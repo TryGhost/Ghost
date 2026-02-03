@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const jwt = require('jsonwebtoken');
 const should = require('should');
 const {UnauthorizedError} = require('@tryghost/errors');
@@ -7,7 +8,7 @@ describe('Auth Service - Members', function () {
     it('exports an authenticateMembersToken method', function () {
         const actual = typeof members.authenticateMembersToken;
         const expected = 'function';
-        should.equal(actual, expected);
+        assert.equal(actual, expected);
     });
 
     describe('authenticateMembersToken', function () {
@@ -20,7 +21,7 @@ describe('Auth Service - Members', function () {
                 const actual = err;
                 const expected = undefined;
 
-                should.equal(actual, expected);
+                assert.equal(actual, expected);
             });
         });
 
@@ -33,7 +34,7 @@ describe('Auth Service - Members', function () {
                 const actual = err;
                 const expected = undefined;
 
-                should.equal(actual, expected);
+                assert.equal(actual, expected);
             });
         });
         describe('attempts to verify the credentials as a JWT, not allowing the "NONE" algorithm', function () {
@@ -46,7 +47,7 @@ describe('Auth Service - Members', function () {
                     const actual = err instanceof UnauthorizedError;
                     const expected = true;
 
-                    should.equal(actual, expected);
+                    assert.equal(actual, expected);
                 });
             });
             it('calls next with an error if the token is using the "none" algorithm', function () {
@@ -65,7 +66,7 @@ describe('Auth Service - Members', function () {
                     const actual = err instanceof UnauthorizedError;
                     const expected = true;
 
-                    should.equal(actual, expected);
+                    assert.equal(actual, expected);
                 });
             });
         });

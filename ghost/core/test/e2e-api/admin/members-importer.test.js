@@ -152,7 +152,7 @@ describe('Members Importer API', function () {
     //                     should.exist(jsonResponse.meta);
     //                     should.exist(jsonResponse.meta.stats);
     //                     should.exist(jsonResponse.meta.stats.successful);
-    //                     should.equal(jsonResponse.meta.stats.successful, 8);
+    //                     assert.equal(jsonResponse.meta.stats.successful, 8);
     //                 })
     //                 .then(() => importLabel);
     //         })
@@ -214,7 +214,7 @@ describe('Members Importer API', function () {
         should.exist(bulkUnsubscribeResponse.body.bulk.meta);
         should.exist(bulkUnsubscribeResponse.body.bulk.meta.stats);
         should.exist(bulkUnsubscribeResponse.body.bulk.meta.stats.successful);
-        should.equal(bulkUnsubscribeResponse.body.bulk.meta.stats.successful, 8);
+        assert.equal(bulkUnsubscribeResponse.body.bulk.meta.stats.successful, 8);
 
         const postUnsubscribeBrowseResponse = await request
             .get(localUtils.API.getApiQuery('members/?filter=label:bulk-unsubscribe-test'))
@@ -270,7 +270,7 @@ describe('Members Importer API', function () {
         should.exist(bulkAddLabelResponse.body.bulk.meta);
         should.exist(bulkAddLabelResponse.body.bulk.meta.stats);
         should.exist(bulkAddLabelResponse.body.bulk.meta.stats.successful);
-        should.equal(bulkAddLabelResponse.body.bulk.meta.stats.successful, 8);
+        assert.equal(bulkAddLabelResponse.body.bulk.meta.stats.successful, 8);
 
         const postLabelAddBrowseResponse = await request
             .get(localUtils.API.getApiQuery(`members/?filter=label:${labelToAdd.slug}`))
@@ -302,7 +302,7 @@ describe('Members Importer API', function () {
         should.exist(bulkRemoveLabelResponse.body.bulk.meta);
         should.exist(bulkRemoveLabelResponse.body.bulk.meta.stats);
         should.exist(bulkRemoveLabelResponse.body.bulk.meta.stats.successful);
-        should.equal(bulkRemoveLabelResponse.body.bulk.meta.stats.successful, 8);
+        assert.equal(bulkRemoveLabelResponse.body.bulk.meta.stats.successful, 8);
 
         const postLabelRemoveBrowseResponse = await request
             .get(localUtils.API.getApiQuery(`members/?filter=label:${labelToRemove.slug}`))

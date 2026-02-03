@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const fs = require('fs-extra');
@@ -33,7 +34,7 @@ describe('Unit: services/url/LocalFileCache', function () {
 
             const cachedUrls = await localFileCache.read('urls');
 
-            should.equal(cachedUrls, null);
+            assert.equal(cachedUrls, null);
         });
 
         it('returns null when the cache file is malformatted', async function () {
@@ -49,7 +50,7 @@ describe('Unit: services/url/LocalFileCache', function () {
 
             const cachedUrls = await localFileCache.read('urls');
 
-            should.equal(cachedUrls, null);
+            assert.equal(cachedUrls, null);
         });
     });
 
@@ -81,7 +82,7 @@ describe('Unit: services/url/LocalFileCache', function () {
 
             const result = await localFileCache.write('urls', {data: 'test'});
 
-            should.equal(result, null);
+            assert.equal(result, null);
             writeFileStub.called.should.equal(false);
         });
     });

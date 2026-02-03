@@ -53,7 +53,7 @@ describe('Themes', function () {
                     formatStub.calledOnce.should.be.true();
                     checkedTheme.should.be.an.Object();
 
-                    should.equal(validate.canActivate(checkedTheme), true);
+                    assert.equal(validate.canActivate(checkedTheme), true);
                 });
         });
 
@@ -69,7 +69,7 @@ describe('Themes', function () {
                     formatStub.calledOnce.should.be.true();
                     checkedTheme.should.be.an.Object();
 
-                    should.equal(validate.canActivate(checkedTheme), true);
+                    assert.equal(validate.canActivate(checkedTheme), true);
                 });
         });
 
@@ -98,7 +98,7 @@ describe('Themes', function () {
                     checkStub.callCount.should.be.equal(0);
                     formatStub.calledOnce.should.be.true();
 
-                    should.equal(validate.canActivate(checkedTheme), false);
+                    assert.equal(validate.canActivate(checkedTheme), false);
                 });
         });
 
@@ -127,7 +127,7 @@ describe('Themes', function () {
                     checkZipStub.callCount.should.be.equal(0);
                     formatStub.calledOnce.should.be.true();
 
-                    should.equal(validate.canActivate(checkedTheme), false);
+                    assert.equal(validate.canActivate(checkedTheme), false);
                 });
         });
 

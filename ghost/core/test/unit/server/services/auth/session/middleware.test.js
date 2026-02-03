@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const sessionMiddleware = require('../../../../../../core/server/services/auth').session;
 const SessionMiddlware = require('../../../../../../core/server/services/auth/session/middleware');
 const models = require('../../../../../../core/server/models');
@@ -44,7 +45,7 @@ describe('Session Service', function () {
 
             sinon.stub(res, 'sendStatus')
                 .callsFake(function () {
-                    should.equal(req.session.origin, 'http://ghost.org');
+                    assert.equal(req.session.origin, 'http://ghost.org');
                     done();
                 });
 
@@ -64,11 +65,11 @@ describe('Session Service', function () {
 
             sinon.stub(res, 'sendStatus')
                 .callsFake(function (statusCode) {
-                    should.equal(req.session.user_id, 23);
-                    should.equal(req.session.origin, 'http://host.tld');
-                    should.equal(req.session.user_agent, 'bububang');
-                    should.equal(req.session.ip, '127.0.0.1');
-                    should.equal(statusCode, 201);
+                    assert.equal(req.session.user_id, 23);
+                    assert.equal(req.session.origin, 'http://host.tld');
+                    assert.equal(req.session.user_agent, 'bububang');
+                    assert.equal(req.session.ip, '127.0.0.1');
+                    assert.equal(statusCode, 201);
                     done();
                 });
 
@@ -105,9 +106,9 @@ describe('Session Service', function () {
             });
 
             await middleware.createSession(req, res, next);
-            should.equal(next.callCount, 1);
-            should.equal(next.args[0][0].statusCode, 403);
-            should.equal(next.args[0][0].code, '2FA_NEW_DEVICE_DETECTED');
+            assert.equal(next.callCount, 1);
+            assert.equal(next.args[0][0].statusCode, 403);
+            assert.equal(next.args[0][0].code, '2FA_NEW_DEVICE_DETECTED');
         });
 
         it('errors with a 403 when require_email_mfa is true', async function () {
@@ -141,9 +142,9 @@ describe('Session Service', function () {
             });
 
             await middleware.createSession(req, res, next);
-            should.equal(next.callCount, 1);
-            should.equal(next.args[0][0].statusCode, 403);
-            should.equal(next.args[0][0].code, '2FA_TOKEN_REQUIRED');
+            assert.equal(next.callCount, 1);
+            assert.equal(next.args[0][0].statusCode, 403);
+            assert.equal(next.args[0][0].code, '2FA_TOKEN_REQUIRED');
         });
     });
 
@@ -160,7 +161,7 @@ describe('Session Service', function () {
             });
 
             middleware.logout(req, res, function next(err) {
-                should.equal(err.errorType, 'InternalServerError');
+                assert.equal(err.errorType, 'InternalServerError');
                 done();
             });
         });
@@ -170,7 +171,7 @@ describe('Session Service', function () {
             const res = fakeRes();
             sinon.stub(res, 'sendStatus')
                 .callsFake(function (status) {
-                    should.equal(status, 204);
+                    assert.equal(status, 204);
                     done();
                 });
 
@@ -203,10 +204,10 @@ describe('Session Service', function () {
 
             await middleware.sendAuthCode(req, res, nextStub);
 
-            should.equal(sendAuthCodeToUserStub.callCount, 1);
-            should.equal(nextStub.callCount, 0);
-            should.equal(sendStatusStub.callCount, 1);
-            should.equal(sendStatusStub.args[0][0], 200);
+            assert.equal(sendAuthCodeToUserStub.callCount, 1);
+            assert.equal(nextStub.callCount, 0);
+            assert.equal(sendStatusStub.callCount, 1);
+            assert.equal(sendStatusStub.args[0][0], 200);
         });
 
         it('calls next with an error if sendAuthCodeToUser fails', async function () {
@@ -225,9 +226,9 @@ describe('Session Service', function () {
 
             await middleware.sendAuthCode(req, res, nextStub);
 
-            should.equal(sendAuthCodeToUserStub.callCount, 1);
-            should.equal(nextStub.callCount, 1);
-            should.equal(sendStatusStub.callCount, 0);
+            assert.equal(sendAuthCodeToUserStub.callCount, 1);
+            assert.equal(nextStub.callCount, 1);
+            assert.equal(sendStatusStub.callCount, 0);
         });
     });
 
@@ -249,10 +250,10 @@ describe('Session Service', function () {
 
             await middleware.verifyAuthCode(req, res, nextStub);
 
-            should.equal(verifyAuthCodeForUserStub.callCount, 1);
-            should.equal(nextStub.callCount, 0);
-            should.equal(sendStatusStub.callCount, 1);
-            should.equal(sendStatusStub.args[0][0], 200);
+            assert.equal(verifyAuthCodeForUserStub.callCount, 1);
+            assert.equal(nextStub.callCount, 0);
+            assert.equal(sendStatusStub.callCount, 1);
+            assert.equal(sendStatusStub.args[0][0], 200);
         });
 
         it('returns 401 if the auth code is invalid', async function () {
@@ -271,10 +272,10 @@ describe('Session Service', function () {
 
             await middleware.verifyAuthCode(req, res, nextStub);
 
-            should.equal(verifyAuthCodeForUserStub.callCount, 1);
-            should.equal(nextStub.callCount, 0);
-            should.equal(sendStatusStub.callCount, 1);
-            should.equal(sendStatusStub.args[0][0], 401);
+            assert.equal(verifyAuthCodeForUserStub.callCount, 1);
+            assert.equal(nextStub.callCount, 0);
+            assert.equal(sendStatusStub.callCount, 1);
+            assert.equal(sendStatusStub.args[0][0], 401);
         });
 
         it('calls next with an error if sendAuthCodeToUser fails', async function () {
@@ -293,9 +294,9 @@ describe('Session Service', function () {
 
             await middleware.verifyAuthCode(req, res, nextStub);
 
-            should.equal(verifyAuthCodeForUserStub.callCount, 1);
-            should.equal(nextStub.callCount, 1);
-            should.equal(sendStatusStub.callCount, 0);
+            assert.equal(verifyAuthCodeForUserStub.callCount, 1);
+            assert.equal(nextStub.callCount, 1);
+            assert.equal(sendStatusStub.callCount, 0);
         });
     });
 });

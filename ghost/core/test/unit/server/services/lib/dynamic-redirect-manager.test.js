@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const DynamicRedirectManager = require('../../../../../core/server/services/lib/dynamic-redirect-manager');
 
@@ -56,9 +57,9 @@ describe('DynamicRedirectManager', function () {
                 should.fail(true, false, 'next should NOT have been called');
             });
 
-            should.equal(headers['Cache-Control'], 'public, max-age=100');
-            should.equal(status, 301);
-            should.equal(location, '/result?q=abc&lang=js');
+            assert.equal(headers['Cache-Control'], 'public, max-age=100');
+            assert.equal(status, 301);
+            assert.equal(location, '/result?q=abc&lang=js');
         });
 
         it('Allows redirects to be removed', function () {
@@ -71,9 +72,9 @@ describe('DynamicRedirectManager', function () {
                 should.ok(true, 'next should have been called');
             });
 
-            should.equal(headers, null);
-            should.equal(status, null);
-            should.equal(location, null);
+            assert.equal(headers, null);
+            assert.equal(status, null);
+            assert.equal(location, null);
         });
 
         it('Can add same redirect multiple times and remove it once', function () {
@@ -87,9 +88,9 @@ describe('DynamicRedirectManager', function () {
                 should.ok(true, 'next should have been called');
             });
 
-            should.equal(headers, null);
-            should.equal(status, null);
-            should.equal(location, null);
+            assert.equal(headers, null);
+            assert.equal(status, null);
+            assert.equal(location, null);
         });
 
         it('The routing works when passed an invalid regexp for the from parameter', function () {
@@ -106,9 +107,9 @@ describe('DynamicRedirectManager', function () {
                 should.ok(true, 'next should have been called');
             });
 
-            should.equal(headers, null);
-            should.equal(status, null);
-            should.equal(location, null);
+            assert.equal(headers, null);
+            assert.equal(status, null);
+            assert.equal(location, null);
         });
 
         it('Throws an error if unexpected internal component throws unknown error', function () {
@@ -158,9 +159,9 @@ describe('DynamicRedirectManager', function () {
                 });
 
                 // NOTE: max-age is "0" because it's not a permanent redirect
-                should.equal(headers['Cache-Control'], 'public, max-age=0');
-                should.equal(status, 302);
-                should.equal(location, '/a-nice-blog-post');
+                assert.equal(headers['Cache-Control'], 'public, max-age=0');
+                assert.equal(status, 302);
+                assert.equal(location, '/a-nice-blog-post');
             });
 
             it('Works with substitution redirect case and a trailing slash', function (){
@@ -176,9 +177,9 @@ describe('DynamicRedirectManager', function () {
                 });
 
                 // NOTE: max-age is "0" because it's not a permanent redirect
-                should.equal(headers['Cache-Control'], 'public, max-age=0');
-                should.equal(status, 302);
-                should.equal(location, '/a-nice-blog-post');
+                assert.equal(headers['Cache-Control'], 'public, max-age=0');
+                assert.equal(status, 302);
+                assert.equal(location, '/a-nice-blog-post');
             });
 
             it('Redirects keeping the query params for substitution regexp', function (){
@@ -194,9 +195,9 @@ describe('DynamicRedirectManager', function () {
                 });
 
                 // NOTE: max-age is "0" because it's not a permanent redirect
-                should.equal(headers['Cache-Control'], 'public, max-age=0');
-                should.equal(status, 302);
-                should.equal(location, '/a-nice-blog-post?a=b');
+                assert.equal(headers['Cache-Control'], 'public, max-age=0');
+                assert.equal(status, 302);
+                assert.equal(location, '/a-nice-blog-post?a=b');
             });
 
             it('Redirects keeping the query params', function (){
@@ -212,9 +213,9 @@ describe('DynamicRedirectManager', function () {
                 });
 
                 // NOTE: max-age is "0" because it's not a permanent redirect
-                should.equal(headers['Cache-Control'], 'public, max-age=0');
-                should.equal(status, 302);
-                should.equal(location, '/?something=good');
+                assert.equal(headers['Cache-Control'], 'public, max-age=0');
+                assert.equal(status, 302);
+                assert.equal(location, '/?something=good');
             });
         });
 
@@ -232,9 +233,9 @@ describe('DynamicRedirectManager', function () {
                 });
 
                 // NOTE: max-age is "0" because it's not a permanent redirect
-                should.equal(headers['Cache-Control'], 'public, max-age=0');
-                should.equal(status, 302);
-                should.equal(location, '/redirected-insensitive');
+                assert.equal(headers['Cache-Control'], 'public, max-age=0');
+                assert.equal(status, 302);
+                assert.equal(location, '/redirected-insensitive');
             });
 
             it('with case sensitive', function () {
@@ -250,9 +251,9 @@ describe('DynamicRedirectManager', function () {
                 });
 
                 // NOTE: max-age is "0" because it's not a permanent redirect
-                should.equal(headers['Cache-Control'], 'public, max-age=0');
-                should.equal(status, 302);
-                should.equal(location, '/redirected-sensitive');
+                assert.equal(headers['Cache-Control'], 'public, max-age=0');
+                assert.equal(status, 302);
+                assert.equal(location, '/redirected-sensitive');
             });
 
             it('defaults to case sensitive', function () {
@@ -267,9 +268,9 @@ describe('DynamicRedirectManager', function () {
                     should.fail(true, 'next should NOT have been called');
                 });
 
-                should.equal(headers['Cache-Control'], 'public, max-age=0');
-                should.equal(status, 302);
-                should.equal(location, '/redirected-default');
+                assert.equal(headers['Cache-Control'], 'public, max-age=0');
+                assert.equal(status, 302);
+                assert.equal(location, '/redirected-default');
             });
 
             it('should not redirect with case sensitive', function () {
@@ -284,9 +285,9 @@ describe('DynamicRedirectManager', function () {
                     should.ok(true, 'next should have been called');
                 });
 
-                should.equal(headers, null);
-                should.equal(status, null);
-                should.equal(location, null);
+                assert.equal(headers, null);
+                assert.equal(status, null);
+                assert.equal(location, null);
             });
 
             it('should not redirect with default case sensitive', function () {
@@ -301,9 +302,9 @@ describe('DynamicRedirectManager', function () {
                     should.ok(true, 'next should have been called');
                 });
 
-                should.equal(headers, null);
-                should.equal(status, null);
-                should.equal(location, null);
+                assert.equal(headers, null);
+                assert.equal(status, null);
+                assert.equal(location, null);
             });
         });
 
@@ -321,9 +322,9 @@ describe('DynamicRedirectManager', function () {
                 });
 
                 // NOTE: max-age is "0" because it's not a permanent redirect
-                should.equal(headers['Cache-Control'], 'public, max-age=0');
-                should.equal(status, 302);
-                should.equal(location, 'https://ghost.org/');
+                assert.equal(headers['Cache-Control'], 'public, max-age=0');
+                assert.equal(status, 302);
+                assert.equal(location, 'https://ghost.org/');
             });
 
             it('without trailing slash', function () {
@@ -339,9 +340,9 @@ describe('DynamicRedirectManager', function () {
                 });
 
                 // NOTE: max-age is "0" because it's not a permanent redirect
-                should.equal(headers['Cache-Control'], 'public, max-age=0');
-                should.equal(status, 302);
-                should.equal(location, 'https://ghost.org/');
+                assert.equal(headers['Cache-Control'], 'public, max-age=0');
+                assert.equal(status, 302);
+                assert.equal(location, 'https://ghost.org/');
             });
 
             it('with capturing group', function () {
@@ -357,9 +358,9 @@ describe('DynamicRedirectManager', function () {
                 });
 
                 // NOTE: max-age is "0" because it's not a permanent redirect
-                should.equal(headers['Cache-Control'], 'public, max-age=0');
-                should.equal(status, 302);
-                should.equal(location, 'https://ghost.org/docs');
+                assert.equal(headers['Cache-Control'], 'public, max-age=0');
+                assert.equal(status, 302);
+                assert.equal(location, 'https://ghost.org/docs');
             });
         });
 
@@ -377,9 +378,9 @@ describe('DynamicRedirectManager', function () {
                 });
 
                 // NOTE: max-age is "0" because it's not a permanent redirect
-                should.equal(headers['Cache-Control'], 'public, max-age=0');
-                should.equal(status, 302);
-                should.equal(location, '/joloonii-angilal/а-ангилал');
+                assert.equal(headers['Cache-Control'], 'public, max-age=0');
+                assert.equal(status, 302);
+                assert.equal(location, '/joloonii-angilal/а-ангилал');
             });
         });
     });
@@ -408,9 +409,9 @@ describe('DynamicRedirectManager', function () {
                 should.fail(true, 'next should NOT have been called');
             });
 
-            should.equal(headers['Cache-Control'], 'public, max-age=100');
-            should.equal(status, 301);
-            should.equal(location, '/blog/revamped-url/');
+            assert.equal(headers['Cache-Control'], 'public, max-age=100');
+            assert.equal(status, 301);
+            assert.equal(location, '/blog/revamped-url/');
         });
     });
 });

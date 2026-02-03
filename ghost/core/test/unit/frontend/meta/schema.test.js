@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const {getSchema, SOCIAL_PLATFORMS} = require('../../../../core/frontend/meta/schema');
 const socialUrls = require('@tryghost/social-urls');
@@ -826,7 +827,7 @@ describe('getSchema', function () {
         const schema = getSchema(metadata, data);
 
         should.exist(schema.contributor);
-        should.equal(schema.contributor.length, 2);
+        assert.equal(schema.contributor.length, 2);
         should.deepEqual(schema.contributor[0], {
             '@type': 'Person',
             name: 'Co-Author 1',

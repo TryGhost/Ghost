@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 
 const OfferCode = require('../../../../../../../core/server/services/offers/domain/models/offer-code');
@@ -29,19 +30,19 @@ describe('OfferCode', function () {
 
             const code = OfferCode.create('Hello, world');
 
-            should.equal(code.value, 'hello-world');
+            assert.equal(code.value, 'hello-world');
         });
 
         it('Requires the string to be a maximum of 191 characters', function () {
             const maxLengthInput = Array.from({length: 191}).map(() => 'a').join('');
 
-            should.equal(maxLengthInput.length, 191);
+            assert.equal(maxLengthInput.length, 191);
 
             OfferCode.create(maxLengthInput);
 
             const tooLong = maxLengthInput + 'a';
 
-            should.equal(tooLong.length, 192);
+            assert.equal(tooLong.length, 192);
 
             try {
                 OfferCode.create(tooLong);

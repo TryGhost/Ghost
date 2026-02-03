@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 
 const OfferCurrency = require('../../../../../../../core/server/services/offers/domain/models/offer-currency');
@@ -63,7 +64,7 @@ describe('OfferCurrency', function () {
     it('Store the currency as a string on the value property', function () {
         const currency = OfferCurrency.create('usd');
 
-        should.equal(typeof currency.value, 'string');
+        assert.equal(typeof currency.value, 'string');
     });
 
     it('Considers currencies equal if they have the same ISO code', function () {

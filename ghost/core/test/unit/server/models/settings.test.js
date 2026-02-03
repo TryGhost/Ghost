@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const mockDb = require('mock-knex');
@@ -85,22 +86,22 @@ describe('Unit: models/settings', function () {
             const setting = models.Settings.forge();
 
             let returns = setting.formatOnWrite({key: 'cover_image', value: 'http://127.0.0.1:2369/cover_image.png', type: 'string'});
-            should.equal(returns.value, '__GHOST_URL__/cover_image.png');
+            assert.equal(returns.value, '__GHOST_URL__/cover_image.png');
 
             returns = setting.formatOnWrite({key: 'logo', value: 'http://127.0.0.1:2369/logo.png', type: 'string'});
-            should.equal(returns.value, '__GHOST_URL__/logo.png');
+            assert.equal(returns.value, '__GHOST_URL__/logo.png');
 
             returns = setting.formatOnWrite({key: 'icon', value: 'http://127.0.0.1:2369/icon.png', type: 'string'});
-            should.equal(returns.value, '__GHOST_URL__/icon.png');
+            assert.equal(returns.value, '__GHOST_URL__/icon.png');
 
             returns = setting.formatOnWrite({key: 'portal_button_icon', value: 'http://127.0.0.1:2369/portal_button_icon.png', type: 'string'});
-            should.equal(returns.value, '__GHOST_URL__/portal_button_icon.png');
+            assert.equal(returns.value, '__GHOST_URL__/portal_button_icon.png');
 
             returns = setting.formatOnWrite({key: 'og_image', value: 'http://127.0.0.1:2369/og_image.png', type: 'string'});
-            should.equal(returns.value, '__GHOST_URL__/og_image.png');
+            assert.equal(returns.value, '__GHOST_URL__/og_image.png');
 
             returns = setting.formatOnWrite({key: 'twitter_image', value: 'http://127.0.0.1:2369/twitter_image.png', type: 'string'});
-            should.equal(returns.value, '__GHOST_URL__/twitter_image.png');
+            assert.equal(returns.value, '__GHOST_URL__/twitter_image.png');
         });
     });
 
@@ -109,43 +110,43 @@ describe('Unit: models/settings', function () {
             const setting = models.Settings.forge();
 
             let returns = setting.parse({key: 'is_private', value: 'false', type: 'boolean'});
-            should.equal(returns.value, false);
+            assert.equal(returns.value, false);
 
             returns = setting.parse({key: 'is_private', value: false, type: 'boolean'});
-            should.equal(returns.value, false);
+            assert.equal(returns.value, false);
 
             returns = setting.parse({key: 'is_private', value: true, type: 'boolean'});
-            should.equal(returns.value, true);
+            assert.equal(returns.value, true);
 
             returns = setting.parse({key: 'is_private', value: 'true', type: 'boolean'});
-            should.equal(returns.value, true);
+            assert.equal(returns.value, true);
 
             returns = setting.parse({key: 'is_private', value: '0', type: 'boolean'});
-            should.equal(returns.value, false);
+            assert.equal(returns.value, false);
 
             returns = setting.parse({key: 'is_private', value: '1', type: 'boolean'});
-            should.equal(returns.value, true);
+            assert.equal(returns.value, true);
 
             returns = setting.parse({key: 'something', value: 'null'});
-            should.equal(returns.value, 'null');
+            assert.equal(returns.value, 'null');
 
             returns = setting.parse({key: 'cover_image', value: '__GHOST_URL__/cover_image.png', type: 'string'});
-            should.equal(returns.value, 'http://127.0.0.1:2369/cover_image.png');
+            assert.equal(returns.value, 'http://127.0.0.1:2369/cover_image.png');
 
             returns = setting.parse({key: 'logo', value: '__GHOST_URL__/logo.png', type: 'string'});
-            should.equal(returns.value, 'http://127.0.0.1:2369/logo.png');
+            assert.equal(returns.value, 'http://127.0.0.1:2369/logo.png');
 
             returns = setting.parse({key: 'icon', value: '__GHOST_URL__/icon.png', type: 'string'});
-            should.equal(returns.value, 'http://127.0.0.1:2369/icon.png');
+            assert.equal(returns.value, 'http://127.0.0.1:2369/icon.png');
 
             returns = setting.parse({key: 'portal_button_icon', value: '__GHOST_URL__/portal_button_icon.png', type: 'string'});
-            should.equal(returns.value, 'http://127.0.0.1:2369/portal_button_icon.png');
+            assert.equal(returns.value, 'http://127.0.0.1:2369/portal_button_icon.png');
 
             returns = setting.parse({key: 'og_image', value: '__GHOST_URL__/og_image.png', type: 'string'});
-            should.equal(returns.value, 'http://127.0.0.1:2369/og_image.png');
+            assert.equal(returns.value, 'http://127.0.0.1:2369/og_image.png');
 
             returns = setting.parse({key: 'twitter_image', value: '__GHOST_URL__/twitter_image.png', type: 'string'});
-            should.equal(returns.value, 'http://127.0.0.1:2369/twitter_image.png');
+            assert.equal(returns.value, 'http://127.0.0.1:2369/twitter_image.png');
         });
     });
 

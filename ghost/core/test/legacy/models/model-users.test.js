@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const errors = require('@tryghost/errors');
 const should = require('should');
 const sinon = require('sinon');
@@ -279,7 +280,7 @@ describe('User Model', function run() {
                 should.exist(results);
                 user = results.toJSON();
                 user.id.should.equal(firstUser);
-                should.equal(user.website, null);
+                assert.equal(user.website, null);
 
                 return UserModel.edit({website: 'http://some.newurl.com'}, {id: firstUser});
             }).then(function (edited) {

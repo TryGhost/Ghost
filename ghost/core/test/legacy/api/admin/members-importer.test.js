@@ -68,7 +68,7 @@ describe('Members Importer API', function () {
 
                 should.exist(jsonResponse);
                 should.exist(jsonResponse.members);
-                should.equal(jsonResponse.members.length, 2);
+                assert.equal(jsonResponse.members.length, 2);
 
                 const importedMember1 = jsonResponse.members.find(m => m.email === 'member+labels_1@example.com');
                 should.exist(importedMember1);

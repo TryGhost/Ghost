@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const nock = require('nock');
 const path = require('path');
@@ -160,7 +161,7 @@ describe('Posts API', function () {
             .expect(200);
 
         const jsonResponse = res.body;
-        should.equal(jsonResponse.meta.pagination.page, 2);
+        assert.equal(jsonResponse.meta.pagination.page, 2);
     });
 
     it('Can request a post by id', async function () {

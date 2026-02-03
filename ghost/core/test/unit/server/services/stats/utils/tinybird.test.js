@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const should = require('should');
 const tinybird = require('../../../../../../core/server/services/stats/utils/tinybird');
@@ -191,7 +192,7 @@ describe('Tinybird Client', function () {
             };
 
             const result = tinybirdClient.parseResponse(mockResponse);
-            should.equal(result, null);
+            assert.equal(result, null);
         });
     });
 
@@ -230,7 +231,7 @@ describe('Tinybird Client', function () {
             
             const result = await tinybirdClient.fetch('test_pipe', {});
             
-            should.equal(result, null);
+            assert.equal(result, null);
             mockRequest.get.calledOnce.should.be.true();
         });
         
@@ -242,7 +243,7 @@ describe('Tinybird Client', function () {
             
             const result = await tinybirdClient.fetch('test_pipe', {});
             
-            should.equal(result, null);
+            assert.equal(result, null);
             mockRequest.get.calledOnce.should.be.true();
         });
     });

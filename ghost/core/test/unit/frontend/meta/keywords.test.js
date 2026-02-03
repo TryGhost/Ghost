@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const models = require('../../../../core/server/models');
@@ -45,20 +46,20 @@ describe('getKeywords', function () {
                 tags: []
             }
         });
-        should.equal(keywords, null);
+        assert.equal(keywords, null);
     });
 
     it('should return null if post has no tags', function () {
         const keywords = getKeywords({
             post: {}
         });
-        should.equal(keywords, null);
+        assert.equal(keywords, null);
     });
 
     it('should return null if not a post', function () {
         const keywords = getKeywords({
             author: {}
         });
-        should.equal(keywords, null);
+        assert.equal(keywords, null);
     });
 });

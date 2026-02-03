@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const {UnauthorizedError} = require('@tryghost/errors');
@@ -17,10 +18,10 @@ describe('Session controller', function () {
     });
 
     it('exports an add method', function () {
-        should.equal(typeof sessionController.add, 'function');
+        assert.equal(typeof sessionController.add, 'function');
     });
     it('exports an delete method', function () {
-        should.equal(typeof sessionController.delete, 'function');
+        assert.equal(typeof sessionController.delete, 'function');
     });
 
     describe('#add', function () {
@@ -28,7 +29,7 @@ describe('Session controller', function () {
             return sessionController.add({}).then(() => {
                 should.fail('session.add did not throw');
             },(err) => {
-                should.equal(err instanceof UnauthorizedError, true);
+                assert.equal(err instanceof UnauthorizedError, true);
             });
         });
 
@@ -42,7 +43,7 @@ describe('Session controller', function () {
             }, {}).then(() => {
                 should.fail('session.add did not throw');
             },(err) => {
-                should.equal(err instanceof UnauthorizedError, true);
+                assert.equal(err instanceof UnauthorizedError, true);
             });
         });
 
@@ -68,13 +69,13 @@ describe('Session controller', function () {
             }}).then((fn) => {
                 fn(fakeReq, fakeRes, fakeNext);
             }).then(function () {
-                should.equal(fakeReq.brute.reset.callCount, 1);
+                assert.equal(fakeReq.brute.reset.callCount, 1);
 
                 const createSessionStubCall = createSessionStub.getCall(0);
-                should.equal(fakeReq.user, fakeUser);
-                should.equal(createSessionStubCall.args[0], fakeReq);
-                should.equal(createSessionStubCall.args[1], fakeRes);
-                should.equal(createSessionStubCall.args[2], fakeNext);
+                assert.equal(fakeReq.user, fakeUser);
+                assert.equal(createSessionStubCall.args[0], fakeReq);
+                assert.equal(createSessionStubCall.args[1], fakeRes);
+                assert.equal(createSessionStubCall.args[2], fakeNext);
             });
         });
 
@@ -101,9 +102,9 @@ describe('Session controller', function () {
             }}).then((fn) => {
                 fn(fakeReq, fakeRes, fakeNext);
             }).then(function () {
-                should.equal(fakeReq.brute.reset.callCount, 1);
-                should.equal(fakeNext.callCount, 1);
-                should.equal(fakeNext.args[0][0], resetError);
+                assert.equal(fakeReq.brute.reset.callCount, 1);
+                assert.equal(fakeNext.callCount, 1);
+                assert.equal(fakeNext.args[0][0], resetError);
             });
         });
 
@@ -129,15 +130,15 @@ describe('Session controller', function () {
             }}).then((fn) => {
                 fn(fakeReq, fakeRes, fakeNext);
             }).then(function () {
-                should.equal(fakeReq.brute.reset.callCount, 1);
+                assert.equal(fakeReq.brute.reset.callCount, 1);
 
                 const createSessionStubCall = createSessionStub.getCall(0);
-                should.equal(fakeReq.user, fakeUser);
-                should.equal(createSessionStubCall.args[0], fakeReq);
-                should.equal(createSessionStubCall.args[1], fakeRes);
-                should.equal(createSessionStubCall.args[2], fakeNext);
+                assert.equal(fakeReq.user, fakeUser);
+                assert.equal(createSessionStubCall.args[0], fakeReq);
+                assert.equal(createSessionStubCall.args[1], fakeRes);
+                assert.equal(createSessionStubCall.args[2], fakeNext);
 
-                should.equal(fakeReq.skipVerification, true);
+                assert.equal(fakeReq.skipVerification, true);
             });
         });
 
@@ -163,15 +164,15 @@ describe('Session controller', function () {
             }}).then((fn) => {
                 fn(fakeReq, fakeRes, fakeNext);
             }).then(function () {
-                should.equal(fakeReq.brute.reset.callCount, 1);
+                assert.equal(fakeReq.brute.reset.callCount, 1);
 
                 const createSessionStubCall = createSessionStub.getCall(0);
-                should.equal(fakeReq.user, fakeUser);
-                should.equal(createSessionStubCall.args[0], fakeReq);
-                should.equal(createSessionStubCall.args[1], fakeRes);
-                should.equal(createSessionStubCall.args[2], fakeNext);
+                assert.equal(fakeReq.user, fakeUser);
+                assert.equal(createSessionStubCall.args[0], fakeReq);
+                assert.equal(createSessionStubCall.args[1], fakeRes);
+                assert.equal(createSessionStubCall.args[2], fakeNext);
 
-                should.equal(fakeReq.skipVerification, false);
+                assert.equal(fakeReq.skipVerification, false);
             });
         });
     });
@@ -187,9 +188,9 @@ describe('Session controller', function () {
                 fn(fakeReq, fakeRes, fakeNext);
             }).then(function () {
                 const destroySessionStubCall = logoutSessionStub.getCall(0);
-                should.equal(destroySessionStubCall.args[0], fakeReq);
-                should.equal(destroySessionStubCall.args[1], fakeRes);
-                should.equal(destroySessionStubCall.args[2], fakeNext);
+                assert.equal(destroySessionStubCall.args[0], fakeReq);
+                assert.equal(destroySessionStubCall.args[1], fakeRes);
+                assert.equal(destroySessionStubCall.args[2], fakeNext);
             });
         });
     });

@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const supertest = require('supertest');
@@ -132,7 +133,7 @@ describe('Actions API', function () {
         res5.body.actions[0].event.should.eql('edited');
         Object.keys(res5.body.actions[0].actor).length.should.eql(4);
         res5.body.actions[0].actor.id.should.eql(testUtils.DataGenerator.Content.integrations[0].id);
-        should.equal(res5.body.actions[0].actor.image, null);
+        assert.equal(res5.body.actions[0].actor.image, null);
         res5.body.actions[0].actor.name.should.eql(testUtils.DataGenerator.Content.integrations[0].name);
         res5.body.actions[0].actor.slug.should.eql(testUtils.DataGenerator.Content.integrations[0].slug);
     });

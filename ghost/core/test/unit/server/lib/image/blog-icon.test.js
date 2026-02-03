@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const path = require('path');
@@ -83,7 +84,7 @@ describe('lib/image: blog icon', function () {
                     get: () => {}
                 }});
 
-                should.equal(blogIcon.getIconUrl({absolute: true, fallbackToDefault: false}), null);
+                assert.equal(blogIcon.getIconUrl({absolute: true, fallbackToDefault: false}), null);
             });
         });
     });

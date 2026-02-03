@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const UrlUtils = require('@tryghost/url-utils');
@@ -48,7 +49,7 @@ describe('Stripe - config', function () {
         };
         const config = getConfig({settingsHelpers, config: configUtils.config, urlUtils: {}});
 
-        should.equal(config, null);
+        assert.equal(config, null);
     });
 
     it('Includes the subdirectory in the webhookHandlerUrl', function () {
@@ -60,9 +61,9 @@ describe('Stripe - config', function () {
 
         const config = getConfig({settingsHelpers, config: configUtils.config, urlUtils: fakeUrlUtils});
 
-        should.equal(config.secretKey, 'direct_secret');
-        should.equal(config.publicKey, 'direct_publishable');
-        should.equal(config.webhookHandlerUrl, 'http://site.com/subdir/members/webhooks/stripe/');
+        assert.equal(config.secretKey, 'direct_secret');
+        assert.equal(config.publicKey, 'direct_publishable');
+        assert.equal(config.webhookHandlerUrl, 'http://site.com/subdir/members/webhooks/stripe/');
 
         should.exist(config.checkoutSessionSuccessUrl);
         should.exist(config.checkoutSessionCancelUrl);

@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const supertest = require('supertest');
@@ -60,7 +61,7 @@ describe('Tag API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
 
-        should.equal(res.body.meta.pagination.page, 2);
+        assert.equal(res.body.meta.pagination.page, 2);
     });
 
     it('Can read a tag', async function () {

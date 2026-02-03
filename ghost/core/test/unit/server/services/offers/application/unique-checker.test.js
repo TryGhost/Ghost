@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const should = require('should');
 const UniqueChecker = require('../../../../../../core/server/services/offers/application/unique-checker');
@@ -14,7 +15,7 @@ describe('UniqueChecker', function () {
 
             const returnVal = await checker.isUniqueCode('code');
 
-            should.equal(returnVal, true);
+            assert.equal(returnVal, true);
         });
 
         it('Returns false if there is an Offer found in the repository', async function () {
@@ -27,7 +28,7 @@ describe('UniqueChecker', function () {
 
             const returnVal = await checker.isUniqueCode('code');
 
-            should.equal(returnVal, false);
+            assert.equal(returnVal, false);
         });
     });
 
@@ -42,7 +43,7 @@ describe('UniqueChecker', function () {
 
             const returnVal = await checker.isUniqueName('name');
 
-            should.equal(returnVal, true);
+            assert.equal(returnVal, true);
         });
 
         it('Returns false if there is an Offer found in the repository', async function () {
@@ -55,7 +56,7 @@ describe('UniqueChecker', function () {
 
             const returnVal = await checker.isUniqueName('name');
 
-            should.equal(returnVal, false);
+            assert.equal(returnVal, false);
         });
     });
 });

@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 
 // Stuff we are testing
@@ -30,6 +31,6 @@ describe('{{facebook_url}} helper', function () {
     });
 
     it('should return null if there are no facebook usernames', function () {
-        should.equal(facebook_url(options), null);
+        assert.equal(facebook_url(options), null);
     });
 });

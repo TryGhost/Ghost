@@ -282,7 +282,7 @@ describe('Front-end members behavior', function () {
                     'sort_order'
                 ]);
 
-                should.equal(restoreJsonResponse.newsletters[0].name, originalNewsletterName);
+                assert.equal(restoreJsonResponse.newsletters[0].name, originalNewsletterName);
             });
         });
 
