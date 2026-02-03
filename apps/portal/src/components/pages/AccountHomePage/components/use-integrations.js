@@ -23,10 +23,12 @@ const useIntegrations = () => {
                 const response = await fetch(`https://partner.transistor.fm/ghost/member/${memberUuid}`);
                 if (response.ok) {
                     const data = await response.json();
-                    setTransistorPodcasts(data.member === true);
+                    setTransistorPodcasts(data?.member === true);
                 }
             } catch (e) {
-                // Silently fail - don't show the button if we can't reach Transistor
+                // Don't show the button if Transistor fails
+                // eslint-disable-next-line no-console
+                console.warn('Error in Transistor request', e);
             }
         };
 
