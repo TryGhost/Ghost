@@ -324,7 +324,7 @@ const filterAddButtonVariants = cva(
 
 const filterOperatorVariants = cva(
     [
-        'focus-visible:z-1 relative flex shrink-0 items-center text-muted-foreground transition hover:text-foreground data-[state=open]:text-foreground',
+        'focus-visible:z-1 relative flex shrink-0 items-center whitespace-nowrap text-muted-foreground transition hover:text-foreground data-[state=open]:text-foreground',
         'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring'
     ],
     {
@@ -954,7 +954,7 @@ function FilterOperatorDropdown<T = unknown>({field, operator, values, onChange}
     // If hideOperatorSelect is true, just render the operator as plain text
     if (field.hideOperatorSelect) {
         return (
-            <div className="flex items-center self-stretch border border-r-[0px] px-3 text-xs text-muted-foreground sm:text-sm">
+            <div className="flex items-center self-stretch whitespace-nowrap border border-r-[0px] px-3 text-xs text-muted-foreground sm:text-sm">
                 {operatorLabel}
             </div>
         );
