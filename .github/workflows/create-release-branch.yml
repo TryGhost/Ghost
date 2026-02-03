@@ -26,7 +26,7 @@ jobs:
       - run: echo "BASE_REF=${{ inputs.base-ref }}" >> $GITHUB_ENV
         if: inputs.base-ref != 'latest'
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: ${{ env.BASE_REF }}
           fetch-depth: 0
@@ -46,7 +46,7 @@ jobs:
           echo "NEW_VERSION=$(semver bump ${{ inputs.bump-type }} $(git describe --tags --abbrev=0 --match=v*))" >> $GITHUB_ENV
 
       - name: Create branch
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const branchName = `v${process.env.NEW_VERSION}`;
