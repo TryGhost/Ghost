@@ -233,6 +233,22 @@ class CommentsService {
     }
 
     /**
+     * Get reporters for a comment (admin only)
+     * @param {string} commentId - The ID of the Comment to get reporters for
+     * @param {any} options - Query options (page, limit)
+     */
+    async getCommentReporters(commentId, options = {}) {
+        const page = await this.models.CommentReport.findPage({
+            filter: `comment_id:'${commentId}'`,
+            withRelated: ['member'],
+            order: 'created_at desc',
+            ...options
+        });
+
+        return page;
+    }
+
+    /**
      * @param {string} id - The ID of the Comment to get
      * @param {any} options
      */

@@ -46,6 +46,7 @@ module.exports = function apiRoutes() {
     router.get('/comments', mw.authAdminApi, http(api.comments.browseAll));
     router.get('/comments/:id', mw.authAdminApi, http(api.commentReplies.read));
     router.get('/comments/:id/replies', mw.authAdminApi, http(api.commentReplies.browse));
+    router.get('/comments/:id/reports', mw.authAdminApi, http(api.commentReports.browse));
     router.get('/comments/post/:post_id', mw.authAdminApi, http(api.comments.browse));
     router.post('/comments', mw.authAdminApi, http(api.comments.add));
     router.put('/comments/:id', mw.authAdminApi, http(api.comments.edit));
