@@ -63,39 +63,7 @@ const CommentThreadSidebar: React.FC<CommentThreadSidebarProps> = ({
         <Sheet open={open} onOpenChange={onOpenChange}>
             <SheetContent className='overflow-y-auto px-6 pt-0 sm:max-w-[600px]'>
                 <SheetHeader className='sticky top-0 z-40 -mx-6 bg-background/60 p-6 pb-4 backdrop-blur'>
-                    <SheetTitle className='mb-4'>Thread</SheetTitle>
-                    {post && (
-                        <a 
-                            className='flex items-stretch overflow-hidden rounded-md border transition-all hover:border-muted-foreground/40' 
-                            href={post.url} 
-                            rel="noopener noreferrer" 
-                            target='_blank'
-                        >
-                            {post.feature_image && (
-                                <div className='hidden w-24 shrink-0 bg-cover bg-center md:block' style={{
-                                    backgroundImage: `url(${post.feature_image})`
-                                }}></div>
-                            )}
-                            <div className='min-w-0 flex-1 p-3 text-left'>
-                                <H3 className={cn('line-clamp-2 text-sm font-semibold leading-tight')}>{post.title}</H3>
-                                {post.excerpt && (
-                                    <p className='mt-1 line-clamp-2 text-xs leading-snug'>{post.excerpt}</p>
-                                )}
-                                {site && (
-                                    <div className='mt-2 flex items-start gap-2'>
-                                        {site.icon && (
-                                            <div className='mt-0.5 size-4 shrink-0 bg-cover bg-center' style={{
-                                                backgroundImage: `url(${site.icon})`
-                                            }}></div>
-                                        )}
-                                        <div className='flex gap-1 text-xs'>
-                                            <strong>{site.title}</strong>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </a>
-                    )}
+                    <SheetTitle className='mb-2'>Thread</SheetTitle>
                 </SheetHeader>
                 <div>
                     {isLoading ? (

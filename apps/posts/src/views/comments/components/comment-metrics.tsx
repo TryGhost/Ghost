@@ -28,7 +28,7 @@ export function CommentMetrics({
     const isClickableReplies = hasReplies && onRepliesClick;
 
     return (
-        <div className={cn('flex items-center gap-4', className)}>
+        <div className={cn('flex items-center gap-6', className)}>
             {isClickableReplies ? (
                 <TooltipProvider>
                     <Tooltip>
