@@ -88,6 +88,8 @@ test.describe('Ghost Public - Comments - Replies', () => {
         await postPage.waitForCommentsToLoad();
         const postCommentsSection = postPage.commentsSection;
 
+        await expect(postCommentsSection.comments).toHaveCount(2);
+
         await postCommentsSection.replyToComment('Reply to main comment', 'My reply');
         await expect(postCommentsSection.comments).toHaveCount(3);
         await expect(postCommentsSection.comments.first()).toContainText('Main comment');
