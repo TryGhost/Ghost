@@ -5,6 +5,7 @@ import SniperLinkButton from '../common/sniper-link-button';
 import AppContext from '../../app-context';
 import {ReactComponent as EnvelopeIcon} from '../../images/icons/envelope.svg';
 import {t} from '../../utils/i18n';
+import {isInviteOnly} from '../../utils/helpers';
 
 export const MagicLinkStyles = `
     .gh-portal-icon-envelope {
@@ -97,7 +98,8 @@ export default class MagicLinkPage extends React.Component {
         return {
             signin: {
                 withOTC: t('An email has been sent to {submittedEmailOrInbox}. Click the link inside or enter your code below.', {submittedEmailOrInbox}),
-                withoutOTC: t('A login link has been sent to your inbox. If it doesn\'t arrive in 3 minutes, be sure to check your spam folder.')
+                withoutOTC: t('A login link has been sent to your inbox. If it doesn\'t arrive in 3 minutes, be sure to check your spam folder.'),
+                withoutOTCInviteOnly: t('If you have an account, a sign in link will be sent to you shortly. Please check your inbox and spam folder.')
             },
             signup: t('To complete signup, click the confirmation link in your inbox. If it doesn\'t arrive within 3 minutes, check your spam folder!')
         };
@@ -119,7 +121,16 @@ export default class MagicLinkPage extends React.Component {
             return descriptionConfig.signup;
         }
 
-        return otcRef ? descriptionConfig.signin.withOTC : descriptionConfig.signin.withoutOTC;
+        if (otcRef) {
+            return descriptionConfig.signin.withOTC;
+        }
+
+        const {site} = this.context;
+        if (isInviteOnly({site})) {
+            return descriptionConfig.signin.withoutOTCInviteOnly;
+        }
+
+        return descriptionConfig.signin.withoutOTC;
     }
 
     renderFormHeader() {

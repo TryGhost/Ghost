@@ -22,8 +22,8 @@ const messages = {
     unableToCheckout: 'Unable to initiate checkout session',
     inviteOnly: 'This site is invite-only, contact the owner for access.',
     paidOnly: 'This site only accepts paid members.',
-    memberNotFound: 'No member exists with this e-mail address.',
-    memberNotFoundSignUp: 'No member exists with this e-mail address. Please sign up first.',
+    memberNotFound: 'No member exists with this email address.',
+    memberNotFoundSignUp: 'No member exists with this email address. Please sign up first.',
     invalidType: 'Invalid checkout type.',
     notConfigured: 'This site is not accepting payments at the moment.',
     invalidNewsletters: 'Cannot subscribe to invalid newsletters {newsletters}',
@@ -869,9 +869,33 @@ module.exports = class RouterController {
         const member = await this._memberRepository.get({email: normalizedEmail});
 
         if (!member) {
-            throw new errors.BadRequestError({
-                message: this._allowSelfSignup() ? tpl(messages.memberNotFoundSignUp) : tpl(messages.memberNotFound)
-            });
+            // Member doesn't exist - to prevent enumeration, we don't reveal this
+            // If self-signup is allowed, send a signup email so they can create an account
+            // If self-signup is disabled (invite-only), silently return to prevent enumeration
+            if (this._allowSelfSignup()) {
+                const blockedEmailDomains = this._settingsCache.get('all_blocked_email_domains');
+                const emailDomain = normalizedEmail.split('@')[1]?.toLowerCase();
+                if (emailDomain && blockedEmailDomains.includes(emailDomain)) {
+                    // To prevent enumeration, we don't reveal this
+                    return {};
+                }
+
+                const tokenData = {
+                    reqIp: req.ip ?? undefined,
+                    attribution: await this._memberAttributionService.getAttribution(req.body.urlHistory)
+                };
+                // Send a signup email - this allows them to create an account
+                return await this._sendEmailWithMagicLink({
+                    email: normalizedEmail,
+                    tokenData,
+                    requestedType: 'signup',
+                    referrer
+                });
+            }
+
+            // Self-signup disabled (invite-only): silently return empty response
+            // to prevent member enumeration
+            return {};
         }
 
         const tokenData = {};
