@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const find = require('lodash/find');
 const should = require('should');
 const SettingsImporter = require('../../../../../../../core/server/data/importer/importers/data/settings-importer');
@@ -19,7 +20,7 @@ describe('SettingsImporter', function () {
 
             const passwordSetting = find(importer.dataToImport, {key: 'password'});
 
-            should.equal(passwordSetting, undefined);
+            assert.equal(passwordSetting, undefined);
         });
 
         it('Removes the is_private setting', function () {
@@ -37,7 +38,7 @@ describe('SettingsImporter', function () {
 
             const passwordSetting = find(importer.dataToImport, {key: 'is_private'});
 
-            should.equal(passwordSetting, undefined);
+            assert.equal(passwordSetting, undefined);
         });
 
         it('Does not overwrite members from address', function () {

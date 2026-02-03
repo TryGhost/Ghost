@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 
 const OfferName = require('../../../../../../../core/server/services/offers/domain/models/offer-name');
@@ -51,13 +52,13 @@ describe('OfferName', function () {
         it('Requires the string to be a maximum of 40 characters', function () {
             const maxLengthInput = Array.from({length: 40}).map(() => 'a').join('');
 
-            should.equal(maxLengthInput.length, 40);
+            assert.equal(maxLengthInput.length, 40);
 
             OfferName.create(maxLengthInput);
 
             const tooLong = maxLengthInput + 'a';
 
-            should.equal(tooLong.length, 41);
+            assert.equal(tooLong.length, 41);
 
             try {
                 OfferName.create(tooLong);
@@ -73,7 +74,7 @@ describe('OfferName', function () {
         it('Trims the contents of the OfferName', function () {
             const description = OfferName.create('    Trim me!    ');
 
-            should.equal(description.value, 'Trim me!');
+            assert.equal(description.value, 'Trim me!');
         });
     });
 });
