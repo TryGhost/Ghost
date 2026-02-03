@@ -881,6 +881,7 @@ module.exports = class RouterController {
                 }
 
                 const tokenData = {
+                    reqIp: req.ip ?? undefined,
                     attribution: await this._memberAttributionService.getAttribution(req.body.urlHistory)
                 };
                 // Send a signup email - this allows them to create an account
