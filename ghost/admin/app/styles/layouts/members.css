@@ -1185,6 +1185,10 @@ textarea.gh-member-details-textarea {
     text-decoration: underline;
 }
 
+.gh-member-newsletter-no-data p {
+    margin-bottom: 0.8rem;
+}
+
 .gh-member-newsletter-footer {
     font-size: 1.3rem;
     margin-top: 12px;
