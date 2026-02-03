@@ -148,7 +148,7 @@
     "sentry-testkit": "5.0.10",
     "sinon-chai": "4.0.1",
     "testem": "3.16.0",
-    "tracked-built-ins": "3.4.0",
+    "tracked-built-ins": "4.1.0",
     "util": "0.12.5",
     "validator": "13.12.0",
     "walk-sync": "3.0.0"
