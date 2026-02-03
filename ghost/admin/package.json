@@ -56,7 +56,7 @@
     "@tryghost/nql-lang": "0.6.4",
     "@tryghost/string": "0.2.17",
     "@tryghost/timezone-data": "0.4.12",
-    "animejs": "3.2.2",
+    "animejs": "4.3.5",
     "autoprefixer": "9.8.6",
     "babel-plugin-transform-class-properties": "6.24.1",
     "babel-plugin-transform-react-jsx": "6.24.1",
