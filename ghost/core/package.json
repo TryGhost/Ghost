@@ -177,7 +177,7 @@
     "keypair": "1.0.4",
     "knex": "2.4.2",
     "knex-migrator": "5.3.2",
-    "leaky-bucket": "2.2.0",
+    "leaky-bucket": "4.1.4",
     "lodash": "4.17.21",
     "luxon": "3.7.2",
     "mailgun.js": "10.4.0",
