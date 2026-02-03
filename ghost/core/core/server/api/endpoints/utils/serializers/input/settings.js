@@ -80,7 +80,10 @@ const EDITABLE_SETTINGS = [
     'explore_ping',
     'explore_ping_growth',
     'indexnow_api_key',
-    'transistor'
+    'transistor',
+    'portal_transistor_heading',
+    'portal_transistor_description',
+    'portal_transistor_button_text'
 ];
 
 module.exports = {
