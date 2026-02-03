@@ -75,7 +75,7 @@ describe('MemberStripeCustomer Model', function run() {
 
             const subscriptions = customer.related('subscriptions');
 
-            assert.equal(subscriptions.length, 1, 'Should  be two subscriptions');
+            assert.equal(subscriptions.length, 1, 'Should have one subscription');
 
             assert.equal(subscriptions.models[0].get('subscription_id'), 'fake_subscription_id');
         });
