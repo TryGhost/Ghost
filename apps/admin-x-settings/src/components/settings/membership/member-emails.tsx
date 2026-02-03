@@ -3,7 +3,7 @@ import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
 import WelcomeEmailModal from './member-emails/welcome-email-modal';
-import {Separator, SettingGroupContent, Toggle, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {Icon, Separator, SettingGroupContent, Toggle, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useAddAutomatedEmail, useBrowseAutomatedEmails, useEditAutomatedEmail} from '@tryghost/admin-x-framework/api/automated-emails';
 import {useGlobalData} from '../../providers/global-data-provider';
@@ -39,26 +39,32 @@ const EmailPreview: React.FC<{
 
     return (
         <button
-            className='flex w-full cursor-pointer items-center justify-between gap-3 rounded-lg border border-grey-100 bg-grey-50 p-5 text-left transition-all hover:border-grey-200 hover:shadow-sm dark:border-grey-925 dark:bg-grey-975 dark:hover:border-grey-800'
+            className='flex w-full cursor-pointer items-center justify-between gap-6 rounded-lg border border-grey-100 bg-grey-50 p-5 text-left transition-all hover:border-grey-200 hover:shadow-sm dark:border-grey-925 dark:bg-grey-975 dark:hover:border-grey-800'
             data-testid={`${emailType}-welcome-email-preview`}
             type='button'
             onClick={onEdit}
         >
-            <div className='flex items-start gap-3'>
-                {icon ?
-                    <div className='size-10 min-h-10 min-w-10 rounded-sm bg-cover bg-center' style={{
-                        backgroundImage: `url(${icon})`
-                    }} />
-                    :
-                    <div className='flex aspect-square size-10 items-center justify-center overflow-hidden rounded-full p-1 text-white' style={{
-                        backgroundColor: color
-                    }}>
-                        <img className='h-auto w-8' src={FakeLogo} />
+            <div className='flex w-full items-center justify-between'>
+                <div className='flex items-start gap-3'>
+                    {icon ?
+                        <div className='size-10 min-h-10 min-w-10 rounded-sm bg-cover bg-center' style={{
+                            backgroundImage: `url(${icon})`
+                        }} />
+                        :
+                        <div className='flex aspect-square size-10 items-center justify-center overflow-hidden rounded-full p-1 text-white' style={{
+                            backgroundColor: color
+                        }}>
+                            <img className='h-auto w-8' src={FakeLogo} />
+                        </div>
+                    }
+                    <div>
+                        <div className='font-semibold'>{senderName}</div>
+                        <div className='text-sm'>{automatedEmail.subject}</div>
                     </div>
-                }
-                <div>
-                    <div className='font-semibold'>{senderName}</div>
-                    <div className='text-sm'>{automatedEmail.subject}</div>
+                </div>
+                <div className='text-sm font-semibold opacity-100 transition-all hover:opacity-80'>
+                    Edit
+                    {/* <Icon name='pen' size='sm' /> */}
                 </div>
             </div>
             <div onClick={e => e.stopPropagation()}>
