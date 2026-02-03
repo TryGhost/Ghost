@@ -107,7 +107,8 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
                 options: [
                     {value: 'published', label: 'Published'},
                     {value: 'hidden', label: 'Hidden'}
-                ]
+                ],
+                searchable: false
             },
             {
                 key: 'reported',
@@ -117,7 +118,8 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
                 options: [
                     {value: 'true', label: 'Yes'},
                     {value: 'false', label: 'No'}
-                ]
+                ],
+                searchable: false
             },
             {
                 key: 'created_at',
@@ -158,6 +160,7 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
                     )
                 }
                 addButtonText={hasFilters ? 'Add filter' : 'Filter'}
+                allowMultiple={false}
                 className={`[&>button]:order-last ${
                     hasFilters && '[&>button]:border-none'
                 }`}
@@ -165,6 +168,7 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
                 filters={filters}
                 keyboardShortcut="f"
                 popoverAlign={hasFilters ? 'start' : 'end'}
+                showSearchInput={false}
                 onChange={onFiltersChange}
             />
             {hasFilters && (
