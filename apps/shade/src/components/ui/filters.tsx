@@ -2099,10 +2099,13 @@ export function Filters<T = unknown>({
                         : f
                 ));
                 onChange(updatedFilters);
+
+                // Always update tempSelectedValues to keep inline multiselect in sync
+                setTempSelectedValues(values as T[]);
+
                 if (closePopover) {
                     setAddFilterOpen(false);
                     setSelectedFieldKeyForOptions(null);
-                    setTempSelectedValues([]);
                 }
                 return;
             }
