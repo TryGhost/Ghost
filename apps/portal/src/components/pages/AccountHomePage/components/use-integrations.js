@@ -1,5 +1,6 @@
 import {useContext, useEffect, useState} from 'react';
 import AppContext from '../../../../app-context';
+import {hasMode} from '../../../../utils/check-mode';
 
 /**
  * Hook to fetch integration data for account details.
@@ -9,12 +10,13 @@ const useIntegrations = () => {
     const {member, site} = useContext(AppContext);
 
     const isTransistorEnabled = Boolean(site.labs?.transistor);
-    const memberUuid = member?.uuid;
+    const memberUuid = '0897917f-5ef0-4caa-a44b-2f748c8e80da'; // TODO: revert to member?.uuid
+    const isPreview = hasMode(['preview']);
 
-    const [transistorPodcasts, setTransistorPodcasts] = useState(false);
+    const [transistorPodcasts, setTransistorPodcasts] = useState(isPreview && isTransistorEnabled);
 
     useEffect(() => {
-        if (!isTransistorEnabled || !memberUuid) {
+        if (isPreview || !isTransistorEnabled || !memberUuid) {
             return;
         }
 
@@ -31,7 +33,7 @@ const useIntegrations = () => {
         };
 
         checkTransistor();
-    }, [isTransistorEnabled, memberUuid]);
+    }, [isPreview, isTransistorEnabled, memberUuid]);
 
     return {
         transistor: {

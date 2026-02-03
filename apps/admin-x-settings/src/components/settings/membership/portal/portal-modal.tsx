@@ -14,6 +14,12 @@ import {useGlobalData} from '../../../providers/global-data-provider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 import {verifyEmailToken} from '@tryghost/admin-x-framework/api/email-verification';
 
+const SIDEBAR_TAB_TO_PREVIEW_TAB: Record<string, string> = {
+    signupOptions: 'signup',
+    lookAndFeel: 'signup',
+    accountPage: 'account'
+};
+
 const Sidebar: React.FC<{
     localSettings: Setting[]
     updateSetting: (key: string, setting: SettingValue) => void
@@ -21,7 +27,8 @@ const Sidebar: React.FC<{
     updateTier: (tier: Tier) => void
     errors: Record<string, string | undefined>
     setError: (key: string, error: string | undefined) => void
-}> = ({localSettings, updateSetting, localTiers, updateTier, errors, setError}) => {
+    onPreviewTabChange: (id: string) => void
+}> = ({localSettings, updateSetting, localTiers, updateTier, errors, setError, onPreviewTabChange}) => {
     const [selectedTab, setSelectedTab] = useState('signupOptions');
 
     const tabs: Tab[] = [
@@ -45,12 +52,16 @@ const Sidebar: React.FC<{
         {
             id: 'accountPage',
             title: 'Account page',
-            contents: <AccountPage errors={errors} setError={setError} updateSetting={updateSetting} />
+            contents: <AccountPage errors={errors} localSettings={localSettings} setError={setError} updateSetting={updateSetting} />
         }
     ];
 
     const handleTabChange = (id: string) => {
         setSelectedTab(id);
+        const previewTab = SIDEBAR_TAB_TO_PREVIEW_TAB[id];
+        if (previewTab) {
+            onPreviewTabChange(previewTab);
+        }
     };
 
     return (
@@ -198,6 +209,7 @@ const PortalModal: React.FC = () => {
         setError={setError}
         updateSetting={updateSetting}
         updateTier={updateTier}
+        onPreviewTabChange={setSelectedPreviewTab}
     />;
     const preview = <PortalPreview
         localSettings={formState.settings}

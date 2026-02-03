@@ -394,6 +394,18 @@
                 "isIn": [["true", "false"]]
             },
             "type": "boolean"
+        },
+        "portal_transistor_heading": {
+            "defaultValue": "Podcasts",
+            "type": "string"
+        },
+        "portal_transistor_description": {
+            "defaultValue": "Access your private podcasts",
+            "type": "string"
+        },
+        "portal_transistor_button_text": {
+            "defaultValue": "Subscribe",
+            "type": "string"
         }
     },
     "email": {
