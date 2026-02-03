@@ -471,26 +471,25 @@ const getStripeAccountId = async () => {
     }
 
     const parallelIndex = process.env.TEST_PARALLEL_INDEX;
-    const accountEmail = `test${parallelIndex}@example.com`;
+    // Include GITHUB_RUN_ID and GITHUB_RUN_ATTEMPT to allow concurrent CI jobs
+    // and re-runs without account conflicts
+    const runId = process.env.GITHUB_RUN_ID || 'local';
+    const runAttempt = process.env.GITHUB_RUN_ATTEMPT || '1';
+    const accountEmail = `test-${runId}-${runAttempt}-${parallelIndex}@example.com`;
 
     const secretKey = process.env.STRIPE_SECRET_KEY;
     const stripe = new Stripe(secretKey, {
         apiVersion: '2020-08-27'
     });
-    const accounts = await stripe.accounts.list();
-    if (accounts.data.length > 0) {
-        const account = accounts.data.find(acc => acc.email === accountEmail);
-        if (account) {
-            await stripe.accounts.del(account.id);
-        }
-    }
 
+    // Each CI run has a unique GITHUB_RUN_ID, so we always create a fresh account
+    // Cleanup of old accounts is handled by the scheduled cleanup-stripe-test-accounts workflow
     const account = await stripe.accounts.create({
         type: 'standard',
         email: accountEmail,
         business_type: 'company',
         company: {
-            name: `Test Company ${parallelIndex}`
+            name: `Test Company ${runId}-${runAttempt}-${parallelIndex}`
         }
     });
     stripeAccountId = account.id;

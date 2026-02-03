@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const nock = require('nock');
 const should = require('should');
 const GeolocationService = require('../../../../../../../core/server/services/members/members-api/services/geolocation-service');
@@ -57,22 +58,22 @@ describe('lib/geolocation', function () {
             let scope = nock('https://get.geojs.io').get('/v1/ip/geo/.json').reply(200, {test: true});
             let result = await service.getGeolocationFromIP('');
             scope.isDone().should.eql(false);
-            should.equal(undefined, result);
+            assert.equal(undefined, result);
 
             scope = nock('https://get.geojs.io').get('/v1/ip/geo/null.json').reply(200, {test: true});
             result = await service.getGeolocationFromIP(null);
             scope.isDone().should.eql(false);
-            should.equal(undefined, result);
+            assert.equal(undefined, result);
 
             scope = nock('https://get.geojs.io').get('/v1/ip/geo/undefined.json').reply(200, {test: true});
             result = await service.getGeolocationFromIP(undefined);
             scope.isDone().should.eql(false);
-            should.equal(undefined, result);
+            assert.equal(undefined, result);
 
             scope = nock('https://get.geojs.io').get('/v1/ip/geo/test.json').reply(200, {test: true});
             result = await service.getGeolocationFromIP('test');
             scope.isDone().should.eql(false);
-            should.equal(undefined, result);
+            assert.equal(undefined, result);
         });
     });
 });

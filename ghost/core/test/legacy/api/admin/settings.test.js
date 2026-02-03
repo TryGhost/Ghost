@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const supertest = require('supertest');
 const config = require('../../../../core/shared/config');
@@ -127,10 +128,10 @@ describe('Settings API', function () {
             should.exist(putBody);
 
             let setting = putBody.settings.find(s => s.key === 'unsplash');
-            should.equal(setting.value, true);
+            assert.equal(setting.value, true);
 
             setting = putBody.settings.find(s => s.key === 'title');
-            should.equal(setting.value, 'New Value');
+            assert.equal(setting.value, 'New Value');
 
             localUtils.API.checkResponse(putBody, 'settings');
         });

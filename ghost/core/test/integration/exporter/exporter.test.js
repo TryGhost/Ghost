@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../utils');
@@ -132,7 +133,7 @@ describe('Exporter', function () {
 
             excludedTables.forEach((tableName) => {
                 // NOTE: why is this undefined? The key should probably not even be present
-                should.equal(exportData.data[tableName], undefined);
+                assert.equal(exportData.data[tableName], undefined);
             });
 
             // excludes settings with sensitive data

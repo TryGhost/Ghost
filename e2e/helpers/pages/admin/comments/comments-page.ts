@@ -13,6 +13,7 @@ export class CommentsPage extends AdminPage {
     readonly disableCommentsButton: Locator;
     readonly cancelButton: Locator;
     readonly commentingDisabledIndicator = (row: Locator) => row.getByTestId('commenting-disabled-indicator');
+    readonly hideCommentsCheckbox: Locator;
 
     constructor(page: Page) {
         super(page);
@@ -28,6 +29,7 @@ export class CommentsPage extends AdminPage {
         this.disableCommentsModalTitle = this.disableCommentsModal.getByRole('heading', {name: 'Disable comments'});
         this.disableCommentsButton = page.getByRole('button', {name: 'Disable comments'});
         this.cancelButton = this.disableCommentsModal.getByRole('button', {name: 'Cancel'});
+        this.hideCommentsCheckbox = page.getByRole('checkbox', {name: 'Hide all previous comments'});
     }
 
     async waitForComments(): Promise<void> {

@@ -719,7 +719,7 @@ module.exports = class RouterController {
         }
 
         try {
-            /** @type {{sniperLinks?: {desktop: string; android: string}; otc_ref?: string}} */
+            /** @type {{sniperLinks?: {desktop: string; android: string; provider: string}; otc_ref?: string}} */
             const resBody = {};
 
             if (emailType === 'signup' || emailType === 'subscribe') {
@@ -738,6 +738,9 @@ module.exports = class RouterController {
             });
             if (sniperLinks) {
                 resBody.sniperLinks = sniperLinks;
+                logging.info(`[Sniperlinks] Found sniper links for provider ${sniperLinks.provider}`);
+            } else {
+                logging.info('[Sniperlinks] Found no sniper links');
             }
 
             res.writeHead(201, {'Content-Type': 'application/json'});
