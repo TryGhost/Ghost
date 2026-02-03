@@ -1,5 +1,4 @@
 const crypto = require('crypto');
-const logging = require('@tryghost/logging');
 const DomainEvents = require('@tryghost/domain-events');
 const RedirectEvent = require('./redirect-event');
 const LinkRedirect = require('./link-redirect');
@@ -126,19 +125,15 @@ class LinkRedirectsService {
             // We try decodeURIComponent first (handles double-encoded), then normalize
             // URL-encoded braces to recover the placeholder from path-encoded forms
             let redirectUrl = link.to.href;
-            logging.info('[link-redirects] Stored destination URL: ' + redirectUrl);
             let decodedUrl;
             try {
                 decodedUrl = decodeURIComponent(redirectUrl);
-                logging.info('[link-redirects] Decoded URL: ' + decodedUrl);
             } catch (e) {
                 // decodeURIComponent fails on malformed sequences (e.g. %%%7Buuid%7D%%)
                 // Normalize URL-encoded braces so we can still detect the placeholder
                 decodedUrl = redirectUrl.replace(/%7B/gi, '{').replace(/%7D/gi, '}');
-                logging.info('[link-redirects] decodeURIComponent failed, normalized URL: ' + decodedUrl);
             }
             const hasMemberUuidPlaceholder = decodedUrl.includes(MEMBER_UUID_PLACEHOLDER);
-            logging.info('[link-redirects] Has placeholder: ' + hasMemberUuidPlaceholder + ', m param: ' + url.searchParams.get('m'));
             if (hasMemberUuidPlaceholder) {
                 const memberUuid = url.searchParams.get('m');
                 if (memberUuid && UUID_REGEX.test(memberUuid)) {
