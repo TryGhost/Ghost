@@ -407,6 +407,12 @@ export default class App extends React.Component {
                 data.site.members_signup_access = value;
             } else if (key === 'portalDefaultPlan' && value) {
                 data.site.portal_default_plan = value;
+            } else if (key === 'transistorHeading') {
+                data.site.portal_transistor_heading = value || '';
+            } else if (key === 'transistorDescription') {
+                data.site.portal_transistor_description = value || '';
+            } else if (key === 'transistorButtonText') {
+                data.site.portal_transistor_button_text = value || '';
             }
         }
         data.site.portal_plans = allowedPlans;

@@ -15,7 +15,7 @@ export const TransistorPodcastsActionStyles = `
     }
 `;
 
-const TransistorPodcastsAction = ({hasPodcasts, memberUuid}) => {
+const TransistorPodcastsAction = ({hasPodcasts, memberUuid, heading, description, buttonText}) => {
     if (!hasPodcasts || !memberUuid) {
         return null;
     }
@@ -25,7 +25,8 @@ const TransistorPodcastsAction = ({hasPodcasts, memberUuid}) => {
     return (
         <section className="gh-portal-action-transistor">
             <div className='gh-portal-list-detail'>
-                <h3>{t('Podcasts')}</h3>
+                <h3>{heading || t('Podcasts')}</h3>
+                {description && <p>{description}</p>}
             </div>
             <a
                 href={transistorUrl}
@@ -33,7 +34,7 @@ const TransistorPodcastsAction = ({hasPodcasts, memberUuid}) => {
                 rel="noopener noreferrer"
                 className='gh-portal-btn gh-portal-btn-list'
             >
-                {t('Subscribe')}
+                {buttonText || t('Subscribe')}
             </a>
         </section>
     );

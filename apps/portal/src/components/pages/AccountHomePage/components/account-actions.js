@@ -61,7 +61,10 @@ const AccountActions = () => {
                 {showEmailPreferences && <EmailPreferencesAction />}
                 {showEmailNewsletterAction && <EmailNewsletterAction />}
                 <TransistorPodcastsAction
+                    buttonText={site.portal_transistor_button_text}
+                    description={site.portal_transistor_description}
                     hasPodcasts={transistor.hasPodcasts}
+                    heading={site.portal_transistor_heading}
                     memberUuid={transistor.memberUuid}
                 />
             </div>
