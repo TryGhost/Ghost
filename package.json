@@ -91,7 +91,7 @@
     "*.js": "eslint"
   },
   "devDependencies": {
-    "@actions/core": "1.11.1",
+    "@actions/core": "3.0.0",
     "chalk": "4.1.2",
     "chokidar": "3.6.0",
     "concurrently": "8.2.2",

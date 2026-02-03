@@ -222,7 +222,7 @@
     "sqlite3": "5.1.7"
   },
   "devDependencies": {
-    "@actions/core": "1.11.1",
+    "@actions/core": "3.0.0",
     "@playwright/test": "1.55.1",
     "@prettier/sync": "0.6.1",
     "@tryghost/express-test": "0.15.0",
