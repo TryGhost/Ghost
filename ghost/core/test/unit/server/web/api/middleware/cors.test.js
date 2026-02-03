@@ -45,7 +45,7 @@ describe('cors', function () {
 
         cors(req, res, next);
 
-        next.called.should.be.true();
+        sinon.assert.calledOnce(next);
         should.not.exist(res.headers['Access-Control-Allow-Origin']);
 
         done();
@@ -60,7 +60,7 @@ describe('cors', function () {
 
         cors(req, res, next);
 
-        res.end.called.should.be.true();
+        sinon.assert.calledOnce(res.end);
         res.headers['Access-Control-Allow-Origin'].should.equal(origin);
 
         done();
@@ -75,7 +75,7 @@ describe('cors', function () {
 
         cors(req, res, next);
 
-        res.end.called.should.be.true();
+        sinon.assert.calledOnce(res.end);
         res.headers['Access-Control-Allow-Origin'].should.equal(origin);
 
         done();
@@ -90,7 +90,7 @@ describe('cors', function () {
 
         cors(req, res, next);
 
-        next.called.should.be.true();
+        sinon.assert.calledOnce(next);
         should.not.exist(res.headers['Access-Control-Allow-Origin']);
 
         done();
@@ -107,7 +107,7 @@ describe('cors', function () {
 
         cors(req, res, next);
 
-        res.end.called.should.be.true();
+        sinon.assert.calledOnce(res.end);
         res.headers['Access-Control-Allow-Origin'].should.equal(origin);
 
         done();
@@ -129,7 +129,7 @@ describe('cors', function () {
 
         cors(req, res, next);
 
-        res.end.called.should.be.true();
+        sinon.assert.called(res.end);
         res.headers['Access-Control-Allow-Origin'].should.equal(origin);
 
         done();
@@ -137,8 +137,8 @@ describe('cors', function () {
 
     it('should add origin value to the vary header', function (done) {
         corsCaching(req, res, function () {
-            should.equal(res.vary.called, true);
-            should.equal(res.vary.args[0], 'Origin');
+            sinon.assert.calledOnce(res.vary);
+            sinon.assert.calledWith(res.vary, 'Origin');
             done();
         });
     });
@@ -146,7 +146,7 @@ describe('cors', function () {
     it('should NOT add origin value to the vary header when not an OPTIONS request', function (done) {
         req.method = 'GET';
         corsCaching(req, res, function () {
-            should.equal(res.vary.called, false);
+            sinon.assert.notCalled(res.vary);
             done();
         });
     });

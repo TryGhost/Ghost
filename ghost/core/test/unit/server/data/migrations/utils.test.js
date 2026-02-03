@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
@@ -393,7 +394,7 @@ describe('migrations/utils/permissions', function () {
                     await runUpMigration(knex, migration);
                     should.fail('addPermissionToRole up migration did not throw');
                 } catch (err) {
-                    should.equal(errors.utils.isGhostError(err), true);
+                    assert.equal(errors.utils.isGhostError(err), true);
                     err.message.should.equal('Cannot add permission(Unimaginable) with role(Not there) - permission does not exist');
                 }
             });
@@ -426,7 +427,7 @@ describe('migrations/utils/permissions', function () {
                     await runUpMigration(knex, migration);
                     should.fail('addPermissionToRole did not throw');
                 } catch (err) {
-                    should.equal(errors.utils.isGhostError(err), true);
+                    assert.equal(errors.utils.isGhostError(err), true);
                     err.message.should.equal('Cannot add permission(Permission Name) with role(Not there) - role does not exist');
                 }
             });
@@ -595,17 +596,17 @@ describe('migrations/utils/settings', function () {
                 return row.key === 'test_key';
             });
 
-            should.equal(addedSettingAfterUp.key, 'test_key', 'The setting was added to the database');
-            should.equal(addedSettingAfterUp.value, 'test_value');
-            should.equal(addedSettingAfterUp.type, 'string');
-            should.equal(addedSettingAfterUp.group, 'test_group');
-            should.equal(addedSettingAfterUp.flags, 'PUBLIC');
+            assert.equal(addedSettingAfterUp.key, 'test_key', 'The setting was added to the database');
+            assert.equal(addedSettingAfterUp.value, 'test_value');
+            assert.equal(addedSettingAfterUp.type, 'string');
+            assert.equal(addedSettingAfterUp.group, 'test_group');
+            assert.equal(addedSettingAfterUp.flags, 'PUBLIC');
 
             await runDownMigration();
 
             const allSettingsAfterDown = await knex('settings').select();
 
-            should.equal(allSettingsAfterDown.length, 0, 'The setting was removed');
+            assert.equal(allSettingsAfterDown.length, 0, 'The setting was removed');
         });
 
         it('Skips adding if setting already exists', async function () {
@@ -638,13 +639,13 @@ describe('migrations/utils/settings', function () {
                 return row.key === 'test_key';
             });
 
-            should.equal(existingSetting.value, 'test_value', 'The original value was preserved');
+            assert.equal(existingSetting.value, 'test_value', 'The original value was preserved');
 
             await runDownMigration();
 
             const allSettingsAfterDown = await knex('settings').select();
 
-            should.equal(allSettingsAfterDown.length, 0, 'The setting was removed');
+            assert.equal(allSettingsAfterDown.length, 0, 'The setting was removed');
         });
     });
 
@@ -676,10 +677,10 @@ describe('migrations/utils/settings', function () {
                 return row.key === 'remove_test_key';
             });
 
-            should.equal(allSettingsAtStart.length, 1, 'Started with one setting');
-            should.equal(allSettingsAfterUp.length, 0, 'Setting was removed');
-            should.equal(allSettingsAfterDown.length, 1, 'Ended with one setting');
-            should.equal(restoredSettingAfterDown.key, 'remove_test_key', 'Setting was restored');
+            assert.equal(allSettingsAtStart.length, 1, 'Started with one setting');
+            assert.equal(allSettingsAfterUp.length, 0, 'Setting was removed');
+            assert.equal(allSettingsAfterDown.length, 1, 'Ended with one setting');
+            assert.equal(restoredSettingAfterDown.key, 'remove_test_key', 'Setting was restored');
         });
 
         it('Skips removal if setting does not exist', async function () {
@@ -697,9 +698,9 @@ describe('migrations/utils/settings', function () {
 
             const allSettingsAfterDown = await knex('settings').select();
 
-            should.equal(allSettingsAtStart.length, 0, 'No settings in place at the start');
-            should.equal(allSettingsAfterUp.length, 0, 'No settings were removed');
-            should.equal(allSettingsAfterDown.length, 0, 'No settings were restored');
+            assert.equal(allSettingsAtStart.length, 0, 'No settings in place at the start');
+            assert.equal(allSettingsAfterUp.length, 0, 'No settings were removed');
+            assert.equal(allSettingsAfterDown.length, 0, 'No settings were restored');
         });
     });
 });
@@ -752,18 +753,18 @@ describe('migrations/utils/schema nullable functions', function () {
 
             // Verify initial state - column should be not nullable
             const isNullableInitial = await checkColumnNullable('test_nullable_migration', 'not_nullable_col', knex);
-            should.equal(isNullableInitial, false, 'Column should initially be not nullable');
+            assert.equal(isNullableInitial, false, 'Column should initially be not nullable');
 
             const runDownMigration = await runUpMigration(knex, migration);
 
             // Verify column is now nullable
             const isNullableAfter = await checkColumnNullable('test_nullable_migration', 'not_nullable_col', knex);
-            should.equal(isNullableAfter, true, 'Column should be nullable after up migration');
+            assert.equal(isNullableAfter, true, 'Column should be nullable after up migration');
 
             // Test down migration
             await runDownMigration();
             const isNullableAfterDown = await checkColumnNullable('test_nullable_migration', 'not_nullable_col', knex);
-            should.equal(isNullableAfterDown, false, 'Column should be not nullable after down migration');
+            assert.equal(isNullableAfterDown, false, 'Column should be not nullable after down migration');
 
             await knex.destroy();
         });
@@ -775,7 +776,7 @@ describe('migrations/utils/schema nullable functions', function () {
 
             // Verify initial state - column should already be nullable
             const isNullableInitial = await checkColumnNullable('test_nullable_migration', 'nullable_col', knex);
-            should.equal(isNullableInitial, true, 'Column should initially be nullable');
+            assert.equal(isNullableInitial, true, 'Column should initially be nullable');
 
             // Spy on logging to verify skip message
             const logSpy = sinon.spy(logging, 'warn');
@@ -787,7 +788,7 @@ describe('migrations/utils/schema nullable functions', function () {
 
                 // Column should still be nullable
                 const isNullableAfter = await checkColumnNullable('test_nullable_migration', 'nullable_col', knex);
-                should.equal(isNullableAfter, true, 'Column should still be nullable');
+                assert.equal(isNullableAfter, true, 'Column should still be nullable');
 
                 await runDownMigration();
             } finally {
@@ -808,18 +809,18 @@ describe('migrations/utils/schema nullable functions', function () {
 
             // Verify initial state - column should be nullable
             const isNullableInitial = await checkColumnNullable('test_nullable_migration', 'nullable_col', knex);
-            should.equal(isNullableInitial, true, 'Column should initially be nullable');
+            assert.equal(isNullableInitial, true, 'Column should initially be nullable');
 
             const runDownMigration = await runUpMigration(knex, migration);
 
             // Verify column is now not nullable
             const isNotNullableAfter = await checkColumnNullable('test_nullable_migration', 'nullable_col', knex);
-            should.equal(isNotNullableAfter, false, 'Column should be not nullable after up migration');
+            assert.equal(isNotNullableAfter, false, 'Column should be not nullable after up migration');
 
             // Test down migration (should set back to nullable)
             await runDownMigration();
             const isNullableAfterDown = await checkColumnNullable('test_nullable_migration', 'nullable_col', knex);
-            should.equal(isNullableAfterDown, true, 'Column should be nullable after down migration');
+            assert.equal(isNullableAfterDown, true, 'Column should be nullable after down migration');
 
             await knex.destroy();
         });
@@ -831,7 +832,7 @@ describe('migrations/utils/schema nullable functions', function () {
 
             // Verify initial state - column should already be not nullable
             const isNotNullableInitial = await checkColumnNullable('test_nullable_migration', 'not_nullable_col', knex);
-            should.equal(isNotNullableInitial, false, 'Column should initially be not nullable');
+            assert.equal(isNotNullableInitial, false, 'Column should initially be not nullable');
 
             // Spy on logging to verify skip message
             const logSpy = sinon.spy(require('@tryghost/logging'), 'warn');
@@ -843,7 +844,7 @@ describe('migrations/utils/schema nullable functions', function () {
 
                 // Column should still be not nullable
                 const isNotNullableAfter = await checkColumnNullable('test_nullable_migration', 'not_nullable_col', knex);
-                should.equal(isNotNullableAfter, false, 'Column should still be not nullable');
+                assert.equal(isNotNullableAfter, false, 'Column should still be not nullable');
 
                 await runDownMigration();
             } finally {
@@ -861,8 +862,8 @@ describe('migrations/utils/schema nullable functions', function () {
             const nullableResult = await checkColumnNullable('test_nullable_migration', 'nullable_col', knex);
             const notNullableResult = await checkColumnNullable('test_nullable_migration', 'not_nullable_col', knex);
 
-            should.equal(nullableResult, true, 'Should identify nullable column correctly');
-            should.equal(notNullableResult, false, 'Should identify not nullable column correctly');
+            assert.equal(nullableResult, true, 'Should identify nullable column correctly');
+            assert.equal(notNullableResult, false, 'Should identify not nullable column correctly');
 
             await knex.destroy();
         });

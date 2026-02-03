@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const moment = require('moment');
@@ -10,7 +11,7 @@ describe('updateUserLastSeenMiddleware', function () {
 
     it('calls next with no error if there is no user on the request', function (done) {
         updateUserLastSeenMiddleware({}, {}, function next(err) {
-            should.equal(err, undefined);
+            assert.equal(err, undefined);
             done();
         });
     });
@@ -21,7 +22,7 @@ describe('updateUserLastSeenMiddleware', function () {
             get: sinon.stub().withArgs('last_seen').returns(fakeLastSeen)
         };
         updateUserLastSeenMiddleware({user: fakeUser}, {}, function next(err) {
-            should.equal(err, undefined);
+            assert.equal(err, undefined);
             done();
         });
     });
@@ -34,8 +35,8 @@ describe('updateUserLastSeenMiddleware', function () {
                 updateLastSeen: sinon.stub().resolves()
             };
             updateUserLastSeenMiddleware({user: fakeUser}, {}, function next(err) {
-                should.equal(err, undefined);
-                should.equal(fakeUser.updateLastSeen.callCount, 1);
+                assert.equal(err, undefined);
+                assert.equal(fakeUser.updateLastSeen.callCount, 1);
                 done();
             });
         });
@@ -48,8 +49,8 @@ describe('updateUserLastSeenMiddleware', function () {
                 updateLastSeen: sinon.stub().rejects(fakeError)
             };
             updateUserLastSeenMiddleware({user: fakeUser}, {}, function next(err) {
-                should.equal(err, fakeError);
-                should.equal(fakeUser.updateLastSeen.callCount, 1);
+                assert.equal(err, fakeError);
+                assert.equal(fakeUser.updateLastSeen.callCount, 1);
                 done();
             });
         });

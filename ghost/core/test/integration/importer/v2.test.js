@@ -787,9 +787,9 @@ describe('Importer', function () {
                     return models.Settings.findOne(_.merge({key: 'labs'}, testUtils.context.internal));
                 })
                 .then(function (result) {
-                    should.equal(result.attributes.key, 'labs');
-                    should.equal(result.attributes.group, 'labs');
-                    should.equal(result.attributes.value, '{"additionalPaymentMethods":true}');
+                    assert.equal(result.attributes.key, 'labs');
+                    assert.equal(result.attributes.group, 'labs');
+                    assert.equal(result.attributes.value, '{"additionalPaymentMethods":true}');
                 });
         });
 
@@ -807,9 +807,9 @@ describe('Importer', function () {
                     return models.Settings.findOne(_.merge({key: 'labs'}, testUtils.context.internal));
                 })
                 .then(function (result) {
-                    should.equal(result.attributes.key, 'labs');
-                    should.equal(result.attributes.group, 'labs');
-                    should.equal(result.attributes.value, '{}');
+                    assert.equal(result.attributes.key, 'labs');
+                    assert.equal(result.attributes.group, 'labs');
+                    assert.equal(result.attributes.value, '{}');
                 });
         });
 

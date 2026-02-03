@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const errors = require('@tryghost/errors');
 const should = require('should');
 const sinon = require('sinon');
@@ -747,8 +748,8 @@ describe('Post Model', function () {
                     (!!createdPost.get('featured')).should.equal(false);
                     (!!createdPost.get('page')).should.equal(false);
 
-                    should.equal(createdPost.get('locale'), null);
-                    should.equal(createdPost.get('visibility'), 'public');
+                    assert.equal(createdPost.get('locale'), null);
+                    assert.equal(createdPost.get('visibility'), 'public');
 
                     // testing for nulls
                     (createdPost.get('feature_image') === null).should.equal(true);
@@ -756,8 +757,8 @@ describe('Post Model', function () {
                     createdPost.get('created_at').should.be.above(new Date(0).getTime());
                     createdPost.relations.authors.models[0].id.should.equal(testUtils.DataGenerator.Content.users[0].id);
                     createdPost.get('updated_at').should.be.above(new Date(0).getTime());
-                    should.equal(createdPost.get('published_at'), null);
-                    should.equal(createdPost.get('published_by'), null);
+                    assert.equal(createdPost.get('published_at'), null);
+                    assert.equal(createdPost.get('published_by'), null);
 
                     createdPostUpdatedDate = createdPost.get('updated_at');
 
@@ -816,8 +817,8 @@ describe('Post Model', function () {
                     (!!createdPost.get('featured')).should.equal(false);
                     (!!createdPost.get('page')).should.equal(false);
 
-                    should.equal(createdPost.get('locale'), null);
-                    should.equal(createdPost.get('visibility'), 'paid');
+                    assert.equal(createdPost.get('locale'), null);
+                    assert.equal(createdPost.get('visibility'), 'paid');
 
                     // testing for nulls
                     (createdPost.get('feature_image') === null).should.equal(true);
@@ -825,8 +826,8 @@ describe('Post Model', function () {
                     createdPost.get('created_at').should.be.above(new Date(0).getTime());
                     createdPost.relations.authors.models[0].id.should.equal(testUtils.DataGenerator.Content.users[0].id);
                     createdPost.get('updated_at').should.be.above(new Date(0).getTime());
-                    should.equal(createdPost.get('published_at'), null);
-                    should.equal(createdPost.get('published_by'), null);
+                    assert.equal(createdPost.get('published_at'), null);
+                    assert.equal(createdPost.get('published_by'), null);
 
                     createdPostUpdatedDate = createdPost.get('updated_at');
 
@@ -1484,7 +1485,7 @@ describe('Post Model', function () {
                 }).then(function (response) {
                     const deleted = response.toJSON();
 
-                    should.equal(deleted.author, undefined);
+                    assert.equal(deleted.author, undefined);
 
                     Object.keys(eventsTriggered).length.should.eql(5);
                     should.exist(eventsTriggered['post.unpublished']);
@@ -1496,7 +1497,7 @@ describe('Post Model', function () {
                     // Double check we can't find the post again
                     return models.Post.findOne(firstItemData);
                 }).then(function (newResults) {
-                    should.equal(newResults, null);
+                    assert.equal(newResults, null);
 
                     // Double check we can't find any related tags
                     return ghostBookshelf.knex.select().table('posts_tags').where('post_id', firstItemData.id);
@@ -1525,7 +1526,7 @@ describe('Post Model', function () {
                 }).then(function (response) {
                     const deleted = response.toJSON();
 
-                    should.equal(deleted.author, undefined);
+                    assert.equal(deleted.author, undefined);
 
                     Object.keys(eventsTriggered).length.should.eql(4);
                     should.exist(eventsTriggered['post.deleted']);
@@ -1536,7 +1537,7 @@ describe('Post Model', function () {
                     // Double check we can't find the post again
                     return models.Post.findOne(firstItemData);
                 }).then(function (newResults) {
-                    should.equal(newResults, null);
+                    assert.equal(newResults, null);
 
                     // Double check we can't find any related tags
                     return ghostBookshelf.knex.select().table('posts_tags').where('post_id', firstItemData.id);
@@ -1565,7 +1566,7 @@ describe('Post Model', function () {
                 }).then(function (response) {
                     const deleted = response.toJSON();
 
-                    should.equal(deleted.author, undefined);
+                    assert.equal(deleted.author, undefined);
 
                     Object.keys(eventsTriggered).length.should.eql(3);
                     should.exist(eventsTriggered['page.unpublished']);
@@ -1575,7 +1576,7 @@ describe('Post Model', function () {
                     // Double check we can't find the post again
                     return models.Post.findOne(firstItemData);
                 }).then(function (newResults) {
-                    should.equal(newResults, null);
+                    assert.equal(newResults, null);
 
                     // Double check we can't find any related tags
                     return ghostBookshelf.knex.select().table('posts_tags').where('post_id', firstItemData.id);
@@ -1602,7 +1603,7 @@ describe('Post Model', function () {
                 }).then(function (response) {
                     const deleted = response.toJSON();
 
-                    should.equal(deleted.author, undefined);
+                    assert.equal(deleted.author, undefined);
 
                     Object.keys(eventsTriggered).length.should.eql(2);
                     should.exist(eventsTriggered['page.deleted']);
@@ -1611,7 +1612,7 @@ describe('Post Model', function () {
                     // Double check we can't find the post again
                     return models.Post.findOne(firstItemData);
                 }).then(function (newResults) {
-                    should.equal(newResults, null);
+                    assert.equal(newResults, null);
 
                     // Double check we can't find any related tags
                     return ghostBookshelf.knex.select().table('posts_tags').where('post_id', firstItemData.id);
@@ -1738,7 +1739,7 @@ describe('Post Model', function () {
                         });
                 })
                 .then((mobiledocRevisions) => {
-                    should.equal(mobiledocRevisions.length, 2);
+                    assert.equal(mobiledocRevisions.length, 2);
 
                     mobiledocRevisions.toJSON()[0].mobiledoc.should.equal(markdownToMobiledoc('b'));
                     mobiledocRevisions.toJSON()[1].mobiledoc.should.equal(markdownToMobiledoc('a'));
@@ -1773,7 +1774,7 @@ describe('Post Model', function () {
                     })
                 )
                 .then((mobiledocRevisions) => {
-                    should.equal(mobiledocRevisions.length, 10);
+                    assert.equal(mobiledocRevisions.length, 10);
 
                     mobiledocRevisions.toJSON()[0].mobiledoc.should.equal(markdownToMobiledoc('revision: 11'));
                     mobiledocRevisions.toJSON()[9].mobiledoc.should.equal(markdownToMobiledoc('revision: 2'));
@@ -1803,7 +1804,7 @@ describe('Post Model', function () {
                         });
                 })
                 .then((mobiledocRevisions) => {
-                    should.equal(mobiledocRevisions.length, 0);
+                    assert.equal(mobiledocRevisions.length, 0);
 
                     return models.Post.edit({
                         mobiledoc: markdownToMobiledoc('b')
@@ -1819,7 +1820,7 @@ describe('Post Model', function () {
                         });
                 })
                 .then((mobiledocRevisions) => {
-                    should.equal(mobiledocRevisions.length, 2);
+                    assert.equal(mobiledocRevisions.length, 2);
 
                     mobiledocRevisions.toJSON()[0].mobiledoc.should.equal(markdownToMobiledoc('b'));
                     mobiledocRevisions.toJSON()[1].mobiledoc.should.equal(markdownToMobiledoc('a'));
