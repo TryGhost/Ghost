@@ -227,56 +227,58 @@ function CommentsList({
 
                                     <div className='flex min-w-0 flex-col'>
                                         <div className='flex items-baseline gap-4'>
-                                            <div className={`mb-1 flex min-w-0 items-center gap-x-1 text-sm ${item.status === 'hidden' && 'opacity-50'}`}>
-                                                <div className='whitespace-nowrap'>
-                                                    {item.member?.id ? (
-                                                        <Button
-                                                            className={`flex h-auto items-center gap-1.5 truncate p-0 font-semibold text-primary hover:opacity-70`}
-                                                            variant='link'
-                                                            onClick={() => {
-                                                                onAddFilter('author', item.member!.id);
-                                                            }}
-                                                        >
-                                                            {item.member.name || 'Unknown'}
-                                                        </Button>
-                                                    ) : (
-                                                        <span className="block truncate font-semibold">
-                                                            {item.member?.name || 'Unknown'}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                {disableMemberCommentingEnabled && item.member?.can_comment === false && (
-                                                    <TooltipProvider>
-                                                        <Tooltip>
-                                                            <TooltipTrigger asChild>
-                                                                <span data-testid="commenting-disabled-indicator">
-                                                                    <LucideIcon.MessageCircleOff
-                                                                        className="size-3.5 text-muted-foreground"
-                                                                    />
-                                                                </span>
-                                                            </TooltipTrigger>
-                                                            <TooltipContent>Comments disabled</TooltipContent>
-                                                        </Tooltip>
-                                                    </TooltipProvider>
-                                                )}
-                                                <LucideIcon.Dot className='shrink-0 text-muted-foreground/50' size={16} />
-                                                <div className='shrink-0 whitespace-nowrap'>
-                                                    {item.created_at && (
+                                            <div className={`mb-1 flex min-w-0 flex-col gap-x-1 text-sm sm:flex-row sm:items-center ${item.status === 'hidden' && 'opacity-50'}`}>
+                                                <div className='flex items-center gap-1'>
+                                                    <div className='whitespace-nowrap'>
+                                                        {item.member?.id ? (
+                                                            <Button
+                                                                className={`flex h-auto items-center gap-1.5 truncate p-0 font-semibold text-primary hover:opacity-70`}
+                                                                variant='link'
+                                                                onClick={() => {
+                                                                    onAddFilter('author', item.member!.id);
+                                                                }}
+                                                            >
+                                                                {item.member.name || 'Unknown'}
+                                                            </Button>
+                                                        ) : (
+                                                            <span className="block truncate font-semibold">
+                                                                {item.member?.name || 'Unknown'}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    {disableMemberCommentingEnabled && item.member?.can_comment === false && (
                                                         <TooltipProvider>
                                                             <Tooltip>
                                                                 <TooltipTrigger asChild>
-                                                                    <span className="cursor-default text-sm text-muted-foreground">
-                                                                        {formatTimestamp(item.created_at)}
+                                                                    <span data-testid="commenting-disabled-indicator">
+                                                                        <LucideIcon.MessageCircleOff
+                                                                            className="size-3.5 text-muted-foreground"
+                                                                        />
                                                                     </span>
                                                                 </TooltipTrigger>
-                                                                <TooltipContent>
-                                                                    {formatDate(item.created_at)}
-                                                                </TooltipContent>
+                                                                <TooltipContent>Comments disabled</TooltipContent>
                                                             </Tooltip>
                                                         </TooltipProvider>
                                                     )}
+                                                    <LucideIcon.Dot className='hidden shrink-0 text-muted-foreground/50 sm:block' size={16} />
+                                                    <div className='shrink-0 whitespace-nowrap'>
+                                                        {item.created_at && (
+                                                            <TooltipProvider>
+                                                                <Tooltip>
+                                                                    <TooltipTrigger asChild>
+                                                                        <span className="cursor-default text-sm text-muted-foreground">
+                                                                            {formatTimestamp(item.created_at)}
+                                                                        </span>
+                                                                    </TooltipTrigger>
+                                                                    <TooltipContent>
+                                                                        {formatDate(item.created_at)}
+                                                                    </TooltipContent>
+                                                                </Tooltip>
+                                                            </TooltipProvider>
+                                                        )}
+                                                    </div>
+                                                    <div className='hidden shrink-0 text-muted-foreground sm:block'>on</div>
                                                 </div>
-                                                <div className='shrink-0 text-muted-foreground'>on</div>
                                                 <div className='min-w-0 truncate'>
                                                     {item.post?.id && item.post?.title && onAddFilter ? (
                                                         <Button
@@ -300,7 +302,7 @@ function CommentsList({
 
                                         <CommentContent item={item} />
 
-                                        <div className="mt-4 flex flex-row flex-nowrap items-center gap-3">
+                                        <div className="mt-4 flex flex-row flex-wrap    items-center gap-3 sm:flex-nowrap">
                                             {item.status === 'published' && (
                                                 <Button className='text-gray-800' size="sm" variant="outline" onClick={() => hideComment({id: item.id})}>
                                                     <LucideIcon.EyeOff/>

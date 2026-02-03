@@ -77,8 +77,8 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
                 onSearchChange: posts.onSearchChange,
                 searchValue: posts.searchValue,
                 searchable: true,
-                className: 'w-80',
-                popoverContentClassName: 'w-80',
+                className: 'w-full max-w-80',
+                popoverContentClassName: 'w-full max-w-[calc(100vw-32px)] max-w-80',
                 operators: [
                     {value: 'is', label: 'is'},
                     {value: 'is_not', label: 'is not'}
@@ -124,7 +124,7 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
                 key: 'created_at',
                 label: 'Date',
                 type: 'date',
-                className: 'w-32',
+                className: 'w-full max-w-32',
                 icon: <LucideIcon.Calendar className="size-4" />,
                 operators: [
                     {value: 'is', label: 'is'},
