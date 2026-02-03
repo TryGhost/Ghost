@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const errors = require('@tryghost/errors');
 const should = require('should');
 const sinon = require('sinon');
@@ -28,17 +29,17 @@ describe('Models: crud', function () {
             const destroyStub = sinon.stub(model, 'destroy');
 
             return models.Base.Model.destroy(unfilteredOptions).then(() => {
-                should.equal(filterOptionsSpy.args[0][0], unfilteredOptions);
-                should.equal(filterOptionsSpy.args[0][1], 'destroy');
+                assert.equal(filterOptionsSpy.args[0][0], unfilteredOptions);
+                assert.equal(filterOptionsSpy.args[0][1], 'destroy');
 
-                should.deepEqual(forgeStub.args[0][0], {
+                assert.deepEqual(forgeStub.args[0][0], {
                     prop: 'whatever'
                 });
 
                 const filteredOptions = filterOptionsSpy.returnValues[0];
 
-                should.equal(fetchStub.args[0][0], filteredOptions);
-                should.equal(destroyStub.args[0][0], filteredOptions);
+                assert.equal(fetchStub.args[0][0], filteredOptions);
+                assert.equal(destroyStub.args[0][0], filteredOptions);
             });
         });
 
@@ -55,17 +56,17 @@ describe('Models: crud', function () {
             const destroyStub = sinon.stub(model, 'destroy');
 
             return models.Base.Model.destroy(unfilteredOptions).then(() => {
-                should.equal(filterOptionsSpy.args[0][0], unfilteredOptions);
-                should.equal(filterOptionsSpy.args[0][1], 'destroy');
+                assert.equal(filterOptionsSpy.args[0][0], unfilteredOptions);
+                assert.equal(filterOptionsSpy.args[0][1], 'destroy');
 
-                should.deepEqual(forgeStub.args[0][0], {
+                assert.deepEqual(forgeStub.args[0][0], {
                     id: 23
                 });
 
                 const filteredOptions = filterOptionsSpy.returnValues[0];
 
-                should.equal(fetchStub.args[0][0], filteredOptions);
-                should.equal(destroyStub.args[0][0], filteredOptions);
+                assert.equal(fetchStub.args[0][0], filteredOptions);
+                assert.equal(destroyStub.args[0][0], filteredOptions);
             });
         });
     });
@@ -90,18 +91,18 @@ describe('Models: crud', function () {
             const findOneReturnValue = models.Base.Model.findOne(data, unfilteredOptions);
 
             return findOneReturnValue.then((result) => {
-                should.equal(result, fetchedModel);
+                assert.equal(result, fetchedModel);
 
-                should.equal(filterOptionsSpy.args[0][0], unfilteredOptions);
-                should.equal(filterOptionsSpy.args[0][1], 'findOne');
+                assert.equal(filterOptionsSpy.args[0][0], unfilteredOptions);
+                assert.equal(filterOptionsSpy.args[0][1], 'findOne');
 
-                should.equal(filterDataSpy.args[0][0], data);
+                assert.equal(filterDataSpy.args[0][0], data);
 
                 const filteredData = filterDataSpy.returnValues[0];
-                should.deepEqual(forgeStub.args[0][0], filteredData);
+                assert.deepEqual(forgeStub.args[0][0], filteredData);
 
                 const filteredOptions = filterOptionsSpy.returnValues[0];
-                should.equal(fetchStub.args[0][0], filteredOptions);
+                assert.equal(fetchStub.args[0][0], filteredOptions);
             });
         });
 
@@ -125,7 +126,7 @@ describe('Models: crud', function () {
 
             await models.Base.Model.findOne(data, unfilteredOptions);
 
-            should.equal(fetchStub.args[0][0].lock, 'forUpdate');
+            assert.equal(fetchStub.args[0][0].lock, 'forUpdate');
         });
     });
 
@@ -149,23 +150,23 @@ describe('Models: crud', function () {
                 .resolves(savedModel);
 
             return models.Base.Model.edit(data, unfilteredOptions).then((result) => {
-                should.equal(result, savedModel);
+                assert.equal(result, savedModel);
 
-                should.equal(filterOptionsSpy.args[0][0], unfilteredOptions);
-                should.equal(filterOptionsSpy.args[0][1], 'edit');
+                assert.equal(filterOptionsSpy.args[0][0], unfilteredOptions);
+                assert.equal(filterOptionsSpy.args[0][1], 'edit');
 
-                should.equal(filterDataSpy.args[0][0], data);
+                assert.equal(filterDataSpy.args[0][0], data);
 
                 const filteredOptions = filterOptionsSpy.returnValues[0];
-                should.deepEqual(forgeStub.args[0][0], {id: filteredOptions.id});
+                assert.deepEqual(forgeStub.args[0][0], {id: filteredOptions.id});
 
-                should.equal(fetchStub.args[0][0], filteredOptions);
-                should.equal(fetchStub.args[0][0].lock, undefined);
+                assert.equal(fetchStub.args[0][0], filteredOptions);
+                assert.equal(fetchStub.args[0][0].lock, undefined);
 
                 const filteredData = filterDataSpy.returnValues[0];
-                should.equal(saveStub.args[0][0], filteredData);
-                should.equal(saveStub.args[0][1].method, 'update');
-                should.deepEqual(saveStub.args[0][1], filteredOptions);
+                assert.equal(saveStub.args[0][0], filteredData);
+                assert.equal(saveStub.args[0][1].method, 'update');
+                assert.deepEqual(saveStub.args[0][1], filteredOptions);
             });
         });
 
@@ -184,7 +185,7 @@ describe('Models: crud', function () {
                 .resolves();
 
             return models.Base.Model.findOne(data, unfilteredOptions).then(() => {
-                should.equal(fetchStub.args[0][0].lock, undefined);
+                assert.equal(fetchStub.args[0][0].lock, undefined);
             });
         });
 
@@ -200,7 +201,7 @@ describe('Models: crud', function () {
             sinon.stub(model, 'fetch').resolves();
 
             return models.Base.Model.findOne(data, unfilteredOptions).then(() => {
-                should.equal(model.hasTimestamps, true);
+                assert.equal(model.hasTimestamps, true);
             });
         });
 
@@ -242,20 +243,20 @@ describe('Models: crud', function () {
                 .resolves(savedModel);
 
             return models.Base.Model.add(data, unfilteredOptions).then((result) => {
-                should.equal(result, savedModel);
+                assert.equal(result, savedModel);
 
-                should.equal(filterOptionsSpy.args[0][0], unfilteredOptions);
-                should.equal(filterOptionsSpy.args[0][1], 'add');
+                assert.equal(filterOptionsSpy.args[0][0], unfilteredOptions);
+                assert.equal(filterOptionsSpy.args[0][1], 'add');
 
-                should.equal(filterDataSpy.args[0][0], data);
+                assert.equal(filterDataSpy.args[0][0], data);
 
                 const filteredData = filterDataSpy.returnValues[0];
-                should.deepEqual(forgeStub.args[0][0], filteredData);
+                assert.deepEqual(forgeStub.args[0][0], filteredData);
 
                 const filteredOptions = filterOptionsSpy.returnValues[0];
-                should.equal(saveStub.args[0][0], null);
-                should.equal(saveStub.args[0][1].method, 'insert');
-                should.deepEqual(saveStub.args[0][1], filteredOptions);
+                assert.equal(saveStub.args[0][0], null);
+                assert.equal(saveStub.args[0][1].method, 'insert');
+                assert.deepEqual(saveStub.args[0][1], filteredOptions);
             });
         });
 
@@ -271,7 +272,7 @@ describe('Models: crud', function () {
             sinon.stub(model, 'save').resolves();
 
             return models.Base.Model.add(data, unfilteredOptions).then(() => {
-                should.equal(model.hasTimestamps, false);
+                assert.equal(model.hasTimestamps, false);
             });
         });
     });

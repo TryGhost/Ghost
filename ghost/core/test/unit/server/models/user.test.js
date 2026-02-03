@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
@@ -18,7 +19,7 @@ describe('Unit: models/user', function () {
 
     describe('updateLastSeen method', function () {
         it('exists', function () {
-            should.equal(typeof models.User.prototype.updateLastSeen, 'function');
+            assert.equal(typeof models.User.prototype.updateLastSeen, 'function');
         });
 
         it('sets the last_seen property to new Date and returns a call to save', function () {
@@ -32,11 +33,11 @@ describe('Unit: models/user', function () {
 
             const returnVal = models.User.prototype.updateLastSeen.call(instance);
 
-            should.deepEqual(instance.set.args[0][0], {
+            assert.deepEqual(instance.set.args[0][0], {
                 last_seen: now
             });
 
-            should.equal(returnVal, instance.save.returnValues[0]);
+            assert.equal(returnVal, instance.save.returnValues[0]);
 
             clock.restore();
         });
@@ -561,7 +562,7 @@ describe('Unit: models/user', function () {
                 .resolves(userToChangeContext);
 
             models.User.ownerIdCache.set('old-owner-id');
-            should.equal(models.User.ownerIdCache.get(), 'old-owner-id');
+            assert.equal(models.User.ownerIdCache.get(), 'old-owner-id');
 
             const clearSpy = sinon.spy(models.User.ownerIdCache, 'clear');
 
@@ -577,7 +578,7 @@ describe('Unit: models/user', function () {
             return models.User.transferOwnership({id: userToChange.context.user}, loggedInUser)
                 .then(() => {
                     clearSpy.calledOnce.should.be.true();
-                    should.equal(models.User.ownerIdCache.get(), null);
+                    assert.equal(models.User.ownerIdCache.get(), null);
                 })
                 .finally(() => {
                     clearSpy.restore();
@@ -635,20 +636,20 @@ describe('Unit: models/user', function () {
 
     describe('ownerIdCache', function () {
         it('should return null initially', function () {
-            should.equal(models.User.ownerIdCache.get(), null);
+            assert.equal(models.User.ownerIdCache.get(), null);
         });
 
         it('should store and retrieve values', function () {
             models.User.ownerIdCache.set('abc123');
 
-            should.equal(models.User.ownerIdCache.get(), 'abc123');
+            assert.equal(models.User.ownerIdCache.get(), 'abc123');
         });
 
         it('should clear stored values', function () {
             models.User.ownerIdCache.set('abc123');
             models.User.ownerIdCache.clear();
 
-            should.equal(models.User.ownerIdCache.get(), null);
+            assert.equal(models.User.ownerIdCache.get(), null);
         });
     });
 
@@ -668,7 +669,7 @@ describe('Unit: models/user', function () {
 
             return models.User.getOwnerId()
                 .then((ownerId) => {
-                    should.equal(ownerId, 'abc123');
+                    assert.equal(ownerId, 'abc123');
                     models.User.getOwnerUser.called.should.be.false();
                 });
         });
@@ -682,9 +683,9 @@ describe('Unit: models/user', function () {
 
             return models.User.getOwnerId()
                 .then((ownerId) => {
-                    should.equal(ownerId, mockOwner.id);
+                    assert.equal(ownerId, mockOwner.id);
                     models.User.getOwnerUser.calledOnce.should.be.true();
-                    should.equal(models.User.ownerIdCache.get(), mockOwner.id);
+                    assert.equal(models.User.ownerIdCache.get(), mockOwner.id);
                 });
         });
 
@@ -697,13 +698,13 @@ describe('Unit: models/user', function () {
 
             return models.User.getOwnerId()
                 .then((ownerId) => {
-                    should.equal(ownerId, mockOwner.id);
+                    assert.equal(ownerId, mockOwner.id);
                     models.User.getOwnerUser.calledOnce.should.be.true();
 
                     return models.User.getOwnerId();
                 })
                 .then((ownerId) => {
-                    should.equal(ownerId, mockOwner.id);
+                    assert.equal(ownerId, mockOwner.id);
                     models.User.getOwnerUser.calledOnce.should.be.true();
                 });
         });

@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const errors = require('@tryghost/errors');
 
@@ -14,7 +15,7 @@ describe('schema commands', function () {
             await commands._hasForeignSQLite({transaction: knex});
             should.fail('addForeign did not throw');
         } catch (err) {
-            should.equal(errors.utils.isGhostError(err), true);
+            assert.equal(errors.utils.isGhostError(err), true);
             err.message.should.equal('Must use hasForeignSQLite3 on an SQLite3 database');
         }
     });
@@ -29,7 +30,7 @@ describe('schema commands', function () {
             await commands._hasPrimaryKeySQLite(null, knex);
             should.fail('hasPrimaryKeySQLite did not throw');
         } catch (err) {
-            should.equal(errors.utils.isGhostError(err), true);
+            assert.equal(errors.utils.isGhostError(err), true);
             err.message.should.equal('Must use hasPrimaryKeySQLite on an SQLite3 database');
         }
     });

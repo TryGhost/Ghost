@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const supertest = require('supertest');
 const moment = require('moment');
@@ -124,8 +125,8 @@ describe('Pages API', function () {
         const additionalProperties = ['reading_time'];
         localUtils.API.checkResponse(returnedPage, 'page', additionalProperties);
 
-        should.equal(returnedPage.mobiledoc, page.mobiledoc);
-        should.equal(returnedPage.lexical, null);
+        assert.equal(returnedPage.mobiledoc, page.mobiledoc);
+        assert.equal(returnedPage.lexical, null);
     });
 
     it('Can add a page with lexical', async function () {
@@ -175,9 +176,9 @@ describe('Pages API', function () {
         const additionalProperties = ['html', 'reading_time'];
         localUtils.API.checkResponse(returnedPage, 'page', additionalProperties);
 
-        should.equal(returnedPage.mobiledoc, null);
-        should.equal(returnedPage.lexical, page.lexical);
-        should.equal(returnedPage.html, '<p>Testing page creation with lexical</p>');
+        assert.equal(returnedPage.mobiledoc, null);
+        assert.equal(returnedPage.lexical, page.lexical);
+        assert.equal(returnedPage.html, '<p>Testing page creation with lexical</p>');
     });
 
     it('Can\'t add a page with both mobiledoc and lexical', async function () {
