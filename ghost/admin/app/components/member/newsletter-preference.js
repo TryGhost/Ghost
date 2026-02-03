@@ -1,10 +1,17 @@
 import Component from '@glimmer/component';
 import moment from 'moment-timezone';
 import {action} from '@ember/object';
+import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
 export default class MembersNewsletterPreference extends Component {
+    @service ajax;
+    @service notifications;
+    @service ghostPaths;
+    @service store;
+
     @tracked filterValue;
+    @tracked isReEnabling = false;
 
     constructor(...args) {
         super(...args);
@@ -57,5 +64,31 @@ export default class MembersNewsletterPreference extends Component {
             }).concat(selectedNewsletter);
         }
         this.args.setMemberNewsletters(updatedNewsletters);
+    }
+
+    @action
+    async reEnableEmail() {
+        this.isReEnabling = true;
+
+        try {
+            const url = `${this.ghostPaths.url.api('members', this.args.member.id)}suppression`;
+            await this.ajax.delete(url);
+
+            // Refresh the member data to get updated suppression status
+            await this.store.findRecord('member', this.args.member.id, {
+                reload: true,
+                include: 'tiers'
+            });
+
+            this.notifications.showNotification('Email re-enabled successfully', {
+                type: 'success'
+            });
+        } catch (error) {
+            this.notifications.showAlert('Failed to re-enable email. Please try again.', {
+                type: 'error'
+            });
+        } finally {
+            this.isReEnabling = false;
+        }
     }
 }

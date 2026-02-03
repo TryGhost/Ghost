@@ -9,6 +9,7 @@ import {
     AlertDialogTitle,
     Badge,
     Button,
+    Checkbox,
     Dialog,
     DialogContent,
     DialogDescription,
@@ -19,6 +20,7 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
+    Label,
     LucideIcon,
     Tooltip,
     TooltipContent,
@@ -135,7 +137,8 @@ function CommentsList({
     onAddFilter,
     isLoading,
     commentPermalinksEnabled,
-    disableMemberCommentingEnabled
+    disableMemberCommentingEnabled,
+    hideCommentsEnabled
 }: {
     items: Comment[];
     totalItems: number;
@@ -146,6 +149,7 @@ function CommentsList({
     isLoading?: boolean;
     commentPermalinksEnabled?: boolean;
     disableMemberCommentingEnabled?: boolean;
+    hideCommentsEnabled?: boolean;
 }) {
     const parentRef = useRef<HTMLDivElement>(null);
 
@@ -168,6 +172,7 @@ function CommentsList({
     const {mutate: enableCommenting} = useEnableMemberCommenting();
     const [commentToDelete, setCommentToDelete] = useState<Comment | null>(null);
     const [memberToDisable, setMemberToDisable] = useState<{member: Comment['member']; commentId: string} | null>(null);
+    const [hideComments, setHideComments] = useState(false);
 
     const confirmDelete = () => {
         if (commentToDelete) {
@@ -180,9 +185,11 @@ function CommentsList({
         if (memberToDisable?.member?.id) {
             disableCommenting({
                 id: memberToDisable.member.id,
-                reason: `Disabled from comment ${memberToDisable.commentId}`
+                reason: `Disabled from comment ${memberToDisable.commentId}`,
+                ...(hideCommentsEnabled && {hideComments})
             });
             setMemberToDisable(null);
+            setHideComments(false);
         }
     };
 
@@ -452,6 +459,7 @@ function CommentsList({
             <Dialog open={!!memberToDisable} onOpenChange={(open) => {
                 if (!open) {
                     setMemberToDisable(null);
+                    setHideComments(false);
                 }
             }}>
                 <DialogContent>
@@ -463,8 +471,24 @@ function CommentsList({
                         </DialogDescription>
                     </DialogHeader>
 
+                    {hideCommentsEnabled && (
+                        <div className="flex items-center gap-2 py-2">
+                            <Checkbox
+                                checked={hideComments}
+                                id="hide-comments"
+                                onCheckedChange={checked => setHideComments(checked === true)}
+                            />
+                            <Label htmlFor="hide-comments">
+                                Hide all previous comments
+                            </Label>
+                        </div>
+                    )}
+
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setMemberToDisable(null)}>
+                        <Button variant="outline" onClick={() => {
+                            setMemberToDisable(null);
+                            setHideComments(false);
+                        }}>
                             Cancel
                         </Button>
                         <Button onClick={confirmDisableCommenting}>
