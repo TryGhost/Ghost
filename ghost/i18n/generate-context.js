@@ -24,5 +24,14 @@ const CONTEXT_FILE = './locales/context.json';
         return obj;
     }, {});
 
-    await fs.writeFile(CONTEXT_FILE, JSON.stringify(orderedContext, null, 4));
+    const newContent = JSON.stringify(orderedContext, null, 4);
+    const existingContent = await fs.readFile(CONTEXT_FILE, 'utf-8');
+
+    if (process.env.CI && newContent !== existingContent) {
+        // eslint-disable-next-line no-console
+        console.error('context.json is out of date. Run `yarn translate` in ghost/i18n and commit the result.');
+        process.exit(1);
+    }
+
+    await fs.writeFile(CONTEXT_FILE, newContent);
 })();
