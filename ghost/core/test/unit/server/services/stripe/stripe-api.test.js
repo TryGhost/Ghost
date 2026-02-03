@@ -264,7 +264,7 @@ describe('StripeAPI', function () {
                 sinon.restore();
             });
 
-            it('returns null if customer exists', async function () {
+            it('returns undefined', async function () {
                 const stripeCustomerId = await api.getCustomerIdByEmail(mockCustomerEmail);
 
                 assert.equal(stripeCustomerId, undefined);
