@@ -164,7 +164,7 @@ jobs:
           echo "$EOF" >> "$GITHUB_ENV"
 
       - name: Nx cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         id: cache_nx
         with:
           path: .nxcache
@@ -175,7 +175,7 @@ jobs:
             nx-Linux
 
       - name: Check dependency cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         id: cache_dependencies
         with:
           path: ${{ env.CACHED_DEPENDENCY_PATHS }}
@@ -244,7 +244,7 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: ghost/**/.eslintcache
           key: eslint-cache
