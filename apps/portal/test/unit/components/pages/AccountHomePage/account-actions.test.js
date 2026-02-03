@@ -96,6 +96,25 @@ describe('AccountActions', () => {
             expect(queryByText('Podcasts')).not.toBeInTheDocument();
         });
 
+        test('does not show Podcasts when API returns invalid JSON', async () => {
+            vi.spyOn(window, 'fetch').mockResolvedValue({
+                ok: true,
+                json: async () => {
+                    throw new SyntaxError('Unexpected token');
+                }
+            });
+
+            const {queryByText} = render(<AccountActions />, {
+                overrideContext: {site, member}
+            });
+
+            await waitFor(() => {
+                expect(window.fetch).toHaveBeenCalled();
+            });
+
+            expect(queryByText('Podcasts')).not.toBeInTheDocument();
+        });
+
         test('calls Transistor API with correct member UUID', async () => {
             vi.spyOn(window, 'fetch').mockResolvedValue({
                 ok: true,
