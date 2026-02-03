@@ -28,6 +28,7 @@ import {cn} from '@/lib/utils';
 export interface FilterI18nConfig {
   // UI Labels
     addFilter: string;
+    clearFilters: string;
     searchFields: string;
     noFieldsFound: string;
     noResultsFound: string;
@@ -103,6 +104,7 @@ export interface FilterI18nConfig {
 export const DEFAULT_I18N: FilterI18nConfig = {
     // UI Labels
     addFilter: '',
+    clearFilters: 'Clear',
     searchFields: 'Search fields...',
     noFieldsFound: 'No fields found.',
     noResultsFound: 'No results found.',
@@ -379,7 +381,7 @@ const filterFieldLabelVariants = cva(
 
 const filterFieldValueVariants = cva(
     [
-        'focus-visible:z-1 relative flex min-w-0 max-w-[240px] shrink items-center gap-1 text-foreground transition',
+        'focus-visible:z-1 relative flex min-w-0 shrink items-center gap-1 text-foreground transition',
         'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring'
     ],
     {
@@ -442,7 +444,7 @@ const filterFieldBetweenVariants = cva('flex shrink-0 items-center text-muted-fo
     }
 });
 
-const filtersContainerVariants = cva('flex flex-wrap items-center', {
+const filtersContainerVariants = cva('relative flex w-full flex-wrap items-center', {
     variants: {
         variant: {
             solid: 'gap-2',
@@ -734,6 +736,7 @@ export interface FilterFieldConfig<T = unknown> {
     allowCustomValues?: boolean;
     className?: string;
     popoverContentClassName?: string;
+    triggerClassName?: string;
     selectedOptionsClassName?: string;
     // Grouping options (legacy support)
     groupLabel?: string;
@@ -1053,13 +1056,13 @@ function SelectOptionsPopover<T = unknown>({
                 const result: FilterOption<T>[] = [];
                 for (const value of effectiveValues) {
                     // Prefer new option, fall back to cached option
-                    const option = optionsFromField.find(opt => opt.value === value) 
+                    const option = optionsFromField.find(opt => opt.value === value)
                         ?? prev.find(opt => opt.value === value);
                     if (option) {
                         result.push(option);
                     }
                 }
-                
+
                 return result;
             });
         }
@@ -1208,11 +1211,11 @@ function SelectOptionsPopover<T = unknown>({
             }}
         >
             <PopoverTrigger
-                className={filterFieldValueVariants({
+                className={cn(filterFieldValueVariants({
                     variant: context.variant,
                     size: context.size,
                     cursorPointer: context.cursorPointer
-                })}
+                }), field.triggerClassName ?? 'max-w-[240px]')}
             >
                 <div className="flex min-w-0 items-center gap-1.5">
                     {field.customValueRenderer ? (
@@ -1896,6 +1899,12 @@ interface FiltersProps<T = unknown> {
     addButtonIcon?: React.ReactNode;
     addButtonClassName?: string;
     addButton?: React.ReactNode;
+    showClearButton?: boolean;
+    clearButtonText?: string;
+    clearButtonIcon?: React.ReactNode;
+    clearButtonClassName?: string;
+    clearButton?: React.ReactNode;
+    onClear?: () => void;
     variant?: 'solid' | 'outline';
     size?: 'sm' | 'md' | 'lg';
     radius?: 'md' | 'full';
@@ -1920,6 +1929,12 @@ export function Filters<T = unknown>({
     addButtonIcon,
     addButtonClassName,
     addButton,
+    showClearButton = false,
+    clearButtonText,
+    clearButtonIcon,
+    clearButtonClassName,
+    clearButton,
+    onClear,
     variant = 'outline',
     size = 'md',
     radius = 'md',
@@ -2177,7 +2192,47 @@ export function Filters<T = unknown>({
                 allowMultiple
             }}
         >
-            <div className={cn(filtersContainerVariants({variant, size}), className)}>
+            <div className={cn(
+                filtersContainerVariants({variant, size}),
+                showClearButton && filters.length > 0 && 'sm:pr-24',
+                className
+            )}>
+                {filters.map((filter) => {
+                    const field = fieldsMap[filter.field];
+                    if (!field) {
+                        return null;
+                    }
+
+                    return (
+                        <div key={filter.id} className={filterItemVariants({variant})} data-slot="filter-item">
+                            {/* Field Label */}
+                            <div className={filterFieldLabelVariants({variant: variant, size: size, radius: radius})}>
+                                {field.icon}
+                                {field.label}
+                            </div>
+
+                            {/* Operator Dropdown */}
+                            <FilterOperatorDropdown<T>
+                                field={field}
+                                operator={filter.operator}
+                                values={filter.values}
+                                onChange={operator => updateFilter(filter.id, {operator})}
+                            />
+
+                            {/* Value Selector */}
+                            <FilterValueSelector<T>
+                                field={field}
+                                operator={filter.operator}
+                                values={filter.values}
+                                onChange={values => updateFilter(filter.id, {values})}
+                            />
+
+                            {/* Remove Button */}
+                            <FilterRemoveButton onClick={() => removeFilter(filter.id)} />
+                        </div>
+                    );
+                })}
+
                 {showAddButton && selectableFields.length > 0 && (
                     <Popover
                         open={addFilterOpen}
@@ -2356,41 +2411,37 @@ export function Filters<T = unknown>({
                     </Popover>
                 )}
 
-                {filters.map((filter) => {
-                    const field = fieldsMap[filter.field];
-                    if (!field) {
-                        return null;
-                    }
-
-                    return (
-                        <div key={filter.id} className={filterItemVariants({variant})} data-slot="filter-item">
-                            {/* Field Label */}
-                            <div className={filterFieldLabelVariants({variant: variant, size: size, radius: radius})}>
-                                {field.icon}
-                                {field.label}
-                            </div>
-
-                            {/* Operator Dropdown */}
-                            <FilterOperatorDropdown<T>
-                                field={field}
-                                operator={filter.operator}
-                                values={filter.values}
-                                onChange={operator => updateFilter(filter.id, {operator})}
-                            />
-
-                            {/* Value Selector */}
-                            <FilterValueSelector<T>
-                                field={field}
-                                operator={filter.operator}
-                                values={filter.values}
-                                onChange={values => updateFilter(filter.id, {values})}
-                            />
-
-                            {/* Remove Button */}
-                            <FilterRemoveButton onClick={() => removeFilter(filter.id)} />
-                        </div>
-                    );
-                })}
+                {/* Clear Button */}
+                {showClearButton && filters.length > 0 && (
+                    clearButton ? (
+                        clearButton
+                    ) : (
+                        <button
+                            className={cn(
+                                filterAddButtonVariants({
+                                    variant: variant,
+                                    size: size,
+                                    cursorPointer: cursorPointer,
+                                    radius: radius
+                                }),
+                                'border-0 bg-transparent hover:bg-transparent hover:text-foreground',
+                                'sm:absolute sm:right-0 sm:top-0',
+                                clearButtonClassName
+                            )}
+                            type='button'
+                            onClick={() => {
+                                if (onClear) {
+                                    onClear();
+                                } else {
+                                    onChange([]);
+                                }
+                            }}
+                        >
+                            {clearButtonIcon || <X />}
+                            {clearButtonText || mergedI18n.clearFilters}
+                        </button>
+                    )
+                )}
             </div>
         </FilterContext.Provider>
     );
