@@ -18,14 +18,23 @@ const useIntegrations = () => {
             return;
         }
 
+        const controller = new AbortController();
+
         const checkTransistor = async () => {
             try {
-                const response = await fetch(`https://partner.transistor.fm/ghost/member/${memberUuid}`);
+                const response = await fetch(`https://partner.transistor.fm/ghost/member/${memberUuid}`, {
+                    signal: controller.signal
+                });
                 if (response.ok) {
                     const data = await response.json();
-                    setTransistorPodcasts(data?.member === true);
+                    if (!controller.signal.aborted) {
+                        setTransistorPodcasts(data?.member === true);
+                    }
                 }
             } catch (e) {
+                if (controller.signal.aborted) {
+                    return;
+                }
                 // Don't show the button if Transistor fails
                 // eslint-disable-next-line no-console
                 console.warn('Error in Transistor request', e);
@@ -33,6 +42,8 @@ const useIntegrations = () => {
         };
 
         checkTransistor();
+
+        return () => controller.abort();
     }, [isTransistorEnabled, memberUuid]);
 
     return {
