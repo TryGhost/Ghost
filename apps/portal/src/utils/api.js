@@ -551,6 +551,52 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             return responseJson;
         },
 
+        async editBilling({successUrl, cancelUrl, subscriptionId} = {}) {
+            const siteUrlObj = new URL(siteUrl);
+            const identity = await api.member.identity();
+            const url = endpointFor({type: 'members', resource: 'create-stripe-update-session'});
+            if (!successUrl) {
+                const checkoutSuccessUrl = new URL(siteUrl);
+                checkoutSuccessUrl.searchParams.set('stripe', 'billing-update-success');
+                successUrl = checkoutSuccessUrl.href;
+            }
+
+            if (!cancelUrl) {
+                const checkoutCancelUrl = window.location.href.startsWith(siteUrlObj.href) ? new URL(window.location.href) : new URL(siteUrl);
+                checkoutCancelUrl.searchParams.set('stripe', 'billing-update-cancel');
+                cancelUrl = checkoutCancelUrl.href;
+            }
+            return makeRequest({
+                url,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    identity: identity,
+                    subscription_id: subscriptionId,
+                    successUrl,
+                    cancelUrl
+                })
+            }).then(function (res) {
+                if (!res.ok) {
+                    throw new Error('Unable to create stripe checkout session');
+                }
+                return res.json();
+            }).then(function (result) {
+                const stripe = window.Stripe(result.publicKey);
+                return stripe.redirectToCheckout({
+                    sessionId: result.sessionId
+                });
+            }).then(function (result) {
+                if (result.error) {
+                    throw new Error(result.error.message);
+                }
+            }).catch(function (err) {
+                throw err;
+            });
+        },
+
         async manageBilling({returnUrl, subscriptionId} = {}) {
             const identity = await api.member.identity();
             const url = endpointFor({type: 'members', resource: 'create-stripe-billing-portal-session'});
