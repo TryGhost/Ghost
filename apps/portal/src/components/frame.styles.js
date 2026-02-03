@@ -267,6 +267,19 @@ html[dir="rtl"] .gh-portal-btn-site-title-back span {
     stroke: var(--grey3);
 }
 
+.gh-portal-btn-sniper-link {
+    background: var(--white);
+    gap: 8px;
+    min-width: unset;
+    width: 100%;
+}
+
+.gh-portal-btn-sniper-link svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
 /* Global layout styles
 /* ----------------------------------------------------- */
 .gh-portal-popup-background {

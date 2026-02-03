@@ -140,6 +140,16 @@ footer.gh-portal-signin-footer {
     gap: 12px;
 }
 
+footer.gh-portal-signin-footer.gh-button-row {
+    flex-direction: row-reverse;
+}
+
+@media (max-width: 480px) {
+    footer.gh-portal-signin-footer.gh-button-row {
+        flex-direction: column;
+    }
+}
+
 .gh-portal-content.signup,
 .gh-portal-content.signin {
     max-height: unset !important;

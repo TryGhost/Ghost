@@ -330,8 +330,6 @@ jobs:
       labels: ubuntu-latest
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_any_code == 'true' && (needs.job_setup.outputs.is_six_pr == 'true' || needs.job_setup.outputs.is_development == 'true' || needs.job_setup.outputs.has_browser_tests_label == 'true')
-    concurrency:
-      group: ${{ github.workflow }}
     steps:
     - uses: actions/checkout@v4
       with:
