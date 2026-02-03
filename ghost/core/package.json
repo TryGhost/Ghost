@@ -64,7 +64,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "3.864.0",
     "@extractus/oembed-extractor": "3.2.1",
-    "@faker-js/faker": "7.6.0",
+    "@faker-js/faker": "10.2.0",
     "@isaacs/ttlcache": "1.4.1",
     "@sentry/node": "7.120.4",
     "@slack/webhook": "7.0.6",
