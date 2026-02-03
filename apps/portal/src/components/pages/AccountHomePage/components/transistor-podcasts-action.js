@@ -23,14 +23,14 @@ const TransistorPodcastsAction = ({hasPodcasts, memberUuid}) => {
     const transistorUrl = `https://partner.transistor.fm/ghost/${memberUuid}`;
 
     return (
-        <section className="gh-portal-action-transistor">
+        <section className='gh-portal-action-transistor'>
             <div className='gh-portal-list-detail'>
                 <h3>{t('Podcasts')}</h3>
             </div>
             <a
                 href={transistorUrl}
-                target="_blank"
-                rel="noopener noreferrer"
+                target='_blank'
+                rel='noopener noreferrer'
                 className='gh-portal-btn gh-portal-btn-list'
             >
                 {t('Subscribe')}
