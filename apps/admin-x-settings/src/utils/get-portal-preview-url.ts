@@ -58,6 +58,10 @@ export const getPortalPreviewUrl = ({settings, config, tiers, siteData, selected
         settingsParam.append('buttonStyle', encodeURIComponent(portalButtonStyle));
     }
 
+    settingsParam.append('transistorHeading', getSettingValue(settings, 'portal_transistor_heading') || '');
+    settingsParam.append('transistorDescription', getSettingValue(settings, 'portal_transistor_description') || '');
+    settingsParam.append('transistorButtonText', getSettingValue(settings, 'portal_transistor_button_text') || '');
+
     settingsParam.append('disableBackground', 'false');
 
     return `${baseUrl}${portalBase}?${settingsParam.toString()}`;
