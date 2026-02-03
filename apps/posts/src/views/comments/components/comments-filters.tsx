@@ -95,8 +95,8 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
                     {value: 'not_contains', label: 'does not contain'}
                 ],
                 defaultOperator: 'contains',
-                className: 'w-48',
-                popoverContentClassName: 'w-48'
+                className: 'w-full max-w-48',
+                popoverContentClassName: 'w-full max-w-48'
             },
             {
                 key: 'status',
