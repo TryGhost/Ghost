@@ -236,8 +236,8 @@ const filterInputVariants = cva(
                 outline: 'border border-border bg-background'
             },
             size: {
-                lg: 'h-10 px-2.5 text-xs has-[[data-slot=filters-prefix]]:ps-0 has-[[data-slot=filters-suffix]]:pe-0 sm:text-sm',
-                md: 'h-[34px] px-2 text-xs has-[[data-slot=filters-prefix]]:ps-0 has-[[data-slot=filters-suffix]]:pe-0 sm:text-sm',
+                lg: 'h-10 px-2.5 text-sm has-[[data-slot=filters-prefix]]:ps-0 has-[[data-slot=filters-suffix]]:pe-0',
+                md: 'h-[34px] px-2 text-sm has-[[data-slot=filters-prefix]]:ps-0 has-[[data-slot=filters-suffix]]:pe-0',
                 sm: 'h-8 px-2 text-xs has-[[data-slot=filters-prefix]]:ps-0 has-[[data-slot=filters-suffix]]:pe-0'
             },
             cursorPointer: {
@@ -301,8 +301,8 @@ const filterAddButtonVariants = cva(
                 outline: 'border border-border hover:bg-accent'
             },
             size: {
-                lg: 'h-10 gap-1.5 px-4 text-xs sm:text-sm [&_svg:not([class*=size-])]:size-4',
-                md: 'h-[34px] gap-1.5 px-3 text-xs sm:text-sm [&_svg:not([class*=size-])]:size-4',
+                lg: 'h-10 gap-1.5 px-4 text-sm [&_svg:not([class*=size-])]:size-4',
+                md: 'h-[34px] gap-1.5 px-3 text-sm [&_svg:not([class*=size-])]:size-4',
                 sm: 'h-8 gap-1.5 px-2.5 text-xs [&_svg:not([class*=size-])]:size-3.5'
             },
             radius: {
@@ -334,8 +334,8 @@ const filterOperatorVariants = cva(
                 outline: 'border border-e-0 border-border bg-background hover:bg-secondary data-[state=open]:bg-secondary [&+[data-slot=filters-remove]]:border-s'
             },
             size: {
-                lg: 'h-10 gap-1.5 px-4 text-xs sm:text-sm',
-                md: 'h-[34px] gap-0.5 px-3 text-xs sm:text-sm',
+                lg: 'h-10 gap-1.5 px-4 text-sm',
+                md: 'h-[34px] gap-0.5 px-3 text-sm',
                 sm: 'h-8 gap-1 px-2.5 text-xs'
             },
             cursorPointer: {
@@ -363,8 +363,8 @@ const filterFieldLabelVariants = cva(
                 outline: 'border border-e-0 border-border'
             },
             size: {
-                lg: 'h-10 gap-1.5 px-4 text-xs sm:text-sm [&_svg:not([class*=size-])]:size-4',
-                md: 'h-[34px] gap-1.5 px-3 text-xs sm:text-sm [&_svg:not([class*=size-])]:size-4',
+                lg: 'h-10 gap-1.5 px-4 text-sm [&_svg:not([class*=size-])]:size-4',
+                md: 'h-[34px] gap-1.5 px-3 text-sm [&_svg:not([class*=size-])]:size-4',
                 sm: 'h-8 gap-0.5 px-2.5 text-xs [&_svg:not([class*=size-])]:size-3.5'
             },
             radius: {
@@ -391,8 +391,8 @@ const filterFieldValueVariants = cva(
                 outline: 'border border-border bg-background hover:bg-secondary has-[[data-slot=switch]]:hover:bg-transparent'
             },
             size: {
-                lg: 'h-10 gap-1.5 px-4 text-xs sm:text-sm [&_svg:not([class*=size-])]:size-4',
-                md: 'h-[34px] gap-1.5 px-3 text-xs sm:text-sm [&_svg:not([class*=size-])]:size-4',
+                lg: 'h-10 gap-1.5 px-4 text-sm [&_svg:not([class*=size-])]:size-4',
+                md: 'h-[34px] gap-1.5 px-3 text-sm [&_svg:not([class*=size-])]:size-4',
                 sm: 'h-8 gap-0.5 px-2.5 text-xs [&_svg:not([class*=size-])]:size-3.5'
             },
             cursorPointer: {
@@ -415,8 +415,8 @@ const filterFieldAddonVariants = cva('flex shrink-0 items-center justify-center 
             outline: ''
         },
         size: {
-            lg: 'h-10 px-4 text-xs sm:text-sm',
-            md: 'h-[34px] px-3 text-xs sm:text-sm',
+            lg: 'h-10 px-4 text-sm',
+            md: 'h-[34px] px-3 text-sm',
             sm: 'h-8 px-2.5 text-xs'
         }
     },
@@ -433,8 +433,8 @@ const filterFieldBetweenVariants = cva('flex shrink-0 items-center text-muted-fo
             outline: 'border border-x-0 border-border bg-background'
         },
         size: {
-            lg: 'h-10 px-4 text-xs sm:text-sm',
-            md: 'h-[34px] px-3 text-xs sm:text-sm',
+            lg: 'h-10 px-4 text-sm',
+            md: 'h-[34px] px-3 text-sm',
             sm: 'h-8 px-2.5 text-xs'
         }
     },
@@ -954,7 +954,7 @@ function FilterOperatorDropdown<T = unknown>({field, operator, values, onChange}
     // If hideOperatorSelect is true, just render the operator as plain text
     if (field.hideOperatorSelect) {
         return (
-            <div className="flex items-center self-stretch whitespace-nowrap border border-r-[0px] px-3 text-xs text-muted-foreground sm:text-sm">
+            <div className="flex items-center self-stretch whitespace-nowrap border border-r-[0px] px-3 text-sm text-muted-foreground">
                 {operatorLabel}
             </div>
         );
@@ -1096,7 +1096,7 @@ function SelectOptionsPopover<T = unknown>({
                 <Command>
                     {field.searchable !== false && (
                         <CommandInput
-                            className="h-8.5 text-xs sm:text-sm"
+                            className="h-8.5 text-sm"
                             placeholder={context.i18n.placeholders.searchField(field.label || '')}
                             value={searchInput}
                             onValueChange={handleSearchChange}
@@ -1104,7 +1104,7 @@ function SelectOptionsPopover<T = unknown>({
                     )}
                     <CommandList className="outline-none">
                         {field.isLoading ? (
-                            <div className="flex items-center justify-center py-6 text-xs text-muted-foreground sm:text-sm">
+                            <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
                                 <Loader2 className="mr-2 size-4 animate-spin" />
                                 {context.i18n.loading}
                             </div>
@@ -1139,7 +1139,7 @@ function SelectOptionsPopover<T = unknown>({
                                         {option.icon && option.icon}
                                         <div className="flex flex-col overflow-hidden">
                                             <span className="truncate text-accent-foreground" title={option.label}>{option.label}</span>
-                                            {option.detail && <span className="truncate text-xs text-muted-foreground sm:text-sm" title={option.detail}>{option.detail}</span>}
+                                            {option.detail && <span className="truncate text-sm text-muted-foreground" title={option.detail}>{option.detail}</span>}
                                         </div>
                                         <Check className="ms-auto text-primary" />
                                     </CommandItem>
@@ -1186,7 +1186,7 @@ function SelectOptionsPopover<T = unknown>({
                                             {option.icon && option.icon}
                                             <div className="flex flex-col overflow-hidden">
                                                 <span className="truncate text-accent-foreground" title={option.label}>{option.label}</span>
-                                                {option.detail && <span className="truncate text-xs text-muted-foreground sm:text-sm" title={option.detail}>{option.detail}</span>}
+                                                {option.detail && <span className="truncate text-sm text-muted-foreground" title={option.detail}>{option.detail}</span>}
                                             </div>
                                             <Check className="ms-auto text-primary opacity-0" />
                                         </CommandItem>
@@ -1248,7 +1248,7 @@ function SelectOptionsPopover<T = unknown>({
                 <Command>
                     {field.searchable !== false && (
                         <CommandInput
-                            className="h-[34px] text-xs sm:text-sm"
+                            className="h-[34px] text-sm"
                             placeholder={context.i18n.placeholders.searchField(field.label || '')}
                             value={searchInput}
                             onValueChange={handleSearchChange}
@@ -1256,7 +1256,7 @@ function SelectOptionsPopover<T = unknown>({
                     )}
                     <CommandList className="outline-none">
                         {field.isLoading ? (
-                            <div className="flex items-center justify-center py-6 text-xs text-muted-foreground sm:text-sm">
+                            <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
                                 <Loader2 className="mr-2 size-4 animate-spin" />
                                 {context.i18n.loading}
                             </div>
@@ -1286,7 +1286,7 @@ function SelectOptionsPopover<T = unknown>({
                                         {option.icon && option.icon}
                                         <div className="flex flex-col overflow-hidden">
                                             <span className="truncate text-accent-foreground" title={option.label}>{option.label}</span>
-                                            {option.detail && <span className="truncate text-xs text-muted-foreground sm:text-sm" title={option.detail}>{option.detail}</span>}
+                                            {option.detail && <span className="truncate text-sm text-muted-foreground" title={option.detail}>{option.detail}</span>}
                                         </div>
                                         <Check className="ms-auto text-primary" />
                                     </CommandItem>
@@ -1325,7 +1325,7 @@ function SelectOptionsPopover<T = unknown>({
                                             {option.icon && option.icon}
                                             <div className="flex flex-col overflow-hidden">
                                                 <span className="truncate text-accent-foreground" title={option.label}>{option.label}</span>
-                                                {option.detail && <span className="truncate text-xs text-muted-foreground sm:text-sm" title={option.detail}>{option.detail}</span>}
+                                                {option.detail && <span className="truncate text-sm text-muted-foreground" title={option.detail}>{option.detail}</span>}
                                             </div>
                                             <Check className="ms-auto text-primary opacity-0" />
                                         </CommandItem>
@@ -1711,7 +1711,7 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
                 <Command>
                     {field.searchable !== false && (
                         <CommandInput
-                            className="h-[34px] text-xs sm:text-sm"
+                            className="h-[34px] text-sm"
                             placeholder={context.i18n.placeholders.searchField(field.label || '')}
                             value={searchInput}
                             onValueChange={handleSearchChange}
@@ -1719,7 +1719,7 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
                     )}
                     <CommandList className="outline-none">
                         {field.isLoading ? (
-                            <div className="flex items-center justify-center py-6 text-xs text-muted-foreground sm:text-sm">
+                            <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
                                 <Loader2 className="mr-2 size-4 animate-spin" />
                                 {context.i18n.loading}
                             </div>
