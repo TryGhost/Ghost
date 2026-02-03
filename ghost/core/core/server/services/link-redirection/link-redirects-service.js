@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const logging = require('@tryghost/logging');
 const DomainEvents = require('@tryghost/domain-events');
 const RedirectEvent = require('./redirect-event');
 const LinkRedirect = require('./link-redirect');
@@ -118,16 +119,26 @@ class LinkRedirectsService {
 
             // Substitute %%{uuid}%% placeholder if present in the destination URL
             // This allows tracked links to include dynamic member UUIDs (e.g., for Transistor embeds)
-            // Note: The URL may be stored with URL-encoded placeholder (%25%25%7Buuid%7D%25%25)
-            // so we decode it first to check and perform substitution
+            // The URL may be stored in different encoded forms depending on placeholder position:
+            //   - Query string: %%{uuid}%% is preserved as-is
+            //   - Path: {/} are encoded to %7B/%7D, producing %%%7Buuid%7D%%
+            //   - Double-encoded: %25%25%7Buuid%7D%25%25
+            // We try decodeURIComponent first (handles double-encoded), then normalize
+            // URL-encoded braces to recover the placeholder from path-encoded forms
             let redirectUrl = link.to.href;
+            logging.info('[link-redirects] Stored destination URL: ' + redirectUrl);
             let decodedUrl;
             try {
                 decodedUrl = decodeURIComponent(redirectUrl);
+                logging.info('[link-redirects] Decoded URL: ' + decodedUrl);
             } catch (e) {
-                decodedUrl = redirectUrl;
+                // decodeURIComponent fails on malformed sequences (e.g. %%%7Buuid%7D%%)
+                // Normalize URL-encoded braces so we can still detect the placeholder
+                decodedUrl = redirectUrl.replace(/%7B/gi, '{').replace(/%7D/gi, '}');
+                logging.info('[link-redirects] decodeURIComponent failed, normalized URL: ' + decodedUrl);
             }
             const hasMemberUuidPlaceholder = decodedUrl.includes(MEMBER_UUID_PLACEHOLDER);
+            logging.info('[link-redirects] Has placeholder: ' + hasMemberUuidPlaceholder + ', m param: ' + url.searchParams.get('m'));
             if (hasMemberUuidPlaceholder) {
                 const memberUuid = url.searchParams.get('m');
                 if (memberUuid && UUID_REGEX.test(memberUuid)) {

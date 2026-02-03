@@ -317,13 +317,11 @@ describe('LinkRedirectsService', function () {
             assert.equal(res.redirect.getCall(0).args[0], 'https://example.com/normal-link?foo=bar');
         });
 
-        it('substitutes URL-encoded %%{uuid}%% placeholder (as stored by email renderer)', async function () {
-            // When email-renderer stores URLs with %%{uuid}%%, URL manipulation may encode it
-            // The redirect service should decode and substitute correctly
+        it('substitutes double-encoded %%{uuid}%% placeholder in query string', async function () {
+            // When stored as %25%25%7Buuid%7D%25%25, decodeURIComponent recovers %%{uuid}%%
             const linkRedirectRepository = {
                 getByURL: (url) => {
                     if (url.pathname === '/r/abc') {
-                        // Simulate URL-encoded placeholder as stored in database
                         return Promise.resolve({
                             to: {href: 'https://share.transistor.fm/e/episode?subscriber_id=%25%25%7Buuid%7D%25%25'}
                         });
@@ -347,6 +345,38 @@ describe('LinkRedirectsService', function () {
             await instance.handleRequest(req, res);
             assert.equal(res.redirect.callCount, 1);
             assert.equal(res.redirect.getCall(0).args[0], 'https://share.transistor.fm/e/episode?subscriber_id=a1b2c3d4-e5f6-4789-abcd-ef1234567890');
+        });
+
+        it('substitutes path-encoded %%{uuid}%% placeholder (braces encoded by URL constructor)', async function () {
+            // When %%{uuid}%% is in a URL path, the URL constructor encodes {/} to %7B/%7D
+            // producing %%%7Buuid%7D%% which causes decodeURIComponent to fail.
+            // The redirect service should normalize braces and still substitute correctly.
+            const linkRedirectRepository = {
+                getByURL: (url) => {
+                    if (url.pathname === '/r/abc') {
+                        return Promise.resolve({
+                            to: {href: 'https://share.transistor.fm/%%%7Buuid%7D%%/episode'}
+                        });
+                    }
+                    return Promise.resolve(undefined);
+                }
+            };
+            const instance = new LinkRedirectsService({
+                linkRedirectRepository,
+                config: {
+                    baseURL: new URL('https://localhost:2368/')
+                }
+            });
+            const req = {
+                originalUrl: '/r/abc?m=a1b2c3d4-e5f6-4789-abcd-ef1234567890'
+            };
+            const res = {
+                redirect: sinon.fake(),
+                setHeader: sinon.fake()
+            };
+            await instance.handleRequest(req, res);
+            assert.equal(res.redirect.callCount, 1);
+            assert.equal(res.redirect.getCall(0).args[0], 'https://share.transistor.fm/a1b2c3d4-e5f6-4789-abcd-ef1234567890/episode');
         });
     });
 });
