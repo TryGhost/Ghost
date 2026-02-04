@@ -82,6 +82,7 @@
     "Failed to sign up, please try again": "註冊失敗，請再試一次",
     "Failed to update account data": "更新帳號資訊失敗",
     "Failed to update account details": "更新帳號資訊失敗",
+    "Failed to update billing information, please try again": "",
     "Failed to update newsletter settings": "更新電子報設定失敗，請再試一次",
     "Failed to update subscription, please try again": "更新訂閱失敗，請再試一次",
     "Failed to verify code, please try again": "驗證碼驗證失敗，請再試一次",

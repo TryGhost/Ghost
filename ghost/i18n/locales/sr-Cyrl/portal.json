@@ -205,7 +205,6 @@
     "Unlock access to all newsletters by becoming a paid subscriber.": "Откључајте приступ свим билтенима тако што ћете постати плаћени претплатник.",
     "Unsubscribe from all emails": "Одјавите се са свих email-ова",
     "Unsubscribed": "Одјављени",
-<<<<<<< HEAD
     "Unsubscribed from all emails.": "Одјављени са свих email-ова.",
     "Unsubscribing from emails will not cancel your paid subscription to {title}": "Одјављивање са email-ова неће отказати Вашу плаћену претплату на {title}",
     "Update": "Ажурирајте",
@@ -213,15 +212,6 @@
     "Verification link sent, check your inbox": "Линк за верификацију је послат, проверите Ваш inbox",
     "Verify your email address is correct": "Проверите да ли је Ваша email адреса исправна",
     "Verifying...": "Верификација...",
-=======
-    "Unsubscribed from all emails.": "Одјављени са свих мејлова.",
-    "Unsubscribing from emails will not cancel your paid subscription to {title}": "Одјављивање са мејлова неће отказати вашу плаћену претплату на {title}",
-    "Update": "Ажурирајте",
-    "Update your preferences": "Ажурирајте своје преференције",
-    "Verification link sent, check your inbox": "Линк за верификацију је послат, проверите ваше сандуче",
-    "Verify your email address is correct": "Проверите да ли је ваша мејл адреса исправна",
-    "Verifying...": "",
->>>>>>> e67b11323a (Revert "Switched back to using card checkout flow (#26039)")
     "View plans": "Погледајте планове",
     "We couldn't unsubscribe you as the email address was not found. Please contact the site owner.": "Нисмо могли да Вас одјавимо јер email адреса није пронађена. Молимо Вас да контактирате власника сајта.",
     "Welcome back, {name}!": "Добро дошли назад, {name}!",

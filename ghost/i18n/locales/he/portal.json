@@ -82,6 +82,7 @@
     "Failed to sign up, please try again": "ההרשמה נכשלה, נסו שוב",
     "Failed to update account data": "עדכון נתוני החשבון נכשל",
     "Failed to update account details": "עדכון פרטי החשבון נכשל",
+    "Failed to update billing information, please try again": "",
     "Failed to update newsletter settings": "עדכון הגדרות הניוזלטר נכשל",
     "Failed to update subscription, please try again": "עדכון המנוי נכשל, נסו שוב",
     "Failed to verify code, please try again": "",

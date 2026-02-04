@@ -82,6 +82,7 @@
     "Failed to sign up, please try again": "Không thể đăng ký, vui lòng thử lại",
     "Failed to update account data": "Không thể cập nhật thông tin tài khoản",
     "Failed to update account details": "Không thể cập nhật chi tiết tài khoản",
+    "Failed to update billing information, please try again": "",
     "Failed to update newsletter settings": "Không thể cập nhật thiết lập bản tin email",
     "Failed to update subscription, please try again": "Không thể cập nhật gói, vui lòng thử lại",
     "Failed to verify code, please try again": "Không thể xác minh mã, vui lòng thử lại",

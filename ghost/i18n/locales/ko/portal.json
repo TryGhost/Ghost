@@ -82,6 +82,7 @@
     "Failed to sign up, please try again": "가입에 실패했어요. 다시 시도해 주세요",
     "Failed to update account data": "계정 데이터 업데이트에 실패했어요",
     "Failed to update account details": "계정 상세정보 업데이트에 실패했어요",
+    "Failed to update billing information, please try again": "",
     "Failed to update newsletter settings": "뉴스레터 설정 업데이트에 실패했어요",
     "Failed to update subscription, please try again": "구독 업데이트에 실패했어요. 다시 시도해 주세요",
     "Failed to verify code, please try again": "",

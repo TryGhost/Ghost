@@ -82,6 +82,7 @@
     "Failed to sign up, please try again": "Не удалось зарегистрироваться, попробуйте ещё раз",
     "Failed to update account data": "Не удалось обновить данные учётной записи",
     "Failed to update account details": "Не удалось обновить настройки учётной записи",
+    "Failed to update billing information, please try again": "",
     "Failed to update newsletter settings": "Не удалось обновить настройки email рассылки",
     "Failed to update subscription, please try again": "Не удалось обновить подписку, попробуйте ещё раз",
     "Failed to verify code, please try again": "",

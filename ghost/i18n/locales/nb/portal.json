@@ -82,6 +82,7 @@
     "Failed to sign up, please try again": "Registrering mislyktes, vennligst prøv igjen",
     "Failed to update account data": "Kunne ikke oppdatere kontodata",
     "Failed to update account details": "Kunne ikke oppdatere kontodetaljer",
+    "Failed to update billing information, please try again": "",
     "Failed to update newsletter settings": "Kunne ikke oppdatere nyhetsbrevinnstillinger",
     "Failed to update subscription, please try again": "Kunne ikke oppdatere abonnement, vennligst prøv igjen",
     "Failed to verify code, please try again": "",

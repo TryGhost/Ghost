@@ -82,6 +82,7 @@
     "Failed to sign up, please try again": "Nem sikerült a regisztráció. Kérjük, próbáld újra",
     "Failed to update account data": "Nem sikerült frissíteni a fiókadatokat",
     "Failed to update account details": "Nem sikerült frissíteni a fiókadatokat",
+    "Failed to update billing information, please try again": "",
     "Failed to update newsletter settings": "Nem sikerült frissíteni a hírlevél beállításokat",
     "Failed to update subscription, please try again": "Nem sikerült frissíteni az előfizetést. Kérjük, próbáld újra",
     "Failed to verify code, please try again": "",

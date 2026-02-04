@@ -82,6 +82,7 @@
     "Failed to sign up, please try again": "فشل في التسجيل، يرجى المحاولة مرة",
     "Failed to update account data": "فشل في تحديث بيانات الحساب",
     "Failed to update account details": "فشل في تحديث تفاصيل الحساب",
+    "Failed to update billing information, please try again": "",
     "Failed to update newsletter settings": "فشل في تحديث إعدادات النشرة الإخبارية",
     "Failed to update subscription, please try again": "فشل في تحديث الاشتراك، يرجى المحاولة مرة أخرى",
     "Failed to verify code, please try again": "",

@@ -82,6 +82,7 @@
     "Failed to sign up, please try again": "Anmeldung ist fehlgeschlagen. Bitte versuche es erneut.",
     "Failed to update account data": "Kontodaten konnten nicht aktualisiert werden",
     "Failed to update account details": "Kontodetails konnten nicht aktualisiert werden",
+    "Failed to update billing information, please try again": "",
     "Failed to update newsletter settings": "Newsletter Einstellungen konnten nicht aktualisiert werden",
     "Failed to update subscription, please try again": "Abonnement konnte nicht aktualisiert werden. Bitte versuche es erneut.",
     "Failed to verify code, please try again": "Bestätigungscode konnte nicht verifiziert werden. Bitte versuche es erneut.",
