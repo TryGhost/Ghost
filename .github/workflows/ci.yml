@@ -146,7 +146,6 @@ jobs:
               - 'ghost/core/core/server/data/tinybird/**'
               - '!ghost/core/core/server/data/tinybird/**/*.md'
             browser-tests:
-              - *shared
               - 'ghost/core/test/e2e-browser/**'
             any-code:
               - '!**/*.md'
