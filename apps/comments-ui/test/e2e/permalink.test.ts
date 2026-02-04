@@ -460,4 +460,90 @@ test.describe('Comment Permalinks', async () => {
         // The target comment (beyond admin page 1) must STILL be visible
         await expect(commentsFrame.getByText('Target comment beyond admin page 1')).toBeVisible();
     });
+
+    test('admin auth does not overwrite expanded replies loaded for permalink', async ({page}) => {
+        const mockedApi = new MockedApi({});
+        mockedApi.setMember({id: '1', uuid: '12345'});
+
+        const admin = MOCKED_SITE_URL + '/ghost/';
+        await mockAdminAuthFrame({page, admin});
+
+        // Create a parent with 5 replies — browse API returns only the first 3.
+        // The target (reply 5) is loaded by loadRepliesForComment during
+        // initSetup permalink flow. initAdminAuth then re-fetches admin page 1,
+        // which must NOT overwrite the expanded replies.
+        const parentId = 'aaa0000000000000parent';
+        const parentComment = {
+            id: parentId,
+            html: '<p>Parent comment</p>',
+            replies: [] as any[]
+        };
+
+        // Use hex IDs because parseCommentIdFromHash only accepts [a-f0-9]+
+        const targetId = 'aaa0000000000000000005';
+        for (let i = 1; i <= 4; i++) {
+            parentComment.replies.push(mockedApi.buildReply({
+                html: `<p>Reply ${i}</p>`,
+                parent_id: parentId
+            }));
+        }
+        parentComment.replies.push(mockedApi.buildReply({
+            id: targetId,
+            html: '<p>Target deep reply</p>',
+            parent_id: parentId
+        }));
+
+        mockedApi.addComment(parentComment);
+
+        const sitePath = MOCKED_SITE_URL;
+
+        mockedApi.setSettings({
+            settings: {
+                labs: {
+                    commentPermalinks: true
+                }
+            }
+        });
+
+        await page.route(sitePath, async (route) => {
+            await route.fulfill({status: 200, body: '<html><head><meta charset="UTF-8" /></head><body></body></html>'});
+        });
+
+        const url = `http://localhost:${E2E_PORT}/comments-ui.min.js`;
+        await page.setViewportSize({width: 1000, height: 1000});
+        await page.goto(`${sitePath}#ghost-comments-${targetId}`);
+        await mockedApi.listen({page, path: sitePath});
+
+        const options = {
+            publication: 'Publisher Weekly',
+            count: true,
+            title: 'Title',
+            ghostComments: MOCKED_SITE_URL,
+            postId: mockedApi.postId,
+            api: MOCKED_SITE_URL,
+            admin,
+            key: '12345678'
+        };
+
+        await page.evaluate((data) => {
+            const scriptTag = document.createElement('script');
+            scriptTag.src = data.url;
+            for (const option of Object.keys(data.options)) {
+                scriptTag.dataset[option] = data.options[option];
+            }
+            document.body.appendChild(scriptTag);
+        }, {url, options});
+
+        const commentsFrame = page.frameLocator('iframe[title="comments-frame"]');
+
+        // Target reply should be visible after permalink reply expansion
+        await expect(commentsFrame.getByText('Target deep reply')).toBeVisible();
+
+        // Wait for admin auth to complete — the more button (admin context menu)
+        // only renders when isAdmin is true, proving initAdminAuth has finished
+        await expect(commentsFrame.locator('[data-testid="more-button"]').first()).toBeVisible();
+
+        // The target reply must STILL be visible after admin auth completes
+        await expect(commentsFrame.getByText('Target deep reply')).toBeVisible();
+    });
 });
