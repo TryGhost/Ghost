@@ -285,7 +285,7 @@ describe('Posts API', function () {
         assert.equal(res.headers['x-cache-invalidate'], undefined);
 
         assertExists(res.headers.location);
-        assert.equal(res.headers.location, `http://127.0.0.1:2369${localUtils.API.getApiQuery('posts/')}${res.body.posts[0].id}/`);
+        assert.equal(res.headers.location, `${config.get('url')}${localUtils.API.getApiQuery('posts/')}${res.body.posts[0].id}/`);
 
         // Newsletter should be returned as null
         assert.equal(res.body.posts[0].newsletter, null);
