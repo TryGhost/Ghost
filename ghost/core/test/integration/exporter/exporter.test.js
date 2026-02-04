@@ -148,13 +148,13 @@ describe('Exporter', function () {
             ];
 
             excludedSettings.forEach((settingKey) => {
-                should.not.exist(_.find(exportData.data.settings, {key: settingKey}));
+                assert.equal(_.find(exportData.data.settings, {key: settingKey}), undefined);
             });
 
-            should.not.exist(_.find(exportData.data.settings, {key: 'permalinks'}));
+            assert.equal(_.find(exportData.data.settings, {key: 'permalinks'}), undefined);
 
             // should not export sqlite data
-            should.not.exist(exportData.data.sqlite_sequence);
+            assert.equal(exportData.data.sqlite_sequence, undefined);
             done();
         }).catch(done);
     });

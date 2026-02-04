@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const nock = require('nock');
 const sinon = require('sinon');
 const should = require('should');
@@ -567,7 +568,7 @@ describe('Oembed API', function () {
                 width: 200,
                 height: 100
             });
-            should.not.exist(res.body.unknown);
+            assert.equal(res.body.unknown, undefined);
         });
 
         it('skips fetching IPv4 addresses', async function () {

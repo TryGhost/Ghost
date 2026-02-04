@@ -14,7 +14,8 @@ import {
     AlertCircle,
     CheckCircle,
     XCircle,
-    Circle
+    Circle,
+    X
 } from 'lucide-react';
 
 const meta = {
@@ -657,11 +658,11 @@ export const SolidAllSizes: Story = {
     }
 };
 
-// Add button positioned at the end
-export const AddButtonAtEnd: Story = {
+// Add button positioned at the start
+export const AddButtonAtStart: Story = {
     render: () => (
         <FilterDemo
-            className="[&>button]:order-last"
+            className="[&>button]:order-first"
             fields={basicFields}
             initialFilters={[
                 createFilter('text', 'contains', ['example']),
@@ -672,7 +673,155 @@ export const AddButtonAtEnd: Story = {
     parameters: {
         docs: {
             description: {
-                story: 'Add button positioned at the end (right side) of the filter list using CSS order property. This is achieved with the className prop: `className="[&>button]:order-last"`'
+                story: 'Add button positioned at the start (left side) of the filter list using CSS order property. By default, the add button appears at the end. This is achieved with the className prop: `className="[&>button]:order-first"`'
+            }
+        }
+    }
+};
+
+// With clear button
+export const WithClearButton: Story = {
+    render: () => (
+        <FilterDemo
+            clearButtonIcon={<X />}
+            clearButtonText="Clear all"
+            fields={selectFields}
+            initialFilters={[
+                createFilter('status', 'is', ['active']),
+                createFilter('tags', 'is_any_of', ['urgent', 'important'])
+            ]}
+            showClearButton={true}
+        />
+    ),
+    parameters: {
+        docs: {
+            description: {
+                story: 'Filters with an integrated clear button that appears when filters are active. The clear button removes all filters with a single click.'
+            }
+        }
+    }
+};
+
+// Clear button with custom styling
+export const ClearButtonCustomStyling: Story = {
+    render: () => (
+        <FilterDemo
+            clearButtonClassName="text-red-500 hover:text-red-700 font-medium"
+            clearButtonIcon={<X className="size-4" />}
+            clearButtonText="Reset"
+            fields={comprehensiveFields}
+            initialFilters={[
+                createFilter('status', 'is', ['active']),
+                createFilter('verified', 'is', [true]),
+                createFilter('age', 'greater_than', ['18'])
+            ]}
+            showClearButton={true}
+        />
+    ),
+    parameters: {
+        docs: {
+            description: {
+                story: 'Clear button with custom styling using the `clearButtonClassName` prop.'
+            }
+        }
+    }
+};
+
+// Mobile-friendly layout with clear button
+export const MobileFriendlyLayout: Story = {
+    render: () => (
+        <div className="max-w-md">
+            <FilterDemo
+                clearButtonClassName="font-normal text-muted-foreground"
+                clearButtonIcon={<X />}
+                clearButtonText="Clear"
+                fields={selectFields}
+                initialFilters={[
+                    createFilter('status', 'is', ['pending']),
+                    createFilter('tags', 'is_any_of', ['review'])
+                ]}
+                showClearButton={true}
+                size="sm"
+            />
+        </div>
+    ),
+    parameters: {
+        docs: {
+            description: {
+                story: 'Mobile-optimized layout with clear button. The add button appears at the end of the filter list by default. On mobile, the clear button flows with the filters. On larger screens (sm+), it positions absolutely at the top-right. The container is constrained to mobile width (max-w-md) to demonstrate responsive behavior.'
+            }
+        }
+    }
+};
+
+// Full-width responsive layout
+export const FullWidthResponsiveLayout: Story = {
+    render: () => (
+        <FilterDemo
+            clearButtonClassName="font-normal text-muted-foreground"
+            clearButtonIcon={<X />}
+            clearButtonText="Clear"
+            fields={comprehensiveFields}
+            initialFilters={[
+                createFilter('status', 'is', ['active']),
+                createFilter('verified', 'is', [true]),
+                createFilter('age', 'greater_than', ['18'])
+            ]}
+            showClearButton={true}
+        />
+    ),
+    parameters: {
+        docs: {
+            description: {
+                story: 'Full-width responsive layout demonstrating the clear button behavior. Resize your browser to see how the clear button repositions: flows inline on mobile, moves to top-right on desktop.'
+            }
+        }
+    }
+};
+
+// Clear button with custom handler
+const ClearButtonCustomHandlerDemo = () => {
+    const [filters, setFilters] = useState<Filter[]>([
+        createFilter('status', 'is', ['active']),
+        createFilter('email', 'contains', ['@example.com'])
+    ]);
+    const [clearCount, setClearCount] = useState(0);
+
+    const handleClear = () => {
+        setFilters([]);
+        setClearCount(prev => prev + 1);
+    };
+
+    return (
+        <div>
+            <Filters
+                clearButtonIcon={<X />}
+                clearButtonText="Clear all"
+                fields={basicFields}
+                filters={filters}
+                showClearButton={true}
+                onChange={setFilters}
+                onClear={handleClear}
+            />
+            <div className="mt-6">
+                <h4 className="mb-2 text-sm font-medium">Active Filters:</h4>
+                <pre className="rounded-md bg-secondary p-4 text-xs">
+                    {JSON.stringify(filters, null, 2)}
+                </pre>
+                <p className="mt-4 text-sm text-muted-foreground">
+                    Clear button clicked: <span className="font-medium text-foreground">{clearCount}</span> times
+                </p>
+            </div>
+        </div>
+    );
+};
+
+export const ClearButtonCustomHandler: Story = {
+    render: () => <ClearButtonCustomHandlerDemo />,
+    parameters: {
+        docs: {
+            description: {
+                story: 'Custom clear handler using the `onClear` prop. This allows you to perform additional actions when filters are cleared, such as analytics tracking or side effects.'
             }
         }
     }

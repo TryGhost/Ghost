@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const express = require('../../../../../core/shared/express')._express;
@@ -41,7 +42,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
 
             should.exist(collectionRouter.router);
 
-            should.not.exist(collectionRouter.filter);
+            assert.equal(collectionRouter.filter, undefined);
             collectionRouter.getResourceType().should.eql('posts');
             collectionRouter.templates.should.eql([]);
             collectionRouter.getPermalinks().getValue().should.eql('/:slug/');
@@ -88,7 +89,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
 
             should.exist(collectionRouter.router);
 
-            should.not.exist(collectionRouter.filter);
+            assert.equal(collectionRouter.filter, undefined);
             collectionRouter.getResourceType().should.eql('posts');
             collectionRouter.templates.should.eql([]);
             collectionRouter.getPermalinks().getValue().should.eql('/blog/:year/:slug/');

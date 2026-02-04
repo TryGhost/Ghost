@@ -42,7 +42,7 @@ describe('Members Importer API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(201)
             .then((res) => {
-                should.not.exist(res.headers['x-cache-invalidate']);
+                assert.equal(res.headers['x-cache-invalidate'], undefined);
                 const jsonResponse = res.body;
 
                 should.exist(jsonResponse);
@@ -63,7 +63,7 @@ describe('Members Importer API', function () {
                     .expect(200);
             })
             .then((res) => {
-                should.not.exist(res.headers['x-cache-invalidate']);
+                assert.equal(res.headers['x-cache-invalidate'], undefined);
                 const jsonResponse = res.body;
 
                 should.exist(jsonResponse);
@@ -109,7 +109,7 @@ describe('Members Importer API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(201)
             .then((res) => {
-                should.not.exist(res.headers['x-cache-invalidate']);
+                assert.equal(res.headers['x-cache-invalidate'], undefined);
                 const jsonResponse = res.body;
 
                 should.exist(jsonResponse);
@@ -131,7 +131,7 @@ describe('Members Importer API', function () {
                     .expect(200);
             })
             .then((res) => {
-                should.not.exist(res.headers['x-cache-invalidate']);
+                assert.equal(res.headers['x-cache-invalidate'], undefined);
                 const jsonResponse = res.body;
 
                 should.exist(jsonResponse);
@@ -159,7 +159,7 @@ describe('Members Importer API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(201)
             .then((res) => {
-                should.not.exist(res.headers['x-cache-invalidate']);
+                assert.equal(res.headers['x-cache-invalidate'], undefined);
                 const jsonResponse = res.body;
 
                 should.exist(jsonResponse);
@@ -178,7 +178,7 @@ describe('Members Importer API', function () {
                     .expect(200);
             })
             .then((res) => {
-                should.not.exist(res.headers['x-cache-invalidate']);
+                assert.equal(res.headers['x-cache-invalidate'], undefined);
                 const jsonResponse = res.body;
 
                 should.exist(jsonResponse);
@@ -207,12 +207,12 @@ describe('Members Importer API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(202)
             .then((res) => {
-                should.not.exist(res.headers['x-cache-invalidate']);
+                assert.equal(res.headers['x-cache-invalidate'], undefined);
                 const jsonResponse = res.body;
 
                 should.exist(jsonResponse);
                 should.exist(jsonResponse.meta);
-                should.not.exist(jsonResponse.meta.stats);
+                assert.equal(jsonResponse.meta.stats, undefined);
             });
     });
 
@@ -226,7 +226,7 @@ describe('Members Importer API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(201)
             .then((res) => {
-                should.not.exist(res.headers['x-cache-invalidate']);
+                assert.equal(res.headers['x-cache-invalidate'], undefined);
                 const jsonResponse = res.body;
 
                 should.exist(jsonResponse);
@@ -262,7 +262,7 @@ describe('Members Importer API', function () {
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(201);
-        should.not.exist(res.headers['x-cache-invalidate']);
+        assert.equal(res.headers['x-cache-invalidate'], undefined);
         const jsonResponse = res.body;
 
         should.exist(jsonResponse);
@@ -288,7 +288,7 @@ describe('Members Importer API', function () {
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(201);
-        should.not.exist(res.headers['x-cache-invalidate']);
+        assert.equal(res.headers['x-cache-invalidate'], undefined);
         const jsonResponse = res.body;
 
         should.exist(jsonResponse);
@@ -331,7 +331,7 @@ describe('Members Importer API', function () {
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(202);
-        should.not.exist(res.headers['x-cache-invalidate']);
+        assert.equal(res.headers['x-cache-invalidate'], undefined);
         const jsonResponse = res.body;
 
         should.exist(jsonResponse);

@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const getStructuredData = require('../../../../core/frontend/meta/structured-data');
 
 describe('getStructuredData', function () {
@@ -38,7 +38,7 @@ describe('getStructuredData', function () {
 
         const structuredData = getStructuredData(metadata);
 
-        should.deepEqual(structuredData, {
+        assert.deepEqual(structuredData, {
             'article:modified_time': '2016-01-21T22:13:05.412Z',
             'article:published_time': '2015-12-25T05:35:01.234Z',
             'article:tag': ['one', 'two', 'tag'],
@@ -100,7 +100,7 @@ describe('getStructuredData', function () {
 
         const structuredData = getStructuredData(metadata);
 
-        should.deepEqual(structuredData, {
+        assert.deepEqual(structuredData, {
             'article:modified_time': '2016-01-21T22:13:05.412Z',
             'article:published_time': '2015-12-25T05:35:01.234Z',
             'article:tag': ['one', 'two', 'tag'],
@@ -160,7 +160,7 @@ describe('getStructuredData', function () {
 
         const structuredData = getStructuredData(metadata);
 
-        should.deepEqual(structuredData, {
+        assert.deepEqual(structuredData, {
             'article:modified_time': '2016-01-21T22:13:05.412Z',
             'og:site_name': 'Site Title',
             'og:title': 'Post Title',

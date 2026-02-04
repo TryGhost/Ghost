@@ -1768,8 +1768,8 @@ describe('Members API', function () {
         }
 
         // Check for this member with a paid subscription that the body results for the patch, get and browse endpoints are 100% identical
-        should.deepEqual(browseMember, readMember, 'Browsing a member returns a different format than reading a member');
-        should.deepEqual(memberWithPaidSubscription, readMember, 'Editing a member returns a different format than reading a member');
+        assert.deepEqual(browseMember, readMember, 'Browsing a member returns a different format than reading a member');
+        assert.deepEqual(memberWithPaidSubscription, readMember, 'Editing a member returns a different format than reading a member');
     });
 
     it('Cannot add unknown tiers to a member', async function () {
@@ -2604,9 +2604,9 @@ describe('Members API', function () {
 
         const csv = Papa.parse(res.text, {header: true});
         should.exist(csv.data.find(row => row.name === 'Mr Egg'));
-        should.not.exist(csv.data.find(row => row.name === 'Egon Spengler'));
-        should.not.exist(csv.data.find(row => row.name === 'Ray Stantz'));
-        should.not.exist(csv.data.find(row => row.email === 'member2@test.com'));
+        assert.equal(csv.data.find(row => row.name === 'Egon Spengler'), undefined);
+        assert.equal(csv.data.find(row => row.name === 'Ray Stantz'), undefined);
+        assert.equal(csv.data.find(row => row.email === 'member2@test.com'), undefined);
         // note that this member doesn't have tiers
         should.exist(csv.data.find(row => row.labels.length > 0));
     });

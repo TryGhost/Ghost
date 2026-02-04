@@ -90,9 +90,9 @@ const setup = async ({site, member = null}) => {
     });
 
     ghostApi.member.sendMagicLink = vi.fn(async ({email}) => {
-        if (email.endsWith('@test-sniper-link.example')) {
+        if (email.endsWith('@test-inbox-link.example')) {
             return {
-                sniperLinks: {
+                inboxLinks: {
                     provider: 'proton',
                     android: 'https://fake-proton.example/',
                     desktop: 'https://fake-proton.example/'
@@ -252,7 +252,7 @@ describe('Signup', () => {
             });
         });
 
-        test('with sniper link', async () => {
+        test('with inbox link', async () => {
             const {
                 emailInput,
                 nameInput,
@@ -261,21 +261,21 @@ describe('Signup', () => {
             } = await setup({
                 site: {
                     ...FixtureSite.singleTier.basic,
-                    labs: {sniperlinks: true}
+                    labs: {inboxlinks: true}
                 }
             });
 
             fireEvent.change(nameInput, {target: {value: 'Jamie Larsen'}});
-            fireEvent.change(emailInput, {target: {value: 'test@test-sniper-link.example'}});
+            fireEvent.change(emailInput, {target: {value: 'test@test-inbox-link.example'}});
 
-            expect(emailInput).toHaveValue('test@test-sniper-link.example');
+            expect(emailInput).toHaveValue('test@test-inbox-link.example');
             expect(nameInput).toHaveValue('Jamie Larsen');
             fireEvent.click(chooseBtns[0]);
 
-            const sniperLinkButton = await within(popupIframeDocument).findByRole('link', {name: /open proton mail/i});
-            expect(sniperLinkButton).toBeInTheDocument();
-            expect(sniperLinkButton).toHaveAttribute('href', 'https://fake-proton.example/');
-            expect(sniperLinkButton).toHaveAttribute('target', '_blank');
+            const inboxLinkButton = await within(popupIframeDocument).findByRole('link', {name: /open proton mail/i});
+            expect(inboxLinkButton).toBeInTheDocument();
+            expect(inboxLinkButton).toHaveAttribute('href', 'https://fake-proton.example/');
+            expect(inboxLinkButton).toHaveAttribute('target', '_blank');
         });
 
         test('without name field', async () => {

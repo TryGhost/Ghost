@@ -71,6 +71,7 @@ export default class FeatureService extends Service {
     @feature('editorExcerpt') editorExcerpt;
     @feature('transistor') transistor;
     @feature('tagsX') tagsX;
+    @feature('commentModeration') commentModeration;
 
     _user = null;
 

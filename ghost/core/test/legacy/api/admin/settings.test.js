@@ -32,7 +32,7 @@ describe('Settings API', function () {
 
         // Check if not changed (also check internal ones)
         const afterValue = settingsCache.get(key);
-        should.deepEqual(afterValue, expectedValue);
+        assert.deepEqual(afterValue, expectedValue);
     }
 
     async function checkCantEdit(key, value) {
@@ -54,12 +54,12 @@ describe('Settings API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200)
             .expect((response) => {
-                should.not.exist(response.headers['x-cache-invalidate']);
+                assert.equal(response.headers['x-cache-invalidate'], undefined);
             });
 
         // Check if not changed (also check internal ones)
         const afterValue = settingsCache.get(key);
-        should.deepEqual(afterValue, currentValue);
+        assert.deepEqual(afterValue, currentValue);
     }
 
     describe('As Owner', function () {
@@ -297,7 +297,7 @@ describe('Settings API', function () {
                         .expect(403)
                         .then(function ({body, headers}) {
                             jsonResponse = body;
-                            should.not.exist(headers['x-cache-invalidate']);
+                            assert.equal(headers['x-cache-invalidate'], undefined);
                             should.exist(jsonResponse.errors);
                             testUtils.API.checkResponseValue(jsonResponse.errors[0], [
                                 'message',
@@ -350,7 +350,7 @@ describe('Settings API', function () {
                         .expect(403)
                         .then(function ({body, headers}) {
                             jsonResponse = body;
-                            should.not.exist(headers['x-cache-invalidate']);
+                            assert.equal(headers['x-cache-invalidate'], undefined);
                             should.exist(jsonResponse.errors);
                             testUtils.API.checkResponseValue(jsonResponse.errors[0], [
                                 'message',

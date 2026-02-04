@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const hbs = require('../../../../../core/frontend/services/theme-engine/engine');
@@ -92,7 +93,7 @@ describe('Themes middleware', function () {
 
         executeMiddleware(middleware, req, res, function next(err) {
             try {
-                should.not.exist(err);
+                assert.equal(err, undefined);
 
                 fakeActiveTheme.mount.called.should.be.true();
                 fakeActiveTheme.mount.calledWith(req.app).should.be.true();
@@ -109,7 +110,7 @@ describe('Themes middleware', function () {
 
         executeMiddleware(middleware, req, res, function next(err) {
             try {
-                should.not.exist(err);
+                assert.equal(err, undefined);
 
                 fakeActiveTheme.mount.called.should.be.false();
 
@@ -147,7 +148,7 @@ describe('Themes middleware', function () {
 
             executeMiddleware(middleware, req, res, function next(err) {
                 try {
-                    should.not.exist(err);
+                    assert.equal(err, undefined);
 
                     hbsUpdateTemplateOptionsStub.calledOnce.should.be.true();
                     const templateOptions = hbsUpdateTemplateOptionsStub.firstCall.args[0];
@@ -163,9 +164,9 @@ describe('Themes middleware', function () {
                     data.config.posts_per_page.should.eql(2);
 
                     // Check labs config
-                    should.deepEqual(data.labs, fakeLabsData);
+                    assert.deepEqual(data.labs, fakeLabsData);
 
-                    should.deepEqual(data.site, {
+                    assert.deepEqual(data.site, {
                         ...fakeSiteData,
 
                         // signup_url should get added
@@ -176,7 +177,7 @@ describe('Themes middleware', function () {
                         comments_access: 'all'
                     });
 
-                    should.deepEqual(data.custom, fakeCustomThemeSettingsData);
+                    assert.deepEqual(data.custom, fakeCustomThemeSettingsData);
 
                     done();
                 } catch (error) {
@@ -213,7 +214,7 @@ describe('Themes middleware', function () {
 
             executeMiddleware(middleware, req, res, function next(err) {
                 try {
-                    should.not.exist(err);
+                    assert.equal(err, undefined);
 
                     hbsUpdateLocalTemplateOptionsStub.calledOnce.should.be.true();
                     const templateOptions = hbsUpdateLocalTemplateOptionsStub.firstCall.args[1];
@@ -240,7 +241,7 @@ describe('Themes middleware', function () {
 
             executeMiddleware(middleware, req, res, function next(err) {
                 try {
-                    should.not.exist(err);
+                    assert.equal(err, undefined);
 
                     hbsUpdateLocalTemplateOptionsStub.calledOnce.should.be.true();
                     const templateOptions = hbsUpdateLocalTemplateOptionsStub.firstCall.args[1];
@@ -269,7 +270,7 @@ describe('Themes middleware', function () {
 
             executeMiddleware(middleware, req, res, function next(err) {
                 try {
-                    should.not.exist(err);
+                    assert.equal(err, undefined);
 
                     hbsUpdateLocalTemplateOptionsStub.calledOnce.should.be.true();
                     const templateOptions = hbsUpdateLocalTemplateOptionsStub.firstCall.args[1];
@@ -296,7 +297,7 @@ describe('Themes middleware', function () {
 
             executeMiddleware(middleware, req, res, function next(err) {
                 try {
-                    should.not.exist(err);
+                    assert.equal(err, undefined);
 
                     hbsUpdateLocalTemplateOptionsStub.calledOnce.should.be.true();
                     const templateOptions = hbsUpdateLocalTemplateOptionsStub.firstCall.args[1];
@@ -324,7 +325,7 @@ describe('Themes middleware', function () {
 
             executeMiddleware(middleware, req, res, function next(err) {
                 try {
-                    should.not.exist(err);
+                    assert.equal(err, undefined);
 
                     hbsUpdateLocalTemplateOptionsStub.calledOnce.should.be.true();
                     const templateOptions = hbsUpdateLocalTemplateOptionsStub.firstCall.args[1];
@@ -350,7 +351,7 @@ describe('Themes middleware', function () {
 
             executeMiddleware(middleware, req, res, function next(err) {
                 try {
-                    should.not.exist(err);
+                    assert.equal(err, undefined);
 
                     hbsUpdateLocalTemplateOptionsStub.calledOnce.should.be.true();
                     const templateOptions = hbsUpdateLocalTemplateOptionsStub.firstCall.args[1];

@@ -879,7 +879,7 @@ describe('Post Model', function () {
                     mobiledoc: markdownToMobiledoc('This is some content')
                 }, context).then(function (newPost) {
                     should.exist(newPost);
-                    should.not.exist(newPost.get('published_at'));
+                    assert.equal(newPost.get('published_at'), null);
 
                     Object.keys(eventsTriggered).length.should.eql(2);
                     should.exist(eventsTriggered['post.added']);

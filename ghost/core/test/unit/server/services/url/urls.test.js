@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const events = require('../../../../../core/server/lib/common/events');
@@ -105,7 +106,7 @@ describe('Unit: services/url/Urls', function () {
 
     it('fn: removeResourceId', function () {
         urls.removeResourceId('object-id-2');
-        should.not.exist(urls.getByResourceId('object-id-2'));
+        assert.equal(urls.getByResourceId('object-id-2'), undefined);
 
         urls.removeResourceId('does not exist');
     });

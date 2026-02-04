@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import * as dns from 'node:dns/promises';
 import {shuffle} from 'lodash-es';
-import {getSniperLinks} from '../../../../core/server/lib/get-sniper-links';
+import {getInboxLinks} from '../../../../core/server/lib/get-inbox-links';
 
-describe('getSniperLinks', function () {
+describe('getInboxLinks', function () {
     const resolverThatShouldNeverBeUsed = {
         resolveMx: () => {
             assert.fail('This DNS test resolver should never be used');
@@ -18,7 +18,7 @@ describe('getSniperLinks', function () {
         ];
         for (const email of emails) {
             assert.equal(
-                await getSniperLinks({
+                await getInboxLinks({
                     recipient: email,
                     sender: 'ignored@example.com',
                     dnsResolver: resolverThatShouldNeverBeUsed
@@ -35,7 +35,7 @@ describe('getSniperLinks', function () {
             'example@google.com'
         ];
         await Promise.all(emails.map(async (recipient) => {
-            const result = await getSniperLinks({
+            const result = await getInboxLinks({
                 recipient,
                 sender: 'sender@example.com',
                 dnsResolver: resolverThatShouldNeverBeUsed
@@ -61,7 +61,7 @@ describe('getSniperLinks', function () {
             'example@rocketmail.com'
         ];
         await Promise.all(emails.map(async (recipient) => {
-            const result = await getSniperLinks({
+            const result = await getInboxLinks({
                 recipient,
                 sender: 'sender@example.com',
                 dnsResolver: resolverThatShouldNeverBeUsed
@@ -86,7 +86,7 @@ describe('getSniperLinks', function () {
             'example@msn.com'
         ];
         await Promise.all(emails.map(async (recipient) => {
-            const result = await getSniperLinks({
+            const result = await getInboxLinks({
                 recipient,
                 sender: 'sender@example.com',
                 dnsResolver: resolverThatShouldNeverBeUsed
@@ -106,7 +106,7 @@ describe('getSniperLinks', function () {
             'example@protonmail.com'
         ];
         await Promise.all(emails.map(async (recipient) => {
-            const result = await getSniperLinks({
+            const result = await getInboxLinks({
                 recipient,
                 sender: 'sender@example.com',
                 dnsResolver: resolverThatShouldNeverBeUsed
@@ -127,7 +127,7 @@ describe('getSniperLinks', function () {
             'example@mac.com'
         ];
         await Promise.all(emails.map(async (recipient) => {
-            const result = await getSniperLinks({
+            const result = await getInboxLinks({
                 recipient,
                 sender: 'sender@example.com',
                 dnsResolver: resolverThatShouldNeverBeUsed
@@ -139,7 +139,7 @@ describe('getSniperLinks', function () {
     });
 
     it('handles Hey emails', async function () {
-        const result = await getSniperLinks({
+        const result = await getInboxLinks({
             recipient: 'example@hey.com',
             sender: 'sender@example.com',
             dnsResolver: resolverThatShouldNeverBeUsed
@@ -152,7 +152,7 @@ describe('getSniperLinks', function () {
     });
 
     it('handles AOL emails', async function () {
-        const result = await getSniperLinks({
+        const result = await getInboxLinks({
             recipient: 'example@aol.com',
             sender: 'sender@example.com',
             dnsResolver: resolverThatShouldNeverBeUsed
@@ -166,7 +166,7 @@ describe('getSniperLinks', function () {
     });
 
     it('handles Mail.ru emails', async function () {
-        const result = await getSniperLinks({
+        const result = await getInboxLinks({
             recipient: 'example@mail.ru',
             sender: 'sender@example.com',
             dnsResolver: resolverThatShouldNeverBeUsed
@@ -190,7 +190,7 @@ describe('getSniperLinks', function () {
                 const resolver = {
                     resolveMx: () => Promise.reject(error)
                 };
-                const result = await getSniperLinks({
+                const result = await getInboxLinks({
                     recipient: 'recipient@example.com',
                     sender: 'sender@example.com',
                     dnsResolver: resolver
@@ -205,7 +205,7 @@ describe('getSniperLinks', function () {
                     {priority: 0, exchange: ''}
                 ]
             };
-            const result = await getSniperLinks({
+            const result = await getInboxLinks({
                 recipient: 'recipient@example.com',
                 sender: 'sender@example.com',
                 dnsResolver: resolver
@@ -222,7 +222,7 @@ describe('getSniperLinks', function () {
                     {priority: 4, exchange: 'google.com.example'}
                 ])
             };
-            const result = await getSniperLinks({
+            const result = await getInboxLinks({
                 recipient: 'recipient@example.com',
                 sender: 'sender@example.com',
                 dnsResolver: resolver
@@ -238,7 +238,7 @@ describe('getSniperLinks', function () {
                     {priority: 2, exchange: 'unknown.example'}
                 ])
             };
-            const result = await getSniperLinks({
+            const result = await getInboxLinks({
                 recipient: 'recipient@example.com',
                 sender: 'sender@example.com',
                 dnsResolver: resolver
@@ -254,7 +254,7 @@ describe('getSniperLinks', function () {
                     {priority: 2, exchange: 'protonmail.ch'}
                 ])
             };
-            const result = await getSniperLinks({
+            const result = await getInboxLinks({
                 recipient: 'recipient@example.com',
                 sender: 'sender@example.com',
                 dnsResolver: resolver
@@ -270,7 +270,7 @@ describe('getSniperLinks', function () {
                     {priority: 3, exchange: 'yahoo.com'}
                 ])
             };
-            const result = await getSniperLinks({
+            const result = await getInboxLinks({
                 recipient: 'recipient@example.com',
                 sender: 'sender@example.com',
                 dnsResolver: resolver
@@ -286,7 +286,7 @@ describe('getSniperLinks', function () {
                     {priority: 3, exchange: 'mail.protonmail.ch'}
                 ])
             };
-            const result = await getSniperLinks({
+            const result = await getInboxLinks({
                 recipient: 'recipient@example.com',
                 sender: 'sender@example.com',
                 dnsResolver: resolver
@@ -303,7 +303,7 @@ describe('getSniperLinks', function () {
                     {priority: 3, exchange: 'mail.protonmail.ch'}
                 ])
             };
-            const result = await getSniperLinks({
+            const result = await getInboxLinks({
                 recipient: 'recipient@example.com',
                 sender: 'sender@example.com',
                 dnsResolver: resolver

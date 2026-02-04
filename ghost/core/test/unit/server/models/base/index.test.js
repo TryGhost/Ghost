@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const security = require('@tryghost/security');
@@ -212,7 +213,7 @@ describe('Models: base', function () {
             base.get('a').should.eql('');
             base.get('b').should.eql('');
             base.setEmptyValuesToNull();
-            should.not.exist(base.get('a'));
+            assert.equal(base.get('a'), null);
             base.get('b').should.eql('');
         });
     });

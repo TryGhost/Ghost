@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const urlUtils = require('../../../../../core/shared/url-utils');
@@ -60,7 +61,7 @@ describe('Unit: services/url/UrlGenerator', function () {
         const urlGenerator = new UrlGenerator({router, queue});
 
         queue.register.calledTwice.should.be.true();
-        should.not.exist(urlGenerator.filter);
+        assert.equal(urlGenerator.filter, undefined);
     });
 
     it('routing type has filter', function () {
@@ -181,7 +182,7 @@ describe('Unit: services/url/UrlGenerator', function () {
                     resources,
                     urls
                 });
-                should.not.exist(urlGenerator.nql);
+                assert.equal(urlGenerator.nql, undefined);
 
                 sinon.stub(urlGenerator, '_generateUrl').returns('something');
                 sinon.stub(urlGenerator, '_resourceListeners');
@@ -205,7 +206,7 @@ describe('Unit: services/url/UrlGenerator', function () {
                     resources,
                     urls
                 });
-                should.not.exist(urlGenerator.nql);
+                assert.equal(urlGenerator.nql, undefined);
 
                 sinon.stub(urlGenerator, '_generateUrl').returns('something');
                 sinon.stub(urlGenerator, '_resourceListeners');

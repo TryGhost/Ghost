@@ -1,4 +1,5 @@
 /* eslint no-invalid-this:0 */
+const assert = require('node:assert/strict');
 const errors = require('@tryghost/errors');
 const should = require('should');
 const sinon = require('sinon');
@@ -247,7 +248,7 @@ describe('Unit: models/post', function () {
 
             const json = toJSON(post, {formats: ['mobiledoc']});
 
-            should.not.exist(json.mobiledoc_revisions);
+            assert.equal(json.mobiledoc_revisions, undefined);
             should.exist(json.mobiledoc);
         });
 

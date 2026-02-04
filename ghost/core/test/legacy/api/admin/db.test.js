@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const path = require('path');
 const os = require('os');
 const fs = require('fs-extra');
@@ -436,7 +437,7 @@ describe('DB API (cleaned)', function () {
 
         // Check if we ignored the import of the product
         const productDuplicate = await models.Product.findOne({slug: 'ghost-inc-2'});
-        should.not.exist(productDuplicate);
+        assert.equal(productDuplicate, null);
 
         // Check if we have a product
         const product = await models.Product.findOne({slug: 'ghost-inc'});

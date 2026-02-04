@@ -376,7 +376,7 @@ describe('Mail: Ghostmailer', function () {
             sentMessage['o:tag'].should.be.an.Array();
             sentMessage['o:tag'].should.containEql('transactional-email');
             sentMessage['o:tag'].should.containEql('blog-123123');
-            should.not.exist(sentMessage['o:tracking-opens']);
+            assert.equal(sentMessage['o:tracking-opens'], undefined);
         });
 
         it('should not add site ID tag when site ID is missing', async function () {
@@ -416,7 +416,7 @@ describe('Mail: Ghostmailer', function () {
             });
 
             const sentMessage = sendMailSpy.firstCall.args[0];
-            should.not.exist(sentMessage['o:tag']);
+            assert.equal(sentMessage['o:tag'], undefined);
         });
     });
 });
