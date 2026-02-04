@@ -1,4 +1,5 @@
 import {
+    Button,
     LucideIcon,
     Tooltip,
     TooltipContent,
@@ -28,14 +29,15 @@ export function CommentMetrics({
     const isClickableReplies = hasReplies && onRepliesClick;
 
     return (
-        <div className={cn('flex items-center gap-6', className)}>
+        <div className={cn('flex items-center gap-1', className)}>
             {isClickableReplies ? (
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <button
-                                className='flex cursor-pointer items-center gap-1 text-xs text-gray-800 hover:opacity-70'
-                                type="button"
+                            <Button
+                                className='text-foreground/60 [&_svg]:size-4'
+                                size='sm'
+                                variant="ghost"
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     onRepliesClick();
@@ -43,7 +45,7 @@ export function CommentMetrics({
                             >
                                 <LucideIcon.Reply size={16} strokeWidth={1.5} />
                                 <span>{formatNumber(repliesCount)}</span>
-                            </button>
+                            </Button>
                         </TooltipTrigger>
                         <TooltipContent>View replies</TooltipContent>
                     </Tooltip>
@@ -52,7 +54,7 @@ export function CommentMetrics({
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <div className='flex items-center gap-1 text-xs text-gray-800'>
+                            <div className='inline-flex h-7 items-center justify-center gap-2 whitespace-nowrap rounded-md px-3 text-xs font-medium text-foreground/60'>
                                 <LucideIcon.Reply size={16} strokeWidth={1.5} />
                                 <span>{formatNumber(repliesCount)}</span>
                             </div>
@@ -65,7 +67,7 @@ export function CommentMetrics({
             <TooltipProvider>
                 <Tooltip>
                     <TooltipTrigger asChild>
-                        <div className='flex items-center gap-1 text-xs text-gray-800'>
+                        <div className='inline-flex h-7 items-center justify-center gap-2 whitespace-nowrap rounded-md px-3 text-xs font-medium text-foreground/60'>
                             <LucideIcon.Heart size={16} strokeWidth={1.5} />
                             <span>{formatNumber(likesCount)}</span>
                         </div>
@@ -78,8 +80,8 @@ export function CommentMetrics({
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <div className={cn(
-                            'flex items-center gap-1 text-xs',
-                            reportsCount ? 'font-semibold text-red' : 'text-gray-800'
+                            'inline-flex h-7 items-center justify-center gap-2 whitespace-nowrap rounded-md px-3 text-xs font-medium text-foreground/60',
+                            reportsCount ? 'font-semibold text-red' : 'text-foreground/60'
                         )}>
                             <LucideIcon.Flag size={16} strokeWidth={reportsCount ? 1.75 : 1.5} />
                             <span>{formatNumber(reportsCount)}</span>
