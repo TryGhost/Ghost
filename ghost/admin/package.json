@@ -40,7 +40,7 @@
     "@embroider/macros": "1.16.13",
     "@faker-js/faker": "7.6.0",
     "@glimmer/component": "1.1.2",
-    "@html-next/vertical-collection": "3.0.0",
+    "@html-next/vertical-collection": "5.0.2",
     "@sentry/ember": "7.120.3",
     "@sentry/integrations": "7.114.0",
     "@sentry/replay": "7.116.0",
