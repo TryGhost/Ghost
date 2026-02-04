@@ -46,7 +46,7 @@
         "@vitejs/plugin-react": "4.7.0",
         "autoprefixer": "10.4.21",
         "c8": "10.1.3",
-        "chai": "4.5.0",
+        "chai": "6.2.2",
         "eslint-plugin-react-hooks": "4.6.2",
         "eslint-plugin-react-refresh": "0.4.24",
         "eslint-plugin-tailwindcss": "3.18.2",
