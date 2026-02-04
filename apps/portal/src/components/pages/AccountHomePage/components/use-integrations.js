@@ -15,8 +15,12 @@ const useIntegrations = () => {
 
     useEffect(() => {
         if (!isTransistorEnabled || !memberUuid) {
+            setTransistorPodcasts(false);
             return;
         }
+
+        // Reset before fetching to avoid showing stale data
+        setTransistorPodcasts(false);
 
         const controller = new AbortController();
 
