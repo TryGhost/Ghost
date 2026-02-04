@@ -1222,7 +1222,7 @@ function SelectOptionsPopover<T = unknown>({
                         field.customValueRenderer(values, field.options || [])
                     ) : (
                         <>
-                            {selectedOptions.length > 0 && (
+                            {selectedOptions.length > 0 && selectedOptions.some(option => option.icon) && (
                                 <div className={cn('-space-x-0.5 flex shrink-0 items-center', field.selectedOptionsClassName)}>
                                     {selectedOptions.slice(0, 3).map(option => (
                                         <div key={String(option.value)}>{option.icon}</div>
