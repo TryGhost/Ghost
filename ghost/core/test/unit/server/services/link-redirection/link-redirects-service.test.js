@@ -312,7 +312,7 @@ describe('LinkRedirectsService', function () {
                 }
             });
             const req = {
-                originalUrl: '/r/abc?m=some-uuid'
+                originalUrl: '/r/abc?m=a1b2c3d4-e5f6-4789-abcd-ef1234567890'
             };
             const res = {
                 redirect: sinon.fake(),
