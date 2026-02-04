@@ -101,7 +101,7 @@
     "husky": "8.0.3",
     "inquirer": "8.2.7",
     "jsonc-parser": "3.3.1",
-    "lint-staged": "15.5.2",
+    "lint-staged": "16.2.7",
     "nx": "22.0.4",
     "rimraf": "5.0.10",
     "typescript": "5.8.3"
