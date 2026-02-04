@@ -372,10 +372,31 @@ describe(`Admin Comments API`, function () {
                 }]
             });
 
-            const res = await adminApi.get(`/comments/${parent.get('id')}/`);
-            res.body.comments[0].replies.length.should.eql(3);
-            res.body.comments[0].replies[0].member.should.be.an.Object().with.properties('id', 'uuid', 'name', 'avatar_image');
-            res.body.comments[0].replies[0].should.be.an.Object().with.properties('id', 'html', 'status', 'created_at', 'member', 'count');
+            const replyMatcher = {
+                id: anyObjectId,
+                parent_id: anyObjectId,
+                html: anyString,
+                status: anyString,
+                created_at: anyISODateTime,
+                member: {
+                    id: anyObjectId,
+                    uuid: anyUuid,
+                    name: nullable(anyString),
+                    avatar_image: nullable(anyString)
+                },
+                count: {
+                    likes: anyNumber
+                }
+            };
+
+            await adminApi.get(`/comments/${parent.get('id')}/`)
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    comments: [{
+                        ...membersCommentMatcher,
+                        replies: [replyMatcher, replyMatcher, replyMatcher]
+                    }]
+                });
         });
 
         it('ensure replies are always ordered from oldest to newest', async function () {
@@ -700,12 +721,12 @@ describe(`Admin Comments API`, function () {
         it('can get comment liked status by impersonating member via admin browse route', async function () {
             // Like the comment
             const res = await adminApi.get(`/comments/post/${post.id}/?impersonate_member_uuid=${fixtureManager.get('members', 1).uuid}`);
-            res.body.comments[0].liked.should.eql(true);
+            assert.equal(res.body.comments[0].liked, true);
         });
 
         it('can get comment liked status by impersonating member via admin get by comment id read route', async function () {
             const res = await adminApi.get(`/comments/${comment.get('id')}/?impersonate_member_uuid=${fixtureManager.get('members', 1).uuid}`);
-            res.body.comments[0].liked.should.eql(true);
+            assert.equal(res.body.comments[0].liked, true);
         });
 
         it('can get comment liked status by impersonating member via admin get by comment replies route', async function () {
@@ -722,7 +743,7 @@ describe(`Admin Comments API`, function () {
                 .expectEmptyBody();
 
             const res = await adminApi.get(`/comments/${parent.get('id')}/replies/?impersonate_member_uuid=${fixtureManager.get('members', 1).uuid}`);
-            res.body.comments[0].liked.should.eql(true);
+            assert.equal(res.body.comments[0].liked, true);
         });
     });
 
@@ -751,15 +772,15 @@ describe(`Admin Comments API`, function () {
                 .expectStatus(201);
 
             // Validate response structure
-            response.body.should.have.property('comments');
-            response.body.comments.should.be.an.Array().with.lengthOf(1);
-            
+            assert.ok(Array.isArray(response.body.comments));
+            assert.equal(response.body.comments.length, 1);
+
             const comment = response.body.comments[0];
-            comment.should.have.property('id').which.is.a.String();
-            comment.should.have.property('html', '<p>This is a test comment via Admin API</p>');
-            comment.should.have.property('status', 'published');
-            comment.should.have.property('member');
-            comment.member.should.have.property('id', memberId);
+            assert.equal(typeof comment.id, 'string');
+            assert.equal(comment.html, '<p>This is a test comment via Admin API</p>');
+            assert.equal(comment.status, 'published');
+            assert.ok(comment.member);
+            assert.equal(comment.member.id, memberId);
         });
 
         it('Can add a comment with custom created_at timestamp', async function () {
@@ -781,16 +802,16 @@ describe(`Admin Comments API`, function () {
                 .expectStatus(201);
 
             // Validate response structure
-            response.body.should.have.property('comments');
-            response.body.comments.should.be.an.Array().with.lengthOf(1);
-            
+            assert.ok(Array.isArray(response.body.comments));
+            assert.equal(response.body.comments.length, 1);
+
             const comment = response.body.comments[0];
-            comment.should.have.property('id').which.is.a.String();
-            comment.should.have.property('html', '<p>This comment was created at a specific time</p>');
-            comment.should.have.property('status', 'published');
-            comment.should.have.property('created_at', customTimestamp);
-            comment.should.have.property('member');
-            comment.member.should.have.property('id', memberId);
+            assert.equal(typeof comment.id, 'string');
+            assert.equal(comment.html, '<p>This comment was created at a specific time</p>');
+            assert.equal(comment.status, 'published');
+            assert.equal(comment.created_at, customTimestamp);
+            assert.ok(comment.member);
+            assert.equal(comment.member.id, memberId);
         });
 
         it('Can add a reply to an existing comment via Admin API', async function () {
@@ -814,15 +835,15 @@ describe(`Admin Comments API`, function () {
                 .expectStatus(201);
 
             // Validate response structure
-            response.body.should.have.property('comments');
-            response.body.comments.should.be.an.Array().with.lengthOf(1);
-            
+            assert.ok(Array.isArray(response.body.comments));
+            assert.equal(response.body.comments.length, 1);
+
             const reply = response.body.comments[0];
-            reply.should.have.property('id').which.is.a.String();
-            reply.should.have.property('html', '<p>This is a reply via Admin API</p>');
-            reply.should.have.property('status', 'published');
-            reply.should.have.property('member');
-            reply.member.should.have.property('id', memberId);
+            assert.equal(typeof reply.id, 'string');
+            assert.equal(reply.html, '<p>This is a reply via Admin API</p>');
+            assert.equal(reply.status, 'published');
+            assert.ok(reply.member);
+            assert.equal(reply.member.id, memberId);
         });
 
         it('Can add a reply with custom created_at timestamp', async function () {
@@ -848,16 +869,16 @@ describe(`Admin Comments API`, function () {
                 .expectStatus(201);
 
             // Validate response structure
-            response.body.should.have.property('comments');
-            response.body.comments.should.be.an.Array().with.lengthOf(1);
-            
+            assert.ok(Array.isArray(response.body.comments));
+            assert.equal(response.body.comments.length, 1);
+
             const reply = response.body.comments[0];
-            reply.should.have.property('id').which.is.a.String();
-            reply.should.have.property('html', '<p>This is a timestamped reply via Admin API</p>');
-            reply.should.have.property('status', 'published');
-            reply.should.have.property('created_at', customTimestamp);
-            reply.should.have.property('member');
-            reply.member.should.have.property('id', memberId);
+            assert.equal(typeof reply.id, 'string');
+            assert.equal(reply.html, '<p>This is a timestamped reply via Admin API</p>');
+            assert.equal(reply.status, 'published');
+            assert.equal(reply.created_at, customTimestamp);
+            assert.ok(reply.member);
+            assert.equal(reply.member.id, memberId);
         });
 
         it('Returns validation error for missing required fields', async function () {
@@ -902,17 +923,17 @@ describe(`Admin Comments API`, function () {
                 .expectStatus(201);
 
             // Should succeed but use current timestamp instead of invalid date
-            response.body.should.have.property('comments');
-            response.body.comments.should.be.an.Array().with.lengthOf(1);
-            
+            assert.ok(Array.isArray(response.body.comments));
+            assert.equal(response.body.comments.length, 1);
+
             const comment = response.body.comments[0];
-            comment.should.have.property('created_at');
+            assert.ok(comment.created_at);
             // The created_at should be a valid recent timestamp, not the invalid input
             const createdAt = new Date(comment.created_at);
             const now = new Date();
             const timeDiff = Math.abs(now.getTime() - createdAt.getTime());
             // Should be created within the last few seconds
-            timeDiff.should.be.lessThan(10000);
+            assert.ok(timeDiff < 10000, `Expected timeDiff (${timeDiff}) to be less than 10000`);
         });
 
         it('Handles future dates by using current timestamp', async function () {
@@ -934,18 +955,18 @@ describe(`Admin Comments API`, function () {
                 .expectStatus(201);
 
             // Should succeed but use current timestamp instead of future date
-            response.body.should.have.property('comments');
-            response.body.comments.should.be.an.Array().with.lengthOf(1);
-            
+            assert.ok(Array.isArray(response.body.comments));
+            assert.equal(response.body.comments.length, 1);
+
             const comment = response.body.comments[0];
-            comment.should.have.property('created_at');
+            assert.ok(comment.created_at);
             // The created_at should not be the future date
             const createdAt = new Date(comment.created_at);
             const now = new Date();
-            createdAt.should.not.eql(futureDate);
+            assert.notDeepEqual(createdAt, futureDate);
             // Should be created recently (within the last few seconds)
             const timeDiff = Math.abs(now.getTime() - createdAt.getTime());
-            timeDiff.should.be.lessThan(10000);
+            assert.ok(timeDiff < 10000, `Expected timeDiff (${timeDiff}) to be less than 10000`);
         });
 
         it('Handles non-string/non-Date created_at values gracefully', async function () {
@@ -965,16 +986,16 @@ describe(`Admin Comments API`, function () {
                 .expectStatus(201);
 
             // Should succeed but use current timestamp instead of invalid type
-            response.body.should.have.property('comments');
-            response.body.comments.should.be.an.Array().with.lengthOf(1);
-            
+            assert.ok(Array.isArray(response.body.comments));
+            assert.equal(response.body.comments.length, 1);
+
             const comment = response.body.comments[0];
-            comment.should.have.property('created_at');
+            assert.ok(comment.created_at);
             // The created_at should be a valid recent timestamp
             const createdAt = new Date(comment.created_at);
             const now = new Date();
             const timeDiff = Math.abs(now.getTime() - createdAt.getTime());
-            timeDiff.should.be.lessThan(10000);
+            assert.ok(timeDiff < 10000, `Expected timeDiff (${timeDiff}) to be less than 10000`);
         });
 
         it('Works correctly with valid Date object as created_at', async function () {
@@ -994,11 +1015,11 @@ describe(`Admin Comments API`, function () {
                 .body({comments: [commentData]})
                 .expectStatus(201);
 
-            response.body.should.have.property('comments');
-            response.body.comments.should.be.an.Array().with.lengthOf(1);
-            
+            assert.ok(Array.isArray(response.body.comments));
+            assert.equal(response.body.comments.length, 1);
+
             const comment = response.body.comments[0];
-            comment.should.have.property('created_at', validDate.toISOString());
+            assert.equal(comment.created_at, validDate.toISOString());
         });
 
         it('Can set in_reply_to_id when creating a reply to a specific reply', async function () {
@@ -1030,17 +1051,17 @@ describe(`Admin Comments API`, function () {
                 .expectStatus(201);
 
             // Validate response structure
-            response.body.should.have.property('comments');
-            response.body.comments.should.be.an.Array().with.lengthOf(1);
-            
+            assert.ok(Array.isArray(response.body.comments));
+            assert.equal(response.body.comments.length, 1);
+
             const reply = response.body.comments[0];
-            reply.should.have.property('id').which.is.a.String();
-            reply.should.have.property('html', '<p>This is a reply to the first reply via Admin API</p>');
-            reply.should.have.property('status', 'published');
-            reply.should.have.property('in_reply_to_id', firstReply.id);
-            reply.should.have.property('in_reply_to_snippet', 'This is the first reply to the parent');
-            reply.should.have.property('member');
-            reply.member.should.have.property('id', memberId);
+            assert.equal(typeof reply.id, 'string');
+            assert.equal(reply.html, '<p>This is a reply to the first reply via Admin API</p>');
+            assert.equal(reply.status, 'published');
+            assert.equal(reply.in_reply_to_id, firstReply.id);
+            assert.equal(reply.in_reply_to_snippet, 'This is the first reply to the parent');
+            assert.ok(reply.member);
+            assert.equal(reply.member.id, memberId);
         });
 
         it('Ignores in_reply_to_id when no parent_id is specified', async function () {
@@ -1067,18 +1088,18 @@ describe(`Admin Comments API`, function () {
                 .expectStatus(201);
 
             // Validate response structure
-            response.body.should.have.property('comments');
-            response.body.comments.should.be.an.Array().with.lengthOf(1);
-            
+            assert.ok(Array.isArray(response.body.comments));
+            assert.equal(response.body.comments.length, 1);
+
             const comment = response.body.comments[0];
-            comment.should.have.property('id').which.is.a.String();
-            comment.should.have.property('html', '<p>This is a top-level comment that incorrectly references another comment</p>');
-            comment.should.have.property('status', 'published');
+            assert.equal(typeof comment.id, 'string');
+            assert.equal(comment.html, '<p>This is a top-level comment that incorrectly references another comment</p>');
+            assert.equal(comment.status, 'published');
             // For top-level comments, in_reply_to_id should be null
-            comment.should.have.property('in_reply_to_id', null);
-            comment.should.have.property('in_reply_to_snippet', null);
-            comment.should.have.property('member');
-            comment.member.should.have.property('id', memberId);
+            assert.equal(comment.in_reply_to_id, null);
+            assert.equal(comment.in_reply_to_snippet, null);
+            assert.ok(comment.member);
+            assert.equal(comment.member.id, memberId);
         });
 
         it('Ignores in_reply_to_id when referenced comment has different parent', async function () {
@@ -1116,18 +1137,18 @@ describe(`Admin Comments API`, function () {
                 .expectStatus(201);
 
             // Validate response structure
-            response.body.should.have.property('comments');
-            response.body.comments.should.be.an.Array().with.lengthOf(1);
-            
+            assert.ok(Array.isArray(response.body.comments));
+            assert.equal(response.body.comments.length, 1);
+
             const reply = response.body.comments[0];
-            reply.should.have.property('id').which.is.a.String();
-            reply.should.have.property('html', '<p>This reply has mismatched parent and in_reply_to</p>');
-            reply.should.have.property('status', 'published');
-            // in_reply_to should be ignored due to parent mismatch  
-            reply.should.have.property('in_reply_to_id', null);
-            reply.should.have.property('in_reply_to_snippet', null);
-            reply.should.have.property('member');
-            reply.member.should.have.property('id', memberId);
+            assert.equal(typeof reply.id, 'string');
+            assert.equal(reply.html, '<p>This reply has mismatched parent and in_reply_to</p>');
+            assert.equal(reply.status, 'published');
+            // in_reply_to should be ignored due to parent mismatch
+            assert.equal(reply.in_reply_to_id, null);
+            assert.equal(reply.in_reply_to_snippet, null);
+            assert.ok(reply.member);
+            assert.equal(reply.member.id, memberId);
         });
 
         it('Does not send notifications when adding comments via Admin API', async function () {
@@ -1147,13 +1168,13 @@ describe(`Admin Comments API`, function () {
                 .expectStatus(201);
 
             // Validate the comment was created successfully
-            response.body.should.have.property('comments');
-            response.body.comments.should.be.an.Array().with.lengthOf(1);
-            
+            assert.ok(Array.isArray(response.body.comments));
+            assert.equal(response.body.comments.length, 1);
+
             const comment = response.body.comments[0];
-            comment.should.have.property('id').which.is.a.String();
-            comment.should.have.property('html', '<p>This comment should not trigger notifications</p>');
-            comment.should.have.property('status', 'published');
+            assert.equal(typeof comment.id, 'string');
+            assert.equal(comment.html, '<p>This comment should not trigger notifications</p>');
+            assert.equal(comment.status, 'published');
 
             // Verify NO emails were sent (internal context should prevent notifications)
             emailMockReceiver.assertSentEmailCount(0);
@@ -1183,13 +1204,13 @@ describe(`Admin Comments API`, function () {
                 .expectStatus(201);
 
             // Validate the reply was created successfully
-            response.body.should.have.property('comments');
-            response.body.comments.should.be.an.Array().with.lengthOf(1);
-            
+            assert.ok(Array.isArray(response.body.comments));
+            assert.equal(response.body.comments.length, 1);
+
             const reply = response.body.comments[0];
-            reply.should.have.property('id').which.is.a.String();
-            reply.should.have.property('html', '<p>This reply should not trigger notifications</p>');
-            reply.should.have.property('status', 'published');
+            assert.equal(typeof reply.id, 'string');
+            assert.equal(reply.html, '<p>This reply should not trigger notifications</p>');
+            assert.equal(reply.status, 'published');
 
             // Verify NO emails were sent (internal context should prevent notifications)
             emailMockReceiver.assertSentEmailCount(0);
@@ -1217,6 +1238,17 @@ describe(`Admin Comments API`, function () {
                 replies: anyNumber,
                 reports: anyNumber
             }
+        };
+        const parentMatcher = {
+            id: anyObjectId,
+            parent_id: nullable(anyObjectId),
+            in_reply_to_id: nullable(anyObjectId),
+            edited_at: nullable(anyISODateTime),
+            created_at: anyISODateTime
+        };
+        const commentMatcherWithParent = {
+            ...commentMatcher,
+            parent: parentMatcher
         };
 
         it('Can browse all comments across posts', async function () {
@@ -1249,7 +1281,7 @@ describe(`Admin Comments API`, function () {
             await adminApi.get('/comments/')
                 .expectStatus(200)
                 .matchBodySnapshot({
-                    comments: [commentMatcher, commentMatcher]
+                    comments: [commentMatcher, commentMatcherWithParent]
                 });
         });
 
@@ -1318,7 +1350,7 @@ describe(`Admin Comments API`, function () {
             await adminApi.get('/comments/')
                 .expectStatus(200)
                 .matchBodySnapshot({
-                    comments: [commentMatcher]
+                    comments: [commentMatcherWithParent]
                 });
         });
 
