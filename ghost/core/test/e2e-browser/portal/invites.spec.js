@@ -13,7 +13,7 @@ test.describe('Portal', () => {
             await sharedPage.locator('[data-test-nav="settings"]').click();
             await sharedPage.waitForLoadState('networkidle');
 
-            const testEmail = 'test@gmail.com';
+            const testEmail = `test-${Date.now()}@gmail.com`;
 
             // Send the invitation
             await sharedPage.getByRole('button', {name: 'Invite people'}).click();
@@ -77,7 +77,7 @@ test.describe('Portal', () => {
                 await sharedPage.locator('[data-test-nav="settings"]').click();
                 await sharedPage.waitForLoadState('networkidle');
 
-                const testEmail = 'test@gmail.com';
+                const testEmail = `test-${Date.now()}@gmail.com`;
 
                 // Send the invitation
                 await sharedPage.getByRole('button', {name: 'Invite people'}).click();
