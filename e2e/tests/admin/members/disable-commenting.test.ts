@@ -4,8 +4,6 @@ import {SettingsService} from '@/helpers/services/settings/settings-service';
 import {expect, test} from '@/helpers/playwright';
 
 test.describe('Ghost Admin - Member Detail Disable Commenting', () => {
-    test.use({labs: {commentModeration: true}});
-
     let memberFactory: MemberFactory;
 
     test.beforeEach(async ({page}) => {
@@ -172,8 +170,6 @@ test.describe('Ghost Admin - Member Detail Disable Commenting', () => {
 });
 
 test.describe('Ghost Admin - Disable Commenting Cache Invalidation', () => {
-    test.use({labs: {commentModeration: true}});
-
     let memberFactory: MemberFactory;
     let postFactory: PostFactory;
     let commentFactory: CommentFactory;

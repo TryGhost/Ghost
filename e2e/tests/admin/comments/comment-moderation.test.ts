@@ -26,7 +26,7 @@ test.describe('Ghost Admin - Comment Moderation', () => {
 
     test.describe('with commentPermalinks disabled', () => {
         test.use({
-            labs: {commentModeration: true, commentPermalinks: false}
+            labs: {commentPermalinks: false}
         });
 
         test('view post action navigates to post', async ({page}) => {
@@ -58,7 +58,7 @@ test.describe('Ghost Admin - Comment Moderation', () => {
 
     test.describe('with commentPermalinks enabled', () => {
         test.use({
-            labs: {commentModeration: true, commentPermalinks: true}
+            labs: {commentPermalinks: true}
         });
 
         test('view on post action navigates to comment permalink', async ({
@@ -92,8 +92,6 @@ test.describe('Ghost Admin - Comment Moderation', () => {
     });
 
     test.describe('deep linking', () => {
-        test.use({labs: {commentModeration: true}});
-
         test('can deep link to a specific comment by id', async ({page}) => {
             const post = await postFactory.create({status: 'published'});
             const member = await memberFactory.create();
