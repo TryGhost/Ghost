@@ -126,6 +126,7 @@ module.exports = class StripeService {
                 if (!labs.isSet('welcomeEmails')) {
                     return false;
                 }
+                memberWelcomeEmailService.init();
                 return memberWelcomeEmailService.api.isMemberWelcomeEmailActive('paid');
             }
         });

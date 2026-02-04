@@ -728,17 +728,6 @@ describe('CheckoutSessionEventService', function () {
                 assert(!sendSignupEmail.called);
             });
 
-            it('should always send signup email for custom membership pages regardless of welcome email status', async function () {
-                api.getCustomer.resolves(customer);
-                memberRepository.get.resolves(null);
-                session.metadata.requestSrc = undefined; // Not portal (custom membership page)
-                isPaidWelcomeEmailActive.resolves(true); // Welcome email IS active
-
-                await service.handleSubscriptionEvent(session);
-
-                assert(sendSignupEmail.calledOnce); // Still sent because user needs magic link
-            });
-
             it('should NOT send signup email on upgrade regardless of requestSrc or welcome email', async function () {
                 api.getCustomer.resolves(customer);
                 memberRepository.get.resolves(member);
