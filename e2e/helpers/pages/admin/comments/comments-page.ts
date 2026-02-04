@@ -6,6 +6,7 @@ export class CommentsPage extends AdminPage {
     readonly commentRows: Locator;
     readonly viewPostMenuItem: Locator;
     readonly viewOnPostMenuItem: Locator;
+    readonly viewMemberMenuItem: Locator;
     readonly disableCommentingMenuItem: Locator;
     readonly enableCommentingMenuItem: Locator;
     readonly disableCommentsModal: Locator;
@@ -23,6 +24,7 @@ export class CommentsPage extends AdminPage {
         this.commentRows = page.getByTestId('comment-list-row');
         this.viewPostMenuItem = page.getByRole('menuitem', {name: 'View post'});
         this.viewOnPostMenuItem = page.getByRole('menuitem', {name: 'View on post'});
+        this.viewMemberMenuItem = page.getByRole('menuitem', {name: 'View member'});
         this.disableCommentingMenuItem = page.getByRole('menuitem', {name: 'Disable commenting'});
         this.enableCommentingMenuItem = page.getByRole('menuitem', {name: 'Enable commenting'});
         this.disableCommentsModal = page.getByRole('dialog');
