@@ -6,6 +6,7 @@ const configUtils = require('../../../utils/config-utils');
 
 describe('getPaginatedUrl', function () {
     let data;
+    const siteUrl = () => configUtils.config.get('url');
 
     beforeEach(function () {
         data = {};
@@ -35,7 +36,7 @@ describe('getPaginatedUrl', function () {
             const urls = getTestUrls();
 
             // Check results
-            assert.equal(urls.next, 'http://127.0.0.1:2369/page/2/');
+            assert.equal(urls.next, `${siteUrl()}/page/2/`);
             assert.equal(urls.prev, null);
             assert.equal(urls.page1, '/');
             assert.equal(urls.page5, '/page/5/');
@@ -51,8 +52,8 @@ describe('getPaginatedUrl', function () {
             const urls = getTestUrls();
 
             // Check results
-            assert.equal(urls.next, 'http://127.0.0.1:2369/page/3/');
-            assert.equal(urls.prev, 'http://127.0.0.1:2369/');
+            assert.equal(urls.next, `${siteUrl()}/page/3/`);
+            assert.equal(urls.prev, `${siteUrl()}/`);
             assert.equal(urls.page1, '/');
             assert.equal(urls.page5, '/page/5/');
             assert.equal(urls.page10, '/page/10/');
@@ -68,7 +69,7 @@ describe('getPaginatedUrl', function () {
 
             // Check results
             assert.equal(urls.next, null);
-            assert.equal(urls.prev, 'http://127.0.0.1:2369/page/9/');
+            assert.equal(urls.prev, `${siteUrl()}/page/9/`);
             assert.equal(urls.page1, '/');
             assert.equal(urls.page5, '/page/5/');
             assert.equal(urls.page10, '/page/10/');
@@ -85,7 +86,7 @@ describe('getPaginatedUrl', function () {
             const urls = getTestUrls();
 
             // Check results
-            assert.equal(urls.next, 'http://127.0.0.1:2369/featured/page/2/');
+            assert.equal(urls.next, `${siteUrl()}/featured/page/2/`);
             assert.equal(urls.prev, null);
             assert.equal(urls.page1, '/featured/');
             assert.equal(urls.page5, '/featured/page/5/');
@@ -101,8 +102,8 @@ describe('getPaginatedUrl', function () {
             const urls = getTestUrls();
 
             // Check results
-            assert.equal(urls.next, 'http://127.0.0.1:2369/featured/page/3/');
-            assert.equal(urls.prev, 'http://127.0.0.1:2369/featured/');
+            assert.equal(urls.next, `${siteUrl()}/featured/page/3/`);
+            assert.equal(urls.prev, `${siteUrl()}/featured/`);
             assert.equal(urls.page1, '/featured/');
             assert.equal(urls.page5, '/featured/page/5/');
             assert.equal(urls.page10, '/featured/page/10/');
@@ -118,7 +119,7 @@ describe('getPaginatedUrl', function () {
 
             // Check results
             assert.equal(urls.next, null);
-            assert.equal(urls.prev, 'http://127.0.0.1:2369/featured/page/9/');
+            assert.equal(urls.prev, `${siteUrl()}/featured/page/9/`);
             assert.equal(urls.page1, '/featured/');
             assert.equal(urls.page5, '/featured/page/5/');
             assert.equal(urls.page10, '/featured/page/10/');

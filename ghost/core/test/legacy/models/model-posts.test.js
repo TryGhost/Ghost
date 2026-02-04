@@ -1127,44 +1127,45 @@ describe('Post Model', function () {
             });
 
             it('it stores urls as transform-ready and reads as absolute', function (done) {
+                const siteUrl = configUtils.config.get('url');
                 const post = {
                     title: 'Absolute->Transform-ready URL Transform Test',
-                    mobiledoc: '{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"http://127.0.0.1:2369/content/images/card.jpg"}]],"markups":[["a",["href","http://127.0.0.1:2369/test"]]],"sections":[[1,"p",[[0,[0],1,"Testing"]]],[10,0]]}',
-                    custom_excerpt: 'Testing <a href="http://127.0.0.1:2369/internal">links</a> in custom excerpts',
-                    codeinjection_head: '<script src="http://127.0.0.1:2369/assets/head.js"></script>',
-                    codeinjection_foot: '<script src="http://127.0.0.1:2369/assets/foot.js"></script>',
-                    feature_image: 'http://127.0.0.1:2369/content/images/feature.png',
-                    canonical_url: 'http://127.0.0.1:2369/canonical',
+                    mobiledoc: `{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"${siteUrl}/content/images/card.jpg"}]],"markups":[["a",["href","${siteUrl}/test"]]],"sections":[[1,"p",[[0,[0],1,"Testing"]]],[10,0]]}`,
+                    custom_excerpt: `Testing <a href="${siteUrl}/internal">links</a> in custom excerpts`,
+                    codeinjection_head: `<script src="${siteUrl}/assets/head.js"></script>`,
+                    codeinjection_foot: `<script src="${siteUrl}/assets/foot.js"></script>`,
+                    feature_image: `${siteUrl}/content/images/feature.png`,
+                    canonical_url: `${siteUrl}/canonical`,
                     posts_meta: {
-                        og_image: 'http://127.0.0.1:2369/content/images/og.png',
-                        twitter_image: 'http://127.0.0.1:2369/content/images/twitter.png'
+                        og_image: `${siteUrl}/content/images/og.png`,
+                        twitter_image: `${siteUrl}/content/images/twitter.png`
                     }
                 };
 
                 models.Post.add(post, context).then((createdPost) => {
-                    assert.equal(createdPost.get('mobiledoc'), '{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"http://127.0.0.1:2369/content/images/card.jpg"}]],"markups":[["a",["href","http://127.0.0.1:2369/test"]]],"sections":[[1,"p",[[0,[0],1,"Testing"]]],[10,0]]}');
-                    assert.equal(createdPost.get('html'), '<p><a href="http://127.0.0.1:2369/test">Testing</a></p><figure class="kg-card kg-image-card"><img src="http://127.0.0.1:2369/content/images/card.jpg" class="kg-image" alt loading="lazy"></figure>');
+                    assert.equal(createdPost.get('mobiledoc'), `{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"${siteUrl}/content/images/card.jpg"}]],"markups":[["a",["href","${siteUrl}/test"]]],"sections":[[1,"p",[[0,[0],1,"Testing"]]],[10,0]]}`);
+                    assert.equal(createdPost.get('html'), `<p><a href="${siteUrl}/test">Testing</a></p><figure class="kg-card kg-image-card"><img src="${siteUrl}/content/images/card.jpg" class="kg-image" alt loading="lazy"></figure>`);
                     assert(createdPost.get('plaintext').includes('Testing'));
-                    assert.equal(createdPost.get('custom_excerpt'), 'Testing <a href="http://127.0.0.1:2369/internal">links</a> in custom excerpts');
-                    assert.equal(createdPost.get('codeinjection_head'), '<script src="http://127.0.0.1:2369/assets/head.js"></script>');
-                    assert.equal(createdPost.get('codeinjection_foot'), '<script src="http://127.0.0.1:2369/assets/foot.js"></script>');
-                    assert.equal(createdPost.get('feature_image'), 'http://127.0.0.1:2369/content/images/feature.png');
-                    assert.equal(createdPost.get('canonical_url'), 'http://127.0.0.1:2369/canonical');
+                    assert.equal(createdPost.get('custom_excerpt'), `Testing <a href="${siteUrl}/internal">links</a> in custom excerpts`);
+                    assert.equal(createdPost.get('codeinjection_head'), `<script src="${siteUrl}/assets/head.js"></script>`);
+                    assert.equal(createdPost.get('codeinjection_foot'), `<script src="${siteUrl}/assets/foot.js"></script>`);
+                    assert.equal(createdPost.get('feature_image'), `${siteUrl}/content/images/feature.png`);
+                    assert.equal(createdPost.get('canonical_url'), `${siteUrl}/canonical`);
 
                     const postMeta = createdPost.relations.posts_meta;
 
-                    assert.equal(postMeta.get('og_image'), 'http://127.0.0.1:2369/content/images/og.png');
-                    assert.equal(postMeta.get('twitter_image'), 'http://127.0.0.1:2369/content/images/twitter.png');
+                    assert.equal(postMeta.get('og_image'), `${siteUrl}/content/images/og.png`);
+                    assert.equal(postMeta.get('twitter_image'), `${siteUrl}/content/images/twitter.png`);
 
                     // ensure canonical_url is not transformed when protocol does not match
                     return createdPost.save({
-                        canonical_url: 'https://127.0.0.1:2369/https-internal',
+                        canonical_url: `${siteUrl.replace('http:', 'https:')}/https-internal`,
                         // sanity check for general absolute->relative transform during edits
-                        feature_image: 'http://127.0.0.1:2369/content/images/updated_feature.png'
+                        feature_image: `${siteUrl}/content/images/updated_feature.png`
                     });
                 }).then((updatedPost) => {
-                    assert.equal(updatedPost.get('canonical_url'), 'https://127.0.0.1:2369/https-internal');
-                    assert.equal(updatedPost.get('feature_image'), 'http://127.0.0.1:2369/content/images/updated_feature.png');
+                    assert.equal(updatedPost.get('canonical_url'), `${siteUrl.replace('http:', 'https:')}/https-internal`);
+                    assert.equal(updatedPost.get('feature_image'), `${siteUrl}/content/images/updated_feature.png`);
 
                     return updatedPost;
                 }).then((updatedPost) => {
@@ -1178,7 +1179,7 @@ describe('Post Model', function () {
                     assert.equal(knexPost.codeinjection_head, '<script src="__GHOST_URL__/assets/head.js"></script>');
                     assert.equal(knexPost.codeinjection_foot, '<script src="__GHOST_URL__/assets/foot.js"></script>');
                     assert.equal(knexPost.feature_image, '__GHOST_URL__/content/images/updated_feature.png');
-                    assert.equal(knexPost.canonical_url, 'https://127.0.0.1:2369/https-internal');
+                    assert.equal(knexPost.canonical_url, `${siteUrl.replace('http:', 'https:')}/https-internal`);
 
                     done();
                 }).catch(done);
@@ -1186,13 +1187,14 @@ describe('Post Model', function () {
 
             // NOTE: separate to the test above because mobiledoc+lexical cannot co-exist
             it('stores lexical as transform-ready and reads as absolute', async function () {
+                const siteUrl = configUtils.config.get('url');
                 const post = {
                     title: 'Absolute->Transform-ready Lexical URL Transform Test',
-                    lexical: `{"root":{"children":[{"type":"image","src":"http://127.0.0.1:2369/content/images/card.jpg"},{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"local link","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"link","version":1,"rel":null,"target":null,"url":"http://127.0.0.1:2369/local"}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1},{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"external link","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"link","version":1,"rel":null,"target":null,"url":"https://example.com/external"}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`
+                    lexical: `{"root":{"children":[{"type":"image","src":"${siteUrl}/content/images/card.jpg"},{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"local link","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"link","version":1,"rel":null,"target":null,"url":"${siteUrl}/local"}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1},{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"external link","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"link","version":1,"rel":null,"target":null,"url":"https://example.com/external"}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`
                 };
 
                 const createdPost = await models.Post.add(post, context);
-                assert.equal(createdPost.get('lexical'), `{"root":{"children":[{"type":"image","src":"http://127.0.0.1:2369/content/images/card.jpg"},{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"local link","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"link","version":1,"rel":null,"target":null,"url":"http://127.0.0.1:2369/local"}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1},{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"external link","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"link","version":1,"rel":null,"target":null,"url":"https://example.com/external"}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`, 'Post.add result');
+                assert.equal(createdPost.get('lexical'), `{"root":{"children":[{"type":"image","src":"${siteUrl}/content/images/card.jpg"},{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"local link","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"link","version":1,"rel":null,"target":null,"url":"${siteUrl}/local"}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1},{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"external link","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"link","version":1,"rel":null,"target":null,"url":"https://example.com/external"}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`, 'Post.add result');
 
                 const knexResult = await db.knex('posts').where({id: createdPost.id});
                 const [knexPost] = knexResult;
@@ -1200,7 +1202,7 @@ describe('Post Model', function () {
             });
 
             describe('URL transformations without CDN config', function () {
-                const siteUrl = 'http://127.0.0.1:2369';
+                const siteUrl = configUtils.config.get('url');
 
                 describe('Mobiledoc', function () {
                     let post, postsMeta, mobiledoc;

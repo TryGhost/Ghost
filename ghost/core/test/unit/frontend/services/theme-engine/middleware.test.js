@@ -9,6 +9,7 @@ const middleware = require('../../../../../core/frontend/services/theme-engine')
 const activeTheme = require('../../../../../core/frontend/services/theme-engine/active');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const customThemeSettingsCache = require('../../../../../core/shared/custom-theme-settings-cache');
+const config = require('../../../../../core/shared/config');
 const labs = require('../../../../../core/shared/labs');
 
 const sandbox = sinon.createSandbox();
@@ -197,7 +198,7 @@ describe('Themes middleware', function () {
                     const data = templateOptions.data;
 
                     assertExists(data.site.signup_url);
-                    assert.equal(data.site.signup_url, 'https://feedly.com/i/subscription/feed/http%3A%2F%2F127.0.0.1%3A2369%2Frss%2F');
+                    assert.equal(data.site.signup_url, `https://feedly.com/i/subscription/feed/${encodeURIComponent(config.get('url') + '/rss/')}`);
 
                     done();
                 } catch (error) {

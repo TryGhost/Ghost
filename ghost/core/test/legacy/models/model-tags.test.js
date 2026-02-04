@@ -9,7 +9,7 @@ const models = require('../../../core/server/models');
 const urlService = require('../../../core/server/services/url');
 
 describe('Tag Model', function () {
-    const siteUrl = 'http://127.0.0.1:2369';
+    const siteUrl = configUtils.config.get('url');
 
     before(testUtils.teardownDb);
     before(testUtils.stopGhost);

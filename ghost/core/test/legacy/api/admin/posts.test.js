@@ -317,7 +317,7 @@ describe('Posts API', function () {
                     assert.equal(res.body.posts[0].title, '(Untitled)');
 
                     assertExists(res.headers.location);
-                    assert.equal(res.headers.location, `http://127.0.0.1:2369${localUtils.API.getApiQuery('posts/')}${res.body.posts[0].id}/`);
+                    assert.equal(res.headers.location, `${config.get('url')}${localUtils.API.getApiQuery('posts/')}${res.body.posts[0].id}/`);
                 });
         });
 
@@ -600,7 +600,7 @@ describe('Posts API', function () {
             assert.equal(res.body.posts[0].status, 'draft');
 
             assertExists(res.headers.location);
-            assert.equal(res.headers.location, `http://127.0.0.1:2369${localUtils.API.getApiQuery('posts/')}${res.body.posts[0].id}/`);
+            assert.equal(res.headers.location, `${config.get('url')}${localUtils.API.getApiQuery('posts/')}${res.body.posts[0].id}/`);
 
             const publishedRes = await request
                 .put(localUtils.API.getApiQuery(`posts/${res.body.posts[0].id}/?newsletter=${defaultNewsletterSlug}`))
@@ -643,7 +643,7 @@ describe('Posts API', function () {
             assert.equal(res.body.posts[0].status, 'draft');
 
             assertExists(res.headers.location);
-            assert.equal(res.headers.location, `http://127.0.0.1:2369${localUtils.API.getApiQuery('posts/')}${res.body.posts[0].id}/`);
+            assert.equal(res.headers.location, `${config.get('url')}${localUtils.API.getApiQuery('posts/')}${res.body.posts[0].id}/`);
 
             const publishedRes = await request
                 .put(localUtils.API.getApiQuery(`posts/${res.body.posts[0].id}/?email_segment=status:-free&newsletter=${defaultNewsletterSlug}`))
@@ -686,7 +686,7 @@ describe('Posts API', function () {
             assert.equal(res.body.posts[0].status, 'draft');
 
             assertExists(res.headers.location);
-            assert.equal(res.headers.location, `http://127.0.0.1:2369${localUtils.API.getApiQuery('posts/')}${res.body.posts[0].id}/`);
+            assert.equal(res.headers.location, `${config.get('url')}${localUtils.API.getApiQuery('posts/')}${res.body.posts[0].id}/`);
 
             const publishedRes = await request
                 .put(localUtils.API.getApiQuery(`posts/${res.body.posts[0].id}/?email_segment=status:-free&newsletter=${secondNewsletterSlug}`))
@@ -986,7 +986,7 @@ describe('Posts API', function () {
 
                     assertExists(res.body.posts);
                     assert.equal(res.body.posts[0].email_only, true);
-                    assert.equal(res.body.posts[0].url, 'http://127.0.0.1:2369/email/d52c42ae-2755-455c-80ec-70b2ec55c903/');
+                    assert.equal(res.body.posts[0].url, `${config.get('url')}/email/d52c42ae-2755-455c-80ec-70b2ec55c903/`);
                 });
         });
 
