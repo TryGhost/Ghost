@@ -28,7 +28,6 @@ interface CommentHeaderProps {
     createdAt?: string;
     isHidden?: boolean;
     canComment?: boolean | null;
-    disableMemberCommentingEnabled?: boolean;
     onAuthorClick?: () => void;
     postTitle?: string | null;
     onPostClick?: () => void;
@@ -41,7 +40,6 @@ export function CommentHeader({
     createdAt,
     isHidden,
     canComment,
-    disableMemberCommentingEnabled,
     onAuthorClick,
     postTitle,
     onPostClick,
@@ -68,7 +66,7 @@ export function CommentHeader({
                         </span>
                     )}
                 </div>
-                {disableMemberCommentingEnabled && canComment === false && (
+                {canComment === false && (
                     <TooltipProvider>
                         <Tooltip>
                             <TooltipTrigger asChild>

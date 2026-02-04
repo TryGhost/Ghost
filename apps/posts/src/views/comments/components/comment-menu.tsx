@@ -14,13 +14,11 @@ import {useState} from 'react';
 interface CommentMenuProps {
     comment: Comment;
     commentPermalinksEnabled?: boolean;
-    disableMemberCommentingEnabled?: boolean;
 }
 
 export function CommentMenu({
     comment,
-    commentPermalinksEnabled,
-    disableMemberCommentingEnabled
+    commentPermalinksEnabled
 }: CommentMenuProps) {
     const {mutate: disableCommenting} = useDisableMemberCommenting();
     const {mutate: enableCommenting} = useEnableMemberCommenting();
@@ -87,7 +85,7 @@ export function CommentMenu({
                         </DropdownMenuItem>
 
                     )}
-                    {memberId && disableMemberCommentingEnabled && (
+                    {memberId && (
                         canComment !== false ? (
                             <DropdownMenuItem onClick={() => setDisableDialogOpen(true)}>
                                 <LucideIcon.MessageCircleOff className="mr-2 size-4" />
