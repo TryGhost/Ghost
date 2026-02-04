@@ -1,0 +1,45 @@
+<div class="modal-content" role="dialog" aria-modal="true" data-test-modal="disable-commenting">
+    <header class="modal-header">
+        <h1>Disable commenting</h1>
+    </header>
+    <button type="button" class="close" title="Close" {{on "click" (fn @close false)}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
+
+    <div class="modal-body">
+        <p class="mb6">
+            <strong>{{or @data.member.name @data.member.email}}</strong> won't be able to comment in the future. You can re-enable commenting anytime.
+        </p>
+
+        <div class="flex justify-between">
+            <div class="form-group for-checkbox">
+                <label class="checkbox">
+                    <input
+                        class="gh-input"
+                        type="checkbox"
+                        checked={{this.hideComments}}
+                        {{on "click" (toggle "hideComments" this)}}
+                    />
+                    <span class="input-toggle-component"></span>
+                    <span>Hide all previous comments</span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button
+            type="button"
+            class="gh-btn"
+            {{on "click" (fn @close false)}}
+            data-test-button="cancel"
+        >
+            <span>Cancel</span>
+        </button>
+        <GhTaskButton
+            @buttonText="Disable commenting"
+            @successText="Disabled"
+            @task={{this.disableCommentingTask}}
+            @class="gh-btn gh-btn-black gh-btn-icon"
+            data-test-button="confirm"
+        />
+    </div>
+</div>
