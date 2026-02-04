@@ -114,7 +114,7 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     return (
         <TopLevelGroup
-            description="Create and manage automated emails that are sent to your members."
+            description="Create and manage automated emails for your members"
             keywords={keywords}
             navid='memberemails'
             testId='memberemails'
@@ -129,8 +129,8 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     direction='rtl'
                     disabled={isLoading}
                     gap='gap-0'
-                    hint='Email new free members receive when they join your site.'
-                    label='Free members welcome email'
+                    hint='Sent to new free members right after they join your site.'
+                    label='Free members'
                     labelClasses='py-4 w-full'
                     onChange={() => handleToggle('free')}
                 />
@@ -150,8 +150,8 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
                             direction='rtl'
                             disabled={isLoading}
                             gap='gap-0'
-                            hint='Sent to new paid members as soon as they start their subscription.'
-                            label='Paid members welcome email'
+                            hint='Sent to new paid members right after they start their subscription.'
+                            label='Paid members'
                             labelClasses='py-4 w-full'
                             onChange={() => handleToggle('paid')}
                         />
