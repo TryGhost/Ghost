@@ -107,7 +107,11 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
                     {value: 'published', label: 'Published'},
                     {value: 'hidden', label: 'Hidden'}
                 ],
-                searchable: false
+                operators: [
+                    {value: 'is', label: 'is'}
+                ],
+                searchable: false,
+                hideOperatorSelect: true
             },
             {
                 key: 'reported',
