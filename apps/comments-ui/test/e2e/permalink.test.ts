@@ -143,6 +143,26 @@ test.describe('Comment Permalinks', async () => {
         await expect(commentElement).toBeVisible();
     });
 
+    test('shows highlight mark inside comment content when navigating via permalink', async ({page}) => {
+        const mockedApi = new MockedApi({});
+        mockedApi.setMember({});
+
+        const commentId = '64a1b2c3d4e5f6a7b8c9d0e1';
+        mockedApi.addComment({
+            id: commentId,
+            html: '<p>Comment to highlight</p>'
+        });
+
+        const commentsFrame = await setupPermalinkTest(page, mockedApi, `#ghost-comments-${commentId}`);
+
+        // The comment content container should contain a <mark> with the highlight class
+        const commentContent = commentsFrame.getByTestId('comment-content').first();
+        const mark = commentContent.locator('mark');
+        await expect(mark).toBeVisible();
+        await expect(mark).toHaveClass(/bg-yellow-300\/40/);
+        await expect(mark).toContainText('Comment to highlight');
+    });
+
     test('handles invalid comment ID gracefully', async ({page}) => {
         const mockedApi = new MockedApi({});
         mockedApi.setMember({});
