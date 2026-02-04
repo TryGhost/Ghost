@@ -724,10 +724,6 @@ input:focus,
     background-color: transparent;
 }
 
-.gh-referral-toast-close:hover {
-    color: #fff;
-}
-
 .nightshift-toggle {
     background: var(--grey-800);
 }
