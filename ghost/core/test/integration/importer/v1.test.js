@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const testUtils = require('../../utils');
 const {exportedBodyV1} = require('../../utils/fixtures/export/body-generator');
@@ -98,7 +99,7 @@ describe('Importer 1.0', function () {
                     const posts = result[0].data.map(model => model.toJSON(options));
 
                     posts.length.should.eql(1);
-                    should(posts[0].html).eql('<h1 id="this-is-my-post-content">This is my post content.</h1>');
+                    assert.equal(posts[0].html, '<h1 id="this-is-my-post-content">This is my post content.</h1>');
                     posts[0].mobiledoc.should.eql('{"version":"0.3.1","atoms":[],"cards":[],"markups":[],"sections":[[1,"h1",[[0,[],0,"This is my post content."]]]]}');
                 });
         });

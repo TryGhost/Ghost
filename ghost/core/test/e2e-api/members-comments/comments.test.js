@@ -487,10 +487,10 @@ describe('Comments API', function () {
                 data2.body.comments.forEach((comment) => {
                     if (comment.id === hiddenComment.id) {
                         should(comment.replies.length).eql(1);
-                        should(comment.replies[0].html).eql('This is a reply to a hidden comment');
+                        assert.equal(comment.replies[0].html, 'This is a reply to a hidden comment');
                     } else if (comment.id === deletedComment.id) {
                         should(comment.replies.length).eql(1);
-                        should(comment.replies[0].html).eql('This is a reply to a deleted comment');
+                        assert.equal(comment.replies[0].html, 'This is a reply to a deleted comment');
                     }
                 });
             });

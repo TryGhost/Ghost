@@ -1415,7 +1415,7 @@ describe('Email renderer', function () {
             ]);
 
             response.plaintext.should.containEql('http://example.com');
-            should($('.preheader').text()).eql('Test plaintext for post');
+            assert.equal($('.preheader').text(), 'Test plaintext for post');
             response.html.should.containEql('Test Post');
             response.html.should.containEql('http://example.com');
 
@@ -1447,7 +1447,7 @@ describe('Email renderer', function () {
             );
 
             const $ = cheerio.load(response.html);
-            should($('.preheader').text()).eql('Custom excerpt');
+            assert.equal($('.preheader').text(), 'Custom excerpt');
         });
 
         it('does not include members-only content in preheader for non-members', async function () {
@@ -1481,7 +1481,7 @@ describe('Email renderer', function () {
             );
 
             const $ = cheerio.load(response.html);
-            should($('.preheader').text()).eql('Lexical Test some text for both');
+            assert.equal($('.preheader').text(), 'Lexical Test some text for both');
         });
 
         it('does not include paid segmented content in preheader for non-paying members', async function () {
@@ -1515,7 +1515,7 @@ describe('Email renderer', function () {
             );
 
             const $ = cheerio.load(response.html);
-            should($('.preheader').text()).eql('Lexical Test some text for both');
+            assert.equal($('.preheader').text(), 'Lexical Test some text for both');
         });
 
         it('only includes first author if more than 2', async function () {
