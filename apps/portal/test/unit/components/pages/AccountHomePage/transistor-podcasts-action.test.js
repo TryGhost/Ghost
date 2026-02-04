@@ -2,6 +2,8 @@ import {render} from '../../../../utils/test-utils';
 import TransistorPodcastsAction from '../../../../../src/components/pages/AccountHomePage/components/transistor-podcasts-action';
 
 describe('TransistorPodcastsAction', () => {
+    const TEST_UUID = '12345678-1234-4123-8123-123456789abc';
+
     const setup = ({hasPodcasts, memberUuid} = {}) => {
         const {mockDoActionFn, ...utils} = render(
             <TransistorPodcastsAction hasPodcasts={hasPodcasts} memberUuid={memberUuid} />,
@@ -24,19 +26,19 @@ describe('TransistorPodcastsAction', () => {
     });
 
     test('renders Podcasts section with Subscribe link when hasPodcasts is true', () => {
-        const {queryByText} = setup({hasPodcasts: true, memberUuid: 'test-uuid-123'});
+        const {queryByText} = setup({hasPodcasts: true, memberUuid: TEST_UUID});
         expect(queryByText('Podcasts')).toBeInTheDocument();
         expect(queryByText('Subscribe')).toBeInTheDocument();
     });
 
     test('Subscribe link points to correct Transistor URL', () => {
-        const {getByText} = setup({hasPodcasts: true, memberUuid: 'test-uuid-123'});
+        const {getByText} = setup({hasPodcasts: true, memberUuid: TEST_UUID});
         const link = getByText('Subscribe');
-        expect(link.getAttribute('href')).toBe('https://partner.transistor.fm/ghost/test-uuid-123');
+        expect(link.getAttribute('href')).toBe(`https://partner.transistor.fm/ghost/${TEST_UUID}`);
     });
 
     test('Subscribe link opens in new tab', () => {
-        const {getByText} = setup({hasPodcasts: true, memberUuid: 'test-uuid-123'});
+        const {getByText} = setup({hasPodcasts: true, memberUuid: TEST_UUID});
         const link = getByText('Subscribe');
         expect(link.getAttribute('target')).toBe('_blank');
         expect(link.getAttribute('rel')).toBe('noopener noreferrer');
