@@ -938,8 +938,9 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   job_docker_build:
-    name: Build & Push Docker Image
+    name: Build & Push E2E Docker Image
     runs-on: ubuntu-latest
+    needs: [job_setup]
     permissions:
       contents: read
       packages: write
@@ -947,7 +948,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
+          fetch-tags: true
           submodules: true
+
+      - uses: actions/setup-node@v4
+        env:
+          FORCE_COLOR: 0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Restore caches
+        uses: ./.github/actions/restore-cache
+        env:
+          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+
+      - name: Build assets for E2E image
+        run: yarn build
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -966,9 +982,9 @@ jobs:
           if [ "${{ github.event_name }}" = "pull_request" ] && [ "${{ github.event.pull_request.head.repo.full_name }}" != "${{ github.repository }}" ]; then
             IS_FORK_PR="true"
           fi
-          IMAGE_NAME="ghcr.io/${{ github.repository_owner }}/ghost-development"
+          IMAGE_NAME="ghcr.io/${{ github.repository_owner }}/ghost-e2e"
           if [ "$IS_FORK_PR" = "true" ]; then
-            IMAGE_NAME="ghcr.io/${{ github.event.pull_request.head.repo.owner.login }}/ghost-development"
+            IMAGE_NAME="ghcr.io/${{ github.event.pull_request.head.repo.owner.login }}/ghost-e2e"
           fi
           CACHE_KEY=$(echo $IMAGE_NAME | tr '[:upper:]' '[:lower:]')
           echo "is-fork-pr=$IS_FORK_PR" >> $GITHUB_OUTPUT
@@ -983,6 +999,21 @@ jobs:
           echo "  Image name: $IMAGE_NAME"
           echo "  Cache key: $CACHE_KEY"
 
+      - name: Collect version tags
+        id: version_tags
+        shell: bash
+        run: |
+          # Collect semver-ish tags pointing at this commit so the e2e image can be pulled by version.
+          TAG_LINES=""
+          while read -r tag; do
+            [ -z "$tag" ] && continue
+            TAG_LINES="${TAG_LINES}type=raw,value=${tag}\n"
+          done < <(git tag --points-at "$GITHUB_SHA" | grep -E '^[vV]?[0-9]+\.[0-9]+\.[0-9]+' || true)
+
+          echo "extra-tags<<EOF" >> $GITHUB_OUTPUT
+          printf "%b" "$TAG_LINES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v5
@@ -992,11 +1023,13 @@ jobs:
           tags: |
             type=ref,event=branch
             type=ref,event=pr
+            type=ref,event=tag
             type=sha
             type=raw,value=latest,enable={{is_default_branch}}
+            ${{ steps.version_tags.outputs.extra-tags }}
           labels: |
-            org.opencontainers.image.title=Ghost Development
-            org.opencontainers.image.description=Ghost development build
+            org.opencontainers.image.title=Ghost E2E
+            org.opencontainers.image.description=Ghost E2E test image
             org.opencontainers.image.vendor=TryGhost
             maintainer=TryGhost
 
@@ -1005,7 +1038,7 @@ jobs:
         id: build
         with:
           context: .
-          file: Dockerfile
+          file: e2e/Dockerfile
           push: ${{ steps.strategy.outputs.should-push }}
           load: ${{ steps.strategy.outputs.should-load }}
           tags: ${{ steps.meta.outputs.tags }}
@@ -1145,11 +1178,6 @@ jobs:
       - name: Setup Docker Registry Mirrors
         uses: ./.github/actions/setup-docker-registry-mirrors
 
-      - name: Pull images
-        env:
-          GHOST_IMAGE_TAG: ${{ steps.load.outputs.image-tag }}
-        run: docker compose -f e2e/compose.yml pull
-
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -1162,11 +1190,18 @@ jobs:
       - name: Setup Playwright
         uses: ./.github/actions/setup-playwright
 
+      - name: Start E2E infra
+        run: yarn workspace @tryghost/e2e infra:up
+
       - name: Run e2e tests
         env:
-          GHOST_IMAGE_TAG: ${{ steps.load.outputs.image-tag }}
-          TEST_WORKERS_COUNT: 1
+          GHOST_E2E_MODE: build
+          GHOST_E2E_IMAGE: ${{ steps.load.outputs.image-tag }}
         run: yarn test:e2e:all --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
+
+      - name: Stop E2E infra
+        if: always()
+        run: yarn workspace @tryghost/e2e infra:down
 
       - name: Upload blob report to GitHub Actions Artifacts
         if: failure()
