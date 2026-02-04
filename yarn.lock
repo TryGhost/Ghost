@@ -3782,10 +3782,10 @@
     wrap-ansi "^8.1.0"
     wrap-ansi-cjs "npm:wrap-ansi@^7.0.0"
 
-"@isaacs/ttlcache@1.4.1":
-  version "1.4.1"
-  resolved "https://registry.yarnpkg.com/@isaacs/ttlcache/-/ttlcache-1.4.1.tgz#21fb23db34e9b6220c6ba023a0118a2dd3461ea2"
-  integrity sha512-RQgQ4uQ+pLbqXfOmieB91ejmLwvSgv9nLx6sT6sD83s7umBypgg+OIBOBbEUiJXrfpnp9j0mRhYYdzp9uqq3lA==
+"@isaacs/ttlcache@2.1.4":
+  version "2.1.4"
+  resolved "https://registry.yarnpkg.com/@isaacs/ttlcache/-/ttlcache-2.1.4.tgz#c90f02f927088b8588f5bc61ecfbdf16e804dfd8"
+  integrity sha512-7kMz0BJpMvgAMkyglums7B2vtrn5g0a0am77JY0GjkZZNetOBCFn7AG7gKCwT0QPiXyxW7YIQSgtARknUEOcxQ==
 
 "@istanbuljs/load-nyc-config@^1.0.0":
   version "1.1.0"
