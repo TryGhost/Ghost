@@ -18,7 +18,6 @@ interface CommentThreadSidebarProps {
     onOpenChange: (open: boolean) => void;
     onThreadClick: (commentId: string) => void;
     commentPermalinksEnabled?: boolean;
-    disableMemberCommentingEnabled?: boolean;
 }
 
 const CommentThreadSidebar: React.FC<CommentThreadSidebarProps> = ({
@@ -26,8 +25,7 @@ const CommentThreadSidebar: React.FC<CommentThreadSidebarProps> = ({
     open,
     onOpenChange,
     onThreadClick,
-    commentPermalinksEnabled,
-    disableMemberCommentingEnabled
+    commentPermalinksEnabled
 }) => {
     const {data: repliesData, isLoading: isLoadingReplies, isError: isRepliesError} = useCommentReplies(commentId ?? '', {
         enabled: open && !!commentId
@@ -77,7 +75,6 @@ const CommentThreadSidebar: React.FC<CommentThreadSidebarProps> = ({
                     ) : (
                         <CommentThreadList
                             commentPermalinksEnabled={commentPermalinksEnabled}
-                            disableMemberCommentingEnabled={disableMemberCommentingEnabled}
                             parentComment={parentComment}
                             replies={replies}
                             onThreadClick={onThreadClick}
