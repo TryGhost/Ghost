@@ -4,6 +4,7 @@ const errors = require('@tryghost/errors');
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../utils');
+const config = require('../../../core/shared/config');
 const DataGenerator = require('../../utils/fixtures/data-generator');
 const _ = require('lodash');
 
@@ -396,9 +397,11 @@ describe('User Model', function run() {
             });
 
             it('password matches blog URL', function (done) {
+                const blogUrl = new URL(config.get('url'));
+                const blogHostPassword = blogUrl.host;
                 UserModel.changePassword({
-                    newPassword: '127.0.0.1:2369',
-                    ne2Password: '127.0.0.1:2369',
+                    newPassword: blogHostPassword,
+                    ne2Password: blogHostPassword,
                     oldPassword: 'Sl1m3rson99',
                     user_id: testUtils.DataGenerator.Content.users[0].id
                 }, testUtils.context.owner).then(function () {
