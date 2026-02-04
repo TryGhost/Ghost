@@ -64,10 +64,6 @@ const features: Feature[] = [{
     description: 'Enable Transistor podcast integration',
     flag: 'transistor'
 }, {
-    title: 'Disable Member Commenting',
-    description: 'Allow staff to disable commenting for individual members',
-    flag: 'disableMemberCommenting'
-}, {
     title: 'Sniper Links',
     description: 'Enable mail app links on signup/signin',
     flag: 'sniperlinks'

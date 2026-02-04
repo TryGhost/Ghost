@@ -44,8 +44,7 @@ function CommentsList({
     fetchNextPage,
     onAddFilter,
     isLoading,
-    commentPermalinksEnabled,
-    disableMemberCommentingEnabled
+    commentPermalinksEnabled
 }: {
     items: Comment[];
     totalItems: number;
@@ -55,7 +54,6 @@ function CommentsList({
     onAddFilter: (field: string, value: string, operator?: string) => void;
     isLoading?: boolean;
     commentPermalinksEnabled?: boolean;
-    disableMemberCommentingEnabled?: boolean;
 }) {
     const parentRef = useRef<HTMLDivElement>(null);
     const [searchParams, setSearchParams] = useSearchParams();
@@ -168,7 +166,6 @@ function CommentsList({
                                         <CommentHeader
                                             canComment={item.member?.can_comment}
                                             createdAt={item.created_at}
-                                            disableMemberCommentingEnabled={disableMemberCommentingEnabled}
                                             isHidden={item.status === 'hidden'}
                                             memberId={item.member?.id}
                                             memberName={item.member?.name}
@@ -226,7 +223,6 @@ function CommentsList({
                                             <CommentMenu
                                                 comment={item}
                                                 commentPermalinksEnabled={commentPermalinksEnabled}
-                                                disableMemberCommentingEnabled={disableMemberCommentingEnabled}
                                             />
                                         </div>
                                     </div>
@@ -251,7 +247,6 @@ function CommentsList({
             <CommentThreadSidebar
                 commentId={selectedThreadCommentId}
                 commentPermalinksEnabled={commentPermalinksEnabled}
-                disableMemberCommentingEnabled={disableMemberCommentingEnabled}
                 open={threadSidebarOpen}
                 onOpenChange={handleCloseSidebar}
                 onThreadClick={handleThreadClick}

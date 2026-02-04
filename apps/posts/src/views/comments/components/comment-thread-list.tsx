@@ -25,10 +25,9 @@ interface CommentRowProps {
     isReply?: boolean;
     onThreadClick: (commentId: string) => void;
     commentPermalinksEnabled?: boolean;
-    disableMemberCommentingEnabled?: boolean;
 }
 
-function CommentRow({comment, isReply = false, onThreadClick, commentPermalinksEnabled, disableMemberCommentingEnabled}: CommentRowProps) {
+function CommentRow({comment, isReply = false, onThreadClick, commentPermalinksEnabled}: CommentRowProps) {
     const {mutate: hideComment} = useHideComment();
     const {mutate: showComment} = useShowComment();
 
@@ -56,7 +55,6 @@ function CommentRow({comment, isReply = false, onThreadClick, commentPermalinksE
                         <CommentHeader
                             canComment={comment.member?.can_comment}
                             createdAt={comment.created_at}
-                            disableMemberCommentingEnabled={disableMemberCommentingEnabled}
                             isHidden={comment.status === 'hidden'}
                             memberId={comment.member?.id}
                             memberName={comment.member?.name}
@@ -106,7 +104,6 @@ function CommentRow({comment, isReply = false, onThreadClick, commentPermalinksE
                             <CommentMenu
                                 comment={comment}
                                 commentPermalinksEnabled={commentPermalinksEnabled}
-                                disableMemberCommentingEnabled={disableMemberCommentingEnabled}
                             />
                         </div>
                     </div>
@@ -119,7 +116,6 @@ function CommentRow({comment, isReply = false, onThreadClick, commentPermalinksE
                                     key={reply.id}
                                     comment={reply}
                                     commentPermalinksEnabled={commentPermalinksEnabled}
-                                    disableMemberCommentingEnabled={disableMemberCommentingEnabled}
                                     isReply={true}
                                     onThreadClick={onThreadClick}
                                 />
@@ -137,15 +133,13 @@ interface CommentThreadListProps {
     replies: Comment[];
     onThreadClick: (commentId: string) => void;
     commentPermalinksEnabled?: boolean;
-    disableMemberCommentingEnabled?: boolean;
 }
 
 const CommentThreadList: React.FC<CommentThreadListProps> = ({
     parentComment,
     replies,
     onThreadClick,
-    commentPermalinksEnabled,
-    disableMemberCommentingEnabled
+    commentPermalinksEnabled
 }) => {
     // All replies are direct children of the parent comment (flat structure)
     const commentWithReplies: Comment = {...parentComment, replies};
@@ -155,7 +149,6 @@ const CommentThreadList: React.FC<CommentThreadListProps> = ({
             <CommentRow
                 comment={commentWithReplies}
                 commentPermalinksEnabled={commentPermalinksEnabled}
-                disableMemberCommentingEnabled={disableMemberCommentingEnabled}
                 onThreadClick={onThreadClick}
             />
         </div>

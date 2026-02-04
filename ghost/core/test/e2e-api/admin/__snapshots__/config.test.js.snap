@@ -15,7 +15,6 @@ Object {
       "commentModeration": true,
       "commentPermalinks": true,
       "customFonts": true,
-      "disableMemberCommenting": true,
       "editorExcerpt": true,
       "emailCustomization": true,
       "emailUniqueid": true,
