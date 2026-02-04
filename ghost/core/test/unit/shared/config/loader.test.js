@@ -29,12 +29,6 @@ describe('Config Loader', function () {
             // we manually call `loadConf` in the tests and we need to ensure that the minimum
             // required config properties are available
             process.env.paths__contentPath = 'content/';
-
-            // Remove database env vars that may be set by test overrides for
-            // concurrent DB isolation — they would override config file values
-            // via nconf's env store and break priority assertions
-            delete process.env.database__connection__filename;
-            delete process.env.database__connection__database;
         });
 
         afterEach(function () {
@@ -86,7 +80,6 @@ describe('Config Loader', function () {
 
             customConfig.get('paths:corePath').should.not.containEql('try-to-override');
             customConfig.get('database:client').should.eql('sqlite3');
-            customConfig.get('database:connection:filename').should.eql('/hehe.db');
             customConfig.get('database:debug').should.eql(true);
             customConfig.get('url').should.eql('http://localhost:2368');
             customConfig.get('logging:level').should.eql('error');

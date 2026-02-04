@@ -3,37 +3,43 @@ const crypto = require('crypto');
 process.env.NODE_ENV = process.env.NODE_ENV || 'testing';
 process.env.WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || 'TEST_STRIPE_WEBHOOK_SECRET';
 
+// Generate unique session values for database and port BEFORE loading Ghost,
+// so that nconf picks them up naturally via nconf.env(). Worker threads
+// spawned by bree also inherit these env vars and get the same values when
+// they load a fresh nconf instance. Values already set externally (e.g. by
+// CI or the user) are respected.
+const sessionId = crypto.randomBytes(4).toString('hex');
+const sqliteGenerated = !process.env.database__connection__filename;
+const mysqlGenerated = !process.env.database__connection__database;
+process.env.database__connection__filename = process.env.database__connection__filename || `/tmp/ghost-test-${sessionId}.db`;
+process.env.database__connection__database = process.env.database__connection__database || `ghost_testing_${sessionId}`;
+
+const canonicalTestPort = 2369;
+process.env.server__port = process.env.server__port || String(10000 + Math.floor(Math.random() * 50000));
+const sessionPort = parseInt(process.env.server__port, 10);
+
+// Now load Ghost — config will read the env vars we just set
 require('../../core/server/overrides');
 
-// Generate a unique database name per test session to allow concurrent test runs.
-// Uses nconf-style env vars (database__connection__*) so worker threads spawned by
-// bree inherit the config when they load a fresh nconf instance.
-const sessionId = crypto.randomBytes(4).toString('hex');
-const config = require('../../core/shared/config');
-let sessionDbName;
-let sessionDbIsGenerated = false;
+const snapshotExports = require('@tryghost/express-test').snapshot;
+const {mochaHooks} = snapshotExports;
 
-if (process.env.NODE_ENV === 'testing-mysql') {
-    if (process.env.database__connection__database) {
-        sessionDbName = process.env.database__connection__database;
-    } else {
-        sessionDbName = `ghost_testing_${sessionId}`;
-        sessionDbIsGenerated = true;
-    }
-    process.env.database__connection__database = sessionDbName;
-    config.set('database:connection:database', sessionDbName);
-} else {
-    if (process.env.database__connection__filename) {
-        sessionDbName = process.env.database__connection__filename;
-    } else {
-        sessionDbName = `/tmp/ghost-test-${sessionId}.db`;
-        sessionDbIsGenerated = true;
-    }
-    process.env.database__connection__filename = sessionDbName;
-    config.set('database:connection:filename', sessionDbName);
+// Monkey-patch the snapshot manager to normalize URLs before comparison.
+// When a random port is in use, response URLs contain the session port but
+// committed snapshots use the canonical port (2369). This normalization
+// ensures snapshot comparisons remain stable across concurrent sessions.
+if (sessionPort !== canonicalTestPort && snapshotExports.snapshotManager) {
+    const snapshotManager = snapshotExports.snapshotManager;
+    const originalMatch = snapshotManager.match.bind(snapshotManager);
+    const portRegex = new RegExp(`127\\.0\\.0\\.1:${sessionPort}`, 'g');
+    snapshotManager.match = function (received, properties, hint) {
+        const normalized = JSON.parse(
+            JSON.stringify(received).replace(portRegex, `127.0.0.1:${canonicalTestPort}`)
+        );
+        return originalMatch(normalized, properties, hint);
+    };
 }
 
-const {mochaHooks} = require('@tryghost/express-test').snapshot;
 exports.mochaHooks = mochaHooks;
 
 const chalk = require('chalk');
@@ -84,8 +90,8 @@ mochaHooks.afterAll = async function () {
     if (process.env.NODE_ENV === 'testing-mysql') {
         try {
             const db = require('../../core/server/data/db');
-            if (sessionDbIsGenerated && sessionDbName) {
-                await db.knex.raw(`DROP DATABASE IF EXISTS \`${sessionDbName}\``);
+            if (mysqlGenerated) {
+                await db.knex.raw(`DROP DATABASE IF EXISTS \`${process.env.database__connection__database}\``);
             }
             await db.knex.destroy();
         } catch (err) {
@@ -95,10 +101,11 @@ mochaHooks.afterAll = async function () {
     } else {
         try {
             const fs = require('fs-extra');
-            if (sessionDbIsGenerated && sessionDbName) {
-                await fs.remove(sessionDbName);
-                await fs.remove(`${sessionDbName}-orig`);
-                await fs.remove(`${sessionDbName}-journal`);
+            if (sqliteGenerated) {
+                const dbFile = process.env.database__connection__filename;
+                await fs.remove(dbFile);
+                await fs.remove(`${dbFile}-orig`);
+                await fs.remove(`${dbFile}-journal`);
             }
         } catch (err) {
             // Best effort cleanup
