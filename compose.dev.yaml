@@ -121,6 +121,8 @@ services:
       - "80:80"
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    environment:
+      SUBDIR: ${SUBDIR:-}
     volumes:
       # Mount Caddyfile for live config changes without rebuilding
       - ./docker/dev-gateway/Caddyfile:/etc/caddy/Caddyfile:ro
