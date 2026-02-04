@@ -324,7 +324,6 @@ describe('LinkRedirectsService', function () {
         });
 
         it('substitutes double-encoded %%{uuid}%% placeholder in query string', async function () {
-            // When stored as %25%25%7Buuid%7D%25%25, decodeURIComponent recovers %%{uuid}%%
             const linkRedirectRepository = {
                 getByURL: (url) => {
                     if (url.pathname === '/r/abc') {
