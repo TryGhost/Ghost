@@ -23,7 +23,7 @@ const icloudIcon = (
     <svg xmlns="http://www.w3.org/2000/svg" width="2500" height="2432" viewBox="85.04 232.402 412.912 401.703"><path d="M391.631 424.861l-4.477-1.119v-4.477c0-40.281-32.449-72.73-71.611-72.73-29.094 0-55.947 17.904-67.138 44.758l-3.355 7.834-5.595-5.596c-5.597-5.594-13.429-8.951-21.262-8.951a30.086 30.086 0 0 0-30.211 30.211l1.118 6.715-4.476 1.117c-21.26 6.715-35.807 25.736-35.807 46.996 0 26.854 22.38 49.234 49.234 49.234h185.745c25.734 0 48.113-21.262 48.113-48.115-1.114-22.379-16.78-41.401-40.278-45.877z" fill="#333"/><path d="M394.989 232.402H189.102c-58.185 0-104.062 46.996-104.062 104.062v193.578c0 58.186 46.995 104.062 104.062 104.062H393.87c58.187 0 104.062-46.996 104.062-104.062V337.583c1.118-58.185-45.877-105.181-102.943-105.181zm-11.19 298.76H198.054c-33.568 0-60.424-26.855-60.424-60.424 0-25.734 15.666-46.996 39.164-55.947 1.118-22.379 19.021-40.281 41.4-40.281 7.833 0 15.666 2.238 22.379 6.713 14.547-27.973 42.521-44.758 73.852-44.758 44.758 0 81.684 35.809 82.802 79.447 25.736 6.713 44.759 30.211 44.759 57.066-.001 31.328-25.737 58.184-58.187 58.184z" fill="#333"/><path d="M398.345 414.791c-2.237-44.758-38.044-79.445-82.802-79.445-31.33 0-60.424 17.904-73.852 44.76-6.714-4.477-14.546-6.715-22.379-6.715-22.379 0-40.282 17.902-41.401 40.281-23.498 8.951-39.163 31.33-39.163 55.947 0 33.568 26.855 60.424 60.424 60.424h185.746c32.448 0 59.304-26.854 59.304-59.305-2.237-25.737-20.14-49.233-45.877-55.947zm-14.546 105.181H198.054c-26.854 0-49.233-22.379-49.233-49.232 0-22.379 14.546-40.283 35.806-46.996l4.476-1.119-1.118-6.713c0-16.785 13.427-30.213 30.211-30.213 7.833 0 15.666 3.357 21.262 8.953l5.595 5.594 3.355-7.832c11.189-26.855 36.925-44.758 67.138-44.758 40.281 0 71.611 32.449 71.611 72.73v4.477l4.477 1.119c23.498 3.355 39.164 23.498 39.164 46.996-.003 25.734-21.264 46.994-46.999 46.994z" fill="#e4e4e4"/></svg>
 );
 
-const defaultEmailIcon = <EnvelopeIcon className="gh-portal-sniper-link-icon" />;
+const defaultEmailIcon = <EnvelopeIcon className="gh-portal-inbox-link-icon" />;
 
 const PROVIDER_ICONS = {
     gmail: gmailIcon,
@@ -49,20 +49,20 @@ const PROVIDER_LABELS = {
 
 /**
  * @param {object} props
- * @param {object} props.sniperLinks
- * @param {string} props.sniperLinks.android
- * @param {string} props.sniperLinks.desktop
- * @param {'gmail' | 'yahoo' | 'outlook' | 'proton' | 'icloud' | 'hey' | 'aol' | 'mailru'} props.sniperLinks.provider
+ * @param {object} props.inboxLinks
+ * @param {string} props.inboxLinks.android
+ * @param {string} props.inboxLinks.desktop
+ * @param {'gmail' | 'yahoo' | 'outlook' | 'proton' | 'icloud' | 'hey' | 'aol' | 'mailru'} props.inboxLinks.provider
  */
-function SniperLinkButton({
-    sniperLinks: {android, desktop, provider}
+function InboxLinkButton({
+    inboxLinks: {android, desktop, provider}
 }) {
     return (
         <a
             href={isAndroidChrome(navigator) ? android : desktop}
             target='_blank'
             rel='noreferrer noopener'
-            className='gh-portal-btn gh-portal-btn-sniper-link'
+            className='gh-portal-btn gh-portal-btn-inbox-link'
         >
             {getOwn(PROVIDER_ICONS, provider) ?? defaultEmailIcon}
             <span>{getOwn(PROVIDER_LABELS, provider) ?? t('Open email')}</span>
@@ -70,4 +70,4 @@ function SniperLinkButton({
     );
 }
 
-export default SniperLinkButton;
+export default InboxLinkButton;

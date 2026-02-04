@@ -135,7 +135,7 @@ const getErrorCode = (err: unknown): undefined | string => (
  * Grab the MX records for a domain.
  *
  * If there are any errors at all, return the empty array. We don't want to
- * break sniper links if a DNS lookup fails—worst case, the user won't get a
+ * break inbox links if a DNS lookup fails—worst case, the user won't get a
  * "open in your email app" link.
  */
 const getMxRecords = async (
@@ -227,12 +227,12 @@ const getProvider = async (
 };
 
 /**
- * Given an email address, return "sniper links" to open the email app/inbox.
+ * Given an email address, return "inbox links" to open the email app/inbox.
  *
  * For example, if `newsletter@sender.example` emails `test@gmail.com`, we want
  * a link to open Gmail.
  */
-export const getSniperLinks = async (
+export const getInboxLinks = async (
     options: Readonly<{
         recipient: string;
         sender: string;

@@ -106,7 +106,7 @@ export async function formSubmitHandler(
                     doAction('startSigninOTCFromCustomForm', {
                         email: (email || '').trim(),
                         otcRef,
-                        sniperLinks: responseBody?.sniperLinks
+                        inboxLinks: responseBody?.inboxLinks
                     });
                 } catch (e) {
                     // eslint-disable-next-line no-console

@@ -64,9 +64,9 @@ const features: Feature[] = [{
     description: 'Enable Transistor podcast integration',
     flag: 'transistor'
 }, {
-    title: 'Sniper Links',
+    title: 'Inbox Links',
     description: 'Enable mail app links on signup/signin',
-    flag: 'sniperlinks'
+    flag: 'inboxlinks'
 }];
 
 const AlphaFeatures: React.FC = () => {

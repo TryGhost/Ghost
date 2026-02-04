@@ -1,7 +1,7 @@
 import React from 'react';
 import ActionButton from '../common/action-button';
 import CloseButton from '../common/close-button';
-import SniperLinkButton from '../common/sniper-link-button';
+import InboxLinkButton from '../common/inbox-link-button';
 import AppContext from '../../app-context';
 import {ReactComponent as EnvelopeIcon} from '../../images/icons/envelope.svg';
 import {t} from '../../utils/i18n';
@@ -173,10 +173,10 @@ export default class MagicLinkPage extends React.Component {
     }
 
     renderCloseButton() {
-        const {site, sniperLinks} = this.context;
-        const isSniperLinksEnabled = site.labs?.sniperlinks !== false;
-        if (isSniperLinksEnabled && sniperLinks) {
-            return <SniperLinkButton sniperLinks={sniperLinks} />;
+        const {site, inboxLinks} = this.context;
+        const isInboxLinksEnabled = site.labs?.inboxlinks !== false;
+        if (isInboxLinksEnabled && inboxLinks) {
+            return <InboxLinkButton inboxLinks={inboxLinks} />;
         } else {
             return (
                 <ActionButton
@@ -244,8 +244,8 @@ export default class MagicLinkPage extends React.Component {
     }
 
     renderOTCForm() {
-        const {action, actionErrorMessage, otcRef, site, sniperLinks} = this.context;
-        const isSniperLinksEnabled = site.labs?.sniperlinks !== false;
+        const {action, actionErrorMessage, otcRef, site, inboxLinks} = this.context;
+        const isInboxLinksEnabled = site.labs?.inboxlinks !== false;
         const errors = this.state.errors || {};
 
         if (!otcRef) {
@@ -289,8 +289,8 @@ export default class MagicLinkPage extends React.Component {
                 </section>
 
                 <footer className='gh-portal-signin-footer gh-button-row'>
-                    {isSniperLinksEnabled && sniperLinks && !this.state.otc ? (
-                        <SniperLinkButton sniperLinks={sniperLinks} />
+                    {isInboxLinksEnabled && inboxLinks && !this.state.otc ? (
+                        <InboxLinkButton inboxLinks={inboxLinks} />
                     ) : (
                         <ActionButton
                             style={{width: '100%'}}

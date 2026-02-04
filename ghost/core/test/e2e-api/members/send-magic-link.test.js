@@ -174,7 +174,7 @@ describe('sendMagicLink', function () {
         assert.equal(data.attribution.type, null);
     });
 
-    it('Creates a valid magic link with sniper links for Gmail', async function () {
+    it('Creates a valid magic link with inbox links for Gmail', async function () {
         const email = 'test@gmail.com';
         const res = await membersAgent.post('/api/send-magic-link')
             .body({
@@ -183,8 +183,8 @@ describe('sendMagicLink', function () {
             })
             .expectStatus(201);
 
-        assert(res.body.sniperLinks.desktop.startsWith('https://mail.google.com/'));
-        assert(res.body.sniperLinks.android.startsWith('intent:'));
+        assert(res.body.inboxLinks.desktop.startsWith('https://mail.google.com/'));
+        assert(res.body.inboxLinks.android.startsWith('intent:'));
     });
 
     it('Creates a valid magic link from custom signup with redirection', async function () {
