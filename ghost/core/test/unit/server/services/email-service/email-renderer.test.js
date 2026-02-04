@@ -1907,7 +1907,8 @@ describe('Email renderer', function () {
 
             // Verify tracking was called for the Transistor link
             addTrackingToUrlStub.called.should.be.true();
-            const transistorCall = addTrackingToUrlStub.getCalls().find(call => call.args[0].href.includes('transistor.fm')
+            const transistorCall = addTrackingToUrlStub.getCalls().find(
+                call => call.args[0].href.includes('transistor.fm')
             );
             transistorCall.should.not.be.undefined();
 
