@@ -138,10 +138,10 @@ class LinkRedirectsService {
             if (hasMemberUuidPlaceholder) {
                 const memberUuid = url.searchParams.get('m');
                 if (memberUuid && UUID_REGEX.test(memberUuid)) {
-                    redirectUrl = decodedUrl.split(MEMBER_UUID_PLACEHOLDER).join(memberUuid);
+                    redirectUrl = decodedUrl.replaceAll(MEMBER_UUID_PLACEHOLDER, memberUuid);
                 } else {
                     // Remove placeholder if no valid UUID (includes unsubstituted Mailgun variables)
-                    redirectUrl = decodedUrl.split(MEMBER_UUID_PLACEHOLDER).join('');
+                    redirectUrl = decodedUrl.replaceAll(MEMBER_UUID_PLACEHOLDER, '');
                 }
             }
 
