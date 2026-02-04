@@ -17,6 +17,9 @@ export class MembersService {
         const response = await this.request.get(
             `${this.adminEndpoint}/members/?filter=email:'${email}'`
         );
+        if (!response.ok()) {
+            throw new Error(`Failed to fetch member: ${response.status()}`);
+        }
         const data = await response.json() as MembersResponse;
         if (!data.members || data.members.length === 0) {
             throw new Error(`Member not found with email: ${email}`);
