@@ -196,6 +196,11 @@ yalc.lock
 # direnv environment loader files
 .envrc
 
+# Private Claude Code instructions
+*.local.md
+.claude/settings.local.json
+.mcp.local.json
+
 # e2e test suite
 /e2e/test-results
 /e2e/playwright-report
