@@ -256,7 +256,7 @@
     "parse-prometheus-text-format": "1.1.1",
     "postcss": "8.5.6",
     "postcss-cli": "11.0.1",
-    "rewire": "8.0.0",
+    "rewire": "9.0.1",
     "should": "13.2.3",
     "sinon": "18.0.1",
     "supertest": "6.3.4",
