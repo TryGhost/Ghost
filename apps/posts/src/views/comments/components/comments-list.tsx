@@ -1,26 +1,13 @@
 import CommentContent from './comment-content';
 import CommentThreadSidebar from './comment-thread-sidebar';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    Button,
-    LucideIcon
-} from '@tryghost/shade';
-import {Comment} from '@tryghost/admin-x-framework/api/comments';
+import {Button, LucideIcon} from '@tryghost/shade';
+import {Comment, useHideComment, useShowComment} from '@tryghost/admin-x-framework/api/comments';
 import {CommentAvatar} from './comment-avatar';
 import {CommentHeader} from './comment-header';
 import {CommentMenu} from './comment-menu';
 import {CommentMetrics} from './comment-metrics';
-import {DisableCommentingDialog} from './disable-commenting-dialog';
 import {Link, useSearchParams} from '@tryghost/admin-x-framework';
 import {forwardRef, useEffect, useRef, useState} from 'react';
-import {useCommentMutations} from './use-comment-mutations';
 import {useInfiniteVirtualScroll} from '@components/virtual-table/use-infinite-virtual-scroll';
 import {useScrollRestoration} from '@components/virtual-table/use-scroll-restoration';
 
@@ -75,17 +62,8 @@ function CommentsList({
     const [threadSidebarOpen, setThreadSidebarOpen] = useState(false);
     const [selectedThreadCommentId, setSelectedThreadCommentId] = useState<string | null>(null);
 
-    const {
-        hideComment,
-        showComment,
-        commentToDelete,
-        setCommentToDelete,
-        confirmDelete,
-        memberToDisable,
-        setMemberToDisable,
-        confirmDisableCommenting,
-        handleEnableCommenting
-    } = useCommentMutations();
+    const {mutate: hideComment} = useHideComment();
+    const {mutate: showComment} = useShowComment();
 
     const handleOpenThread = (commentId: string) => {
         // Update URL to open thread sidebar
@@ -246,14 +224,9 @@ function CommentsList({
                                                 onRepliesClick={() => handleOpenThread(item.id)}
                                             />
                                             <CommentMenu
-                                                canComment={item.member?.can_comment}
-                                                commentId={item.id}
+                                                comment={item}
                                                 commentPermalinksEnabled={commentPermalinksEnabled}
                                                 disableMemberCommentingEnabled={disableMemberCommentingEnabled}
-                                                memberId={item.member?.id}
-                                                postUrl={item.post?.url}
-                                                onDisableCommenting={() => setMemberToDisable({member: item.member, commentId: item.id})}
-                                                onEnableCommenting={() => handleEnableCommenting(item.member)}
                                             />
                                         </div>
                                     </div>
@@ -274,37 +247,6 @@ function CommentsList({
                     <SpacerRow height={spaceAfter} />
                 </div>
             </div>
-
-            <AlertDialog open={!!commentToDelete} onOpenChange={open => !open && setCommentToDelete(null)}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Delete comment?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            This comment will be permanently deleted and cannot be recovered.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                            className="hover:bg-red-700 bg-red-600 text-white"
-                            onClick={confirmDelete}
-                        >
-                            Delete
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-
-            <DisableCommentingDialog
-                memberName={memberToDisable?.member?.name}
-                open={!!memberToDisable}
-                onConfirm={confirmDisableCommenting}
-                onOpenChange={(open) => {
-                    if (!open) {
-                        setMemberToDisable(null);
-                    }
-                }}
-            />
 
             <CommentThreadSidebar
                 commentId={selectedThreadCommentId}
