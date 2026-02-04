@@ -81,14 +81,14 @@ test.describe('Portal Settings', async () => {
         });
 
         await page.goto('/');
-        const section = await page.getByTestId('portal');
+        const section = page.getByTestId('portal');
         await section.getByRole('button', {name: 'Customize'}).click();
         await page.waitForSelector('[data-testid="portal-modal"]');
-        const modal = await page.getByTestId('portal-modal');
+        const modal = page.getByTestId('portal-modal');
 
         // In Portal settings, the free tier is hidden because the site is set to paid-members only, even if available in the tiers list
-        const freeTierCheckbox = await modal.getByTestId('free-tier-checkbox');
-        expect(freeTierCheckbox).not.toBeVisible();
+        const freeTierCheckbox = modal.getByTestId('free-tier-checkbox');
+        await expect(freeTierCheckbox).not.toBeVisible();
     });
 
     test('can toggle portal Look & Feel options', async ({page}) => {
@@ -104,21 +104,20 @@ test.describe('Portal Settings', async () => {
         });
 
         await page.goto('/');
-        const section = await page.getByTestId('portal');
+        const section = page.getByTestId('portal');
         await section.getByRole('button', {name: 'Customize'}).click();
 
         await page.waitForSelector('[data-testid="portal-modal"]');
 
-        const modal = await page.getByTestId('portal-modal');
+        const modal = page.getByTestId('portal-modal');
 
         await modal.getByRole('tab', {name: 'Look & feel'}).click();
-
-        await modal.getByRole('switch').click();
         await modal.getByRole('textbox').fill('become a member of something epic');
+        await modal.getByRole('switch').click(); // turn off the customization settings
         await modal.getByRole('button', {name: 'Save'}).click();
 
         expect(lastApiRequests.editSettings?.body).toEqual({
-            settings: [
+            settings: [ // assert that the portal button is turned off but that we still saved the button text
                 {key: 'portal_button', value: false},
                 {
                     key: 'portal_button_signup_text',
