@@ -13,7 +13,7 @@ body.react-admin {
 body.react-admin #ember-alerts-wormhole {
     grid-row: 1;
     grid-column: 1;
-    z-index: 0; /* Hide alerts when settings app modal is open */
+    z-index: 9999; /* Keep alerts above content */
 }
 
 /* Main app container - pass through to children (.shade.shade-admin) */
