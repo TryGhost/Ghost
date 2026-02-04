@@ -141,9 +141,9 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
                     // this is a bit of a hack, but we need to fetch the comments fully populated if the user is an admin
                     const adminComments = await adminApi.browse({page: 1, postId: options.postId, order: state.order, memberUuid: state.member?.uuid});
                     setState((currentState) => {
-                        // Don't overwrite paginated comments when initSetup loaded
-                        // multiple pages (e.g., for permalink scrolling)
-                        if (currentState.pagination && currentState.pagination.page > 1) {
+                        // Don't overwrite comments when initSetup loaded extra data
+                        // for permalink scrolling (multiple pages or expanded replies)
+                        if ((currentState.pagination && currentState.pagination.page > 1) || initialCommentId) {
                             return {
                                 adminApi,
                                 admin,
