@@ -145,6 +145,9 @@ jobs:
             tinybird:
               - 'ghost/core/core/server/data/tinybird/**'
               - '!ghost/core/core/server/data/tinybird/**/*.md'
+            browser-tests:
+              - *shared
+              - 'ghost/core/test/e2e-browser/**'
             any-code:
               - '!**/*.md'
 
@@ -210,6 +213,7 @@ jobs:
       changed_sodo_search: ${{ steps.changed.outputs.sodo-search }}
       changed_tinybird: ${{ steps.changed.outputs.tinybird }}
       changed_any_code: ${{ steps.changed.outputs.any-code }}
+      changed_browser_tests: ${{ steps.changed.outputs.browser-tests }}
       changed_new_package: ${{ steps.added.outputs.new-package }}
       base_commit: ${{ env.BASE_COMMIT }}
       is_main: ${{ env.IS_MAIN }}
@@ -329,7 +333,7 @@ jobs:
     runs-on:
       labels: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_any_code == 'true' && (needs.job_setup.outputs.is_six_pr == 'true' || needs.job_setup.outputs.is_development == 'true' || needs.job_setup.outputs.has_browser_tests_label == 'true')
+    if: needs.job_setup.outputs.changed_any_code == 'true' && (needs.job_setup.outputs.is_six_pr == 'true' || needs.job_setup.outputs.is_development == 'true' || needs.job_setup.outputs.has_browser_tests_label == 'true' || needs.job_setup.outputs.changed_browser_tests == 'true')
     steps:
     - uses: actions/checkout@v4
       with:
