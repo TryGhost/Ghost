@@ -82,6 +82,7 @@
     "Failed to sign up, please try again": "Rekisteröityminen ei onnistunut, yritäthän uudestaan",
     "Failed to update account data": "Tilitietojen päivitys ei onnistunut",
     "Failed to update account details": "Tilin lisätietojen päivitys ei onnistunut",
+    "Failed to update billing information, please try again": "",
     "Failed to update newsletter settings": "Uutiskirjeen asetusten päivitys ei onnistunut",
     "Failed to update subscription, please try again": "Tilauksen päivitys ei onnistunut, yritäthän uudestaan",
     "Failed to verify code, please try again": "Koodin vahvistus ei onnistunut, yritäthän uudestaan",

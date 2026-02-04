@@ -82,6 +82,7 @@
     "Failed to sign up, please try again": "L'inscription a échoué, veuillez réessayer",
     "Failed to update account data": "La mise à jour des données du compte a échoué",
     "Failed to update account details": "La mise à jour des détails du compte a échoué",
+    "Failed to update billing information, please try again": "",
     "Failed to update newsletter settings": "La mise à jour des paramètres de la newletter a échoué",
     "Failed to update subscription, please try again": "La mise à jour de l'abonnement a échoué, veuillez réessayer",
     "Failed to verify code, please try again": "Échec de la vérification du code, veuillez réessayer",

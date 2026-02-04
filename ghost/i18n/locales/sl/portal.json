@@ -82,6 +82,7 @@
     "Failed to sign up, please try again": "Registracija ni uspela, poskusite znova",
     "Failed to update account data": "Posodobitev podatkov računa ni uspela",
     "Failed to update account details": "Posodobitev podrobnosti računa ni uspela",
+    "Failed to update billing information, please try again": "",
     "Failed to update newsletter settings": "Posodobitev nastavitev novic ni uspela",
     "Failed to update subscription, please try again": "Posodobitev naročnine ni uspela, poskusite znova",
     "Failed to verify code, please try again": "",

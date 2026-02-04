@@ -82,6 +82,7 @@
     "Failed to sign up, please try again": "Kayıt işlemi başarısız oldu, lütfen tekrar deneyin",
     "Failed to update account data": "Hesap verileri güncellenemedi",
     "Failed to update account details": "Hesap detayları güncellenemedi",
+    "Failed to update billing information, please try again": "",
     "Failed to update newsletter settings": "Bülten ayarları güncellenemedi",
     "Failed to update subscription, please try again": "Abonelik güncellenemedi, lütfen tekrar deneyin",
     "Failed to verify code, please try again": "",

@@ -106,6 +106,7 @@
     "Failed to sign up, please try again": "error message",
     "Failed to update account data": "error message",
     "Failed to update account details": "error message",
+    "Failed to update billing information, please try again": "",
     "Failed to update newsletter settings": "error message",
     "Failed to update subscription, please try again": "error message",
     "Failed to verify code, please try again": "",

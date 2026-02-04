@@ -82,6 +82,7 @@
     "Failed to sign up, please try again": "No s'ha pogut completar el registre. Si-us-plau, torna-ho a intentar",
     "Failed to update account data": "No s'han pogut actualitzar les dades del compte",
     "Failed to update account details": "No s'han pogut actualitzar els detalls del compte",
+    "Failed to update billing information, please try again": "",
     "Failed to update newsletter settings": "No s'ha pogut actualitzar la configuració del butlletí",
     "Failed to update subscription, please try again": "No s'ha pogut actualitzar la subscripció. Si-us-plau, torna-ho a intentar",
     "Failed to verify code, please try again": "",
