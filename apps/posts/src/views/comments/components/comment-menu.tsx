@@ -6,80 +6,109 @@ import {
     DropdownMenuTrigger,
     LucideIcon
 } from '@tryghost/shade';
+import {Comment} from '@tryghost/admin-x-framework/api/comments';
+import {DisableCommentingDialog} from './disable-commenting-dialog';
+import {useDisableMemberCommenting, useEnableMemberCommenting} from '@tryghost/admin-x-framework/api/members';
+import {useState} from 'react';
 
 interface CommentMenuProps {
-    commentId: string;
-    postUrl?: string;
-    memberId?: string | null;
-    canComment?: boolean | null;
+    comment: Comment;
     commentPermalinksEnabled?: boolean;
     disableMemberCommentingEnabled?: boolean;
-    onDisableCommenting?: () => void;
-    onEnableCommenting?: () => void;
 }
 
 export function CommentMenu({
-    commentId,
-    postUrl,
-    memberId,
-    canComment,
+    comment,
     commentPermalinksEnabled,
-    disableMemberCommentingEnabled,
-    onDisableCommenting,
-    onEnableCommenting
+    disableMemberCommentingEnabled
 }: CommentMenuProps) {
-    return (
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button
-                    className="relative z-10 text-gray-800 hover:bg-secondary [&_svg]:size-4"
-                    size="sm"
-                    variant="ghost"
-                >
-                    <LucideIcon.Ellipsis />
-                </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
-                {postUrl && (
-                    commentPermalinksEnabled ? (
-                        <DropdownMenuItem asChild>
-                            <a href={`${postUrl}#ghost-comments-${commentId}`} rel="noopener noreferrer" target="_blank">
-                                <LucideIcon.ExternalLink className="mr-2 size-4" />
-                                View on post
-                            </a>
-                        </DropdownMenuItem>
-                    ) : (
-                        <DropdownMenuItem asChild>
-                            <a href={postUrl} rel="noopener noreferrer" target="_blank">
-                                <LucideIcon.ExternalLink className="mr-2 size-4" />
-                                View post
-                            </a>
-                        </DropdownMenuItem>
-                    )
-                )}
-                {memberId && (
-                    <DropdownMenuItem asChild>
-                        <a href={`#/members/${memberId}`}>
-                            <LucideIcon.User className="mr-2 size-4" />
-                            View member
-                        </a>
-                    </DropdownMenuItem>
+    const {mutate: disableCommenting} = useDisableMemberCommenting();
+    const {mutate: enableCommenting} = useEnableMemberCommenting();
+    const [disableDialogOpen, setDisableDialogOpen] = useState(false);
 
-                )}
-                {memberId && disableMemberCommentingEnabled && (
-                    canComment !== false ? (
-                        <DropdownMenuItem onClick={() => onDisableCommenting?.()}>
-                            <LucideIcon.MessageCircleOff className="mr-2 size-4" />
-                            Disable commenting
+    const {id: commentId, post, member} = comment;
+    const postUrl = post?.url;
+    const memberId = member?.id;
+    const canComment = member?.can_comment;
+
+    const handleDisableCommenting = (hideComments: boolean) => {
+        if (memberId) {
+            disableCommenting({
+                id: memberId,
+                reason: `Disabled from comment ${commentId}`,
+                hideComments
+            });
+            setDisableDialogOpen(false);
+        }
+    };
+
+    const handleEnableCommenting = () => {
+        if (memberId) {
+            enableCommenting({id: memberId});
+        }
+    };
+
+    return (
+        <>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button
+                        className="relative z-10 text-gray-800 hover:bg-secondary [&_svg]:size-4"
+                        size="sm"
+                        variant="ghost"
+                    >
+                        <LucideIcon.Ellipsis />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start">
+                    {postUrl && (
+                        commentPermalinksEnabled ? (
+                            <DropdownMenuItem asChild>
+                                <a href={`${postUrl}#ghost-comments-${commentId}`} rel="noopener noreferrer" target="_blank">
+                                    <LucideIcon.ExternalLink className="mr-2 size-4" />
+                                    View on post
+                                </a>
+                            </DropdownMenuItem>
+                        ) : (
+                            <DropdownMenuItem asChild>
+                                <a href={postUrl} rel="noopener noreferrer" target="_blank">
+                                    <LucideIcon.ExternalLink className="mr-2 size-4" />
+                                    View post
+                                </a>
+                            </DropdownMenuItem>
+                        )
+                    )}
+                    {memberId && (
+                        <DropdownMenuItem asChild>
+                            <a href={`#/members/${memberId}`}>
+                                <LucideIcon.User className="mr-2 size-4" />
+                                View member
+                            </a>
                         </DropdownMenuItem>
-                    ) : (
-                        <DropdownMenuItem onClick={() => onEnableCommenting?.()}>
-                            <LucideIcon.MessageCircle className="mr-2 size-4" />
-                            Enable commenting
-                        </DropdownMenuItem>
-                    )
-                )}
-            </DropdownMenuContent>
-        </DropdownMenu>
+
+                    )}
+                    {memberId && disableMemberCommentingEnabled && (
+                        canComment !== false ? (
+                            <DropdownMenuItem onClick={() => setDisableDialogOpen(true)}>
+                                <LucideIcon.MessageCircleOff className="mr-2 size-4" />
+                                Disable commenting
+                            </DropdownMenuItem>
+                        ) : (
+                            <DropdownMenuItem onClick={handleEnableCommenting}>
+                                <LucideIcon.MessageCircle className="mr-2 size-4" />
+                                Enable commenting
+                            </DropdownMenuItem>
+                        )
+                    )}
+                </DropdownMenuContent>
+            </DropdownMenu>
+
+            <DisableCommentingDialog
+                memberName={member?.name}
+                open={disableDialogOpen}
+                onConfirm={handleDisableCommenting}
+                onOpenChange={setDisableDialogOpen}
+            />
+        </>
     );
 }
