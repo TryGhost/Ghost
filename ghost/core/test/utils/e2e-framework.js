@@ -92,6 +92,15 @@ const startGhost = async (options = {}) => {
 
     const bootOptions = Object.assign({}, defaults, options);
 
+    // When starting a real HTTP server, update the URL to match the actual
+    // server port so that frontendAgent HTTP requests reach the right port.
+    // The snapshot manager normalizes these URLs back to the canonical port
+    // (2369) before comparison, so committed snapshots remain stable.
+    if (bootOptions.server) {
+        const serverPort = configUtils.config.get('server:port');
+        configUtils.set('url', `http://127.0.0.1:${serverPort}`);
+    }
+
     const bootNow = Date.now();
     const ghostServer = await boot(bootOptions);
     const bootTime = Date.now() - bootNow;
@@ -533,7 +542,7 @@ module.exports = {
         // @NOTE: hack here! it's due to https://github.com/TryGhost/Toolbox/issues/341
         //        this matcher should be removed once the issue is solved - routing is redesigned
         //        An ideal solution would be removal of this matcher altogether.
-        anyLocalURL: stringMatching(/http:\/\/127.0.0.1:2369\/[A-Za-z0-9_-]+\//),
+        anyLocalURL: stringMatching(/http:\/\/127.0.0.1:\d+\/[A-Za-z0-9_-]+\//),
         stringMatching
     },
 

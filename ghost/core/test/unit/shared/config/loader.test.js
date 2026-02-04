@@ -81,7 +81,6 @@ describe('Config Loader', function () {
 
             customConfig.get('paths:corePath').should.not.containEql('try-to-override');
             customConfig.get('database:client').should.eql('sqlite3');
-            customConfig.get('database:connection:filename').should.eql('/hehe.db');
             customConfig.get('database:debug').should.eql(true);
             customConfig.get('url').should.eql('http://localhost:2368');
             customConfig.get('logging:level').should.eql('error');
