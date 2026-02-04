@@ -2,7 +2,8 @@ import {InfiniteData} from '@tanstack/react-query';
 import {
     Meta,
     createInfiniteQuery,
-    createMutation
+    createMutation,
+    createQueryWithId
 } from '../utils/api/hooks';
 
 export type Comment = {
@@ -14,6 +15,8 @@ export type Comment = {
     post_id: string;
     member_id: string;
     parent_id: string | null;
+    in_reply_to_id?: string | null;
+    in_reply_to_snippet?: string | null;
     member?: {
         id: string;
         name: string;
@@ -27,12 +30,15 @@ export type Comment = {
         slug: string;
         url: string;
         feature_image?: string;
+        excerpt?: string;
     };
     count?: {
         replies?: number;
         likes?: number;
         reports?: number;
     };
+    // Optional nested replies for tree structures
+    replies?: Comment[];
 };
 
 export interface CommentsResponseType {
@@ -70,7 +76,7 @@ export const useBrowseComments = (args?: Parameters<typeof useBrowseCommentsQuer
         searchParams: {
             limit: '100',
             order: 'created_at desc',
-            include: 'member,post',
+            include: 'member,post,parent',
             ...args?.searchParams
         }
     });
@@ -86,7 +92,7 @@ export const useHideComment = createMutation<CommentsResponseType, {id: string}>
         }]
     }),
     invalidateQueries: {
-        dataType: 'CommentsResponseType'
+        dataType
     }
 });
 
@@ -100,7 +106,7 @@ export const useShowComment = createMutation<CommentsResponseType, {id: string}>
         }]
     }),
     invalidateQueries: {
-        dataType: 'CommentsResponseType'
+        dataType
     }
 });
 
@@ -114,6 +120,23 @@ export const useDeleteComment = createMutation<CommentsResponseType, {id: string
         }]
     }),
     invalidateQueries: {
-        dataType: 'CommentsResponseType'
+        dataType
+    }
+});
+
+export const useCommentReplies = createQueryWithId<CommentsResponseType>({
+    dataType,
+    path: (id: string) => `/comments/${id}/replies/`,
+    defaultSearchParams: {
+        include: 'member,post,count.replies,count.likes,count.reports,parent',
+        limit: '100' // Max limit allowed by API
+    }
+});
+
+export const useReadComment = createQueryWithId<CommentsResponseType>({
+    dataType,
+    path: (id: string) => `/comments/${id}/`,
+    defaultSearchParams: {
+        include: 'member,post,count.replies,count.likes,count.reports,parent'
     }
 });
