@@ -99,7 +99,7 @@ class MemberWelcomeEmailRenderer {
         const contentWithReplacements = this.#applyReplacements({text: content, member, siteSettings, escapeHtml: true});
         const subjectWithReplacements = this.#applyReplacements({text: subject, member, siteSettings, escapeHtml: false});
 
-        const managePreferencesUrl = new URL('#/portal/account', siteSettings.url).href;
+        const managePreferencesUrl = new URL('#/portal/account/newsletters', siteSettings.url).href;
         const year = new Date().getFullYear();
 
         const html = this.#wrapperTemplate({
