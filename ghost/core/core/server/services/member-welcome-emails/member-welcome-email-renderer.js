@@ -99,12 +99,17 @@ class MemberWelcomeEmailRenderer {
         const contentWithReplacements = this.#applyReplacements({text: content, member, siteSettings, escapeHtml: true});
         const subjectWithReplacements = this.#applyReplacements({text: subject, member, siteSettings, escapeHtml: false});
 
+        const managePreferencesUrl = new URL('#/portal/account/newsletters', siteSettings.url).href;
+        const year = new Date().getFullYear();
+
         const html = this.#wrapperTemplate({
             content: contentWithReplacements,
             subject: subjectWithReplacements,
             siteTitle: siteSettings.title,
             siteUrl: siteSettings.url,
-            accentColor: siteSettings.accentColor
+            accentColor: siteSettings.accentColor,
+            managePreferencesUrl,
+            year
         });
 
         const inlinedHtml = juice(html, {inlinePseudoElements: true, removeStyleTags: true});

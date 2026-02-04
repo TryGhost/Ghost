@@ -210,6 +210,7 @@ describe('MemberWelcomeEmailRenderer', function () {
         it('wraps content in wrapper.hbs template', async function () {
             lexicalRenderStub.resolves('<p>Content</p>');
             const renderer = new MemberWelcomeEmailRenderer();
+            const year = new Date().getFullYear();
 
             const result = await renderer.render({
                 lexical: '{}',
@@ -221,6 +222,10 @@ describe('MemberWelcomeEmailRenderer', function () {
             result.html.should.containEql('<!doctype html>');
             result.html.should.containEql('<title>Test Subject</title>');
             result.html.should.containEql('>Content</p>');
+            result.html.should.containEql('Test Site');
+            result.html.should.containEql(`&copy; ${year}`);
+            result.html.should.containEql('Manage your preferences');
+            result.html.should.containEql('https://example.com/#/portal/account');
         });
 
         it('generates plain text from HTML', async function () {
