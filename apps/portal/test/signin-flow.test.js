@@ -241,10 +241,7 @@ describe('Signin', () => {
                 popupIframeDocument,
                 submitButton
             } = await setup({
-                site: {
-                    ...FixtureSite.singleTier.basic,
-                    labs: {sniperlinks: true}
-                }
+                site: FixtureSite.singleTier.basic
             });
 
             fireEvent.change(emailInput, {target: {value: 'test@test-sniper-link.example'}});
