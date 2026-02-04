@@ -140,8 +140,6 @@ function CommentsList({
                             return <PlaceholderRow key={key} {...props} />;
                         }
 
-                        const hasReplies = (item.count?.replies ?? 0) > 0;
-
                         return (
                             <div
                                 key={key}
@@ -214,10 +212,7 @@ function CommentsList({
                                             )}
                                             <CommentMetrics
                                                 className="ml-2"
-                                                hasReplies={hasReplies}
-                                                likesCount={item.count?.likes}
-                                                repliesCount={item.count?.replies}
-                                                reportsCount={item.count?.reports}
+                                                comment={item}
                                                 onRepliesClick={() => handleOpenThread(item.id)}
                                             />
                                             <CommentMenu

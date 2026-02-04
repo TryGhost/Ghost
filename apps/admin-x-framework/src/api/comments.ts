@@ -5,6 +5,7 @@ import {
     createMutation,
     createQueryWithId
 } from '../utils/api/hooks';
+import {Member} from './members';
 
 export type Comment = {
     id: string;
@@ -17,13 +18,7 @@ export type Comment = {
     parent_id: string | null;
     in_reply_to_id?: string | null;
     in_reply_to_snippet?: string | null;
-    member?: {
-        id: string;
-        name: string;
-        email: string;
-        avatar_image?: string;
-        can_comment?: boolean;
-    };
+    member?: Member;
     post?: {
         id: string;
         title: string;
@@ -39,6 +34,15 @@ export type Comment = {
     };
     // Optional nested replies for tree structures
     replies?: Comment[];
+};
+
+export type CommentReport = {
+    id: string;
+    comment_id: string;
+    member_id: string;
+    created_at: string;
+    updated_at: string;
+    member?: Member;
 };
 
 export interface CommentsResponseType {
@@ -140,3 +144,17 @@ export const useReadComment = createQueryWithId<CommentsResponseType>({
         include: 'member,post,count.replies,count.likes,count.reports,parent'
     }
 });
+
+export interface CommentReportsResponseType {
+    meta?: Meta;
+    comment_reports: CommentReport[];
+}
+
+const useBrowseCommentReportsQuery = createQueryWithId<CommentReportsResponseType>({
+    dataType: 'CommentReportsResponseType',
+    path: id => `/comments/${id}/reports/`
+});
+
+export const useBrowseCommentReports = (commentId: string, options?: {enabled?: boolean}) => {
+    return useBrowseCommentReportsQuery(commentId, {...options});
+};

@@ -961,17 +961,19 @@ Object {
 
 exports[`Admin Comments API Comment Reports Returns 404 for non-existent comment 1: [body] 1`] = `
 Object {
-  "comment_reports": Array [],
-  "meta": Object {
-    "pagination": Object {
-      "limit": 15,
-      "next": null,
-      "page": 1,
-      "pages": 1,
-      "prev": null,
-      "total": 0,
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Comment could not be found",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Resource not found error, cannot list comment_reports.",
+      "property": null,
+      "type": "NotFoundError",
     },
-  },
+  ],
 }
 `;
 

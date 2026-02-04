@@ -95,11 +95,8 @@ function CommentRow({comment, isReply = false, onThreadClick, commentPermalinksE
                                 </Button>
                             )}
                             <CommentMetrics
-                                hasReplies={hasReplies}
-                                likesCount={comment.count?.likes}
-                                repliesCount={comment.count?.replies}
-                                reportsCount={comment.count?.reports}
-                                onRepliesClick={hasReplies ? () => onThreadClick(comment.id) : undefined}
+                                comment={comment}
+                                onRepliesClick={() => onThreadClick(comment.id)}
                             />
                             <CommentMenu
                                 comment={comment}
