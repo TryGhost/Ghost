@@ -15,7 +15,6 @@ const Comments: React.FC = () => {
     const {data: configData} = useBrowseConfig();
     const commentPermalinksEnabled = configData?.config?.labs?.commentPermalinks === true;
     const disableMemberCommentingEnabled = configData?.config?.labs?.disableMemberCommenting === true;
-    const hideCommentsEnabled = configData?.config?.labs?.disableMemberCommentingHideComments === true;
 
     const handleAddFilter = useCallback((field: string, value: string, operator: string = 'is') => {
         setFilters((prevFilters) => {
@@ -88,7 +87,6 @@ const Comments: React.FC = () => {
                             disableMemberCommentingEnabled={disableMemberCommentingEnabled}
                             fetchNextPage={fetchNextPage}
                             hasNextPage={hasNextPage}
-                            hideCommentsEnabled={hideCommentsEnabled}
                             isFetchingNextPage={isFetchingNextPage}
                             isLoading={isFetching && !isFetchingNextPage}
                             items={data?.comments ?? []}

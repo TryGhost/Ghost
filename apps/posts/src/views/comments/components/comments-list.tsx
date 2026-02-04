@@ -137,8 +137,7 @@ function CommentsList({
     onAddFilter,
     isLoading,
     commentPermalinksEnabled,
-    disableMemberCommentingEnabled,
-    hideCommentsEnabled
+    disableMemberCommentingEnabled
 }: {
     items: Comment[];
     totalItems: number;
@@ -149,7 +148,6 @@ function CommentsList({
     isLoading?: boolean;
     commentPermalinksEnabled?: boolean;
     disableMemberCommentingEnabled?: boolean;
-    hideCommentsEnabled?: boolean;
 }) {
     const parentRef = useRef<HTMLDivElement>(null);
 
@@ -186,7 +184,7 @@ function CommentsList({
             disableCommenting({
                 id: memberToDisable.member.id,
                 reason: `Disabled from comment ${memberToDisable.commentId}`,
-                ...(hideCommentsEnabled && {hideComments})
+                hideComments
             });
             setMemberToDisable(null);
             setHideComments(false);
@@ -471,18 +469,16 @@ function CommentsList({
                         </DialogDescription>
                     </DialogHeader>
 
-                    {hideCommentsEnabled && (
-                        <div className="flex items-center gap-2 py-2">
-                            <Checkbox
-                                checked={hideComments}
-                                id="hide-comments"
-                                onCheckedChange={checked => setHideComments(checked === true)}
-                            />
-                            <Label htmlFor="hide-comments">
-                                Hide all previous comments
-                            </Label>
-                        </div>
-                    )}
+                    <div className="flex items-center gap-2 py-2">
+                        <Checkbox
+                            checked={hideComments}
+                            id="hide-comments"
+                            onCheckedChange={checked => setHideComments(checked === true)}
+                        />
+                        <Label htmlFor="hide-comments">
+                            Hide all previous comments
+                        </Label>
+                    </div>
 
                     <DialogFooter>
                         <Button variant="outline" onClick={() => {
