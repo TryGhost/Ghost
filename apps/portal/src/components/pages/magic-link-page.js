@@ -174,7 +174,7 @@ export default class MagicLinkPage extends React.Component {
 
     renderCloseButton() {
         const {site, sniperLinks} = this.context;
-        const isSniperLinksEnabled = Boolean(site.labs?.sniperlinks);
+        const isSniperLinksEnabled = site.labs?.sniperlinks !== false;
         if (isSniperLinksEnabled && sniperLinks) {
             return <SniperLinkButton sniperLinks={sniperLinks} />;
         } else {
@@ -245,7 +245,7 @@ export default class MagicLinkPage extends React.Component {
 
     renderOTCForm() {
         const {action, actionErrorMessage, otcRef, site, sniperLinks} = this.context;
-        const isSniperLinksEnabled = Boolean(site.labs?.sniperlinks);
+        const isSniperLinksEnabled = site.labs?.sniperlinks !== false;
         const errors = this.state.errors || {};
 
         if (!otcRef) {
