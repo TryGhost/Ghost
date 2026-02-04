@@ -16,7 +16,9 @@ export const TransistorPodcastsActionStyles = `
 `;
 
 const TransistorPodcastsAction = ({hasPodcasts, memberUuid}) => {
-    if (!hasPodcasts || !memberUuid) {
+    const isValidUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(memberUuid);
+
+    if (!hasPodcasts || !memberUuid || !isValidUuid) {
         return null;
     }
 
