@@ -202,8 +202,8 @@ describe('LinkRedirectsService', function () {
                 setHeader: sinon.fake()
             };
             await instance.handleRequest(req, res);
-            assert.equal(res.redirect.callCount, 1);
-            assert.equal(res.redirect.getCall(0).args[0], 'https://share.transistor.fm/e/episode?subscriber_id=a1b2c3d4-e5f6-4789-abcd-ef1234567890');
+            sinon.assert.calledOnce(res.redirect);
+            sinon.assert.calledWith(res.redirect, 'https://share.transistor.fm/e/episode?subscriber_id=a1b2c3d4-e5f6-4789-abcd-ef1234567890');
         });
 
         it('substitutes multiple %%{uuid}%% placeholders in the same URL', async function () {
@@ -231,8 +231,8 @@ describe('LinkRedirectsService', function () {
                 setHeader: sinon.fake()
             };
             await instance.handleRequest(req, res);
-            assert.equal(res.redirect.callCount, 1);
-            assert.equal(res.redirect.getCall(0).args[0], 'https://example.com/path?id=f47ac10b-58cc-4372-a567-0e02b2c3d479&verify=f47ac10b-58cc-4372-a567-0e02b2c3d479');
+            sinon.assert.calledOnce(res.redirect);
+            sinon.assert.calledWith(res.redirect, 'https://example.com/path?id=f47ac10b-58cc-4372-a567-0e02b2c3d479&verify=f47ac10b-58cc-4372-a567-0e02b2c3d479');
         });
 
         it('removes %%{uuid}%% placeholder when m param is missing', async function () {
@@ -260,8 +260,8 @@ describe('LinkRedirectsService', function () {
                 setHeader: sinon.fake()
             };
             await instance.handleRequest(req, res);
-            assert.equal(res.redirect.callCount, 1);
-            assert.equal(res.redirect.getCall(0).args[0], 'https://share.transistor.fm/e/episode?subscriber_id=');
+            sinon.assert.calledOnce(res.redirect);
+            sinon.assert.calledWith(res.redirect, 'https://share.transistor.fm/e/episode?subscriber_id=');
         });
 
         it('removes %%{uuid}%% placeholder when m param contains invalid value like unsubstituted Mailgun variable', async function () {
@@ -289,9 +289,9 @@ describe('LinkRedirectsService', function () {
                 setHeader: sinon.fake()
             };
             await instance.handleRequest(req, res);
-            assert.equal(res.redirect.callCount, 1);
+            sinon.assert.calledOnce(res.redirect);
             // Invalid UUID (unsubstituted Mailgun variable) should result in empty string
-            assert.equal(res.redirect.getCall(0).args[0], 'https://share.transistor.fm/e/episode?subscriber_id=');
+            sinon.assert.calledWith(res.redirect, 'https://share.transistor.fm/e/episode?subscriber_id=');
         });
 
         it('does not modify redirect URL when no %%{uuid}%% placeholder is present', async function () {
@@ -319,8 +319,8 @@ describe('LinkRedirectsService', function () {
                 setHeader: sinon.fake()
             };
             await instance.handleRequest(req, res);
-            assert.equal(res.redirect.callCount, 1);
-            assert.equal(res.redirect.getCall(0).args[0], 'https://example.com/normal-link?foo=bar');
+            sinon.assert.calledOnce(res.redirect);
+            sinon.assert.calledWith(res.redirect, 'https://example.com/normal-link?foo=bar');
         });
 
         it('substitutes double-encoded %%{uuid}%% placeholder in query string', async function () {
@@ -349,8 +349,8 @@ describe('LinkRedirectsService', function () {
                 setHeader: sinon.fake()
             };
             await instance.handleRequest(req, res);
-            assert.equal(res.redirect.callCount, 1);
-            assert.equal(res.redirect.getCall(0).args[0], 'https://share.transistor.fm/e/episode?subscriber_id=a1b2c3d4-e5f6-4789-abcd-ef1234567890');
+            sinon.assert.calledOnce(res.redirect);
+            sinon.assert.calledWith(res.redirect, 'https://share.transistor.fm/e/episode?subscriber_id=a1b2c3d4-e5f6-4789-abcd-ef1234567890');
         });
 
         it('substitutes path-encoded %%{uuid}%% placeholder (braces encoded by URL constructor)', async function () {
@@ -381,8 +381,8 @@ describe('LinkRedirectsService', function () {
                 setHeader: sinon.fake()
             };
             await instance.handleRequest(req, res);
-            assert.equal(res.redirect.callCount, 1);
-            assert.equal(res.redirect.getCall(0).args[0], 'https://share.transistor.fm/a1b2c3d4-e5f6-4789-abcd-ef1234567890/episode');
+            sinon.assert.calledOnce(res.redirect);
+            sinon.assert.calledWith(res.redirect, 'https://share.transistor.fm/a1b2c3d4-e5f6-4789-abcd-ef1234567890/episode');
         });
     });
 });
