@@ -70,7 +70,7 @@ describe('Members Importer API', function () {
         const importedMember1 = jsonResponse2.members.find(m => m.email === 'jbloggs@example.com');
         should.exist(importedMember1);
         importedMember1.name.should.equal('joe');
-        should(importedMember1.note).equal(null);
+        assert.equal(importedMember1.note, null);
         importedMember1.subscribed.should.equal(true);
         importedMember1.newsletters.length.should.equal(filteredNewsletters.length);
         importedMember1.labels.length.should.equal(1);
@@ -82,7 +82,7 @@ describe('Members Importer API', function () {
         const importedMember2 = jsonResponse2.members.find(m => m.email === 'test@example.com');
         should.exist(importedMember2);
         importedMember2.name.should.equal('test');
-        should(importedMember2.note).equal('test note');
+        assert.equal(importedMember2.note, 'test note');
         importedMember2.subscribed.should.equal(false);
         importedMember2.newsletters.length.should.equal(0);
         importedMember2.labels.length.should.equal(2);

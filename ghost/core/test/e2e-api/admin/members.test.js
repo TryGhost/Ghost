@@ -3447,7 +3447,7 @@ describe('Members API Bulk operations', function () {
             });
         const updatedModel = await models.Member.findOne({id: member.id}, {withRelated: 'newsletters'});
         // ensure they were unsubscribed from the single 'chosen' newsletter
-        should(updatedModel.relations.newsletters.models.length).equal(newsletterCount - 1);
+        assert.equal(updatedModel.relations.newsletters.models.length, newsletterCount - 1);
     });
 
     it('Can bulk unsubscribe members with deprecated subscribed filter', async function () {
@@ -3761,7 +3761,7 @@ describe('Members API Bulk operations', function () {
         // Verify member1 has the label
         const beforeMember = await models.Member.findOne({id: member1.id}, {withRelated: 'labels'});
         const beforeLabelCount = beforeMember.relations.labels.models.filter(m => m.id === label.id).length;
-        should(beforeLabelCount).equal(1);
+        assert.equal(beforeLabelCount, 1);
 
         // Try to add the same label again
         await agent
@@ -3795,7 +3795,7 @@ describe('Members API Bulk operations', function () {
         // Verify member1 still has only one instance of the label (not duplicated)
         const afterMember = await models.Member.findOne({id: member1.id}, {withRelated: 'labels'});
         const afterLabelCount = afterMember.relations.labels.models.filter(m => m.id === label.id).length;
-        should(afterLabelCount).equal(1);
+        assert.equal(afterLabelCount, 1);
     });
 
     it('Can bulk delete members', async function () {

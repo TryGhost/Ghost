@@ -72,8 +72,8 @@ describe('Members Importer API', function () {
 
                 const importedMember1 = jsonResponse.members.find(m => m.email === 'member+labels_1@example.com');
                 should.exist(importedMember1);
-                should(importedMember1.name).equal(null);
-                should(importedMember1.note).equal(null);
+                assert.equal(importedMember1.name, null);
+                assert.equal(importedMember1.note, null);
                 importedMember1.subscribed.should.equal(true);
                 importedMember1.comped.should.equal(false);
                 importedMember1.subscriptions.should.not.be.undefined();
@@ -139,9 +139,9 @@ describe('Members Importer API', function () {
                 should.exist(jsonResponse.members[0]);
 
                 const importedMember1 = jsonResponse.members[0];
-                should(importedMember1.email).equal('member+mapped_1@example.com');
-                should(importedMember1.name).equal('Hannah');
-                should(importedMember1.note).equal('do map me');
+                assert.equal(importedMember1.email, 'member+mapped_1@example.com');
+                assert.equal(importedMember1.name, 'Hannah');
+                assert.equal(importedMember1.note, 'do map me');
                 importedMember1.subscribed.should.equal(true);
                 importedMember1.comped.should.equal(false);
                 importedMember1.subscriptions.should.not.be.undefined();
@@ -185,8 +185,8 @@ describe('Members Importer API', function () {
                 should.exist(jsonResponse.members);
 
                 const defaultMember1 = jsonResponse.members.find(member => (member.email === 'member+defaults_1@example.com'));
-                should(defaultMember1.name).equal(null);
-                should(defaultMember1.note).equal(null);
+                assert.equal(defaultMember1.name, null);
+                assert.equal(defaultMember1.note, null);
                 defaultMember1.subscribed.should.equal(true);
                 defaultMember1.comped.should.equal(false);
                 defaultMember1.subscriptions.should.not.be.undefined();

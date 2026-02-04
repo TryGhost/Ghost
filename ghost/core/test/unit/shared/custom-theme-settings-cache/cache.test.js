@@ -59,7 +59,7 @@ describe('Cache', function () {
 
             const returned = cache.populate(settings1);
 
-            should(returned).equal(undefined);
+            assert.equal(returned, undefined);
         });
     });
 
@@ -86,13 +86,13 @@ describe('Cache', function () {
 
             cache.populate(settings);
 
-            should(cache.get('unknown')).equal(undefined);
+            assert.equal(cache.get('unknown'), undefined);
         });
 
         it('returns undefined when cache is empty', function () {
             const cache = new Cache();
 
-            should(cache.get('unknown')).equal(undefined);
+            assert.equal(cache.get('unknown'), undefined);
         });
     });
 
