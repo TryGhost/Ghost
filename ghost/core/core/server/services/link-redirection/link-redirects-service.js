@@ -15,7 +15,8 @@ const LinkRedirect = require('./link-redirect');
 // %%{uuid}%% is substituted with the actual UUID at redirect time
 const MEMBER_UUID_PLACEHOLDER = '%%{uuid}%%';
 
-// UUID v4 pattern (8-4-4-4-12 hex format) for validating member UUIDs
+// UUID pattern (8-4-4-4-12 hex format) for validating member UUIDs
+//   Ghost uses UUID v4; this regex is not that strict
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 class LinkRedirectsService {
