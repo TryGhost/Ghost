@@ -814,6 +814,10 @@ export const getUpdatedOfferPrice = ({offer, price, useFormatted = false}) => {
     return updatedAmount;
 };
 
+export const isRetentionOffer = ({offer}) => {
+    return offer.redemption_type === 'retention';
+};
+
 export const isActiveOffer = ({site, offer}) => {
     if (offer?.status !== 'active') {
         return false;
