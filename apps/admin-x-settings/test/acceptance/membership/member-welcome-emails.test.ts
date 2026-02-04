@@ -45,8 +45,8 @@ test.describe('Member emails settings', async () => {
             const section = page.getByTestId('memberemails');
             await expect(section).toBeVisible({timeout: 10000});
 
-            // Click the Edit button on the welcome email preview to open the modal
-            await section.getByTestId('free-welcome-email-edit-button').click();
+            // Click the welcome email preview card to open the modal
+            await section.getByTestId('free-welcome-email-preview').click();
 
             const modal = page.getByTestId('welcome-email-modal');
             await expect(modal).toBeVisible();
@@ -94,8 +94,8 @@ test.describe('Member emails settings', async () => {
             const section = page.getByTestId('memberemails');
             await expect(section).toBeVisible({timeout: 10000});
 
-            // Click the Edit button on the welcome email preview to open the modal
-            await section.getByTestId('free-welcome-email-edit-button').click();
+            // Click the welcome email preview card to open the modal
+            await section.getByTestId('free-welcome-email-preview').click();
 
             const modal = page.getByTestId('welcome-email-modal');
             await expect(modal).toBeVisible();
@@ -133,8 +133,8 @@ test.describe('Member emails settings', async () => {
             const section = page.getByTestId('memberemails');
             await expect(section).toBeVisible({timeout: 10000});
 
-            // Click the Edit button on the welcome email preview to open the modal
-            await section.getByTestId('free-welcome-email-edit-button').click();
+            // Click the welcome email preview card to open the modal
+            await section.getByTestId('free-welcome-email-preview').click();
 
             const modal = page.getByTestId('welcome-email-modal');
             await expect(modal).toBeVisible();
@@ -202,16 +202,11 @@ test.describe('Member emails settings', async () => {
             await expect(section).toBeVisible({timeout: 10000});
 
             // Email preview card should be visible even though no DB row exists
-            const emailPreview = section.getByTestId('free-welcome-email-edit-button');
+            const emailPreview = section.getByTestId('free-welcome-email-preview');
             await expect(emailPreview).toBeVisible();
 
             // Should show default subject based on site title from settings
             await expect(emailPreview).toContainText('Welcome to');
-
-            // Edit button should be visible and enabled
-            const editButton = section.getByTestId('free-welcome-email-edit-button');
-            await expect(editButton).toBeVisible();
-            await expect(editButton).toBeEnabled();
         });
 
         test('Edit button is NOT dimmed when toggle is OFF', async ({page}) => {
@@ -241,11 +236,10 @@ test.describe('Member emails settings', async () => {
             await expect(section).toBeVisible({timeout: 10000});
 
             // Edit button should be fully visible and NOT have dimmed opacity
-            const editButton = section.getByTestId('free-welcome-email-edit-button');
-            await expect(editButton).toBeVisible();
-            await expect(editButton).toBeEnabled();
-            // The edit button should NOT have reduced opacity
-            await expect(editButton).not.toHaveClass(/opacity-50/);
+            const emailPreview = section.getByTestId('free-welcome-email-preview');
+            await expect(emailPreview).toBeVisible();
+            // The preview should NOT have reduced opacity
+            await expect(emailPreview).not.toHaveClass(/opacity-60/);
         });
 
         test('Clicking Edit when no row exists creates inactive row then opens modal', async ({page}) => {
@@ -293,8 +287,8 @@ test.describe('Member emails settings', async () => {
             await expect(section).toBeVisible({timeout: 10000});
 
             // Click Edit button when no row exists
-            const editButton = section.getByTestId('free-welcome-email-edit-button');
-            await editButton.click();
+            const emailPreview = section.getByTestId('free-welcome-email-preview');
+            await emailPreview.click();
 
             // Verify API was called to create an INACTIVE row
             expect(lastApiRequests.addAutomatedEmail?.body).toMatchObject({
@@ -349,8 +343,8 @@ test.describe('Member emails settings', async () => {
             await expect(section).toBeVisible({timeout: 10000});
 
             // Click Edit button when row already exists
-            const editButton = section.getByTestId('free-welcome-email-edit-button');
-            await editButton.click();
+            const emailPreview = section.getByTestId('free-welcome-email-preview');
+            await emailPreview.click();
 
             // Verify NO POST API was called (no new row created)
             expect(lastApiRequests.addAutomatedEmail).toBeUndefined();
