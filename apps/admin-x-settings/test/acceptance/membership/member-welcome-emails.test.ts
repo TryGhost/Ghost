@@ -8,7 +8,8 @@ const automatedEmailsFixture = {
         name: 'Welcome Email (Free)',
         slug: 'member-welcome-email-free',
         subject: 'Welcome to Test Site',
-        lexical: '{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"Welcome to our site!","type":"extended-text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}',
+        // Note the lexical content includes a template token ({name})
+        lexical: '{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"Welcome {name} to our site!","type":"extended-text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}',
         sender_name: null,
         sender_email: null,
         sender_reply_to: null,
@@ -105,6 +106,63 @@ test.describe('Member emails settings', async () => {
 
             // Verify modal is closed
             await expect(modal).not.toBeVisible();
+        });
+
+        test('Welcome email modal does not start dirty but becomes dirty after edit', async ({page}) => {
+            // Config with welcomeEmails feature flag enabled
+            const configResponse = {
+                config: {
+                    ...responseFixtures.config.config,
+                    labs: {
+                        welcomeEmails: true
+                    }
+                }
+            };
+
+            await mockApi({page, requests: {
+                ...globalDataRequests,
+                browseConfig: {method: 'GET', path: '/config/', response: configResponse},
+                browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: automatedEmailsFixture}
+            }});
+
+            // Navigate directly to the memberemails section
+            await page.goto('/#/memberemails');
+
+            // Wait for page to load
+            await page.waitForLoadState('networkidle');
+
+            const section = page.getByTestId('memberemails');
+            await expect(section).toBeVisible({timeout: 10000});
+
+            // Open modal
+            await section.getByTestId('free-welcome-email-edit-button').click();
+            const modal = page.getByTestId('welcome-email-modal');
+            await expect(modal).toBeVisible();
+
+            // Close without edits - should not trigger unsaved confirmation
+            await page.keyboard.press('Escape');
+            await expect(modal).not.toBeVisible();
+            await expect(page.getByTestId('confirmation-modal')).not.toBeVisible();
+
+            // Re-open modal
+            await section.getByTestId('free-welcome-email-edit-button').click();
+            await expect(modal).toBeVisible();
+
+            // Edit subject to mark dirty
+            const subjectInput = modal.locator('input').first();
+            await expect(subjectInput).toHaveValue('Welcome to Test Site');
+            await subjectInput.fill('Updated subject');
+            await expect(subjectInput).toHaveValue('Updated subject');
+
+            // Close with unsaved changes - should show confirmation modal
+            // First Escape blurs the input, second triggers modal close
+            await page.keyboard.press('Escape');
+            await page.keyboard.press('Escape');
+            const confirmationModal = page.getByTestId('confirmation-modal');
+            await expect(confirmationModal).toBeVisible();
+            await confirmationModal.getByRole('button', {name: 'Stay'}).click();
+            await expect(confirmationModal).not.toBeVisible();
+            await expect(modal).toBeVisible();
         });
 
         test('Escape key does not close modal or navigate away when pressed from Koenig link input', async ({page}) => {
