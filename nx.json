@@ -1,5 +1,6 @@
 {
     "$schema": "./node_modules/nx/schemas/nx-schema.json",
+    "useDaemonProcess": false,
     "namedInputs": {
         "default": ["{projectRoot}/**/*", "{workspaceRoot}/ghost/tsconfig.json"]
     },
