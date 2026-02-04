@@ -201,13 +201,13 @@ function CommentsList({
 
                                         <div className="mt-4 flex flex-row flex-nowrap items-center gap-3">
                                             {item.status === 'published' && (
-                                                <Button className='text-gray-800' size="sm" variant="outline" onClick={() => hideComment({id: item.id})}>
+                                                <Button className='text-foreground' size="sm" variant="outline" onClick={() => hideComment({id: item.id})}>
                                                     <LucideIcon.EyeOff/>
                                                     Hide
                                                 </Button>
                                             )}
                                             {item.status === 'hidden' && (
-                                                <Button className='text-gray-800' size="sm" variant="outline" onClick={() => showComment({id: item.id})}>
+                                                <Button className='text-foreground' size="sm" variant="outline" onClick={() => showComment({id: item.id})}>
                                                     <LucideIcon.Eye/>
                                                     Show
                                                 </Button>

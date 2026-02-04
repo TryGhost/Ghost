@@ -6,7 +6,7 @@ const {BadRequestError, NoPermissionError, UnauthorizedError, DisabledFeatureErr
 const errors = require('@tryghost/errors');
 const {isEmail} = require('@tryghost/validator');
 const normalizeEmail = require('../utils/normalize-email');
-const {getSniperLinks} = require('../../../../lib/get-sniper-links');
+const {getInboxLinks} = require('../../../../lib/get-inbox-links');
 
 const messages = {
     emailRequired: 'Email is required.',
@@ -53,7 +53,7 @@ function extractRefererOrRedirect(req) {
 }
 
 module.exports = class RouterController {
-    #sniperLinksDnsResolver = new dns.Resolver({maxTimeout: 1000});
+    #inboxLinksDnsResolver = new dns.Resolver({maxTimeout: 1000});
 
     /**
      * RouterController
@@ -719,7 +719,7 @@ module.exports = class RouterController {
         }
 
         try {
-            /** @type {{sniperLinks?: {desktop: string; android: string; provider: string}; otc_ref?: string}} */
+            /** @type {{inboxLinks?: {desktop: string; android: string; provider: string}; otc_ref?: string}} */
             const resBody = {};
 
             if (emailType === 'signup' || emailType === 'subscribe') {
@@ -731,16 +731,16 @@ module.exports = class RouterController {
                 }
             }
 
-            const sniperLinks = await getSniperLinks({
+            const inboxLinks = await getInboxLinks({
                 recipient: normalizedEmail,
                 sender: this._settingsHelpers.getMembersSupportAddress(),
-                dnsResolver: this.#sniperLinksDnsResolver
+                dnsResolver: this.#inboxLinksDnsResolver
             });
-            if (sniperLinks) {
-                resBody.sniperLinks = sniperLinks;
-                logging.info(`[Sniperlinks] Found sniper links for provider ${sniperLinks.provider}`);
+            if (inboxLinks) {
+                resBody.inboxLinks = inboxLinks;
+                logging.info(`[Inbox links] Found inbox links for provider ${inboxLinks.provider}`);
             } else {
-                logging.info('[Sniperlinks] Found no sniper links');
+                logging.info('[Inbox links] Found no inbox links');
             }
 
             res.writeHead(201, {'Content-Type': 'application/json'});
