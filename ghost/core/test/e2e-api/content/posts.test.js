@@ -79,23 +79,25 @@ describe('Posts Content API', function () {
         // kitchen sink
         assert.equal(res.body.posts[11].slug, fixtureManager.get('posts', 1).slug);
 
+        const configUrl = new URL(config.get('url'));
         let urlParts = new URL(res.body.posts[11].feature_image);
-        assert.equal(urlParts.protocol, 'http:');
-        assert.equal(urlParts.host, '127.0.0.1:2369');
+        assert.equal(urlParts.protocol, configUrl.protocol);
+        assert.equal(urlParts.host, configUrl.host);
 
         urlParts = new URL(res.body.posts[11].url);
-        assert.equal(urlParts.protocol, 'http:');
-        assert.equal(urlParts.host, '127.0.0.1:2369');
+        assert.equal(urlParts.protocol, configUrl.protocol);
+        assert.equal(urlParts.host, configUrl.host);
 
         const $ = cheerio.load(res.body.posts[11].html);
         urlParts = new URL($('img').attr('src'));
-        assert.equal(urlParts.protocol, 'http:');
-        assert.equal(urlParts.host, '127.0.0.1:2369');
+        assert.equal(urlParts.protocol, configUrl.protocol);
+        assert.equal(urlParts.host, configUrl.host);
 
+        const escapedUrl = config.get('url').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         assert.equal(res.body.posts[9].slug, 'not-so-short-bit-complex');
-        assert.match(res.body.posts[9].html, /<a href="http:\/\/127.0.0.1:2369\/about#nowhere" title="Relative URL/);
+        assert.match(res.body.posts[9].html, new RegExp(`<a href="${escapedUrl}/about#nowhere" title="Relative URL`));
         assert.equal(res.body.posts[11].slug, 'ghostly-kitchen-sink');
-        assert.match(res.body.posts[11].html, /<img src="http:\/\/127.0.0.1:2369\/content\/images\/lol.jpg"/);
+        assert.match(res.body.posts[11].html, new RegExp(`<img src="${escapedUrl}/content/images/lol.jpg"`));
     });
 
     it('Cannot request mobiledoc or lexical formats', async function () {

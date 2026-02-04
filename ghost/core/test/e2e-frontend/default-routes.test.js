@@ -15,6 +15,7 @@ const cheerio = require('cheerio');
 const _ = require('lodash');
 const testUtils = require('../utils');
 const configUtils = require('../utils/config-utils');
+const config = require('../../core/shared/config');
 const settingsCache = require('../../core/shared/settings-cache');
 const origCache = _.cloneDeep(settingsCache);
 
@@ -346,7 +347,7 @@ describe('Default Frontend routing', function () {
                 .expect(assertCorrectFrontendHeaders);
 
             assert.equal(res.text, 'User-agent: *\n' +
-            'Sitemap: http://127.0.0.1:2369/sitemap.xml\nDisallow: /ghost/\n' +
+            `Sitemap: ${config.get('url')}/sitemap.xml\nDisallow: /ghost/\n` +
             'Disallow: /email/\n' +
             'Disallow: /members/api/comments/counts/\n' +
             'Disallow: /r/\n' +
@@ -403,7 +404,7 @@ describe('Default Frontend routing', function () {
                 .expect((res) => {
                     assert.match(res.text, /urlset/);
                     // CASE: the index page should always be present in pages sitemap
-                    assert(res.text.includes('<loc>http://127.0.0.1:2369/</loc>'));
+                    assert(res.text.includes(`<loc>${config.get('url')}/</loc>`));
                     assert(!res.text.includes('__GHOST_URL__'));
                 });
         });
