@@ -389,6 +389,12 @@ module.exports = class RouterController {
                 });
             }
 
+            if (!offer.tier) {
+                throw new BadRequestError({
+                    message: 'Offer does not have a tier'
+                });
+            }
+
             tier = await this._tiersService.api.read(offer.tier.id);
             cadence = offer.cadence;
         } else if (tierId) {
