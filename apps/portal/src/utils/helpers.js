@@ -823,6 +823,11 @@ export const isActiveOffer = ({site, offer}) => {
         return false;
     }
 
+    // Null-tier offers (retention) are active if their status is active
+    if (!offer.tier) {
+        return true;
+    }
+
     // Check if the corresponding tier has been archived
     const product = getProductFromId({site, productId: offer.tier.id});
     return !!product;

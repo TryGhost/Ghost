@@ -116,6 +116,27 @@ describe('Helpers - ', () => {
             const value = isActiveOffer({offer: FixtureOffer, site: FixturesSite.singleTier.onlyFreePlan});
             expect(value).toBe(false);
         });
+
+        test('returns true for active null-tier offer', () => {
+            const nullTierOffer = {
+                ...FixtureOffer,
+                tier: null,
+                redemption_type: 'retention'
+            };
+            const value = isActiveOffer({offer: nullTierOffer, site: FixturesSite.singleTier.basic});
+            expect(value).toBe(true);
+        });
+
+        test('returns false for archived null-tier offer', () => {
+            const archivedNullTierOffer = {
+                ...FixtureOffer,
+                tier: null,
+                redemption_type: 'retention',
+                status: 'archived'
+            };
+            const value = isActiveOffer({offer: archivedNullTierOffer, site: FixturesSite.singleTier.basic});
+            expect(value).toBe(false);
+        });
     });
 
     describe('isRetentionOffer -', () => {
