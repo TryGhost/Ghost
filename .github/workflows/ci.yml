@@ -1145,11 +1145,6 @@ jobs:
       - name: Setup Docker Registry Mirrors
         uses: ./.github/actions/setup-docker-registry-mirrors
 
-      - name: Pull images
-        env:
-          GHOST_IMAGE_TAG: ${{ steps.load.outputs.image-tag }}
-        run: docker compose -f e2e/compose.yml pull
-
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -1164,8 +1159,8 @@ jobs:
 
       - name: Run e2e tests
         env:
-          GHOST_IMAGE_TAG: ${{ steps.load.outputs.image-tag }}
-          TEST_WORKERS_COUNT: 1
+          GHOST_E2E_MODE: build
+          GHOST_E2E_IMAGE: ${{ steps.load.outputs.image-tag }}
         run: yarn test:e2e:all --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
 
       - name: Upload blob report to GitHub Actions Artifacts
