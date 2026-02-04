@@ -92,77 +92,73 @@ test.describe('Ghost Admin - Disable Commenting', () => {
         await expect(commentsPage.disableCommentingMenuItem).toBeVisible();
     });
 
-    test.describe('with hide comments enabled', () => {
-        test.use({labs: {disableMemberCommenting: true, disableMemberCommentingHideComments: true}});
-
-        test('hide comments checkbox appears in modal', async ({page}) => {
-            const post = await postFactory.create({status: 'published'});
-            const member = await memberFactory.create();
-            await commentFactory.create({
-                post_id: post.id,
-                member_id: member.id,
-                html: '<p>Test comment for hide checkbox</p>'
-            });
-
-            const commentsPage = new CommentsPage(page);
-            await commentsPage.goto();
-            await commentsPage.waitForComments();
-
-            const commentRow = commentsPage.getCommentRowByText('Test comment for hide checkbox');
-            await commentsPage.openMoreMenu(commentRow);
-            await commentsPage.clickDisableCommenting();
-
-            await expect(commentsPage.hideCommentsCheckbox).toBeVisible();
+    test('hide comments checkbox appears in modal', async ({page}) => {
+        const post = await postFactory.create({status: 'published'});
+        const member = await memberFactory.create();
+        await commentFactory.create({
+            post_id: post.id,
+            member_id: member.id,
+            html: '<p>Test comment for hide checkbox</p>'
         });
 
-        test('disabling with hide comments checked marks comments as hidden', async ({page}) => {
-            const post = await postFactory.create({status: 'published'});
-            const member = await memberFactory.create();
-            await commentFactory.create({
-                post_id: post.id,
-                member_id: member.id,
-                html: '<p>Comment that should be hidden</p>'
-            });
+        const commentsPage = new CommentsPage(page);
+        await commentsPage.goto();
+        await commentsPage.waitForComments();
 
-            const commentsPage = new CommentsPage(page);
-            await commentsPage.goto();
-            await commentsPage.waitForComments();
+        const commentRow = commentsPage.getCommentRowByText('Test comment for hide checkbox');
+        await commentsPage.openMoreMenu(commentRow);
+        await commentsPage.clickDisableCommenting();
 
-            const commentRow = commentsPage.getCommentRowByText('Comment that should be hidden');
-            await expect(commentRow).toBeVisible();
-            await expect(commentRow.getByText('Hidden', {exact: true})).toBeHidden();
+        await expect(commentsPage.hideCommentsCheckbox).toBeVisible();
+    });
 
-            await commentsPage.openMoreMenu(commentRow);
-            await commentsPage.clickDisableCommenting();
-            await commentsPage.hideCommentsCheckbox.check();
-            await commentsPage.confirmDisableCommenting();
-
-            await expect(commentRow.getByText('Hidden', {exact: true})).toBeVisible();
-            await expect(commentsPage.commentingDisabledIndicator(commentRow)).toBeVisible();
+    test('disabling with hide comments checked marks comments as hidden', async ({page}) => {
+        const post = await postFactory.create({status: 'published'});
+        const member = await memberFactory.create();
+        await commentFactory.create({
+            post_id: post.id,
+            member_id: member.id,
+            html: '<p>Comment that should be hidden</p>'
         });
 
-        test('disabling without hide comments checked keeps comments visible', async ({page}) => {
-            const post = await postFactory.create({status: 'published'});
-            const member = await memberFactory.create();
-            await commentFactory.create({
-                post_id: post.id,
-                member_id: member.id,
-                html: '<p>Comment that should stay visible</p>'
-            });
+        const commentsPage = new CommentsPage(page);
+        await commentsPage.goto();
+        await commentsPage.waitForComments();
 
-            const commentsPage = new CommentsPage(page);
-            await commentsPage.goto();
-            await commentsPage.waitForComments();
+        const commentRow = commentsPage.getCommentRowByText('Comment that should be hidden');
+        await expect(commentRow).toBeVisible();
+        await expect(commentRow.getByText('Hidden', {exact: true})).toBeHidden();
 
-            const commentRow = commentsPage.getCommentRowByText('Comment that should stay visible');
-            await commentsPage.openMoreMenu(commentRow);
-            await commentsPage.clickDisableCommenting();
-            await commentsPage.confirmDisableCommenting();
+        await commentsPage.openMoreMenu(commentRow);
+        await commentsPage.clickDisableCommenting();
+        await commentsPage.hideCommentsCheckbox.check();
+        await commentsPage.confirmDisableCommenting();
 
-            await expect(commentsPage.disableCommentsModal).toBeHidden();
-            await expect(commentRow).toBeVisible();
-            await expect(commentsPage.commentingDisabledIndicator(commentRow)).toBeVisible();
+        await expect(commentRow.getByText('Hidden', {exact: true})).toBeVisible();
+        await expect(commentsPage.commentingDisabledIndicator(commentRow)).toBeVisible();
+    });
+
+    test('disabling without hide comments checked keeps comments visible', async ({page}) => {
+        const post = await postFactory.create({status: 'published'});
+        const member = await memberFactory.create();
+        await commentFactory.create({
+            post_id: post.id,
+            member_id: member.id,
+            html: '<p>Comment that should stay visible</p>'
         });
+
+        const commentsPage = new CommentsPage(page);
+        await commentsPage.goto();
+        await commentsPage.waitForComments();
+
+        const commentRow = commentsPage.getCommentRowByText('Comment that should stay visible');
+        await commentsPage.openMoreMenu(commentRow);
+        await commentsPage.clickDisableCommenting();
+        await commentsPage.confirmDisableCommenting();
+
+        await expect(commentsPage.disableCommentsModal).toBeHidden();
+        await expect(commentRow).toBeVisible();
+        await expect(commentsPage.commentingDisabledIndicator(commentRow)).toBeVisible();
     });
 
     test.describe('disable/enable commenting flow', () => {

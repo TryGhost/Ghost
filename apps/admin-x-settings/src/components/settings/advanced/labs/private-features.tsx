@@ -68,10 +68,6 @@ const features: Feature[] = [{
     description: 'Allow staff to disable commenting for individual members',
     flag: 'disableMemberCommenting'
 }, {
-    title: 'Hide Comments When Disabling',
-    description: 'Show option to hide all previous comments when disabling commenting for a member',
-    flag: 'disableMemberCommentingHideComments'
-}, {
     title: 'Sniper Links',
     description: 'Enable mail app links on signup/signin',
     flag: 'sniperlinks'

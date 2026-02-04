@@ -106,7 +106,7 @@ describe('Auth Service SessionStore', function () {
             const sid = 1;
             store.get(sid, function (err, session) {
                 assert.equal(err, null);
-                should.deepEqual(session, {
+                assert.deepEqual(session, {
                     ice: 'cube'
                 });
                 done();

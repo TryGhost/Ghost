@@ -89,19 +89,19 @@ describe('Unit: models/session', function () {
         it('returns the base permittedOptions result', function () {
             const returnedOptions = models.Session.permittedOptions();
 
-            should.deepEqual(returnedOptions, basePermittedOptionsReturnVal);
+            assert.deepEqual(returnedOptions, basePermittedOptionsReturnVal);
         });
 
         it('returns the base permittedOptions result plus "session_id" when methodName is upsert', function () {
             const returnedOptions = models.Session.permittedOptions('upsert');
 
-            should.deepEqual(returnedOptions, basePermittedOptionsReturnVal.concat('session_id'));
+            assert.deepEqual(returnedOptions, basePermittedOptionsReturnVal.concat('session_id'));
         });
 
         it('returns the base permittedOptions result plus "session_id" when methodName is destroy', function () {
             const returnedOptions = models.Session.permittedOptions('destroy');
 
-            should.deepEqual(returnedOptions, basePermittedOptionsReturnVal.concat('session_id'));
+            assert.deepEqual(returnedOptions, basePermittedOptionsReturnVal.concat('session_id'));
         });
     });
 
@@ -137,7 +137,7 @@ describe('Unit: models/session', function () {
                 assert.equal(filterOptionsStub.args[0][0], unfilteredOptions);
                 assert.equal(filterOptionsStub.args[0][1], 'destroy');
 
-                should.deepEqual(forgeStub.args[0][0], {session_id});
+                assert.deepEqual(forgeStub.args[0][0], {session_id});
 
                 assert.equal(fetchStub.args[0][0], filteredOptions);
                 assert.equal(destroyStub.args[0][0], filteredOptions);
@@ -170,12 +170,12 @@ describe('Unit: models/session', function () {
                 assert.equal(filterOptionsStub.args[0][0], unfilteredOptions);
                 assert.equal(filterOptionsStub.args[0][1], 'upsert');
 
-                should.deepEqual(findOneStub.args[0][0], {
+                assert.deepEqual(findOneStub.args[0][0], {
                     session_id
                 });
                 assert.equal(findOneStub.args[0][1], filteredOptions);
 
-                should.deepEqual(addStub.args[0][0], {
+                assert.deepEqual(addStub.args[0][0], {
                     session_id: filteredOptions.session_id,
                     session_data: data.session_data,
                     user_id: data.session_data.user_id
@@ -209,16 +209,16 @@ describe('Unit: models/session', function () {
                 assert.equal(filterOptionsStub.args[0][0], unfilteredOptions);
                 assert.equal(filterOptionsStub.args[0][1], 'upsert');
 
-                should.deepEqual(findOneStub.args[0][0], {
+                assert.deepEqual(findOneStub.args[0][0], {
                     session_id
                 });
                 assert.equal(findOneStub.args[0][1], filteredOptions);
 
-                should.deepEqual(editStub.args[0][0], {
+                assert.deepEqual(editStub.args[0][0], {
                     session_data: data.session_data
                 });
 
-                should.deepEqual(editStub.args[0][1], {
+                assert.deepEqual(editStub.args[0][1], {
                     session_id,
                     id: model.id
                 });
