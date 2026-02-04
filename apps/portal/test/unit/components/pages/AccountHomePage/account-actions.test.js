@@ -1,6 +1,13 @@
-import {render, waitFor} from '../../../../utils/test-utils';
+import {act, render, waitFor} from '../../../../utils/test-utils';
 import AccountActions from '../../../../../src/components/pages/AccountHomePage/components/account-actions';
 import {getSiteData, getMemberData} from '../../../../../src/utils/fixtures-generator';
+
+async function waitForFetchAndFlush() {
+    await waitFor(() => {
+        expect(window.fetch).toHaveBeenCalled();
+    });
+    await act(async () => {});
+}
 
 describe('AccountActions', () => {
     describe('Transistor integration', () => {
@@ -42,10 +49,7 @@ describe('AccountActions', () => {
                 overrideContext: {site, member}
             });
 
-            await waitFor(() => {
-                expect(window.fetch).toHaveBeenCalled();
-            });
-
+            await waitForFetchAndFlush();
             expect(queryByText('Podcasts')).not.toBeInTheDocument();
         });
 
@@ -72,10 +76,7 @@ describe('AccountActions', () => {
                 overrideContext: {site, member}
             });
 
-            await waitFor(() => {
-                expect(window.fetch).toHaveBeenCalled();
-            });
-
+            await waitForFetchAndFlush();
             expect(queryByText('Podcasts')).not.toBeInTheDocument();
         });
 
@@ -88,10 +89,7 @@ describe('AccountActions', () => {
             const {queryByText} = render(<AccountActions />, {
                 overrideContext: {site, member}
             });
-
-            await waitFor(() => {
-                expect(window.fetch).toHaveBeenCalled();
-            });
+            await waitForFetchAndFlush();
 
             expect(queryByText('Podcasts')).not.toBeInTheDocument();
         });
@@ -108,10 +106,7 @@ describe('AccountActions', () => {
                 overrideContext: {site, member}
             });
 
-            await waitFor(() => {
-                expect(window.fetch).toHaveBeenCalled();
-            });
-
+            await waitForFetchAndFlush();
             expect(queryByText('Podcasts')).not.toBeInTheDocument();
         });
 
