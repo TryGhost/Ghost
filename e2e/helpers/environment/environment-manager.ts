@@ -56,9 +56,21 @@ export class EnvironmentManager {
      *
      * NOTE: Playwright workers run in their own processes, so each worker gets its own instance of EnvironmentManager.
      * This is why we need to use a shared state file for Tinybird tokens - this.tinybird instance is not shared between workers.
+     *
+     * When GHOST_E2E_COMPOSE_RUNNING=true (external compose mode), compose services are assumed
+     * to already be running on the host. See isExternalComposeMode() for details.
      */
     public async globalSetup(): Promise<void> {
         logging.info('Starting global environment setup...');
+
+        if (this.isExternalComposeMode()) {
+            logging.info('External compose mode: services already running on host');
+            await this.cleanupResourcesWithoutCompose();
+            await this.mysql.createSnapshot();
+            // Tinybird config should already be fetched by the host
+            logging.info('Global environment setup complete (external compose mode)');
+            return;
+        }
 
         await this.cleanupResources();
         await this.dockerCompose.up();
@@ -101,7 +113,11 @@ export class EnvironmentManager {
 
         logging.info('Starting global environment teardown...');
 
-        await this.cleanupResources();
+        if (this.isExternalComposeMode()) {
+            await this.cleanupResourcesWithoutCompose();
+        } else {
+            await this.cleanupResources();
+        }
 
         logging.info('Global environment teardown complete (docker compose services left running)');
     }
@@ -155,6 +171,54 @@ export class EnvironmentManager {
 
     private shouldPreserveEnvironment(): boolean {
         return process.env.PRESERVE_ENV === 'true';
+    }
+
+    /**
+     * External Compose Mode (GHOST_E2E_COMPOSE_RUNNING=true)
+     *
+     * When tests run inside a container (CI or local containerized testing),
+     * Docker Compose services must be started on the HOST because:
+     *
+     * 1. Volume mount paths in compose.yml are host paths, not container paths
+     * 2. The `docker compose` CLI would fail to resolve paths inside the container
+     *
+     * In this mode:
+     * - Skip `docker compose` CLI commands (up, down, run)
+     * - Use dockerode API directly for container operations (works via mounted socket)
+     * - Tinybird config must be fetched by the host before tests start
+     *
+     * The dockerode library communicates with Docker via the Unix socket,
+     * which works when the socket is mounted into the test container.
+     */
+    private isExternalComposeMode(): boolean {
+        return process.env.GHOST_E2E_COMPOSE_RUNNING === 'true';
+    }
+
+    /**
+     * Clean up resources without using docker compose CLI commands.
+     * Used in external compose mode where compose services are running on the host.
+     * Only performs dockerode-based operations that work through the mounted socket.
+     *
+     * NOTE: We do NOT call recreateBaseDatabase() here because ghost-migrations
+     * has already run and populated ghost_testing with tables. Recreating it
+     * would wipe out the migrated schema.
+     *
+     * NOTE: We skip tinybird.truncateAnalyticsEvents() because it uses `docker compose run`
+     * which would fail inside the container.
+     */
+    private async cleanupResourcesWithoutCompose(): Promise<void> {
+        try {
+            logging.info('Cleaning up resources (external compose mode)...');
+
+            // These use dockerode API directly, not compose CLI
+            await this.ghost.removeAll();
+            await this.mysql.dropAllTestDatabases();
+            await this.mysql.deleteSnapshot();
+
+            logging.info('Resources cleaned up (external compose mode)');
+        } catch (error) {
+            logging.warn('Failed to clean up some resources:', error);
+        }
     }
 
     // each test is going to have unique Ghost container, and site uuid for analytic events
