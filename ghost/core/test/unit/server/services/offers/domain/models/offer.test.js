@@ -386,7 +386,6 @@ describe('Offer', function () {
                 should.ok(err instanceof errors.InvalidOfferTier);
             }
         });
-
     });
 
     describe('#updateCode', function () {
