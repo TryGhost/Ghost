@@ -82,6 +82,7 @@
     "Failed to sign up, please try again": "Fallo al registrarte, inténtalo de nuevo por favor",
     "Failed to update account data": "Fallo al actualizar los datos de la cuenta",
     "Failed to update account details": "Fallo al actualizar los detalles de la cuenta",
+    "Failed to update billing information, please try again": "",
     "Failed to update newsletter settings": "Fallo al actualizar la configuración del boletín",
     "Failed to update subscription, please try again": "Fallo al actualizar la suscripción, inténtalo de nuevo por favor",
     "Failed to verify code, please try again": "",

@@ -82,6 +82,7 @@
     "Failed to sign up, please try again": "Misslyckades med registrering, vänligen försök igen",
     "Failed to update account data": "Misslyckades med att uppdatera kontodata",
     "Failed to update account details": "Misslyckades med att uppdatera kontodetaljer",
+    "Failed to update billing information, please try again": "",
     "Failed to update newsletter settings": "Misslyckades med att uppdatera inställningar för nyhetsbrev",
     "Failed to update subscription, please try again": "Misslyckades med att uppdatera prenumeration, vänligen försök igen",
     "Failed to verify code, please try again": "Det gick inte att verifiera koden, vänligen försök igen",

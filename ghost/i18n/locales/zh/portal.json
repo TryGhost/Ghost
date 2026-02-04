@@ -82,6 +82,7 @@
     "Failed to sign up, please try again": "注册失败，请重试",
     "Failed to update account data": "更新账户数据失败",
     "Failed to update account details": "更新账户信息失败",
+    "Failed to update billing information, please try again": "",
     "Failed to update newsletter settings": "更新新闻信设置失败",
     "Failed to update subscription, please try again": "更新订阅失败，请重试",
     "Failed to verify code, please try again": "验证码验证失败，请重试",

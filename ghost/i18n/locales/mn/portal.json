@@ -82,6 +82,7 @@
     "Failed to sign up, please try again": "Бүртгүүлж чадсангүй, дахин оролдоно уу",
     "Failed to update account data": "Бүртгэлийн мэдээллийг шинэчилж чадсангүй",
     "Failed to update account details": "Бүртгэлийн дэлгэрэнгүй мэдээллийг шинэчилж чадсангүй",
+    "Failed to update billing information, please try again": "",
     "Failed to update newsletter settings": "Товхимолын тохиргоог шинэчилж чадсангүй",
     "Failed to update subscription, please try again": "Захиалгыг шинэчилж чадсангүй, дахин оролдоно уу",
     "Failed to verify code, please try again": "",

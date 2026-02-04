@@ -207,7 +207,7 @@ describe('BillingPortalManager', function () {
 
             assert.deepEqual(options, {
                 business_profile: {
-                    headline: 'Manage your My Ghost Site subscription'
+                    headline: 'Subscription & payment details'
                 },
                 features: {
                     invoice_history: {enabled: true},
@@ -258,7 +258,7 @@ describe('BillingPortalManager', function () {
 
             const options = manager.getConfigurationOptions();
 
-            assert.equal(options.business_profile.headline, 'Manage your Awesome Blog subscription');
+            assert.equal(options.business_profile.headline, 'Subscription & payment details');
         });
     });
 });
