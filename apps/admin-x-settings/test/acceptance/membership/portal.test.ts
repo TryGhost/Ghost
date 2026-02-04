@@ -111,8 +111,8 @@ test.describe('Portal Settings', async () => {
 
         await modal.getByRole('tab', {name: 'Look & feel'}).click();
 
-        await modal.getByRole('switch').click();
         await modal.getByRole('textbox').fill('become a member of something epic');
+        await modal.getByRole('switch').click();
         await modal.getByRole('button', {name: 'Save'}).click();
 
         await expect.poll(() => lastApiRequests.editSettings?.body).toEqual({
