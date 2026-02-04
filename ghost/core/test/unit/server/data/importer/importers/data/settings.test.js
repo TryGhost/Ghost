@@ -53,7 +53,7 @@ describe('SettingsImporter', function () {
 
             const membersFromAddress = find(importer.dataToImport, {key: 'members_from_address'});
 
-            should.not.exist(membersFromAddress);
+            assert.equal(membersFromAddress, undefined);
         });
 
         it('Does not overwrite members support address', function () {
@@ -68,7 +68,7 @@ describe('SettingsImporter', function () {
 
             const membersSupportAddress = find(importer.dataToImport, {key: 'members_support_address'});
 
-            should.not.exist(membersSupportAddress);
+            assert.equal(membersSupportAddress, undefined);
         });
 
         it('Does not overwrite email_verification_required setting', function () {
@@ -84,7 +84,7 @@ describe('SettingsImporter', function () {
 
             const emailVerificationRequired = find(importer.dataToImport, {key: 'email_verification_required'});
 
-            should.not.exist(emailVerificationRequired);
+            assert.equal(emailVerificationRequired, undefined);
         });
 
         it('Does not overwrite site_uuid setting', function () {
@@ -100,7 +100,7 @@ describe('SettingsImporter', function () {
 
             const siteUuid = find(importer.dataToImport, {key: 'site_uuid'});
 
-            should.not.exist(siteUuid);
+            assert.equal(siteUuid, undefined);
         });
 
         it('Adds a problem if the existing data is_private is false, and new data is_private is true', function () {

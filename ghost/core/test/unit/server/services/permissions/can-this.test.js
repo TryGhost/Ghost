@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../../../utils');
@@ -281,7 +282,7 @@ describe('Permissions', function () {
                     .tag({id: 1}) // tag id in model syntax
                     .then(function (res) {
                         userProviderStub.callCount.should.eql(1);
-                        should.not.exist(res);
+                        assert.equal(res, undefined);
                         done();
                     })
                     .catch(done);
@@ -302,7 +303,7 @@ describe('Permissions', function () {
                     .tag() // tag id in model syntax
                     .then(function (res) {
                         userProviderStub.callCount.should.eql(1);
-                        should.not.exist(res);
+                        assert.equal(res, undefined);
                         done();
                     })
                     .catch(done);
@@ -324,7 +325,7 @@ describe('Permissions', function () {
                     .tag({id: 1}) // tag id in model syntax
                     .then(function (res) {
                         userProviderStub.callCount.should.eql(1);
-                        should.not.exist(res);
+                        assert.equal(res, undefined);
                         done();
                     })
                     .catch(done);
@@ -352,7 +353,7 @@ describe('Permissions', function () {
                     .tag({id: 1}) // tag id in model syntax
                     .then(function (res) {
                         apiKeyProviderStub.callCount.should.eql(1);
-                        should.not.exist(res);
+                        assert.equal(res, undefined);
                         done();
                     })
                     .catch(done);
@@ -388,7 +389,7 @@ describe('Permissions', function () {
                     .then(function (res) {
                         userProviderStub.callCount.should.eql(1);
                         apiKeyProviderStub.callCount.should.eql(1);
-                        should.not.exist(res);
+                        assert.equal(res, undefined);
                         done();
                     })
                     .catch(done);
@@ -419,7 +420,7 @@ describe('Permissions', function () {
                     .then(function (res) {
                         userProviderStub.callCount.should.eql(1);
                         apiKeyProviderStub.callCount.should.eql(1);
-                        should.not.exist(res);
+                        assert.equal(res, undefined);
                         // Fixed: Now uses USER permission instead of API key logic
                         done();
                     })
@@ -520,7 +521,7 @@ describe('Permissions', function () {
                     .then(function (res) {
                         userProviderStub.callCount.should.eql(1);
                         apiKeyProviderStub.callCount.should.eql(1);
-                        should.not.exist(res);
+                        assert.equal(res, undefined);
                         done();
                     })
                     .catch(done);
@@ -553,7 +554,7 @@ describe('Permissions', function () {
                         .then(function (res) {
                             userProviderStub.callCount.should.eql(1);
                             apiKeyProviderStub.callCount.should.eql(1);
-                            should.not.exist(res);
+                            assert.equal(res, undefined);
                             done();
                         })
                         .catch(function (err) {
@@ -619,7 +620,7 @@ describe('Permissions', function () {
                         .then(function (res) {
                             userProviderStub.callCount.should.eql(1);
                             apiKeyProviderStub.callCount.should.eql(1);
-                            should.not.exist(res);
+                            assert.equal(res, undefined);
                             done();
                         })
                         .catch(function (err) {
@@ -687,7 +688,7 @@ describe('Permissions', function () {
                     );
 
                     userProviderStub.callCount.should.eql(1);
-                    should.not.exist(res);
+                    assert.equal(res, undefined);
                     done();
                 })
                 .catch(done);

@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const supertest = require('supertest');
 const jwt = require('jsonwebtoken');
@@ -48,7 +49,7 @@ describe('Identities API', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200)
                 .then((res) => {
-                    should.not.exist(res.headers['x-cache-invalidate']);
+                    assert.equal(res.headers['x-cache-invalidate'], undefined);
                     const jsonResponse = res.body;
                     should.exist(jsonResponse);
                     should.exist(jsonResponse.identities);
@@ -94,7 +95,7 @@ describe('Identities API', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200)
                 .then((res) => {
-                    should.not.exist(res.headers['x-cache-invalidate']);
+                    assert.equal(res.headers['x-cache-invalidate'], undefined);
                     const jsonResponse = res.body;
                     should.exist(jsonResponse);
                     should.exist(jsonResponse.identities);

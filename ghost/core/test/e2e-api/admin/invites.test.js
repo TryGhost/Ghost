@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const supertest = require('supertest');
 const sinon = require('sinon');
@@ -31,7 +32,7 @@ describe('Invites API', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200);
 
-            should.not.exist(res.headers['x-cache-invalidate']);
+            assert.equal(res.headers['x-cache-invalidate'], undefined);
             const jsonResponse = res.body;
             should.exist(jsonResponse);
             should.exist(jsonResponse.invites);
@@ -58,7 +59,7 @@ describe('Invites API', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200);
 
-            should.not.exist(res.headers['x-cache-invalidate']);
+            assert.equal(res.headers['x-cache-invalidate'], undefined);
             const jsonResponse = res.body;
             should.exist(jsonResponse);
             should.exist(jsonResponse.invites);
@@ -80,7 +81,7 @@ describe('Invites API', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(201);
 
-            should.not.exist(res.headers['x-cache-invalidate']);
+            assert.equal(res.headers['x-cache-invalidate'], undefined);
             const jsonResponse = res.body;
             should.exist(jsonResponse);
             should.exist(jsonResponse.invites);
@@ -144,7 +145,7 @@ describe('Invites API', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(201);
 
-            should.not.exist(res.headers['x-cache-invalidate']);
+            assert.equal(res.headers['x-cache-invalidate'], undefined);
             const jsonResponse = res.body;
             should.exist(jsonResponse);
             should.exist(jsonResponse.invites);
@@ -171,7 +172,7 @@ describe('Invites API', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(201);
 
-            should.not.exist(res.headers['x-cache-invalidate']);
+            assert.equal(res.headers['x-cache-invalidate'], undefined);
             const jsonResponse = res.body;
             should.exist(jsonResponse);
             should.exist(jsonResponse.invites);
@@ -198,7 +199,7 @@ describe('Invites API', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(201);
 
-            should.not.exist(res.headers['x-cache-invalidate']);
+            assert.equal(res.headers['x-cache-invalidate'], undefined);
             const jsonResponse = res.body;
             should.exist(jsonResponse);
             should.exist(jsonResponse.invites);
@@ -225,7 +226,7 @@ describe('Invites API', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(201);
 
-            should.not.exist(res.headers['x-cache-invalidate']);
+            assert.equal(res.headers['x-cache-invalidate'], undefined);
             const jsonResponse = res.body;
             should.exist(jsonResponse);
             should.exist(jsonResponse.invites);

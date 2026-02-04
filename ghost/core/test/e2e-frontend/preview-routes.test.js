@@ -2,6 +2,7 @@
 // As it stands, these tests depend on the database, and as such are integration tests.
 // Mocking out the models to not touch the DB would turn these into unit tests, and should probably be done in future,
 // But then again testing real code, rather than mock code, might be more useful...
+const assert = require('node:assert/strict');
 const should = require('should');
 
 const sinon = require('sinon');
@@ -13,9 +14,9 @@ const {DateTime} = require('luxon');
 let request;
 
 function assertCorrectFrontendHeaders(res) {
-    should.not.exist(res.headers['x-cache-invalidate']);
-    should.not.exist(res.headers['X-CSRF-Token']);
-    should.not.exist(res.headers['set-cookie']);
+    assert.equal(res.headers['x-cache-invalidate'], undefined);
+    assert.equal(res.headers['X-CSRF-Token'], undefined);
+    assert.equal(res.headers['set-cookie'], undefined);
     should.exist(res.headers.date);
 }
 
@@ -63,9 +64,9 @@ describe('Frontend Routing: Preview Routes', function () {
             .expect((res) => {
                 const $ = cheerio.load(res.text);
 
-                should.not.exist(res.headers['x-cache-invalidate']);
-                should.not.exist(res.headers['X-CSRF-Token']);
-                should.not.exist(res.headers['set-cookie']);
+                assert.equal(res.headers['x-cache-invalidate'], undefined);
+                assert.equal(res.headers['X-CSRF-Token'], undefined);
+                assert.equal(res.headers['set-cookie'], undefined);
                 should.exist(res.headers.date);
 
                 $('title').text().should.equal('Not finished yet');
