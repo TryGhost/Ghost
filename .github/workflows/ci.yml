@@ -49,7 +49,7 @@ jobs:
       pull-requests: read
     steps:
       - name: Checkout current commit
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ env.HEAD_COMMIT }}
           fetch-depth: 2
@@ -230,7 +230,7 @@ jobs:
     if: needs.job_setup.outputs.changed_any_code == 'true'
     name: Lint
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 1000
       - uses: actions/setup-node@v4
@@ -269,7 +269,7 @@ jobs:
         || needs.job_setup.outputs.changed_portal == 'true'
         || needs.job_setup.outputs.changed_core == 'true'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -293,7 +293,7 @@ jobs:
       CI: true
       COVERAGE: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -331,7 +331,7 @@ jobs:
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_any_code == 'true' && (needs.job_setup.outputs.is_six_pr == 'true' || needs.job_setup.outputs.is_development == 'true' || needs.job_setup.outputs.has_browser_tests_label == 'true')
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       with:
         submodules: true
     - name: Check secrets
@@ -407,7 +407,7 @@ jobs:
     if: (needs.job_setup.outputs.changed_core == 'true' && needs.job_setup.outputs.is_development == 'true') || needs.job_setup.outputs.has_perf_tests_label == 'true'
     name: Performance tests
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: true
       - uses: actions/setup-node@v4
@@ -460,7 +460,7 @@ jobs:
         node: ${{ fromJSON(needs.job_setup.outputs.node_test_matrix) }}
     name: Unit tests (Node ${{ matrix.node }})
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 1000
       - uses: actions/setup-node@v4
@@ -518,7 +518,7 @@ jobs:
       NODE_ENV: ${{ matrix.env.NODE_ENV }}
     name: Acceptance tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v4
         env:
           FORCE_COLOR: 0
@@ -609,7 +609,7 @@ jobs:
       NODE_ENV: ${{ matrix.env.NODE_ENV }}
     name: Legacy tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: true
       - uses: actions/setup-node@v4
@@ -666,7 +666,7 @@ jobs:
     env:
       CI: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v4
         env:
           FORCE_COLOR: 0
@@ -706,7 +706,7 @@ jobs:
     env:
       CI: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v4
         env:
           FORCE_COLOR: 0
@@ -746,7 +746,7 @@ jobs:
     env:
       CI: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v4
         env:
           FORCE_COLOR: 0
@@ -786,7 +786,7 @@ jobs:
     env:
       CI: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v4
         env:
           FORCE_COLOR: 0
@@ -837,7 +837,7 @@ jobs:
       TINYBIRD_HOST_STAGING: ${{ secrets.TINYBIRD_HOST_STAGING }}
       TINYBIRD_TOKEN_STAGING: ${{ secrets.TINYBIRD_TOKEN_STAGING }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install Tinybird CLI
         run: curl -fsSL https://tinybird.co/install.sh | sh
       - name: Build project
@@ -855,7 +855,7 @@ jobs:
     if: needs.job_setup.outputs.changed_core == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           submodules: true
@@ -945,7 +945,7 @@ jobs:
       packages: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           submodules: true
 
@@ -1048,7 +1048,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           sparse-checkout: |
             .github/actions/load-docker-image
@@ -1119,7 +1119,7 @@ jobs:
         shardTotal: [8]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
         # TODO: Build tb-cli in a separate workflow and pull from GHCR instead of building here
       - name: Set up Docker Buildx
@@ -1200,7 +1200,7 @@ jobs:
       fail-fast: false
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - uses: actions/setup-node@v4
         with:
@@ -1284,7 +1284,7 @@ jobs:
     ]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Restore Admin coverage
         if: contains(needs.job_admin-tests.result, 'success')
@@ -1441,7 +1441,7 @@ jobs:
             cdn_paths: 'https://cdn.jsdelivr.net/ghost/announcement-bar@~CURRENT_MINOR/umd/announcement-bar.min.js'
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -1548,7 +1548,7 @@ jobs:
     if: always() && github.event_name == 'push' && needs.job_setup.outputs.changed_tinybird == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird-tests.result == 'success' && needs.job_setup.outputs.is_main == 'true'
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Deploy to Staging
         uses: ./.github/actions/deploy-tinybird
         with:
@@ -1568,7 +1568,7 @@ jobs:
     if: always() && github.event_name == 'push' && needs.job_setup.outputs.changed_tinybird == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird-tests.result == 'success' && needs.deploy_tinybird_staging.result == 'success' && needs.job_setup.outputs.is_main == 'true'
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Deploy to Production
         uses: ./.github/actions/deploy-tinybird
         with:
@@ -1590,7 +1590,7 @@ jobs:
       && needs.job_setup.outputs.is_main == 'true'
       && needs.job_required_tests.result == 'success'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v4
         env:
           FORCE_COLOR: 0
