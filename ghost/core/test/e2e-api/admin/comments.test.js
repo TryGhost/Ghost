@@ -7,7 +7,7 @@ const {
     dbUtils,
     matchers
 } = require('../../utils/e2e-framework');
-const {anyEtag, anyObjectId, anyISODateTime, anyUuid, anyNumber, anyBoolean, anyString, nullable} = matchers;
+const {anyEtag, anyErrorId, anyObjectId, anyISODateTime, anyUuid, anyNumber, anyBoolean, anyString, nullable} = matchers;
 const models = require('../../../core/server/models');
 const db = require('../../../core/server/data/db');
 const security = require('@tryghost/security');
@@ -1682,9 +1682,11 @@ describe(`Admin Comments API`, function () {
             const fakeCommentId = '507f1f77bcf86cd799439011';
 
             await adminApi.get(`/comments/${fakeCommentId}/reports/`)
-                .expectStatus(200)
+                .expectStatus(404)
                 .matchBodySnapshot({
-                    comment_reports: []
+                    errors: [{
+                        id: anyErrorId
+                    }]
                 });
         });
     });

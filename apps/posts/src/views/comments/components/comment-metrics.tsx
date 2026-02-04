@@ -1,5 +1,6 @@
+import CommentReportsModal from './comment-reports-modal';
+import {Comment} from '@tryghost/admin-x-framework/api/comments';
 import {
-    Button,
     LucideIcon,
     Tooltip,
     TooltipContent,
@@ -8,88 +9,98 @@ import {
     cn,
     formatNumber
 } from '@tryghost/shade';
+import {useState} from 'react';
+
+interface MetricProps {
+    icon: React.ReactNode;
+    count: number;
+    label: string;
+    onClick?: () => void;
+    className?: string;
+}
+
+function Metric({icon, count, label, onClick, className}: MetricProps) {
+    const baseClassName = cn('flex items-center gap-1 text-xs text-gray-800', className);
+    const content = (
+        <>
+            {icon}
+            <span>{formatNumber(count)}</span>
+        </>
+    );
+
+    return (
+        <TooltipProvider>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    {onClick ? (
+                        <button
+                            className={cn(baseClassName, 'cursor-pointer hover:opacity-70')}
+                            type="button"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onClick();
+                            }}
+                        >
+                            {content}
+                        </button>
+                    ) : (
+                        <div className={baseClassName}>
+                            {content}
+                        </div>
+                    )}
+                </TooltipTrigger>
+                <TooltipContent>{onClick ? `View ${label.toLowerCase()}` : label}</TooltipContent>
+            </Tooltip>
+        </TooltipProvider>
+    );
+}
 
 interface CommentMetricsProps {
-    repliesCount?: number;
-    likesCount?: number;
-    reportsCount?: number;
-    hasReplies?: boolean;
-    onRepliesClick?: () => void;
+    comment: Comment;
+    onRepliesClick: () => void;
     className?: string;
 }
 
 export function CommentMetrics({
-    repliesCount = 0,
-    likesCount = 0,
-    reportsCount = 0,
-    hasReplies,
+    comment,
     onRepliesClick,
     className
 }: CommentMetricsProps) {
-    const isClickableReplies = hasReplies && onRepliesClick;
+    const [reportsModalOpen, setReportsModalOpen] = useState(false);
+
+    const repliesCount = comment.count?.replies ?? comment.replies?.length ?? 0;
+    const likesCount = comment.count?.likes ?? 0;
+    const reportsCount = comment.count?.reports ?? 0;
+    const hasReplies = repliesCount > 0;
+    const hasReports = reportsCount > 0;
 
     return (
-        <div className={cn('flex items-center gap-1', className)}>
-            {isClickableReplies ? (
-                <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button
-                                className='text-foreground/60 [&_svg]:size-4'
-                                size='sm'
-                                variant="ghost"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    onRepliesClick();
-                                }}
-                            >
-                                <LucideIcon.Reply size={16} strokeWidth={1.5} />
-                                <span>{formatNumber(repliesCount)}</span>
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>View replies</TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
-            ) : (
-                <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <div className='inline-flex h-7 items-center justify-center gap-2 whitespace-nowrap rounded-md px-3 text-xs font-medium text-foreground/60'>
-                                <LucideIcon.Reply size={16} strokeWidth={1.5} />
-                                <span>{formatNumber(repliesCount)}</span>
-                            </div>
-                        </TooltipTrigger>
-                        <TooltipContent>Replies</TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
-            )}
-
-            <TooltipProvider>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <div className='inline-flex h-7 items-center justify-center gap-2 whitespace-nowrap rounded-md px-3 text-xs font-medium text-foreground/60'>
-                            <LucideIcon.Heart size={16} strokeWidth={1.5} />
-                            <span>{formatNumber(likesCount)}</span>
-                        </div>
-                    </TooltipTrigger>
-                    <TooltipContent>Likes</TooltipContent>
-                </Tooltip>
-            </TooltipProvider>
-
-            <TooltipProvider>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <div className={cn(
-                            'inline-flex h-7 items-center justify-center gap-2 whitespace-nowrap rounded-md px-3 text-xs font-medium text-foreground/60',
-                            reportsCount ? 'font-semibold text-red' : 'text-foreground/60'
-                        )}>
-                            <LucideIcon.Flag size={16} strokeWidth={reportsCount ? 1.75 : 1.5} />
-                            <span>{formatNumber(reportsCount)}</span>
-                        </div>
-                    </TooltipTrigger>
-                    <TooltipContent>Reports</TooltipContent>
-                </Tooltip>
-            </TooltipProvider>
-        </div>
+        <>
+            <div className={cn('flex items-center gap-6', className)}>
+                <Metric
+                    count={repliesCount}
+                    icon={<LucideIcon.Reply size={16} strokeWidth={1.5} />}
+                    label="Replies"
+                    onClick={hasReplies ? onRepliesClick : undefined}
+                />
+                <Metric
+                    count={likesCount}
+                    icon={<LucideIcon.Heart size={16} strokeWidth={1.5} />}
+                    label="Likes"
+                />
+                <Metric
+                    className={hasReports ? 'font-semibold text-red' : undefined}
+                    count={reportsCount}
+                    icon={<LucideIcon.Flag size={16} strokeWidth={1.5} />}
+                    label="Reports"
+                    onClick={hasReports ? () => setReportsModalOpen(true) : undefined}
+                />
+            </div>
+            <CommentReportsModal
+                comment={comment}
+                open={reportsModalOpen}
+                onOpenChange={setReportsModalOpen}
+            />
+        </>
     );
 }

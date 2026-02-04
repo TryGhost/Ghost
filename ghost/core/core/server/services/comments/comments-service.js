@@ -238,14 +238,23 @@ class CommentsService {
      * @param {any} options - Query options (page, limit)
      */
     async getCommentReporters(commentId, options = {}) {
-        const page = await this.models.CommentReport.findPage({
+        const comment = await this.models.Comment.findOne({id: commentId});
+        if (!comment) {
+            throw new errors.NotFoundError({
+                message: tpl(messages.commentNotFound)
+            });
+        }
+
+        const {page, limit} = options;
+        const result = await this.models.CommentReport.findPage({
             filter: `comment_id:'${commentId}'`,
             withRelated: ['member'],
             order: 'created_at desc',
-            ...options
+            page,
+            limit
         });
 
-        return page;
+        return result;
     }
 
     /**
