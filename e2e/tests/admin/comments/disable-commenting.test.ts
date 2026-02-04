@@ -7,7 +7,6 @@ const useReactShell = process.env.USE_REACT_SHELL === 'true';
 
 test.describe('Ghost Admin - Disable Commenting', () => {
     test.skip(!useReactShell, 'Skipping: requires USE_REACT_SHELL=true');
-    test.use({labs: {commentModeration: true}});
 
     let postFactory: PostFactory;
     let memberFactory: MemberFactory;
