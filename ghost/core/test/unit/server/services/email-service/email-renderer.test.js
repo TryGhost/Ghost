@@ -1882,6 +1882,56 @@ describe('Email renderer', function () {
             response.replacements[3].id.should.eql('list_unsubscribe');
         });
 
+        it('tracks links containing %%{uuid}%% and preserves placeholder in destination', async function () {
+            const post = createModel(basePost);
+            const newsletter = createModel({
+                header_image: null,
+                name: 'Test Newsletter',
+                show_badge: false,
+                feedback_enabled: false,
+                show_post_title_section: true
+            });
+            const segment = null;
+            const options = {
+                clickTrackingEnabled: true
+            };
+
+            renderedPost = '<p>Lexical Test</p><p><a href="https://share.transistor.fm/e/episode?subscriber_id=%%{uuid}%%">Listen to episode</a></p>';
+
+            let response = await emailRenderer.renderBody(
+                post,
+                newsletter,
+                segment,
+                options
+            );
+
+            // Verify tracking was called for the Transistor link
+            addTrackingToUrlStub.called.should.be.true();
+            const transistorCall = addTrackingToUrlStub.getCalls().find(
+                call => call.args[0].href.includes('transistor.fm')
+            );
+            transistorCall.should.not.be.undefined();
+
+            // The %%{uuid}%% placeholder should survive in the tracked URL destination
+            // When URL searchParams are manipulated, the placeholder gets URL-encoded
+            const href = transistorCall.args[0].href;
+            const hasPlaceholder = href.includes('%%{uuid}%%') ||
+                href.includes('%25%25%7Buuid%7D%25%25');
+            hasPlaceholder.should.be.true('URL should contain uuid placeholder');
+
+            // The final tracked link should be in the HTML
+            const $ = cheerio.load(response.html);
+            const links = [];
+            for (const link of $('a').toArray()) {
+                const linkHref = $(link).attr('href');
+                links.push(linkHref);
+            }
+
+            // The Transistor link should be tracked
+            const trackedTransistorLink = links.find(linkHref => linkHref.includes('tracked-link.com'));
+            trackedTransistorLink.should.not.be.undefined();
+        });
+
         it('removes data-gh-segment and renders paywall', async function () {
             renderedPost = '<div> Lexical Test </div> <div data-gh-segment="status:-free"> members only section</div> some text for both <!--members-only--> finishing part only for members';
             let post = {

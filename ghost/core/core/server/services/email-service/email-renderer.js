@@ -380,10 +380,6 @@ class EmailRenderer {
     async renderBody(post, newsletter, segment, options) {
         let html = await this.renderPostBaseHtml(post, newsletter);
 
-        // We don't allow the usage of the %%{uuid}%% replacement in the email body (only in links and special cases)
-        // So we need to filter them before we introduce the real %%{uuid}%%
-        html = html.replace(/%%{uuid}%%/g, '{uuid}');
-
         // Paywall and members only content handling
         const isPaidPost = post.get('visibility') === 'paid' || post.get('visibility') === 'tiers';
         const membersOnlyIndex = html.indexOf('<!--members-only-->');
@@ -443,10 +439,13 @@ class EmailRenderer {
                     return originalPath;
                 }
 
-                // We ignore all links that contain %%{uuid}%%
-                // because otherwise we would add tracking to links that need to be replaced first
-                if (url.toString().indexOf('%%{uuid}%%') !== -1) {
-                    return url.toString();
+                // Skip tracking for links that contain replacement patterns other than %%{uuid}%%
+                // %%{uuid}%% is substituted at redirect time via the ?m= parameter, but other
+                // patterns (e.g. %%{key}%%) require direct Mailgun substitution
+                const urlStr = url.toString();
+                const withoutUuid = urlStr.replace(/%%\{uuid\}%%/g, '');
+                if (/%%\{[^}]+\}%%/.test(withoutUuid)) {
+                    return urlStr;
                 }
 
                 // Add newsletter source attribution
