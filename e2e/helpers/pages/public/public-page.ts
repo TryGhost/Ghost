@@ -77,7 +77,7 @@ export class PublicPage extends BasePage {
         });
     }
 
-    async goto(url?: string, options?: pageGotoOptions): Promise<void> {
+    async goto(url?: string, options?: pageGotoOptions): Promise<null | Response> {
         const testInfo = test.info();
         let pageHitPromise = null;
         if (testInfo.project.name === 'analytics') {
@@ -85,10 +85,11 @@ export class PublicPage extends BasePage {
             pageHitPromise = this.pageHitRequestPromise();
         }
         await this.enableAnalyticsRequests();
-        await super.goto(url, options);
+        const result = await super.goto(url, options);
         if (pageHitPromise) {
             await pageHitPromise;
         }
+        return result;
     }
 
     pageHitRequestPromise(): Promise<Response> {
