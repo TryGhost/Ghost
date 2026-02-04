@@ -416,7 +416,9 @@ const PlansContainer = ({
 
     // Retention offer flow - shown before cancellation confirmation
     if (confirmationType === 'offerRetention' && pendingOffer) {
-        const offerProduct = getProductFromId({site, productId: pendingOffer.tier.id});
+        const offerProduct = pendingOffer.tier
+            ? getProductFromId({site, productId: pendingOffer.tier.id})
+            : getMemberActiveProduct({member, site});
         const offerPrice = pendingOffer.cadence === 'month' ? offerProduct?.monthlyPrice : offerProduct?.yearlyPrice;
 
         // Skip retention offer if product or price data is invalid

@@ -276,7 +276,7 @@ export default class OfferPage extends React.Component {
     handleSignup(e) {
         e.preventDefault();
         const {pageData: offer, site} = this.context;
-        if (!offer) {
+        if (!offer || !offer.tier) {
             return null;
         }
         const product = getProductFromId({site, productId: offer.tier.id});
@@ -649,7 +649,7 @@ export default class OfferPage extends React.Component {
 
     render() {
         const {pageData: offer, site} = this.context;
-        if (!offer) {
+        if (!offer || !offer.tier) {
             return null;
         }
         const product = getProductFromId({site, productId: offer.tier.id});
