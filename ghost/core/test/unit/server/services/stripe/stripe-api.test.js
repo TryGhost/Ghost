@@ -69,7 +69,7 @@ describe('StripeAPI', function () {
                 trialDays: 12
             });
 
-            should.not.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.subscription_data.trial_from_plan);
+            assert.equal(mockStripe.checkout.sessions.create.firstCall.firstArg.subscription_data.trial_from_plan, undefined);
             should.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.subscription_data.trial_period_days);
             assert.equal(mockStripe.checkout.sessions.create.firstCall.firstArg.subscription_data.trial_period_days, 12);
         });
@@ -79,7 +79,7 @@ describe('StripeAPI', function () {
 
             should.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.subscription_data.trial_from_plan);
             assert.equal(mockStripe.checkout.sessions.create.firstCall.firstArg.subscription_data.trial_from_plan, true);
-            should.not.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.subscription_data.trial_period_days);
+            assert.equal(mockStripe.checkout.sessions.create.firstCall.firstArg.subscription_data.trial_period_days, undefined);
         });
 
         it('ignores 0 trialDays', async function () {
@@ -89,7 +89,7 @@ describe('StripeAPI', function () {
 
             should.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.subscription_data.trial_from_plan);
             assert.equal(mockStripe.checkout.sessions.create.firstCall.firstArg.subscription_data.trial_from_plan, true);
-            should.not.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.subscription_data.trial_period_days);
+            assert.equal(mockStripe.checkout.sessions.create.firstCall.firstArg.subscription_data.trial_period_days, undefined);
         });
 
         it('ignores null trialDays', async function () {
@@ -99,7 +99,7 @@ describe('StripeAPI', function () {
 
             should.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.subscription_data.trial_from_plan);
             assert.equal(mockStripe.checkout.sessions.create.firstCall.firstArg.subscription_data.trial_from_plan, true);
-            should.not.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.subscription_data.trial_period_days);
+            assert.equal(mockStripe.checkout.sessions.create.firstCall.firstArg.subscription_data.trial_period_days, undefined);
         });
 
         it('passes customer ID successfully to Stripe', async function () {
@@ -152,7 +152,7 @@ describe('StripeAPI', function () {
                 trialDays: null
             });
 
-            should.not.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.customer_email);
+            assert.equal(mockStripe.checkout.sessions.create.firstCall.firstArg.customer_email, undefined);
             should.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.customer);
             assert.equal(mockStripe.checkout.sessions.create.firstCall.firstArg.customer, 'cust_mock_123456');
         });
@@ -232,7 +232,7 @@ describe('StripeAPI', function () {
             mockLabsIsSet.withArgs('additionalPaymentMethods').returns(false);
             await api.createCheckoutSetupSession('priceId', {currency: 'usd'});
 
-            should.not.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.currency);
+            assert.equal(mockStripe.checkout.sessions.create.firstCall.firstArg.currency, undefined);
         });
 
         it('createCheckoutSetupSession sends currency if additionalPaymentMethods flag is on', async function () {
@@ -470,7 +470,7 @@ describe('StripeAPI', function () {
             await api.createCheckoutSession('priceId', undefined, {
                 trialDays: null
             });
-            should.not.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.customer_update);
+            assert.equal(mockStripe.checkout.sessions.create.firstCall.firstArg.customer_update, undefined);
         });
 
         it('createCheckoutSession does not add customer_update if automatic tax flag is disabled', async function () {
@@ -491,7 +491,7 @@ describe('StripeAPI', function () {
             await api.createCheckoutSession('priceId', mockCustomer, {
                 trialDays: null
             });
-            should.not.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.customer_update);
+            assert.equal(mockStripe.checkout.sessions.create.firstCall.firstArg.customer_update, undefined);
         });
     });
 
@@ -531,7 +531,7 @@ describe('StripeAPI', function () {
             mockLabsIsSet.withArgs('additionalPaymentMethods').returns(false);
             await api.createDonationCheckoutSession('priceId', {currency: 'usd'});
 
-            should.not.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.currency);
+            assert.equal(mockStripe.checkout.sessions.create.firstCall.firstArg.currency, undefined);
         });
 
         it('passes customer ID when a valid customer object is provided', async function () {
@@ -584,7 +584,7 @@ describe('StripeAPI', function () {
 
             should.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.customer);
             assert.equal(mockStripe.checkout.sessions.create.firstCall.firstArg.customer, mockCustomerId);
-            should.not.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.customer_email);
+            assert.equal(mockStripe.checkout.sessions.create.firstCall.firstArg.customer_email, undefined);
         });
 
         it('passes metadata correctly', async function () {

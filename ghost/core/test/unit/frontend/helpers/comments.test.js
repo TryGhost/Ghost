@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const configUtils = require('../../../utils/config-utils');
@@ -36,7 +37,7 @@ describe('{{comments}} helper', function () {
         settingsCacheGetStub.withArgs('comments_enabled').returns('all');
 
         comments({}).then(function (rendered) {
-            should.not.exist(rendered);
+            assert.equal(rendered, undefined);
             done();
         }).catch(done);
     });
@@ -113,7 +114,7 @@ describe('{{comments}} helper', function () {
                 site: {}
             }
         });
-        should.not.exist(rendered);
+        assert.equal(rendered, undefined);
     });
 
     it('returns undefined when no access to post', async function () {
@@ -130,6 +131,6 @@ describe('{{comments}} helper', function () {
                 site: {}
             }
         });
-        should.not.exist(rendered);
+        assert.equal(rendered, undefined);
     });
 });

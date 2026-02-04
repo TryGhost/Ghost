@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const Gravatar = require('../../../../../core/server/lib/image/gravatar');
 
@@ -53,7 +54,7 @@ describe('lib/image: gravatar', function () {
 
         gravatar.lookup({email: 'invalid@example.com'}).then(function (result) {
             should.exist(result);
-            should.not.exist(result.image);
+            assert.equal(result.image, undefined);
 
             done();
         }).catch(done);

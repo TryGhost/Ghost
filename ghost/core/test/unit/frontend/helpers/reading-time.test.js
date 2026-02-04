@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 
 // Stuff we are testing
@@ -112,6 +113,6 @@ describe('{{reading_time}} helper', function () {
 
         const result = reading_time.call(data);
 
-        should.not.exist(result);
+        assert.equal(result, null);
     });
 });

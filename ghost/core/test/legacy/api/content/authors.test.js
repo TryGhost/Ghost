@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const supertest = require('supertest');
 const localUtils = require('./utils');
@@ -104,7 +105,7 @@ describe('Authors Content API', function () {
             .expect('Cache-Control', testUtils.cacheRules.public)
             .expect(200)
             .then((res) => {
-                should.not.exist(res.headers['x-cache-invalidate']);
+                assert.equal(res.headers['x-cache-invalidate'], undefined);
 
                 // We don't expose any other attrs.
                 localUtils.API.checkResponse(res.body.authors[0], 'author', null, null, ['id', 'name']);

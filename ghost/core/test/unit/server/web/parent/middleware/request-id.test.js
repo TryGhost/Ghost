@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const validator = require('@tryghost/validator');
@@ -26,7 +27,7 @@ describe('Request ID middleware', function () {
     });
 
     it('generates a new request ID if X-Request-ID not present', function () {
-        should.not.exist(req.requestId);
+        assert.equal(req.requestId, undefined);
 
         requestId(req, res, next);
 
@@ -36,7 +37,7 @@ describe('Request ID middleware', function () {
     });
 
     it('keeps the request ID if X-Request-ID is present', function () {
-        should.not.exist(req.requestId);
+        assert.equal(req.requestId, undefined);
         req.get.withArgs('X-Request-ID').returns('abcd');
 
         requestId(req, res, next);

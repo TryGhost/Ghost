@@ -78,8 +78,8 @@ describe('lib/image: image size cache', function () {
         cacheStore.get(url).should.not.be.undefined;
         const image = cacheStore.get(url);
         assert.equal(image.url, 'http://mysite.com/content/image/mypostcoverimage.jpg');
-        should.not.exist(image.width);
-        should.not.exist(image.height);
+        assert.equal(image.width, undefined);
+        assert.equal(image.height, undefined);
         sinon.assert.calledOnce(loggingStub);
     });
 
@@ -99,8 +99,8 @@ describe('lib/image: image size cache', function () {
         cacheStore.get(url).should.not.be.undefined;
         const image = cacheStore.get(url);
         assert.equal(image.url, 'http://mysite.com/content/image/mypostcoverimage.jpg');
-        should.not.exist(image.width);
-        should.not.exist(image.height);
+        assert.equal(image.width, undefined);
+        assert.equal(image.height, undefined);
     });
 
     it('should return null if url is null', async function () {
@@ -113,6 +113,6 @@ describe('lib/image: image size cache', function () {
 
         result = await cachedImageSizeFromUrl.getCachedImageSizeFromUrl(url);
 
-        should.not.exist(result);
+        assert.equal(result, undefined);
     });
 });

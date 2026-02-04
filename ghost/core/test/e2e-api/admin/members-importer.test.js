@@ -42,7 +42,7 @@ describe('Members Importer API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(201);
 
-        should.not.exist(res.headers['x-cache-invalidate']);
+        assert.equal(res.headers['x-cache-invalidate'], undefined);
         const jsonResponse = res.body;
 
         should.exist(jsonResponse);

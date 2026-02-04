@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const moment = require('moment');
@@ -47,8 +48,8 @@ describe('Scheduling Default Adapter', function () {
             });
 
             // 2 jobs get immediately executed
-            should.not.exist(scope.adapter.allJobs[moment(dates[1]).valueOf()]);
-            should.not.exist(scope.adapter.allJobs[moment(dates[7]).valueOf()]);
+            assert.equal(scope.adapter.allJobs[moment(dates[1]).valueOf()], undefined);
+            assert.equal(scope.adapter.allJobs[moment(dates[7]).valueOf()], undefined);
             scope.adapter._execute.calledTwice.should.eql(true);
 
             Object.keys(scope.adapter.allJobs).length.should.eql(dates.length - 2);

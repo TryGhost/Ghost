@@ -43,7 +43,7 @@ describe('Posts API', function () {
                         return done(err);
                     }
 
-                    should.not.exist(res.headers['x-cache-invalidate']);
+                    assert.equal(res.headers['x-cache-invalidate'], undefined);
                     const jsonResponse = res.body;
                     should.exist(jsonResponse.posts);
                     localUtils.API.checkResponse(jsonResponse, 'posts');
@@ -74,7 +74,7 @@ describe('Posts API', function () {
                         return done(err);
                     }
 
-                    should.not.exist(res.headers['x-cache-invalidate']);
+                    assert.equal(res.headers['x-cache-invalidate'], undefined);
                     const jsonResponse = res.body;
                     should.exist(jsonResponse.posts);
                     localUtils.API.checkResponse(jsonResponse, 'posts');
@@ -105,7 +105,7 @@ describe('Posts API', function () {
                         return done(err);
                     }
 
-                    should.not.exist(res.headers['x-cache-invalidate']);
+                    assert.equal(res.headers['x-cache-invalidate'], undefined);
                     const jsonResponse = res.body;
                     should.exist(jsonResponse.posts);
                     localUtils.API.checkResponse(jsonResponse, 'posts');
@@ -136,7 +136,7 @@ describe('Posts API', function () {
                         return done(err);
                     }
 
-                    should.not.exist(res.headers['x-cache-invalidate']);
+                    assert.equal(res.headers['x-cache-invalidate'], undefined);
                     const jsonResponse = res.body;
                     should.exist(jsonResponse.posts);
                     localUtils.API.checkResponse(jsonResponse, 'posts');
@@ -166,7 +166,7 @@ describe('Posts API', function () {
                         return done(err);
                     }
 
-                    should.not.exist(res.headers['x-cache-invalidate']);
+                    assert.equal(res.headers['x-cache-invalidate'], undefined);
                     const jsonResponse = res.body;
                     should.exist(jsonResponse.posts);
                     localUtils.API.checkResponse(jsonResponse, 'posts');
@@ -231,7 +231,7 @@ describe('Posts API', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200)
                 .then((res) => {
-                    should.not.exist(res.headers['x-cache-invalidate']);
+                    assert.equal(res.headers['x-cache-invalidate'], undefined);
                     const jsonResponse = res.body;
                     should.exist(jsonResponse.posts);
                     localUtils.API.checkResponse(jsonResponse, 'posts');
@@ -269,7 +269,7 @@ describe('Posts API', function () {
                         return done(err);
                     }
 
-                    should.not.exist(res.headers['x-cache-invalidate']);
+                    assert.equal(res.headers['x-cache-invalidate'], undefined);
                     const jsonResponse = res.body;
                     should.exist(jsonResponse);
                     should.exist(jsonResponse.errors);
@@ -730,7 +730,7 @@ describe('Posts API', function () {
                 })
                 .then((res) => {
                     // NOTE: when ONLY ignored fields are posted they should not change a thing, thus cache stays untouched
-                    should.not.exist(res.headers['x-cache-invalidate']);
+                    assert.equal(res.headers['x-cache-invalidate'], undefined);
 
                     should.exist(res.body.posts);
                     should.exist(res.body.posts[0].published_at);
@@ -809,7 +809,7 @@ describe('Posts API', function () {
                 .expect(200)
                 .then((res) => {
                     // @NOTE: you cannot modify these fields above manually, that's why the resource won't change.
-                    should.not.exist(res.headers['x-cache-invalidate']);
+                    assert.equal(res.headers['x-cache-invalidate'], undefined);
 
                     return models.Post.findOne({
                         id: res.body.posts[0].id
@@ -1024,7 +1024,7 @@ describe('Posts API', function () {
                         .expect(200);
                 })
                 .then((res) => {
-                    should.not.exist(res.headers['x-cache-invalidate']);
+                    assert.equal(res.headers['x-cache-invalidate'], undefined);
 
                     should.exist(res.body.posts);
                     res.body.posts[0].title.should.equal('Has a title by no other content');
@@ -1078,7 +1078,7 @@ describe('Posts API', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(404)
                 .then((res) => {
-                    should.not.exist(res.headers['x-cache-invalidate']);
+                    assert.equal(res.headers['x-cache-invalidate'], undefined);
                     should.exist(res.body);
                     should.exist(res.body.errors);
                     testUtils.API.checkResponseValue(res.body.errors[0], [

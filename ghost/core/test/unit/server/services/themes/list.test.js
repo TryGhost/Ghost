@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const _ = require('lodash');
@@ -21,7 +22,7 @@ describe('Themes', function () {
         });
 
         it('get() with no args should do nothing', function () {
-            should.not.exist(themeList.get());
+            assert.equal(themeList.get(), undefined);
         });
 
         it('getAll() returns all themes', function () {
@@ -46,7 +47,7 @@ describe('Themes', function () {
             should.exist(themeList.get('casper'));
             should.exist(themeList.get('not-casper'));
             themeList.del('casper');
-            should.not.exist(themeList.get('casper'));
+            assert.equal(themeList.get('casper'), undefined);
             should.exist(themeList.get('not-casper'));
         });
 

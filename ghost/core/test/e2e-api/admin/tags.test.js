@@ -24,7 +24,7 @@ describe('Tag API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
 
-        should.not.exist(res.headers['x-cache-invalidate']);
+        assert.equal(res.headers['x-cache-invalidate'], undefined);
         const jsonResponse = res.body;
         should.exist(jsonResponse);
         should.exist(jsonResponse.tags);
@@ -72,7 +72,7 @@ describe('Tag API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
 
-        should.not.exist(res.headers['x-cache-invalidate']);
+        assert.equal(res.headers['x-cache-invalidate'], undefined);
         const jsonResponse = res.body;
         should.exist(jsonResponse);
         should.exist(jsonResponse.tags);

@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const should = require('should');
 const fs = require('fs-extra');
@@ -31,7 +32,7 @@ describe('UNIT > Settings Service yaml parser:', function () {
 
             try {
                 const result = yamlParser(file);
-                should.not.exist(result);
+                assert.equal(result, undefined);
             } catch (error) {
                 should.exist(error);
                 error.message.should.eql('Could not parse provided YAML file: bad indentation of a mapping entry.');

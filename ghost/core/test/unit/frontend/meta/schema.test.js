@@ -734,7 +734,7 @@ describe('getSchema', function () {
 
         const schema = getSchema(metadata, data);
 
-        should.not.exist(schema.contributor);
+        assert.equal(schema.contributor, undefined);
     });
 
     it('should include contributors when post has multiple authors', function () {

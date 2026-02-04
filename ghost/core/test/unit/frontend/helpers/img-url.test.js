@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const configUtils = require('../../../utils/config-utils');
@@ -63,19 +64,19 @@ describe('{{img_url}} helper', function () {
 
         it('should have no output if the image attribute is not provided (with warning)', function () {
             const rendered = img_url({hash: {absolute: 'true'}});
-            should.not.exist(rendered);
+            assert.equal(rendered, undefined);
             logWarnStub.calledOnce.should.be.true();
         });
 
         it('should have no output if the image attribute evaluates to undefined (with warning)', function () {
             const rendered = img_url(undefined, {hash: {absolute: 'true'}});
-            should.not.exist(rendered);
+            assert.equal(rendered, undefined);
             logWarnStub.calledOnce.should.be.true();
         });
 
         it('should have no output if the image attribute evaluates to null (no waring)', function () {
             const rendered = img_url(null, {hash: {absolute: 'true'}});
-            should.not.exist(rendered);
+            assert.equal(rendered, undefined);
             logWarnStub.calledOnce.should.be.false();
         });
     });

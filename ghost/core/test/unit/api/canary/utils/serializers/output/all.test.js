@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const serializers = require('../../../../../../../core/server/api/endpoints/utils/serializers');
 
@@ -18,7 +19,7 @@ describe('Unit: endpoints/utils/serializers/output/all', function () {
                 response: response
             });
 
-            should.not.exist(response.posts[0].published_by);
+            assert.equal(response.posts[0].published_by, undefined);
             should.exist(response.posts[0].title);
 
             response = {
@@ -33,7 +34,7 @@ describe('Unit: endpoints/utils/serializers/output/all', function () {
                 response: response
             });
 
-            should.not.exist(response.post.published_by);
+            assert.equal(response.post.published_by, undefined);
             should.exist(response.post.title);
 
             response = {
@@ -56,8 +57,8 @@ describe('Unit: endpoints/utils/serializers/output/all', function () {
                 response: response
             });
 
-            should.not.exist(response.pages[0].published_by);
-            should.not.exist(response.pages[1].published_by);
+            assert.equal(response.pages[0].published_by, undefined);
+            assert.equal(response.pages[1].published_by, undefined);
             should.exist(response.pages[0].authors);
             should.exist(response.pages[0].authors[0].slug);
         });

@@ -114,7 +114,7 @@ describe('User Model', function run() {
 
             UserModel.add(userData, context).then(function (createdUser) {
                 should.exist(createdUser);
-                should.not.exist(createdUser.image);
+                assert.equal(createdUser.image, undefined);
                 done();
             }).catch(done);
         });

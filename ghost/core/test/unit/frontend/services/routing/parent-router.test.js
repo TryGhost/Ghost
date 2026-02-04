@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const configUtils = require('../../../../utils/config-utils');
@@ -290,7 +291,7 @@ describe('UNIT - services/routing/ParentRouter', function () {
         it('data keys are undefined', function () {
             const parentRouter = new ParentRouter();
             parentRouter.data = {query: {}, router: {}};
-            should.not.exist(parentRouter.isRedirectEnabled('tags', 'bacon'));
+            assert.equal(parentRouter.isRedirectEnabled('tags', 'bacon'), undefined);
         });
 
         it('no redirect when unspecified slug', function () {
@@ -303,7 +304,7 @@ describe('UNIT - services/routing/ParentRouter', function () {
                 }
             };
 
-            should.not.exist(parentRouter.isRedirectEnabled('tags', 'bacon'));
+            assert.equal(parentRouter.isRedirectEnabled('tags', 'bacon'), undefined);
         });
 
         it('no redirect when wrong slug', function () {
@@ -316,7 +317,7 @@ describe('UNIT - services/routing/ParentRouter', function () {
                 }
             };
 
-            should.not.exist(parentRouter.isRedirectEnabled('tags', 'bacon'));
+            assert.equal(parentRouter.isRedirectEnabled('tags', 'bacon'), undefined);
         });
 
         it('no redirect when tag redirect=false', function () {
@@ -329,7 +330,7 @@ describe('UNIT - services/routing/ParentRouter', function () {
                 }
             };
 
-            should.not.exist(parentRouter.isRedirectEnabled('tags', 'bacon'));
+            assert.equal(parentRouter.isRedirectEnabled('tags', 'bacon'), undefined);
         });
 
         it('redirect (tags)', function () {

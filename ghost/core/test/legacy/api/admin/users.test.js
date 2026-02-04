@@ -39,7 +39,7 @@ describe('User API', function () {
                             return done(err);
                         }
 
-                        should.not.exist(res.headers['x-cache-invalidate']);
+                        assert.equal(res.headers['x-cache-invalidate'], undefined);
                         const jsonResponse = res.body;
                         should.exist(jsonResponse);
                         should.exist(jsonResponse.errors);
@@ -70,7 +70,7 @@ describe('User API', function () {
                             return done(err);
                         }
 
-                        should.not.exist(res.headers['x-cache-invalidate']);
+                        assert.equal(res.headers['x-cache-invalidate'], undefined);
                         const jsonResponse = res.body;
                         should.exist(jsonResponse);
                         should.exist(jsonResponse.errors);

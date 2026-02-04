@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const should = require('should');
 const ContentStatsService = require('../../../../../core/server/services/stats/content-stats-service');
@@ -166,7 +167,7 @@ describe('ContentStatsService', function () {
             });
 
             const result = serviceNoUrl.getResourceTitle('/about/');
-            should.not.exist(result);
+            assert.equal(result, null);
         });
 
         it('returns title from resource with title property', function () {
@@ -203,14 +204,14 @@ describe('ContentStatsService', function () {
             mockUrlService.getResource.withArgs('/not-found/').throws(new Error('Resource not found'));
 
             const result = service.getResourceTitle('/not-found/');
-            should.not.exist(result);
+            assert.equal(result, null);
         });
 
         it('returns null if resource has no data or title/name', function () {
             mockUrlService.getResource.withArgs('/empty/').returns({});
 
             const result = service.getResourceTitle('/empty/');
-            should.not.exist(result);
+            assert.equal(result, null);
         });
     });
 
@@ -356,7 +357,7 @@ describe('ContentStatsService', function () {
 
             const result = await service.fetchRawTopContentData(options);
 
-            should.not.exist(result);
+            assert.equal(result, null);
 
             // Verify that camelCase conversion happened
             const calledWith = mockTinybirdClient.fetch.firstCall.args;

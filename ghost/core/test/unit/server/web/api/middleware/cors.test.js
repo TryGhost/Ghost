@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const rewire = require('rewire');
@@ -46,7 +47,7 @@ describe('cors', function () {
         cors(req, res, next);
 
         sinon.assert.calledOnce(next);
-        should.not.exist(res.headers['Access-Control-Allow-Origin']);
+        assert.equal(res.headers['Access-Control-Allow-Origin'], undefined);
 
         done();
     });
@@ -91,7 +92,7 @@ describe('cors', function () {
         cors(req, res, next);
 
         sinon.assert.calledOnce(next);
-        should.not.exist(res.headers['Access-Control-Allow-Origin']);
+        assert.equal(res.headers['Access-Control-Allow-Origin'], undefined);
 
         done();
     });

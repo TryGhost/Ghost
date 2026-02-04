@@ -102,7 +102,7 @@ describe('Models: getLazyRelation', function () {
         });
 
         const modelA = TestModel.forge({id: '1'});
-        should.not.exist(await modelA.getLazyRelation('other'));
+        assert.equal(await modelA.getLazyRelation('other'), undefined);
     });
 
     it('throws for model without id for optional relations with require', async function () {
@@ -134,7 +134,7 @@ describe('Models: getLazyRelation', function () {
             tableName: 'test_models'
         });
         const modelA = TestModel.forge({id: '1'});
-        should.not.exist(await modelA.getLazyRelation('other'));
+        assert.equal(await modelA.getLazyRelation('other'), undefined);
     });
 
     it('throws for nonexistent relations with require', async function () {

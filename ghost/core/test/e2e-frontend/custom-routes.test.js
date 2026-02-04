@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const supertest = require('supertest');
 const path = require('path');
@@ -6,9 +7,9 @@ const testUtils = require('../utils');
 const configUtils = require('../utils/config-utils');
 
 function assertCorrectFrontendHeaders(res) {
-    should.not.exist(res.headers['x-cache-invalidate']);
-    should.not.exist(res.headers['X-CSRF-Token']);
-    should.not.exist(res.headers['set-cookie']);
+    assert.equal(res.headers['x-cache-invalidate'], undefined);
+    assert.equal(res.headers['X-CSRF-Token'], undefined);
+    assert.equal(res.headers['set-cookie'], undefined);
     should.exist(res.headers.date);
 }
 

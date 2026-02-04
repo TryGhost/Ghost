@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const crypto = require('crypto');
 const {agentProvider, mockManager, fixtureManager, matchers, configUtils} = require('../../utils/e2e-framework');
 const {anyEtag, anyObjectId, anyUuid, anyISODateTime, stringMatching} = matchers;
@@ -269,7 +270,7 @@ describe('Comments API', function () {
                 .expectStatus(204)
                 .expectEmptyBody()
                 .expect(({headers}) => {
-                    should.not.exist(headers['set-cookie']);
+                    assert.equal(headers['set-cookie'], undefined);
                 });
         });
 

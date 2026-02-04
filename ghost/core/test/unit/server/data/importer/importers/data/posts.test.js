@@ -117,7 +117,7 @@ describe('PostsImporter', function () {
             const post = find(importer.dataToImport, {slug: 'post-with-newsletter'});
             should.exist(post);
             post.email_recipient_filter.should.eql('all');
-            should.not.exist(post.send_email_when_published);
+            assert.equal(post.send_email_when_published, undefined);
             // @TODO: need to check this mapping
             //post.newsletter_id.should.eql();
         });

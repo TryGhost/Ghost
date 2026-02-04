@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const NewslettersImporter = require('../../../../../../../core/server/data/importer/importers/data/newsletters-importer');
 
@@ -47,10 +48,10 @@ describe('NewslettersImporter', function () {
             const newsletter2 = importer.dataToImport[1];
 
             newsletter1.name.should.be.eql('Daily newsletter');
-            should.not.exist(newsletter1.sender_email);
+            assert.equal(newsletter1.sender_email, undefined);
 
             newsletter2.name.should.be.eql('Weekly roundup');
-            should.not.exist(newsletter2.sender_email);
+            assert.equal(newsletter2.sender_email, undefined);
         });
     });
 });

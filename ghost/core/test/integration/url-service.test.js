@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../utils');
@@ -109,7 +110,7 @@ describe('Integration: services/url/UrlService', function () {
             resource.data.id.should.eql(testUtils.DataGenerator.forKnex.posts[0].id);
 
             resource = urlService.getResource('/does-not-exist/');
-            should.not.exist(resource);
+            assert.equal(resource, null);
         });
     });
 

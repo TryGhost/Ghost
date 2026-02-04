@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const errors = require('@tryghost/errors');
 const rewire = require('rewire');
 const should = require('should');
@@ -101,7 +102,7 @@ describe('Unit: services/url/UrlService', function () {
         it('no resource for url found', function () {
             urlService.finished = true;
             urlService.urls.getByUrl.withArgs('/blog-post/').returns([]);
-            should.not.exist(urlService.getResource('/blog-post/'));
+            assert.equal(urlService.getResource('/blog-post/'), null);
         });
 
         it('one resource for url found', function () {

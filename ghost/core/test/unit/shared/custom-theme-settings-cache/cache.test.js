@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 
 const Cache = require('../../../../core/shared/custom-theme-settings-cache/custom-theme-settings-cache');
@@ -127,7 +128,7 @@ describe('Cache', function () {
 
             returned.new = 'exists';
 
-            should.not.exist(cache.get('new'));
+            assert.equal(cache.get('new'), undefined);
         });
     });
 
@@ -144,7 +145,7 @@ describe('Cache', function () {
             cache.clear();
 
             cache.getAll().should.deepEqual({});
-            should.not.exist(cache.get('one'));
+            assert.equal(cache.get('one'), undefined);
         });
     });
 });

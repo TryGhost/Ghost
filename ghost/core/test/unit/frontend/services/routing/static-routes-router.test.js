@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const controllers = require('../../../../../core/frontend/services/routing/controllers');
@@ -37,8 +38,8 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
             const staticRoutesRouter = new StaticRoutesRouter('/about/', {templates: ['test']}, routerCreatedSpy);
             should.exist(staticRoutesRouter.router);
 
-            should.not.exist(staticRoutesRouter.filter);
-            should.not.exist(staticRoutesRouter.getPermalinks());
+            assert.equal(staticRoutesRouter.filter, undefined);
+            assert.equal(staticRoutesRouter.getPermalinks(), undefined);
 
             staticRoutesRouter.templates.should.eql(['test']);
 
@@ -60,8 +61,8 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
 
             should.exist(staticRoutesRouter.router);
 
-            should.not.exist(staticRoutesRouter.getPermalinks());
-            should.not.exist(staticRoutesRouter.filter);
+            assert.equal(staticRoutesRouter.getPermalinks(), undefined);
+            assert.equal(staticRoutesRouter.filter, undefined);
             staticRoutesRouter.templates.should.eql([]);
 
             routerCreatedSpy.calledOnce.should.be.true();
@@ -88,7 +89,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
             res.routerOptions.data.should.eql({});
 
             should(res.routerOptions.contentType).be.undefined();
-            should.not.exist(res.locals.slug);
+            assert.equal(res.locals.slug, undefined);
         });
 
         it('fn: _prepareStaticRouteContext (mainRoute=root)', function () {
@@ -104,7 +105,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
             res.routerOptions.context.should.eql(['index']);
             res.routerOptions.data.should.eql({});
 
-            should.not.exist(res.locals.slug);
+            assert.equal(res.locals.slug, undefined);
         });
     });
 
@@ -119,7 +120,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
 
                 should.exist(staticRoutesRouter.router);
 
-                should.not.exist(staticRoutesRouter.getPermalinks());
+                assert.equal(staticRoutesRouter.getPermalinks(), undefined);
                 staticRoutesRouter.filter.should.eql('tag:test');
                 staticRoutesRouter.templates.should.eql([]);
                 should.exist(staticRoutesRouter.data);
@@ -146,7 +147,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
 
                 should.exist(staticRoutesRouter.router);
 
-                should.not.exist(staticRoutesRouter.getPermalinks());
+                assert.equal(staticRoutesRouter.getPermalinks(), undefined);
                 staticRoutesRouter.filter.should.eql('tag:test');
 
                 staticRoutesRouter.templates.should.eql([]);
@@ -171,7 +172,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
                     data: {query: {}, router: {}}
                 }, routerCreatedSpy);
 
-                should.not.exist(staticRoutesRouter.filter);
+                assert.equal(staticRoutesRouter.filter, undefined);
             });
 
             it('initialize on subdirectory with controller+data+filter', function () {
