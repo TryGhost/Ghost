@@ -360,7 +360,7 @@ describe('Create Stripe Checkout Session', function () {
                 .matchBodySnapshot()
                 .matchHeaderSnapshot();
 
-            should(scope.isDone()).eql(true);
+            assert.equal(scope.isDone(), true);
         });
 
         it('Does pass post attribution source to session metadata', async function () {
@@ -444,7 +444,7 @@ describe('Create Stripe Checkout Session', function () {
                 .matchBodySnapshot()
                 .matchHeaderSnapshot();
 
-            should(scope.isDone()).eql(true);
+            assert.equal(scope.isDone(), true);
         });
 
         it('Ignores attribution_* values in metadata', async function () {
@@ -522,7 +522,7 @@ describe('Create Stripe Checkout Session', function () {
                 .matchBodySnapshot()
                 .matchHeaderSnapshot();
 
-            should(scope.isDone()).eql(true);
+            assert.equal(scope.isDone(), true);
         });
 
         it('Does pass UTM parameters to session metadata', async function () {
@@ -615,7 +615,7 @@ describe('Create Stripe Checkout Session', function () {
                 .matchBodySnapshot()
                 .matchHeaderSnapshot();
 
-            should(scope.isDone()).eql(true);
+            assert.equal(scope.isDone(), true);
         });
     });
 });

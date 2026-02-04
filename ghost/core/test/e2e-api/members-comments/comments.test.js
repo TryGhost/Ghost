@@ -1028,7 +1028,7 @@ describe('Comments API', function () {
                         // Check liked + likes working for replies too
                         should(body.comments[2].id).eql(replies[2].get('id'));
                         should(body.comments[2].count.likes).eql(1);
-                        should(body.comments[2].liked).eql(true);
+                        assert.equal(body.comments[2].liked, true);
                     });
             });
 
