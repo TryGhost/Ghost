@@ -70,7 +70,7 @@ export function CommentMetrics({
     const [likesModalOpen, setLikesModalOpen] = useState(false);
     const [reportsModalOpen, setReportsModalOpen] = useState(false);
 
-    const repliesCount = comment.count?.replies ?? comment.replies?.length ?? 0;
+    const repliesCount = comment.count?.direct_replies ?? comment.count?.replies ?? comment.replies?.length ?? 0; // TODO: remove replies fallback once backend is fully rolled out
     const likesCount = comment.count?.likes ?? 0;
     const reportsCount = comment.count?.reports ?? 0;
     const hasReplies = repliesCount > 0;

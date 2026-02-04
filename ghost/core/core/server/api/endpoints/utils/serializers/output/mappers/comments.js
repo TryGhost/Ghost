@@ -43,11 +43,13 @@ const postFields = [
 
 const countFields = [
     'replies',
+    'direct_replies',
     'likes'
 ];
 
 const countFieldsAdmin = [
     'replies',
+    'direct_replies',
     'likes',
     'reports'
 ];

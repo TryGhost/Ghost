@@ -401,6 +401,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
                     },
                     count: {
                         replies: 12,
+                        direct_replies: 5,
                         likes: 13,
                         foo: 1
                     }
@@ -441,6 +442,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
                     },
                     count: {
                         replies: 12,
+                        direct_replies: 5,
                         likes: 13
                     }
                 }

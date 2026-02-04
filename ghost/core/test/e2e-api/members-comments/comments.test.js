@@ -67,6 +67,7 @@ const dbFns = {
                 post_id: parent.get('post_id'),
                 member_id: reply.member_id,
                 parent_id: parent.get('id'),
+                in_reply_to_id: reply.in_reply_to_id,
                 html: reply.html || '<p>This is a reply</p>',
                 status: reply.status
             });
@@ -135,7 +136,8 @@ function commentMatcherWithReplies(options) {
         replies: new Array(options.replies).fill(options.commentMatcher),
         count: {
             likes: anyNumber,
-            replies: anyNumber
+            replies: anyNumber,
+            direct_replies: anyNumber
         }
     };
 }
@@ -713,6 +715,7 @@ describe('Comments API', function () {
                     assert.equal(result.body.comments.length, 1);
                     assert.equal(result.body.comments[0].html, null);
                     assert.equal(result.body.comments[0].count.replies, 1);
+                    assert.equal(result.body.comments[0].count.direct_replies, 1);
                     assert.equal(result.body.meta.pagination.total, 1);
                 });
 
@@ -888,10 +891,13 @@ describe('Comments API', function () {
                     })
                 });
 
-                // Check if we have count.replies = 4, and replies.length == 3
+                // All 5 are direct replies (in_reply_to_id IS NULL)
+                // count.replies = 5 (all descendants)
+                // count.direct_replies = 5 (all are direct)
                 await testGetComments(`/api/comments/${parent.get('id')}/`, [commentMatcherWithReplies({replies: 3})])
                     .expect(({body}) => {
                         assert.equal(body.comments[0].count.replies, 5);
+                        assert.equal(body.comments[0].count.direct_replies, 5);
                     });
             });
 
@@ -907,6 +913,7 @@ describe('Comments API', function () {
                 const res = await membersAgent.get(`/api/comments/${parent.get('id')}/`);
 
                 assert.equal(res.body.comments[0].count.replies, 0);
+                assert.equal(res.body.comments[0].count.direct_replies, 0);
             });
 
             it('deleted replies are not included in the count', async function () {
@@ -921,6 +928,80 @@ describe('Comments API', function () {
                 const res = await membersAgent.get(`/api/comments/${parent.get('id')}/`);
 
                 assert.equal(res.body.comments[0].count.replies, 0);
+                assert.equal(res.body.comments[0].count.direct_replies, 0);
+            });
+
+            it('returns correct count.replies and count.direct_replies for threaded comments', async function () {
+                const member0 = fixtureManager.get('members', 0).id;
+                const member1 = fixtureManager.get('members', 1).id;
+
+                // Root A
+                const rootA = await dbFns.addComment({member_id: member0, html: '<p>Root A</p>'});
+
+                // Reply B to A (direct reply — in_reply_to_id is null)
+                const replyB = await dbFns.addComment({
+                    member_id: member1,
+                    parent_id: rootA.get('id'),
+                    html: '<p>Reply B</p>'
+                });
+
+                // Reply C to B (in_reply_to_id = B)
+                await dbFns.addComment({
+                    member_id: member0,
+                    parent_id: rootA.get('id'),
+                    in_reply_to_id: replyB.get('id'),
+                    html: '<p>Reply C to B</p>'
+                });
+
+                // Reply D to B (in_reply_to_id = B)
+                await dbFns.addComment({
+                    member_id: member1,
+                    parent_id: rootA.get('id'),
+                    in_reply_to_id: replyB.get('id'),
+                    html: '<p>Reply D to B</p>'
+                });
+
+                // Fetch root comment
+                // count.replies = 3 (B, C, D all have parent_id=A)
+                // count.direct_replies = 1 (only B is direct: parent_id=A AND in_reply_to_id IS NULL)
+                const result = await membersAgent.get(`/api/comments/${rootA.get('id')}/`);
+                assert.equal(result.body.comments[0].count.replies, 3);
+                assert.equal(result.body.comments[0].count.direct_replies, 1);
+
+                // Fetch replies — child B should have count.direct_replies = 2 (C, D have in_reply_to_id=B)
+                const repliesResult = await membersAgent.get(`/api/comments/${rootA.get('id')}/replies/`);
+                const childB = repliesResult.body.comments.find(c => c.id === replyB.get('id'));
+                assert.equal(childB.count.direct_replies, 2);
+            });
+
+            it('count.replies and count.direct_replies exclude hidden/deleted for public', async function () {
+                const member0 = fixtureManager.get('members', 0).id;
+                const member1 = fixtureManager.get('members', 1).id;
+
+                const root = await dbFns.addComment({member_id: member0, html: '<p>Root</p>'});
+
+                // Direct reply (visible)
+                const replyA = await dbFns.addComment({
+                    member_id: member1, parent_id: root.get('id'), html: '<p>Reply A</p>'
+                });
+                // Direct reply (hidden — excluded from public counts)
+                await dbFns.addComment({
+                    member_id: member1, parent_id: root.get('id'), html: '<p>Reply B hidden</p>', status: 'hidden'
+                });
+                // Reply-to-reply (visible, to replyA)
+                await dbFns.addComment({
+                    member_id: member0, parent_id: root.get('id'), in_reply_to_id: replyA.get('id'), html: '<p>Reply C to A</p>'
+                });
+                // Reply-to-reply (deleted, to replyA — excluded)
+                await dbFns.addComment({
+                    member_id: member0, parent_id: root.get('id'), in_reply_to_id: replyA.get('id'), html: '<p>Reply D deleted</p>', status: 'deleted'
+                });
+
+                const result = await membersAgent.get(`/api/comments/${root.get('id')}/`);
+                // count.replies = all descendants excluding hidden/deleted: replyA + replyC = 2
+                assert.equal(result.body.comments[0].count.replies, 2);
+                // count.direct_replies = direct replies excluding hidden/deleted: only replyA
+                assert.equal(result.body.comments[0].count.direct_replies, 1);
             });
 
             it('Can reply to a comment with www domain', async function () {
