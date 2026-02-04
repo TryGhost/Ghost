@@ -1,4 +1,4 @@
-import {hasAvailablePrices, getAllProductsForSite, getAvailableProducts, getCurrencySymbol, getFreeProduct, getMemberName, getMemberSubscription, getPriceFromSubscription, getPriceIdFromPageQuery, getSupportAddress, getDefaultNewsletterSender, getUrlHistory, hasMultipleProducts, isActiveOffer, isInviteOnly, isPaidMember, isPaidMembersOnly, isSameCurrency, transformApiTiersData, isSigninAllowed, isSignupAllowed, getCompExpiry, isInThePast, hasNewsletterSendingEnabled} from '../../src/utils/helpers';
+import {hasAvailablePrices, getAllProductsForSite, getAvailableProducts, getCurrencySymbol, getFreeProduct, getMemberName, getMemberSubscription, getPriceFromSubscription, getPriceIdFromPageQuery, getSupportAddress, getDefaultNewsletterSender, getUrlHistory, hasMultipleProducts, isActiveOffer, isRetentionOffer, isInviteOnly, isPaidMember, isPaidMembersOnly, isSameCurrency, transformApiTiersData, isSigninAllowed, isSignupAllowed, getCompExpiry, isInThePast, hasNewsletterSendingEnabled} from '../../src/utils/helpers';
 import * as Fixtures from '../../src/utils/fixtures-generator';
 import {site as FixturesSite, member as FixtureMember, offer as FixtureOffer, transformTierFixture as TransformFixtureTiers} from './test-fixtures';
 import {isComplimentaryMember} from '../../src/utils/helpers';
@@ -115,6 +115,18 @@ describe('Helpers - ', () => {
         test('returns false for active offer with archived or disabled tier', () => {
             const value = isActiveOffer({offer: FixtureOffer, site: FixturesSite.singleTier.onlyFreePlan});
             expect(value).toBe(false);
+        });
+    });
+
+    describe('isRetentionOffer -', () => {
+        test('returns false for signup offers', () => {
+            const result = isRetentionOffer({offer: {...FixtureOffer, redemption_type: 'signup'}});
+            expect(result).toBe(false);
+        });
+
+        test('returns true for retention offers', () => {
+            const result = isRetentionOffer({offer: {...FixtureOffer, redemption_type: 'retention'}});
+            expect(result).toBe(true);
         });
     });
 

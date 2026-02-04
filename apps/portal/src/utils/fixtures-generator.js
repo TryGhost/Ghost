@@ -89,7 +89,8 @@ export function getOfferData({
     currency = null,
     status = 'active',
     tierId = '',
-    tierName = 'Basic'
+    tierName = 'Basic',
+    redemptionType = 'signup'
 } = {}) {
     return {
         id: `offer_${objectId()}`,
@@ -108,7 +109,8 @@ export function getOfferData({
         tier: {
             id: `${tierId}`,
             name: tierName
-        }
+        },
+        redemption_type: redemptionType
     };
 }
 

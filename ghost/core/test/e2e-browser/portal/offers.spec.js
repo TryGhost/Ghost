@@ -1,6 +1,9 @@
 const {expect} = require('@playwright/test');
 const test = require('../fixtures/ghost-test');
 const {deleteAllMembers, createTier, createOffer, completeStripeSubscription} = require('../utils');
+const models = require('../../../core/server/models');
+const offersService = require('../../../core/server/services/offers');
+const ObjectID = require('bson-objectid').default;
 
 test.describe('Portal', () => {
     test.setTimeout(90000); // override the default 60s in the config as these retries can run close to 60s
@@ -336,6 +339,47 @@ test.describe('Portal', () => {
             await sharedPage.goto(offerLink);
             const portalPopup = await sharedPage.locator('[data-testid="portal-popup-frame"]').isVisible();
             await expect(portalPopup).toBeFalsy();
+        });
+
+        test('Retention offers do not trigger the offer redemption popup when visiting the offer URL', async ({sharedPage}) => {
+            await sharedPage.goto('/ghost');
+            await deleteAllMembers(sharedPage);
+
+            const tierName = `Retention Tier ${new ObjectID().toHexString().slice(0, 8)}`;
+            await createTier(sharedPage, {
+                name: tierName,
+                monthlyPrice: 6,
+                yearlyPrice: 60
+            });
+
+            const product = await models.Product.findOne({name: tierName}, {require: true});
+            const suffix = new ObjectID().toHexString().slice(0, 8);
+            const offerCode = `retention-${suffix}`;
+
+            await offersService.api.createOffer({
+                name: `Retention Offer ${suffix}`,
+                code: offerCode,
+                display_title: 'Stay with us',
+                display_description: 'Retention offer',
+                type: 'percent',
+                cadence: 'month',
+                amount: 10,
+                duration: 'once',
+                duration_in_months: null,
+                status: 'active',
+                tier: {
+                    id: product.id,
+                    name: product.get('name')
+                },
+                redemption_type: 'retention'
+            });
+
+            const siteUrl = new URL(sharedPage.url()).origin;
+            await sharedPage.goto(`${siteUrl}/${offerCode}`);
+            await sharedPage.waitForLoadState('load');
+
+            await expect(sharedPage.locator('[data-testid="portal-popup-frame"]')).not.toBeVisible();
+            await expect(sharedPage).not.toHaveURL(/#\/portal\/offers/);
         });
     });
 });
