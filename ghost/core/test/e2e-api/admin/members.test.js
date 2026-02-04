@@ -3378,9 +3378,7 @@ describe('Members API Bulk operations', function () {
                             // Should contain the count of members, not the newsletter count!
                             successful: 1,
                             unsuccessful: 0
-                        },
-                        unsuccessfulData: [],
-                        errors: []
+                        }
                     }
                 }
             })
@@ -3406,9 +3404,7 @@ describe('Members API Bulk operations', function () {
                             // Should contain the count of members, not the newsletter count!
                             successful: 1,
                             unsuccessful: 0
-                        },
-                        unsuccessfulData: [],
-                        errors: []
+                        }
                     }
                 }
             })
@@ -3439,9 +3435,7 @@ describe('Members API Bulk operations', function () {
                         stats: {
                             successful: 4,
                             unsuccessful: 0
-                        },
-                        unsuccessfulData: [],
-                        errors: []
+                        }
                     }
                 }
             });
@@ -3463,9 +3457,7 @@ describe('Members API Bulk operations', function () {
                         stats: {
                             successful: 2, // We have two members who are subscribed to an inactive newsletter
                             unsuccessful: 0
-                        },
-                        unsuccessfulData: [],
-                        errors: []
+                        }
                     }
                 }
             })
@@ -3491,9 +3483,7 @@ describe('Members API Bulk operations', function () {
                         stats: {
                             successful: 6, // not 7 because members subscribed to an inactive newsletter aren't subscribed (newsletter fixture[2])
                             unsuccessful: 0
-                        },
-                        unsuccessfulData: [],
-                        errors: []
+                        }
                     }
                 }
             })
@@ -3531,9 +3521,7 @@ describe('Members API Bulk operations', function () {
                         stats: {
                             successful: 2,
                             unsuccessful: 0
-                        },
-                        unsuccessfulData: [],
-                        errors: []
+                        }
                     }
                 }
             })
@@ -3559,9 +3547,7 @@ describe('Members API Bulk operations', function () {
                         stats: {
                             successful: 1,
                             unsuccessful: 0
-                        },
-                        unsuccessfulData: [],
-                        errors: []
+                        }
                     }
                 }
             })
@@ -3600,9 +3586,7 @@ describe('Members API Bulk operations', function () {
                         stats: {
                             successful: 1,
                             unsuccessful: 0
-                        },
-                        unsuccessfulData: [],
-                        errors: []
+                        }
                     }
                 }
             })
@@ -3650,9 +3634,7 @@ describe('Members API Bulk operations', function () {
                         stats: {
                             successful: 1,
                             unsuccessful: 0
-                        },
-                        unsuccessfulData: [],
-                        errors: []
+                        }
                     }
                 }
             })
@@ -3689,9 +3671,7 @@ describe('Members API Bulk operations', function () {
                         stats: {
                             successful: 8,
                             unsuccessful: 0
-                        },
-                        unsuccessfulData: [],
-                        errors: []
+                        }
                     }
                 }
             })
@@ -3732,9 +3712,7 @@ describe('Members API Bulk operations', function () {
                         stats: {
                             successful: 1,
                             unsuccessful: 0
-                        },
-                        unsuccessfulData: [],
-                        errors: []
+                        }
                     }
                 }
             })
@@ -3781,9 +3759,7 @@ describe('Members API Bulk operations', function () {
                         stats: {
                             successful: 1,
                             unsuccessful: 0
-                        },
-                        unsuccessfulData: [],
-                        errors: []
+                        }
                     }
                 }
             })
@@ -3807,9 +3783,7 @@ describe('Members API Bulk operations', function () {
                     stats: {
                         successful: 8,
                         unsuccessful: 0
-                    },
-                    unsuccessfulIds: [],
-                    errors: []
+                    }
                 }
             });
     });

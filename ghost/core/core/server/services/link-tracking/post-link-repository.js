@@ -78,9 +78,7 @@ module.exports = class PostLinkRepository {
                     stats: {
                         successful: bulkActionResult.successful,
                         unsuccessful: bulkActionResult.unsuccessful
-                    },
-                    errors: bulkActionResult.errors,
-                    unsuccessfulData: bulkActionResult.unsuccessfulData
+                    }
                 }
             }
         };
