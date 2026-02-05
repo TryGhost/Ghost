@@ -1028,7 +1028,7 @@ describe('Posts API', function () {
 
         const publishedPost = publishedRes.body.posts[0];
 
-        publishedPost.newsletter.id.should.eql(newsletterId);
+        assert.equal(publishedPost.newsletter.id, newsletterId);
         assert.equal(publishedPost.email_segment, 'all');
         assert.equal(publishedPost.status, 'sent');
         assert.equal(publishedPost.newsletter_id, undefined);
@@ -1097,7 +1097,7 @@ describe('Posts API', function () {
 
         const publishedPost = publishedRes.body.posts[0];
 
-        publishedPost.newsletter.id.should.eql(newsletterId);
+        assert.equal(publishedPost.newsletter.id, newsletterId);
         assert.equal(publishedPost.email_segment, 'status:free');
         assert.equal(publishedPost.status, 'sent');
         assert.equal(publishedPost.newsletter_id, undefined);
@@ -1166,7 +1166,7 @@ describe('Posts API', function () {
 
         const publishedPost = publishedRes.body.posts[0];
 
-        publishedPost.newsletter.id.should.eql(newsletterId);
+        assert.equal(publishedPost.newsletter.id, newsletterId);
         assert.equal(publishedPost.email_segment, 'status:free');
         assert.equal(publishedPost.status, 'sent');
         assert.equal(publishedPost.newsletter_id, undefined);
@@ -1229,7 +1229,7 @@ describe('Posts API', function () {
 
         const scheduledPost = scheduledRes.body.posts[0];
 
-        scheduledPost.newsletter.id.should.eql(newsletterId);
+        assert.equal(scheduledPost.newsletter.id, newsletterId);
         assert.equal(scheduledPost.email_segment, 'all');
         assert.equal(scheduledPost.newsletter_id, undefined);
 
@@ -1271,7 +1271,7 @@ describe('Posts API', function () {
         assert.equal(model.get('email_recipient_filter'), 'all');
         assertExists(model.get('published_by'));
 
-        publishedPost.newsletter.id.should.eql(newsletterId);
+        assert.equal(publishedPost.newsletter.id, newsletterId);
         assert.equal(publishedPost.newsletter_id, undefined);
 
         // Check email is sent to the correct newsletter
@@ -1322,7 +1322,7 @@ describe('Posts API', function () {
 
         const scheduledPost = scheduledRes.body.posts[0];
 
-        scheduledPost.newsletter.id.should.eql(newsletterId);
+        assert.equal(scheduledPost.newsletter.id, newsletterId);
         assert.equal(scheduledPost.email_segment, 'status:free');
         assert.equal(scheduledPost.newsletter_id, undefined);
 
@@ -1362,7 +1362,7 @@ describe('Posts API', function () {
         should(model.get('newsletter_id')).eql(newsletterId);
         assert.equal(model.get('email_recipient_filter'), 'status:free');
 
-        publishedPost.newsletter.id.should.eql(newsletterId);
+        assert.equal(publishedPost.newsletter.id, newsletterId);
         assert.equal(publishedPost.newsletter_id, undefined);
 
         // Check email is sent to the correct newsletter
@@ -1501,7 +1501,7 @@ describe('Posts API', function () {
 
         const scheduledPost = scheduledRes.body.posts[0];
 
-        scheduledPost.newsletter.id.should.eql(newsletterId);
+        assert.equal(scheduledPost.newsletter.id, newsletterId);
         assert.equal(scheduledPost.email_segment, 'all');
         assert.equal(scheduledPost.status, 'scheduled');
         assert.equal(scheduledPost.email_only, true);
@@ -1545,7 +1545,7 @@ describe('Posts API', function () {
         assert.equal(model.get('status'), 'sent');
         assert.equal(model.get('email_recipient_filter'), 'all');
 
-        publishedPost.newsletter.id.should.eql(newsletterId);
+        assert.equal(publishedPost.newsletter.id, newsletterId);
         assert.equal(publishedPost.newsletter_id, undefined);
 
         // Check email is sent to the correct newsletter
@@ -1841,7 +1841,7 @@ describe('Posts API', function () {
 
             const publishedPost = publishedRes.body.posts[0];
 
-            publishedPost.newsletter.id.should.eql(newsletterId);
+            assert.equal(publishedPost.newsletter.id, newsletterId);
             assert.equal(publishedPost.email_segment, 'all');
             assert.equal(publishedPost.status, 'sent');
             assert.equal(publishedPost.newsletter_id, undefined);
