@@ -50,6 +50,29 @@ class MemberWelcomeEmailRenderer {
     }
 
     /**
+     * Removes <code> wrappers from replacement strings like {name}
+     * The Lexical editor treats curly braces as inline code, but we want
+     * replacement tokens to render in the same font as surrounding text.
+     * @param {string} html - The HTML content to process
+     * @returns {string}
+     */
+    #removeCodeWrappersFromReplacementStrings(html) {
+        const cheerio = require('cheerio');
+        // Wrap in a container so we can extract it back after modifications
+        const $ = cheerio.load(`<div id="__wrapper__">${html}</div>`, {decodeEntities: false});
+
+        $('code').each((i, el) => {
+            const $el = $(el);
+            // Check if the code element contains a replacement pattern like {name}
+            if ($el.text().match(/\{.*?\}/)) {
+                $el.replaceWith($el.html());
+            }
+        });
+
+        return $('#__wrapper__').html();
+    }
+
+    /**
      * Applies replacement tokens to a string
      * Supports fallback values: {first_name, "friend"} renders "friend" if name is empty
      * @param {Object} options
@@ -96,7 +119,10 @@ class MemberWelcomeEmailRenderer {
             });
         }
 
-        const contentWithReplacements = this.#applyReplacements({text: content, member, siteSettings, escapeHtml: true});
+        // Remove <code> wrappers from replacement strings so they render in normal font
+        const contentWithoutCodeWrappers = this.#removeCodeWrappersFromReplacementStrings(content);
+
+        const contentWithReplacements = this.#applyReplacements({text: contentWithoutCodeWrappers, member, siteSettings, escapeHtml: true});
         const subjectWithReplacements = this.#applyReplacements({text: subject, member, siteSettings, escapeHtml: false});
 
         const managePreferencesUrl = new URL('#/portal/account/newsletters', siteSettings.url).href;
