@@ -40,7 +40,7 @@ export function DisableCommentingDialog({
 
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
-            <DialogContent>
+            <DialogContent className='gap-5'>
                 <DialogHeader>
                     <DialogTitle>Disable comments</DialogTitle>
                     <DialogDescription>
@@ -49,7 +49,7 @@ export function DisableCommentingDialog({
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="flex items-center gap-2 py-2">
+                <div className="flex items-center gap-2">
                     <Checkbox
                         checked={hideComments}
                         id="hide-comments"
