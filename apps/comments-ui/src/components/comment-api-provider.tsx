@@ -6,11 +6,7 @@ import {GhostApi} from '../utils/api';
 
 const ALLOWED_MODERATORS = ['Owner', 'Administrator', 'Super Editor'];
 
-// --- CommentApi type + factory ---
-
-export type CommentApi = {
-    isAdmin: boolean;
-
+type BaseCommentApi = {
     browse(params: {page: number; postId: string; order?: string}): Promise<{comments: Comment[]; meta: {pagination: any}}>;
     replies(params: {commentId: string; afterReplyId?: string; limit?: number | 'all'}): Promise<{comments: Comment[]; meta: {pagination: any}}>;
     read(commentId: string): Promise<{comments: Comment[]}>;
@@ -23,10 +19,17 @@ export type CommentApi = {
     report(params: {comment: {id: string}}): Promise<string>;
 
     updateMember(data: {name?: string; expertise?: string}): Promise<Member | null>;
-
-    hideComment: ((id: string) => Promise<any>) | null;
-    showComment: ((params: {id: string}) => Promise<any>) | null;
 };
+
+export type MemberCommentApi = BaseCommentApi & {isAdmin: false};
+
+export type AdminCommentApi = BaseCommentApi & {
+    isAdmin: true;
+    hideComment(id: string): Promise<any>;
+    showComment(params: {id: string}): Promise<any>;
+};
+
+export type CommentApi = MemberCommentApi | AdminCommentApi;
 
 function createCommentApi(api: GhostApi, adminApi: AdminApi | null, memberUuid?: string): CommentApi {
     if (adminApi) {
@@ -58,13 +61,9 @@ function createCommentApi(api: GhostApi, adminApi: AdminApi | null, memberUuid?:
         like: p => api.comments.like(p),
         unlike: p => api.comments.unlike(p),
         report: p => api.comments.report(p),
-        updateMember: data => api.member.update(data),
-        hideComment: null,
-        showComment: null
+        updateMember: data => api.member.update(data)
     };
 }
-
-// --- Context + Hook ---
 
 type CommentApiContextType = {
     resolved: boolean;
@@ -83,8 +82,6 @@ const CommentApiContext = React.createContext<CommentApiContextType>({
 });
 
 export const useCommentApi = () => useContext(CommentApiContext);
-
-// --- Provider ---
 
 type CommentApiProviderProps = {
     api: GhostApi;

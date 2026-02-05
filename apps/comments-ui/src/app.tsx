@@ -6,6 +6,7 @@ import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import i18nLib from '@tryghost/i18n';
 import setupGhostApi from './utils/api';
 import {ActionHandler, SyncActionHandler, isSyncAction} from './actions';
+import {AdminActionsProvider} from './components/admin-actions';
 import {AppContext, Comment, DispatchActionType, EditableAppContext} from './app-context';
 import {type CommentApi, CommentApiProvider, useCommentApi} from './components/comment-api-provider';
 import {CommentsFrame} from './components/frame';
@@ -23,8 +24,6 @@ type AppProps = {
 function isCommentLoaded(comments: Comment[], targetId: string): boolean {
     return comments.some(c => c.id === targetId || c.replies?.some(r => r.id === targetId));
 }
-
-// --- Permalink scroll-target helpers (pure functions) ---
 
 async function fetchScrollTarget(commentApi: CommentApi, targetId: string): Promise<Comment | null> {
     try {
@@ -123,8 +122,6 @@ async function loadScrollTarget(
 
     return {comments, pagination, found: isCommentLoaded(comments, targetId)};
 }
-
-// --- Components ---
 
 const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
     const options = useOptions(scriptTag);
@@ -314,12 +311,20 @@ const AppInner: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) =>
 
     const done = state.initStatus === 'success';
 
-    return (
-        <AppContext.Provider value={context}>
+    const content = (
+        <>
             <CommentsFrame ref={iframeRef}>
                 <ContentBox done={done} />
             </CommentsFrame>
             <PopupBox />
+        </>
+    );
+
+    return (
+        <AppContext.Provider value={context}>
+            <AdminActionsProvider commentApi={commentApi} setState={setState}>
+                {content}
+            </AdminActionsProvider>
         </AppContext.Provider>
     );
 };
