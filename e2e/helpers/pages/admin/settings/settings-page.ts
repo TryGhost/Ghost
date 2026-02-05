@@ -37,7 +37,8 @@ export class SettingsPage extends BasePage {
     }
 
     async goto() {
-        await super.goto();
+        const result = await super.goto();
         await this.sidebar.waitFor({state: 'visible'});
+        return result;
     }
 }
