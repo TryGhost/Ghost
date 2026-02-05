@@ -64,6 +64,10 @@
     border-bottom: none;
 }
 
+.gh-email-debug-permanent-failures {
+    table-layout: fixed;
+}
+
 .gh-email-debug .gh-list thead,
 .gh-email-debug .gh-list tbody {
     width: 100%;
@@ -86,6 +90,18 @@
     display: flex;
     flex-wrap: nowrap;
     align-items: center;
+    min-width: 0;
+}
+
+.gh-email-debug-member > div {
+    min-width: 0;
+}
+
+.gh-email-debug-member .gh-members-list-name,
+.gh-email-debug-member .gh-members-list-email {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .gh-email-debug-failure {
