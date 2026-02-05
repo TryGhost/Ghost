@@ -48,6 +48,8 @@ describe('{{pagination}} helper', function () {
         {name: 'themeI18next (new)', useNewTranslation: true}
     ];
 
+    // Run rendering tests with both i18n implementations
+
     i18nImplementations.forEach(({name, useNewTranslation}) => {
         describe(`rendering with ${name}`, function () {
             let ogI18nBasePath;
@@ -159,9 +161,6 @@ describe('{{pagination}} helper', function () {
         runErrorTest({pagination: {page: 1, prev: null, next: null, limit: 15, total: 8, pages: null}})
             .should.throwError('Invalid value, check page, pages, limit and total are numbers');
     });
-
-    // Run rendering tests with both i18n implementations
-
 });
 
 describe('{{pagination}} helper with custom template', function () {
