@@ -1,9 +1,14 @@
 const assert = require('node:assert/strict');
 const should = require('should');
+const sinon = require('sinon');
 const hbs = require('../../../../core/frontend/services/theme-engine/engine');
 const configUtils = require('../../../utils/config-utils');
 const path = require('path');
 const page_url = require('../../../../core/frontend/helpers/page_url');
+const t = require('../../../../core/frontend/helpers/t');
+const themeI18n = require('../../../../core/frontend/services/theme-engine/i18n');
+const themeI18next = require('../../../../core/frontend/services/theme-engine/i18next');
+const labs = require('../../../../core/shared/labs');
 const pagination = require('../../../../core/frontend/helpers/pagination');
 
 describe('{{pagination}} helper', function () {
@@ -14,9 +19,10 @@ describe('{{pagination}} helper', function () {
             done();
         });
 
-        // The pagination partial expects this helper
+        // The pagination partial expects these helpers
         // @TODO: change to register with Ghost's own registration tools
         hbs.registerHelper('page_url', page_url);
+        hbs.registerHelper('t', t);
     });
 
     const paginationRegex = /class="pagination"/;
@@ -37,60 +43,94 @@ describe('{{pagination}} helper', function () {
         runHelper(function () {
         }).should.throwError(expectedMessage);
     });
+    const i18nImplementations = [
+        {name: 'themeI18n (legacy)', useNewTranslation: false},
+        {name: 'themeI18next (new)', useNewTranslation: true}
+    ];
 
-    it('can render single page with no pagination necessary', function () {
-        const rendered = pagination.call({
-            pagination: {page: 1, prev: null, next: null, limit: 15, total: 8, pages: 1},
-            tag: {slug: 'slug'}
+    // Run rendering tests with both i18n implementations
+
+    i18nImplementations.forEach(({name, useNewTranslation}) => {
+        describe(`rendering with ${name}`, function () {
+            let ogI18nBasePath;
+            let ogI18nextBasePath;
+
+            before(function () {
+                sinon.stub(labs, 'isSet').withArgs('themeTranslation').returns(useNewTranslation);
+
+                ogI18nBasePath = themeI18n.basePath;
+                ogI18nextBasePath = themeI18next.basePath;
+                const themesPath = path.join(__dirname, '../../../utils/fixtures/themes/');
+                themeI18n.basePath = themesPath;
+                themeI18next.basePath = themesPath;
+
+                if (useNewTranslation) {
+                    themeI18next.init({activeTheme: 'locale-theme', locale: 'en'});
+                } else {
+                    themeI18n.init({activeTheme: 'locale-theme', locale: 'en'});
+                }
+            });
+
+            after(function () {
+                sinon.restore();
+                themeI18n.basePath = ogI18nBasePath;
+                themeI18next.basePath = ogI18nextBasePath;
+            });
+
+            it('can render single page with no pagination necessary', function () {
+                const rendered = pagination.call({
+                    pagination: {page: 1, prev: null, next: null, limit: 15, total: 8, pages: 1},
+                    tag: {slug: 'slug'}
+                });
+                should.exist(rendered);
+                // strip out carriage returns and compare.
+                assert.match(rendered.string, paginationRegex);
+                assert.match(rendered.string, pageRegex);
+                assert.match(rendered.string, /Page 1 of 1/);
+                assert.doesNotMatch(rendered.string, newerRegex);
+                assert.doesNotMatch(rendered.string, olderRegex);
+            });
+
+            it('can render first page of many with older posts link', function () {
+                const rendered = pagination.call({
+                    pagination: {page: 1, prev: null, next: 2, limit: 15, total: 8, pages: 3}
+                });
+                should.exist(rendered);
+
+                assert.match(rendered.string, paginationRegex);
+                assert.match(rendered.string, pageRegex);
+                assert.match(rendered.string, olderRegex);
+                assert.match(rendered.string, /Page 1 of 3/);
+                assert.doesNotMatch(rendered.string, newerRegex);
+            });
+
+            it('can render middle pages of many with older and newer posts link', function () {
+                const rendered = pagination.call({
+                    pagination: {page: 2, prev: 1, next: 3, limit: 15, total: 8, pages: 3}
+                });
+                should.exist(rendered);
+
+                assert.match(rendered.string, paginationRegex);
+                assert.match(rendered.string, pageRegex);
+                assert.match(rendered.string, olderRegex);
+                assert.match(rendered.string, newerRegex);
+                assert.match(rendered.string, /Page 2 of 3/);
+            });
+
+            it('can render last page of many with newer posts link', function () {
+                const rendered = pagination.call({
+                    pagination: {page: 3, prev: 2, next: null, limit: 15, total: 8, pages: 3}
+                });
+                should.exist(rendered);
+
+                assert.match(rendered.string, paginationRegex);
+                assert.match(rendered.string, pageRegex);
+                assert.match(rendered.string, newerRegex);
+                assert.match(rendered.string, /Page 3 of 3/);
+                assert.doesNotMatch(rendered.string, olderRegex);
+            });
         });
-        should.exist(rendered);
-        // strip out carriage returns and compare.
-        rendered.string.should.match(paginationRegex);
-        rendered.string.should.match(pageRegex);
-        assert.match(rendered.string, /Page 1 of 1/);
-        rendered.string.should.not.match(newerRegex);
-        rendered.string.should.not.match(olderRegex);
     });
-
-    it('can render first page of many with older posts link', function () {
-        const rendered = pagination.call({
-            pagination: {page: 1, prev: null, next: 2, limit: 15, total: 8, pages: 3}
-        });
-        should.exist(rendered);
-
-        rendered.string.should.match(paginationRegex);
-        rendered.string.should.match(pageRegex);
-        rendered.string.should.match(olderRegex);
-        assert.match(rendered.string, /Page 1 of 3/);
-        rendered.string.should.not.match(newerRegex);
-    });
-
-    it('can render middle pages of many with older and newer posts link', function () {
-        const rendered = pagination.call({
-            pagination: {page: 2, prev: 1, next: 3, limit: 15, total: 8, pages: 3}
-        });
-        should.exist(rendered);
-
-        rendered.string.should.match(paginationRegex);
-        rendered.string.should.match(pageRegex);
-        rendered.string.should.match(olderRegex);
-        rendered.string.should.match(newerRegex);
-        assert.match(rendered.string, /Page 2 of 3/);
-    });
-
-    it('can render last page of many with newer posts link', function () {
-        const rendered = pagination.call({
-            pagination: {page: 3, prev: 2, next: null, limit: 15, total: 8, pages: 3}
-        });
-        should.exist(rendered);
-
-        rendered.string.should.match(paginationRegex);
-        rendered.string.should.match(pageRegex);
-        rendered.string.should.match(newerRegex);
-        assert.match(rendered.string, /Page 3 of 3/);
-        rendered.string.should.not.match(olderRegex);
-    });
-
     it('validates values', function () {
         const runErrorTest = function (data) {
             return function () {
