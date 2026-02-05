@@ -125,6 +125,7 @@ async function loadScrollTarget(
 
 const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
     const options = useOptions(scriptTag);
+    const adminUrl = scriptTag.dataset.admin;
 
     const api = React.useMemo(() => {
         return setupGhostApi({
@@ -135,7 +136,7 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
     }, [options]);
 
     return (
-        <CommentApiProvider adminUrl={options.adminUrl} api={api}>
+        <CommentApiProvider adminUrl={adminUrl} api={api}>
             <AppInner initialCommentId={initialCommentId} pageUrl={pageUrl} scriptTag={scriptTag} />
         </CommentApiProvider>
     );

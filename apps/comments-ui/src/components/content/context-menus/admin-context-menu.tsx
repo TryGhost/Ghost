@@ -1,12 +1,14 @@
 import {Comment, useAppContext, useLabs} from '../../../app-context';
 import {useAdminActions} from '../../admin-actions';
+import {useCommentApi} from '../../comment-api-provider';
 
 type Props = {
     comment: Comment;
     close: () => void;
 };
 const AdminContextMenu: React.FC<Props> = ({comment, close}) => {
-    const {t, adminUrl} = useAppContext();
+    const {t} = useAppContext();
+    const {adminUrl} = useCommentApi();
     const labs = useLabs();
     const adminActions = useAdminActions();
 

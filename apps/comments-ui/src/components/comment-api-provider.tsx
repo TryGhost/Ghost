@@ -71,6 +71,7 @@ type CommentApiContextType = {
     member: Member | null;
     labs: LabsContextType;
     supportEmail: string | null;
+    adminUrl: string | undefined;
 };
 
 const CommentApiContext = React.createContext<CommentApiContextType>({
@@ -78,7 +79,8 @@ const CommentApiContext = React.createContext<CommentApiContextType>({
     commentApi: null,
     member: null,
     labs: {},
-    supportEmail: null
+    supportEmail: null,
+    adminUrl: undefined
 });
 
 export const useCommentApi = () => useContext(CommentApiContext);
@@ -165,8 +167,9 @@ export const CommentApiProvider: React.FC<CommentApiProviderProps> = ({api, admi
         commentApi,
         member: initData?.member ?? null,
         labs: initData?.labs ?? {},
-        supportEmail: initData?.supportEmail ?? null
-    }), [resolved, commentApi, initData]);
+        supportEmail: initData?.supportEmail ?? null,
+        adminUrl
+    }), [resolved, commentApi, initData, adminUrl]);
 
     return (
         <CommentApiContext.Provider value={value}>

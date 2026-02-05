@@ -10,7 +10,6 @@ export function useOptions(scriptTag: HTMLElement) {
         const siteUrl = dataset.ghostComments || window.location.origin;
         const apiKey = dataset.key;
         const apiUrl = dataset.api;
-        const adminUrl = dataset.admin;
         const postId = dataset.postId || '';
         const colorScheme = dataset.colorScheme;
         const avatarSaturation = dataset.avatarSaturation ? parseInt(dataset.avatarSaturation) : undefined;
@@ -21,7 +20,7 @@ export function useOptions(scriptTag: HTMLElement) {
         const publication = dataset.publication ?? ''; // TODO: replace with dynamic data from script
         const locale = dataset.locale ?? 'en';
 
-        const options = {locale, siteUrl, apiKey, apiUrl, postId, adminUrl, colorScheme, avatarSaturation, accentColor, commentsEnabled, title, showCount, publication};
+        const options = {locale, siteUrl, apiKey, apiUrl, postId, colorScheme, avatarSaturation, accentColor, commentsEnabled, title, showCount, publication};
         return options;
     }, [scriptTag]);
 

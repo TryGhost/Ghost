@@ -57,7 +57,6 @@ export type CommentsOptions = {
     apiKey: string | undefined,
     apiUrl: string | undefined,
     postId: string,
-    adminUrl: string | undefined,
     colorScheme: string | undefined,
     avatarSaturation: number | undefined,
     accentColor: string,
