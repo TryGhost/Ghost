@@ -475,7 +475,7 @@ describe('Members API - member attribution', function () {
                 })
             })
             .expect(({body}) => {
-                should(body.events.find(e => e.type !== 'signup_event')).be.undefined();
+                assert.equal(body.events.find(e => e.type !== 'signup_event'), undefined);
                 should(body.events.map(e => e.data.attribution)).containDeep(signupAttributions);
             });
     });
@@ -1849,7 +1849,7 @@ describe('Members API', function () {
 
         // Check that the product that we are going to add is not the same as the existing one
         const product = await getOtherPaidProduct();
-        should(memberWithPaidSubscription.tiers).have.length(1);
+        assert.equal(memberWithPaidSubscription.tiers.length, 1);
         should(memberWithPaidSubscription.tiers[0].id).not.eql(product.id);
 
         // Add it manually
@@ -2383,7 +2383,7 @@ describe('Members API', function () {
 
             // email_disabled should be true
             await testMember.refresh();
-            should(testMember.get('email_disabled')).be.true();
+            assert.equal(testMember.get('email_disabled'), true);
 
             // Now update the email address of that member to a non-suppressed email
             await agent
@@ -2393,7 +2393,7 @@ describe('Members API', function () {
 
             // email_disabled should be false
             await testMember.refresh();
-            should(testMember.get('email_disabled')).be.false();
+            assert.equal(testMember.get('email_disabled'), false);
         });
     });
 
@@ -2421,10 +2421,10 @@ describe('Members API', function () {
                     });
 
                 await suppressedMember.refresh();
-                should(suppressedMember.get('email_disabled')).be.false();
+                assert.equal(suppressedMember.get('email_disabled'), false);
 
                 const suppressionRecord = await models.Suppression.findOne({email: 'suppression-test@email.com'});
-                should(suppressionRecord).be.null();
+                assert.equal(suppressionRecord, null);
             } finally {
                 await models.Member.destroy({id: suppressedMember.id});
                 try {
@@ -2476,7 +2476,7 @@ describe('Members API', function () {
 
                 // Verify email_disabled was NOT changed since the operation failed
                 await suppressedMember.refresh();
-                should(suppressedMember.get('email_disabled')).be.true();
+                assert.equal(suppressedMember.get('email_disabled'), true);
             } finally {
                 removeEmailStub.restore();
                 await models.Member.destroy({id: suppressedMember.id});
@@ -2579,7 +2579,7 @@ describe('Members API', function () {
                 'content-disposition': anyString
             });
 
-        res.text.should.match(/id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers/);
+        assert.match(res.text, /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers/);
 
         const csv = Papa.parse(res.text, {header: true});
         should.exist(csv.data.find(row => row.name === 'Mr Egg'));
@@ -2600,7 +2600,7 @@ describe('Members API', function () {
                 'content-disposition': anyString
             });
 
-        res.text.should.match(/id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers/);
+        assert.match(res.text, /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers/);
 
         const csv = Papa.parse(res.text, {header: true});
         should.exist(csv.data.find(row => row.name === 'Mr Egg'));
@@ -3363,7 +3363,7 @@ describe('Members API Bulk operations', function () {
         const newsletterCount = 2;
 
         const model = await models.Member.findOne({id: member.id}, {withRelated: 'newsletters'});
-        should(model.relations.newsletters.models.length).equal(newsletterCount, 'This test requires a member with 2 or more newsletters');
+        assert.equal(model.relations.newsletters.models.length, newsletterCount, 'This test requires a member with 2 or more newsletters');
 
         await agent
             .put(`/members/bulk/?filter=id:'${member.id}'`)
@@ -3390,7 +3390,7 @@ describe('Members API Bulk operations', function () {
             });
 
         const updatedModel = await models.Member.findOne({id: member.id}, {withRelated: 'newsletters'});
-        should(updatedModel.relations.newsletters.models.length).equal(0, 'This member should be unsubscribed from all newsletters');
+        assert.equal(updatedModel.relations.newsletters.models.length, 0, 'This member should be unsubscribed from all newsletters');
 
         // When we do it again, we should still receive a count of 1, because we unsubcribed one member (who happens to be already unsubscribed)
         await agent
@@ -3423,7 +3423,7 @@ describe('Members API Bulk operations', function () {
         const newsletterCount = 2;
 
         const model = await models.Member.findOne({id: member.id}, {withRelated: 'newsletters'});
-        should(model.relations.newsletters.models.length).equal(newsletterCount, 'This test requires a member with 2 or more newsletters');
+        assert.equal(model.relations.newsletters.models.length, newsletterCount, 'This test requires a member with 2 or more newsletters');
 
         await agent
             .put(`/members/bulk/?all=true`)
@@ -3507,7 +3507,7 @@ describe('Members API Bulk operations', function () {
             if (model.id === ignoredMember.id) {
                 continue;
             }
-            should(model.relations.newsletters.models.length).equal(0, 'This member should be unsubscribed from all newsletters');
+            assert.equal(model.relations.newsletters.models.length, 0, 'This member should be unsubscribed from all newsletters');
         }
     });
 

@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../utils');
@@ -74,11 +75,11 @@ describe('e2e {{#next_post}} helper', function () {
 
     // Assert fixtures are correct
     it('has valid fixtures', function () {
-        publicPost.visibility.should.eql('public');
-        membersPost.visibility.should.eql('members');
-        paidPost.visibility.should.eql('paid');
-        basicTierPost.visibility.should.eql('tiers');
-        publicPost2.visibility.should.eql('public');
+        assert.equal(publicPost.visibility, 'public');
+        assert.equal(membersPost.visibility, 'members');
+        assert.equal(paidPost.visibility, 'paid');
+        assert.equal(basicTierPost.visibility, 'tiers');
+        assert.equal(publicPost2.visibility, 'public');
     });
 
     beforeEach(function () {

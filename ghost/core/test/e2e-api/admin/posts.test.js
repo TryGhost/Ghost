@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const {assertMatchSnapshot} = require('../../utils/assertions');
 const {agentProvider, fixtureManager, mockManager, matchers} = require('../../utils/e2e-framework');
@@ -264,7 +265,7 @@ describe('Posts API', function () {
                 .orderBy('created_at_ts', 'desc')
                 .fetchAll();
 
-            postRevisions.length.should.equal(1);
+            assert.equal(postRevisions.length, 1);
             postRevisions.at(0).get('lexical').should.equal(lexical);
 
             // mobiledoc revision is not created
@@ -273,7 +274,7 @@ describe('Posts API', function () {
                 .orderBy('created_at_ts', 'desc')
                 .fetchAll();
 
-            mobiledocRevisions.length.should.equal(0);
+            assert.equal(mobiledocRevisions.length, 0);
         });
 
         it('Can create a post with html', async function () {
@@ -432,7 +433,7 @@ describe('Posts API', function () {
                 .orderBy('created_at_ts', 'desc')
                 .fetchAll();
 
-            mobiledocRevisions.length.should.equal(2);
+            assert.equal(mobiledocRevisions.length, 2);
             mobiledocRevisions.at(0).get('mobiledoc').should.equal(updatedMobiledoc);
             mobiledocRevisions.at(1).get('mobiledoc').should.equal(originalMobiledoc);
 
@@ -442,7 +443,7 @@ describe('Posts API', function () {
                 .orderBy('created_at_ts', 'desc')
                 .fetchAll();
 
-            postRevisions.length.should.equal(0);
+            assert.equal(postRevisions.length, 0);
         });
 
         it('Can update a post with lexical', async function () {
@@ -486,7 +487,7 @@ describe('Posts API', function () {
                 .orderBy('created_at_ts', 'desc')
                 .fetchAll();
 
-            postRevisions.length.should.equal(2);
+            assert.equal(postRevisions.length, 2);
             postRevisions.at(0).get('lexical').should.equal(updatedLexical);
             postRevisions.at(1).get('lexical').should.equal(originalLexical);
 
@@ -496,7 +497,7 @@ describe('Posts API', function () {
                 .orderBy('created_at_ts', 'desc')
                 .fetchAll();
 
-            mobiledocRevisions.length.should.equal(0);
+            assert.equal(mobiledocRevisions.length, 0);
         });
 
         describe('Access', function () {
@@ -689,8 +690,8 @@ describe('Posts API', function () {
                 .expectStatus(201);
 
             const [postResponse] = body.posts;
-            postResponse.title.should.equal('Integration Auth Test Post');
-            postResponse.status.should.equal('published');
+            assert.equal(postResponse.title, 'Integration Auth Test Post');
+            assert.equal(postResponse.status, 'published');
             postResponse.lexical.should.equal(lexical);
 
             // Verify the post revision was created with owner user as author
@@ -699,7 +700,7 @@ describe('Posts API', function () {
                 .where('post_id', postResponse.id)
                 .fetchAll();
 
-            postRevisions.length.should.equal(1);
+            assert.equal(postRevisions.length, 1);
             const revision = postRevisions.at(0);
             revision.get('lexical').should.equal(lexical);
             revision.get('author_id').should.equal(ownerUser.get('id'));
@@ -720,7 +721,7 @@ describe('Posts API', function () {
                 .orderBy('created_at_ts', 'desc')
                 .fetchAll();
 
-            updatedRevisions.length.should.equal(2);
+            assert.equal(updatedRevisions.length, 2);
             const latestRevision = updatedRevisions.at(0);
             latestRevision.get('lexical').should.equal(updatedLexical);
             latestRevision.get('author_id').should.equal(ownerUser.get('id'));
@@ -758,11 +759,11 @@ describe('Posts API', function () {
             mobiledoc.cards.find(c => c[0] === 'file')[1].src.should.equal(`${siteUrl}/content/files/document.pdf`);
             mobiledoc.cards.find(c => c[0] === 'video')[1].src.should.equal(`${siteUrl}/content/media/video.mp4`);
             mobiledoc.cards.find(c => c[0] === 'audio')[1].src.should.equal(`${siteUrl}/content/media/audio.mp3`);
-            post.mobiledoc.should.containEql(`${siteUrl}/content/images/snippet-inline.jpg`);
-            post.mobiledoc.should.containEql(`${siteUrl}/content/files/snippet-document.pdf`);
-            post.mobiledoc.should.containEql(`${siteUrl}/content/media/snippet-video.mp4`);
-            post.mobiledoc.should.containEql(`${siteUrl}/content/media/snippet-audio.mp3`);
-            post.mobiledoc.should.not.containEql('__GHOST_URL__');
+            assert(post.mobiledoc.includes(`${siteUrl}/content/images/snippet-inline.jpg`));
+            assert(post.mobiledoc.includes(`${siteUrl}/content/files/snippet-document.pdf`));
+            assert(post.mobiledoc.includes(`${siteUrl}/content/media/snippet-video.mp4`));
+            assert(post.mobiledoc.includes(`${siteUrl}/content/media/snippet-audio.mp3`));
+            assert(!post.mobiledoc.includes('__GHOST_URL__'));
         });
 
         it('Can read Lexical post with all URLs as absolute site URLs', async function () {
@@ -773,15 +774,15 @@ describe('Posts API', function () {
             const post = res.body.posts[0];
 
             post.feature_image.should.equal(`${siteUrl}/content/images/feature.jpg`);
-            post.lexical.should.containEql(`${siteUrl}/content/images/inline.jpg`);
-            post.lexical.should.containEql(`${siteUrl}/content/files/document.pdf`);
-            post.lexical.should.containEql(`${siteUrl}/content/media/video.mp4`);
-            post.lexical.should.containEql(`${siteUrl}/content/media/audio.mp3`);
-            post.lexical.should.containEql(`${siteUrl}/content/images/snippet-inline.jpg`);
-            post.lexical.should.containEql(`${siteUrl}/content/files/snippet-document.pdf`);
-            post.lexical.should.containEql(`${siteUrl}/content/media/snippet-video.mp4`);
-            post.lexical.should.containEql(`${siteUrl}/content/media/snippet-audio.mp3`);
-            post.lexical.should.not.containEql('__GHOST_URL__');
+            assert(post.lexical.includes(`${siteUrl}/content/images/inline.jpg`));
+            assert(post.lexical.includes(`${siteUrl}/content/files/document.pdf`));
+            assert(post.lexical.includes(`${siteUrl}/content/media/video.mp4`));
+            assert(post.lexical.includes(`${siteUrl}/content/media/audio.mp3`));
+            assert(post.lexical.includes(`${siteUrl}/content/images/snippet-inline.jpg`));
+            assert(post.lexical.includes(`${siteUrl}/content/files/snippet-document.pdf`));
+            assert(post.lexical.includes(`${siteUrl}/content/media/snippet-video.mp4`));
+            assert(post.lexical.includes(`${siteUrl}/content/media/snippet-audio.mp3`));
+            assert(!post.lexical.includes('__GHOST_URL__'));
         });
 
         it('Can read Mobiledoc post with CDN URLs for media/files when configured', async function () {
@@ -804,12 +805,12 @@ describe('Posts API', function () {
             mobiledoc.cards.find(c => c[0] === 'video')[1].src.should.equal(`${cdnUrl}/content/media/video.mp4`);
             mobiledoc.cards.find(c => c[0] === 'audio')[1].src.should.equal(`${cdnUrl}/content/media/audio.mp3`);
             // Inserted snippet images stay on site URL
-            post.mobiledoc.should.containEql(`${siteUrl}/content/images/snippet-inline.jpg`);
+            assert(post.mobiledoc.includes(`${siteUrl}/content/images/snippet-inline.jpg`));
             // Inserted snippet media/files use CDN URL
-            post.mobiledoc.should.containEql(`${cdnUrl}/content/files/snippet-document.pdf`);
-            post.mobiledoc.should.containEql(`${cdnUrl}/content/media/snippet-video.mp4`);
-            post.mobiledoc.should.containEql(`${cdnUrl}/content/media/snippet-audio.mp3`);
-            post.mobiledoc.should.not.containEql('__GHOST_URL__');
+            assert(post.mobiledoc.includes(`${cdnUrl}/content/files/snippet-document.pdf`));
+            assert(post.mobiledoc.includes(`${cdnUrl}/content/media/snippet-video.mp4`));
+            assert(post.mobiledoc.includes(`${cdnUrl}/content/media/snippet-audio.mp3`));
+            assert(!post.mobiledoc.includes('__GHOST_URL__'));
         });
 
         it('Can read Lexical post with CDN URLs for media/files when configured', async function () {
@@ -825,18 +826,18 @@ describe('Posts API', function () {
 
             // Images stay on site URL
             post.feature_image.should.equal(`${siteUrl}/content/images/feature.jpg`);
-            post.lexical.should.containEql(`${siteUrl}/content/images/inline.jpg`);
+            assert(post.lexical.includes(`${siteUrl}/content/images/inline.jpg`));
             // Media/files use CDN URL
-            post.lexical.should.containEql(`${cdnUrl}/content/files/document.pdf`);
-            post.lexical.should.containEql(`${cdnUrl}/content/media/video.mp4`);
-            post.lexical.should.containEql(`${cdnUrl}/content/media/audio.mp3`);
+            assert(post.lexical.includes(`${cdnUrl}/content/files/document.pdf`));
+            assert(post.lexical.includes(`${cdnUrl}/content/media/video.mp4`));
+            assert(post.lexical.includes(`${cdnUrl}/content/media/audio.mp3`));
             // Inserted snippet images stay on site URL
-            post.lexical.should.containEql(`${siteUrl}/content/images/snippet-inline.jpg`);
+            assert(post.lexical.includes(`${siteUrl}/content/images/snippet-inline.jpg`));
             // Inserted snippet media/files use CDN URL
-            post.lexical.should.containEql(`${cdnUrl}/content/files/snippet-document.pdf`);
-            post.lexical.should.containEql(`${cdnUrl}/content/media/snippet-video.mp4`);
-            post.lexical.should.containEql(`${cdnUrl}/content/media/snippet-audio.mp3`);
-            post.lexical.should.not.containEql('__GHOST_URL__');
+            assert(post.lexical.includes(`${cdnUrl}/content/files/snippet-document.pdf`));
+            assert(post.lexical.includes(`${cdnUrl}/content/media/snippet-video.mp4`));
+            assert(post.lexical.includes(`${cdnUrl}/content/media/snippet-audio.mp3`));
+            assert(!post.lexical.includes('__GHOST_URL__'));
         });
     });
 });

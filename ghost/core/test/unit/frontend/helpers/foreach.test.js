@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const _ = require('lodash');
@@ -46,12 +47,12 @@ describe('{{#foreach}} helper', function () {
 
             runTest(_this, context, options);
 
-            options.fn.called.should.be.true();
+            assert.equal(options.fn.called, true);
             options.fn.getCalls().length.should.eql(_.size(context));
 
             _.each(context, function (value, index) {
                 options.fn.getCall(index).args[0].should.eql(value);
-                should(options.fn.getCall(index).args[1].data).be.undefined();
+                assert.equal(options.fn.getCall(index).args[1].data, undefined);
             });
         });
 
@@ -71,12 +72,12 @@ describe('{{#foreach}} helper', function () {
 
             runTest(_this, context, options);
 
-            options.fn.called.should.be.true();
+            assert.equal(options.fn.called, true);
             options.fn.getCalls().length.should.eql(_.size(context));
 
             _.each(_.keys(context), function (value, index) {
                 options.fn.getCall(index).args[0].should.eql(context[value]);
-                should(options.fn.getCall(index).args[1].data).be.undefined();
+                assert.equal(options.fn.getCall(index).args[1].data, undefined);
             });
         });
 
@@ -97,7 +98,7 @@ describe('{{#foreach}} helper', function () {
 
             runTest(_this, context, options);
 
-            options.fn.called.should.be.true();
+            assert.equal(options.fn.called, true);
             options.fn.getCalls().length.should.eql(_.size(context));
 
             _.each(context, function (value, index) {
@@ -139,7 +140,7 @@ describe('{{#foreach}} helper', function () {
 
             runTest(_this, context, options);
 
-            options.fn.called.should.be.true();
+            assert.equal(options.fn.called, true);
             options.fn.getCalls().length.should.eql(_.size(context));
 
             _.each(_.keys(context), function (value, index) {
@@ -174,7 +175,7 @@ describe('{{#foreach}} helper', function () {
             context = 'hello world this is ghost'.split(' ');
             runTest(_this, context, options);
 
-            options.fn.called.should.be.true();
+            assert.equal(options.fn.called, true);
             options.fn.getCalls().length.should.eql(_.size(context));
 
             _.each(context, function (value, index) {
@@ -216,7 +217,7 @@ describe('{{#foreach}} helper', function () {
 
             runTest(_this, context, options);
 
-            options.fn.called.should.be.true();
+            assert.equal(options.fn.called, true);
             options.fn.getCalls().length.should.eql(_.size(context));
 
             _.each(_.keys(context), function (value, index) {
@@ -243,9 +244,9 @@ describe('{{#foreach}} helper', function () {
 
             runTest(_this, context, options);
 
-            options.fn.called.should.be.false();
-            options.inverse.called.should.be.true();
-            options.inverse.calledOnce.should.be.true();
+            assert.equal(options.fn.called, false);
+            assert.equal(options.inverse.called, true);
+            assert.equal(options.inverse.calledOnce, true);
         });
     });
 

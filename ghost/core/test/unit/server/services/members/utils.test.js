@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const should = require('should');
 const {formattedMemberResponse} = require('../../../../../core/server/services/members/utils');
@@ -33,7 +34,7 @@ describe('Members Service - utils', function () {
                 unsubscribe_url: undefined,
                 created_at: '2020-01-01T00:00:00.000Z'
             });
-            should(member1).deepEqual({
+            assert.deepEqual(member1, {
                 uuid: 'uuid-1',
                 email: 'jamie+1@example.com',
                 name: 'Jamie Larson',
@@ -80,7 +81,7 @@ describe('Members Service - utils', function () {
                 unsubscribe_url: undefined,
                 created_at: '2020-01-01T00:00:00.000Z'
             });
-            should(member1).deepEqual({
+            assert.deepEqual(member1, {
                 uuid: 'uuid-1',
                 email: 'jamie+1@example.com',
                 name: 'Jamie Larson',

@@ -15,10 +15,10 @@ describe('lib/image: gravatar', function () {
             }
         }, request: () => {}});
 
-        gravatar.url('exists@example.com', {
+        assert.equal(gravatar.url('exists@example.com', {
             size: 180,
             rating: 'r'
-        }).should.eql('https://www.gravatar.com/avatar/ef6dcde5c99bb8f685dd451ccc3e050a?s=180&r=r&d=blank');
+        }), 'https://www.gravatar.com/avatar/ef6dcde5c99bb8f685dd451ccc3e050a?s=180&r=r&d=blank');
     });
 
     it('can successfully lookup a gravatar url', function (done) {
@@ -34,7 +34,7 @@ describe('lib/image: gravatar', function () {
         gravatar.lookup({email: 'exists@example.com'}).then(function (result) {
             should.exist(result);
             should.exist(result.image);
-            result.image.should.eql('https://www.gravatar.com/avatar/ef6dcde5c99bb8f685dd451ccc3e050a?s=250&r=x&d=mp');
+            assert.equal(result.image, 'https://www.gravatar.com/avatar/ef6dcde5c99bb8f685dd451ccc3e050a?s=250&r=x&d=mp');
 
             done();
         }).catch(done);

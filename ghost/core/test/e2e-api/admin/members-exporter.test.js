@@ -28,7 +28,7 @@ function basicAsserts(member, row) {
     should(row.name).eql(member.get('name'));
     should(row.note).eql(member.get('note') || '');
 
-    should(row.deleted_at).eql('');
+    assert.equal(row.deleted_at, '');
     should(row.created_at).eql(moment(member.get('created_at')).toISOString());
 }
 
@@ -52,7 +52,7 @@ async function testOutput(member, asserts, filters = []) {
                 'content-disposition': anyString
             });
 
-        res.text.should.match(/id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers/);
+        assert.match(res.text, /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers/);
 
         let csv = Papa.parse(res.text, {header: true});
         let row = csv.data.find(r => r.id === member.id);
@@ -61,7 +61,7 @@ async function testOutput(member, asserts, filters = []) {
         asserts(row);
 
         if (filter === `filter=id:'${member.id}'`) {
-            csv.data.length.should.eql(1);
+            assert.equal(csv.data.length, 1);
         }
     }
 }
@@ -118,7 +118,7 @@ describe('Members API — exportCSV', function () {
         await testOutput(member, (row) => {
             basicAsserts(member, row);
             assert.equal(row.subscribed_to_emails, 'false');
-            should(row.complimentary_plan).eql('');
+            assert.equal(row.complimentary_plan, '');
             should(row.tiers.split(',').sort().join(',')).eql(tiersList);
         }, [`filter=tier:[${tiers[0].get('slug')}]`, 'filter=subscribed:false']);
     });
@@ -133,8 +133,8 @@ describe('Members API — exportCSV', function () {
         await testOutput(member, (row) => {
             basicAsserts(member, row);
             assert.equal(row.subscribed_to_emails, 'false');
-            should(row.complimentary_plan).eql('');
-            should(row.tiers).eql('');
+            assert.equal(row.complimentary_plan, '');
+            assert.equal(row.tiers, '');
         }, ['filter=subscribed:false']);
     });
 
@@ -155,9 +155,9 @@ describe('Members API — exportCSV', function () {
         await testOutput(member, (row) => {
             basicAsserts(member, row);
             assert.equal(row.subscribed_to_emails, 'false');
-            should(row.complimentary_plan).eql('');
+            assert.equal(row.complimentary_plan, '');
             should(row.labels.split(',').sort().join(',')).eql(labelsList);
-            should(row.tiers).eql('');
+            assert.equal(row.tiers, '');
         }, [`filter=label:${labels[0].get('slug')}`, 'filter=subscribed:false']);
     });
 
@@ -173,8 +173,8 @@ describe('Members API — exportCSV', function () {
             basicAsserts(member, row);
             assert.equal(row.subscribed_to_emails, 'false');
             assert.equal(row.complimentary_plan, 'true');
-            should(row.labels).eql('');
-            should(row.tiers).eql('');
+            assert.equal(row.labels, '');
+            assert.equal(row.tiers, '');
         }, ['filter=status:comped', 'filter=subscribed:false']);
     });
 
@@ -191,9 +191,9 @@ describe('Members API — exportCSV', function () {
         await testOutput(member, (row) => {
             basicAsserts(member, row);
             assert.equal(row.subscribed_to_emails, 'true');
-            should(row.complimentary_plan).eql('');
-            should(row.labels).eql('');
-            should(row.tiers).eql('');
+            assert.equal(row.complimentary_plan, '');
+            assert.equal(row.labels, '');
+            assert.equal(row.tiers, '');
         }, ['filter=subscribed:true']);
     });
 
@@ -230,9 +230,9 @@ describe('Members API — exportCSV', function () {
         await testOutput(member, (row) => {
             basicAsserts(member, row);
             assert.equal(row.subscribed_to_emails, 'false');
-            should(row.complimentary_plan).eql('');
-            should(row.labels).eql('');
-            should(row.tiers).eql('');
+            assert.equal(row.complimentary_plan, '');
+            assert.equal(row.labels, '');
+            assert.equal(row.tiers, '');
             assert.equal(row.stripe_customer_id, 'cus_12345');
         }, ['filter=subscribed:false', 'filter=subscriptions.subscription_id:sub_123']);
     });

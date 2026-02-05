@@ -323,7 +323,7 @@ describe('Create Stripe Checkout Session', function () {
                         const parsed = new URLSearchParams(body);
                         assert.equal(parsed.get('metadata[attribution_url]'), '/test');
                         assert.equal(parsed.get('metadata[attribution_type]'), 'url');
-                        should(parsed.get('metadata[attribution_id]')).be.null();
+                        assert.equal(parsed.get('metadata[attribution_id]'), null);
 
                         return [200, {id: 'cs_123', url: 'https://site.com'}];
                     }
@@ -486,9 +486,9 @@ describe('Create Stripe Checkout Session', function () {
                 .reply((uri, body) => {
                     if (uri === '/v1/checkout/sessions') {
                         const parsed = new URLSearchParams(body);
-                        should(parsed.get('metadata[attribution_url]')).be.null();
-                        should(parsed.get('metadata[attribution_type]')).be.null();
-                        should(parsed.get('metadata[attribution_id]')).be.null();
+                        assert.equal(parsed.get('metadata[attribution_url]'), null);
+                        assert.equal(parsed.get('metadata[attribution_type]'), null);
+                        assert.equal(parsed.get('metadata[attribution_id]'), null);
 
                         return [200, {id: 'cs_123', url: 'https://site.com'}];
                     }

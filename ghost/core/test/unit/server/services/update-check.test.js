@@ -79,7 +79,7 @@ describe('Update Check', function () {
 
             await updateCheckService.check();
 
-            scope.isDone().should.equal(true);
+            assert.equal(scope.isDone(), true);
         });
 
         it('update check won\'t happen if it\'s too early', async function () {
@@ -101,7 +101,7 @@ describe('Update Check', function () {
 
             await updateCheckService.check();
 
-            requestStub.called.should.equal(false);
+            assert.equal(requestStub.called, false);
         });
 
         it('update check will happen if it\'s time to check', async function () {
@@ -145,7 +145,7 @@ describe('Update Check', function () {
 
             await updateCheckService.check();
 
-            scope.isDone().should.equal(true);
+            assert.equal(scope.isDone(), true);
         });
     });
 
@@ -206,16 +206,16 @@ describe('Update Check', function () {
 
             await updateCheckService.check();
 
-            scope.isDone().should.equal(true);
+            assert.equal(scope.isDone(), true);
 
-            capturedData.ghost_version.should.equal('4.0.0');
+            assert.equal(capturedData.ghost_version, '4.0.0');
             capturedData.node_version.should.equal(process.versions.node);
             capturedData.env.should.equal(process.env.NODE_ENV);
-            capturedData.database_type.should.match(/sqlite3|mysql/);
+            assert.match(capturedData.database_type, /sqlite3|mysql/);
             capturedData.blog_id.should.be.a.String();
             capturedData.blog_id.should.not.be.empty();
             capturedData.theme.should.be.equal('casperito');
-            capturedData.blog_created_at.should.equal(819846900);
+            assert.equal(capturedData.blog_created_at, 819846900);
             capturedData.user_count.should.be.equal(2);
             capturedData.post_count.should.be.equal(13);
             capturedData.npm_version.should.be.equal('10.8.2');
@@ -281,17 +281,17 @@ describe('Update Check', function () {
 
             await updateCheckService.check();
 
-            notificationsAPIAddStub.calledOnce.should.equal(true);
-            notificationsAPIAddStub.args[0][0].notifications.length.should.equal(1);
+            assert.equal(notificationsAPIAddStub.calledOnce, true);
+            assert.equal(notificationsAPIAddStub.args[0][0].notifications.length, 1);
 
             const targetNotification = notificationsAPIAddStub.args[0][0].notifications[0];
             targetNotification.dismissible.should.eql(notification.messages[0].dismissible);
             targetNotification.id.should.eql(notification.messages[0].id);
             targetNotification.top.should.eql(notification.messages[0].top);
-            targetNotification.type.should.eql('info');
+            assert.equal(targetNotification.type, 'info');
             targetNotification.message.should.eql(notification.messages[0].content);
 
-            usersBrowseStub.calledTwice.should.eql(true);
+            assert.equal(usersBrowseStub.calledTwice, true);
 
             // Second (non statistical) call should be looking for admin users with an 'active' status only
             usersBrowseStub.args[1][0].should.eql({
@@ -362,14 +362,14 @@ describe('Update Check', function () {
 
             await updateCheckService.check();
 
-            sendEmailStub.called.should.be.true();
-            sendEmailStub.args[0][0].to.should.equal('jbloggs@example.com');
-            sendEmailStub.args[0][0].subject.should.equal('Action required: Critical alert from Ghost instance http://127.0.0.1:2369');
-            sendEmailStub.args[0][0].html.should.equal('<p>Critical message. Upgrade your site!</p>');
-            sendEmailStub.args[0][0].forceTextContent.should.equal(true);
+            assert.equal(sendEmailStub.called, true);
+            assert.equal(sendEmailStub.args[0][0].to, 'jbloggs@example.com');
+            assert.equal(sendEmailStub.args[0][0].subject, 'Action required: Critical alert from Ghost instance http://127.0.0.1:2369');
+            assert.equal(sendEmailStub.args[0][0].html, '<p>Critical message. Upgrade your site!</p>');
+            assert.equal(sendEmailStub.args[0][0].forceTextContent, true);
 
-            notificationsAPIAddStub.calledOnce.should.equal(true);
-            notificationsAPIAddStub.args[0][0].notifications.length.should.equal(1);
+            assert.equal(notificationsAPIAddStub.calledOnce, true);
+            assert.equal(notificationsAPIAddStub.args[0][0].notifications.length, 1);
         });
 
         it('not create a notification if the check response has no messages', async function () {
@@ -417,7 +417,7 @@ describe('Update Check', function () {
 
             await updateCheckService.check();
 
-            notificationsAPIAddStub.calledOnce.should.equal(false);
+            assert.equal(notificationsAPIAddStub.calledOnce, false);
         });
     });
 
@@ -434,10 +434,10 @@ describe('Update Check', function () {
 
             updateCheckService.updateCheckError({});
 
-            settingsStub.called.should.be.true();
-            logging.error.called.should.be.true();
-            logging.error.args[0][0].context.should.equal('Checking for updates failed, your site will continue to function.');
-            logging.error.args[0][0].help.should.equal('If you get this error repeatedly, please seek help from https://ghost.org/docs/');
+            assert.equal(settingsStub.called, true);
+            assert.equal(logging.error.called, true);
+            assert.equal(logging.error.args[0][0].context, 'Checking for updates failed, your site will continue to function.');
+            assert.equal(logging.error.args[0][0].help, 'If you get this error repeatedly, please seek help from https://ghost.org/docs/');
         });
 
         it('logs and rethrows an error when error with rethrow configuration', function () {
@@ -456,12 +456,12 @@ describe('Update Check', function () {
                 updateCheckService.updateCheckError({});
                 assert.fail('should have thrown');
             } catch (e) {
-                settingsStub.called.should.be.true();
-                logging.error.called.should.be.true();
-                logging.error.args[0][0].context.should.equal('Checking for updates failed, your site will continue to function.');
-                logging.error.args[0][0].help.should.equal('If you get this error repeatedly, please seek help from https://ghost.org/docs/');
+                assert.equal(settingsStub.called, true);
+                assert.equal(logging.error.called, true);
+                assert.equal(logging.error.args[0][0].context, 'Checking for updates failed, your site will continue to function.');
+                assert.equal(logging.error.args[0][0].help, 'If you get this error repeatedly, please seek help from https://ghost.org/docs/');
 
-                e.context.should.equal('Checking for updates failed, your site will continue to function.');
+                assert.equal(e.context, 'Checking for updates failed, your site will continue to function.');
             }
         });
     });

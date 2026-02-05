@@ -60,8 +60,8 @@ describe('Unit: models/integration', function () {
             }, {
                 filter: 'type:[custom,builtin,core]'
             }).then(() => {
-                queries.length.should.eql(1);
-                queries[0].sql.should.eql('select `integrations`.* from `integrations` where `integrations`.`type` in (?, ?, ?) and `integrations`.`id` = ? limit ?');
+                assert.equal(queries.length, 1);
+                assert.equal(queries[0].sql, 'select `integrations`.* from `integrations` where `integrations`.`type` in (?, ?, ?) and `integrations`.`id` = ? limit ?');
                 queries[0].bindings.should.eql(['custom', 'builtin', 'core', '123', 1]);
             });
         });
@@ -90,8 +90,8 @@ describe('Unit: models/integration', function () {
             });
 
             return models.Integration.getInternalFrontendKey().then(() => {
-                queries.length.should.eql(1);
-                queries[0].sql.should.eql('select `integrations`.* from `integrations` where `integrations`.`slug` = ? limit ?');
+                assert.equal(queries.length, 1);
+                assert.equal(queries[0].sql, 'select `integrations`.* from `integrations` where `integrations`.`slug` = ? limit ?');
                 queries[0].bindings.should.eql(['ghost-internal-frontend', 1]);
             });
         });

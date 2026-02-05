@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 
@@ -34,7 +35,7 @@ describe('Webhook Service', function () {
             await webhookService.add(fakeWebhook, {});
             should.fail('should have thrown');
         } catch (err) {
-            err.name.should.equal('CustomTestError');
+            assert.equal(err.name, 'CustomTestError');
         }
     });
 });

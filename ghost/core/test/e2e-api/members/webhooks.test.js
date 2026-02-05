@@ -3222,7 +3222,7 @@ describe('Members API', function () {
                     etag: anyEtag
                 })
                 .expect(({body}) => {
-                    should(body.events.find(e => e.type !== 'subscription_event')).be.undefined();
+                    assert.equal(body.events.find(e => e.type !== 'subscription_event'), undefined);
                     should(body.events.map(e => e.data.attribution)).containDeep(subscriptionAttributions);
                 });
         });

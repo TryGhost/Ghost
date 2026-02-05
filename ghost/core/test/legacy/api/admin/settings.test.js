@@ -27,7 +27,7 @@ describe('Settings API', function () {
             .expect(200)
             .expect((response) => {
                 should.exist(response.headers['x-cache-invalidate']);
-                response.headers['x-cache-invalidate'].should.eql('/*');
+                assert.equal(response.headers['x-cache-invalidate'], '/*');
             });
 
         // Check if not changed (also check internal ones)
@@ -124,7 +124,7 @@ describe('Settings API', function () {
                 .expect(200);
 
             const putBody = body;
-            headers['x-cache-invalidate'].should.eql('/*');
+            assert.equal(headers['x-cache-invalidate'], '/*');
             should.exist(putBody);
 
             let setting = putBody.settings.find(s => s.key === 'unsplash');
@@ -154,12 +154,12 @@ describe('Settings API', function () {
                 .expect(200);
 
             const putBody = body;
-            headers['x-cache-invalidate'].should.eql('/*');
+            assert.equal(headers['x-cache-invalidate'], '/*');
             should.exist(putBody);
 
             localUtils.API.checkResponse(putBody, 'settings');
             const setting = putBody.settings.find(s => s.key === 'slack_username');
-            setting.value.should.eql('can edit me');
+            assert.equal(setting.value, 'can edit me');
         });
 
         it('Can edit URLs without internal storage format leaking', async function () {
@@ -392,7 +392,7 @@ describe('Settings API', function () {
 
             const setting = jsonResponse.settings.find(s => s.key === 'email_verification_required');
             should.exist(setting);
-            setting.value.should.eql(true);
+            assert.equal(setting.value, true);
         });
     });
 });
