@@ -50,7 +50,7 @@ describe('Themes', function () {
                 .then((checkedTheme) => {
                     assert.equal(checkZipStub.calledOnce, true);
                     assert.equal(checkZipStub.calledWith(testTheme), true);
-                    checkStub.callCount.should.be.equal(0);
+                    sinon.assert.notCalled(checkStub);
                     assert.equal(formatStub.calledOnce, true);
                     assert(_.isPlainObject(checkedTheme));
 
@@ -64,7 +64,7 @@ describe('Themes', function () {
 
             return validate.check(testTheme.name, testTheme, {isZip: false})
                 .then((checkedTheme) => {
-                    checkZipStub.callCount.should.be.equal(0);
+                    sinon.assert.notCalled(checkZipStub);
                     assert.equal(checkStub.calledOnce, true);
                     assert.equal(checkStub.calledWith(testTheme.path), true);
                     assert.equal(formatStub.calledOnce, true);
@@ -96,7 +96,7 @@ describe('Themes', function () {
                 .then((checkedTheme) => {
                     assert.equal(checkZipStub.calledOnce, true);
                     assert.equal(checkZipStub.calledWith(testTheme), true);
-                    checkStub.callCount.should.be.equal(0);
+                    sinon.assert.notCalled(checkStub);
                     assert.equal(formatStub.calledOnce, true);
 
                     assert.equal(validate.canActivate(checkedTheme), false);
@@ -125,7 +125,7 @@ describe('Themes', function () {
                 .then((checkedTheme) => {
                     assert.equal(checkStub.calledOnce, true);
                     assert.equal(checkStub.calledWith(testTheme.path), true);
-                    checkZipStub.callCount.should.be.equal(0);
+                    sinon.assert.notCalled(checkZipStub);
                     assert.equal(formatStub.calledOnce, true);
 
                     assert.equal(validate.canActivate(checkedTheme), false);
@@ -144,7 +144,7 @@ describe('Themes', function () {
                     error.message.should.be.equal('invalid zip file');
                     assert.equal(checkZipStub.calledOnce, true);
                     assert.equal(checkZipStub.calledWith(testTheme), true);
-                    checkStub.callCount.should.be.equal(0);
+                    sinon.assert.notCalled(checkStub);
                     assert.equal(formatStub.calledOnce, false);
                 });
         });
