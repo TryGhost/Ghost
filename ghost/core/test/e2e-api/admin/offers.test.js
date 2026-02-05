@@ -403,7 +403,7 @@ describe('Offers API', function () {
             })
             .expect(({body}) => {
                 // Test if all the changes were applied, and that the code has been slugified
-                body.offers[0].should.match({...updatedOffer, code: 'cyber-monday'});
+                assertObjectMatches(body.offers[0], {...updatedOffer, code: 'cyber-monday'});
             });
     });
 

@@ -2336,7 +2336,7 @@ describe('Members API', function () {
             });
 
             // Check whether the offer attribute is passed correctly in the response when fetching a single member
-            member.subscriptions[0].should.match({
+            assertObjectMatches(member.subscriptions[0], {
                 offer: null
             });
 
