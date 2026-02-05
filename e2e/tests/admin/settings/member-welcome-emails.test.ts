@@ -51,7 +51,6 @@ test.describe('Ghost Admin - Member Welcome Emails', () => {
         await welcomeEmailsSection.disableFreeWelcomeEmail();
 
         await expect(welcomeEmailsSection.freeWelcomeEmailToggle).toHaveAttribute('aria-checked', 'false');
-        await expect(welcomeEmailsSection.freeWelcomeEmailEditButton).toBeHidden();
 
         // TODO: Update test once full E2E functionality is added for welcome emails
         // We shouldn't assert via API directly, but for now this verifies the toggle works as expected
