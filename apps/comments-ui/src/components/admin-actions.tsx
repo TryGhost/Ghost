@@ -1,15 +1,21 @@
-import React, {useCallback, useContext, useMemo} from 'react';
+import React, {useContext, useMemo} from 'react';
 import {Comment, EditableAppContext} from '../app-context';
-import type {CommentApi} from './comment-api-provider';
+import type {AdminCommentApi, CommentApi} from './comment-api-provider';
 
 export type AdminActions = {
     hideComment(id: string): Promise<void>;
     showComment(id: string): Promise<void>;
 };
 
-const AdminActionsContext = React.createContext<AdminActions | null>(null);
+const AdminActionsContext = React.createContext<AdminActions | undefined>(undefined);
 
-export const useAdminActions = (): AdminActions | null => useContext(AdminActionsContext);
+export function useAdminActions(): AdminActions {
+    const context = useContext(AdminActionsContext);
+    if (context === undefined) {
+        throw new Error('useAdminActions must be used within an admin context');
+    }
+    return context;
+}
 
 type Props = {
     commentApi: CommentApi | null;
@@ -29,37 +35,34 @@ function updateCommentInState(comments: Comment[], commentId: string, updater: (
     });
 }
 
+function buildAdminActions(commentApi: AdminCommentApi, setState: Props['setState']): AdminActions {
+    return {
+        async hideComment(id: string) {
+            await commentApi.hideComment(id);
+            setState(state => ({
+                comments: updateCommentInState(state.comments, id, c => ({...c, status: 'hidden'})),
+                commentCount: state.commentCount - 1
+            }));
+        },
+        async showComment(id: string) {
+            await commentApi.showComment({id});
+            const data = await commentApi.read(id);
+            const updatedComment = data.comments[0];
+            setState(state => ({
+                comments: updateCommentInState(state.comments, id, () => updatedComment),
+                commentCount: state.commentCount + 1
+            }));
+        }
+    };
+}
+
 export const AdminActionsProvider: React.FC<Props> = ({commentApi, setState, children}) => {
-    const hideComment = useCallback(async (id: string) => {
+    const actions = useMemo<AdminActions | undefined>(() => {
         if (!commentApi?.isAdmin) {
-            return;
+            return undefined;
         }
-        await commentApi.hideComment(id);
-        setState(state => ({
-            comments: updateCommentInState(state.comments, id, c => ({...c, status: 'hidden'})),
-            commentCount: state.commentCount - 1
-        }));
+        return buildAdminActions(commentApi, setState);
     }, [commentApi, setState]);
-
-    const showComment = useCallback(async (id: string) => {
-        if (!commentApi?.isAdmin) {
-            return;
-        }
-        await commentApi.showComment({id});
-        const data = await commentApi.read(id);
-        const updatedComment = data.comments[0];
-        setState(state => ({
-            comments: updateCommentInState(state.comments, id, () => updatedComment),
-            commentCount: state.commentCount + 1
-        }));
-    }, [commentApi, setState]);
-
-    const actions = useMemo<AdminActions | null>(() => {
-        if (!commentApi?.isAdmin) {
-            return null;
-        }
-        return {hideComment, showComment};
-    }, [commentApi, hideComment, showComment]);
 
     return (
         <AdminActionsContext.Provider value={actions}>

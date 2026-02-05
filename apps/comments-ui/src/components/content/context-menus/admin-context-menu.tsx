@@ -13,12 +13,12 @@ const AdminContextMenu: React.FC<Props> = ({comment, close}) => {
     const adminActions = useAdminActions();
 
     const hideComment = () => {
-        adminActions?.hideComment(comment.id);
+        adminActions.hideComment(comment.id);
         close();
     };
 
     const showComment = () => {
-        adminActions?.showComment(comment.id);
+        adminActions.showComment(comment.id);
         close();
     };
 
