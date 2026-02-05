@@ -1,5 +1,5 @@
 import React, {useCallback} from 'react';
-import {KoenigEditorBase, type KoenigInstance, type NodeType} from '@tryghost/admin-x-design-system';
+import {KoenigEditorBase, type KoenigInstance, LoadingIndicator, type NodeType} from '@tryghost/admin-x-design-system';
 import {cn} from '@tryghost/shade';
 
 export interface MemberEmailsEditorProps {
@@ -63,6 +63,7 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
                 emojiPicker={false}
                 inheritFontStyles={false}
                 initialEditorState={value}
+                loadingFallback={<LoadingIndicator delay={200} size="lg" />}
                 nodes={nodes}
                 placeholder={placeholder}
                 singleParagraph={singleParagraph}
