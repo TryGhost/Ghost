@@ -173,7 +173,7 @@ function CommentsList({
                                         />
 
                                         {item.in_reply_to_snippet && (
-                                            <div className={`mb-1 line-clamp-1 text-sm ${item.status === 'hidden' && 'opacity-50'}`}>
+                                            <div className={`mb-1 line-clamp-1 max-w-3xl text-sm ${item.status === 'hidden' && 'opacity-50'}`}>
                                                 <span className="text-muted-foreground">Replied to:</span>&nbsp;
                                                 <Link
                                                     className="text-sm font-normal text-muted-foreground hover:text-foreground"
