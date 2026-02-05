@@ -160,6 +160,7 @@ function CommentsList({
                                                 <span className="text-muted-foreground">Replied to:</span>&nbsp;
                                                 <Link
                                                     className="text-sm font-normal text-muted-foreground hover:text-foreground"
+                                                    data-testid="replied-to-link"
                                                     to={buildThreadLink(searchParams, item.in_reply_to_id || item.parent_id) || ''}
                                                     onClick={(e) => {
                                                         e.stopPropagation();

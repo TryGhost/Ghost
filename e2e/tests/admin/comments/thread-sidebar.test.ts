@@ -104,7 +104,7 @@ test.describe('Ghost Admin - Thread Sidebar', () => {
             await commentsPage.waitForComments();
 
             const replyRow = commentsPage.getCommentRowByText('Reply that shows replied to');
-            const repliedToLink = commentsPage.getMainListRepliedToLink(replyRow);
+            const repliedToLink = commentsPage.getRepliedToLink(replyRow);
             await repliedToLink.click();
 
             await commentsPage.waitForThreadSidebar();

@@ -53,8 +53,7 @@ function CommentRow({comment, isReply = false, isSelectedComment = false, select
             <div className="grow">
                 <div
                     className="w-full"
-                    data-comment-id={comment.id}
-                    data-testid="comment-thread-row"
+                    data-testid={`comment-thread-row-${comment.id}`}
                 >
                     <div className='flex min-w-0 flex-col'>
                         <CommentHeader
@@ -70,6 +69,7 @@ function CommentRow({comment, isReply = false, isSelectedComment = false, select
                                 <span className="text-muted-foreground">Replied to:</span>&nbsp;
                                 <Link
                                     className="text-sm font-normal text-muted-foreground hover:text-foreground"
+                                    data-testid="replied-to-link"
                                     to={buildThreadLink(searchParams, comment.in_reply_to_id || comment.parent_id) || ''}
                                     onClick={(e: React.MouseEvent) => {
                                         e.stopPropagation();
