@@ -320,7 +320,7 @@ describe('package-json read', function () {
 
             packageJSON.readPackage(packagePath.name, 'casper.zip')
                 .then(function (pkg) {
-                    pkg.should.eql({});
+                    assert.deepEqual(pkg, {});
 
                     done();
                 })

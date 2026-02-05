@@ -166,7 +166,7 @@ describe('Tag API', function () {
             .expect(204);
 
         assertExists(res.headers['x-cache-invalidate']);
-        res.body.should.eql({});
+        assert.deepEqual(res.body, {});
     });
 
     it('Can destroy a non-existent tag', async function () {

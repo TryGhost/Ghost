@@ -45,7 +45,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
 
             assert.equal(collectionRouter.filter, undefined);
             assert.equal(collectionRouter.getResourceType(), 'posts');
-            collectionRouter.templates.should.eql([]);
+            assert.deepEqual(collectionRouter.templates, []);
             assert.equal(collectionRouter.getPermalinks().getValue(), '/:slug/');
 
             assert.equal(routerCreatedSpy.calledOnce, true);
@@ -92,7 +92,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
 
             assert.equal(collectionRouter.filter, undefined);
             assert.equal(collectionRouter.getResourceType(), 'posts');
-            collectionRouter.templates.should.eql([]);
+            assert.deepEqual(collectionRouter.templates, []);
             assert.equal(collectionRouter.getPermalinks().getValue(), '/blog/:year/:slug/');
 
             assert.equal(routerCreatedSpy.calledOnce, true);

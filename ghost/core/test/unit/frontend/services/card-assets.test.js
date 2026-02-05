@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 
 const path = require('path');
@@ -36,7 +37,7 @@ describe('Card Asset Service', function () {
 
         await cardAssets.load();
 
-        cardAssets.files.should.eql([]);
+        assert.deepEqual(cardAssets.files, []);
     });
 
     it('can load a single css file', async function () {
@@ -62,14 +63,14 @@ describe('Card Asset Service', function () {
 
         await cardAssets.load(false);
 
-        cardAssets.files.should.eql([]);
+        assert.deepEqual(cardAssets.files, []);
     });
 
     describe('Generate the correct glob strings', function () {
         it('CARD ASSET SERVICE DEFAULT CASE: do nothing', function () {
             const cardAssets = new CardAssetService();
 
-            cardAssets.generateGlobs().should.eql({});
+            assert.deepEqual(cardAssets.generateGlobs(), {});
         });
 
         it('GHOST DEFAULT CASE: exclude bookmark and gallery', function () {
@@ -99,7 +100,7 @@ describe('Card Asset Service', function () {
                 config: false
             });
 
-            cardAssets.generateGlobs().should.eql({});
+            assert.deepEqual(cardAssets.generateGlobs(), {});
         });
 
         it('CASE: card_assets is an object with an exclude property, generate inverse match strings', function () {

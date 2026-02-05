@@ -74,7 +74,7 @@ describe('Themes', function () {
             const result = themeList.getAll();
             assertExists(result);
             assert(_.isPlainObject(result));
-            result.should.eql({});
+            assert.deepEqual(result, {});
             assert.equal(Object.keys(result).length, 0);
         });
     });
