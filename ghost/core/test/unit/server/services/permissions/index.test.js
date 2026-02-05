@@ -69,7 +69,7 @@ describe('Permissions', function () {
         it('throws an error without actionMap', function () {
             sinon.stub(actionsMap, 'empty').returns(true);
 
-            permissions.canThis.should.throw(/No actions map found/);
+            assert.throws(permissions.canThis, /No actions map found/);
         });
     });
 

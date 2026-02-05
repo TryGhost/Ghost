@@ -293,13 +293,13 @@ describe('Importer', function () {
                 it('fails a zip with two base directories', function () {
                     const testDir = path.resolve('test/utils/fixtures/import/zips/zip-with-double-base-dir');
 
-                    ImportManager.isValidZip.bind(ImportManager, testDir).should.throw(errors.UnsupportedMediaTypeError);
+                    assert.throws(ImportManager.isValidZip.bind(ImportManager, testDir), errors.UnsupportedMediaTypeError);
                 });
 
                 it('fails a zip with no content', function () {
                     const testDir = path.resolve('test/utils/fixtures/import/zips/zip-invalid');
 
-                    ImportManager.isValidZip.bind(ImportManager, testDir).should.throw(errors.UnsupportedMediaTypeError);
+                    assert.throws(ImportManager.isValidZip.bind(ImportManager, testDir), errors.UnsupportedMediaTypeError);
                 });
             });
 
