@@ -43,39 +43,6 @@ describe('{{pagination}} helper', function () {
         runHelper(function () {
         }).should.throwError(expectedMessage);
     });
-
-    it('validates values', function () {
-        const runErrorTest = function (data) {
-            return function () {
-                pagination.call(data);
-            };
-        };
-
-        runErrorTest({pagination: {page: 3, prev: true, next: null, limit: 15, total: 8, pages: 3}})
-            .should.throwError('Invalid value, Next/Prev must be a number');
-        runErrorTest({pagination: {page: 3, prev: 2, next: true, limit: 15, total: 8, pages: 3}})
-            .should.throwError('Invalid value, Next/Prev must be a number');
-
-        runErrorTest({pagination: {limit: 15, total: 8, pages: 3}})
-            .should.throwError('All values must be defined for page, pages, limit and total');
-        runErrorTest({pagination: {page: 3, total: 8, pages: 3}})
-            .should.throwError('All values must be defined for page, pages, limit and total');
-        runErrorTest({pagination: {page: 3, limit: 15, pages: 3}})
-            .should.throwError('All values must be defined for page, pages, limit and total');
-        runErrorTest({pagination: {page: 3, limit: 15, total: 8}})
-            .should.throwError('All values must be defined for page, pages, limit and total');
-
-        runErrorTest({pagination: {page: null, prev: null, next: null, limit: 15, total: 8, pages: 3}})
-            .should.throwError('Invalid value, check page, pages, limit and total are numbers');
-        runErrorTest({pagination: {page: 1, prev: null, next: null, limit: null, total: 8, pages: 3}})
-            .should.throwError('Invalid value, check page, pages, limit and total are numbers');
-        runErrorTest({pagination: {page: 1, prev: null, next: null, limit: 15, total: null, pages: 3}})
-            .should.throwError('Invalid value, check page, pages, limit and total are numbers');
-        runErrorTest({pagination: {page: 1, prev: null, next: null, limit: 15, total: 8, pages: null}})
-            .should.throwError('Invalid value, check page, pages, limit and total are numbers');
-    });
-
-    // Run rendering tests with both i18n implementations
     const i18nImplementations = [
         {name: 'themeI18n (legacy)', useNewTranslation: false},
         {name: 'themeI18next (new)', useNewTranslation: true}
@@ -162,6 +129,39 @@ describe('{{pagination}} helper', function () {
             });
         });
     });
+    it('validates values', function () {
+        const runErrorTest = function (data) {
+            return function () {
+                pagination.call(data);
+            };
+        };
+
+        runErrorTest({pagination: {page: 3, prev: true, next: null, limit: 15, total: 8, pages: 3}})
+            .should.throwError('Invalid value, Next/Prev must be a number');
+        runErrorTest({pagination: {page: 3, prev: 2, next: true, limit: 15, total: 8, pages: 3}})
+            .should.throwError('Invalid value, Next/Prev must be a number');
+
+        runErrorTest({pagination: {limit: 15, total: 8, pages: 3}})
+            .should.throwError('All values must be defined for page, pages, limit and total');
+        runErrorTest({pagination: {page: 3, total: 8, pages: 3}})
+            .should.throwError('All values must be defined for page, pages, limit and total');
+        runErrorTest({pagination: {page: 3, limit: 15, pages: 3}})
+            .should.throwError('All values must be defined for page, pages, limit and total');
+        runErrorTest({pagination: {page: 3, limit: 15, total: 8}})
+            .should.throwError('All values must be defined for page, pages, limit and total');
+
+        runErrorTest({pagination: {page: null, prev: null, next: null, limit: 15, total: 8, pages: 3}})
+            .should.throwError('Invalid value, check page, pages, limit and total are numbers');
+        runErrorTest({pagination: {page: 1, prev: null, next: null, limit: null, total: 8, pages: 3}})
+            .should.throwError('Invalid value, check page, pages, limit and total are numbers');
+        runErrorTest({pagination: {page: 1, prev: null, next: null, limit: 15, total: null, pages: 3}})
+            .should.throwError('Invalid value, check page, pages, limit and total are numbers');
+        runErrorTest({pagination: {page: 1, prev: null, next: null, limit: 15, total: 8, pages: null}})
+            .should.throwError('Invalid value, check page, pages, limit and total are numbers');
+    });
+
+    // Run rendering tests with both i18n implementations
+
 });
 
 describe('{{pagination}} helper with custom template', function () {
