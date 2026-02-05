@@ -158,10 +158,12 @@ describe('Email verification flow', function () {
             sendVerificationEmail: emailStub
         });
 
-        await trigger._startVerificationProcess({
-            amount: 10,
-            throwOnTrigger: true
-        }).should.be.rejected();
+        await assert.rejects(
+            trigger._startVerificationProcess({
+                amount: 10,
+                throwOnTrigger: true
+            })
+        );
     });
 
     it('Sends a message containing the number of members imported', async function () {
