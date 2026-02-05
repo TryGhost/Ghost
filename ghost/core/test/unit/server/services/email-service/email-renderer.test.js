@@ -1918,7 +1918,7 @@ describe('Email renderer', function () {
             const href = transistorCall.args[0].href;
             const hasPlaceholder = href.includes('%%{uuid}%%') ||
                 href.includes('%25%25%7Buuid%7D%25%25');
-            hasPlaceholder.should.be.true('URL should contain uuid placeholder');
+            assert.equal(hasPlaceholder, true, 'URL should contain uuid placeholder');
 
             // The final tracked link should be in the HTML
             const $ = cheerio.load(response.html);
