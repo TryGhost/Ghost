@@ -39,7 +39,7 @@ export class CommentsPage extends AdminPage {
 
         this.threadSidebar = page.getByRole('dialog', {name: 'Thread'});
         this.threadSidebarTitle = this.threadSidebar.getByRole('heading', {name: 'Thread'});
-        this.threadCommentRows = page.getByTestId('comment-thread-row');
+        this.threadCommentRows = page.getByTestId(/^comment-thread-row-/);
     }
 
     async waitForComments(): Promise<void> {
@@ -89,14 +89,10 @@ export class CommentsPage extends AdminPage {
     }
 
     getThreadCommentById(commentId: string): Locator {
-        return this.page.locator(`[data-testid="comment-thread-row"][data-comment-id="${commentId}"]`);
+        return this.page.getByTestId(`comment-thread-row-${commentId}`);
     }
 
     getRepliedToLink(row: Locator): Locator {
-        return row.getByText('Replied to:').locator('..').locator('a, button');
-    }
-
-    getMainListRepliedToLink(row: Locator): Locator {
-        return row.getByText('Replied to:').locator('..').getByRole('link');
+        return row.getByTestId('replied-to-link');
     }
 }
