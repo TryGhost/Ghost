@@ -195,7 +195,7 @@ describe('Members Importer API', function () {
                 assert.equal(defaultMember1.labels.length, 1); // auto-generated import label
 
                 const defaultMember2 = jsonResponse.members.find(member => (member.email === 'member+defaults_2@example.com'));
-                should(defaultMember2).not.be.undefined();
+                assertExists(defaultMember2);
             });
     });
 
