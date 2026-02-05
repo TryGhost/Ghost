@@ -11,7 +11,7 @@ describe('StripeCoupon', function () {
                 duration: 'forever'
             });
 
-            should.ok(coupon instanceof StripeCoupon);
+            assert(coupon instanceof StripeCoupon);
             assert.equal(coupon.id, 'coupon_123');
             assert.equal(coupon.percent_off, 20);
             assert.equal(coupon.duration, 'forever');
@@ -26,7 +26,7 @@ describe('StripeCoupon', function () {
                 duration: 'once'
             });
 
-            should.ok(coupon instanceof StripeCoupon);
+            assert(coupon instanceof StripeCoupon);
             assert.equal(coupon.id, 'coupon_456');
             assert.equal(coupon.amount_off, 500);
             assert.equal(coupon.currency, 'usd');
@@ -42,7 +42,7 @@ describe('StripeCoupon', function () {
                 duration_in_months: 3
             });
 
-            should.ok(coupon instanceof StripeCoupon);
+            assert(coupon instanceof StripeCoupon);
             assert.equal(coupon.duration, 'repeating');
             assert.equal(coupon.duration_in_months, 3);
         });

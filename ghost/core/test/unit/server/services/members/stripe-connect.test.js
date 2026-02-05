@@ -57,7 +57,7 @@ describe('Members - Stripe Connect', function () {
         await stripeConnect.getStripeConnectTokenData(encodedData, getSessionProp).then(() => {
             throw new Error('The token data should not be returned if the state is incorrect');
         }, (error) => {
-            should.ok(error);
+            assert(error);
         });
     });
 });

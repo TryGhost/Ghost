@@ -71,7 +71,7 @@ describe('OfferCurrency', function () {
         const currencyA = OfferCurrency.create('usd');
         const currencyB = OfferCurrency.create('USD');
 
-        should.ok(currencyA.equals(currencyB));
+        assert(currencyA.equals(currencyB));
     });
 });
 

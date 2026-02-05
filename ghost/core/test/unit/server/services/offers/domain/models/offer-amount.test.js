@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 
 const {OfferPercentageAmount, OfferFixedAmount, OfferTrialAmount} = require('../../../../../../../core/server/services/offers/domain/models/offer-amount');
@@ -63,7 +64,7 @@ describe('OfferAmount', function () {
         it('Exposes a number on the value property', function () {
             const cadence = OfferPercentageAmount.create(42);
 
-            should.ok(typeof cadence.value === 'number');
+            assert(typeof cadence.value === 'number');
         });
     });
 
@@ -117,7 +118,7 @@ describe('OfferAmount', function () {
         it('Exposes a number on the value property', function () {
             const cadence = OfferFixedAmount.create(42);
 
-            should.ok(typeof cadence.value === 'number');
+            assert(typeof cadence.value === 'number');
         });
     });
 
@@ -171,7 +172,7 @@ describe('OfferAmount', function () {
         it('Exposes a number on the value property', function () {
             const cadence = OfferTrialAmount.create(42);
 
-            should.ok(typeof cadence.value === 'number');
+            assert(typeof cadence.value === 'number');
         });
     });
 });

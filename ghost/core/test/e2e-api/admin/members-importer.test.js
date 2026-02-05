@@ -197,7 +197,7 @@ describe('Members Importer API', function () {
             return member.subscribed && member.newsletters.length > 0;
         });
 
-        should.ok(allMembersSubscribed);
+        assert(allMembersSubscribed);
 
         const bulkUnsubscribeResponse = await request
             .put(localUtils.API.getApiQuery('members/bulk/?filter=label:bulk-unsubscribe-test'))
@@ -229,7 +229,7 @@ describe('Members Importer API', function () {
             return member.newsletters.length === 0;
         });
 
-        should.ok(allMembersUnsubscribed);
+        assert(allMembersUnsubscribed);
     });
 
     it('Can bulk add and remove labels to members with filter', async function () {
