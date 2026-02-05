@@ -33,10 +33,10 @@ describe('Importer', function () {
         it('has the correct interface', function () {
             ImportManager.handlers.should.be.instanceof(Array).and.have.lengthOf(6);
             ImportManager.importers.should.be.instanceof(Array).and.have.lengthOf(5);
-            ImportManager.loadFile.should.be.instanceof(Function);
-            ImportManager.preProcess.should.be.instanceof(Function);
-            ImportManager.doImport.should.be.instanceof(Function);
-            ImportManager.generateReport.should.be.instanceof(Function);
+            assert.equal(typeof ImportManager.loadFile, 'function');
+            assert.equal(typeof ImportManager.preProcess, 'function');
+            assert.equal(typeof ImportManager.doImport, 'function');
+            assert.equal(typeof ImportManager.generateReport, 'function');
         });
 
         it('gets the correct extensions', function () {
@@ -531,7 +531,7 @@ describe('Importer', function () {
             JSONHandler.contentTypes.should.be.instanceof(Array).and.have.lengthOf(2);
             assert(JSONHandler.contentTypes.includes('application/octet-stream'));
             assert(JSONHandler.contentTypes.includes('application/json'));
-            JSONHandler.loadFile.should.be.instanceof(Function);
+            assert.equal(typeof JSONHandler.loadFile, 'function');
         });
 
         it('correctly handles a valid db api wrapper', function (done) {
@@ -570,7 +570,7 @@ describe('Importer', function () {
             MarkdownHandler.contentTypes.should.be.instanceof(Array).and.have.lengthOf(2);
             assert(MarkdownHandler.contentTypes.includes('application/octet-stream'));
             assert(MarkdownHandler.contentTypes.includes('text/plain'));
-            MarkdownHandler.loadFile.should.be.instanceof(Function);
+            assert.equal(typeof MarkdownHandler.loadFile, 'function');
         });
 
         it('does convert a markdown file into a post object', function (done) {
@@ -716,8 +716,8 @@ describe('Importer', function () {
     describe('DataImporter', function () {
         it('has the correct interface', function () {
             assert.equal(DataImporter.type, 'data');
-            DataImporter.preProcess.should.be.instanceof(Function);
-            DataImporter.doImport.should.be.instanceof(Function);
+            assert.equal(typeof DataImporter.preProcess, 'function');
+            assert.equal(typeof DataImporter.doImport, 'function');
         });
 
         it('does preprocess posts, users and tags correctly', function () {

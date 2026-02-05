@@ -34,7 +34,7 @@ describe('ImageHandler', function () {
         assert(ImageHandler.contentTypes.includes('image/x-icon'));
         assert(ImageHandler.contentTypes.includes('image/vnd.microsoft.icon'));
         assert(ImageHandler.contentTypes.includes('image/webp'));
-        ImageHandler.loadFile.should.be.instanceof(Function);
+        assert.equal(typeof ImageHandler.loadFile, 'function');
     });
 
     it('can load a single file', function (done) {
