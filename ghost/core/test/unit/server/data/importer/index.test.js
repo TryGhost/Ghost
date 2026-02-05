@@ -440,10 +440,10 @@ describe('Importer', function () {
                     // eql checks for equality
                     // equal checks the references are for the same object
                     output.should.not.equal(input);
-                    output.should.have.property('preProcessedByData', true);
-                    output.should.have.property('preProcessedByImage', true);
-                    output.should.have.property('preProcessedByMedia', true);
-                    output.should.have.property('preProcessedByFiles', true);
+                    assert.equal(output.preProcessedByData, true);
+                    assert.equal(output.preProcessedByImage, true);
+                    assert.equal(output.preProcessedByMedia, true);
+                    assert.equal(output.preProcessedByFiles, true);
                     done();
                 }).catch(done);
             });

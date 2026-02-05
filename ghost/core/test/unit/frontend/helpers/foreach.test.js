@@ -110,9 +110,9 @@ describe('{{#foreach}} helper', function () {
                 assertObjectMatches(resultData[index].data, expected[index]);
 
                 // Incrementing properties
-                resultData[index].data.should.have.property('key', index);
-                resultData[index].data.should.have.property('index', index);
-                resultData[index].data.should.have.property('number', index + 1);
+                assert.equal(resultData[index].data.key, index);
+                assert.equal(resultData[index].data.index, index);
+                assert.equal(resultData[index].data.number, index + 1);
             });
 
             resultData[_.size(context) - 1].data.should.eql(options.fn.lastCall.args[1].data);
@@ -152,9 +152,9 @@ describe('{{#foreach}} helper', function () {
                 assertObjectMatches(resultData[index].data, expected[index]);
 
                 // Incrementing properties
-                resultData[index].data.should.have.property('key', value);
-                resultData[index].data.should.have.property('index', index);
-                resultData[index].data.should.have.property('number', index + 1);
+                assert.equal(resultData[index].data.key, value);
+                assert.equal(resultData[index].data.index, index);
+                assert.equal(resultData[index].data.number, index + 1);
             });
 
             resultData[_.size(context) - 1].data.should.eql(options.fn.lastCall.args[1].data);
@@ -187,9 +187,9 @@ describe('{{#foreach}} helper', function () {
                 assertObjectMatches(resultData[index].data, expected[index]);
 
                 // Incrementing properties
-                resultData[index].data.should.have.property('key', index);
-                resultData[index].data.should.have.property('index', index);
-                resultData[index].data.should.have.property('number', index + 1);
+                assert.equal(resultData[index].data.key, index);
+                assert.equal(resultData[index].data.index, index);
+                assert.equal(resultData[index].data.number, index + 1);
             });
 
             resultData[_.size(context) - 1].data.should.eql(options.fn.lastCall.args[1].data);
@@ -229,9 +229,9 @@ describe('{{#foreach}} helper', function () {
                 assertObjectMatches(resultData[index].data, expected[index]);
 
                 // Incrementing properties
-                resultData[index].data.should.have.property('key', value);
-                resultData[index].data.should.have.property('index', index);
-                resultData[index].data.should.have.property('number', index + 1);
+                assert.equal(resultData[index].data.key, value);
+                assert.equal(resultData[index].data.index, index);
+                assert.equal(resultData[index].data.number, index + 1);
             });
 
             resultData[_.size(context) - 1].data.should.eql(options.fn.lastCall.args[1].data);

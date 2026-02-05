@@ -126,7 +126,7 @@ describe('EmailAnalyticsService', function () {
                 });
                 await service.fetchLatestOpenedEvents();
                 assert.equal(fetchLatestSpy.calledOnce, true);
-                fetchLatestSpy.getCall(0).args[1].should.have.property('events', ['opened']);
+                assert.deepEqual(fetchLatestSpy.getCall(0).args[1].events, ['opened']);
             });
 
             it('quits if the end is before the begin', async function () {
@@ -163,7 +163,7 @@ describe('EmailAnalyticsService', function () {
                 });
                 await service.fetchLatestNonOpenedEvents();
                 assert.equal(fetchLatestSpy.calledOnce, true);
-                fetchLatestSpy.getCall(0).args[1].should.have.property('events', ['delivered', 'failed', 'unsubscribed', 'complained']);
+                assert.deepEqual(fetchLatestSpy.getCall(0).args[1].events, ['delivered', 'failed', 'unsubscribed', 'complained']);
             });
 
             it('quits if the end is before the begin', async function () {

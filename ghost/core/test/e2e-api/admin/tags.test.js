@@ -35,12 +35,12 @@ describe('Tag API', function () {
         assert.equal(testUtils.API.isISO8601(jsonResponse.tags[0].created_at), true);
         jsonResponse.tags[0].created_at.should.be.an.instanceof(String);
 
-        jsonResponse.meta.pagination.should.have.property('page', 1);
-        jsonResponse.meta.pagination.should.have.property('limit', 15);
-        jsonResponse.meta.pagination.should.have.property('pages', 1);
-        jsonResponse.meta.pagination.should.have.property('total', 7);
-        jsonResponse.meta.pagination.should.have.property('next', null);
-        jsonResponse.meta.pagination.should.have.property('prev', null);
+        assert.equal(jsonResponse.meta.pagination.page, 1);
+        assert.equal(jsonResponse.meta.pagination.limit, 15);
+        assert.equal(jsonResponse.meta.pagination.pages, 1);
+        assert.equal(jsonResponse.meta.pagination.total, 7);
+        assert.equal(jsonResponse.meta.pagination.next, null);
+        assert.equal(jsonResponse.meta.pagination.prev, null);
 
         // returns 404 because this tag has no published posts
         jsonResponse.tags[0].url.should.eql(`${config.get('url')}/404/`);

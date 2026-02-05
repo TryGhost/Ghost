@@ -84,8 +84,8 @@ describe('Unit - frontend/data/fetch-data', function () {
             assert.equal(browsePostsStub.calledOnce, true);
             assert(_.isPlainObject(browsePostsStub.firstCall.args[0]));
             browsePostsStub.firstCall.args[0].should.have.property('include');
-            browsePostsStub.firstCall.args[0].should.have.property('limit', 10);
-            browsePostsStub.firstCall.args[0].should.have.property('page', 2);
+            assert.equal(browsePostsStub.firstCall.args[0].limit, 10);
+            assert.equal(browsePostsStub.firstCall.args[0].page, 2);
 
             done();
         }).catch(done);
@@ -116,9 +116,9 @@ describe('Unit - frontend/data/fetch-data', function () {
             result.data.featured.length.should.eql(posts.length);
 
             assert.equal(browsePostsStub.calledTwice, true);
-            browsePostsStub.firstCall.args[0].should.have.property('include', 'authors,tags,tiers');
-            browsePostsStub.secondCall.args[0].should.have.property('filter', 'featured:true');
-            browsePostsStub.secondCall.args[0].should.have.property('limit', 3);
+            assert.equal(browsePostsStub.firstCall.args[0].include, 'authors,tags,tiers');
+            assert.equal(browsePostsStub.secondCall.args[0].filter, 'featured:true');
+            assert.equal(browsePostsStub.secondCall.args[0].limit, 3);
             done();
         }).catch(done);
     });
@@ -148,10 +148,10 @@ describe('Unit - frontend/data/fetch-data', function () {
             result.data.featured.length.should.eql(posts.length);
 
             assert.equal(browsePostsStub.calledTwice, true);
-            browsePostsStub.firstCall.args[0].should.have.property('include', 'authors,tags,tiers');
-            browsePostsStub.firstCall.args[0].should.have.property('page', 2);
-            browsePostsStub.secondCall.args[0].should.have.property('filter', 'featured:true');
-            browsePostsStub.secondCall.args[0].should.have.property('limit', 3);
+            assert.equal(browsePostsStub.firstCall.args[0].include, 'authors,tags,tiers');
+            assert.equal(browsePostsStub.firstCall.args[0].page, 2);
+            assert.equal(browsePostsStub.secondCall.args[0].filter, 'featured:true');
+            assert.equal(browsePostsStub.secondCall.args[0].limit, 3);
             done();
         }).catch(done);
     });
@@ -183,9 +183,9 @@ describe('Unit - frontend/data/fetch-data', function () {
 
             assert.equal(browsePostsStub.calledOnce, true);
             browsePostsStub.firstCall.args[0].should.have.property('include');
-            browsePostsStub.firstCall.args[0].should.have.property('filter', 'tags:testing');
+            assert.equal(browsePostsStub.firstCall.args[0].filter, 'tags:testing');
             browsePostsStub.firstCall.args[0].should.not.have.property('slug');
-            readTagsStub.firstCall.args[0].should.have.property('slug', 'testing');
+            assert.equal(readTagsStub.firstCall.args[0].slug, 'testing');
             done();
         }).catch(done);
     });
