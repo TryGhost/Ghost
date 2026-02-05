@@ -100,7 +100,7 @@ describe('Migration Fixture Utils', function () {
             const manager = new FixtureManager(testFixtures, placeholderMap);
             const processed = manager.fixtures;
 
-            processed.relations[0].entries.should.have.property('user123');
+            assert('user123' in processed.relations[0].entries);
             assert.deepEqual(processed.relations[0].entries.user123, ['Owner', 'Admin']);
             processed.relations[0].entries.should.not.have.property('__USER_ID__');
         });

@@ -380,7 +380,7 @@ describe('staticTheme', function () {
 
                 const options = expressStaticStub.firstCall.args[1];
                 assert(_.isPlainObject(options));
-                options.should.have.property('maxAge');
+                assert('maxAge' in options);
                 assert.equal(options.fallthrough, true);
 
                 done();
@@ -401,7 +401,7 @@ describe('staticTheme', function () {
 
                 const options = expressStaticStub.firstCall.args[1];
                 assert(_.isPlainObject(options));
-                options.should.have.property('maxAge');
+                assert('maxAge' in options);
                 assert.equal(options.fallthrough, true);
 
                 done();
@@ -422,7 +422,7 @@ describe('staticTheme', function () {
 
                 const options = expressStaticStub.firstCall.args[1];
                 assert(_.isPlainObject(options));
-                options.should.have.property('maxAge');
+                assert('maxAge' in options);
                 assert.equal(options.fallthrough, true);
 
                 done();
@@ -441,7 +441,7 @@ describe('staticTheme', function () {
 
                 const options = expressStaticStub.firstCall.args[1];
                 assert(_.isPlainObject(options));
-                options.should.have.property('maxAge');
+                assert('maxAge' in options);
                 assert.equal(options.fallthrough, true);
 
                 done();
@@ -504,7 +504,7 @@ describe('staticTheme', function () {
 
                 const options = expressStaticStub.firstCall.args[1];
                 assert(_.isPlainObject(options));
-                options.should.have.property('maxAge');
+                assert('maxAge' in options);
                 assert.equal(options.fallthrough, false);
 
                 done();
@@ -525,7 +525,7 @@ describe('staticTheme', function () {
 
                 const options = expressStaticStub.firstCall.args[1];
                 assert(_.isPlainObject(options));
-                options.should.have.property('maxAge');
+                assert('maxAge' in options);
                 assert.equal(options.fallthrough, false);
 
                 done();
@@ -546,7 +546,7 @@ describe('staticTheme', function () {
 
                 const options = expressStaticStub.firstCall.args[1];
                 assert(_.isPlainObject(options));
-                options.should.have.property('maxAge');
+                assert('maxAge' in options);
                 assert.equal(options.fallthrough, false);
 
                 done();

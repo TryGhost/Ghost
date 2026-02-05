@@ -390,10 +390,10 @@ describe('ContentStatsService', function () {
             assertExists(result);
             assertExists(result.data);
             result.data.should.be.an.Array().with.lengthOf(2);
-            result.data[0].should.have.property('title');
-            result.data[0].should.have.property('post_id');
-            result.data[1].should.have.property('title');
-            result.data[1].should.have.property('post_id');
+            assert('title' in result.data[0]);
+            assert('post_id' in result.data[0]);
+            assert('title' in result.data[1]);
+            assert('post_id' in result.data[1]);
 
             assert.equal(service.fetchRawTopContentData.calledOnce, true);
 

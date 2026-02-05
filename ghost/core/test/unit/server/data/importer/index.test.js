@@ -233,8 +233,8 @@ describe('Importer', function () {
                         assert.equal(jsonSpy.calledTwice, true);
 
                         // They should both have data keys, and they should be equivalent
-                        zipResult.should.have.property('data');
-                        fileResult.should.have.property('data');
+                        assert('data' in zipResult);
+                        assert('data' in fileResult);
                         zipResult.should.eql(fileResult);
                         done();
                     });

@@ -66,7 +66,7 @@ describe('Unit - frontend/data/fetch-data', function () {
 
             assert.equal(browsePostsStub.calledOnce, true);
             assert(_.isPlainObject(browsePostsStub.firstCall.args[0]));
-            browsePostsStub.firstCall.args[0].should.have.property('include');
+            assert('include' in browsePostsStub.firstCall.args[0]);
             browsePostsStub.firstCall.args[0].should.not.have.property('filter');
 
             done();
@@ -83,7 +83,7 @@ describe('Unit - frontend/data/fetch-data', function () {
 
             assert.equal(browsePostsStub.calledOnce, true);
             assert(_.isPlainObject(browsePostsStub.firstCall.args[0]));
-            browsePostsStub.firstCall.args[0].should.have.property('include');
+            assert('include' in browsePostsStub.firstCall.args[0]);
             assert.equal(browsePostsStub.firstCall.args[0].limit, 10);
             assert.equal(browsePostsStub.firstCall.args[0].page, 2);
 
@@ -182,7 +182,7 @@ describe('Unit - frontend/data/fetch-data', function () {
             result.data.tag.length.should.eql(tags.length);
 
             assert.equal(browsePostsStub.calledOnce, true);
-            browsePostsStub.firstCall.args[0].should.have.property('include');
+            assert('include' in browsePostsStub.firstCall.args[0]);
             assert.equal(browsePostsStub.firstCall.args[0].filter, 'tags:testing');
             browsePostsStub.firstCall.args[0].should.not.have.property('slug');
             assert.equal(readTagsStub.firstCall.args[0].slug, 'testing');
