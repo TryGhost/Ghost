@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 const express = require('../../../../../core/shared/express')._express;
@@ -40,7 +41,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
         it('default', function () {
             const collectionRouter = new CollectionRouter('/', {permalink: '/:slug/'}, RESOURCE_CONFIG, routerCreatedSpy);
 
-            should.exist(collectionRouter.router);
+            assertExists(collectionRouter.router);
 
             assert.equal(collectionRouter.filter, undefined);
             assert.equal(collectionRouter.getResourceType(), 'posts');
@@ -87,7 +88,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
         it('collection lives under /blog/', function () {
             const collectionRouter = new CollectionRouter('/blog/', {permalink: '/blog/:year/:slug/'}, RESOURCE_CONFIG, routerCreatedSpy);
 
-            should.exist(collectionRouter.router);
+            assertExists(collectionRouter.router);
 
             assert.equal(collectionRouter.filter, undefined);
             assert.equal(collectionRouter.getResourceType(), 'posts');

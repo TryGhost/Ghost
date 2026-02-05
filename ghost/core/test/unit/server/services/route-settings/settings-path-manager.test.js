@@ -1,5 +1,6 @@
 // Switch these lines once there are useful utils
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 // const testUtils = require('./utils');
 const should = require('should');
 const SettingsPathManager = require('../../../../../core/server/services/route-settings/settings-path-manager');
@@ -14,7 +15,7 @@ describe('Settings Path Manager', function () {
 
             should.fail(settingsPathManager, 'Should have errored');
         } catch (err) {
-            should.exist(err);
+            assertExists(err);
             assert.match(err.message, /paths values/g);
         }
     });

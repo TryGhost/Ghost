@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../../utils/assertions');
 const sinon = require('sinon');
 const should = require('should');
 const tinybird = require('../../../../../../core/server/services/stats/utils/tinybird');
@@ -58,7 +59,7 @@ describe('Tinybird Client', function () {
                 dateTo: '2023-01-31'
             });
 
-            should.exist(url);
+            assertExists(url);
             url.should.startWith('https://api.tinybird.co/v0/pipes/test_pipe.json?');
             assert(url.includes('site_uuid=931ade9e-a4f1-4217-8625-34bd34250c16'));
             assert(url.includes('date_from=2023-01-01'));
@@ -66,8 +67,8 @@ describe('Tinybird Client', function () {
             // assert(url.includes('timezone=UTC'));
             // assert(url.includes('member_status=all'));
 
-            should.exist(options);
-            should.exist(options.headers);
+            assertExists(options);
+            assertExists(options.headers);
             assert.equal(options.headers.Authorization, 'Bearer mock-jwt-token');
         });
 
@@ -131,7 +132,7 @@ describe('Tinybird Client', function () {
             };
 
             const result = tinybirdClient.parseResponse(mockResponse);
-            should.exist(result);
+            assertExists(result);
             result.should.be.an.Array().with.lengthOf(2);
             assert.equal(result[0].pathname, '/test-1/');
             assert.equal(result[0].visits, 100);
@@ -148,7 +149,7 @@ describe('Tinybird Client', function () {
             };
 
             const result = tinybirdClient.parseResponse(mockResponse);
-            should.exist(result);
+            assertExists(result);
             result.should.be.an.Array().with.lengthOf(2);
         });
 
@@ -160,7 +161,7 @@ describe('Tinybird Client', function () {
             });
 
             const result = tinybirdClient.parseResponse(mockResponse);
-            should.exist(result);
+            assertExists(result);
             result.should.be.an.Array().with.lengthOf(1);
         });
 
@@ -172,7 +173,7 @@ describe('Tinybird Client', function () {
             };
 
             const result = tinybirdClient.parseResponse(mockResponse);
-            should.exist(result);
+            assertExists(result);
             result.should.be.an.Array().with.lengthOf(1);
         });
 
@@ -182,7 +183,7 @@ describe('Tinybird Client', function () {
             };
 
             const result = tinybirdClient.parseResponse(mockResponse);
-            should.exist(result);
+            assertExists(result);
             result.should.be.an.Array().with.lengthOf(0);
         });
 
@@ -213,7 +214,7 @@ describe('Tinybird Client', function () {
                 dateTo: '2023-01-31'
             });
 
-            should.exist(result);
+            assertExists(result);
             result.should.be.an.Array().with.lengthOf(2);
             assert.equal(result[0].pathname, '/test-1/');
             assert.equal(result[0].visits, 100);

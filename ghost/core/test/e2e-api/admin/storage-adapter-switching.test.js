@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 const {agentProvider, fixtureManager} = require('../../utils/e2e-framework');
@@ -96,7 +97,7 @@ describe('Ghost Admin - Storage Adapter Switching', function () {
 
     it('Snippets also switch URLs correctly', async function () {
         const snippet = await models.Snippet.findOne({name: 'Snippet with all media types - Mobiledoc'});
-        should.exist(snippet, 'Snippet should exist');
+        assertExists(snippet, 'Snippet should exist');
 
         let res = await agent
             .get(`snippets/${snippet.id}/`)

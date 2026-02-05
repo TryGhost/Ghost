@@ -1,3 +1,4 @@
+const {assertExists} = require('../../../utils/assertions');
 const sinon = require('sinon');
 const should = require('should');
 
@@ -45,9 +46,9 @@ describe('Update User Last Seen', function () {
             .expectStatus(200);
 
         const user = await models.User.findOne({id: userId});
-        should.exist(user);
+        assertExists(user);
         const lastSeen = user.get('last_seen');
-        should.exist(lastSeen);
+        assertExists(lastSeen);
 
         clock.tick(1000 * 60 * 60 * 24);
 
@@ -56,14 +57,14 @@ describe('Update User Last Seen', function () {
             .expectStatus(200);
 
         const ownerAfter = await models.User.findOne({id: userId});
-        should.exist(ownerAfter);
+        assertExists(ownerAfter);
         should(ownerAfter.get('last_seen')).not.eql(lastSeen);
     });
 
     it('Should only update last seen after 1 hour', async function () {
         const user = await models.User.findOne({id: userId});
         const lastSeen = user.get('last_seen');
-        should.exist(lastSeen);
+        assertExists(lastSeen);
 
         clock.tick(1000 * 60 * 30);
 
@@ -73,19 +74,19 @@ describe('Update User Last Seen', function () {
             .expectStatus(200);
 
         const ownerAfter = await models.User.findOne({id: userId});
-        should.exist(ownerAfter);
+        assertExists(ownerAfter);
         should(ownerAfter.get('last_seen')).eql(lastSeen);
     });
 
     it('Should always update last seen after login', async function () {
         const user = await models.User.findOne({id: userId});
         const lastSeen = user.get('last_seen');
-        should.exist(lastSeen);
+        assertExists(lastSeen);
 
         await agent.loginAsOwner();
 
         const ownerAfter = await models.User.findOne({id: userId});
-        should.exist(ownerAfter);
+        assertExists(ownerAfter);
         should(ownerAfter.get('last_seen')).not.eql(lastSeen);
     });
 
@@ -97,11 +98,11 @@ describe('Update User Last Seen', function () {
 
         // Suspend the user
         const user = await models.User.findOne({id: userId});
-        should.exist(user);
+        assertExists(user);
 
         await models.User.edit({status: 'inactive'}, {id: userId});
         const lastSeen = user.get('last_seen');
-        should.exist(lastSeen);
+        assertExists(lastSeen);
 
         clock.tick(1000 * 60 * 60 * 24);
 
@@ -110,7 +111,7 @@ describe('Update User Last Seen', function () {
             .expectStatus(403);
 
         const ownerAfter = await models.User.findOne({id: userId});
-        should.exist(ownerAfter);
+        assertExists(ownerAfter);
         should(ownerAfter.get('last_seen')).eql(lastSeen);
     });
 });

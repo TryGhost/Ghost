@@ -1,6 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 const assert = require('assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 
 // Stuff we are testing
 const DomainEvents = require('@tryghost/domain-events');
@@ -59,12 +60,12 @@ describe('Unit: sitemap/manager', function () {
         });
 
         it('can create a SiteMapManager instance', function () {
-            should.exist(manager);
+            assertExists(manager);
             assert.equal(Object.keys(eventsToRemember).length, 4);
-            should.exist(eventsToRemember['url.added']);
-            should.exist(eventsToRemember['url.removed']);
-            should.exist(eventsToRemember['router.created']);
-            should.exist(eventsToRemember['routers.reset']);
+            assertExists(eventsToRemember['url.added']);
+            assertExists(eventsToRemember['url.removed']);
+            assertExists(eventsToRemember['router.created']);
+            assertExists(eventsToRemember['routers.reset']);
         });
 
         describe('trigger url events', function () {

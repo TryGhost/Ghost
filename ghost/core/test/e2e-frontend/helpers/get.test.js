@@ -1,4 +1,5 @@
 const assert = require('assert/strict');
+const {assertExists} = require('../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../utils');
@@ -37,7 +38,7 @@ function testPosts(posts, map) {
         const expectData = map[postID];
 
         const post = posts.find(p => p.id === postID);
-        should.exist(post);
+        assertExists(post);
 
         post.should.match(expectData);
     }

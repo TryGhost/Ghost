@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 const validator = require('@tryghost/validator');
@@ -31,7 +32,7 @@ describe('Request ID middleware', function () {
 
         requestId(req, res, next);
 
-        should.exist(req.requestId);
+        assertExists(req.requestId);
         assert.equal(validator.isUUID(req.requestId), true);
         assert.equal(res.set.calledOnce, false);
     });
@@ -42,7 +43,7 @@ describe('Request ID middleware', function () {
 
         requestId(req, res, next);
 
-        should.exist(req.requestId);
+        assertExists(req.requestId);
         assert.equal(req.requestId, 'abcd');
         assert.equal(res.set.calledOnce, true);
         assert.equal(res.set.calledWith('X-Request-ID', 'abcd'), true);

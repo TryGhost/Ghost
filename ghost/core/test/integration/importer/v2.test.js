@@ -4,6 +4,7 @@ const testUtils = require('../../utils');
 const moment = require('moment-timezone');
 const ObjectId = require('bson-objectid').default;
 const assert = require('assert/strict');
+const {assertExists} = require('../../utils/assertions');
 const _ = require('lodash');
 const validator = require('@tryghost/validator');
 
@@ -43,7 +44,7 @@ describe('Importer', function () {
         it('ensure return structure', function () {
             return dataImporter.doImport(exportedBodyV2().db[0], importOptions)
                 .then(function (importResult) {
-                    should.exist(importResult);
+                    assertExists(importResult);
                     assert.equal(importResult.hasOwnProperty('data'), true);
                     assert.equal(importResult.hasOwnProperty('problems'), true);
                 });
@@ -78,7 +79,7 @@ describe('Importer', function () {
 
             return dataImporter.doImport(exportData, importOptions)
                 .then(function (importResult) {
-                    should.exist(importResult.data.posts);
+                    assertExists(importResult.data.posts);
                     assert.equal(importResult.data.posts.length, 2);
                     assert.equal(importResult.problems.length, 1);
 
@@ -131,7 +132,7 @@ describe('Importer', function () {
 
             return dataImporter.doImport(exportData, importOptions)
                 .then(function (importResult) {
-                    should.exist(importResult.data.users);
+                    assertExists(importResult.data.users);
                     assert.equal(importResult.data.users.length, 1);
                     assert.equal(importResult.problems.length, 1);
 
@@ -153,7 +154,7 @@ describe('Importer', function () {
 
             return dataImporter.doImport(exportData, importOptions)
                 .then(function (importResult) {
-                    should.exist(importResult.data.posts);
+                    assertExists(importResult.data.posts);
                     assert.equal(importResult.data.posts.length, 1);
                     assert.equal(importResult.problems.length, 1);
 
@@ -175,7 +176,7 @@ describe('Importer', function () {
 
             return dataImporter.doImport(exportData, importOptions)
                 .then(function (importResult) {
-                    should.exist(importResult.data.posts);
+                    assertExists(importResult.data.posts);
                     assert.equal(importResult.data.posts.length, 2);
                     assert.equal(importResult.problems.length, 0);
 
@@ -225,8 +226,8 @@ describe('Importer', function () {
 
             return dataImporter.doImport(exportData, importOptions)
                 .then(function (importResult) {
-                    should.exist(importResult.data.tags);
-                    should.exist(importResult.originalData.posts_tags);
+                    assertExists(importResult.data.tags);
+                    assertExists(importResult.originalData.posts_tags);
 
                     assert.equal(importResult.data.tags.length, 1);
 
@@ -299,7 +300,7 @@ describe('Importer', function () {
                     ]);
                 })
                 .then(function (importedData) {
-                    should.exist(importedData);
+                    assertExists(importedData);
 
                     assert.equal(importedData.length, 4, 'Did not get data successfully');
 
@@ -432,7 +433,7 @@ describe('Importer', function () {
                     ]);
                 })
                 .then(function (importedData) {
-                    should.exist(importedData);
+                    assertExists(importedData);
 
                     assert.equal(importedData.length, 2, 'Did not get data successfully');
 

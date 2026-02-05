@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 
@@ -69,7 +70,7 @@ describe('Notifications Service', function () {
 
             const notifications = notificationSvc.browse({user: owner});
 
-            should.exist(notifications);
+            assertExists(notifications);
             assert.equal(notifications.length, 1);
         });
 
@@ -98,7 +99,7 @@ describe('Notifications Service', function () {
 
             const notifications = notificationSvc.browse({user: owner});
 
-            should.exist(notifications);
+            assertExists(notifications);
             assert.equal(notifications.length, 1);
         });
 
@@ -127,7 +128,7 @@ describe('Notifications Service', function () {
 
             const notifications = notificationSvc.browse({user: owner});
 
-            should.exist(notifications);
+            assertExists(notifications);
             assert.equal(notifications.length, 0);
         });
 
@@ -156,7 +157,7 @@ describe('Notifications Service', function () {
 
             const notifications = notificationSvc.browse({user: owner});
 
-            should.exist(notifications);
+            assertExists(notifications);
             assert.equal(notifications.length, 0);
         });
 
@@ -185,7 +186,7 @@ describe('Notifications Service', function () {
 
             const notifications = notificationSvc.browse({user: owner});
 
-            should.exist(notifications);
+            assertExists(notifications);
             assert.equal(notifications.length, 0);
         });
 
@@ -227,7 +228,7 @@ describe('Notifications Service', function () {
 
             const notifications = notificationSvc.browse({user: owner});
 
-            should.exist(notifications);
+            assertExists(notifications);
             assert.equal(notifications.length, 2);
             assert.equal(notifications[0].message, 'should be visible');
             assert.equal(notifications[1].message, 'visible even though without a created at property');
@@ -252,7 +253,7 @@ describe('Notifications Service', function () {
 
             const notifications = notificationSvc.browse({user: owner});
 
-            should.exist(notifications);
+            assertExists(notifications);
             assert.equal(notifications.length, 0);
 
             assert.equal(settingsModelStub.called, true);
@@ -280,7 +281,7 @@ describe('Notifications Service', function () {
 
             const notifications = notificationSvc.browse({user: owner});
 
-            should.exist(notifications);
+            assertExists(notifications);
             assert.equal(notifications.length, 1);
 
             assert.equal(settingsModelStub.called, false);

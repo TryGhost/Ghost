@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const sinon = require('sinon');
 const should = require('should');
 const fs = require('fs-extra');
@@ -78,7 +79,7 @@ describe('UNIT > Settings Service DefaultSettingsManager:', function () {
                 await defaultSettingsManager.ensureSettingsFileExists();
                 throw new Error('Expected test to fail');
             } catch (error) {
-                should.exist(error);
+                assertExists(error);
                 error.message.should.be.eql(`Error trying to access settings files in ${destinationFolderPath}.`);
                 assert.equal(fsReadFileStub.calledOnce, true);
                 assert.equal(fsCopyStub.called, false);

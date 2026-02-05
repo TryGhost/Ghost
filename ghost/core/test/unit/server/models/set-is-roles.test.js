@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../utils/assertions');
 const should = require('should');
 const {setIsRoles} = require('../../../../core/server/models/role-utils');
 
@@ -60,7 +61,7 @@ describe('setIsRoles function behavior', function () {
 
     it('returns an object', function () {
         let result = setIsRoles(loadedPermissionsEditor);
-        should.exist(result);
+        assertExists(result);
         result.should.be.an.Object();
     });
 

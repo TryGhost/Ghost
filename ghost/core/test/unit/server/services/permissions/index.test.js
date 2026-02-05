@@ -1,3 +1,4 @@
+const {assertExists} = require('../../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../../../utils');
@@ -76,7 +77,7 @@ describe('Permissions', function () {
             fakePermissions = loadFakePermissions();
 
             permissions.init().then(function (actions) {
-                should.exist(actions);
+                assertExists(actions);
 
                 permissions.canThis.should.not.throwError();
 
@@ -95,7 +96,7 @@ describe('Permissions', function () {
             fakePermissions = loadFakePermissions({extra: true});
 
             permissions.init().then(function (actions) {
-                should.exist(actions);
+                assertExists(actions);
 
                 permissions.canThis.should.not.throwError();
 

@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 
@@ -57,7 +58,7 @@ describe('Unit - frontend/data/entry-lookup', function () {
             return data.entryLookup(testUrl, routerOptions, locals).then(function (lookup) {
                 assert.equal(postsReadStub.called, false);
                 assert.equal(pagesReadStub.calledOnce, true);
-                should.exist(lookup.entry);
+                assertExists(lookup.entry);
                 lookup.entry.should.have.property('url', pages[0].url);
                 assert.equal(lookup.isEditURL, false);
             });
@@ -108,7 +109,7 @@ describe('Unit - frontend/data/entry-lookup', function () {
             return data.entryLookup(testUrl, routerOptions, locals).then(function (lookup) {
                 assert.equal(postsReadStub.calledOnce, true);
                 assert.equal(pagesReadStub.called, false);
-                should.exist(lookup.entry);
+                assertExists(lookup.entry);
                 lookup.entry.should.have.property('url', posts[0].url);
                 assert.equal(lookup.isEditURL, false);
             });
@@ -120,7 +121,7 @@ describe('Unit - frontend/data/entry-lookup', function () {
             return data.entryLookup(testUrl, routerOptions, locals).then(function (lookup) {
                 assert.equal(postsReadStub.calledOnce, true);
                 assert.equal(pagesReadStub.called, false);
-                should.exist(lookup.entry);
+                assertExists(lookup.entry);
                 lookup.entry.should.have.property('url', posts[0].url);
                 assert.equal(lookup.isEditURL, true);
             });

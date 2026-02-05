@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../../../../../utils');
@@ -146,16 +147,16 @@ describe('Unit: utils/serializers/output/mappers', function () {
 
             const mapped = mappers.integrations(integration, frame);
 
-            should.exist(mapped.api_keys);
+            assertExists(mapped.api_keys);
 
             mapped.api_keys.forEach((key) => {
                 if (key.type === 'admin') {
                     const [id, secret] = key.secret.split(':');
-                    should.exist(id);
-                    should.exist(secret);
+                    assertExists(id);
+                    assertExists(secret);
                 } else {
                     const [id, secret] = key.secret.split(':');
-                    should.exist(id);
+                    assertExists(id);
                     assert.equal(secret, undefined);
                 }
             });

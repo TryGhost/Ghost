@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 const configUtils = require('../../../utils/config-utils');
@@ -30,34 +31,34 @@ describe('{{img_url}} helper', function () {
 
         it('should output relative url of image', function () {
             const rendered = img_url('/content/images/image-relative-url.png', {});
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(rendered, '/content/images/image-relative-url.png');
             assert.equal(logWarnStub.called, false);
         });
 
         it('should output relative url of image if the input is absolute', function () {
             const rendered = img_url('http://localhost:65535/content/images/image-relative-url.png', {});
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(rendered, '/content/images/image-relative-url.png');
             assert.equal(logWarnStub.called, false);
         });
 
         it('should output absolute url of image if the option is present ', function () {
             const rendered = img_url('/content/images/image-relative-url.png', {hash: {absolute: 'true'}});
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(rendered, 'http://localhost:65535/content/images/image-relative-url.png');
             assert.equal(logWarnStub.called, false);
         });
 
         it('should NOT output absolute url of image if the option is "false" ', function () {
             const rendered = img_url('/content/images/image-relative-url.png', {hash: {absolute: 'false'}});
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(rendered, '/content/images/image-relative-url.png');
         });
 
         it('should output author url', function () {
             const rendered = img_url('/content/images/author-image-relative-url.png', {});
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(rendered, '/content/images/author-image-relative-url.png');
             assert.equal(logWarnStub.called, false);
         });
@@ -92,19 +93,19 @@ describe('{{img_url}} helper', function () {
 
         it('should output relative url of image', function () {
             const rendered = img_url('/blog/content/images/image-relative-url.png', {});
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(rendered, '/blog/content/images/image-relative-url.png');
         });
 
         it('should output absolute url of image if the option is present ', function () {
             const rendered = img_url('/blog/content/images/image-relative-url.png', {hash: {absolute: 'true'}});
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(rendered, 'http://localhost:65535/blog/content/images/image-relative-url.png');
         });
 
         it('should not change output for an external url', function () {
             const rendered = img_url('http://example.com/picture.jpg', {});
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(rendered, 'http://example.com/picture.jpg');
         });
     });
@@ -133,7 +134,7 @@ describe('{{img_url}} helper', function () {
                     }
                 }
             });
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(rendered, '/content/images/size/w400/my-coole-img.jpg');
         });
 
@@ -152,7 +153,7 @@ describe('{{img_url}} helper', function () {
                     }
                 }
             });
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(rendered, '//website.com/whatever/my-coole-img.jpg');
         });
 
@@ -171,7 +172,7 @@ describe('{{img_url}} helper', function () {
                     }
                 }
             });
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(rendered, '/content/images/size/w400/my-coole-img.jpg');
         });
 
@@ -190,13 +191,13 @@ describe('{{img_url}} helper', function () {
                     }
                 }
             });
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(rendered, 'content/images/size/w400/my-coole-img.jpg');
         });
 
         it('ignores invalid size options', function () {
             const rendered = img_url('/content/images/author-image-relative-url.png', {hash: {size: 'invalid-size'}});
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(rendered, '/content/images/author-image-relative-url.png');
             assert.equal(logWarnStub.called, false);
         });
@@ -214,7 +215,7 @@ describe('{{img_url}} helper', function () {
                     }
                 }
             });
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(rendered, '/content/images/author-image-relative-url.png');
             assert.equal(logWarnStub.called, false);
         });
@@ -232,7 +233,7 @@ describe('{{img_url}} helper', function () {
                     }
                 }
             });
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(rendered, '/content/images/author-image-relative-url.png');
             assert.equal(logWarnStub.called, false);
         });
@@ -251,7 +252,7 @@ describe('{{img_url}} helper', function () {
                     }
                 }
             });
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(rendered, '/content/images/size/w600/format/webp/author-image-relative-url.png');
             assert.equal(logWarnStub.called, false);
         });
@@ -270,7 +271,7 @@ describe('{{img_url}} helper', function () {
                     }
                 }
             });
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(rendered, '/content/images/size/w600/author-image-relative-url.png');
             assert.equal(logWarnStub.called, false);
         });
@@ -298,7 +299,7 @@ describe('{{img_url}} helper', function () {
                     }
                 }
             });
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(rendered, 'https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80&w=2000');
         });
 
@@ -317,7 +318,7 @@ describe('{{img_url}} helper', function () {
                     }
                 }
             });
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(rendered, 'https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80&w=400');
         });
 
@@ -336,7 +337,7 @@ describe('{{img_url}} helper', function () {
                     }
                 }
             });
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(rendered, 'https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80&h=400');
         });
 
@@ -355,7 +356,7 @@ describe('{{img_url}} helper', function () {
                     }
                 }
             });
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(rendered, 'https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80');
         });
 
@@ -375,7 +376,7 @@ describe('{{img_url}} helper', function () {
                     }
                 }
             });
-            should.exist(rendered);
+            assertExists(rendered);
             rendered.should.equal(invalid);
         });
 
@@ -394,7 +395,7 @@ describe('{{img_url}} helper', function () {
                     }
                 }
             });
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(rendered, 'https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80&w=2000');
         });
 
@@ -413,7 +414,7 @@ describe('{{img_url}} helper', function () {
                     }
                 }
             });
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(rendered, 'https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=max&fm=webp&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80&w=2000');
         });
 
@@ -432,7 +433,7 @@ describe('{{img_url}} helper', function () {
                     }
                 }
             });
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(rendered, 'https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80&w=2000');
         });
 
@@ -451,7 +452,7 @@ describe('{{img_url}} helper', function () {
                     }
                 }
             });
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(rendered, 'https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80&w=2000');
         });
 
@@ -471,7 +472,7 @@ describe('{{img_url}} helper', function () {
                     }
                 }
             });
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(rendered, 'https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=max&fm=webp&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80&w=400');
         });
     });

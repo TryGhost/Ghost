@@ -1,3 +1,4 @@
+const {assertExists} = require('../../../utils/assertions');
 const proxy = require('../../../../core/frontend/services/proxy');
 const {getFrontendKey} = proxy;
 const should = require('should');
@@ -10,7 +11,7 @@ describe('{{content_api_key}} helper', function () {
         it('returns the content API key', async function () {
             const result = await content_api_key();
             const expected = await getFrontendKey();
-            should.exist(result);
+            assertExists(result);
             String(result).should.equal(expected);
         });
     });

@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../utils/assertions');
 const should = require('should');
 const supertest = require('supertest');
 const ObjectId = require('bson-objectid').default;
@@ -41,8 +42,8 @@ describe('User API', function () {
 
                         assert.equal(res.headers['x-cache-invalidate'], undefined);
                         const jsonResponse = res.body;
-                        should.exist(jsonResponse);
-                        should.exist(jsonResponse.errors);
+                        assertExists(jsonResponse);
+                        assertExists(jsonResponse.errors);
                         testUtils.API.checkResponseValue(jsonResponse.errors[0], [
                             'message',
                             'context',
@@ -72,8 +73,8 @@ describe('User API', function () {
 
                         assert.equal(res.headers['x-cache-invalidate'], undefined);
                         const jsonResponse = res.body;
-                        should.exist(jsonResponse);
-                        should.exist(jsonResponse.errors);
+                        assertExists(jsonResponse);
+                        assertExists(jsonResponse.errors);
                         testUtils.API.checkResponseValue(jsonResponse.errors[0], [
                             'message',
                             'context',

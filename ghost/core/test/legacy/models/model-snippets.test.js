@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../utils');
@@ -32,7 +33,7 @@ describe('Snippet Model', function () {
             before(async function () {
                 const snippets = await models.Snippet.findAll();
                 snippet = snippets.models.find(s => s.get('name') === 'Snippet with all media types - Mobiledoc');
-                should.exist(snippet, 'Mobiledoc snippet should exist');
+                assertExists(snippet, 'Mobiledoc snippet should exist');
                 mobiledoc = JSON.parse(snippet.get('mobiledoc'));
             });
 
@@ -75,7 +76,7 @@ describe('Snippet Model', function () {
             before(async function () {
                 const snippets = await models.Snippet.findAll();
                 snippet = snippets.models.find(s => s.get('name') === 'Snippet with all media types - Lexical');
-                should.exist(snippet, 'Lexical snippet should exist');
+                assertExists(snippet, 'Lexical snippet should exist');
                 lexicalString = snippet.get('lexical');
             });
 

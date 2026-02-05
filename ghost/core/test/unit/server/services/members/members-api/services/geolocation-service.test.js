@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../../../utils/assertions');
 const nock = require('nock');
 const should = require('should');
 const GeolocationService = require('../../../../../../../core/server/services/members/members-api/services/geolocation-service');
@@ -38,7 +39,7 @@ describe('lib/geolocation', function () {
             const result = await service.getGeolocationFromIP('188.39.113.90');
 
             assert.equal(scope.isDone(), true, 'request was not made');
-            should.exist(result, 'nothing was returned');
+            assertExists(result, 'nothing was returned');
             result.should.deepEqual(RESPONSE, 'result didn\'t match expected response');
         });
 
@@ -50,7 +51,7 @@ describe('lib/geolocation', function () {
             const result = await service.getGeolocationFromIP('2a01:4c8:43a:13c9:8d6:128e:1fd5:6aad');
 
             assert.equal(scope.isDone(), true, 'request was not made');
-            should.exist(result, 'nothing was returned');
+            assertExists(result, 'nothing was returned');
             result.should.deepEqual(RESPONSE, 'result didn\'t match expected response');
         });
 
