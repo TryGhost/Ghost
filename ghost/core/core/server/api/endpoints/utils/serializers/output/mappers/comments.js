@@ -93,6 +93,13 @@ const commentMapper = (model, frame) => {
         // We could use the post mapper here, but we need less field + don't need all the async behavior support
         url.forPost(jsonModel.post.id, jsonModel.post, frame);
         response.post = _.pick(jsonModel.post, postFields);
+
+        // Compute excerpt from custom_excerpt or plaintext (same logic as post serializer)
+        if (jsonModel.post.custom_excerpt) {
+            response.post.excerpt = jsonModel.post.custom_excerpt;
+        } else if (jsonModel.post.plaintext) {
+            response.post.excerpt = jsonModel.post.plaintext.substring(0, 500);
+        }
     }
 
     if (jsonModel.count && jsonModel.count.liked !== undefined) {

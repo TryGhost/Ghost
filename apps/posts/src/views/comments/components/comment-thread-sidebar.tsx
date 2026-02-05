@@ -5,6 +5,7 @@ import {
     EmptyIndicator,
     LoadingIndicator,
     LucideIcon,
+    Separator,
     Sheet,
     SheetContent,
     SheetHeader,
@@ -50,9 +51,33 @@ const CommentThreadSidebar: React.FC<CommentThreadSidebarProps> = ({
     return (
         <Sheet open={open} onOpenChange={onOpenChange}>
             <SheetContent className='overflow-y-auto px-6 pt-0 sm:max-w-[600px]'>
-                <SheetHeader className='sticky top-0 z-40 -mx-6 bg-background/60 p-6 pb-4 backdrop-blur'>
-                    <SheetTitle className='mb-2'>Thread</SheetTitle>
+                <SheetHeader className='sticky top-0 z-40 -mx-6 bg-background/60 p-6 backdrop-blur'>
+                    <SheetTitle className='text-md'>Thread</SheetTitle>
                 </SheetHeader>
+                {parentComment?.post && (
+                    <>
+                        <div className="flex items-center gap-4">
+                            <div className="min-w-0 flex-1">
+                                <h3 className="line-clamp-1 text-xl font-semibold text-foreground">
+                                    {parentComment.post.title}
+                                </h3>
+                                {parentComment.post.excerpt && (
+                                    <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
+                                        {parentComment.post.excerpt}
+                                    </p>
+                                )}
+                            </div>
+                            {parentComment.post.feature_image && (
+                                <img
+                                    alt={parentComment.post.title || 'Post feature image'}
+                                    className="hidden aspect-video h-18 shrink-0 rounded object-cover lg:block"
+                                    src={parentComment.post.feature_image}
+                                />
+                            )}
+                        </div>
+                        <Separator className="-mx-6 my-6 w-auto" />
+                    </>
+                )}
                 <div>
                     {isLoading ? (
                         <div className="flex h-full items-center justify-center py-8">
