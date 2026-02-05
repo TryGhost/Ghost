@@ -44,7 +44,7 @@ describe('Themes', function () {
                         // Loader doesn't return anything
                         assert.equal(result, undefined);
 
-                        themeResult.should.eql({
+                        assert.deepEqual(themeResult, {
                             casper: {
                                 name: 'casper',
                                 path: join(themePath.name, 'casper'),
@@ -77,7 +77,7 @@ describe('Themes', function () {
                         // Loader doesn't return anything
                         assert.equal(result, undefined);
 
-                        themeResult.should.eql({
+                        assert.deepEqual(themeResult, {
                             casper: {
                                 name: 'casper',
                                 path: join(themePath.name, 'casper'),
@@ -114,7 +114,7 @@ describe('Themes', function () {
 
                 loader.loadOneTheme('casper')
                     .then(function (themeResult) {
-                        themeResult.should.eql({
+                        assert.deepEqual(themeResult, {
                             name: 'casper',
                             path: join(themePath.name, 'casper'),
                             'package.json': {name: 'casper', version: '0.1.2'}

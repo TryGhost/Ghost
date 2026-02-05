@@ -106,9 +106,10 @@ describe('SessionService', function () {
         });
         const res = Object.create(express.response);
 
-        const error = `Request made from incorrect origin. Expected 'origin' received 'other-origin'.`;
-
-        await sessionService.getUserForSession(req, res).should.be.rejectedWith(error);
+        await assert.rejects(
+            sessionService.getUserForSession(req, res),
+            {message: `Request made from incorrect origin. Expected 'origin' received 'other-origin'.`}
+        );
     });
 
     it('Doesn\'t throw an error when the csrf verification fails when bypassed', async function () {
@@ -551,10 +552,9 @@ describe('SessionService', function () {
         const req = Object.create(express.request);
         const res = Object.create(express.response);
 
-        await should(sessionService.sendAuthCodeToUser(req, res))
-            .rejectedWith({
-                message: 'Failed to send email. Please check your site configuration and try again.'
-            });
+        await assert.rejects(sessionService.sendAuthCodeToUser(req, res), {
+            message: 'Failed to send email. Please check your site configuration and try again.'
+        });
     });
 
     it('Can create a verified session for SSO', async function () {
@@ -640,10 +640,9 @@ describe('SessionService', function () {
         const req = Object.create(express.request);
         const res = Object.create(express.response);
 
-        await should(sessionService.sendAuthCodeToUser(req, res))
-            .rejectedWith({
-                message: 'Could not fetch user from the session.'
-            });
+        await assert.rejects(sessionService.sendAuthCodeToUser(req, res), {
+            message: 'Could not fetch user from the session.'
+        });
     });
 
     it('Can remove verified session', async function () {

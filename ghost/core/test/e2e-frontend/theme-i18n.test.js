@@ -2,6 +2,7 @@
 // Tests theme translations using the {{t}} helper
 // Uses the Admin API to change locale and labs settings
 
+const assert = require('node:assert/strict');
 const cheerio = require('cheerio');
 const {agentProvider, fixtureManager} = require('../utils/e2e-framework');
 const config = require('../../core/shared/config');
@@ -39,13 +40,13 @@ describe('Theme i18n', function () {
             .expect((res) => {
                 const $ = cheerio.load(res.text);
                 if (translated) {
-                    $('.translation-test .translated').text().should.equal(translated);
+                    assert.equal($('.translation-test .translated').text(), translated);
                 }
                 if (untranslated) {
-                    $('.translation-test .untranslated').text().should.equal(untranslated);
+                    assert.equal($('.translation-test .untranslated').text(), untranslated);
                 }
                 if (interpolated) {
-                    $('.translation-test .interpolated').text().should.equal(interpolated);
+                    assert.equal($('.translation-test .interpolated').text(), interpolated);
                 }
             });
     }

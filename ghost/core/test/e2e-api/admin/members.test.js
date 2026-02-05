@@ -277,7 +277,7 @@ describe('Members API - member attribution', function () {
                 etag: anyEtag
             })
             .expect(({body}) => {
-                should(body.members[0].attribution).eql({
+                assert.deepEqual(body.members[0].attribution, {
                     id: post.id,
                     url: absoluteUrl,
                     type: 'post',
@@ -320,7 +320,7 @@ describe('Members API - member attribution', function () {
                 etag: anyEtag
             })
             .expect(({body}) => {
-                should(body.members[0].attribution).eql({
+                assert.deepEqual(body.members[0].attribution, {
                     id: post.id,
                     url: absoluteUrl,
                     type: 'page',
@@ -363,7 +363,7 @@ describe('Members API - member attribution', function () {
                 etag: anyEtag
             })
             .expect(({body}) => {
-                should(body.members[0].attribution).eql({
+                assert.deepEqual(body.members[0].attribution, {
                     id: tag.id,
                     url: absoluteUrl,
                     type: 'tag',
@@ -406,7 +406,7 @@ describe('Members API - member attribution', function () {
                 etag: anyEtag
             })
             .expect(({body}) => {
-                should(body.members[0].attribution).eql({
+                assert.deepEqual(body.members[0].attribution, {
                     id: author.id,
                     url: absoluteUrl,
                     type: 'author',
@@ -446,7 +446,7 @@ describe('Members API - member attribution', function () {
                 etag: anyEtag
             })
             .expect(({body}) => {
-                should(body.members[0].attribution).eql({
+                assert.deepEqual(body.members[0].attribution, {
                     id: null,
                     url: absoluteUrl,
                     type: 'url',

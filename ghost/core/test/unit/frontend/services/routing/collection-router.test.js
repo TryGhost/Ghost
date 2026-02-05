@@ -45,7 +45,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
 
             assert.equal(collectionRouter.filter, undefined);
             assert.equal(collectionRouter.getResourceType(), 'posts');
-            collectionRouter.templates.should.eql([]);
+            assert.deepEqual(collectionRouter.templates, []);
             assert.equal(collectionRouter.getPermalinks().getValue(), '/:slug/');
 
             assert.equal(routerCreatedSpy.calledOnce, true);
@@ -80,9 +80,9 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             assert.equal(collectionRouter2.routerName, 'podcast');
             assert.equal(collectionRouter3.routerName, 'helloworld');
 
-            collectionRouter1.context.should.eql(['index']);
-            collectionRouter2.context.should.eql(['podcast']);
-            collectionRouter3.context.should.eql(['helloworld']);
+            assert.deepEqual(collectionRouter1.context, ['index']);
+            assert.deepEqual(collectionRouter2.context, ['podcast']);
+            assert.deepEqual(collectionRouter3.context, ['helloworld']);
         });
 
         it('collection lives under /blog/', function () {
@@ -92,7 +92,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
 
             assert.equal(collectionRouter.filter, undefined);
             assert.equal(collectionRouter.getResourceType(), 'posts');
-            collectionRouter.templates.should.eql([]);
+            assert.deepEqual(collectionRouter.templates, []);
             assert.equal(collectionRouter.getPermalinks().getValue(), '/blog/:year/:slug/');
 
             assert.equal(routerCreatedSpy.calledOnce, true);
@@ -127,7 +127,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             const collectionRouter = new CollectionRouter('/magic/', {permalink: '/:slug/', templates: ['home', 'index']}, RESOURCE_CONFIG, routerCreatedSpy);
 
             // they are getting reversed because we unshift the templates in the helper
-            collectionRouter.templates.should.eql(['index', 'home']);
+            assert.deepEqual(collectionRouter.templates, ['index', 'home']);
         });
     });
 
@@ -138,7 +138,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             collectionRouter._prepareEntriesContext(req, res, next);
 
             assert.equal(next.calledOnce, true);
-            res.routerOptions.should.eql({
+            assert.deepEqual(res.routerOptions, {
                 type: 'collection',
                 filter: undefined,
                 permalinks: '/:slug/:options(edit)?/',
@@ -166,7 +166,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             collectionRouter._prepareEntriesContext(req, res, next);
 
             assert.equal(next.calledOnce, true);
-            res.routerOptions.should.eql({
+            assert.deepEqual(res.routerOptions, {
                 type: 'collection',
                 filter: undefined,
                 permalinks: '/:slug/:options(edit)?/',

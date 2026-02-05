@@ -158,10 +158,12 @@ describe('Email verification flow', function () {
             sendVerificationEmail: emailStub
         });
 
-        await trigger._startVerificationProcess({
-            amount: 10,
-            throwOnTrigger: true
-        }).should.be.rejected();
+        await assert.rejects(
+            trigger._startVerificationProcess({
+                amount: 10,
+                throwOnTrigger: true
+            })
+        );
     });
 
     it('Sends a message containing the number of members imported', async function () {
@@ -181,7 +183,7 @@ describe('Email verification flow', function () {
             throwOnTrigger: false
         });
 
-        emailStub.lastCall.firstArg.should.eql({
+        assert.deepEqual(emailStub.lastCall.firstArg, {
             subject: 'Email needs verification',
             message: 'Email verification needed for site: {siteUrl}, has imported: {amountTriggered} members in the last 30 days.',
             amountTriggered: 10
@@ -313,7 +315,7 @@ describe('Email verification flow', function () {
         assert.match(eventStub.firstCall.lastArg.created_at.$gt, /\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/);
 
         assert.equal(emailStub.callCount, 1);
-        emailStub.lastCall.firstArg.should.eql({
+        assert.deepEqual(emailStub.lastCall.firstArg, {
             subject: 'Email needs verification',
             message: 'Email verification needed for site: {siteUrl}, has imported: {amountTriggered} members in the last 30 days.',
             amountTriggered: 10
@@ -436,7 +438,7 @@ describe('Email verification flow', function () {
         assert.match(eventStub.firstCall.lastArg.created_at.$gt, /\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/);
 
         assert.equal(emailStub.callCount, 1);
-        emailStub.lastCall.firstArg.should.eql({
+        assert.deepEqual(emailStub.lastCall.firstArg, {
             subject: 'Email needs verification',
             message: 'Email verification needed for site: {siteUrl} has added: {amountTriggered} members through the Admin client in the last 30 days.',
             amountTriggered: 10
@@ -494,7 +496,7 @@ describe('Email verification flow', function () {
         assert.match(eventStub.firstCall.lastArg.created_at.$gt, /\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/);
 
         assert.equal(emailStub.callCount, 1);
-        emailStub.lastCall.firstArg.should.eql({
+        assert.deepEqual(emailStub.lastCall.firstArg, {
             subject: 'Email needs verification',
             message: 'Email verification needed for site: {siteUrl} has added: {amountTriggered} members through the API in the last 30 days.',
             amountTriggered: 10

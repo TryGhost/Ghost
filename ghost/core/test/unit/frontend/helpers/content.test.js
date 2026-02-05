@@ -32,7 +32,7 @@ describe('{{content}} helper', function () {
         const rendered = content.call({html: html});
 
         assertExists(rendered);
-        rendered.string.should.equal(html);
+        assert.equal(rendered.string, html);
     });
 
     it('can truncate html by word', function () {

@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const sinon = require('sinon');
 const ObjectID = require('bson-objectid').default;
 const EventEmitter = require('events').EventEmitter;
@@ -150,7 +149,6 @@ describe('UNIT: LinkRedirectRepository class', function () {
             const url = new URL('https://example.com/r/1234abcd');
             linkRedirectRepository = createLinkRedirectRepository();
             const result = await linkRedirectRepository.getByURL(url);
-            should(result).be.an.Object();
             assert.equal(result.from.href, url.href);
             assert.equal(result.to.href, 'https://google.com/');
         });
@@ -170,7 +168,6 @@ describe('UNIT: LinkRedirectRepository class', function () {
                 cacheAdapter: cacheAdapterStub
             });
             const result = await linkRedirectRepository.getByURL(url);
-            should(result).be.an.Object();
             assert.equal(result.from.href, 'https://example.com/r/1234abcd');
             assert.equal(result.to.href, 'https://google.com/');
             assert.equal(result.edited, true);
@@ -188,7 +185,6 @@ describe('UNIT: LinkRedirectRepository class', function () {
                 cacheAdapter: cacheAdapterStub
             });
             const result = await linkRedirectRepository.getByURL(url);
-            should(result).be.an.Object();
             assert.equal(result.from.href, 'https://example.com/r/1234abcd');
             assert.equal(result.to.href, 'https://google.com/');
             assert.equal(result.edited, true);

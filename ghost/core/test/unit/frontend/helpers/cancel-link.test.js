@@ -38,11 +38,11 @@ describe('{{cancel_link}} helper', function () {
             };
         };
 
-        runHelper('not an object').should.throw();
-        runHelper(function () { }).should.throw();
-        runHelper({}).should.throw();
-        runHelper({id: ''}).should.throw();
-        runHelper({cancel_at_period_end: ''}).should.throw();
+        assert.throws(runHelper('not an object'));
+        assert.throws(runHelper(function () { }));
+        assert.throws(runHelper({}));
+        assert.throws(runHelper({id: ''}));
+        assert.throws(runHelper({cancel_at_period_end: ''}));
     });
 
     it('can render cancel subscription link', function () {

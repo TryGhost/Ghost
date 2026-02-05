@@ -108,7 +108,7 @@ describe('Tag API', function () {
         assert.equal(testUtils.API.isISO8601(jsonResponse.tags[0].created_at), true);
 
         assertExists(res.headers.location);
-        res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('tags/')}${res.body.tags[0].id}/`);
+        assert.equal(res.headers.location, `http://127.0.0.1:2369${localUtils.API.getApiQuery('tags/')}${res.body.tags[0].id}/`);
     });
 
     it('Can add an internal tag', async function () {
@@ -135,7 +135,7 @@ describe('Tag API', function () {
         assert.equal(jsonResponse.tags[0].slug, 'hash-test');
 
         assertExists(res.headers.location);
-        res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('tags/')}${res.body.tags[0].id}/`);
+        assert.equal(res.headers.location, `http://127.0.0.1:2369${localUtils.API.getApiQuery('tags/')}${res.body.tags[0].id}/`);
     });
 
     it('Can edit a tag', async function () {
@@ -166,7 +166,7 @@ describe('Tag API', function () {
             .expect(204);
 
         assertExists(res.headers['x-cache-invalidate']);
-        res.body.should.eql({});
+        assert.deepEqual(res.body, {});
     });
 
     it('Can destroy a non-existent tag', async function () {
@@ -196,9 +196,9 @@ describe('Tag API', function () {
 
             const tag = res.body.tags[0];
 
-            tag.feature_image.should.equal(`${siteUrl}/content/images/tag-feature.jpg`);
-            tag.og_image.should.equal(`${siteUrl}/content/images/tag-og.jpg`);
-            tag.twitter_image.should.equal(`${siteUrl}/content/images/tag-twitter.jpg`);
+            assert.equal(tag.feature_image, `${siteUrl}/content/images/tag-feature.jpg`);
+            assert.equal(tag.og_image, `${siteUrl}/content/images/tag-og.jpg`);
+            assert.equal(tag.twitter_image, `${siteUrl}/content/images/tag-twitter.jpg`);
         });
 
         it('Transforms image URLs to absolute site URLs even when CDN is configured', async function () {
@@ -215,9 +215,9 @@ describe('Tag API', function () {
 
             const tag = res.body.tags[0];
 
-            tag.feature_image.should.equal(`${siteUrl}/content/images/tag-feature.jpg`);
-            tag.og_image.should.equal(`${siteUrl}/content/images/tag-og.jpg`);
-            tag.twitter_image.should.equal(`${siteUrl}/content/images/tag-twitter.jpg`);
+            assert.equal(tag.feature_image, `${siteUrl}/content/images/tag-feature.jpg`);
+            assert.equal(tag.og_image, `${siteUrl}/content/images/tag-og.jpg`);
+            assert.equal(tag.twitter_image, `${siteUrl}/content/images/tag-twitter.jpg`);
         });
     });
 });

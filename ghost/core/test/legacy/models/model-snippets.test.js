@@ -40,33 +40,33 @@ describe('Snippet Model', function () {
             it('transforms image card src to absolute site URL', function () {
                 const imageCard = mobiledoc.cards.find(card => card[0] === 'image');
 
-                imageCard[1].src.should.equal(`${siteUrl}/content/images/snippet-inline.jpg`);
+                assert.equal(imageCard[1].src, `${siteUrl}/content/images/snippet-inline.jpg`);
             });
 
             it('transforms file card src to absolute site URL', function () {
                 const fileCard = mobiledoc.cards.find(card => card[0] === 'file');
 
-                fileCard[1].src.should.equal(`${siteUrl}/content/files/snippet-document.pdf`);
+                assert.equal(fileCard[1].src, `${siteUrl}/content/files/snippet-document.pdf`);
             });
 
             it('transforms video card src and thumbnailSrc to absolute site URLs', function () {
                 const videoCard = mobiledoc.cards.find(card => card[0] === 'video');
 
-                videoCard[1].src.should.equal(`${siteUrl}/content/media/snippet-video.mp4`);
-                videoCard[1].thumbnailSrc.should.equal(`${siteUrl}/content/images/snippet-video-thumb.jpg`);
+                assert.equal(videoCard[1].src, `${siteUrl}/content/media/snippet-video.mp4`);
+                assert.equal(videoCard[1].thumbnailSrc, `${siteUrl}/content/images/snippet-video-thumb.jpg`);
             });
 
             it('transforms audio card src and thumbnailSrc to absolute site URLs', function () {
                 const audioCard = mobiledoc.cards.find(card => card[0] === 'audio');
 
-                audioCard[1].src.should.equal(`${siteUrl}/content/media/snippet-audio.mp3`);
-                audioCard[1].thumbnailSrc.should.equal(`${siteUrl}/content/images/snippet-audio-thumb.jpg`);
+                assert.equal(audioCard[1].src, `${siteUrl}/content/media/snippet-audio.mp3`);
+                assert.equal(audioCard[1].thumbnailSrc, `${siteUrl}/content/images/snippet-audio-thumb.jpg`);
             });
 
             it('transforms link markup href to absolute site URL', function () {
                 const linkMarkup = mobiledoc.markups.find(markup => markup[0] === 'a');
 
-                linkMarkup[1][1].should.equal(`${siteUrl}/snippet-link`);
+                assert.equal(linkMarkup[1][1], `${siteUrl}/snippet-link`);
             });
         });
 
@@ -114,7 +114,7 @@ describe('Snippet Model', function () {
                 const mobiledoc = JSON.parse(snippet.get('mobiledoc'));
 
                 const fileCard = mobiledoc.cards.find(card => card[0] === 'file');
-                fileCard[1].src.should.equal(`${cdnUrl}/content/files/snippet-document.pdf`);
+                assert.equal(fileCard[1].src, `${cdnUrl}/content/files/snippet-document.pdf`);
             });
 
             it('transforms video card src to media CDN URL', async function () {
@@ -123,7 +123,7 @@ describe('Snippet Model', function () {
                 const mobiledoc = JSON.parse(snippet.get('mobiledoc'));
 
                 const videoCard = mobiledoc.cards.find(card => card[0] === 'video');
-                videoCard[1].src.should.equal(`${cdnUrl}/content/media/snippet-video.mp4`);
+                assert.equal(videoCard[1].src, `${cdnUrl}/content/media/snippet-video.mp4`);
             });
 
             it('transforms audio card src to media CDN URL', async function () {
@@ -132,7 +132,7 @@ describe('Snippet Model', function () {
                 const mobiledoc = JSON.parse(snippet.get('mobiledoc'));
 
                 const audioCard = mobiledoc.cards.find(card => card[0] === 'audio');
-                audioCard[1].src.should.equal(`${cdnUrl}/content/media/snippet-audio.mp3`);
+                assert.equal(audioCard[1].src, `${cdnUrl}/content/media/snippet-audio.mp3`);
             });
 
             it('transforms image card src to absolute site URL(NOT CDN)', async function () {
@@ -141,7 +141,7 @@ describe('Snippet Model', function () {
                 const mobiledoc = JSON.parse(snippet.get('mobiledoc'));
 
                 const imageCard = mobiledoc.cards.find(card => card[0] === 'image');
-                imageCard[1].src.should.equal(`${siteUrl}/content/images/snippet-inline.jpg`);
+                assert.equal(imageCard[1].src, `${siteUrl}/content/images/snippet-inline.jpg`);
             });
 
             it('transforms video thumbnailSrc to absolute site URL(NOT CDN)', async function () {
@@ -150,7 +150,7 @@ describe('Snippet Model', function () {
                 const mobiledoc = JSON.parse(snippet.get('mobiledoc'));
 
                 const videoCard = mobiledoc.cards.find(card => card[0] === 'video');
-                videoCard[1].thumbnailSrc.should.equal(`${siteUrl}/content/images/snippet-video-thumb.jpg`);
+                assert.equal(videoCard[1].thumbnailSrc, `${siteUrl}/content/images/snippet-video-thumb.jpg`);
             });
         });
 

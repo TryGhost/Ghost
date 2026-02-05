@@ -80,7 +80,7 @@ describe('UNIT > Settings Service DefaultSettingsManager:', function () {
                 throw new Error('Expected test to fail');
             } catch (error) {
                 assertExists(error);
-                error.message.should.be.eql(`Error trying to access settings files in ${destinationFolderPath}.`);
+                assert.equal(error.message, `Error trying to access settings files in ${destinationFolderPath}.`);
                 assert.equal(fsReadFileStub.calledOnce, true);
                 assert.equal(fsCopyStub.called, false);
             }

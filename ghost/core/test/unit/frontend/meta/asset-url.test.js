@@ -17,32 +17,32 @@ describe('getAssetUrl', function () {
 
     it('should return asset url with just context', function () {
         const testUrl = getAssetUrl('myfile.js');
-        testUrl.should.equal('/assets/myfile.js?v=' + config.get('assetHash'));
+        assert.equal(testUrl, '/assets/myfile.js?v=' + config.get('assetHash'));
     });
 
     it('should return asset url with just context even with leading /', function () {
         const testUrl = getAssetUrl('/myfile.js');
-        testUrl.should.equal('/assets/myfile.js?v=' + config.get('assetHash'));
+        assert.equal(testUrl, '/assets/myfile.js?v=' + config.get('assetHash'));
     });
 
     it('should not add asset to url if ghost.css for default templates', function () {
         const testUrl = getAssetUrl('public/ghost.css');
-        testUrl.should.equal('/public/ghost.css?v=' + config.get('assetHash'));
+        assert.equal(testUrl, '/public/ghost.css?v=' + config.get('assetHash'));
     });
 
     it('should not add asset to url has public in it', function () {
         const testUrl = getAssetUrl('public/myfile.js');
-        testUrl.should.equal('/public/myfile.js?v=' + config.get('assetHash'));
+        assert.equal(testUrl, '/public/myfile.js?v=' + config.get('assetHash'));
     });
 
     it('should return hash before #', function () {
         const testUrl = getAssetUrl('myfile.svg#arrow-up');
-        testUrl.should.equal(`/assets/myfile.svg?v=${config.get('assetHash')}#arrow-up`);
+        assert.equal(testUrl, `/assets/myfile.svg?v=${config.get('assetHash')}#arrow-up`);
     });
 
     it('should handle Handlebars’ SafeString', function () {
         const testUrl = getAssetUrl(new SafeString('myfile.js'));
-        testUrl.should.equal('/assets/myfile.js?v=' + config.get('assetHash'));
+        assert.equal(testUrl, '/assets/myfile.js?v=' + config.get('assetHash'));
     });
 
     describe('favicon', function () {
@@ -73,25 +73,25 @@ describe('getAssetUrl', function () {
         it('should return asset minified url when hasMinFile & useMinFiles are both set to true', function () {
             configUtils.set('useMinFiles', true);
             const testUrl = getAssetUrl('myfile.js', true);
-            testUrl.should.equal('/assets/myfile.min.js?v=' + config.get('assetHash'));
+            assert.equal(testUrl, '/assets/myfile.min.js?v=' + config.get('assetHash'));
         });
 
         it('should NOT return asset minified url when hasMinFile true but useMinFiles is false', function () {
             configUtils.set('useMinFiles', false);
             const testUrl = getAssetUrl('myfile.js', true);
-            testUrl.should.equal('/assets/myfile.js?v=' + config.get('assetHash'));
+            assert.equal(testUrl, '/assets/myfile.js?v=' + config.get('assetHash'));
         });
 
         it('should NOT return asset minified url when hasMinFile false but useMinFiles is true', function () {
             configUtils.set('useMinFiles', true);
             const testUrl = getAssetUrl('myfile.js', false);
-            testUrl.should.equal('/assets/myfile.js?v=' + config.get('assetHash'));
+            assert.equal(testUrl, '/assets/myfile.js?v=' + config.get('assetHash'));
         });
 
         it('should not add min to anything besides the last .', function () {
             configUtils.set('useMinFiles', true);
             const testUrl = getAssetUrl('test.page/myfile.js', true);
-            testUrl.should.equal('/assets/test.page/myfile.min.js?v=' + config.get('assetHash'));
+            assert.equal(testUrl, '/assets/test.page/myfile.min.js?v=' + config.get('assetHash'));
         });
     });
 
@@ -106,22 +106,22 @@ describe('getAssetUrl', function () {
 
         it('should return asset url with just context', function () {
             const testUrl = getAssetUrl('myfile.js');
-            testUrl.should.equal('/blog/assets/myfile.js?v=' + config.get('assetHash'));
+            assert.equal(testUrl, '/blog/assets/myfile.js?v=' + config.get('assetHash'));
         });
 
         it('should return asset url with just context even with leading /', function () {
             const testUrl = getAssetUrl('/myfile.js');
-            testUrl.should.equal('/blog/assets/myfile.js?v=' + config.get('assetHash'));
+            assert.equal(testUrl, '/blog/assets/myfile.js?v=' + config.get('assetHash'));
         });
 
         it('should not add asset to url if ghost.css for default templates', function () {
             const testUrl = getAssetUrl('public/ghost.css');
-            testUrl.should.equal('/blog/public/ghost.css?v=' + config.get('assetHash'));
+            assert.equal(testUrl, '/blog/public/ghost.css?v=' + config.get('assetHash'));
         });
 
         it('should not add asset to url has public in it', function () {
             const testUrl = getAssetUrl('public/myfile.js');
-            testUrl.should.equal('/blog/public/myfile.js?v=' + config.get('assetHash'));
+            assert.equal(testUrl, '/blog/public/myfile.js?v=' + config.get('assetHash'));
         });
 
         describe('favicon', function () {
@@ -149,25 +149,25 @@ describe('getAssetUrl', function () {
             it('should return asset minified url when hasMinFile & useMinFiles are both set to true', function () {
                 configUtils.set('useMinFiles', true);
                 const testUrl = getAssetUrl('myfile.js', true);
-                testUrl.should.equal('/blog/assets/myfile.min.js?v=' + config.get('assetHash'));
+                assert.equal(testUrl, '/blog/assets/myfile.min.js?v=' + config.get('assetHash'));
             });
 
             it('should NOT return asset minified url when hasMinFile true but useMinFiles is false', function () {
                 configUtils.set('useMinFiles', false);
                 const testUrl = getAssetUrl('myfile.js', true);
-                testUrl.should.equal('/blog/assets/myfile.js?v=' + config.get('assetHash'));
+                assert.equal(testUrl, '/blog/assets/myfile.js?v=' + config.get('assetHash'));
             });
 
             it('should NOT return asset minified url when hasMinFile false but useMinFiles is true', function () {
                 configUtils.set('useMinFiles', true);
                 const testUrl = getAssetUrl('myfile.js', false);
-                testUrl.should.equal('/blog/assets/myfile.js?v=' + config.get('assetHash'));
+                assert.equal(testUrl, '/blog/assets/myfile.js?v=' + config.get('assetHash'));
             });
 
             it('should not add min to anything besides the last .', function () {
                 configUtils.set('useMinFiles', true);
                 const testUrl = getAssetUrl('test.page/myfile.js', true);
-                testUrl.should.equal('/blog/assets/test.page/myfile.min.js?v=' + config.get('assetHash'));
+                assert.equal(testUrl, '/blog/assets/test.page/myfile.min.js?v=' + config.get('assetHash'));
             });
         });
     });
