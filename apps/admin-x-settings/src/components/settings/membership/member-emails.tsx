@@ -80,24 +80,14 @@ const EmailPreview: React.FC<{
 
 const EmailSettingRow: React.FC<{
     title: string,
-    description: string,
-    onEdit: () => void,
-    testId: string
-}> = ({title, description, onEdit, testId}) => {
+    description: string
+}> = ({title, description}) => {
     return (
         <div className='flex items-center justify-between py-4'>
             <div>
                 <div className='font-medium'>{title}</div>
                 <div className='text-sm text-grey-700 dark:text-grey-600'>{description}</div>
             </div>
-            <button
-                className='hidden font-semibold text-green'
-                data-testid={testId}
-                type='button'
-                onClick={onEdit}
-            >
-                Edit
-            </button>
         </div>
     );
 };
@@ -204,11 +194,10 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 <Separator />
                 <EmailSettingRow
                     description='Email new free members receive when they join your site.'
-                    testId='free-welcome-email-edit-button'
                     title='Free members welcome email'
-                    onEdit={() => handleEditClick('free')}
                 />
                 <EmailPreview
+                    key={`free-${freeWelcomeEmailEnabled}`}
                     automatedEmail={freeEmailForDisplay}
                     emailType='free'
                     enabled={freeWelcomeEmailEnabled}
@@ -220,11 +209,10 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     <div className='mt-4'>
                         <EmailSettingRow
                             description='Sent to new paid members as soon as they start their subscription.'
-                            testId='paid-welcome-email-edit-button'
                             title='Paid members welcome email'
-                            onEdit={() => handleEditClick('paid')}
                         />
                         <EmailPreview
+                            key={`paid-${paidWelcomeEmailEnabled}`}
                             automatedEmail={paidEmailForDisplay}
                             emailType='paid'
                             enabled={paidWelcomeEmailEnabled}
