@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const sinon = require('sinon');
 const ThemeI18n = require('../../../../../core/frontend/services/theme-engine/i18next/theme-i18n');
 const path = require('path');
@@ -50,9 +49,10 @@ describe('NEW i18nextThemeI18n Class behavior', function () {
     });
 
     it('throws error if used before initialization', function () {
-        should(function () {
-            i18n.t('some key');
-        }).throw('Theme translation was used before it was initialised with key some key');
+        assert.throws(
+            () => i18n.t('some key'),
+            {message: 'Theme translation was used before it was initialised with key some key'}
+        );
     });
 
     it('uses key fallback correctly', function () {

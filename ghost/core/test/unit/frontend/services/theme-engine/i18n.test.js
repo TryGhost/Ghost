@@ -59,9 +59,10 @@ describe('I18n Class behavior', function () {
         });
 
         it('errors for invalid strings', function () {
-            should(function () {
-                i18n.t('unknown string');
-            }).throw('i18n.t() called with an invalid key: unknown string');
+            assert.throws(
+                () => i18n.t('unknown string'),
+                {message: 'i18n.t() called with an invalid key: unknown string'}
+            );
         });
     });
 
