@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../utils/assertions');
 const should = require('should');
 const hbs = require('../../../../core/frontend/services/theme-engine/engine');
 const configUtils = require('../../../utils/config-utils');
@@ -43,7 +44,7 @@ describe('{{pagination}} helper', function () {
             pagination: {page: 1, prev: null, next: null, limit: 15, total: 8, pages: 1},
             tag: {slug: 'slug'}
         });
-        should.exist(rendered);
+        assertExists(rendered);
         // strip out carriage returns and compare.
         rendered.string.should.match(paginationRegex);
         rendered.string.should.match(pageRegex);
@@ -56,7 +57,7 @@ describe('{{pagination}} helper', function () {
         const rendered = pagination.call({
             pagination: {page: 1, prev: null, next: 2, limit: 15, total: 8, pages: 3}
         });
-        should.exist(rendered);
+        assertExists(rendered);
 
         rendered.string.should.match(paginationRegex);
         rendered.string.should.match(pageRegex);
@@ -69,7 +70,7 @@ describe('{{pagination}} helper', function () {
         const rendered = pagination.call({
             pagination: {page: 2, prev: 1, next: 3, limit: 15, total: 8, pages: 3}
         });
-        should.exist(rendered);
+        assertExists(rendered);
 
         rendered.string.should.match(paginationRegex);
         rendered.string.should.match(pageRegex);
@@ -82,7 +83,7 @@ describe('{{pagination}} helper', function () {
         const rendered = pagination.call({
             pagination: {page: 3, prev: 2, next: null, limit: 15, total: 8, pages: 3}
         });
-        should.exist(rendered);
+        assertExists(rendered);
 
         rendered.string.should.match(paginationRegex);
         rendered.string.should.match(pageRegex);
@@ -143,7 +144,7 @@ describe('{{pagination}} helper with custom template', function () {
                 }
             }
         });
-        should.exist(rendered);
+        assertExists(rendered);
         // strip out carriage returns and compare.
         assert.match(rendered.string, /Page 1 of 1/);
         assert(rendered.string.includes('Chaos is a ladder'));
@@ -160,7 +161,7 @@ describe('{{pagination}} helper with custom template', function () {
                 site: {}
             }
         });
-        should.exist(rendered);
+        assertExists(rendered);
         // strip out carriage returns and compare.
         assert.match(rendered.string, /Page 1 of 1/);
         assert(!rendered.string.includes('Chaos is a ladder'));

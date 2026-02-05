@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../../utils/assertions');
 const errors = require('@tryghost/errors');
 const should = require('should');
 const sinon = require('sinon');
@@ -11,7 +12,7 @@ const dataService = require('../../../../../../core/frontend/services/data');
 
 function failTest(done) {
     return function (err) {
-        should.exist(err);
+        assertExists(err);
         done(err);
     };
 }

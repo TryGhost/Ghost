@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../utils/assertions');
 const should = require('should');
 
 // Stuff we are testing
@@ -8,7 +9,7 @@ describe('{{title}} Helper', function () {
     it('can render title', function () {
         const rendered = title.call({title: 'Hello World'});
 
-        should.exist(rendered);
+        assertExists(rendered);
         assert.equal(rendered.string, 'Hello World');
     });
 

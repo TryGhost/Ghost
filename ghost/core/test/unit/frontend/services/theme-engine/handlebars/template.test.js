@@ -1,3 +1,4 @@
+const {assertExists} = require('../../../../../utils/assertions');
 const should = require('should');
 const errors = require('@tryghost/errors');
 const {hbs, templates} = require('../../../../../../core/frontend/services/handlebars');
@@ -8,7 +9,7 @@ describe('Helpers Template', function () {
 
         const safeString = templates.execute('test', {name: 'world'});
 
-        should.exist(safeString);
+        assertExists(safeString);
         safeString.should.have.property('string').and.equal('<h1>Hello world</h1>');
     });
 

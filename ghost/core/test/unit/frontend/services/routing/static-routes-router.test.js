@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 const controllers = require('../../../../../core/frontend/services/routing/controllers');
@@ -36,7 +37,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
     describe('static routes', function () {
         it('instantiate: default', function () {
             const staticRoutesRouter = new StaticRoutesRouter('/about/', {templates: ['test']}, routerCreatedSpy);
-            should.exist(staticRoutesRouter.router);
+            assertExists(staticRoutesRouter.router);
 
             assert.equal(staticRoutesRouter.filter, undefined);
             assert.equal(staticRoutesRouter.getPermalinks(), undefined);
@@ -59,7 +60,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
                 filter: 'tag:test'
             }, routerCreatedSpy);
 
-            should.exist(staticRoutesRouter.router);
+            assertExists(staticRoutesRouter.router);
 
             assert.equal(staticRoutesRouter.getPermalinks(), undefined);
             assert.equal(staticRoutesRouter.filter, undefined);
@@ -118,12 +119,12 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
                     filter: 'tag:test'
                 }, routerCreatedSpy);
 
-                should.exist(staticRoutesRouter.router);
+                assertExists(staticRoutesRouter.router);
 
                 assert.equal(staticRoutesRouter.getPermalinks(), undefined);
                 assert.equal(staticRoutesRouter.filter, 'tag:test');
                 staticRoutesRouter.templates.should.eql([]);
-                should.exist(staticRoutesRouter.data);
+                assertExists(staticRoutesRouter.data);
 
                 assert.equal(routerCreatedSpy.calledOnce, true);
                 assert.equal(routerCreatedSpy.calledWith(staticRoutesRouter), true);
@@ -145,7 +146,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
                     filter: 'tag:test'
                 }, routerCreatedSpy);
 
-                should.exist(staticRoutesRouter.router);
+                assertExists(staticRoutesRouter.router);
 
                 assert.equal(staticRoutesRouter.getPermalinks(), undefined);
                 assert.equal(staticRoutesRouter.filter, 'tag:test');

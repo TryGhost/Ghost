@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 const {JSDOM} = require('jsdom');
@@ -48,37 +49,37 @@ describe('URL Attribution Utils', function () {
     describe('parseReferrerData', function () {
         it('should extract ref parameter correctly', function () {
             const result = parseReferrerData('https://example.com/?ref=newsletter');
-            should.exist(result);
+            assertExists(result);
             assert.equal(result.source, 'newsletter');
         });
         
         it('should extract source parameter correctly', function () {
             const result = parseReferrerData('https://example.com/?source=twitter');
-            should.exist(result);
+            assertExists(result);
             assert.equal(result.source, 'twitter');
         });
         
         it('should extract utm_source parameter correctly', function () {
             const result = parseReferrerData('https://example.com/?utm_source=facebook');
-            should.exist(result);
+            assertExists(result);
             assert.equal(result.source, 'facebook');
         });
         
         it('should handle portal hash URLs', function () {
             const result = parseReferrerData('https://example.com/#/portal/signup?ref=portal-hash');
-            should.exist(result);
+            assertExists(result);
             assert.equal(result.source, 'portal-hash');
         });
         
         it('should return document.referrer when no source params are present', function () {
             const result = parseReferrerData('https://example.com/');
-            should.exist(result);
+            assertExists(result);
             assert.equal(result.url, 'https://external-site.com/');
         });
         
         it('should extract all UTM parameters', function () {
             const result = parseReferrerData('https://example.com/?utm_source=google&utm_medium=cpc&utm_campaign=summer&utm_term=ghost&utm_content=banner');
-            should.exist(result);
+            assertExists(result);
             assert.equal(result.utmSource, 'google');
             assert.equal(result.utmMedium, 'cpc');
             assert.equal(result.utmCampaign, 'summer');
@@ -91,20 +92,20 @@ describe('URL Attribution Utils', function () {
     describe('parseReferrerData with portal hash', function () {
         it('should extract parameters from portal hash URL', function () {
             const result = parseReferrerData('https://example.com/#/portal/signup?ref=newsletter');
-            should.exist(result);
+            assertExists(result);
             assert.equal(result.source, 'newsletter');
         });
         
         it('should handle multiple parameters in portal hash', function () {
             const result = parseReferrerData('https://example.com/#/portal/signup?ref=newsletter&utm_medium=email');
-            should.exist(result);
+            assertExists(result);
             assert.equal(result.source, 'newsletter');
             assert.equal(result.medium, 'email');
         });
         
         it('should extract all UTM parameters from portal hash', function () {
             const result = parseReferrerData('https://example.com/#/portal/signup?utm_source=google&utm_medium=cpc&utm_campaign=summer&utm_term=ghost&utm_content=banner');
-            should.exist(result);
+            assertExists(result);
             assert.equal(result.utmSource, 'google');
             assert.equal(result.utmMedium, 'cpc');
             assert.equal(result.utmCampaign, 'summer');

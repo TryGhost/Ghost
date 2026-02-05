@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../utils');
@@ -18,7 +19,7 @@ describe('Exporter', function () {
     });
     beforeEach(testUtils.setup('default', 'settings'));
 
-    should.exist(exporter);
+    assertExists(exporter);
 
     it('exports expected table data', function (done) {
         exporter.doExport().then(function (exportData) {
@@ -102,9 +103,9 @@ describe('Exporter', function () {
                 'webhooks'
             ];
 
-            should.exist(exportData);
-            should.exist(exportData.meta);
-            should.exist(exportData.data);
+            assertExists(exportData);
+            assertExists(exportData.meta);
+            assertExists(exportData.data);
 
             // NOTE: using `Object.keys` here instead of `should.have.only.keys` assertion
             //       because when `have.only.keys` fails there's no useful diff

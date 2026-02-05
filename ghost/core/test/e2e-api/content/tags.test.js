@@ -1,4 +1,5 @@
 const assert = require('assert/strict');
+const {assertExists} = require('../../utils/assertions');
 const should = require('should');
 const supertest = require('supertest');
 const _ = require('lodash');
@@ -33,7 +34,7 @@ describe('Tags Content API', function () {
 
         assert.equal(res.headers['x-cache-invalidate'], undefined);
         const jsonResponse = res.body;
-        should.exist(jsonResponse.tags);
+        assertExists(jsonResponse.tags);
         localUtils.API.checkResponse(jsonResponse, 'tags');
         assert.equal(jsonResponse.tags.length, 5);
         localUtils.API.checkResponse(jsonResponse.tags[0], 'tag', ['url']);
@@ -50,9 +51,9 @@ describe('Tags Content API', function () {
             assert.equal(jsonResponse.tags[4].name, 'kitchen sink');
         }
 
-        should.exist(res.body.tags[0].url);
-        should.exist(url.parse(res.body.tags[0].url).protocol);
-        should.exist(url.parse(res.body.tags[0].url).host);
+        assertExists(res.body.tags[0].url);
+        assertExists(url.parse(res.body.tags[0].url).protocol);
+        assertExists(url.parse(res.body.tags[0].url).host);
     });
 
     it('Can request tags with limit=all', async function () {
@@ -64,7 +65,7 @@ describe('Tags Content API', function () {
 
         assert.equal(res.headers['x-cache-invalidate'], undefined);
         const jsonResponse = res.body;
-        should.exist(jsonResponse.tags);
+        assertExists(jsonResponse.tags);
         localUtils.API.checkResponse(jsonResponse, 'tags');
         assert.equal(jsonResponse.tags.length, 5);
         localUtils.API.checkResponse(jsonResponse.tags[0], 'tag', ['url']);
@@ -80,7 +81,7 @@ describe('Tags Content API', function () {
 
         assert.equal(res.headers['x-cache-invalidate'], undefined);
         const jsonResponse = res.body;
-        should.exist(jsonResponse.tags);
+        assertExists(jsonResponse.tags);
         localUtils.API.checkResponse(jsonResponse, 'tags');
         assert.equal(jsonResponse.tags.length, 3);
         localUtils.API.checkResponse(jsonResponse.tags[0], 'tag', ['url']);
@@ -96,7 +97,7 @@ describe('Tags Content API', function () {
 
         const jsonResponse = res.body;
 
-        should.exist(jsonResponse.tags);
+        assertExists(jsonResponse.tags);
         jsonResponse.tags.should.be.an.Array().with.lengthOf(5);
 
         // Each tag should have the correct count

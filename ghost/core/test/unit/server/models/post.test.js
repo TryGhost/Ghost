@@ -1,5 +1,6 @@
 /* eslint no-invalid-this:0 */
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../utils/assertions');
 const errors = require('@tryghost/errors');
 const should = require('should');
 const sinon = require('sinon');
@@ -249,7 +250,7 @@ describe('Unit: models/post', function () {
             const json = toJSON(post, {formats: ['mobiledoc']});
 
             assert.equal(json.mobiledoc_revisions, undefined);
-            should.exist(json.mobiledoc);
+            assertExists(json.mobiledoc);
         });
 
         it('ensure post revisions are exposed', function () {
@@ -260,8 +261,8 @@ describe('Unit: models/post', function () {
 
             const json = toJSON(post, {formats: ['lexical']});
 
-            should.exist(json.post_revisions);
-            should.exist(json.lexical);
+            assertExists(json.post_revisions);
+            assertExists(json.lexical);
         });
     });
 
@@ -482,7 +483,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         true,
                         false
                     ).then((result) => {
-                        should.exist(result);
+                        assertExists(result);
                         assert.deepEqual(result.excludedAttrs, ['authors', 'tags']);
                         assert.equal(mockPostObj.get.callCount, 2);
                         assert.equal(mockPostObj.related.callCount, 2);
@@ -569,7 +570,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         true,
                         false
                     ).then((result) => {
-                        should.exist(result);
+                        assertExists(result);
                         assert.deepEqual(result.excludedAttrs, ['authors', 'tags']);
                         assert.equal(mockPostObj.get.callCount, 2);
                         assert.equal(mockPostObj.related.callCount, 1);
@@ -670,7 +671,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         true,
                         true
                     ).then((result) => {
-                        should.exist(result);
+                        assertExists(result);
                         assert.deepEqual(result.excludedAttrs, ['authors', 'tags']);
                         assert.equal(mockPostObj.get.called, false);
                         done();
@@ -756,7 +757,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         true,
                         true
                     ).then((result) => {
-                        should.exist(result);
+                        assertExists(result);
                         assert.deepEqual(result.excludedAttrs, ['authors', 'tags']);
                         assert.equal(mockPostObj.get.calledOnce, true);
                         assert.equal(mockPostObj.related.calledOnce, true);

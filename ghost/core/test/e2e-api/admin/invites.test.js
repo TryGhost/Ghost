@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../utils/assertions');
 const should = require('should');
 const supertest = require('supertest');
 const sinon = require('sinon');
@@ -34,8 +35,8 @@ describe('Invites API', function () {
 
             assert.equal(res.headers['x-cache-invalidate'], undefined);
             const jsonResponse = res.body;
-            should.exist(jsonResponse);
-            should.exist(jsonResponse.invites);
+            assertExists(jsonResponse);
+            assertExists(jsonResponse.invites);
             assert.equal(jsonResponse.invites.length, 2);
 
             localUtils.API.checkResponse(jsonResponse, 'invites');
@@ -61,8 +62,8 @@ describe('Invites API', function () {
 
             assert.equal(res.headers['x-cache-invalidate'], undefined);
             const jsonResponse = res.body;
-            should.exist(jsonResponse);
-            should.exist(jsonResponse.invites);
+            assertExists(jsonResponse);
+            assertExists(jsonResponse.invites);
             assert.equal(jsonResponse.invites.length, 1);
 
             localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
@@ -83,8 +84,8 @@ describe('Invites API', function () {
 
             assert.equal(res.headers['x-cache-invalidate'], undefined);
             const jsonResponse = res.body;
-            should.exist(jsonResponse);
-            should.exist(jsonResponse.invites);
+            assertExists(jsonResponse);
+            assertExists(jsonResponse.invites);
             assert.equal(jsonResponse.invites.length, 1);
 
             localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
@@ -92,7 +93,7 @@ describe('Invites API', function () {
 
             assert.equal(mailService.GhostMailer.prototype.send.called, true);
 
-            should.exist(res.headers.location);
+            assertExists(res.headers.location);
             res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('invites/')}${res.body.invites[0].id}/`);
         });
 
@@ -147,8 +148,8 @@ describe('Invites API', function () {
 
             assert.equal(res.headers['x-cache-invalidate'], undefined);
             const jsonResponse = res.body;
-            should.exist(jsonResponse);
-            should.exist(jsonResponse.invites);
+            assertExists(jsonResponse);
+            assertExists(jsonResponse.invites);
             assert.equal(jsonResponse.invites.length, 1);
 
             localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
@@ -156,7 +157,7 @@ describe('Invites API', function () {
 
             assert.equal(mailService.GhostMailer.prototype.send.called, true);
 
-            should.exist(res.headers.location);
+            assertExists(res.headers.location);
             res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('invites/')}${res.body.invites[0].id}/`);
         });
 
@@ -174,8 +175,8 @@ describe('Invites API', function () {
 
             assert.equal(res.headers['x-cache-invalidate'], undefined);
             const jsonResponse = res.body;
-            should.exist(jsonResponse);
-            should.exist(jsonResponse.invites);
+            assertExists(jsonResponse);
+            assertExists(jsonResponse.invites);
             assert.equal(jsonResponse.invites.length, 1);
 
             localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
@@ -183,7 +184,7 @@ describe('Invites API', function () {
 
             assert.equal(mailService.GhostMailer.prototype.send.called, true);
 
-            should.exist(res.headers.location);
+            assertExists(res.headers.location);
             res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('invites/')}${res.body.invites[0].id}/`);
         });
 
@@ -201,8 +202,8 @@ describe('Invites API', function () {
 
             assert.equal(res.headers['x-cache-invalidate'], undefined);
             const jsonResponse = res.body;
-            should.exist(jsonResponse);
-            should.exist(jsonResponse.invites);
+            assertExists(jsonResponse);
+            assertExists(jsonResponse.invites);
             assert.equal(jsonResponse.invites.length, 1);
 
             localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
@@ -210,7 +211,7 @@ describe('Invites API', function () {
 
             assert.equal(mailService.GhostMailer.prototype.send.called, true);
 
-            should.exist(res.headers.location);
+            assertExists(res.headers.location);
             res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('invites/')}${res.body.invites[0].id}/`);
         });
 
@@ -228,8 +229,8 @@ describe('Invites API', function () {
 
             assert.equal(res.headers['x-cache-invalidate'], undefined);
             const jsonResponse = res.body;
-            should.exist(jsonResponse);
-            should.exist(jsonResponse.invites);
+            assertExists(jsonResponse);
+            assertExists(jsonResponse.invites);
             assert.equal(jsonResponse.invites.length, 1);
 
             localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
@@ -237,7 +238,7 @@ describe('Invites API', function () {
 
             assert.equal(mailService.GhostMailer.prototype.send.called, true);
 
-            should.exist(res.headers.location);
+            assertExists(res.headers.location);
             res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('invites/')}${res.body.invites[0].id}/`);
         });
 

@@ -1,6 +1,19 @@
 const assert = require('node:assert/strict');
 const {snapshotManager} = require('@tryghost/express-test').snapshot;
 
+/**
+ * @template T
+ * @param {T} value
+ * @param {string} [message]
+ * @returns {asserts value is NonNullable<T>}
+ */
+function assertExists(value, message = 'Value should exist') {
+    assert(
+        (value !== undefined) && (value !== null),
+        message
+    );
+}
+
 function assertMatchSnapshot(obj, properties) {
     const result = snapshotManager.match(obj, properties);
     assert(result.pass, result.message());
@@ -24,6 +37,7 @@ function assertObjectMatches(obj, properties, message) {
 }
 
 module.exports = {
+    assertExists,
     assertMatchSnapshot,
     assertObjectMatches
 };

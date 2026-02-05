@@ -4,6 +4,7 @@ const {queryStringToken} = regexes;
 const ObjectId = require('bson-objectid').default;
 
 const assert = require('assert/strict');
+const {assertExists} = require('../../utils/assertions');
 const nock = require('nock');
 const sinon = require('sinon');
 const should = require('should');
@@ -1228,6 +1229,12 @@ describe('Members API', function () {
         sinon.stub(stripeService.api, 'createPrice').resolves(fakePrice);
         sinon.stub(stripeService.api, 'createSubscription').resolves(fakeSubscription);
         sinon.stub(stripeService.api, 'getSubscription').resolves(fakeSubscription);
+        sinon.stub(stripeService.api, 'getCustomer').resolves({
+            id: 'cus_1',
+            invoice_settings: {
+                default_payment_method: null
+            }
+        });
         const initialMember = {
             name: 'Name',
             email: 'compedtest@test.com',
@@ -2582,12 +2589,12 @@ describe('Members API', function () {
         assert.match(res.text, /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers/);
 
         const csv = Papa.parse(res.text, {header: true});
-        should.exist(csv.data.find(row => row.name === 'Mr Egg'));
-        should.exist(csv.data.find(row => row.name === 'Winston Zeddemore'));
-        should.exist(csv.data.find(row => row.name === 'Ray Stantz'));
-        should.exist(csv.data.find(row => row.email === 'member2@test.com'));
-        should.exist(csv.data.find(row => row.tiers.length > 0));
-        should.exist(csv.data.find(row => row.labels.length > 0));
+        assertExists(csv.data.find(row => row.name === 'Mr Egg'));
+        assertExists(csv.data.find(row => row.name === 'Winston Zeddemore'));
+        assertExists(csv.data.find(row => row.name === 'Ray Stantz'));
+        assertExists(csv.data.find(row => row.email === 'member2@test.com'));
+        assertExists(csv.data.find(row => row.tiers.length > 0));
+        assertExists(csv.data.find(row => row.labels.length > 0));
     });
 
     it('Can export a filtered CSV', async function () {
@@ -2603,12 +2610,12 @@ describe('Members API', function () {
         assert.match(res.text, /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers/);
 
         const csv = Papa.parse(res.text, {header: true});
-        should.exist(csv.data.find(row => row.name === 'Mr Egg'));
+        assertExists(csv.data.find(row => row.name === 'Mr Egg'));
         assert.equal(csv.data.find(row => row.name === 'Egon Spengler'), undefined);
         assert.equal(csv.data.find(row => row.name === 'Ray Stantz'), undefined);
         assert.equal(csv.data.find(row => row.email === 'member2@test.com'), undefined);
         // note that this member doesn't have tiers
-        should.exist(csv.data.find(row => row.labels.length > 0));
+        assertExists(csv.data.find(row => row.labels.length > 0));
     });
 
     it('Can delete a member without cancelling Stripe Subscription', async function () {

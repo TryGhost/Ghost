@@ -1004,12 +1004,19 @@ module.exports = class MemberRepository {
 
         const stripeSubscriptionData = await this._stripeAPIService.getSubscription(data.subscription.id);
         let paymentMethodId;
-        if (!stripeSubscriptionData.default_payment_method) {
-            paymentMethodId = null;
-        } else if (typeof stripeSubscriptionData.default_payment_method === 'string') {
+        if (stripeSubscriptionData.default_payment_method) {
             paymentMethodId = stripeSubscriptionData.default_payment_method;
         } else {
-            paymentMethodId = stripeSubscriptionData.default_payment_method.id;
+            // If the subscription doesn't have a payment method, we fall back to the customer's default.
+            // This is set when the customer uses the Stripe billing portal to update their payment method.
+            const customerId = stripeSubscriptionData.customer;
+            const customer = await this._stripeAPIService.getCustomer(customerId);
+            const customerPaymentMethod = customer.invoice_settings?.default_payment_method;
+            if (customerPaymentMethod) {
+                paymentMethodId = customerPaymentMethod;
+            } else {
+                paymentMethodId = null;
+            }
         }
         const stripePaymentMethodData = paymentMethodId ? await this._stripeAPIService.getCardPaymentMethod(paymentMethodId) : null;
 

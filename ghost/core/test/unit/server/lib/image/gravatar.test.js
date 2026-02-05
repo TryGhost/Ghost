@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const should = require('should');
 const Gravatar = require('../../../../../core/server/lib/image/gravatar');
 
@@ -32,8 +33,8 @@ describe('lib/image: gravatar', function () {
         }, request: () => {}});
 
         gravatar.lookup({email: 'exists@example.com'}).then(function (result) {
-            should.exist(result);
-            should.exist(result.image);
+            assertExists(result);
+            assertExists(result.image);
             assert.equal(result.image, 'https://www.gravatar.com/avatar/ef6dcde5c99bb8f685dd451ccc3e050a?s=250&r=x&d=mp');
 
             done();
@@ -53,7 +54,7 @@ describe('lib/image: gravatar', function () {
         }});
 
         gravatar.lookup({email: 'invalid@example.com'}).then(function (result) {
-            should.exist(result);
+            assertExists(result);
             assert.equal(result.image, undefined);
 
             done();

@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 
@@ -183,7 +184,7 @@ describe('Migration Fixture Utils', function () {
 
             assert.equal(processed.models[0].entries[0].id, 'user123');
 
-            should.exist(receivedModels);
+            assertExists(receivedModels);
 
             receivedModels.should.equal(models);
         });
@@ -336,7 +337,7 @@ describe('Migration Fixture Utils', function () {
             });
 
             fixtureManager.addFixturesForModel(postFixtures).then(function (result) {
-                should.exist(result);
+                assertExists(result);
                 result.should.be.an.Object();
                 result.should.have.property('expected', 11);
                 result.should.have.property('done', 11);
@@ -357,7 +358,7 @@ describe('Migration Fixture Utils', function () {
             });
 
             fixtureManager.addFixturesForModel(newsletterFixtures).then(function (result) {
-                should.exist(result);
+                assertExists(result);
                 result.should.be.an.Object();
                 result.should.have.property('expected', 1);
                 result.should.have.property('done', 1);
@@ -378,7 +379,7 @@ describe('Migration Fixture Utils', function () {
             });
 
             fixtureManager.addFixturesForModel(postFixtures).then(function (result) {
-                should.exist(result);
+                assertExists(result);
                 result.should.be.an.Object();
                 result.should.have.property('expected', 11);
                 result.should.have.property('done', 0);
@@ -411,7 +412,7 @@ describe('Migration Fixture Utils', function () {
 
             fixtureManager.addFixturesForRelation(fixtures.relations[0]).then(function (result) {
                 const FIXTURE_COUNT = 137;
-                should.exist(result);
+                assertExists(result);
                 result.should.be.an.Object();
                 result.should.have.property('expected', FIXTURE_COUNT);
                 result.should.have.property('done', FIXTURE_COUNT);
@@ -448,7 +449,7 @@ describe('Migration Fixture Utils', function () {
             const tagsAllStub = sinon.stub(models.Tag, 'findAll').returns(Promise.resolve(dataMethodStub));
 
             fixtureManager.addFixturesForRelation(fixtures.relations[1]).then(function (result) {
-                should.exist(result);
+                assertExists(result);
                 result.should.be.an.Object();
                 result.should.have.property('expected', 7);
                 result.should.have.property('done', 7);
@@ -485,7 +486,7 @@ describe('Migration Fixture Utils', function () {
             const tagsAllStub = sinon.stub(models.Tag, 'findAll').returns(Promise.resolve(dataMethodStub));
 
             fixtureManager.addFixturesForRelation(fixtures.relations[1]).then(function (result) {
-                should.exist(result);
+                assertExists(result);
                 result.should.be.an.Object();
                 result.should.have.property('expected', 7);
                 result.should.have.property('done', 0);

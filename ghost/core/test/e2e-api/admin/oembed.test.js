@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../utils/assertions');
 const nock = require('nock');
 const sinon = require('sinon');
 const should = require('should');
@@ -67,7 +68,7 @@ describe('Oembed API', function () {
             .expect(200);
 
         assert.equal(requestMock.isDone(), true);
-        should.exist(res.body.html);
+        assertExists(res.body.html);
     });
 
     it('does not use http preferentially to https', async function () {
@@ -92,7 +93,7 @@ describe('Oembed API', function () {
 
         assert.equal(httpMock.isDone(), false);
         assert.equal(httpsMock.isDone(), true);
-        should.exist(res.body.html);
+        assertExists(res.body.html);
     });
 
     it('errors with a useful message when embedding is disabled', async function () {
@@ -122,7 +123,7 @@ describe('Oembed API', function () {
             .expect(422);
 
         assert.equal(requestMock.isDone(), true);
-        should.exist(res.body.errors);
+        assertExists(res.body.errors);
         assert.match(res.body.errors[0].context, /URL contains a private resource/i);
     });
 
@@ -189,7 +190,7 @@ describe('Oembed API', function () {
                 .expect(422);
 
             assert.equal(pageMock.isDone(), true);
-            should.exist(res.body.errors);
+            assertExists(res.body.errors);
             assert.match(res.body.errors[0].context, /insufficient metadata/i);
         });
 
@@ -220,7 +221,7 @@ describe('Oembed API', function () {
                 .expect(422);
 
             assert.equal(pageMock.isDone(), false); // we shouldn't hit this; blocked by externalRequest
-            should.exist(res.body.errors);
+            assertExists(res.body.errors);
         });
 
         it('errors when fetched url is incorrect', async function () {
@@ -231,7 +232,7 @@ describe('Oembed API', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(422);
 
-            should.exist(res.body.errors);
+            assertExists(res.body.errors);
         });
 
         it('should replace icon URL when it returns 404', async function () {
