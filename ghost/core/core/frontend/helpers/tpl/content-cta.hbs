@@ -2,19 +2,31 @@
 <aside class="gh-post-upgrade-cta">
     <div class="gh-post-upgrade-cta-content" style="background-color: {{@site.accent_color}}">
         {{#has visibility="paid"}}
-            <h2>This {{#is "page"}}page{{else}}post{{/is}} is for paying subscribers only</h2>
+            {{#is "page"}}
+                <h2>{{t "This page is for paying subscribers only"}}</h2>
+            {{else}}
+                <h2>{{t "This post is for paying subscribers only"}}</h2>
+            {{/is}}
         {{/has}}
         {{#has visibility="members"}}
-            <h2>This {{#is "page"}}page{{else}}post{{/is}} is for subscribers only</h2>
+            {{#is "page"}}
+                <h2>{{t "This page is for subscribers only"}}</h2>
+            {{else}}
+                <h2>{{t "This post is for subscribers only"}}</h2>
+            {{/is}}
         {{/has}}
         {{#has visibility="tiers"}}
-            <h2>This {{#is "page"}}page{{else}}post{{/is}} is for subscribers on the {{tiers}} only </h2>
+            {{#is "page"}}
+                <h2>{{t "This page is for subscribers on the {tiers} only" tiers=(tiers separator=", " lastSeparator=(concat " " (t "and") " "))}}</h2>
+            {{else}}
+                <h2>{{t "This post is for subscribers on the {tiers} only" tiers=(tiers separator=", " lastSeparator=(concat " " (t "and") " "))}}</h2>
+            {{/is}}
         {{/has}}
         {{#if @member}}
-            <a class="gh-btn" data-portal="account/plans" href="#/portal/account/plans" style="color:{{@site.accent_color}}">Upgrade your account</a>
+            <a class="gh-btn" data-portal="account/plans" href="#/portal/account/plans" style="color:{{@site.accent_color}}">{{t "Upgrade your account"}}</a>
         {{else}}
-            <a class="gh-btn" data-portal="signup" href="#/portal/signup" style="color:{{@site.accent_color}}">Subscribe now</a>
-            <p><small>Already have an account? <a data-portal="signin" href="#/portal/signin">Sign in</a></small></p>
+            <a class="gh-btn" data-portal="signup" href="#/portal/signup" style="color:{{@site.accent_color}}">{{t "Subscribe now"}}</a>
+            <p><small>{{t "Already have an account?"}} <a data-portal="signin" href="#/portal/signin">{{t "Sign in"}}</a></small></p>
         {{/if}}
     </div>
 </aside>
