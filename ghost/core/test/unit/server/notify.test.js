@@ -34,8 +34,8 @@ describe('Notify', function () {
             eventSpy.restore();
         });
 
-        it('it resolves a promise', function () {
-            notify.notifyServerStarted().should.be.fulfilled();
+        it('it resolves a promise', async function () {
+            await notify.notifyServerStarted();
         });
 
         it('it communicates with IPC correctly on success', function () {

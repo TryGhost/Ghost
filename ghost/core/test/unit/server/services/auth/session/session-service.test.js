@@ -149,7 +149,7 @@ describe('SessionService', function () {
             bypassCsrfProtection: true
         };
 
-        await sessionService.getUserForSession(req, res).should.be.fulfilled();
+        await sessionService.getUserForSession(req, res);
     });
 
     it('Can verify a user session', async function () {
