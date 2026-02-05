@@ -43,6 +43,11 @@ exports.getLocalImagesStoragePath = function getLocalImagesStoragePath(imagePath
  */
 
 exports.isLocalImage = function isLocalImage(imagePath) {
+    // Check for Ghost CDN URL
+    if (imagePath.includes('storage.ghost.is')) {
+        return true;
+    }
+
     const localImagePath = this.getLocalImagesStoragePath(imagePath);
 
     if (localImagePath !== imagePath) {
