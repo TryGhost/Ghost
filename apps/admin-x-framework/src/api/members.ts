@@ -1,4 +1,4 @@
-import {Meta, createMutation, createQuery} from '../utils/api/hooks';
+import {Meta, createMutation, createQuery, createQueryWithId} from '../utils/api/hooks';
 
 export type Member = {
     id: string;
@@ -29,6 +29,11 @@ const dataType = 'MembersResponseType';
 export const useBrowseMembers = createQuery<MembersResponseType>({
     dataType,
     path: '/members/'
+});
+
+export const getMember = createQueryWithId<MembersResponseType>({
+    dataType,
+    path: id => `/members/${id}/`
 });
 
 export const useDisableMemberCommenting = createMutation<
