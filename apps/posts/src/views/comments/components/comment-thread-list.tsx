@@ -5,7 +5,8 @@ import {Comment, useHideComment, useShowComment} from '@tryghost/admin-x-framewo
 import {CommentAvatar} from './comment-avatar';
 import {CommentHeader} from './comment-header';
 import {CommentMenu} from './comment-menu';
-import {CommentMetrics} from './comment-metrics';
+import {CommentMetrics, buildThreadLink} from './comment-metrics';
+import {Link, useSearchParams} from '@tryghost/admin-x-framework';
 
 function RepliesLine({hasReplies}: {hasReplies: boolean}) {
     if (!hasReplies) {
@@ -23,15 +24,19 @@ function RepliesLine({hasReplies}: {hasReplies: boolean}) {
 interface CommentRowProps {
     comment: Comment;
     isReply?: boolean;
-    onThreadClick: (commentId: string) => void;
+    isSelectedComment?: boolean;
+    selectedCommentId?: string;
     commentPermalinksEnabled?: boolean;
 }
 
-function CommentRow({comment, isReply = false, onThreadClick, commentPermalinksEnabled}: CommentRowProps) {
+function CommentRow({comment, isReply = false, isSelectedComment = false, selectedCommentId, commentPermalinksEnabled}: CommentRowProps) {
+    const [searchParams] = useSearchParams();
     const {mutate: hideComment} = useHideComment();
     const {mutate: showComment} = useShowComment();
 
-    const hasReplies = (comment.replies?.length ?? 0) > 0 || (comment.count?.replies ?? 0) > 0;
+    // Check replies array for loaded objects, or count.direct_replies for unloaded
+    // TODO: remove count.replies fallback once backend is fully rolled out
+    const hasReplies = (comment.replies?.length ?? 0) > 0 || (comment.count?.direct_replies ?? comment.count?.replies ?? 0) > 0;
     const containerClassName = (!hasReplies || isReply) ? 'mb-7' : 'mb-0';
 
     return (
@@ -43,7 +48,7 @@ function CommentRow({comment, isReply = false, onThreadClick, commentPermalinksE
                     isHidden={comment.status === 'hidden'}
                     memberId={comment.member?.id}
                 />
-                <RepliesLine hasReplies={hasReplies} />
+                <RepliesLine hasReplies={hasReplies && !isReply} />
             </div>
             <div className="grow">
                 <div
@@ -60,22 +65,18 @@ function CommentRow({comment, isReply = false, onThreadClick, commentPermalinksE
                             memberName={comment.member?.name}
                         />
 
-                        {comment.in_reply_to_snippet && !isReply && (
+                        {comment.in_reply_to_snippet && isSelectedComment && (
                             <div className={`mb-1 line-clamp-1 text-sm ${comment.status === 'hidden' && 'opacity-50'}`}>
                                 <span className="text-muted-foreground">Replied to:</span>&nbsp;
-                                <button
-                                    className="cursor-pointer text-sm font-normal text-muted-foreground hover:text-foreground"
-                                    type="button"
-                                    onClick={(e) => {
+                                <Link
+                                    className="text-sm font-normal text-muted-foreground hover:text-foreground"
+                                    to={buildThreadLink(searchParams, comment.in_reply_to_id || comment.parent_id) || ''}
+                                    onClick={(e: React.MouseEvent) => {
                                         e.stopPropagation();
-                                        // Navigate to the parent thread root (parent_id is the root of the thread)
-                                        if (comment.parent_id) {
-                                            onThreadClick(comment.parent_id);
-                                        }
                                     }}
                                 >
                                     {comment.in_reply_to_snippet}
-                                </button>
+                                </Link>
                             </div>
                         )}
 
@@ -96,7 +97,6 @@ function CommentRow({comment, isReply = false, onThreadClick, commentPermalinksE
                             )}
                             <CommentMetrics
                                 comment={comment}
-                                onRepliesClick={() => onThreadClick(comment.id)}
                             />
                             <CommentMenu
                                 comment={comment}
@@ -114,7 +114,7 @@ function CommentRow({comment, isReply = false, onThreadClick, commentPermalinksE
                                     comment={reply}
                                     commentPermalinksEnabled={commentPermalinksEnabled}
                                     isReply={true}
-                                    onThreadClick={onThreadClick}
+                                    selectedCommentId={selectedCommentId}
                                 />
                             ))}
                         </div>
@@ -126,27 +126,28 @@ function CommentRow({comment, isReply = false, onThreadClick, commentPermalinksE
 }
 
 interface CommentThreadListProps {
-    parentComment: Comment;
+    selectedComment: Comment;
     replies: Comment[];
-    onThreadClick: (commentId: string) => void;
+    selectedCommentId: string;
     commentPermalinksEnabled?: boolean;
 }
 
 const CommentThreadList: React.FC<CommentThreadListProps> = ({
-    parentComment,
+    selectedComment,
     replies,
-    onThreadClick,
+    selectedCommentId,
     commentPermalinksEnabled
 }) => {
-    // All replies are direct children of the parent comment (flat structure)
-    const commentWithReplies: Comment = {...parentComment, replies};
+    // All replies are children of the selected comment (flat structure from API)
+    const commentWithReplies: Comment = {...selectedComment, replies};
 
     return (
         <div className="flex flex-col" data-testid="comment-thread-list">
             <CommentRow
                 comment={commentWithReplies}
                 commentPermalinksEnabled={commentPermalinksEnabled}
-                onThreadClick={onThreadClick}
+                isSelectedComment={true}
+                selectedCommentId={selectedCommentId}
             />
         </div>
     );
