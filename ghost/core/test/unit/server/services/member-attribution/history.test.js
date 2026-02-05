@@ -112,6 +112,6 @@ describe('UrlHistory', function () {
             id: 'old'
         }];
         const history = UrlHistory.create(input);
-        should(history.history).eql([input[1]]);
+        assert.deepEqual(history.history, [input[1]]);
     });
 });
