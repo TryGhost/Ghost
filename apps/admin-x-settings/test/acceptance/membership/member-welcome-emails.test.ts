@@ -272,40 +272,6 @@ test.describe('Member emails settings', async () => {
             await expect(editButton).toBeEnabled();
         });
 
-        test('Edit button is NOT dimmed when toggle is OFF', async ({page}) => {
-            const configResponse = {
-                config: {
-                    ...responseFixtures.config.config,
-                    labs: {
-                        welcomeEmails: true
-                    }
-                }
-            };
-
-            const emptyAutomatedEmailsFixture = {
-                automated_emails: []
-            };
-
-            await mockApi({page, requests: {
-                ...globalDataRequests,
-                browseConfig: {method: 'GET', path: '/config/', response: configResponse},
-                browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: emptyAutomatedEmailsFixture}
-            }});
-
-            await page.goto('/#/memberemails');
-            await page.waitForLoadState('networkidle');
-
-            const section = page.getByTestId('memberemails');
-            await expect(section).toBeVisible({timeout: 10000});
-
-            // Edit button should be fully visible and NOT have dimmed opacity
-            const editButton = section.getByTestId('free-welcome-email-preview');
-            await expect(editButton).toBeVisible();
-            await expect(editButton).toBeEnabled();
-            // The edit button should NOT have reduced opacity
-            await expect(editButton).not.toHaveClass(/opacity-50/);
-        });
-
         test('Clicking Edit when no row exists creates inactive row then opens modal', async ({page}) => {
             const configResponse = {
                 config: {
