@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const utils = require('../../../../../core/server/api/endpoints/utils');
@@ -12,7 +13,7 @@ describe('Unit: endpoints/utils/index', function () {
             const frame = {
                 apiType: 'content'
             };
-            should(utils.isContentAPI(frame)).equal(true);
+            assert.equal(utils.isContentAPI(frame), true);
         });
 
         it('is false when apiType is admin', function () {
@@ -24,7 +25,7 @@ describe('Unit: endpoints/utils/index', function () {
                     }
                 }
             };
-            should(utils.isContentAPI(frame)).equal(false);
+            assert.equal(utils.isContentAPI(frame), false);
         });
     });
 });

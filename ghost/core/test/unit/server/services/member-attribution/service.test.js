@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 
 const MemberAttributionService = require('../../../../../core/server/services/member-attribution/member-attribution-service');
@@ -244,8 +245,8 @@ describe('MemberAttributionService', function () {
 
             const result = service.addPostAttributionTracking(url, post);
 
-            should(result.searchParams.get('attribution_id')).equal('post_123');
-            should(result.searchParams.get('attribution_type')).equal('post');
+            assert.equal(result.searchParams.get('attribution_id'), 'post_123');
+            assert.equal(result.searchParams.get('attribution_type'), 'post');
         });
 
         it('does not overwrite existing attribution params', function () {
@@ -255,8 +256,8 @@ describe('MemberAttributionService', function () {
 
             const result = service.addPostAttributionTracking(url, post);
 
-            should(result.searchParams.get('attribution_id')).equal('existing');
-            should(result.searchParams.get('attribution_type')).equal('existing');
+            assert.equal(result.searchParams.get('attribution_id'), 'existing');
+            assert.equal(result.searchParams.get('attribution_type'), 'existing');
         });
     });
 

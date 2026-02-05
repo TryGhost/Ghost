@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyContentVersion, anyString} = matchers;
 
@@ -116,7 +117,7 @@ describe('Members API — exportCSV', function () {
 
         await testOutput(member, (row) => {
             basicAsserts(member, row);
-            should(row.subscribed_to_emails).eql('false');
+            assert.equal(row.subscribed_to_emails, 'false');
             should(row.complimentary_plan).eql('');
             should(row.tiers.split(',').sort().join(',')).eql(tiersList);
         }, [`filter=tier:[${tiers[0].get('slug')}]`, 'filter=subscribed:false']);
@@ -131,7 +132,7 @@ describe('Members API — exportCSV', function () {
 
         await testOutput(member, (row) => {
             basicAsserts(member, row);
-            should(row.subscribed_to_emails).eql('false');
+            assert.equal(row.subscribed_to_emails, 'false');
             should(row.complimentary_plan).eql('');
             should(row.tiers).eql('');
         }, ['filter=subscribed:false']);
@@ -153,7 +154,7 @@ describe('Members API — exportCSV', function () {
 
         await testOutput(member, (row) => {
             basicAsserts(member, row);
-            should(row.subscribed_to_emails).eql('false');
+            assert.equal(row.subscribed_to_emails, 'false');
             should(row.complimentary_plan).eql('');
             should(row.labels.split(',').sort().join(',')).eql(labelsList);
             should(row.tiers).eql('');
@@ -170,8 +171,8 @@ describe('Members API — exportCSV', function () {
 
         await testOutput(member, (row) => {
             basicAsserts(member, row);
-            should(row.subscribed_to_emails).eql('false');
-            should(row.complimentary_plan).eql('true');
+            assert.equal(row.subscribed_to_emails, 'false');
+            assert.equal(row.complimentary_plan, 'true');
             should(row.labels).eql('');
             should(row.tiers).eql('');
         }, ['filter=status:comped', 'filter=subscribed:false']);
@@ -189,7 +190,7 @@ describe('Members API — exportCSV', function () {
 
         await testOutput(member, (row) => {
             basicAsserts(member, row);
-            should(row.subscribed_to_emails).eql('true');
+            assert.equal(row.subscribed_to_emails, 'true');
             should(row.complimentary_plan).eql('');
             should(row.labels).eql('');
             should(row.tiers).eql('');
@@ -228,11 +229,11 @@ describe('Members API — exportCSV', function () {
 
         await testOutput(member, (row) => {
             basicAsserts(member, row);
-            should(row.subscribed_to_emails).eql('false');
+            assert.equal(row.subscribed_to_emails, 'false');
             should(row.complimentary_plan).eql('');
             should(row.labels).eql('');
             should(row.tiers).eql('');
-            should(row.stripe_customer_id).eql('cus_12345');
+            assert.equal(row.stripe_customer_id, 'cus_12345');
         }, ['filter=subscribed:false', 'filter=subscriptions.subscription_id:sub_123']);
     });
 });

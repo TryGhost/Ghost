@@ -487,10 +487,10 @@ describe('Comments API', function () {
                 data2.body.comments.forEach((comment) => {
                     if (comment.id === hiddenComment.id) {
                         should(comment.replies.length).eql(1);
-                        should(comment.replies[0].html).eql('This is a reply to a hidden comment');
+                        assert.equal(comment.replies[0].html, 'This is a reply to a hidden comment');
                     } else if (comment.id === deletedComment.id) {
                         should(comment.replies.length).eql(1);
-                        should(comment.replies[0].html).eql('This is a reply to a deleted comment');
+                        assert.equal(comment.replies[0].html, 'This is a reply to a deleted comment');
                     }
                 });
             });
@@ -1028,7 +1028,7 @@ describe('Comments API', function () {
                         // Check liked + likes working for replies too
                         should(body.comments[2].id).eql(replies[2].get('id'));
                         should(body.comments[2].count.likes).eql(1);
-                        should(body.comments[2].liked).eql(true);
+                        assert.equal(body.comments[2].liked, true);
                     });
             });
 

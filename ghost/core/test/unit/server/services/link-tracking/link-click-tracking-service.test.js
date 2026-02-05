@@ -256,7 +256,7 @@ describe('LinkClickTrackingService', function () {
             });
 
             const [filterOptions] = linkRedirectServiceStub.getFilteredIds.firstCall.args;
-            should(filterOptions.filter).equal('post_id:\'1\'+to:\'https://example.com/path\'');
+            assert.equal(filterOptions.filter, 'post_id:\'1\'+to:\'https://example.com/path\'');
         });
 
         //test for #parseLinkFilter method
@@ -305,7 +305,7 @@ describe('LinkClickTrackingService', function () {
             });
 
             const [filterOptions] = linkRedirectServiceStub.getFilteredIds.firstCall.args;
-            should(filterOptions.filter).equal('post_id:\'1\'+to:\'https://example.com/path%2Ftestpath\'');
+            assert.equal(filterOptions.filter, 'post_id:\'1\'+to:\'https://example.com/path%2Ftestpath\'');
         });
 
         //test for #parseLinkFilter method

@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const getMetaDescription = require('../../../../core/frontend/meta/description');
@@ -50,9 +51,7 @@ describe('getMetaDescription', function () {
 
             localSettingsCache.description = '';
 
-            should(
-                getMetaDescription({}, {context: 'home'})
-            ).equal(null);
+            assert.equal(getMetaDescription({}, {context: 'home'}), null);
         });
 
         it('has correct fallbacks for context: post', function () {
@@ -65,15 +64,11 @@ describe('getMetaDescription', function () {
 
             post.meta_description = '';
 
-            should(
-                getMetaDescription({post}, {context: 'post'})
-            ).equal(null);
+            assert.equal(getMetaDescription({post}, {context: 'post'}), null);
 
             post.custom_excerpt = 'Custom excerpt';
 
-            should(
-                getMetaDescription({post}, {context: 'post'})
-            ).equal('Custom excerpt');
+            assert.equal(getMetaDescription({post}, {context: 'post'}), 'Custom excerpt');
         });
 
         it('has correct fallbacks for context: page', function () {
@@ -86,15 +81,11 @@ describe('getMetaDescription', function () {
 
             page.meta_description = '';
 
-            should(
-                getMetaDescription({page}, {context: 'page'})
-            ).equal(null);
+            assert.equal(getMetaDescription({page}, {context: 'page'}), null);
 
             page.custom_excerpt = 'Custom excerpt';
 
-            should(
-                getMetaDescription({page}, {context: 'page'})
-            ).equal('Custom excerpt');
+            assert.equal(getMetaDescription({page}, {context: 'page'}), 'Custom excerpt');
         });
 
         // NOTE: this is a legacy format and should be resolved with https://github.com/TryGhost/Ghost/issues/10042
@@ -108,9 +99,7 @@ describe('getMetaDescription', function () {
 
             post.meta_description = '';
 
-            should(
-                getMetaDescription({post}, {context: 'page'})
-            ).equal(null);
+            assert.equal(getMetaDescription({post}, {context: 'page'}), null);
         });
 
         it('has correct fallbacks for context: author', function () {
@@ -129,9 +118,7 @@ describe('getMetaDescription', function () {
 
             author.bio = '';
 
-            should(
-                getMetaDescription({author}, {context: 'author'})
-            ).equal(null);
+            assert.equal(getMetaDescription({author}, {context: 'author'}), null);
         });
 
         it('has correct fallbacks for context: author_paged', function () {
@@ -140,9 +127,7 @@ describe('getMetaDescription', function () {
                 bio: 'Author bio'
             };
 
-            should(
-                getMetaDescription({author}, {context: ['author', 'paged']})
-            ).equal(null);
+            assert.equal(getMetaDescription({author}, {context: ['author', 'paged']}), null);
         });
 
         it('has correct fallbacks for context: tag', function () {
@@ -161,9 +146,7 @@ describe('getMetaDescription', function () {
 
             tag.description = '';
 
-            should(
-                getMetaDescription({tag}, {context: 'tag'})
-            ).equal(null);
+            assert.equal(getMetaDescription({tag}, {context: 'tag'}), null);
         });
 
         it('has correct fallbacks for context: tag_paged', function () {
@@ -172,9 +155,7 @@ describe('getMetaDescription', function () {
                 description: 'Tag description'
             };
 
-            should(
-                getMetaDescription({tag}, {context: ['tag', 'paged']})
-            ).equal(null);
+            assert.equal(getMetaDescription({tag}, {context: ['tag', 'paged']}), null);
         });
     });
 
@@ -201,9 +182,7 @@ describe('getMetaDescription', function () {
 
             localSettingsCache.description = '';
 
-            should(
-                getMetaDescription({}, {context: 'home'}, options)
-            ).equal(null);
+            assert.equal(getMetaDescription({}, {context: 'home'}, options), null);
         });
 
         it('has correct fallbacks for context: post', function () {
@@ -324,9 +303,7 @@ describe('getMetaDescription', function () {
 
             localSettingsCache.meta_description = '';
 
-            should(
-                getMetaDescription({author}, {context: 'author'}, options)
-            ).equal(null);
+            assert.equal(getMetaDescription({author}, {context: 'author'}, options), null);
         });
 
         it('has correct fallbacks for context: author_paged', function () {
@@ -350,9 +327,7 @@ describe('getMetaDescription', function () {
 
             localSettingsCache.meta_description = '';
 
-            should(
-                getMetaDescription({author}, {context: ['author', 'paged']}, options)
-            ).equal(null);
+            assert.equal(getMetaDescription({author}, {context: ['author', 'paged']}, options), null);
         });
 
         it('has correct fallbacks for context: tag', function () {
@@ -376,9 +351,7 @@ describe('getMetaDescription', function () {
 
             localSettingsCache.meta_description = '';
 
-            should(
-                getMetaDescription({tag}, {context: 'tag'}, options)
-            ).equal(null);
+            assert.equal(getMetaDescription({tag}, {context: 'tag'}, options), null);
         });
 
         it('has correct fallbacks for context: tag_paged', function () {
@@ -402,9 +375,7 @@ describe('getMetaDescription', function () {
 
             localSettingsCache.meta_description = '';
 
-            should(
-                getMetaDescription({tag}, {context: ['tag', 'paged']}, options)
-            ).equal(null);
+            assert.equal(getMetaDescription({tag}, {context: ['tag', 'paged']}, options), null);
         });
     });
 
@@ -431,9 +402,7 @@ describe('getMetaDescription', function () {
 
             localSettingsCache.description = '';
 
-            should(
-                getMetaDescription({}, {context: 'home'}, options)
-            ).equal(null);
+            assert.equal(getMetaDescription({}, {context: 'home'}, options), null);
         });
 
         it('has correct fallbacks for context: post', function () {
@@ -554,9 +523,7 @@ describe('getMetaDescription', function () {
 
             localSettingsCache.meta_description = '';
 
-            should(
-                getMetaDescription({author}, {context: 'author'}, options)
-            ).equal(null);
+            assert.equal(getMetaDescription({author}, {context: 'author'}, options), null);
         });
 
         it('has correct fallbacks for context: author_paged', function () {
@@ -580,9 +547,7 @@ describe('getMetaDescription', function () {
 
             localSettingsCache.meta_description = '';
 
-            should(
-                getMetaDescription({author}, {context: ['author', 'paged']}, options)
-            ).equal(null);
+            assert.equal(getMetaDescription({author}, {context: ['author', 'paged']}, options), null);
         });
 
         it('has correct fallbacks for context: tag', function () {
@@ -606,9 +571,7 @@ describe('getMetaDescription', function () {
 
             localSettingsCache.meta_description = '';
 
-            should(
-                getMetaDescription({tag}, {context: 'tag'}, options)
-            ).equal(null);
+            assert.equal(getMetaDescription({tag}, {context: 'tag'}, options), null);
         });
 
         it('has correct fallbacks for context: tag_paged', function () {
@@ -632,9 +595,7 @@ describe('getMetaDescription', function () {
 
             localSettingsCache.meta_description = '';
 
-            should(
-                getMetaDescription({tag}, {context: ['tag', 'paged']}, options)
-            ).equal(null);
+            assert.equal(getMetaDescription({tag}, {context: ['tag', 'paged']}, options), null);
         });
     });
 
