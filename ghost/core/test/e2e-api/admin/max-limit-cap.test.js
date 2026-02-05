@@ -216,7 +216,7 @@ describe('Admin API - Max Limit Cap', function () {
                 .expectStatus(200);
 
             // Check CSV file has more than MAX_LIMIT rows + 1 for header row
-            text.split('\n').length.should.be.greaterThan(MAX_LIMIT + 1);
+            assert(text.split('\n').length > MAX_LIMIT + 1);
         });
     });
 

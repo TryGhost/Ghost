@@ -2188,7 +2188,7 @@ describe('Members API', function () {
 
     it('Subscribes to default newsletters', async function () {
         const filtered = newsletters.filter(n => n.get('subscribe_on_signup'));
-        filtered.length.should.be.greaterThan(0, 'There should be at least one newsletter with subscribe on signup for this test to work');
+        assert(filtered.length > 0, 'There should be at least one newsletter with subscribe on signup for this test to work');
 
         const memberToCreate = {
             name: 'create me',
@@ -3064,7 +3064,7 @@ describe('Members API', function () {
 
     it('Can add and send a signup confirmation email (old)', async function () {
         const filteredNewsletters = newsletters.filter(n => n.get('subscribe_on_signup'));
-        filteredNewsletters.length.should.be.greaterThan(0, 'For this test to work, we need at least one newsletter fixture with subscribe_on_signup = true');
+        assert(filteredNewsletters.length > 0, 'For this test to work, we need at least one newsletter fixture with subscribe_on_signup = true');
 
         const member = {
             name: 'Send Me Confirmation',
@@ -3139,7 +3139,7 @@ describe('Members API', function () {
 
     it('Can add a member that is not subscribed (old)', async function () {
         const filteredNewsletters = newsletters.filter(n => n.get('subscribe_on_signup'));
-        filteredNewsletters.length.should.be.greaterThan(0, 'For this test to work, we need at least one newsletter fixture with subscribe_on_signup = true');
+        assert(filteredNewsletters.length > 0, 'For this test to work, we need at least one newsletter fixture with subscribe_on_signup = true');
 
         const member = {
             name: 'Send Me Confirmation',
@@ -3275,7 +3275,7 @@ describe('Members API', function () {
 
     it('Can subscribe by setting (old) subscribed property to true', async function () {
         const filteredNewsletters = newsletters.filter(n => n.get('subscribe_on_signup'));
-        filteredNewsletters.length.should.be.greaterThan(0, 'For this test to work, we need at least one newsletter fixture with subscribe_on_signup = true');
+        assert(filteredNewsletters.length > 0, 'For this test to work, we need at least one newsletter fixture with subscribe_on_signup = true');
 
         const memberToChange = {
             name: 'change me',

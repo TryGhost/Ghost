@@ -33,7 +33,7 @@ describe('Members Importer API', function () {
 
     it('Can import CSV', async function () {
         const filteredNewsletters = newsletters.filter(n => n.get('subscribe_on_signup'));
-        filteredNewsletters.length.should.be.greaterThan(0, 'For this test to work, we need at least one newsletter fixture with subscribe_on_signup = true');
+        assert(filteredNewsletters.length > 0, 'For this test to work, we need at least one newsletter fixture with subscribe_on_signup = true');
 
         const res = await request
             .post(localUtils.API.getApiQuery(`members/upload/`))
@@ -175,7 +175,7 @@ describe('Members Importer API', function () {
 
     it('Can bulk unsubscribe members with filter', async function () {
         const filteredNewsletters = newsletters.filter(n => n.get('subscribe_on_signup'));
-        filteredNewsletters.length.should.be.greaterThan(0, 'For this test to work, we need at least one newsletter fixture with subscribe_on_signup = true');
+        assert(filteredNewsletters.length > 0, 'For this test to work, we need at least one newsletter fixture with subscribe_on_signup = true');
 
         // import our dummy data for deletion
         await request
