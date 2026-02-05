@@ -1,12 +1,14 @@
 import CardContext from '../context/CardContext';
 import KoenigComposerContext from '../context/KoenigComposerContext.jsx';
 import React from 'react';
-import {$getNodeByKey} from 'lexical';
+// TODO: Re-enable when design tab is implemented
+// import {$getNodeByKey} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
+import {SettingsPanel} from '../components/ui/SettingsPanel.jsx';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
 import {TransistorCard} from '../components/ui/cards/TransistorCard.jsx';
-import {useKoenigSelectedCardContext} from '../context/KoenigSelectedCardContext.jsx';
+import {VisibilitySettings} from '../components/ui/VisibilitySettings.jsx';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {useVisibilityToggle} from '../hooks/useVisibilityToggle.js';
 
@@ -17,11 +19,10 @@ export const TransistorNodeComponent = ({
 }) => {
     const [editor] = useLexicalComposerContext();
     const {isEditing, isSelected, setEditing} = React.useContext(CardContext);
-    const {cardConfig} = React.useContext(KoenigComposerContext);
+    const {cardConfig, darkMode} = React.useContext(KoenigComposerContext);
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
 
     const {visibilityOptions: rawVisibilityOptions, toggleVisibility} = useVisibilityToggle(editor, nodeKey, cardConfig);
-    const {showVisibilitySettings} = useKoenigSelectedCardContext();
 
     // Filter out nonMembers option - Transistor requires a member UUID so public visitors can't see it
     const visibilityOptions = React.useMemo(() => {
@@ -31,37 +32,43 @@ export const TransistorNodeComponent = ({
         }));
     }, [rawVisibilityOptions]);
 
+    const settingsTabs = [
+        {id: 'visibility', label: 'Visibility'}
+    ];
+
     const handleToolbarEdit = (event) => {
         event.preventDefault();
         event.stopPropagation();
         setEditing(true);
     };
 
-    const handleAccentColorChange = (val) => {
-        editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
-            node.accentColor = val;
-        });
-    };
+    // TODO: Re-enable when design tab is implemented
+    // const handleAccentColorChange = (val) => {
+    //     editor.update(() => {
+    //         const node = $getNodeByKey(nodeKey);
+    //         node.accentColor = val;
+    //     });
+    // };
 
-    const handleBackgroundColorChange = (val) => {
-        editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
-            node.backgroundColor = val;
-        });
-    };
+    // const handleBackgroundColorChange = (val) => {
+    //     editor.update(() => {
+    //         const node = $getNodeByKey(nodeKey);
+    //         node.backgroundColor = val;
+    //     });
+    // };
+
+    const visibilitySettings = (
+        <VisibilitySettings
+            toggleVisibility={toggleVisibility}
+            visibilityOptions={visibilityOptions}
+        />
+    );
 
     return (
         <>
             <TransistorCard
                 accentColor={accentColor}
                 backgroundColor={backgroundColor}
-                handleAccentColorChange={handleAccentColorChange}
-                handleBackgroundColorChange={handleBackgroundColorChange}
-                isEditing={isEditing}
-                showVisibilitySettings={showVisibilitySettings}
-                toggleVisibility={toggleVisibility}
-                visibilityOptions={visibilityOptions}
             />
 
             <ActionToolbar
@@ -76,7 +83,13 @@ export const TransistorNodeComponent = ({
                 isVisible={isSelected && !isEditing && !showSnippetToolbar}
             >
                 <ToolbarMenu>
-                    <ToolbarMenuItem dataTestId="edit-transistor-card" icon="edit" isActive={false} label="Edit" onClick={handleToolbarEdit} />
+                    <ToolbarMenuItem
+                        dataTestId="edit-transistor-card"
+                        icon="edit"
+                        isActive={false}
+                        label="Edit"
+                        onClick={handleToolbarEdit}
+                    />
                     <ToolbarMenuSeparator hide={!cardConfig.createSnippet} />
                     <ToolbarMenuItem
                         dataTestId="create-snippet"
@@ -88,6 +101,22 @@ export const TransistorNodeComponent = ({
                     />
                 </ToolbarMenu>
             </ActionToolbar>
+
+            {isEditing && (
+                <SettingsPanel
+                    darkMode={darkMode}
+                    defaultTab="visibility"
+                    tabs={settingsTabs}
+                    onMouseDown={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }}
+                >
+                    {{
+                        visibility: visibilitySettings
+                    }}
+                </SettingsPanel>
+            )}
         </>
     );
 };

@@ -45,36 +45,37 @@ test.describe('Transistor Card', async () => {
         await expect(page.getByTestId('transistor-placeholder')).toBeVisible();
     });
 
-    test('has settings panel with Design and Visibility tabs', async function () {
+    test('has settings panel with Visibility tab', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'transistor'});
 
-        await expect(page.getByTestId('tab-design')).toBeVisible();
         await expect(page.getByTestId('tab-visibility')).toBeVisible();
+        // Design tab is hidden until color customization is fully implemented
+        await expect(page.getByTestId('tab-design')).not.toBeVisible();
     });
 
-    test('can change player color', async function () {
-        await focusEditor(page);
-        await insertCard(page, {cardName: 'transistor'});
+    // TODO: Re-enable when design tab is implemented
+    // test('can change player color', async function () {
+    //     await focusEditor(page);
+    //     await insertCard(page, {cardName: 'transistor'});
 
-        const playerColorSetting = page.getByTestId('transistor-accent-color');
-        await expect(playerColorSetting).toBeVisible();
-    });
+    //     const playerColorSetting = page.getByTestId('transistor-accent-color');
+    //     await expect(playerColorSetting).toBeVisible();
+    // });
 
-    test('can change background color', async function () {
-        await focusEditor(page);
-        await insertCard(page, {cardName: 'transistor'});
+    // test('can change background color', async function () {
+    //     await focusEditor(page);
+    //     await insertCard(page, {cardName: 'transistor'});
 
-        const backgroundColorSetting = page.getByTestId('transistor-background-color');
-        await expect(backgroundColorSetting).toBeVisible();
-    });
+    //     const backgroundColorSetting = page.getByTestId('transistor-background-color');
+    //     await expect(backgroundColorSetting).toBeVisible();
+    // });
 
     test('can access visibility settings', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'transistor'});
 
-        await page.getByTestId('tab-visibility').click();
-
+        // Visibility is the default/only tab, so settings should be visible immediately
         await expect(page.getByText('Free members').first()).toBeVisible();
         await expect(page.getByText('Paid members').first()).toBeVisible();
     });
@@ -83,8 +84,7 @@ test.describe('Transistor Card', async () => {
         await focusEditor(page);
         await insertCard(page, {cardName: 'transistor'});
 
-        await page.getByTestId('tab-visibility').click();
-
+        // Visibility is the default/only tab
         await expect(page.getByText('Public visitors')).not.toBeVisible();
     });
 
