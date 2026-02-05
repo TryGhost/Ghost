@@ -17,9 +17,9 @@
         {{/has}}
         {{#has visibility="tiers"}}
             {{#is "page"}}
-                <h2>{{t "This page is for subscribers on the {tiers} only" tiers=(tiers separator=", " lastSeparator=(concat " " (t "and") " "))}}</h2>
+                <h2>{{{t "This page is for subscribers on the {tiers} only" tiers=(tiers separator=", " lastSeparator=(t " and "))}}}</h2>
             {{else}}
-                <h2>{{t "This post is for subscribers on the {tiers} only" tiers=(tiers separator=", " lastSeparator=(concat " " (t "and") " "))}}</h2>
+                <h2>{{{t "This post is for subscribers on the {tiers} only" tiers=(tiers separator=", " lastSeparator=(t " and "))}}}</h2>
             {{/is}}
         {{/has}}
         {{#if @member}}
