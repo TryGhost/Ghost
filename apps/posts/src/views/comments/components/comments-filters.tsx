@@ -6,6 +6,8 @@ import {
     LucideIcon,
     cn
 } from '@tryghost/shade';
+import {getMember} from '@tryghost/admin-x-framework/api/members';
+import {getPost} from '@tryghost/admin-x-framework/api/posts';
 import {useFilterOptions} from '../hooks/use-filter-options';
 import {useSearchMembers} from '../hooks/use-search-members';
 import {useSearchPosts} from '../hooks/use-search-posts';
@@ -26,6 +28,7 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
     const posts = useFilterOptions({
         knownItems: knownPosts,
         useSearch: useSearchPosts,
+        useGetById: getPost,
         searchFieldName: 'posts',
         filters,
         filterFieldName: 'post',
@@ -38,6 +41,7 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
     const members = useFilterOptions({
         knownItems: knownMembers,
         useSearch: useSearchMembers,
+        useGetById: getMember,
         searchFieldName: 'members',
         filters,
         filterFieldName: 'author',

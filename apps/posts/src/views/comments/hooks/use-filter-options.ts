@@ -1,9 +1,15 @@
 import {useCallback, useMemo, useState} from 'react';
 import type {Filter} from '@tryghost/shade';
 
+interface QueryResult<Item, FieldName extends string> {
+    data: { [key in FieldName]?: Item[] } | undefined;
+    isLoading: boolean;
+}
+
 interface UseFilterOptionsParams<Item extends {id: string}, Option extends {value: string, label: string}, FieldName extends string> {
     knownItems: Item[];
-    useSearch: (searchTerm: string) => {data: { [key in FieldName]?: Item[] } | undefined; isLoading: boolean};
+    useSearch: (searchTerm: string) => QueryResult<Item, FieldName>;
+    useGetById: (id: string, options?: {enabled?: boolean; defaultErrorHandler?: boolean}) => QueryResult<Item, FieldName>;
     searchFieldName: FieldName;
     filters: Filter[];
     filterFieldName: string;
@@ -17,13 +23,39 @@ interface UseFilterOptionsParams<Item extends {id: string}, Option extends {valu
 export function useFilterOptions<Item extends {id: string}, Option extends {value: string, label: string}, FieldName extends string>({
     knownItems,
     useSearch,
+    useGetById,
     filters,
     filterFieldName,
     searchFieldName,
     toOption
 }: UseFilterOptionsParams<Item, Option, FieldName>) {
     const [searchValue, setSearchValue] = useState('');
-    const {data, isLoading} = useSearch(searchValue);
+    const {data, isLoading: isSearchLoading} = useSearch(searchValue);
+
+    const activeFilterValue = useMemo(() => {
+        const activeFilter = filters.find(f => f.field === filterFieldName);
+        return activeFilter?.values[0] ? String(activeFilter.values[0]) : '';
+    }, [filters, filterFieldName]);
+
+    const shouldFetchById = useMemo(() => {
+        if (!activeFilterValue) {
+            return false;
+        }
+
+        if (knownItems.some(item => item.id === activeFilterValue)) {
+            return false;
+        }
+
+        const searchResults = data?.[searchFieldName] ?? [];
+        return !searchResults.some(item => item.id === activeFilterValue);
+    }, [activeFilterValue, knownItems, data, searchFieldName]);
+
+    const {data: byIdData, isLoading: isByIdLoading} = useGetById(activeFilterValue || '', {
+        enabled: shouldFetchById,
+        defaultErrorHandler: false
+    });
+
+    const isLoading = isSearchLoading || isByIdLoading;
 
     const transformToOption = useCallback((item: Item) => toOption(item), [toOption]);
 
@@ -41,17 +73,19 @@ export function useFilterOptions<Item extends {id: string}, Option extends {valu
             optionsMap[item.id] = transformToOption(item);
         }
 
+        // Add/update with fetched-by-ID result if missing in known/search results
+        const fetchedById = byIdData?.[searchFieldName]?.[0];
+        if (fetchedById?.id) {
+            optionsMap[fetchedById.id] = transformToOption(fetchedById);
+        }
+
         // Add ID fallback for active filter on deleted items
-        const activeFilter = filters.find(f => f.field === filterFieldName);
-        if (activeFilter && activeFilter.values[0]) {
-            const filterValue = String(activeFilter.values[0]);
-            if (!(filterValue in optionsMap)) {
-                optionsMap[filterValue] = {value: filterValue, label: `ID: ${filterValue}`} as Option;
-            }
+        if (activeFilterValue && !(activeFilterValue in optionsMap)) {
+            optionsMap[activeFilterValue] = {value: activeFilterValue, label: `ID: ${activeFilterValue}`} as Option;
         }
         
         return Object.values(optionsMap);
-    }, [knownItems, data, searchFieldName, filters, filterFieldName, transformToOption]);
+    }, [knownItems, data, searchFieldName, byIdData, activeFilterValue, transformToOption]);
 
     return {
         options,
@@ -60,4 +94,3 @@ export function useFilterOptions<Item extends {id: string}, Option extends {valu
         onSearchChange: setSearchValue
     };
 }
-
