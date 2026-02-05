@@ -31,8 +31,10 @@ describe('Importer', function () {
 
     describe('ImportManager', function () {
         it('has the correct interface', function () {
-            ImportManager.handlers.should.be.instanceof(Array).and.have.lengthOf(6);
-            ImportManager.importers.should.be.instanceof(Array).and.have.lengthOf(5);
+            assert(Array.isArray(ImportManager.handlers));
+            assert.equal(ImportManager.handlers.length, 6);
+            assert(Array.isArray(ImportManager.importers));
+            assert.equal(ImportManager.importers.length, 5);
             assert.equal(typeof ImportManager.loadFile, 'function');
             assert.equal(typeof ImportManager.preProcess, 'function');
             assert.equal(typeof ImportManager.doImport, 'function');
@@ -40,7 +42,8 @@ describe('Importer', function () {
         });
 
         it('gets the correct extensions', function () {
-            ImportManager.getExtensions().should.be.instanceof(Array).and.have.lengthOf(32);
+            assert(Array.isArray(ImportManager.getExtensions()));
+            assert.equal(ImportManager.getExtensions().length, 32);
             assert(ImportManager.getExtensions().includes('.csv'));
             assert(ImportManager.getExtensions().includes('.json'));
             assert(ImportManager.getExtensions().includes('.zip'));
@@ -70,7 +73,8 @@ describe('Importer', function () {
         });
 
         it('gets the correct types', function () {
-            ImportManager.getContentTypes().should.be.instanceof(Array).and.have.lengthOf(35);
+            assert(Array.isArray(ImportManager.getContentTypes()));
+            assert.equal(ImportManager.getContentTypes().length, 35);
             assert(ImportManager.getContentTypes().includes('image/jpeg'));
             assert(ImportManager.getContentTypes().includes('image/png'));
             assert(ImportManager.getContentTypes().includes('image/gif'));
@@ -116,7 +120,8 @@ describe('Importer', function () {
         });
 
         it('gets the correct directories', function () {
-            ImportManager.getDirectories().should.be.instanceof(Array).and.have.lengthOf(4);
+            assert(Array.isArray(ImportManager.getDirectories()));
+            assert.equal(ImportManager.getDirectories().length, 4);
             assert(ImportManager.getDirectories().includes('images'));
             assert(ImportManager.getDirectories().includes('content'));
             assert(ImportManager.getDirectories().includes('media'));
@@ -526,9 +531,9 @@ describe('Importer', function () {
     describe('JSONHandler', function () {
         it('has the correct interface', function () {
             assert.equal(JSONHandler.type, 'data');
-            JSONHandler.extensions.should.be.instanceof(Array).and.have.lengthOf(1);
-            assert(JSONHandler.extensions.includes('.json'));
-            JSONHandler.contentTypes.should.be.instanceof(Array).and.have.lengthOf(2);
+            assert.deepEqual(JSONHandler.extensions, ['.json']);
+            assert(Array.isArray(JSONHandler.contentTypes));
+            assert.equal(JSONHandler.contentTypes.length, 2);
             assert(JSONHandler.contentTypes.includes('application/octet-stream'));
             assert(JSONHandler.contentTypes.includes('application/json'));
             assert.equal(typeof JSONHandler.loadFile, 'function');
@@ -564,10 +569,12 @@ describe('Importer', function () {
     describe('MarkdownHandler', function () {
         it('has the correct interface', function () {
             assert.equal(MarkdownHandler.type, 'data');
-            MarkdownHandler.extensions.should.be.instanceof(Array).and.have.lengthOf(2);
+            assert(Array.isArray(MarkdownHandler.extensions));
+            assert.equal(MarkdownHandler.extensions.length, 2);
             assert(MarkdownHandler.extensions.includes('.md'));
             assert(MarkdownHandler.extensions.includes('.markdown'));
-            MarkdownHandler.contentTypes.should.be.instanceof(Array).and.have.lengthOf(2);
+            assert(Array.isArray(MarkdownHandler.contentTypes));
+            assert.equal(MarkdownHandler.contentTypes.length, 2);
             assert(MarkdownHandler.contentTypes.includes('application/octet-stream'));
             assert(MarkdownHandler.contentTypes.includes('text/plain'));
             assert.equal(typeof MarkdownHandler.loadFile, 'function');

@@ -33,7 +33,7 @@ describe('Tag API', function () {
         localUtils.API.checkResponse(jsonResponse.tags[0], 'tag', ['count', 'url']);
 
         assert.equal(testUtils.API.isISO8601(jsonResponse.tags[0].created_at), true);
-        jsonResponse.tags[0].created_at.should.be.an.instanceof(String);
+        assert.equal(typeof jsonResponse.tags[0].created_at, 'string');
 
         assert.equal(jsonResponse.meta.pagination.page, 1);
         assert.equal(jsonResponse.meta.pagination.limit, 15);

@@ -39,7 +39,7 @@ describe('Unit - services/routing/helpers/format-response', function () {
 
             const formatted = helpers.formatResponse.entry(postObject);
 
-            formatted.post.feature_image_caption.should.be.an.instanceof(SafeString);
+            assert(formatted.post.feature_image_caption instanceof SafeString);
         });
 
         it('should set up @page local for posts', function () {
@@ -146,11 +146,11 @@ describe('Unit - services/routing/helpers/format-response', function () {
 
             const formatted = helpers.formatResponse.entries(data);
 
-            formatted.posts[0].feature_image_caption.should.be.an.instanceof(SafeString);
-            formatted.posts[1].feature_image_caption.should.be.an.instanceof(SafeString);
-            formatted.featured_single.feature_image_caption.should.be.an.instanceof(SafeString);
-            formatted.featured_multiple[0].feature_image_caption.should.be.an.instanceof(SafeString);
-            formatted.featured_multiple[1].feature_image_caption.should.be.an.instanceof(SafeString);
+            assert(formatted.posts[0].feature_image_caption instanceof SafeString);
+            assert(formatted.posts[1].feature_image_caption instanceof SafeString);
+            assert(formatted.featured_single.feature_image_caption instanceof SafeString);
+            assert(formatted.featured_multiple[0].feature_image_caption instanceof SafeString);
+            assert(formatted.featured_multiple[1].feature_image_caption instanceof SafeString);
         });
 
         it('should set @page when data.page is present (e.g. custom routing)', function () {
