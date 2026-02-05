@@ -80,7 +80,7 @@ export {useSimplePagination} from './hooks/use-simple-pagination';
 
 // Utils
 export * from '@/lib/utils';
-export {cn, debounce, kebabToPascalCase, formatUrl, formatQueryDate, formatTimestamp, formatNumber, formatDuration, formatPercentage, formatDisplayDate, isValidDomain, getYRange, getYRangeWithMinPadding, getYRangeWithLargePadding, calculateYAxisWidth, getRangeDates, getCountryFlag, sanitizeChartData, formatDisplayDateWithRange, centsToDollars, getRangeForStartDate, formatMemberName, getMemberInitials, stringToHslColor, abbreviateNumber} from '@/lib/utils';
+export {cn, debounce, kebabToPascalCase, formatUrl, formatQueryDate, formatTimestamp, formatNumber, formatDuration, formatPercentage, formatDisplayDate, formatDisplayTime, isValidDomain, getYRange, getYRangeWithMinPadding, getYRangeWithLargePadding, calculateYAxisWidth, getRangeDates, getCountryFlag, sanitizeChartData, formatDisplayDateWithRange, centsToDollars, getRangeForStartDate, formatMemberName, getMemberInitials, stringToHslColor, abbreviateNumber} from '@/lib/utils';
 
 export {default as ShadeApp} from './shade-app';
 export type {ShadeAppProps} from './shade-app';

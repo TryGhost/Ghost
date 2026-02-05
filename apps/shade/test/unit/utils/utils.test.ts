@@ -5,6 +5,7 @@ import {
     kebabToPascalCase,
     formatQueryDate,
     formatDisplayDate,
+    formatDisplayTime,
     formatNumber,
     formatDuration,
     formatPercentage,
@@ -176,6 +177,23 @@ describe('utils', function () {
             // July 31, 2023 at midnight UTC - should show July 31 without timezone conversion
             const formatted = formatDisplayDate('2023-07-31T00:00:00Z');
             assert.equal(formatted, '31 Jul 2023');
+        });
+    });
+
+    describe('formatDisplayTime function', function () {
+        it('formats time in the provided timezone', function () {
+            const formatted = formatDisplayTime('2020-04-20T18:09:12.345Z', 'Africa/Lagos');
+            assert.equal(formatted, '7:09pm');
+        });
+
+        it('handles timezones with negative offsets', function () {
+            const formatted = formatDisplayTime('2020-04-20T18:09:12.345Z', 'America/New_York');
+            assert.equal(formatted, '2:09pm');
+        });
+
+        it('handles times that cross a date boundary', function () {
+            const formatted = formatDisplayTime('2020-04-20T00:30:00.000Z', 'America/Los_Angeles');
+            assert.equal(formatted, '5:30pm');
         });
     });
 
