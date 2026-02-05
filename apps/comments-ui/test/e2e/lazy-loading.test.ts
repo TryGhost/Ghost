@@ -48,23 +48,20 @@ test.describe('Lazy loading', async () => {
         await page.locator('iframe[title="comments-frame"]').waitFor({state: 'attached'});
 
         const commentsFrameSelector = 'iframe[title="comments-frame"]';
-        const adminFrameSelector = 'iframe[data-frame="admin-auth"]';
 
         const commentsFrame = page.frameLocator(commentsFrameSelector);
 
         // wait for a little bit to ensure we're not loading comments until scrolled
         await page.waitForTimeout(250);
 
-        // check that we haven't loaded comments or admin-auth yet
+        // check that we haven't loaded comments yet
         await expect(commentsFrame.getByTestId('loading')).toHaveCount(1);
-        await expect(page.locator(adminFrameSelector)).toHaveCount(0);
 
         // scroll the iframe into view
         const iframeHandle = await page.locator(commentsFrameSelector);
         iframeHandle.scrollIntoViewIfNeeded();
 
-        // loading state should be gone and admin-auth frame should be present
+        // loading state should be gone
         await expect(commentsFrame.getByTestId('loading')).toHaveCount(0);
-        await expect(page.locator(adminFrameSelector)).toHaveCount(1);
     });
 });

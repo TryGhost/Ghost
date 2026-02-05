@@ -1,8 +1,8 @@
 // Ref: https://reactjs.org/docs/context.html
 import React, {useContext} from 'react';
 import {ActionType, Actions, SyncActionType, SyncActions} from './actions';
-import {AdminApi} from './utils/admin-api';
 import {Page} from './pages';
+import type {CommentApi} from './components/comment-api-provider';
 
 export type Member = {
     id: string,
@@ -70,7 +70,6 @@ export type CommentsOptions = {
 export type EditableAppContext = {
     initStatus: string,
     member: null | any,
-    admin: null | any,
     comments: Comment[],
     pagination: {
         page: number,
@@ -81,16 +80,12 @@ export type EditableAppContext = {
     commentCount: number,
     openCommentForms: OpenCommentForm[],
     popup: Page | null,
-    labs: LabsContextType,
     order: string,
-    adminApi: AdminApi | null,
     commentsIsLoading?: boolean,
     commentIdToHighlight: string | null,
     commentIdToScrollTo: string | null,
     pageUrl: string,
-    supportEmail: string | null,
     isMember: boolean,
-    isAdmin: boolean,
     isPaidOnly: boolean,
     hasRequiredTier: boolean,
     isCommentingDisabled: boolean
@@ -102,6 +97,10 @@ export type AppContextType = EditableAppContext & CommentsOptions & {
     // This part makes sure we can add automatic data and return types to the actions when using context.dispatchAction('actionName', data)
     t: TranslationFunction,
     dispatchAction: <T extends ActionType | SyncActionType>(action: T, data: Parameters<(typeof Actions & typeof SyncActions)[T]>[0] extends { data: any } ? Parameters<(typeof Actions & typeof SyncActions)[T]>[0]['data'] : any) => T extends ActionType ? Promise<void> : void,
+    commentApi: CommentApi | null,
+    isAdmin: boolean,
+    labs: LabsContextType,
+    supportEmail: string | null,
     openFormCount: number
 }
 
