@@ -3,6 +3,7 @@ const should = require('should');
 const Tier = require('../../../../../../core/server/services/tiers/tier');
 const ObjectID = require('bson-objectid').default;
 const assert = require('assert/strict');
+const {assertExists} = require('../../../../../utils/assertions');
 const fs = require('fs-extra');
 const path = require('path');
 const sinon = require('sinon');
@@ -118,15 +119,15 @@ describe('MembersCSVImporter', function () {
                 }
             });
 
-            should.exist(result.meta);
-            should.exist(result.meta.stats);
-            should.exist(result.meta.stats.imported);
+            assertExists(result.meta);
+            assertExists(result.meta.stats);
+            assertExists(result.meta.stats.imported);
             assert.equal(result.meta.stats.imported, 2);
 
-            should.exist(result.meta.stats.invalid);
+            assertExists(result.meta.stats.invalid);
             assert.equal(result.meta.import_label, null);
 
-            should.exist(result.meta.originalImportSize);
+            assertExists(result.meta.originalImportSize);
             assert.equal(result.meta.originalImportSize, 2);
 
             assert.equal(fsWriteSpy.calledOnce, true);
@@ -167,15 +168,15 @@ describe('MembersCSVImporter', function () {
                 }
             });
 
-            should.exist(result.meta);
-            should.exist(result.meta.stats);
-            should.exist(result.meta.stats.imported);
+            assertExists(result.meta);
+            assertExists(result.meta.stats);
+            assertExists(result.meta.stats.imported);
             assert.equal(result.meta.stats.imported, 2);
 
-            should.exist(result.meta.stats.invalid);
+            assertExists(result.meta.stats.invalid);
             assert.deepEqual(result.meta.import_label, internalLabel);
 
-            should.exist(result.meta.originalImportSize);
+            assertExists(result.meta.originalImportSize);
             assert.equal(result.meta.originalImportSize, 2);
 
             assert.equal(fsWriteSpy.calledOnce, true);
@@ -313,15 +314,15 @@ describe('MembersCSVImporter', function () {
                 }
             });
 
-            should.exist(result.meta);
-            should.exist(result.meta.stats);
-            should.exist(result.meta.stats.imported);
+            assertExists(result.meta);
+            assertExists(result.meta.stats);
+            assertExists(result.meta.stats.imported);
             assert.equal(result.meta.stats.imported, 5);
 
-            should.exist(result.meta.stats.invalid);
+            assertExists(result.meta.stats.invalid);
             assert.deepEqual(result.meta.import_label, internalLabel);
 
-            should.exist(result.meta.originalImportSize);
+            assertExists(result.meta.originalImportSize);
             assert.equal(result.meta.originalImportSize, 15);
 
             assert.equal(fsWriteSpy.calledOnce, true);
@@ -473,11 +474,11 @@ describe('MembersCSVImporter', function () {
 
             const result = await membersImporter.prepare(`${csvPath}/single-column-with-header.csv`, defaultAllowedFields);
 
-            should.exist(result.filePath);
+            assertExists(result.filePath);
             assert.match(result.filePath, /\/members\/importer\/fixtures\/Members Import/);
 
             assert.equal(result.batches, 2);
-            should.exist(result.metadata);
+            assertExists(result.metadata);
             assert.equal(result.metadata.hasStripeData, false);
             assert.equal(fsWriteSpy.calledOnce, true);
         });
@@ -507,7 +508,7 @@ describe('MembersCSVImporter', function () {
 
             const result = await membersImporter.prepare(`${csvPath}/member-csv-export.csv`);
 
-            should.exist(result.metadata);
+            assertExists(result.metadata);
             assert.equal(result.metadata.hasStripeData, true);
         });
     });

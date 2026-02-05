@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../utils/assertions');
 const _ = require('lodash');
 const should = require('should');
 const sinon = require('sinon');
@@ -45,7 +46,7 @@ describe('getImageDimensions', function () {
         });
 
         getImageDimensions(metaData).then(function (result) {
-            should.exist(result);
+            assertExists(result);
             assert.equal(sizeOfStub.calledWith(metaData.coverImage.url), true);
             assert.equal(sizeOfStub.calledWith(metaData.authorImage.url), true);
             assert.equal(sizeOfStub.calledWith(metaData.ogImage.url), true);
@@ -98,7 +99,7 @@ describe('getImageDimensions', function () {
         });
 
         getImageDimensions(metaData).then(function (result) {
-            should.exist(result);
+            assertExists(result);
             assert.equal(sizeOfStub.calledWith(metaData.coverImage.url), true);
             assert.equal(sizeOfStub.calledWith(metaData.authorImage.url), true);
             assert.equal(sizeOfStub.calledWith(metaData.ogImage.url), true);
@@ -144,7 +145,7 @@ describe('getImageDimensions', function () {
         });
 
         getImageDimensions(metaData).then(function (result) {
-            should.exist(result);
+            assertExists(result);
             assert.equal(sizeOfStub.calledWith(metaData.coverImage.url), true);
             assert.equal(sizeOfStub.calledWith(metaData.authorImage.url), true);
             assert.equal(sizeOfStub.calledWith(metaData.ogImage.url), true);
@@ -198,7 +199,7 @@ describe('getImageDimensions', function () {
         });
 
         getImageDimensions(metaData).then(function (result) {
-            should.exist(result);
+            assertExists(result);
             assert.equal(sizeOfStub.calledWith(metaData.coverImage.url), true);
             assert.equal(sizeOfStub.calledWith(metaData.authorImage.url), true);
             assert.equal(sizeOfStub.calledWith(metaData.ogImage.url), true);
@@ -258,7 +259,7 @@ describe('getImageDimensions', function () {
         });
 
         getImageDimensions(metaData).then(function (result) {
-            should.exist(result);
+            assertExists(result);
             assert.equal(sizeOfStub.calledWith(originalMetaData.coverImage.url), true);
             assert.equal(sizeOfStub.calledWith(originalMetaData.authorImage.url), true);
             assert.equal(sizeOfStub.calledWith(originalMetaData.ogImage.url), true);
@@ -316,7 +317,7 @@ describe('getImageDimensions', function () {
         });
 
         getImageDimensions(metaData).then(function (result) {
-            should.exist(result);
+            assertExists(result);
             result.coverImage.should.have.property('url');
             assert.equal(result.coverImage.url, 'http://anothersite.com/some/storage/mypostcoverimage.jpg');
             result.authorImage.should.have.property('url');

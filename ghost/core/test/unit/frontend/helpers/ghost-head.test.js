@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../utils/assertions');
 const should = require('should');
 
 const sinon = require('sinon');
@@ -33,7 +34,7 @@ async function testGhostHead(options) {
     const sodoSearchVersion = /sodo-search@~\d+\.\d+(\.\d+)?\//g;
     rendered = rendered.replace(sodoSearchVersion, 'sodo-search@~[[VERSION]]/');
 
-    should.exist(rendered);
+    assertExists(rendered);
     // Note: we need to convert the string to an object in order to use the snapshot feature
     assertMatchSnapshot({rendered});
     return rendered;

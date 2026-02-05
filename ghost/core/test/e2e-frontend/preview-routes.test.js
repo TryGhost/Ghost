@@ -3,6 +3,7 @@
 // Mocking out the models to not touch the DB would turn these into unit tests, and should probably be done in future,
 // But then again testing real code, rather than mock code, might be more useful...
 const assert = require('node:assert/strict');
+const {assertExists} = require('../utils/assertions');
 const should = require('should');
 
 const sinon = require('sinon');
@@ -17,7 +18,7 @@ function assertCorrectFrontendHeaders(res) {
     assert.equal(res.headers['x-cache-invalidate'], undefined);
     assert.equal(res.headers['X-CSRF-Token'], undefined);
     assert.equal(res.headers['set-cookie'], undefined);
-    should.exist(res.headers.date);
+    assertExists(res.headers.date);
 }
 
 function assertPaywallRendered(res) {
@@ -67,7 +68,7 @@ describe('Frontend Routing: Preview Routes', function () {
                 assert.equal(res.headers['x-cache-invalidate'], undefined);
                 assert.equal(res.headers['X-CSRF-Token'], undefined);
                 assert.equal(res.headers['set-cookie'], undefined);
-                should.exist(res.headers.date);
+                assertExists(res.headers.date);
 
                 assert.equal($('title').text(), 'Not finished yet');
                 assert.equal($('meta[name="description"]').attr('content'), 'meta description for draft post');

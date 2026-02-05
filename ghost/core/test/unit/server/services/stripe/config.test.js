@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 const UrlUtils = require('@tryghost/url-utils');
@@ -65,10 +66,10 @@ describe('Stripe - config', function () {
         assert.equal(config.publicKey, 'direct_publishable');
         assert.equal(config.webhookHandlerUrl, 'http://site.com/subdir/members/webhooks/stripe/');
 
-        should.exist(config.checkoutSessionSuccessUrl);
-        should.exist(config.checkoutSessionCancelUrl);
-        should.exist(config.checkoutSetupSessionSuccessUrl);
-        should.exist(config.checkoutSetupSessionCancelUrl);
-        should.exist(config.billingPortalReturnUrl);
+        assertExists(config.checkoutSessionSuccessUrl);
+        assertExists(config.checkoutSessionCancelUrl);
+        assertExists(config.checkoutSetupSessionSuccessUrl);
+        assertExists(config.checkoutSetupSessionCancelUrl);
+        assertExists(config.billingPortalReturnUrl);
     });
 });

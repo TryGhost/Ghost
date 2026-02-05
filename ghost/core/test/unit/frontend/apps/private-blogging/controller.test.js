@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 const path = require('path');
@@ -57,7 +58,7 @@ describe('Private Controller', function () {
     it('Should render default password page when theme has no password template', function (done) {
         res.render = function (view, context) {
             view.should.eql(defaultPath);
-            should.exist(context);
+            assertExists(context);
             done();
         };
 
@@ -69,7 +70,7 @@ describe('Private Controller', function () {
 
         res.render = function (view, context) {
             assert.equal(view, 'private');
-            should.exist(context);
+            assertExists(context);
             done();
         };
 

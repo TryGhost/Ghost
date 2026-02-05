@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 const hbs = require('../../../../core/frontend/services/theme-engine/engine');
@@ -49,7 +50,7 @@ describe('{{cancel_link}} helper', function () {
             id: 'sub_cancel',
             cancel_at_period_end: false
         });
-        should.exist(rendered);
+        assertExists(rendered);
 
         rendered.string.should.match(defaultLinkClass);
         assert.match(rendered.string, /data-members-cancel-subscription="sub_cancel"/);
@@ -63,7 +64,7 @@ describe('{{cancel_link}} helper', function () {
             id: 'sub_continue',
             cancel_at_period_end: true
         });
-        should.exist(rendered);
+        assertExists(rendered);
 
         rendered.string.should.match(defaultLinkClass);
         assert.match(rendered.string, /data-members-continue-subscription="sub_continue"/);
@@ -79,7 +80,7 @@ describe('{{cancel_link}} helper', function () {
                 class: 'custom-link-class'
             }
         });
-        should.exist(rendered);
+        assertExists(rendered);
 
         assert.match(rendered.string, /custom-link-class/);
     });
@@ -93,7 +94,7 @@ describe('{{cancel_link}} helper', function () {
                 errorClass: 'custom-error-class'
             }
         });
-        should.exist(rendered);
+        assertExists(rendered);
 
         assert.match(rendered.string, /custom-error-class/);
     });
@@ -107,7 +108,7 @@ describe('{{cancel_link}} helper', function () {
                 cancelLabel: 'custom cancel link text'
             }
         });
-        should.exist(rendered);
+        assertExists(rendered);
 
         assert.match(rendered.string, /custom cancel link text/);
     });
@@ -121,7 +122,7 @@ describe('{{cancel_link}} helper', function () {
                 continueLabel: 'custom continue link text'
             }
         });
-        should.exist(rendered);
+        assertExists(rendered);
 
         assert.match(rendered.string, /custom continue link text/);
     });
@@ -135,7 +136,7 @@ describe('{{cancel_link}} helper', function () {
             cancel_at_period_end: true
         });
 
-        should.exist(rendered);
+        assertExists(rendered);
 
         assert.match(rendered.string, /^<script/);
         assert.match(rendered.string, /helper is not available/);

@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../utils/assertions');
 const should = require('should');
 const supertest = require('supertest');
 const path = require('path');
@@ -10,7 +11,7 @@ function assertCorrectFrontendHeaders(res) {
     assert.equal(res.headers['x-cache-invalidate'], undefined);
     assert.equal(res.headers['X-CSRF-Token'], undefined);
     assert.equal(res.headers['set-cookie'], undefined);
-    should.exist(res.headers.date);
+    assertExists(res.headers.date);
 }
 
 describe('Custom Frontend routing', function () {

@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 const configUtils = require('../../../../utils/config-utils');
@@ -23,7 +24,7 @@ describe('UNIT - services/routing/RSSRouter', function () {
         it('default', function () {
             const rssRouter = new RSSRouter();
 
-            should.exist(rssRouter.router);
+            assertExists(rssRouter.router);
             assert.equal(rssRouter.route.value, '/rss/');
 
             assert.equal(rssRouter.mountRoute.callCount, 2);
@@ -38,7 +39,7 @@ describe('UNIT - services/routing/RSSRouter', function () {
             configUtils.set('url', 'http://localhost:22222/blog/');
             const rssRouter = new RSSRouter();
 
-            should.exist(rssRouter.router);
+            assertExists(rssRouter.router);
             assert.equal(rssRouter.route.value, '/rss/');
 
             assert.equal(rssRouter.mountRoute.callCount, 2);

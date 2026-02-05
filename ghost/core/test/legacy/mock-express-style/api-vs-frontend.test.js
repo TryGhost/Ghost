@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 const cheerio = require('cheerio');
@@ -155,12 +156,12 @@ describe('Frontend behavior tests', function () {
 
                         assert.equal($('.post-card').length, 2);
 
-                        should.exist(response.res.locals.context);
-                        should.exist(response.res.locals.version);
-                        should.exist(response.res.locals.safeVersion);
-                        should.exist(response.res.locals.safeVersion);
-                        should.exist(response.res.locals.relativeUrl);
-                        should.exist(response.res.routerOptions);
+                        assertExists(response.res.locals.context);
+                        assertExists(response.res.locals.version);
+                        assertExists(response.res.locals.safeVersion);
+                        assertExists(response.res.locals.safeVersion);
+                        assertExists(response.res.locals.relativeUrl);
+                        assertExists(response.res.routerOptions);
                     });
             });
 

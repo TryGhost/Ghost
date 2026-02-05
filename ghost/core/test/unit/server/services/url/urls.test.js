@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 const events = require('../../../../../core/server/lib/common/events');
@@ -64,11 +65,11 @@ describe('Unit: services/url/Urls', function () {
             generatorId: 1
         });
 
-        should.exist(eventsToRemember['url.added']);
+        assertExists(eventsToRemember['url.added']);
         assert.equal(eventsToRemember['url.added'].url.absolute, 'http://127.0.0.1:2369/test/');
         assert.equal(eventsToRemember['url.added'].url.relative, '/test/');
-        should.exist(eventsToRemember['url.added'].resource);
-        should.exist(eventsToRemember['url.added'].resource.data);
+        assertExists(eventsToRemember['url.added'].resource);
+        assertExists(eventsToRemember['url.added'].resource.data);
 
         assert.equal(urls.getByResourceId('object-id-x').resource.data.slug, 'a');
 
@@ -85,14 +86,14 @@ describe('Unit: services/url/Urls', function () {
             generatorId: 1
         });
 
-        should.exist(eventsToRemember['url.added']);
+        assertExists(eventsToRemember['url.added']);
 
         assert.equal(urls.getByResourceId('object-id-x').resource.data.slug, 'b');
     });
 
     it('fn: getByResourceId', function () {
         assert.equal(urls.getByResourceId('object-id-2').url, '/something/');
-        should.exist(urls.getByResourceId('object-id-2').generatorId);
+        assertExists(urls.getByResourceId('object-id-2').generatorId);
         assert.equal(urls.getByResourceId('object-id-2').generatorId, 1);
     });
 

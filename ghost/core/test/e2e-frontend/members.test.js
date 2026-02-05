@@ -1,4 +1,5 @@
 const assert = require('assert/strict');
+const {assertExists} = require('../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 const supertest = require('supertest');
@@ -57,7 +58,7 @@ describe('Front-end members behavior', function () {
             .expect(302)
             .expect((res) => {
                 const redirectUrl = new URL(res.headers.location, testUtils.API.getURL());
-                should.exist(redirectUrl.searchParams.get('success'));
+                assertExists(redirectUrl.searchParams.get('success'));
                 assert.equal(redirectUrl.searchParams.get('success'), 'true');
             });
 
@@ -229,7 +230,7 @@ describe('Front-end members behavior', function () {
                     .expect(200);
                 const getJsonResponse = getRes.body;
 
-                should.exist(getJsonResponse);
+                assertExists(getJsonResponse);
                 getJsonResponse.should.have.properties(['email', 'uuid', 'status', 'name', 'newsletters']);
                 getJsonResponse.should.not.have.property('id');
                 assert.equal(getJsonResponse.newsletters.length, 1);
@@ -256,7 +257,7 @@ describe('Front-end members behavior', function () {
                     .expect(200);
                 const jsonResponse = res.body;
 
-                should.exist(jsonResponse);
+                assertExists(jsonResponse);
                 jsonResponse.should.have.properties(['email', 'uuid', 'status', 'name', 'newsletters']);
                 jsonResponse.should.not.have.property('id');
                 assert.equal(jsonResponse.newsletters.length, 0);
@@ -268,7 +269,7 @@ describe('Front-end members behavior', function () {
                     .expect(200);
 
                 const restoreJsonResponse = resRestored.body;
-                should.exist(restoreJsonResponse);
+                assertExists(restoreJsonResponse);
                 restoreJsonResponse.should.have.properties(['email', 'uuid', 'status', 'name', 'newsletters']);
                 restoreJsonResponse.should.not.have.property('id');
                 assert.equal(restoreJsonResponse.newsletters.length, 1);
@@ -860,7 +861,7 @@ describe('Front-end members behavior', function () {
                     .expect(302)
                     .then((res) => {
                         const redirectUrl = new URL(res.headers.location, testUtils.API.getURL());
-                        should.exist(redirectUrl.searchParams.get('success'));
+                        assertExists(redirectUrl.searchParams.get('success'));
                         assert.equal(redirectUrl.searchParams.get('success'), 'true');
                     });
             });
@@ -870,7 +871,7 @@ describe('Front-end members behavior', function () {
                     .expect(200);
 
                 const memberData = res.body;
-                should.exist(memberData);
+                assertExists(memberData);
 
                 // @NOTE: this should be a snapshot test not code
                 memberData.should.have.properties([

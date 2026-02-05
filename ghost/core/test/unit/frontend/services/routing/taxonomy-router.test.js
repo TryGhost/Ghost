@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 const settingsCache = require('../../../../../core/shared/settings-cache');
@@ -35,8 +36,8 @@ describe('UNIT - services/routing/TaxonomyRouter', function () {
     it('instantiate', function () {
         const taxonomyRouter = new TaxonomyRouter('tag', '/tag/:slug/', {}, routerCreatedSpy);
 
-        should.exist(taxonomyRouter.router);
-        should.exist(taxonomyRouter.rssRouter);
+        assertExists(taxonomyRouter.router);
+        assertExists(taxonomyRouter.rssRouter);
 
         assert.equal(taxonomyRouter.taxonomyKey, 'tag');
         assert.equal(taxonomyRouter.getPermalinks().getValue(), '/tag/:slug/');

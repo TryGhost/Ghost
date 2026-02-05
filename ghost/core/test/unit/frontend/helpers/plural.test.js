@@ -1,3 +1,4 @@
+const {assertExists} = require('../../../utils/assertions');
 const should = require('should');
 
 // Stuff we are testing
@@ -15,7 +16,7 @@ describe('{{plural}} helper', function () {
             }
         });
 
-        should.exist(rendered);
+        assertExists(rendered);
         rendered.string.should.equal(expected);
     });
 
@@ -30,7 +31,7 @@ describe('{{plural}} helper', function () {
             }
         });
 
-        should.exist(rendered);
+        assertExists(rendered);
         rendered.string.should.equal(expected);
     });
 
@@ -45,7 +46,7 @@ describe('{{plural}} helper', function () {
             }
         });
 
-        should.exist(rendered);
+        assertExists(rendered);
         rendered.string.should.equal(expected);
     });
 
@@ -60,7 +61,7 @@ describe('{{plural}} helper', function () {
             }
         });
 
-        should.exist(rendered);
+        assertExists(rendered);
         rendered.string.should.equal(expected);
     });
 });

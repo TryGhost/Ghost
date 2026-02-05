@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../utils/assertions');
 const crypto = require('crypto');
 const {agentProvider, mockManager, fixtureManager, matchers, configUtils} = require('../../utils/e2e-framework');
 const {anyEtag, anyObjectId, anyUuid, anyISODateTime, stringMatching} = matchers;
@@ -285,7 +286,7 @@ describe('Comments API', function () {
             await membersAgent
                 .get('/api/member/')
                 .expect(({headers}) => {
-                    should.exist(headers['set-cookie']);
+                    assertExists(headers['set-cookie']);
                     headers['set-cookie'].should.matchAny(/ghost-access=null;/);
                 })
                 .expectStatus(204)

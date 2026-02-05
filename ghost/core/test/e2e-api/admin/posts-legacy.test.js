@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../utils/assertions');
 const should = require('should');
 const nock = require('nock');
 const path = require('path');
@@ -52,7 +53,7 @@ describe('Posts API', function () {
 
         assert.equal(res.headers['x-cache-invalidate'], undefined);
         const jsonResponse = res.body;
-        should.exist(jsonResponse.posts);
+        assertExists(jsonResponse.posts);
         localUtils.API.checkResponse(jsonResponse, 'posts');
         assert.equal(jsonResponse.posts.length, 15);
         localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
@@ -94,7 +95,7 @@ describe('Posts API', function () {
 
         assert.equal(res.headers['x-cache-invalidate'], undefined);
         const jsonResponse = res.body;
-        should.exist(jsonResponse.posts);
+        assertExists(jsonResponse.posts);
         localUtils.API.checkResponse(jsonResponse, 'posts');
         assert.equal(jsonResponse.posts.length, 3);
         localUtils.API.checkResponse(jsonResponse.posts[0], 'post', ['plaintext']);
@@ -114,7 +115,7 @@ describe('Posts API', function () {
 
         assert.equal(res.headers['x-cache-invalidate'], undefined);
         const jsonResponse = res.body;
-        should.exist(jsonResponse.posts);
+        assertExists(jsonResponse.posts);
         localUtils.API.checkResponse(jsonResponse, 'posts');
         assert.equal(jsonResponse.posts.length, 15);
         localUtils.API.checkResponse(
@@ -136,7 +137,7 @@ describe('Posts API', function () {
 
         assert.equal(res.headers['x-cache-invalidate'], undefined);
         const jsonResponse = res.body;
-        should.exist(jsonResponse.posts);
+        assertExists(jsonResponse.posts);
         localUtils.API.checkResponse(jsonResponse, 'posts');
         assert.equal(jsonResponse.posts.length, 2);
         localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
@@ -173,8 +174,8 @@ describe('Posts API', function () {
 
         assert.equal(res.headers['x-cache-invalidate'], undefined);
         const jsonResponse = res.body;
-        should.exist(jsonResponse);
-        should.exist(jsonResponse.posts);
+        assertExists(jsonResponse);
+        assertExists(jsonResponse.posts);
         localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
         jsonResponse.posts[0].id.should.equal(testUtils.DataGenerator.Content.posts[0].id);
 
@@ -196,8 +197,8 @@ describe('Posts API', function () {
 
         assert.equal(res.headers['x-cache-invalidate'], undefined);
         const jsonResponse = res.body;
-        should.exist(jsonResponse);
-        should.exist(jsonResponse.posts);
+        assertExists(jsonResponse);
+        assertExists(jsonResponse.posts);
         localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
         jsonResponse.posts[0].id.should.equal(testUtils.DataGenerator.Content.posts[1].id);
 
@@ -219,8 +220,8 @@ describe('Posts API', function () {
 
         assert.equal(res.headers['x-cache-invalidate'], undefined);
         const jsonResponse = res.body;
-        should.exist(jsonResponse);
-        should.exist(jsonResponse.posts);
+        assertExists(jsonResponse);
+        assertExists(jsonResponse.posts);
         localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
         assert.equal(jsonResponse.posts[0].slug, 'welcome');
 
@@ -241,8 +242,8 @@ describe('Posts API', function () {
 
         assert.equal(res.headers['x-cache-invalidate'], undefined);
         const jsonResponse = res.body;
-        should.exist(jsonResponse);
-        should.exist(jsonResponse.posts);
+        assertExists(jsonResponse);
+        assertExists(jsonResponse.posts);
 
         localUtils.API.checkResponse(jsonResponse.posts[0], 'post', null, ['count', 'post_revisions']);
 
@@ -283,7 +284,7 @@ describe('Posts API', function () {
         assert.match(res.body.posts[0].url, new RegExp(`${config.get('url')}/p/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}`));
         assert.equal(res.headers['x-cache-invalidate'], undefined);
 
-        should.exist(res.headers.location);
+        assertExists(res.headers.location);
         res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('posts/')}${res.body.posts[0].id}/`);
 
         // Newsletter should be returned as null
@@ -832,7 +833,7 @@ describe('Posts API', function () {
         }, testUtils.context.internal);
 
         assert.equal(model.get('newsletter_id'), null);
-        should.exist(model.get('published_by'));
+        assertExists(model.get('published_by'));
 
         // Check email
         // Note: we only create an email if we have members susbcribed to the newsletter
@@ -898,7 +899,7 @@ describe('Posts API', function () {
         }, testUtils.context.internal);
 
         should(model.get('newsletter_id')).eql(newsletterId);
-        should.exist(model.get('published_by'));
+        assertExists(model.get('published_by'));
 
         // Check email
         // Note: we only create an email if we have members susbcribed to the newsletter
@@ -906,7 +907,7 @@ describe('Posts API', function () {
             post_id: id
         }, testUtils.context.internal);
 
-        should.exist(email);
+        assertExists(email);
         should(email.get('newsletter_id')).eql(newsletterId);
         should(email.get('status')).equalOneOf('pending', 'submitted', 'submitting');
     });
@@ -969,7 +970,7 @@ describe('Posts API', function () {
         }, testUtils.context.internal);
 
         should(model.get('newsletter_id')).eql(newsletterId);
-        should.exist(model.get('published_by'));
+        assertExists(model.get('published_by'));
 
         // Check email
         // Note: we only create an email if we have members susbcribed to the newsletter
@@ -977,7 +978,7 @@ describe('Posts API', function () {
             post_id: id
         }, testUtils.context.internal);
 
-        should.exist(email);
+        assertExists(email);
         should(email.get('newsletter_id')).eql(newsletterId);
         should(email.get('status')).equalOneOf('pending', 'submitted', 'submitting');
     });
@@ -1040,7 +1041,7 @@ describe('Posts API', function () {
         assert.equal(model.get('status'), 'sent');
         should(model.get('newsletter_id')).eql(newsletterId);
         assert.equal(model.get('email_recipient_filter'), 'all');
-        should.exist(model.get('published_by'));
+        assertExists(model.get('published_by'));
 
         // We should have an email
         const email = await models.Email.findOne({
@@ -1109,7 +1110,7 @@ describe('Posts API', function () {
         assert.equal(model.get('status'), 'sent');
         should(model.get('newsletter_id')).eql(newsletterId);
         assert.equal(model.get('email_recipient_filter'), 'status:free');
-        should.exist(model.get('published_by'));
+        assertExists(model.get('published_by'));
 
         // We should have an email
         const email = await models.Email.findOne({
@@ -1178,7 +1179,7 @@ describe('Posts API', function () {
         assert.equal(model.get('status'), 'sent');
         should(model.get('newsletter_id')).eql(newsletterId);
         assert.equal(model.get('email_recipient_filter'), 'status:free');
-        should.exist(model.get('published_by'));
+        assertExists(model.get('published_by'));
 
         // We should have an email
         const email = await models.Email.findOne({
@@ -1268,7 +1269,7 @@ describe('Posts API', function () {
 
         should(model.get('newsletter_id')).eql(newsletterId);
         assert.equal(model.get('email_recipient_filter'), 'all');
-        should.exist(model.get('published_by'));
+        assertExists(model.get('published_by'));
 
         publishedPost.newsletter.id.should.eql(newsletterId);
         assert.equal(publishedPost.newsletter_id, undefined);
@@ -1651,7 +1652,7 @@ describe('Posts API', function () {
             post_id: id
         }, testUtils.context.internal);
 
-        should.exist(email);
+        assertExists(email);
         should(email.get('newsletter_id')).eql(newsletterId);
 
         const republished = {
@@ -1795,7 +1796,7 @@ describe('Posts API', function () {
                 post_id: id
             }, testUtils.context.internal);
 
-            should.exist(email);
+            assertExists(email);
             should(email.get('newsletter_id')).eql(newsletterId);
             should(email.get('status')).equalOneOf('pending', 'submitted', 'submitting');
         });

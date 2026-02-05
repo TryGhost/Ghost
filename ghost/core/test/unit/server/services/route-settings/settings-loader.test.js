@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const sinon = require('sinon');
 const should = require('should');
 const rewire = require('rewire');
@@ -53,7 +54,7 @@ describe('UNIT > SettingsLoader:', function () {
             const fsReadFileStub = sinon.stub(fs, 'readFile').returns(settingsStubFile);
 
             const result = await settingsLoader.loadSettings();
-            should.exist(result);
+            assertExists(result);
             result.should.be.an.Object().with.properties('routes', 'collections', 'taxonomies');
             assert.equal(fsReadFileStub.calledOnce, true);
         });
@@ -73,7 +74,7 @@ describe('UNIT > SettingsLoader:', function () {
                 settingFilePath: expectedSettingsFile
             });
             const setting = await settingsLoader.loadSettings();
-            should.exist(setting);
+            assertExists(setting);
             setting.should.be.an.Object().with.properties('routes', 'collections', 'taxonomies');
 
             assert.equal(fsReadFileSpy.calledOnce, true);
@@ -96,7 +97,7 @@ describe('UNIT > SettingsLoader:', function () {
                 await settingsLoader.loadSettings();
                 throw new Error('Should have failed already');
             } catch (err) {
-                should.exist(err);
+                assertExists(err);
                 err.message.should.be.eql('could not parse yaml file');
                 err.context.should.be.eql('bad indentation of a mapping entry at line 5, column 10');
                 assert.equal(yamlParserStub.calledOnce, true);

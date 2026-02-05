@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const sinon = require('sinon');
 const should = require('should');
 const fs = require('fs-extra');
@@ -22,7 +23,7 @@ describe('UNIT > Settings Service yaml parser:', function () {
             const file = fs.readFileSync(path.join(__dirname, '../../../../utils/fixtures/settings/', 'goodroutes.yaml'), 'utf8');
 
             const result = yamlParser(file);
-            should.exist(result);
+            assertExists(result);
             result.should.be.an.Object().with.properties('routes', 'collections', 'taxonomies');
             assert.equal(yamlSpy.calledOnce, true);
         });
@@ -34,7 +35,7 @@ describe('UNIT > Settings Service yaml parser:', function () {
                 const result = yamlParser(file);
                 assert.equal(result, undefined);
             } catch (error) {
-                should.exist(error);
+                assertExists(error);
                 assert.equal(error.message, 'Could not parse provided YAML file: bad indentation of a mapping entry.');
                 assert(error.context.includes('bad indentation of a mapping entry (5:14)'));
                 assert.equal(error.help, 'Check provided file for typos and fix the named issues.');

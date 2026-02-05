@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const should = require('should');
 
 const path = require('path');
@@ -122,7 +123,7 @@ describe('Minifier', function () {
                 });
                 should.fail(minifier, 'Should have errored');
             } catch (err) {
-                should.exist(err);
+                assertExists(err);
                 assert.equal(err.errorType, 'IncorrectUsageError');
                 assert.match(err.message, /Unexpected destination/);
             }
@@ -136,7 +137,7 @@ describe('Minifier', function () {
                 });
                 should.fail(minifier, 'Should have errored');
             } catch (err) {
-                should.exist(err);
+                assertExists(err);
                 assert.equal(err.errorType, 'IncorrectUsageError');
                 assert.match(err.message, /Unable to read/);
             }

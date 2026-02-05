@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 const mockDb = require('mock-knex');
@@ -161,7 +162,7 @@ describe('Unit: models/settings', function () {
             } catch (err) {
                 error = err;
             } finally {
-                should.exist(error, `Setting Model should throw when saving invalid ${key}`);
+                assertExists(error, `Setting Model should throw when saving invalid ${key}`);
                 should.ok(error instanceof errors.ValidationError, 'Setting Model should throw ValidationError');
             }
         }

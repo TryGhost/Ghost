@@ -7,6 +7,7 @@ const configUtils = require('../../../../utils/config-utils');
 const urlUtils = require('../../../../../core/shared/url-utils');
 let mailer;
 const assert = require('assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const emailAddress = require('../../../../../core/server/services/email-address');
 
 // Mock SMTP config
@@ -56,7 +57,7 @@ describe('Mail: Ghostmailer', function () {
     it('should attach mail provider to ghost instance', function () {
         mailer = new mail.GhostMailer();
 
-        should.exist(mailer);
+        assertExists(mailer);
         mailer.should.have.property('send').and.be.a.Function();
     });
 
@@ -86,8 +87,8 @@ describe('Mail: Ghostmailer', function () {
         assert.equal(mailer.transport.transporter.name, 'Stub');
 
         mailer.send(mailDataNoServer).then(function (response) {
-            should.exist(response.response);
-            should.exist(response.envelope);
+            assertExists(response.response);
+            assertExists(response.envelope);
             assert(response.envelope.to.includes('joe@example.com'));
 
             done();

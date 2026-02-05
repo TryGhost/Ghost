@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
@@ -43,7 +44,7 @@ describe('Exporter', function () {
                 // NOTE: 15 default tables
                 const expectedCallCount = exporter.TABLES_ALLOWLIST.length;
 
-                should.exist(exportData);
+                assertExists(exportData);
 
                 assert.match(exportData.meta.version, /\d+.\d+.\d+/gi);
 
@@ -94,7 +95,7 @@ describe('Exporter', function () {
                 // NOTE: 15 default tables + 2 includes
                 const expectedCallCount = exporter.TABLES_ALLOWLIST.length + 2;
 
-                should.exist(exportData);
+                assertExists(exportData);
 
                 assert.match(exportData.meta.version, /\d+.\d+.\d+/gi);
 
@@ -166,7 +167,7 @@ describe('Exporter', function () {
             );
 
             exporter.fileName().then(function (result) {
-                should.exist(result);
+                assertExists(result);
                 assert.equal(settingsStub.calledOnce, true);
                 assert.match(result, /^testblog\.ghost\.[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}\.json$/);
 
@@ -180,7 +181,7 @@ describe('Exporter', function () {
             );
 
             exporter.fileName().then(function (result) {
-                should.exist(result);
+                assertExists(result);
                 assert.equal(settingsStub.calledOnce, true);
                 assert.match(result, /^ghost\.[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}\.json$/);
 
@@ -195,7 +196,7 @@ describe('Exporter', function () {
             const loggingStub = sinon.stub(logging, 'error');
 
             exporter.fileName().then(function (result) {
-                should.exist(result);
+                assertExists(result);
                 assert.equal(settingsStub.calledOnce, true);
                 assert.equal(loggingStub.calledOnce, true);
                 assert.match(result, /^ghost\.[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}\.json$/);

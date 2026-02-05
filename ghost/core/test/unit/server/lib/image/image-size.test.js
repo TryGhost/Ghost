@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 const nock = require('nock');
@@ -21,8 +22,8 @@ describe('lib/image: image size', function () {
         const imageSize = new ImageSize({config: {
             get: () => {}
         }, tpl: {}, storage: {}, storageUtils: {}, validator: {}, urlUtils: {}, request: {}, probe});
-        should.exist(imageSize.getImageSizeFromUrl);
-        should.exist(imageSize.getImageSizeFromStoragePath);
+        assertExists(imageSize.getImageSizeFromUrl);
+        assertExists(imageSize.getImageSizeFromStoragePath);
     });
 
     describe('getImageSizeFromUrl', function () {
@@ -48,7 +49,7 @@ describe('lib/image: image size', function () {
 
             imageSize.getImageSizeFromUrl(url).then(function (res) {
                 assert.equal(requestMock.isDone(), true);
-                should.exist(res);
+                assertExists(res);
                 res.width.should.be.equal(expectedImageObject.width);
                 res.height.should.be.equal(expectedImageObject.height);
                 res.url.should.be.equal(expectedImageObject.url);
@@ -83,7 +84,7 @@ describe('lib/image: image size', function () {
 
             imageSize.getImageSizeFromUrl(url).then(function (res) {
                 assert.equal(requestMock.isDone(), false);
-                should.exist(res);
+                assertExists(res);
                 res.width.should.be.equal(expectedImageObject.width);
                 res.height.should.be.equal(expectedImageObject.height);
                 res.url.should.be.equal(expectedImageObject.url);
@@ -113,7 +114,7 @@ describe('lib/image: image size', function () {
 
             imageSize.getImageSizeFromUrl(url).then(function (res) {
                 assert.equal(requestMock.isDone(), true);
-                should.exist(res);
+                assertExists(res);
                 res.width.should.be.equal(expectedImageObject.width);
                 res.height.should.be.equal(expectedImageObject.height);
                 res.url.should.be.equal(expectedImageObject.url);
@@ -145,7 +146,7 @@ describe('lib/image: image size', function () {
             imageSize.getImageSizeFromUrl(url).then(function (res) {
                 assert.equal(requestMockNotFound.isDone(), false);
                 assert.equal(requestMock.isDone(), true);
-                should.exist(res);
+                assertExists(res);
                 res.width.should.be.equal(expectedImageObject.width);
                 res.height.should.be.equal(expectedImageObject.height);
                 res.url.should.be.equal(expectedImageObject.url);
@@ -194,7 +195,7 @@ describe('lib/image: image size', function () {
 
             imageSize.getImageSizeFromUrl(url).then(function (res) {
                 assert.equal(requestMock.isDone(), true);
-                should.exist(res);
+                assertExists(res);
                 res.width.should.be.equal(expectedImageObject.width);
                 res.height.should.be.equal(expectedImageObject.height);
                 res.url.should.be.equal(expectedImageObject.url);
@@ -224,7 +225,7 @@ describe('lib/image: image size', function () {
 
             imageSize.getImageSizeFromUrl(url).then(function (res) {
                 assert.equal(requestMock.isDone(), true);
-                should.exist(res);
+                assertExists(res);
                 res.width.should.be.equal(expectedImageObject.width);
                 res.height.should.be.equal(expectedImageObject.height);
                 res.url.should.be.equal(expectedImageObject.url);
@@ -261,7 +262,7 @@ describe('lib/image: image size', function () {
             imageSize.getImageSizeFromUrl(url).then(function (res) {
                 assert.equal(requestMock.isDone(), true);
                 assert.equal(secondRequestMock.isDone(), true);
-                should.exist(res);
+                assertExists(res);
                 res.width.should.be.equal(expectedImageObject.width);
                 res.height.should.be.equal(expectedImageObject.height);
                 res.url.should.be.equal(expectedImageObject.url);
@@ -306,12 +307,12 @@ describe('lib/image: image size', function () {
 
             imageSize.getImageSizeFromUrl(url).then(function (res) {
                 assert.equal(requestMock.isDone(), false);
-                should.exist(res);
-                should.exist(res.width);
+                assertExists(res);
+                assertExists(res.width);
                 res.width.should.be.equal(expectedImageObject.width);
-                should.exist(res.height);
+                assertExists(res.height);
                 res.height.should.be.equal(expectedImageObject.height);
-                should.exist(res.url);
+                assertExists(res.url);
                 res.url.should.be.equal(expectedImageObject.url);
                 done();
             }).catch(done);
@@ -335,7 +336,7 @@ describe('lib/image: image size', function () {
             imageSize.getImageSizeFromUrl(url)
                 .catch(function (err) {
                     assert.equal(requestMock.isDone(), true);
-                    should.exist(err);
+                    assertExists(err);
                     err.errorType.should.be.equal('NotFoundError');
                     err.message.should.be.equal('Image not found.');
                     done();
@@ -373,7 +374,7 @@ describe('lib/image: image size', function () {
             imageSize.getImageSizeFromUrl(url)
                 .catch(function (err) {
                     assert.equal(requestMock.isDone(), false);
-                    should.exist(err);
+                    assertExists(err);
                     err.errorType.should.be.equal('NotFoundError');
                     err.message.should.be.equal('Image not found.');
                     done();
@@ -393,7 +394,7 @@ describe('lib/image: image size', function () {
 
             imageSize.getImageSizeFromUrl(url)
                 .catch(function (err) {
-                    should.exist(err);
+                    assertExists(err);
                     err.errorType.should.be.equal('InternalServerError');
                     err.message.should.be.equal('URL empty or invalid.');
                     done();
@@ -427,7 +428,7 @@ describe('lib/image: image size', function () {
             imageSize.getImageSizeFromUrl(url)
                 .catch(function (err) {
                     assert.equal(requestMock.isDone(), true);
-                    should.exist(err);
+                    assertExists(err);
                     err.errorType.should.be.equal('InternalServerError');
                     err.message.should.be.equal('Request timed out.');
                     done();
@@ -455,7 +456,7 @@ describe('lib/image: image size', function () {
                 })
                 .catch(function (err) {
                     assert.equal(requestMock.isDone(), true);
-                    should.exist(err);
+                    assertExists(err);
                     err.errorType.should.be.equal('InternalServerError');
                     done();
                 }).catch(done);
@@ -489,7 +490,7 @@ describe('lib/image: image size', function () {
                 })
                 .catch(function (err) {
                     assert.equal(requestMock.isDone(), false);
-                    should.exist(err);
+                    assertExists(err);
                     err.errorType.should.be.equal('InternalServerError');
                     done();
                 }).catch(done);
@@ -510,7 +511,7 @@ describe('lib/image: image size', function () {
 
             imageSize.getImageSizeFromUrl(url)
                 .catch(function (err) {
-                    should.exist(err);
+                    assertExists(err);
                     err.errorType.should.be.equal('InternalServerError');
                     err.message.should.be.equal('Unknown Request error.');
                     done();
@@ -542,7 +543,7 @@ describe('lib/image: image size', function () {
             imageSize.getImageSizeFromUrl(url)
                 .catch(function (err) {
                     assert.equal(requestMock.isDone(), true);
-                    should.exist(err);
+                    assertExists(err);
                     err.errorType.should.be.equal('InternalServerError');
                     err.message.should.be.equal('Probe unresponsive.');
                     done();
@@ -583,12 +584,12 @@ describe('lib/image: image size', function () {
             }, probe});
 
             imageSize.getImageSizeFromStoragePath(url).then(function (res) {
-                should.exist(res);
-                should.exist(res.width);
+                assertExists(res);
+                assertExists(res.width);
                 res.width.should.be.equal(expectedImageObject.width);
-                should.exist(res.height);
+                assertExists(res.height);
                 res.height.should.be.equal(expectedImageObject.height);
-                should.exist(res.url);
+                assertExists(res.url);
                 res.url.should.be.equal(expectedImageObject.url);
                 done();
             }).catch(done);
@@ -626,12 +627,12 @@ describe('lib/image: image size', function () {
             }, probe});
 
             imageSize.getImageSizeFromStoragePath(url).then(function (res) {
-                should.exist(res);
-                should.exist(res.width);
+                assertExists(res);
+                assertExists(res.width);
                 res.width.should.be.equal(expectedImageObject.width);
-                should.exist(res.height);
+                assertExists(res.height);
                 res.height.should.be.equal(expectedImageObject.height);
-                should.exist(res.url);
+                assertExists(res.url);
                 res.url.should.be.equal(expectedImageObject.url);
                 done();
             }).catch(done);
@@ -669,12 +670,12 @@ describe('lib/image: image size', function () {
             }, probe});
 
             imageSize.getImageSizeFromStoragePath(url).then(function (res) {
-                should.exist(res);
-                should.exist(res.width);
+                assertExists(res);
+                assertExists(res.width);
                 res.width.should.be.equal(expectedImageObject.width);
-                should.exist(res.height);
+                assertExists(res.height);
                 res.height.should.be.equal(expectedImageObject.height);
-                should.exist(res.url);
+                assertExists(res.url);
                 res.url.should.be.equal(expectedImageObject.url);
                 done();
             }).catch(done);
@@ -712,12 +713,12 @@ describe('lib/image: image size', function () {
             }, probe});
 
             imageSize.getImageSizeFromStoragePath(url).then(function (res) {
-                should.exist(res);
-                should.exist(res.width);
+                assertExists(res);
+                assertExists(res.width);
                 res.width.should.be.equal(expectedImageObject.width);
-                should.exist(res.height);
+                assertExists(res.height);
                 res.height.should.be.equal(expectedImageObject.height);
-                should.exist(res.url);
+                assertExists(res.url);
                 res.url.should.be.equal(expectedImageObject.url);
                 done();
             }).catch(done);
@@ -753,7 +754,7 @@ describe('lib/image: image size', function () {
 
             imageSize.getImageSizeFromStoragePath(url)
                 .catch(function (err) {
-                    should.exist(err);
+                    assertExists(err);
                     assert.equal((err instanceof errors.NotFoundError), true);
                     done();
                 }).catch(done);
@@ -788,7 +789,7 @@ describe('lib/image: image size', function () {
 
             imageSize.getImageSizeFromStoragePath(url)
                 .catch(function (err) {
-                    should.exist(err);
+                    assertExists(err);
                     done();
                 }).catch(done);
         });

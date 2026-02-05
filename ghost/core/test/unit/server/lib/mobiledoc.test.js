@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../utils/assertions');
 const path = require('path');
 const should = require('should');
 const sinon = require('sinon');
@@ -351,14 +352,14 @@ describe('lib/mobiledoc', function () {
 
             assert.equal(transformed.cards.length, 2);
 
-            should.exist(transformed.cards[0][1].width);
+            assertExists(transformed.cards[0][1].width);
             assert.equal(transformed.cards[0][1].width, 800);
-            should.exist(transformed.cards[0][1].height);
+            assertExists(transformed.cards[0][1].height);
             assert.equal(transformed.cards[0][1].height, 257);
 
-            should.exist(transformed.cards[1][1].width);
+            assertExists(transformed.cards[1][1].width);
             assert.equal(transformed.cards[1][1].width, 800);
-            should.exist(transformed.cards[1][1].height);
+            assertExists(transformed.cards[1][1].height);
             assert.equal(transformed.cards[1][1].height, 257);
         });
     });

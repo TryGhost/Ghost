@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const sinon = require('sinon');
 const should = require('should');
 const ContentStatsService = require('../../../../../core/server/services/stats/content-stats-service');
@@ -69,7 +70,7 @@ describe('ContentStatsService', function () {
 
             const result = mockTinybirdClient.buildRequest('api_top_pages', options);
 
-            should.exist(result.url);
+            assertExists(result.url);
             result.url.should.startWith('https://api.tinybird.co/v0/pipes/api_top_pages.json?');
             assert(result.url.includes('site_uuid=site-id'));
             assert(result.url.includes('date_from=2023-01-01'));
@@ -77,8 +78,8 @@ describe('ContentStatsService', function () {
             assert(result.url.includes('timezone=UTC'));
             assert(result.url.includes('member_status=all'));
 
-            should.exist(result.options);
-            should.exist(result.options.headers);
+            assertExists(result.options);
+            assertExists(result.options.headers);
             assert.equal(result.options.headers.Authorization, 'Bearer tb-token');
 
             assert.equal(mockTinybirdClient.buildRequest.calledWith('api_top_pages', options), true);
@@ -100,7 +101,7 @@ describe('ContentStatsService', function () {
             ]);
 
             const result = mockTinybirdClient.parseResponse(mockResponse);
-            should.exist(result);
+            assertExists(result);
             result.should.be.an.Array().with.lengthOf(2);
 
             assert.equal(mockTinybirdClient.parseResponse.calledWith(mockResponse), true);
@@ -115,7 +116,7 @@ describe('ContentStatsService', function () {
             ];
 
             const result = service.extractPostUuids(data);
-            should.exist(result);
+            assertExists(result);
             result.should.be.an.Array().with.lengthOf(2);
             assert(result.includes('post-1'));
             assert(result.includes('post-2'));
@@ -129,7 +130,7 @@ describe('ContentStatsService', function () {
             ];
 
             const result = service.extractPostUuids(data);
-            should.exist(result);
+            assertExists(result);
             result.should.be.an.Array().with.lengthOf(0);
         });
     });
@@ -137,14 +138,14 @@ describe('ContentStatsService', function () {
     describe('lookupPostTitles', function () {
         it('returns empty object for empty UUIDs array', async function () {
             const result = await service.lookupPostTitles([]);
-            should.exist(result);
+            assertExists(result);
             assert.equal(Object.keys(result).length, 0);
         });
 
         it('queries database and builds title map', async function () {
             const result = await service.lookupPostTitles(['post-1', 'post-2']);
 
-            should.exist(result);
+            assertExists(result);
             result.should.have.properties(['post-1', 'post-2']);
             result['post-1'].should.have.property('title', 'Test Post 1');
             result['post-1'].should.have.property('id', 'post-id-1');
@@ -179,7 +180,7 @@ describe('ContentStatsService', function () {
             });
 
             const result = service.getResourceTitle('/about/');
-            should.exist(result);
+            assertExists(result);
             result.should.have.properties(['title', 'resourceType']);
             assert.equal(result.title, 'About Us');
             assert.equal(result.resourceType, 'page');
@@ -194,7 +195,7 @@ describe('ContentStatsService', function () {
             });
 
             const result = service.getResourceTitle('/tag/news/');
-            should.exist(result);
+            assertExists(result);
             result.should.have.properties(['title', 'resourceType']);
             assert.equal(result.title, 'News');
             assert.equal(result.resourceType, 'tag');
@@ -225,7 +226,7 @@ describe('ContentStatsService', function () {
 
         it('returns empty array for empty input', async function () {
             const result = await service.enrichTopContentData([]);
-            should.exist(result);
+            assertExists(result);
             result.should.be.an.Array().with.lengthOf(0);
 
             assert.equal(service.extractPostUuids.called, false);
@@ -244,7 +245,7 @@ describe('ContentStatsService', function () {
 
             const result = await service.enrichTopContentData(data);
 
-            should.exist(result);
+            assertExists(result);
             result.should.be.an.Array().with.lengthOf(2);
             assert.equal(result[0].title, 'Test Post 1');
             assert.equal(result[0].post_id, 'post-id-1');
@@ -271,7 +272,7 @@ describe('ContentStatsService', function () {
 
             const result = await service.enrichTopContentData(data);
 
-            should.exist(result);
+            assertExists(result);
             result.should.be.an.Array().with.lengthOf(1);
             assert.equal(result[0].title, 'About Us');
             assert.equal(result[0].resourceType, 'page');
@@ -289,7 +290,7 @@ describe('ContentStatsService', function () {
 
             const result = await service.enrichTopContentData(data);
 
-            should.exist(result);
+            assertExists(result);
             result.should.be.an.Array().with.lengthOf(1);
             assert.equal(result[0].title, 'unknown-page');
             assert.equal(result[0].url_exists, false);
@@ -306,7 +307,7 @@ describe('ContentStatsService', function () {
 
             const result = await service.enrichTopContentData(data);
 
-            should.exist(result);
+            assertExists(result);
             result.should.be.an.Array().with.lengthOf(1);
             assert.equal(result[0].title, 'Homepage');
             assert.equal(result[0].url_exists, false);
@@ -329,7 +330,7 @@ describe('ContentStatsService', function () {
 
             const result = await service.fetchRawTopContentData(options);
 
-            should.exist(result);
+            assertExists(result);
             result.should.be.an.Array().with.lengthOf(1);
             assert.equal(result[0].pathname, '/test/');
             assert.equal(result[0].visits, 100);
@@ -386,8 +387,8 @@ describe('ContentStatsService', function () {
                 date_to: '2023-01-31'
             });
 
-            should.exist(result);
-            should.exist(result.data);
+            assertExists(result);
+            assertExists(result.data);
             result.data.should.be.an.Array().with.lengthOf(2);
             result.data[0].should.have.property('title');
             result.data[0].should.have.property('post_id');
@@ -410,8 +411,8 @@ describe('ContentStatsService', function () {
                 date_to: '2023-01-31'
             });
 
-            should.exist(result);
-            should.exist(result.data);
+            assertExists(result);
+            assertExists(result.data);
             result.data.should.be.an.Array().with.lengthOf(0);
 
             assert.equal(service.fetchRawTopContentData.calledOnce, true);
@@ -425,8 +426,8 @@ describe('ContentStatsService', function () {
                 date_to: '2023-01-31'
             });
 
-            should.exist(result);
-            should.exist(result.data);
+            assertExists(result);
+            assertExists(result.data);
             result.data.should.be.an.Array().with.lengthOf(0);
         });
 
@@ -442,8 +443,8 @@ describe('ContentStatsService', function () {
                 date_to: '2023-01-31'
             });
 
-            should.exist(result);
-            should.exist(result.data);
+            assertExists(result);
+            assertExists(result.data);
             result.data.should.be.an.Array().with.lengthOf(0);
         });
     });
@@ -466,7 +467,7 @@ describe('ContentStatsService', function () {
             const result = await service.fetchRawTopContentData(options);
 
             // Verify result is correct
-            should.exist(result);
+            assertExists(result);
             result.should.be.an.Array().with.lengthOf(2);
 
             // Verify tinybird client was called with correct parameters
@@ -485,7 +486,7 @@ describe('ContentStatsService', function () {
 
             const result = await service.getTopContent({});
 
-            should.exist(result);
+            assertExists(result);
             result.should.have.property('data').which.is.an.Array().with.lengthOf(0);
         });
 

@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 const configUtils = require('../../../utils/config-utils');
@@ -56,7 +57,7 @@ describe('{{comments}} helper', function () {
                 site: {}
             }
         });
-        should.exist(rendered);
+        assertExists(rendered);
         assert(rendered.string.includes('<script defer src="https://cdn.jsdelivr.net/ghost/comments-ui'));
         assert(rendered.string.includes('data-ghost-comments="http://127.0.0.1:2369/"'));
         assert(rendered.string.includes('data-api="http://127.0.0.1:2369/ghost/api/content/"'));
@@ -85,7 +86,7 @@ describe('{{comments}} helper', function () {
                 site: {}
             }
         });
-        should.exist(rendered);
+        assertExists(rendered);
         assert(rendered.string.includes('<script defer src="https://cdn.jsdelivr.net/ghost/comments-ui'));
         assert(rendered.string.includes('data-ghost-comments="http://127.0.0.1:2369/"'));
         assert(rendered.string.includes('data-api="http://127.0.0.1:2369/ghost/api/content/"'));

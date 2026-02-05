@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../utils/assertions');
 const should = require('should');
 const supertest = require('supertest');
 const config = require('../../../../core/shared/config');
@@ -26,7 +27,7 @@ describe('Settings API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200)
             .expect((response) => {
-                should.exist(response.headers['x-cache-invalidate']);
+                assertExists(response.headers['x-cache-invalidate']);
                 assert.equal(response.headers['x-cache-invalidate'], '/*');
             });
 
@@ -125,7 +126,7 @@ describe('Settings API', function () {
 
             const putBody = body;
             assert.equal(headers['x-cache-invalidate'], '/*');
-            should.exist(putBody);
+            assertExists(putBody);
 
             let setting = putBody.settings.find(s => s.key === 'unsplash');
             assert.equal(setting.value, true);
@@ -155,7 +156,7 @@ describe('Settings API', function () {
 
             const putBody = body;
             assert.equal(headers['x-cache-invalidate'], '/*');
-            should.exist(putBody);
+            assertExists(putBody);
 
             localUtils.API.checkResponse(putBody, 'settings');
             const setting = putBody.settings.find(s => s.key === 'slack_username');
@@ -285,8 +286,8 @@ describe('Settings API', function () {
                 .then(function (res) {
                     let jsonResponse = res.body;
 
-                    should.exist(jsonResponse);
-                    should.exist(jsonResponse.settings);
+                    assertExists(jsonResponse);
+                    assertExists(jsonResponse.settings);
                     jsonResponse.settings = [{key: 'visibility', value: 'public'}];
 
                     return request.put(localUtils.API.getApiQuery('settings/'))
@@ -298,7 +299,7 @@ describe('Settings API', function () {
                         .then(function ({body, headers}) {
                             jsonResponse = body;
                             assert.equal(headers['x-cache-invalidate'], undefined);
-                            should.exist(jsonResponse.errors);
+                            assertExists(jsonResponse.errors);
                             testUtils.API.checkResponseValue(jsonResponse.errors[0], [
                                 'message',
                                 'context',
@@ -338,8 +339,8 @@ describe('Settings API', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .then(function (res) {
                     let jsonResponse = res.body;
-                    should.exist(jsonResponse);
-                    should.exist(jsonResponse.settings);
+                    assertExists(jsonResponse);
+                    assertExists(jsonResponse.settings);
                     jsonResponse.settings = [{key: 'visibility', value: 'public'}];
 
                     return request.put(localUtils.API.getApiQuery('settings/'))
@@ -351,7 +352,7 @@ describe('Settings API', function () {
                         .then(function ({body, headers}) {
                             jsonResponse = body;
                             assert.equal(headers['x-cache-invalidate'], undefined);
-                            should.exist(jsonResponse.errors);
+                            assertExists(jsonResponse.errors);
                             testUtils.API.checkResponseValue(jsonResponse.errors[0], [
                                 'message',
                                 'context',
@@ -391,7 +392,7 @@ describe('Settings API', function () {
             }, testUtils.context.internal);
 
             const setting = jsonResponse.settings.find(s => s.key === 'email_verification_required');
-            should.exist(setting);
+            assertExists(setting);
             assert.equal(setting.value, true);
         });
     });

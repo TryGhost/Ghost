@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../../../utils/assertions');
 const should = require('should');
 const ObjectID = require('bson-objectid').default;
 const errors = require('../../../../../../../core/server/services/offers/domain/errors');
@@ -415,20 +416,20 @@ describe('Offer', function () {
 
             const offer = await Offer.create(data, mockUniqueChecker);
 
-            should.exist(offer.id);
-            should.exist(offer.name);
-            should.exist(offer.code);
-            should.exist(offer.currency);
-            should.exist(offer.duration);
-            should.exist(offer.status);
-            should.exist(offer.redemptionCount);
-            should.exist(offer.displayTitle);
-            should.exist(offer.displayDescription);
-            should.exist(offer.tier);
-            should.exist(offer.cadence);
-            should.exist(offer.type);
-            should.exist(offer.amount);
-            should.exist(offer.isNew);
+            assertExists(offer.id);
+            assertExists(offer.name);
+            assertExists(offer.code);
+            assertExists(offer.currency);
+            assertExists(offer.duration);
+            assertExists(offer.status);
+            assertExists(offer.redemptionCount);
+            assertExists(offer.displayTitle);
+            assertExists(offer.displayDescription);
+            assertExists(offer.tier);
+            assertExists(offer.cadence);
+            assertExists(offer.type);
+            assertExists(offer.amount);
+            assertExists(offer.isNew);
         });
     });
 

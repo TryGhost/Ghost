@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const _ = require('lodash');
 const should = require('should');
 const sinon = require('sinon');
@@ -28,7 +29,7 @@ describe('Unit: services/url/Queue', function () {
             event: 'chocolate'
         }, null);
 
-        should.exist(queue.queue.chocolate);
+        assertExists(queue.queue.chocolate);
         assert.equal(queue.queue.chocolate.subscribers.length, 1);
 
         queue.register({
@@ -41,8 +42,8 @@ describe('Unit: services/url/Queue', function () {
             event: 'nachos'
         }, null);
 
-        should.exist(queue.queue.chocolate);
-        should.exist(queue.queue.nachos);
+        assertExists(queue.queue.chocolate);
+        assertExists(queue.queue.nachos);
 
         assert.equal(queue.queue.chocolate.subscribers.length, 2);
         assert.equal(queue.queue.nachos.subscribers.length, 1);

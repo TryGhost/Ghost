@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 const path = require('path');
@@ -176,7 +177,7 @@ describe('lib/image: blog icon', function () {
             const blogIcon = new BlogIcon({config: {}, storageUtils: {}, urlUtils: {}, settingsCache: {}});
             blogIcon.getIconDimensions(path.join(__dirname, '../../../../utils/fixtures/images/favicon.ico'))
                 .then(function (result) {
-                    should.exist(result);
+                    assertExists(result);
                     result.should.eql({
                         width: 48,
                         height: 48
@@ -189,7 +190,7 @@ describe('lib/image: blog icon', function () {
             const blogIcon = new BlogIcon({config: {}, storageUtils: {}, urlUtils: {}, settingsCache: {}});
             blogIcon.getIconDimensions(path.join(__dirname, '../../../../utils/fixtures/images/favicon.png'))
                 .then(function (result) {
-                    should.exist(result);
+                    assertExists(result);
                     result.should.eql({
                         width: 100,
                         height: 100
@@ -202,7 +203,7 @@ describe('lib/image: blog icon', function () {
             const blogIcon = new BlogIcon({config: {}, storageUtils: {}, urlUtils: {}, settingsCache: {}});
             blogIcon.getIconDimensions(path.join(__dirname, '../../../../utils/fixtures/images/favicon_multi_sizes.ico'))
                 .then(function (result) {
-                    should.exist(result);
+                    assertExists(result);
                     result.should.eql({
                         width: 64,
                         height: 64
@@ -217,7 +218,7 @@ describe('lib/image: blog icon', function () {
 
             blogIcon.getIconDimensions(path.join(__dirname, '../../../../utils/fixtures/images/favicon_multi_sizes_FILE_DOES_NOT_EXIST.ico'))
                 .catch(function (error) {
-                    should.exist(error);
+                    assertExists(error);
                     assert.equal(error.message, 'Could not fetch icon dimensions.');
                     done();
                 });

@@ -1,3 +1,4 @@
+const {assertExists} = require('../../../../utils/assertions');
 const should = require('should');
 const _ = require('lodash');
 
@@ -60,7 +61,7 @@ describe('schema validations', function () {
                 should(column).be.Object();
 
                 // Ensure the `type` key exists on a column
-                should.exist(column.type, `${tableName}.${columnName}.type should exist`);
+                assertExists(column.type, `${tableName}.${columnName}.type should exist`);
 
                 // Ensure the column type is one of the ones we allow
                 should(column.type).be.equalOneOf(Object.keys(VALID_KEYS));

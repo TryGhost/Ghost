@@ -1,3 +1,4 @@
+const {assertExists} = require('../../../../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../../../../../utils');
@@ -30,7 +31,7 @@ describe('Unit: endpoints/utils/serializers/output/members', function () {
             data: [ctrlResponse],
             meta: null
         }, apiConfig, frame);
-        should.exist(frame.response.members[0].newsletters);
+        assertExists(frame.response.members[0].newsletters);
     });
 
     it('browse: includes tiers data', function () {
@@ -47,7 +48,7 @@ describe('Unit: endpoints/utils/serializers/output/members', function () {
             meta: null
         }, apiConfig, frame);
 
-        should.exist(frame.response.members[0].tiers);
+        assertExists(frame.response.members[0].tiers);
     });
 
     it('read: includes newsletter data', function () {
@@ -60,7 +61,7 @@ describe('Unit: endpoints/utils/serializers/output/members', function () {
 
         const ctrlResponse = memberModel(testUtils.DataGenerator.forKnex.createMemberWithNewsletter());
         memberSerializer.read(ctrlResponse, apiConfig, frame);
-        should.exist(frame.response.members[0].newsletters);
+        assertExists(frame.response.members[0].newsletters);
     });
 
     it('read: includes tiers data', function () {
@@ -74,6 +75,6 @@ describe('Unit: endpoints/utils/serializers/output/members', function () {
         const ctrlResponse = memberModel(testUtils.DataGenerator.forKnex.createMemberWithProducts());
         memberSerializer.read(ctrlResponse, apiConfig, frame);
 
-        should.exist(frame.response.members[0].tiers);
+        assertExists(frame.response.members[0].tiers);
     });
 });

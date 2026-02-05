@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../utils/assertions');
 const should = require('should');
 const supertest = require('supertest');
 const _ = require('lodash');
@@ -113,11 +114,11 @@ describe('api/endpoints/content/posts', function () {
                 }
 
                 assert.equal(res.headers.vary, 'Accept-Version, Accept-Encoding');
-                should.exist(res.headers['access-control-allow-origin']);
+                assertExists(res.headers['access-control-allow-origin']);
                 assert.equal(res.headers['x-cache-invalidate'], undefined);
 
                 const jsonResponse = res.body;
-                should.exist(jsonResponse.posts);
+                assertExists(jsonResponse.posts);
                 localUtils.API.checkResponse(jsonResponse, 'posts');
                 assert.equal(jsonResponse.posts.length, 13);
                 localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
@@ -154,11 +155,11 @@ describe('api/endpoints/content/posts', function () {
                 }
 
                 assert.equal(res.headers.vary, 'Accept-Version, Accept-Encoding');
-                should.exist(res.headers['access-control-allow-origin']);
+                assertExists(res.headers['access-control-allow-origin']);
                 assert.equal(res.headers['x-cache-invalidate'], undefined);
 
                 const jsonResponse = res.body;
-                should.exist(jsonResponse.posts);
+                assertExists(jsonResponse.posts);
                 localUtils.API.checkResponse(jsonResponse, 'posts');
                 assert.equal(jsonResponse.posts.length, 13);
                 localUtils.API.checkResponse(
@@ -260,7 +261,7 @@ describe('api/endpoints/content/posts', function () {
 
                 assert.equal(res.headers.vary, 'Accept-Version, Accept, Accept-Encoding');
                 res.headers.location.should.eql(`http://localhost:9999/ghost/api/content/posts/?key=${validKey}`);
-                should.exist(res.headers['access-control-allow-origin']);
+                assertExists(res.headers['access-control-allow-origin']);
                 assert.equal(res.headers['x-cache-invalidate'], undefined);
                 done();
             });
@@ -342,7 +343,7 @@ describe('api/endpoints/content/posts', function () {
                 .expect(200)
                 .then((res) => {
                     const jsonResponse = res.body;
-                    should.exist(jsonResponse.posts);
+                    assertExists(jsonResponse.posts);
                     const post = jsonResponse.posts[0];
 
                     localUtils.API.checkResponse(post, 'post', null, null, ['id', 'slug', 'html', 'plaintext']);
@@ -361,7 +362,7 @@ describe('api/endpoints/content/posts', function () {
                 .expect(200)
                 .then((res) => {
                     const jsonResponse = res.body;
-                    should.exist(jsonResponse.posts);
+                    assertExists(jsonResponse.posts);
                     const post = jsonResponse.posts[0];
 
                     localUtils.API.checkResponse(post, 'post', null, null);
@@ -380,7 +381,7 @@ describe('api/endpoints/content/posts', function () {
                 .expect(200)
                 .then((res) => {
                     const jsonResponse = res.body;
-                    should.exist(jsonResponse.posts);
+                    assertExists(jsonResponse.posts);
                     const post = jsonResponse.posts[0];
 
                     localUtils.API.checkResponse(post, 'post', null, null);
@@ -399,7 +400,7 @@ describe('api/endpoints/content/posts', function () {
                 .expect(200)
                 .then((res) => {
                     const jsonResponse = res.body;
-                    should.exist(jsonResponse.posts);
+                    assertExists(jsonResponse.posts);
                     const post = jsonResponse.posts[0];
 
                     localUtils.API.checkResponse(post, 'post', null, null, ['id', 'html', 'plaintext']);
@@ -417,7 +418,7 @@ describe('api/endpoints/content/posts', function () {
                 .expect(200)
                 .then((res) => {
                     const jsonResponse = res.body;
-                    should.exist(jsonResponse.posts);
+                    assertExists(jsonResponse.posts);
                     const post = jsonResponse.posts[0];
 
                     localUtils.API.checkResponse(post, 'post', ['plaintext']);
@@ -435,11 +436,11 @@ describe('api/endpoints/content/posts', function () {
                 .expect(200)
                 .then((res) => {
                     assert.equal(res.headers.vary, 'Accept-Version, Accept-Encoding');
-                    should.exist(res.headers['access-control-allow-origin']);
+                    assertExists(res.headers['access-control-allow-origin']);
                     assert.equal(res.headers['x-cache-invalidate'], undefined);
 
                     const jsonResponse = res.body;
-                    should.exist(jsonResponse.posts);
+                    assertExists(jsonResponse.posts);
                     localUtils.API.checkResponse(jsonResponse, 'posts');
                     assert.equal(jsonResponse.posts.length, 15);
                     localUtils.API.checkResponse(jsonResponse.posts[0], 'post', null, null);

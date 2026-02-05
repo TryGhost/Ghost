@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 const rewire = require('rewire');
@@ -130,7 +131,7 @@ describe('templates', function () {
             hasTemplateStub.returns(false);
 
             const view = _private.getTemplateForEntry({title: 'hey'}, 'page');
-            should.exist(view);
+            assertExists(view);
             assert.equal(view, 'post');
         });
 
@@ -149,7 +150,7 @@ describe('templates', function () {
                     page: 0,
                     slug: 'test-post'
                 });
-                should.exist(view);
+                assertExists(view);
                 assert.equal(view, 'post');
             });
 
@@ -159,7 +160,7 @@ describe('templates', function () {
                     page: 0,
                     slug: 'welcome-to-ghost'
                 });
-                should.exist(view);
+                assertExists(view);
                 assert.equal(view, 'post-welcome-to-ghost');
             });
 
@@ -167,7 +168,7 @@ describe('templates', function () {
                 const view = _private.getTemplateForEntry({
                     slug: 'contact'
                 }, 'page');
-                should.exist(view);
+                assertExists(view);
                 assert.equal(view, 'page');
             });
 
@@ -175,7 +176,7 @@ describe('templates', function () {
                 const view = _private.getTemplateForEntry({
                     slug: 'about'
                 }, 'page');
-                should.exist(view);
+                assertExists(view);
                 assert.equal(view, 'page-about');
             });
 
@@ -186,7 +187,7 @@ describe('templates', function () {
                     page: 0,
                     custom_template: 'custom-about'
                 });
-                should.exist(view);
+                assertExists(view);
                 assert.equal(view, 'custom-about');
             });
 
@@ -197,7 +198,7 @@ describe('templates', function () {
                     page: 1,
                     custom_template: 'custom-about'
                 });
-                should.exist(view);
+                assertExists(view);
                 assert.equal(view, 'custom-about');
             });
 
@@ -208,7 +209,7 @@ describe('templates', function () {
                     page: 0,
                     custom_template: 'custom-about'
                 });
-                should.exist(view);
+                assertExists(view);
                 assert.equal(view, 'post');
             });
 
@@ -218,7 +219,7 @@ describe('templates', function () {
                 const view = _private.getTemplateForEntry({
                     custom_template: 'custom-about'
                 }, 'page');
-                should.exist(view);
+                assertExists(view);
                 assert.equal(view, 'page');
             });
 
@@ -231,7 +232,7 @@ describe('templates', function () {
                     slug: 'about',
                     custom_template: 'custom-about'
                 });
-                should.exist(view);
+                assertExists(view);
                 assert.equal(view, 'post-about');
             });
 
@@ -244,7 +245,7 @@ describe('templates', function () {
                     slug: 'about',
                     custom_template: 'custom-about'
                 });
-                should.exist(view);
+                assertExists(view);
                 assert.equal(view, 'post');
             });
         });
@@ -267,7 +268,7 @@ describe('templates', function () {
 
             it('will return correct view for a tag', function () {
                 const view = _private.getTemplateForEntries({name: 'tag', slugTemplate: true}, {slugParam: 'development'});
-                should.exist(view);
+                assertExists(view);
                 assert.equal(view, 'index');
             });
         });
@@ -282,20 +283,20 @@ describe('templates', function () {
 
             it('will return correct view for a tag when template exists', function () {
                 const view = _private.getTemplateForEntries({name: 'tag', slugTemplate: true}, {slugParam: 'design'});
-                should.exist(view);
+                assertExists(view);
                 assert.equal(view, 'tag-design');
             });
 
             it('will return correct view for a tag', function () {
                 const view = _private.getTemplateForEntries({name: 'tag', slugTemplate: true}, {slugParam: 'development'});
-                should.exist(view);
+                assertExists(view);
                 assert.equal(view, 'tag');
             });
         });
 
         it('will fall back to index even if no index.hbs', function () {
             const view = _private.getTemplateForEntries({name: 'tag', slugTemplate: true}, {slugParam: 'development'});
-            should.exist(view);
+            assertExists(view);
             assert.equal(view, 'index');
         });
     });

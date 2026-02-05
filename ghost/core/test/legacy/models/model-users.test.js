@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../utils/assertions');
 const errors = require('@tryghost/errors');
 const should = require('should');
 const sinon = require('sinon');
@@ -24,7 +25,7 @@ describe('User Model', function run() {
     });
 
     before(function () {
-        should.exist(UserModel);
+        assertExists(UserModel);
     });
 
     describe('Registration', function runRegistration() {
@@ -34,7 +35,7 @@ describe('User Model', function run() {
             const userData = testUtils.DataGenerator.forModel.users[0];
 
             UserModel.add(userData, context).then(function (createdUser) {
-                should.exist(createdUser);
+                assertExists(createdUser);
                 createdUser.attributes.password.should.not.equal(userData.password, 'password was hashed');
                 createdUser.attributes.email.should.eql(userData.email, 'email address correct');
 
@@ -46,7 +47,7 @@ describe('User Model', function run() {
             const userData = testUtils.DataGenerator.forModel.users[2];
 
             UserModel.add(userData, context).then(function (createdUser) {
-                should.exist(createdUser);
+                assertExists(createdUser);
                 assert.equal(createdUser.has('slug'), true);
                 assert.equal(createdUser.attributes.slug, 'jimothy');
                 done();
@@ -57,19 +58,19 @@ describe('User Model', function run() {
             const userData = testUtils.DataGenerator.forModel.users[2];
 
             UserModel.add(userData, context).then(function (createdUser) {
-                should.exist(createdUser);
+                assertExists(createdUser);
                 assert.equal(createdUser.has('slug'), true);
                 assert.equal(createdUser.attributes.slug, 'jimothy');
             }).then(function () {
                 userData.email = 'newmail@mail.com';
                 UserModel.add(userData, context).then(function (createdUser) {
-                    should.exist(createdUser);
+                    assertExists(createdUser);
                     assert.equal(createdUser.has('slug'), true);
                     assert.equal(createdUser.attributes.slug, 'jimothy-bogendath');
                 }).then(function () {
                     userData.email = 'newmail2@mail.com';
                     UserModel.add(userData, context).then(function (createdUser) {
-                        should.exist(createdUser);
+                        assertExists(createdUser);
                         assert.equal(createdUser.has('slug'), true);
                         assert.equal(createdUser.attributes.slug, 'jimothy-bogendath-2');
                         done();
@@ -82,7 +83,7 @@ describe('User Model', function run() {
             const userData = testUtils.DataGenerator.forModel.users[2];
 
             UserModel.add(userData, context).then(function (createdUser) {
-                should.exist(createdUser);
+                assertExists(createdUser);
                 createdUser.attributes.email.should.eql(userData.email, 'email address correct');
                 done();
             }).catch(done);
@@ -97,7 +98,7 @@ describe('User Model', function run() {
             });
 
             UserModel.add(userData, context).then(function (createdUser) {
-                should.exist(createdUser);
+                assertExists(createdUser);
                 assert.equal(createdUser.attributes.profile_image, 'http://www.gravatar.com/avatar/2fab21a4c4ed88e76add10650c73bae1?d=404', 'Gravatar found');
                 done();
             }).catch(done);
@@ -111,7 +112,7 @@ describe('User Model', function run() {
             });
 
             UserModel.add(userData, context).then(function (createdUser) {
-                should.exist(createdUser);
+                assertExists(createdUser);
                 assert.equal(createdUser.image, undefined);
                 done();
             }).catch(done);
@@ -124,25 +125,25 @@ describe('User Model', function run() {
             UserModel.add(userData, context).then(function () {
                 // Test same case
                 return UserModel.getByEmail(email).then(function (user) {
-                    should.exist(user);
+                    assertExists(user);
                     user.attributes.email.should.eql(email);
                 });
             }).then(function () {
                 // Test entered in lowercase
                 return UserModel.getByEmail(email.toLowerCase()).then(function (user) {
-                    should.exist(user);
+                    assertExists(user);
                     user.attributes.email.should.eql(email);
                 });
             }).then(function () {
                 // Test entered in uppercase
                 return UserModel.getByEmail(email.toUpperCase()).then(function (user) {
-                    should.exist(user);
+                    assertExists(user);
                     user.attributes.email.should.eql(email);
                 });
             }).then(function () {
                 // Test incorrect email address - swapped capital O for number 0
                 return UserModel.getByEmail('jb0gendAth@example.com').then(null, function (error) {
-                    should.exist(error);
+                    assertExists(error);
                     assert.equal(error.message, 'NotFound');
                 });
             }).then(function () {
@@ -169,7 +170,7 @@ describe('User Model', function run() {
             const userData = testUtils.DataGenerator.forModel.users[0];
 
             UserModel.check({email: userData.email, password: userData.password}).then(function (activeUser) {
-                should.exist(activeUser.get('last_seen'));
+                assertExists(activeUser.get('last_seen'));
                 done();
             }).catch(done);
         });
@@ -184,7 +185,7 @@ describe('User Model', function run() {
                 let createdAt;
                 let updatedAt;
 
-                should.exist(user);
+                assertExists(user);
 
                 lastLogin = user.get('last_seen');
                 createdAt = user.get('created_at');
@@ -219,14 +220,14 @@ describe('User Model', function run() {
                 let owner = results[0];
                 let editor = results[1];
 
-                should.exist(owner);
-                should.exist(editor);
+                assertExists(owner);
+                assertExists(editor);
 
                 owner = owner.toJSON();
                 editor = editor.toJSON();
 
-                should.exist(owner.roles);
-                should.exist(editor.roles);
+                assertExists(owner.roles);
+                assertExists(editor.roles);
 
                 assert.equal(owner.roles[0].name, 'Owner');
                 assert.equal(editor.roles[0].name, 'Editor');
@@ -241,14 +242,14 @@ describe('User Model', function run() {
 
                 return UserModel.add(userData, _.extend({}, context, {withRelated: ['roles']}));
             }).then(function (createdUser) {
-                should.exist(createdUser);
+                assertExists(createdUser);
                 createdUser.get('password').should.not.equal(userData.password, 'password was hashed');
                 createdUser.get('email').should.eql(userData.email, 'email address correct');
                 assert.equal(createdUser.related('roles').toJSON()[0].name, 'Administrator', 'role set correctly');
 
                 assert.equal(Object.keys(eventsTriggered).length, 2);
-                should.exist(eventsTriggered['user.added']);
-                should.exist(eventsTriggered['user.activated']);
+                assertExists(eventsTriggered['user.added']);
+                assertExists(eventsTriggered['user.activated']);
 
                 done();
             }).catch(done);
@@ -275,19 +276,19 @@ describe('User Model', function run() {
 
             UserModel.findOne({id: firstUser}).then(function (results) {
                 let user;
-                should.exist(results);
+                assertExists(results);
                 user = results.toJSON();
                 user.id.should.equal(firstUser);
                 assert.equal(user.website, null);
 
                 return UserModel.edit({website: 'http://some.newurl.com'}, {id: firstUser});
             }).then(function (edited) {
-                should.exist(edited);
+                assertExists(edited);
                 assert.equal(edited.attributes.website, 'http://some.newurl.com');
 
                 assert.equal(Object.keys(eventsTriggered).length, 2);
-                should.exist(eventsTriggered['user.activated.edited']);
-                should.exist(eventsTriggered['user.edited']);
+                assertExists(eventsTriggered['user.activated.edited']);
+                assertExists(eventsTriggered['user.edited']);
 
                 done();
             }).catch(done);

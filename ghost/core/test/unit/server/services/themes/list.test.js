@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 const _ = require('lodash');
@@ -44,19 +45,19 @@ describe('Themes', function () {
         });
 
         it('del() removes a key from the list', function () {
-            should.exist(themeList.get('casper'));
-            should.exist(themeList.get('not-casper'));
+            assertExists(themeList.get('casper'));
+            assertExists(themeList.get('not-casper'));
             themeList.del('casper');
             assert.equal(themeList.get('casper'), undefined);
-            should.exist(themeList.get('not-casper'));
+            assertExists(themeList.get('not-casper'));
         });
 
         it('del() with no argument does nothing', function () {
-            should.exist(themeList.get('casper'));
-            should.exist(themeList.get('not-casper'));
+            assertExists(themeList.get('casper'));
+            assertExists(themeList.get('not-casper'));
             themeList.del();
-            should.exist(themeList.get('casper'));
-            should.exist(themeList.get('not-casper'));
+            assertExists(themeList.get('casper'));
+            assertExists(themeList.get('not-casper'));
         });
 
         it('init() calls set for each theme', function () {
@@ -71,7 +72,7 @@ describe('Themes', function () {
         it('init() with empty object resets the list', function () {
             themeList.init();
             const result = themeList.getAll();
-            should.exist(result);
+            assertExists(result);
             result.should.be.an.Object();
             result.should.eql({});
             assert.equal(Object.keys(result).length, 0);

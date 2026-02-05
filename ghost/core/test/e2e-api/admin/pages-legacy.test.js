@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../utils/assertions');
 const should = require('should');
 const supertest = require('supertest');
 const moment = require('moment');
@@ -26,7 +27,7 @@ describe('Pages API', function () {
 
         assert.equal(res.headers['x-cache-invalidate'], undefined);
         const jsonResponse = res.body;
-        should.exist(jsonResponse.pages);
+        assertExists(jsonResponse.pages);
         localUtils.API.checkResponse(jsonResponse, 'pages');
         assert.equal(jsonResponse.pages.length, 6);
 
@@ -48,7 +49,7 @@ describe('Pages API', function () {
 
         assert.equal(res.headers['x-cache-invalidate'], undefined);
         const jsonResponse = res.body;
-        should.exist(jsonResponse.pages);
+        assertExists(jsonResponse.pages);
         localUtils.API.checkResponse(jsonResponse, 'pages');
         assert.equal(jsonResponse.pages.length, 6);
 
@@ -76,9 +77,9 @@ describe('Pages API', function () {
         assert.equal(res.body.pages.length, 1);
 
         localUtils.API.checkResponse(res.body.pages[0], 'page');
-        should.exist(res.headers['x-cache-invalidate']);
+        assertExists(res.headers['x-cache-invalidate']);
 
-        should.exist(res.headers.location);
+        assertExists(res.headers.location);
         res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('pages/')}${res.body.pages[0].id}/`);
 
         const model = await models.Post.findOne({
@@ -346,7 +347,7 @@ describe('Pages API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
 
-        should.exist(res2.headers['x-cache-invalidate']);
+        assertExists(res2.headers['x-cache-invalidate']);
         localUtils.API.checkResponse(res2.body.pages[0], 'page', ['reading_time']);
 
         const model = await models.Post.findOne({
@@ -389,7 +390,7 @@ describe('Pages API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
 
-        should.exist(res2.headers['x-cache-invalidate']);
+        assertExists(res2.headers['x-cache-invalidate']);
         localUtils.API.checkResponse(res2.body.pages[0], 'page', ['reading_time']);
         res2.body.pages[0].tiers.length.should.eql(paidTiers.length);
 

@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 const hbs = require('../../../../../core/frontend/services/theme-engine/engine');
@@ -129,7 +130,7 @@ describe('Themes middleware', function () {
         executeMiddleware(middleware, req, res, function next(err) {
             try {
                 // Did throw an error
-                should.exist(err);
+                assertExists(err);
                 assert.equal(err.message, 'The currently active theme "bacon-sensation" is missing.');
 
                 assert.equal(activeThemeGetStub.called, true);
@@ -194,7 +195,7 @@ describe('Themes middleware', function () {
                     const templateOptions = hbsUpdateTemplateOptionsStub.firstCall.args[0];
                     const data = templateOptions.data;
 
-                    should.exist(data.site.signup_url);
+                    assertExists(data.site.signup_url);
                     assert.equal(data.site.signup_url, 'https://feedly.com/i/subscription/feed/http%3A%2F%2F127.0.0.1%3A2369%2Frss%2F');
 
                     done();

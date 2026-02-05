@@ -1,3 +1,4 @@
+const {assertExists} = require('../../../utils/assertions');
 const should = require('should');
 
 // Stuff we are testing
@@ -6,7 +7,7 @@ const excerptHelper = require('../../../../core/frontend/helpers/excerpt');
 describe('{{excerpt}} Helper', function () {
     function shouldRenderToExpected(data, hash, expected) {
         const rendered = excerptHelper.call(data, hash);
-        should.exist(rendered);
+        assertExists(rendered);
         rendered.string.should.equal(expected);
     }
 

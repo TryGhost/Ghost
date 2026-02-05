@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 
@@ -106,7 +107,7 @@ describe('staticTheme', function () {
             assert.equal(expressStaticStub.called, true);
 
             // Check that express static gets called with the theme path + maxAge
-            should.exist(expressStaticStub.firstCall.args);
+            assertExists(expressStaticStub.firstCall.args);
             assert.equal(expressStaticStub.firstCall.args[0], 'my/fake/path');
             expressStaticStub.firstCall.args[1].should.be.an.Object().with.property('maxAge');
 
@@ -123,7 +124,7 @@ describe('staticTheme', function () {
             assert.equal(expressStaticStub.called, true);
 
             // Check that express static gets called with the theme path + maxAge
-            should.exist(expressStaticStub.firstCall.args);
+            assertExists(expressStaticStub.firstCall.args);
             assert.equal(expressStaticStub.firstCall.args[0], 'my/fake/path');
             expressStaticStub.firstCall.args[1].should.be.an.Object().with.property('maxAge');
 
@@ -154,7 +155,7 @@ describe('staticTheme', function () {
             assert.equal(expressStaticStub.called, true);
 
             // Check that express static gets called with the theme path + maxAge
-            should.exist(expressStaticStub.firstCall.args);
+            assertExists(expressStaticStub.firstCall.args);
             assert.equal(expressStaticStub.firstCall.args[0], 'my/fake/path');
             expressStaticStub.firstCall.args[1].should.be.an.Object().with.property('maxAge');
 
@@ -171,7 +172,7 @@ describe('staticTheme', function () {
             assert.equal(expressStaticStub.called, true);
 
             // Check that express static gets called with the theme path + maxAge
-            should.exist(expressStaticStub.firstCall.args);
+            assertExists(expressStaticStub.firstCall.args);
             assert.equal(expressStaticStub.firstCall.args[0], 'my/fake/path');
             expressStaticStub.firstCall.args[1].should.be.an.Object().with.property('maxAge');
 
@@ -188,7 +189,7 @@ describe('staticTheme', function () {
             assert.equal(expressStaticStub.called, true);
 
             // Check that express static gets called with the theme path + maxAge
-            should.exist(expressStaticStub.firstCall.args);
+            assertExists(expressStaticStub.firstCall.args);
             assert.equal(expressStaticStub.firstCall.args[0], 'my/fake/path');
             expressStaticStub.firstCall.args[1].should.be.an.Object().with.property('maxAge');
 
@@ -285,7 +286,7 @@ describe('staticTheme', function () {
                 assert.equal(expressStaticStub.called, true);
 
                 // Check that express static gets called with the theme path + maxAge
-                should.exist(expressStaticStub.firstCall.args);
+                assertExists(expressStaticStub.firstCall.args);
                 assert.equal(expressStaticStub.firstCall.args[0], 'my/fake/path');
                 expressStaticStub.firstCall.args[1].should.be.an.Object().with.property('maxAge');
 
@@ -302,7 +303,7 @@ describe('staticTheme', function () {
                 assert.equal(expressStaticStub.called, true);
 
                 // Check that express static gets called with the theme path + maxAge
-                should.exist(expressStaticStub.firstCall.args);
+                assertExists(expressStaticStub.firstCall.args);
                 assert.equal(expressStaticStub.firstCall.args[0], 'my/fake/path');
                 expressStaticStub.firstCall.args[1].should.be.an.Object().with.property('maxAge');
 
@@ -319,7 +320,7 @@ describe('staticTheme', function () {
                 assert.equal(expressStaticStub.called, true);
 
                 // Check that express static gets called with the theme path + maxAge
-                should.exist(expressStaticStub.firstCall.args);
+                assertExists(expressStaticStub.firstCall.args);
                 assert.equal(expressStaticStub.firstCall.args[0], 'my/fake/path');
                 expressStaticStub.firstCall.args[1].should.be.an.Object().with.property('maxAge');
 
@@ -343,7 +344,7 @@ describe('staticTheme', function () {
                 assert.equal(expressStaticStub.called, true);
 
                 const options = expressStaticStub.firstCall.args[1];
-                should.exist(options.setHeaders);
+                assertExists(options.setHeaders);
 
                 const setHeaderStub = sinon.stub();
                 options.setHeaders({setHeader: setHeaderStub});
@@ -373,7 +374,7 @@ describe('staticTheme', function () {
                 assert.equal(expressStaticStub.called, true);
 
                 // Check that express static gets called with correct options
-                should.exist(expressStaticStub.firstCall.args);
+                assertExists(expressStaticStub.firstCall.args);
                 assert.equal(expressStaticStub.firstCall.args[0], 'my/fake/path');
 
                 const options = expressStaticStub.firstCall.args[1];
@@ -394,7 +395,7 @@ describe('staticTheme', function () {
                 assert.equal(expressStaticStub.called, true);
 
                 // Check that express static gets called with correct options
-                should.exist(expressStaticStub.firstCall.args);
+                assertExists(expressStaticStub.firstCall.args);
                 assert.equal(expressStaticStub.firstCall.args[0], 'my/fake/path');
 
                 const options = expressStaticStub.firstCall.args[1];
@@ -415,7 +416,7 @@ describe('staticTheme', function () {
                 assert.equal(expressStaticStub.called, true);
 
                 // Check that express static gets called with correct options
-                should.exist(expressStaticStub.firstCall.args);
+                assertExists(expressStaticStub.firstCall.args);
                 assert.equal(expressStaticStub.firstCall.args[0], 'my/fake/path');
 
                 const options = expressStaticStub.firstCall.args[1];
@@ -434,7 +435,7 @@ describe('staticTheme', function () {
                 assert.equal(activeThemeStub.calledTwice, true);
                 assert.equal(expressStaticStub.called, true);
 
-                should.exist(expressStaticStub.firstCall.args);
+                assertExists(expressStaticStub.firstCall.args);
                 assert.equal(expressStaticStub.firstCall.args[0], 'my/fake/path');
 
                 const options = expressStaticStub.firstCall.args[1];
@@ -497,7 +498,7 @@ describe('staticTheme', function () {
                 assert.equal(expressStaticStub.called, true);
 
                 // Check that express static gets called with correct options
-                should.exist(expressStaticStub.firstCall.args);
+                assertExists(expressStaticStub.firstCall.args);
                 assert.equal(expressStaticStub.firstCall.args[0], 'my/fake/path');
 
                 const options = expressStaticStub.firstCall.args[1];
@@ -518,7 +519,7 @@ describe('staticTheme', function () {
                 assert.equal(expressStaticStub.called, true);
 
                 // Check that express static gets called with correct options
-                should.exist(expressStaticStub.firstCall.args);
+                assertExists(expressStaticStub.firstCall.args);
                 assert.equal(expressStaticStub.firstCall.args[0], 'my/fake/path');
 
                 const options = expressStaticStub.firstCall.args[1];
@@ -539,7 +540,7 @@ describe('staticTheme', function () {
                 assert.equal(expressStaticStub.called, true);
 
                 // Check that express static gets called with correct options
-                should.exist(expressStaticStub.firstCall.args);
+                assertExists(expressStaticStub.firstCall.args);
                 assert.equal(expressStaticStub.firstCall.args[0], 'my/fake/path');
 
                 const options = expressStaticStub.firstCall.args[1];

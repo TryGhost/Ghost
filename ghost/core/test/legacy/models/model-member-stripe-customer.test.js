@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../utils/assertions');
 const should = require('should');
 const {Member} = require('../../../core/server/models/member');
 const {MemberStripeCustomer} = require('../../../core/server/models/member-stripe-customer');
@@ -71,7 +72,7 @@ describe('MemberStripeCustomer Model', function run() {
                 withRelated: ['subscriptions']
             }));
 
-            should.exist(customer.related('subscriptions'), 'MemberStripeCustomer should have been fetched with subscriptions');
+            assertExists(customer.related('subscriptions'), 'MemberStripeCustomer should have been fetched with subscriptions');
 
             const subscriptions = customer.related('subscriptions');
 
@@ -102,7 +103,7 @@ describe('MemberStripeCustomer Model', function run() {
 
             const memberFromRelation = customer.related('member');
 
-            should.exist(memberFromRelation, 'MemberStripeCustomer should have been fetched with member');
+            assertExists(memberFromRelation, 'MemberStripeCustomer should have been fetched with member');
 
             assert.equal(memberFromRelation.get('id'), member.get('id'));
             assert.equal(memberFromRelation.get('email'), 'test@test.member');
@@ -126,7 +127,7 @@ describe('MemberStripeCustomer Model', function run() {
                 customer_id: 'fake_customer_id'
             }, context);
 
-            should.exist(customer, 'Customer should have been created');
+            assertExists(customer, 'Customer should have been created');
 
             const product = await Product.add({
                 name: 'Ghost Product',
@@ -169,7 +170,7 @@ describe('MemberStripeCustomer Model', function run() {
                 customer_id: customer.get('customer_id')
             }, context);
 
-            should.exist(subscription, 'Subscription should have been created');
+            assertExists(subscription, 'Subscription should have been created');
 
             await MemberStripeCustomer.destroy(Object.assign({
                 id: customer.get('id')

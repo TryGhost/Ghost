@@ -1,3 +1,4 @@
+const {assertExists} = require('../../../utils/assertions');
 const should = require('should');
 const getPaginatedUrl = require('../../../../core/frontend/meta/paginated-url');
 const configUtils = require('../../../utils/config-utils');
@@ -20,7 +21,7 @@ describe('getPaginatedUrl', function () {
     };
 
     it('should be a function', function () {
-        should.exist(getPaginatedUrl);
+        assertExists(getPaginatedUrl);
     });
 
     describe('index', function () {

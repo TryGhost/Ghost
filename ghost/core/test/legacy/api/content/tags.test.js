@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../utils/assertions');
 const should = require('should');
 const supertest = require('supertest');
 const _ = require('lodash');
@@ -45,8 +46,8 @@ describe('api/endpoints/content/tags', function () {
             .then((res) => {
                 assert.equal(res.headers['x-cache-invalidate'], undefined);
                 const jsonResponse = res.body;
-                should.exist(jsonResponse);
-                should.exist(jsonResponse.tags);
+                assertExists(jsonResponse);
+                assertExists(jsonResponse.tags);
                 assert.equal(jsonResponse.tags.length, 5);
                 localUtils.API.checkResponse(jsonResponse.tags[0], 'tag', ['count', 'url']);
 
@@ -57,7 +58,7 @@ describe('api/endpoints/content/tags', function () {
                 jsonResponse.meta.pagination.should.have.property('next', 2);
                 jsonResponse.meta.pagination.should.have.property('prev', null);
 
-                should.exist(jsonResponse.tags[0].count.posts);
+                assertExists(jsonResponse.tags[0].count.posts);
                 // Each tag should have the correct count
                 assert.equal(_.find(jsonResponse.tags, {name: 'Getting Started'}).count.posts, 7);
                 assert.equal(_.find(jsonResponse.tags, {name: 'kitchen sink'}).count.posts, 2);
