@@ -5,12 +5,12 @@
     <button type="button" class="close" title="Close" {{on "click" (fn @close false)}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
 
     <div class="modal-body">
-        <p class="mb6">
+        <p class="mb5">
             <strong>{{or @data.member.name @data.member.email}}</strong> won't be able to comment in the future. You can re-enable commenting anytime.
         </p>
 
         <div class="flex justify-between">
-            <div class="form-group for-checkbox">
+            <div class="for-checkbox">
                 <label class="checkbox">
                     <input
                         class="gh-input"
