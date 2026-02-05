@@ -11,13 +11,12 @@ import {
     SheetHeader,
     SheetTitle
 } from '@tryghost/shade';
-import {useCommentReplies, useReadComment} from '@tryghost/admin-x-framework/api/comments';
+import {useReadComment, useThreadComments} from '@tryghost/admin-x-framework/api/comments';
 
 interface CommentThreadSidebarProps {
     commentId: string | null;
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    onThreadClick: (commentId: string) => void;
     commentPermalinksEnabled?: boolean;
 }
 
@@ -25,28 +24,27 @@ const CommentThreadSidebar: React.FC<CommentThreadSidebarProps> = ({
     commentId,
     open,
     onOpenChange,
-    onThreadClick,
     commentPermalinksEnabled
 }) => {
-    const {data: repliesData, isLoading: isLoadingReplies, isError: isRepliesError} = useCommentReplies(commentId ?? '', {
+    const {data: threadData, isLoading: isLoadingThread, isError: isThreadError} = useThreadComments(commentId ?? '', {
         enabled: open && !!commentId
     });
 
-    // Fetch the parent comment separately using the read endpoint
-    const {data: parentData, isLoading: isLoadingParent, isError: isParentError} = useReadComment(commentId ?? '', {
+    // Fetch the selected comment separately using the read endpoint
+    const {data: selectedData, isLoading: isLoadingSelected, isError: isSelectedError} = useReadComment(commentId ?? '', {
         enabled: open && !!commentId
     });
 
-    const isLoading = isLoadingReplies || isLoadingParent;
-    // Only show error if both queries failed, or if parent failed (we need parent to render)
-    // If only replies failed, we can still show the parent comment
-    const isError = isParentError || (isRepliesError && !parentData);
+    const isLoading = isLoadingThread || isLoadingSelected;
+    // Only show error if both queries failed, or if selected comment failed (we need it to render)
+    // If only thread query failed, we can still show the selected comment
+    const isError = isSelectedError || (isThreadError && !selectedData);
 
-    // Get the parent comment from the read results
-    const parentComment = parentData?.comments?.[0];
+    // Get the selected comment from the read results
+    const selectedComment = selectedData?.comments?.[0];
 
-    // Get all replies (empty array if replies query failed)
-    const replies = repliesData?.comments || [];
+    // Get all thread comments (empty array if thread query failed)
+    const threadReplies = threadData?.comments || [];
 
     return (
         <Sheet open={open} onOpenChange={onOpenChange}>
@@ -54,24 +52,24 @@ const CommentThreadSidebar: React.FC<CommentThreadSidebarProps> = ({
                 <SheetHeader className='sticky top-0 z-40 -mx-6 bg-background/60 p-6 backdrop-blur'>
                     <SheetTitle className='text-md'>Thread</SheetTitle>
                 </SheetHeader>
-                {parentComment?.post && (
+                {selectedComment?.post && (
                     <>
                         <div className="flex items-center gap-4">
                             <div className="min-w-0 flex-1">
                                 <h3 className="line-clamp-1 text-xl font-semibold text-foreground">
-                                    {parentComment.post.title}
+                                    {selectedComment.post.title}
                                 </h3>
-                                {parentComment.post.excerpt && (
+                                {selectedComment.post.excerpt && (
                                     <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
-                                        {parentComment.post.excerpt}
+                                        {selectedComment.post.excerpt}
                                     </p>
                                 )}
                             </div>
-                            {parentComment.post.feature_image && (
+                            {selectedComment.post.feature_image && (
                                 <img
-                                    alt={parentComment.post.title || 'Post feature image'}
+                                    alt={selectedComment.post.title || 'Post feature image'}
                                     className="hidden aspect-video h-18 shrink-0 rounded object-cover lg:block"
-                                    src={parentComment.post.feature_image}
+                                    src={selectedComment.post.feature_image}
                                 />
                             )}
                         </div>
@@ -83,7 +81,7 @@ const CommentThreadSidebar: React.FC<CommentThreadSidebarProps> = ({
                         <div className="flex h-full items-center justify-center py-8">
                             <LoadingIndicator size="lg" />
                         </div>
-                    ) : isError || !parentComment ? (
+                    ) : isError || !selectedComment ? (
                         <div className="flex h-full items-center justify-center py-8">
                             <EmptyIndicator
                                 actions={
@@ -100,9 +98,9 @@ const CommentThreadSidebar: React.FC<CommentThreadSidebarProps> = ({
                     ) : (
                         <CommentThreadList
                             commentPermalinksEnabled={commentPermalinksEnabled}
-                            parentComment={parentComment}
-                            replies={replies}
-                            onThreadClick={onThreadClick}
+                            replies={threadReplies}
+                            selectedComment={selectedComment}
+                            selectedCommentId={commentId ?? ''}
                         />
                     )}
                 </div>
