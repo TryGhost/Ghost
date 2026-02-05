@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/kg-mobiledoc-html-renderer",
-  "version": "7.1.8",
+  "version": "7.1.9",
   "repository": "https://github.com/TryGhost/Koenig/tree/master/packages/kg-mobiledoc-html-renderer",
   "author": "Ghost Foundation",
   "license": "MIT",
