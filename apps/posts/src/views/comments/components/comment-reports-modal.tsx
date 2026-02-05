@@ -33,7 +33,7 @@ function CommentReportsModal({comment, open, onOpenChange}: CommentReportsModalP
                 </DialogHeader>
 
                 {/* Comment context */}
-                <div className="overflow-hidden rounded-md border p-3 opacity-60">
+                <div className="overflow-hidden rounded-md border p-3">
                     <div className="flex min-w-0 items-start gap-3">
                         <CommentAvatar
                             avatarImage={comment.member?.avatar_image}
