@@ -18,10 +18,10 @@ export class MemberWelcomeEmailsSection extends BasePage {
     constructor(page: Page) {
         super(page, '/ghost/#/settings/memberemails');
         this.section = page.getByTestId('memberemails');
-        this.freeWelcomeEmailToggle = this.section.getByLabel('Free members');
-        this.paidWelcomeEmailToggle = this.section.getByLabel('Paid members');
-        this.freeWelcomeEmailEditButton = page.getByTestId('free-welcome-email-edit-button');
-        this.paidWelcomeEmailEditButton = page.getByTestId('paid-welcome-email-edit-button');
+        this.freeWelcomeEmailToggle = this.section.getByTestId('free-welcome-email-preview').getByRole('switch');
+        this.paidWelcomeEmailToggle = this.section.getByTestId('paid-welcome-email-preview').getByRole('switch');
+        this.freeWelcomeEmailEditButton = page.getByTestId('free-welcome-email-preview');
+        this.paidWelcomeEmailEditButton = page.getByTestId('paid-welcome-email-preview');
 
         // Modal locators
         this.welcomeEmailModal = page.getByTestId('welcome-email-modal');
@@ -70,12 +70,12 @@ export class MemberWelcomeEmailsSection extends BasePage {
     }
 
     private async waitForFreeToggle(checked: boolean): Promise<void> {
-        const toggle = this.section.getByLabel('Free members').and(this.page.getByRole('switch', {checked}));
+        const toggle = this.section.getByTestId('free-welcome-email-preview').getByRole('switch', {checked});
         await toggle.waitFor({state: 'visible'});
     }
 
     private async waitForPaidToggle(checked: boolean): Promise<void> {
-        const toggle = this.section.getByLabel('Paid members').and(this.page.getByRole('switch', {checked}));
+        const toggle = this.section.getByTestId('paid-welcome-email-preview').getByRole('switch', {checked});
         await toggle.waitFor({state: 'visible'});
     }
 
