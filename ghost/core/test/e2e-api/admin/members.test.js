@@ -3704,7 +3704,7 @@ describe('Members API Bulk operations', function () {
         const members = await models.Member.findAll({withRelated: 'labels'});
         for (const member of members) {
             const labelIds = member.relations.labels.models.map(m => m.id);
-            should(labelIds).containEql(label.id);
+            assert(labelIds.includes(label.id));
         }
     });
 
@@ -3745,10 +3745,10 @@ describe('Members API Bulk operations', function () {
 
         // Verify only member1 has the label
         const updatedMember1 = await models.Member.findOne({id: member1.id}, {withRelated: 'labels'});
-        should(updatedMember1.relations.labels.models.map(m => m.id)).containEql(label.id);
+        assert(updatedMember1.relations.labels.models.map(m => m.id).includes(label.id));
 
         const updatedMember2 = await models.Member.findOne({id: member2.id}, {withRelated: 'labels'});
-        should(updatedMember2.relations.labels.models.map(m => m.id)).not.containEql(label.id);
+        assert(!updatedMember2.relations.labels.models.some(m => m.id === label.id));
     });
 
     it('Handles duplicate labels gracefully when bulk adding', async function () {

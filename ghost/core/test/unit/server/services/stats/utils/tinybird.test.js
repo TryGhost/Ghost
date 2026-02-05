@@ -9,13 +9,13 @@ describe('Tinybird Client', function () {
     let mockRequest;
     let mockSettingsCache;
     let mockTinybirdService;
-    
+
     beforeEach(function () {
         // Set up mocks
         mockConfig = {
             get: sinon.stub()
         };
-        
+
         mockRequest = {
             get: sinon.stub()
         };
@@ -63,8 +63,8 @@ describe('Tinybird Client', function () {
             assert(url.includes('site_uuid=931ade9e-a4f1-4217-8625-34bd34250c16'));
             assert(url.includes('date_from=2023-01-01'));
             assert(url.includes('date_to=2023-01-31'));
-            // url.should.containEql('timezone=UTC');
-            // url.should.containEql('member_status=all');
+            // assert(url.includes('timezone=UTC'));
+            // assert(url.includes('member_status=all'));
 
             should.exist(options);
             should.exist(options.headers);
@@ -99,7 +99,7 @@ describe('Tinybird Client', function () {
             assert(url.includes('timezone=America%2FNew_York'));
             assert(url.includes('member_status=paid'));
         });
-        
+
         it('uses local endpoint and token when local is enabled', function () {
             // Update config mock to return local config
             mockConfig.get.withArgs('tinybird:stats').returns({
@@ -207,44 +207,44 @@ describe('Tinybird Client', function () {
                     ]
                 }
             });
-            
+
             const result = await tinybirdClient.fetch('test_pipe', {
                 dateFrom: '2023-01-01',
                 dateTo: '2023-01-31'
             });
-            
+
             should.exist(result);
             result.should.be.an.Array().with.lengthOf(2);
             assert.equal(result[0].pathname, '/test-1/');
             assert.equal(result[0].visits, 100);
-            
+
             // Verify request was called with correct parameters
             assert.equal(mockRequest.get.calledOnce, true);
             const [url, options] = mockRequest.get.firstCall.args;
             url.should.startWith('https://api.tinybird.co/v0/pipes/test_pipe.json?');
             assert.equal(options.headers.Authorization, 'Bearer mock-jwt-token');
         });
-        
+
         it('returns null when request fails', async function () {
             // Setup mock to throw error
             mockRequest.get.rejects(new Error('Network error'));
-            
+
             const result = await tinybirdClient.fetch('test_pipe', {});
-            
+
             assert.equal(result, null);
             assert.equal(mockRequest.get.calledOnce, true);
         });
-        
+
         it('returns null when response parsing fails', async function () {
             // Setup mock with invalid response
             mockRequest.get.resolves({
                 body: 'invalid json'
             });
-            
+
             const result = await tinybirdClient.fetch('test_pipe', {});
-            
+
             assert.equal(result, null);
             assert.equal(mockRequest.get.calledOnce, true);
         });
     });
-}); 
+});
