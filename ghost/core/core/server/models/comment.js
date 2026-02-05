@@ -42,7 +42,7 @@ const Comment = ghostBookshelf.Model.extend({
         return this.belongsTo('Comment', 'parent_id');
     },
 
-    inReplyTo() {
+    in_reply_to() {
         return this.belongsTo('Comment', 'in_reply_to_id');
     },
 
@@ -199,7 +199,7 @@ const Comment = ghostBookshelf.Model.extend({
                     // Do not include replies for replies
                     options.withRelated = [
                         // Relations
-                        'inReplyTo', 'member', 'count.direct_replies', 'count.likes', 'count.liked'
+                        'in_reply_to', 'member', 'count.direct_replies', 'count.likes', 'count.liked'
                     ];
 
                     // Add count.reports for admin requests only
@@ -209,9 +209,9 @@ const Comment = ghostBookshelf.Model.extend({
                 } else {
                     options.withRelated = [
                         // Relations
-                        'member', 'inReplyTo', 'count.replies', 'count.direct_replies', 'count.likes', 'count.liked',
+                        'member', 'in_reply_to', 'count.replies', 'count.direct_replies', 'count.likes', 'count.liked',
                         // Replies (limited to 3)
-                        'replies', 'replies.member', 'replies.inReplyTo',
+                        'replies', 'replies.member', 'replies.in_reply_to',
                         'replies.count.direct_replies', 'replies.count.likes', 'replies.count.liked'
                     ];
 
@@ -235,7 +235,7 @@ const Comment = ghostBookshelf.Model.extend({
         const relationsToLoadIndividually = [
             'replies',
             'replies.member',
-            'replies.inReplyTo',
+            'replies.in_reply_to',
             'replies.count.direct_replies',
             'replies.count.likes',
             'replies.count.liked'
