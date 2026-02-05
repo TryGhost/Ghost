@@ -51,12 +51,12 @@ describe('api/endpoints/content/tags', function () {
                 assert.equal(jsonResponse.tags.length, 5);
                 localUtils.API.checkResponse(jsonResponse.tags[0], 'tag', ['count', 'url']);
 
-                jsonResponse.meta.pagination.should.have.property('page', 1);
-                jsonResponse.meta.pagination.should.have.property('limit', 15);
-                jsonResponse.meta.pagination.should.have.property('pages', 4);
-                jsonResponse.meta.pagination.should.have.property('total', 57);
-                jsonResponse.meta.pagination.should.have.property('next', 2);
-                jsonResponse.meta.pagination.should.have.property('prev', null);
+                assert.equal(jsonResponse.meta.pagination.page, 1);
+                assert.equal(jsonResponse.meta.pagination.limit, 15);
+                assert.equal(jsonResponse.meta.pagination.pages, 4);
+                assert.equal(jsonResponse.meta.pagination.total, 57);
+                assert.equal(jsonResponse.meta.pagination.next, 2);
+                assert.equal(jsonResponse.meta.pagination.prev, null);
 
                 assertExists(jsonResponse.tags[0].count.posts);
                 // Each tag should have the correct count

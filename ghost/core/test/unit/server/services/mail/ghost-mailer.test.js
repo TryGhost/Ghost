@@ -65,7 +65,7 @@ describe('Mail: Ghostmailer', function () {
         configUtils.set({mail: SMTP});
         mailer = new mail.GhostMailer();
 
-        mailer.should.have.property('transport');
+        assert('transport' in mailer);
         assert.equal(mailer.transport.transporter.name, 'SMTP');
         mailer.transport.sendMail.should.be.a.Function();
     });
@@ -75,7 +75,7 @@ describe('Mail: Ghostmailer', function () {
 
         mailer = new mail.GhostMailer();
 
-        mailer.should.have.property('transport');
+        assert('transport' in mailer);
         assert.equal(mailer.transport.transporter.name, 'SMTP (direct)');
     });
 

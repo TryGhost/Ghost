@@ -59,7 +59,7 @@ describe('Custom Frontend routing', function () {
                 const year = todayMoment.format('YYYY');
                 const postLink = `/blog/${year}/welcome/`;
 
-                content.indexOf(postLink).should.be.above(0);
+                assert(content.indexOf(postLink) > 0);
             });
     });
 

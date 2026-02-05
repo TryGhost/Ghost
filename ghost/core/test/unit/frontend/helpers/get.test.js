@@ -100,7 +100,7 @@ describe('{{#get}} helper', function () {
                 assert.equal(fn.called, true);
                 fn.firstCall.args[0].should.be.an.Object().with.property('posts');
 
-                fn.firstCall.args[0].posts[0].feature_image_caption.should.be.an.instanceOf(SafeString);
+                assert(fn.firstCall.args[0].posts[0].feature_image_caption instanceof SafeString);
 
                 done();
             }).catch(done);

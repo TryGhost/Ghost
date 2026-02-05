@@ -60,7 +60,7 @@ describe('SessionService', function () {
         assert.equal(req.session.user_id, 'egg');
 
         const actualUser = await sessionService.getUserForSession(req, res);
-        should.ok(findUserById.calledWith(sinon.match({id: 'egg'})));
+        assert(findUserById.calledWith(sinon.match({id: 'egg'})));
 
         const expectedUser = await findUserById.returnValues[0];
         assert.equal(actualUser, expectedUser);
@@ -149,7 +149,7 @@ describe('SessionService', function () {
             bypassCsrfProtection: true
         };
 
-        await sessionService.getUserForSession(req, res).should.be.fulfilled();
+        await sessionService.getUserForSession(req, res);
     });
 
     it('Can verify a user session', async function () {
@@ -504,7 +504,7 @@ describe('SessionService', function () {
 
         await sessionService.sendAuthCodeToUser(req, res);
 
-        should.ok(mailer.send.calledOnce);
+        assert(mailer.send.calledOnce);
         const emailArgs = mailer.send.firstCall.args[0];
         assert.equal(emailArgs.to, 'test@example.com');
         assert.match(emailArgs.subject, /Ghost sign in verification code/);

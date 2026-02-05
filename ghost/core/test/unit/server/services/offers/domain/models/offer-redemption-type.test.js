@@ -11,7 +11,7 @@ describe('OfferRedemptionType', function () {
 
             try {
                 OfferRedemptionType.create('other');
-                should.fail();
+                assert.fail();
             } catch (err) {
                 should.ok(
                     err instanceof OfferRedemptionType.InvalidOfferRedemptionType,
@@ -21,7 +21,7 @@ describe('OfferRedemptionType', function () {
 
             try {
                 OfferRedemptionType.create();
-                should.fail();
+                assert.fail();
             } catch (err) {
                 should.ok(
                     err instanceof OfferRedemptionType.InvalidOfferRedemptionType,
@@ -34,14 +34,14 @@ describe('OfferRedemptionType', function () {
     describe('OfferRedemptionType.Signup', function () {
         it('Is an OfferRedemptionType with a value of "signup"', function () {
             assert.equal(OfferRedemptionType.Signup.value, 'signup');
-            should.ok(OfferRedemptionType.Signup.equals(OfferRedemptionType.create('signup')));
+            assert(OfferRedemptionType.Signup.equals(OfferRedemptionType.create('signup')));
         });
     });
 
     describe('OfferRedemptionType.Retention', function () {
         it('Is an OfferRedemptionType with a value of "retention"', function () {
             assert.equal(OfferRedemptionType.Retention.value, 'retention');
-            should.ok(OfferRedemptionType.Retention.equals(OfferRedemptionType.create('retention')));
+            assert(OfferRedemptionType.Retention.equals(OfferRedemptionType.create('retention')));
         });
     });
 });

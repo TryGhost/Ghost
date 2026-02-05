@@ -187,12 +187,12 @@ describe('Settings API', function () {
                 return acc;
             }, {});
 
-            responseSettings.should.have.property('cover_image', `${config.get('url')}/content/images/cover_image.png`);
-            responseSettings.should.have.property('logo', `${config.get('url')}/content/images/logo.png`);
-            responseSettings.should.have.property('icon', `${config.get('url')}/content/images/size/w256h256/icon.png`);
-            responseSettings.should.have.property('portal_button_icon', `${config.get('url')}/content/images/portal_button_icon.png`);
-            responseSettings.should.have.property('og_image', `${config.get('url')}/content/images/og_image.png`);
-            responseSettings.should.have.property('twitter_image', `${config.get('url')}/content/images/twitter_image.png`);
+            assert.equal(responseSettings.cover_image, `${config.get('url')}/content/images/cover_image.png`);
+            assert.equal(responseSettings.logo, `${config.get('url')}/content/images/logo.png`);
+            assert.equal(responseSettings.icon, `${config.get('url')}/content/images/size/w256h256/icon.png`);
+            assert.equal(responseSettings.portal_button_icon, `${config.get('url')}/content/images/portal_button_icon.png`);
+            assert.equal(responseSettings.og_image, `${config.get('url')}/content/images/og_image.png`);
+            assert.equal(responseSettings.twitter_image, `${config.get('url')}/content/images/twitter_image.png`);
 
             const dbSettingsRows = await db.knex('settings')
                 .select('key', 'value')
@@ -203,12 +203,12 @@ describe('Settings API', function () {
                 return acc;
             }, {});
 
-            dbSettings.should.have.property('cover_image', '__GHOST_URL__/content/images/cover_image.png');
-            dbSettings.should.have.property('logo', '__GHOST_URL__/content/images/logo.png');
-            dbSettings.should.have.property('icon', '__GHOST_URL__/content/images/icon.png');
-            dbSettings.should.have.property('portal_button_icon', '__GHOST_URL__/content/images/portal_button_icon.png');
-            dbSettings.should.have.property('og_image', '__GHOST_URL__/content/images/og_image.png');
-            dbSettings.should.have.property('twitter_image', '__GHOST_URL__/content/images/twitter_image.png');
+            assert.equal(dbSettings.cover_image, '__GHOST_URL__/content/images/cover_image.png');
+            assert.equal(dbSettings.logo, '__GHOST_URL__/content/images/logo.png');
+            assert.equal(dbSettings.icon, '__GHOST_URL__/content/images/icon.png');
+            assert.equal(dbSettings.portal_button_icon, '__GHOST_URL__/content/images/portal_button_icon.png');
+            assert.equal(dbSettings.og_image, '__GHOST_URL__/content/images/og_image.png');
+            assert.equal(dbSettings.twitter_image, '__GHOST_URL__/content/images/twitter_image.png');
         });
 
         it('Can only send array values for keys defined with array type', async function () {

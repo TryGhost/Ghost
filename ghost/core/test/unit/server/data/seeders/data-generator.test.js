@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-require('should');
 
 const knex = require('knex').default;
 
@@ -215,8 +214,8 @@ describe('Events Generator', function () {
         });
 
         for (const timestamp of timestamps) {
-            timestamp.valueOf().should.be.lessThanOrEqual(endTime.valueOf());
-            timestamp.valueOf().should.be.greaterThanOrEqual(startTime.valueOf());
+            assert(timestamp.valueOf() <= endTime.valueOf());
+            assert(timestamp.valueOf() >= startTime.valueOf());
         }
     });
 

@@ -100,9 +100,9 @@ describe('Migration Fixture Utils', function () {
             const manager = new FixtureManager(testFixtures, placeholderMap);
             const processed = manager.fixtures;
 
-            processed.relations[0].entries.should.have.property('user123');
-            processed.relations[0].entries.user123.should.deepEqual(['Owner', 'Admin']);
-            processed.relations[0].entries.should.not.have.property('__USER_ID__');
+            assert('user123' in processed.relations[0].entries);
+            assert.deepEqual(processed.relations[0].entries.user123, ['Owner', 'Admin']);
+            assert(!('__USER_ID__' in processed.relations[0].entries));
         });
 
         it('should only process fixtures once', function () {
@@ -155,7 +155,7 @@ describe('Migration Fixture Utils', function () {
             const manager = new FixtureManager(testFixtures, {});
             const processed = manager.fixtures;
 
-            processed.should.deepEqual(testFixtures);
+            assert.deepEqual(processed, testFixtures);
         });
 
         it('should pass models to placeholder functions', function () {
@@ -340,8 +340,8 @@ describe('Migration Fixture Utils', function () {
             fixtureManager.addFixturesForModel(postFixtures).then(function (result) {
                 assertExists(result);
                 assert(_.isPlainObject(result));
-                result.should.have.property('expected', 11);
-                result.should.have.property('done', 11);
+                assert.equal(result.expected, 11);
+                assert.equal(result.done, 11);
 
                 assert.equal(postOneStub.callCount, 11);
                 assert.equal(postAddStub.callCount, 11);
@@ -361,8 +361,8 @@ describe('Migration Fixture Utils', function () {
             fixtureManager.addFixturesForModel(newsletterFixtures).then(function (result) {
                 assertExists(result);
                 assert(_.isPlainObject(result));
-                result.should.have.property('expected', 1);
-                result.should.have.property('done', 1);
+                assert.equal(result.expected, 1);
+                assert.equal(result.done, 1);
 
                 assert.equal(newsletterOneStub.callCount, 1);
                 assert.equal(newsletterAddStub.callCount, 1);
@@ -382,8 +382,8 @@ describe('Migration Fixture Utils', function () {
             fixtureManager.addFixturesForModel(postFixtures).then(function (result) {
                 assertExists(result);
                 assert(_.isPlainObject(result));
-                result.should.have.property('expected', 11);
-                result.should.have.property('done', 0);
+                assert.equal(result.expected, 11);
+                assert.equal(result.done, 0);
 
                 assert.equal(postOneStub.callCount, 11);
                 assert.equal(postAddStub.callCount, 0);
@@ -415,8 +415,8 @@ describe('Migration Fixture Utils', function () {
                 const FIXTURE_COUNT = 137;
                 assertExists(result);
                 assert(_.isPlainObject(result));
-                result.should.have.property('expected', FIXTURE_COUNT);
-                result.should.have.property('done', FIXTURE_COUNT);
+                assert.equal(result.expected, FIXTURE_COUNT);
+                assert.equal(result.done, FIXTURE_COUNT);
 
                 // Permissions & Roles
                 assert.equal(permsAllStub.calledOnce, true);
@@ -452,8 +452,8 @@ describe('Migration Fixture Utils', function () {
             fixtureManager.addFixturesForRelation(fixtures.relations[1]).then(function (result) {
                 assertExists(result);
                 assert(_.isPlainObject(result));
-                result.should.have.property('expected', 7);
-                result.should.have.property('done', 7);
+                assert.equal(result.expected, 7);
+                assert.equal(result.done, 7);
 
                 // Posts & Tags
                 assert.equal(postsAllStub.calledOnce, true);
@@ -489,8 +489,8 @@ describe('Migration Fixture Utils', function () {
             fixtureManager.addFixturesForRelation(fixtures.relations[1]).then(function (result) {
                 assertExists(result);
                 assert(_.isPlainObject(result));
-                result.should.have.property('expected', 7);
-                result.should.have.property('done', 0);
+                assert.equal(result.expected, 7);
+                assert.equal(result.done, 0);
 
                 // Posts & Tags
                 assert.equal(postsAllStub.calledOnce, true);
@@ -546,7 +546,7 @@ describe('Migration Fixture Utils', function () {
             const foundFixture = fixtureManager.findPermissionRelationsForObject('db');
             assert(_.isPlainObject(foundFixture));
             assert(_.isPlainObject(foundFixture.entries));
-            foundFixture.entries.should.have.property('Administrator', {db: 'all'});
+            assert.deepEqual(foundFixture.entries.Administrator, {db: 'all'});
         });
     });
 });

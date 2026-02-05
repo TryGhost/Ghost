@@ -14,7 +14,7 @@ describe('OfferDescription', function () {
 
             try {
                 OfferDescription.create(12);
-                should.fail();
+                assert.fail();
             } catch (err) {
                 should.ok(
                     err instanceof OfferDescription.InvalidOfferDescription,
@@ -24,7 +24,7 @@ describe('OfferDescription', function () {
 
             try {
                 OfferDescription.create({});
-                should.fail();
+                assert.fail();
             } catch (err) {
                 should.ok(
                     err instanceof OfferDescription.InvalidOfferDescription,
@@ -46,7 +46,7 @@ describe('OfferDescription', function () {
 
             try {
                 OfferDescription.create(tooLong);
-                should.fail();
+                assert.fail();
             } catch (err) {
                 should.ok(
                     err instanceof OfferDescription.InvalidOfferDescription,

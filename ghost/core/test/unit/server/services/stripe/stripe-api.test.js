@@ -653,7 +653,7 @@ describe('StripeAPI', function () {
                 customerEmail: mockCustomerEmail
             });
 
-            should.ok(mockStripe.checkout.sessions.create.firstCall.firstArg.custom_fields.length <= 3);
+            assert(mockStripe.checkout.sessions.create.firstCall.firstArg.custom_fields.length <= 3);
         });
     });
 });

@@ -10,7 +10,7 @@ describe('OfferCode', function () {
 
             try {
                 OfferCode.create();
-                should.fail();
+                assert.fail();
             } catch (err) {
                 should.ok(
                     err instanceof OfferCode.InvalidOfferCode,
@@ -20,7 +20,7 @@ describe('OfferCode', function () {
 
             try {
                 OfferCode.create(1234);
-                should.fail();
+                assert.fail();
             } catch (err) {
                 should.ok(
                     err instanceof OfferCode.InvalidOfferCode,
@@ -46,7 +46,7 @@ describe('OfferCode', function () {
 
             try {
                 OfferCode.create(tooLong);
-                should.fail();
+                assert.fail();
             } catch (err) {
                 should.ok(
                     err instanceof OfferCode.InvalidOfferCode,

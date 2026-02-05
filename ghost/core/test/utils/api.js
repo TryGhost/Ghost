@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const errors = require('@tryghost/errors');
 const _ = require('lodash');
 const url = require('url');
@@ -32,11 +33,11 @@ function checkResponseValue(jsonResponse, expectedProperties) {
     const unexpected = _.difference(providedProperties, expectedProperties);
 
     _.each(missing, function (prop) {
-        jsonResponse.should.have.property(prop);
+        assert(prop in jsonResponse);
     });
 
     _.each(unexpected, function (prop) {
-        jsonResponse.should.not.have.property(prop);
+        assert(!(prop in jsonResponse));
     });
 
     providedProperties.length.should.eql(expectedProperties.length, 'provided properties length does not match expected properties length');

@@ -98,9 +98,9 @@ describe('Offer', function () {
                     id: ObjectID()
                 }
             }, mockUniqueChecker).then(() => {
-                should.fail('Expected an error');
+                assert.fail('Expected an error');
             }, (err) => {
-                should.ok(err);
+                assert(err);
             });
         });
 
@@ -119,9 +119,9 @@ describe('Offer', function () {
                     id: ObjectID()
                 }
             }, mockUniqueChecker).then(() => {
-                should.fail('Expected an error');
+                assert.fail('Expected an error');
             }, (err) => {
-                should.ok(err);
+                assert(err);
             });
         });
 
@@ -140,9 +140,9 @@ describe('Offer', function () {
                     id: ObjectID()
                 }
             }, mockUniqueChecker).then(() => {
-                should.fail('Expected an error');
+                assert.fail('Expected an error');
             }, (err) => {
-                should.ok(err);
+                assert(err);
             });
         });
 
@@ -164,7 +164,7 @@ describe('Offer', function () {
 
             const offer = await Offer.create(data, mockUniqueChecker);
 
-            should.ok(offer.name.equals(OfferName.create(data.name)));
+            assert(offer.name.equals(OfferName.create(data.name)));
         });
 
         it('Errors if the repeating duration is applied to the year cadence', async function () {
@@ -186,9 +186,9 @@ describe('Offer', function () {
 
             try {
                 await Offer.create(data, mockUniqueChecker);
-                should.fail();
+                assert.fail();
             } catch (err) {
-                should.ok(err instanceof errors.InvalidOfferDuration);
+                assert(err instanceof errors.InvalidOfferDuration);
             }
         });
 
@@ -275,9 +275,9 @@ describe('Offer', function () {
             await Offer.create(data, mockUniqueChecker);
 
             await Offer.create({...data, redemptionCount: 2}, mockUniqueChecker).then(() => {
-                should.fail('Expected an error');
+                assert.fail('Expected an error');
             }, (err) => {
-                should.ok(err);
+                assert(err);
             });
         });
 
@@ -324,9 +324,9 @@ describe('Offer', function () {
             const offer = await Offer.create(data, mockUniqueChecker);
 
             await offer.updateCode(OfferCode.create('dupe'), mockUniqueChecker).then(() => {
-                should.fail('Expected an error');
+                assert.fail('Expected an error');
             }, (err) => {
-                should.ok(err);
+                assert(err);
             });
 
             const offer2 = await Offer.create({...data, code: 'dupe'}, createUniqueChecker());
@@ -355,9 +355,9 @@ describe('Offer', function () {
 
             await offer.updateCode(OfferCode.create('changed'), mockUniqueChecker);
             await offer.updateCode(OfferCode.create('changed-again'), mockUniqueChecker).then(() => {
-                should.fail('Expected an error');
+                assert.fail('Expected an error');
             }, (err) => {
-                should.ok(err);
+                assert(err);
             });
         });
     });
@@ -385,9 +385,9 @@ describe('Offer', function () {
             await offer.updateName(OfferName.create('Unique!'), mockUniqueChecker);
 
             await offer.updateName(OfferName.create('dupe'), mockUniqueChecker).then(() => {
-                should.fail('Expected an error');
+                assert.fail('Expected an error');
             }, (err) => {
-                should.ok(err);
+                assert(err);
             });
 
             const offer2 = await Offer.create({...data, name: 'dupe'}, createUniqueChecker());
@@ -448,7 +448,7 @@ describe('Offer', function () {
 
             const offer = await Offer.createFromStripeCoupon(stripeCoupon, 'month', tier, mockUniqueChecker);
 
-            should.ok(offer instanceof Offer);
+            assert(offer instanceof Offer);
             assert.equal(offer.code.value, 'stripe_coupon_abc');
             assert.equal(offer.status.value, 'archived');
             assert.equal(offer.stripeCouponId, 'stripe_coupon_abc');
@@ -474,7 +474,7 @@ describe('Offer', function () {
 
             const offer = await Offer.createFromStripeCoupon(stripeCoupon, 'year', tier, mockUniqueChecker);
 
-            should.ok(offer instanceof Offer);
+            assert(offer instanceof Offer);
             assert.equal(offer.code.value, 'fixed_coupon_xyz');
             assert.equal(offer.status.value, 'archived');
             assert.equal(offer.stripeCouponId, 'fixed_coupon_xyz');

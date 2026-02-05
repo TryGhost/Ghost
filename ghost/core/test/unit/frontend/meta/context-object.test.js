@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const {assertExists} = require('../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
@@ -59,7 +60,7 @@ describe('getContextObject', function () {
             contextObject = getContextObject(data, context);
 
             assertExists(contextObject);
-            contextObject.should.have.property('cover_image', 'test.png');
+            assert.equal(contextObject.cover_image, 'test.png');
         });
     });
 });

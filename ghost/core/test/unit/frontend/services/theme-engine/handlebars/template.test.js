@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../../utils/assertions');
 const should = require('should');
 const errors = require('@tryghost/errors');
@@ -14,7 +15,7 @@ describe('Helpers Template', function () {
     });
 
     it('will throw an IncorrectUsageError if the partial does not exist', function () {
-        should.throws(() => {
+        assert.throws(() => {
             templates.execute('non-existent');
         }, errors.IncorrectUsageError);
     });

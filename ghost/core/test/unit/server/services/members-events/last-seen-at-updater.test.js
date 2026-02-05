@@ -26,7 +26,7 @@ describe('LastSeenAtUpdater', function () {
         it('throws if getMembersApi is not passed to LastSeenAtUpdater', async function () {
             const settingsCache = sinon.stub().returns('Asia/Bangkok');
 
-            should.throws(() => {
+            assert.throws(() => {
                 new LastSeenAtUpdater({
                     services: {
                         settingsCache: {
@@ -34,7 +34,7 @@ describe('LastSeenAtUpdater', function () {
                         }
                     }
                 });
-            }, 'Missing option getMembersApi');
+            }, {message: 'Missing option getMembersApi'});
         });
     });
 

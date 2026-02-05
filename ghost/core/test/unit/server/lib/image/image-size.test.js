@@ -452,7 +452,7 @@ describe('lib/image: image size', function () {
 
             imageSize.getImageSizeFromUrl(url)
                 .then(() => {
-                    true.should.be.false('succeeded when expecting failure');
+                    assert.equal(true, false, 'succeeded when expecting failure');
                 })
                 .catch(function (err) {
                     assert.equal(requestMock.isDone(), true);
@@ -486,7 +486,7 @@ describe('lib/image: image size', function () {
 
             imageSize.getImageSizeFromUrl(url)
                 .then(() => {
-                    true.should.be.false('succeeded when expecting failure');
+                    assert.equal(true, false, 'succeeded when expecting failure');
                 })
                 .catch(function (err) {
                     assert.equal(requestMock.isDone(), false);

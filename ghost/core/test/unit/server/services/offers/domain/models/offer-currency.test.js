@@ -11,7 +11,7 @@ describe('OfferCurrency', function () {
 
             try {
                 OfferCurrency.create();
-                should.fail();
+                assert.fail();
             } catch (err) {
                 should.ok(
                     err instanceof OfferCurrency.InvalidOfferCurrency,
@@ -21,7 +21,7 @@ describe('OfferCurrency', function () {
 
             try {
                 OfferCurrency.create('US Dollars');
-                should.fail();
+                assert.fail();
             } catch (err) {
                 should.ok(
                     err instanceof OfferCurrency.InvalidOfferCurrency,
@@ -31,7 +31,7 @@ describe('OfferCurrency', function () {
 
             try {
                 OfferCurrency.create('$');
-                should.fail();
+                assert.fail();
             } catch (err) {
                 should.ok(
                     err instanceof OfferCurrency.InvalidOfferCurrency,
@@ -41,7 +41,7 @@ describe('OfferCurrency', function () {
 
             try {
                 OfferCurrency.create('USDC');
-                should.fail();
+                assert.fail();
             } catch (err) {
                 should.ok(
                     err instanceof OfferCurrency.InvalidOfferCurrency,
@@ -51,7 +51,7 @@ describe('OfferCurrency', function () {
 
             try {
                 OfferCurrency.create(2);
-                should.fail();
+                assert.fail();
             } catch (err) {
                 should.ok(
                     err instanceof OfferCurrency.InvalidOfferCurrency,
@@ -71,7 +71,7 @@ describe('OfferCurrency', function () {
         const currencyA = OfferCurrency.create('usd');
         const currencyB = OfferCurrency.create('USD');
 
-        should.ok(currencyA.equals(currencyB));
+        assert(currencyA.equals(currencyB));
     });
 });
 

@@ -71,7 +71,7 @@ describe('Permission Providers', function () {
                     // Roles is a JSON array
                     res.permissions[0].should.be.an.Object().with.properties('attributes', 'id');
                     res.roles[0].should.be.an.Object().with.properties('id', 'name', 'description');
-                    res.permissions[0].should.be.instanceOf(models.Base.Model);
+                    assert(res.permissions[0] instanceof models.Base.Model);
                     res.roles[0].should.not.be.instanceOf(models.Base.Model);
 
                     done();
@@ -121,7 +121,7 @@ describe('Permission Providers', function () {
                     // Roles is a JSON array
                     res.permissions[0].should.be.an.Object().with.properties('attributes', 'id');
                     res.roles[0].should.be.an.Object().with.properties('id', 'name', 'description');
-                    res.permissions[0].should.be.instanceOf(models.Base.Model);
+                    assert(res.permissions[0] instanceof models.Base.Model);
                     res.roles[0].should.not.be.instanceOf(models.Base.Model);
 
                     done();
@@ -172,7 +172,7 @@ describe('Permission Providers', function () {
                     // Roles is a JSON array
                     res.permissions[0].should.be.an.Object().with.properties('attributes', 'id');
                     res.roles[0].should.be.an.Object().with.properties('id', 'name', 'description');
-                    res.permissions[0].should.be.instanceOf(models.Base.Model);
+                    assert(res.permissions[0] instanceof models.Base.Model);
                     res.roles[0].should.not.be.instanceOf(models.Base.Model);
 
                     done();
@@ -237,7 +237,7 @@ describe('Permission Providers', function () {
                 res.roles.should.be.an.Array().with.lengthOf(1);
                 res.permissions[0].should.be.an.Object().with.properties('attributes', 'id');
                 res.roles[0].should.be.an.Object().with.properties('id', 'name', 'description');
-                res.permissions[0].should.be.instanceOf(models.Base.Model);
+                assert(res.permissions[0] instanceof models.Base.Model);
                 res.roles[0].should.not.be.instanceOf(models.Base.Model);
                 done();
             }).catch(done);

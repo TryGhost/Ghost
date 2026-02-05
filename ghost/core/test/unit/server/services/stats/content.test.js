@@ -147,10 +147,10 @@ describe('ContentStatsService', function () {
 
             assertExists(result);
             result.should.have.properties(['post-1', 'post-2']);
-            result['post-1'].should.have.property('title', 'Test Post 1');
-            result['post-1'].should.have.property('id', 'post-id-1');
-            result['post-2'].should.have.property('title', 'Test Post 2');
-            result['post-2'].should.have.property('id', 'post-id-2');
+            assert.equal(result['post-1'].title, 'Test Post 1');
+            assert.equal(result['post-1'].id, 'post-id-1');
+            assert.equal(result['post-2'].title, 'Test Post 2');
+            assert.equal(result['post-2'].id, 'post-id-2');
 
             // Verify knex was called correctly
             assert.equal(mockKnex.select.calledWith('uuid', 'title', 'id'), true);
@@ -342,10 +342,10 @@ describe('ContentStatsService', function () {
             assert.equal(calledWith[0], 'api_top_pages');
 
             // The second param should have camelCase properties
-            calledWith[1].should.have.property('dateFrom', '2023-01-01');
-            calledWith[1].should.have.property('dateTo', '2023-01-31');
+            assert.equal(calledWith[1].dateFrom, '2023-01-01');
+            assert.equal(calledWith[1].dateTo, '2023-01-31');
             // site_uuid should not be passed through options
-            calledWith[1].should.not.have.property('siteUuid');
+            assert(!('siteUuid' in calledWith[1]));
         });
 
         it('returns null on API request failure', async function () {
@@ -363,8 +363,8 @@ describe('ContentStatsService', function () {
             // Verify that camelCase conversion happened
             const calledWith = mockTinybirdClient.fetch.firstCall.args;
             assert.equal(calledWith[0], 'api_top_pages');
-            calledWith[1].should.have.property('dateFrom', '2023-01-01');
-            calledWith[1].should.have.property('dateTo', '2023-01-31');
+            assert.equal(calledWith[1].dateFrom, '2023-01-01');
+            assert.equal(calledWith[1].dateTo, '2023-01-31');
         });
     });
 
@@ -390,17 +390,17 @@ describe('ContentStatsService', function () {
             assertExists(result);
             assertExists(result.data);
             result.data.should.be.an.Array().with.lengthOf(2);
-            result.data[0].should.have.property('title');
-            result.data[0].should.have.property('post_id');
-            result.data[1].should.have.property('title');
-            result.data[1].should.have.property('post_id');
+            assert('title' in result.data[0]);
+            assert('post_id' in result.data[0]);
+            assert('title' in result.data[1]);
+            assert('post_id' in result.data[1]);
 
             assert.equal(service.fetchRawTopContentData.calledOnce, true);
 
             // Verify the parameters were passed properly
             const options = service.fetchRawTopContentData.firstCall.args[0];
-            options.should.have.property('date_from', '2023-01-01');
-            options.should.have.property('date_to', '2023-01-31');
+            assert.equal(options.date_from, '2023-01-01');
+            assert.equal(options.date_to, '2023-01-31');
         });
 
         it('returns empty data array when fetch returns no data', async function () {
@@ -475,10 +475,10 @@ describe('ContentStatsService', function () {
             assert.equal(mockTinybirdClient.fetch.firstCall.args[0], 'api_top_pages');
 
             const tinybirdOptions = mockTinybirdClient.fetch.firstCall.args[1];
-            tinybirdOptions.should.have.property('dateFrom', '2023-01-01');
-            tinybirdOptions.should.have.property('dateTo', '2023-01-31');
-            tinybirdOptions.should.have.property('timezone', 'America/New_York');
-            tinybirdOptions.should.have.property('memberStatus', 'paid');
+            assert.equal(tinybirdOptions.dateFrom, '2023-01-01');
+            assert.equal(tinybirdOptions.dateTo, '2023-01-31');
+            assert.equal(tinybirdOptions.timezone, 'America/New_York');
+            assert.equal(tinybirdOptions.memberStatus, 'paid');
         });
 
         it('handles null response from tinybird client', async function () {
@@ -515,21 +515,21 @@ describe('ContentStatsService', function () {
 
             const tinybirdOptions = mockTinybirdClient.fetch.firstCall.args[1];
             // Base parameters
-            tinybirdOptions.should.have.property('dateFrom', '2023-01-01');
-            tinybirdOptions.should.have.property('dateTo', '2023-01-31');
-            tinybirdOptions.should.have.property('timezone', 'America/New_York');
-            tinybirdOptions.should.have.property('memberStatus', 'paid');
+            assert.equal(tinybirdOptions.dateFrom, '2023-01-01');
+            assert.equal(tinybirdOptions.dateTo, '2023-01-31');
+            assert.equal(tinybirdOptions.timezone, 'America/New_York');
+            assert.equal(tinybirdOptions.memberStatus, 'paid');
             // Content filters
-            tinybirdOptions.should.have.property('postType', 'page');
-            tinybirdOptions.should.have.property('postUuid', 'post-123');
+            assert.equal(tinybirdOptions.postType, 'page');
+            assert.equal(tinybirdOptions.postUuid, 'post-123');
             // Source filter
-            tinybirdOptions.should.have.property('source', 'google.com');
+            assert.equal(tinybirdOptions.source, 'google.com');
             // UTM filters
-            tinybirdOptions.should.have.property('utmSource', 'newsletter');
-            tinybirdOptions.should.have.property('utmMedium', 'email');
-            tinybirdOptions.should.have.property('utmCampaign', 'spring_sale');
-            tinybirdOptions.should.have.property('utmContent', 'banner');
-            tinybirdOptions.should.have.property('utmTerm', 'headless_cms');
+            assert.equal(tinybirdOptions.utmSource, 'newsletter');
+            assert.equal(tinybirdOptions.utmMedium, 'email');
+            assert.equal(tinybirdOptions.utmCampaign, 'spring_sale');
+            assert.equal(tinybirdOptions.utmContent, 'banner');
+            assert.equal(tinybirdOptions.utmTerm, 'headless_cms');
         });
     });
 });

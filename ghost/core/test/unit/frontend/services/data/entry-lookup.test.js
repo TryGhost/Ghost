@@ -59,7 +59,7 @@ describe('Unit - frontend/data/entry-lookup', function () {
                 assert.equal(postsReadStub.called, false);
                 assert.equal(pagesReadStub.calledOnce, true);
                 assertExists(lookup.entry);
-                lookup.entry.should.have.property('url', pages[0].url);
+                assert.equal(lookup.entry.url, pages[0].url);
                 assert.equal(lookup.isEditURL, false);
             });
         });
@@ -110,7 +110,7 @@ describe('Unit - frontend/data/entry-lookup', function () {
                 assert.equal(postsReadStub.calledOnce, true);
                 assert.equal(pagesReadStub.called, false);
                 assertExists(lookup.entry);
-                lookup.entry.should.have.property('url', posts[0].url);
+                assert.equal(lookup.entry.url, posts[0].url);
                 assert.equal(lookup.isEditURL, false);
             });
         });
@@ -122,7 +122,7 @@ describe('Unit - frontend/data/entry-lookup', function () {
                 assert.equal(postsReadStub.calledOnce, true);
                 assert.equal(pagesReadStub.called, false);
                 assertExists(lookup.entry);
-                lookup.entry.should.have.property('url', posts[0].url);
+                assert.equal(lookup.entry.url, posts[0].url);
                 assert.equal(lookup.isEditURL, true);
             });
         });

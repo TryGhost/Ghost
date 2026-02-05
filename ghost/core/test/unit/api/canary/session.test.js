@@ -27,7 +27,7 @@ describe('Session controller', function () {
     describe('#add', function () {
         it('throws an UnauthorizedError if the object is missing a username and password', function () {
             return sessionController.add({}).then(() => {
-                should.fail('session.add did not throw');
+                assert.fail('session.add did not throw');
             },(err) => {
                 assert.equal(err instanceof UnauthorizedError, true);
             });
@@ -41,7 +41,7 @@ describe('Session controller', function () {
                 username: 'freddy@vodafone.com',
                 password: 'qu33nRul35'
             }, {}).then(() => {
-                should.fail('session.add did not throw');
+                assert.fail('session.add did not throw');
             },(err) => {
                 assert.equal(err instanceof UnauthorizedError, true);
             });

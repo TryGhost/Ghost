@@ -316,8 +316,8 @@ describe('Unit: services/url/UrlGenerator', function () {
                 assert.equal(urlGenerator._try(resource), false);
 
                 // Ensure the above false return is due to the malformed filter
-                queryJSONSpy.should.throw(new RegExp('Query Error: unexpected character in filter'));
-                queryJSONSpy.should.throw(new RegExp(malformedFilter));
+                assert.throws(queryJSONSpy, new RegExp('Query Error: unexpected character in filter'));
+                assert.throws(queryJSONSpy, new RegExp(malformedFilter));
             });
         });
     });

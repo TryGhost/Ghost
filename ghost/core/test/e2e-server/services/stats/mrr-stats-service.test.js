@@ -212,7 +212,7 @@ describe('MRR Stats Service', function () {
             const isWithinLast90Days = (date) => {
                 return moment(date).isBetween(ninetyDaysAgo, today, null, '[]');
             };
-            results.length.should.be.above(0);
+            assert(results.length > 0);
             results.forEach((result) => {
                 assert.equal(isWithinLast90Days(result.date), true);
             });

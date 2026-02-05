@@ -10,7 +10,7 @@ describe('OfferName', function () {
 
             try {
                 OfferName.create();
-                should.fail();
+                assert.fail();
             } catch (err) {
                 should.ok(
                     err instanceof OfferName.InvalidOfferName,
@@ -20,7 +20,7 @@ describe('OfferName', function () {
 
             try {
                 OfferName.create(null);
-                should.fail();
+                assert.fail();
             } catch (err) {
                 should.ok(
                     err instanceof OfferName.InvalidOfferName,
@@ -30,7 +30,7 @@ describe('OfferName', function () {
 
             try {
                 OfferName.create(12);
-                should.fail();
+                assert.fail();
             } catch (err) {
                 should.ok(
                     err instanceof OfferName.InvalidOfferName,
@@ -40,7 +40,7 @@ describe('OfferName', function () {
 
             try {
                 OfferName.create({});
-                should.fail();
+                assert.fail();
             } catch (err) {
                 should.ok(
                     err instanceof OfferName.InvalidOfferName,
@@ -62,7 +62,7 @@ describe('OfferName', function () {
 
             try {
                 OfferName.create(tooLong);
-                should.fail();
+                assert.fail();
             } catch (err) {
                 should.ok(
                     err instanceof OfferName.InvalidOfferName,

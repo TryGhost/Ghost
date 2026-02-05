@@ -312,7 +312,7 @@ describe('Importer', function () {
                     // we always have 1 user, the owner user we added
                     assert.equal(users.length, 1, 'There should only be one user');
 
-                    settings.length.should.be.above(0, 'Wrong number of settings');
+                    assert(settings.length > 0, 'Wrong number of settings');
                     assert.equal(posts.length, exportData.data.posts.length, 'no new posts');
                     assert.equal(tags.length, exportData.data.tags.length, 'no new tags');
                 });

@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 
 const OfferDuration = require('../../../../../../../core/server/services/offers/domain/models/offer-duration');
@@ -12,7 +13,7 @@ describe('OfferDuration', function () {
 
             try {
                 OfferDuration.create();
-                should.fail();
+                assert.fail();
             } catch (err) {
                 should.ok(
                     err instanceof OfferDuration.InvalidOfferDuration,
@@ -22,7 +23,7 @@ describe('OfferDuration', function () {
 
             try {
                 OfferDuration.create('other');
-                should.fail();
+                assert.fail();
             } catch (err) {
                 should.ok(
                     err instanceof OfferDuration.InvalidOfferDuration,
@@ -32,7 +33,7 @@ describe('OfferDuration', function () {
 
             try {
                 OfferDuration.create('repeating');
-                should.fail();
+                assert.fail();
             } catch (err) {
                 should.ok(
                     err instanceof OfferDuration.InvalidOfferDuration,
@@ -42,7 +43,7 @@ describe('OfferDuration', function () {
 
             try {
                 OfferDuration.create('repeating', 1.5);
-                should.fail();
+                assert.fail();
             } catch (err) {
                 should.ok(
                     err instanceof OfferDuration.InvalidOfferDuration,
@@ -52,7 +53,7 @@ describe('OfferDuration', function () {
 
             try {
                 OfferDuration.create('repeating', -12);
-                should.fail();
+                assert.fail();
             } catch (err) {
                 should.ok(
                     err instanceof OfferDuration.InvalidOfferDuration,
@@ -62,7 +63,7 @@ describe('OfferDuration', function () {
 
             try {
                 OfferDuration.create('repeating', '2');
-                should.fail();
+                assert.fail();
             } catch (err) {
                 should.ok(
                     err instanceof OfferDuration.InvalidOfferDuration,

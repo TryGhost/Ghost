@@ -260,18 +260,19 @@ describe('MemberWelcomeEmailRenderer', function () {
             lexicalRenderStub.rejects(new Error('Parse error'));
             const renderer = new MemberWelcomeEmailRenderer();
 
-            try {
-                await renderer.render({
+            await assert.rejects(
+                renderer.render({
                     lexical: 'invalid',
                     subject: 'Welcome!',
                     member: {name: 'John', email: 'john@example.com'},
                     siteSettings: defaultSiteSettings
-                });
-                should.fail('Should have thrown');
-            } catch (err) {
-                err.should.be.instanceof(errors.IncorrectUsageError);
-                assert.equal(err.context, 'Parse error');
-            }
+                }),
+                (err) => {
+                    assert(err instanceof errors.IncorrectUsageError);
+                    assert.equal(err.context, 'Parse error');
+                    return true;
+                }
+            );
         });
 
         it('escapes HTML in member values for body but not subject', async function () {
