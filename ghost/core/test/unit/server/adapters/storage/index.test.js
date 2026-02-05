@@ -27,8 +27,8 @@ describe('storage: index_spec', function () {
 
     it('default image storage is local file storage', function () {
         const chosenStorage = storage.getStorage();
-        (chosenStorage instanceof StorageBase).should.eql(true);
-        (chosenStorage instanceof LocalStorageBase).should.eql(true);
+        assert.equal((chosenStorage instanceof StorageBase), true);
+        assert.equal((chosenStorage instanceof LocalStorageBase), true);
     });
 
     it('custom adapter', function () {
@@ -56,10 +56,10 @@ describe('storage: index_spec', function () {
 
         fs.writeFileSync(scope.adapter, jsFile);
 
-        configUtils.config.get('storage:active').should.eql('custom-adapter');
+        assert.equal(configUtils.config.get('storage:active'), 'custom-adapter');
         chosenStorage = storage.getStorage();
-        (chosenStorage instanceof LocalStorageBase).should.eql(false);
-        (chosenStorage instanceof StorageBase).should.eql(true);
+        assert.equal((chosenStorage instanceof LocalStorageBase), false);
+        assert.equal((chosenStorage instanceof StorageBase), true);
     });
 
     it('create bad adapter: exists fn is missing', function () {

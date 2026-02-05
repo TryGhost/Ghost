@@ -228,7 +228,7 @@ describe('Member Attribution Service', function () {
                 const urlWithoutSubdirectory = urlService.getUrlByResourceId(post.id, {absolute: false, withSubdirectory: false});
 
                 // Check if we are actually testing with subdirectories
-                should(url).startWith('/subdirectory/');
+                assert(url.startsWith('/subdirectory/'));
 
                 const attribution = await memberAttributionService.service.getAttribution([
                     {
@@ -262,7 +262,7 @@ describe('Member Attribution Service', function () {
                 const absoluteUrl = urlService.getUrlByResourceId(post.id, {absolute: true, withSubdirectory: true});
 
                 // Check if we are actually testing with subdirectories
-                should(url).startWith('/subdirectory/');
+                assert(url.startsWith('/subdirectory/'));
 
                 const attribution = await memberAttributionService.service.getAttribution([
                     {

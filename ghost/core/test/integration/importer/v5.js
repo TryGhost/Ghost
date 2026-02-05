@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const importer = require('../../../core/server/data/importer');
 const models = require('../../../core/server/models');
 const testUtils = require('../../utils');
@@ -62,19 +63,19 @@ describe('Importing 5.x export', function () {
         const users = await models.User.findPage(userOptions);
         const posts = await models.Post.findPage(postOptions);
 
-        users.data.length.should.equal(2);
+        assert.equal(users.data.length, 2);
 
         const user1 = users.data[0].toJSON();
         const user2 = users.data[1].toJSON();
 
         // Current owner user
-        user1.email.should.equal('jbloggs@example.com');
+        assert.equal(user1.email, 'jbloggs@example.com');
 
         // Imported user
-        user2.email.should.equal('import-test-user@ghost.org');
+        assert.equal(user2.email, 'import-test-user@ghost.org');
         user2.id.should.not.equal(LEGACY_HARDCODED_USER_ID);
 
-        posts.data.length.should.equal(2);
+        assert.equal(posts.data.length, 2);
 
         const post1 = posts.data[0].toJSON();
         const post2 = posts.data[1].toJSON();

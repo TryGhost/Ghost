@@ -46,7 +46,7 @@ describe('Config Loader', function () {
                 customConfigPath: path.join(__dirname, '../../../utils/fixtures/config')
             });
 
-            customConfig.get('database:client').should.eql('test');
+            assert.equal(customConfig.get('database:client'), 'test');
         });
 
         it('argv is stronger than env parameter', function () {
@@ -58,7 +58,7 @@ describe('Config Loader', function () {
                 customConfigPath: path.join(__dirname, '../../../utils/fixtures/config')
             });
 
-            customConfig.get('database:client').should.eql('stronger');
+            assert.equal(customConfig.get('database:client'), 'stronger');
         });
 
         it('argv or env is NOT stronger than overrides', function () {
@@ -70,7 +70,7 @@ describe('Config Loader', function () {
                 customConfigPath: path.join(__dirname, '../../../utils/fixtures/config')
             });
 
-            customConfig.get('paths:corePath').should.not.containEql('try-to-override');
+            assert(!customConfig.get('paths:corePath').includes('try-to-override'));
         });
 
         it('overrides is stronger than every other config file', function () {
@@ -79,12 +79,12 @@ describe('Config Loader', function () {
                 customConfigPath: path.join(__dirname, '../../../utils/fixtures/config')
             });
 
-            customConfig.get('paths:corePath').should.not.containEql('try-to-override');
-            customConfig.get('database:client').should.eql('sqlite3');
-            customConfig.get('database:connection:filename').should.eql('/hehe.db');
-            customConfig.get('database:debug').should.eql(true);
-            customConfig.get('url').should.eql('http://localhost:2368');
-            customConfig.get('logging:level').should.eql('error');
+            assert(!customConfig.get('paths:corePath').includes('try-to-override'));
+            assert.equal(customConfig.get('database:client'), 'sqlite3');
+            assert.equal(customConfig.get('database:connection:filename'), '/hehe.db');
+            assert.equal(customConfig.get('database:debug'), true);
+            assert.equal(customConfig.get('url'), 'http://localhost:2368');
+            assert.equal(customConfig.get('logging:level'), 'error');
             customConfig.get('logging:transports').should.eql(['stdout']);
         });
 
@@ -95,7 +95,7 @@ describe('Config Loader', function () {
                 customConfigPath: path.join(__dirname, '../../../utils/fixtures/config')
             });
 
-            customConfig.get('site_uuid').should.eql('a58fe20c-0af0-4fc6-9b1a-20873d5b7d03');
+            assert.equal(customConfig.get('site_uuid'), 'a58fe20c-0af0-4fc6-9b1a-20873d5b7d03');
             assert.equal(customConfig.get('commented'), undefined);
         });
     });

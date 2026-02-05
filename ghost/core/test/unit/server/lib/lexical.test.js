@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const jsdom = require('jsdom');
@@ -13,7 +14,7 @@ describe('lib/lexical', function () {
             const lexical = `{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"Lexical is ","type":"text","version":1},{"detail":0,"format":3,"mode":"normal","style":"","text":"rendering.","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`;
 
             const renderedHtml = await lexicalLib.render(lexical);
-            renderedHtml.should.eql('<p>Lexical is <strong><em>rendering.</em></strong></p>');
+            assert.equal(renderedHtml, '<p>Lexical is <strong><em>rendering.</em></strong></p>');
         });
 
         it('renders all default cards', async function () {
@@ -47,8 +48,8 @@ describe('lib/lexical', function () {
 
             const rendered = await lexicalLib.render(lexicalState);
 
-            rendered.should.containEql('<figure class="kg-card kg-image-card kg-width-wide kg-card-hascaption">');
-            rendered.should.containEql('<div class="kg-card kg-audio-card">');
+            assert(rendered.includes('<figure class="kg-card kg-image-card kg-width-wide kg-card-hascaption">'));
+            assert(rendered.includes('<div class="kg-card kg-audio-card">'));
         });
 
         it(`calls custom renderers`, async function () {
@@ -88,7 +89,7 @@ describe('lib/lexical', function () {
 
             const rendered = await lexicalLib.render(lexicalState);
 
-            rendered.should.containEql('<span>CUSTOM</span>');
+            assert(rendered.includes('<span>CUSTOM</span>'));
         });
     });
 });

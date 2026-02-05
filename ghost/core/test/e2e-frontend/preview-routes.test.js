@@ -69,8 +69,8 @@ describe('Frontend Routing: Preview Routes', function () {
                 assert.equal(res.headers['set-cookie'], undefined);
                 should.exist(res.headers.date);
 
-                $('title').text().should.equal('Not finished yet');
-                $('meta[name="description"]').attr('content').should.equal('meta description for draft post');
+                assert.equal($('title').text(), 'Not finished yet');
+                assert.equal($('meta[name="description"]').attr('content'), 'meta description for draft post');
 
                 // @TODO: use theme from fixtures and don't rely on content/themes/casper
                 // $('.content .post').length.should.equal(1);

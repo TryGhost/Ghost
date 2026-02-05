@@ -121,19 +121,19 @@ describe('MembersCSVImporter', function () {
             should.exist(result.meta);
             should.exist(result.meta.stats);
             should.exist(result.meta.stats.imported);
-            result.meta.stats.imported.should.equal(2);
+            assert.equal(result.meta.stats.imported, 2);
 
             should.exist(result.meta.stats.invalid);
             assert.equal(result.meta.import_label, null);
 
             should.exist(result.meta.originalImportSize);
-            result.meta.originalImportSize.should.equal(2);
+            assert.equal(result.meta.originalImportSize, 2);
 
-            fsWriteSpy.calledOnce.should.be.true();
+            assert.equal(fsWriteSpy.calledOnce, true);
 
             // Called at least once
-            memberCreateStub.notCalled.should.be.false();
-            memberCreateStub.firstCall.lastArg.context.import.should.be.true();
+            assert.equal(memberCreateStub.notCalled, false);
+            assert.equal(memberCreateStub.firstCall.lastArg.context.import, true);
         });
 
         it('should import a CSV in the default Members export format', async function () {
@@ -170,18 +170,18 @@ describe('MembersCSVImporter', function () {
             should.exist(result.meta);
             should.exist(result.meta.stats);
             should.exist(result.meta.stats.imported);
-            result.meta.stats.imported.should.equal(2);
+            assert.equal(result.meta.stats.imported, 2);
 
             should.exist(result.meta.stats.invalid);
             assert.deepEqual(result.meta.import_label, internalLabel);
 
             should.exist(result.meta.originalImportSize);
-            result.meta.originalImportSize.should.equal(2);
+            assert.equal(result.meta.originalImportSize, 2);
 
-            fsWriteSpy.calledOnce.should.be.true();
+            assert.equal(fsWriteSpy.calledOnce, true);
 
             // member records get inserted
-            membersRepositoryStub.create.calledTwice.should.be.true();
+            assert.equal(membersRepositoryStub.create.calledTwice, true);
 
             assert.equal(membersRepositoryStub.create.args[0][1].context.import, true, 'inserts are done in the "import" context');
 
@@ -208,13 +208,13 @@ describe('MembersCSVImporter', function () {
             assert.deepEqual(membersRepositoryStub.create.args[1][0].labels, [], 'no labels should be assigned');
 
             // stripe customer import
-            membersRepositoryStub.linkStripeCustomer.calledOnce.should.be.true();
+            assert.equal(membersRepositoryStub.linkStripeCustomer.calledOnce, true);
             assert.equal(membersRepositoryStub.linkStripeCustomer.args[0][0].customer_id, 'cus_MdR9tqW6bAreiq');
             assert.equal(membersRepositoryStub.linkStripeCustomer.args[0][0].member_id, 'test_member_id');
             assert.equal(membersRepositoryStub.linkStripeCustomer.args[0][1].context.importer, true, 'linkStripeCustomer is called with importer context to prevent welcome emails');
 
             // complimentary_plan import
-            membersRepositoryStub.update.calledOnce.should.be.true();
+            assert.equal(membersRepositoryStub.update.calledOnce, true);
             assert.deepEqual(membersRepositoryStub.update.args[0][0].products, [{
                 id: defaultTierId.toString()
             }]);
@@ -316,15 +316,15 @@ describe('MembersCSVImporter', function () {
             should.exist(result.meta);
             should.exist(result.meta.stats);
             should.exist(result.meta.stats.imported);
-            result.meta.stats.imported.should.equal(5);
+            assert.equal(result.meta.stats.imported, 5);
 
             should.exist(result.meta.stats.invalid);
             assert.deepEqual(result.meta.import_label, internalLabel);
 
             should.exist(result.meta.originalImportSize);
-            result.meta.originalImportSize.should.equal(15);
+            assert.equal(result.meta.originalImportSize, 15);
 
-            fsWriteSpy.calledOnce.should.be.true();
+            assert.equal(fsWriteSpy.calledOnce, true);
 
             // member records get inserted
             assert.equal(membersRepositoryStub.create.callCount, 5);
@@ -450,7 +450,7 @@ describe('MembersCSVImporter', function () {
                 importLabel: {name: 'Test import'}
             });
 
-            sendEmailStub.calledWith({
+            assert.equal(sendEmailStub.calledWith({
                 to: 'test@example.com',
                 subject: 'Your member import was unsuccessful',
                 html: 'Import was unsuccessful',
@@ -463,7 +463,7 @@ describe('MembersCSVImporter', function () {
                         contentDisposition: 'attachment'
                     }
                 ]
-            }).should.be.true();
+            }), true);
         });
     });
 
@@ -474,12 +474,12 @@ describe('MembersCSVImporter', function () {
             const result = await membersImporter.prepare(`${csvPath}/single-column-with-header.csv`, defaultAllowedFields);
 
             should.exist(result.filePath);
-            result.filePath.should.match(/\/members\/importer\/fixtures\/Members Import/);
+            assert.match(result.filePath, /\/members\/importer\/fixtures\/Members Import/);
 
-            result.batches.should.equal(2);
+            assert.equal(result.batches, 2);
             should.exist(result.metadata);
             assert.equal(result.metadata.hasStripeData, false);
-            fsWriteSpy.calledOnce.should.be.true();
+            assert.equal(fsWriteSpy.calledOnce, true);
         });
 
         it('Does not include columns not in the original CSV or mapped', async function () {
@@ -489,7 +489,7 @@ describe('MembersCSVImporter', function () {
 
             const fileContents = fsWriteSpy.firstCall.args[1];
 
-            fileContents.should.match(/^email,labels\r\n/);
+            assert.match(fileContents, /^email,labels\r\n/);
         });
 
         it('It supports "subscribed_to_emails" column header ouf of the box', async function (){
@@ -499,7 +499,7 @@ describe('MembersCSVImporter', function () {
 
             const fileContents = fsWriteSpy.firstCall.args[1];
 
-            fileContents.should.match(/^email,subscribed_to_emails,labels\r\n/);
+            assert.match(fileContents, /^email,subscribed_to_emails,labels\r\n/);
         });
 
         it('checks for stripe data in the imported file', async function () {

@@ -52,57 +52,57 @@ describe('Integration: services/url/UrlService', function () {
         it('getUrl', function () {
             urlService.urlGenerators.forEach(function (generator) {
                 if (generator.resourceType === 'posts') {
-                    generator.getUrls().length.should.eql(4);
+                    assert.equal(generator.getUrls().length, 4);
                 }
 
                 if (generator.resourceType === 'pages') {
-                    generator.getUrls().length.should.eql(1);
+                    assert.equal(generator.getUrls().length, 1);
                 }
 
                 if (generator.resourceType === 'tags') {
-                    generator.getUrls().length.should.eql(4);
+                    assert.equal(generator.getUrls().length, 4);
                 }
 
                 if (generator.resourceType === 'authors') {
-                    generator.getUrls().length.should.eql(2);
+                    assert.equal(generator.getUrls().length, 2);
                 }
             });
 
             let url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.posts[0].id);
-            url.should.eql('/html-ipsum/');
+            assert.equal(url, '/html-ipsum/');
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.posts[1].id);
-            url.should.eql('/ghostly-kitchen-sink/');
+            assert.equal(url, '/ghostly-kitchen-sink/');
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.posts[2].id);
-            url.should.eql('/404/');
+            assert.equal(url, '/404/');
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[0].id);
-            url.should.eql('/tag/kitchen-sink/');
+            assert.equal(url, '/tag/kitchen-sink/');
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[1].id);
-            url.should.eql('/tag/bacon/');
+            assert.equal(url, '/tag/bacon/');
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[2].id);
-            url.should.eql('/tag/chorizo/');
+            assert.equal(url, '/tag/chorizo/');
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[3].id);
-            url.should.eql('/404/'); // tags with no posts should not be public
+            assert.equal(url, '/404/'); // tags with no posts should not be public
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[0].id);
-            url.should.eql('/author/joe-bloggs/');
+            assert.equal(url, '/author/joe-bloggs/');
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[1].id);
-            url.should.eql('/404/'); // users with no posts should not be public
+            assert.equal(url, '/404/'); // users with no posts should not be public
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[2].id);
-            url.should.eql('/404/'); // users with no posts should not be public
+            assert.equal(url, '/404/'); // users with no posts should not be public
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[3].id);
-            url.should.eql('/author/slimer-mcectoplasm/');
+            assert.equal(url, '/author/slimer-mcectoplasm/');
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[4].id);
-            url.should.eql('/404/'); // users with no posts should not be public
+            assert.equal(url, '/404/'); // users with no posts should not be public
         });
 
         it('getResource', function () {
@@ -153,62 +153,62 @@ describe('Integration: services/url/UrlService', function () {
         it('getUrl', function () {
             urlService.urlGenerators.forEach(function (generator) {
                 if (generator.resourceType === 'posts' && generator.filter === 'type:post') {
-                    generator.getUrls().length.should.eql(4);
+                    assert.equal(generator.getUrls().length, 4);
                 }
 
                 if (generator.resourceType === 'posts' && generator.filter === 'featured:true') {
-                    generator.getUrls().length.should.eql(2);
+                    assert.equal(generator.getUrls().length, 2);
                 }
 
                 if (generator.resourceType === 'pages') {
-                    generator.getUrls().length.should.eql(1);
+                    assert.equal(generator.getUrls().length, 1);
                 }
 
                 if (generator.resourceType === 'tags') {
-                    generator.getUrls().length.should.eql(4);
+                    assert.equal(generator.getUrls().length, 4);
                 }
 
                 if (generator.resourceType === 'authors') {
-                    generator.getUrls().length.should.eql(2);
+                    assert.equal(generator.getUrls().length, 2);
                 }
             });
 
             let url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.posts[0].id);
-            url.should.eql('/collection/2015/html-ipsum/');
+            assert.equal(url, '/collection/2015/html-ipsum/');
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.posts[1].id);
-            url.should.eql('/collection/2015/ghostly-kitchen-sink/');
+            assert.equal(url, '/collection/2015/ghostly-kitchen-sink/');
 
             // featured
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.posts[2].id);
-            url.should.eql('/podcast/short-and-sweet/');
+            assert.equal(url, '/podcast/short-and-sweet/');
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[0].id);
-            url.should.eql('/category/kitchen-sink/');
+            assert.equal(url, '/category/kitchen-sink/');
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[1].id);
-            url.should.eql('/category/bacon/');
+            assert.equal(url, '/category/bacon/');
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[2].id);
-            url.should.eql('/category/chorizo/');
+            assert.equal(url, '/category/chorizo/');
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[3].id);
-            url.should.eql('/404/'); // tags with no posts should not be public
+            assert.equal(url, '/404/'); // tags with no posts should not be public
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[0].id);
-            url.should.eql('/persons/joe-bloggs/');
+            assert.equal(url, '/persons/joe-bloggs/');
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[1].id);
-            url.should.eql('/404/'); // users with no posts should not be public
+            assert.equal(url, '/404/'); // users with no posts should not be public
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[2].id);
-            url.should.eql('/404/'); // users with no posts should not be public
+            assert.equal(url, '/404/'); // users with no posts should not be public
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[3].id);
-            url.should.eql('/persons/slimer-mcectoplasm/');
+            assert.equal(url, '/persons/slimer-mcectoplasm/');
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[4].id);
-            url.should.eql('/404/'); // users with no posts should not be public
+            assert.equal(url, '/404/'); // users with no posts should not be public
         });
     });
 
@@ -247,62 +247,62 @@ describe('Integration: services/url/UrlService', function () {
         it('getUrl', function () {
             urlService.urlGenerators.forEach(function (generator) {
                 if (generator.resourceType === 'posts' && generator.filter === 'featured:false') {
-                    generator.getUrls().length.should.eql(4);
+                    assert.equal(generator.getUrls().length, 4);
                 }
 
                 if (generator.resourceType === 'posts' && generator.filter === 'featured:true') {
-                    generator.getUrls().length.should.eql(2);
+                    assert.equal(generator.getUrls().length, 2);
                 }
 
                 if (generator.resourceType === 'pages') {
-                    generator.getUrls().length.should.eql(1);
+                    assert.equal(generator.getUrls().length, 1);
                 }
 
                 if (generator.resourceType === 'tags') {
-                    generator.getUrls().length.should.eql(4);
+                    assert.equal(generator.getUrls().length, 4);
                 }
 
                 if (generator.resourceType === 'authors') {
-                    generator.getUrls().length.should.eql(2);
+                    assert.equal(generator.getUrls().length, 2);
                 }
             });
 
             let url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.posts[0].id);
-            url.should.eql('/collection/2015/html-ipsum/');
+            assert.equal(url, '/collection/2015/html-ipsum/');
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.posts[1].id);
-            url.should.eql('/collection/2015/ghostly-kitchen-sink/');
+            assert.equal(url, '/collection/2015/ghostly-kitchen-sink/');
 
             // featured
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.posts[2].id);
-            url.should.eql('/podcast/short-and-sweet/');
+            assert.equal(url, '/podcast/short-and-sweet/');
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[0].id);
-            url.should.eql('/category/kitchen-sink/');
+            assert.equal(url, '/category/kitchen-sink/');
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[1].id);
-            url.should.eql('/category/bacon/');
+            assert.equal(url, '/category/bacon/');
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[2].id);
-            url.should.eql('/category/chorizo/');
+            assert.equal(url, '/category/chorizo/');
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[3].id);
-            url.should.eql('/404/'); // tags with no posts should not be public
+            assert.equal(url, '/404/'); // tags with no posts should not be public
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[0].id);
-            url.should.eql('/persons/joe-bloggs/');
+            assert.equal(url, '/persons/joe-bloggs/');
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[1].id);
-            url.should.eql('/404/'); // users with no posts should not be public
+            assert.equal(url, '/404/'); // users with no posts should not be public
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[2].id);
-            url.should.eql('/404/'); // users with no posts should not be public
+            assert.equal(url, '/404/'); // users with no posts should not be public
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[3].id);
-            url.should.eql('/persons/slimer-mcectoplasm/');
+            assert.equal(url, '/persons/slimer-mcectoplasm/');
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[4].id);
-            url.should.eql('/404/'); // users with no posts should not be public
+            assert.equal(url, '/404/'); // users with no posts should not be public
         });
     });
 });

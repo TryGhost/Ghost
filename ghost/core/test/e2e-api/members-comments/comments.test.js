@@ -416,7 +416,7 @@ describe('Comments API', function () {
 
                 // check that hiddenComment.id is not in the response
                 should(data2.body.comments.map(c => c.id)).not.containEql(hiddenComment.id);
-                should(data2.body.comments.length).eql(0);
+                assert.equal(data2.body.comments.length, 0);
             });
 
             it('excludes deleted comments', async function () {
@@ -436,7 +436,7 @@ describe('Comments API', function () {
                     should(comment.html).not.eql('This is a deleted comment');
                 });
 
-                data2.body.comments.length.should.eql(0);
+                assert.equal(data2.body.comments.length, 0);
             });
 
             it('shows hidden and deleted comment where there is a reply', async function () {
@@ -486,10 +486,10 @@ describe('Comments API', function () {
                 // check if the replies to hidden and deleted comments are in the response
                 data2.body.comments.forEach((comment) => {
                     if (comment.id === hiddenComment.id) {
-                        should(comment.replies.length).eql(1);
+                        assert.equal(comment.replies.length, 1);
                         assert.equal(comment.replies[0].html, 'This is a reply to a hidden comment');
                     } else if (comment.id === deletedComment.id) {
-                        should(comment.replies.length).eql(1);
+                        assert.equal(comment.replies.length, 1);
                         assert.equal(comment.replies[0].html, 'This is a reply to a deleted comment');
                     }
                 });
@@ -515,7 +515,7 @@ describe('Comments API', function () {
                     .get(`/api/comments/post/${postId}`)
                     .expectStatus(200);
 
-                should(data2.body.comments.length).eql(0);
+                assert.equal(data2.body.comments.length, 0);
             });
 
             it('cannot comment on a post', async function () {
@@ -650,8 +650,8 @@ describe('Comments API', function () {
                     });
 
                     const result = await testGetComments(`/api/comments/post/${postId}/`, []);
-                    should(result.body.comments.length).eql(0);
-                    should(result.body.meta.pagination.total).eql(0);
+                    assert.equal(result.body.comments.length, 0);
+                    assert.equal(result.body.meta.pagination.total, 0);
                 });
 
                 it('includes deleted comments if they have published replies', async function () {
@@ -683,8 +683,8 @@ describe('Comments API', function () {
                     });
 
                     const result = await testGetComments(`/api/comments/post/${postId}/`, []);
-                    should(result.body.comments.length).eql(0);
-                    should(result.body.meta.pagination.total).eql(0);
+                    assert.equal(result.body.comments.length, 0);
+                    assert.equal(result.body.meta.pagination.total, 0);
                 });
 
                 it('excludes hidden comments', async function () {
@@ -694,8 +694,8 @@ describe('Comments API', function () {
                     });
 
                     const result = await testGetComments(`/api/comments/post/${postId}/`, []);
-                    should(result.body.comments.length).eql(0);
-                    should(result.body.meta.pagination.total).eql(0);
+                    assert.equal(result.body.comments.length, 0);
+                    assert.equal(result.body.meta.pagination.total, 0);
                 });
 
                 it('includes hidden comments if they have published replies', async function () {
@@ -710,10 +710,10 @@ describe('Comments API', function () {
                     });
 
                     const result = await testGetComments(`/api/comments/post/${postId}/`, [commentMatcherWithReplies({replies: 1})]);
-                    should(result.body.comments.length).eql(1);
-                    should(result.body.comments[0].html).eql(null);
-                    should(result.body.comments[0].count.replies).eql(1);
-                    should(result.body.meta.pagination.total).eql(1);
+                    assert.equal(result.body.comments.length, 1);
+                    assert.equal(result.body.comments[0].html, null);
+                    assert.equal(result.body.comments[0].count.replies, 1);
+                    assert.equal(result.body.meta.pagination.total, 1);
                 });
 
                 it('excludes hidden comments if all replies are hidden or deleted', async function () {
@@ -731,8 +731,8 @@ describe('Comments API', function () {
                     });
 
                     const result = await testGetComments(`/api/comments/post/${postId}/`, []);
-                    should(result.body.comments.length).eql(0);
-                    should(result.body.meta.pagination.total).eql(0);
+                    assert.equal(result.body.comments.length, 0);
+                    assert.equal(result.body.meta.pagination.total, 0);
                 });
 
                 it('excludes deleted replies', async function () {
@@ -745,7 +745,7 @@ describe('Comments API', function () {
                     });
 
                     const result = await testGetComments(`/api/comments/post/${postId}/`, [commentMatcherWithReplies({replies: 0})]);
-                    should(result.body.comments[0].replies.length).eql(0);
+                    assert.equal(result.body.comments[0].replies.length, 0);
                 });
 
                 it('excludes hidden replies', async function () {
@@ -758,7 +758,7 @@ describe('Comments API', function () {
                     });
 
                     const result = await testGetComments(`/api/comments/post/${postId}/`, [commentMatcherWithReplies({replies: 0})]);
-                    should(result.body.comments[0].replies.length).eql(0);
+                    assert.equal(result.body.comments[0].replies.length, 0);
                 });
 
                 it('doesn\'t count deleted or hidden comments in replies count', async function () {
@@ -780,7 +780,7 @@ describe('Comments API', function () {
 
                     // Deleted parent returned with full data, only 1 published reply visible
                     const result = await testGetComments(`/api/comments/post/${postId}/`, [commentMatcherWithReplies({replies: 1})]);
-                    should(result.body.comments[0].replies.length).eql(1);
+                    assert.equal(result.body.comments[0].replies.length, 1);
                 });
             });
 
@@ -891,7 +891,7 @@ describe('Comments API', function () {
                 // Check if we have count.replies = 4, and replies.length == 3
                 await testGetComments(`/api/comments/${parent.get('id')}/`, [commentMatcherWithReplies({replies: 3})])
                     .expect(({body}) => {
-                        body.comments[0].count.replies.should.eql(5);
+                        assert.equal(body.comments[0].count.replies, 5);
                     });
             });
 
@@ -906,7 +906,7 @@ describe('Comments API', function () {
 
                 const res = await membersAgent.get(`/api/comments/${parent.get('id')}/`);
 
-                res.body.comments[0].count.replies.should.eql(0);
+                assert.equal(res.body.comments[0].count.replies, 0);
             });
 
             it('deleted replies are not included in the count', async function () {
@@ -920,7 +920,7 @@ describe('Comments API', function () {
 
                 const res = await membersAgent.get(`/api/comments/${parent.get('id')}/`);
 
-                res.body.comments[0].count.replies.should.eql(0);
+                assert.equal(res.body.comments[0].count.replies, 0);
             });
 
             it('Can reply to a comment with www domain', async function () {
@@ -960,8 +960,8 @@ describe('Comments API', function () {
                 // Check liked
                 await testGetComments(`/api/comments/${comment.get('id')}/`, [commentMatcher])
                     .expect(({body}) => {
-                        body.comments[0].liked.should.eql(true);
-                        body.comments[0].count.likes.should.eql(1);
+                        assert.equal(body.comments[0].liked, true);
+                        assert.equal(body.comments[0].count.likes, 1);
                     });
             });
 
@@ -1002,8 +1002,8 @@ describe('Comments API', function () {
                 // Check liked
                 await testGetComments(`/api/comments/${reply.id}/`, [commentMatcher])
                     .expect(({body}) => {
-                        body.comments[0].liked.should.eql(true);
-                        body.comments[0].count.likes.should.eql(1);
+                        assert.equal(body.comments[0].liked, true);
+                        assert.equal(body.comments[0].count.likes, 1);
                     });
             });
 
@@ -1021,13 +1021,13 @@ describe('Comments API', function () {
 
                 await testGetComments(`/api/comments/${parent.get('id')}/replies/`, new Array(7).fill(commentMatcher))
                     .expect(({body}) => {
-                        should(body.comments[0].count.replies).be.undefined();
-                        should(body.meta.pagination.total).eql(7);
-                        should(body.meta.pagination.next).eql(null);
+                        assert.equal(body.comments[0].count.replies, undefined);
+                        assert.equal(body.meta.pagination.total, 7);
+                        assert.equal(body.meta.pagination.next, null);
 
                         // Check liked + likes working for replies too
                         should(body.comments[2].id).eql(replies[2].get('id'));
-                        should(body.comments[2].count.likes).eql(1);
+                        assert.equal(body.comments[2].count.likes, 1);
                         assert.equal(body.comments[2].liked, true);
                     });
             });
@@ -1042,9 +1042,9 @@ describe('Comments API', function () {
 
                 await testGetComments(`/api/comments/${parent.get('id')}/replies/?page=3&limit=3`, [commentMatcher])
                     .expect(({body}) => {
-                        should(body.comments[0].count.replies).be.undefined();
-                        should(body.meta.pagination.total).eql(7);
-                        should(body.meta.pagination.next).eql(null);
+                        assert.equal(body.comments[0].count.replies, undefined);
+                        assert.equal(body.meta.pagination.total, 7);
+                        assert.equal(body.meta.pagination.next, null);
                     });
             });
 
@@ -1063,8 +1063,8 @@ describe('Comments API', function () {
                 // Check not liked
                 await testGetComments(`/api/comments/${comment.get('id')}/`, [commentMatcher])
                     .expect(({body}) => {
-                        body.comments[0].liked.should.eql(false);
-                        body.comments[0].count.likes.should.eql(0);
+                        assert.equal(body.comments[0].liked, false);
+                        assert.equal(body.comments[0].count.likes, 0);
                     });
             });
 
@@ -1086,7 +1086,7 @@ describe('Comments API', function () {
 
                 // Check report
                 const reports = await models.CommentReport.findAll({filter: 'comment_id:\'' + comment.get('id') + '\''});
-                reports.models.length.should.eql(1);
+                assert.equal(reports.models.length, 1);
 
                 const report = reports.models[0];
                 report.get('member_id').should.eql(loggedInMember.id);
@@ -1112,7 +1112,7 @@ describe('Comments API', function () {
 
                 // Check report should be the same (no extra created)
                 const reports = await models.CommentReport.findAll({filter: 'comment_id:\'' + comment.get('id') + '\''});
-                reports.models.length.should.eql(1);
+                assert.equal(reports.models.length, 1);
 
                 const report = reports.models[0];
                 report.get('member_id').should.eql(loggedInMember.id);
@@ -1137,9 +1137,9 @@ describe('Comments API', function () {
 
                 // Verify the reports count is NOT included in public API response
                 const res = await membersAgent.get(`/api/comments/${comment.get('id')}/`);
-                should(res.body.comments[0].count.reports).be.undefined();
+                assert.equal(res.body.comments[0].count.reports, undefined);
                 // Verify other counts are still there
-                should(res.body.comments[0].count.likes).eql(0);
+                assert.equal(res.body.comments[0].count.likes, 0);
             });
 
             it('Can edit a comment on a post', async function () {
@@ -1401,7 +1401,7 @@ describe('Comments API', function () {
 
                     // in_reply_to is set
                     newComment.in_reply_to_id.should.eql(reply.get('id'));
-                    newComment.in_reply_to_snippet.should.eql('This is a reply');
+                    assert.equal(newComment.in_reply_to_snippet, 'This is a reply');
 
                     // replied-to comment author is notified
                     // parent comment author is notified
@@ -1518,7 +1518,7 @@ describe('Comments API', function () {
                     const {body: {comments: [comment]}} = await testGetComments(`/api/comments/${newComment.id}`, [labsCommentMatcher]);
 
                     // in_reply_to_snippet is included
-                    comment.in_reply_to_snippet.should.eql('This is what was replied to');
+                    assert.equal(comment.in_reply_to_snippet, 'This is what was replied to');
                 });
 
                 ['deleted', 'hidden'].forEach((status) => {
@@ -1540,7 +1540,7 @@ describe('Comments API', function () {
 
                         const {body: {comments: [comment]}} = await testGetComments(`/api/comments/${newComment.id}`, [labsCommentMatcher]);
 
-                        comment.in_reply_to_snippet.should.eql('[removed]');
+                        assert.equal(comment.in_reply_to_snippet, '[removed]');
                     });
                 });
             });

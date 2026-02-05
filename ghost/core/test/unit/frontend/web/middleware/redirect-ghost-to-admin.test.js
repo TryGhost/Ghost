@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const redirectGhostToAdmin = require('../../../../../core/frontend/web/middleware/redirect-ghost-to-admin');
@@ -30,8 +31,8 @@ describe('Redirect Ghost To Admin', function () {
     const expectPathCallsRedirectToAdminWith = (inputPath, expectedAdminPath) => {
         req.path = inputPath;
         handleAdminRedirect(req, res);
-        redirectToAdminStub.calledOnce.should.be.true();
-        redirectToAdminStub.calledWith(301, res, expectedAdminPath).should.be.true();
+        assert.equal(redirectToAdminStub.calledOnce, true);
+        assert.equal(redirectToAdminStub.calledWith(301, res, expectedAdminPath), true);
     };
 
     describe('handleAdminRedirect function', function () {
@@ -56,7 +57,7 @@ describe('Redirect Ghost To Admin', function () {
 
             // When disabled, no ghost redirect routes should be added
             const ghostRoutes = router.stack.filter(layer => layer.regexp.source.includes('ghost'));
-            ghostRoutes.should.have.length(0);
+            assert.equal(ghostRoutes.length, 0);
         });
 
         it('should add admin redirect route when admin:redirects is enabled', function () {
@@ -76,14 +77,14 @@ describe('Redirect Ghost To Admin', function () {
             const route = router.stack.find(layer => layer.regexp.source.includes('ghost'));
 
             // Test that the regex matches the expected paths
-            route.regexp.test('/ghost').should.be.true();
-            route.regexp.test('/ghost/').should.be.true();
-            route.regexp.test('/ghost/api/admin/site/').should.be.true();
+            assert.equal(route.regexp.test('/ghost'), true);
+            assert.equal(route.regexp.test('/ghost/'), true);
+            assert.equal(route.regexp.test('/ghost/api/admin/site/'), true);
 
             // Test that it doesn't match unrelated paths
-            route.regexp.test('/admin').should.be.false();
-            route.regexp.test('/.ghost/').should.be.false();
-            route.regexp.test('/tag/ghost/').should.be.false();
+            assert.equal(route.regexp.test('/admin'), false);
+            assert.equal(route.regexp.test('/.ghost/'), false);
+            assert.equal(route.regexp.test('/tag/ghost/'), false);
         });
     });
 });

@@ -46,7 +46,7 @@ describe('Frontend Routing: Email Routes', function () {
 
         const $ = cheerio.load(res.text);
 
-        $('title').text().should.equal('I am visible through email route!');
+        assert.equal($('title').text(), 'I am visible through email route!');
 
         assert.equal(res.headers['x-cache-invalidate'], undefined);
         assert.equal(res.headers['X-CSRF-Token'], undefined);

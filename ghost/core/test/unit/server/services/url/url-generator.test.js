@@ -60,7 +60,7 @@ describe('Unit: services/url/UrlGenerator', function () {
     it('ensure listeners', function () {
         const urlGenerator = new UrlGenerator({router, queue});
 
-        queue.register.calledTwice.should.be.true();
+        assert.equal(queue.register.calledTwice, true);
         assert.equal(urlGenerator.filter, undefined);
     });
 
@@ -70,7 +70,7 @@ describe('Unit: services/url/UrlGenerator', function () {
             filter: 'featured:true',
             queue
         });
-        urlGenerator.filter.should.eql('featured:true');
+        assert.equal(urlGenerator.filter, 'featured:true');
     });
 
     it('routing type has changed', function () {
@@ -98,10 +98,10 @@ describe('Unit: services/url/UrlGenerator', function () {
 
         urlGenerator.regenerateResources();
 
-        urls.removeResourceId.calledTwice.should.be.true();
-        resource.release.calledOnce.should.be.true();
-        resource2.release.calledOnce.should.be.true();
-        urlGenerator._try.calledTwice.should.be.true();
+        assert.equal(urls.removeResourceId.calledTwice, true);
+        assert.equal(resource.release.calledOnce, true);
+        assert.equal(resource2.release.calledOnce, true);
+        assert.equal(urlGenerator._try.calledTwice, true);
     });
 
     describe('fn: _onInit', function () {
@@ -118,7 +118,7 @@ describe('Unit: services/url/UrlGenerator', function () {
             sinon.stub(urlGenerator, '_try');
 
             urlGenerator._onInit();
-            urlGenerator._try.calledOnce.should.be.true();
+            assert.equal(urlGenerator._try.calledOnce, true);
         });
 
         it('no resource', function () {
@@ -134,7 +134,7 @@ describe('Unit: services/url/UrlGenerator', function () {
             sinon.stub(urlGenerator, '_try');
 
             urlGenerator._onInit();
-            urlGenerator._try.called.should.be.false();
+            assert.equal(urlGenerator._try.called, false);
         });
     });
 
@@ -152,7 +152,7 @@ describe('Unit: services/url/UrlGenerator', function () {
             sinon.stub(urlGenerator, '_try');
 
             urlGenerator._onAdded({id: 1, type: 'posts'});
-            urlGenerator._try.calledOnce.should.be.true();
+            assert.equal(urlGenerator._try.calledOnce, true);
         });
 
         it('type is not equal', function () {
@@ -166,7 +166,7 @@ describe('Unit: services/url/UrlGenerator', function () {
             sinon.stub(urlGenerator, '_try');
 
             urlGenerator._onAdded({id: 1, type: 'posts'});
-            urlGenerator._try.called.should.be.false();
+            assert.equal(urlGenerator._try.called, false);
         });
     });
 
@@ -189,10 +189,10 @@ describe('Unit: services/url/UrlGenerator', function () {
 
                 urlGenerator._try(resource);
 
-                urlGenerator._generateUrl.calledOnce.should.be.true();
-                urlGenerator._resourceListeners.calledOnce.should.be.true();
-                urls.add.calledOnce.should.be.true();
-                resource.reserve.calledOnce.should.be.true();
+                assert.equal(urlGenerator._generateUrl.calledOnce, true);
+                assert.equal(urlGenerator._resourceListeners.calledOnce, true);
+                assert.equal(urls.add.calledOnce, true);
+                assert.equal(resource.reserve.calledOnce, true);
             });
 
             it('resource is taken', function () {
@@ -213,10 +213,10 @@ describe('Unit: services/url/UrlGenerator', function () {
 
                 urlGenerator._try(resource);
 
-                urlGenerator._generateUrl.called.should.be.false();
-                urlGenerator._resourceListeners.called.should.be.false();
-                urls.add.called.should.be.false();
-                resource.reserve.called.should.be.false();
+                assert.equal(urlGenerator._generateUrl.called, false);
+                assert.equal(urlGenerator._resourceListeners.called, false);
+                assert.equal(urls.add.called, false);
+                assert.equal(resource.reserve.called, false);
             });
         });
 
@@ -239,11 +239,11 @@ describe('Unit: services/url/UrlGenerator', function () {
 
                 urlGenerator._try(resource);
 
-                urlGenerator._generateUrl.calledOnce.should.be.true();
-                urlGenerator._resourceListeners.calledOnce.should.be.true();
-                urls.add.calledOnce.should.be.true();
-                resource.reserve.calledOnce.should.be.true();
-                urlGenerator.nql.queryJSON.called.should.be.true();
+                assert.equal(urlGenerator._generateUrl.calledOnce, true);
+                assert.equal(urlGenerator._resourceListeners.calledOnce, true);
+                assert.equal(urls.add.calledOnce, true);
+                assert.equal(resource.reserve.calledOnce, true);
+                assert.equal(urlGenerator.nql.queryJSON.called, true);
             });
 
             it('no match', function () {
@@ -264,11 +264,11 @@ describe('Unit: services/url/UrlGenerator', function () {
 
                 urlGenerator._try(resource);
 
-                urlGenerator._generateUrl.calledOnce.should.be.false();
-                urlGenerator._resourceListeners.called.should.be.false();
-                urls.add.called.should.be.false();
-                resource.reserve.called.should.be.false();
-                urlGenerator.nql.queryJSON.called.should.be.true();
+                assert.equal(urlGenerator._generateUrl.calledOnce, false);
+                assert.equal(urlGenerator._resourceListeners.called, false);
+                assert.equal(urls.add.called, false);
+                assert.equal(resource.reserve.called, false);
+                assert.equal(urlGenerator.nql.queryJSON.called, true);
             });
 
             it('resource is taken', function () {
@@ -289,11 +289,11 @@ describe('Unit: services/url/UrlGenerator', function () {
 
                 urlGenerator._try(resource);
 
-                urlGenerator._generateUrl.called.should.be.false();
-                urlGenerator._resourceListeners.called.should.be.false();
-                urls.add.called.should.be.false();
-                resource.reserve.called.should.be.false();
-                urlGenerator.nql.queryJSON.called.should.be.false();
+                assert.equal(urlGenerator._generateUrl.called, false);
+                assert.equal(urlGenerator._resourceListeners.called, false);
+                assert.equal(urls.add.called, false);
+                assert.equal(resource.reserve.called, false);
+                assert.equal(urlGenerator.nql.queryJSON.called, false);
             });
 
             it('filter is malformed', function () {
@@ -313,7 +313,7 @@ describe('Unit: services/url/UrlGenerator', function () {
                 const queryJSONSpy = sinon.spy(urlGenerator.nql, 'queryJSON');
 
                 // When the filter is malformed, the resource should not be reserved
-                urlGenerator._try(resource).should.be.false();
+                assert.equal(urlGenerator._try(resource), false);
 
                 // Ensure the above false return is due to the malformed filter
                 queryJSONSpy.should.throw(new RegExp('Query Error: unexpected character in filter'));
@@ -334,8 +334,8 @@ describe('Unit: services/url/UrlGenerator', function () {
             const replacePermalink = sinon.stub().returns('/url/');
             sinon.stub(urlUtils, 'replacePermalink').get(() => replacePermalink);
 
-            urlGenerator._generateUrl(resource).should.eql('/url/');
-            replacePermalink.calledWith('/:slug/', resource.data).should.be.true();
+            assert.equal(urlGenerator._generateUrl(resource), '/url/');
+            assert.equal(replacePermalink.calledWith('/:slug/', resource.data), true);
         });
     });
 
@@ -344,8 +344,8 @@ describe('Unit: services/url/UrlGenerator', function () {
             const urlGenerator = new UrlGenerator({router, queue, resources, urls});
 
             urlGenerator._resourceListeners(resource);
-            resource.removeAllListeners.calledOnce.should.be.true();
-            resource.addListener.calledTwice.should.be.true();
+            assert.equal(resource.removeAllListeners.calledOnce, true);
+            assert.equal(resource.addListener.calledTwice, true);
         });
 
         it('resource was updated', function () {
@@ -360,10 +360,10 @@ describe('Unit: services/url/UrlGenerator', function () {
             urlGenerator._resourceListeners(resource);
             resource.addListener.args[0][1](resource);
 
-            urlGenerator._try.called.should.be.false();
-            urls.removeResourceId.called.should.be.true();
-            resource.release.called.should.be.true();
-            queue.start.called.should.be.true();
+            assert.equal(urlGenerator._try.called, false);
+            assert.equal(urls.removeResourceId.called, true);
+            assert.equal(resource.release.called, true);
+            assert.equal(queue.start.called, true);
         });
 
         it('resource got removed', function () {
@@ -375,8 +375,8 @@ describe('Unit: services/url/UrlGenerator', function () {
             };
 
             resource.addListener.args[1][1](resource);
-            urls.removeResourceId.calledOnce.should.be.true();
-            resource.release.calledOnce.should.be.true();
+            assert.equal(urls.removeResourceId.calledOnce, true);
+            assert.equal(resource.release.calledOnce, true);
         });
     });
 });

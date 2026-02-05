@@ -327,7 +327,7 @@ describe('Create Stripe Checkout Session for Donations', function () {
             .orderBy('created_at', 'DESC')
             .fetch({require: true});
 
-        latestStripePrice.get('nickname').should.have.length(250);
+        assert.equal(latestStripePrice.get('nickname').length, 250);
     });
     it('Can create a checkout session with a personal note included', async function () {
         const post = await getPost(fixtureManager.get('posts', 0).id);
