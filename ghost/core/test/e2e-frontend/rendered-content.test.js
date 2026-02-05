@@ -79,13 +79,18 @@ describe('Post Rendering', function () {
                     assert(res.text.includes(`${cdnUrl}/content/media/audio.mp3`));
                     // Video/audio thumbnails use CDN URL
                     assert(res.text.includes(`${cdnUrl}/content/images/video-thumb.jpg`));
+                    assert(res.text.includes(`${cdnUrl}/content/images/audio-thumb.jpg`));
                     // Gallery images use CDN URL
                     assert(res.text.includes(`${cdnUrl}/content/images/gallery-1.jpg`));
+                    assert(res.text.includes(`${cdnUrl}/content/images/gallery-2.jpg`));
+                    assert(res.text.includes(`${cdnUrl}/content/images/gallery-3.jpg`));
                     // Snippet images use CDN URL
                     assert(res.text.includes(`${cdnUrl}/content/images/snippet-inline.jpg`));
                     assert(res.text.includes(`${cdnUrl}/content/files/snippet-document.pdf`));
                     assert(res.text.includes(`${cdnUrl}/content/media/snippet-video.mp4`));
                     assert(res.text.includes(`${cdnUrl}/content/media/snippet-audio.mp3`));
+                    assert(res.text.includes(`${cdnUrl}/content/images/snippet-video-thumb.jpg`));
+                    assert(res.text.includes(`${cdnUrl}/content/images/snippet-audio-thumb.jpg`));
                     assert(!res.text.includes('__GHOST_URL__'));
                 });
         });
