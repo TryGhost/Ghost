@@ -1,4 +1,3 @@
-import AudienceSelect, {getAudienceFromFilterValues, getAudienceQueryParam} from '../components/audience-select';
 import DateRangeSelect from '../components/date-range-select';
 import LocationsCard from '../Locations/components/locations-card';
 import React, {useCallback, useMemo} from 'react';
@@ -13,6 +12,7 @@ import {Card, CardContent, NavbarActions, createFilter, formatDuration, formatNu
 import {KpiMetric} from '@src/types/kpi';
 import {Navigate, useAppContext, useTinybirdQuery} from '@tryghost/admin-x-framework';
 import {STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
+import {getAudienceFromFilterValues, getAudienceQueryParam} from '@src/utils/audience';
 import {useFilterParams} from '@hooks/use-filter-params';
 import {useGlobalData} from '@src/providers/global-data-provider';
 
@@ -51,25 +51,18 @@ export const KPI_METRICS: Record<string, KpiMetric> = {
 };
 
 const Web: React.FC = () => {
-    const {statsConfig, isLoading: isConfigLoading, range, audience: globalAudience, data} = useGlobalData();
+    const {statsConfig, isLoading: isConfigLoading, range, data} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
     const {appSettings} = useAppContext();
 
     // Use URL-synced filter state for bookmarking and sharing
-    const {filters: utmFilters, setFilters: setUtmFilters} = useFilterParams();
+    const {filters: analyticsFilters, setFilters: setAnalyticsFilters} = useFilterParams();
 
-    // Check if UTM tracking is enabled in labs (defaults to true / GA)
-    const utmTrackingEnabled = data?.labs?.utmTracking ?? true;
-
-    // Derive audience from filters when UTM tracking is enabled, otherwise use global state
-    // This makes the URL the single source of truth for filters
+    // Derive audience from filters - URL is the single source of truth
     const audience = useMemo(() => {
-        if (!utmTrackingEnabled) {
-            return globalAudience;
-        }
-        const audienceFilter = utmFilters.find(f => f.field === 'audience');
+        const audienceFilter = analyticsFilters.find(f => f.field === 'audience');
         return getAudienceFromFilterValues(audienceFilter?.values as string[] | undefined);
-    }, [utmTrackingEnabled, globalAudience, utmFilters]);
+    }, [analyticsFilters]);
 
     // Get site URL and icon for domain comparison and Direct traffic favicon
     const siteUrl = data?.url as string | undefined;
@@ -88,7 +81,7 @@ const Web: React.FC = () => {
     const filterParams = useMemo(() => {
         const params: Record<string, string> = {};
 
-        utmFilters.forEach((filter) => {
+        analyticsFilters.forEach((filter) => {
             const fieldKey = filter.field;
             const values = filter.values;
 
@@ -122,11 +115,11 @@ const Web: React.FC = () => {
         });
 
         return params;
-    }, [utmFilters]);
+    }, [analyticsFilters]);
 
     // Generic handler for click-to-filter on any field (source, location, etc.)
     const handleFilterClick = useCallback((field: string, value: string) => {
-        setUtmFilters((prevFilters) => {
+        setAnalyticsFilters((prevFilters) => {
             const existingFilter = prevFilters.find(f => f.field === field);
             if (existingFilter) {
                 // Update the existing filter
@@ -138,7 +131,7 @@ const Web: React.FC = () => {
             return [...prevFilters, createFilter(field, 'is', [value])];
         });
         scrollToTop();
-    }, [setUtmFilters, scrollToTop]);
+    }, [setAnalyticsFilters, scrollToTop]);
 
     const handleLocationClick = useCallback((location: string) => handleFilterClick('location', location), [handleFilterClick]);
     const handleSourceClick = useCallback((source: string) => handleFilterClick('source', source), [handleFilterClick]);
@@ -187,33 +180,23 @@ const Web: React.FC = () => {
     }
 
     // Check if filters are applied
-    const hasFilters = utmFilters.length > 0;
+    const hasFilters = analyticsFilters.length > 0;
 
     return (
         <StatsLayout>
             <StatsHeader>
-                {!utmTrackingEnabled ?
-                    <NavbarActions>
-                        <AudienceSelect />
-                        <DateRangeSelect />
-                    </NavbarActions>
-                    :
-                    <>
-                        {hasFilters &&
-                        <NavbarActions>
-                            <DateRangeSelect />
-                        </NavbarActions>
-                        }
-                        <NavbarActions className={`${hasFilters ? '!mt-0 [grid-area:subactions] lg:!mt-[25px]' : '[grid-area:actions]'}`}>
-                            <StatsFilter
-                                filters={utmFilters}
-                                utmTrackingEnabled={utmTrackingEnabled}
-                                onChange={setUtmFilters}
-                            />
-                            {!hasFilters && <DateRangeSelect />}
-                        </NavbarActions>
-                    </>
+                {hasFilters &&
+                <NavbarActions>
+                    <DateRangeSelect />
+                </NavbarActions>
                 }
+                <NavbarActions className={`${hasFilters ? '!mt-0 [grid-area:subactions] lg:!mt-[25px]' : '[grid-area:actions]'}`}>
+                    <StatsFilter
+                        filters={analyticsFilters}
+                        onChange={setAnalyticsFilters}
+                    />
+                    {!hasFilters && <DateRangeSelect />}
+                </NavbarActions>
             </StatsHeader>
             <StatsView isLoading={isPageLoading} loadingComponent={<></>}>
                 <Card>
@@ -227,9 +210,10 @@ const Web: React.FC = () => {
                 </Card>
                 <div className='flex grid-cols-2 flex-col gap-6 lg:grid'>
                     <TopContent
+                        audience={audience}
+                        filterParams={filterParams}
                         range={range}
                         totalVisitors={totalVisitors}
-                        utmFilterParams={filterParams}
                     />
                     <SourcesCard
                         data={sourcesData as SourcesData[] | null}
@@ -239,14 +223,14 @@ const Web: React.FC = () => {
                         siteIcon={siteIcon}
                         siteUrl={siteUrl}
                         totalVisitors={totalVisitors}
-                        onSourceClick={utmTrackingEnabled ? handleSourceClick : undefined}
+                        onSourceClick={handleSourceClick}
                     />
                 </div>
                 <LocationsCard
                     data={locationsData}
                     isLoading={isLocationsLoading}
                     range={range}
-                    onLocationClick={utmTrackingEnabled ? handleLocationClick : undefined}
+                    onLocationClick={handleLocationClick}
                 />
             </StatsView>
         </StatsLayout>

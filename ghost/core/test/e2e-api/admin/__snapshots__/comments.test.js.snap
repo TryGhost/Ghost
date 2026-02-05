@@ -1,10 +1,47 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Admin Comments API API Key Permissions API key without comment permissions cannot browse comments 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": null,
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "You do not have permission to browse comments",
+      "property": null,
+      "type": "NoPermissionError",
+    },
+  ],
+}
+`;
+
+exports[`Admin Comments API API Key Permissions API key without comment permissions cannot hide comments 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "You do not have permission to edit comments",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Permission error, cannot edit comment.",
+      "property": null,
+      "type": "NoPermissionError",
+    },
+  ],
+}
+`;
+
 exports[`Admin Comments API Browse All Always includes member and post relations 1: [body] 1`] = `
 Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": Any<Number>,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -17,6 +54,12 @@ Object {
       "in_reply_to_snippet": null,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -25,6 +68,9 @@ Object {
       },
       "parent_id": Nullable<StringMatching>,
       "post": Object {
+        "excerpt": "HTML Ipsum Presents
+
+Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum o",
         "feature_image": "http://127.0.0.1:2369/content/images/2018/hey.jpg",
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "title": "Ghostly Kitchen Sink",
@@ -52,6 +98,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": Any<Number>,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -64,6 +111,12 @@ Object {
       "in_reply_to_snippet": null,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -72,6 +125,7 @@ Object {
       },
       "parent_id": Nullable<StringMatching>,
       "post": Object {
+        "excerpt": "This is my custom excerpt!",
         "feature_image": "https://example.com/super_photo.jpg",
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "title": "HTML Ipsum",
@@ -82,6 +136,7 @@ Object {
     },
     Object {
       "count": Object {
+        "direct_replies": Any<Number>,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -94,6 +149,12 @@ Object {
       "in_reply_to_snippet": null,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -102,6 +163,9 @@ Object {
       },
       "parent_id": Nullable<StringMatching>,
       "post": Object {
+        "excerpt": "HTML Ipsum Presents
+
+Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum o",
         "feature_image": "http://127.0.0.1:2369/content/images/2018/hey.jpg",
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "title": "Ghostly Kitchen Sink",
@@ -129,6 +193,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": Any<Number>,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -141,6 +206,12 @@ Object {
       "in_reply_to_snippet": null,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -149,6 +220,9 @@ Object {
       },
       "parent_id": Nullable<StringMatching>,
       "post": Object {
+        "excerpt": "HTML Ipsum Presents
+
+Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum o",
         "feature_image": "http://127.0.0.1:2369/content/images/2018/hey.jpg",
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "title": "Ghostly Kitchen Sink",
@@ -176,6 +250,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": Any<Number>,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -188,6 +263,12 @@ Object {
       "in_reply_to_snippet": null,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -196,6 +277,9 @@ Object {
       },
       "parent_id": Nullable<StringMatching>,
       "post": Object {
+        "excerpt": "HTML Ipsum Presents
+
+Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum o",
         "feature_image": "http://127.0.0.1:2369/content/images/2018/hey.jpg",
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "title": "Ghostly Kitchen Sink",
@@ -223,6 +307,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": Any<Number>,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -235,6 +320,12 @@ Object {
       "in_reply_to_snippet": null,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -243,6 +334,9 @@ Object {
       },
       "parent_id": Nullable<StringMatching>,
       "post": Object {
+        "excerpt": "HTML Ipsum Presents
+
+Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum o",
         "feature_image": "http://127.0.0.1:2369/content/images/2018/hey.jpg",
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "title": "Ghostly Kitchen Sink",
@@ -253,6 +347,7 @@ Object {
     },
     Object {
       "count": Object {
+        "direct_replies": Any<Number>,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -265,6 +360,12 @@ Object {
       "in_reply_to_snippet": null,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -273,6 +374,9 @@ Object {
       },
       "parent_id": Nullable<StringMatching>,
       "post": Object {
+        "excerpt": "HTML Ipsum Presents
+
+Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum o",
         "feature_image": "http://127.0.0.1:2369/content/images/2018/hey.jpg",
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "title": "Ghostly Kitchen Sink",
@@ -300,6 +404,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": Any<Number>,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -312,6 +417,12 @@ Object {
       "in_reply_to_snippet": null,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -320,6 +431,9 @@ Object {
       },
       "parent_id": Nullable<StringMatching>,
       "post": Object {
+        "excerpt": "HTML Ipsum Presents
+
+Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum o",
         "feature_image": "http://127.0.0.1:2369/content/images/2018/hey.jpg",
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "title": "Ghostly Kitchen Sink",
@@ -347,8 +461,9 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": Any<Number>,
         "likes": Any<Number>,
-        "replies": Any<Number>,
+        "replies": 0,
         "reports": Any<Number>,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -356,17 +471,37 @@ Object {
       "html": "<p>Published reply</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "in_reply_to_id": null,
-      "in_reply_to_snippet": null,
+      "in_reply_to_snippet": "[removed]",
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
         "email": "member2@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "name": null,
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
+      "parent": Object {
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "edited_at": Nullable<StringMatching>,
+        "html": null,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "in_reply_to_id": Nullable<StringMatching>,
+        "in_reply_to_snippet": null,
+        "member": null,
+        "parent_id": Nullable<StringMatching>,
+        "status": "deleted",
+      },
       "parent_id": Nullable<StringMatching>,
       "post": Object {
+        "excerpt": "HTML Ipsum Presents
+
+Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum o",
         "feature_image": "http://127.0.0.1:2369/content/images/2018/hey.jpg",
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "title": "Ghostly Kitchen Sink",
@@ -394,6 +529,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": Any<Number>,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -406,6 +542,12 @@ Object {
       "in_reply_to_snippet": null,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -414,6 +556,9 @@ Object {
       },
       "parent_id": Nullable<StringMatching>,
       "post": Object {
+        "excerpt": "HTML Ipsum Presents
+
+Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum o",
         "feature_image": "http://127.0.0.1:2369/content/images/2018/hey.jpg",
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "title": "Ghostly Kitchen Sink",
@@ -441,6 +586,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": Any<Number>,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -453,6 +599,12 @@ Object {
       "in_reply_to_snippet": null,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -461,6 +613,9 @@ Object {
       },
       "parent_id": Nullable<StringMatching>,
       "post": Object {
+        "excerpt": "HTML Ipsum Presents
+
+Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum o",
         "feature_image": "http://127.0.0.1:2369/content/images/2018/hey.jpg",
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "title": "Ghostly Kitchen Sink",
@@ -471,6 +626,7 @@ Object {
     },
     Object {
       "count": Object {
+        "direct_replies": Any<Number>,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -483,6 +639,12 @@ Object {
       "in_reply_to_snippet": null,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -491,6 +653,9 @@ Object {
       },
       "parent_id": Nullable<StringMatching>,
       "post": Object {
+        "excerpt": "HTML Ipsum Presents
+
+Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum o",
         "feature_image": "http://127.0.0.1:2369/content/images/2018/hey.jpg",
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "title": "Ghostly Kitchen Sink",
@@ -518,6 +683,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": Any<Number>,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -530,6 +696,12 @@ Object {
       "in_reply_to_snippet": null,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -538,6 +710,9 @@ Object {
       },
       "parent_id": Nullable<StringMatching>,
       "post": Object {
+        "excerpt": "HTML Ipsum Presents
+
+Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum o",
         "feature_image": "http://127.0.0.1:2369/content/images/2018/hey.jpg",
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "title": "Ghostly Kitchen Sink",
@@ -548,8 +723,9 @@ Object {
     },
     Object {
       "count": Object {
+        "direct_replies": Any<Number>,
         "likes": Any<Number>,
-        "replies": Any<Number>,
+        "replies": 0,
         "reports": Any<Number>,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -557,17 +733,37 @@ Object {
       "html": "<p>Reply</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "in_reply_to_id": null,
-      "in_reply_to_snippet": null,
+      "in_reply_to_snippet": "Parent",
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
         "email": "member2@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "name": null,
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
+      "parent": Object {
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "edited_at": Nullable<StringMatching>,
+        "html": "<p>Parent</p>",
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "in_reply_to_id": Nullable<StringMatching>,
+        "in_reply_to_snippet": null,
+        "member": null,
+        "parent_id": Nullable<StringMatching>,
+        "status": "published",
+      },
       "parent_id": Nullable<StringMatching>,
       "post": Object {
+        "excerpt": "HTML Ipsum Presents
+
+Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum o",
         "feature_image": "http://127.0.0.1:2369/content/images/2018/hey.jpg",
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "title": "Ghostly Kitchen Sink",
@@ -595,6 +791,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": Any<Number>,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -607,6 +804,12 @@ Object {
       "in_reply_to_snippet": null,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -615,6 +818,9 @@ Object {
       },
       "parent_id": Nullable<StringMatching>,
       "post": Object {
+        "excerpt": "HTML Ipsum Presents
+
+Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum o",
         "feature_image": "http://127.0.0.1:2369/content/images/2018/hey.jpg",
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "title": "Ghostly Kitchen Sink",
@@ -642,6 +848,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": Any<Number>,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -654,6 +861,12 @@ Object {
       "in_reply_to_snippet": null,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -662,6 +875,9 @@ Object {
       },
       "parent_id": Nullable<StringMatching>,
       "post": Object {
+        "excerpt": "HTML Ipsum Presents
+
+Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum o",
         "feature_image": "http://127.0.0.1:2369/content/images/2018/hey.jpg",
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "title": "Ghostly Kitchen Sink",
@@ -672,6 +888,7 @@ Object {
     },
     Object {
       "count": Object {
+        "direct_replies": Any<Number>,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -684,6 +901,12 @@ Object {
       "in_reply_to_snippet": null,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -692,6 +915,9 @@ Object {
       },
       "parent_id": Nullable<StringMatching>,
       "post": Object {
+        "excerpt": "HTML Ipsum Presents
+
+Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum o",
         "feature_image": "http://127.0.0.1:2369/content/images/2018/hey.jpg",
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "title": "Ghostly Kitchen Sink",
@@ -714,11 +940,250 @@ Object {
 }
 `;
 
+exports[`Admin Comments API Comment Likes Can browse comment likes 1: [body] 1`] = `
+Object {
+  "comment_likes": Array [
+    Object {
+      "comment_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "member": Object {
+        "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "email": "member2@test.com",
+        "email_count": 0,
+        "email_disabled": false,
+        "email_open_rate": 50,
+        "email_opened_count": 0,
+        "enable_comment_notifications": true,
+        "expertise": null,
+        "geolocation": null,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "last_commented_at": Nullable<StringMatching>,
+        "last_seen_at": Nullable<StringMatching>,
+        "name": null,
+        "note": null,
+        "status": "free",
+        "transient_id": Any<String>,
+        "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      },
+      "member_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    },
+    Object {
+      "comment_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "member": Object {
+        "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "email": "paid@test.com",
+        "email_count": 0,
+        "email_disabled": false,
+        "email_open_rate": 80,
+        "email_opened_count": 0,
+        "enable_comment_notifications": true,
+        "expertise": null,
+        "geolocation": null,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "last_commented_at": Nullable<StringMatching>,
+        "last_seen_at": Nullable<StringMatching>,
+        "name": "Egon Spengler",
+        "note": null,
+        "status": "paid",
+        "transient_id": Any<String>,
+        "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      },
+      "member_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": 15,
+      "next": null,
+      "page": 1,
+      "pages": 1,
+      "prev": null,
+      "total": 2,
+    },
+  },
+}
+`;
+
+exports[`Admin Comments API Comment Likes Returns 404 for non-existent comment 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Comment could not be found",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Resource not found error, cannot list comment_likes.",
+      "property": null,
+      "type": "NotFoundError",
+    },
+  ],
+}
+`;
+
+exports[`Admin Comments API Comment Likes Returns empty list for comment with no likes 1: [body] 1`] = `
+Object {
+  "comment_likes": Array [],
+  "meta": Object {
+    "pagination": Object {
+      "limit": 15,
+      "next": null,
+      "page": 1,
+      "pages": 1,
+      "prev": null,
+      "total": 0,
+    },
+  },
+}
+`;
+
+exports[`Admin Comments API Comment Reports Can browse reporters for a comment 1: [body] 1`] = `
+Object {
+  "comment_reports": Array [
+    Object {
+      "comment_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "member": Object {
+        "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "email": "member2@test.com",
+        "email_count": 0,
+        "email_disabled": false,
+        "email_open_rate": 50,
+        "email_opened_count": 0,
+        "enable_comment_notifications": true,
+        "expertise": null,
+        "geolocation": null,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "last_commented_at": Nullable<StringMatching>,
+        "last_seen_at": Nullable<StringMatching>,
+        "name": null,
+        "note": null,
+        "status": "free",
+        "transient_id": Any<String>,
+        "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      },
+      "member_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    },
+    Object {
+      "comment_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "member": Object {
+        "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "email": "paid@test.com",
+        "email_count": 0,
+        "email_disabled": false,
+        "email_open_rate": 80,
+        "email_opened_count": 0,
+        "enable_comment_notifications": true,
+        "expertise": null,
+        "geolocation": null,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "last_commented_at": Nullable<StringMatching>,
+        "last_seen_at": Nullable<StringMatching>,
+        "name": "Egon Spengler",
+        "note": null,
+        "status": "paid",
+        "transient_id": Any<String>,
+        "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      },
+      "member_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": 15,
+      "next": null,
+      "page": 1,
+      "pages": 1,
+      "prev": null,
+      "total": 2,
+    },
+  },
+}
+`;
+
+exports[`Admin Comments API Comment Reports Returns 404 for non-existent comment 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Comment could not be found",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Resource not found error, cannot list comment_reports.",
+      "property": null,
+      "type": "NotFoundError",
+    },
+  ],
+}
+`;
+
+exports[`Admin Comments API Comment Reports Returns empty list for comment with no reports 1: [body] 1`] = `
+Object {
+  "comment_reports": Array [],
+  "meta": Object {
+    "pagination": Object {
+      "limit": 15,
+      "next": null,
+      "page": 1,
+      "pages": 1,
+      "prev": null,
+      "total": 0,
+    },
+  },
+}
+`;
+
 exports[`Admin Comments API Hide Can hide comments 1: [body] 1`] = `
 Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
@@ -748,7 +1213,7 @@ exports[`Admin Comments API Hide Can hide comments 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "427",
+  "content-length": "446",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -761,6 +1226,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
@@ -790,7 +1256,7 @@ exports[`Admin Comments API Hide Can hide comments 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "402",
+  "content-length": "421",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -803,6 +1269,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
@@ -832,7 +1299,7 @@ exports[`Admin Comments API Hide Can hide replies 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "443",
+  "content-length": "462",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -845,6 +1312,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
@@ -874,7 +1342,7 @@ exports[`Admin Comments API Hide Can hide replies 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "420",
+  "content-length": "439",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -912,6 +1380,136 @@ Object {
 }
 `;
 
+exports[`Admin Comments API browse by post Does return published replies 1: [body] 1`] = `
+Object {
+  "comments": Array [
+    Object {
+      "count": Object {
+        "direct_replies": 3,
+        "likes": Any<Number>,
+        "replies": 3,
+        "reports": 0,
+      },
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "edited_at": null,
+      "html": "<p>This is a comment</p>",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "in_reply_to_id": null,
+      "in_reply_to_snippet": null,
+      "liked": Any<Boolean>,
+      "member": Object {
+        "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
+        "email": "member1@test.com",
+        "expertise": null,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Mr Egg",
+        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      },
+      "parent_id": Nullable<StringMatching>,
+      "replies": Array [
+        Object {
+          "count": Object {
+            "direct_replies": 0,
+            "likes": Any<Number>,
+            "reports": 0,
+          },
+          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "edited_at": null,
+          "html": Any<String>,
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "in_reply_to_id": null,
+          "in_reply_to_snippet": null,
+          "liked": false,
+          "member": Object {
+            "avatar_image": Nullable<Any<String>>,
+            "can_comment": true,
+            "commenting": Object {
+              "disabled": false,
+              "disabled_reason": null,
+              "disabled_until": null,
+            },
+            "email": "member2@test.com",
+            "expertise": null,
+            "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+            "name": Nullable<Any<String>>,
+            "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+          },
+          "parent_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "status": Any<String>,
+        },
+        Object {
+          "count": Object {
+            "direct_replies": 0,
+            "likes": Any<Number>,
+            "reports": 0,
+          },
+          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "edited_at": null,
+          "html": Any<String>,
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "in_reply_to_id": null,
+          "in_reply_to_snippet": null,
+          "liked": false,
+          "member": Object {
+            "avatar_image": Nullable<Any<String>>,
+            "can_comment": true,
+            "commenting": Object {
+              "disabled": false,
+              "disabled_reason": null,
+              "disabled_until": null,
+            },
+            "email": "paid@test.com",
+            "expertise": null,
+            "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+            "name": Nullable<Any<String>>,
+            "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+          },
+          "parent_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "status": Any<String>,
+        },
+        Object {
+          "count": Object {
+            "direct_replies": 0,
+            "likes": Any<Number>,
+            "reports": 0,
+          },
+          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "edited_at": null,
+          "html": Any<String>,
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "in_reply_to_id": null,
+          "in_reply_to_snippet": null,
+          "liked": false,
+          "member": Object {
+            "avatar_image": Nullable<Any<String>>,
+            "can_comment": true,
+            "commenting": Object {
+              "disabled": false,
+              "disabled_reason": null,
+              "disabled_until": null,
+            },
+            "email": "trialing@test.com",
+            "expertise": null,
+            "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+            "name": Nullable<Any<String>>,
+            "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+          },
+          "parent_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "status": Any<String>,
+        },
+      ],
+      "status": "published",
+    },
+  ],
+}
+`;
+
 exports[`Admin Comments API browse by post does not return deleted comments 1: [body] 1`] = `
 Object {
   "comments": Array [],
@@ -933,6 +1531,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": 2,
         "likes": Any<Number>,
         "replies": 2,
         "reports": 0,
@@ -946,6 +1545,12 @@ Object {
       "liked": Any<Boolean>,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -956,6 +1561,7 @@ Object {
       "replies": Array [
         Object {
           "count": Object {
+            "direct_replies": 0,
             "likes": 0,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -967,6 +1573,12 @@ Object {
           "liked": false,
           "member": Object {
             "avatar_image": null,
+            "can_comment": true,
+            "commenting": Object {
+              "disabled": false,
+              "disabled_reason": null,
+              "disabled_until": null,
+            },
             "email": "member1@test.com",
             "expertise": null,
             "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -978,6 +1590,7 @@ Object {
         },
         Object {
           "count": Object {
+            "direct_replies": 0,
             "likes": 0,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -989,6 +1602,12 @@ Object {
           "liked": false,
           "member": Object {
             "avatar_image": null,
+            "can_comment": true,
+            "commenting": Object {
+              "disabled": false,
+              "disabled_reason": null,
+              "disabled_until": null,
+            },
             "email": "member1@test.com",
             "expertise": null,
             "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1036,6 +1655,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": 2,
         "likes": Any<Number>,
         "replies": 2,
         "reports": 0,
@@ -1049,6 +1669,12 @@ Object {
       "liked": Any<Boolean>,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1059,6 +1685,7 @@ Object {
       "replies": Array [
         Object {
           "count": Object {
+            "direct_replies": 0,
             "likes": 0,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1070,6 +1697,12 @@ Object {
           "liked": false,
           "member": Object {
             "avatar_image": null,
+            "can_comment": true,
+            "commenting": Object {
+              "disabled": false,
+              "disabled_reason": null,
+              "disabled_until": null,
+            },
             "email": "member1@test.com",
             "expertise": null,
             "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1081,6 +1714,7 @@ Object {
         },
         Object {
           "count": Object {
+            "direct_replies": 0,
             "likes": 0,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1092,6 +1726,12 @@ Object {
           "liked": false,
           "member": Object {
             "avatar_image": null,
+            "can_comment": true,
+            "commenting": Object {
+              "disabled": false,
+              "disabled_reason": null,
+              "disabled_until": null,
+            },
             "email": "member1@test.com",
             "expertise": null,
             "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1123,6 +1763,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": 1,
         "likes": Any<Number>,
         "replies": 1,
         "reports": 0,
@@ -1136,6 +1777,12 @@ Object {
       "liked": Any<Boolean>,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1146,6 +1793,7 @@ Object {
       "replies": Array [
         Object {
           "count": Object {
+            "direct_replies": 0,
             "likes": 0,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1157,6 +1805,12 @@ Object {
           "liked": false,
           "member": Object {
             "avatar_image": null,
+            "can_comment": true,
+            "commenting": Object {
+              "disabled": false,
+              "disabled_reason": null,
+              "disabled_until": null,
+            },
             "email": "member1@test.com",
             "expertise": null,
             "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1188,6 +1842,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": 0,
         "likes": Any<Number>,
         "replies": 0,
         "reports": 0,
@@ -1201,6 +1856,12 @@ Object {
       "liked": Any<Boolean>,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,

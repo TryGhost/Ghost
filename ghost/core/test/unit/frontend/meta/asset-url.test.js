@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const {SafeString} = require('../../../../core/frontend/services/handlebars');
@@ -47,24 +48,24 @@ describe('getAssetUrl', function () {
     describe('favicon', function () {
         it('should not add asset to url if favicon.ico', function () {
             const testUrl = getAssetUrl('favicon.ico');
-            testUrl.should.equal('/favicon.ico');
+            assert.equal(testUrl, '/favicon.ico');
         });
 
         it('should not add asset to url if favicon.png', function () {
             const testUrl = getAssetUrl('favicon.png');
-            testUrl.should.equal('/favicon.ico');
+            assert.equal(testUrl, '/favicon.ico');
         });
 
         it('should correct favicon path for custom png', function () {
             sinon.stub(settingsCache, 'get').withArgs('icon').returns('/content/images/2017/04/my-icon.png');
             const testUrl = getAssetUrl('favicon.ico');
-            testUrl.should.equal('/content/images/size/w256h256/2017/04/my-icon.png');
+            assert.equal(testUrl, '/content/images/size/w256h256/2017/04/my-icon.png');
         });
 
         it('should correct favicon path for custom svg', function () {
             sinon.stub(settingsCache, 'get').withArgs('icon').returns('/content/images/2017/04/my-icon.svg');
             const testUrl = getAssetUrl('favicon.ico');
-            testUrl.should.equal('/content/images/size/w256h256/format/png/2017/04/my-icon.svg');
+            assert.equal(testUrl, '/content/images/size/w256h256/format/png/2017/04/my-icon.svg');
         });
     });
 
@@ -127,20 +128,20 @@ describe('getAssetUrl', function () {
             it('should not add asset to url if favicon.ico', function () {
                 sinon.stub(imageLib.blogIcon, 'getIconUrl').returns('/blog/favicon.ico');
                 const testUrl = getAssetUrl('favicon.ico');
-                testUrl.should.equal('/blog/favicon.ico');
+                assert.equal(testUrl, '/blog/favicon.ico');
             });
 
             it('should not add asset to url if favicon.png', function () {
                 sinon.stub(imageLib.blogIcon, 'getIconUrl').returns('/blog/favicon.ico');
                 const testUrl = getAssetUrl('favicon.png');
-                testUrl.should.equal('/blog/favicon.ico');
+                assert.equal(testUrl, '/blog/favicon.ico');
             });
 
             it('should return correct favicon path for custom png', function () {
                 sinon.stub(imageLib.blogIcon, 'getIconUrl').returns('/blog/favicon.png');
                 sinon.stub(settingsCache, 'get').withArgs('icon').returns('/content/images/2017/04/my-icon.png');
                 const testUrl = getAssetUrl('favicon.ico');
-                testUrl.should.equal('/blog/favicon.png');
+                assert.equal(testUrl, '/blog/favicon.png');
             });
         });
 

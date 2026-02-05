@@ -140,20 +140,29 @@ const publishPost = async (page, {type = 'publish', time, date} = {}) => {
         await page.locator(`[data-test-publish-type="${type}"] + label`).click({timeout: 1000}); // If this times out, it is likely that there are no members (running a single test).
     }
 
+    const scheduleSummary = page.locator('[data-test-setting="publish-at"] [data-test-setting-title]');
+
     // Schedule the post
     if (date || time) {
         await page.locator('[data-test-setting="publish-at"] > button').click();
         await page.locator('[data-test-radio="schedule"] + label').click();
+        // Wait for Ember to process the schedule toggle and update the summary
+        await expect(scheduleSummary).not.toContainText('Right now');
     }
 
     if (date) {
+        const textBefore = await scheduleSummary.textContent();
         await page.locator('[data-test-date-time-picker-date-input]').fill(date);
         await page.locator('[data-test-date-time-picker-date-input]').blur();
+        // Wait for Ember to process the date change before continuing
+        await expect(scheduleSummary).not.toContainText(textBefore.trim());
     }
 
     if (time) {
         await page.locator('[data-test-date-time-picker-time-input]').fill(time);
         await page.locator('[data-test-date-time-picker-time-input]').blur();
+        // Allow Ember's run loop to process the time change
+        await page.waitForTimeout(500);
     }
 
     // TODO: set other publish options
@@ -166,7 +175,8 @@ const publishPost = async (page, {type = 'publish', time, date} = {}) => {
     // (we need force because the button is animating)
     await page.locator('[data-test-modal="publish-flow"] [data-test-button="confirm-publish"]').click({force: true});
 
-    // TODO: assert publish flow has expected completion details
+    // Wait for the publish flow to complete by checking the confirm button is no longer visible
+    await page.locator('[data-test-modal="publish-flow"] [data-test-button="confirm-publish"]').waitFor({state: 'hidden'});
 };
 
 /**

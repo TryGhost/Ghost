@@ -15,10 +15,10 @@ test.describe('Portal Settings', async () => {
         });
 
         await page.goto('/');
-        const section = await page.getByTestId('portal');
+        const section = page.getByTestId('portal');
         await section.getByRole('button', {name: 'Customize'}).click();
 
-        await page.waitForSelector('[data-testid="portal-modal"]');
+        await expect(page.getByTestId('portal-modal')).toBeVisible();
     });
 
     test('can set portal signup options', async ({page}) => {
@@ -36,26 +36,25 @@ test.describe('Portal Settings', async () => {
         });
 
         await page.goto('/');
-        const section = await page.getByTestId('portal');
+        const section = page.getByTestId('portal');
         await section.getByRole('button', {name: 'Customize'}).click();
 
-        await page.waitForSelector('[data-testid="portal-modal"]');
+        const modal = page.getByTestId('portal-modal');
+        await expect(modal).toBeVisible();
 
-        const modal = await page.getByTestId('portal-modal');
+        const displayNameToggle = modal.getByLabel('Display name in signup form');
+        await expect(displayNameToggle).toBeVisible();
+        await expect(displayNameToggle).toBeChecked();
 
-        const displayNameToggle = await modal.getByLabel('Display name in signup form');
-        expect(displayNameToggle).toBeVisible();
-        expect(displayNameToggle).toBeChecked();
-
-        const freeTierCheckbox = await modal.getByTestId('free-tier-checkbox');
-        expect(freeTierCheckbox).toBeVisible();
-        expect(freeTierCheckbox).toBeChecked();
+        const freeTierCheckbox = modal.getByTestId('free-tier-checkbox');
+        await expect(freeTierCheckbox).toBeVisible();
+        await expect(freeTierCheckbox).toBeChecked();
 
         await freeTierCheckbox.click();
         await displayNameToggle.click();
         await modal.getByRole('button', {name: 'Save'}).click();
 
-        expect(lastApiRequests.editTiers?.body).toMatchObject({
+        await expect.poll(() => lastApiRequests.editTiers?.body).toMatchObject({
             tiers: [{
                 name: 'Free',
                 visibility: 'none'
@@ -81,14 +80,14 @@ test.describe('Portal Settings', async () => {
         });
 
         await page.goto('/');
-        const section = await page.getByTestId('portal');
+        const section = page.getByTestId('portal');
         await section.getByRole('button', {name: 'Customize'}).click();
-        await page.waitForSelector('[data-testid="portal-modal"]');
-        const modal = await page.getByTestId('portal-modal');
+        const modal = page.getByTestId('portal-modal');
+        await expect(modal).toBeVisible();
 
         // In Portal settings, the free tier is hidden because the site is set to paid-members only, even if available in the tiers list
-        const freeTierCheckbox = await modal.getByTestId('free-tier-checkbox');
-        expect(freeTierCheckbox).not.toBeVisible();
+        const freeTierCheckbox = modal.getByTestId('free-tier-checkbox');
+        await expect(freeTierCheckbox).toBeHidden();
     });
 
     test('can toggle portal Look & Feel options', async ({page}) => {
@@ -104,20 +103,19 @@ test.describe('Portal Settings', async () => {
         });
 
         await page.goto('/');
-        const section = await page.getByTestId('portal');
+        const section = page.getByTestId('portal');
         await section.getByRole('button', {name: 'Customize'}).click();
 
-        await page.waitForSelector('[data-testid="portal-modal"]');
-
-        const modal = await page.getByTestId('portal-modal');
+        const modal = page.getByTestId('portal-modal');
+        await expect(modal).toBeVisible();
 
         await modal.getByRole('tab', {name: 'Look & feel'}).click();
 
-        await modal.getByRole('switch').click();
         await modal.getByRole('textbox').fill('become a member of something epic');
+        await modal.getByRole('switch').click();
         await modal.getByRole('button', {name: 'Save'}).click();
 
-        expect(lastApiRequests.editSettings?.body).toEqual({
+        await expect.poll(() => lastApiRequests.editSettings?.body).toEqual({
             settings: [
                 {key: 'portal_button', value: false},
                 {
@@ -141,20 +139,20 @@ test.describe('Portal Settings', async () => {
         });
 
         await page.goto('/');
-        const section = await page.getByTestId('portal');
+        const section = page.getByTestId('portal');
         await section.getByRole('button', {name: 'Customize'}).click();
 
-        await page.waitForSelector('[data-testid="portal-modal"]');
-
         const modal = page.getByTestId('portal-modal');
+        await expect(modal).toBeVisible();
 
         // since account page occurs twice on the page, we need to grab it by ID instead.
-        const accountTab = await page.$('#accountPage');
-        await accountTab?.click();
+        const accountTab = page.locator('#accountPage').first();
+        await expect(accountTab).toBeVisible();
+        await accountTab.click();
         await modal.getByRole('textbox').fill('hello@world.com');
         await modal.getByRole('button', {name: 'Save'}).click();
 
-        expect(lastApiRequests.editSettings?.body).toEqual({
+        await expect.poll(() => lastApiRequests.editSettings?.body).toEqual({
             settings: [
                 {
                     key: 'members_support_address',

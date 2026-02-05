@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const errors = require('@tryghost/errors');
 const should = require('should');
 const sinon = require('sinon');
@@ -46,8 +47,8 @@ describe('User Model', function run() {
 
             UserModel.add(userData, context).then(function (createdUser) {
                 should.exist(createdUser);
-                createdUser.has('slug').should.equal(true);
-                createdUser.attributes.slug.should.equal('jimothy');
+                assert.equal(createdUser.has('slug'), true);
+                assert.equal(createdUser.attributes.slug, 'jimothy');
                 done();
             }).catch(done);
         });
@@ -57,20 +58,20 @@ describe('User Model', function run() {
 
             UserModel.add(userData, context).then(function (createdUser) {
                 should.exist(createdUser);
-                createdUser.has('slug').should.equal(true);
-                createdUser.attributes.slug.should.equal('jimothy');
+                assert.equal(createdUser.has('slug'), true);
+                assert.equal(createdUser.attributes.slug, 'jimothy');
             }).then(function () {
                 userData.email = 'newmail@mail.com';
                 UserModel.add(userData, context).then(function (createdUser) {
                     should.exist(createdUser);
-                    createdUser.has('slug').should.equal(true);
-                    createdUser.attributes.slug.should.equal('jimothy-bogendath');
+                    assert.equal(createdUser.has('slug'), true);
+                    assert.equal(createdUser.attributes.slug, 'jimothy-bogendath');
                 }).then(function () {
                     userData.email = 'newmail2@mail.com';
                     UserModel.add(userData, context).then(function (createdUser) {
                         should.exist(createdUser);
-                        createdUser.has('slug').should.equal(true);
-                        createdUser.attributes.slug.should.equal('jimothy-bogendath-2');
+                        assert.equal(createdUser.has('slug'), true);
+                        assert.equal(createdUser.attributes.slug, 'jimothy-bogendath-2');
                         done();
                     });
                 });
@@ -97,9 +98,7 @@ describe('User Model', function run() {
 
             UserModel.add(userData, context).then(function (createdUser) {
                 should.exist(createdUser);
-                createdUser.attributes.profile_image.should.eql(
-                    'http://www.gravatar.com/avatar/2fab21a4c4ed88e76add10650c73bae1?d=404', 'Gravatar found'
-                );
+                assert.equal(createdUser.attributes.profile_image, 'http://www.gravatar.com/avatar/2fab21a4c4ed88e76add10650c73bae1?d=404', 'Gravatar found');
                 done();
             }).catch(done);
         });
@@ -113,7 +112,7 @@ describe('User Model', function run() {
 
             UserModel.add(userData, context).then(function (createdUser) {
                 should.exist(createdUser);
-                should.not.exist(createdUser.image);
+                assert.equal(createdUser.image, undefined);
                 done();
             }).catch(done);
         });
@@ -144,7 +143,7 @@ describe('User Model', function run() {
                 // Test incorrect email address - swapped capital O for number 0
                 return UserModel.getByEmail('jb0gendAth@example.com').then(null, function (error) {
                     should.exist(error);
-                    error.message.should.eql('NotFound');
+                    assert.equal(error.message, 'NotFound');
                 });
             }).then(function () {
                 done();
@@ -203,10 +202,10 @@ describe('User Model', function run() {
             return testUtils.fixtures.createExtraUsers().then(function () {
                 return UserModel.findPage({limit: 'all'});
             }).then(function (results) {
-                results.meta.pagination.page.should.equal(1);
-                results.meta.pagination.limit.should.equal('all');
-                results.meta.pagination.pages.should.equal(1);
-                results.data.length.should.equal(10);
+                assert.equal(results.meta.pagination.page, 1);
+                assert.equal(results.meta.pagination.limit, 'all');
+                assert.equal(results.meta.pagination.pages, 1);
+                assert.equal(results.data.length, 10);
             });
         });
 
@@ -229,8 +228,8 @@ describe('User Model', function run() {
                 should.exist(owner.roles);
                 should.exist(editor.roles);
 
-                owner.roles[0].name.should.equal('Owner');
-                editor.roles[0].name.should.equal('Editor');
+                assert.equal(owner.roles[0].name, 'Owner');
+                assert.equal(editor.roles[0].name, 'Editor');
             });
         });
 
@@ -245,9 +244,9 @@ describe('User Model', function run() {
                 should.exist(createdUser);
                 createdUser.get('password').should.not.equal(userData.password, 'password was hashed');
                 createdUser.get('email').should.eql(userData.email, 'email address correct');
-                createdUser.related('roles').toJSON()[0].name.should.eql('Administrator', 'role set correctly');
+                assert.equal(createdUser.related('roles').toJSON()[0].name, 'Administrator', 'role set correctly');
 
-                Object.keys(eventsTriggered).length.should.eql(2);
+                assert.equal(Object.keys(eventsTriggered).length, 2);
                 should.exist(eventsTriggered['user.added']);
                 should.exist(eventsTriggered['user.activated']);
 
@@ -279,14 +278,14 @@ describe('User Model', function run() {
                 should.exist(results);
                 user = results.toJSON();
                 user.id.should.equal(firstUser);
-                should.equal(user.website, null);
+                assert.equal(user.website, null);
 
                 return UserModel.edit({website: 'http://some.newurl.com'}, {id: firstUser});
             }).then(function (edited) {
                 should.exist(edited);
-                edited.attributes.website.should.equal('http://some.newurl.com');
+                assert.equal(edited.attributes.website, 'http://some.newurl.com');
 
-                Object.keys(eventsTriggered).length.should.eql(2);
+                assert.equal(Object.keys(eventsTriggered).length, 2);
                 should.exist(eventsTriggered['user.activated.edited']);
                 should.exist(eventsTriggered['user.edited']);
 
@@ -315,7 +314,7 @@ describe('User Model', function run() {
                     done(new Error('Already existing email address was accepted'));
                 })
                 .catch(function (err) {
-                    (err instanceof errors.ValidationError).should.eql(true);
+                    assert.equal((err instanceof errors.ValidationError), true);
                     done();
                 });
         });
@@ -334,7 +333,7 @@ describe('User Model', function run() {
                 }, testUtils.context.owner).then(function () {
                     done(new Error('expected error!'));
                 }).catch(function (err) {
-                    (err instanceof errors.ValidationError).should.eql(true);
+                    assert.equal((err instanceof errors.ValidationError), true);
                     done();
                 });
             });
@@ -348,7 +347,7 @@ describe('User Model', function run() {
                 }, testUtils.context.owner).then(function () {
                     done(new Error('expected error!'));
                 }).catch(function (err) {
-                    (err instanceof errors.ValidationError).should.eql(true);
+                    assert.equal((err instanceof errors.ValidationError), true);
                     done();
                 });
             });
@@ -362,7 +361,7 @@ describe('User Model', function run() {
                 }, testUtils.context.owner).then(function () {
                     done(new Error('expected error!'));
                 }).catch(function (err) {
-                    (err instanceof errors.ValidationError).should.eql(true);
+                    assert.equal((err instanceof errors.ValidationError), true);
                     done();
                 });
             });
@@ -376,7 +375,7 @@ describe('User Model', function run() {
                 }, testUtils.context.owner).then(function () {
                     done(new Error('expected error!'));
                 }).catch(function (err) {
-                    (err instanceof errors.ValidationError).should.eql(true);
+                    assert.equal((err instanceof errors.ValidationError), true);
                     done();
                 });
             });
@@ -390,7 +389,7 @@ describe('User Model', function run() {
                 }, testUtils.context.owner).then(function () {
                     done(new Error('expected error!'));
                 }).catch(function (err) {
-                    (err instanceof errors.ValidationError).should.eql(true);
+                    assert.equal((err instanceof errors.ValidationError), true);
                     done();
                 });
             });
@@ -404,7 +403,7 @@ describe('User Model', function run() {
                 }, testUtils.context.owner).then(function () {
                     done(new Error('expected error!'));
                 }).catch(function (err) {
-                    (err instanceof errors.ValidationError).should.eql(true);
+                    assert.equal((err instanceof errors.ValidationError), true);
                     done();
                 });
             });
@@ -418,7 +417,7 @@ describe('User Model', function run() {
                 }, testUtils.context.owner).then(function () {
                     done(new Error('expected error!'));
                 }).catch(function (err) {
-                    (err instanceof errors.ValidationError).should.eql(true);
+                    assert.equal((err instanceof errors.ValidationError), true);
                     done();
                 });
             });
@@ -432,7 +431,7 @@ describe('User Model', function run() {
                 }, testUtils.context.owner).then(function () {
                     done(new Error('expected error!'));
                 }).catch(function (err) {
-                    (err instanceof errors.ValidationError).should.eql(true);
+                    assert.equal((err instanceof errors.ValidationError), true);
                     done();
                 });
             });
@@ -453,7 +452,7 @@ describe('User Model', function run() {
                 .then(function (user) {
                     user.get('name').should.eql(userData.name);
                     user.get('email').should.eql(userData.email);
-                    user.get('slug').should.eql('max');
+                    assert.equal(user.get('slug'), 'max');
 
                     // naive check that password was hashed
                     user.get('password').should.not.eql(userData.password);

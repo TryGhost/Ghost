@@ -14,6 +14,9 @@ export const ALL_EVENT_TYPES = [
 export function getAvailableEventTypes(settings, feature, hiddenEvents = []) {
     const extended = [...ALL_EVENT_TYPES];
 
+    if (feature.welcomeEmails) {
+        extended.push({event: 'automated_email_sent_event', icon: 'filter-dropdown-email-received', name: 'Welcome email received', group: 'emails'});
+    }
     if (settings.commentsEnabled !== 'off') {
         extended.push({event: 'comment_event', icon: 'filter-dropdown-comments', name: 'Comments', group: 'others'});
     }

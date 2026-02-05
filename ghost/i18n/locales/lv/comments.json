@@ -17,7 +17,9 @@
     "Best": "",
     "Cancel": "Atcelt",
     "Comment": "Komentēt",
+    "Commenting disabled": "",
     "Complete your profile": "Pabeidziet savu profilu",
+    "Contact support": "",
     "Delete": "Dzēst",
     "Deleted": "Izdzēsts",
     "Deleted member": "Dzēsts dalībnieks",
@@ -28,6 +30,7 @@
     "edited": "rediģēts",
     "Enter your name": "Ievadiet savu vārdu",
     "Expertise": "Ekspertīze",
+    "for more information.": "",
     "Founder @ Acme Inc": "Dibinātājs @ Acme Inc",
     "Full-time parent": "Pilnas slodzes vecāks",
     "Head of Marketing at Acme, Inc": "Mārketinga vadītājs uzņēmumā Acme, Inc",
@@ -69,6 +72,8 @@
     "This comment has been hidden.": "Šis komentārs ir paslēpts.",
     "This comment has been removed.": "Šis komentārs ir noņemts.",
     "Upgrade now": "Jauniniet tūlīt",
+    "View in admin": "",
     "Yesterday": "Vakar",
+    "You can't post comments in this publication.": "",
     "Your request will be sent to the owner of this site.": "Jūsu pieprasījums tiks nosūtīts šīs vietnes īpašniekam."
 }

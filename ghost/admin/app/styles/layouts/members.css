@@ -799,6 +799,34 @@ label[for="member-description"] + p {
     stroke: var(--midgrey);
 }
 
+.gh-member-details-meta svg line {
+    stroke: var(--midgrey);
+}
+
+.gh-member-commenting-disabled {
+    margin-top: -1px;
+}
+
+.gh-member-details-enable-link {
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+.gh-member-commenting-disabled:hover .gh-member-details-enable-link,
+.gh-member-commenting-disabled:focus-within .gh-member-details-enable-link {
+    opacity: 1;
+}
+
+.gh-member-details-enable-link button {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--green);
+    cursor: pointer;
+    text-decoration: underline;
+    font-size: inherit;
+}
+
 .gh-member-details-attribution {
     display: grid;
     grid-template-columns: 1fr;
@@ -1183,6 +1211,10 @@ textarea.gh-member-details-textarea {
     font-weight: 500;
     letter-spacing: 0.02em;
     text-decoration: underline;
+}
+
+.gh-member-newsletter-no-data p {
+    margin-bottom: 0.8rem;
 }
 
 .gh-member-newsletter-footer {

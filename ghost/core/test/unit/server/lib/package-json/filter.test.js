@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 require('should');
 
 const packageJSON = require('../../../../../core/server/lib/package-json');
@@ -48,9 +49,9 @@ describe('package-json filter', function () {
 
         package1.should.be.an.Object().with.properties('name', 'package', 'active');
         Object.keys(package1).should.be.an.Array().with.lengthOf(3);
-        package1.name.should.eql('casper');
+        assert.equal(package1.name, 'casper');
         package1.package.should.be.an.Object().with.properties('name', 'version');
-        package1.active.should.be.false();
+        assert.equal(package1.active, false);
     });
 
     it('should filter packages and handle a single active package string', function () {
@@ -64,15 +65,15 @@ describe('package-json filter', function () {
 
         package1.should.be.an.Object().with.properties('name', 'package', 'active');
         Object.keys(package1).should.be.an.Array().with.lengthOf(3);
-        package1.name.should.eql('casper');
+        assert.equal(package1.name, 'casper');
         package1.package.should.be.an.Object().with.properties('name', 'version');
-        package1.active.should.be.true();
+        assert.equal(package1.active, true);
 
         package2.should.be.an.Object().with.properties('name', 'package', 'active');
         Object.keys(package2).should.be.an.Array().with.lengthOf(3);
-        package2.name.should.eql('simple');
+        assert.equal(package2.name, 'simple');
         package2.package.should.be.an.Object().with.properties('name', 'version');
-        package2.active.should.be.false();
+        assert.equal(package2.active, false);
     });
 
     it('should filter packages and handle an array of active packages', function () {
@@ -86,15 +87,15 @@ describe('package-json filter', function () {
 
         package1.should.be.an.Object().with.properties('name', 'package', 'active');
         Object.keys(package1).should.be.an.Array().with.lengthOf(3);
-        package1.name.should.eql('casper');
+        assert.equal(package1.name, 'casper');
         package1.package.should.be.an.Object().with.properties('name', 'version');
-        package1.active.should.be.true();
+        assert.equal(package1.active, true);
 
         package2.should.be.an.Object().with.properties('name', 'package', 'active');
         Object.keys(package2).should.be.an.Array().with.lengthOf(3);
-        package2.name.should.eql('simple');
+        assert.equal(package2.name, 'simple');
         package2.package.should.be.an.Object().with.properties('name', 'version');
-        package2.active.should.be.true();
+        assert.equal(package2.active, true);
     });
 
     it('handles packages with no package.json even though this makes us sad', function () {
@@ -108,15 +109,15 @@ describe('package-json filter', function () {
 
         package1.should.be.an.Object().with.properties('name', 'package', 'active');
         Object.keys(package1).should.be.an.Array().with.lengthOf(3);
-        package1.name.should.eql('casper');
+        assert.equal(package1.name, 'casper');
         package1.package.should.be.an.Object().with.properties('name', 'version');
-        package1.active.should.be.true();
+        assert.equal(package1.active, true);
 
         package2.should.be.an.Object().with.properties('name', 'package', 'active');
         Object.keys(package2).should.be.an.Array().with.lengthOf(3);
-        package2.name.should.eql('missing');
-        package2.package.should.be.false();
-        package2.active.should.be.false();
+        assert.equal(package2.name, 'missing');
+        assert.equal(package2.package, false);
+        assert.equal(package2.active, false);
     });
 
     it('filters out things which are not packages', function () {

@@ -22,13 +22,12 @@ const messages = {
 // flags in this list always return `true`, allows quick global enable prior to full flag removal
 const GA_FEATURES = [
     'audienceFeedback',
-    'i18n',
-    'themeErrorsNotification',
     'announcementBar',
     'customFonts',
-    'contentVisibility',
     'explore',
-    'utmTracking'
+    'inboxlinks',
+    'commentModeration',
+    'commentPermalinks'
 ];
 
 // These features are considered publicly available and can be enabled/disabled by users
@@ -46,16 +45,11 @@ const PRIVATE_FEATURES = [
     'importMemberTier',
     'urlCache',
     'lexicalIndicators',
-    'contentVisibilityAlpha',
     'emailCustomization',
     'tagsX',
     'emailUniqueid',
     'welcomeEmails',
-    'adminForward',
-    'domainWarmup',
     'themeTranslation',
-    'commentModeration',
-    'commentPermalinks',
     'indexnow',
     'featurebaseFeedback',
     'transistor'

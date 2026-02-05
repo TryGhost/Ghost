@@ -107,12 +107,18 @@ function parseFilterValue(queryValue: string): {operator: string; value: string}
 
 /**
  * Parse URL search params into Filter objects
+ * Preserves the order of filters as they appear in the URL
  */
 function searchParamsToFilters(searchParams: URLSearchParams): Filter[] {
     const filters: Filter[] = [];
 
-    for (const field of COMMENT_FILTER_FIELDS) {
-        const queryValue = searchParams.get(field);
+    // Iterate over URL params in order to preserve filter order
+    for (const [field, queryValue] of searchParams.entries()) {
+        // Only process valid filter fields
+        if (!COMMENT_FILTER_FIELDS.includes(field as CommentFilterField)) {
+            continue;
+        }
+
         if (!queryValue) {
             continue;
         }

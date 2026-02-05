@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const ghostLocals = require('../../../../../../core/server/web/parent/middleware/ghost-locals');
@@ -27,7 +28,7 @@ describe('Theme Handler', function () {
             should.exist(res.locals.version);
             should.exist(res.locals.safeVersion);
             res.locals.relativeUrl.should.equal(req.path);
-            next.called.should.be.true();
+            assert.equal(next.called, true);
         });
     });
 });

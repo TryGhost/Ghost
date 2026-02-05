@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const BaseModel = require('../../../core/server/models/base');
 const {Label} = require('../../../core/server/models/label');
@@ -146,10 +147,10 @@ describe('Member Model', function run() {
 
             const stripeCustomers = member.related('stripeCustomers');
 
-            should.equal(stripeCustomers.length, 2, 'Should  be two stripeCustomers');
+            assert.equal(stripeCustomers.length, 2, 'Should  be two stripeCustomers');
 
-            should.equal(stripeCustomers.models[0].get('customer_id'), 'fake_customer_id1');
-            should.equal(stripeCustomers.models[1].get('customer_id'), 'fake_customer_id2');
+            assert.equal(stripeCustomers.models[0].get('customer_id'), 'fake_customer_id1');
+            assert.equal(stripeCustomers.models[1].get('customer_id'), 'fake_customer_id2');
         });
     });
 
@@ -269,8 +270,8 @@ describe('Member Model', function run() {
 
         it('can use search query', function (done) {
             Member.findAll({search: 'egg'}).then(function (queryResult) {
-                queryResult.length.should.equal(1);
-                queryResult.models[0].get('name').should.equal('Mr Egg');
+                assert.equal(queryResult.length, 1);
+                assert.equal(queryResult.models[0].get('name'), 'Mr Egg');
                 done();
             }).catch(done);
         });
@@ -481,7 +482,7 @@ describe('Member Model', function run() {
 
             {
                 const members = await Member.findPage({filter: `subscriptions.status:canceled+subscriptions.status:-active`});
-                should.equal(members.data.length, 0, 'Can search for members with canceled subscription and no active ones');
+                assert.equal(members.data.length, 0, 'Can search for members with canceled subscription and no active ones');
             }
 
             await StripeCustomerSubscription.edit({
@@ -493,12 +494,12 @@ describe('Member Model', function run() {
 
             {
                 const members = await Member.findPage({filter: `subscriptions.status:canceled+subscriptions.status:-active`});
-                should.equal(members.data.length, 1, 'Can search for members with canceled subscription and no active ones');
+                assert.equal(members.data.length, 1, 'Can search for members with canceled subscription and no active ones');
             }
 
             {
                 const members = await Member.findPage({filter: `subscriptions.plan_interval:year`});
-                should.equal(members.data.length, 1, 'Can search for members by plan_interval');
+                assert.equal(members.data.length, 1, 'Can search for members by plan_interval');
             }
 
             await StripeCustomerSubscription.edit({
@@ -510,7 +511,7 @@ describe('Member Model', function run() {
 
             {
                 const members = await Member.findPage({filter: `subscriptions.plan_interval:month+subscriptions.plan_interval:-year`});
-                should.equal(members.data.length, 0, 'Can search for members by plan_interval');
+                assert.equal(members.data.length, 0, 'Can search for members by plan_interval');
             }
         });
 
@@ -582,7 +583,7 @@ describe('Member Model', function run() {
             const members = await Member.findPage({filter: `offer_redemptions:${offerId}`});
             // convert members to json
             const membersJson = members.data.map(model => model.toJSON());
-            should.equal(membersJson[0].email, email, 'Can search for members with offer_redemptions');
+            assert.equal(membersJson[0].email, email, 'Can search for members with offer_redemptions');
         });
     });
 });

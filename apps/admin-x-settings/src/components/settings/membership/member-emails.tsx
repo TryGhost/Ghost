@@ -30,7 +30,7 @@ const EmailPreview: React.FC<{
     const senderName = automatedEmail.sender_name || siteTitle || 'Your Site';
 
     return (
-        <div className='mb-5 flex items-center justify-between gap-3 rounded-lg border border-grey-100 bg-grey-50 p-5 dark:border-grey-925 dark:bg-grey-950'>
+        <div className='mb-5 flex items-center justify-between gap-3 rounded-lg border border-grey-100 bg-grey-50 p-5 dark:border-grey-925 dark:bg-grey-975'>
             <div className='flex items-start gap-3'>
                 {icon ?
                     <div className='size-10 min-h-10 min-w-10 rounded-sm bg-cover bg-center' style={{
@@ -49,7 +49,7 @@ const EmailPreview: React.FC<{
                 </div>
             </div>
             <Button
-                className='rounded-md border border-grey-200 font-semibold hover:shadow-xs'
+                className='border border-grey-200 font-semibold hover:border-grey-300 dark:border-grey-900 dark:hover:border-grey-800 dark:hover:bg-grey-950'
                 color='white'
                 data-testid={`${emailType}-welcome-email-edit-button`}
                 icon='pen'
@@ -114,7 +114,7 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     return (
         <TopLevelGroup
-            description="Create and manage automated emails that are sent to your members."
+            description="Create and manage automated emails for your members"
             keywords={keywords}
             navid='memberemails'
             testId='memberemails'
@@ -129,8 +129,8 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     direction='rtl'
                     disabled={isLoading}
                     gap='gap-0'
-                    hint='Email new free members receive when they join your site.'
-                    label='Free members welcome email'
+                    hint='Sent to new free members right after they join your site.'
+                    label='Free members'
                     labelClasses='py-4 w-full'
                     onChange={() => handleToggle('free')}
                 />
@@ -150,8 +150,8 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
                             direction='rtl'
                             disabled={isLoading}
                             gap='gap-0'
-                            hint='Sent to new paid members as soon as they start their subscription.'
-                            label='Paid members welcome email'
+                            hint='Sent to new paid members right after they start their subscription.'
+                            label='Paid members'
                             labelClasses='py-4 w-full'
                             onChange={() => handleToggle('paid')}
                         />

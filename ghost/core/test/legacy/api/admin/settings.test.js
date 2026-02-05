@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const supertest = require('supertest');
 const config = require('../../../../core/shared/config');
@@ -26,12 +27,12 @@ describe('Settings API', function () {
             .expect(200)
             .expect((response) => {
                 should.exist(response.headers['x-cache-invalidate']);
-                response.headers['x-cache-invalidate'].should.eql('/*');
+                assert.equal(response.headers['x-cache-invalidate'], '/*');
             });
 
         // Check if not changed (also check internal ones)
         const afterValue = settingsCache.get(key);
-        should.deepEqual(afterValue, expectedValue);
+        assert.deepEqual(afterValue, expectedValue);
     }
 
     async function checkCantEdit(key, value) {
@@ -53,12 +54,12 @@ describe('Settings API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200)
             .expect((response) => {
-                should.not.exist(response.headers['x-cache-invalidate']);
+                assert.equal(response.headers['x-cache-invalidate'], undefined);
             });
 
         // Check if not changed (also check internal ones)
         const afterValue = settingsCache.get(key);
-        should.deepEqual(afterValue, currentValue);
+        assert.deepEqual(afterValue, currentValue);
     }
 
     describe('As Owner', function () {
@@ -123,14 +124,14 @@ describe('Settings API', function () {
                 .expect(200);
 
             const putBody = body;
-            headers['x-cache-invalidate'].should.eql('/*');
+            assert.equal(headers['x-cache-invalidate'], '/*');
             should.exist(putBody);
 
             let setting = putBody.settings.find(s => s.key === 'unsplash');
-            should.equal(setting.value, true);
+            assert.equal(setting.value, true);
 
             setting = putBody.settings.find(s => s.key === 'title');
-            should.equal(setting.value, 'New Value');
+            assert.equal(setting.value, 'New Value');
 
             localUtils.API.checkResponse(putBody, 'settings');
         });
@@ -153,12 +154,12 @@ describe('Settings API', function () {
                 .expect(200);
 
             const putBody = body;
-            headers['x-cache-invalidate'].should.eql('/*');
+            assert.equal(headers['x-cache-invalidate'], '/*');
             should.exist(putBody);
 
             localUtils.API.checkResponse(putBody, 'settings');
             const setting = putBody.settings.find(s => s.key === 'slack_username');
-            setting.value.should.eql('can edit me');
+            assert.equal(setting.value, 'can edit me');
         });
 
         it('Can edit URLs without internal storage format leaking', async function () {
@@ -296,7 +297,7 @@ describe('Settings API', function () {
                         .expect(403)
                         .then(function ({body, headers}) {
                             jsonResponse = body;
-                            should.not.exist(headers['x-cache-invalidate']);
+                            assert.equal(headers['x-cache-invalidate'], undefined);
                             should.exist(jsonResponse.errors);
                             testUtils.API.checkResponseValue(jsonResponse.errors[0], [
                                 'message',
@@ -349,7 +350,7 @@ describe('Settings API', function () {
                         .expect(403)
                         .then(function ({body, headers}) {
                             jsonResponse = body;
-                            should.not.exist(headers['x-cache-invalidate']);
+                            assert.equal(headers['x-cache-invalidate'], undefined);
                             should.exist(jsonResponse.errors);
                             testUtils.API.checkResponseValue(jsonResponse.errors[0], [
                                 'message',
@@ -391,7 +392,7 @@ describe('Settings API', function () {
 
             const setting = jsonResponse.settings.find(s => s.key === 'email_verification_required');
             should.exist(setting);
-            setting.value.should.eql(true);
+            assert.equal(setting.value, true);
         });
     });
 });

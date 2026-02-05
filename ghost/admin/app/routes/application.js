@@ -51,7 +51,6 @@ export default Route.extend(ShortcutsRoute, {
     settings: service(),
     stateBridge: service(),
     ui: service(),
-    whatsNew: service(),
     billing: service(),
     modals: service(),
 

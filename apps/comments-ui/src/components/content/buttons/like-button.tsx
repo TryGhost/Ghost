@@ -6,13 +6,11 @@ type Props = {
     comment: Comment;
 };
 const LikeButton: React.FC<Props> = ({comment}) => {
-    const {dispatchAction, member, commentsEnabled} = useAppContext();
+    const {dispatchAction, isMember, hasRequiredTier} = useAppContext();
     const [animationClass, setAnimation] = useState('');
     const [disabled, setDisabled] = useState(false);
 
-    const paidOnly = commentsEnabled === 'paid';
-    const isPaidMember = member && !!member.paid;
-    const canLike = member && (isPaidMember || !paidOnly);
+    const canLike = isMember && hasRequiredTier;
 
     const toggleLike = async () => {
         if (!canLike) {

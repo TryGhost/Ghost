@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const {agentProvider, fixtureManager} = require('../../utils/e2e-framework');
@@ -29,8 +30,8 @@ describe('Ghost Admin - Storage Adapter Switching', function () {
 
         let post = res.body.posts[0];
         post.feature_image.should.equal(`${siteUrl}/content/images/feature.jpg`);
-        post.lexical.should.containEql(`${siteUrl}/content/files/document.pdf`);
-        post.lexical.should.containEql(`${siteUrl}/content/media/video.mp4`);
+        assert(post.lexical.includes(`${siteUrl}/content/files/document.pdf`));
+        assert(post.lexical.includes(`${siteUrl}/content/media/video.mp4`));
 
         urlUtilsHelper.stubUrlUtilsWithCdn({
             assetBaseUrls: {media: cdnUrl, files: cdnUrl}
@@ -42,8 +43,8 @@ describe('Ghost Admin - Storage Adapter Switching', function () {
 
         post = res.body.posts[0];
         post.feature_image.should.equal(`${siteUrl}/content/images/feature.jpg`);
-        post.lexical.should.containEql(`${cdnUrl}/content/files/document.pdf`);
-        post.lexical.should.containEql(`${cdnUrl}/content/media/video.mp4`);
+        assert(post.lexical.includes(`${cdnUrl}/content/files/document.pdf`));
+        assert(post.lexical.includes(`${cdnUrl}/content/media/video.mp4`));
 
         sinon.restore();
 
@@ -53,8 +54,8 @@ describe('Ghost Admin - Storage Adapter Switching', function () {
 
         post = res.body.posts[0];
         post.feature_image.should.equal(`${siteUrl}/content/images/feature.jpg`);
-        post.lexical.should.containEql(`${siteUrl}/content/files/document.pdf`);
-        post.lexical.should.containEql(`${siteUrl}/content/media/video.mp4`);
+        assert(post.lexical.includes(`${siteUrl}/content/files/document.pdf`));
+        assert(post.lexical.includes(`${siteUrl}/content/media/video.mp4`));
 
         urlUtilsHelper.stubUrlUtilsWithCdn({
             assetBaseUrls: {media: newCdnUrl, files: newCdnUrl}
@@ -66,8 +67,8 @@ describe('Ghost Admin - Storage Adapter Switching', function () {
 
         post = res.body.posts[0];
         post.feature_image.should.equal(`${siteUrl}/content/images/feature.jpg`);
-        post.lexical.should.containEql(`${newCdnUrl}/content/files/document.pdf`);
-        post.lexical.should.containEql(`${newCdnUrl}/content/media/video.mp4`);
+        assert(post.lexical.includes(`${newCdnUrl}/content/files/document.pdf`));
+        assert(post.lexical.includes(`${newCdnUrl}/content/media/video.mp4`));
     });
 
     it('Mobiledoc posts also switch URLs correctly', async function () {
@@ -102,9 +103,9 @@ describe('Ghost Admin - Storage Adapter Switching', function () {
             .expectStatus(200);
 
         let snippetData = res.body.snippets[0];
-        snippetData.mobiledoc.should.containEql(`${siteUrl}/content/files/snippet-document.pdf`);
-        snippetData.mobiledoc.should.containEql(`${siteUrl}/content/media/snippet-video.mp4`);
-        snippetData.mobiledoc.should.containEql(`${siteUrl}/content/images/snippet-inline.jpg`);
+        assert(snippetData.mobiledoc.includes(`${siteUrl}/content/files/snippet-document.pdf`));
+        assert(snippetData.mobiledoc.includes(`${siteUrl}/content/media/snippet-video.mp4`));
+        assert(snippetData.mobiledoc.includes(`${siteUrl}/content/images/snippet-inline.jpg`));
 
         urlUtilsHelper.stubUrlUtilsWithCdn({
             assetBaseUrls: {media: cdnUrl, files: cdnUrl}
@@ -115,9 +116,9 @@ describe('Ghost Admin - Storage Adapter Switching', function () {
             .expectStatus(200);
 
         snippetData = res.body.snippets[0];
-        snippetData.mobiledoc.should.containEql(`${cdnUrl}/content/files/snippet-document.pdf`);
-        snippetData.mobiledoc.should.containEql(`${cdnUrl}/content/media/snippet-video.mp4`);
-        snippetData.mobiledoc.should.containEql(`${siteUrl}/content/images/snippet-inline.jpg`);
+        assert(snippetData.mobiledoc.includes(`${cdnUrl}/content/files/snippet-document.pdf`));
+        assert(snippetData.mobiledoc.includes(`${cdnUrl}/content/media/snippet-video.mp4`));
+        assert(snippetData.mobiledoc.includes(`${siteUrl}/content/images/snippet-inline.jpg`));
     });
 });
 

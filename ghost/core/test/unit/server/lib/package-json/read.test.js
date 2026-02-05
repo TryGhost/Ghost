@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 require('should');
 
 const tmp = require('tmp');
@@ -304,7 +305,7 @@ describe('package-json read', function () {
                     done('Should have thrown an error');
                 })
                 .catch(function (err) {
-                    err.message.should.eql('Package not found');
+                    assert.equal(err.message, 'Package not found');
                     done();
                 })
                 .finally(packagePath.removeCallback);

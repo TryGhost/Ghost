@@ -28,7 +28,7 @@ export async function formSubmitHandler(
     let nameInput = event.target.querySelector('input[data-members-name]');
     let autoRedirect = form?.dataset?.membersAutoredirect || 'true';
     let email = emailInput?.value;
-    let name = (nameInput && nameInput.value) || undefined;
+    let name = (nameInput?.value || '').trim() || undefined;
     let emailType = undefined;
     let labels = [];
     let newsletters = [];
@@ -105,7 +105,8 @@ export async function formSubmitHandler(
                 try {
                     doAction('startSigninOTCFromCustomForm', {
                         email: (email || '').trim(),
-                        otcRef
+                        otcRef,
+                        inboxLinks: responseBody?.inboxLinks
                     });
                 } catch (e) {
                     // eslint-disable-next-line no-console
@@ -204,7 +205,7 @@ export function planClickHandler({event, el, errorEl, siteUrl, site, member, cli
     });
 }
 
-export function handleDataAttributes({siteUrl, site = {}, member, labs = {}, doAction, captureException} = {}) {
+export function handleDataAttributes({siteUrl, site = {}, member, doAction, captureException} = {}) {
     if (!siteUrl) {
         return;
     }
@@ -213,7 +214,7 @@ export function handleDataAttributes({siteUrl, site = {}, member, labs = {}, doA
     Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'), function (form) {
         let errorEl = form.querySelector('[data-members-error]');
         function submitHandler(event) {
-            formSubmitHandler({event, errorEl, form, siteUrl, submitHandler, labs, doAction, captureException});
+            formSubmitHandler({event, errorEl, form, siteUrl, submitHandler, doAction, captureException});
         }
         form.addEventListener('submit', submitHandler);
     });
@@ -282,6 +283,61 @@ export function handleDataAttributes({siteUrl, site = {}, member, labs = {}, doA
                 if (result.error) {
                     throw new Error(t(result.error.message));
                 }
+            }).catch(function (err) {
+                console.error(err);
+                el.addEventListener('click', clickHandler);
+                el.classList.remove('loading');
+                if (errorEl) {
+                    errorEl.innerText = err.message;
+                }
+                el.classList.add('error');
+            });
+        }
+        el.addEventListener('click', clickHandler);
+    });
+
+    Array.prototype.forEach.call(document.querySelectorAll('[data-members-manage-billing]'), function (el) {
+        let errorEl = el.querySelector('[data-members-error]');
+        let membersReturn = el.dataset.membersReturn;
+        let returnUrl;
+
+        if (membersReturn) {
+            returnUrl = (new URL(membersReturn, window.location.href)).href;
+        }
+
+        function clickHandler(event) {
+            el.removeEventListener('click', clickHandler);
+            event.preventDefault();
+
+            if (errorEl) {
+                errorEl.innerText = '';
+            }
+            el.classList.add('loading');
+            fetch(`${siteUrl}/members/api/session`, {
+                credentials: 'same-origin'
+            }).then(function (res) {
+                if (!res.ok) {
+                    return null;
+                }
+                return res.text();
+            }).then(function (identity) {
+                return fetch(`${siteUrl}/members/api/create-stripe-billing-portal-session/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        identity: identity,
+                        returnUrl
+                    })
+                }).then(function (res) {
+                    if (!res.ok) {
+                        throw new Error(t('Could not create Stripe billing portal session'));
+                    }
+                    return res.json();
+                });
+            }).then(function (result) {
+                return window.location.assign(result.url);
             }).catch(function (err) {
                 console.error(err);
                 el.addEventListener('click', clickHandler);

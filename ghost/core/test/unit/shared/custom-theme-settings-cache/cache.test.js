@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 
 const Cache = require('../../../../core/shared/custom-theme-settings-cache/custom-theme-settings-cache');
@@ -21,8 +22,8 @@ describe('Cache', function () {
                 two: 2
             });
 
-            cache.get('one').should.equal(1);
-            cache.get('two').should.equal(2);
+            assert.equal(cache.get('one'), 1);
+            assert.equal(cache.get('two'), 2);
         });
 
         it('clears cache before filling', function () {
@@ -58,7 +59,7 @@ describe('Cache', function () {
 
             const returned = cache.populate(settings1);
 
-            should(returned).equal(undefined);
+            assert.equal(returned, undefined);
         });
     });
 
@@ -72,8 +73,8 @@ describe('Cache', function () {
 
             cache.populate(settings);
 
-            cache.get('one').should.equal(1);
-            cache.get('two').should.equal(2);
+            assert.equal(cache.get('one'), 1);
+            assert.equal(cache.get('two'), 2);
         });
 
         it('returns undefined for unknown value', function () {
@@ -85,13 +86,13 @@ describe('Cache', function () {
 
             cache.populate(settings);
 
-            should(cache.get('unknown')).equal(undefined);
+            assert.equal(cache.get('unknown'), undefined);
         });
 
         it('returns undefined when cache is empty', function () {
             const cache = new Cache();
 
-            should(cache.get('unknown')).equal(undefined);
+            assert.equal(cache.get('unknown'), undefined);
         });
     });
 
@@ -127,7 +128,7 @@ describe('Cache', function () {
 
             returned.new = 'exists';
 
-            should.not.exist(cache.get('new'));
+            assert.equal(cache.get('new'), undefined);
         });
     });
 
@@ -144,7 +145,7 @@ describe('Cache', function () {
             cache.clear();
 
             cache.getAll().should.deepEqual({});
-            should.not.exist(cache.get('one'));
+            assert.equal(cache.get('one'), undefined);
         });
     });
 });

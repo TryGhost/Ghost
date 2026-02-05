@@ -17,7 +17,9 @@
     "Best": "",
     "Cancel": "Annuleren",
     "Comment": "Verstuur",
+    "Commenting disabled": "",
     "Complete your profile": "Vervolledig jouw profiel",
+    "Contact support": "",
     "Delete": "Verwijderen",
     "Deleted": "Verwijderd",
     "Deleted member": "Verwijderd lid",
@@ -28,6 +30,7 @@
     "edited": "bewerkt",
     "Enter your name": "Vul je naam in",
     "Expertise": "Expertise",
+    "for more information.": "",
     "Founder @ Acme Inc": "Oprichter, Acme BV",
     "Full-time parent": "Full-time ouder",
     "Head of Marketing at Acme, Inc": "Acme BV, Hoofd Marketing",
@@ -69,6 +72,8 @@
     "This comment has been hidden.": "Deze reactie is verborgen.",
     "This comment has been removed.": "Deze reactie is verwijderd.",
     "Upgrade now": "Upgrade nu",
+    "View in admin": "",
     "Yesterday": "Gisteren",
+    "You can't post comments in this publication.": "",
     "Your request will be sent to the owner of this site.": "Jouw melding zal worden verzonden naar de eigenaar van deze site."
 }

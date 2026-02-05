@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 
 // Use path relative to test file
@@ -19,10 +20,10 @@ describe('Privacy Utils', function () {
             const result = maskSensitiveData(payload);
             const parsed = JSON.parse(result);
             
-            should.equal(parsed.user, '********');
-            should.equal(parsed.user_id, '********');
-            should.equal(parsed.email, '********');
-            should.equal(parsed.normal, 'data');
+            assert.equal(parsed.user, '********');
+            assert.equal(parsed.user_id, '********');
+            assert.equal(parsed.email, '********');
+            assert.equal(parsed.normal, 'data');
         });
         
         it('should mask custom sensitive attributes', function () {
@@ -35,8 +36,8 @@ describe('Privacy Utils', function () {
             const result = maskSensitiveData(payload, customAttributes);
             const parsed = JSON.parse(result);
             
-            should.equal(parsed.custom_field, '********');
-            should.equal(parsed.normal, 'data');
+            assert.equal(parsed.custom_field, '********');
+            assert.equal(parsed.normal, 'data');
         });
         
         it('should handle nested objects', function () {
@@ -53,9 +54,9 @@ describe('Privacy Utils', function () {
             const result = maskSensitiveData(payload);
             const parsed = JSON.parse(result);
             
-            should.equal(parsed.data.user, '********');
-            should.equal(parsed.data.details.email, '********');
-            should.equal(parsed.normal, 'data');
+            assert.equal(parsed.data.user, '********');
+            assert.equal(parsed.data.details.email, '********');
+            assert.equal(parsed.normal, 'data');
         });
         
         it('should handle empty payloads', function () {
@@ -64,7 +65,7 @@ describe('Privacy Utils', function () {
             const result = maskSensitiveData(payload);
             const parsed = JSON.parse(result);
             
-            should.deepEqual(parsed, {});
+            assert.deepEqual(parsed, {});
         });
     });
 
@@ -77,10 +78,10 @@ describe('Privacy Utils', function () {
             
             const result = processPayload(payload);
             
-            should.equal(typeof result, 'string');
+            assert.equal(typeof result, 'string');
             const parsed = JSON.parse(result);
-            should.equal(parsed.email, '********');
-            should.equal(parsed.normal, 'data');
+            assert.equal(parsed.email, '********');
+            assert.equal(parsed.normal, 'data');
         });
         
         it('should add global attributes to payload', function () {
@@ -95,8 +96,8 @@ describe('Privacy Utils', function () {
             const result = processPayload(payload, globalAttributes);
             const parsed = JSON.parse(result);
             
-            should.equal(parsed.data, 'value');
-            should.equal(parsed.global, 'attribute');
+            assert.equal(parsed.data, 'value');
+            assert.equal(parsed.global, 'attribute');
         });
         
         it('should return object when stringify is false', function () {
@@ -107,9 +108,9 @@ describe('Privacy Utils', function () {
             
             const result = processPayload(payload, {}, false);
             
-            should.equal(typeof result, 'object');
-            should.equal(result.email, '********');
-            should.equal(result.normal, 'data');
+            assert.equal(typeof result, 'object');
+            assert.equal(result.email, '********');
+            assert.equal(result.normal, 'data');
         });
         
         it('should mask sensitive data in global attributes', function () {
@@ -123,8 +124,8 @@ describe('Privacy Utils', function () {
             
             const result = processPayload(payload, globalAttributes, false);
             
-            should.equal(result.email, '********');
-            should.equal(result.normal, 'data');
+            assert.equal(result.email, '********');
+            assert.equal(result.normal, 'data');
         });
         
         it('should handle empty payload and attributes', function () {
@@ -134,7 +135,7 @@ describe('Privacy Utils', function () {
             const result = processPayload(payload, globalAttributes);
             const parsed = JSON.parse(result);
             
-            should.deepEqual(parsed, {});
+            assert.deepEqual(parsed, {});
         });
     });
 }); 

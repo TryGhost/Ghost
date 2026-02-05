@@ -6,8 +6,8 @@ const models = require('../../../core/server/models');
 const {OUTBOX_STATUSES} = require('../../../core/server/models/outbox');
 const db = require('../../../core/server/data/db');
 const configUtils = require('../../utils/config-utils');
+const mockManager = require('../../utils/e2e-framework-mock-manager');
 const mailService = require('../../../core/server/services/mail');
-const config = require('../../../core/shared/config');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../core/server/services/member-welcome-emails/constants');
 const processOutbox = require('../../../core/server/services/outbox/jobs/lib/process-outbox');
 
@@ -59,16 +59,18 @@ describe('Member Welcome Emails Integration', function () {
     });
 
     afterEach(async function () {
+        await db.knex('automated_email_recipients').del();
         await db.knex('outbox').del();
         await db.knex('members').del();
         await db.knex('automated_emails').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free).del();
         await db.knex('automated_emails').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.paid).del();
         await configUtils.restore();
+        mockManager.restore();
     });
 
     describe('Member creation with welcome emails enabled', function () {
         it('creates outbox entry when member source is "member"', async function () {
-            configUtils.set('memberWelcomeEmailTestInbox', 'test-inbox@example.com');
+            mockManager.mockLabsEnabled('welcomeEmails');
 
             const member = await membersService.api.members.create({
                 email: 'welcome-test@example.com',
@@ -92,8 +94,8 @@ describe('Member Welcome Emails Integration', function () {
             assert.equal(payload.status, 'free');
         });
 
-        it('does NOT create outbox entry when config is not set', async function () {
-            configUtils.set('memberWelcomeEmailTestInbox', '');
+        it('does NOT create outbox entry when welcomeEmails labs flag is off', async function () {
+            mockManager.mockLabsDisabled('welcomeEmails');
 
             await membersService.api.members.create({
                 email: 'no-welcome@example.com',
@@ -108,7 +110,7 @@ describe('Member Welcome Emails Integration', function () {
         });
 
         it('does NOT create outbox entry when member is imported', async function () {
-            configUtils.set('memberWelcomeEmailTestInbox', 'test-inbox@example.com');
+            mockManager.mockLabsEnabled('welcomeEmails');
 
             await membersService.api.members.create({
                 email: 'imported@example.com',
@@ -123,7 +125,7 @@ describe('Member Welcome Emails Integration', function () {
         });
 
         it('does NOT create outbox entry when member is created by admin', async function () {
-            configUtils.set('memberWelcomeEmailTestInbox', 'test-inbox@example.com');
+            mockManager.mockLabsEnabled('welcomeEmails');
 
             await membersService.api.members.create({
                 email: 'admin-created@example.com',
@@ -138,7 +140,7 @@ describe('Member Welcome Emails Integration', function () {
         });
 
         it('creates outbox entry with correct timestamp', async function () {
-            configUtils.set('memberWelcomeEmailTestInbox', 'test-inbox@example.com');
+            mockManager.mockLabsEnabled('welcomeEmails');
 
             const beforeCreation = new Date(Date.now() - 1000);
 
@@ -173,12 +175,7 @@ describe('Member Welcome Emails Integration', function () {
 
         beforeEach(function () {
             sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail sent');
-            sinon.stub(config, 'get').callsFake(function (key) {
-                if (key === 'memberWelcomeEmailTestInbox') {
-                    return 'test-inbox@example.com';
-                }
-                return config.get.wrappedMethod.call(config, key);
-            });
+            mockManager.mockLabsEnabled('welcomeEmails');
         });
 
         afterEach(async function () {
@@ -293,6 +290,92 @@ describe('Member Welcome Emails Integration', function () {
             const entriesAfterJob = await models.Outbox.findAll();
             assert.equal(entriesAfterJob.length, 1);
             assert.ok(entriesAfterJob.models[0].get('message'));
+        });
+
+        it('creates automated_email_recipients record when welcome email is sent', async function () {
+            const memberId = ObjectId().toHexString();
+            const memberUuid = '550e8400-e29b-41d4-a716-446655440000';
+            const memberEmail = 'tracking-test@example.com';
+            const memberName = 'Tracking Test Member';
+
+            await models.Outbox.add({
+                event_type: 'MemberCreatedEvent',
+                payload: JSON.stringify({
+                    memberId,
+                    uuid: memberUuid,
+                    email: memberEmail,
+                    name: memberName,
+                    status: 'free'
+                }),
+                status: OUTBOX_STATUSES.PENDING
+            });
+
+            await scheduleInlineJob();
+
+            assert.equal(mailService.GhostMailer.prototype.send.callCount, 1);
+
+            const trackingRecords = await db.knex('automated_email_recipients')
+                .where('member_id', memberId);
+
+            assert.equal(trackingRecords.length, 1);
+
+            const record = trackingRecords[0];
+            assert.equal(record.member_id, memberId);
+            assert.equal(record.member_uuid, memberUuid);
+            assert.equal(record.member_email, memberEmail);
+            assert.equal(record.member_name, memberName);
+
+            const automatedEmail = await db.knex('automated_emails')
+                .where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free)
+                .first();
+            assert.equal(record.automated_email_id, automatedEmail.id);
+        });
+
+        it('sends email to member email when test inbox is not configured', async function () {
+            // Explicitly clear the test inbox config (it's set in config.testing.json)
+            configUtils.set('memberWelcomeEmailTestInbox', '');
+
+            const memberEmail = 'real-member@example.com';
+
+            await models.Outbox.add({
+                event_type: 'MemberCreatedEvent',
+                payload: JSON.stringify({
+                    memberId: ObjectId().toHexString(),
+                    email: memberEmail,
+                    name: 'Real Member',
+                    status: 'free'
+                }),
+                status: OUTBOX_STATUSES.PENDING
+            });
+
+            await scheduleInlineJob();
+
+            assert.equal(mailService.GhostMailer.prototype.send.callCount, 1);
+            const sendCall = mailService.GhostMailer.prototype.send.firstCall;
+            assert.equal(sendCall.args[0].to, memberEmail);
+        });
+
+        it('sends email to test inbox when memberWelcomeEmailTestInbox is configured', async function () {
+            configUtils.set('memberWelcomeEmailTestInbox', 'test-inbox@example.com');
+
+            const memberEmail = 'real-member-2@example.com';
+
+            await models.Outbox.add({
+                event_type: 'MemberCreatedEvent',
+                payload: JSON.stringify({
+                    memberId: ObjectId().toHexString(),
+                    email: memberEmail,
+                    name: 'Real Member 2',
+                    status: 'free'
+                }),
+                status: OUTBOX_STATUSES.PENDING
+            });
+
+            await scheduleInlineJob();
+
+            assert.equal(mailService.GhostMailer.prototype.send.callCount, 1);
+            const sendCall = mailService.GhostMailer.prototype.send.firstCall;
+            assert.equal(sendCall.args[0].to, 'test-inbox@example.com');
         });
     });
 });

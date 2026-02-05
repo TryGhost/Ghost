@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 
@@ -77,8 +78,8 @@ describe('Unit - services/routing/controllers/static', function () {
 
     it('no extra data to fetch', function (done) {
         renderer.renderer.callsFake(function () {
-            renderer.formatResponse.entries.calledOnce.should.be.true();
-            tagsReadStub.called.should.be.false();
+            assert.equal(renderer.formatResponse.entries.calledOnce, true);
+            assert.equal(tagsReadStub.called, false);
             done();
         });
 
@@ -100,8 +101,8 @@ describe('Unit - services/routing/controllers/static', function () {
         tagsReadStub = sinon.stub().resolves({tags: [{slug: 'bacon'}]});
 
         renderer.renderer.callsFake(function () {
-            tagsReadStub.called.should.be.true();
-            renderer.formatResponse.entries.calledOnce.should.be.true();
+            assert.equal(tagsReadStub.called, true);
+            assert.equal(renderer.formatResponse.entries.calledOnce, true);
             done();
         });
 

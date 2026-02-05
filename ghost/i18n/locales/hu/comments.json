@@ -17,7 +17,9 @@
     "Best": "Legjobb",
     "Cancel": "Mégse",
     "Comment": "Hozzászólás",
+    "Commenting disabled": "",
     "Complete your profile": "Profil befejezése",
+    "Contact support": "",
     "Delete": "Törlés",
     "Deleted": "Törölt",
     "Deleted member": "Törölt tag",
@@ -28,6 +30,7 @@
     "edited": "szerkesztve",
     "Enter your name": "Add meg a nevedet",
     "Expertise": "Foglalkozás",
+    "for more information.": "",
     "Founder @ Acme Inc": "A(z) @ Sirály Kft. alapítója",
     "Full-time parent": "Főállású szülő",
     "Head of Marketing at Acme, Inc": "Marketingvezető —\u00a0Sirály Kft.",
@@ -69,6 +72,8 @@
     "This comment has been hidden.": "Ezt a hozzászólást elrejtettük.",
     "This comment has been removed.": "Ezt a hozzászólást töröltük.",
     "Upgrade now": "Előfizetéssel te is hozzászólhatsz",
+    "View in admin": "",
     "Yesterday": "Tegnap",
+    "You can't post comments in this publication.": "",
     "Your request will be sent to the owner of this site.": "A kérésedet továbbítjuk a weboldal tulajdonosának."
 }

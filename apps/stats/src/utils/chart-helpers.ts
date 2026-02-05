@@ -7,7 +7,7 @@ import {STATS_RANGE_OPTIONS} from '@src/utils/constants';
 export const getPeriodText = (range: number): string => {
     const option = STATS_RANGE_OPTIONS.find((opt: {value: number; name: string}) => opt.value === range);
     if (option) {
-        if (['Last 7 days', 'Last 30 days', 'Last 3 months', 'Last 12 months'].includes(option.name)) {
+        if (['Last 7 days', 'Last 30 days', 'Last 90 days', 'Last 12 months'].includes(option.name)) {
             return `in the ${option.name.toLowerCase()}`;
         }
         if (option.name === 'All time') {
@@ -71,11 +71,11 @@ function calculateOutlierThreshold(values: number[]): {threshold: number; averag
     // Calculate median instead of mean to be more robust against extreme outliers
     const sortedValues = [...values].sort((a, b) => a - b);
     const median = sortedValues[Math.floor(sortedValues.length / 2)];
-    
+
     // Calculate MAD (Median Absolute Deviation) which is more robust than standard deviation
     const deviations = values.map(val => Math.abs(val - median));
     const mad = deviations.sort((a, b) => a - b)[Math.floor(deviations.length / 2)];
-    
+
     return {
         threshold: median + (5 * mad), // Using 5 times MAD as threshold
         average: median
@@ -85,7 +85,12 @@ function calculateOutlierThreshold(values: number[]): {threshold: number; averag
 /**
  * Determines the appropriate aggregation strategy based on range and date span
  */
-function determineAggregationStrategy(range: number, dateSpan: number, aggregationType: AggregationType): AggregationStrategy {
+function determineAggregationStrategy(range: number, dateSpan: number, aggregationType: AggregationType, overrideStrategy?: AggregationStrategy): AggregationStrategy {
+    // If an override strategy is provided, use it
+    if (overrideStrategy) {
+        return overrideStrategy;
+    }
+
     // Normalize YTD range
     if (range === -1) {
         if (dateSpan > 150) {
@@ -260,7 +265,7 @@ function aggregateByMonthExact<T extends {date: string}>(data: T[], fieldName: k
         if (isMonthStart || isMonthEnd || isSignificantChange) {
             importantPoints.set(item.date, {...item});
         }
-        
+
         prevValue = currentValue;
     });
 
@@ -278,7 +283,8 @@ export const sanitizeChartData = <T extends {date: string}>(
     data: T[],
     range: number,
     fieldName: keyof T = 'value' as keyof T,
-    aggregationType: AggregationType = 'avg'
+    aggregationType: AggregationType = 'avg',
+    overrideStrategy?: AggregationStrategy
 ): T[] => {
     if (!data.length) {
         return [];
@@ -288,7 +294,7 @@ export const sanitizeChartData = <T extends {date: string}>(
     const dateSpan = data.length > 1 ? calculateDateSpan(data[0].date, data[data.length - 1].date) : 0;
 
     // Determine aggregation strategy
-    const strategy = determineAggregationStrategy(range, dateSpan, aggregationType);
+    const strategy = determineAggregationStrategy(range, dateSpan, aggregationType, overrideStrategy);
 
     // Apply the appropriate aggregation
     let result: T[];

@@ -54,16 +54,6 @@ class StatsService {
     /**
      * @param {string} postId
      */
-    async getPostReferrers(postId) {
-        return {
-            data: await this.referrers.getForPost(postId),
-            meta: {}
-        };
-    }
-
-    /**
-     * @param {string} postId
-     */
     async getReferrersForPost(postId, options) {
         const result = await this.posts.getReferrersForPost(postId, options);
         return result;
@@ -242,23 +232,6 @@ class StatsService {
      */
     async getTopSourcesWithRange(options = {}) {
         return this.referrers.getTopSourcesWithRange(options);
-    }
-
-    /**
-     * Get UTM growth stats broken down by UTM field
-     * Can be filtered by post using post_id parameter
-     * @param {Object} options
-     * @param {string} [options.utm_type='utm_source'] - Which UTM field to group by ('utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content')
-     * @param {string} [options.order='free_members desc'] - Sort order
-     * @param {number} [options.limit=50] - Maximum number of results (ignored when filtering by post)
-     * @param {string} [options.date_from] - Start date in YYYY-MM-DD format
-     * @param {string} [options.date_to] - End date in YYYY-MM-DD format
-     * @param {string} [options.timezone] - Timezone to use for date interpretation
-     * @param {string} [options.post_id] - Optional filter by post ID
-     * @returns {Promise<{data: import('./referrers-stats-service').UtmGrowthStat[], meta: {}}>}
-     */
-    async getUtmGrowthStats(options = {}) {
-        return this.referrers.getUtmGrowthStats(options);
     }
 
     /**

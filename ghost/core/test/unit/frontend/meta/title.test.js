@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const getTitle = require('../../../../core/frontend/meta/title');
@@ -22,7 +23,7 @@ describe('getTitle', function () {
             meta_title: 'My test title'
         });
 
-        title.should.equal('My test title');
+        assert.equal(title, 'My test title');
     });
 
     describe('property: null', function () {
@@ -30,13 +31,11 @@ describe('getTitle', function () {
             localSettingsCache.title = 'My site title';
             localSettingsCache.meta_title = 'My site meta title';
 
-            getTitle({}, {context: 'home'})
-                .should.equal('My site meta title');
+            assert.equal(getTitle({}, {context: 'home'}), 'My site meta title');
 
             localSettingsCache.meta_title = '';
 
-            getTitle({}, {context: 'home'})
-                .should.equal('My site title');
+            assert.equal(getTitle({}, {context: 'home'}), 'My site title');
         });
 
         it('has correct fallbacks for context: post', function () {
@@ -46,18 +45,15 @@ describe('getTitle', function () {
                 meta_title: 'Post meta title'
             };
 
-            getTitle({post}, {context: 'post'})
-                .should.equal('Post meta title');
+            assert.equal(getTitle({post}, {context: 'post'}), 'Post meta title');
 
             post.meta_title = '';
 
-            getTitle({post}, {context: 'post'})
-                .should.equal('Post title');
+            assert.equal(getTitle({post}, {context: 'post'}), 'Post title');
 
             post.title = '';
 
-            getTitle({post}, {context: 'post'})
-                .should.equal('');
+            assert.equal(getTitle({post}, {context: 'post'}), '');
         });
 
         it('has correct fallbacks for context: page', function () {
@@ -67,18 +63,15 @@ describe('getTitle', function () {
                 meta_title: 'Page meta title'
             };
 
-            getTitle({page}, {context: 'page'})
-                .should.equal('Page meta title');
+            assert.equal(getTitle({page}, {context: 'page'}), 'Page meta title');
 
             page.meta_title = '';
 
-            getTitle({page}, {context: 'page'})
-                .should.equal('Page title');
+            assert.equal(getTitle({page}, {context: 'page'}), 'Page title');
 
             page.title = '';
 
-            getTitle({page}, {context: 'page'})
-                .should.equal('');
+            assert.equal(getTitle({page}, {context: 'page'}), '');
         });
 
         // NOTE: this is a legacy format and should be resolved with https://github.com/TryGhost/Ghost/issues/10042
@@ -89,18 +82,15 @@ describe('getTitle', function () {
                 meta_title: 'Page meta title'
             };
 
-            getTitle({post}, {context: 'page'})
-                .should.equal('Page meta title');
+            assert.equal(getTitle({post}, {context: 'page'}), 'Page meta title');
 
             post.meta_title = '';
 
-            getTitle({post}, {context: 'page'})
-                .should.equal('Page title');
+            assert.equal(getTitle({post}, {context: 'page'}), 'Page title');
 
             post.title = '';
 
-            getTitle({post}, {context: 'page'})
-                .should.equal('');
+            assert.equal(getTitle({post}, {context: 'page'}), '');
         });
 
         it('has correct fallbacks for context: author', function () {
@@ -110,8 +100,7 @@ describe('getTitle', function () {
                 name: 'Author name'
             };
 
-            getTitle({author}, {context: 'author'})
-                .should.equal('Author name - Site title');
+            assert.equal(getTitle({author}, {context: 'author'}), 'Author name - Site title');
         });
 
         it('has correct fallbacks for context: author_paged', function () {
@@ -121,8 +110,7 @@ describe('getTitle', function () {
                 name: 'Author name'
             };
 
-            getTitle({author}, {context: ['author', 'paged'], pagination: {total: 40, page: 3}})
-                .should.equal('Author name - Site title (Page 3)');
+            assert.equal(getTitle({author}, {context: ['author', 'paged'], pagination: {total: 40, page: 3}}), 'Author name - Site title (Page 3)');
         });
 
         it('has correct fallbacks for context: tag', function () {
@@ -133,13 +121,11 @@ describe('getTitle', function () {
                 meta_title: 'Tag meta title'
             };
 
-            getTitle({tag}, {context: 'tag'})
-                .should.equal('Tag meta title');
+            assert.equal(getTitle({tag}, {context: 'tag'}), 'Tag meta title');
 
             tag.meta_title = '';
 
-            getTitle({tag}, {context: 'tag'})
-                .should.equal('Tag name - Site title');
+            assert.equal(getTitle({tag}, {context: 'tag'}), 'Tag name - Site title');
         });
 
         it('has correct fallbacks for context: tag_paged', function () {
@@ -150,13 +136,11 @@ describe('getTitle', function () {
                 meta_title: 'Tag meta title'
             };
 
-            getTitle({tag}, {context: ['tag', 'paged'], pagination: {total: 40, page: 3}})
-                .should.equal('Tag meta title');
+            assert.equal(getTitle({tag}, {context: ['tag', 'paged'], pagination: {total: 40, page: 3}}), 'Tag meta title');
 
             tag.meta_title = '';
 
-            getTitle({tag}, {context: ['tag', 'paged'], pagination: {total: 40, page: 3}})
-                .should.equal('Tag name - Site title (Page 3)');
+            assert.equal(getTitle({tag}, {context: ['tag', 'paged'], pagination: {total: 40, page: 3}}), 'Tag name - Site title (Page 3)');
         });
     });
 
@@ -166,13 +150,11 @@ describe('getTitle', function () {
             localSettingsCache.meta_title = 'My site meta title';
             localSettingsCache.og_title = 'My site og title';
 
-            getTitle({}, {context: 'home'}, {property: 'og'})
-                .should.equal('My site og title');
+            assert.equal(getTitle({}, {context: 'home'}, {property: 'og'}), 'My site og title');
 
             localSettingsCache.og_title = '';
 
-            getTitle({}, {context: 'home'}, {property: 'og'})
-                .should.equal('My site title');
+            assert.equal(getTitle({}, {context: 'home'}, {property: 'og'}), 'My site title');
         });
 
         it('has correct fallbacks for context: post', function () {
@@ -182,18 +164,15 @@ describe('getTitle', function () {
                 og_title: 'Post og title'
             };
 
-            getTitle({post}, {context: 'post'}, {property: 'og'})
-                .should.equal('Post og title');
+            assert.equal(getTitle({post}, {context: 'post'}, {property: 'og'}), 'Post og title');
 
             post.og_title = '';
 
-            getTitle({post}, {context: 'post'}, {property: 'og'})
-                .should.equal('Post meta title');
+            assert.equal(getTitle({post}, {context: 'post'}, {property: 'og'}), 'Post meta title');
 
             post.meta_title = '';
 
-            getTitle({post}, {context: 'post'}, {property: 'og'})
-                .should.equal('Post title');
+            assert.equal(getTitle({post}, {context: 'post'}, {property: 'og'}), 'Post title');
         });
 
         it('has correct fallbacks for context: page', function () {
@@ -204,18 +183,15 @@ describe('getTitle', function () {
                 og_title: 'Page og title'
             };
 
-            getTitle({page}, {context: 'page'}, {property: 'og'})
-                .should.equal('Page og title');
+            assert.equal(getTitle({page}, {context: 'page'}, {property: 'og'}), 'Page og title');
 
             page.og_title = '';
 
-            getTitle({page}, {context: 'page'}, {property: 'og'})
-                .should.equal('Page meta title');
+            assert.equal(getTitle({page}, {context: 'page'}, {property: 'og'}), 'Page meta title');
 
             page.meta_title = '';
 
-            getTitle({page}, {context: 'page'}, {property: 'og'})
-                .should.equal('Page title');
+            assert.equal(getTitle({page}, {context: 'page'}, {property: 'og'}), 'Page title');
         });
 
         // NOTE: this is a legacy format and should be resolved with https://github.com/TryGhost/Ghost/issues/10042
@@ -227,18 +203,15 @@ describe('getTitle', function () {
                 og_title: 'Page og title'
             };
 
-            getTitle({post}, {context: 'page'}, {property: 'og'})
-                .should.equal('Page og title');
+            assert.equal(getTitle({post}, {context: 'page'}, {property: 'og'}), 'Page og title');
 
             post.og_title = '';
 
-            getTitle({post}, {context: 'page'}, {property: 'og'})
-                .should.equal('Page meta title');
+            assert.equal(getTitle({post}, {context: 'page'}, {property: 'og'}), 'Page meta title');
 
             post.meta_title = '';
 
-            getTitle({post}, {context: 'page'}, {property: 'og'})
-                .should.equal('Page title');
+            assert.equal(getTitle({post}, {context: 'page'}, {property: 'og'}), 'Page title');
         });
 
         it('has correct fallbacks for context: author', function () {
@@ -248,8 +221,7 @@ describe('getTitle', function () {
                 name: 'Author name'
             };
 
-            getTitle({author}, {context: 'author'}, {property: 'og'})
-                .should.equal('Author name - Site title');
+            assert.equal(getTitle({author}, {context: 'author'}, {property: 'og'}), 'Author name - Site title');
         });
 
         it('has correct fallbacks for context: author_paged', function () {
@@ -259,8 +231,7 @@ describe('getTitle', function () {
                 name: 'Author name'
             };
 
-            getTitle({author}, {context: ['author', 'paged'], pagination: {total: 40, page: 3}}, {property: 'og'})
-                .should.equal('Author name - Site title (Page 3)');
+            assert.equal(getTitle({author}, {context: ['author', 'paged'], pagination: {total: 40, page: 3}}, {property: 'og'}), 'Author name - Site title (Page 3)');
         });
 
         it('has correct fallbacks for context: tag', function () {
@@ -271,13 +242,11 @@ describe('getTitle', function () {
                 meta_title: 'Tag meta title'
             };
 
-            getTitle({tag}, {context: 'tag'}, {property: 'og'})
-                .should.equal('Tag meta title');
+            assert.equal(getTitle({tag}, {context: 'tag'}, {property: 'og'}), 'Tag meta title');
 
             tag.meta_title = '';
 
-            getTitle({tag}, {context: 'tag'}, {property: 'og'})
-                .should.equal('Tag name - Site title');
+            assert.equal(getTitle({tag}, {context: 'tag'}, {property: 'og'}), 'Tag name - Site title');
         });
 
         it('has correct fallbacks for context: tag_paged', function () {
@@ -288,13 +257,11 @@ describe('getTitle', function () {
                 meta_title: 'Tag meta title'
             };
 
-            getTitle({tag}, {context: ['tag', 'paged'], pagination: {total: 40, page: 3}}, {property: 'og'})
-                .should.equal('Tag meta title');
+            assert.equal(getTitle({tag}, {context: ['tag', 'paged'], pagination: {total: 40, page: 3}}, {property: 'og'}), 'Tag meta title');
 
             tag.meta_title = '';
 
-            getTitle({tag}, {context: ['tag', 'paged'], pagination: {total: 40, page: 3}}, {property: 'og'})
-                .should.equal('Tag name - Site title (Page 3)');
+            assert.equal(getTitle({tag}, {context: ['tag', 'paged'], pagination: {total: 40, page: 3}}, {property: 'og'}), 'Tag name - Site title (Page 3)');
         });
     });
 
@@ -304,13 +271,11 @@ describe('getTitle', function () {
             localSettingsCache.meta_title = 'My site meta title';
             localSettingsCache.twitter_title = 'My site twitter title';
 
-            getTitle({}, {context: 'home'}, {property: 'twitter'})
-                .should.equal('My site twitter title');
+            assert.equal(getTitle({}, {context: 'home'}, {property: 'twitter'}), 'My site twitter title');
 
             localSettingsCache.twitter_title = '';
 
-            getTitle({}, {context: 'home'}, {property: 'twitter'})
-                .should.equal('My site title');
+            assert.equal(getTitle({}, {context: 'home'}, {property: 'twitter'}), 'My site title');
         });
 
         it('has correct fallbacks for context: post', function () {
@@ -320,18 +285,15 @@ describe('getTitle', function () {
                 twitter_title: 'Post twitter title'
             };
 
-            getTitle({post}, {context: 'post'}, {property: 'twitter'})
-                .should.equal('Post twitter title');
+            assert.equal(getTitle({post}, {context: 'post'}, {property: 'twitter'}), 'Post twitter title');
 
             post.twitter_title = '';
 
-            getTitle({post}, {context: 'post'}, {property: 'twitter'})
-                .should.equal('Post meta title');
+            assert.equal(getTitle({post}, {context: 'post'}, {property: 'twitter'}), 'Post meta title');
 
             post.meta_title = '';
 
-            getTitle({post}, {context: 'post'}, {property: 'twitter'})
-                .should.equal('Post title');
+            assert.equal(getTitle({post}, {context: 'post'}, {property: 'twitter'}), 'Post title');
         });
 
         it('has correct fallbacks for context: page', function () {
@@ -342,18 +304,15 @@ describe('getTitle', function () {
                 twitter_title: 'Page twitter title'
             };
 
-            getTitle({page}, {context: 'page'}, {property: 'twitter'})
-                .should.equal('Page twitter title');
+            assert.equal(getTitle({page}, {context: 'page'}, {property: 'twitter'}), 'Page twitter title');
 
             page.twitter_title = '';
 
-            getTitle({page}, {context: 'page'}, {property: 'twitter'})
-                .should.equal('Page meta title');
+            assert.equal(getTitle({page}, {context: 'page'}, {property: 'twitter'}), 'Page meta title');
 
             page.meta_title = '';
 
-            getTitle({page}, {context: 'page'}, {property: 'twitter'})
-                .should.equal('Page title');
+            assert.equal(getTitle({page}, {context: 'page'}, {property: 'twitter'}), 'Page title');
         });
 
         // NOTE: this is a legacy format and should be resolved with https://github.com/TryGhost/Ghost/issues/10042
@@ -365,18 +324,15 @@ describe('getTitle', function () {
                 twitter_title: 'Page twitter title'
             };
 
-            getTitle({post}, {context: 'page'}, {property: 'twitter'})
-                .should.equal('Page twitter title');
+            assert.equal(getTitle({post}, {context: 'page'}, {property: 'twitter'}), 'Page twitter title');
 
             post.twitter_title = '';
 
-            getTitle({post}, {context: 'page'}, {property: 'twitter'})
-                .should.equal('Page meta title');
+            assert.equal(getTitle({post}, {context: 'page'}, {property: 'twitter'}), 'Page meta title');
 
             post.meta_title = '';
 
-            getTitle({post}, {context: 'page'}, {property: 'twitter'})
-                .should.equal('Page title');
+            assert.equal(getTitle({post}, {context: 'page'}, {property: 'twitter'}), 'Page title');
         });
 
         it('has correct fallbacks for context: author', function () {
@@ -386,8 +342,7 @@ describe('getTitle', function () {
                 name: 'Author name'
             };
 
-            getTitle({author}, {context: 'author'}, {property: 'twitter'})
-                .should.equal('Author name - Site title');
+            assert.equal(getTitle({author}, {context: 'author'}, {property: 'twitter'}), 'Author name - Site title');
         });
 
         it('has correct fallbacks for context: author_paged', function () {
@@ -397,8 +352,7 @@ describe('getTitle', function () {
                 name: 'Author name'
             };
 
-            getTitle({author}, {context: ['author', 'paged'], pagination: {total: 40, page: 3}}, {property: 'twitter'})
-                .should.equal('Author name - Site title (Page 3)');
+            assert.equal(getTitle({author}, {context: ['author', 'paged'], pagination: {total: 40, page: 3}}, {property: 'twitter'}), 'Author name - Site title (Page 3)');
         });
 
         it('has correct fallbacks for context: tag', function () {
@@ -409,13 +363,11 @@ describe('getTitle', function () {
                 meta_title: 'Tag meta title'
             };
 
-            getTitle({tag}, {context: 'tag'}, {property: 'twitter'})
-                .should.equal('Tag meta title');
+            assert.equal(getTitle({tag}, {context: 'tag'}, {property: 'twitter'}), 'Tag meta title');
 
             tag.meta_title = '';
 
-            getTitle({tag}, {context: 'tag'}, {property: 'twitter'})
-                .should.equal('Tag name - Site title');
+            assert.equal(getTitle({tag}, {context: 'tag'}, {property: 'twitter'}), 'Tag name - Site title');
         });
 
         it('has correct fallbacks for context: tag_paged', function () {
@@ -426,13 +378,11 @@ describe('getTitle', function () {
                 meta_title: 'Tag meta title'
             };
 
-            getTitle({tag}, {context: ['tag', 'paged'], pagination: {total: 40, page: 3}}, {property: 'twitter'})
-                .should.equal('Tag meta title');
+            assert.equal(getTitle({tag}, {context: ['tag', 'paged'], pagination: {total: 40, page: 3}}, {property: 'twitter'}), 'Tag meta title');
 
             tag.meta_title = '';
 
-            getTitle({tag}, {context: ['tag', 'paged'], pagination: {total: 40, page: 3}}, {property: 'twitter'})
-                .should.equal('Tag name - Site title (Page 3)');
+            assert.equal(getTitle({tag}, {context: ['tag', 'paged'], pagination: {total: 40, page: 3}}, {property: 'twitter'}), 'Tag name - Site title (Page 3)');
         });
     });
 
@@ -447,7 +397,7 @@ describe('getTitle', function () {
             }
         });
 
-        title.should.equal('My site title 4 (Page 35)');
+        assert.equal(title, 'My site title 4 (Page 35)');
     });
 
     it('should not display "null" for an undefined site title', function () {
@@ -461,7 +411,7 @@ describe('getTitle', function () {
             context: ['tag']
         });
 
-        title.should.equal('My tag');
+        assert.equal(title, 'My tag');
 
         title = getTitle({
             tag: {
@@ -475,7 +425,7 @@ describe('getTitle', function () {
             }
         });
 
-        title.should.equal('My tag - (Page 35)');
+        assert.equal(title, 'My tag - (Page 35)');
 
         title = getTitle({
             author: {
@@ -485,7 +435,7 @@ describe('getTitle', function () {
             context: ['author']
         });
 
-        title.should.equal('My name');
+        assert.equal(title, 'My name');
 
         title = getTitle({
             author: {
@@ -499,6 +449,6 @@ describe('getTitle', function () {
             }
         });
 
-        title.should.equal('My name - (Page 35)');
+        assert.equal(title, 'My name - (Page 35)');
     });
 });

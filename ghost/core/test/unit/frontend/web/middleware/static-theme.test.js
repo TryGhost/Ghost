@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 
@@ -34,8 +35,8 @@ describe('staticTheme', function () {
         req.path = 'mytemplate.hbs';
 
         staticTheme()(req, res, function next() {
-            activeThemeStub.called.should.be.false();
-            expressStaticStub.called.should.be.false();
+            assert.equal(activeThemeStub.called, false);
+            assert.equal(expressStaticStub.called, false);
 
             done();
         });
@@ -45,8 +46,8 @@ describe('staticTheme', function () {
         req.path = 'README.md';
 
         staticTheme()(req, res, function next() {
-            activeThemeStub.called.should.be.false();
-            expressStaticStub.called.should.be.false();
+            assert.equal(activeThemeStub.called, false);
+            assert.equal(expressStaticStub.called, false);
 
             done();
         });
@@ -56,8 +57,8 @@ describe('staticTheme', function () {
         req.path = 'sample.json';
 
         staticTheme()(req, res, function next() {
-            activeThemeStub.called.should.be.false();
-            expressStaticStub.called.should.be.false();
+            assert.equal(activeThemeStub.called, false);
+            assert.equal(expressStaticStub.called, false);
 
             done();
         });
@@ -67,8 +68,8 @@ describe('staticTheme', function () {
         req.path = 'yarn.lock';
 
         staticTheme()(req, res, function next() {
-            activeThemeStub.called.should.be.false();
-            expressStaticStub.called.should.be.false();
+            assert.equal(activeThemeStub.called, false);
+            assert.equal(expressStaticStub.called, false);
 
             done();
         });
@@ -78,8 +79,8 @@ describe('staticTheme', function () {
         req.path = 'gulpfile.js';
 
         staticTheme()(req, res, function next() {
-            activeThemeStub.called.should.be.false();
-            expressStaticStub.called.should.be.false();
+            assert.equal(activeThemeStub.called, false);
+            assert.equal(expressStaticStub.called, false);
 
             done();
         });
@@ -89,8 +90,8 @@ describe('staticTheme', function () {
         req.path = 'Gulpfile.js';
 
         staticTheme()(req, res, function next() {
-            activeThemeStub.called.should.be.false();
-            expressStaticStub.called.should.be.false();
+            assert.equal(activeThemeStub.called, false);
+            assert.equal(expressStaticStub.called, false);
 
             done();
         });
@@ -101,12 +102,12 @@ describe('staticTheme', function () {
 
         staticTheme()(req, res, function next() {
             // Specifically gets called twice
-            activeThemeStub.calledTwice.should.be.true();
-            expressStaticStub.called.should.be.true();
+            assert.equal(activeThemeStub.calledTwice, true);
+            assert.equal(expressStaticStub.called, true);
 
             // Check that express static gets called with the theme path + maxAge
             should.exist(expressStaticStub.firstCall.args);
-            expressStaticStub.firstCall.args[0].should.eql('my/fake/path');
+            assert.equal(expressStaticStub.firstCall.args[0], 'my/fake/path');
             expressStaticStub.firstCall.args[1].should.be.an.Object().with.property('maxAge');
 
             done();
@@ -118,12 +119,12 @@ describe('staticTheme', function () {
 
         staticTheme()(req, res, function next() {
             // Specifically gets called twice
-            activeThemeStub.calledTwice.should.be.true();
-            expressStaticStub.called.should.be.true();
+            assert.equal(activeThemeStub.calledTwice, true);
+            assert.equal(expressStaticStub.called, true);
 
             // Check that express static gets called with the theme path + maxAge
             should.exist(expressStaticStub.firstCall.args);
-            expressStaticStub.firstCall.args[0].should.eql('my/fake/path');
+            assert.equal(expressStaticStub.firstCall.args[0], 'my/fake/path');
             expressStaticStub.firstCall.args[1].should.be.an.Object().with.property('maxAge');
 
             done();
@@ -137,8 +138,8 @@ describe('staticTheme', function () {
         activeThemeStub.returns(undefined);
 
         staticTheme()(req, res, function next() {
-            activeThemeStub.calledOnce.should.be.true();
-            expressStaticStub.called.should.be.false();
+            assert.equal(activeThemeStub.calledOnce, true);
+            assert.equal(expressStaticStub.called, false);
 
             done();
         });
@@ -149,12 +150,12 @@ describe('staticTheme', function () {
 
         staticTheme()(req, res, function next() {
             // Specifically gets called twice
-            activeThemeStub.calledTwice.should.be.true();
-            expressStaticStub.called.should.be.true();
+            assert.equal(activeThemeStub.calledTwice, true);
+            assert.equal(expressStaticStub.called, true);
 
             // Check that express static gets called with the theme path + maxAge
             should.exist(expressStaticStub.firstCall.args);
-            expressStaticStub.firstCall.args[0].should.eql('my/fake/path');
+            assert.equal(expressStaticStub.firstCall.args[0], 'my/fake/path');
             expressStaticStub.firstCall.args[1].should.be.an.Object().with.property('maxAge');
 
             done();
@@ -166,12 +167,12 @@ describe('staticTheme', function () {
 
         staticTheme()(req, res, function next() {
             // Specifically gets called twice
-            activeThemeStub.calledTwice.should.be.true();
-            expressStaticStub.called.should.be.true();
+            assert.equal(activeThemeStub.calledTwice, true);
+            assert.equal(expressStaticStub.called, true);
 
             // Check that express static gets called with the theme path + maxAge
             should.exist(expressStaticStub.firstCall.args);
-            expressStaticStub.firstCall.args[0].should.eql('my/fake/path');
+            assert.equal(expressStaticStub.firstCall.args[0], 'my/fake/path');
             expressStaticStub.firstCall.args[1].should.be.an.Object().with.property('maxAge');
 
             done();
@@ -183,12 +184,12 @@ describe('staticTheme', function () {
 
         staticTheme()(req, res, function next() {
             // Specifically gets called twice
-            activeThemeStub.calledTwice.should.be.true();
-            expressStaticStub.called.should.be.true();
+            assert.equal(activeThemeStub.calledTwice, true);
+            assert.equal(expressStaticStub.called, true);
 
             // Check that express static gets called with the theme path + maxAge
             should.exist(expressStaticStub.firstCall.args);
-            expressStaticStub.firstCall.args[0].should.eql('my/fake/path');
+            assert.equal(expressStaticStub.firstCall.args[0], 'my/fake/path');
             expressStaticStub.firstCall.args[1].should.be.an.Object().with.property('maxAge');
 
             done();
@@ -199,8 +200,8 @@ describe('staticTheme', function () {
         req.path = '/assets/mytemplate.hbs';
 
         staticTheme()(req, res, function next() {
-            activeThemeStub.called.should.be.false();
-            expressStaticStub.called.should.be.false();
+            assert.equal(activeThemeStub.called, false);
+            assert.equal(expressStaticStub.called, false);
 
             done();
         });
@@ -211,8 +212,8 @@ describe('staticTheme', function () {
         req.method = 'GET';
 
         staticTheme()(req, res, function next() {
-            activeThemeStub.called.should.be.false();
-            expressStaticStub.called.should.be.false();
+            assert.equal(activeThemeStub.called, false);
+            assert.equal(expressStaticStub.called, false);
 
             done();
         });
@@ -223,8 +224,8 @@ describe('staticTheme', function () {
         req.method = 'GET';
 
         staticTheme()(req, res, function next() {
-            activeThemeStub.called.should.be.false();
-            expressStaticStub.called.should.be.false();
+            assert.equal(activeThemeStub.called, false);
+            assert.equal(expressStaticStub.called, false);
 
             done();
         });
@@ -235,8 +236,8 @@ describe('staticTheme', function () {
             req.path = '/';
 
             staticTheme()(req, res, function next() {
-                activeThemeStub.called.should.be.false();
-                expressStaticStub.called.should.be.false();
+                assert.equal(activeThemeStub.called, false);
+                assert.equal(expressStaticStub.called, false);
 
                 done();
             });
@@ -246,8 +247,8 @@ describe('staticTheme', function () {
             req.path = '/about/';
 
             staticTheme()(req, res, function next() {
-                activeThemeStub.called.should.be.false();
-                expressStaticStub.called.should.be.false();
+                assert.equal(activeThemeStub.called, false);
+                assert.equal(expressStaticStub.called, false);
 
                 done();
             });
@@ -257,8 +258,8 @@ describe('staticTheme', function () {
             req.path = '/blog/my-post/';
 
             staticTheme()(req, res, function next() {
-                activeThemeStub.called.should.be.false();
-                expressStaticStub.called.should.be.false();
+                assert.equal(activeThemeStub.called, false);
+                assert.equal(expressStaticStub.called, false);
 
                 done();
             });
@@ -268,8 +269,8 @@ describe('staticTheme', function () {
             req.path = '/contact';
 
             staticTheme()(req, res, function next() {
-                activeThemeStub.called.should.be.false();
-                expressStaticStub.called.should.be.false();
+                assert.equal(activeThemeStub.called, false);
+                assert.equal(expressStaticStub.called, false);
 
                 done();
             });
@@ -280,12 +281,12 @@ describe('staticTheme', function () {
 
             staticTheme()(req, res, function next() {
                 // Specifically gets called twice
-                activeThemeStub.calledTwice.should.be.true();
-                expressStaticStub.called.should.be.true();
+                assert.equal(activeThemeStub.calledTwice, true);
+                assert.equal(expressStaticStub.called, true);
 
                 // Check that express static gets called with the theme path + maxAge
                 should.exist(expressStaticStub.firstCall.args);
-                expressStaticStub.firstCall.args[0].should.eql('my/fake/path');
+                assert.equal(expressStaticStub.firstCall.args[0], 'my/fake/path');
                 expressStaticStub.firstCall.args[1].should.be.an.Object().with.property('maxAge');
 
                 done();
@@ -297,12 +298,12 @@ describe('staticTheme', function () {
 
             staticTheme()(req, res, function next() {
                 // Specifically gets called twice
-                activeThemeStub.calledTwice.should.be.true();
-                expressStaticStub.called.should.be.true();
+                assert.equal(activeThemeStub.calledTwice, true);
+                assert.equal(expressStaticStub.called, true);
 
                 // Check that express static gets called with the theme path + maxAge
                 should.exist(expressStaticStub.firstCall.args);
-                expressStaticStub.firstCall.args[0].should.eql('my/fake/path');
+                assert.equal(expressStaticStub.firstCall.args[0], 'my/fake/path');
                 expressStaticStub.firstCall.args[1].should.be.an.Object().with.property('maxAge');
 
                 done();
@@ -314,12 +315,12 @@ describe('staticTheme', function () {
 
             staticTheme()(req, res, function next() {
                 // Specifically gets called twice
-                activeThemeStub.calledTwice.should.be.true();
-                expressStaticStub.called.should.be.true();
+                assert.equal(activeThemeStub.calledTwice, true);
+                assert.equal(expressStaticStub.called, true);
 
                 // Check that express static gets called with the theme path + maxAge
                 should.exist(expressStaticStub.firstCall.args);
-                expressStaticStub.firstCall.args[0].should.eql('my/fake/path');
+                assert.equal(expressStaticStub.firstCall.args[0], 'my/fake/path');
                 expressStaticStub.firstCall.args[1].should.be.an.Object().with.property('maxAge');
 
                 done();
@@ -338,15 +339,15 @@ describe('staticTheme', function () {
             req.path = '/.well-known/apple-app-site-association';
 
             staticTheme()(req, res, function next() {
-                activeThemeStub.called.should.be.true();
-                expressStaticStub.called.should.be.true();
+                assert.equal(activeThemeStub.called, true);
+                assert.equal(expressStaticStub.called, true);
 
                 const options = expressStaticStub.firstCall.args[1];
                 should.exist(options.setHeaders);
 
                 const setHeaderStub = sinon.stub();
                 options.setHeaders({setHeader: setHeaderStub});
-                setHeaderStub.calledWith('Content-Type', 'application/json').should.be.true();
+                assert.equal(setHeaderStub.calledWith('Content-Type', 'application/json'), true);
 
                 done();
             });
@@ -356,7 +357,7 @@ describe('staticTheme', function () {
             req.path = '/.WELL-KNOWN/apple-app-site-association.json';
 
             staticTheme()(req, res, function next() {
-                expressStaticStub.called.should.be.false();
+                assert.equal(expressStaticStub.called, false);
                 done();
             });
         });
@@ -368,12 +369,12 @@ describe('staticTheme', function () {
 
             staticTheme()(req, res, function next() {
                 // Specifically gets called twice
-                activeThemeStub.calledTwice.should.be.true();
-                expressStaticStub.called.should.be.true();
+                assert.equal(activeThemeStub.calledTwice, true);
+                assert.equal(expressStaticStub.called, true);
 
                 // Check that express static gets called with correct options
                 should.exist(expressStaticStub.firstCall.args);
-                expressStaticStub.firstCall.args[0].should.eql('my/fake/path');
+                assert.equal(expressStaticStub.firstCall.args[0], 'my/fake/path');
 
                 const options = expressStaticStub.firstCall.args[1];
                 options.should.be.an.Object();
@@ -389,12 +390,12 @@ describe('staticTheme', function () {
 
             staticTheme()(req, res, function next() {
                 // Specifically gets called twice
-                activeThemeStub.calledTwice.should.be.true();
-                expressStaticStub.called.should.be.true();
+                assert.equal(activeThemeStub.calledTwice, true);
+                assert.equal(expressStaticStub.called, true);
 
                 // Check that express static gets called with correct options
                 should.exist(expressStaticStub.firstCall.args);
-                expressStaticStub.firstCall.args[0].should.eql('my/fake/path');
+                assert.equal(expressStaticStub.firstCall.args[0], 'my/fake/path');
 
                 const options = expressStaticStub.firstCall.args[1];
                 options.should.be.an.Object();
@@ -410,16 +411,77 @@ describe('staticTheme', function () {
 
             staticTheme()(req, res, function next() {
                 // Specifically gets called twice
-                activeThemeStub.calledTwice.should.be.true();
-                expressStaticStub.called.should.be.true();
+                assert.equal(activeThemeStub.calledTwice, true);
+                assert.equal(expressStaticStub.called, true);
 
                 // Check that express static gets called with correct options
                 should.exist(expressStaticStub.firstCall.args);
-                expressStaticStub.firstCall.args[0].should.eql('my/fake/path');
+                assert.equal(expressStaticStub.firstCall.args[0], 'my/fake/path');
 
                 const options = expressStaticStub.firstCall.args[1];
                 options.should.be.an.Object();
                 options.should.have.property('maxAge');
+                options.should.have.property('fallthrough', true);
+
+                done();
+            });
+        });
+
+        it('should set fallthrough to true for paginated sitemaps like /sitemap-posts-2.xml', function (done) {
+            req.path = '/sitemap-posts-2.xml';
+
+            staticTheme()(req, res, function next() {
+                assert.equal(activeThemeStub.calledTwice, true);
+                assert.equal(expressStaticStub.called, true);
+
+                should.exist(expressStaticStub.firstCall.args);
+                assert.equal(expressStaticStub.firstCall.args[0], 'my/fake/path');
+
+                const options = expressStaticStub.firstCall.args[1];
+                options.should.be.an.Object();
+                options.should.have.property('maxAge');
+                options.should.have.property('fallthrough', true);
+
+                done();
+            });
+        });
+
+        it('should set fallthrough to true for higher page numbers like /sitemap-posts-99.xml', function (done) {
+            req.path = '/sitemap-posts-99.xml';
+
+            staticTheme()(req, res, function next() {
+                assert.equal(activeThemeStub.calledTwice, true);
+                assert.equal(expressStaticStub.called, true);
+
+                const options = expressStaticStub.firstCall.args[1];
+                options.should.have.property('fallthrough', true);
+
+                done();
+            });
+        });
+
+        it('should set fallthrough to true for paginated tag sitemaps like /sitemap-tags-3.xml', function (done) {
+            req.path = '/sitemap-tags-3.xml';
+
+            staticTheme()(req, res, function next() {
+                assert.equal(activeThemeStub.calledTwice, true);
+                assert.equal(expressStaticStub.called, true);
+
+                const options = expressStaticStub.firstCall.args[1];
+                options.should.have.property('fallthrough', true);
+
+                done();
+            });
+        });
+
+        it('should set fallthrough to true for paginated author sitemaps like /sitemap-authors-2.xml', function (done) {
+            req.path = '/sitemap-authors-2.xml';
+
+            staticTheme()(req, res, function next() {
+                assert.equal(activeThemeStub.calledTwice, true);
+                assert.equal(expressStaticStub.called, true);
+
+                const options = expressStaticStub.firstCall.args[1];
                 options.should.have.property('fallthrough', true);
 
                 done();
@@ -431,12 +493,12 @@ describe('staticTheme', function () {
 
             staticTheme()(req, res, function next() {
                 // Specifically gets called twice
-                activeThemeStub.calledTwice.should.be.true();
-                expressStaticStub.called.should.be.true();
+                assert.equal(activeThemeStub.calledTwice, true);
+                assert.equal(expressStaticStub.called, true);
 
                 // Check that express static gets called with correct options
                 should.exist(expressStaticStub.firstCall.args);
-                expressStaticStub.firstCall.args[0].should.eql('my/fake/path');
+                assert.equal(expressStaticStub.firstCall.args[0], 'my/fake/path');
 
                 const options = expressStaticStub.firstCall.args[1];
                 options.should.be.an.Object();
@@ -452,12 +514,12 @@ describe('staticTheme', function () {
 
             staticTheme()(req, res, function next() {
                 // Specifically gets called twice
-                activeThemeStub.calledTwice.should.be.true();
-                expressStaticStub.called.should.be.true();
+                assert.equal(activeThemeStub.calledTwice, true);
+                assert.equal(expressStaticStub.called, true);
 
                 // Check that express static gets called with correct options
                 should.exist(expressStaticStub.firstCall.args);
-                expressStaticStub.firstCall.args[0].should.eql('my/fake/path');
+                assert.equal(expressStaticStub.firstCall.args[0], 'my/fake/path');
 
                 const options = expressStaticStub.firstCall.args[1];
                 options.should.be.an.Object();
@@ -473,12 +535,12 @@ describe('staticTheme', function () {
 
             staticTheme()(req, res, function next() {
                 // Specifically gets called twice
-                activeThemeStub.calledTwice.should.be.true();
-                expressStaticStub.called.should.be.true();
+                assert.equal(activeThemeStub.calledTwice, true);
+                assert.equal(expressStaticStub.called, true);
 
                 // Check that express static gets called with correct options
                 should.exist(expressStaticStub.firstCall.args);
-                expressStaticStub.firstCall.args[0].should.eql('my/fake/path');
+                assert.equal(expressStaticStub.firstCall.args[0], 'my/fake/path');
 
                 const options = expressStaticStub.firstCall.args[1];
                 options.should.be.an.Object();

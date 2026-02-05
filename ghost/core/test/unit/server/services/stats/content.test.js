@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const should = require('should');
 const ContentStatsService = require('../../../../../core/server/services/stats/content-stats-service');
@@ -70,17 +71,17 @@ describe('ContentStatsService', function () {
 
             should.exist(result.url);
             result.url.should.startWith('https://api.tinybird.co/v0/pipes/api_top_pages.json?');
-            result.url.should.containEql('site_uuid=site-id');
-            result.url.should.containEql('date_from=2023-01-01');
-            result.url.should.containEql('date_to=2023-01-31');
-            result.url.should.containEql('timezone=UTC');
-            result.url.should.containEql('member_status=all');
+            assert(result.url.includes('site_uuid=site-id'));
+            assert(result.url.includes('date_from=2023-01-01'));
+            assert(result.url.includes('date_to=2023-01-31'));
+            assert(result.url.includes('timezone=UTC'));
+            assert(result.url.includes('member_status=all'));
 
             should.exist(result.options);
             should.exist(result.options.headers);
-            result.options.headers.Authorization.should.equal('Bearer tb-token');
+            assert.equal(result.options.headers.Authorization, 'Bearer tb-token');
 
-            mockTinybirdClient.buildRequest.calledWith('api_top_pages', options).should.be.true();
+            assert.equal(mockTinybirdClient.buildRequest.calledWith('api_top_pages', options), true);
         });
 
         it('parseResponse handles various response formats', function () {
@@ -102,7 +103,7 @@ describe('ContentStatsService', function () {
             should.exist(result);
             result.should.be.an.Array().with.lengthOf(2);
 
-            mockTinybirdClient.parseResponse.calledWith(mockResponse).should.be.true();
+            assert.equal(mockTinybirdClient.parseResponse.calledWith(mockResponse), true);
         });
     });
 
@@ -116,8 +117,8 @@ describe('ContentStatsService', function () {
             const result = service.extractPostUuids(data);
             should.exist(result);
             result.should.be.an.Array().with.lengthOf(2);
-            result.should.containEql('post-1');
-            result.should.containEql('post-2');
+            assert(result.includes('post-1'));
+            assert(result.includes('post-2'));
         });
 
         it('filters out null/undefined/empty UUIDs', function () {
@@ -137,7 +138,7 @@ describe('ContentStatsService', function () {
         it('returns empty object for empty UUIDs array', async function () {
             const result = await service.lookupPostTitles([]);
             should.exist(result);
-            Object.keys(result).should.have.lengthOf(0);
+            assert.equal(Object.keys(result).length, 0);
         });
 
         it('queries database and builds title map', async function () {
@@ -151,9 +152,9 @@ describe('ContentStatsService', function () {
             result['post-2'].should.have.property('id', 'post-id-2');
 
             // Verify knex was called correctly
-            mockKnex.select.calledWith('uuid', 'title', 'id').should.be.true();
-            mockKnex.from.calledWith('posts').should.be.true();
-            mockKnex.whereIn.calledWith('uuid', ['post-1', 'post-2']).should.be.true();
+            assert.equal(mockKnex.select.calledWith('uuid', 'title', 'id'), true);
+            assert.equal(mockKnex.from.calledWith('posts'), true);
+            assert.equal(mockKnex.whereIn.calledWith('uuid', ['post-1', 'post-2']), true);
         });
     });
 
@@ -166,7 +167,7 @@ describe('ContentStatsService', function () {
             });
 
             const result = serviceNoUrl.getResourceTitle('/about/');
-            should.not.exist(result);
+            assert.equal(result, null);
         });
 
         it('returns title from resource with title property', function () {
@@ -180,8 +181,8 @@ describe('ContentStatsService', function () {
             const result = service.getResourceTitle('/about/');
             should.exist(result);
             result.should.have.properties(['title', 'resourceType']);
-            result.title.should.equal('About Us');
-            result.resourceType.should.equal('page');
+            assert.equal(result.title, 'About Us');
+            assert.equal(result.resourceType, 'page');
         });
 
         it('returns name from resource with name property (tags, authors)', function () {
@@ -195,22 +196,22 @@ describe('ContentStatsService', function () {
             const result = service.getResourceTitle('/tag/news/');
             should.exist(result);
             result.should.have.properties(['title', 'resourceType']);
-            result.title.should.equal('News');
-            result.resourceType.should.equal('tag');
+            assert.equal(result.title, 'News');
+            assert.equal(result.resourceType, 'tag');
         });
 
         it('returns null if resource lookup fails', function () {
             mockUrlService.getResource.withArgs('/not-found/').throws(new Error('Resource not found'));
 
             const result = service.getResourceTitle('/not-found/');
-            should.not.exist(result);
+            assert.equal(result, null);
         });
 
         it('returns null if resource has no data or title/name', function () {
             mockUrlService.getResource.withArgs('/empty/').returns({});
 
             const result = service.getResourceTitle('/empty/');
-            should.not.exist(result);
+            assert.equal(result, null);
         });
     });
 
@@ -227,8 +228,8 @@ describe('ContentStatsService', function () {
             should.exist(result);
             result.should.be.an.Array().with.lengthOf(0);
 
-            service.extractPostUuids.called.should.be.false();
-            service.lookupPostTitles.called.should.be.false();
+            assert.equal(service.extractPostUuids.called, false);
+            assert.equal(service.lookupPostTitles.called, false);
         });
 
         it('enriches data with post_uuid titles', async function () {
@@ -245,15 +246,15 @@ describe('ContentStatsService', function () {
 
             should.exist(result);
             result.should.be.an.Array().with.lengthOf(2);
-            result[0].title.should.equal('Test Post 1');
-            result[0].post_id.should.equal('post-id-1');
-            result[0].url_exists.should.equal(true);
-            result[1].title.should.equal('Test Post 2');
-            result[1].post_id.should.equal('post-id-2');
-            result[1].url_exists.should.equal(true);
+            assert.equal(result[0].title, 'Test Post 1');
+            assert.equal(result[0].post_id, 'post-id-1');
+            assert.equal(result[0].url_exists, true);
+            assert.equal(result[1].title, 'Test Post 2');
+            assert.equal(result[1].post_id, 'post-id-2');
+            assert.equal(result[1].url_exists, true);
 
-            service.extractPostUuids.calledOnce.should.be.true();
-            service.lookupPostTitles.calledOnce.should.be.true();
+            assert.equal(service.extractPostUuids.calledOnce, true);
+            assert.equal(service.lookupPostTitles.calledOnce, true);
         });
 
         it('uses urlService for non-post pages', async function () {
@@ -272,11 +273,11 @@ describe('ContentStatsService', function () {
 
             should.exist(result);
             result.should.be.an.Array().with.lengthOf(1);
-            result[0].title.should.equal('About Us');
-            result[0].resourceType.should.equal('page');
-            result[0].url_exists.should.equal(true);
+            assert.equal(result[0].title, 'About Us');
+            assert.equal(result[0].resourceType, 'page');
+            assert.equal(result[0].url_exists, true);
 
-            service.getResourceTitle.calledWith('/about/').should.be.true();
+            assert.equal(service.getResourceTitle.calledWith('/about/'), true);
         });
 
         it('falls back to formatted pathname for unknown pages', async function () {
@@ -290,10 +291,10 @@ describe('ContentStatsService', function () {
 
             should.exist(result);
             result.should.be.an.Array().with.lengthOf(1);
-            result[0].title.should.equal('unknown-page');
-            result[0].url_exists.should.equal(false);
+            assert.equal(result[0].title, 'unknown-page');
+            assert.equal(result[0].url_exists, false);
 
-            service.getResourceTitle.calledWith('/unknown-page/').should.be.true();
+            assert.equal(service.getResourceTitle.calledWith('/unknown-page/'), true);
         });
 
         it('handles home page', async function () {
@@ -307,8 +308,8 @@ describe('ContentStatsService', function () {
 
             should.exist(result);
             result.should.be.an.Array().with.lengthOf(1);
-            result[0].title.should.equal('Homepage');
-            result[0].url_exists.should.equal(false);
+            assert.equal(result[0].title, 'Homepage');
+            assert.equal(result[0].url_exists, false);
         });
     });
 
@@ -330,14 +331,14 @@ describe('ContentStatsService', function () {
 
             should.exist(result);
             result.should.be.an.Array().with.lengthOf(1);
-            result[0].pathname.should.equal('/test/');
-            result[0].visits.should.equal(100);
+            assert.equal(result[0].pathname, '/test/');
+            assert.equal(result[0].visits, 100);
 
-            mockTinybirdClient.fetch.calledOnce.should.be.true();
+            assert.equal(mockTinybirdClient.fetch.calledOnce, true);
 
             // Verify that camelCase conversion happened - the first param should be the pipe name
             const calledWith = mockTinybirdClient.fetch.firstCall.args;
-            calledWith[0].should.equal('api_top_pages');
+            assert.equal(calledWith[0], 'api_top_pages');
 
             // The second param should have camelCase properties
             calledWith[1].should.have.property('dateFrom', '2023-01-01');
@@ -356,11 +357,11 @@ describe('ContentStatsService', function () {
 
             const result = await service.fetchRawTopContentData(options);
 
-            should.not.exist(result);
+            assert.equal(result, null);
 
             // Verify that camelCase conversion happened
             const calledWith = mockTinybirdClient.fetch.firstCall.args;
-            calledWith[0].should.equal('api_top_pages');
+            assert.equal(calledWith[0], 'api_top_pages');
             calledWith[1].should.have.property('dateFrom', '2023-01-01');
             calledWith[1].should.have.property('dateTo', '2023-01-31');
         });
@@ -393,7 +394,7 @@ describe('ContentStatsService', function () {
             result.data[1].should.have.property('title');
             result.data[1].should.have.property('post_id');
 
-            service.fetchRawTopContentData.calledOnce.should.be.true();
+            assert.equal(service.fetchRawTopContentData.calledOnce, true);
 
             // Verify the parameters were passed properly
             const options = service.fetchRawTopContentData.firstCall.args[0];
@@ -413,7 +414,7 @@ describe('ContentStatsService', function () {
             should.exist(result.data);
             result.data.should.be.an.Array().with.lengthOf(0);
 
-            service.fetchRawTopContentData.calledOnce.should.be.true();
+            assert.equal(service.fetchRawTopContentData.calledOnce, true);
         });
 
         it('returns empty data array on error', async function () {
@@ -469,8 +470,8 @@ describe('ContentStatsService', function () {
             result.should.be.an.Array().with.lengthOf(2);
 
             // Verify tinybird client was called with correct parameters
-            mockTinybirdClient.fetch.calledOnce.should.be.true();
-            mockTinybirdClient.fetch.firstCall.args[0].should.equal('api_top_pages');
+            assert.equal(mockTinybirdClient.fetch.calledOnce, true);
+            assert.equal(mockTinybirdClient.fetch.firstCall.args[0], 'api_top_pages');
 
             const tinybirdOptions = mockTinybirdClient.fetch.firstCall.args[1];
             tinybirdOptions.should.have.property('dateFrom', '2023-01-01');
@@ -508,8 +509,8 @@ describe('ContentStatsService', function () {
 
             await service.fetchRawTopContentData(options);
 
-            mockTinybirdClient.fetch.calledOnce.should.be.true();
-            mockTinybirdClient.fetch.firstCall.args[0].should.equal('api_top_pages');
+            assert.equal(mockTinybirdClient.fetch.calledOnce, true);
+            assert.equal(mockTinybirdClient.fetch.firstCall.args[0], 'api_top_pages');
 
             const tinybirdOptions = mockTinybirdClient.fetch.firstCall.args[1];
             // Base parameters

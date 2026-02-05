@@ -277,6 +277,10 @@
             "flags": "PUBLIC,RO",
             "type": "string"
         },
+        "stripe_billing_portal_configuration_id": {
+            "defaultValue": null,
+            "type": "string"
+        },
         "stripe_secret_key": {
             "defaultValue": null,
             "type": "string"
@@ -470,6 +474,15 @@
             "defaultValue": "true",
             "validations": {
                 "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
+        }
+    },
+    "transistor": {
+        "transistor": {
+            "defaultValue": "false",
+            "validations": {
                 "isIn": [["true", "false"]]
             },
             "type": "boolean"

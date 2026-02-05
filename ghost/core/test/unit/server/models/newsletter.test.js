@@ -1,4 +1,5 @@
 /* eslint no-invalid-this:0 */
+const assert = require('node:assert/strict');
 const errors = require('@tryghost/errors');
 const sinon = require('sinon');
 const should = require('should');
@@ -21,11 +22,11 @@ describe('Unit: models/newsletter', function () {
                         throw new Error('expected ValidationError');
                     })
                     .catch(function (err) {
-                        err.length.should.eql(2);
-                        (err[0] instanceof errors.ValidationError).should.eql(true);
-                        (err[1] instanceof errors.ValidationError).should.eql(true);
-                        err[0].message.should.match(/newsletters\.name/);
-                        err[1].message.should.match(/newsletters\.slug/);
+                        assert.equal(err.length, 2);
+                        assert.equal((err[0] instanceof errors.ValidationError), true);
+                        assert.equal((err[1] instanceof errors.ValidationError), true);
+                        assert.match(err[0].message, /newsletters\.name/);
+                        assert.match(err[1].message, /newsletters\.slug/);
                     });
             });
         });

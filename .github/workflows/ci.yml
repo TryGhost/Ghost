@@ -44,6 +44,7 @@ jobs:
       IS_DEVELOPMENT: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/5.x' || github.ref == 'refs/heads/6.x' }}
       IS_SIX: ${{ github.ref == 'refs/heads/6.x' }}
       IS_SIX_PR: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref == '6.x' }}
+      IS_FIVE: ${{ github.ref == 'refs/heads/5.x' }}
     permissions:
       pull-requests: read
     steps:
@@ -144,6 +145,8 @@ jobs:
             tinybird:
               - 'ghost/core/core/server/data/tinybird/**'
               - '!ghost/core/core/server/data/tinybird/**/*.md'
+            browser-tests:
+              - 'ghost/core/test/e2e-browser/**'
             any-code:
               - '!**/*.md'
 
@@ -209,14 +212,17 @@ jobs:
       changed_sodo_search: ${{ steps.changed.outputs.sodo-search }}
       changed_tinybird: ${{ steps.changed.outputs.tinybird }}
       changed_any_code: ${{ steps.changed.outputs.any-code }}
+      changed_browser_tests: ${{ steps.changed.outputs.browser-tests }}
       changed_new_package: ${{ steps.added.outputs.new-package }}
       base_commit: ${{ env.BASE_COMMIT }}
       is_main: ${{ env.IS_MAIN }}
       is_development: ${{ env.IS_DEVELOPMENT }}
       is_six: ${{ env.IS_SIX }}
       is_six_pr: ${{ env.IS_SIX_PR }}
+      is_five: ${{ env.IS_FIVE }}
       member_is_in_org: ${{ steps.check_user_org_membership.outputs.is_member }}
       has_browser_tests_label: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'browser-tests') }}
+      has_perf_tests_label: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'perf-tests') }}
       dependency_cache_key: ${{ env.cachekey }}
       node_version: ${{ env.NODE_VERSION }}
       node_test_matrix: ${{ steps.node_matrix.outputs.matrix }}
@@ -326,9 +332,7 @@ jobs:
     runs-on:
       labels: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_any_code == 'true' && (needs.job_setup.outputs.is_six_pr == 'true' || needs.job_setup.outputs.is_development == 'true' || needs.job_setup.outputs.has_browser_tests_label == 'true')
-    concurrency:
-      group: ${{ github.workflow }}
+    if: needs.job_setup.outputs.changed_any_code == 'true' && (needs.job_setup.outputs.is_six_pr == 'true' || needs.job_setup.outputs.is_development == 'true' || needs.job_setup.outputs.has_browser_tests_label == 'true' || needs.job_setup.outputs.changed_browser_tests == 'true')
     steps:
     - uses: actions/checkout@v4
       with:
@@ -366,9 +370,14 @@ jobs:
     - name: Run migrations
       working-directory: ghost/core
       run: yarn knex-migrator init
+      env:
+        NODE_OPTIONS: "--import=tsx"
 
     - name: Setup Playwright
       uses: ./.github/actions/setup-playwright
+
+    - name: Build TS packages
+      run: yarn nx run-many -t build --exclude=ghost-admin
 
     - name: Build Admin
       run: yarn nx run ghost-admin:build:dev
@@ -398,7 +407,7 @@ jobs:
     runs-on:
       labels: ubuntu-latest-4-cores
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_core == 'true' && needs.job_setup.outputs.is_development == 'true'
+    if: (needs.job_setup.outputs.changed_core == 'true' && needs.job_setup.outputs.is_development == 'true') || needs.job_setup.outputs.has_perf_tests_label == 'true'
     name: Performance tests
     steps:
       - uses: actions/checkout@v4
@@ -544,6 +553,9 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
+      - name: Build TS packages
+        run: yarn nx run-many -t build --exclude=ghost-admin
+
       - name: Set timezone (non-UTC)
         uses: szenius/set-timezone@v2.0
         with:
@@ -626,6 +638,9 @@ jobs:
         uses: ./.github/actions/restore-cache
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+
+      - name: Build TS packages
+        run: yarn nx run-many -t build --exclude=ghost-admin
 
       - name: Set env vars (SQLite)
         if: contains(matrix.env.DB, 'sqlite')
@@ -1097,16 +1112,14 @@ jobs:
           } >> $GITHUB_STEP_SUMMARY
 
   job_e2e_tests:
-    name: ${{matrix.shell == 'react' && '[Optional] ' || ''}}E2E Tests (${{ matrix.shell == 'react' && 'React' || 'Ember' }} ${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
+    name: E2E Tests (${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
     runs-on: ubuntu-latest
     needs: [job_docker_build, job_setup]
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         shardIndex: [1, 2, 3, 4]
         shardTotal: [4]
-        shell: [ember, react]
-    continue-on-error: ${{ matrix.shell == 'react' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -1155,15 +1168,14 @@ jobs:
       - name: Run e2e tests
         env:
           GHOST_IMAGE_TAG: ${{ steps.load.outputs.image-tag }}
-          USE_REACT_SHELL: ${{ matrix.shell == 'react' && 'true' || '' }}
           TEST_WORKERS_COUNT: 1
-        run: yarn test:e2e --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
+        run: yarn test:e2e:all --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }} --retries=2
 
       - name: Upload blob report to GitHub Actions Artifacts
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: blob-report-${{ matrix.shell }}-${{ matrix.shardIndex }}
+          name: blob-report-${{ matrix.shardIndex }}
           path: e2e/blob-report
           retention-days: 1
 
@@ -1171,7 +1183,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results-${{ matrix.shell }}-${{ matrix.shardIndex }}
+          name: test-results-${{ matrix.shardIndex }}
           path: e2e/test-results
           retention-days: 7
 
@@ -1183,14 +1195,12 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   job_merge_e2e_reports:
-    name: Merge ${{ matrix.shell == 'react' && 'React' || 'Ember' }} Reports
+    name: Merge Reports
     if: always()
     needs: [job_e2e_tests, job_setup]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix:
-        shell: [ember, react]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -1209,7 +1219,7 @@ jobs:
         continue-on-error: true
         with:
           path: e2e/all-blob-reports
-          pattern: blob-report-${{ matrix.shell }}-*
+          pattern: blob-report-*
           merge-multiple: true
 
       - name: Check for blob reports
@@ -1226,7 +1236,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: e2e/all-test-results
-          pattern: test-results-${{ matrix.shell }}-*
+          pattern: test-results-*
           merge-multiple: true
 
       - name: Merge into HTML Report
@@ -1238,7 +1248,7 @@ jobs:
         if: steps.check.outputs.has_reports == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report-${{ matrix.shell }}
+          name: playwright-report
           path: e2e/playwright-report
           retention-days: 14
 
@@ -1246,26 +1256,26 @@ jobs:
         if: steps.check.outputs.has_reports == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: test-results-${{ matrix.shell }}
+          name: test-results
           path: e2e/all-test-results
           retention-days: 7
 
       - name: View Test Report command
         if: steps.check.outputs.has_reports == 'true'
         run: |
-          echo -e "::notice::To view the ${{ matrix.shell == 'react' && 'React' || 'Ember' }} Playwright report locally, run:\n\nREPORT_DIR=\$(mktemp -d) && gh run download ${{ github.run_id }} -n playwright-report-${{ matrix.shell }} -D \"\$REPORT_DIR\" && npx playwright show-report \"\$REPORT_DIR\""
+          echo -e "::notice::To view the Playwright report locally, run:\n\nREPORT_DIR=\$(mktemp -d) && gh run download ${{ github.run_id }} -n playwright-report -D \"\$REPORT_DIR\" && npx playwright show-report \"\$REPORT_DIR\""
 
       - name: Comment on PR with test report command
         if: github.event_name == 'pull_request' && steps.check.outputs.has_reports == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh pr comment ${{ github.event.pull_request.number }} --body "## ${{ matrix.shell == 'react' && 'React' || 'Ember' }} E2E Tests Failed
+          gh pr comment ${{ github.event.pull_request.number }} --body "## E2E Tests Failed
 
           To view the Playwright test report locally, run:
 
           \`\`\`bash
-          REPORT_DIR=\$(mktemp -d) && gh run download ${{ github.run_id }} -n playwright-report-${{ matrix.shell }} -D \"\$REPORT_DIR\" && npx playwright show-report \"\$REPORT_DIR\"
+          REPORT_DIR=\$(mktemp -d) && gh run download ${{ github.run_id }} -n playwright-report -D \"\$REPORT_DIR\" && npx playwright show-report \"\$REPORT_DIR\"
           \`\`\`"
 
   job_coverage:
@@ -1406,7 +1416,7 @@ jobs:
     ]
     name: Publish ${{ matrix.package_name }}
     runs-on: ubuntu-latest
-    if: always() && needs.job_setup.result == 'success' && needs.job_lint.result == 'success' && needs.job_unit-tests.result == 'success' && needs.job_setup.outputs.is_main == 'true'
+    if: always() && needs.job_setup.result == 'success' && needs.job_lint.result == 'success' && needs.job_unit-tests.result == 'success' && (needs.job_setup.outputs.is_main == 'true' || needs.job_setup.outputs.is_five == 'true')
     permissions:
       id-token: write
     strategy:
@@ -1451,9 +1461,7 @@ jobs:
         working-directory: ${{ matrix.package_path }}
         run: |
           CURRENT_VERSION=$(cat package.json | jq -r .version)
-          PUBLISHED_VERSION=$(npm show ${{ matrix.package_name }} version || echo "0.0.0")
           echo "Current version: $CURRENT_VERSION"
-          echo "Published version: $PUBLISHED_VERSION"
 
           CURRENT_MINOR=$(cat package.json | jq -r .version | awk -F. '{print $1"."$2}')
           echo "current_minor=$CURRENT_MINOR" >> $GITHUB_OUTPUT
@@ -1461,12 +1469,27 @@ jobs:
           CURRENT_MAJOR=$(cat package.json | jq -r .version | awk -F. '{print $1}')
           echo "current_major=$CURRENT_MAJOR" >> $GITHUB_OUTPUT
 
-          if [ "$CURRENT_VERSION" = "$PUBLISHED_VERSION" ]; then
-            echo "Version is unchanged."
-            echo "version_changed=false" >> $GITHUB_OUTPUT
+          if [ "${{ needs.job_setup.outputs.is_five }}" = "true" ]; then
+            # For 5.x branch, check if this exact version exists on npm
+            if npm show ${{ matrix.package_name }}@$CURRENT_VERSION version > /dev/null 2>&1; then
+              echo "Version $CURRENT_VERSION already exists on npm."
+              echo "version_changed=false" >> $GITHUB_OUTPUT
+            else
+              echo "Version $CURRENT_VERSION does not exist on npm."
+              echo "version_changed=true" >> $GITHUB_OUTPUT
+            fi
           else
-            echo "Version has changed."
-            echo "version_changed=true" >> $GITHUB_OUTPUT
+            # For main branch, compare against latest
+            PUBLISHED_VERSION=$(npm show ${{ matrix.package_name }} version || echo "0.0.0")
+            echo "Published version (latest): $PUBLISHED_VERSION"
+
+            if [ "$CURRENT_VERSION" = "$PUBLISHED_VERSION" ]; then
+              echo "Version is unchanged."
+              echo "version_changed=false" >> $GITHUB_OUTPUT
+            else
+              echo "Version has changed."
+              echo "version_changed=true" >> $GITHUB_OUTPUT
+            fi
           fi
 
       - name: Build the package
@@ -1486,7 +1509,12 @@ jobs:
       - name: Publish to npm
         if: steps.version_check.outputs.version_changed == 'true'
         working-directory: ${{ matrix.package_path }}
-        run: npm publish --access public
+        run: |
+          if [ "${{ needs.job_setup.outputs.is_five }}" = "true" ]; then
+            npm publish --access public --tag ghost-5x
+          else
+            npm publish --access public
+          fi
 
       - name: Replace version placeholders in cdn-paths
         id: cdn_paths
