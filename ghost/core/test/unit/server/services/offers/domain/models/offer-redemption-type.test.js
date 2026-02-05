@@ -11,7 +11,7 @@ describe('OfferRedemptionType', function () {
 
             try {
                 OfferRedemptionType.create('other');
-                should.fail();
+                assert.fail();
             } catch (err) {
                 should.ok(
                     err instanceof OfferRedemptionType.InvalidOfferRedemptionType,
@@ -21,7 +21,7 @@ describe('OfferRedemptionType', function () {
 
             try {
                 OfferRedemptionType.create();
-                should.fail();
+                assert.fail();
             } catch (err) {
                 should.ok(
                     err instanceof OfferRedemptionType.InvalidOfferRedemptionType,

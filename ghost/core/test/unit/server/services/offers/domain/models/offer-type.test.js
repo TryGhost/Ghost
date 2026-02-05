@@ -12,7 +12,7 @@ describe('OfferType', function () {
 
             try {
                 OfferType.create('other');
-                should.fail();
+                assert.fail();
             } catch (err) {
                 should.ok(
                     err instanceof OfferType.InvalidOfferType,
@@ -22,7 +22,7 @@ describe('OfferType', function () {
 
             try {
                 OfferType.create();
-                should.fail();
+                assert.fail();
             } catch (err) {
                 should.ok(
                     err instanceof OfferType.InvalidOfferType,

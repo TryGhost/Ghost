@@ -9,7 +9,7 @@ describe('OfferAmount', function () {
             it('Will only create an OfferPercentageAmount containing an integer between 1 & 100 (inclusive)', function () {
                 try {
                     OfferPercentageAmount.create();
-                    should.fail();
+                    assert.fail();
                 } catch (err) {
                     should.ok(
                         err instanceof OfferPercentageAmount.InvalidOfferAmount,
@@ -19,7 +19,7 @@ describe('OfferAmount', function () {
 
                 try {
                     OfferPercentageAmount.create('1');
-                    should.fail();
+                    assert.fail();
                 } catch (err) {
                     should.ok(
                         err instanceof OfferPercentageAmount.InvalidOfferAmount,
@@ -29,7 +29,7 @@ describe('OfferAmount', function () {
 
                 try {
                     OfferPercentageAmount.create(-1);
-                    should.fail();
+                    assert.fail();
                 } catch (err) {
                     should.ok(
                         err instanceof OfferPercentageAmount.InvalidOfferAmount,
@@ -39,7 +39,7 @@ describe('OfferAmount', function () {
 
                 try {
                     OfferPercentageAmount.create(200);
-                    should.fail();
+                    assert.fail();
                 } catch (err) {
                     should.ok(
                         err instanceof OfferPercentageAmount.InvalidOfferAmount,
@@ -49,7 +49,7 @@ describe('OfferAmount', function () {
 
                 try {
                     OfferPercentageAmount.create(3.14);
-                    should.fail();
+                    assert.fail();
                 } catch (err) {
                     should.ok(
                         err instanceof OfferPercentageAmount.InvalidOfferAmount,
@@ -73,7 +73,7 @@ describe('OfferAmount', function () {
             it('Will only create an OfferFixedAmount containing an integer greater than 0', function () {
                 try {
                     OfferFixedAmount.create();
-                    should.fail();
+                    assert.fail();
                 } catch (err) {
                     should.ok(
                         err instanceof OfferFixedAmount.InvalidOfferAmount,
@@ -83,7 +83,7 @@ describe('OfferAmount', function () {
 
                 try {
                     OfferFixedAmount.create('1');
-                    should.fail();
+                    assert.fail();
                 } catch (err) {
                     should.ok(
                         err instanceof OfferFixedAmount.InvalidOfferAmount,
@@ -93,7 +93,7 @@ describe('OfferAmount', function () {
 
                 try {
                     OfferFixedAmount.create(-1);
-                    should.fail();
+                    assert.fail();
                 } catch (err) {
                     should.ok(
                         err instanceof OfferFixedAmount.InvalidOfferAmount,
@@ -103,7 +103,7 @@ describe('OfferAmount', function () {
 
                 try {
                     OfferFixedAmount.create(3.14);
-                    should.fail();
+                    assert.fail();
                 } catch (err) {
                     should.ok(
                         err instanceof OfferFixedAmount.InvalidOfferAmount,
@@ -127,7 +127,7 @@ describe('OfferAmount', function () {
             it('Will only create an OfferTrialAmount containing an integer greater than 0', function () {
                 try {
                     OfferTrialAmount.create();
-                    should.fail();
+                    assert.fail();
                 } catch (err) {
                     should.ok(
                         err instanceof OfferTrialAmount.InvalidOfferAmount,
@@ -137,7 +137,7 @@ describe('OfferAmount', function () {
 
                 try {
                     OfferTrialAmount.create('1');
-                    should.fail();
+                    assert.fail();
                 } catch (err) {
                     should.ok(
                         err instanceof OfferTrialAmount.InvalidOfferAmount,
@@ -147,7 +147,7 @@ describe('OfferAmount', function () {
 
                 try {
                     OfferTrialAmount.create(-1);
-                    should.fail();
+                    assert.fail();
                 } catch (err) {
                     should.ok(
                         err instanceof OfferTrialAmount.InvalidOfferAmount,
@@ -157,7 +157,7 @@ describe('OfferAmount', function () {
 
                 try {
                     OfferTrialAmount.create(3.14);
-                    should.fail();
+                    assert.fail();
                 } catch (err) {
                     should.ok(
                         err instanceof OfferTrialAmount.InvalidOfferAmount,

@@ -11,7 +11,7 @@ describe('OfferCadence', function () {
 
             try {
                 OfferCadence.create();
-                should.fail();
+                assert.fail();
             } catch (err) {
                 should.ok(
                     err instanceof OfferCadence.InvalidOfferCadence,
@@ -21,7 +21,7 @@ describe('OfferCadence', function () {
 
             try {
                 OfferCadence.create(12);
-                should.fail();
+                assert.fail();
             } catch (err) {
                 should.ok(
                     err instanceof OfferCadence.InvalidOfferCadence,
@@ -31,7 +31,7 @@ describe('OfferCadence', function () {
 
             try {
                 OfferCadence.create('daily');
-                should.fail();
+                assert.fail();
             } catch (err) {
                 should.ok(
                     err instanceof OfferCadence.InvalidOfferCadence,

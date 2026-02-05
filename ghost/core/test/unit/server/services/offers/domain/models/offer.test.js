@@ -98,7 +98,7 @@ describe('Offer', function () {
                     id: ObjectID()
                 }
             }, mockUniqueChecker).then(() => {
-                should.fail('Expected an error');
+                assert.fail('Expected an error');
             }, (err) => {
                 assert(err);
             });
@@ -119,7 +119,7 @@ describe('Offer', function () {
                     id: ObjectID()
                 }
             }, mockUniqueChecker).then(() => {
-                should.fail('Expected an error');
+                assert.fail('Expected an error');
             }, (err) => {
                 assert(err);
             });
@@ -140,7 +140,7 @@ describe('Offer', function () {
                     id: ObjectID()
                 }
             }, mockUniqueChecker).then(() => {
-                should.fail('Expected an error');
+                assert.fail('Expected an error');
             }, (err) => {
                 assert(err);
             });
@@ -186,7 +186,7 @@ describe('Offer', function () {
 
             try {
                 await Offer.create(data, mockUniqueChecker);
-                should.fail();
+                assert.fail();
             } catch (err) {
                 assert(err instanceof errors.InvalidOfferDuration);
             }
@@ -275,7 +275,7 @@ describe('Offer', function () {
             await Offer.create(data, mockUniqueChecker);
 
             await Offer.create({...data, redemptionCount: 2}, mockUniqueChecker).then(() => {
-                should.fail('Expected an error');
+                assert.fail('Expected an error');
             }, (err) => {
                 assert(err);
             });
@@ -324,7 +324,7 @@ describe('Offer', function () {
             const offer = await Offer.create(data, mockUniqueChecker);
 
             await offer.updateCode(OfferCode.create('dupe'), mockUniqueChecker).then(() => {
-                should.fail('Expected an error');
+                assert.fail('Expected an error');
             }, (err) => {
                 assert(err);
             });
@@ -355,7 +355,7 @@ describe('Offer', function () {
 
             await offer.updateCode(OfferCode.create('changed'), mockUniqueChecker);
             await offer.updateCode(OfferCode.create('changed-again'), mockUniqueChecker).then(() => {
-                should.fail('Expected an error');
+                assert.fail('Expected an error');
             }, (err) => {
                 assert(err);
             });
@@ -385,7 +385,7 @@ describe('Offer', function () {
             await offer.updateName(OfferName.create('Unique!'), mockUniqueChecker);
 
             await offer.updateName(OfferName.create('dupe'), mockUniqueChecker).then(() => {
-                should.fail('Expected an error');
+                assert.fail('Expected an error');
             }, (err) => {
                 assert(err);
             });
