@@ -890,7 +890,7 @@ describe('Posts API', function () {
             .expect(200);
 
         // Check newsletter relation is loaded in response
-        should(finalPost.body.posts[0].newsletter.id).eql(newsletterId);
+        assert.equal(finalPost.body.posts[0].newsletter.id, newsletterId);
         assert.equal(finalPost.body.posts[0].email_segment, 'all');
         assert.equal(finalPost.body.posts[0].newsletter_id, undefined);
 
@@ -898,7 +898,7 @@ describe('Posts API', function () {
             id
         }, testUtils.context.internal);
 
-        should(model.get('newsletter_id')).eql(newsletterId);
+        assert.equal(model.get('newsletter_id'), newsletterId);
         assertExists(model.get('published_by'));
 
         // Check email
@@ -908,7 +908,7 @@ describe('Posts API', function () {
         }, testUtils.context.internal);
 
         assertExists(email);
-        should(email.get('newsletter_id')).eql(newsletterId);
+        assert.equal(email.get('newsletter_id'), newsletterId);
         assert(['pending', 'submitted', 'submitting'].includes(email.get('status')));
     });
 
@@ -958,7 +958,7 @@ describe('Posts API', function () {
             .expect(200);
 
         // Check newsletter relation is loaded in response
-        should(finalPost.body.posts[0].newsletter.id).eql(newsletterId);
+        assert.equal(finalPost.body.posts[0].newsletter.id, newsletterId);
         assert.equal(finalPost.body.posts[0].email_segment, 'all');
         assert.equal(finalPost.body.posts[0].newsletter_id, undefined);
 
@@ -969,7 +969,7 @@ describe('Posts API', function () {
             id
         }, testUtils.context.internal);
 
-        should(model.get('newsletter_id')).eql(newsletterId);
+        assert.equal(model.get('newsletter_id'), newsletterId);
         assertExists(model.get('published_by'));
 
         // Check email
@@ -979,7 +979,7 @@ describe('Posts API', function () {
         }, testUtils.context.internal);
 
         assertExists(email);
-        should(email.get('newsletter_id')).eql(newsletterId);
+        assert.equal(email.get('newsletter_id'), newsletterId);
         assert(['pending', 'submitted', 'submitting'].includes(email.get('status')));
     });
 
@@ -1039,7 +1039,7 @@ describe('Posts API', function () {
         }, testUtils.context.internal);
 
         assert.equal(model.get('status'), 'sent');
-        should(model.get('newsletter_id')).eql(newsletterId);
+        assert.equal(model.get('newsletter_id'), newsletterId);
         assert.equal(model.get('email_recipient_filter'), 'all');
         assertExists(model.get('published_by'));
 
@@ -1048,7 +1048,7 @@ describe('Posts API', function () {
             post_id: id
         }, testUtils.context.internal);
 
-        should(email.get('newsletter_id')).eql(newsletterId);
+        assert.equal(email.get('newsletter_id'), newsletterId);
         assert.equal(email.get('recipient_filter'), 'all');
         assert(['pending', 'submitted', 'submitting'].includes(email.get('status')));
     });
@@ -1108,7 +1108,7 @@ describe('Posts API', function () {
         }, testUtils.context.internal);
 
         assert.equal(model.get('status'), 'sent');
-        should(model.get('newsletter_id')).eql(newsletterId);
+        assert.equal(model.get('newsletter_id'), newsletterId);
         assert.equal(model.get('email_recipient_filter'), 'status:free');
         assertExists(model.get('published_by'));
 
@@ -1117,7 +1117,7 @@ describe('Posts API', function () {
             post_id: id
         }, testUtils.context.internal);
 
-        should(email.get('newsletter_id')).eql(newsletterId);
+        assert.equal(email.get('newsletter_id'), newsletterId);
         assert.equal(email.get('recipient_filter'), 'status:free');
         assert(['pending', 'submitted', 'submitting'].includes(email.get('status')));
     });
@@ -1177,7 +1177,7 @@ describe('Posts API', function () {
         }, testUtils.context.internal);
 
         assert.equal(model.get('status'), 'sent');
-        should(model.get('newsletter_id')).eql(newsletterId);
+        assert.equal(model.get('newsletter_id'), newsletterId);
         assert.equal(model.get('email_recipient_filter'), 'status:free');
         assertExists(model.get('published_by'));
 
@@ -1186,7 +1186,7 @@ describe('Posts API', function () {
             post_id: id
         }, testUtils.context.internal);
 
-        should(email.get('newsletter_id')).eql(newsletterId);
+        assert.equal(email.get('newsletter_id'), newsletterId);
         assert.equal(email.get('recipient_filter'), 'status:free');
         assert(['pending', 'submitted', 'submitting'].includes(email.get('status')));
     });
@@ -1238,7 +1238,7 @@ describe('Posts API', function () {
             status: 'scheduled'
         }, testUtils.context.internal);
 
-        should(model.get('newsletter_id')).eql(newsletterId);
+        assert.equal(model.get('newsletter_id'), newsletterId);
         assert.equal(model.get('email_recipient_filter'), 'all');
         assert.equal(model.get('published_by'), null);
 
@@ -1267,7 +1267,7 @@ describe('Posts API', function () {
             id
         }, testUtils.context.internal);
 
-        should(model.get('newsletter_id')).eql(newsletterId);
+        assert.equal(model.get('newsletter_id'), newsletterId);
         assert.equal(model.get('email_recipient_filter'), 'all');
         assertExists(model.get('published_by'));
 
@@ -1279,7 +1279,7 @@ describe('Posts API', function () {
             post_id: id
         }, testUtils.context.internal);
 
-        should(email.get('newsletter_id')).eql(newsletterId);
+        assert.equal(email.get('newsletter_id'), newsletterId);
         assert.equal(email.get('recipient_filter'), 'all');
         assert(['pending', 'submitted', 'submitting'].includes(email.get('status')));
     });
@@ -1331,7 +1331,7 @@ describe('Posts API', function () {
             status: 'scheduled'
         }, testUtils.context.internal);
 
-        should(model.get('newsletter_id')).eql(newsletterId);
+        assert.equal(model.get('newsletter_id'), newsletterId);
         assert.equal(model.get('email_recipient_filter'), 'status:free');
 
         // We should not have an email
@@ -1359,7 +1359,7 @@ describe('Posts API', function () {
             id
         }, testUtils.context.internal);
 
-        should(model.get('newsletter_id')).eql(newsletterId);
+        assert.equal(model.get('newsletter_id'), newsletterId);
         assert.equal(model.get('email_recipient_filter'), 'status:free');
 
         assert.equal(publishedPost.newsletter.id, newsletterId);
@@ -1370,7 +1370,7 @@ describe('Posts API', function () {
             post_id: id
         }, testUtils.context.internal);
 
-        should(email.get('newsletter_id')).eql(newsletterId);
+        assert.equal(email.get('newsletter_id'), newsletterId);
         assert.equal(email.get('recipient_filter'), 'status:free');
         assert(['pending', 'submitted', 'submitting'].includes(email.get('status')));
     });
@@ -1512,7 +1512,7 @@ describe('Posts API', function () {
             status: 'scheduled'
         }, testUtils.context.internal);
 
-        should(model.get('newsletter_id')).eql(newsletterId);
+        assert.equal(model.get('newsletter_id'), newsletterId);
         assert.equal(model.get('status'), 'scheduled');
         assert.equal(model.get('email_recipient_filter'), 'all');
 
@@ -1541,7 +1541,7 @@ describe('Posts API', function () {
             status: 'all'
         }, testUtils.context.internal);
 
-        should(model.get('newsletter_id')).eql(newsletterId);
+        assert.equal(model.get('newsletter_id'), newsletterId);
         assert.equal(model.get('status'), 'sent');
         assert.equal(model.get('email_recipient_filter'), 'all');
 
@@ -1553,7 +1553,7 @@ describe('Posts API', function () {
             post_id: id
         }, testUtils.context.internal);
 
-        should(email.get('newsletter_id')).eql(newsletterId);
+        assert.equal(email.get('newsletter_id'), newsletterId);
         assert.equal(email.get('recipient_filter'), 'all');
         assert(['pending', 'submitted', 'submitting'].includes(email.get('status')));
     });
@@ -1599,7 +1599,7 @@ describe('Posts API', function () {
             .expect(200);
 
         // Check newsletter relation is loaded in response
-        should(res2.body.posts[0].newsletter.id).eql(newsletterId);
+        assert.equal(res2.body.posts[0].newsletter.id, newsletterId);
         assert.equal(res2.body.posts[0].email_segment, 'status:-free');
 
         assert.equal(res2.body.posts[0].newsletter_id, undefined);
@@ -1608,7 +1608,7 @@ describe('Posts API', function () {
             id: id,
             status: 'published'
         }, testUtils.context.internal);
-        should(model.get('newsletter_id')).eql(newsletterId);
+        assert.equal(model.get('newsletter_id'), newsletterId);
         assert.equal(model.get('email_recipient_filter'), 'status:-free');
 
         // Check email is sent to the correct newsletter
@@ -1616,7 +1616,7 @@ describe('Posts API', function () {
             post_id: id
         }, testUtils.context.internal);
 
-        should(email.get('newsletter_id')).eql(newsletterId);
+        assert.equal(email.get('newsletter_id'), newsletterId);
         assert.equal(email.get('recipient_filter'), 'status:-free');
         assert(['pending', 'submitted', 'submitting'].includes(email.get('status')));
 
@@ -1635,7 +1635,7 @@ describe('Posts API', function () {
 
         // Check newsletter relation is loaded in response
         // We should keep it, because we already sent an email
-        should(res3.body.posts[0].newsletter.id).eql(newsletterId);
+        assert.equal(res3.body.posts[0].newsletter.id, newsletterId);
         assert.equal(res2.body.posts[0].email_segment, 'status:-free');
         assert.equal(res3.body.posts[0].newsletter_id, undefined);
 
@@ -1644,7 +1644,7 @@ describe('Posts API', function () {
             status: 'draft'
         }, testUtils.context.internal);
 
-        should(model.get('newsletter_id')).eql(newsletterId);
+        assert.equal(model.get('newsletter_id'), newsletterId);
 
         // Check email
         // Note: we only create an email if we have members susbcribed to the newsletter
@@ -1653,7 +1653,7 @@ describe('Posts API', function () {
         }, testUtils.context.internal);
 
         assertExists(email);
-        should(email.get('newsletter_id')).eql(newsletterId);
+        assert.equal(email.get('newsletter_id'), newsletterId);
 
         const republished = {
             status: 'published',
@@ -1670,7 +1670,7 @@ describe('Posts API', function () {
 
         // Check newsletter relation is loaded in response
         // + did update the newsletter id
-        should(res4.body.posts[0].newsletter.id).eql(newsletterId);
+        assert.equal(res4.body.posts[0].newsletter.id, newsletterId);
         assert.equal(res4.body.posts[0].email_segment, 'status:-free');
         assert.equal(res4.body.posts[0].newsletter_id, undefined);
 
@@ -1678,7 +1678,7 @@ describe('Posts API', function () {
             id: id,
             status: 'published'
         }, testUtils.context.internal);
-        should(model.get('newsletter_id')).eql(newsletterId);
+        assert.equal(model.get('newsletter_id'), newsletterId);
 
         // Should not change if status remains published
         const res5 = await request
@@ -1691,7 +1691,7 @@ describe('Posts API', function () {
 
         // Check newsletter relation is loaded in response
         // + did not update the newsletter id
-        should(res5.body.posts[0].newsletter.id).eql(newsletterId);
+        assert.equal(res5.body.posts[0].newsletter.id, newsletterId);
         assert.equal(res5.body.posts[0].email_segment, 'status:-free');
         assert.equal(res5.body.posts[0].newsletter_id, undefined);
 
@@ -1701,7 +1701,7 @@ describe('Posts API', function () {
         }, testUtils.context.internal);
 
         // Test if the newsletter_id option was ignored
-        should(model.get('newsletter_id')).eql(newsletterId);
+        assert.equal(model.get('newsletter_id'), newsletterId);
     });
 
     it('Cannot get post via pages endpoint', async function () {
@@ -1780,7 +1780,7 @@ describe('Posts API', function () {
                 .expect(200);
 
             // Check newsletter relation is loaded in response
-            should(finalPost.body.posts[0].newsletter.id).eql(newsletterId);
+            assert.equal(finalPost.body.posts[0].newsletter.id, newsletterId);
             assert.equal(finalPost.body.posts[0].email_segment, 'all');
             assert.equal(finalPost.body.posts[0].newsletter_id, undefined);
 
@@ -1788,7 +1788,7 @@ describe('Posts API', function () {
                 id
             }, testUtils.context.internal);
 
-            should(model.get('newsletter_id')).eql(newsletterId);
+            assert.equal(model.get('newsletter_id'), newsletterId);
 
             // Check email
             // Note: we only create an email if we have members susbcribed to the newsletter
@@ -1797,7 +1797,7 @@ describe('Posts API', function () {
             }, testUtils.context.internal);
 
             assertExists(email);
-            should(email.get('newsletter_id')).eql(newsletterId);
+            assert.equal(email.get('newsletter_id'), newsletterId);
             assert(['pending', 'submitted', 'submitting'].includes(email.get('status')));
         });
 
@@ -1852,7 +1852,7 @@ describe('Posts API', function () {
             }, testUtils.context.internal);
 
             assert.equal(model.get('status'), 'sent');
-            should(model.get('newsletter_id')).eql(newsletterId);
+            assert.equal(model.get('newsletter_id'), newsletterId);
             assert.equal(model.get('email_recipient_filter'), 'all');
 
             // We should have an email
@@ -1860,7 +1860,7 @@ describe('Posts API', function () {
                 post_id: id
             }, testUtils.context.internal);
 
-            should(email.get('newsletter_id')).eql(newsletterId);
+            assert.equal(email.get('newsletter_id'), newsletterId);
             assert.equal(email.get('recipient_filter'), 'all');
             assert(['pending', 'submitted', 'submitting'].includes(email.get('status')));
         });
