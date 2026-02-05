@@ -3,8 +3,10 @@ import {useContext} from 'react';
 import {hasCommentsEnabled, hasMultipleNewsletters, isEmailSuppressed, hasNewsletterSendingEnabled} from '../../../../utils/helpers';
 
 import PaidAccountActions from './paid-account-actions';
+import TransistorPodcastsAction from './transistor-podcasts-action';
 import EmailNewsletterAction from './email-newsletter-action';
 import EmailPreferencesAction from './email-preferences-action';
+import useIntegrations from './use-integrations';
 import {t} from '../../../../utils/i18n';
 
 const shouldShowEmailPreferences = (site, member) => {
@@ -26,6 +28,7 @@ const shouldShowEmailNewsletterAction = (site) => {
 const AccountActions = () => {
     const {member, doAction, site} = useContext(AppContext);
     const {name, email} = member;
+    const {transistor} = useIntegrations();
 
     const openEditProfile = () => {
         doAction('switchPage', {
@@ -33,8 +36,6 @@ const AccountActions = () => {
             lastPage: 'accountHome'
         });
     };
-
-    // Extract helper functions for complex conditions
 
     const showEmailPreferences = shouldShowEmailPreferences(site, member);
     const showEmailNewsletterAction = shouldShowEmailNewsletterAction(site);
@@ -59,6 +60,10 @@ const AccountActions = () => {
                 <PaidAccountActions />
                 {showEmailPreferences && <EmailPreferencesAction />}
                 {showEmailNewsletterAction && <EmailNewsletterAction />}
+                <TransistorPodcastsAction
+                    hasPodcasts={transistor.hasPodcasts}
+                    memberUuid={transistor.memberUuid}
+                />
             </div>
 
         </div>

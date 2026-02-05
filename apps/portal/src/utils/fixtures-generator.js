@@ -13,6 +13,14 @@ export function objectId() {
     }).toLowerCase();
 }
 
+export function generateUuid() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
+
 export function getSiteData({
     title = 'The Blueprint',
     description = 'Thoughts, stories and ideas.',
@@ -163,7 +171,7 @@ export function getMemberData({
     newsletters = []
 } = {}) {
     return {
-        uuid: `member_${objectId()}`,
+        uuid: generateUuid(),
         email,
         name,
         firstname,

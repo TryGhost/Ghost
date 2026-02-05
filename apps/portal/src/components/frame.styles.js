@@ -23,6 +23,7 @@ import EmailReceivingFAQ from './pages/email-receiving-faq.css?inline';
 import {TipsAndDonationsSuccessStyle} from './pages/support-success';
 import {TipsAndDonationsErrorStyle} from './pages/support-error';
 import {RecommendationsPageStyles} from './pages/recommendations-page';
+import {TransistorPodcastsActionStyles} from './pages/AccountHomePage/components/transistor-podcasts-action';
 import NotificationStyle from './notification.styles';
 
 // Global styles
@@ -1299,6 +1300,7 @@ export function getFrameStyles({site}) {
         EmailReceivingFAQ +
         TipsAndDonationsSuccessStyle +
         TipsAndDonationsErrorStyle +
-        RecommendationsPageStyles;
+        RecommendationsPageStyles +
+        TransistorPodcastsActionStyles;
     return FrameStyle;
 }
