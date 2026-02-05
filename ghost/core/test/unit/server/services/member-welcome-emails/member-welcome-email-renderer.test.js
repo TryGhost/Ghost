@@ -248,12 +248,12 @@ describe('MemberWelcomeEmailRenderer', function () {
             lexicalRenderStub.rejects(new Error('Invalid JSON'));
             const renderer = new MemberWelcomeEmailRenderer();
 
-            await renderer.render({
+            await assert.rejects(renderer.render({
                 lexical: 'invalid',
                 subject: 'Welcome!',
                 member: {name: 'John', email: 'john@example.com'},
                 siteSettings: defaultSiteSettings
-            }).should.be.rejectedWith(errors.IncorrectUsageError);
+            }), errors.IncorrectUsageError);
         });
 
         it('includes error context in IncorrectUsageError', async function () {

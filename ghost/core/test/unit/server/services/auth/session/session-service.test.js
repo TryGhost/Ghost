@@ -106,9 +106,10 @@ describe('SessionService', function () {
         });
         const res = Object.create(express.response);
 
-        const error = `Request made from incorrect origin. Expected 'origin' received 'other-origin'.`;
-
-        await sessionService.getUserForSession(req, res).should.be.rejectedWith(error);
+        await assert.rejects(
+            sessionService.getUserForSession(req, res),
+            {message: `Request made from incorrect origin. Expected 'origin' received 'other-origin'.`}
+        );
     });
 
     it('Doesn\'t throw an error when the csrf verification fails when bypassed', async function () {

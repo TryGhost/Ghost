@@ -786,7 +786,10 @@ describe('RouterController', function () {
                     newslettersService: newslettersServiceStub
                 });
 
-                await controller.sendMagicLink(req, res).should.be.rejectedWith(`Cannot subscribe to invalid newsletters ${INVALID_NEWSLETTER_NAME}`);
+                await assert.rejects(
+                    controller.sendMagicLink(req, res),
+                    {message: `Cannot subscribe to invalid newsletters ${INVALID_NEWSLETTER_NAME}`}
+                );
             });
 
             it('validates archived newsletters', async function () {
@@ -826,7 +829,10 @@ describe('RouterController', function () {
                     newslettersService: newslettersServiceStub
                 });
 
-                await controller.sendMagicLink(req, res).should.be.rejectedWith(`Cannot subscribe to archived newsletters Newsletter 2`);
+                await assert.rejects(
+                    controller.sendMagicLink(req, res),
+                    {message: `Cannot subscribe to archived newsletters Newsletter 2`}
+                );
             });
         });
 
