@@ -24,6 +24,7 @@ module.exports = class CheckoutSessionEventService {
      * @param {object} deps.donationRepository
      * @param {object} deps.staffServiceEmails
      * @param {function} deps.sendSignupEmail
+     * @param {function} deps.isPaidWelcomeEmailActive
      */
     constructor(deps) {
         this.api = deps.api;
@@ -260,7 +261,20 @@ module.exports = class CheckoutSessionEventService {
         }
 
         if (checkoutType !== 'upgrade') {
-            this.deps.sendSignupEmail(customer.email);
+            const requestSrc = _.get(session, 'metadata.requestSrc');
+
+            // Only consider skipping if this was a Portal-initiated checkout
+            if (requestSrc === 'portal') {
+                const isPaidWelcomeEmailActive = await this.deps.isPaidWelcomeEmailActive();
+                if (!isPaidWelcomeEmailActive) {
+                    this.deps.sendSignupEmail(customer.email);
+                }
+                // If welcome email is active, skip signup email (welcome email replaces it)
+            } else {
+                // Non-Portal checkouts (custom membership pages) always get the signup email
+                // because they need the magic link to sign in
+                this.deps.sendSignupEmail(customer.email);
+            }
         }
     }
 };
