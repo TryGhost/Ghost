@@ -240,49 +240,49 @@ describe('Importer', function () {
                 it('accepts a zip with a base directory', function () {
                     const testDir = path.resolve('test/utils/fixtures/import/zips/zip-with-base-dir');
 
-                    ImportManager.isValidZip(testDir).should.be.ok();
+                    assert(ImportManager.isValidZip(testDir));
                 });
 
                 it('accepts a zip without a base directory', function () {
                     const testDir = path.resolve('test/utils/fixtures/import/zips/zip-without-base-dir');
 
-                    ImportManager.isValidZip(testDir).should.be.ok();
+                    assert(ImportManager.isValidZip(testDir));
                 });
 
                 it('accepts a zip with an image directory', function () {
                     const testDir = path.resolve('test/utils/fixtures/import/zips/zip-image-dir');
 
-                    ImportManager.isValidZip(testDir).should.be.ok();
+                    assert(ImportManager.isValidZip(testDir));
                 });
 
                 it('accepts a zip with a content directory', function () {
                     const testDir = path.resolve('test/utils/fixtures/import/zips/zip-content-dir');
 
-                    ImportManager.isValidZip(testDir).should.be.ok();
+                    assert(ImportManager.isValidZip(testDir));
                 });
 
                 it('accepts a zip with a content/images directory', function () {
                     const testDir = path.resolve('test/utils/fixtures/import/zips/zip-content-images-subdir');
 
-                    ImportManager.isValidZip(testDir).should.be.ok();
+                    assert(ImportManager.isValidZip(testDir));
                 });
 
                 it('accepts a zip with a media directory', function () {
                     const testDir = path.resolve('test/utils/fixtures/import/zips/zip-media-dir');
 
-                    ImportManager.isValidZip(testDir).should.be.ok();
+                    assert(ImportManager.isValidZip(testDir));
                 });
 
                 it('accepts a zip with a files directory', function () {
                     const testDir = path.resolve('test/utils/fixtures/import/zips/zip-files-dir');
 
-                    ImportManager.isValidZip(testDir).should.be.ok();
+                    assert(ImportManager.isValidZip(testDir));
                 });
 
                 it('accepts a zip with uppercase image extensions', function () {
                     const testDir = path.resolve('test/utils/fixtures/import/zips/zip-uppercase-extensions');
 
-                    ImportManager.isValidZip(testDir).should.be.ok();
+                    assert(ImportManager.isValidZip(testDir));
                 });
 
                 it('fails a zip with two base directories', function () {
