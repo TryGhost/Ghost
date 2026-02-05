@@ -644,7 +644,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
                     }
                 },
                 in_reply_to_id: 'comment2',
-                inReplyTo: {
+                in_reply_to: {
                     id: 'comment2',
                     parent_id: 'comment1',
                     html: '<p>comment 2</p>',
@@ -693,7 +693,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
             const frame = {};
 
             const model = {
-                inReplyTo: {
+                in_reply_to: {
                     html: '<p>First paragraph <a href="https://example.com">with link</a>,<br> and new line.</p><p>Second paragraph</p>',
                     status: 'published'
                 }
@@ -715,7 +715,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
             const model = {
                 id: 'comment1',
                 html: '<p>comment 1</p>',
-                inReplyTo: undefined
+                in_reply_to: undefined
             };
 
             const mapped = mappers.comments(model, frame);

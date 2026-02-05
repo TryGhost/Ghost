@@ -60,8 +60,8 @@ const commentMapper = (model, frame) => {
     const isPublicRequest = utils.isMembersAPI(frame);
 
     // For admin requests, we want to show a snippet for ALL replies
-    // Use inReplyTo if available, otherwise fall back to parent for first-level replies
-    const replyToComment = jsonModel.inReplyTo || (!isPublicRequest && jsonModel.parent_id && jsonModel.parent);
+    // Use in_reply_to if available, otherwise fall back to parent for first-level replies
+    const replyToComment = jsonModel.in_reply_to || (!isPublicRequest && jsonModel.parent_id && jsonModel.parent);
 
     if (replyToComment && (replyToComment.status === 'published' || (!isPublicRequest && replyToComment.status === 'hidden'))) {
         jsonModel.in_reply_to_snippet = htmlToPlaintext.commentSnippet(replyToComment.html);
@@ -71,7 +71,7 @@ const commentMapper = (model, frame) => {
         jsonModel.in_reply_to_snippet = null;
     }
 
-    if (!jsonModel.inReplyTo) {
+    if (!jsonModel.in_reply_to) {
         jsonModel.in_reply_to_id = null;
     }
 
