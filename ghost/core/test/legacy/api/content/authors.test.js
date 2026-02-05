@@ -121,9 +121,9 @@ describe('Authors Content API', function () {
                 const jsonResponse = res.body;
 
                 jsonResponse.authors.should.be.an.Array().with.lengthOf(3);
-                jsonResponse.authors[0].slug.should.equal('joe-bloggs');
-                jsonResponse.authors[1].slug.should.equal('ghost');
-                jsonResponse.authors[2].slug.should.equal('slimer-mcectoplasm');
+                assert.equal(jsonResponse.authors[0].slug, 'joe-bloggs');
+                assert.equal(jsonResponse.authors[1].slug, 'ghost');
+                assert.equal(jsonResponse.authors[2].slug, 'slimer-mcectoplasm');
             });
     });
 });

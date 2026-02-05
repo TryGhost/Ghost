@@ -125,7 +125,7 @@ describe('DynamicRedirectManager', function () {
                 manager.addRedirect(from , to);
                 should.fail(false, 'Should have thrown an error');
             } catch (e) {
-                e.message.should.equal('Unknown error');
+                assert.equal(e.message, 'Unknown error');
             }
         });
 

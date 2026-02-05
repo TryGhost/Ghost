@@ -270,8 +270,8 @@ describe('Member Model', function run() {
 
         it('can use search query', function (done) {
             Member.findAll({search: 'egg'}).then(function (queryResult) {
-                queryResult.length.should.equal(1);
-                queryResult.models[0].get('name').should.equal('Mr Egg');
+                assert.equal(queryResult.length, 1);
+                assert.equal(queryResult.models[0].get('name'), 'Mr Egg');
                 done();
             }).catch(done);
         });

@@ -505,7 +505,7 @@ describe('SessionService', function () {
         should.ok(mailer.send.calledOnce);
         const emailArgs = mailer.send.firstCall.args[0];
         assert.equal(emailArgs.to, 'test@example.com');
-        emailArgs.subject.should.match(/Ghost sign in verification code/);
+        assert.match(emailArgs.subject, /Ghost sign in verification code/);
     });
 
     it('throws an error when mail fails to send', async function () {

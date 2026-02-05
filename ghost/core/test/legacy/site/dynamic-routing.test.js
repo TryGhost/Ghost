@@ -64,9 +64,9 @@ describe('Dynamic Routing', function () {
                     assert.equal(res.headers['set-cookie'], undefined);
                     should.exist(res.headers.date);
 
-                    $('title').text().should.equal('Ghost');
-                    $('body.home-template').length.should.equal(1);
-                    $('article.post').length.should.equal(7);
+                    assert.equal($('title').text(), 'Ghost');
+                    assert.equal($('body.home-template').length, 1);
+                    assert.equal($('article.post').length, 7);
 
                     done();
                 });
@@ -137,8 +137,8 @@ describe('Dynamic Routing', function () {
                     assert.equal(res.headers['set-cookie'], undefined);
                     should.exist(res.headers.date);
 
-                    $('body').attr('class').should.eql('tag-template tag-getting-started has-sans-title has-sans-body');
-                    $('article.post').length.should.equal(5);
+                    assert.equal($('body').attr('class'), 'tag-template tag-getting-started has-sans-title has-sans-body');
+                    assert.equal($('article.post').length, 5);
 
                     done();
                 });

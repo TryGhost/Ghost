@@ -54,15 +54,11 @@ describe('getOgImage', function () {
 
         post.feature_image = '';
 
-        should(
-            getOgImage({context: ['post'], post})
-        ).endWith('settings-og.jpg');
+        assert(getOgImage({context: ['post'], post}).endsWith('settings-og.jpg'));
 
         localSettingsCache.og_image = '';
 
-        should(
-            getOgImage({context: ['post'], post})
-        ).endWith('settings-cover.jpg');
+        assert(getOgImage({context: ['post'], post}).endsWith('settings-cover.jpg'));
 
         localSettingsCache.cover_image = '';
 
@@ -88,15 +84,11 @@ describe('getOgImage', function () {
 
         page.feature_image = '';
 
-        should(
-            getOgImage({context: ['page'], page})
-        ).endWith('settings-og.jpg');
+        assert(getOgImage({context: ['page'], page}).endsWith('settings-og.jpg'));
 
         localSettingsCache.og_image = '';
 
-        should(
-            getOgImage({context: ['page'], page})
-        ).endWith('settings-cover.jpg');
+        assert(getOgImage({context: ['page'], page}).endsWith('settings-cover.jpg'));
 
         localSettingsCache.cover_image = '';
 
@@ -122,15 +114,11 @@ describe('getOgImage', function () {
 
         post.feature_image = '';
 
-        should(
-            getOgImage({context: ['page'], post})
-        ).endWith('settings-og.jpg');
+        assert(getOgImage({context: ['page'], post}).endsWith('settings-og.jpg'));
 
         localSettingsCache.og_image = '';
 
-        should(
-            getOgImage({context: ['page'], post})
-        ).endWith('settings-cover.jpg');
+        assert(getOgImage({context: ['page'], post}).endsWith('settings-cover.jpg'));
 
         localSettingsCache.cover_image = '';
 

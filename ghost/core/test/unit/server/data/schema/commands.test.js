@@ -16,7 +16,7 @@ describe('schema commands', function () {
             should.fail('addForeign did not throw');
         } catch (err) {
             assert.equal(errors.utils.isGhostError(err), true);
-            err.message.should.equal('Must use hasForeignSQLite3 on an SQLite3 database');
+            assert.equal(err.message, 'Must use hasForeignSQLite3 on an SQLite3 database');
         }
     });
 
@@ -31,7 +31,7 @@ describe('schema commands', function () {
             should.fail('hasPrimaryKeySQLite did not throw');
         } catch (err) {
             assert.equal(errors.utils.isGhostError(err), true);
-            err.message.should.equal('Must use hasPrimaryKeySQLite on an SQLite3 database');
+            assert.equal(err.message, 'Must use hasPrimaryKeySQLite on an SQLite3 database');
         }
     });
 });

@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const raw = require('../../../../core/frontend/helpers/raw');
 const handlebars = require('../../../../core/frontend/services/theme-engine/engine').handlebars;
@@ -21,20 +22,17 @@ describe('{{raw}} helper', function () {
     });
 
     it('can correctly compile space', function () {
-        compile('{{{{raw}}}} {{{{/raw}}}}')
-            .with({})
-            .should.eql(' ');
+        assert.equal(compile('{{{{raw}}}} {{{{/raw}}}}')
+            .with({}), ' ');
     });
 
     it('can correctly ignore handlebars', function () {
-        compile('{{{{raw}}}}{{test}}{{{{/raw}}}}')
-            .with({tag: {}})
-            .should.eql('{{test}}');
+        assert.equal(compile('{{{{raw}}}}{{test}}{{{{/raw}}}}')
+            .with({tag: {}}), '{{test}}');
     });
 
     it('can correctly compile recursive', function () {
-        compile('{{{{raw}}}}{{{{raw}}}}{{{{/raw}}}}{{{{/raw}}}}')
-            .with({tag: {}})
-            .should.eql('{{{{raw}}}}{{{{/raw}}}}');
+        assert.equal(compile('{{{{raw}}}}{{{{raw}}}}{{{{/raw}}}}{{{{/raw}}}}')
+            .with({tag: {}}), '{{{{raw}}}}{{{{/raw}}}}');
     });
 });

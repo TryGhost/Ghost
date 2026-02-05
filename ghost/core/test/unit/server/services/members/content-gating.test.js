@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const {checkPostAccess, checkGatedBlockAccess} = require('../../../../../core/server/services/members/content-gating');
 
@@ -11,28 +12,28 @@ describe('Members Service - Content gating', function () {
             post = {visibility: 'public'};
             member = null;
             access = checkPostAccess(post, member);
-            should(access).be.true();
+            assert.equal(access, true);
         });
 
         it('should allow access to public posts with member', async function () {
             post = {visibility: 'public'};
             member = {id: 'test'};
             access = checkPostAccess(post, member);
-            should(access).be.true();
+            assert.equal(access, true);
         });
 
         it('should allow access to members only post with member', async function () {
             post = {visibility: 'members'};
             member = {id: 'test'};
             access = checkPostAccess(post, member);
-            should(access).be.true();
+            assert.equal(access, true);
         });
 
         it('should allow access to paid members only posts for paid members', async function () {
             post = {visibility: 'paid'};
             member = {id: 'test', status: 'paid'};
             access = checkPostAccess(post, member);
-            should(access).be.true();
+            assert.equal(access, true);
         });
 
         it('should allow access to tiers only post for members on allowed tier', async function () {
@@ -41,7 +42,7 @@ describe('Members Service - Content gating', function () {
                 slug: 'test-tier'
             }]};
             access = checkPostAccess(post, member);
-            should(access).be.true();
+            assert.equal(access, true);
         });
 
         it('should not error out if the slug associated with a tier is only 1 character in length', async function () {
@@ -57,28 +58,28 @@ describe('Members Service - Content gating', function () {
             post = {visibility: 'members'};
             member = null;
             access = checkPostAccess(post, member);
-            should(access).be.false();
+            assert.equal(access, false);
         });
 
         it('should block access to paid members only post without member', async function () {
             post = {visibility: 'paid'};
             member = null;
             access = checkPostAccess(post, member);
-            should(access).be.false();
+            assert.equal(access, false);
         });
 
         it('should block access to paid members only posts for free members', async function () {
             post = {visibility: 'paid'};
             member = {id: 'test', status: 'free'};
             access = checkPostAccess(post, member);
-            should(access).be.false();
+            assert.equal(access, false);
         });
 
         it('should block access to specific tiers only post without tiers list', async function () {
             post = {visibility: 'tiers'};
             member = {id: 'test'};
             access = checkPostAccess(post, member);
-            should(access).be.false();
+            assert.equal(access, false);
         });
 
         it('should block access to tiers only post for members not on allowed tier', async function () {
@@ -87,7 +88,7 @@ describe('Members Service - Content gating', function () {
                 slug: 'test-tier-2'
             }]};
             access = checkPostAccess(post, member);
-            should(access).be.false();
+            assert.equal(access, false);
         });
     });
 

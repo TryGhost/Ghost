@@ -35,15 +35,15 @@ describe('Models: getLazyRelation', function () {
         const options = {test: true};
         const modelA = TestModel.forge({id: '1'});
         (await modelA.getLazyRelation('tiers', options)).should.eql(rel);
-        fetchStub.calledOnceWithExactly(options).should.be.true();
+        assert.equal(fetchStub.calledOnceWithExactly(options), true);
 
         // Check if it can reuse it again
         (await modelA.getLazyRelation('tiers', options)).should.eql(rel);
-        fetchStub.calledOnceWithExactly(options).should.be.true();
+        assert.equal(fetchStub.calledOnceWithExactly(options), true);
 
         // Check if we can force reload
         await should(modelA.getLazyRelation('tiers', {forceRefresh: true})).rejectedWith(/Called twice/);
-        fetchStub.calledTwice.should.be.true();
+        assert.equal(fetchStub.calledTwice, true);
     });
 
     it('can fetch models', async function () {
@@ -70,15 +70,15 @@ describe('Models: getLazyRelation', function () {
         const options = {test: true};
         const modelA = TestModel.forge({id: '1'});
         (await modelA.getLazyRelation('other', options)).should.eql(rel);
-        fetchStub.calledOnceWithExactly(options).should.be.true();
+        assert.equal(fetchStub.calledOnceWithExactly(options), true);
 
         // Check if it can reuse it again
         (await modelA.getLazyRelation('other', options)).should.eql(rel);
-        fetchStub.calledOnceWithExactly(options).should.be.true();
+        assert.equal(fetchStub.calledOnceWithExactly(options), true);
 
         // Check if we can force reload
         await should(modelA.getLazyRelation('other', {forceRefresh: true})).rejectedWith(/Called twice/);
-        fetchStub.calledTwice.should.be.true();
+        assert.equal(fetchStub.calledTwice, true);
     });
 
     it('can handle fetch of model without id for optional relations', async function () {

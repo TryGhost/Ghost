@@ -17,7 +17,7 @@ describe('MemberAttributionService', function () {
             });
             const attribution = await service.getAttributionFromContext();
 
-            should(attribution).be.null();
+            assert.equal(attribution, null);
         });
 
         it('returns null if tracking is disabled is provided', async function () {
@@ -26,7 +26,7 @@ describe('MemberAttributionService', function () {
             });
             const attribution = await service.getAttributionFromContext();
 
-            should(attribution).be.null();
+            assert.equal(attribution, null);
         });
 
         it('returns attribution for importer context', async function () {
@@ -219,7 +219,7 @@ describe('MemberAttributionService', function () {
                 getTrackingEnabled: () => true
             });
             const attribution = await service.getAttribution([{path: '/test'}]);
-            should(attribution).deepEqual({success: true});
+            assert.deepEqual(attribution, {success: true});
         });
 
         it('returns empty history attribution when tracking disabled', async function () {
@@ -233,7 +233,7 @@ describe('MemberAttributionService', function () {
                 getTrackingEnabled: () => false
             });
             const attribution = await service.getAttribution([{path: '/test'}]);
-            should(attribution).deepEqual({success: true});
+            assert.deepEqual(attribution, {success: true});
         });
     });
 
@@ -272,7 +272,7 @@ describe('MemberAttributionService', function () {
             });
 
             const result = await service.getMemberCreatedAttribution('member_123');
-            should(result).be.null();
+            assert.equal(result, null);
         });
 
         it('returns attribution from event', async function () {
@@ -307,7 +307,7 @@ describe('MemberAttributionService', function () {
             });
 
             const result = await service.getMemberCreatedAttribution('member_123');
-            should(result).deepEqual({
+            assert.deepEqual(result, {
                 id: 'attr_123',
                 url: '/test',
                 type: 'post',
@@ -330,7 +330,7 @@ describe('MemberAttributionService', function () {
             });
 
             const result = await service.getSubscriptionCreatedAttribution('subscription_123');
-            should(result).be.null();
+            assert.equal(result, null);
         });
 
         it('returns attribution from event', async function () {
@@ -365,7 +365,7 @@ describe('MemberAttributionService', function () {
             });
 
             const result = await service.getSubscriptionCreatedAttribution('subscription_123');
-            should(result).deepEqual({
+            assert.deepEqual(result, {
                 id: 'attr_123',
                 url: '/test',
                 type: 'post',
@@ -381,7 +381,7 @@ describe('MemberAttributionService', function () {
         it('returns null when no attribution provided', async function () {
             const service = new MemberAttributionService({});
             const result = await service.fetchResource(null);
-            should(result).be.null();
+            assert.equal(result, null);
         });
 
         it('fetches resource using attribution builder', async function () {
@@ -405,7 +405,7 @@ describe('MemberAttributionService', function () {
             };
 
             const result = await service.fetchResource(attribution);
-            should(result).deepEqual({
+            assert.deepEqual(result, {
                 id: 'attr_123',
                 type: 'post',
                 url: '/test',

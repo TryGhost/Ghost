@@ -222,7 +222,7 @@ describe('Models: crud', function () {
             return models.Base.Model.edit(data, unfilteredOptions).then(() => {
                 throw new Error('That should not happen');
             }).catch((err) => {
-                (err instanceof errors.NotFoundError).should.be.true();
+                assert.equal((err instanceof errors.NotFoundError), true);
             });
         });
     });

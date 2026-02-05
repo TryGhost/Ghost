@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const errors = require('@tryghost/errors');
 const sinon = require('sinon');
 const markdownToMobiledoc = require('../../../utils/fixtures/data-generator').markdownToMobiledoc;
@@ -55,14 +56,14 @@ describe('{{next_post}} helper', function () {
                     published_at: new Date(0),
                     url: '/current/'
                 }, optionsData);
-            fn.calledOnce.should.be.true();
-            inverse.calledOnce.should.be.false();
+            assert.equal(fn.calledOnce, true);
+            assert.equal(inverse.calledOnce, false);
 
-            fn.firstCall.args.should.have.lengthOf(2);
+            assert.equal(fn.firstCall.args.length, 2);
             fn.firstCall.args[0].should.have.properties('slug', 'title');
             fn.firstCall.args[1].should.be.an.Object().and.have.property('data');
-            browsePostsStub.calledOnce.should.be.true();
-            browsePostsStub.firstCall.args[0].include.should.eql('author,authors,tags,tiers');
+            assert.equal(browsePostsStub.calledOnce, true);
+            assert.equal(browsePostsStub.firstCall.args[0].include, 'author,authors,tags,tiers');
         });
     });
 
@@ -92,10 +93,10 @@ describe('{{next_post}} helper', function () {
                     published_at: new Date(0),
                     url: '/current/'
                 }, optionsData);
-            fn.called.should.be.false();
-            inverse.called.should.be.true();
+            assert.equal(fn.called, false);
+            assert.equal(inverse.called, true);
 
-            inverse.firstCall.args.should.have.lengthOf(2);
+            assert.equal(inverse.firstCall.args.length, 2);
             inverse.firstCall.args[0].should.have.properties('slug', 'title');
             inverse.firstCall.args[1].should.be.an.Object().and.have.property('data');
         });
@@ -117,9 +118,9 @@ describe('{{next_post}} helper', function () {
 
             await next_post
                 .call({}, optionsData);
-            fn.called.should.be.false();
-            inverse.called.should.be.true();
-            browsePostsStub.called.should.be.false();
+            assert.equal(fn.called, false);
+            assert.equal(inverse.called, true);
+            assert.equal(browsePostsStub.called, false);
         });
     });
 
@@ -155,8 +156,8 @@ describe('{{next_post}} helper', function () {
                     url: '/current/',
                     page: true
                 }, optionsData);
-            fn.called.should.be.false();
-            inverse.called.should.be.true();
+            assert.equal(fn.called, false);
+            assert.equal(inverse.called, true);
         });
     });
 
@@ -190,8 +191,8 @@ describe('{{next_post}} helper', function () {
                     created_at: new Date(0),
                     url: '/current/'
                 }, optionsData);
-            fn.called.should.be.false();
-            inverse.called.should.be.true();
+            assert.equal(fn.called, false);
+            assert.equal(inverse.called, true);
         });
     });
 
@@ -223,15 +224,15 @@ describe('{{next_post}} helper', function () {
                     url: '/current/'
                 }, optionsData);
 
-            fn.calledOnce.should.be.true();
-            inverse.calledOnce.should.be.false();
+            assert.equal(fn.calledOnce, true);
+            assert.equal(inverse.calledOnce, false);
 
-            fn.firstCall.args.should.have.lengthOf(2);
+            assert.equal(fn.firstCall.args.length, 2);
             fn.firstCall.args[0].should.have.properties('slug', 'title');
             fn.firstCall.args[1].should.be.an.Object().and.have.property('data');
-            browsePostsStub.calledOnce.should.be.true();
-            browsePostsStub.firstCall.args[0].include.should.eql('author,authors,tags,tiers');
-            browsePostsStub.firstCall.args[0].filter.should.match(/\+primary_tag:test/);
+            assert.equal(browsePostsStub.calledOnce, true);
+            assert.equal(browsePostsStub.firstCall.args[0].include, 'author,authors,tags,tiers');
+            assert.match(browsePostsStub.firstCall.args[0].filter, /\+primary_tag:test/);
         });
 
         it('shows \'if\' template with prev post data with primary_author set', async function () {
@@ -251,15 +252,15 @@ describe('{{next_post}} helper', function () {
                     url: '/current/'
                 }, optionsData);
 
-            fn.calledOnce.should.be.true();
-            inverse.calledOnce.should.be.false();
+            assert.equal(fn.calledOnce, true);
+            assert.equal(inverse.calledOnce, false);
 
-            fn.firstCall.args.should.have.lengthOf(2);
+            assert.equal(fn.firstCall.args.length, 2);
             fn.firstCall.args[0].should.have.properties('slug', 'title');
             fn.firstCall.args[1].should.be.an.Object().and.have.property('data');
-            browsePostsStub.calledOnce.should.be.true();
-            browsePostsStub.firstCall.args[0].include.should.eql('author,authors,tags,tiers');
-            browsePostsStub.firstCall.args[0].filter.should.match(/\+primary_author:hans/);
+            assert.equal(browsePostsStub.calledOnce, true);
+            assert.equal(browsePostsStub.firstCall.args[0].include, 'author,authors,tags,tiers');
+            assert.match(browsePostsStub.firstCall.args[0].filter, /\+primary_author:hans/);
         });
 
         it('shows \'if\' template with prev post data with author set', async function () {
@@ -279,15 +280,15 @@ describe('{{next_post}} helper', function () {
                     url: '/current/'
                 }, optionsData);
 
-            fn.calledOnce.should.be.true();
-            inverse.calledOnce.should.be.false();
+            assert.equal(fn.calledOnce, true);
+            assert.equal(inverse.calledOnce, false);
 
-            fn.firstCall.args.should.have.lengthOf(2);
+            assert.equal(fn.firstCall.args.length, 2);
             fn.firstCall.args[0].should.have.properties('slug', 'title');
             fn.firstCall.args[1].should.be.an.Object().and.have.property('data');
-            browsePostsStub.calledOnce.should.be.true();
-            browsePostsStub.firstCall.args[0].include.should.eql('author,authors,tags,tiers');
-            browsePostsStub.firstCall.args[0].filter.should.match(/\+author:author-name/);
+            assert.equal(browsePostsStub.calledOnce, true);
+            assert.equal(browsePostsStub.firstCall.args[0].include, 'author,authors,tags,tiers');
+            assert.match(browsePostsStub.firstCall.args[0].filter, /\+author:author-name/);
         });
 
         it('shows \'if\' template with prev post data & ignores in author if author isnt present', async function () {
@@ -306,15 +307,15 @@ describe('{{next_post}} helper', function () {
                     url: '/current/'
                 }, optionsData);
 
-            fn.calledOnce.should.be.true();
-            inverse.calledOnce.should.be.false();
+            assert.equal(fn.calledOnce, true);
+            assert.equal(inverse.calledOnce, false);
 
-            fn.firstCall.args.should.have.lengthOf(2);
+            assert.equal(fn.firstCall.args.length, 2);
             fn.firstCall.args[0].should.have.properties('slug', 'title');
             fn.firstCall.args[1].should.be.an.Object().and.have.property('data');
-            browsePostsStub.calledOnce.should.be.true();
-            browsePostsStub.firstCall.args[0].include.should.eql('author,authors,tags,tiers');
-            browsePostsStub.firstCall.args[0].filter.should.not.match(/\+author:/);
+            assert.equal(browsePostsStub.calledOnce, true);
+            assert.equal(browsePostsStub.firstCall.args[0].include, 'author,authors,tags,tiers');
+            assert.doesNotMatch(browsePostsStub.firstCall.args[0].filter, /\+author:/);
         });
 
         it('shows \'if\' template with prev post data & ignores unknown in value', async function () {
@@ -334,15 +335,15 @@ describe('{{next_post}} helper', function () {
                     url: '/current/'
                 }, optionsData);
 
-            fn.calledOnce.should.be.true();
-            inverse.calledOnce.should.be.false();
+            assert.equal(fn.calledOnce, true);
+            assert.equal(inverse.calledOnce, false);
 
-            fn.firstCall.args.should.have.lengthOf(2);
+            assert.equal(fn.firstCall.args.length, 2);
             fn.firstCall.args[0].should.have.properties('slug', 'title');
             fn.firstCall.args[1].should.be.an.Object().and.have.property('data');
-            browsePostsStub.calledOnce.should.be.true();
-            browsePostsStub.firstCall.args[0].include.should.eql('author,authors,tags,tiers');
-            browsePostsStub.firstCall.args[0].filter.should.not.match(/\+magic/);
+            assert.equal(browsePostsStub.calledOnce, true);
+            assert.equal(browsePostsStub.firstCall.args[0].include, 'author,authors,tags,tiers');
+            assert.doesNotMatch(browsePostsStub.firstCall.args[0].filter, /\+magic/);
         });
     });
 
@@ -370,13 +371,13 @@ describe('{{next_post}} helper', function () {
                     url: '/current/'
                 }, optionsData);
 
-            fn.called.should.be.false();
-            inverse.calledOnce.should.be.true();
-            loggingStub.calledOnce.should.be.true();
+            assert.equal(fn.called, false);
+            assert.equal(inverse.calledOnce, true);
+            assert.equal(loggingStub.calledOnce, true);
 
             inverse.firstCall.args[1].should.be.an.Object().and.have.property('data');
             inverse.firstCall.args[1].data.should.be.an.Object().and.have.property('error');
-            inverse.firstCall.args[1].data.error.should.match(/^Something wasn't found/);
+            assert.match(inverse.firstCall.args[1].data.error, /^Something wasn't found/);
         });
 
         it('should show warning for call without any options', async function () {
@@ -390,8 +391,8 @@ describe('{{next_post}} helper', function () {
                     optionsData
                 );
 
-            fn.called.should.be.false();
-            inverse.called.should.be.false();
+            assert.equal(fn.called, false);
+            assert.equal(inverse.called, false);
         });
     });
 
@@ -430,14 +431,14 @@ describe('{{next_post}} helper', function () {
                     url: '/current/'
                 }, optionsData);
 
-            fn.calledOnce.should.be.true();
-            inverse.calledOnce.should.be.false();
+            assert.equal(fn.calledOnce, true);
+            assert.equal(inverse.calledOnce, false);
 
-            fn.firstCall.args.should.have.lengthOf(2);
+            assert.equal(fn.firstCall.args.length, 2);
             fn.firstCall.args[0].should.have.properties('slug', 'title');
             fn.firstCall.args[1].should.be.an.Object().and.have.property('data');
-            browsePostsStub.calledOnce.should.be.true();
-            browsePostsStub.firstCall.args[0].include.should.eql('author,authors,tags,tiers');
+            assert.equal(browsePostsStub.calledOnce, true);
+            assert.equal(browsePostsStub.firstCall.args[0].include, 'author,authors,tags,tiers');
 
             // Check context passed
             browsePostsStub.firstCall.args[0].context.member.should.eql(member);

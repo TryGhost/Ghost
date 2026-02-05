@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const should = require('should');
 const nock = require('nock');
@@ -44,7 +45,7 @@ describe('External Request', function () {
                 .reply(200, 'Response body');
 
             return externalRequest(url, options).then(function (res) {
-                requestMock.isDone().should.be.true();
+                assert.equal(requestMock.isDone(), true);
                 should.exist(res);
                 should.exist(res.body);
                 res.body.should.be.equal(expectedResponse.body);
@@ -75,7 +76,7 @@ describe('External Request', function () {
                 .reply(200, 'Response body');
 
             return externalRequest(url, options).then(function (res) {
-                requestMock.isDone().should.be.true();
+                assert.equal(requestMock.isDone(), true);
                 should.exist(res);
                 should.exist(res.body);
                 res.body.should.be.equal(expectedResponse.body);
@@ -139,7 +140,7 @@ describe('External Request', function () {
             }, (err) => {
                 should.exist(err);
                 err.message.should.be.equal('URL resolves to a non-permitted private IP block');
-                requestMock.isDone().should.be.false();
+                assert.equal(requestMock.isDone(), false);
             });
         });
 
@@ -169,8 +170,8 @@ describe('External Request', function () {
             }, (err) => {
                 should.exist(err);
                 err.message.should.be.equal('URL resolves to a non-permitted private IP block');
-                requestMock.isDone().should.be.true();
-                secondRequestMock.isDone().should.be.false();
+                assert.equal(requestMock.isDone(), true);
+                assert.equal(secondRequestMock.isDone(), false);
             });
         });
     });
@@ -206,7 +207,7 @@ describe('External Request', function () {
                 .reply(200, 'Response body');
 
             return externalRequest(url, options).then(function (res) {
-                requestMock.isDone().should.be.true();
+                assert.equal(requestMock.isDone(), true);
                 should.exist(res);
                 should.exist(res.body);
                 res.body.should.be.equal(expectedResponse.body);
@@ -242,8 +243,8 @@ describe('External Request', function () {
                 .reply(200, 'Redirected response');
 
             return externalRequest(url, options).then(function (res) {
-                requestMock.isDone().should.be.true();
-                secondRequestMock.isDone().should.be.true();
+                assert.equal(requestMock.isDone(), true);
+                assert.equal(secondRequestMock.isDone(), true);
                 should.exist(res);
                 should.exist(res.body);
                 res.body.should.be.equal(expectedResponse.body);
@@ -302,7 +303,7 @@ describe('External Request', function () {
             return externalRequest(url, options).then(() => {
                 throw new Error('Request should have errored');
             }, (err) => {
-                requestMock.isDone().should.be.true();
+                assert.equal(requestMock.isDone(), true);
                 should.exist(err);
                 err.response.statusMessage.should.be.equal('Not Found');
             });
@@ -324,7 +325,7 @@ describe('External Request', function () {
             return externalRequest(url, options).then(() => {
                 throw new Error('Request should have errored with an awful error');
             }, (err) => {
-                requestMock.isDone().should.be.true();
+                assert.equal(requestMock.isDone(), true);
                 should.exist(err);
                 err.response.statusMessage.should.be.equal(`Internal Server Error`);
             });

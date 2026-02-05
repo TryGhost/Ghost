@@ -54,15 +54,11 @@ describe('getTwitterImage', function () {
 
         post.feature_image = '';
 
-        should(
-            getTwitterImage({context: ['post'], post})
-        ).endWith('settings-twitter.jpg');
+        assert(getTwitterImage({context: ['post'], post}).endsWith('settings-twitter.jpg'));
 
         localSettingsCache.twitter_image = '';
 
-        should(
-            getTwitterImage({context: ['post'], post})
-        ).endWith('settings-cover.jpg');
+        assert(getTwitterImage({context: ['post'], post}).endsWith('settings-cover.jpg'));
 
         localSettingsCache.cover_image = '';
 
@@ -88,15 +84,11 @@ describe('getTwitterImage', function () {
 
         page.feature_image = '';
 
-        should(
-            getTwitterImage({context: ['page'], page})
-        ).endWith('settings-twitter.jpg');
+        assert(getTwitterImage({context: ['page'], page}).endsWith('settings-twitter.jpg'));
 
         localSettingsCache.twitter_image = '';
 
-        should(
-            getTwitterImage({context: ['page'], page})
-        ).endWith('settings-cover.jpg');
+        assert(getTwitterImage({context: ['page'], page}).endsWith('settings-cover.jpg'));
 
         localSettingsCache.cover_image = '';
 
@@ -122,15 +114,11 @@ describe('getTwitterImage', function () {
 
         post.feature_image = '';
 
-        should(
-            getTwitterImage({context: ['page'], post})
-        ).endWith('settings-twitter.jpg');
+        assert(getTwitterImage({context: ['page'], post}).endsWith('settings-twitter.jpg'));
 
         localSettingsCache.twitter_image = '';
 
-        should(
-            getTwitterImage({context: ['page'], post})
-        ).endWith('settings-cover.jpg');
+        assert(getTwitterImage({context: ['page'], post}).endsWith('settings-cover.jpg'));
 
         localSettingsCache.cover_image = '';
 

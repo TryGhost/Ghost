@@ -42,7 +42,7 @@ describe('NewslettersImporter', function () {
             const importer = new NewslettersImporter({newsletters: fakeNewsletters});
 
             importer.beforeImport();
-            importer.dataToImport.should.have.length(2);
+            assert.equal(importer.dataToImport.length, 2);
 
             const newsletter1 = importer.dataToImport[0];
             const newsletter2 = importer.dataToImport[1];
