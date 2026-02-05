@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const _ = require('lodash');
 const ObjectId = require('bson-objectid').default;
@@ -23,7 +24,7 @@ describe('Validate Schema', function () {
                         throw err;
                     }
 
-                    err.length.should.eql(5);
+                    assert.equal(err.length, 5);
 
                     const errorMessages = _.map(err, function (object) {
                         return object.message;
@@ -51,8 +52,8 @@ describe('Validate Schema', function () {
                         throw err;
                     }
 
-                    err.length.should.eql(1);
-                    err[0].message.should.match(/posts\.id/);
+                    assert.equal(err.length, 1);
+                    assert.match(err[0].message, /posts\.id/);
                 });
         });
 
@@ -66,19 +67,19 @@ describe('Validate Schema', function () {
 
         it('transforms 0 and 1 (boolean)', async function () {
             const user = models.User.forge(testUtils.DataGenerator.forKnex.createUser({email: 'test@example.com', comment_notifications: 0}));
-            user.get('comment_notifications').should.eql(0);
+            assert.equal(user.get('comment_notifications'), 0);
 
             await validateSchema('users', user, {method: 'insert'});
-            user.get('comment_notifications').should.eql(false);
+            assert.equal(user.get('comment_notifications'), false);
         });
 
         it('keeps true or false', function () {
             const post = models.Post.forge(testUtils.DataGenerator.forKnex.createPost({slug: 'test', featured: true}));
-            post.get('featured').should.eql(true);
+            assert.equal(post.get('featured'), true);
 
             return validateSchema('posts', post, {method: 'insert'})
                 .then(function () {
-                    post.get('featured').should.eql(true);
+                    assert.equal(post.get('featured'), true);
                 });
         });
     });
@@ -100,9 +101,9 @@ describe('Validate Schema', function () {
                         throw err;
                     }
 
-                    err.length.should.eql(1);
-                    err[0].errorType.should.eql('ValidationError');
-                    err[0].message.should.match(/isLowercase/);
+                    assert.equal(err.length, 1);
+                    assert.equal(err[0].errorType, 'ValidationError');
+                    assert.match(err[0].message, /isLowercase/);
                 });
         });
     });
@@ -122,8 +123,8 @@ describe('Validate Schema', function () {
                         throw err;
                     }
 
-                    err.length.should.eql(1);
-                    err[0].message.should.match(/isUUID/);
+                    assert.equal(err.length, 1);
+                    assert.match(err[0].message, /isUUID/);
                 });
         });
 
@@ -141,8 +142,8 @@ describe('Validate Schema', function () {
                         throw err;
                     }
 
-                    err.length.should.eql(1);
-                    err[0].message.should.match(/posts\.created_at/);
+                    assert.equal(err.length, 1);
+                    assert.match(err[0].message, /posts\.created_at/);
                 });
         });
     });

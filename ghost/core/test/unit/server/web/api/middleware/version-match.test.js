@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 require('should');
 const sinon = require('sinon');
 
@@ -42,7 +43,7 @@ describe('Version Mismatch', function () {
 
         testVersionMatch(server);
 
-        nextStub.calledOnce.should.be.true();
+        assert.equal(nextStub.calledOnce, true);
         nextStub.firstCall.args.should.be.empty();
     });
 
@@ -52,7 +53,7 @@ describe('Version Mismatch', function () {
 
         testVersionMatch(server, client);
 
-        nextStub.calledOnce.should.be.true();
+        assert.equal(nextStub.calledOnce, true);
         nextStub.firstCall.args.should.be.empty();
     });
 
@@ -62,7 +63,7 @@ describe('Version Mismatch', function () {
 
         testVersionMatch(server, client);
 
-        nextStub.calledOnce.should.be.true();
+        assert.equal(nextStub.calledOnce, true);
         nextStub.firstCall.args.should.be.empty();
     });
 
@@ -72,8 +73,8 @@ describe('Version Mismatch', function () {
 
         testVersionMatch(server, client);
 
-        nextStub.calledOnce.should.be.true();
-        nextStub.firstCall.args.should.have.lengthOf(1);
+        assert.equal(nextStub.calledOnce, true);
+        assert.equal(nextStub.firstCall.args.length, 1);
         nextStub.firstCall.args[0].should.have.property('errorType', 'BadRequestError');
         nextStub.firstCall.args[0].should.have.property('statusCode', 400);
     });
@@ -84,8 +85,8 @@ describe('Version Mismatch', function () {
 
         testVersionMatch(server, client);
 
-        nextStub.calledOnce.should.be.true();
-        nextStub.firstCall.args.should.have.lengthOf(1);
+        assert.equal(nextStub.calledOnce, true);
+        assert.equal(nextStub.firstCall.args.length, 1);
         nextStub.firstCall.args[0].should.have.property('errorType', 'VersionMismatchError');
         nextStub.firstCall.args[0].should.have.property('statusCode', 400);
     });
@@ -96,8 +97,8 @@ describe('Version Mismatch', function () {
 
         testVersionMatch(server, client);
 
-        nextStub.calledOnce.should.be.true();
-        nextStub.firstCall.args.should.have.lengthOf(1);
+        assert.equal(nextStub.calledOnce, true);
+        assert.equal(nextStub.firstCall.args.length, 1);
         nextStub.firstCall.args[0].should.have.property('errorType', 'VersionMismatchError');
         nextStub.firstCall.args[0].should.have.property('statusCode', 400);
     });
@@ -108,8 +109,8 @@ describe('Version Mismatch', function () {
 
         testVersionMatch(server, client);
 
-        nextStub.calledOnce.should.be.true();
-        nextStub.firstCall.args.should.have.lengthOf(1);
+        assert.equal(nextStub.calledOnce, true);
+        assert.equal(nextStub.firstCall.args.length, 1);
         nextStub.firstCall.args[0].should.have.property('errorType', 'VersionMismatchError');
         nextStub.firstCall.args[0].should.have.property('statusCode', 400);
     });
@@ -120,7 +121,7 @@ describe('Version Mismatch', function () {
 
         testVersionMatch(server, client);
 
-        nextStub.calledOnce.should.be.true();
+        assert.equal(nextStub.calledOnce, true);
         nextStub.firstCall.args.should.be.empty();
     });
 
@@ -130,8 +131,8 @@ describe('Version Mismatch', function () {
 
         testVersionMatch(server, client);
 
-        nextStub.calledOnce.should.be.true();
-        nextStub.firstCall.args.should.have.lengthOf(1);
+        assert.equal(nextStub.calledOnce, true);
+        assert.equal(nextStub.firstCall.args.length, 1);
         nextStub.firstCall.args[0].should.have.property('errorType', 'VersionMismatchError');
         nextStub.firstCall.args[0].should.have.property('statusCode', 400);
     });

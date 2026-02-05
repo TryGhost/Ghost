@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyContentVersion, anyEtag, anyObjectId, anyLocationFor, anyErrorId, anyISODateTime} = matchers;
 const should = require('should');
@@ -149,7 +150,7 @@ describe('Offers API', function () {
                 }]
             })
             .expect(({body}) => {
-                body.offers[0].code.should.eql('summer-sale');
+                assert.equal(body.offers[0].code, 'summer-sale');
             });
     });
 
@@ -567,7 +568,7 @@ describe('Offers API', function () {
                 })
             })
             .expect(({body}) => {
-                body.offers[0].cadence.should.eql('year');
+                assert.equal(body.offers[0].cadence, 'year');
             });
     });
 
@@ -596,7 +597,7 @@ describe('Offers API', function () {
                 })
             })
             .expect(({body}) => {
-                body.offers[0].amount.should.eql(12);
+                assert.equal(body.offers[0].amount, 12);
             });
     });
 

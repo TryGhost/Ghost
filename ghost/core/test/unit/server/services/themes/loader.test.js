@@ -135,7 +135,7 @@ describe('Themes', function () {
                         done('Should have thrown an error');
                     })
                     .catch(function (err) {
-                        err.message.should.eql('Package not found');
+                        assert.equal(err.message, 'Package not found');
                         done();
                     });
             });

@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../../../utils');
@@ -24,8 +25,8 @@ describe('Permission Providers', function () {
                     done(new Error('Should have thrown a user not found error'));
                 })
                 .catch(function (err) {
-                    findUserSpy.callCount.should.eql(1);
-                    err.errorType.should.eql('NotFoundError');
+                    assert.equal(findUserSpy.callCount, 1);
+                    assert.equal(err.errorType, 'NotFoundError');
                     done();
                 });
         });
@@ -58,7 +59,7 @@ describe('Permission Providers', function () {
             // Get permissions for the user
             providers.user(1)
                 .then(function (res) {
-                    findUserSpy.callCount.should.eql(1);
+                    assert.equal(findUserSpy.callCount, 1);
 
                     res.should.be.an.Object().with.properties('permissions', 'roles');
 
@@ -108,7 +109,7 @@ describe('Permission Providers', function () {
             // Get permissions for the user
             providers.user(1)
                 .then(function (res) {
-                    findUserSpy.callCount.should.eql(1);
+                    assert.equal(findUserSpy.callCount, 1);
 
                     res.should.be.an.Object().with.properties('permissions', 'roles');
 
@@ -159,7 +160,7 @@ describe('Permission Providers', function () {
             // Get permissions for the user
             providers.user(1)
                 .then(function (res) {
-                    findUserSpy.callCount.should.eql(1);
+                    assert.equal(findUserSpy.callCount, 1);
 
                     res.should.be.an.Object().with.properties('permissions', 'roles');
 
@@ -195,8 +196,8 @@ describe('Permission Providers', function () {
                     done(new Error('Locked user should should throw an error'));
                 })
                 .catch((err) => {
-                    err.errorType.should.equal('UnauthorizedError');
-                    findUserSpy.callCount.should.eql(1);
+                    assert.equal(err.errorType, 'UnauthorizedError');
+                    assert.equal(findUserSpy.callCount, 1);
                     done();
                 });
         });
@@ -211,8 +212,8 @@ describe('Permission Providers', function () {
                     done(new Error('Should have thrown an api key not found error'));
                 })
                 .catch((err) => {
-                    findApiKeySpy.callCount.should.eql(1);
-                    err.errorType.should.eql('NotFoundError');
+                    assert.equal(findApiKeySpy.callCount, 1);
+                    assert.equal(err.errorType, 'NotFoundError');
                     done();
                 });
         });
@@ -231,7 +232,7 @@ describe('Permission Providers', function () {
                 return Promise.resolve(fakeApiKey);
             });
             providers.apiKey(1).then((res) => {
-                findApiKeySpy.callCount.should.eql(1);
+                assert.equal(findApiKeySpy.callCount, 1);
                 res.should.be.an.Object().with.properties('permissions', 'roles');
                 res.roles.should.be.an.Array().with.lengthOf(1);
                 res.permissions[0].should.be.an.Object().with.properties('attributes', 'id');

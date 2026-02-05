@@ -18,7 +18,7 @@ describe('getAuthorImage', function () {
             }
         }, false);
 
-        imageUrl.should.equal('/content/images/2016/01/myimage.jpg');
+        assert.equal(imageUrl, '/content/images/2016/01/myimage.jpg');
     });
 
     it('should return absolute author image url if post and has url', function () {
@@ -30,8 +30,8 @@ describe('getAuthorImage', function () {
                 }
             }
         }, true);
-        imageUrl.should.not.equal('/content/images/2016/01/myimage.jpg');
-        imageUrl.should.match(/\/content\/images\/2016\/01\/myimage\.jpg$/);
+        assert.notEqual(imageUrl, '/content/images/2016/01/myimage.jpg');
+        assert.match(imageUrl, /\/content\/images\/2016\/01\/myimage\.jpg$/);
     });
 
     it('should return null if context does not contain author image url and is a post', function () {

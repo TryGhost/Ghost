@@ -50,8 +50,8 @@ describe('lib/image: image size cache', function () {
         // second call to check if values get returned from cache
         await cachedImageSizeFromUrl.getCachedImageSizeFromUrl(url);
 
-        imageSizeSpy.calledOnce.should.be.true();
-        imageSizeSpy.calledTwice.should.be.false();
+        assert.equal(imageSizeSpy.calledOnce, true);
+        assert.equal(imageSizeSpy.calledTwice, false);
 
         cacheStore.get(url).should.not.be.undefined;
         const image2 = cacheStore.get(url);

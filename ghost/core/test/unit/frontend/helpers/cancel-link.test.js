@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const hbs = require('../../../../core/frontend/services/theme-engine/engine');
@@ -51,7 +52,7 @@ describe('{{cancel_link}} helper', function () {
         should.exist(rendered);
 
         rendered.string.should.match(defaultLinkClass);
-        rendered.string.should.match(/data-members-cancel-subscription="sub_cancel"/);
+        assert.match(rendered.string, /data-members-cancel-subscription="sub_cancel"/);
         rendered.string.should.match(defaultCancelLinkText);
 
         rendered.string.should.match(defaultErrorElementClass);
@@ -65,7 +66,7 @@ describe('{{cancel_link}} helper', function () {
         should.exist(rendered);
 
         rendered.string.should.match(defaultLinkClass);
-        rendered.string.should.match(/data-members-continue-subscription="sub_continue"/);
+        assert.match(rendered.string, /data-members-continue-subscription="sub_continue"/);
         rendered.string.should.match(defaultContinueLinkText);
     });
 
@@ -80,7 +81,7 @@ describe('{{cancel_link}} helper', function () {
         });
         should.exist(rendered);
 
-        rendered.string.should.match(/custom-link-class/);
+        assert.match(rendered.string, /custom-link-class/);
     });
 
     it('can render custom error class', function () {
@@ -94,7 +95,7 @@ describe('{{cancel_link}} helper', function () {
         });
         should.exist(rendered);
 
-        rendered.string.should.match(/custom-error-class/);
+        assert.match(rendered.string, /custom-error-class/);
     });
 
     it('can render custom cancel subscription link attributes', function () {
@@ -108,7 +109,7 @@ describe('{{cancel_link}} helper', function () {
         });
         should.exist(rendered);
 
-        rendered.string.should.match(/custom cancel link text/);
+        assert.match(rendered.string, /custom cancel link text/);
     });
 
     it('can render custom continue subscription link attributes', function () {
@@ -122,7 +123,7 @@ describe('{{cancel_link}} helper', function () {
         });
         should.exist(rendered);
 
-        rendered.string.should.match(/custom continue link text/);
+        assert.match(rendered.string, /custom continue link text/);
     });
 
     it('is disabled if labs flag is not set', function () {
@@ -136,8 +137,8 @@ describe('{{cancel_link}} helper', function () {
 
         should.exist(rendered);
 
-        rendered.string.should.match(/^<script/);
-        rendered.string.should.match(/helper is not available/);
+        assert.match(rendered.string, /^<script/);
+        assert.match(rendered.string, /helper is not available/);
 
         sinon.assert.calledOnce(loggingStub);
     });

@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const testUtils = require('../../utils');
 const db = require('../../../core/server/data/db');
@@ -14,7 +15,7 @@ describe('Settings Model', function () {
     describe('defaults', function () {
         it('populates all defaults', async function () {
             const settings = await models.Settings.findAll();
-            settings.length.should.equal(0);
+            assert.equal(settings.length, 0);
 
             await models.Settings.populateDefaults();
 
@@ -37,7 +38,7 @@ describe('Settings Model', function () {
                 });
 
             const settings = await models.Settings.findAll();
-            settings.length.should.equal(1);
+            assert.equal(settings.length, 1);
 
             await models.Settings.populateDefaults();
 
@@ -45,10 +46,10 @@ describe('Settings Model', function () {
             settingsPopulated.length.should.equal(SETTINGS_LENGTH);
 
             const titleSetting = settingsPopulated.models.find(s => s.get('key') === 'title');
-            titleSetting.get('value').should.equal('Testing Defaults');
+            assert.equal(titleSetting.get('value'), 'Testing Defaults');
 
             const descriptionSetting = settingsPopulated.models.find(s => s.get('key') === 'description');
-            descriptionSetting.get('value').should.equal('Thoughts, stories and ideas');
+            assert.equal(descriptionSetting.get('value'), 'Thoughts, stories and ideas');
         });
     });
 });

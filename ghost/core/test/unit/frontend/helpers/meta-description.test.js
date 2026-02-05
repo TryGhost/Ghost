@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const meta_description = require('../../../../core/frontend/helpers/meta_description');
@@ -28,7 +29,7 @@ describe('{{meta_description}} helper', function () {
             );
 
             should.exist(rendered);
-            String(rendered).should.equal('The professional publishing platform');
+            assert.equal(String(rendered), 'The professional publishing platform');
         });
 
         it('returns empty description on paginated page', function () {
@@ -38,7 +39,7 @@ describe('{{meta_description}} helper', function () {
             );
 
             should.exist(rendered);
-            String(rendered).should.equal('');
+            assert.equal(String(rendered), '');
         });
 
         it('returns empty description for a tag page', function () {
@@ -48,7 +49,7 @@ describe('{{meta_description}} helper', function () {
             );
 
             should.exist(rendered);
-            String(rendered).should.equal('');
+            assert.equal(String(rendered), '');
         });
 
         it('returns empty description for a paginated tag page', function () {
@@ -58,7 +59,7 @@ describe('{{meta_description}} helper', function () {
             );
 
             should.exist(rendered);
-            String(rendered).should.equal('');
+            assert.equal(String(rendered), '');
         });
 
         it('returns tag meta_description if present for a tag page', function () {
@@ -68,7 +69,7 @@ describe('{{meta_description}} helper', function () {
             );
 
             should.exist(rendered);
-            String(rendered).should.equal('Rasper is the Cool Red Casper');
+            assert.equal(String(rendered), 'Rasper is the Cool Red Casper');
         });
 
         it('returns empty description on paginated tag page that has meta data', function () {
@@ -78,7 +79,7 @@ describe('{{meta_description}} helper', function () {
             );
 
             should.exist(rendered);
-            String(rendered).should.equal('');
+            assert.equal(String(rendered), '');
         });
 
         it('returns author bio for an author page', function () {
@@ -88,7 +89,7 @@ describe('{{meta_description}} helper', function () {
             );
 
             should.exist(rendered);
-            String(rendered).should.equal('I am a Duck.');
+            assert.equal(String(rendered), 'I am a Duck.');
         });
 
         it('returns empty description for a paginated author page', function () {
@@ -98,7 +99,7 @@ describe('{{meta_description}} helper', function () {
             );
 
             should.exist(rendered);
-            String(rendered).should.equal('');
+            assert.equal(String(rendered), '');
         });
 
         it('returns empty description when meta_description is not set', function () {
@@ -108,7 +109,7 @@ describe('{{meta_description}} helper', function () {
             );
 
             should.exist(rendered);
-            String(rendered).should.equal('');
+            assert.equal(String(rendered), '');
         });
 
         it('returns meta_description on post with meta_description set', function () {
@@ -118,7 +119,7 @@ describe('{{meta_description}} helper', function () {
             );
 
             should.exist(rendered);
-            String(rendered).should.equal('Nice post about stuff.');
+            assert.equal(String(rendered), 'Nice post about stuff.');
         });
 
         it('returns meta_description on post when used within {{#foreach posts}}', function () {
@@ -128,7 +129,7 @@ describe('{{meta_description}} helper', function () {
             );
 
             should.exist(rendered);
-            String(rendered).should.equal('Nice post about stuff.');
+            assert.equal(String(rendered), 'Nice post about stuff.');
         });
     });
 
@@ -144,7 +145,7 @@ describe('{{meta_description}} helper', function () {
             );
 
             should.exist(rendered);
-            String(rendered).should.equal('Meta description of the professional publishing platform');
+            assert.equal(String(rendered), 'Meta description of the professional publishing platform');
         });
 
         it('returns tag meta_description if present for a tag page', function () {
@@ -154,7 +155,7 @@ describe('{{meta_description}} helper', function () {
             );
 
             should.exist(rendered);
-            String(rendered).should.equal('Rasper is the Cool Red Casper');
+            assert.equal(String(rendered), 'Rasper is the Cool Red Casper');
         });
     });
 });

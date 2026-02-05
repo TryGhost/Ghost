@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const should = require('should');
 const models = require('../../../../core/server/models');
@@ -48,7 +49,7 @@ describe('Unit: models/member', function () {
             config.set('privacy:useGravatar', false);
             const json = toJSON(member);
 
-            should(json.avatar_image).eql(null);
+            assert.equal(json.avatar_image, null);
         });
     });
 
@@ -75,7 +76,7 @@ describe('Unit: models/member', function () {
                 id: '1'
             }]);
 
-            updatePivot.calledWith({expiry_at: new Date(expiry)}, {query: {where: {product_id: '1'}}}).should.be.true();
+            assert.equal(updatePivot.calledWith({expiry_at: new Date(expiry)}, {query: {where: {product_id: '1'}}}), true);
         });
 
         it('calls updatePivot on member products to remove expiry', function () {
@@ -83,7 +84,7 @@ describe('Unit: models/member', function () {
                 id: '1'
             }]);
 
-            updatePivot.calledWith({expiry_at: null}, {query: {where: {product_id: '1'}}}).should.be.true();
+            assert.equal(updatePivot.calledWith({expiry_at: null}, {query: {where: {product_id: '1'}}}), true);
         });
     });
 });

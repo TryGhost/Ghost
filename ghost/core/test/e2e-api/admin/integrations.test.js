@@ -81,7 +81,7 @@ describe('Integrations API', function () {
         should.exist(id);
         assert.equal(id, adminApiKey.id);
         should.exist(secret);
-        secret.length.should.equal(64);
+        assert.equal(secret.length, 64);
 
         should.exist(res.headers.location);
         res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('integrations/')}${res.body.integrations[0].id}/`);
@@ -362,7 +362,7 @@ describe('Integrations API', function () {
             .set('Origin', config.get('url'))
             .expect(404);
 
-        editRes.body.errors[0].context.should.eql('Integration not found.');
+        assert.equal(editRes.body.errors[0].context, 'Integration not found.');
     });
 
     describe('As Administrator', function () {

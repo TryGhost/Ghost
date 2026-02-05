@@ -90,8 +90,8 @@ describe('UNIT: LinkRedirectRepository class', function () {
             const linkRedirect = linkRedirectRepository.fromModel(model);
             assert.equal(linkRedirect.from.href, 'https://example.com/r/1234abcd');
             assert.equal(linkRedirect.to.href, 'https://google.com/');
-            should(linkRedirect.edited).be.false();
-            should(ObjectID.isValid(linkRedirect.link_id)).be.true();
+            assert.equal(linkRedirect.edited, false);
+            assert.equal(ObjectID.isValid(linkRedirect.link_id), true);
         });
 
         it('should set edited to false if updated_at is within 1 second of created_at', function () {
@@ -103,8 +103,8 @@ describe('UNIT: LinkRedirectRepository class', function () {
             const linkRedirect = linkRedirectRepository.fromModel(model);
             assert.equal(linkRedirect.from.href, 'https://example.com/r/1234abcd');
             assert.equal(linkRedirect.to.href, 'https://google.com/');
-            should(linkRedirect.edited).be.false();
-            should(ObjectID.isValid(linkRedirect.link_id)).be.true();
+            assert.equal(linkRedirect.edited, false);
+            assert.equal(ObjectID.isValid(linkRedirect.link_id), true);
         });
 
         it('should set edited to true if updated_at is greater than created_at by more than 1 second', function () {
@@ -116,8 +116,8 @@ describe('UNIT: LinkRedirectRepository class', function () {
             const linkRedirect = linkRedirectRepository.fromModel(model);
             assert.equal(linkRedirect.from.href, 'https://example.com/r/1234abcd');
             assert.equal(linkRedirect.to.href, 'https://google.com/');
-            should(linkRedirect.edited).be.true();
-            should(ObjectID.isValid(linkRedirect.link_id)).be.true();
+            assert.equal(linkRedirect.edited, true);
+            assert.equal(ObjectID.isValid(linkRedirect.link_id), true);
         });
     });
 
@@ -125,13 +125,13 @@ describe('UNIT: LinkRedirectRepository class', function () {
         it('should return an array of LinkRedirect instances', async function () {
             linkRedirectRepository = createLinkRedirectRepository();
             const linkRedirects = await linkRedirectRepository.getAll({});
-            should(linkRedirects).be.an.Array();
+            assert(Array.isArray(linkRedirects));
             assert.equal(linkRedirects.length, 1);
             const linkRedirect = linkRedirects[0];
             assert.equal(linkRedirect.from.href, 'https://example.com/r/1234abcd');
             assert.equal(linkRedirect.to.href, 'https://google.com/');
-            should(linkRedirect.edited).be.true();
-            should(ObjectID.isValid(linkRedirect.link_id)).be.true();
+            assert.equal(linkRedirect.edited, true);
+            assert.equal(ObjectID.isValid(linkRedirect.link_id), true);
         });
     });
 
@@ -139,7 +139,7 @@ describe('UNIT: LinkRedirectRepository class', function () {
         it('should return an array of link ids', async function () {
             linkRedirectRepository = createLinkRedirectRepository();
             const linkIds = await linkRedirectRepository.getFilteredIds({});
-            should(linkIds).be.an.Array();
+            assert(Array.isArray(linkIds));
             assert.equal(linkIds.length, 1);
             assert.equal(linkIds[0], '662194931d0ba6fb37c080ee');
         });
@@ -173,8 +173,8 @@ describe('UNIT: LinkRedirectRepository class', function () {
             should(result).be.an.Object();
             assert.equal(result.from.href, 'https://example.com/r/1234abcd');
             assert.equal(result.to.href, 'https://google.com/');
-            should(result.edited).be.true();
-            should(ObjectID.isValid(result.link_id)).be.true();
+            assert.equal(result.edited, true);
+            assert.equal(ObjectID.isValid(result.link_id), true);
         });
 
         it('should return a LinkRedirect instance from the DB if cache is enabled and key does not exist', async function () {
@@ -191,9 +191,9 @@ describe('UNIT: LinkRedirectRepository class', function () {
             should(result).be.an.Object();
             assert.equal(result.from.href, 'https://example.com/r/1234abcd');
             assert.equal(result.to.href, 'https://google.com/');
-            should(result.edited).be.true();
-            should(ObjectID.isValid(result.link_id)).be.true();
-            should(cacheAdapterStub.set.calledOnce).be.true();
+            assert.equal(result.edited, true);
+            assert.equal(ObjectID.isValid(result.link_id), true);
+            assert.equal(cacheAdapterStub.set.calledOnce, true);
         });
     });
 
@@ -211,7 +211,7 @@ describe('UNIT: LinkRedirectRepository class', function () {
                 to: new URL('https://google.com')
             });
             await linkRedirectRepository.save(linkRedirect);
-            should(cacheAdapterStub.set.calledOnce).be.true();
+            assert.equal(cacheAdapterStub.set.calledOnce, true);
         });
 
         it('should clear cache on site.changed event', function () {
@@ -226,7 +226,7 @@ describe('UNIT: LinkRedirectRepository class', function () {
             });
 
             EventRegistry.emit('site.changed');
-            should(reset.calledOnce).be.true();
+            assert.equal(reset.calledOnce, true);
         });
     });
 });

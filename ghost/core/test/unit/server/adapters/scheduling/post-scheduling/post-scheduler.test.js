@@ -74,13 +74,13 @@ describe('Scheduling: Post Scheduler', function () {
                     setTimeout(resolve, 100);
                 });
 
-                adapter.schedule.called.should.eql(true);
+                assert.equal(adapter.schedule.called, true);
 
-                adapter.schedule.calledOnce.should.eql(true);
+                assert.equal(adapter.schedule.calledOnce, true);
 
                 adapter.schedule.args[0][0].time.should.equal(moment(post.get('published_at')).valueOf());
                 adapter.schedule.args[0][0].url.should.startWith(urlUtils.urlJoin('http://scheduler.local:1111/', 'schedules', 'posts', post.get('id'), '?token='));
-                adapter.schedule.args[0][0].extra.httpMethod.should.eql('PUT');
+                assert.equal(adapter.schedule.args[0][0].extra.httpMethod, 'PUT');
                 assert.equal(null, adapter.schedule.args[0][0].extra.oldTime);
             });
         });
@@ -91,7 +91,7 @@ describe('Scheduling: Post Scheduler', function () {
                     new PostScheduler();
                     throw new Error('should have thrown');
                 } catch (err) {
-                    (err instanceof errors.IncorrectUsageError).should.eql(true);
+                    assert.equal((err instanceof errors.IncorrectUsageError), true);
                 }
             });
         });

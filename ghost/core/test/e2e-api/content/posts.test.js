@@ -319,7 +319,7 @@ describe('Posts Content API', function () {
             .get(`posts/${publicPost.id}/?include=tiers`)
             .expectStatus(200);
         const publicPostData = publicPostRes.body.posts[0];
-        publicPostData.tiers.length.should.eql(2);
+        assert.equal(publicPostData.tiers.length, 2);
     });
 
     it('Can include free and paid tiers for members only post', async function () {
@@ -334,7 +334,7 @@ describe('Posts Content API', function () {
             .get(`posts/${membersPost.id}/?include=tiers`)
             .expectStatus(200);
         const membersPostData = membersPostRes.body.posts[0];
-        membersPostData.tiers.length.should.eql(2);
+        assert.equal(membersPostData.tiers.length, 2);
     });
 
     it('Can include only paid tier for paid post', async function () {
@@ -349,7 +349,7 @@ describe('Posts Content API', function () {
             .get(`posts/${paidPost.id}/?include=tiers`)
             .expectStatus(200);
         const paidPostData = paidPostRes.body.posts[0];
-        paidPostData.tiers.length.should.eql(1);
+        assert.equal(paidPostData.tiers.length, 1);
     });
 
     it('Can include specific tier for post with tiers visibility', async function () {
@@ -376,7 +376,7 @@ describe('Posts Content API', function () {
 
         const tiersPostData = tiersPostRes.body.posts[0];
 
-        tiersPostData.tiers.length.should.eql(1);
+        assert.equal(tiersPostData.tiers.length, 1);
     });
 
     it('Can use post excerpt as field', async function () {

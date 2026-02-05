@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const {checks} = require('../../../../../core/frontend/services/data');
 
@@ -13,48 +14,48 @@ describe('Checks', function () {
         ]);
     });
     it('isPost', function () {
-        checks.isPost({}).should.eql(false);
-        checks.isPost({title: 'Test'}).should.eql(false);
-        checks.isPost({title: 'Test', slug: 'test'}).should.eql(false);
-        checks.isPost({title: 'Test', slug: 'test', html: ''}).should.eql(true);
+        assert.equal(checks.isPost({}), false);
+        assert.equal(checks.isPost({title: 'Test'}), false);
+        assert.equal(checks.isPost({title: 'Test', slug: 'test'}), false);
+        assert.equal(checks.isPost({title: 'Test', slug: 'test', html: ''}), true);
     });
 
     it('isPage', function () {
-        checks.isPage(undefined).should.eql(false);
-        checks.isPage({}).should.eql(false);
-        checks.isPage({title: 'Test'}).should.eql(false);
-        checks.isPage({title: 'Test', show_title_and_feature_image: false}).should.eql(true);
-        checks.isPage({title: 'Test', show_title_and_feature_image: true}).should.eql(true);
+        assert.equal(checks.isPage(undefined), false);
+        assert.equal(checks.isPage({}), false);
+        assert.equal(checks.isPage({title: 'Test'}), false);
+        assert.equal(checks.isPage({title: 'Test', show_title_and_feature_image: false}), true);
+        assert.equal(checks.isPage({title: 'Test', show_title_and_feature_image: true}), true);
     });
 
     it('isNewsletter', function () {
-        checks.isNewsletter({}).should.eql(false);
-        checks.isNewsletter({name: 'Test'}).should.eql(false);
-        checks.isNewsletter({name: 'Test', visibility: 'members', subscribe_on_signup: true}).should.eql(true);
-        checks.isNewsletter({name: 'Test', visibility: 'paid', subscribe_on_signup: false}).should.eql(true);
+        assert.equal(checks.isNewsletter({}), false);
+        assert.equal(checks.isNewsletter({name: 'Test'}), false);
+        assert.equal(checks.isNewsletter({name: 'Test', visibility: 'members', subscribe_on_signup: true}), true);
+        assert.equal(checks.isNewsletter({name: 'Test', visibility: 'paid', subscribe_on_signup: false}), true);
     });
 
     it('isTag', function () {
-        checks.isTag({}).should.eql(false);
-        checks.isTag({name: 'Test'}).should.eql(false);
-        checks.isTag({name: 'Test', slug: 'test'}).should.eql(false);
-        checks.isTag({name: 'Test', slug: 'test', description: ''}).should.eql(false);
-        checks.isTag({name: 'Test', slug: 'test', description: '', feature_image: ''}).should.eql(true);
+        assert.equal(checks.isTag({}), false);
+        assert.equal(checks.isTag({name: 'Test'}), false);
+        assert.equal(checks.isTag({name: 'Test', slug: 'test'}), false);
+        assert.equal(checks.isTag({name: 'Test', slug: 'test', description: ''}), false);
+        assert.equal(checks.isTag({name: 'Test', slug: 'test', description: '', feature_image: ''}), true);
     });
 
     it('isUser', function () {
-        checks.isUser({}).should.eql(false);
-        checks.isUser({bio: 'Test'}).should.eql(false);
-        checks.isUser({bio: 'Test', website: 'test'}).should.eql(false);
-        checks.isUser({bio: 'Test', website: 'test', profile_image: ''}).should.eql(false);
-        checks.isUser({bio: 'Test', website: 'test', profile_image: '', location: ''}).should.eql(true);
+        assert.equal(checks.isUser({}), false);
+        assert.equal(checks.isUser({bio: 'Test'}), false);
+        assert.equal(checks.isUser({bio: 'Test', website: 'test'}), false);
+        assert.equal(checks.isUser({bio: 'Test', website: 'test', profile_image: ''}), false);
+        assert.equal(checks.isUser({bio: 'Test', website: 'test', profile_image: '', location: ''}), true);
     });
 
     it('isNav', function () {
-        checks.isNav({}).should.eql(false);
-        checks.isNav({label: 'Test'}).should.eql(false);
-        checks.isNav({label: 'Test', slug: 'test'}).should.eql(false);
-        checks.isNav({label: 'Test', slug: 'test', url: ''}).should.eql(false);
-        checks.isNav({label: 'Test', slug: 'test', url: '', current: false}).should.eql(true);
+        assert.equal(checks.isNav({}), false);
+        assert.equal(checks.isNav({label: 'Test'}), false);
+        assert.equal(checks.isNav({label: 'Test', slug: 'test'}), false);
+        assert.equal(checks.isNav({label: 'Test', slug: 'test', url: ''}), false);
+        assert.equal(checks.isNav({label: 'Test', slug: 'test', url: '', current: false}), true);
     });
 });

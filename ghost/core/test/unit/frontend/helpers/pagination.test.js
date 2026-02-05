@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const hbs = require('../../../../core/frontend/services/theme-engine/engine');
 const configUtils = require('../../../utils/config-utils');
@@ -46,7 +47,7 @@ describe('{{pagination}} helper', function () {
         // strip out carriage returns and compare.
         rendered.string.should.match(paginationRegex);
         rendered.string.should.match(pageRegex);
-        rendered.string.should.match(/Page 1 of 1/);
+        assert.match(rendered.string, /Page 1 of 1/);
         rendered.string.should.not.match(newerRegex);
         rendered.string.should.not.match(olderRegex);
     });
@@ -60,7 +61,7 @@ describe('{{pagination}} helper', function () {
         rendered.string.should.match(paginationRegex);
         rendered.string.should.match(pageRegex);
         rendered.string.should.match(olderRegex);
-        rendered.string.should.match(/Page 1 of 3/);
+        assert.match(rendered.string, /Page 1 of 3/);
         rendered.string.should.not.match(newerRegex);
     });
 
@@ -74,7 +75,7 @@ describe('{{pagination}} helper', function () {
         rendered.string.should.match(pageRegex);
         rendered.string.should.match(olderRegex);
         rendered.string.should.match(newerRegex);
-        rendered.string.should.match(/Page 2 of 3/);
+        assert.match(rendered.string, /Page 2 of 3/);
     });
 
     it('can render last page of many with newer posts link', function () {
@@ -86,7 +87,7 @@ describe('{{pagination}} helper', function () {
         rendered.string.should.match(paginationRegex);
         rendered.string.should.match(pageRegex);
         rendered.string.should.match(newerRegex);
-        rendered.string.should.match(/Page 3 of 3/);
+        assert.match(rendered.string, /Page 3 of 3/);
         rendered.string.should.not.match(olderRegex);
     });
 
@@ -144,9 +145,9 @@ describe('{{pagination}} helper with custom template', function () {
         });
         should.exist(rendered);
         // strip out carriage returns and compare.
-        rendered.string.should.match(/Page 1 of 1/);
-        rendered.string.should.containEql('Chaos is a ladder');
-        rendered.string.should.not.containEql('isHeader is set');
+        assert.match(rendered.string, /Page 1 of 1/);
+        assert(rendered.string.includes('Chaos is a ladder'));
+        assert(!rendered.string.includes('isHeader is set'));
     });
 
     it('can pass attributes through', function () {
@@ -161,8 +162,8 @@ describe('{{pagination}} helper with custom template', function () {
         });
         should.exist(rendered);
         // strip out carriage returns and compare.
-        rendered.string.should.match(/Page 1 of 1/);
-        rendered.string.should.not.containEql('Chaos is a ladder');
-        rendered.string.should.containEql('isHeader is set');
+        assert.match(rendered.string, /Page 1 of 1/);
+        assert(!rendered.string.includes('Chaos is a ladder'));
+        assert(rendered.string.includes('isHeader is set'));
     });
 });

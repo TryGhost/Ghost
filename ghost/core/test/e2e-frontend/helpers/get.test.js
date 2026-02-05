@@ -87,10 +87,10 @@ describe('e2e {{#get}} helper', function () {
 
     // Assert fixtures are correct
     it('has valid fixtures', function () {
-        publicPost.visibility.should.eql('public');
-        membersPost.visibility.should.eql('members');
-        paidPost.visibility.should.eql('paid');
-        basicTierPost.visibility.should.eql('tiers');
+        assert.equal(publicPost.visibility, 'public');
+        assert.equal(membersPost.visibility, 'members');
+        assert.equal(paidPost.visibility, 'paid');
+        assert.equal(basicTierPost.visibility, 'tiers');
     });
 
     beforeEach(function () {

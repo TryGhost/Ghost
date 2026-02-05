@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../utils');
@@ -79,16 +80,16 @@ describe('Snippet Model', function () {
             });
 
             it('transforms all media URLs to absolute site URLs', function () {
-                lexicalString.should.containEql(`${siteUrl}/content/images/snippet-inline.jpg`);
-                lexicalString.should.containEql(`${siteUrl}/content/files/snippet-document.pdf`);
-                lexicalString.should.containEql(`${siteUrl}/content/media/snippet-video.mp4`);
-                lexicalString.should.containEql(`${siteUrl}/content/images/snippet-video-thumb.jpg`);
-                lexicalString.should.containEql(`${siteUrl}/content/media/snippet-audio.mp3`);
-                lexicalString.should.containEql(`${siteUrl}/content/images/snippet-audio-thumb.jpg`);
-                lexicalString.should.containEql(`${siteUrl}/snippet-link`);
+                assert(lexicalString.includes(`${siteUrl}/content/images/snippet-inline.jpg`));
+                assert(lexicalString.includes(`${siteUrl}/content/files/snippet-document.pdf`));
+                assert(lexicalString.includes(`${siteUrl}/content/media/snippet-video.mp4`));
+                assert(lexicalString.includes(`${siteUrl}/content/images/snippet-video-thumb.jpg`));
+                assert(lexicalString.includes(`${siteUrl}/content/media/snippet-audio.mp3`));
+                assert(lexicalString.includes(`${siteUrl}/content/images/snippet-audio-thumb.jpg`));
+                assert(lexicalString.includes(`${siteUrl}/snippet-link`));
 
                 // Verify no __GHOST_URL__ placeholders remain
-                lexicalString.should.not.containEql('__GHOST_URL__');
+                assert(!lexicalString.includes('__GHOST_URL__'));
             });
         });
     });
@@ -158,7 +159,7 @@ describe('Snippet Model', function () {
                 const snippet = snippets.models.find(s => s.get('name') === 'Snippet with all media types - Lexical');
                 const lexicalString = snippet.get('lexical');
 
-                lexicalString.should.containEql(`${cdnUrl}/content/files/snippet-document.pdf`);
+                assert(lexicalString.includes(`${cdnUrl}/content/files/snippet-document.pdf`));
             });
 
             it('transforms video/audio URLs to media CDN URL', async function () {
@@ -166,8 +167,8 @@ describe('Snippet Model', function () {
                 const snippet = snippets.models.find(s => s.get('name') === 'Snippet with all media types - Lexical');
                 const lexicalString = snippet.get('lexical');
 
-                lexicalString.should.containEql(`${cdnUrl}/content/media/snippet-video.mp4`);
-                lexicalString.should.containEql(`${cdnUrl}/content/media/snippet-audio.mp3`);
+                assert(lexicalString.includes(`${cdnUrl}/content/media/snippet-video.mp4`));
+                assert(lexicalString.includes(`${cdnUrl}/content/media/snippet-audio.mp3`));
             });
 
             it('transforms image URLs to absolute site URL(NOT CDN)', async function () {
@@ -175,9 +176,9 @@ describe('Snippet Model', function () {
                 const snippet = snippets.models.find(s => s.get('name') === 'Snippet with all media types - Lexical');
                 const lexicalString = snippet.get('lexical');
 
-                lexicalString.should.containEql(`${siteUrl}/content/images/snippet-inline.jpg`);
-                lexicalString.should.containEql(`${siteUrl}/content/images/snippet-video-thumb.jpg`);
-                lexicalString.should.containEql(`${siteUrl}/content/images/snippet-audio-thumb.jpg`);
+                assert(lexicalString.includes(`${siteUrl}/content/images/snippet-inline.jpg`));
+                assert(lexicalString.includes(`${siteUrl}/content/images/snippet-video-thumb.jpg`));
+                assert(lexicalString.includes(`${siteUrl}/content/images/snippet-audio-thumb.jpg`));
             });
         });
     });

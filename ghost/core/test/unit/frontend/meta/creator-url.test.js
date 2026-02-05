@@ -13,7 +13,7 @@ describe('getCreatorTwitterUrl', function () {
                     }
                 }
             });
-            twitterUrl.should.equal('https://twitter.com/user');
+            assert.equal(twitterUrl, 'https://twitter.com/user');
         });
 
     it('should return null if context does not contain author twitter url and is a post',
@@ -45,7 +45,7 @@ describe('getCreatorTwitterUrl', function () {
                     twitter: 'https://twitter.com/user'
                 }
             });
-            twitterUrl.should.equal('https://twitter.com/user');
+            assert.equal(twitterUrl, 'https://twitter.com/user');
         });
 
     it('should return null if context does not contain author twitter url and is a author',

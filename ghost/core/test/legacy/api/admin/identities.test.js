@@ -60,8 +60,8 @@ describe('Identities API', function () {
                     return verifyJWKS(`${request.app}/ghost/.well-known/jwks.json`, identity.token);
                 })
                 .then((decoded) => {
-                    decoded.sub.should.equal('jbloggs@example.com');
-                    decoded.role.should.equal('Owner');
+                    assert.equal(decoded.sub, 'jbloggs@example.com');
+                    assert.equal(decoded.role, 'Owner');
                 });
         });
     });
@@ -106,8 +106,8 @@ describe('Identities API', function () {
                     return verifyJWKS(`${request.app}/ghost/.well-known/jwks.json`, identity.token);
                 })
                 .then((decoded) => {
-                    decoded.sub.should.equal('admin+1@ghost.org');
-                    decoded.role.should.equal('Administrator');
+                    assert.equal(decoded.sub, 'admin+1@ghost.org');
+                    assert.equal(decoded.role, 'Administrator');
                 });
         });
     });

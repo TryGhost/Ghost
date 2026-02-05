@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const path = require('path');
@@ -67,7 +68,7 @@ describe('Private Controller', function () {
         hasTemplateStub.withArgs('private').returns(true);
 
         res.render = function (view, context) {
-            view.should.eql('private');
+            assert.equal(view, 'private');
             should.exist(context);
             done();
         };

@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 require('should');
 const sinon = require('sinon');
 const {DataImportError} = require('@tryghost/errors');
@@ -278,9 +279,9 @@ describe('MembersCSVImporterStripeUtils', function () {
             }, OPTIONS);
 
             result.stripePriceId.should.equal(stripeCustomerSubscriptionItem.price.id);
-            result.isNewStripePrice.should.be.false();
+            assert.equal(result.isNewStripePrice, false);
 
-            stripeAPIServiceStub.updateSubscriptionItemPrice.calledOnce.should.be.false();
+            assert.equal(stripeAPIServiceStub.updateSubscriptionItemPrice.calledOnce, false);
         });
 
         it('updates the Stripe customer\'s subscription if they already have a subscription, but to some other Ghost product', async function () {
@@ -299,15 +300,15 @@ describe('MembersCSVImporterStripeUtils', function () {
             }, OPTIONS);
 
             result.stripePriceId.should.equal(GHOST_PRODUCT_STRIPE_PRICE_ID);
-            result.isNewStripePrice.should.be.false();
+            assert.equal(result.isNewStripePrice, false);
 
-            stripeAPIServiceStub.updateSubscriptionItemPrice.calledOnce.should.be.true();
-            stripeAPIServiceStub.updateSubscriptionItemPrice.calledWithExactly(
+            assert.equal(stripeAPIServiceStub.updateSubscriptionItemPrice.calledOnce, true);
+            assert.equal(stripeAPIServiceStub.updateSubscriptionItemPrice.calledWithExactly(
                 stripeCustomer.subscriptions.data[0].id,
                 stripeCustomerSubscriptionItem.id,
                 GHOST_PRODUCT_STRIPE_PRICE_ID,
                 {prorationBehavior: 'none'}
-            ).should.be.true();
+            ), true);
         });
 
         it('creates a new price on the Stripe product matching the Stripe customer\'s existing subscription and updates the subscription', async function () {
@@ -341,16 +342,16 @@ describe('MembersCSVImporterStripeUtils', function () {
 
             // Assert new price was created
             result.stripePriceId.should.equal(NEW_STRIPE_PRICE_ID);
-            result.isNewStripePrice.should.be.true();
+            assert.equal(result.isNewStripePrice, true);
 
             // Assert subscription was updated
-            stripeAPIServiceStub.updateSubscriptionItemPrice.calledOnce.should.be.true();
-            stripeAPIServiceStub.updateSubscriptionItemPrice.calledWithExactly(
+            assert.equal(stripeAPIServiceStub.updateSubscriptionItemPrice.calledOnce, true);
+            assert.equal(stripeAPIServiceStub.updateSubscriptionItemPrice.calledWithExactly(
                 stripeCustomer.subscriptions.data[0].id,
                 stripeCustomerSubscriptionItem.id,
                 NEW_STRIPE_PRICE_ID,
                 {prorationBehavior: 'none'}
-            ).should.be.true();
+            ), true);
         });
 
         it('creates a new product in Stripe if one does not already existing for the Ghost product', async function () {
@@ -368,8 +369,8 @@ describe('MembersCSVImporterStripeUtils', function () {
                 product_id: PRODUCT_ID
             }, OPTIONS);
 
-            productRepositoryStub.update.calledOnce.should.be.true();
-            productRepositoryStub.update.calledWithExactly(
+            assert.equal(productRepositoryStub.update.calledOnce, true);
+            assert.equal(productRepositoryStub.update.calledWithExactly(
                 {
                     id: PRODUCT_ID,
                     name: ghostProduct.name,
@@ -383,7 +384,7 @@ describe('MembersCSVImporterStripeUtils', function () {
                     }
                 },
                 OPTIONS
-            ).should.be.true();
+            ), true);
         });
     });
 
@@ -397,8 +398,8 @@ describe('MembersCSVImporterStripeUtils', function () {
 
             await membersCSVImporterStripeUtils.archivePrice(stripePriceId);
 
-            stripeAPIServiceStub.updatePrice.calledOnce.should.be.true();
-            stripeAPIServiceStub.updatePrice.calledWithExactly(stripePriceId, {active: false}).should.be.true();
+            assert.equal(stripeAPIServiceStub.updatePrice.calledOnce, true);
+            assert.equal(stripeAPIServiceStub.updatePrice.calledWithExactly(stripePriceId, {active: false}), true);
         });
     });
 });

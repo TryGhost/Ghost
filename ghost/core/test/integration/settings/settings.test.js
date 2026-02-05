@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const db = require('../../../core/server/data/db');
 const testUtils = require('../../utils');
 
@@ -42,7 +43,7 @@ describe('Settings', function () {
             .count('*')
             .then(function (data) {
                 const countResult = data[0]['count(*)'];
-                countResult.should.eql(0);
+                assert.equal(countResult, 0);
             })
             .catch(function (err) {
             // CASE: table does not exist

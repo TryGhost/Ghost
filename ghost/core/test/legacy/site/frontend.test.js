@@ -128,9 +128,9 @@ describe('Frontend Routing', function () {
                         assert.equal(res.headers['set-cookie'], undefined);
                         should.exist(res.headers.date);
 
-                        $('title').text().should.equal('This is a static page');
-                        $('body.page-template').length.should.equal(1);
-                        $('article.post').length.should.equal(1);
+                        assert.equal($('title').text(), 'This is a static page');
+                        assert.equal($('body.page-template').length, 1);
+                        assert.equal($('article.post').length, 1);
 
                         doEnd(done)(err, res);
                     });

@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const statsService = require('../../../../core/server/services/stats');
 const {agentProvider, fixtureManager, mockManager} = require('../../../utils/e2e-framework');
 require('should');
@@ -174,7 +175,7 @@ describe('MRR Stats Service', function () {
             await createMemberWithSubscription('month', 2, 'usd', moment(today).toISOString());
 
             const results = await statsService.api.mrr.fetchAllDeltas();
-            results.length.should.equal(3);
+            assert.equal(results.length, 3);
             results.should.match([
                 {
                     date: ninetyDaysAgo,
@@ -213,7 +214,7 @@ describe('MRR Stats Service', function () {
             };
             results.length.should.be.above(0);
             results.forEach((result) => {
-                isWithinLast90Days(result.date).should.equal(true);
+                assert.equal(isWithinLast90Days(result.date), true);
             });
         });
     });

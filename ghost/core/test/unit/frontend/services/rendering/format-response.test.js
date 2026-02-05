@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const testUtils = require('../../../../utils');
 const helpers = require('../../../../../core/frontend/services/rendering');
@@ -49,7 +50,7 @@ describe('Unit - services/routing/helpers/format-response', function () {
 
             locals.should.be.an.Object().with.properties('_templateOptions');
             locals._templateOptions.data.should.be.an.Object().with.properties('page');
-            locals._templateOptions.data.page.show_title_and_feature_image.should.be.true();
+            assert.equal(locals._templateOptions.data.page.show_title_and_feature_image, true);
         });
 
         it('should set up @page local for pages', function () {
@@ -62,7 +63,7 @@ describe('Unit - services/routing/helpers/format-response', function () {
 
             locals.should.be.an.Object().with.properties('_templateOptions');
             locals._templateOptions.data.should.be.an.Object().with.properties('page');
-            locals._templateOptions.data.page.show_title_and_feature_image.should.be.true();
+            assert.equal(locals._templateOptions.data.page.show_title_and_feature_image, true);
         });
 
         it('should assign properties on @page for pages', function () {
@@ -75,7 +76,7 @@ describe('Unit - services/routing/helpers/format-response', function () {
 
             locals.should.be.an.Object().with.properties('_templateOptions');
             locals._templateOptions.data.should.be.an.Object().with.properties('page');
-            locals._templateOptions.data.page.show_title_and_feature_image.should.be.false();
+            assert.equal(locals._templateOptions.data.page.show_title_and_feature_image, false);
         });
     });
 
@@ -166,7 +167,7 @@ describe('Unit - services/routing/helpers/format-response', function () {
 
             locals.should.be.an.Object().with.properties('_templateOptions');
             locals._templateOptions.data.should.be.an.Object().with.properties('page');
-            locals._templateOptions.data.page.show_title_and_feature_image.should.be.false();
+            assert.equal(locals._templateOptions.data.page.show_title_and_feature_image, false);
         });
     });
 });

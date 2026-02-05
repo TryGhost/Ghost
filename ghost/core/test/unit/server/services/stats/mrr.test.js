@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const MrrStatsService = require('../../../../../core/server/services/stats/mrr-stats-service');
 const moment = require('moment');
 const sinon = require('sinon');
@@ -127,7 +128,7 @@ describe('MrrStatsService', function () {
         it('Handles no data', async function () {
             const history = await getMrrHistory();
 
-            history.count.should.eql(1);
+            assert.equal(history.count, 1);
             assertMrrEntry(history.data[0], todayDate, 0, 'usd');
             assertTotals(history.totals, [{mrr: 0}]);
         });
@@ -140,7 +141,7 @@ describe('MrrStatsService', function () {
 
             const history = await getMrrHistory();
 
-            history.count.should.eql(2);
+            assert.equal(history.count, 2);
 
             // Currencies are always sorted ascending
             assertMrrEntry(history.data[0], todayDate, 2, 'eur');
@@ -160,7 +161,7 @@ describe('MrrStatsService', function () {
 
             const history = await getMrrHistory();
 
-            history.count.should.eql(2);
+            assert.equal(history.count, 2);
             assertMrrEntry(history.data[0], yesterdayDate, 0);
             assertMrrEntry(history.data[1], todayDate, 5);
             assertTotals(history.totals, [{mrr: 5}]);
@@ -179,7 +180,7 @@ describe('MrrStatsService', function () {
 
             const history = await getMrrHistory();
 
-            history.count.should.eql(3);
+            assert.equal(history.count, 3);
             assertMrrEntry(history.data[0], dayBeforeYesterdayDate, 0);
             assertMrrEntry(history.data[1], yesterdayDate, 2);
             assertMrrEntry(history.data[2], todayDate, 7);
@@ -204,7 +205,7 @@ describe('MrrStatsService', function () {
 
             const history = await getMrrHistory();
 
-            history.count.should.eql(6);
+            assert.equal(history.count, 6);
 
             // Day before yesterday
             assertMrrEntry(history.data[0], dayBeforeYesterdayDate, 200, 'eur');
@@ -236,7 +237,7 @@ describe('MrrStatsService', function () {
             const history = await getMrrHistory();
 
             // Invalid currency event should be ignored
-            history.count.should.eql(1);
+            assert.equal(history.count, 1);
             assertMrrEntry(history.data[0], yesterdayDate, 7);
             assertTotals(history.totals, [{mrr: 7}]);
         });
@@ -252,7 +253,7 @@ describe('MrrStatsService', function () {
 
             const history = await getMrrHistory();
 
-            history.count.should.eql(3);
+            assert.equal(history.count, 3);
             assertMrrEntry(history.data[0], dayBeforeYesterdayDate, 0);
             assertMrrEntry(history.data[1], yesterdayDate, 2);
             assertMrrEntry(history.data[2], todayDate, 7);
@@ -270,7 +271,7 @@ describe('MrrStatsService', function () {
 
             const history = await getMrrHistory();
 
-            history.count.should.eql(4);
+            assert.equal(history.count, 4);
 
             // Two days before yesterday: calculated backward from current MRR
             assertMrrEntry(history.data[0], twoDaysBeforeYesterdayDate, 5);

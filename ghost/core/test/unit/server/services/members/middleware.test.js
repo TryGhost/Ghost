@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 
@@ -55,7 +56,7 @@ describe('Members Service Middleware', function () {
             await membersMiddleware.createSessionFromMagicLink(req, res, next);
 
             // Check behavior
-            next.calledOnce.should.be.true();
+            assert.equal(next.calledOnce, true);
             next.firstCall.args.should.be.an.Array().with.lengthOf(0);
         });
 
@@ -77,9 +78,9 @@ describe('Members Service Middleware', function () {
             await membersMiddleware.createSessionFromMagicLink(req, res, next);
 
             // Check behavior
-            next.calledOnce.should.be.false();
-            res.redirect.calledOnce.should.be.true();
-            res.redirect.firstCall.args[0].should.eql('/blah/?action=signup&success=true');
+            assert.equal(next.calledOnce, false);
+            assert.equal(res.redirect.calledOnce, true);
+            assert.equal(res.redirect.firstCall.args[0], '/blah/?action=signup&success=true');
         });
 
         it('redirects correctly on failure', async function () {
@@ -93,9 +94,9 @@ describe('Members Service Middleware', function () {
             await membersMiddleware.createSessionFromMagicLink(req, res, next);
 
             // Check behavior
-            next.calledOnce.should.be.false();
-            res.redirect.calledOnce.should.be.true();
-            res.redirect.firstCall.args[0].should.eql('/blah/?action=signup&success=false');
+            assert.equal(next.calledOnce, false);
+            assert.equal(res.redirect.calledOnce, true);
+            assert.equal(res.redirect.firstCall.args[0], '/blah/?action=signup&success=false');
         });
 
         it('redirects free member to custom redirect on signup', async function () {
@@ -116,9 +117,9 @@ describe('Members Service Middleware', function () {
             await membersMiddleware.createSessionFromMagicLink(req, res, next);
 
             // Check behavior
-            next.calledOnce.should.be.false();
-            res.redirect.calledOnce.should.be.true();
-            res.redirect.firstCall.args[0].should.eql('https://custom.com/redirect/');
+            assert.equal(next.calledOnce, false);
+            assert.equal(res.redirect.calledOnce, true);
+            assert.equal(res.redirect.firstCall.args[0], 'https://custom.com/redirect/');
         });
 
         it('redirects paid member to custom redirect on signup', async function () {
@@ -139,9 +140,9 @@ describe('Members Service Middleware', function () {
             await membersMiddleware.createSessionFromMagicLink(req, res, next);
 
             // Check behavior
-            next.calledOnce.should.be.false();
-            res.redirect.calledOnce.should.be.true();
-            res.redirect.firstCall.args[0].should.eql('https://custom.com/paid/');
+            assert.equal(next.calledOnce, false);
+            assert.equal(res.redirect.calledOnce, true);
+            assert.equal(res.redirect.firstCall.args[0], 'https://custom.com/paid/');
         });
 
         it('redirects member to referrer param path on signin if it is on the site', async function () {
@@ -155,9 +156,9 @@ describe('Members Service Middleware', function () {
             await membersMiddleware.createSessionFromMagicLink(req, res, next);
 
             // Check behavior
-            next.calledOnce.should.be.false();
-            res.redirect.calledOnce.should.be.true();
-            res.redirect.firstCall.args[0].should.eql('https://site.com/blah/my-post/?action=signin&success=true#comment-123');
+            assert.equal(next.calledOnce, false);
+            assert.equal(res.redirect.calledOnce, true);
+            assert.equal(res.redirect.firstCall.args[0], 'https://site.com/blah/my-post/?action=signin&success=true#comment-123');
         });
 
         it('redirects member to referrer param path on signup if it is on the site', async function () {
@@ -171,9 +172,9 @@ describe('Members Service Middleware', function () {
             await membersMiddleware.createSessionFromMagicLink(req, res, next);
 
             // Check behavior
-            next.calledOnce.should.be.false();
-            res.redirect.calledOnce.should.be.true();
-            res.redirect.firstCall.args[0].should.eql('https://site.com/blah/my-post/?action=signup&success=true#comment-123');
+            assert.equal(next.calledOnce, false);
+            assert.equal(res.redirect.calledOnce, true);
+            assert.equal(res.redirect.firstCall.args[0], 'https://site.com/blah/my-post/?action=signup&success=true#comment-123');
         });
 
         it('does not redirect to referrer param if it is external', async function () {
@@ -187,9 +188,9 @@ describe('Members Service Middleware', function () {
             await membersMiddleware.createSessionFromMagicLink(req, res, next);
 
             // Check behavior
-            next.calledOnce.should.be.false();
-            res.redirect.calledOnce.should.be.true();
-            res.redirect.firstCall.args[0].should.eql('/blah/?action=signin&success=true');
+            assert.equal(next.calledOnce, false);
+            assert.equal(res.redirect.calledOnce, true);
+            assert.equal(res.redirect.firstCall.args[0], '/blah/?action=signin&success=true');
         });
     });
 
@@ -219,10 +220,10 @@ describe('Members Service Middleware', function () {
             await membersMiddleware.updateMemberNewsletters(req, res);
 
             // Check behavior
-            res.writeHead.calledOnce.should.be.true();
-            res.writeHead.firstCall.args[0].should.eql(404);
-            res.end.calledOnce.should.be.true();
-            res.end.firstCall.args[0].should.eql('Email address not found.');
+            assert.equal(res.writeHead.calledOnce, true);
+            assert.equal(res.writeHead.firstCall.args[0], 404);
+            assert.equal(res.end.calledOnce, true);
+            assert.equal(res.end.firstCall.args[0], 'Email address not found.');
         });
 
         // auth happens prior to this middleware
@@ -240,10 +241,10 @@ describe('Members Service Middleware', function () {
             await membersMiddleware.updateMemberNewsletters(req, res);
 
             // Check behavior
-            res.writeHead.calledOnce.should.be.true();
-            res.writeHead.firstCall.args[0].should.eql(404);
-            res.end.calledOnce.should.be.true();
-            res.end.firstCall.args[0].should.eql('Email address not found.');
+            assert.equal(res.writeHead.calledOnce, true);
+            assert.equal(res.writeHead.firstCall.args[0], 404);
+            assert.equal(res.end.calledOnce, true);
+            assert.equal(res.end.firstCall.args[0], 'Email address not found.');
         });
 
         it('attempts to update newsletters', async function () {
@@ -269,7 +270,7 @@ describe('Members Service Middleware', function () {
             });
             await membersMiddleware.updateMemberNewsletters(req, res);
             // the stubbing of the api is difficult to test with the current design, so we just check that the response is sent
-            res.json.calledOnce.should.be.true();
+            assert.equal(res.json.calledOnce, true);
         });
 
         it('returns 400 on error', async function () {
@@ -293,10 +294,10 @@ describe('Members Service Middleware', function () {
             await membersMiddleware.updateMemberNewsletters(req, res);
 
             // Check behavior
-            res.writeHead.calledOnce.should.be.true();
-            res.writeHead.firstCall.args[0].should.eql(400);
-            res.end.calledOnce.should.be.true();
-            res.end.firstCall.args[0].should.eql('Failed to update newsletters');
+            assert.equal(res.writeHead.calledOnce, true);
+            assert.equal(res.writeHead.firstCall.args[0], 400);
+            assert.equal(res.end.calledOnce, true);
+            assert.equal(res.end.firstCall.args[0], 'Failed to update newsletters');
         });
     });
 });

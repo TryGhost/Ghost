@@ -10,8 +10,8 @@ describe('getCoverImage', function () {
                 cover_image: '/content/images/my-test-image.jpg'
             }
         });
-        coverImageUrl.should.not.equal('/content/images/my-test-image.jpg');
-        coverImageUrl.should.match(/\/content\/images\/my-test-image\.jpg$/);
+        assert.notEqual(coverImageUrl, '/content/images/my-test-image.jpg');
+        assert.match(coverImageUrl, /\/content\/images\/my-test-image\.jpg$/);
     });
 
     it('should return absolute cover image url for author', function () {
@@ -21,8 +21,8 @@ describe('getCoverImage', function () {
                 cover_image: '/content/images/my-test-image.jpg'
             }
         });
-        coverImageUrl.should.not.equal('/content/images/my-test-image.jpg');
-        coverImageUrl.should.match(/\/content\/images\/my-test-image\.jpg$/);
+        assert.notEqual(coverImageUrl, '/content/images/my-test-image.jpg');
+        assert.match(coverImageUrl, /\/content\/images\/my-test-image\.jpg$/);
     });
 
     it('should return absolute image url for post', function () {
@@ -32,8 +32,8 @@ describe('getCoverImage', function () {
                 feature_image: '/content/images/my-test-image.jpg'
             }
         });
-        coverImageUrl.should.not.equal('/content/images/my-test-image.jpg');
-        coverImageUrl.should.match(/\/content\/images\/my-test-image\.jpg$/);
+        assert.notEqual(coverImageUrl, '/content/images/my-test-image.jpg');
+        assert.match(coverImageUrl, /\/content\/images\/my-test-image\.jpg$/);
     });
 
     it('should return null if missing image', function () {

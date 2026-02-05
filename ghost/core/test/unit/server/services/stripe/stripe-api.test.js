@@ -180,7 +180,7 @@ describe('StripeAPI', function () {
                 }
             });
 
-            should(mockStripe.checkout.sessions.create.args[0][0].subscription_data.metadata).deepEqual({
+            assert.deepEqual(mockStripe.checkout.sessions.create.args[0][0].subscription_data.metadata, {
                 attribution_id: '123',
                 attribution_url: '/',
                 attribution_type: 'url',

@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const _ = require('lodash');
 const configUtils = require('../../../../core/shared/config/utils');
@@ -30,9 +31,9 @@ describe('Config Utils', function () {
 
             configUtils.makePathsAbsolute(fakeNconf, fakeConfig.database, 'database');
 
-            changedKey.length.should.eql(1);
-            changedKey[0][0].should.eql('database:connection:filename');
-            changedKey[0][1].should.not.eql('content/data/ghost.db');
+            assert.equal(changedKey.length, 1);
+            assert.equal(changedKey[0][0], 'database:connection:filename');
+            assert.notEqual(changedKey[0][1], 'content/data/ghost.db');
         });
 
         it('ensure it skips non strings', function () {
@@ -41,7 +42,7 @@ describe('Config Utils', function () {
             };
 
             configUtils.makePathsAbsolute(fakeNconf, fakeConfig.database, 'database');
-            changedKey.length.should.eql(0);
+            assert.equal(changedKey.length, 0);
         });
 
         it('ensure we don\'t change absolute paths', function () {
@@ -53,7 +54,7 @@ describe('Config Utils', function () {
             };
 
             configUtils.makePathsAbsolute(fakeNconf, fakeConfig.database, 'database');
-            changedKey.length.should.eql(0);
+            assert.equal(changedKey.length, 0);
         });
 
         it('match paths on windows', function () {
@@ -63,9 +64,9 @@ describe('Config Utils', function () {
             };
 
             configUtils.makePathsAbsolute(fakeNconf, fakeConfig.database, 'database');
-            changedKey.length.should.eql(1);
-            changedKey[0][0].should.eql('database:filename');
-            changedKey[0][1].should.not.eql('content\\data\\ghost.db');
+            assert.equal(changedKey.length, 1);
+            assert.equal(changedKey[0][0], 'database:filename');
+            assert.notEqual(changedKey[0][1], 'content\\data\\ghost.db');
         });
     });
 });

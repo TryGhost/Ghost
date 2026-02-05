@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 require('should');
 
 const knex = require('knex').default;
@@ -159,8 +160,8 @@ describe('Importer', function () {
 
         const products = await db.select('id', 'name').from('products');
 
-        products.length.should.eql(4);
-        products[0].name.should.eql('Free');
+        assert.equal(products.length, 4);
+        assert.equal(products[0].name, 'Free');
     });
 
     it('Should import an item for each entry in an array', async function () {
@@ -174,7 +175,7 @@ describe('Importer', function () {
 
         const results = await db.select('id').from('stripe_products');
 
-        results.length.should.eql(4);
+        assert.equal(results.length, 4);
     });
 
     it('Should update products to reference price ids', async function () {
@@ -195,8 +196,8 @@ describe('Importer', function () {
 
         const results = await db.select('id', 'name', 'monthly_price_id', 'yearly_price_id').from('products');
 
-        results.length.should.eql(4);
-        results[0].name.should.eql('Free');
+        assert.equal(results.length, 4);
+        assert.equal(results[0].name, 'Free');
     });
 });
 

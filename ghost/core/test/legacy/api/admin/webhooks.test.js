@@ -42,12 +42,12 @@ describe('Webhooks API', function () {
                 should.exist(jsonResponse.webhooks[0].event);
                 should.exist(jsonResponse.webhooks[0].target_url);
 
-                jsonResponse.webhooks[0].event.should.eql('test.create');
-                jsonResponse.webhooks[0].target_url.should.eql('http://example.com/webhooks/test/extra/canary');
+                assert.equal(jsonResponse.webhooks[0].event, 'test.create');
+                assert.equal(jsonResponse.webhooks[0].target_url, 'http://example.com/webhooks/test/extra/canary');
                 jsonResponse.webhooks[0].integration_id.should.eql(testUtils.DataGenerator.Content.api_keys[0].integration_id);
-                jsonResponse.webhooks[0].name.should.eql('test');
-                jsonResponse.webhooks[0].secret.should.eql('thisissecret');
-                jsonResponse.webhooks[0].api_version.should.eql('canary');
+                assert.equal(jsonResponse.webhooks[0].name, 'test');
+                assert.equal(jsonResponse.webhooks[0].secret, 'thisissecret');
+                assert.equal(jsonResponse.webhooks[0].api_version, 'canary');
 
                 localUtils.API.checkResponse(jsonResponse.webhooks[0], 'webhook');
             });

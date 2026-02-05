@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const bulkFilters = require('../../../../../core/server/models/base/plugins/bulk-filters');
 const {byNQL, byColumnValues, byIds} = bulkFilters;
@@ -12,7 +13,7 @@ describe('Models: bulk-filters', function () {
             const strategy = byNQL('status:published');
             const results = [...strategy];
 
-            results.length.should.equal(1);
+            assert.equal(results.length, 1);
             results[0].should.be.a.Function();
         });
     });
@@ -24,7 +25,7 @@ describe('Models: bulk-filters', function () {
             const results = [...strategy];
 
             // Should produce 2 chunks: 100 + 50
-            results.length.should.equal(2);
+            assert.equal(results.length, 2);
         });
 
         it('yields single chunk for values less than chunk size', function () {
@@ -32,14 +33,14 @@ describe('Models: bulk-filters', function () {
             const strategy = byColumnValues('id', ids);
             const results = [...strategy];
 
-            results.length.should.equal(1);
+            assert.equal(results.length, 1);
         });
 
         it('yields no chunks for empty array', function () {
             const strategy = byColumnValues('id', []);
             const results = [...strategy];
 
-            results.length.should.equal(0);
+            assert.equal(results.length, 0);
         });
 
         it('applies whereIn to query builder for each chunk', function () {
@@ -53,8 +54,8 @@ describe('Models: bulk-filters', function () {
 
             applyWhere(mockQb);
 
-            mockQb.whereIn.calledOnce.should.be.true();
-            mockQb.whereIn.calledWith('member_id', ids).should.be.true();
+            assert.equal(mockQb.whereIn.calledOnce, true);
+            assert.equal(mockQb.whereIn.calledWith('member_id', ids), true);
         });
 
         it('allows custom chunk size', function () {
@@ -63,7 +64,7 @@ describe('Models: bulk-filters', function () {
             const results = [...strategy];
 
             // Should produce 3 chunks: 10 + 10 + 5
-            results.length.should.equal(3);
+            assert.equal(results.length, 3);
         });
     });
 
@@ -79,8 +80,8 @@ describe('Models: bulk-filters', function () {
 
             applyWhere(mockQb);
 
-            mockQb.whereIn.calledOnce.should.be.true();
-            mockQb.whereIn.calledWith('id', ids).should.be.true();
+            assert.equal(mockQb.whereIn.calledOnce, true);
+            assert.equal(mockQb.whereIn.calledWith('id', ids), true);
         });
     });
 });

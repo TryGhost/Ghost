@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const supertest = require('supertest');
 const fs = require('fs-extra');
@@ -54,17 +55,17 @@ describe('Redirects API', function () {
                             .expect(200);
                     })
                     .then((res) => {
-                        res.headers['x-cache-invalidate'].should.eql('/*');
+                        assert.equal(res.headers['x-cache-invalidate'], '/*');
 
                         return request
                             .get('/k/')
                             .expect(302);
                     })
                     .then((response) => {
-                        response.headers.location.should.eql('/l');
+                        assert.equal(response.headers.location, '/l');
 
                         const dataFiles = fs.readdirSync(config.getContentPath('data'));
-                        dataFiles.join(',').match(/(redirects)/g).length.should.eql(2);
+                        assert.equal(dataFiles.join(',').match(/(redirects)/g).length, 2);
 
                         const fileContent = fs.readFileSync(path.join(contentFolder, 'data', 'redirects.json'), 'utf-8');
                         fileContent.should.eql(JSON.stringify([{
@@ -86,7 +87,7 @@ describe('Redirects API', function () {
                             .expect(200);
                     })
                     .then((res) => {
-                        res.headers['x-cache-invalidate'].should.eql('/*');
+                        assert.equal(res.headers['x-cache-invalidate'], '/*');
 
                         return request
                             .get('/my-old-blog-post/')
@@ -98,10 +99,10 @@ describe('Redirects API', function () {
                             .expect(302);
                     })
                     .then((response) => {
-                        response.headers.location.should.eql('/d');
+                        assert.equal(response.headers.location, '/d');
 
                         const fileContent = fs.readFileSync(path.join(config.get('paths:contentPath'), 'data', 'redirects.yaml'), 'utf-8');
-                        fileContent.should.eql('302:\n  c: d');
+                        assert.equal(fileContent, '302:\n  c: d');
                     });
             });
         });

@@ -47,10 +47,10 @@ describe('Themes', function () {
 
             return validate.check(testTheme.name, testTheme, {isZip: true})
                 .then((checkedTheme) => {
-                    checkZipStub.calledOnce.should.be.true();
-                    checkZipStub.calledWith(testTheme).should.be.true();
+                    assert.equal(checkZipStub.calledOnce, true);
+                    assert.equal(checkZipStub.calledWith(testTheme), true);
                     checkStub.callCount.should.be.equal(0);
-                    formatStub.calledOnce.should.be.true();
+                    assert.equal(formatStub.calledOnce, true);
                     checkedTheme.should.be.an.Object();
 
                     assert.equal(validate.canActivate(checkedTheme), true);
@@ -64,9 +64,9 @@ describe('Themes', function () {
             return validate.check(testTheme.name, testTheme, {isZip: false})
                 .then((checkedTheme) => {
                     checkZipStub.callCount.should.be.equal(0);
-                    checkStub.calledOnce.should.be.true();
-                    checkStub.calledWith(testTheme.path).should.be.true();
-                    formatStub.calledOnce.should.be.true();
+                    assert.equal(checkStub.calledOnce, true);
+                    assert.equal(checkStub.calledWith(testTheme.path), true);
+                    assert.equal(formatStub.calledOnce, true);
                     checkedTheme.should.be.an.Object();
 
                     assert.equal(validate.canActivate(checkedTheme), true);
@@ -93,10 +93,10 @@ describe('Themes', function () {
 
             return validate.check(testTheme.name, testTheme, {isZip: true})
                 .then((checkedTheme) => {
-                    checkZipStub.calledOnce.should.be.true();
-                    checkZipStub.calledWith(testTheme).should.be.true();
+                    assert.equal(checkZipStub.calledOnce, true);
+                    assert.equal(checkZipStub.calledWith(testTheme), true);
                     checkStub.callCount.should.be.equal(0);
-                    formatStub.calledOnce.should.be.true();
+                    assert.equal(formatStub.calledOnce, true);
 
                     assert.equal(validate.canActivate(checkedTheme), false);
                 });
@@ -122,10 +122,10 @@ describe('Themes', function () {
 
             return validate.check(testTheme.name, testTheme, {isZip: false})
                 .then((checkedTheme) => {
-                    checkStub.calledOnce.should.be.true();
-                    checkStub.calledWith(testTheme.path).should.be.true();
+                    assert.equal(checkStub.calledOnce, true);
+                    assert.equal(checkStub.calledWith(testTheme.path), true);
                     checkZipStub.callCount.should.be.equal(0);
-                    formatStub.calledOnce.should.be.true();
+                    assert.equal(formatStub.calledOnce, true);
 
                     assert.equal(validate.canActivate(checkedTheme), false);
                 });
@@ -141,10 +141,10 @@ describe('Themes', function () {
                 }).catch((error) => {
                     error.should.be.an.Object();
                     error.message.should.be.equal('invalid zip file');
-                    checkZipStub.calledOnce.should.be.true();
-                    checkZipStub.calledWith(testTheme).should.be.true();
+                    assert.equal(checkZipStub.calledOnce, true);
+                    assert.equal(checkZipStub.calledWith(testTheme), true);
                     checkStub.callCount.should.be.equal(0);
-                    formatStub.calledOnce.should.be.false();
+                    assert.equal(formatStub.calledOnce, false);
                 });
         });
     });

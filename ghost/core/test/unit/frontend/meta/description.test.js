@@ -35,19 +35,17 @@ describe('getMetaDescription', function () {
             context: 'home'
         });
 
-        description.should.equal('My data meta description');
+        assert.equal(description, 'My data meta description');
     });
 
     // <meta name="description">
     describe('property: null', function () {
         it('has correct fallbacks for context: home', function () {
-            getMetaDescription({}, {context: 'home'})
-                .should.equal('Site meta description');
+            assert.equal(getMetaDescription({}, {context: 'home'}), 'Site meta description');
 
             localSettingsCache.meta_description = '';
 
-            getMetaDescription({}, {context: 'home'})
-                .should.equal('Site description');
+            assert.equal(getMetaDescription({}, {context: 'home'}), 'Site description');
 
             localSettingsCache.description = '';
 
@@ -59,8 +57,7 @@ describe('getMetaDescription', function () {
                 meta_description: 'Post meta description'
             };
 
-            getMetaDescription({post}, {context: 'post'})
-                .should.equal('Post meta description');
+            assert.equal(getMetaDescription({post}, {context: 'post'}), 'Post meta description');
 
             post.meta_description = '';
 
@@ -76,8 +73,7 @@ describe('getMetaDescription', function () {
                 meta_description: 'Page meta description'
             };
 
-            getMetaDescription({page}, {context: 'page'})
-                .should.equal('Page meta description');
+            assert.equal(getMetaDescription({page}, {context: 'page'}), 'Page meta description');
 
             page.meta_description = '';
 
@@ -94,8 +90,7 @@ describe('getMetaDescription', function () {
                 meta_description: 'Page meta description'
             };
 
-            getMetaDescription({post}, {context: 'page'})
-                .should.equal('Page meta description');
+            assert.equal(getMetaDescription({post}, {context: 'page'}), 'Page meta description');
 
             post.meta_description = '';
 
@@ -108,13 +103,11 @@ describe('getMetaDescription', function () {
                 bio: 'Author bio'
             };
 
-            getMetaDescription({author}, {context: 'author'})
-                .should.equal('Author meta description');
+            assert.equal(getMetaDescription({author}, {context: 'author'}), 'Author meta description');
 
             author.meta_description = '';
 
-            getMetaDescription({author}, {context: 'author'})
-                .should.equal('Author bio');
+            assert.equal(getMetaDescription({author}, {context: 'author'}), 'Author bio');
 
             author.bio = '';
 
@@ -136,13 +129,11 @@ describe('getMetaDescription', function () {
                 description: 'Tag description'
             };
 
-            getMetaDescription({tag}, {context: 'tag'})
-                .should.equal('Tag meta description');
+            assert.equal(getMetaDescription({tag}, {context: 'tag'}), 'Tag meta description');
 
             tag.meta_description = '';
 
-            getMetaDescription({tag}, {context: 'tag'})
-                .should.equal('Tag description');
+            assert.equal(getMetaDescription({tag}, {context: 'tag'}), 'Tag description');
 
             tag.description = '';
 
@@ -167,18 +158,15 @@ describe('getMetaDescription', function () {
         });
 
         it('has correct fallbacks for context: home', function () {
-            getMetaDescription({}, {context: 'home'}, options)
-                .should.equal('Site og description');
+            assert.equal(getMetaDescription({}, {context: 'home'}, options), 'Site og description');
 
             localSettingsCache.og_description = '';
 
-            getMetaDescription({}, {context: 'home'}, options)
-                .should.equal('Site meta description');
+            assert.equal(getMetaDescription({}, {context: 'home'}, options), 'Site meta description');
 
             localSettingsCache.meta_description = '';
 
-            getMetaDescription({}, {context: 'home'}, options)
-                .should.equal('Site description');
+            assert.equal(getMetaDescription({}, {context: 'home'}, options), 'Site description');
 
             localSettingsCache.description = '';
 
@@ -193,28 +181,23 @@ describe('getMetaDescription', function () {
                 og_description: 'Post og description'
             };
 
-            getMetaDescription({post}, {context: 'post'}, options)
-                .should.equal('Post og description');
+            assert.equal(getMetaDescription({post}, {context: 'post'}, options), 'Post og description');
 
             post.og_description = '';
 
-            getMetaDescription({post}, {context: 'post'}, options)
-                .should.equal('Post custom excerpt');
+            assert.equal(getMetaDescription({post}, {context: 'post'}, options), 'Post custom excerpt');
 
             post.custom_excerpt = '';
 
-            getMetaDescription({post}, {context: 'post'}, options)
-                .should.equal('Post meta description');
+            assert.equal(getMetaDescription({post}, {context: 'post'}, options), 'Post meta description');
 
             post.meta_description = '';
 
-            getMetaDescription({post}, {context: 'post'}, options)
-                .should.equal('Post html');
+            assert.equal(getMetaDescription({post}, {context: 'post'}, options), 'Post html');
 
             post.excerpt = '';
 
-            getMetaDescription({post}, {context: 'post'}, options)
-                .should.equal('Site description');
+            assert.equal(getMetaDescription({post}, {context: 'post'}, options), 'Site description');
         });
 
         it('has correct fallbacks for context: page', function () {
@@ -225,28 +208,23 @@ describe('getMetaDescription', function () {
                 og_description: 'Page og description'
             };
 
-            getMetaDescription({page}, {context: 'page'}, options)
-                .should.equal('Page og description');
+            assert.equal(getMetaDescription({page}, {context: 'page'}, options), 'Page og description');
 
             page.og_description = '';
 
-            getMetaDescription({page}, {context: 'page'}, options)
-                .should.equal('Page custom excerpt');
+            assert.equal(getMetaDescription({page}, {context: 'page'}, options), 'Page custom excerpt');
 
             page.custom_excerpt = '';
 
-            getMetaDescription({page}, {context: 'page'}, options)
-                .should.equal('Page meta description');
+            assert.equal(getMetaDescription({page}, {context: 'page'}, options), 'Page meta description');
 
             page.meta_description = '';
 
-            getMetaDescription({page}, {context: 'page'}, options)
-                .should.equal('Page html');
+            assert.equal(getMetaDescription({page}, {context: 'page'}, options), 'Page html');
 
             page.excerpt = '';
 
-            getMetaDescription({page}, {context: 'page'}, options)
-                .should.equal('Site description');
+            assert.equal(getMetaDescription({page}, {context: 'page'}, options), 'Site description');
         });
 
         // NOTE: this is a legacy format and should be resolved with https://github.com/TryGhost/Ghost/issues/10042
@@ -258,28 +236,23 @@ describe('getMetaDescription', function () {
                 og_description: 'Page og description'
             };
 
-            getMetaDescription({post}, {context: 'page'}, options)
-                .should.equal('Page og description');
+            assert.equal(getMetaDescription({post}, {context: 'page'}, options), 'Page og description');
 
             post.og_description = '';
 
-            getMetaDescription({post}, {context: 'page'}, options)
-                .should.equal('Page custom excerpt');
+            assert.equal(getMetaDescription({post}, {context: 'page'}, options), 'Page custom excerpt');
 
             post.custom_excerpt = '';
 
-            getMetaDescription({post}, {context: 'page'}, options)
-                .should.equal('Page meta description');
+            assert.equal(getMetaDescription({post}, {context: 'page'}, options), 'Page meta description');
 
             post.meta_description = '';
 
-            getMetaDescription({post}, {context: 'page'}, options)
-                .should.equal('Page html');
+            assert.equal(getMetaDescription({post}, {context: 'page'}, options), 'Page html');
 
             post.excerpt = '';
 
-            getMetaDescription({post}, {context: 'page'}, options)
-                .should.equal('Site description');
+            assert.equal(getMetaDescription({post}, {context: 'page'}, options), 'Site description');
         });
 
         it('has correct fallbacks for context: author', function () {
@@ -288,18 +261,15 @@ describe('getMetaDescription', function () {
                 bio: 'Author bio'
             };
 
-            getMetaDescription({author}, {context: 'author'}, options)
-                .should.equal('Author meta description');
+            assert.equal(getMetaDescription({author}, {context: 'author'}, options), 'Author meta description');
 
             author.meta_description = '';
 
-            getMetaDescription({author}, {context: 'author'}, options)
-                .should.equal('Author bio');
+            assert.equal(getMetaDescription({author}, {context: 'author'}, options), 'Author bio');
 
             author.bio = '';
 
-            getMetaDescription({author}, {context: 'author'}, options)
-                .should.equal('Site meta description');
+            assert.equal(getMetaDescription({author}, {context: 'author'}, options), 'Site meta description');
 
             localSettingsCache.meta_description = '';
 
@@ -312,18 +282,15 @@ describe('getMetaDescription', function () {
                 bio: 'Author bio'
             };
 
-            getMetaDescription({author}, {context: ['author', 'paged']}, options)
-                .should.equal('Author meta description');
+            assert.equal(getMetaDescription({author}, {context: ['author', 'paged']}, options), 'Author meta description');
 
             author.meta_description = '';
 
-            getMetaDescription({author}, {context: ['author', 'paged']}, options)
-                .should.equal('Author bio');
+            assert.equal(getMetaDescription({author}, {context: ['author', 'paged']}, options), 'Author bio');
 
             author.bio = '';
 
-            getMetaDescription({author}, {context: ['author', 'paged']}, options)
-                .should.equal('Site meta description');
+            assert.equal(getMetaDescription({author}, {context: ['author', 'paged']}, options), 'Site meta description');
 
             localSettingsCache.meta_description = '';
 
@@ -336,18 +303,15 @@ describe('getMetaDescription', function () {
                 description: 'Tag description'
             };
 
-            getMetaDescription({tag}, {context: 'tag'}, options)
-                .should.equal('Tag meta description');
+            assert.equal(getMetaDescription({tag}, {context: 'tag'}, options), 'Tag meta description');
 
             tag.meta_description = '';
 
-            getMetaDescription({tag}, {context: 'tag'}, options)
-                .should.equal('Tag description');
+            assert.equal(getMetaDescription({tag}, {context: 'tag'}, options), 'Tag description');
 
             tag.description = '';
 
-            getMetaDescription({tag}, {context: 'tag'}, options)
-                .should.equal('Site meta description');
+            assert.equal(getMetaDescription({tag}, {context: 'tag'}, options), 'Site meta description');
 
             localSettingsCache.meta_description = '';
 
@@ -360,18 +324,15 @@ describe('getMetaDescription', function () {
                 description: 'Tag description'
             };
 
-            getMetaDescription({tag}, {context: ['tag', 'paged']}, options)
-                .should.equal('Tag meta description');
+            assert.equal(getMetaDescription({tag}, {context: ['tag', 'paged']}, options), 'Tag meta description');
 
             tag.meta_description = '';
 
-            getMetaDescription({tag}, {context: ['tag', 'paged']}, options)
-                .should.equal('Tag description');
+            assert.equal(getMetaDescription({tag}, {context: ['tag', 'paged']}, options), 'Tag description');
 
             tag.description = '';
 
-            getMetaDescription({tag}, {context: ['tag', 'paged']}, options)
-                .should.equal('Site meta description');
+            assert.equal(getMetaDescription({tag}, {context: ['tag', 'paged']}, options), 'Site meta description');
 
             localSettingsCache.meta_description = '';
 
@@ -387,18 +348,15 @@ describe('getMetaDescription', function () {
         });
 
         it('has correct fallbacks for context: home', function () {
-            getMetaDescription({}, {context: 'home'}, options)
-                .should.equal('Site twitter description');
+            assert.equal(getMetaDescription({}, {context: 'home'}, options), 'Site twitter description');
 
             localSettingsCache.twitter_description = '';
 
-            getMetaDescription({}, {context: 'home'}, options)
-                .should.equal('Site meta description');
+            assert.equal(getMetaDescription({}, {context: 'home'}, options), 'Site meta description');
 
             localSettingsCache.meta_description = '';
 
-            getMetaDescription({}, {context: 'home'}, options)
-                .should.equal('Site description');
+            assert.equal(getMetaDescription({}, {context: 'home'}, options), 'Site description');
 
             localSettingsCache.description = '';
 
@@ -413,28 +371,23 @@ describe('getMetaDescription', function () {
                 twitter_description: 'Post twitter description'
             };
 
-            getMetaDescription({post}, {context: 'post'}, options)
-                .should.equal('Post twitter description');
+            assert.equal(getMetaDescription({post}, {context: 'post'}, options), 'Post twitter description');
 
             post.twitter_description = '';
 
-            getMetaDescription({post}, {context: 'post'}, options)
-                .should.equal('Post custom excerpt');
+            assert.equal(getMetaDescription({post}, {context: 'post'}, options), 'Post custom excerpt');
 
             post.custom_excerpt = '';
 
-            getMetaDescription({post}, {context: 'post'}, options)
-                .should.equal('Post meta description');
+            assert.equal(getMetaDescription({post}, {context: 'post'}, options), 'Post meta description');
 
             post.meta_description = '';
 
-            getMetaDescription({post}, {context: 'post'}, options)
-                .should.equal('Post html');
+            assert.equal(getMetaDescription({post}, {context: 'post'}, options), 'Post html');
 
             post.excerpt = '';
 
-            getMetaDescription({post}, {context: 'post'}, options)
-                .should.equal('Site description');
+            assert.equal(getMetaDescription({post}, {context: 'post'}, options), 'Site description');
         });
 
         it('has correct fallbacks for context: page', function () {
@@ -445,28 +398,23 @@ describe('getMetaDescription', function () {
                 twitter_description: 'Page twitter description'
             };
 
-            getMetaDescription({page}, {context: 'page'}, options)
-                .should.equal('Page twitter description');
+            assert.equal(getMetaDescription({page}, {context: 'page'}, options), 'Page twitter description');
 
             page.twitter_description = '';
 
-            getMetaDescription({page}, {context: 'page'}, options)
-                .should.equal('Page custom excerpt');
+            assert.equal(getMetaDescription({page}, {context: 'page'}, options), 'Page custom excerpt');
 
             page.custom_excerpt = '';
 
-            getMetaDescription({page}, {context: 'page'}, options)
-                .should.equal('Page meta description');
+            assert.equal(getMetaDescription({page}, {context: 'page'}, options), 'Page meta description');
 
             page.meta_description = '';
 
-            getMetaDescription({page}, {context: 'page'}, options)
-                .should.equal('Page html');
+            assert.equal(getMetaDescription({page}, {context: 'page'}, options), 'Page html');
 
             page.excerpt = '';
 
-            getMetaDescription({page}, {context: 'page'}, options)
-                .should.equal('Site description');
+            assert.equal(getMetaDescription({page}, {context: 'page'}, options), 'Site description');
         });
 
         // NOTE: this is a legacy format and should be resolved with https://github.com/TryGhost/Ghost/issues/10042
@@ -478,28 +426,23 @@ describe('getMetaDescription', function () {
                 twitter_description: 'Page twitter description'
             };
 
-            getMetaDescription({post}, {context: 'page'}, options)
-                .should.equal('Page twitter description');
+            assert.equal(getMetaDescription({post}, {context: 'page'}, options), 'Page twitter description');
 
             post.twitter_description = '';
 
-            getMetaDescription({post}, {context: 'page'}, options)
-                .should.equal('Page custom excerpt');
+            assert.equal(getMetaDescription({post}, {context: 'page'}, options), 'Page custom excerpt');
 
             post.custom_excerpt = '';
 
-            getMetaDescription({post}, {context: 'page'}, options)
-                .should.equal('Page meta description');
+            assert.equal(getMetaDescription({post}, {context: 'page'}, options), 'Page meta description');
 
             post.meta_description = '';
 
-            getMetaDescription({post}, {context: 'page'}, options)
-                .should.equal('Page html');
+            assert.equal(getMetaDescription({post}, {context: 'page'}, options), 'Page html');
 
             post.excerpt = '';
 
-            getMetaDescription({post}, {context: 'page'}, options)
-                .should.equal('Site description');
+            assert.equal(getMetaDescription({post}, {context: 'page'}, options), 'Site description');
         });
 
         it('has correct fallbacks for context: author', function () {
@@ -508,18 +451,15 @@ describe('getMetaDescription', function () {
                 bio: 'Author bio'
             };
 
-            getMetaDescription({author}, {context: 'author'}, options)
-                .should.equal('Author meta description');
+            assert.equal(getMetaDescription({author}, {context: 'author'}, options), 'Author meta description');
 
             author.meta_description = '';
 
-            getMetaDescription({author}, {context: 'author'}, options)
-                .should.equal('Author bio');
+            assert.equal(getMetaDescription({author}, {context: 'author'}, options), 'Author bio');
 
             author.bio = '';
 
-            getMetaDescription({author}, {context: 'author'}, options)
-                .should.equal('Site meta description');
+            assert.equal(getMetaDescription({author}, {context: 'author'}, options), 'Site meta description');
 
             localSettingsCache.meta_description = '';
 
@@ -532,18 +472,15 @@ describe('getMetaDescription', function () {
                 bio: 'Author bio'
             };
 
-            getMetaDescription({author}, {context: ['author', 'paged']}, options)
-                .should.equal('Author meta description');
+            assert.equal(getMetaDescription({author}, {context: ['author', 'paged']}, options), 'Author meta description');
 
             author.meta_description = '';
 
-            getMetaDescription({author}, {context: ['author', 'paged']}, options)
-                .should.equal('Author bio');
+            assert.equal(getMetaDescription({author}, {context: ['author', 'paged']}, options), 'Author bio');
 
             author.bio = '';
 
-            getMetaDescription({author}, {context: ['author', 'paged']}, options)
-                .should.equal('Site meta description');
+            assert.equal(getMetaDescription({author}, {context: ['author', 'paged']}, options), 'Site meta description');
 
             localSettingsCache.meta_description = '';
 
@@ -556,18 +493,15 @@ describe('getMetaDescription', function () {
                 description: 'Tag description'
             };
 
-            getMetaDescription({tag}, {context: 'tag'}, options)
-                .should.equal('Tag meta description');
+            assert.equal(getMetaDescription({tag}, {context: 'tag'}, options), 'Tag meta description');
 
             tag.meta_description = '';
 
-            getMetaDescription({tag}, {context: 'tag'}, options)
-                .should.equal('Tag description');
+            assert.equal(getMetaDescription({tag}, {context: 'tag'}, options), 'Tag description');
 
             tag.description = '';
 
-            getMetaDescription({tag}, {context: 'tag'}, options)
-                .should.equal('Site meta description');
+            assert.equal(getMetaDescription({tag}, {context: 'tag'}, options), 'Site meta description');
 
             localSettingsCache.meta_description = '';
 
@@ -580,18 +514,15 @@ describe('getMetaDescription', function () {
                 description: 'Tag description'
             };
 
-            getMetaDescription({tag}, {context: ['tag', 'paged']}, options)
-                .should.equal('Tag meta description');
+            assert.equal(getMetaDescription({tag}, {context: ['tag', 'paged']}, options), 'Tag meta description');
 
             tag.meta_description = '';
 
-            getMetaDescription({tag}, {context: ['tag', 'paged']}, options)
-                .should.equal('Tag description');
+            assert.equal(getMetaDescription({tag}, {context: ['tag', 'paged']}, options), 'Tag description');
 
             tag.description = '';
 
-            getMetaDescription({tag}, {context: ['tag', 'paged']}, options)
-                .should.equal('Site meta description');
+            assert.equal(getMetaDescription({tag}, {context: ['tag', 'paged']}, options), 'Site meta description');
 
             localSettingsCache.meta_description = '';
 
@@ -607,6 +538,6 @@ describe('getMetaDescription', function () {
         }, {
             context: ['page']
         });
-        description.should.equal('Best page ever!');
+        assert.equal(description, 'Best page ever!');
     });
 });

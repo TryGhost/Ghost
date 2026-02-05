@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const CollectionRouter = require('../../../../../core/frontend/services/routing/collection-router');
@@ -37,7 +38,7 @@ describe('UNIT: services/routing/router-manager', function () {
                     _previousAttributes: {value: 'Europe/London'}
                 });
 
-                routerUpdatedSpy.called.should.be.false();
+                assert.equal(routerUpdatedSpy.called, false);
             });
 
             it('tz has not changed', function () {
@@ -56,7 +57,7 @@ describe('UNIT: services/routing/router-manager', function () {
                     _previousAttributes: {value: 'America/Los_Angeles'}
                 });
 
-                routerUpdatedSpy.called.should.be.false();
+                assert.equal(routerUpdatedSpy.called, false);
             });
         });
 
@@ -77,7 +78,7 @@ describe('UNIT: services/routing/router-manager', function () {
                     _previousAttributes: {value: 'Europe/London'}
                 });
 
-                routerUpdatedSpy.called.should.be.true();
+                assert.equal(routerUpdatedSpy.called, true);
             });
 
             it('tz has not changed', function () {
@@ -96,7 +97,7 @@ describe('UNIT: services/routing/router-manager', function () {
                     _previousAttributes: {value: 'America/Los_Angeles'}
                 });
 
-                routerUpdatedSpy.called.should.be.false();
+                assert.equal(routerUpdatedSpy.called, false);
             });
         });
     });

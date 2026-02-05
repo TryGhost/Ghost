@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
@@ -40,18 +41,18 @@ describe('Frontend Error Handler', function () {
 
     // Helper functions to reduce assertion duplication
     function assertPlainTextResponse(response, statusCode, message) {
-        response.status.calledOnceWithExactly(statusCode).should.be.true();
-        response.type.calledOnceWithExactly('text/plain').should.be.true();
-        response.send.calledOnce.should.be.true();
+        assert.equal(response.status.calledOnceWithExactly(statusCode), true);
+        assert.equal(response.type.calledOnceWithExactly('text/plain'), true);
+        assert.equal(response.send.calledOnce, true);
         response.send.firstCall.args[0].should.equal(message);
-        response.render.called.should.be.false();
+        assert.equal(response.render.called, false);
     }
 
     function assertHtmlResponse(response, expectedHtml) {
-        response.render.calledOnce.should.be.true();
-        response.send.calledOnceWithExactly(expectedHtml).should.be.true();
-        response.status.called.should.be.false();
-        response.type.called.should.be.false();
+        assert.equal(response.render.calledOnce, true);
+        assert.equal(response.send.calledOnceWithExactly(expectedHtml), true);
+        assert.equal(response.status.called, false);
+        assert.equal(response.type.called, false);
     }
 
     describe('themeErrorRenderer', function () {
@@ -196,7 +197,7 @@ describe('Frontend Error Handler', function () {
             await themeErrorRenderer(err, req, res, next);
 
             assertHtmlResponse(res, mockHtml);
-            next.called.should.be.false();
+            assert.equal(next.called, false);
         });
 
         it('should render HTML for paths with trailing slash', async function () {
@@ -214,7 +215,7 @@ describe('Frontend Error Handler', function () {
             await themeErrorRenderer(err, req, res, next);
 
             assertHtmlResponse(res, mockHtml);
-            next.called.should.be.false();
+            assert.equal(next.called, false);
         });
 
         it('should handle render failures gracefully', async function () {
@@ -231,13 +232,13 @@ describe('Frontend Error Handler', function () {
 
             await themeErrorRenderer(err, req, res, next);
 
-            res.render.calledOnce.should.be.true();
-            res.status.calledOnceWithExactly(500).should.be.true();
-            res.send.calledOnce.should.be.true();
+            assert.equal(res.render.calledOnce, true);
+            assert.equal(res.status.calledOnceWithExactly(500), true);
+            assert.equal(res.send.calledOnce, true);
             
             const errorHtml = res.send.firstCall.args[0];
-            errorHtml.should.containEql('Oops, seems there is an error in the error template');
-            errorHtml.should.containEql('Template rendering failed');
+            assert(errorHtml.includes('Oops, seems there is an error in the error template'));
+            assert(errorHtml.includes('Template rendering failed'));
         });
     });
 });

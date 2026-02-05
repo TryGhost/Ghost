@@ -24,6 +24,6 @@ describe('getRssUrl', function () {
     it('forwards absolute flags', function () {
         getRssUrl({}, true);
 
-        routing.registry.getRssUrl.calledWith({absolute: true}).should.be.true();
+        assert.equal(routing.registry.getRssUrl.calledWith({absolute: true}), true);
     });
 });

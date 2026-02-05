@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 
 const path = require('path');
@@ -91,7 +92,7 @@ describe('Minifier', function () {
 
             const outputPath = minifier.getFullDest(result[0]);
             const content = await fs.readFile(outputPath, {encoding: 'utf8'});
-            content.should.match(/randomword/);
+            assert.match(content, /randomword/);
         });
     });
 
@@ -122,8 +123,8 @@ describe('Minifier', function () {
                 should.fail(minifier, 'Should have errored');
             } catch (err) {
                 should.exist(err);
-                err.errorType.should.eql('IncorrectUsageError');
-                err.message.should.match(/Unexpected destination/);
+                assert.equal(err.errorType, 'IncorrectUsageError');
+                assert.match(err.message, /Unexpected destination/);
             }
         });
 
@@ -136,8 +137,8 @@ describe('Minifier', function () {
                 should.fail(minifier, 'Should have errored');
             } catch (err) {
                 should.exist(err);
-                err.errorType.should.eql('IncorrectUsageError');
-                err.message.should.match(/Unable to read/);
+                assert.equal(err.errorType, 'IncorrectUsageError');
+                assert.match(err.message, /Unable to read/);
             }
         });
 

@@ -36,20 +36,20 @@ describe('Invites API', function () {
             const jsonResponse = res.body;
             should.exist(jsonResponse);
             should.exist(jsonResponse.invites);
-            jsonResponse.invites.should.have.length(2);
+            assert.equal(jsonResponse.invites.length, 2);
 
             localUtils.API.checkResponse(jsonResponse, 'invites');
             localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
 
-            jsonResponse.invites[0].status.should.eql('sent');
-            jsonResponse.invites[0].email.should.eql('test1@ghost.org');
+            assert.equal(jsonResponse.invites[0].status, 'sent');
+            assert.equal(jsonResponse.invites[0].email, 'test1@ghost.org');
             jsonResponse.invites[0].role_id.should.eql(testUtils.roles.ids.admin);
 
-            jsonResponse.invites[1].status.should.eql('sent');
-            jsonResponse.invites[1].email.should.eql('test2@ghost.org');
+            assert.equal(jsonResponse.invites[1].status, 'sent');
+            assert.equal(jsonResponse.invites[1].email, 'test2@ghost.org');
             jsonResponse.invites[1].role_id.should.eql(testUtils.roles.ids.author);
 
-            mailService.GhostMailer.prototype.send.called.should.be.false();
+            assert.equal(mailService.GhostMailer.prototype.send.called, false);
         });
 
         it('Can read an invitation by id', async function () {
@@ -63,11 +63,11 @@ describe('Invites API', function () {
             const jsonResponse = res.body;
             should.exist(jsonResponse);
             should.exist(jsonResponse.invites);
-            jsonResponse.invites.should.have.length(1);
+            assert.equal(jsonResponse.invites.length, 1);
 
             localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
 
-            mailService.GhostMailer.prototype.send.called.should.be.false();
+            assert.equal(mailService.GhostMailer.prototype.send.called, false);
         });
 
         it('Can add a new invite', async function () {
@@ -85,12 +85,12 @@ describe('Invites API', function () {
             const jsonResponse = res.body;
             should.exist(jsonResponse);
             should.exist(jsonResponse.invites);
-            jsonResponse.invites.should.have.length(1);
+            assert.equal(jsonResponse.invites.length, 1);
 
             localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
             jsonResponse.invites[0].role_id.should.eql(testUtils.getExistingData().roles[1].id);
 
-            mailService.GhostMailer.prototype.send.called.should.be.true();
+            assert.equal(mailService.GhostMailer.prototype.send.called, true);
 
             should.exist(res.headers.location);
             res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('invites/')}${res.body.invites[0].id}/`);
@@ -102,7 +102,7 @@ describe('Invites API', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(204);
 
-            mailService.GhostMailer.prototype.send.called.should.be.false();
+            assert.equal(mailService.GhostMailer.prototype.send.called, false);
         });
 
         it('Cannot destroy an non-existent invite', async function () {
@@ -111,10 +111,10 @@ describe('Invites API', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(404)
                 .expect((res) => {
-                    res.body.errors[0].message.should.eql('Resource not found error, cannot delete invite.');
+                    assert.equal(res.body.errors[0].message, 'Resource not found error, cannot delete invite.');
                 });
 
-            mailService.GhostMailer.prototype.send.called.should.be.false();
+            assert.equal(mailService.GhostMailer.prototype.send.called, false);
         });
     });
     
@@ -149,12 +149,12 @@ describe('Invites API', function () {
             const jsonResponse = res.body;
             should.exist(jsonResponse);
             should.exist(jsonResponse.invites);
-            jsonResponse.invites.should.have.length(1);
+            assert.equal(jsonResponse.invites.length, 1);
 
             localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
             jsonResponse.invites[0].role_id.should.eql(roleId);
 
-            mailService.GhostMailer.prototype.send.called.should.be.true();
+            assert.equal(mailService.GhostMailer.prototype.send.called, true);
 
             should.exist(res.headers.location);
             res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('invites/')}${res.body.invites[0].id}/`);
@@ -176,12 +176,12 @@ describe('Invites API', function () {
             const jsonResponse = res.body;
             should.exist(jsonResponse);
             should.exist(jsonResponse.invites);
-            jsonResponse.invites.should.have.length(1);
+            assert.equal(jsonResponse.invites.length, 1);
 
             localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
             jsonResponse.invites[0].role_id.should.eql(roleId);
 
-            mailService.GhostMailer.prototype.send.called.should.be.true();
+            assert.equal(mailService.GhostMailer.prototype.send.called, true);
 
             should.exist(res.headers.location);
             res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('invites/')}${res.body.invites[0].id}/`);
@@ -203,12 +203,12 @@ describe('Invites API', function () {
             const jsonResponse = res.body;
             should.exist(jsonResponse);
             should.exist(jsonResponse.invites);
-            jsonResponse.invites.should.have.length(1);
+            assert.equal(jsonResponse.invites.length, 1);
 
             localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
             jsonResponse.invites[0].role_id.should.eql(roleId);
 
-            mailService.GhostMailer.prototype.send.called.should.be.true();
+            assert.equal(mailService.GhostMailer.prototype.send.called, true);
 
             should.exist(res.headers.location);
             res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('invites/')}${res.body.invites[0].id}/`);
@@ -230,12 +230,12 @@ describe('Invites API', function () {
             const jsonResponse = res.body;
             should.exist(jsonResponse);
             should.exist(jsonResponse.invites);
-            jsonResponse.invites.should.have.length(1);
+            assert.equal(jsonResponse.invites.length, 1);
 
             localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
             jsonResponse.invites[0].role_id.should.eql(roleId);
 
-            mailService.GhostMailer.prototype.send.called.should.be.true();
+            assert.equal(mailService.GhostMailer.prototype.send.called, true);
 
             should.exist(res.headers.location);
             res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('invites/')}${res.body.invites[0].id}/`);

@@ -91,7 +91,7 @@ describe('Pages Content API', function () {
             .get(`pages/${publicPost.id}/?include=tiers`)
             .expectStatus(200);
         const publicPostData = publicPostRes.body.pages[0];
-        publicPostData.tiers.length.should.eql(2);
+        assert.equal(publicPostData.tiers.length, 2);
     });
 
     it('Can include free and paid tiers for members only post', async function () {
@@ -107,7 +107,7 @@ describe('Pages Content API', function () {
             .get(`pages/${membersPost.id}/?include=tiers`)
             .expectStatus(200);
         const membersPostData = membersPostRes.body.pages[0];
-        membersPostData.tiers.length.should.eql(2);
+        assert.equal(membersPostData.tiers.length, 2);
     });
 
     it('Can include only paid tier for paid post', async function () {
@@ -123,7 +123,7 @@ describe('Pages Content API', function () {
             .get(`pages/${paidPost.id}/?include=tiers`)
             .expectStatus(200);
         const paidPostData = paidPostRes.body.pages[0];
-        paidPostData.tiers.length.should.eql(1);
+        assert.equal(paidPostData.tiers.length, 1);
     });
 
     it('Can include specific tier for page with tiers visibility', async function () {
@@ -151,6 +151,6 @@ describe('Pages Content API', function () {
 
         const tiersPostData = tiersPostRes.body.pages[0];
 
-        tiersPostData.tiers.length.should.eql(1);
+        assert.equal(tiersPostData.tiers.length, 1);
     });
 });

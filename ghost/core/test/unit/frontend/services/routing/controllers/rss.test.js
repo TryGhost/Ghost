@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const testUtils = require('../../../../../utils');
 const security = require('@tryghost/security');
@@ -65,10 +66,10 @@ describe('Unit - services/routing/controllers/rss', function () {
         });
 
         rssServiceRenderStub.callsFake(function (_res, baseUrl, data) {
-            baseUrl.should.eql('/rss/');
+            assert.equal(baseUrl, '/rss/');
             data.posts.should.eql(posts);
-            data.title.should.eql('Ghost');
-            data.description.should.eql('Ghost is cool!');
+            assert.equal(data.title, 'Ghost');
+            assert.equal(data.description, 'Ghost is cool!');
             done();
         });
 

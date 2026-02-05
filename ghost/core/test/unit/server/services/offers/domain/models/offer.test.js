@@ -58,7 +58,7 @@ describe('Offer', function () {
                 stripe_coupon_id: 'coupon_123'
             }, mockUniqueChecker);
 
-            offer.stripeCouponId.should.equal('coupon_123');
+            assert.equal(offer.stripeCouponId, 'coupon_123');
         });
 
         it('Creates a valid instance of a trial Offer', async function () {

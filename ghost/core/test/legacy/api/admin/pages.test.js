@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const supertest = require('supertest');
 const testUtils = require('../../../utils');
@@ -19,7 +20,7 @@ describe('Pages API', function () {
                 .set('Origin', config.get('url'))
                 .expect(200)
                 .then((res) => {
-                    res.body.pages[0].slug.should.equal('static-page-test');
+                    assert.equal(res.body.pages[0].slug, 'static-page-test');
 
                     return request
                         .put(localUtils.API.getApiQuery('pages/' + testUtils.DataGenerator.Content.posts[5].id + '/?source=html'))
@@ -35,7 +36,7 @@ describe('Pages API', function () {
                         .expect(200);
                 })
                 .then((res) => {
-                    res.body.pages[0].mobiledoc.should.equal('{"version":"0.3.1","atoms":[],"cards":[],"markups":[],"sections":[[1,"p",[[0,[],0,"HTML Ipsum presents"]]]]}');
+                    assert.equal(res.body.pages[0].mobiledoc, '{"version":"0.3.1","atoms":[],"cards":[],"markups":[],"sections":[[1,"p",[[0,[],0,"HTML Ipsum presents"]]]]}');
                 });
         });
     });

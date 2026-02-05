@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const helpers = require('../../../../../core/frontend/services/helpers');
@@ -31,7 +32,7 @@ describe('Apps', function () {
 
             appProxy.helperService.registerHelper('myTestHelper', sinon.stub().returns('test result'));
 
-            registerSpy.called.should.equal(true);
+            assert.equal(registerSpy.called, true);
         });
     });
 });

@@ -395,7 +395,7 @@ describe('migrations/utils/permissions', function () {
                     should.fail('addPermissionToRole up migration did not throw');
                 } catch (err) {
                     assert.equal(errors.utils.isGhostError(err), true);
-                    err.message.should.equal('Cannot add permission(Unimaginable) with role(Not there) - permission does not exist');
+                    assert.equal(err.message, 'Cannot add permission(Unimaginable) with role(Not there) - permission does not exist');
                 }
             });
 
@@ -428,7 +428,7 @@ describe('migrations/utils/permissions', function () {
                     should.fail('addPermissionToRole did not throw');
                 } catch (err) {
                     assert.equal(errors.utils.isGhostError(err), true);
-                    err.message.should.equal('Cannot add permission(Permission Name) with role(Not there) - role does not exist');
+                    assert.equal(err.message, 'Cannot add permission(Permission Name) with role(Not there) - role does not exist');
                 }
             });
 

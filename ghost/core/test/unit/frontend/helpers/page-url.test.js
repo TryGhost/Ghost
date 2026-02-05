@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 
 // Stuff we are testing
@@ -15,11 +16,11 @@ describe('{{page_url}} helper', function () {
         options.data.root.pagination.next = 3;
         options.data.root.pagination.prev = 6;
 
-        page_url(1, options).should.equal('/');
-        page_url(2, options).should.equal('/page/2/');
-        page_url(50, options).should.equal('/page/50/');
-        page_url('next', options).should.eql('/page/3/');
-        page_url('prev', options).should.eql('/page/6/');
+        assert.equal(page_url(1, options), '/');
+        assert.equal(page_url(2, options), '/page/2/');
+        assert.equal(page_url(50, options), '/page/50/');
+        assert.equal(page_url('next', options), '/page/3/');
+        assert.equal(page_url('prev', options), '/page/6/');
     });
 
     it('can return a valid url when the relative url has a path', function () {
@@ -27,11 +28,11 @@ describe('{{page_url}} helper', function () {
         options.data.root.pagination.next = 10;
         options.data.root.pagination.prev = 2;
 
-        page_url(1, options).should.equal('/tag/pumpkin/');
-        page_url(2, options).should.equal('/tag/pumpkin/page/2/');
-        page_url(50, options).should.equal('/tag/pumpkin/page/50/');
-        page_url('next', options).should.eql('/tag/pumpkin/page/10/');
-        page_url('prev', options).should.eql('/tag/pumpkin/page/2/');
+        assert.equal(page_url(1, options), '/tag/pumpkin/');
+        assert.equal(page_url(2, options), '/tag/pumpkin/page/2/');
+        assert.equal(page_url(50, options), '/tag/pumpkin/page/50/');
+        assert.equal(page_url('next', options), '/tag/pumpkin/page/10/');
+        assert.equal(page_url('prev', options), '/tag/pumpkin/page/2/');
     });
 
     it('should assume 1 if page is undefined', function () {

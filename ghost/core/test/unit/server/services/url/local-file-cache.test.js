@@ -25,7 +25,7 @@ describe('Unit: services/url/LocalFileCache', function () {
             const cachedUrls = await localFileCache.read('urls');
 
             cachedUrls.should.not.be.undefined();
-            cachedUrls.urls.should.equal('urls!');
+            assert.equal(cachedUrls.urls, 'urls!');
         });
 
         it('returns null when the cache file does not exit', async function () {
@@ -65,8 +65,8 @@ describe('Unit: services/url/LocalFileCache', function () {
 
             const result = await localFileCache.write('urls', {data: 'test'});
 
-            result.should.equal(true);
-            writeFileStub.called.should.equal(true);
+            assert.equal(result, true);
+            assert.equal(writeFileStub.called, true);
         });
 
         it('does not write to the file system is writes are disabled', async function () {
@@ -83,7 +83,7 @@ describe('Unit: services/url/LocalFileCache', function () {
             const result = await localFileCache.write('urls', {data: 'test'});
 
             assert.equal(result, null);
-            writeFileStub.called.should.equal(false);
+            assert.equal(writeFileStub.called, false);
         });
     });
 });
