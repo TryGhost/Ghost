@@ -95,7 +95,7 @@ describe('Members Service - Content gating', function () {
     describe('checkGatedBlockAccess', function () {
         function testCheckGatedBlockAccess({params, member, expectedAccess}) {
             const access = checkGatedBlockAccess(params, member);
-            should(access).be.exactly(expectedAccess);
+            assert.equal(access, expectedAccess);
         }
 
         it('nonMember:true permits access when not logged in', function () {
