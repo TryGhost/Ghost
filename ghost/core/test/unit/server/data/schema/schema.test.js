@@ -47,11 +47,11 @@ const VALID_KEYS = {
 describe('schema validations', function () {
     it('matches the required format', function () {
         // The top-level export should be an object of table names to definitions
-        should(schema).be.Object();
+        assert(_.isPlainObject(schema));
 
         // Each table should be an object, and each column should be an object
         _.each(schema, function (table, tableName) {
-            should(table).be.Object();
+            assert(_.isPlainObject(table));
 
             _.each(table, function (column, columnName) {
                 if (['@@INDEXES@@', '@@UNIQUE_CONSTRAINTS@@'].includes(columnName)) {
@@ -59,7 +59,7 @@ describe('schema validations', function () {
                 }
 
                 // Ensure the column is an object
-                should(column).be.Object();
+                assert(_.isPlainObject(column));
 
                 // Ensure the `type` key exists on a column
                 assertExists(column.type, `${tableName}.${columnName}.type should exist`);
