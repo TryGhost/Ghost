@@ -99,21 +99,21 @@ describe('Minifier', function () {
 
     describe('Bad inputs', function () {
         it('cannot create a minifier without src and dest', function () {
-            (function noObject(){
+            assert.throws((function noObject(){
                 new Minifier();
-            }).should.throw();
+            }));
 
-            (function emptyObject() {
+            assert.throws((function emptyObject() {
                 new Minifier({});
-            }).should.throw();
+            }));
 
-            (function missingSrc() {
+            assert.throws((function missingSrc() {
                 new Minifier({dest: 'a'});
-            }).should.throw();
+            }));
 
-            (function missingDest() {
+            assert.throws((function missingDest() {
                 new Minifier({src: 'a'});
-            }).should.throw();
+            }));
         });
 
         it('can only handle css and js files', async function () {
