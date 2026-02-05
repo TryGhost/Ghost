@@ -3,9 +3,13 @@ const hbs = require('../../../../core/frontend/services/theme-engine/engine');
 const configUtils = require('../../../utils/config-utils');
 const path = require('path');
 const page_url = require('../../../../core/frontend/helpers/page_url');
+const t = require('../../../../core/frontend/helpers/t');
+const themeI18n = require('../../../../core/frontend/services/theme-engine/i18n');
 const pagination = require('../../../../core/frontend/helpers/pagination');
 
 describe('{{pagination}} helper', function () {
+    let ogBasePath;
+
     before(function (done) {
         hbs.express4({partialsDir: [configUtils.config.get('paths').helperTemplates]});
 
@@ -13,9 +17,19 @@ describe('{{pagination}} helper', function () {
             done();
         });
 
-        // The pagination partial expects this helper
+        // The pagination partial expects these helpers
         // @TODO: change to register with Ghost's own registration tools
         hbs.registerHelper('page_url', page_url);
+        hbs.registerHelper('t', t);
+
+        // Initialize i18n for the t helper
+        ogBasePath = themeI18n.basePath;
+        themeI18n.basePath = path.join(__dirname, '../../../utils/fixtures/themes/');
+        themeI18n.init({activeTheme: 'locale-theme', locale: 'en'});
+    });
+
+    after(function () {
+        themeI18n.basePath = ogBasePath;
     });
 
     const paginationRegex = /class="pagination"/;

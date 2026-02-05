@@ -7,6 +7,8 @@ const path = require('path');
 const content = require('../../../../core/frontend/helpers/content');
 const has = require('../../../../core/frontend/helpers/has');
 const is = require('../../../../core/frontend/helpers/is');
+const t = require('../../../../core/frontend/helpers/t');
+const themeI18n = require('../../../../core/frontend/services/theme-engine/i18n');
 
 describe('{{content}} helper', function () {
     before(function (done) {
@@ -81,6 +83,8 @@ describe('{{content}} helper', function () {
 
 describe('{{content}} helper with no access', function () {
     let optionsData;
+    let ogBasePath;
+
     before(function (done) {
         hbs.express4({partialsDir: [configUtils.config.get('paths').helperTemplates]});
 
@@ -90,6 +94,16 @@ describe('{{content}} helper with no access', function () {
 
         hbs.registerHelper('has', has);
         hbs.registerHelper('is', is);
+        hbs.registerHelper('t', t);
+
+        // Initialize i18n for the t helper
+        ogBasePath = themeI18n.basePath;
+        themeI18n.basePath = path.join(__dirname, '../../../utils/fixtures/themes/');
+        themeI18n.init({activeTheme: 'locale-theme', locale: 'en'});
+    });
+
+    after(function () {
+        themeI18n.basePath = ogBasePath;
     });
 
     beforeEach(function () {
