@@ -541,7 +541,7 @@ jobs:
 
       - uses: tryghost/mysql-action@main
         if: matrix.env.DB == 'mysql8'
-        timeout-minutes: 3
+        timeout-minutes: 5
         with:
           authentication plugin: 'caching_sha2_password'
           mysql version: '8.0'
@@ -627,7 +627,7 @@ jobs:
 
       - uses: tryghost/mysql-action@main
         if: matrix.env.DB == 'mysql8'
-        timeout-minutes: 3
+        timeout-minutes: 5
         with:
           authentication plugin: 'caching_sha2_password'
           mysql version: '8.0'
