@@ -42,7 +42,7 @@ describe('Models: getLazyRelation', function () {
         assert.equal(fetchStub.calledOnceWithExactly(options), true);
 
         // Check if we can force reload
-        await should(modelA.getLazyRelation('tiers', {forceRefresh: true})).rejectedWith(/Called twice/);
+        await assert.rejects(modelA.getLazyRelation('tiers', {forceRefresh: true}), /Called twice/);
         assert.equal(fetchStub.calledTwice, true);
     });
 
@@ -77,7 +77,7 @@ describe('Models: getLazyRelation', function () {
         assert.equal(fetchStub.calledOnceWithExactly(options), true);
 
         // Check if we can force reload
-        await should(modelA.getLazyRelation('other', {forceRefresh: true})).rejectedWith(/Called twice/);
+        await assert.rejects(modelA.getLazyRelation('other', {forceRefresh: true}), /Called twice/);
         assert.equal(fetchStub.calledTwice, true);
     });
 

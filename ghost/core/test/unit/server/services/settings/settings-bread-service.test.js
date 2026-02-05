@@ -272,7 +272,7 @@ describe('UNIT > Settings BREAD Service:', function () {
                 labsService: {}
             });
 
-            await should(defaultSettingsManager.verifyKeyUpdate('test')).rejectedWith(/Not allowed to update this setting key via tokens/);
+            await assert.rejects(defaultSettingsManager.verifyKeyUpdate('test'), /Not allowed to update this setting key via tokens/);
         });
     });
 });

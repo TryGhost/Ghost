@@ -551,10 +551,9 @@ describe('SessionService', function () {
         const req = Object.create(express.request);
         const res = Object.create(express.response);
 
-        await should(sessionService.sendAuthCodeToUser(req, res))
-            .rejectedWith({
-                message: 'Failed to send email. Please check your site configuration and try again.'
-            });
+        await assert.rejects(sessionService.sendAuthCodeToUser(req, res), {
+            message: 'Failed to send email. Please check your site configuration and try again.'
+        });
     });
 
     it('Can create a verified session for SSO', async function () {
@@ -640,10 +639,9 @@ describe('SessionService', function () {
         const req = Object.create(express.request);
         const res = Object.create(express.response);
 
-        await should(sessionService.sendAuthCodeToUser(req, res))
-            .rejectedWith({
-                message: 'Could not fetch user from the session.'
-            });
+        await assert.rejects(sessionService.sendAuthCodeToUser(req, res), {
+            message: 'Could not fetch user from the session.'
+        });
     });
 
     it('Can remove verified session', async function () {

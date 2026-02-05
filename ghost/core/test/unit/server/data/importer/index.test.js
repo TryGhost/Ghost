@@ -351,7 +351,7 @@ describe('Importer', function () {
                     const testDir = path.resolve('test/utils/fixtures/import/zips/zip-multiple-data-formats');
                     const extractSpy = sinon.stub(ImportManager, 'extractZip').returns(Promise.resolve(testDir));
 
-                    await should(ImportManager.processZip(testZip)).rejectedWith(/multiple data formats/);
+                    await assert.rejects(ImportManager.processZip(testZip), /multiple data formats/);
                     assert.equal(extractSpy.calledOnce, true);
                 });
 
@@ -359,7 +359,7 @@ describe('Importer', function () {
                     const testDir = path.resolve('test/utils/fixtures/import/zips/zip-empty');
                     const extractSpy = sinon.stub(ImportManager, 'extractZip').returns(Promise.resolve(testDir));
 
-                    await should(ImportManager.processZip(testZip)).rejectedWith(/not include any content/);
+                    await assert.rejects(ImportManager.processZip(testZip), /not include any content/);
                     assert.equal(extractSpy.calledOnce, true);
                 });
             });
