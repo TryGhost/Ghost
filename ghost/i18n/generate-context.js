@@ -5,7 +5,9 @@ const BASE_PATH = './locales/en';
 const CONTEXT_FILE = './locales/context.json';
 
 (async () => {
-    const context = require(CONTEXT_FILE);
+    const existingContent = await fs.readFile(CONTEXT_FILE, 'utf-8');
+    const context = JSON.parse(existingContent);
+
     const newContext = {};
 
     const files = await fs.readdir(BASE_PATH);
@@ -25,7 +27,6 @@ const CONTEXT_FILE = './locales/context.json';
     }, {});
 
     const newContent = JSON.stringify(orderedContext, null, 4);
-    const existingContent = await fs.readFile(CONTEXT_FILE, 'utf-8');
 
     if (process.env.CI && newContent !== existingContent) {
         // eslint-disable-next-line no-console
