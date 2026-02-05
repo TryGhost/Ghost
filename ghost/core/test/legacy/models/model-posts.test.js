@@ -755,9 +755,9 @@ describe('Post Model', function () {
                     // testing for nulls
                     assert.equal((createdPost.get('feature_image') === null), true);
 
-                    createdPost.get('created_at').should.be.above(new Date(0).getTime());
+                    assert(createdPost.get('created_at') > new Date(0).getTime());
                     assert.equal(createdPost.relations.authors.models[0].id, testUtils.DataGenerator.Content.users[0].id);
-                    createdPost.get('updated_at').should.be.above(new Date(0).getTime());
+                    assert(createdPost.get('updated_at') > new Date(0).getTime());
                     assert.equal(createdPost.get('published_at'), null);
                     assert.equal(createdPost.get('published_by'), null);
 
@@ -824,9 +824,9 @@ describe('Post Model', function () {
                     // testing for nulls
                     assert.equal((createdPost.get('feature_image') === null), true);
 
-                    createdPost.get('created_at').should.be.above(new Date(0).getTime());
+                    assert(createdPost.get('created_at') > new Date(0).getTime());
                     assert.equal(createdPost.relations.authors.models[0].id, testUtils.DataGenerator.Content.users[0].id);
-                    createdPost.get('updated_at').should.be.above(new Date(0).getTime());
+                    assert(createdPost.get('updated_at') > new Date(0).getTime());
                     assert.equal(createdPost.get('published_at'), null);
                     assert.equal(createdPost.get('published_by'), null);
 

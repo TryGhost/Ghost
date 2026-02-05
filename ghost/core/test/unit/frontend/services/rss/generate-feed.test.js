@@ -120,7 +120,7 @@ describe('RSS: Generate Feed', function () {
                 // The first title should be before the first content
                 xmlData.indexOf('HTML Ipsum').should.be.below(firstIndex);
                 // The second title should be after the first content
-                xmlData.indexOf('Ghostly Kitchen Sink').should.be.above(firstIndex);
+                assert(xmlData.indexOf('Ghostly Kitchen Sink') > firstIndex);
 
                 done();
             }).catch(done);
