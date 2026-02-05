@@ -97,7 +97,6 @@ export type AppContextType = EditableAppContext & CommentsOptions & {
     t: TranslationFunction,
     dispatchAction: <T extends ActionType | SyncActionType>(action: T, data: Parameters<(typeof Actions & typeof SyncActions)[T]>[0] extends { data: any } ? Parameters<(typeof Actions & typeof SyncActions)[T]>[0]['data'] : any) => T extends ActionType ? Promise<void> : void,
     commentApi: CommentApi | null,
-    isAdmin: boolean,
     labs: LabsContextType,
     supportEmail: string | null,
     openFormCount: number

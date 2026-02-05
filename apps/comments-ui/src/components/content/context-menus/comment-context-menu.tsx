@@ -2,6 +2,7 @@ import AdminContextMenu from './admin-context-menu';
 import AuthorContextMenu from './author-context-menu';
 import NotAuthorContextMenu from './not-author-context-menu';
 import {Comment, useAppContext} from '../../../app-context';
+import {useCommentApi} from '../../comment-api-provider';
 import {useEffect, useRef} from 'react';
 import {useOutOfViewportClasses} from '../../../utils/hooks';
 
@@ -11,7 +12,8 @@ type Props = {
     toggleEdit: () => void;
 };
 const CommentContextMenu: React.FC<Props> = ({comment, close, toggleEdit}) => {
-    const {member, isAdmin} = useAppContext();
+    const {member} = useAppContext();
+    const {isAdmin} = useCommentApi();
     const isAuthor = member && comment.member?.uuid === member?.uuid;
     const element = useRef<HTMLDivElement>(null);
     const innerElement = useRef<HTMLDivElement>(null);

@@ -208,7 +208,6 @@ const AppInner: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) =>
     const context = {
         ...options,
         ...state,
-        isAdmin: commentApi?.isAdmin ?? false,
         commentApi,
         labs,
         supportEmail,

@@ -68,6 +68,7 @@ function createCommentApi(api: GhostApi, adminApi: AdminApi | null, memberUuid?:
 type CommentApiContextType = {
     resolved: boolean;
     commentApi: CommentApi | null;
+    isAdmin: boolean;
     member: Member | null;
     labs: LabsContextType;
     supportEmail: string | null;
@@ -77,6 +78,7 @@ type CommentApiContextType = {
 const CommentApiContext = React.createContext<CommentApiContextType>({
     resolved: false,
     commentApi: null,
+    isAdmin: false,
     member: null,
     labs: {},
     supportEmail: null,
@@ -165,6 +167,7 @@ export const CommentApiProvider: React.FC<CommentApiProviderProps> = ({api, admi
     const value = useMemo<CommentApiContextType>(() => ({
         resolved,
         commentApi,
+        isAdmin: commentApi?.isAdmin ?? false,
         member: initData?.member ?? null,
         labs: initData?.labs ?? {},
         supportEmail: initData?.supportEmail ?? null,
