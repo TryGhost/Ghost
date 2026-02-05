@@ -145,7 +145,7 @@ const CommentThreadList: React.FC<CommentThreadListProps> = ({
     const commentWithReplies: Comment = {...parentComment, replies};
 
     return (
-        <div className="-mt-4 flex flex-col pt-8 lg:-mt-8" data-testid="comment-thread-list">
+        <div className="flex flex-col" data-testid="comment-thread-list">
             <CommentRow
                 comment={commentWithReplies}
                 commentPermalinksEnabled={commentPermalinksEnabled}
