@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 
 const resolveAdapterOptions = require('../../../../../core/server/services/adapter-manager/options-resolver');
@@ -14,8 +15,8 @@ describe('Adapter Manager: options resolver', function () {
 
         const {adapterClassName, adapterConfig} = resolveAdapterOptions(name, adapterServiceConfig);
 
-        adapterClassName.should.equal('Memory');
-        should.equal(adapterConfig, undefined);
+        assert.equal(adapterClassName, 'Memory');
+        assert.equal(adapterConfig, undefined);
     });
 
     it('returns default adapter configuration', function () {
@@ -31,7 +32,7 @@ describe('Adapter Manager: options resolver', function () {
 
         const {adapterClassName, adapterConfig} = resolveAdapterOptions(name, adapterServiceConfig);
 
-        adapterClassName.should.equal('cloud-storage');
+        assert.equal(adapterClassName, 'cloud-storage');
         adapterConfig.should.deepEqual({
             custom: 'configValue'
         });
@@ -54,7 +55,7 @@ describe('Adapter Manager: options resolver', function () {
 
         const {adapterClassName, adapterConfig} = resolveAdapterOptions(name, adapterServiceConfig);
 
-        adapterClassName.should.equal('local-storage');
+        assert.equal(adapterClassName, 'local-storage');
         adapterConfig.should.deepEqual({
             custom: 'localStorageConfig'
         });
@@ -78,7 +79,7 @@ describe('Adapter Manager: options resolver', function () {
 
         const {adapterClassName, adapterConfig} = resolveAdapterOptions(name, adapterServiceConfig);
 
-        adapterClassName.should.equal('cloud-storage');
+        assert.equal(adapterClassName, 'cloud-storage');
         adapterConfig.should.deepEqual({
             custom: 'configValue'
         });
@@ -105,7 +106,7 @@ describe('Adapter Manager: options resolver', function () {
 
         const {adapterClassName, adapterConfig} = resolveAdapterOptions(primaryadapterClassName, adapterServiceConfig);
 
-        adapterClassName.should.equal('Redis');
+        assert.equal(adapterClassName, 'Redis');
         adapterConfig.should.deepEqual({
             commonConfigValue: 'common_config_value',
             adapterConfigValue: 'images_redis_value'
@@ -113,7 +114,7 @@ describe('Adapter Manager: options resolver', function () {
 
         const {adapterClassName: secondadapterClassName, adapterConfig: secondAdapterConfig} = resolveAdapterOptions(secondaryadapterClassName, adapterServiceConfig);
 
-        secondadapterClassName.should.equal('Redis');
+        assert.equal(secondadapterClassName, 'Redis');
         secondAdapterConfig.should.deepEqual({
             commonConfigValue: 'common_config_value',
             adapterConfigValue: 'settings_redis_value'
@@ -138,14 +139,14 @@ describe('Adapter Manager: options resolver', function () {
 
         const {adapterClassName, adapterConfig} = resolveAdapterOptions(primaryadapterClassName, adapterServiceConfig);
 
-        adapterClassName.should.equal('Redis');
+        assert.equal(adapterClassName, 'Redis');
         adapterConfig.should.deepEqual({
             adapterConfigValue: 'images_redis_value'
         });
 
         const {adapterClassName: secondadapterClassName, adapterConfig: secondAdapterConfig} = resolveAdapterOptions(secondaryadapterClassName, adapterServiceConfig);
 
-        secondadapterClassName.should.equal('Redis');
+        assert.equal(secondadapterClassName, 'Redis');
         secondAdapterConfig.should.deepEqual({
             adapterConfigValue: 'settings_redis_value'
         });
@@ -169,7 +170,7 @@ describe('Adapter Manager: options resolver', function () {
 
         const {adapterClassName, adapterConfig} = resolveAdapterOptions(primaryadapterClassName, adapterServiceConfig);
 
-        adapterClassName.should.equal('Redis');
+        assert.equal(adapterClassName, 'Redis');
         adapterConfig.should.deepEqual({
             commonConfigValue: 'common_config_value',
             adapterConfigValue: 'images_redis_value',

@@ -1,5 +1,6 @@
 import {BasePage, pageGotoOptions} from '@/helpers/pages';
-import {Locator, Page, Response} from '@playwright/test';
+import {Locator, Page, Response, test} from '@playwright/test';
+import {expect} from '@/helpers/playwright';
 
 declare global {
     interface Window {
@@ -22,30 +23,22 @@ class PortalSection extends BasePage {
         this.portalScript = page.locator('script[data-ghost][data-key][data-api]');
     }
 
-    async waitForScript(): Promise<void> {
-        await this.portalScript.waitFor({
-            state: 'attached'
-        });
+    /**
+     * Click a Portal link and wait for the popup to open, with retries.
+     *
+     * Portal's hashchange listener is only set up after its async init completes.
+     * If clicked before init finishes, the popup won't open. This method uses
+     * Playwright's retry mechanism to handle the race condition deterministically.
+     */
+    async clickLinkAndWaitForPopup(link: Locator): Promise<void> {
+        await this.portalScript.waitFor({state: 'attached'});
+        await this.portalRoot.waitFor({state: 'attached'});
 
-        await this.portalRoot.waitFor({
-            state: 'attached'
-        });
-    }
-
-    async waitForIFrame(): Promise<void> {
-        await this.portalIframe.waitFor({
-            state: 'visible',
-            timeout: 5000
-        });
-    }
-
-    async waitForPortalToOpen(): Promise<void> {
-        await this.waitForIFrame();
-
-        await this.portalFrame.waitFor({
-            state: 'visible',
-            timeout: 2000
-        });
+        // Use expect.toPass to retry click + popup check until Portal is ready
+        await expect(async () => {
+            await link.click();
+            await expect(this.portalIframe).toBeVisible();
+        }).toPass();
     }
 
     async isPortalOpen(): Promise<boolean> {
@@ -85,10 +78,17 @@ export class PublicPage extends BasePage {
     }
 
     async goto(url?: string, options?: pageGotoOptions): Promise<void> {
+        const testInfo = test.info();
+        let pageHitPromise = null;
+        if (testInfo.project.name === 'analytics') {
+            await this.enableAnalyticsRequests();
+            pageHitPromise = this.pageHitRequestPromise();
+        }
         await this.enableAnalyticsRequests();
-        const pageHitPromise = this.pageHitRequestPromise();
         await super.goto(url, options);
-        await pageHitPromise;
+        if (pageHitPromise) {
+            await pageHitPromise;
+        }
     }
 
     pageHitRequestPromise(): Promise<Response> {
@@ -96,18 +96,14 @@ export class PublicPage extends BasePage {
             return response
                 .url()
                 .includes('/.ghost/analytics/api/v1/page_hit') && response.request().method() === 'POST';
-        }, {timeout: 10000});
+        });
     }
 
     async openPortalViaSubscribeButton(): Promise<void> {
-        await this.portal.waitForScript();
-        await this.subscribeLink.click();
-        await this.portal.waitForPortalToOpen();
+        await this.portal.clickLinkAndWaitForPopup(this.subscribeLink);
     }
 
     async openPortalViaSignInLink(): Promise<void> {
-        await this.portal.waitForScript();
-        await this.signInLink.click();
-        await this.portal.waitForPortalToOpen();
+        await this.portal.clickLinkAndWaitForPopup(this.signInLink);
     }
 }

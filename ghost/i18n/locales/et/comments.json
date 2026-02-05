@@ -17,7 +17,9 @@
     "Best": "",
     "Cancel": "Tühista",
     "Comment": "Kommentaar",
+    "Commenting disabled": "",
     "Complete your profile": "Täida oma profiil",
+    "Contact support": "",
     "Delete": "Kustuta",
     "Deleted": "",
     "Deleted member": "Kustutatud liige",
@@ -28,6 +30,7 @@
     "edited": "muudetud",
     "Enter your name": "Sisesta oma nimi",
     "Expertise": "Oskused",
+    "for more information.": "",
     "Founder @ Acme Inc": "Asutaja @ Acme Inc",
     "Full-time parent": "Täiskohaga lapsevanem",
     "Head of Marketing at Acme, Inc": "Turundusjuht Acme, Inc-s",
@@ -69,6 +72,8 @@
     "This comment has been hidden.": "See kommentaar on peidetud.",
     "This comment has been removed.": "See kommentaar on eemaldatud.",
     "Upgrade now": "Uuenda nüüd",
+    "View in admin": "",
     "Yesterday": "Eile",
+    "You can't post comments in this publication.": "",
     "Your request will be sent to the owner of this site.": "Teie taotlus saadetakse selle saidi omanikule."
 }

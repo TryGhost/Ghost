@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 
@@ -61,7 +62,7 @@ describe('Unit - frontend/data/fetch-data', function () {
             result.should.be.an.Object().with.properties('posts', 'meta');
             result.should.not.have.property('data');
 
-            browsePostsStub.calledOnce.should.be.true();
+            assert.equal(browsePostsStub.calledOnce, true);
             browsePostsStub.firstCall.args[0].should.be.an.Object();
             browsePostsStub.firstCall.args[0].should.have.property('include');
             browsePostsStub.firstCall.args[0].should.not.have.property('filter');
@@ -78,7 +79,7 @@ describe('Unit - frontend/data/fetch-data', function () {
 
             result.posts.length.should.eql(posts.length);
 
-            browsePostsStub.calledOnce.should.be.true();
+            assert.equal(browsePostsStub.calledOnce, true);
             browsePostsStub.firstCall.args[0].should.be.an.Object();
             browsePostsStub.firstCall.args[0].should.have.property('include');
             browsePostsStub.firstCall.args[0].should.have.property('limit', 10);
@@ -112,7 +113,7 @@ describe('Unit - frontend/data/fetch-data', function () {
             result.posts.length.should.eql(posts.length);
             result.data.featured.length.should.eql(posts.length);
 
-            browsePostsStub.calledTwice.should.be.true();
+            assert.equal(browsePostsStub.calledTwice, true);
             browsePostsStub.firstCall.args[0].should.have.property('include', 'authors,tags,tiers');
             browsePostsStub.secondCall.args[0].should.have.property('filter', 'featured:true');
             browsePostsStub.secondCall.args[0].should.have.property('limit', 3);
@@ -144,7 +145,7 @@ describe('Unit - frontend/data/fetch-data', function () {
             result.posts.length.should.eql(posts.length);
             result.data.featured.length.should.eql(posts.length);
 
-            browsePostsStub.calledTwice.should.be.true();
+            assert.equal(browsePostsStub.calledTwice, true);
             browsePostsStub.firstCall.args[0].should.have.property('include', 'authors,tags,tiers');
             browsePostsStub.firstCall.args[0].should.have.property('page', 2);
             browsePostsStub.secondCall.args[0].should.have.property('filter', 'featured:true');
@@ -178,7 +179,7 @@ describe('Unit - frontend/data/fetch-data', function () {
             result.posts.length.should.eql(posts.length);
             result.data.tag.length.should.eql(tags.length);
 
-            browsePostsStub.calledOnce.should.be.true();
+            assert.equal(browsePostsStub.calledOnce, true);
             browsePostsStub.firstCall.args[0].should.have.property('include');
             browsePostsStub.firstCall.args[0].should.have.property('filter', 'tags:testing');
             browsePostsStub.firstCall.args[0].should.not.have.property('slug');

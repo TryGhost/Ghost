@@ -11,9 +11,8 @@ type Props = {
     toggleEdit: () => void;
 };
 const CommentContextMenu: React.FC<Props> = ({comment, close, toggleEdit}) => {
-    const {member, admin} = useAppContext();
+    const {member, isAdmin} = useAppContext();
     const isAuthor = member && comment.member?.uuid === member?.uuid;
-    const isAdmin = !!admin;
     const element = useRef<HTMLDivElement>(null);
     const innerElement = useRef<HTMLDivElement>(null);
 

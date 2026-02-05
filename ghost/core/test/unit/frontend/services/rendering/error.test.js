@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
@@ -18,7 +19,7 @@ describe('handleError', function () {
         const notFoundError = new errors.NotFoundError({message: 'Something wasn\'t found'});
         helpers.handleError(next)(notFoundError);
 
-        next.calledOnce.should.be.true();
+        assert.equal(next.calledOnce, true);
         next.firstCall.args.should.be.empty();
     });
 
@@ -28,8 +29,8 @@ describe('handleError', function () {
 
         helpers.handleError(next)(otherError);
 
-        next.calledOnce.should.be.true();
-        next.firstCall.args.should.have.lengthOf(1);
+        assert.equal(next.calledOnce, true);
+        assert.equal(next.firstCall.args.length, 1);
         next.firstCall.args[0].should.be.an.Object();
         next.firstCall.args[0].should.be.instanceof(Error);
     });

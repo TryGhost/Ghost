@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const supertest = require('supertest');
 const moment = require('moment');
@@ -23,18 +24,18 @@ describe('Pages API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
 
-        should.not.exist(res.headers['x-cache-invalidate']);
+        assert.equal(res.headers['x-cache-invalidate'], undefined);
         const jsonResponse = res.body;
         should.exist(jsonResponse.pages);
         localUtils.API.checkResponse(jsonResponse, 'pages');
-        jsonResponse.pages.should.have.length(6);
+        assert.equal(jsonResponse.pages.length, 6);
 
         localUtils.API.checkResponse(jsonResponse.pages[0], 'page', ['reading_time']);
         localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
-        _.isBoolean(jsonResponse.pages[0].featured).should.eql(true);
+        assert.equal(_.isBoolean(jsonResponse.pages[0].featured), true);
 
         // Absolute urls by default
-        jsonResponse.pages[0].url.should.match(new RegExp(`${config.get('url')}/p/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}`));
+        assert.match(jsonResponse.pages[0].url, new RegExp(`${config.get('url')}/p/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}`));
         jsonResponse.pages[1].url.should.eql(`${config.get('url')}/contribute/`);
     });
 
@@ -45,11 +46,11 @@ describe('Pages API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
 
-        should.not.exist(res.headers['x-cache-invalidate']);
+        assert.equal(res.headers['x-cache-invalidate'], undefined);
         const jsonResponse = res.body;
         should.exist(jsonResponse.pages);
         localUtils.API.checkResponse(jsonResponse, 'pages');
-        jsonResponse.pages.should.have.length(6);
+        assert.equal(jsonResponse.pages.length, 6);
 
         const additionalProperties = ['lexical', 'reading_time'];
         const missingProperties = ['mobiledoc'];
@@ -72,7 +73,7 @@ describe('Pages API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(201);
 
-        res.body.pages.length.should.eql(1);
+        assert.equal(res.body.pages.length, 1);
 
         localUtils.API.checkResponse(res.body.pages[0], 'page');
         should.exist(res.headers['x-cache-invalidate']);
@@ -88,7 +89,7 @@ describe('Pages API', function () {
 
         modelJson.title.should.eql(page.title);
         modelJson.status.should.eql(page.status);
-        modelJson.type.should.eql('page');
+        assert.equal(modelJson.type, 'page');
 
         modelJson.posts_meta.feature_image_alt.should.eql(page.feature_image_alt);
         modelJson.posts_meta.feature_image_caption.should.eql(page.feature_image_caption);
@@ -118,14 +119,14 @@ describe('Pages API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(201);
 
-        res.body.pages.length.should.eql(1);
+        assert.equal(res.body.pages.length, 1);
         const [returnedPage] = res.body.pages;
 
         const additionalProperties = ['reading_time'];
         localUtils.API.checkResponse(returnedPage, 'page', additionalProperties);
 
-        should.equal(returnedPage.mobiledoc, page.mobiledoc);
-        should.equal(returnedPage.lexical, null);
+        assert.equal(returnedPage.mobiledoc, page.mobiledoc);
+        assert.equal(returnedPage.lexical, null);
     });
 
     it('Can add a page with lexical', async function () {
@@ -169,15 +170,15 @@ describe('Pages API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(201);
 
-        res.body.pages.length.should.eql(1);
+        assert.equal(res.body.pages.length, 1);
         const [returnedPage] = res.body.pages;
 
         const additionalProperties = ['html', 'reading_time'];
         localUtils.API.checkResponse(returnedPage, 'page', additionalProperties);
 
-        should.equal(returnedPage.mobiledoc, null);
-        should.equal(returnedPage.lexical, page.lexical);
-        should.equal(returnedPage.html, '<p>Testing page creation with lexical</p>');
+        assert.equal(returnedPage.mobiledoc, null);
+        assert.equal(returnedPage.lexical, page.lexical);
+        assert.equal(returnedPage.html, '<p>Testing page creation with lexical</p>');
     });
 
     it('Can\'t add a page with both mobiledoc and lexical', async function () {
@@ -239,8 +240,8 @@ describe('Pages API', function () {
             .expect(422);
 
         const [error] = res.body.errors;
-        error.type.should.equal('ValidationError');
-        error.property.should.equal('lexical');
+        assert.equal(error.type, 'ValidationError');
+        assert.equal(error.property, 'lexical');
     });
 
     it('Can include free and paid tiers for public page', async function () {
@@ -257,7 +258,7 @@ describe('Pages API', function () {
             .set('Origin', config.get('url'))
             .expect(200);
         const publicPostData = publicPostRes.body.pages[0];
-        publicPostData.tiers.length.should.eql(2);
+        assert.equal(publicPostData.tiers.length, 2);
     });
 
     it('Can include free and paid tiers for members only page', async function () {
@@ -274,7 +275,7 @@ describe('Pages API', function () {
             .set('Origin', config.get('url'))
             .expect(200);
         const membersPostData = membersPostRes.body.pages[0];
-        membersPostData.tiers.length.should.eql(2);
+        assert.equal(membersPostData.tiers.length, 2);
     });
 
     it('Can include only paid tier for paid page', async function () {
@@ -291,7 +292,7 @@ describe('Pages API', function () {
             .set('Origin', config.get('url'))
             .expect(200);
         const paidPostData = paidPostRes.body.pages[0];
-        paidPostData.tiers.length.should.eql(1);
+        assert.equal(paidPostData.tiers.length, 1);
     });
 
     it('Can include specific tier for page with tiers visibility', async function () {
@@ -322,7 +323,7 @@ describe('Pages API', function () {
             .expect(200);
         const tiersPageData = tiersPageRes.body.pages[0];
 
-        tiersPageData.tiers.length.should.eql(1);
+        assert.equal(tiersPageData.tiers.length, 1);
     });
 
     it('Can update a page', async function () {
@@ -352,7 +353,7 @@ describe('Pages API', function () {
             id: res2.body.pages[0].id
         }, testUtils.context.internal);
 
-        model.get('type').should.eql('page');
+        assert.equal(model.get('type'), 'page');
     });
 
     it('Can update a page with restricted access to specific tier', async function () {
@@ -396,7 +397,7 @@ describe('Pages API', function () {
             id: res2.body.pages[0].id
         }, testUtils.context.internal);
 
-        model.get('type').should.eql('page');
+        assert.equal(model.get('type'), 'page');
     });
 
     it('Cannot get page via posts endpoint', async function () {
@@ -428,6 +429,6 @@ describe('Pages API', function () {
             .expect(204);
 
         res.body.should.be.empty();
-        res.headers['x-cache-invalidate'].should.eql('/*');
+        assert.equal(res.headers['x-cache-invalidate'], '/*');
     });
 });

@@ -17,7 +17,9 @@
     "Best": "",
     "Cancel": "Atšaukti",
     "Comment": "Komentuoti",
+    "Commenting disabled": "",
     "Complete your profile": "Pabaikite kurti savo profilį!",
+    "Contact support": "",
     "Delete": "Ištrinti",
     "Deleted": "",
     "Deleted member": "Pašalintas narys",
@@ -28,6 +30,7 @@
     "edited": "redaguotas",
     "Enter your name": "Įrašykite savo vardą",
     "Expertise": "Specializacija",
+    "for more information.": "",
     "Founder @ Acme Inc": "Istorikas",
     "Full-time parent": "Vaiką prižiūrintis tėvas",
     "Head of Marketing at Acme, Inc": "Tyrinėtojas",
@@ -69,6 +72,8 @@
     "This comment has been hidden.": "Šis komentaras buvo paslėptas.",
     "This comment has been removed.": "Šis komentaras buvo pašalintas.",
     "Upgrade now": "Prenumeruokite",
+    "View in admin": "",
     "Yesterday": "Vakar",
+    "You can't post comments in this publication.": "",
     "Your request will be sent to the owner of this site.": "Jūsų pranešimas bus išsiųstas svetainės savininkui."
 }

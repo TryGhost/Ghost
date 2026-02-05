@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const {agentProvider, fixtureManager} = require('../../utils/e2e-framework');
 const should = require('should');
 const sinon = require('sinon');
@@ -204,8 +205,8 @@ describe('Admin API - Max Limit Cap', function () {
             const {body} = await agent.get('posts/?limit=3')
                 .expectStatus(200);
 
-            body.posts.length.should.equal(3);
-            body.meta.pagination.limit.should.equal(3);
+            assert.equal(body.posts.length, 3);
+            assert.equal(body.meta.pagination.limit, 3);
         });
 
         it('should allow large limits for export endpoint', async function () {
@@ -272,8 +273,8 @@ describe('Admin API - Max Limit Cap', function () {
                 .expectStatus(200);
 
             // Exception endpoint should return all 10 batches
-            batchesBody.batches.length.should.equal(10);
-            batchesBody.meta.pagination.limit.should.equal(10);
+            assert.equal(batchesBody.batches.length, 10);
+            assert.equal(batchesBody.meta.pagination.limit, 10);
         });
 
         it('should bypass limit cap for emails recipient-failures endpoint', async function () {
@@ -286,8 +287,8 @@ describe('Admin API - Max Limit Cap', function () {
                 .expectStatus(200);
 
             // Exception endpoint should return all 10 failures
-            failuresBody.failures.length.should.equal(10);
-            failuresBody.meta.pagination.limit.should.equal(10);
+            assert.equal(failuresBody.failures.length, 10);
+            assert.equal(failuresBody.meta.pagination.limit, 10);
         });
 
         it('should allow "all" for exception endpoints', async function () {
@@ -300,16 +301,16 @@ describe('Admin API - Max Limit Cap', function () {
                 .expectStatus(200);
 
             // Should return all batches (10)
-            batchesBody.batches.length.should.equal(10);
-            batchesBody.meta.pagination.limit.should.equal('all');
+            assert.equal(batchesBody.batches.length, 10);
+            assert.equal(batchesBody.meta.pagination.limit, 'all');
 
             // Test failures with limit=all
             const {body: failuresBody} = await agent.get(`emails/${testEmail.id}/recipient-failures/?limit=all`)
                 .expectStatus(200);
 
             // Should return all failures (10)
-            failuresBody.failures.length.should.equal(10);
-            failuresBody.meta.pagination.limit.should.equal('all');
+            assert.equal(failuresBody.failures.length, 10);
+            assert.equal(failuresBody.meta.pagination.limit, 'all');
         });
     });
 

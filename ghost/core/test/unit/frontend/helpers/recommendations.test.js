@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const models = require('../../../../core/server/models');
@@ -124,7 +125,7 @@ describe('{{#recommendations}} helper', function () {
 
             // No HTML is rendered
             response.should.be.an.Object().with.property('string');
-            response.string.should.equal('');
+            assert.equal(response.string, '');
         });
     });
 
@@ -141,7 +142,7 @@ describe('{{#recommendations}} helper', function () {
 
             // No HTML is rendered
             response.should.be.an.Object().with.property('string');
-            response.string.should.equal('');
+            assert.equal(response.string, '');
         });
     });
 
@@ -171,11 +172,11 @@ describe('{{#recommendations}} helper', function () {
             );
 
             // An error message is logged
-            logging.error.calledOnce.should.be.true();
+            assert.equal(logging.error.calledOnce, true);
 
             // No HTML is rendered
             response.should.be.an.Object().with.property('string');
-            response.string.should.equal('');
+            assert.equal(response.string, '');
         });
     });
 });

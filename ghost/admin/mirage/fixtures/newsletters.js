@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 export default [
     {
         id: 1,

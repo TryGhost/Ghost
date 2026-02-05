@@ -17,7 +17,9 @@
     "Best": "Hay nhất",
     "Cancel": "Hủy",
     "Comment": "Bình luận",
+    "Commenting disabled": "",
     "Complete your profile": "Hoàn tất hồ sơ của bạn",
+    "Contact support": "",
     "Delete": "Xóa",
     "Deleted": "Đã xóa",
     "Deleted member": "Thành viên đã xóa",
@@ -28,6 +30,7 @@
     "edited": "đã sửa",
     "Enter your name": "Nhập tên của bạn",
     "Expertise": "Chuyên môn",
+    "for more information.": "",
     "Founder @ Acme Inc": "Nhà sáng lập @ Acme Inc",
     "Full-time parent": "Phụ huynh toàn thời gian",
     "Head of Marketing at Acme, Inc": "Trưởng phòng Marketing tại Acme, Inc",
@@ -69,6 +72,8 @@
     "This comment has been hidden.": "Bình luận này đã bị ẩn.",
     "This comment has been removed.": "Bình luận này đã bị xóa.",
     "Upgrade now": "Nâng cấp",
+    "View in admin": "",
     "Yesterday": "Hôm qua",
+    "You can't post comments in this publication.": "",
     "Your request will be sent to the owner of this site.": "Yêu cầu của bạn sẽ được gửi đến chủ sở hữu trang web này."
 }

@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 
@@ -40,24 +41,24 @@ describe('Notify', function () {
         it('it communicates with IPC correctly on success', function () {
             notify.notifyServerStarted();
 
-            process.send.calledOnce.should.be.true();
+            assert.equal(process.send.calledOnce, true);
 
             let message = process.send.firstCall.args[0];
             message.should.be.an.Object().with.properties('started', 'debug');
             message.should.not.have.property('error');
-            message.started.should.be.true();
+            assert.equal(message.started, true);
         });
 
         it('communicates with IPC correctly on failure', function () {
             notify.notifyServerStarted(new Error('something went wrong'));
 
-            process.send.calledOnce.should.be.true();
+            assert.equal(process.send.calledOnce, true);
 
             let message = process.send.firstCall.args[0];
             message.should.be.an.Object().with.properties('started', 'debug', 'error');
-            message.started.should.be.false();
+            assert.equal(message.started, false);
             message.error.should.be.an.Object().with.properties('message');
-            message.error.message.should.eql('something went wrong');
+            assert.equal(message.error.message, 'something went wrong');
         });
 
         it('communicates via bootstrap socket correctly on success', function () {
@@ -65,13 +66,13 @@ describe('Notify', function () {
 
             notify.notifyServerStarted();
 
-            socketStub.calledOnce.should.be.true();
-            socketStub.firstCall.args[0].should.eql('testing');
+            assert.equal(socketStub.calledOnce, true);
+            assert.equal(socketStub.firstCall.args[0], 'testing');
 
             let message = socketStub.firstCall.args[1];
             message.should.be.an.Object().with.properties('started', 'debug');
             message.should.not.have.property('error');
-            message.started.should.be.true();
+            assert.equal(message.started, true);
         });
 
         it('communicates via bootstrap socket correctly on failure', function () {
@@ -79,14 +80,14 @@ describe('Notify', function () {
 
             notify.notifyServerStarted(new Error('something went wrong'));
 
-            socketStub.calledOnce.should.be.true();
-            socketStub.firstCall.args[0].should.eql('testing');
+            assert.equal(socketStub.calledOnce, true);
+            assert.equal(socketStub.firstCall.args[0], 'testing');
 
             let message = socketStub.firstCall.args[1];
             message.should.be.an.Object().with.properties('started', 'debug', 'error');
-            message.started.should.be.false();
+            assert.equal(message.started, false);
             message.error.should.be.an.Object().with.properties('message');
-            message.error.message.should.eql('something went wrong');
+            assert.equal(message.error.message, 'something went wrong');
         });
 
         it('can be called multiple times, but only communicates once', function () {
@@ -96,8 +97,8 @@ describe('Notify', function () {
             notify.notifyServerStarted(new Error('something went wrong'));
             notify.notifyServerStarted();
 
-            process.send.calledOnce.should.be.true();
-            socketStub.calledOnce.should.be.true();
+            assert.equal(process.send.calledOnce, true);
+            assert.equal(socketStub.calledOnce, true);
         });
     });
 });

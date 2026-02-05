@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const testUtils = require('../../utils');
 const {exportedBodyV1} = require('../../utils/fixtures/export/body-generator');
@@ -37,9 +38,9 @@ describe('Importer 1.0', function () {
             }).then(function (result) {
                 const posts = result[0].data.map(model => model.toJSON());
 
-                posts.length.should.eql(2);
+                assert.equal(posts.length, 2);
                 posts[0].comment_id.should.eql(exportData.data.posts[1].id);
-                posts[1].comment_id.should.eql('2');
+                assert.equal(posts[1].comment_id, '2');
             });
     });
 
@@ -68,12 +69,12 @@ describe('Importer 1.0', function () {
                 }).then(function (result) {
                     const posts = result[0].data.map(model => model.toJSON(options));
 
-                    posts.length.should.eql(2);
-                    should(posts[0].html).eql(null);
-                    posts[0].mobiledoc.should.eql('{"version":"0.3.1","ghostVersion":"4.0","markups":[],"atoms":[],"cards":[],"sections":[[1,"p",[[0,[],0,""]]]]}');
+                    assert.equal(posts.length, 2);
+                    assert.equal(posts[0].html, null);
+                    assert.equal(posts[0].mobiledoc, '{"version":"0.3.1","ghostVersion":"4.0","markups":[],"atoms":[],"cards":[],"sections":[[1,"p",[[0,[],0,""]]]]}');
 
-                    should(posts[1].html).eql(null);
-                    posts[1].mobiledoc.should.eql('{"version":"0.3.1","ghostVersion":"4.0","markups":[],"atoms":[],"cards":[],"sections":[[1,"p",[[0,[],0,""]]]]}');
+                    assert.equal(posts[1].html, null);
+                    assert.equal(posts[1].mobiledoc, '{"version":"0.3.1","ghostVersion":"4.0","markups":[],"atoms":[],"cards":[],"sections":[[1,"p",[[0,[],0,""]]]]}');
                 });
         });
 
@@ -97,9 +98,9 @@ describe('Importer 1.0', function () {
                 }).then(function (result) {
                     const posts = result[0].data.map(model => model.toJSON(options));
 
-                    posts.length.should.eql(1);
-                    should(posts[0].html).eql('<h1 id="this-is-my-post-content">This is my post content.</h1>');
-                    posts[0].mobiledoc.should.eql('{"version":"0.3.1","atoms":[],"cards":[],"markups":[],"sections":[[1,"h1",[[0,[],0,"This is my post content."]]]]}');
+                    assert.equal(posts.length, 1);
+                    assert.equal(posts[0].html, '<h1 id="this-is-my-post-content">This is my post content.</h1>');
+                    assert.equal(posts[0].mobiledoc, '{"version":"0.3.1","atoms":[],"cards":[],"markups":[],"sections":[[1,"h1",[[0,[],0,"This is my post content."]]]]}');
                 });
         });
 
@@ -124,10 +125,10 @@ describe('Importer 1.0', function () {
                 }).then(function (result) {
                     const posts = result[0].data.map(model => model.toJSON(options));
 
-                    posts.length.should.eql(1);
-                    should(posts[0].html).eql(null);
-                    should(posts[0].mobiledoc).eql(null);
-                    posts[0].lexical.should.eql('{"root":{"children":[{"children":[],"direction":null,"format":"","indent":0,"type":"paragraph","version":1}],"direction":null,"format":"","indent":0,"type":"root","version":1}}');
+                    assert.equal(posts.length, 1);
+                    assert.equal(posts[0].html, null);
+                    assert.equal(posts[0].mobiledoc, null);
+                    assert.equal(posts[0].lexical, '{"root":{"children":[{"children":[],"direction":null,"format":"","indent":0,"type":"paragraph","version":1}],"direction":null,"format":"","indent":0,"type":"root","version":1}}');
                 });
         });
 
@@ -150,9 +151,9 @@ describe('Importer 1.0', function () {
                 }).then(function (result) {
                     const posts = result[0].data.map(model => model.toJSON(options));
 
-                    posts.length.should.eql(1);
-                    posts[0].html.should.eql('<!--kg-card-begin: markdown--><h2 id="markdown">markdown</h2>\n<!--kg-card-end: markdown-->');
-                    posts[0].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[["markdown",{"markdown":"## markdown"}]],"sections":[[10,0]],"ghostVersion":"3.0"}');
+                    assert.equal(posts.length, 1);
+                    assert.equal(posts[0].html, '<!--kg-card-begin: markdown--><h2 id="markdown">markdown</h2>\n<!--kg-card-end: markdown-->');
+                    assert.equal(posts[0].mobiledoc, '{"version":"0.3.1","markups":[],"atoms":[],"cards":[["markdown",{"markdown":"## markdown"}]],"sections":[[10,0]],"ghostVersion":"3.0"}');
                 });
         });
 
@@ -175,8 +176,8 @@ describe('Importer 1.0', function () {
                 }).then(function (result) {
                     const posts = result[0].data.map(model => model.toJSON(options));
 
-                    posts.length.should.eql(1);
-                    posts[0].html.should.eql('<!--kg-card-begin: markdown--><h1 id="thisismypostcontent">This is my post content</h1>\n<!--kg-card-end: markdown-->');
+                    assert.equal(posts.length, 1);
+                    assert.equal(posts[0].html, '<!--kg-card-begin: markdown--><h1 id="thisismypostcontent">This is my post content</h1>\n<!--kg-card-end: markdown-->');
                     const expectedMobiledoc = JSON.parse(exportData.data.posts[0].mobiledoc);
                     expectedMobiledoc.ghostVersion = '3.0';
                     posts[0].mobiledoc.should.eql(JSON.stringify(expectedMobiledoc));
@@ -237,13 +238,13 @@ describe('Importer 1.0', function () {
                 }).then(function (result) {
                     const posts = result[0].data.map(model => model.toJSON(options));
 
-                    posts.length.should.eql(2);
+                    assert.equal(posts.length, 2);
 
-                    posts[0].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[["markdown",{"markdown":"## Post Content"}],["image",{"src":"source2","cardWidth":"not-wide"}]],"sections":[[10,0],[10,1]],"ghostVersion":"3.0"}');
-                    posts[0].html.should.eql('<!--kg-card-begin: markdown--><h2 id="postcontent">Post Content</h2>\n<!--kg-card-end: markdown--><figure class="kg-card kg-image-card kg-width-not-wide"><img src="source2" class="kg-image" alt loading="lazy"></figure>');
+                    assert.equal(posts[0].mobiledoc, '{"version":"0.3.1","markups":[],"atoms":[],"cards":[["markdown",{"markdown":"## Post Content"}],["image",{"src":"source2","cardWidth":"not-wide"}]],"sections":[[10,0],[10,1]],"ghostVersion":"3.0"}');
+                    assert.equal(posts[0].html, '<!--kg-card-begin: markdown--><h2 id="postcontent">Post Content</h2>\n<!--kg-card-end: markdown--><figure class="kg-card kg-image-card kg-width-not-wide"><img src="source2" class="kg-image" alt loading="lazy"></figure>');
 
-                    posts[1].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[["image",{"src":"source","cardWidth":"wide"}],["markdown",{"markdown":"# Post Content"}]],"sections":[[10,0],[10,1]],"ghostVersion":"3.0"}');
-                    posts[1].html.should.eql('<figure class="kg-card kg-image-card kg-width-wide"><img src="source" class="kg-image" alt loading="lazy"></figure><!--kg-card-begin: markdown--><h1 id="postcontent">Post Content</h1>\n<!--kg-card-end: markdown-->');
+                    assert.equal(posts[1].mobiledoc, '{"version":"0.3.1","markups":[],"atoms":[],"cards":[["image",{"src":"source","cardWidth":"wide"}],["markdown",{"markdown":"# Post Content"}]],"sections":[[10,0],[10,1]],"ghostVersion":"3.0"}');
+                    assert.equal(posts[1].html, '<figure class="kg-card kg-image-card kg-width-wide"><img src="source" class="kg-image" alt loading="lazy"></figure><!--kg-card-begin: markdown--><h1 id="postcontent">Post Content</h1>\n<!--kg-card-end: markdown-->');
                 });
         });
     });

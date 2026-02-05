@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import BaseModel from './base';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import config from 'ghost-admin/config/environment';

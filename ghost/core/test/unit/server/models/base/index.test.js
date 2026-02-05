@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const security = require('@tryghost/security');
@@ -35,7 +36,7 @@ describe('Models: base', function () {
 
             return models.Base.Model.generateSlug(Model, 'My-Slug', options)
                 .then((slug) => {
-                    slug.should.eql('my-slug');
+                    assert.equal(slug, 'my-slug');
                 });
         });
 
@@ -53,7 +54,7 @@ describe('Models: base', function () {
 
             return models.Base.Model.generateSlug(Model, 'My-Slug', {modelId: 'incorrect-model-id'})
                 .then((slug) => {
-                    slug.should.eql('my-slug-2');
+                    assert.equal(slug, 'my-slug-2');
                 });
         });
 
@@ -71,7 +72,7 @@ describe('Models: base', function () {
 
             return models.Base.Model.generateSlug(Model, 'My-Slug', {modelId: 'correct-model-id'})
                 .then((slug) => {
-                    slug.should.eql('my-slug');
+                    assert.equal(slug, 'my-slug');
                 });
         });
 
@@ -89,7 +90,7 @@ describe('Models: base', function () {
 
             return models.Base.Model.generateSlug(Model, 'My-Slug', options)
                 .then((slug) => {
-                    slug.should.eql('my-slug-2');
+                    assert.equal(slug, 'my-slug-2');
                 });
         });
 
@@ -113,7 +114,7 @@ describe('Models: base', function () {
 
             return models.Base.Model.generateSlug(Model, slug, options)
                 .then((generatedSlug) => {
-                    generatedSlug.should.eql('upsi-tableName');
+                    assert.equal(generatedSlug, 'upsi-tableName');
                 });
         });
 
@@ -129,7 +130,7 @@ describe('Models: base', function () {
 
             return models.Base.Model.generateSlug(Model, slug, options)
                 .then((generatedSlug) => {
-                    generatedSlug.should.eql('hash-#lul');
+                    assert.equal(generatedSlug, 'hash-#lul');
                 });
         });
 
@@ -139,7 +140,7 @@ describe('Models: base', function () {
 
             return models.Base.Model.generateSlug(Model, 'abc\u0008', options)
                 .then((slug) => {
-                    slug.should.eql('abc');
+                    assert.equal(slug, 'abc');
                 });
         });
     });
@@ -152,7 +153,7 @@ describe('Models: base', function () {
                 models.Base.Model.sanitizeData
                     .bind({prototype: {tableName: 'posts'}})(data);
             } catch (err) {
-                err.code.should.eql('DATE_INVALID');
+                assert.equal(err.code, 'DATE_INVALID');
             }
         });
 
@@ -197,7 +198,7 @@ describe('Models: base', function () {
                     }
                 })(data);
 
-            data.authors[0].name.should.eql('Thomas');
+            assert.equal(data.authors[0].name, 'Thomas');
             data.authors[0].updated_at.should.be.a.Date();
         });
     });
@@ -209,11 +210,11 @@ describe('Models: base', function () {
             base.getNullableStringProperties = sinon.stub();
             base.getNullableStringProperties.returns(['a']);
 
-            base.get('a').should.eql('');
-            base.get('b').should.eql('');
+            assert.equal(base.get('a'), '');
+            assert.equal(base.get('b'), '');
             base.setEmptyValuesToNull();
-            should.not.exist(base.get('a'));
-            base.get('b').should.eql('');
+            assert.equal(base.get('a'), null);
+            assert.equal(base.get('b'), '');
         });
     });
 });

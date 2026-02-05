@@ -327,7 +327,7 @@ describe('Create Stripe Checkout Session for Donations', function () {
             .orderBy('created_at', 'DESC')
             .fetch({require: true});
 
-        latestStripePrice.get('nickname').should.have.length(250);
+        assert.equal(latestStripePrice.get('nickname').length, 250);
     });
     it('Can create a checkout session with a personal note included', async function () {
         const post = await getPost(fixtureManager.get('posts', 0).id);
@@ -390,11 +390,11 @@ describe('Create Stripe Checkout Session for Donations', function () {
 
         // Verify that the Stripe mocker captured the UTM parameters in metadata
         const checkoutSession = stripeMocker.checkoutSessions[stripeMocker.checkoutSessions.length - 1];
-        should(checkoutSession.metadata.utm_source).eql('weekly_newsletter');
-        should(checkoutSession.metadata.utm_medium).eql('email');
-        should(checkoutSession.metadata.utm_campaign).eql('donation_drive_2024');
-        should(checkoutSession.metadata.utm_term).eql('support_ghost');
-        should(checkoutSession.metadata.utm_content).eql('footer_cta');
+        assert.equal(checkoutSession.metadata.utm_source, 'weekly_newsletter');
+        assert.equal(checkoutSession.metadata.utm_medium, 'email');
+        assert.equal(checkoutSession.metadata.utm_campaign, 'donation_drive_2024');
+        assert.equal(checkoutSession.metadata.utm_term, 'support_ghost');
+        assert.equal(checkoutSession.metadata.utm_content, 'footer_cta');
 
         // Send a webhook to complete the donation and verify UTM storage
         await stripeMocker.sendWebhook({

@@ -212,7 +212,6 @@ describe('Member Data attributes:', () => {
                 return originalQuerySelector(selector);
             });
 
-            const labs = {};
             const doAction = vi.fn(() => Promise.resolve());
 
             const json = async () => ({otc_ref: 'otc_test_ref'});
@@ -235,7 +234,7 @@ describe('Member Data attributes:', () => {
                 return Promise.resolve({ok: true});
             });
 
-            await formSubmitHandler({event, form, errorEl, siteUrl, submitHandler, labs, doAction});
+            await formSubmitHandler({event, form, errorEl, siteUrl, submitHandler, doAction});
 
             const magicLinkCall = window.fetch.mock.calls.find(([fetchUrl]) => fetchUrl.includes('send-magic-link'));
             const requestBody = JSON.parse(magicLinkCall[1].body);
@@ -260,7 +259,6 @@ describe('Member Data attributes:', () => {
                 return originalQuerySelector(selector);
             });
 
-            const labs = {};
             const actionErrorMessage = new Error('failed to start OTC sign-in');
             const doAction = vi.fn(() => {
                 throw actionErrorMessage;
@@ -288,7 +286,7 @@ describe('Member Data attributes:', () => {
                 return Promise.resolve({ok: true});
             });
 
-            await formSubmitHandler({event, form, errorEl, siteUrl, submitHandler, labs, doAction, captureException});
+            await formSubmitHandler({event, form, errorEl, siteUrl, submitHandler, doAction, captureException});
 
             expect(doAction).toHaveBeenCalledWith('startSigninOTCFromCustomForm', {
                 email: 'jamie@example.com',
@@ -936,7 +934,7 @@ describe('Portal Data attributes:', () => {
                 })
                 .mockResolvedValueOnce({
                     ok: false,
-                    json: async () => ({errors: [{message: 'No member exists with this e-mail address. Please sign up first.'}]}),
+                    json: async () => ({errors: [{message: 'No member exists with this email address. Please sign up first.'}]}),
                     status: 400
                 });
 
@@ -944,7 +942,7 @@ describe('Portal Data attributes:', () => {
 
             expect(window.fetch).toHaveBeenCalledTimes(2);
             expect(form.classList.add).toHaveBeenCalledWith('error');
-            expect(errorEl.innerText).toBe('No member exists with this e-mail address. Please sign up first.');
+            expect(errorEl.innerText).toBe('No member exists with this email address. Please sign up first.');
         });
     });
 });

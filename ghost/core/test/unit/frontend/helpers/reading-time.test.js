@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 
 // Stuff we are testing
@@ -43,7 +44,7 @@ describe('{{reading_time}} helper', function () {
 
         const result = reading_time.call(data);
 
-        String(result).should.equal('1 min read');
+        assert.equal(String(result), '1 min read');
     });
 
     it('[success] renders reading time for one minute text as one minute', function () {
@@ -57,7 +58,7 @@ describe('{{reading_time}} helper', function () {
 
         const result = reading_time.call(data);
 
-        String(result).should.equal('1 min read');
+        assert.equal(String(result), '1 min read');
     });
 
     it('[success] renders reading time for just under 1.5 minutes text as one minute', function () {
@@ -69,7 +70,7 @@ describe('{{reading_time}} helper', function () {
 
         const result = reading_time.call(data);
 
-        String(result).should.equal('1 min read');
+        assert.equal(String(result), '1 min read');
     });
 
     it('[success] adds time for feature image', function () {
@@ -84,7 +85,7 @@ describe('{{reading_time}} helper', function () {
 
         // The reading time for this HTML snippet would 89 seconds without the image
         // Adding the 12 additional seconds for the image results in a readng time of over 1.5 minutes, rounded to 2
-        String(result).should.equal('2 min read');
+        assert.equal(String(result), '2 min read');
     });
 
     it('[success] adds time for inline images', function () {
@@ -99,7 +100,7 @@ describe('{{reading_time}} helper', function () {
 
         // The reading time for this HTML snippet would 89 seconds without the image
         // Adding the 12 additional seconds for the image results in a readng time of over 1.5 minutes, rounded to 2
-        String(result).should.equal('2 min read');
+        assert.equal(String(result), '2 min read');
     });
 
     it('[failure] does not render reading time when not post', function () {
@@ -112,6 +113,6 @@ describe('{{reading_time}} helper', function () {
 
         const result = reading_time.call(data);
 
-        should.not.exist(result);
+        assert.equal(result, null);
     });
 });

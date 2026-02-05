@@ -17,11 +17,11 @@ const membersEventsService = require('../../core/server/services/members-events'
 const crypto = require('crypto');
 
 function assertContentIsPresent(res) {
-    res.text.should.containEql('<h2 id="markdown">markdown</h2>');
+    assert(res.text.includes('<h2 id="markdown">markdown</h2>'));
 }
 
 function assertContentIsAbsent(res) {
-    res.text.should.not.containEql('<h2 id="markdown">markdown</h2>');
+    assert(!res.text.includes('<h2 id="markdown">markdown</h2>'));
 }
 
 async function createMember(data) {
@@ -58,7 +58,7 @@ describe('Front-end members behavior', function () {
             .expect((res) => {
                 const redirectUrl = new URL(res.headers.location, testUtils.API.getURL());
                 should.exist(redirectUrl.searchParams.get('success'));
-                redirectUrl.searchParams.get('success').should.eql('true');
+                assert.equal(redirectUrl.searchParams.get('success'), 'true');
             });
 
         return member;
@@ -167,7 +167,7 @@ describe('Front-end members behavior', function () {
                 .expect(404)
                 .expect('Content-Type', 'text/plain;charset=UTF-8')
                 .expect((res) => {
-                    res.text.should.eql('Could not find subscription invalid');
+                    assert.equal(res.text, 'Could not find subscription invalid');
                 });
         });
 
@@ -232,10 +232,10 @@ describe('Front-end members behavior', function () {
                 should.exist(getJsonResponse);
                 getJsonResponse.should.have.properties(['email', 'uuid', 'status', 'name', 'newsletters']);
                 getJsonResponse.should.not.have.property('id');
-                getJsonResponse.newsletters.should.have.length(1);
+                assert.equal(getJsonResponse.newsletters.length, 1);
 
                 // NOTE: these should be snapshots not code
-                Object.keys(getJsonResponse.newsletters[0]).should.have.length(5);
+                assert.equal(Object.keys(getJsonResponse.newsletters[0]).length, 5);
                 getJsonResponse.newsletters[0].should.have.properties([
                     'id',
                     'uuid',
@@ -259,7 +259,7 @@ describe('Front-end members behavior', function () {
                 should.exist(jsonResponse);
                 jsonResponse.should.have.properties(['email', 'uuid', 'status', 'name', 'newsletters']);
                 jsonResponse.should.not.have.property('id');
-                jsonResponse.newsletters.should.have.length(0);
+                assert.equal(jsonResponse.newsletters.length, 0);
 
                 const resRestored = await request.put(`/members/api/member/newsletters?uuid=${memberUUID}&key=${memberHmac}`)
                     .send({
@@ -271,9 +271,9 @@ describe('Front-end members behavior', function () {
                 should.exist(restoreJsonResponse);
                 restoreJsonResponse.should.have.properties(['email', 'uuid', 'status', 'name', 'newsletters']);
                 restoreJsonResponse.should.not.have.property('id');
-                restoreJsonResponse.newsletters.should.have.length(1);
+                assert.equal(restoreJsonResponse.newsletters.length, 1);
                 // @NOTE: this seems like too much exposed information, needs a review
-                Object.keys(restoreJsonResponse.newsletters[0]).should.have.length(5);
+                assert.equal(Object.keys(restoreJsonResponse.newsletters[0]).length, 5);
                 restoreJsonResponse.newsletters[0].should.have.properties([
                     'id',
                     'uuid',
@@ -282,7 +282,7 @@ describe('Front-end members behavior', function () {
                     'sort_order'
                 ]);
 
-                should.equal(restoreJsonResponse.newsletters[0].name, originalNewsletterName);
+                assert.equal(restoreJsonResponse.newsletters[0].name, originalNewsletterName);
             });
         });
 
@@ -633,7 +633,7 @@ describe('Front-end members behavior', function () {
                     .get('/email/d96d663d-c378-4921-a007-47b3158835f9/')
                     .expect(200)
                     .expect((res) => {
-                        res.text.should.match(/This post is for/);
+                        assert.match(res.text, /This post is for/);
                     });
             });
         });
@@ -803,9 +803,9 @@ describe('Front-end members behavior', function () {
                     .get('/email/d96d663d-c378-4921-a007-47b3158835f9/')
                     .expect(200)
                     .expect((res) => {
-                        res.text.should.match(/Before paywall/);
-                        res.text.should.not.match(/After paywall/);
-                        res.text.should.match(/This post is for/);
+                        assert.match(res.text, /Before paywall/);
+                        assert.doesNotMatch(res.text, /After paywall/);
+                        assert.match(res.text, /This post is for/);
                     });
             });
         });
@@ -861,7 +861,7 @@ describe('Front-end members behavior', function () {
                     .then((res) => {
                         const redirectUrl = new URL(res.headers.location, testUtils.API.getURL());
                         should.exist(redirectUrl.searchParams.get('success'));
-                        redirectUrl.searchParams.get('success').should.eql('true');
+                        assert.equal(redirectUrl.searchParams.get('success'), 'true');
                     });
             });
 
@@ -885,16 +885,18 @@ describe('Front-end members behavior', function () {
                     'paid',
                     'created_at',
                     'enable_comment_notifications',
+                    'can_comment',
+                    'commenting',
                     'newsletters',
                     'email_suppression',
                     'unsubscribe_url'
                 ]);
-                Object.keys(memberData).should.have.length(14);
+                assert.equal(Object.keys(memberData).length, 16);
                 memberData.should.not.have.property('id');
-                memberData.newsletters.should.have.length(1);
+                assert.equal(memberData.newsletters.length, 1);
 
                 // @NOTE: this should be a snapshot test not code
-                Object.keys(memberData.newsletters[0]).should.have.length(5);
+                assert.equal(Object.keys(memberData.newsletters[0]).length, 5);
                 memberData.newsletters[0].should.have.properties([
                     'id',
                     'uuid',
@@ -968,9 +970,9 @@ describe('Front-end members behavior', function () {
                     .expect(200)
                     .expect(assertContentIsAbsent)
                     .expect((res) => {
-                        res.text.should.match(/Before paywall/);
-                        res.text.should.match(/After paywall/);
-                        res.text.should.not.match(/This post is for/);
+                        assert.match(res.text, /Before paywall/);
+                        assert.match(res.text, /After paywall/);
+                        assert.doesNotMatch(res.text, /This post is for/);
                     });
             });
         });

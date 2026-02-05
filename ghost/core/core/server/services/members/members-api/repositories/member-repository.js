@@ -30,7 +30,8 @@ const messages = {
     offerCadenceMismatch: 'Offer is not valid for this subscription cadence',
     offerAlreadyRedeemed: 'This offer has already been redeemed on this subscription',
     subscriptionNotActive: 'Cannot apply offer to an inactive subscription',
-    subscriptionHasOffer: 'Subscription already has an offer applied'
+    subscriptionHasOffer: 'Subscription already has an offer applied',
+    subscriptionInTrial: 'Cannot apply offer to a subscription in a trial period'
 };
 
 const SUBSCRIPTION_STATUS_TRIALING = 'trialing';
@@ -151,7 +152,11 @@ module.exports = class MemberRepository {
     }
 
     isComplimentarySubscription(subscription) {
-        return subscription.plan && subscription.plan.nickname && subscription.plan.nickname.toLowerCase() === 'complimentary';
+        return this.isComplimentaryPlanNickname(subscription.plan?.nickname);
+    }
+
+    isComplimentaryPlanNickname(nickname) {
+        return nickname && nickname.toLowerCase() === 'complimentary';
     }
 
     /**
@@ -1714,6 +1719,14 @@ module.exports = class MemberRepository {
             });
         }
 
+        // Check subscription is not in a trial period
+        const trialEndAt = subscriptionModel.get('trial_end_at');
+        if (trialEndAt && trialEndAt > new Date()) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.subscriptionInTrial)
+            });
+        }
+
         // Get tier and cadence from subscription
         const stripePrice = subscriptionModel.related('stripePrice');
         const stripeProduct = stripePrice.related('stripeProduct');
@@ -1982,34 +1995,83 @@ module.exports = class MemberRepository {
      * @param {Object} options
      * @param {Object} [options.transacting]
      */
-    async cancelComplimentarySubscription({id}, options) {
+    /**
+     * Removes all complimentary access for a member.
+     * Handles two types:
+     * 1. Stripe-backed: Subscriptions with plan_nickname 'Complimentary' — cancelled via Stripe, then synced via linkSubscription
+     * 2. Ghost-only: Products in members_products not backed by any active Stripe subscription — removed directly
+     *
+     * @param {{id: string}} data - member identifier
+     * @param {Object} options
+     */
+    async removeComplimentarySubscription({id}, options) {
         if (!this._stripeAPIService.configured) {
             throw new errors.BadRequestError({message: tpl(messages.noStripeConnection, {action: 'cancel Complimentary Subscription'})});
         }
 
-        const member = await this._Member.findOne({
-            id: id
-        });
+        const member = await this._Member.findOne({id});
+        const subscriptions = await member.related('stripeSubscriptions').fetch(options);
 
-        const subscriptions = await member.related('stripeSubscriptions').fetch();
-
+        // 1. Cancel Stripe-backed complimentary subscriptions
         for (const subscription of subscriptions.models) {
-            if (subscription.get('status') !== 'canceled') {
+            const isComp = this.isComplimentaryPlanNickname(subscription.get('plan_nickname'));
+            const isActive = this.isActiveSubscriptionStatus(subscription.get('status'));
+
+            if (isActive && isComp) {
                 try {
                     const updatedSubscription = await this._stripeAPIService.cancelSubscription(
                         subscription.get('subscription_id')
                     );
-                    // Only needs to update `status`
                     await this.linkSubscription({
                         id: id,
                         subscription: updatedSubscription
                     }, options);
                 } catch (err) {
-                    logging.error(`There was an error cancelling subscription ${subscription.get('subscription_id')}`);
+                    logging.error(`Error cancelling complimentary subscription ${subscription.get('subscription_id')}`);
                     logging.error(err);
                 }
             }
         }
+
+        // 2. Remove Ghost-only comp products (products not backed by any active Stripe subscription)
+        await member.load([
+            'products',
+            'stripeSubscriptions',
+            'stripeSubscriptions.stripePrice',
+            'stripeSubscriptions.stripePrice.stripeProduct'
+        ], options);
+
+        const activeSubscriptionProductIds = new Set(
+            member.related('stripeSubscriptions').models
+                .filter(sub => this.isActiveSubscriptionStatus(sub.get('status')))
+                .map(sub => sub.related('stripePrice')?.related('stripeProduct')?.get('product_id'))
+                .filter(Boolean)
+        );
+
+        const currentProducts = member.related('products').toJSON();
+        const filteredProducts = currentProducts.filter(product => activeSubscriptionProductIds.has(product.id));
+
+        if (filteredProducts.length !== currentProducts.length) {
+            await this._Member.edit({products: filteredProducts}, {id});
+        }
+
         return true;
+    }
+
+    /**
+     * @param {string} memberId
+     * @param {import('../../commenting').MemberCommenting} commenting
+     * @param {string} actionName
+     * @param {Object} context
+     */
+    async saveCommenting(memberId, commenting, actionName, context) {
+        return this._Member.edit(
+            {commenting},
+            {
+                id: memberId,
+                context,
+                actionName
+            }
+        );
     }
 };

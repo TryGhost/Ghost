@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const path = require('path');
 const t = require('../../../../core/frontend/helpers/t');
@@ -21,7 +22,7 @@ describe('{{t}} helper', function () {
             hash: {}
         });
 
-        rendered.should.eql('Oben Links.');
+        assert.equal(rendered, 'Oben Links.');
     });
 
     it('theme translation is EN', function () {
@@ -31,7 +32,7 @@ describe('{{t}} helper', function () {
             hash: {}
         });
 
-        rendered.should.eql('Left Button on Top');
+        assert.equal(rendered, 'Left Button on Top');
     });
 
     it('[fallback] no theme translation file found for FR', function () {
@@ -41,7 +42,7 @@ describe('{{t}} helper', function () {
             hash: {}
         });
 
-        rendered.should.eql('Left Button on Top');
+        assert.equal(rendered, 'Left Button on Top');
     });
 
     it('[fallback] no theme files at all, use key as translation', function () {
@@ -51,7 +52,7 @@ describe('{{t}} helper', function () {
             hash: {}
         });
 
-        rendered.should.eql('Top left Button');
+        assert.equal(rendered, 'Top left Button');
     });
 
     it('returns an empty string if translation key is an empty string', function () {
@@ -59,7 +60,7 @@ describe('{{t}} helper', function () {
             hash: {}
         });
 
-        rendered.should.eql('');
+        assert.equal(rendered, '');
     });
 
     it('returns an empty string if translation key is missing', function () {
@@ -67,7 +68,7 @@ describe('{{t}} helper', function () {
             hash: {}
         });
 
-        rendered.should.eql('');
+        assert.equal(rendered, '');
     });
 
     it('returns a translated string even if no options are passed', function () {
@@ -75,6 +76,6 @@ describe('{{t}} helper', function () {
 
         let rendered = t.call({}, 'Top left Button');
 
-        rendered.should.eql('Left Button on Top');
+        assert.equal(rendered, 'Left Button on Top');
     });
 });

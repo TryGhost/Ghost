@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const errors = require('@tryghost/errors');
 const should = require('should');
 const sinon = require('sinon');
@@ -42,7 +43,7 @@ describe('Unit - services/routing/controllers/channel', function () {
         sinon.stub(themeEngine, 'getActive').returns({
             updateTemplateOptions: sinon.stub(),
             config: function (key) {
-                key.should.eql('posts_per_page');
+                assert.equal(key, 'posts_per_page');
                 return postsPerPage;
             }
         });
@@ -78,9 +79,9 @@ describe('Unit - services/routing/controllers/channel', function () {
             });
 
         controllers.channel(req, res, failTest(done)).then(function () {
-            themeEngine.getActive.calledOnce.should.be.true();
-            security.string.safe.calledOnce.should.be.false();
-            fetchDataStub.calledOnce.should.be.true();
+            assert.equal(themeEngine.getActive.calledOnce, true);
+            assert.equal(security.string.safe.calledOnce, false);
+            assert.equal(fetchDataStub.calledOnce, true);
             done();
         }).catch(done);
     });
@@ -99,9 +100,9 @@ describe('Unit - services/routing/controllers/channel', function () {
             });
 
         controllers.channel(req, res, failTest(done)).then(function () {
-            themeEngine.getActive.calledOnce.should.be.true();
-            security.string.safe.calledOnce.should.be.false();
-            fetchDataStub.calledOnce.should.be.true();
+            assert.equal(themeEngine.getActive.calledOnce, true);
+            assert.equal(security.string.safe.calledOnce, false);
+            assert.equal(fetchDataStub.calledOnce, true);
             done();
         }).catch(done);
     });
@@ -121,10 +122,10 @@ describe('Unit - services/routing/controllers/channel', function () {
             });
 
         controllers.channel(req, res, failTest(done)).then(function () {
-            themeEngine.getActive.calledOnce.should.be.true();
-            themeEngine.getActive().updateTemplateOptions.withArgs({data: {config: {posts_per_page: 3}}}).calledOnce.should.be.true();
-            security.string.safe.calledOnce.should.be.false();
-            fetchDataStub.calledOnce.should.be.true();
+            assert.equal(themeEngine.getActive.calledOnce, true);
+            assert.equal(themeEngine.getActive().updateTemplateOptions.withArgs({data: {config: {posts_per_page: 3}}}).calledOnce, true);
+            assert.equal(security.string.safe.calledOnce, false);
+            assert.equal(fetchDataStub.calledOnce, true);
             done();
         }).catch(done);
     });
@@ -143,12 +144,12 @@ describe('Unit - services/routing/controllers/channel', function () {
             });
 
         controllers.channel(req, res, function (err) {
-            (err instanceof errors.NotFoundError).should.be.true();
+            assert.equal((err instanceof errors.NotFoundError), true);
 
-            themeEngine.getActive.calledOnce.should.be.true();
-            security.string.safe.calledOnce.should.be.false();
-            fetchDataStub.calledOnce.should.be.true();
-            renderStub.calledOnce.should.be.false();
+            assert.equal(themeEngine.getActive.calledOnce, true);
+            assert.equal(security.string.safe.calledOnce, false);
+            assert.equal(fetchDataStub.calledOnce, true);
+            assert.equal(renderStub.calledOnce, false);
             done();
         });
     });
@@ -167,9 +168,9 @@ describe('Unit - services/routing/controllers/channel', function () {
             });
 
         controllers.channel(req, res, failTest(done)).then(function () {
-            themeEngine.getActive.calledOnce.should.be.true();
-            security.string.safe.calledOnce.should.be.true();
-            fetchDataStub.calledOnce.should.be.true();
+            assert.equal(themeEngine.getActive.calledOnce, true);
+            assert.equal(security.string.safe.calledOnce, true);
+            assert.equal(fetchDataStub.calledOnce, true);
             done();
         }).catch(done);
     });
@@ -188,9 +189,9 @@ describe('Unit - services/routing/controllers/channel', function () {
             });
 
         controllers.channel(req, res, failTest(done)).then(function () {
-            themeEngine.getActive.calledOnce.should.be.true();
-            security.string.safe.calledOnce.should.be.false();
-            fetchDataStub.calledOnce.should.be.true();
+            assert.equal(themeEngine.getActive.calledOnce, true);
+            assert.equal(security.string.safe.calledOnce, false);
+            assert.equal(fetchDataStub.calledOnce, true);
             done();
         }).catch(done);
     });

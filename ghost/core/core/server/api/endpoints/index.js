@@ -93,6 +93,10 @@ module.exports = {
         return apiFramework.pipeline(require('./members'), localUtils);
     },
 
+    get memberCommenting() {
+        return apiFramework.pipeline(require('./member-commenting'), localUtils);
+    },
+
     get offers() {
         return apiFramework.pipeline(require('./offers'), localUtils);
     },
@@ -207,6 +211,10 @@ module.exports = {
 
     get commentReplies() {
         return apiFramework.pipeline(require('./comment-replies'), localUtils);
+    },
+
+    get commentReports() {
+        return apiFramework.pipeline(require('./comment-reports'), localUtils);
     },
 
     get links() {

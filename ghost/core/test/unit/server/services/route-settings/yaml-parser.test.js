@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const should = require('should');
 const fs = require('fs-extra');
@@ -23,7 +24,7 @@ describe('UNIT > Settings Service yaml parser:', function () {
             const result = yamlParser(file);
             should.exist(result);
             result.should.be.an.Object().with.properties('routes', 'collections', 'taxonomies');
-            yamlSpy.calledOnce.should.be.true();
+            assert.equal(yamlSpy.calledOnce, true);
         });
 
         it('rejects with clear error when parsing fails', function () {
@@ -31,13 +32,13 @@ describe('UNIT > Settings Service yaml parser:', function () {
 
             try {
                 const result = yamlParser(file);
-                should.not.exist(result);
+                assert.equal(result, undefined);
             } catch (error) {
                 should.exist(error);
-                error.message.should.eql('Could not parse provided YAML file: bad indentation of a mapping entry.');
-                error.context.should.containEql('bad indentation of a mapping entry (5:14)');
-                error.help.should.eql('Check provided file for typos and fix the named issues.');
-                yamlSpy.calledOnce.should.be.true();
+                assert.equal(error.message, 'Could not parse provided YAML file: bad indentation of a mapping entry.');
+                assert(error.context.includes('bad indentation of a mapping entry (5:14)'));
+                assert.equal(error.help, 'Check provided file for typos and fix the named issues.');
+                assert.equal(yamlSpy.calledOnce, true);
             }
         });
     });

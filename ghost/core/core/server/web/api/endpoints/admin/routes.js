@@ -46,6 +46,7 @@ module.exports = function apiRoutes() {
     router.get('/comments', mw.authAdminApi, http(api.comments.browseAll));
     router.get('/comments/:id', mw.authAdminApi, http(api.commentReplies.read));
     router.get('/comments/:id/replies', mw.authAdminApi, http(api.commentReplies.browse));
+    router.get('/comments/:id/reports', mw.authAdminApi, http(api.commentReports.browse));
     router.get('/comments/post/:post_id', mw.authAdminApi, http(api.comments.browse));
     router.post('/comments', mw.authAdminApi, http(api.comments.add));
     router.put('/comments/:id', mw.authAdminApi, http(api.comments.edit));
@@ -145,11 +146,15 @@ module.exports = function apiRoutes() {
     router.put('/members/:id', mw.authAdminApi, http(api.members.edit));
     router.del('/members/:id', mw.authAdminApi, http(api.members.destroy));
     router.del('/members/:id/sessions', mw.authAdminApi, http(api.members.logout));
+    router.del('/members/:id/suppression', mw.authAdminApi, http(api.members.deleteEmailSuppression));
 
     router.post('/members/:id/subscriptions/', mw.authAdminApi, http(api.members.createSubscription));
     router.put('/members/:id/subscriptions/:subscription_id', mw.authAdminApi, http(api.members.editSubscription));
 
     router.get('/members/:id/signin_urls', mw.authAdminApi, http(api.memberSigninUrls.read));
+
+    router.post('/members/:id/commenting/disable', mw.authAdminApi, http(api.memberCommenting.disable));
+    router.post('/members/:id/commenting/enable', mw.authAdminApi, http(api.memberCommenting.enable));
 
     // ## Stats
     router.get('/stats/member_count', mw.authAdminApi, http(api.stats.memberCountHistory));

@@ -5,7 +5,7 @@ import CloseButton from '../common/close-button';
 import BackButton from '../common/back-button';
 import {MultipleProductsPlansSection} from '../common/plans-section';
 import {getDateString} from '../../utils/date-time';
-import {formatNumber, getAvailablePrices, getCurrencySymbol, getFilteredPrices, getMemberActivePrice, getMemberActiveProduct, getMemberSubscription, getPriceFromSubscription, getProductFromPrice, getSubscriptionFromId, getUpgradeProducts, hasMultipleProductsFeature, isComplimentaryMember, isPaidMember} from '../../utils/helpers';
+import {formatNumber, getAvailablePrices, getCurrencySymbol, getFilteredPrices, getMemberActivePrice, getMemberActiveProduct, getMemberSubscription, getPriceFromSubscription, getProductFromId, getProductFromPrice, getSubscriptionFromId, getUpdatedOfferPrice, getUpgradeProducts, hasMultipleProductsFeature, isComplimentaryMember, isPaidMember} from '../../utils/helpers';
 import Interpolate from '@doist/react-interpolate';
 import {t} from '../../utils/i18n';
 
@@ -39,35 +39,15 @@ export const AccountPlanPageStyles = `
         padding: 6px 12px;
     }
 
-    .gh-portal-retention-offer {
-        text-align: center;
+    .gh-portal-retention-offer-price {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 20px;
     }
 
-    .gh-portal-retention-offer-message {
-        font-size: 1.5rem;
-        color: var(--grey4);
-        margin: 0 0 24px;
-        line-height: 1.5;
-    }
-
-    .gh-portal-retention-offer-card {
-        background: var(--grey14);
-        border-radius: 8px;
-        padding: 32px 24px;
-        margin-bottom: 24px;
-    }
-
-    .gh-portal-retention-offer-discount {
-        font-size: 2.4rem;
-        font-weight: 700;
-        color: var(--grey1);
-        line-height: 1.1;
-    }
-
-    .gh-portal-retention-offer-duration {
-        font-size: 1.5rem;
-        color: var(--grey5);
-        margin-top: 4px;
+    .gh-portal-retention-offer-price .gh-portal-offer-oldprice {
+        margin: 4px 0 0;
     }
 `;
 
@@ -295,37 +275,68 @@ function formatOfferDuration(offer) {
     return '';
 }
 
-const RetentionOfferSection = ({offer, onAcceptOffer, onDeclineOffer}) => {
+const RetentionOfferSection = ({offer, product, price, onAcceptOffer, onDeclineOffer}) => {
     const {brandColor, action} = useContext(AppContext);
     const isAcceptingOffer = action === 'applyOffer:running';
 
+    const originalPrice = formatNumber(price.amount / 100);
+    const discountedPrice = formatNumber(getUpdatedOfferPrice({offer, price}));
+    const currencySymbol = getCurrencySymbol(price.currency);
+
     const discountText = formatOfferDiscount(offer);
     const durationText = formatOfferDuration(offer);
+    const intervalLabel = offer.cadence === 'month' ? 'month' : 'year';
+
+    let offerMessage = `${discountText} ${durationText}.`;
+
+    if (offer.duration !== 'forever') {
+        offerMessage += ` Renews at ${currencySymbol}${originalPrice}/${intervalLabel}.`;
+    }
 
     // TODO: Add i18n once copy is finalized
-    /* eslint-disable i18next/no-literal-string */
     return (
-        <div className="gh-portal-logged-out-form-container gh-portal-retention-offer">
-            <p className="gh-portal-retention-offer-message">
+        <div className="gh-portal-logged-out-form-container gh-portal-offer gh-portal-retention-offer">
+            <p className="gh-portal-text-center">
                 {'We\'d hate to see you go! How about a special offer to stay?'}
             </p>
-            <div className="gh-portal-retention-offer-card">
-                <div className="gh-portal-retention-offer-discount">{discountText}</div>
-                <div className="gh-portal-retention-offer-duration">{durationText}</div>
+
+            <div className="gh-portal-offer-bar">
+                <div className="gh-portal-offer-title">
+                    <h4>{product.name} - {offer.cadence === 'month' ? 'Monthly' : 'Yearly'}</h4>
+                    <h5 className="gh-portal-discount-label">{discountText}</h5>
+                </div>
+
+                <div className="gh-portal-offer-details">
+                    <div className="gh-portal-retention-offer-price">
+                        <div className="gh-portal-product-price">
+                            <span className="currency-sign">{currencySymbol}</span>
+                            <span className="amount">{discountedPrice}</span>
+                        </div>
+                        <div className="gh-portal-offer-oldprice">
+                            {currencySymbol}{originalPrice}
+                        </div>
+                    </div>
+                    <p className="footnote">
+                        {offerMessage}
+                    </p>
+                </div>
+
+                <ActionButton
+                    dataTestId={'accept-retention-offer'}
+                    onClick={onAcceptOffer}
+                    isRunning={isAcceptingOffer}
+                    disabled={isAcceptingOffer}
+                    isPrimary={true}
+                    brandColor={brandColor}
+                    label="Accept offer"
+                    style={{
+                        width: '100%',
+                        height: '40px',
+                        marginTop: '28px'
+                    }}
+                />
             </div>
-            <ActionButton
-                dataTestId={'accept-retention-offer'}
-                onClick={onAcceptOffer}
-                isRunning={isAcceptingOffer}
-                disabled={isAcceptingOffer}
-                isPrimary={true}
-                brandColor={brandColor}
-                label="Accept offer"
-                style={{
-                    width: '100%',
-                    height: '40px'
-                }}
-            />
+
             <ActionButton
                 dataTestId={'decline-retention-offer'}
                 onClick={onDeclineOffer}
@@ -333,10 +344,10 @@ const RetentionOfferSection = ({offer, onAcceptOffer, onDeclineOffer}) => {
                 isDestructive={true}
                 classes={'gh-portal-btn-text'}
                 brandColor={brandColor}
-                label="Continue to cancellation"
+                label="No thanks, I want to cancel"
                 style={{
                     width: '100%',
-                    marginTop: '24px',
+                    marginTop: '32px',
                     marginBottom: '24px'
                 }}
             />
@@ -383,7 +394,7 @@ const PlansContainer = ({
     pendingOffer, onPlanSelect, onPlanCheckout, onConfirm, onCancelSubscription,
     onAcceptRetentionOffer, onDeclineRetentionOffer
 }) => {
-    const {member} = useContext(AppContext);
+    const {member, site} = useContext(AppContext);
     // Plan upgrade flow for free member or complimentary member
     if (!isPaidMember({member}) || isComplimentaryMember({member})) {
         return (
@@ -405,13 +416,21 @@ const PlansContainer = ({
 
     // Retention offer flow - shown before cancellation confirmation
     if (confirmationType === 'offerRetention' && pendingOffer) {
-        return (
-            <RetentionOfferSection
-                offer={pendingOffer}
-                onAcceptOffer={onAcceptRetentionOffer}
-                onDeclineOffer={onDeclineRetentionOffer}
-            />
-        );
+        const offerProduct = getProductFromId({site, productId: pendingOffer.tier.id});
+        const offerPrice = pendingOffer.cadence === 'month' ? offerProduct?.monthlyPrice : offerProduct?.yearlyPrice;
+
+        // Skip retention offer if product or price data is invalid
+        if (offerProduct && offerPrice) {
+            return (
+                <RetentionOfferSection
+                    offer={pendingOffer}
+                    product={offerProduct}
+                    price={offerPrice}
+                    onAcceptOffer={onAcceptRetentionOffer}
+                    onDeclineOffer={onDeclineRetentionOffer}
+                />
+            );
+        }
     }
 
     // Plan confirmation flow for cancel/update flows

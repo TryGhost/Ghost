@@ -65,14 +65,13 @@ export default class FeatureService extends Service {
     @feature('webmentions') webmentions;
     @feature('stripeAutomaticTax') stripeAutomaticTax;
     @feature('emailCustomization') emailCustomization;
-    @feature('i18n') i18n;
     @feature('announcementBar') announcementBar;
     @feature('importMemberTier') importMemberTier;
     @feature('lexicalIndicators') lexicalIndicators;
     @feature('editorExcerpt') editorExcerpt;
     @feature('transistor') transistor;
     @feature('tagsX') tagsX;
-
+    @feature('commentModeration') commentModeration;
     _user = null;
 
     @computed('settings.labs')
