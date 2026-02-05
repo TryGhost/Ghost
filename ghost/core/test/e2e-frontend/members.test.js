@@ -232,7 +232,7 @@ describe('Front-end members behavior', function () {
 
                 assertExists(getJsonResponse);
                 getJsonResponse.should.have.properties(['email', 'uuid', 'status', 'name', 'newsletters']);
-                getJsonResponse.should.not.have.property('id');
+                assert(!('id' in getJsonResponse));
                 assert.equal(getJsonResponse.newsletters.length, 1);
 
                 // NOTE: these should be snapshots not code
@@ -259,7 +259,7 @@ describe('Front-end members behavior', function () {
 
                 assertExists(jsonResponse);
                 jsonResponse.should.have.properties(['email', 'uuid', 'status', 'name', 'newsletters']);
-                jsonResponse.should.not.have.property('id');
+                assert(!('id' in jsonResponse));
                 assert.equal(jsonResponse.newsletters.length, 0);
 
                 const resRestored = await request.put(`/members/api/member/newsletters?uuid=${memberUUID}&key=${memberHmac}`)
@@ -271,7 +271,7 @@ describe('Front-end members behavior', function () {
                 const restoreJsonResponse = resRestored.body;
                 assertExists(restoreJsonResponse);
                 restoreJsonResponse.should.have.properties(['email', 'uuid', 'status', 'name', 'newsletters']);
-                restoreJsonResponse.should.not.have.property('id');
+                assert(!('id' in restoreJsonResponse));
                 assert.equal(restoreJsonResponse.newsletters.length, 1);
                 // @NOTE: this seems like too much exposed information, needs a review
                 assert.equal(Object.keys(restoreJsonResponse.newsletters[0]).length, 5);
@@ -893,7 +893,7 @@ describe('Front-end members behavior', function () {
                     'unsubscribe_url'
                 ]);
                 assert.equal(Object.keys(memberData).length, 16);
-                memberData.should.not.have.property('id');
+                assert(!('id' in memberData));
                 assert.equal(memberData.newsletters.length, 1);
 
                 // @NOTE: this should be a snapshot test not code

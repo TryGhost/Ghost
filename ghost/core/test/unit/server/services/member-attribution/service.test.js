@@ -230,7 +230,7 @@ describe('MemberAttributionService', function () {
             const service = new MemberAttributionService({
                 attributionBuilder: {
                     getAttribution: async function (history) {
-                        should(history).have.property('length', 0);
+                        assert.equal(history.length, 0);
                         return {success: true};
                     }
                 },

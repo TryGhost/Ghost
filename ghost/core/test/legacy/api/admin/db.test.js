@@ -349,7 +349,7 @@ describe('DB API', function () {
         // Check settings
         const portalProducts = await models.Settings.findOne({key: 'portal_products'});
         assertExists(portalProducts);
-        JSON.parse(portalProducts.get('value')).should.deepEqual([]);
+        assert.deepEqual(JSON.parse(portalProducts.get('value')), []);
 
         // Check stripe products
         const stripeProduct = await models.StripeProduct.findOne({product_id: product.id});
@@ -451,7 +451,7 @@ describe('DB API (cleaned)', function () {
         // Check settings
         const portalProducts = await models.Settings.findOne({key: 'portal_products'});
         assertExists(portalProducts);
-        JSON.parse(portalProducts.get('value')).should.deepEqual([]);
+        assert.deepEqual(JSON.parse(portalProducts.get('value')), []);
 
         // Check stripe products
         const stripeProduct = await models.StripeProduct.findOne({product_id: product.id});

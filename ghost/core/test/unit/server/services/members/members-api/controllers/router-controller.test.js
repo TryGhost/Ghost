@@ -870,7 +870,7 @@ describe('RouterController', function () {
             it('Sends emails when honeypot is not filled', async function () {
                 const controller = createRouterController();
 
-                await controller.sendMagicLink(req, res).should.be.fulfilled();
+                await controller.sendMagicLink(req, res);
                 assert.equal(sendEmailWithMagicLinkStub.calledOnce, true);
             });
 
@@ -879,7 +879,7 @@ describe('RouterController', function () {
 
                 req.body.honeypot = 'filled!';
 
-                await controller.sendMagicLink(req, res).should.be.fulfilled();
+                await controller.sendMagicLink(req, res);
                 assert.equal(sendEmailWithMagicLinkStub.notCalled, true);
             });
         });

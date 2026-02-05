@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 
 const OfferStatus = require('../../../../../../../core/server/services/offers/domain/models/offer-status');
@@ -10,7 +11,7 @@ describe('OfferStatus', function () {
 
             try {
                 OfferStatus.create('other');
-                should.fail();
+                assert.fail();
             } catch (err) {
                 should.ok(
                     err instanceof OfferStatus.InvalidOfferStatus,
@@ -20,7 +21,7 @@ describe('OfferStatus', function () {
 
             try {
                 OfferStatus.create();
-                should.fail();
+                assert.fail();
             } catch (err) {
                 should.ok(
                     err instanceof OfferStatus.InvalidOfferStatus,

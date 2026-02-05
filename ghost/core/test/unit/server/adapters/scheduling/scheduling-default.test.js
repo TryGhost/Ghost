@@ -165,7 +165,7 @@ describe('Scheduling Default Adapter', function () {
 
             clock.tick(200);
 
-            scope.adapter._execute.callCount.should.be.greaterThan(1);
+            assert(scope.adapter._execute.callCount > 1);
             done();
         });
 

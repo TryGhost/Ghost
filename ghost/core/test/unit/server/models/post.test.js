@@ -400,7 +400,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
+                        assert(error instanceof errors.NoPermissionError);
                         done();
                     }).catch(done);
                 });
@@ -428,7 +428,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
+                        assert(error instanceof errors.NoPermissionError);
                         done();
                     }).catch(done);
                 });
@@ -455,7 +455,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
+                        assert(error instanceof errors.NoPermissionError);
                         assert.equal(mockPostObj.get.called, false);
                         assert.equal(mockPostObj.related.calledTwice, false);
                         done();
@@ -514,7 +514,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
+                        assert(error instanceof errors.NoPermissionError);
                         assert.equal(mockPostObj.get.callCount, 2);
                         assert.equal(mockPostObj.related.callCount, 1);
                         done();
@@ -543,7 +543,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
+                        assert(error instanceof errors.NoPermissionError);
                         assert.equal(mockPostObj.related.callCount, 1);
                         done();
                     });
@@ -598,7 +598,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
+                        assert(error instanceof errors.NoPermissionError);
                         assert.equal(mockPostObj.get.called, false);
                         done();
                     });
@@ -623,7 +623,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
+                        assert(error instanceof errors.NoPermissionError);
                         assert.equal(mockPostObj.get.called, false);
                         done();
                     });
@@ -648,7 +648,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
+                        assert(error instanceof errors.NoPermissionError);
                         assert.equal(mockPostObj.get.called, false);
                         done();
                     });
@@ -701,7 +701,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
+                        assert(error instanceof errors.NoPermissionError);
                         assert.equal(mockPostObj.get.calledOnce, true);
                         assert.equal(mockPostObj.related.calledOnce, true);
                         done();
@@ -730,7 +730,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
+                        assert(error instanceof errors.NoPermissionError);
                         assert.equal(mockPostObj.get.calledOnce, true);
                         assert.equal(mockPostObj.related.calledOnce, true);
                         done();
@@ -790,7 +790,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
+                        assert(error instanceof errors.NoPermissionError);
                         assert.equal(mockPostObj.get.called, false);
                         assert.equal(mockPostObj.related.calledOnce, true);
                         done();
@@ -820,7 +820,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
+                        assert(error instanceof errors.NoPermissionError);
                         assert.equal(mockPostObj.get.called, false);
                         assert.equal(mockPostObj.related.calledOnce, true);
                         done();
@@ -849,7 +849,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
+                        assert(error instanceof errors.NoPermissionError);
                         assert.equal(mockPostObj.get.called, false);
                         assert.equal(mockPostObj.related.calledTwice, true);
                         done();
@@ -878,7 +878,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
+                        assert(error instanceof errors.NoPermissionError);
                         assert.equal(mockPostObj.get.called, false);
                         assert.equal(mockPostObj.related.calledTwice, true);
                         done();
@@ -929,7 +929,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
+                        assert(error instanceof errors.NoPermissionError);
                         assert.equal(mockPostObj.get.called, false);
                         done();
                     });
@@ -957,7 +957,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
+                        assert(error instanceof errors.NoPermissionError);
                         assert.equal(mockPostObj.get.called, false);
                         done();
                     });
@@ -988,7 +988,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                 ).then(() => {
                     done(new Error('Permissible function should have rejected.'));
                 }).catch((error) => {
-                    error.should.be.an.instanceof(errors.NoPermissionError);
+                    assert(error instanceof errors.NoPermissionError);
                     assert.equal(mockPostObj.get.called, false);
                     assert.equal(mockPostObj.related.calledOnce, true);
                     done();

@@ -1,5 +1,6 @@
 const crypto = require('crypto');
 const assert = require('assert/strict');
+const {assertObjectMatches} = require('../../utils/assertions');
 const nock = require('nock');
 const should = require('should');
 const stripe = require('stripe');
@@ -603,15 +604,9 @@ describe('Members API', function () {
             const updatedMember = body.members[0];
             assert.equal(updatedMember.status, 'comped', 'A comped member should have the comped status');
             assert.equal(updatedMember.tiers.length, 1, 'The member should have one tier');
-            should(updatedMember.subscriptions).match([
-                {
-                    status: 'canceled'
-                },
-                {
-                    status: 'active'
-                }
-            ]);
             assert.equal(updatedMember.subscriptions.length, 2, 'The member should have two subscriptions');
+            assertObjectMatches(updatedMember.subscriptions[0], {status: 'canceled'});
+            assertObjectMatches(updatedMember.subscriptions[1], {status: 'active'});
 
             // Check the status events for this newly created member (should be NULL -> paid only)
             await assertMemberEvents({
@@ -2341,7 +2336,7 @@ describe('Members API', function () {
             });
 
             // Check whether the offer attribute is passed correctly in the response when fetching a single member
-            member.subscriptions[0].should.match({
+            assertObjectMatches(member.subscriptions[0], {
                 offer: null
             });
 

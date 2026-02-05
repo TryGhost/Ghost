@@ -12,7 +12,7 @@ describe('OfferType', function () {
 
             try {
                 OfferType.create('other');
-                should.fail();
+                assert.fail();
             } catch (err) {
                 should.ok(
                     err instanceof OfferType.InvalidOfferType,
@@ -22,7 +22,7 @@ describe('OfferType', function () {
 
             try {
                 OfferType.create();
-                should.fail();
+                assert.fail();
             } catch (err) {
                 should.ok(
                     err instanceof OfferType.InvalidOfferType,
@@ -35,21 +35,21 @@ describe('OfferType', function () {
     describe('OfferType.Percentage', function () {
         it('Is an OfferType with a value of "percent"', function () {
             assert.equal(OfferType.Percentage.value, 'percent');
-            should.ok(OfferType.Percentage.equals(OfferType.create('percent')));
+            assert(OfferType.Percentage.equals(OfferType.create('percent')));
         });
     });
 
     describe('OfferType.Fixed', function () {
         it('Is an OfferType with a value of "fixed"', function () {
             assert.equal(OfferType.Fixed.value, 'fixed');
-            should.ok(OfferType.Fixed.equals(OfferType.create('fixed')));
+            assert(OfferType.Fixed.equals(OfferType.create('fixed')));
         });
     });
 
     describe('OfferType.Trial', function () {
         it('Is an OfferType with a value of "trial"', function () {
             assert.equal(OfferType.Trial.value, 'trial');
-            should.ok(OfferType.Trial.equals(OfferType.create('trial')));
+            assert(OfferType.Trial.equals(OfferType.create('trial')));
         });
     });
 });

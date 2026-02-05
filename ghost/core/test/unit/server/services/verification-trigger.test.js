@@ -234,10 +234,10 @@ describe('Email verification flow', function () {
         }, new Date()));
 
         assert.equal(eventStub.callCount, 1);
-        eventStub.lastCall.lastArg.should.have.property('source');
+        assert('source' in eventStub.lastCall.lastArg);
         assert.equal(eventStub.lastCall.lastArg.source, 'api');
-        eventStub.lastCall.lastArg.should.have.property('created_at');
-        eventStub.lastCall.lastArg.created_at.should.have.property('$gt');
+        assert('created_at' in eventStub.lastCall.lastArg);
+        assert('$gt' in eventStub.lastCall.lastArg.created_at);
         assert.match(eventStub.lastCall.lastArg.created_at.$gt, /\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/);
     });
 
@@ -308,10 +308,10 @@ describe('Email verification flow', function () {
         await trigger.testImportThreshold();
 
         assert.equal(eventStub.callCount, 2);
-        eventStub.firstCall.lastArg.should.have.property('source');
+        assert('source' in eventStub.firstCall.lastArg);
         assert.equal(eventStub.firstCall.lastArg.source, 'import');
-        eventStub.firstCall.lastArg.should.have.property('created_at');
-        eventStub.firstCall.lastArg.created_at.should.have.property('$gt');
+        assert('created_at' in eventStub.firstCall.lastArg);
+        assert('$gt' in eventStub.firstCall.lastArg.created_at);
         assert.match(eventStub.firstCall.lastArg.created_at.$gt, /\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/);
 
         assert.equal(emailStub.callCount, 1);
@@ -431,10 +431,10 @@ describe('Email verification flow', function () {
         });
 
         assert.equal(eventStub.callCount, 2);
-        eventStub.firstCall.lastArg.should.have.property('source');
+        assert('source' in eventStub.firstCall.lastArg);
         assert.equal(eventStub.firstCall.lastArg.source, 'admin');
-        eventStub.firstCall.lastArg.should.have.property('created_at');
-        eventStub.firstCall.lastArg.created_at.should.have.property('$gt');
+        assert('created_at' in eventStub.firstCall.lastArg);
+        assert('$gt' in eventStub.firstCall.lastArg.created_at);
         assert.match(eventStub.firstCall.lastArg.created_at.$gt, /\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/);
 
         assert.equal(emailStub.callCount, 1);
@@ -489,10 +489,10 @@ describe('Email verification flow', function () {
         });
 
         assert.equal(eventStub.callCount, 2);
-        eventStub.firstCall.lastArg.should.have.property('source');
+        assert('source' in eventStub.firstCall.lastArg);
         assert.equal(eventStub.firstCall.lastArg.source, 'api');
-        eventStub.firstCall.lastArg.should.have.property('created_at');
-        eventStub.firstCall.lastArg.created_at.should.have.property('$gt');
+        assert('created_at' in eventStub.firstCall.lastArg);
+        assert('$gt' in eventStub.firstCall.lastArg.created_at);
         assert.match(eventStub.firstCall.lastArg.created_at.$gt, /\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/);
 
         assert.equal(emailStub.callCount, 1);

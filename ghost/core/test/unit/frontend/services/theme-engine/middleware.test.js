@@ -310,7 +310,7 @@ describe('Themes middleware', function () {
                     data.custom.should.be.an.Object().with.properties('header_typography');
                     assert.equal(data.custom.header_typography, 'Serif');
 
-                    data.custom.should.not.have.property('unknown_setting');
+                    assert(!('unknown_setting' in data.custom));
 
                     done();
                 } catch (error) {

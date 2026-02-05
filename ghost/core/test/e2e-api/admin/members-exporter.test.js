@@ -82,7 +82,7 @@ describe('Members API — exportCSV', function () {
         });
 
         tiers = (await models.Product.findAll()).models.filter(m => m.get('type') === 'paid');
-        tiers.length.should.be.greaterThan(1, 'These tests requires at least two paid tiers');
+        assert(tiers.length > 1, 'These tests requires at least two paid tiers');
 
         await models.Label.add({
             name: 'Label A'
@@ -93,10 +93,10 @@ describe('Members API — exportCSV', function () {
         });
 
         labels = (await models.Label.findAll()).models;
-        labels.length.should.be.greaterThan(1, 'These tests requires at least two labels');
+        assert(labels.length > 1, 'These tests requires at least two labels');
 
         newsletters = (await models.Newsletter.findAll()).models;
-        newsletters.length.should.be.greaterThan(1, 'These tests requires at least two newsletters');
+        assert(newsletters.length > 1, 'These tests requires at least two newsletters');
     });
 
     beforeEach(function () {

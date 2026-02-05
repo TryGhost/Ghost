@@ -131,14 +131,14 @@ describe('Config Loader', function () {
             const pathConfig = configUtils.config.get('paths');
             const appRoot = path.resolve(__dirname, '../../../../');
 
-            pathConfig.should.have.property('appRoot', appRoot);
+            assert.equal(pathConfig.appRoot, appRoot);
         });
 
         it('should allow specific properties to be user defined', function () {
             const contentPath = path.join(configUtils.config.get('paths').appRoot, 'otherContent', '/');
 
             configUtils.set('paths:contentPath', contentPath);
-            configUtils.config.get('paths').should.have.property('contentPath', contentPath);
+            assert.equal(configUtils.config.get('paths').contentPath, contentPath);
             configUtils.config.getContentPath('images').should.eql(contentPath + 'images/');
         });
     });

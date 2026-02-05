@@ -755,9 +755,9 @@ describe('Post Model', function () {
                     // testing for nulls
                     assert.equal((createdPost.get('feature_image') === null), true);
 
-                    createdPost.get('created_at').should.be.above(new Date(0).getTime());
+                    assert(createdPost.get('created_at') > new Date(0).getTime());
                     assert.equal(createdPost.relations.authors.models[0].id, testUtils.DataGenerator.Content.users[0].id);
-                    createdPost.get('updated_at').should.be.above(new Date(0).getTime());
+                    assert(createdPost.get('updated_at') > new Date(0).getTime());
                     assert.equal(createdPost.get('published_at'), null);
                     assert.equal(createdPost.get('published_by'), null);
 
@@ -770,9 +770,9 @@ describe('Post Model', function () {
                     // Set the status to published to check that `published_at` is set.
                     return createdPost.save({status: 'published'}, context);
                 }).then(function (publishedPost) {
-                    publishedPost.get('published_at').should.be.instanceOf(Date);
+                    assert(publishedPost.get('published_at') instanceof Date);
                     assert.equal(publishedPost.get('published_by'), testUtils.DataGenerator.Content.users[0].id);
-                    publishedPost.get('updated_at').should.be.instanceOf(Date);
+                    assert(publishedPost.get('updated_at') instanceof Date);
                     publishedPost.get('updated_at').should.not.equal(createdPostUpdatedDate);
 
                     assert.equal(Object.keys(eventsTriggered).length, 4);
@@ -824,9 +824,9 @@ describe('Post Model', function () {
                     // testing for nulls
                     assert.equal((createdPost.get('feature_image') === null), true);
 
-                    createdPost.get('created_at').should.be.above(new Date(0).getTime());
+                    assert(createdPost.get('created_at') > new Date(0).getTime());
                     assert.equal(createdPost.relations.authors.models[0].id, testUtils.DataGenerator.Content.users[0].id);
-                    createdPost.get('updated_at').should.be.above(new Date(0).getTime());
+                    assert(createdPost.get('updated_at') > new Date(0).getTime());
                     assert.equal(createdPost.get('published_at'), null);
                     assert.equal(createdPost.get('published_by'), null);
 
@@ -839,9 +839,9 @@ describe('Post Model', function () {
                     // Set the status to published to check that `published_at` is set.
                     return createdPost.save({status: 'published'}, context);
                 }).then(function (publishedPost) {
-                    publishedPost.get('published_at').should.be.instanceOf(Date);
+                    assert(publishedPost.get('published_at') instanceof Date);
                     assert.equal(publishedPost.get('published_by'), testUtils.DataGenerator.Content.users[0].id);
-                    publishedPost.get('updated_at').should.be.instanceOf(Date);
+                    assert(publishedPost.get('updated_at') instanceof Date);
                     publishedPost.get('updated_at').should.not.equal(createdPostUpdatedDate);
 
                     assert.equal(Object.keys(eventsTriggered).length, 4);
