@@ -24,6 +24,71 @@ test.describe('Ghost Admin - Thread Sidebar', () => {
         await settingsService.setCommentsEnabled('all');
     });
 
+    test.describe('thread pagination', () => {
+        test.use({labs: {commentModeration: true}});
+
+        test('loads more replies when clicking load more button', async ({page}) => {
+            const post = await postFactory.create({status: 'published'});
+            const member = await memberFactory.create();
+
+            const rootComment = await commentFactory.create({
+                post_id: post.id,
+                member_id: member.id,
+                html: '<p>Root comment for pagination test</p>'
+            });
+
+            // Create 5 replies
+            for (let i = 1; i <= 5; i++) {
+                await commentFactory.create({
+                    post_id: post.id,
+                    member_id: member.id,
+                    parent_id: rootComment.id,
+                    html: `<p>Reply number ${i}</p>`
+                });
+            }
+
+            // Intercept API to set a low limit (3) to trigger pagination
+            await page.route('**/ghost/api/admin/comments/**', async (route) => {
+                const url = new URL(route.request().url());
+                // Only modify browse requests (not single comment reads)
+                if (url.searchParams.has('filter') && url.searchParams.get('limit') === '100') {
+                    url.searchParams.set('limit', '3');
+                    await route.continue({url: url.toString()});
+                } else {
+                    await route.continue();
+                }
+            });
+
+            const commentsPage = new CommentsPage(page);
+            await page.goto(`/ghost/#/comments?thread=is:${rootComment.id}`);
+            await commentsPage.waitForThreadSidebar();
+
+            // Should see the root comment and first 3 replies
+            await expect(commentsPage.threadSidebar.getByText('Root comment for pagination test')).toBeVisible();
+            await expect(commentsPage.threadSidebar.getByText('Reply number 1')).toBeVisible();
+            await expect(commentsPage.threadSidebar.getByText('Reply number 2')).toBeVisible();
+            await expect(commentsPage.threadSidebar.getByText('Reply number 3')).toBeVisible();
+
+            // Reply 4 and 5 should not be visible yet
+            await expect(commentsPage.threadSidebar.getByText('Reply number 4')).toBeHidden();
+            await expect(commentsPage.threadSidebar.getByText('Reply number 5')).toBeHidden();
+
+            // Load more button should be visible
+            const loadMoreButton = commentsPage.threadSidebar.getByRole('button', {name: 'Load more replies'});
+            await expect(loadMoreButton).toBeVisible();
+
+            // Click load more
+            await loadMoreButton.click();
+
+            // Now replies 4 and 5 should be visible
+            await expect(commentsPage.threadSidebar.getByText('Reply number 4')).toBeVisible();
+            await expect(commentsPage.threadSidebar.getByText('Reply number 5')).toBeVisible();
+
+            // Load more button should be hidden now (no more pages)
+            await expect(loadMoreButton).toBeHidden();
+        });
+    });
+
     test.describe('thread navigation', () => {
         test.use({labs: {commentModeration: true}});
 
