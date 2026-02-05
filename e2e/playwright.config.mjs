@@ -25,7 +25,13 @@ const config = {
     maxFailures: 1,
     workers: parseInt(process.env.TEST_WORKERS_COUNT, 10) || getWorkerCount(),
     fullyParallel: true,
-    reporter: process.env.CI ? [['list', {printSteps: true}], ['blob']] : [['list', {printSteps: true}], ['html']],
+    reporter: process.env.CI
+        ? [
+            ['list', {printSteps: true}],
+            ['blob'],
+            ['playwright-ctrf-json-reporter', {outputFile: 'ctrf-report.json'}]
+        ]
+        : [['list', {printSteps: true}], ['html']],
     use: {
         // Base URL will be set dynamically per test via fixture
         baseURL: process.env.GHOST_BASE_URL || 'http://localhost:2368',
