@@ -51,11 +51,18 @@ module.exports = function content(options = {}) {
         return restrictedCta.apply(self, args);
     }
 
+    let html = this.html;
+
+    // Replace member UUID placeholder for Transistor embeds (URL-encoded {uuid})
+    if (options.data && options.data.member && options.data.member.uuid) {
+        html = html.replace(/%7Buuid%7D/gi, options.data.member.uuid);
+    }
+
     if (runTruncate) {
         return new SafeString(
-            downsize(this.html, truncateOptions)
+            downsize(html, truncateOptions)
         );
     }
 
-    return new SafeString(this.html);
+    return new SafeString(html);
 };

@@ -204,3 +204,96 @@ describe('{{content}} helper with custom template', function () {
         assert(rendered.string.includes('This page is for'));
     });
 });
+
+describe('{{content}} helper with member UUID replacement', function () {
+    before(function (done) {
+        hbs.express4({partialsDir: [configUtils.config.get('paths').helperTemplates]});
+
+        hbs.cachePartials(function () {
+            done();
+        });
+    });
+
+    it('replaces URL-encoded %7Buuid%7D placeholder with member UUID', function () {
+        const html = '<iframe src="https://partner.transistor.fm/ghost/embed/%7Buuid%7D"></iframe>';
+        const rendered = content.call({html: html}, {
+            data: {
+                member: {
+                    uuid: 'test-member-uuid-123'
+                }
+            }
+        });
+
+        should.exist(rendered);
+        assert.equal(rendered.string, '<iframe src="https://partner.transistor.fm/ghost/embed/test-member-uuid-123"></iframe>');
+    });
+
+    it('does not replace non-encoded {uuid} placeholder', function () {
+        const html = '<iframe src="https://partner.transistor.fm/ghost/embed/{uuid}"></iframe>';
+        const rendered = content.call({html: html}, {
+            data: {
+                member: {
+                    uuid: 'test-member-uuid-456'
+                }
+            }
+        });
+
+        should.exist(rendered);
+        // Non-encoded {uuid} should NOT be replaced
+        assert.equal(rendered.string, '<iframe src="https://partner.transistor.fm/ghost/embed/{uuid}"></iframe>');
+    });
+
+    it('does not replace placeholder when no member is present', function () {
+        const html = '<iframe src="https://partner.transistor.fm/ghost/embed/%7Buuid%7D"></iframe>';
+        const rendered = content.call({html: html}, {
+            data: {}
+        });
+
+        should.exist(rendered);
+        assert.equal(rendered.string, '<iframe src="https://partner.transistor.fm/ghost/embed/%7Buuid%7D"></iframe>');
+    });
+
+    it('does not replace placeholder when member has no UUID', function () {
+        const html = '<iframe src="https://partner.transistor.fm/ghost/embed/%7Buuid%7D"></iframe>';
+        const rendered = content.call({html: html}, {
+            data: {
+                member: {
+                    id: '123'
+                }
+            }
+        });
+
+        should.exist(rendered);
+        assert.equal(rendered.string, '<iframe src="https://partner.transistor.fm/ghost/embed/%7Buuid%7D"></iframe>');
+    });
+
+    it('replaces multiple %7Buuid%7D placeholders', function () {
+        const html = '<iframe src="https://partner.transistor.fm/ghost/embed/%7Buuid%7D"></iframe><a href="https://example.com/%7Buuid%7D">Link</a>';
+        const rendered = content.call({html: html}, {
+            data: {
+                member: {
+                    uuid: 'multi-uuid-789'
+                }
+            }
+        });
+
+        should.exist(rendered);
+        assert.equal(rendered.string, '<iframe src="https://partner.transistor.fm/ghost/embed/multi-uuid-789"></iframe><a href="https://example.com/multi-uuid-789">Link</a>');
+    });
+
+    it('replaces UUID placeholder with truncation', function () {
+        const html = '<p>Hello World</p><iframe src="https://partner.transistor.fm/ghost/embed/%7Buuid%7D"></iframe>';
+        const rendered = content.call({html: html}, {
+            hash: {words: 2},
+            data: {
+                member: {
+                    uuid: 'truncate-uuid-test'
+                }
+            }
+        });
+
+        should.exist(rendered);
+        // Truncation happens after UUID replacement
+        assert.equal(rendered.string, '<p>Hello World</p>');
+    });
+});
