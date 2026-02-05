@@ -269,10 +269,10 @@ describe('Snippets API', function () {
             const snippet = res.body.snippets[0];
             const mobiledoc = JSON.parse(snippet.mobiledoc);
 
-            mobiledoc.cards.find(c => c[0] === 'image')[1].src.should.equal(`${siteUrl}/content/images/snippet-inline.jpg`);
-            mobiledoc.cards.find(c => c[0] === 'file')[1].src.should.equal(`${siteUrl}/content/files/snippet-document.pdf`);
-            mobiledoc.cards.find(c => c[0] === 'video')[1].src.should.equal(`${siteUrl}/content/media/snippet-video.mp4`);
-            mobiledoc.cards.find(c => c[0] === 'audio')[1].src.should.equal(`${siteUrl}/content/media/snippet-audio.mp3`);
+            assert.equal(mobiledoc.cards.find(c => c[0] === 'image')[1].src, `${siteUrl}/content/images/snippet-inline.jpg`);
+            assert.equal(mobiledoc.cards.find(c => c[0] === 'file')[1].src, `${siteUrl}/content/files/snippet-document.pdf`);
+            assert.equal(mobiledoc.cards.find(c => c[0] === 'video')[1].src, `${siteUrl}/content/media/snippet-video.mp4`);
+            assert.equal(mobiledoc.cards.find(c => c[0] === 'audio')[1].src, `${siteUrl}/content/media/snippet-audio.mp3`);
             assert(!snippet.mobiledoc.includes('__GHOST_URL__'));
         });
 
@@ -303,11 +303,11 @@ describe('Snippets API', function () {
             const mobiledoc = JSON.parse(snippet.mobiledoc);
 
             // Images stay on site URL
-            mobiledoc.cards.find(c => c[0] === 'image')[1].src.should.equal(`${siteUrl}/content/images/snippet-inline.jpg`);
+            assert.equal(mobiledoc.cards.find(c => c[0] === 'image')[1].src, `${siteUrl}/content/images/snippet-inline.jpg`);
             // Media/files use CDN URL
-            mobiledoc.cards.find(c => c[0] === 'file')[1].src.should.equal(`${cdnUrl}/content/files/snippet-document.pdf`);
-            mobiledoc.cards.find(c => c[0] === 'video')[1].src.should.equal(`${cdnUrl}/content/media/snippet-video.mp4`);
-            mobiledoc.cards.find(c => c[0] === 'audio')[1].src.should.equal(`${cdnUrl}/content/media/snippet-audio.mp3`);
+            assert.equal(mobiledoc.cards.find(c => c[0] === 'file')[1].src, `${cdnUrl}/content/files/snippet-document.pdf`);
+            assert.equal(mobiledoc.cards.find(c => c[0] === 'video')[1].src, `${cdnUrl}/content/media/snippet-video.mp4`);
+            assert.equal(mobiledoc.cards.find(c => c[0] === 'audio')[1].src, `${cdnUrl}/content/media/snippet-audio.mp3`);
             assert(!snippet.mobiledoc.includes('__GHOST_URL__'));
         });
 

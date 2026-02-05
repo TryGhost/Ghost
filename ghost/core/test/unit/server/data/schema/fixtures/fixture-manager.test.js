@@ -135,8 +135,8 @@ describe('Migration Fixture Utils', function () {
             const third = manager.fixtures;
 
             assert.equal(callCount, 1);
-            first.should.equal(second);
-            second.should.equal(third);
+            assert.equal(first, second);
+            assert.equal(second, third);
         });
 
         it('should handle no placeholders gracefully', function () {
@@ -187,7 +187,7 @@ describe('Migration Fixture Utils', function () {
 
             assertExists(receivedModels);
 
-            receivedModels.should.equal(models);
+            assert.equal(receivedModels, models);
         });
 
         it('should handle missing placeholder handlers', function () {

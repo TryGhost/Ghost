@@ -209,8 +209,8 @@ describe('Update Check', function () {
             assert.equal(scope.isDone(), true);
 
             assert.equal(capturedData.ghost_version, '4.0.0');
-            capturedData.node_version.should.equal(process.versions.node);
-            capturedData.env.should.equal(process.env.NODE_ENV);
+            assert.equal(capturedData.node_version, process.versions.node);
+            assert.equal(capturedData.env, process.env.NODE_ENV);
             assert.match(capturedData.database_type, /sqlite3|mysql/);
             capturedData.blog_id.should.be.a.String();
             capturedData.blog_id.should.not.be.empty();

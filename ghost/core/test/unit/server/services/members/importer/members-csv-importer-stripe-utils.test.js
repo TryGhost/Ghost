@@ -278,7 +278,7 @@ describe('MembersCSVImporterStripeUtils', function () {
                 product_id: PRODUCT_ID
             }, OPTIONS);
 
-            result.stripePriceId.should.equal(stripeCustomerSubscriptionItem.price.id);
+            assert.equal(result.stripePriceId, stripeCustomerSubscriptionItem.price.id);
             assert.equal(result.isNewStripePrice, false);
 
             assert.equal(stripeAPIServiceStub.updateSubscriptionItemPrice.calledOnce, false);
@@ -299,7 +299,7 @@ describe('MembersCSVImporterStripeUtils', function () {
                 product_id: PRODUCT_ID
             }, OPTIONS);
 
-            result.stripePriceId.should.equal(GHOST_PRODUCT_STRIPE_PRICE_ID);
+            assert.equal(result.stripePriceId, GHOST_PRODUCT_STRIPE_PRICE_ID);
             assert.equal(result.isNewStripePrice, false);
 
             assert.equal(stripeAPIServiceStub.updateSubscriptionItemPrice.calledOnce, true);
@@ -341,7 +341,7 @@ describe('MembersCSVImporterStripeUtils', function () {
             }, OPTIONS);
 
             // Assert new price was created
-            result.stripePriceId.should.equal(NEW_STRIPE_PRICE_ID);
+            assert.equal(result.stripePriceId, NEW_STRIPE_PRICE_ID);
             assert.equal(result.isNewStripePrice, true);
 
             // Assert subscription was updated

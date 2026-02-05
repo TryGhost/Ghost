@@ -177,7 +177,7 @@ describe('Posts API', function () {
         assertExists(jsonResponse);
         assertExists(jsonResponse.posts);
         localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
-        jsonResponse.posts[0].id.should.equal(testUtils.DataGenerator.Content.posts[0].id);
+        assert.equal(jsonResponse.posts[0].id, testUtils.DataGenerator.Content.posts[0].id);
 
         assert.equal(_.isBoolean(jsonResponse.posts[0].featured), true);
 
@@ -200,7 +200,7 @@ describe('Posts API', function () {
         assertExists(jsonResponse);
         assertExists(jsonResponse.posts);
         localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
-        jsonResponse.posts[0].id.should.equal(testUtils.DataGenerator.Content.posts[1].id);
+        assert.equal(jsonResponse.posts[0].id, testUtils.DataGenerator.Content.posts[1].id);
 
         assert.equal(_.isBoolean(jsonResponse.posts[0].featured), true);
 
@@ -285,7 +285,7 @@ describe('Posts API', function () {
         assert.equal(res.headers['x-cache-invalidate'], undefined);
 
         assertExists(res.headers.location);
-        res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('posts/')}${res.body.posts[0].id}/`);
+        assert.equal(res.headers.location, `http://127.0.0.1:2369${localUtils.API.getApiQuery('posts/')}${res.body.posts[0].id}/`);
 
         // Newsletter should be returned as null
         assert.equal(res.body.posts[0].newsletter, null);

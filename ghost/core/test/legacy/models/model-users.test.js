@@ -278,7 +278,7 @@ describe('User Model', function run() {
                 let user;
                 assertExists(results);
                 user = results.toJSON();
-                user.id.should.equal(firstUser);
+                assert.equal(user.id, firstUser);
                 assert.equal(user.website, null);
 
                 return UserModel.edit({website: 'http://some.newurl.com'}, {id: firstUser});

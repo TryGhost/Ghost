@@ -494,7 +494,7 @@ describe('Importer', function () {
             it('is currently a noop', function (done) {
                 const input = [{data: {}, images: []}];
                 ImportManager.generateReport(input).then(function (output) {
-                    output.should.equal(input);
+                    assert.equal(output, input);
                     done();
                 }).catch(done);
             });
