@@ -1,6 +1,7 @@
 require('should');
 const EmailRenderer = require('../../../../../core/server/services/email-service/email-renderer');
 const assert = require('assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const cheerio = require('cheerio');
 const {createModel, createModelClass} = require('./utils');
 const linkReplacer = require('../../../../../core/server/services/lib/link-replacer');
@@ -1910,7 +1911,7 @@ describe('Email renderer', function () {
             const transistorCall = addTrackingToUrlStub.getCalls().find(
                 call => call.args[0].href.includes('transistor.fm')
             );
-            transistorCall.should.not.be.undefined();
+            assertExists(transistorCall);
 
             // The %%{uuid}%% placeholder should survive in the tracked URL destination
             // When URL searchParams are manipulated, the placeholder gets URL-encoded
@@ -1929,7 +1930,7 @@ describe('Email renderer', function () {
 
             // The Transistor link should be tracked
             const trackedTransistorLink = links.find(linkHref => linkHref.includes('tracked-link.com'));
-            trackedTransistorLink.should.not.be.undefined();
+            assertExists(trackedTransistorLink);
         });
 
         it('removes data-gh-segment and renders paywall', async function () {

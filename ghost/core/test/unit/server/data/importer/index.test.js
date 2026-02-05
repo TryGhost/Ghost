@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const errors = require('@tryghost/errors');
 const should = require('should');
 const sinon = require('sinon');
@@ -312,7 +313,7 @@ describe('Importer', function () {
                     const extractSpy = sinon.stub(ImportManager, 'extractZip').returns(Promise.resolve(testDir));
 
                     const zipResult = await ImportManager.processZip(testZip);
-                    zipResult.data.should.not.be.undefined();
+                    assertExists(zipResult.data);
                     assert.equal(zipResult.images, undefined);
                     assert.equal(extractSpy.calledOnce, true);
                 });
@@ -322,7 +323,7 @@ describe('Importer', function () {
                     const extractSpy = sinon.stub(ImportManager, 'extractZip').returns(Promise.resolve(testDir));
 
                     const zipResult = await ImportManager.processZip(testZip);
-                    zipResult.data.should.not.be.undefined();
+                    assertExists(zipResult.data);
                     assert.equal(zipResult.images, undefined);
                     assert.equal(extractSpy.calledOnce, true);
                 });

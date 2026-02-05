@@ -77,7 +77,7 @@ describe('Members Importer API', function () {
         assert.equal(importedMember1.labels.length, 1);
         assert.equal(testUtils.API.isISO8601(importedMember1.created_at), true);
         assert.equal(importedMember1.comped, false);
-        importedMember1.subscriptions.should.not.be.undefined();
+        assertExists(importedMember1.subscriptions);
         assert.equal(importedMember1.subscriptions.length, 0);
 
         const importedMember2 = jsonResponse2.members.find(m => m.email === 'test@example.com');
@@ -90,7 +90,7 @@ describe('Members Importer API', function () {
         assert.equal(testUtils.API.isISO8601(importedMember2.created_at), true);
         assert.equal(importedMember2.created_at, '1991-10-02T20:30:31.000Z');
         assert.equal(importedMember2.comped, false);
-        importedMember2.subscriptions.should.not.be.undefined();
+        assertExists(importedMember2.subscriptions);
         assert.equal(importedMember2.subscriptions.length, 0);
     });
 

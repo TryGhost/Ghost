@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 const fs = require('fs-extra');
@@ -24,7 +25,7 @@ describe('Unit: services/url/LocalFileCache', function () {
 
             const cachedUrls = await localFileCache.read('urls');
 
-            cachedUrls.should.not.be.undefined();
+            assertExists(cachedUrls);
             assert.equal(cachedUrls.urls, 'urls!');
         });
 

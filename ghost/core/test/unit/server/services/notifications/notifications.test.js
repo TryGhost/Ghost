@@ -38,9 +38,9 @@ describe('Notifications Service', function () {
 
             const createdNotification = notificationsToAdd[0];
 
-            createdNotification.id.should.not.be.undefined();
+            assertExists(createdNotification.id);
             assert.equal(createdNotification.custom, true);
-            createdNotification.createdAt.should.not.be.undefined();
+            assertExists(createdNotification.createdAt);
             assert.equal(createdNotification.status, 'alert');
             assert.equal(createdNotification.type, 'info');
             assert.equal(createdNotification.dismissible, false);

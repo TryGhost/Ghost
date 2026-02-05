@@ -77,7 +77,7 @@ describe('Members Importer API', function () {
                 assert.equal(importedMember1.note, null);
                 assert.equal(importedMember1.subscribed, true);
                 assert.equal(importedMember1.comped, false);
-                importedMember1.subscriptions.should.not.be.undefined();
+                assertExists(importedMember1.subscriptions);
                 assert.equal(importedMember1.subscriptions.length, 0);
 
                 // check label order
@@ -145,7 +145,7 @@ describe('Members Importer API', function () {
                 assert.equal(importedMember1.note, 'do map me');
                 assert.equal(importedMember1.subscribed, true);
                 assert.equal(importedMember1.comped, false);
-                importedMember1.subscriptions.should.not.be.undefined();
+                assertExists(importedMember1.subscriptions);
                 assert.equal(importedMember1.subscriptions.length, 0);
                 assert.equal(importedMember1.labels.length, 1); // auto-generated import label
             });
@@ -190,7 +190,7 @@ describe('Members Importer API', function () {
                 assert.equal(defaultMember1.note, null);
                 assert.equal(defaultMember1.subscribed, true);
                 assert.equal(defaultMember1.comped, false);
-                defaultMember1.subscriptions.should.not.be.undefined();
+                assertExists(defaultMember1.subscriptions);
                 assert.equal(defaultMember1.subscriptions.length, 0);
                 assert.equal(defaultMember1.labels.length, 1); // auto-generated import label
 
