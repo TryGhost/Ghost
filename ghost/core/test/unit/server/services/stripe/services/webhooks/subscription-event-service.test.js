@@ -8,7 +8,7 @@ describe('SubscriptionEventService', function () {
     let memberRepository;
 
     beforeEach(function () {
-        memberRepository = {get: sinon.stub(), linkSubscription: sinon.stub()};
+        memberRepository = {get: sinon.stub(), linkSubscription: sinon.stub(), removeComplimentarySubscription: sinon.stub()};
 
         service = new SubscriptionEventService({memberRepository});
     });
@@ -104,7 +104,9 @@ describe('SubscriptionEventService', function () {
             customer: 'cust_123'
         };
 
-        memberRepository.get.resolves({id: 'member_123'});
+        memberRepository.get
+            .onFirstCall().resolves({id: 'member_123'})
+            .onSecondCall().resolves({get: sinon.stub().returns('free')});
 
         await service.handleSubscriptionEvent(subscription);
 

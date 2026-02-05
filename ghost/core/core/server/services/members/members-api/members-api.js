@@ -8,6 +8,7 @@ const TokenService = require('./services/token-service');
 const GeolocationService = require('./services/geolocation-service');
 const MemberBREADService = require('./services/member-bread-service');
 const MemberRepository = require('./repositories/member-repository');
+const NextPaymentCalculator = require('./services/next-payment-calculator');
 
 const EventRepository = require('./repositories/event-repository');
 const ProductRepository = require('./repositories/product-repository');
@@ -77,7 +78,8 @@ module.exports = function MembersAPI({
     settingsCache,
     sentry,
     settingsHelpers,
-    urlUtils
+    urlUtils,
+    commentsService
 }) {
     const tokenService = new TokenService({
         privateKey,
@@ -135,6 +137,8 @@ module.exports = function MembersAPI({
         AutomatedEmailRecipient
     });
 
+    const nextPaymentCalculator = new NextPaymentCalculator();
+
     const memberBREADService = new MemberBREADService({
         offersAPI,
         memberRepository,
@@ -153,7 +157,9 @@ module.exports = function MembersAPI({
         stripeService: stripeAPIService,
         memberAttributionService,
         emailSuppressionList,
-        settingsHelpers
+        settingsHelpers,
+        nextPaymentCalculator,
+        commentsService
     });
 
     const geolocationService = new GeolocationService();
@@ -205,6 +211,7 @@ module.exports = function MembersAPI({
         labsService,
         newslettersService,
         settingsCache,
+        settingsHelpers,
         sentry,
         urlUtils
     });

@@ -539,6 +539,50 @@ describe('Members API - Member Offers', function () {
             }
         });
 
+        it('returns 400 when subscription is in a trial period', async function () {
+            const {subscription} = await getMemberSubscription('paid@test.com');
+            const stripePrice = subscription.related('stripePrice');
+            const stripeProduct = stripePrice.related('stripeProduct');
+            const product = stripeProduct.related('product');
+
+            const stripeSubscriptionId = subscription.get('subscription_id');
+            const tierId = product.id;
+            const cadence = stripePrice.get('interval');
+
+            // Temporarily set subscription to have an active trial period
+            const futureDate = new Date();
+            futureDate.setDate(futureDate.getDate() + 7);
+            await subscription.save({trial_end_at: futureDate}, {patch: true});
+
+            // Create a retention offer
+            const retentionOffer = await models.Offer.add({
+                name: 'Test Retention Trial',
+                code: 'test-retention-trial',
+                portal_title: '20% off',
+                portal_description: 'Stay with us!',
+                discount_type: 'percent',
+                discount_amount: 20,
+                duration: 'once',
+                interval: cadence,
+                product_id: tierId,
+                currency: null,
+                active: true,
+                redemption_type: 'retention'
+            });
+
+            try {
+                const token = await getIdentityToken('paid@test.com');
+
+                await membersAgent
+                    .post(`/api/subscriptions/${stripeSubscriptionId}/apply-offer`)
+                    .body({identity: token, offer_id: retentionOffer.id})
+                    .expectStatus(400);
+            } finally {
+                await subscription.save({trial_end_at: null}, {patch: true});
+                await models.Offer.destroy({id: retentionOffer.id});
+            }
+        });
+
         it('successfully applies retention offer to subscription', async function () {
             const {subscription} = await getMemberSubscription('paid@test.com');
             const stripePrice = subscription.related('stripePrice');

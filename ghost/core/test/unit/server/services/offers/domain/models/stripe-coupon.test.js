@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const StripeCoupon = require('../../../../../../../core/server/services/offers/domain/models/stripe-coupon');
 
@@ -11,10 +12,10 @@ describe('StripeCoupon', function () {
             });
 
             should.ok(coupon instanceof StripeCoupon);
-            should.equal(coupon.id, 'coupon_123');
-            should.equal(coupon.percent_off, 20);
-            should.equal(coupon.duration, 'forever');
-            should.equal(coupon.amount_off, undefined);
+            assert.equal(coupon.id, 'coupon_123');
+            assert.equal(coupon.percent_off, 20);
+            assert.equal(coupon.duration, 'forever');
+            assert.equal(coupon.amount_off, undefined);
         });
 
         it('Creates a valid StripeCoupon with amount_off', function () {
@@ -26,11 +27,11 @@ describe('StripeCoupon', function () {
             });
 
             should.ok(coupon instanceof StripeCoupon);
-            should.equal(coupon.id, 'coupon_456');
-            should.equal(coupon.amount_off, 500);
-            should.equal(coupon.currency, 'usd');
-            should.equal(coupon.duration, 'once');
-            should.equal(coupon.percent_off, undefined);
+            assert.equal(coupon.id, 'coupon_456');
+            assert.equal(coupon.amount_off, 500);
+            assert.equal(coupon.currency, 'usd');
+            assert.equal(coupon.duration, 'once');
+            assert.equal(coupon.percent_off, undefined);
         });
 
         it('Creates a valid StripeCoupon with repeating duration', function () {
@@ -42,8 +43,8 @@ describe('StripeCoupon', function () {
             });
 
             should.ok(coupon instanceof StripeCoupon);
-            should.equal(coupon.duration, 'repeating');
-            should.equal(coupon.duration_in_months, 3);
+            assert.equal(coupon.duration, 'repeating');
+            assert.equal(coupon.duration_in_months, 3);
         });
 
         it('Throws if coupon is null or undefined', function () {

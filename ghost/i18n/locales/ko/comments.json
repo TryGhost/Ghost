@@ -17,7 +17,9 @@
     "Best": "",
     "Cancel": "취소",
     "Comment": "댓글",
+    "Commenting disabled": "",
     "Complete your profile": "프로필을 완성해 주세요",
+    "Contact support": "",
     "Delete": "삭제",
     "Deleted": "",
     "Deleted member": "삭제된 회원",
@@ -28,6 +30,7 @@
     "edited": "수정됨",
     "Enter your name": "이름을 입력해 주세요",
     "Expertise": "전문분야",
+    "for more information.": "",
     "Founder @ Acme Inc": "Acme Inc 창업자",
     "Full-time parent": "전업 부모",
     "Head of Marketing at Acme, Inc": "Acme Inc 마케팅 책임자",
@@ -69,6 +72,8 @@
     "This comment has been hidden.": "숨김처리 된 댓글이에요.",
     "This comment has been removed.": "삭제 된 댓글이에요.",
     "Upgrade now": "업그레이드",
+    "View in admin": "",
     "Yesterday": "어제",
+    "You can't post comments in this publication.": "",
     "Your request will be sent to the owner of this site.": "운영자에게 요구사항이 전달되었어요."
 }

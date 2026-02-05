@@ -57,5 +57,9 @@ module.exports = {
 
     get comments() {
         return require('./comments');
+    },
+
+    get member_commenting() {
+        return require('./member-commenting');
     }
 };

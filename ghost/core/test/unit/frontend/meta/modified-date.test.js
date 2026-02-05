@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const getModifiedDate = require('../../../../core/frontend/meta/modified-date');
 
@@ -9,7 +10,7 @@ describe('getModifiedDate', function () {
                 updated_at: new Date('2016-01-01 12:56:45.232Z')
             }
         });
-        should.equal(modDate, '2016-01-01T12:56:45.232Z');
+        assert.equal(modDate, '2016-01-01T12:56:45.232Z');
     });
 
     it('should return null if no update_at date on context', function () {
@@ -17,7 +18,7 @@ describe('getModifiedDate', function () {
             context: ['author'],
             author: {}
         });
-        should.equal(modDate, null);
+        assert.equal(modDate, null);
     });
 
     it('should return null if context and property do not match in name', function () {
@@ -27,6 +28,6 @@ describe('getModifiedDate', function () {
                 updated_at: new Date('2016-01-01 12:56:45.232Z')
             }
         });
-        should.equal(modDate, null);
+        assert.equal(modDate, null);
     });
 });

@@ -23,6 +23,7 @@ import EmailReceivingFAQ from './pages/email-receiving-faq.css?inline';
 import {TipsAndDonationsSuccessStyle} from './pages/support-success';
 import {TipsAndDonationsErrorStyle} from './pages/support-error';
 import {RecommendationsPageStyles} from './pages/recommendations-page';
+import {TransistorPodcastsActionStyles} from './pages/AccountHomePage/components/transistor-podcasts-action';
 import NotificationStyle from './notification.styles';
 
 // Global styles
@@ -265,6 +266,19 @@ html[dir="rtl"] .gh-portal-btn-site-title-back span {
 
 .gh-portal-btn-logout:hover .gh-portal-logouticon path {
     stroke: var(--grey3);
+}
+
+.gh-portal-btn-inbox-link {
+    background: var(--white);
+    gap: 8px;
+    min-width: unset;
+    width: 100%;
+}
+
+.gh-portal-btn-inbox-link svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
 }
 
 /* Global layout styles
@@ -1286,6 +1300,7 @@ export function getFrameStyles({site}) {
         EmailReceivingFAQ +
         TipsAndDonationsSuccessStyle +
         TipsAndDonationsErrorStyle +
-        RecommendationsPageStyles;
+        RecommendationsPageStyles +
+        TransistorPodcastsActionStyles;
     return FrameStyle;
 }

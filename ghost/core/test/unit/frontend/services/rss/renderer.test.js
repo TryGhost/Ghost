@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const rssCache = require('../../../../../core/frontend/services/rss/cache');
@@ -28,14 +29,14 @@ describe('RSS: Renderer', function () {
         rssCacheStub.returns(Promise.resolve('dummyxml'));
 
         renderer.render(res, baseUrl).then(function () {
-            rssCacheStub.calledOnce.should.be.true();
+            assert.equal(rssCacheStub.calledOnce, true);
             rssCacheStub.firstCall.args.should.eql(['/rss/', {}]);
 
-            res.set.calledOnce.should.be.true();
-            res.set.calledWith('Content-Type', 'application/rss+xml; charset=UTF-8').should.be.true();
+            assert.equal(res.set.calledOnce, true);
+            assert.equal(res.set.calledWith('Content-Type', 'application/rss+xml; charset=UTF-8'), true);
 
-            res.send.calledOnce.should.be.true();
-            res.send.calledWith('dummyxml').should.be.true();
+            assert.equal(res.send.calledOnce, true);
+            assert.equal(res.send.calledWith('dummyxml'), true);
 
             done();
         }).catch(done);
@@ -47,14 +48,14 @@ describe('RSS: Renderer', function () {
         res.locals = {foo: 'bar'};
 
         renderer.render(res, baseUrl).then(function () {
-            rssCacheStub.calledOnce.should.be.true();
+            assert.equal(rssCacheStub.calledOnce, true);
             rssCacheStub.firstCall.args.should.eql(['/rss/', {foo: 'bar'}]);
 
-            res.set.calledOnce.should.be.true();
-            res.set.calledWith('Content-Type', 'application/rss+xml; charset=UTF-8').should.be.true();
+            assert.equal(res.set.calledOnce, true);
+            assert.equal(res.set.calledWith('Content-Type', 'application/rss+xml; charset=UTF-8'), true);
 
-            res.send.calledOnce.should.be.true();
-            res.send.calledWith('dummyxml').should.be.true();
+            assert.equal(res.send.calledOnce, true);
+            assert.equal(res.send.calledWith('dummyxml'), true);
 
             done();
         }).catch(done);
@@ -67,14 +68,14 @@ describe('RSS: Renderer', function () {
         const data = {foo: 'baz', fizz: 'buzz'};
 
         renderer.render(res, baseUrl, data).then(function () {
-            rssCacheStub.calledOnce.should.be.true();
+            assert.equal(rssCacheStub.calledOnce, true);
             rssCacheStub.firstCall.args.should.eql(['/rss/', {foo: 'baz', fizz: 'buzz'}]);
 
-            res.set.calledOnce.should.be.true();
-            res.set.calledWith('Content-Type', 'application/rss+xml; charset=UTF-8').should.be.true();
+            assert.equal(res.set.calledOnce, true);
+            assert.equal(res.set.calledWith('Content-Type', 'application/rss+xml; charset=UTF-8'), true);
 
-            res.send.calledOnce.should.be.true();
-            res.send.calledWith('dummyxml').should.be.true();
+            assert.equal(res.send.calledOnce, true);
+            assert.equal(res.send.calledWith('dummyxml'), true);
 
             done();
         }).catch(done);
@@ -86,13 +87,13 @@ describe('RSS: Renderer', function () {
         renderer.render(res, baseUrl).then(function () {
             done('This should have errored');
         }).catch(function (err) {
-            err.message.should.eql('Fake Error');
+            assert.equal(err.message, 'Fake Error');
 
-            rssCacheStub.calledOnce.should.be.true();
+            assert.equal(rssCacheStub.calledOnce, true);
             rssCacheStub.firstCall.args.should.eql(['/rss/', {}]);
 
-            res.set.called.should.be.false();
-            res.send.called.should.be.false();
+            assert.equal(res.set.called, false);
+            assert.equal(res.send.called, false);
 
             done();
         });

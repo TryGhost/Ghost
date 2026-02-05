@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const ghost_foot = require('../../../../core/frontend/helpers/ghost_foot');
@@ -19,7 +20,7 @@ describe('{{ghost_foot}} helper', function () {
 
         const rendered = ghost_foot({data: {}});
         should.exist(rendered);
-        rendered.string.should.match(/<script>var test = 'I am a variable!'<\/script>/);
+        assert.match(rendered.string, /<script>var test = 'I am a variable!'<\/script>/);
     });
 
     it('outputs post injected code', function () {
@@ -35,8 +36,8 @@ describe('{{ghost_foot}} helper', function () {
             }
         });
         should.exist(rendered);
-        rendered.string.should.match(/<script>var test = 'I am a variable!'<\/script>/);
-        rendered.string.should.match(/post-codeinjection/);
+        assert.match(rendered.string, /<script>var test = 'I am a variable!'<\/script>/);
+        assert.match(rendered.string, /post-codeinjection/);
     });
 
     it('handles post injected code being null', function () {
@@ -52,8 +53,8 @@ describe('{{ghost_foot}} helper', function () {
             }
         });
         should.exist(rendered);
-        rendered.string.should.match(/<script>var test = 'I am a variable!'<\/script>/);
-        rendered.string.should.not.match(/post-codeinjection/);
+        assert.match(rendered.string, /<script>var test = 'I am a variable!'<\/script>/);
+        assert.doesNotMatch(rendered.string, /post-codeinjection/);
     });
 
     it('handles post injected code being empty', function () {
@@ -69,8 +70,8 @@ describe('{{ghost_foot}} helper', function () {
             }
         });
         should.exist(rendered);
-        rendered.string.should.match(/<script>var test = 'I am a variable!'<\/script>/);
-        rendered.string.should.not.match(/post-codeinjection/);
+        assert.match(rendered.string, /<script>var test = 'I am a variable!'<\/script>/);
+        assert.doesNotMatch(rendered.string, /post-codeinjection/);
     });
 
     it('handles global empty code injection', function () {
@@ -78,7 +79,7 @@ describe('{{ghost_foot}} helper', function () {
 
         const rendered = ghost_foot({data: {}});
         should.exist(rendered);
-        rendered.string.should.eql('');
+        assert.equal(rendered.string, '');
     });
 
     it('handles global undefined code injection', function () {
@@ -86,6 +87,6 @@ describe('{{ghost_foot}} helper', function () {
 
         const rendered = ghost_foot({data: {}});
         should.exist(rendered);
-        rendered.string.should.eql('');
+        assert.equal(rendered.string, '');
     });
 });

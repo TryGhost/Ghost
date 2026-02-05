@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
@@ -44,10 +45,10 @@ describe('Exporter', function () {
 
                 should.exist(exportData);
 
-                exportData.meta.version.should.match(/\d+.\d+.\d+/gi);
+                assert.match(exportData.meta.version, /\d+.\d+.\d+/gi);
 
-                tablesStub.calledOnce.should.be.true();
-                db.knex.called.should.be.true();
+                assert.equal(tablesStub.calledOnce, true);
+                assert.equal(db.knex.called, true);
 
                 knexMock.callCount.should.eql(expectedCallCount);
                 queryMock.select.callCount.should.have.eql(expectedCallCount);
@@ -95,11 +96,11 @@ describe('Exporter', function () {
 
                 should.exist(exportData);
 
-                exportData.meta.version.should.match(/\d+.\d+.\d+/gi);
+                assert.match(exportData.meta.version, /\d+.\d+.\d+/gi);
 
-                tablesStub.calledOnce.should.be.true();
-                db.knex.called.should.be.true();
-                queryMock.select.called.should.be.true();
+                assert.equal(tablesStub.calledOnce, true);
+                assert.equal(db.knex.called, true);
+                assert.equal(queryMock.select.called, true);
 
                 knexMock.callCount.should.eql(expectedCallCount);
                 queryMock.select.callCount.should.have.eql(expectedCallCount);
@@ -148,7 +149,7 @@ describe('Exporter', function () {
                     done(new Error('expected error for export'));
                 })
                 .catch(function (err) {
-                    (err instanceof errors.DataExportError).should.eql(true);
+                    assert.equal((err instanceof errors.DataExportError), true);
                     done();
                 });
         });
@@ -166,8 +167,8 @@ describe('Exporter', function () {
 
             exporter.fileName().then(function (result) {
                 should.exist(result);
-                settingsStub.calledOnce.should.be.true();
-                result.should.match(/^testblog\.ghost\.[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}\.json$/);
+                assert.equal(settingsStub.calledOnce, true);
+                assert.match(result, /^testblog\.ghost\.[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}\.json$/);
 
                 done();
             }).catch(done);
@@ -180,8 +181,8 @@ describe('Exporter', function () {
 
             exporter.fileName().then(function (result) {
                 should.exist(result);
-                settingsStub.calledOnce.should.be.true();
-                result.should.match(/^ghost\.[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}\.json$/);
+                assert.equal(settingsStub.calledOnce, true);
+                assert.match(result, /^ghost\.[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}\.json$/);
 
                 done();
             }).catch(done);
@@ -195,9 +196,9 @@ describe('Exporter', function () {
 
             exporter.fileName().then(function (result) {
                 should.exist(result);
-                settingsStub.calledOnce.should.be.true();
-                loggingStub.calledOnce.should.be.true();
-                result.should.match(/^ghost\.[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}\.json$/);
+                assert.equal(settingsStub.calledOnce, true);
+                assert.equal(loggingStub.calledOnce, true);
+                assert.match(result, /^ghost\.[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}\.json$/);
 
                 done();
             }).catch(done);
@@ -221,7 +222,7 @@ describe('Exporter', function () {
 
             // NOTE: this test is serving a role of a reminder to have a look into exported tables allowlists
             //       if it failed you probably need to add or remove a table entry from table-lists module
-            should.deepEqual(actualTables, expectedTables);
+            assert.deepEqual(actualTables, expectedTables);
         });
 
         it('should be fixed when default settings is changed', function () {

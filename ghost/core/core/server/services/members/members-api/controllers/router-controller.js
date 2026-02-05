@@ -1,3 +1,4 @@
+const dns = require('node:dns/promises');
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
 const sanitizeHtml = require('sanitize-html');
@@ -5,6 +6,7 @@ const {BadRequestError, NoPermissionError, UnauthorizedError, DisabledFeatureErr
 const errors = require('@tryghost/errors');
 const {isEmail} = require('@tryghost/validator');
 const normalizeEmail = require('../utils/normalize-email');
+const {getInboxLinks} = require('../../../../lib/get-inbox-links');
 
 const messages = {
     emailRequired: 'Email is required.',
@@ -20,8 +22,8 @@ const messages = {
     unableToCheckout: 'Unable to initiate checkout session',
     inviteOnly: 'This site is invite-only, contact the owner for access.',
     paidOnly: 'This site only accepts paid members.',
-    memberNotFound: 'No member exists with this e-mail address.',
-    memberNotFoundSignUp: 'No member exists with this e-mail address. Please sign up first.',
+    memberNotFound: 'No member exists with this email address.',
+    memberNotFoundSignUp: 'No member exists with this email address. Please sign up first.',
     invalidType: 'Invalid checkout type.',
     notConfigured: 'This site is not accepting payments at the moment.',
     invalidNewsletters: 'Cannot subscribe to invalid newsletters {newsletters}',
@@ -51,6 +53,8 @@ function extractRefererOrRedirect(req) {
 }
 
 module.exports = class RouterController {
+    #inboxLinksDnsResolver = new dns.Resolver({maxTimeout: 1000});
+
     /**
      * RouterController
      *
@@ -69,6 +73,7 @@ module.exports = class RouterController {
      * @param {any} deps.newslettersService
      * @param {any} deps.sentry
      * @param {any} deps.settingsCache
+     * @param {any} deps.settingsHelpers
      * @param {any} deps.urlUtils
      */
     constructor({
@@ -87,6 +92,7 @@ module.exports = class RouterController {
         newslettersService,
         sentry,
         settingsCache,
+        settingsHelpers,
         urlUtils
     }) {
         this._offersAPI = offersAPI;
@@ -104,6 +110,7 @@ module.exports = class RouterController {
         this._newslettersService = newslettersService;
         this._sentry = sentry || undefined;
         this._settingsCache = settingsCache;
+        this._settingsHelpers = settingsHelpers;
         this._urlUtils = urlUtils;
     }
 
@@ -240,8 +247,11 @@ module.exports = class RouterController {
             customer = await this._stripeAPIService.getCustomer(subscription.get('customer_id'));
         }
 
+        const configurationId = this._settingsCache.get('stripe_billing_portal_configuration_id');
+
         const session = await this._stripeAPIService.createBillingPortalSession(customer, {
-            returnUrl: req.body.returnUrl
+            returnUrl: req.body.returnUrl,
+            ...(configurationId && {configurationId})
         });
         const sessionInfo = {
             url: session.url
@@ -681,18 +691,9 @@ module.exports = class RouterController {
             });
         }
 
-        // Normalize email to prevent homograph attacks
-        let normalizedEmail;
-
-        try {
-            normalizedEmail = normalizeEmail(email);
-
-            if (normalizedEmail !== email) {
-                logging.info(`Email normalized from ${email} to ${normalizedEmail} for magic link`);
-            }
-        } catch (err) {
-            logging.error(`Failed to normalize [${email}]: ${err.message}`);
-
+        // Normalize email to avoid invalid addresses and mitigate homograph attacks
+        const normalizedEmail = normalizeEmail(email);
+        if (!normalizedEmail) {
             throw new errors.BadRequestError({
                 message: tpl(messages.invalidEmail)
             });
@@ -703,8 +704,8 @@ module.exports = class RouterController {
 
             // Honeypot field is filled, this is a bot.
             // Pretend that the email was sent successfully.
-            res.writeHead(201);
-            return res.end('Created.');
+            res.writeHead(201, {'Content-Type': 'application/json'});
+            return res.end('{}');
         }
 
         if (!emailType) {
@@ -718,19 +719,32 @@ module.exports = class RouterController {
         }
 
         try {
+            /** @type {{inboxLinks?: {desktop: string; android: string; provider: string}; otc_ref?: string}} */
+            const resBody = {};
+
             if (emailType === 'signup' || emailType === 'subscribe') {
                 await this._handleSignup(req, normalizedEmail, referrer);
             } else {
                 const signIn = await this._handleSignin(req, normalizedEmail, referrer);
-
                 if (signIn.otcRef) {
-                    res.writeHead(201, {'Content-Type': 'application/json'});
-                    return res.end(JSON.stringify({otc_ref: signIn.otcRef}));
+                    resBody.otc_ref = signIn.otcRef;
                 }
             }
 
-            res.writeHead(201);
-            return res.end('Created.');
+            const inboxLinks = await getInboxLinks({
+                recipient: normalizedEmail,
+                sender: this._settingsHelpers.getMembersSupportAddress(),
+                dnsResolver: this.#inboxLinksDnsResolver
+            });
+            if (inboxLinks) {
+                resBody.inboxLinks = inboxLinks;
+                logging.info(`[Inbox links] Found inbox links for provider ${inboxLinks.provider}`);
+            } else {
+                logging.info('[Inbox links] Found no inbox links');
+            }
+
+            res.writeHead(201, {'Content-Type': 'application/json'});
+            return res.end(JSON.stringify(resBody));
         } catch (err) {
             if (err.code === 'EENVELOPE') {
                 logging.error(err);
@@ -855,9 +869,33 @@ module.exports = class RouterController {
         const member = await this._memberRepository.get({email: normalizedEmail});
 
         if (!member) {
-            throw new errors.BadRequestError({
-                message: this._allowSelfSignup() ? tpl(messages.memberNotFoundSignUp) : tpl(messages.memberNotFound)
-            });
+            // Member doesn't exist - to prevent enumeration, we don't reveal this
+            // If self-signup is allowed, send a signup email so they can create an account
+            // If self-signup is disabled (invite-only), silently return to prevent enumeration
+            if (this._allowSelfSignup()) {
+                const blockedEmailDomains = this._settingsCache.get('all_blocked_email_domains');
+                const emailDomain = normalizedEmail.split('@')[1]?.toLowerCase();
+                if (emailDomain && blockedEmailDomains.includes(emailDomain)) {
+                    // To prevent enumeration, we don't reveal this
+                    return {};
+                }
+
+                const tokenData = {
+                    reqIp: req.ip ?? undefined,
+                    attribution: await this._memberAttributionService.getAttribution(req.body.urlHistory)
+                };
+                // Send a signup email - this allows them to create an account
+                return await this._sendEmailWithMagicLink({
+                    email: normalizedEmail,
+                    tokenData,
+                    requestedType: 'signup',
+                    referrer
+                });
+            }
+
+            // Self-signup disabled (invite-only): silently return empty response
+            // to prevent member enumeration
+            return {};
         }
 
         const tokenData = {};
@@ -920,6 +958,11 @@ module.exports = class RouterController {
         const identity = req.body.identity;
         const redemptionType = req.body.redemption_type || 'retention';
 
+        function sendOffersResponse(offers = []) {
+            res.writeHead(200, {'Content-Type': 'application/json'});
+            return res.end(JSON.stringify({offers}));
+        }
+
         if (!identity) {
             res.writeHead(401);
             return res.end('Unauthorized');
@@ -967,43 +1010,47 @@ module.exports = class RouterController {
             return ['active', 'trialing', 'past_due', 'unpaid'].includes(status);
         });
 
+        // No active subscription - return empty offers
         if (activeSubscriptions.length === 0) {
-            // No active subscription - return empty offers
-            res.writeHead(200, {'Content-Type': 'application/json'});
-            return res.end(JSON.stringify({offers: []}));
+            return sendOffersResponse();
         }
 
+        // Multiple active subscriptions - edge case, return empty offers to avoid ambiguity
         if (activeSubscriptions.length > 1) {
-            // Multiple active subscriptions - edge case, return empty offers to avoid ambiguity
-            res.writeHead(200, {'Content-Type': 'application/json'});
-            return res.end(JSON.stringify({offers: []}));
+            return sendOffersResponse();
         }
 
         const activeSubscription = activeSubscriptions[0];
 
         // If subscription already has an offer applied (e.g. signup offer), don't show retention offers
         if (activeSubscription.get('offer_id')) {
-            res.writeHead(200, {'Content-Type': 'application/json'});
-            return res.end(JSON.stringify({offers: []}));
+            return sendOffersResponse();
+        }
+
+        // If subscription is in a trial period (either offer-based or tier-based), don't show retention offers
+        const trialEndAt = activeSubscription.get('trial_end_at');
+        if (trialEndAt && trialEndAt > new Date()) {
+            return sendOffersResponse();
         }
 
         // Get tier and cadence from the subscription
         const stripePrice = activeSubscription.related('stripePrice');
         if (!stripePrice || !stripePrice.id) {
-            res.writeHead(200, {'Content-Type': 'application/json'});
-            return res.end(JSON.stringify({offers: []}));
+            return sendOffersResponse();
         }
 
         const stripeProduct = stripePrice.related('stripeProduct');
+
+        // If the stripe product is not found, return empty offers
         if (!stripeProduct || !stripeProduct.id) {
-            res.writeHead(200, {'Content-Type': 'application/json'});
-            return res.end(JSON.stringify({offers: []}));
+            return sendOffersResponse();
         }
 
         const product = stripeProduct.related('product');
+
+        // If the product is not found, return empty offers
         if (!product || !product.id) {
-            res.writeHead(200, {'Content-Type': 'application/json'});
-            return res.end(JSON.stringify({offers: []}));
+            return sendOffersResponse();
         }
 
         const tierId = product.id;
@@ -1022,8 +1069,7 @@ module.exports = class RouterController {
             logging.error('Failed to fetch offers:', err);
         }
 
-        res.writeHead(200, {'Content-Type': 'application/json'});
-        return res.end(JSON.stringify({offers}));
+        return sendOffersResponse(offers);
     }
 };
 

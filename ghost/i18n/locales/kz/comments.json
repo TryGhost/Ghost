@@ -17,7 +17,9 @@
     "Best": "",
     "Cancel": "Бас тарту",
     "Comment": "Пікір",
+    "Commenting disabled": "",
     "Complete your profile": "Профиліңізді толтырыңыз",
+    "Contact support": "",
     "Delete": "Жою",
     "Deleted": "",
     "Deleted member": "Жойылған аккаунт",
@@ -28,6 +30,7 @@
     "edited": "Өңделді",
     "Enter your name": "Есіміңізді жазыңыз",
     "Expertise": "Қызмет",
+    "for more information.": "",
     "Founder @ Acme Inc": "@ Acme Inc құрылтайшысы",
     "Full-time parent": "Толық күн жұмыс істейтін ата-ана",
     "Head of Marketing at Acme, Inc": "@ Acme маркетинг жетекшісі ",
@@ -69,6 +72,8 @@
     "This comment has been hidden.": "Бұл пікір жасырылды.",
     "This comment has been removed.": "Бұл пікір өшірілді.",
     "Upgrade now": "Жаңарту ",
+    "View in admin": "",
     "Yesterday": "Кеше",
+    "You can't post comments in this publication.": "",
     "Your request will be sent to the owner of this site.": "Өтінішіңіз сайт иесіне жіберіледі."
 }

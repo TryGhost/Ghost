@@ -17,7 +17,9 @@
     "Best": "Onena",
     "Cancel": "Utzi",
     "Comment": "Egin iruzkina",
+    "Commenting disabled": "",
     "Complete your profile": "Bete zure profila",
+    "Contact support": "",
     "Delete": "Ezabatu",
     "Deleted": "Ezabatuta",
     "Deleted member": "Ezabatutako kidea",
@@ -28,6 +30,7 @@
     "edited": "editatua",
     "Enter your name": "Sartu zure izena",
     "Expertise": "Ezagutza",
+    "for more information.": "",
     "Founder @ Acme Inc": "FAGOR kooperatibaren fundatzailea",
     "Full-time parent": "Lanaldi osoko gurasoa",
     "Head of Marketing at Acme, Inc": "FAGOR kooperatibako marketin-zuzendaria",
@@ -69,6 +72,8 @@
     "This comment has been hidden.": "Iruzkin hau ezkutatu da.",
     "This comment has been removed.": "Iruzkin hau kendu da.",
     "Upgrade now": "Ordaindu orain",
+    "View in admin": "",
     "Yesterday": "Atzo",
+    "You can't post comments in this publication.": "",
     "Your request will be sent to the owner of this site.": "Eskaera gune honetako arduradunari bidaliko zaio."
 }

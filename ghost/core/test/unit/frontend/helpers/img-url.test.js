@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const configUtils = require('../../../utils/config-utils');
@@ -30,53 +31,53 @@ describe('{{img_url}} helper', function () {
         it('should output relative url of image', function () {
             const rendered = img_url('/content/images/image-relative-url.png', {});
             should.exist(rendered);
-            rendered.should.equal('/content/images/image-relative-url.png');
-            logWarnStub.called.should.be.false();
+            assert.equal(rendered, '/content/images/image-relative-url.png');
+            assert.equal(logWarnStub.called, false);
         });
 
         it('should output relative url of image if the input is absolute', function () {
             const rendered = img_url('http://localhost:65535/content/images/image-relative-url.png', {});
             should.exist(rendered);
-            rendered.should.equal('/content/images/image-relative-url.png');
-            logWarnStub.called.should.be.false();
+            assert.equal(rendered, '/content/images/image-relative-url.png');
+            assert.equal(logWarnStub.called, false);
         });
 
         it('should output absolute url of image if the option is present ', function () {
             const rendered = img_url('/content/images/image-relative-url.png', {hash: {absolute: 'true'}});
             should.exist(rendered);
-            rendered.should.equal('http://localhost:65535/content/images/image-relative-url.png');
-            logWarnStub.called.should.be.false();
+            assert.equal(rendered, 'http://localhost:65535/content/images/image-relative-url.png');
+            assert.equal(logWarnStub.called, false);
         });
 
         it('should NOT output absolute url of image if the option is "false" ', function () {
             const rendered = img_url('/content/images/image-relative-url.png', {hash: {absolute: 'false'}});
             should.exist(rendered);
-            rendered.should.equal('/content/images/image-relative-url.png');
+            assert.equal(rendered, '/content/images/image-relative-url.png');
         });
 
         it('should output author url', function () {
             const rendered = img_url('/content/images/author-image-relative-url.png', {});
             should.exist(rendered);
-            rendered.should.equal('/content/images/author-image-relative-url.png');
-            logWarnStub.called.should.be.false();
+            assert.equal(rendered, '/content/images/author-image-relative-url.png');
+            assert.equal(logWarnStub.called, false);
         });
 
         it('should have no output if the image attribute is not provided (with warning)', function () {
             const rendered = img_url({hash: {absolute: 'true'}});
-            should.not.exist(rendered);
-            logWarnStub.calledOnce.should.be.true();
+            assert.equal(rendered, undefined);
+            assert.equal(logWarnStub.calledOnce, true);
         });
 
         it('should have no output if the image attribute evaluates to undefined (with warning)', function () {
             const rendered = img_url(undefined, {hash: {absolute: 'true'}});
-            should.not.exist(rendered);
-            logWarnStub.calledOnce.should.be.true();
+            assert.equal(rendered, undefined);
+            assert.equal(logWarnStub.calledOnce, true);
         });
 
         it('should have no output if the image attribute evaluates to null (no waring)', function () {
             const rendered = img_url(null, {hash: {absolute: 'true'}});
-            should.not.exist(rendered);
-            logWarnStub.calledOnce.should.be.false();
+            assert.equal(rendered, undefined);
+            assert.equal(logWarnStub.calledOnce, false);
         });
     });
 
@@ -92,19 +93,19 @@ describe('{{img_url}} helper', function () {
         it('should output relative url of image', function () {
             const rendered = img_url('/blog/content/images/image-relative-url.png', {});
             should.exist(rendered);
-            rendered.should.equal('/blog/content/images/image-relative-url.png');
+            assert.equal(rendered, '/blog/content/images/image-relative-url.png');
         });
 
         it('should output absolute url of image if the option is present ', function () {
             const rendered = img_url('/blog/content/images/image-relative-url.png', {hash: {absolute: 'true'}});
             should.exist(rendered);
-            rendered.should.equal('http://localhost:65535/blog/content/images/image-relative-url.png');
+            assert.equal(rendered, 'http://localhost:65535/blog/content/images/image-relative-url.png');
         });
 
         it('should not change output for an external url', function () {
             const rendered = img_url('http://example.com/picture.jpg', {});
             should.exist(rendered);
-            rendered.should.equal('http://example.com/picture.jpg');
+            assert.equal(rendered, 'http://example.com/picture.jpg');
         });
     });
 
@@ -133,7 +134,7 @@ describe('{{img_url}} helper', function () {
                 }
             });
             should.exist(rendered);
-            rendered.should.equal('/content/images/size/w400/my-coole-img.jpg');
+            assert.equal(rendered, '/content/images/size/w400/my-coole-img.jpg');
         });
 
         it('should output the correct url for protocol relative urls', function () {
@@ -152,7 +153,7 @@ describe('{{img_url}} helper', function () {
                 }
             });
             should.exist(rendered);
-            rendered.should.equal('//website.com/whatever/my-coole-img.jpg');
+            assert.equal(rendered, '//website.com/whatever/my-coole-img.jpg');
         });
 
         it('should output the correct url for relative paths', function () {
@@ -171,7 +172,7 @@ describe('{{img_url}} helper', function () {
                 }
             });
             should.exist(rendered);
-            rendered.should.equal('/content/images/size/w400/my-coole-img.jpg');
+            assert.equal(rendered, '/content/images/size/w400/my-coole-img.jpg');
         });
 
         it('should output the correct url for relative paths without leading slash', function () {
@@ -190,14 +191,14 @@ describe('{{img_url}} helper', function () {
                 }
             });
             should.exist(rendered);
-            rendered.should.equal('content/images/size/w400/my-coole-img.jpg');
+            assert.equal(rendered, 'content/images/size/w400/my-coole-img.jpg');
         });
 
         it('ignores invalid size options', function () {
             const rendered = img_url('/content/images/author-image-relative-url.png', {hash: {size: 'invalid-size'}});
             should.exist(rendered);
-            rendered.should.equal('/content/images/author-image-relative-url.png');
-            logWarnStub.called.should.be.false();
+            assert.equal(rendered, '/content/images/author-image-relative-url.png');
+            assert.equal(logWarnStub.called, false);
         });
 
         it('ignores misconfigured sizes', function () {
@@ -214,8 +215,8 @@ describe('{{img_url}} helper', function () {
                 }
             });
             should.exist(rendered);
-            rendered.should.equal('/content/images/author-image-relative-url.png');
-            logWarnStub.called.should.be.false();
+            assert.equal(rendered, '/content/images/author-image-relative-url.png');
+            assert.equal(logWarnStub.called, false);
         });
 
         it('ignores format if size is missing', function () {
@@ -232,8 +233,8 @@ describe('{{img_url}} helper', function () {
                 }
             });
             should.exist(rendered);
-            rendered.should.equal('/content/images/author-image-relative-url.png');
-            logWarnStub.called.should.be.false();
+            assert.equal(rendered, '/content/images/author-image-relative-url.png');
+            assert.equal(logWarnStub.called, false);
         });
 
         it('adds format and size options', function () {
@@ -251,8 +252,8 @@ describe('{{img_url}} helper', function () {
                 }
             });
             should.exist(rendered);
-            rendered.should.equal('/content/images/size/w600/format/webp/author-image-relative-url.png');
-            logWarnStub.called.should.be.false();
+            assert.equal(rendered, '/content/images/size/w600/format/webp/author-image-relative-url.png');
+            assert.equal(logWarnStub.called, false);
         });
 
         it('ignores invalid formats', function () {
@@ -270,8 +271,8 @@ describe('{{img_url}} helper', function () {
                 }
             });
             should.exist(rendered);
-            rendered.should.equal('/content/images/size/w600/author-image-relative-url.png');
-            logWarnStub.called.should.be.false();
+            assert.equal(rendered, '/content/images/size/w600/author-image-relative-url.png');
+            assert.equal(logWarnStub.called, false);
         });
     });
 
@@ -298,7 +299,7 @@ describe('{{img_url}} helper', function () {
                 }
             });
             should.exist(rendered);
-            rendered.should.equal('https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80&w=2000');
+            assert.equal(rendered, 'https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80&w=2000');
         });
 
         it('can change the output width', function () {
@@ -317,7 +318,7 @@ describe('{{img_url}} helper', function () {
                 }
             });
             should.exist(rendered);
-            rendered.should.equal('https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80&w=400');
+            assert.equal(rendered, 'https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80&w=400');
         });
 
         it('can change the output height', function () {
@@ -336,7 +337,7 @@ describe('{{img_url}} helper', function () {
                 }
             });
             should.exist(rendered);
-            rendered.should.equal('https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80&h=400');
+            assert.equal(rendered, 'https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80&h=400');
         });
 
         it('ignores invalid image size configurations', function () {
@@ -355,7 +356,7 @@ describe('{{img_url}} helper', function () {
                 }
             });
             should.exist(rendered);
-            rendered.should.equal('https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80');
+            assert.equal(rendered, 'https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80');
         });
 
         it('ignores invalid urls', function () {
@@ -394,7 +395,7 @@ describe('{{img_url}} helper', function () {
                 }
             });
             should.exist(rendered);
-            rendered.should.equal('https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80&w=2000');
+            assert.equal(rendered, 'https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80&w=2000');
         });
 
         it('can change the output format', function () {
@@ -413,7 +414,7 @@ describe('{{img_url}} helper', function () {
                 }
             });
             should.exist(rendered);
-            rendered.should.equal('https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=max&fm=webp&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80&w=2000');
+            assert.equal(rendered, 'https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=max&fm=webp&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80&w=2000');
         });
 
         it('ignores invalid formats', function () {
@@ -432,7 +433,7 @@ describe('{{img_url}} helper', function () {
                 }
             });
             should.exist(rendered);
-            rendered.should.equal('https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80&w=2000');
+            assert.equal(rendered, 'https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80&w=2000');
         });
 
         it('transforms jpeg to jpg', function () {
@@ -451,7 +452,7 @@ describe('{{img_url}} helper', function () {
                 }
             });
             should.exist(rendered);
-            rendered.should.equal('https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80&w=2000');
+            assert.equal(rendered, 'https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80&w=2000');
         });
 
         it('can change the output format and size', function () {
@@ -471,7 +472,7 @@ describe('{{img_url}} helper', function () {
                 }
             });
             should.exist(rendered);
-            rendered.should.equal('https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=max&fm=webp&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80&w=400');
+            assert.equal(rendered, 'https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=max&fm=webp&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80&w=400');
         });
     });
 });

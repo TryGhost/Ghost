@@ -17,7 +17,11 @@ export class HomePage extends PublicPage {
 
     async waitUntilLoaded(): Promise<void> {
         await this.accountButton.waitFor({state: 'visible'});
-        await this.portal.waitForScript();
+        await this.portalRoot.waitFor({state: 'attached'});
+    }
+
+    async openAccountPortal(): Promise<void> {
+        await this.portal.clickLinkAndWaitForPopup(this.accountButton);
     }
 
     async gotoWithQueryParams(params: Record<string, string>): Promise<void> {

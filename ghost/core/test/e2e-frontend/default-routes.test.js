@@ -5,6 +5,7 @@
 // As it stands, these tests depend on the database, and as such are integration tests.
 // Mocking out the models to not touch the DB would turn these into unit tests, and should probably be done in future,
 // But then again testing real code, rather than mock code, might be more useful...
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const supertest = require('supertest');
@@ -17,9 +18,9 @@ const settingsCache = require('../../core/shared/settings-cache');
 const origCache = _.cloneDeep(settingsCache);
 
 function assertCorrectFrontendHeaders(res) {
-    should.not.exist(res.headers['x-cache-invalidate']);
-    should.not.exist(res.headers['X-CSRF-Token']);
-    should.not.exist(res.headers['set-cookie']);
+    assert.equal(res.headers['x-cache-invalidate'], undefined);
+    assert.equal(res.headers['X-CSRF-Token'], undefined);
+    assert.equal(res.headers['set-cookie'], undefined);
     should.exist(res.headers.date);
 }
 
@@ -64,12 +65,12 @@ describe('Default Frontend routing', function () {
                     const $ = cheerio.load(res.text);
 
                     // NOTE: "Ghost" is the title from the settings.
-                    $('title').text().should.equal('Ghost');
+                    assert.equal($('title').text(), 'Ghost');
 
-                    $('body.home-template').length.should.equal(1);
-                    $('article.post').length.should.equal(7);
+                    assert.equal($('body.home-template').length, 1);
+                    assert.equal($('article.post').length, 7);
 
-                    res.text.should.not.containEql('__GHOST_URL__');
+                    assert(!res.text.includes('__GHOST_URL__'));
                 });
         });
 
@@ -83,13 +84,13 @@ describe('Default Frontend routing', function () {
                     const $ = cheerio.load(res.text);
 
                     // NOTE: "Ghost" is the title from the settings.
-                    $('title').text().should.equal('Ghost - Ghost');
+                    assert.equal($('title').text(), 'Ghost - Ghost');
 
-                    $('body.author-template').length.should.equal(1);
-                    $('article.post').length.should.equal(7);
-                    $('article.tag-getting-started').length.should.equal(7);
+                    assert.equal($('body.author-template').length, 1);
+                    assert.equal($('article.post').length, 7);
+                    assert.equal($('article.tag-getting-started').length, 7);
 
-                    res.text.should.not.containEql('__GHOST_URL__');
+                    assert(!res.text.includes('__GHOST_URL__'));
                 });
         });
 
@@ -103,13 +104,13 @@ describe('Default Frontend routing', function () {
                     const $ = cheerio.load(res.text);
 
                     // NOTE: "Ghost" is the title from the settings.
-                    $('title').text().should.equal('Getting Started - Ghost');
+                    assert.equal($('title').text(), 'Getting Started - Ghost');
 
-                    $('body.tag-template').length.should.equal(1);
-                    $('article.post').length.should.equal(7);
-                    $('article.tag-getting-started').length.should.equal(7);
+                    assert.equal($('body.tag-template').length, 1);
+                    assert.equal($('article.post').length, 7);
+                    assert.equal($('article.tag-getting-started').length, 7);
 
-                    res.text.should.not.containEql('__GHOST_URL__');
+                    assert(!res.text.includes('__GHOST_URL__'));
                 });
         });
     });
@@ -123,11 +124,11 @@ describe('Default Frontend routing', function () {
                 .expect(assertCorrectFrontendHeaders)
                 .expect((res) => {
                     // Test that head and body have rendered something...
-                    res.text.should.containEql('<title>Start here for a quick overview of everything you need to know</title>');
-                    res.text.should.match(/<h1[^>]*?>Start here for a quick overview of everything you need to know<\/h1>/);
+                    assert(res.text.includes('<title>Start here for a quick overview of everything you need to know</title>'));
+                    assert.match(res.text, /<h1[^>]*?>Start here for a quick overview of everything you need to know<\/h1>/);
                     // We should write a single test for this, or encapsulate it as an assertion
                     // E.g. res.text.should.not.containInvalidUrls()
-                    res.text.should.not.containEql('__GHOST_URL__');
+                    assert(!res.text.includes('__GHOST_URL__'));
                 });
         });
 
@@ -298,8 +299,8 @@ describe('Default Frontend routing', function () {
                 .expect('Content-Type', 'application/rss+xml; charset=utf-8')
                 .expect(assertCorrectFrontendHeaders)
                 .expect((res) => {
-                    res.text.should.match(/<!\[CDATA\[Start here for a quick overview of everything you need to know\]\]>/);
-                    res.text.should.not.containEql('__GHOST_URL__');
+                    assert.match(res.text, /<!\[CDATA\[Start here for a quick overview of everything you need to know\]\]>/);
+                    assert(!res.text.includes('__GHOST_URL__'));
                 });
         });
 
@@ -310,8 +311,8 @@ describe('Default Frontend routing', function () {
                 .expect('Content-Type', 'application/rss+xml; charset=utf-8')
                 .expect(assertCorrectFrontendHeaders)
                 .expect((res) => {
-                    res.text.should.match(/<!\[CDATA\[Start here for a quick overview of everything you need to know\]\]>/);
-                    res.text.should.not.containEql('__GHOST_URL__');
+                    assert.match(res.text, /<!\[CDATA\[Start here for a quick overview of everything you need to know\]\]>/);
+                    assert(!res.text.includes('__GHOST_URL__'));
                 });
         });
 
@@ -322,8 +323,8 @@ describe('Default Frontend routing', function () {
                 .expect('Content-Type', 'application/rss+xml; charset=utf-8')
                 .expect(assertCorrectFrontendHeaders)
                 .expect((res) => {
-                    res.text.should.match(/<!\[CDATA\[Start here for a quick overview of everything you need to know\]\]>/);
-                    res.text.should.not.containEql('__GHOST_URL__');
+                    assert.match(res.text, /<!\[CDATA\[Start here for a quick overview of everything you need to know\]\]>/);
+                    assert(!res.text.includes('__GHOST_URL__'));
                 });
         });
     });
@@ -377,8 +378,8 @@ describe('Default Frontend routing', function () {
                 .expect('Content-Type', 'text/xml; charset=utf-8')
                 .expect(assertCorrectFrontendHeaders)
                 .expect((res) => {
-                    res.text.should.match(/sitemapindex/);
-                    res.text.should.not.containEql('__GHOST_URL__');
+                    assert.match(res.text, /sitemapindex/);
+                    assert(!res.text.includes('__GHOST_URL__'));
                 });
         });
 
@@ -389,8 +390,8 @@ describe('Default Frontend routing', function () {
                 .expect('Content-Type', 'text/xml; charset=utf-8')
                 .expect(assertCorrectFrontendHeaders)
                 .expect((res) => {
-                    res.text.should.match(/urlset/);
-                    res.text.should.not.containEql('__GHOST_URL__');
+                    assert.match(res.text, /urlset/);
+                    assert(!res.text.includes('__GHOST_URL__'));
                 });
         });
 
@@ -401,10 +402,10 @@ describe('Default Frontend routing', function () {
                 .expect('Content-Type', 'text/xml; charset=utf-8')
                 .expect(assertCorrectFrontendHeaders)
                 .expect((res) => {
-                    res.text.should.match(/urlset/);
+                    assert.match(res.text, /urlset/);
                     // CASE: the index page should always be present in pages sitemap
-                    res.text.should.containEql('<loc>http://127.0.0.1:2369/</loc>');
-                    res.text.should.not.containEql('__GHOST_URL__');
+                    assert(res.text.includes('<loc>http://127.0.0.1:2369/</loc>'));
+                    assert(!res.text.includes('__GHOST_URL__'));
                 });
         });
 
@@ -415,8 +416,8 @@ describe('Default Frontend routing', function () {
                 .expect('Content-Type', 'text/xml; charset=utf-8')
                 .expect(assertCorrectFrontendHeaders)
                 .expect((res) => {
-                    res.text.should.match(/urlset/);
-                    res.text.should.not.containEql('__GHOST_URL__');
+                    assert.match(res.text, /urlset/);
+                    assert(!res.text.includes('__GHOST_URL__'));
                 });
         });
 
@@ -427,8 +428,8 @@ describe('Default Frontend routing', function () {
                 .expect('Content-Type', 'text/xml; charset=utf-8')
                 .expect(assertCorrectFrontendHeaders)
                 .expect((res) => {
-                    res.text.should.match(/urlset/);
-                    res.text.should.not.containEql('__GHOST_URL__');
+                    assert.match(res.text, /urlset/);
+                    assert(!res.text.includes('__GHOST_URL__'));
                 });
         });
 
@@ -439,8 +440,8 @@ describe('Default Frontend routing', function () {
                 .expect('Content-Type', 'text/xsl')
                 .expect(assertCorrectFrontendHeaders)
                 .expect((res) => {
-                    res.text.should.match(/urlset/);
-                    res.text.should.not.containEql('__GHOST_URL__');
+                    assert.match(res.text, /urlset/);
+                    assert(!res.text.includes('__GHOST_URL__'));
                 });
         });
     });
@@ -489,7 +490,7 @@ describe('Default Frontend routing', function () {
                 .expect('Content-Type', 'application/rss+xml; charset=utf-8')
                 .expect(assertCorrectFrontendHeaders)
                 .expect((res) => {
-                    res.text.should.match(/<!\[CDATA\[Start here for a quick overview of everything you need to know\]\]>/);
+                    assert.match(res.text, /<!\[CDATA\[Start here for a quick overview of everything you need to know\]\]>/);
                 });
         });
 
@@ -500,7 +501,7 @@ describe('Default Frontend routing', function () {
                 .expect('Content-Type', 'application/rss+xml; charset=utf-8')
                 .expect(assertCorrectFrontendHeaders)
                 .expect((res) => {
-                    res.text.should.match(/<!\[CDATA\[Start here for a quick overview of everything you need to know\]\]>/);
+                    assert.match(res.text, /<!\[CDATA\[Start here for a quick overview of everything you need to know\]\]>/);
                 });
         });
 

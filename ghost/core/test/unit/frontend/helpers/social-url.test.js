@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const handlebars = require('../../../../core/frontend/services/theme-engine/engine').handlebars;
 const helpers = require('../../../../core/frontend/services/helpers');
@@ -67,32 +68,27 @@ describe('{{social_url}} helper', function () {
 
     it('should return empty string if the type hash parameter is missing', function () {
         const templateString = `{{social_url}}`; // No type hash
-        compile(templateString)
-            .with(socialData)
-            .should.equal('');
+        assert.equal(compile(templateString)
+            .with(socialData), '');
     });
 
     it('should return empty string if the type hash parameter is not a supported platform', function () {
         const templateString = `{{social_url type="unknownplatform"}}`;
-        compile(templateString)
-            .with(socialData)
-            .should.equal('');
+        assert.equal(compile(templateString)
+            .with(socialData), '');
     });
 
     it('should return empty string if the user does not have a new platform set in their profile', function () {
         const templateString = `{{social_url type="instagram"}}`;
-        compile(templateString)
-            .with({})
-            .should.equal('');
+        assert.equal(compile(templateString)
+            .with({}), '');
     });
 
     it('but for facebook and twitter, we do fall back to site data, same as the facebook and twitter url helpers', function () {
-        compile(`{{social_url type="facebook"}}`)
-            .with({})
-            .should.equal('https://www.facebook.com/testuser-fb');
+        assert.equal(compile(`{{social_url type="facebook"}}`)
+            .with({}), 'https://www.facebook.com/testuser-fb');
 
-        compile(`{{social_url type="twitter"}}`)
-            .with({})
-            .should.equal('https://x.com/testuser-tw');
+        assert.equal(compile(`{{social_url type="twitter"}}`)
+            .with({}), 'https://x.com/testuser-tw');
     });
 });

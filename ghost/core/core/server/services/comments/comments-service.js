@@ -2,6 +2,7 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const {MemberCommentEvent} = require('../../../shared/events');
 const DomainEvents = require('@tryghost/domain-events');
+const {byNQL} = require('../../models/base/plugins/bulk-filters');
 
 const messages = {
     commentNotFound: 'Comment could not be found',
@@ -200,7 +201,7 @@ class CommentsService {
      */
     async getAdminAllComments({includeNested, filter, mongoTransformer, reportCount, order, page, limit}) {
         return await this.models.Comment.findPage({
-            withRelated: ['member', 'post', 'count.replies', 'count.likes', 'count.reports'],
+            withRelated: ['member', 'post', 'count.replies', 'count.direct_replies', 'count.likes', 'count.reports', 'inReplyTo', 'parent'],
             filter,
             mongoTransformer,
             reportCount,
@@ -229,6 +230,56 @@ class CommentsService {
         const page = await this.models.Comment.findPage({...options, parentId: id});
 
         return page;
+    }
+
+    /**
+     * Get reporters for a comment (admin only)
+     * @param {string} commentId - The ID of the Comment to get reporters for
+     * @param {any} options - Query options (page, limit)
+     */
+    async getCommentReporters(commentId, options = {}) {
+        const comment = await this.models.Comment.findOne({id: commentId});
+        if (!comment) {
+            throw new errors.NotFoundError({
+                message: tpl(messages.commentNotFound)
+            });
+        }
+
+        const {page, limit} = options;
+        const result = await this.models.CommentReport.findPage({
+            filter: `comment_id:'${commentId}'`,
+            withRelated: ['member'],
+            order: 'created_at desc',
+            page,
+            limit
+        });
+
+        return result;
+    }
+
+    /**
+     * Get likes for a comment (admin only)
+     * @param {string} commentId - The ID of the Comment to get likes for
+     * @param {any} options - Query options (page, limit)
+     */
+    async getCommentLikes(commentId, options = {}) {
+        const comment = await this.models.Comment.findOne({id: commentId});
+        if (!comment) {
+            throw new errors.NotFoundError({
+                message: tpl(messages.commentNotFound)
+            });
+        }
+
+        const {page, limit} = options;
+        const result = await this.models.CommentLike.findPage({
+            filter: `comment_id:'${commentId}'`,
+            withRelated: ['member'],
+            order: 'created_at desc',
+            page,
+            limit
+        });
+
+        return result;
     }
 
     /**
@@ -450,6 +501,18 @@ class CommentsService {
         });
 
         return model;
+    }
+
+    /**
+     * Bulk update comment status based on NQL filter
+     * @param {string} filter - NQL filter string (e.g., "member_id:'abc123'+status:published")
+     * @param {string} status - New status ('hidden', 'published', 'deleted')
+     */
+    async bulkUpdateStatus(filter, status) {
+        await this.models.Comment.bulkEditWhere({
+            data: {status},
+            where: byNQL(filter)
+        });
     }
 
     async getMemberIdByUUID(uuid, options) {

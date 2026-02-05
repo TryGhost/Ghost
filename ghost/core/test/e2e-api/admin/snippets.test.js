@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 require('should');
 const sinon = require('sinon');
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
@@ -272,7 +273,7 @@ describe('Snippets API', function () {
             mobiledoc.cards.find(c => c[0] === 'file')[1].src.should.equal(`${siteUrl}/content/files/snippet-document.pdf`);
             mobiledoc.cards.find(c => c[0] === 'video')[1].src.should.equal(`${siteUrl}/content/media/snippet-video.mp4`);
             mobiledoc.cards.find(c => c[0] === 'audio')[1].src.should.equal(`${siteUrl}/content/media/snippet-audio.mp3`);
-            snippet.mobiledoc.should.not.containEql('__GHOST_URL__');
+            assert(!snippet.mobiledoc.includes('__GHOST_URL__'));
         });
 
         it('Can read Lexical snippet with all URLs as absolute site URLs', async function () {
@@ -282,11 +283,11 @@ describe('Snippets API', function () {
 
             const snippet = res.body.snippets[0];
 
-            snippet.lexical.should.containEql(`${siteUrl}/content/images/snippet-inline.jpg`);
-            snippet.lexical.should.containEql(`${siteUrl}/content/files/snippet-document.pdf`);
-            snippet.lexical.should.containEql(`${siteUrl}/content/media/snippet-video.mp4`);
-            snippet.lexical.should.containEql(`${siteUrl}/content/media/snippet-audio.mp3`);
-            snippet.lexical.should.not.containEql('__GHOST_URL__');
+            assert(snippet.lexical.includes(`${siteUrl}/content/images/snippet-inline.jpg`));
+            assert(snippet.lexical.includes(`${siteUrl}/content/files/snippet-document.pdf`));
+            assert(snippet.lexical.includes(`${siteUrl}/content/media/snippet-video.mp4`));
+            assert(snippet.lexical.includes(`${siteUrl}/content/media/snippet-audio.mp3`));
+            assert(!snippet.lexical.includes('__GHOST_URL__'));
         });
 
         it('Can read Mobiledoc snippet with CDN URLs for media/files when configured', async function () {
@@ -307,7 +308,7 @@ describe('Snippets API', function () {
             mobiledoc.cards.find(c => c[0] === 'file')[1].src.should.equal(`${cdnUrl}/content/files/snippet-document.pdf`);
             mobiledoc.cards.find(c => c[0] === 'video')[1].src.should.equal(`${cdnUrl}/content/media/snippet-video.mp4`);
             mobiledoc.cards.find(c => c[0] === 'audio')[1].src.should.equal(`${cdnUrl}/content/media/snippet-audio.mp3`);
-            snippet.mobiledoc.should.not.containEql('__GHOST_URL__');
+            assert(!snippet.mobiledoc.includes('__GHOST_URL__'));
         });
 
         it('Can read Lexical snippet with CDN URLs for media/files when configured', async function () {
@@ -322,12 +323,12 @@ describe('Snippets API', function () {
             const snippet = res.body.snippets[0];
 
             // Images stay on site URL
-            snippet.lexical.should.containEql(`${siteUrl}/content/images/snippet-inline.jpg`);
+            assert(snippet.lexical.includes(`${siteUrl}/content/images/snippet-inline.jpg`));
             // Media/files use CDN URL
-            snippet.lexical.should.containEql(`${cdnUrl}/content/files/snippet-document.pdf`);
-            snippet.lexical.should.containEql(`${cdnUrl}/content/media/snippet-video.mp4`);
-            snippet.lexical.should.containEql(`${cdnUrl}/content/media/snippet-audio.mp3`);
-            snippet.lexical.should.not.containEql('__GHOST_URL__');
+            assert(snippet.lexical.includes(`${cdnUrl}/content/files/snippet-document.pdf`));
+            assert(snippet.lexical.includes(`${cdnUrl}/content/media/snippet-video.mp4`));
+            assert(snippet.lexical.includes(`${cdnUrl}/content/media/snippet-audio.mp3`));
+            assert(!snippet.lexical.includes('__GHOST_URL__'));
         });
     });
 });

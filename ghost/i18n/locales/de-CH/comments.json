@@ -17,7 +17,9 @@
     "Best": "Beste",
     "Cancel": "Abbrechen",
     "Comment": "Kommentar",
+    "Commenting disabled": "",
     "Complete your profile": "Vervollständigen Sie Ihr Profil",
+    "Contact support": "",
     "Delete": "Löschen",
     "Deleted": "Gelöscht",
     "Deleted member": "Gelöschtes Mitglied",
@@ -28,6 +30,7 @@
     "edited": "bearbeitet",
     "Enter your name": "Geben Sie Ihren Namen ein",
     "Expertise": "Expertise",
+    "for more information.": "",
     "Founder @ Acme Inc": "Gründer bei Acme Inc",
     "Full-time parent": "Vollzeit-Elternteil",
     "Head of Marketing at Acme, Inc": "Leiter Marketing bei Acme, Inc",
@@ -69,6 +72,8 @@
     "This comment has been hidden.": "Dieser Kommentar wurde ausgeblendet.",
     "This comment has been removed.": "Dieser Kommentar wurde entfernt.",
     "Upgrade now": "Jetzt upgraden",
+    "View in admin": "",
     "Yesterday": "Gestern",
+    "You can't post comments in this publication.": "",
     "Your request will be sent to the owner of this site.": "Ihre Anfrage wird an den Seitenbesitzer gesendet."
 }

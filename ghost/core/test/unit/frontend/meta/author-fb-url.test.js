@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const getAuthorFacebookUrl = require('../../../../core/frontend/meta/author-fb-url');
 
@@ -12,7 +13,7 @@ describe('getAuthorFacebookUrl', function () {
                     }
                 }
             });
-            facebookUrl.should.equal('https://www.facebook.com/user');
+            assert.equal(facebookUrl, 'https://www.facebook.com/user');
         });
 
     it('should return null if context does not contain author facebook url and is a post',
@@ -25,7 +26,7 @@ describe('getAuthorFacebookUrl', function () {
                     }
                 }
             });
-            should(facebookUrl).equal(null);
+            assert.equal(facebookUrl, null);
         });
 
     it('should return null if context does not contain author and is a post', function () {
@@ -33,7 +34,7 @@ describe('getAuthorFacebookUrl', function () {
             context: ['post'],
             post: {}
         });
-        should(facebookUrl).equal(null);
+        assert.equal(facebookUrl, null);
     });
 
     it('should return author facebook url if author and has url',
@@ -44,7 +45,7 @@ describe('getAuthorFacebookUrl', function () {
                     facebook: 'https://www.facebook.com/user'
                 }
             });
-            facebookUrl.should.equal('https://www.facebook.com/user');
+            assert.equal(facebookUrl, 'https://www.facebook.com/user');
         });
 
     it('should return null if context does not contain author facebook url and is a author',
@@ -55,13 +56,13 @@ describe('getAuthorFacebookUrl', function () {
                     facebook: ''
                 }
             });
-            should(facebookUrl).equal(null);
+            assert.equal(facebookUrl, null);
         });
 
     it('should return null if context is not a post', function () {
         const facebookUrl = getAuthorFacebookUrl({
             context: ['tag']
         });
-        should(facebookUrl).equal(null);
+        assert.equal(facebookUrl, null);
     });
 });

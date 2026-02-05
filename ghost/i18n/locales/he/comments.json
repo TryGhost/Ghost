@@ -17,7 +17,9 @@
     "Best": "",
     "Cancel": "ביטול",
     "Comment": "תגובה",
+    "Commenting disabled": "",
     "Complete your profile": "השלימו את הפרופיל שלכם",
+    "Contact support": "",
     "Delete": "מחיקה",
     "Deleted": "",
     "Deleted member": "חבר שנמחק",
@@ -28,6 +30,7 @@
     "edited": "נערך",
     "Enter your name": "כתבו את שמכם",
     "Expertise": "ניסיון",
+    "for more information.": "",
     "Founder @ Acme Inc": "מייסד @ Acme Inc",
     "Full-time parent": "הורה במשרה מלאה",
     "Head of Marketing at Acme, Inc": "ראש אגף שיווק ב- Acme, Inc",
@@ -69,6 +72,8 @@
     "This comment has been hidden.": "התגובה הזו הוסתרה.",
     "This comment has been removed.": "התגובה הזו הוסרה.",
     "Upgrade now": "שדרגו עכשיו",
+    "View in admin": "",
     "Yesterday": "אתמול",
+    "You can't post comments in this publication.": "",
     "Your request will be sent to the owner of this site.": "בקשתך תישלח לבעלים של האתר הזה."
 }

@@ -2,12 +2,14 @@ const ghostBookshelf = require('./base');
 const crypto = require('crypto');
 const _ = require('lodash');
 const config = require('../../shared/config');
+const {MemberCommentingCodec} = require('../services/members/commenting');
 
 const Member = ghostBookshelf.Model.extend({
     tableName: 'members',
 
     actionsCollectCRUD: true,
     actionsResourceType: 'member',
+    actionsExtraContext: ['commenting'],
 
     defaults() {
         return {
@@ -18,6 +20,40 @@ const Member = ghostBookshelf.Model.extend({
             email_opened_count: 0,
             enable_comment_notifications: true
         };
+    },
+
+    /**
+     * Transform data coming from the database.
+     * Parses the `commenting` JSON string into a MemberCommenting domain object
+     * and computes the `can_comment` boolean.
+     */
+    parse(attrs) {
+        attrs = ghostBookshelf.Model.prototype.parse.call(this, attrs);
+
+        if (attrs.commenting !== undefined) {
+            const commenting = MemberCommentingCodec.parse(attrs.commenting);
+            attrs.commenting = commenting;
+            attrs.can_comment = commenting.canComment;
+        }
+
+        return attrs;
+    },
+
+    /**
+     * Transform data going to the database.
+     * Converts the MemberCommenting domain object back to a JSON string
+     * and removes the computed `can_comment` field.
+     */
+    format(attrs) {
+        // Remove computed field - it should not be persisted
+        delete attrs.can_comment;
+
+        // Convert MemberCommenting domain object to JSON string for storage
+        if (attrs.commenting) {
+            attrs.commenting = MemberCommentingCodec.format(attrs.commenting);
+        }
+
+        return ghostBookshelf.Model.prototype.format.call(this, attrs);
     },
 
     filterExpansions() {
@@ -400,6 +436,11 @@ const Member = ghostBookshelf.Model.extend({
         if (attrs.email && !config.isPrivacyDisabled('useGravatar')) {
             const {gravatar} = require('../lib/image');
             attrs.avatar_image = gravatar.url(attrs.email, {size: 250, default: 'blank'});
+        }
+
+        // Serialize commenting domain object to API format
+        if (attrs.commenting) {
+            attrs.commenting = MemberCommentingCodec.toJSON(attrs.commenting);
         }
 
         return attrs;

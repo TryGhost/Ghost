@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const events = require('../../../../../core/server/lib/common/events');
@@ -64,12 +65,12 @@ describe('Unit: services/url/Urls', function () {
         });
 
         should.exist(eventsToRemember['url.added']);
-        eventsToRemember['url.added'].url.absolute.should.eql('http://127.0.0.1:2369/test/');
-        eventsToRemember['url.added'].url.relative.should.eql('/test/');
+        assert.equal(eventsToRemember['url.added'].url.absolute, 'http://127.0.0.1:2369/test/');
+        assert.equal(eventsToRemember['url.added'].url.relative, '/test/');
         should.exist(eventsToRemember['url.added'].resource);
         should.exist(eventsToRemember['url.added'].resource.data);
 
-        urls.getByResourceId('object-id-x').resource.data.slug.should.eql('a');
+        assert.equal(urls.getByResourceId('object-id-x').resource.data.slug, 'a');
 
         sinon.stub(logging, 'error');
         // add duplicate
@@ -86,26 +87,26 @@ describe('Unit: services/url/Urls', function () {
 
         should.exist(eventsToRemember['url.added']);
 
-        urls.getByResourceId('object-id-x').resource.data.slug.should.eql('b');
+        assert.equal(urls.getByResourceId('object-id-x').resource.data.slug, 'b');
     });
 
     it('fn: getByResourceId', function () {
-        urls.getByResourceId('object-id-2').url.should.eql('/something/');
+        assert.equal(urls.getByResourceId('object-id-2').url, '/something/');
         should.exist(urls.getByResourceId('object-id-2').generatorId);
-        urls.getByResourceId('object-id-2').generatorId.should.eql(1);
+        assert.equal(urls.getByResourceId('object-id-2').generatorId, 1);
     });
 
     it('fn: getByGeneratorId', function () {
-        urls.getByGeneratorId(2).length.should.eql(2);
+        assert.equal(urls.getByGeneratorId(2).length, 2);
     });
 
     it('fn: getByUrl', function () {
-        urls.getByUrl('/something/').length.should.eql(1);
+        assert.equal(urls.getByUrl('/something/').length, 1);
     });
 
     it('fn: removeResourceId', function () {
         urls.removeResourceId('object-id-2');
-        should.not.exist(urls.getByResourceId('object-id-2'));
+        assert.equal(urls.getByResourceId('object-id-2'), undefined);
 
         urls.removeResourceId('does not exist');
     });

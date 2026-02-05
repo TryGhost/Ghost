@@ -24,11 +24,11 @@ export function useFilterOptions<Item extends {id: string}, Option extends {valu
 }: UseFilterOptionsParams<Item, Option, FieldName>) {
     const [searchValue, setSearchValue] = useState('');
     const {data, isLoading} = useSearch(searchValue);
-    const searchResults = data?.[searchFieldName] ?? [];
 
     const transformToOption = useCallback((item: Item) => toOption(item), [toOption]);
 
     const options = useMemo(() => {
+        const searchResults = data?.[searchFieldName] ?? [];
         const optionsMap: Record<string, Option> = {};
         
         // Start with known items from the list
@@ -37,7 +37,7 @@ export function useFilterOptions<Item extends {id: string}, Option extends {valu
         }
         
         // Add/update with search results (these take priority)
-        for (const item of searchResults ?? []) {
+        for (const item of searchResults) {
             optionsMap[item.id] = transformToOption(item);
         }
 
@@ -51,7 +51,7 @@ export function useFilterOptions<Item extends {id: string}, Option extends {valu
         }
         
         return Object.values(optionsMap);
-    }, [knownItems, searchResults, filters, filterFieldName, transformToOption]);
+    }, [knownItems, data, searchFieldName, filters, filterFieldName, transformToOption]);
 
     return {
         options,

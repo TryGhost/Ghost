@@ -9,7 +9,12 @@
 
 ### Running via Ghost `yarn dev` in root folder
 
-You can automatically start the Sodo-Search dev server when developing Ghost by running Ghost (in root folder) via `yarn dev --all` or `yarn dev --search`.
+Sodo Search runs automatically when using Ghost's development command from the monorepo root:
+```bash
+yarn dev
+```
+
+This starts all frontend apps (including Sodo Search.)
 
 ## Release
 
