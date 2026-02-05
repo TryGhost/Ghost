@@ -3,6 +3,7 @@ const should = require('should');
 const sinon = require('sinon');
 const _ = require('lodash');
 const foreach = require('../../../../core/frontend/helpers/foreach');
+const {assertObjectMatches} = require('../../../utils/assertions');
 const {registerHelper, shouldCompileToExpected} = require('./utils/handlebars');
 
 describe('{{#foreach}} helper', function () {
@@ -106,7 +107,7 @@ describe('{{#foreach}} helper', function () {
                 should(options.fn.getCall(index).args[1].data).not.be.undefined();
 
                 // Expected properties
-                resultData[index].data.should.containEql(expected[index]);
+                assertObjectMatches(resultData[index].data, expected[index]);
 
                 // Incrementing properties
                 resultData[index].data.should.have.property('key', index);
@@ -148,7 +149,7 @@ describe('{{#foreach}} helper', function () {
                 should(options.fn.getCall(index).args[1].data).not.be.undefined();
 
                 // Expected properties
-                resultData[index].data.should.containEql(expected[index]);
+                assertObjectMatches(resultData[index].data, expected[index]);
 
                 // Incrementing properties
                 resultData[index].data.should.have.property('key', value);
@@ -183,7 +184,7 @@ describe('{{#foreach}} helper', function () {
                 should(options.fn.getCall(index).args[1].data).not.be.undefined();
 
                 // Expected properties
-                resultData[index].data.should.containEql(expected[index]);
+                assertObjectMatches(resultData[index].data, expected[index]);
 
                 // Incrementing properties
                 resultData[index].data.should.have.property('key', index);
@@ -225,7 +226,7 @@ describe('{{#foreach}} helper', function () {
                 should(options.fn.getCall(index).args[1].data).not.be.undefined();
 
                 // Expected properties
-                resultData[index].data.should.containEql(expected[index]);
+                assertObjectMatches(resultData[index].data, expected[index]);
 
                 // Incrementing properties
                 resultData[index].data.should.have.property('key', value);

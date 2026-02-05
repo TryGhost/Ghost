@@ -415,7 +415,7 @@ describe('Comments API', function () {
                     .expectStatus(200);
 
                 // check that hiddenComment.id is not in the response
-                should(data2.body.comments.map(c => c.id)).not.containEql(hiddenComment.id);
+                assert(!data2.body.comments.some(c => c.id === hiddenComment.id));
                 assert.equal(data2.body.comments.length, 0);
             });
 
