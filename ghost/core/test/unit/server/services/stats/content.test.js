@@ -345,7 +345,7 @@ describe('ContentStatsService', function () {
             assert.equal(calledWith[1].dateFrom, '2023-01-01');
             assert.equal(calledWith[1].dateTo, '2023-01-31');
             // site_uuid should not be passed through options
-            calledWith[1].should.not.have.property('siteUuid');
+            assert(!('siteUuid' in calledWith[1]));
         });
 
         it('returns null on API request failure', async function () {

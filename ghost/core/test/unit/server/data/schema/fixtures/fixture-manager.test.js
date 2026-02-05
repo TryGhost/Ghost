@@ -102,7 +102,7 @@ describe('Migration Fixture Utils', function () {
 
             assert('user123' in processed.relations[0].entries);
             assert.deepEqual(processed.relations[0].entries.user123, ['Owner', 'Admin']);
-            processed.relations[0].entries.should.not.have.property('__USER_ID__');
+            assert(!('__USER_ID__' in processed.relations[0].entries));
         });
 
         it('should only process fixtures once', function () {

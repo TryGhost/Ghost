@@ -37,7 +37,7 @@ function checkResponseValue(jsonResponse, expectedProperties) {
     });
 
     _.each(unexpected, function (prop) {
-        jsonResponse.should.not.have.property(prop);
+        assert(!(prop in jsonResponse));
     });
 
     providedProperties.length.should.eql(expectedProperties.length, 'provided properties length does not match expected properties length');

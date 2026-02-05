@@ -595,7 +595,7 @@ describe('Importer', function () {
                 assert.equal(result.data.posts[0].title, 'test-1');
                 assert.equal(result.data.posts[0].created_at, 1418990400000);
                 assert.equal(moment.utc(result.data.posts[0].created_at).format('DD MM YY HH:mm'), '19 12 14 12:00');
-                result.data.posts[0].should.not.have.property('image');
+                assert(!('image' in result.data.posts[0]));
 
                 done();
             }).catch(done);
@@ -615,7 +615,7 @@ describe('Importer', function () {
                 assert.equal(result.data.posts[0].slug, 'test-2');
                 assert.equal(result.data.posts[0].title, 'Welcome to Ghost');
                 assert.equal(result.data.posts[0].created_at, 1418990400000);
-                result.data.posts[0].should.not.have.property('image');
+                assert(!('image' in result.data.posts[0]));
 
                 done();
             }).catch(done);
@@ -656,7 +656,7 @@ describe('Importer', function () {
                 assert.equal(result.data.posts[0].title, 'Welcome to Ghost');
                 assert.equal(result.data.posts[0].published_at, 1418990400000);
                 assert.equal(moment.utc(result.data.posts[0].published_at).format('DD MM YY HH:mm'), '19 12 14 12:00');
-                result.data.posts[0].should.not.have.property('image');
+                assert(!('image' in result.data.posts[0]));
 
                 done();
             }).catch(done);
@@ -705,7 +705,7 @@ describe('Importer', function () {
                 assert.equal(result.data.posts[one].title, 'Welcome to Ghost');
                 assert.equal(result.data.posts[one].published_at, 1418990400000);
                 assert.equal(moment.utc(result.data.posts[one].published_at).format('DD MM YY HH:mm'), '19 12 14 12:00');
-                result.data.posts[one].should.not.have.property('image');
+                assert(!('image' in result.data.posts[one]));
 
                 // draft-2014-12-19-test-3.md
                 assert.equal(result.data.posts[two].markdown, 'You\'re live! Nice.');

@@ -104,13 +104,13 @@ describe('getImageDimensions', function () {
             assert.equal(sizeOfStub.calledWith(metaData.authorImage.url), true);
             assert.equal(sizeOfStub.calledWith(metaData.ogImage.url), true);
             assert.equal(sizeOfStub.calledWith(metaData.site.logo.url), true);
-            result.coverImage.should.not.have.property('dimensions');
+            assert(!('dimensions' in result.coverImage));
             assert('url' in result.coverImage);
-            result.authorImage.should.not.have.property('dimensions');
+            assert(!('dimensions' in result.authorImage));
             assert('url' in result.authorImage);
-            result.ogImage.should.not.have.property('dimensions');
+            assert(!('dimensions' in result.ogImage));
             assert('url' in result.ogImage);
-            result.site.logo.should.not.have.property('dimensions');
+            assert(!('dimensions' in result.site.logo));
             assert('url' in result.site.logo);
             done();
         }).catch(done);
@@ -217,7 +217,7 @@ describe('getImageDimensions', function () {
             assert.equal(result.ogImage.dimensions.height, 480);
             assert.equal(result.ogImage.dimensions.width, 80);
             assert('url' in result.site.logo);
-            result.site.logo.should.not.have.property('dimensions');
+            assert(!('dimensions' in result.site.logo));
             done();
         }).catch(done);
     });

@@ -59,7 +59,7 @@ describe('Unit - services/routing/helpers/format-response', function () {
 
             const formatted = helpers.formatResponse.entry(postObject, ['page'], locals);
 
-            formatted.page.should.not.have.property('show_title_and_feature_image');
+            assert(!('show_title_and_feature_image' in formatted.page));
 
             locals.should.be.an.Object().with.properties('_templateOptions');
             locals._templateOptions.data.should.be.an.Object().with.properties('page');
@@ -72,7 +72,7 @@ describe('Unit - services/routing/helpers/format-response', function () {
 
             const formatted = helpers.formatResponse.entry(postObject, ['page'], locals);
 
-            formatted.page.should.not.have.property('show_title_and_feature_image');
+            assert(!('show_title_and_feature_image' in formatted.page));
 
             locals.should.be.an.Object().with.properties('_templateOptions');
             locals._templateOptions.data.should.be.an.Object().with.properties('page');
@@ -163,7 +163,7 @@ describe('Unit - services/routing/helpers/format-response', function () {
             const locals = {};
 
             const formatted = helpers.formatResponse.entries(data, true, locals);
-            formatted.page.should.not.have.property('show_title_and_feature_image');
+            assert(!('show_title_and_feature_image' in formatted.page));
 
             locals.should.be.an.Object().with.properties('_templateOptions');
             locals._templateOptions.data.should.be.an.Object().with.properties('page');
