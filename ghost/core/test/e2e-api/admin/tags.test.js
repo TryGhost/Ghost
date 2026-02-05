@@ -200,9 +200,10 @@ describe('Tag API', function () {
             tag.twitter_image.should.equal(`${siteUrl}/content/images/tag-twitter.jpg`);
         });
 
-        it('Transforms image URLs to absolute site URLs even when CDN is configured', async function () {
+        it('Transforms image URLs to CDN URLs when image CDN is configured', async function () {
+            const cdnUrl = 'https://cdn.example.com';
             urlUtilsHelper.stubUrlUtilsWithCdn({
-                assetBaseUrls: {media: 'https://cdn.example.com', files: 'https://cdn.example.com'}
+                assetBaseUrls: {media: cdnUrl, image: cdnUrl}
             }, sinon);
 
             const res = await request
@@ -214,9 +215,9 @@ describe('Tag API', function () {
 
             const tag = res.body.tags[0];
 
-            tag.feature_image.should.equal(`${siteUrl}/content/images/tag-feature.jpg`);
-            tag.og_image.should.equal(`${siteUrl}/content/images/tag-og.jpg`);
-            tag.twitter_image.should.equal(`${siteUrl}/content/images/tag-twitter.jpg`);
+            tag.feature_image.should.equal(`${cdnUrl}/content/images/tag-feature.jpg`);
+            tag.og_image.should.equal(`${cdnUrl}/content/images/tag-og.jpg`);
+            tag.twitter_image.should.equal(`${cdnUrl}/content/images/tag-twitter.jpg`);
         });
     });
 });

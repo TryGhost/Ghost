@@ -1317,14 +1317,14 @@ describe('Post Model', function () {
             });
 
             describe('URL transformations with CDN config', function () {
-                const siteUrl = 'http://127.0.0.1:2369';
                 const cdnUrl = 'https://cdn.example.com/c/site-uuid';
 
                 beforeEach(function () {
                     urlUtilsHelper.stubUrlUtilsWithCdn({
                         assetBaseUrls: {
                             media: cdnUrl,
-                            files: cdnUrl
+                            files: cdnUrl,
+                            image: cdnUrl
                         }
                     }, sinon);
                 });
@@ -1359,33 +1359,33 @@ describe('Post Model', function () {
                         assert(mobiledocString.includes(`${cdnUrl}/content/media/snippet-audio.mp3`));
                     });
 
-                    it('transforms feature_image to absolute site URL(NOT CDN)', async function () {
+                    it('transforms feature_image to CDN URL', async function () {
                         const post = await models.Post.findOne({slug: 'post-with-all-media-types-mobiledoc'}, {withRelated: ['tags']});
-                        post.get('feature_image').should.equal(`${siteUrl}/content/images/feature.jpg`);
+                        post.get('feature_image').should.equal(`${cdnUrl}/content/images/feature.jpg`);
                     });
 
-                    it('transforms gallery images to absolute site URL(NOT CDN)', async function () {
+                    it('transforms gallery images to CDN URL', async function () {
                         const post = await models.Post.findOne({slug: 'post-with-all-media-types-mobiledoc'}, {withRelated: ['tags']});
                         const mobiledoc = JSON.parse(post.get('mobiledoc'));
                         const galleryCard = mobiledoc.cards.find(card => card[0] === 'gallery');
                         galleryCard[1].images.forEach((image) => {
-                            image.src.should.startWith(siteUrl);
+                            image.src.should.startWith(cdnUrl);
                             assert(image.src.includes('/content/images/'));
                         });
                     });
 
-                    it('transforms inline images to absolute site URL(NOT CDN)', async function () {
+                    it('transforms inline images to CDN URL', async function () {
                         const post = await models.Post.findOne({slug: 'post-with-all-media-types-mobiledoc'}, {withRelated: ['tags']});
                         const mobiledoc = JSON.parse(post.get('mobiledoc'));
                         const imageCard = mobiledoc.cards.find(card => card[0] === 'image');
-                        imageCard[1].src.should.equal(`${siteUrl}/content/images/inline.jpg`);
+                        imageCard[1].src.should.equal(`${cdnUrl}/content/images/inline.jpg`);
                     });
 
-                    it('transforms video thumbnailSrc to absolute site URL(NOT CDN)', async function () {
+                    it('transforms video thumbnailSrc to CDN URL', async function () {
                         const post = await models.Post.findOne({slug: 'post-with-all-media-types-mobiledoc'}, {withRelated: ['tags']});
                         const mobiledoc = JSON.parse(post.get('mobiledoc'));
                         const videoCard = mobiledoc.cards.find(card => card[0] === 'video');
-                        videoCard[1].thumbnailSrc.should.equal(`${siteUrl}/content/images/video-thumb.jpg`);
+                        videoCard[1].thumbnailSrc.should.equal(`${cdnUrl}/content/images/video-thumb.jpg`);
                     });
                 });
 
@@ -1411,29 +1411,29 @@ describe('Post Model', function () {
                         assert(lexicalString.includes(`${cdnUrl}/content/media/snippet-audio.mp3`));
                     });
 
-                    it('transforms feature_image to absolute site URL(NOT CDN)', async function () {
+                    it('transforms feature_image to CDN URL', async function () {
                         const post = await models.Post.findOne({slug: 'post-with-all-media-types-lexical'}, {withRelated: ['tags']});
-                        post.get('feature_image').should.equal(`${siteUrl}/content/images/feature.jpg`);
+                        post.get('feature_image').should.equal(`${cdnUrl}/content/images/feature.jpg`);
                     });
 
-                    it('transforms gallery images to absolute site URL(NOT CDN)', async function () {
+                    it('transforms gallery images to CDN URL', async function () {
                         const post = await models.Post.findOne({slug: 'post-with-all-media-types-lexical'}, {withRelated: ['tags']});
                         const lexicalString = post.get('lexical');
-                        assert(lexicalString.includes(`${siteUrl}/content/images/gallery-1.jpg`));
-                        assert(lexicalString.includes(`${siteUrl}/content/images/gallery-2.jpg`));
+                        assert(lexicalString.includes(`${cdnUrl}/content/images/gallery-1.jpg`));
+                        assert(lexicalString.includes(`${cdnUrl}/content/images/gallery-2.jpg`));
                     });
 
-                    it('transforms inline images to absolute site URL(NOT CDN)', async function () {
+                    it('transforms inline images to CDN URL', async function () {
                         const post = await models.Post.findOne({slug: 'post-with-all-media-types-lexical'}, {withRelated: ['tags']});
                         const lexicalString = post.get('lexical');
-                        assert(lexicalString.includes(`${siteUrl}/content/images/inline.jpg`));
+                        assert(lexicalString.includes(`${cdnUrl}/content/images/inline.jpg`));
                     });
 
-                    it('transforms video/audio thumbnails to absolute site URL(NOT CDN)', async function () {
+                    it('transforms video/audio thumbnails to CDN URL', async function () {
                         const post = await models.Post.findOne({slug: 'post-with-all-media-types-lexical'}, {withRelated: ['tags']});
                         const lexicalString = post.get('lexical');
-                        assert(lexicalString.includes(`${siteUrl}/content/images/video-thumb.jpg`));
-                        assert(lexicalString.includes(`${siteUrl}/content/images/audio-thumb.jpg`));
+                        assert(lexicalString.includes(`${cdnUrl}/content/images/video-thumb.jpg`));
+                        assert(lexicalString.includes(`${cdnUrl}/content/images/audio-thumb.jpg`));
                     });
                 });
             });

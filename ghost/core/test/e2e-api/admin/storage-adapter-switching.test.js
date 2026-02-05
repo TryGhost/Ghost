@@ -34,7 +34,7 @@ describe('Ghost Admin - Storage Adapter Switching', function () {
         assert(post.lexical.includes(`${siteUrl}/content/media/video.mp4`));
 
         urlUtilsHelper.stubUrlUtilsWithCdn({
-            assetBaseUrls: {media: cdnUrl, files: cdnUrl}
+            assetBaseUrls: {media: cdnUrl, files: cdnUrl, image: cdnUrl}
         }, sinon);
 
         res = await agent
@@ -42,7 +42,7 @@ describe('Ghost Admin - Storage Adapter Switching', function () {
             .expectStatus(200);
 
         post = res.body.posts[0];
-        post.feature_image.should.equal(`${siteUrl}/content/images/feature.jpg`);
+        post.feature_image.should.equal(`${cdnUrl}/content/images/feature.jpg`);
         assert(post.lexical.includes(`${cdnUrl}/content/files/document.pdf`));
         assert(post.lexical.includes(`${cdnUrl}/content/media/video.mp4`));
 
@@ -58,7 +58,7 @@ describe('Ghost Admin - Storage Adapter Switching', function () {
         assert(post.lexical.includes(`${siteUrl}/content/media/video.mp4`));
 
         urlUtilsHelper.stubUrlUtilsWithCdn({
-            assetBaseUrls: {media: newCdnUrl, files: newCdnUrl}
+            assetBaseUrls: {media: newCdnUrl, files: newCdnUrl, image: newCdnUrl}
         }, sinon);
 
         res = await agent
@@ -66,7 +66,7 @@ describe('Ghost Admin - Storage Adapter Switching', function () {
             .expectStatus(200);
 
         post = res.body.posts[0];
-        post.feature_image.should.equal(`${siteUrl}/content/images/feature.jpg`);
+        post.feature_image.should.equal(`${newCdnUrl}/content/images/feature.jpg`);
         assert(post.lexical.includes(`${newCdnUrl}/content/files/document.pdf`));
         assert(post.lexical.includes(`${newCdnUrl}/content/media/video.mp4`));
     });
@@ -81,7 +81,7 @@ describe('Ghost Admin - Storage Adapter Switching', function () {
         mobiledoc.cards.find(c => c[0] === 'file')[1].src.should.equal(`${siteUrl}/content/files/document.pdf`);
 
         urlUtilsHelper.stubUrlUtilsWithCdn({
-            assetBaseUrls: {media: cdnUrl, files: cdnUrl}
+            assetBaseUrls: {media: cdnUrl, files: cdnUrl, image: cdnUrl}
         }, sinon);
 
         res = await agent
@@ -91,7 +91,7 @@ describe('Ghost Admin - Storage Adapter Switching', function () {
         post = res.body.posts[0];
         mobiledoc = JSON.parse(post.mobiledoc);
         mobiledoc.cards.find(c => c[0] === 'file')[1].src.should.equal(`${cdnUrl}/content/files/document.pdf`);
-        post.feature_image.should.equal(`${siteUrl}/content/images/feature.jpg`);
+        post.feature_image.should.equal(`${cdnUrl}/content/images/feature.jpg`);
     });
 
     it('Snippets also switch URLs correctly', async function () {
@@ -108,7 +108,7 @@ describe('Ghost Admin - Storage Adapter Switching', function () {
         assert(snippetData.mobiledoc.includes(`${siteUrl}/content/images/snippet-inline.jpg`));
 
         urlUtilsHelper.stubUrlUtilsWithCdn({
-            assetBaseUrls: {media: cdnUrl, files: cdnUrl}
+            assetBaseUrls: {media: cdnUrl, files: cdnUrl, image: cdnUrl}
         }, sinon);
 
         res = await agent
@@ -118,7 +118,7 @@ describe('Ghost Admin - Storage Adapter Switching', function () {
         snippetData = res.body.snippets[0];
         assert(snippetData.mobiledoc.includes(`${cdnUrl}/content/files/snippet-document.pdf`));
         assert(snippetData.mobiledoc.includes(`${cdnUrl}/content/media/snippet-video.mp4`));
-        assert(snippetData.mobiledoc.includes(`${siteUrl}/content/images/snippet-inline.jpg`));
+        assert(snippetData.mobiledoc.includes(`${cdnUrl}/content/images/snippet-inline.jpg`));
     });
 });
 

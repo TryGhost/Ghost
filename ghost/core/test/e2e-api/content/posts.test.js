@@ -530,9 +530,9 @@ describe('Posts Content API', function () {
             assert(!post.html.includes('__GHOST_URL__'));
         });
 
-        it('Can read Mobiledoc post with CDN URLs for media/files when configured', async function () {
+        it('Can read Mobiledoc post with CDN URLs when configured', async function () {
             urlUtilsHelper.stubUrlUtilsWithCdn({
-                assetBaseUrls: {media: cdnUrl, files: cdnUrl}
+                assetBaseUrls: {image: cdnUrl, media: cdnUrl, files: cdnUrl}
             }, sinon);
 
             const res = await agent
@@ -541,25 +541,28 @@ describe('Posts Content API', function () {
 
             const post = res.body.posts[0];
 
-            // Images stay on site URL
-            assert.equal(post.feature_image, `${siteUrl}/content/images/feature.jpg`);
-            assert(post.html.includes(`${siteUrl}/content/images/inline.jpg`));
-            // Media/files use CDN URL
+            // All assets use CDN URL
+            assert.equal(post.feature_image, `${cdnUrl}/content/images/feature.jpg`);
+            assert(post.html.includes(`${cdnUrl}/content/images/inline.jpg`));
             assert(post.html.includes(`${cdnUrl}/content/files/document.pdf`));
             assert(post.html.includes(`${cdnUrl}/content/media/video.mp4`));
             assert(post.html.includes(`${cdnUrl}/content/media/audio.mp3`));
-            // Inserted snippet images stay on site URL
-            assert(post.html.includes(`${siteUrl}/content/images/snippet-inline.jpg`));
-            // Inserted snippet media/files use CDN URL
+            // Video/audio thumbnails use CDN URL
+            assert(post.html.includes(`${cdnUrl}/content/images/video-thumb.jpg`));
+            // Gallery images use CDN URL
+            assert(post.html.includes(`${cdnUrl}/content/images/gallery-1.jpg`));
+            assert(post.html.includes(`${cdnUrl}/content/images/gallery-2.jpg`));
+            // Inserted snippet use CDN URL
+            assert(post.html.includes(`${cdnUrl}/content/images/snippet-inline.jpg`));
             assert(post.html.includes(`${cdnUrl}/content/files/snippet-document.pdf`));
             assert(post.html.includes(`${cdnUrl}/content/media/snippet-video.mp4`));
             assert(post.html.includes(`${cdnUrl}/content/media/snippet-audio.mp3`));
             assert(!post.html.includes('__GHOST_URL__'));
         });
 
-        it('Can read Lexical post with CDN URLs for media/files when configured', async function () {
+        it('Can read Lexical post with CDN URLs when configured', async function () {
             urlUtilsHelper.stubUrlUtilsWithCdn({
-                assetBaseUrls: {media: cdnUrl, files: cdnUrl}
+                assetBaseUrls: {media: cdnUrl, files: cdnUrl, image: cdnUrl}
             }, sinon);
 
             const res = await agent
@@ -568,15 +571,21 @@ describe('Posts Content API', function () {
 
             const post = res.body.posts[0];
 
-            // Images stay on site URL
-            assert.equal(post.feature_image, `${siteUrl}/content/images/feature.jpg`);
-            assert(post.html.includes(`${siteUrl}/content/images/inline.jpg`));
+            // Images use CDN URL
+            assert.equal(post.feature_image, `${cdnUrl}/content/images/feature.jpg`);
+            assert(post.html.includes(`${cdnUrl}/content/images/inline.jpg`));
+            // Video/audio thumbnails use CDN URL
+            assert(post.html.includes(`${cdnUrl}/content/images/video-thumb.jpg`));
+            assert(post.html.includes(`${cdnUrl}/content/images/audio-thumb.jpg`));
+            // Gallery images use CDN URL
+            assert(post.html.includes(`${cdnUrl}/content/images/gallery-1.jpg`));
+            assert(post.html.includes(`${cdnUrl}/content/images/gallery-2.jpg`));
             // Media/files use CDN URL
             assert(post.html.includes(`${cdnUrl}/content/files/document.pdf`));
             assert(post.html.includes(`${cdnUrl}/content/media/video.mp4`));
             assert(post.html.includes(`${cdnUrl}/content/media/audio.mp3`));
-            // Inserted snippet images stay on site URL
-            assert(post.html.includes(`${siteUrl}/content/images/snippet-inline.jpg`));
+            // Inserted snippet images use CDN URL
+            assert(post.html.includes(`${cdnUrl}/content/images/snippet-inline.jpg`));
             // Inserted snippet media/files use CDN URL
             assert(post.html.includes(`${cdnUrl}/content/files/snippet-document.pdf`));
             assert(post.html.includes(`${cdnUrl}/content/media/snippet-video.mp4`));
