@@ -41,6 +41,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": Any<Number>,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -97,6 +98,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": Any<Number>,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -134,6 +136,7 @@ Object {
     },
     Object {
       "count": Object {
+        "direct_replies": Any<Number>,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -190,6 +193,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": Any<Number>,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -246,6 +250,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": Any<Number>,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -302,6 +307,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": Any<Number>,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -341,6 +347,7 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
     },
     Object {
       "count": Object {
+        "direct_replies": Any<Number>,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -397,6 +404,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": Any<Number>,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -453,8 +461,9 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": Any<Number>,
         "likes": Any<Number>,
-        "replies": Any<Number>,
+        "replies": 0,
         "reports": Any<Number>,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -520,6 +529,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": Any<Number>,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -576,6 +586,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": Any<Number>,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -615,6 +626,7 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
     },
     Object {
       "count": Object {
+        "direct_replies": Any<Number>,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -671,6 +683,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": Any<Number>,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -710,8 +723,9 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
     },
     Object {
       "count": Object {
+        "direct_replies": Any<Number>,
         "likes": Any<Number>,
-        "replies": Any<Number>,
+        "replies": 0,
         "reports": Any<Number>,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -777,6 +791,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": Any<Number>,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -833,6 +848,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": Any<Number>,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -872,6 +888,7 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
     },
     Object {
       "count": Object {
+        "direct_replies": Any<Number>,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -918,6 +935,125 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
       "pages": 3,
       "prev": null,
       "total": 5,
+    },
+  },
+}
+`;
+
+exports[`Admin Comments API Comment Likes Can browse comment likes 1: [body] 1`] = `
+Object {
+  "comment_likes": Array [
+    Object {
+      "comment_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "member": Object {
+        "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "email": "member2@test.com",
+        "email_count": 0,
+        "email_disabled": false,
+        "email_open_rate": 50,
+        "email_opened_count": 0,
+        "enable_comment_notifications": true,
+        "expertise": null,
+        "geolocation": null,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "last_commented_at": Nullable<StringMatching>,
+        "last_seen_at": Nullable<StringMatching>,
+        "name": null,
+        "note": null,
+        "status": "free",
+        "transient_id": Any<String>,
+        "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      },
+      "member_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    },
+    Object {
+      "comment_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "member": Object {
+        "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "email": "paid@test.com",
+        "email_count": 0,
+        "email_disabled": false,
+        "email_open_rate": 80,
+        "email_opened_count": 0,
+        "enable_comment_notifications": true,
+        "expertise": null,
+        "geolocation": null,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "last_commented_at": Nullable<StringMatching>,
+        "last_seen_at": Nullable<StringMatching>,
+        "name": "Egon Spengler",
+        "note": null,
+        "status": "paid",
+        "transient_id": Any<String>,
+        "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      },
+      "member_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": 15,
+      "next": null,
+      "page": 1,
+      "pages": 1,
+      "prev": null,
+      "total": 2,
+    },
+  },
+}
+`;
+
+exports[`Admin Comments API Comment Likes Returns 404 for non-existent comment 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Comment could not be found",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Resource not found error, cannot list comment_likes.",
+      "property": null,
+      "type": "NotFoundError",
+    },
+  ],
+}
+`;
+
+exports[`Admin Comments API Comment Likes Returns empty list for comment with no likes 1: [body] 1`] = `
+Object {
+  "comment_likes": Array [],
+  "meta": Object {
+    "pagination": Object {
+      "limit": 15,
+      "next": null,
+      "page": 1,
+      "pages": 1,
+      "prev": null,
+      "total": 0,
     },
   },
 }
@@ -1047,6 +1183,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
@@ -1076,7 +1213,7 @@ exports[`Admin Comments API Hide Can hide comments 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "427",
+  "content-length": "446",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -1089,6 +1226,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
@@ -1118,7 +1256,7 @@ exports[`Admin Comments API Hide Can hide comments 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "402",
+  "content-length": "421",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -1131,6 +1269,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
@@ -1160,7 +1299,7 @@ exports[`Admin Comments API Hide Can hide replies 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "443",
+  "content-length": "462",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -1173,6 +1312,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
@@ -1202,7 +1342,7 @@ exports[`Admin Comments API Hide Can hide replies 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "420",
+  "content-length": "439",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -1245,6 +1385,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": 3,
         "likes": Any<Number>,
         "replies": 3,
         "reports": 0,
@@ -1274,6 +1415,7 @@ Object {
       "replies": Array [
         Object {
           "count": Object {
+            "direct_replies": 0,
             "likes": Any<Number>,
             "reports": 0,
           },
@@ -1303,6 +1445,7 @@ Object {
         },
         Object {
           "count": Object {
+            "direct_replies": 0,
             "likes": Any<Number>,
             "reports": 0,
           },
@@ -1332,6 +1475,7 @@ Object {
         },
         Object {
           "count": Object {
+            "direct_replies": 0,
             "likes": Any<Number>,
             "reports": 0,
           },
@@ -1387,6 +1531,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": 2,
         "likes": Any<Number>,
         "replies": 2,
         "reports": 0,
@@ -1416,6 +1561,7 @@ Object {
       "replies": Array [
         Object {
           "count": Object {
+            "direct_replies": 0,
             "likes": 0,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1444,6 +1590,7 @@ Object {
         },
         Object {
           "count": Object {
+            "direct_replies": 0,
             "likes": 0,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1508,6 +1655,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": 2,
         "likes": Any<Number>,
         "replies": 2,
         "reports": 0,
@@ -1537,6 +1685,7 @@ Object {
       "replies": Array [
         Object {
           "count": Object {
+            "direct_replies": 0,
             "likes": 0,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1565,6 +1714,7 @@ Object {
         },
         Object {
           "count": Object {
+            "direct_replies": 0,
             "likes": 0,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1613,6 +1763,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": 1,
         "likes": Any<Number>,
         "replies": 1,
         "reports": 0,
@@ -1642,6 +1793,7 @@ Object {
       "replies": Array [
         Object {
           "count": Object {
+            "direct_replies": 0,
             "likes": 0,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1690,6 +1842,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": 0,
         "likes": Any<Number>,
         "replies": 0,
         "reports": 0,
