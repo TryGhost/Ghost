@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const {checkPostAccess, checkGatedBlockAccess} = require('../../../../../core/server/services/members/content-gating');
 
 describe('Members Service - Content gating', function () {
@@ -51,7 +50,7 @@ describe('Members Service - Content gating', function () {
                 slug: 'x'
             }]};
 
-            (() => checkPostAccess(post, member)).should.not.throw();
+            assert.doesNotThrow(() => checkPostAccess(post, member));
         });
 
         it('should block access to members only post without member', async function () {
