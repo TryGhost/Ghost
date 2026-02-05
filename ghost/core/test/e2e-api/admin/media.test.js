@@ -203,7 +203,7 @@ describe('Media API', function () {
                 .expect(200);
 
             const thumbnailUrl = res.body.media[0].url.replace('.mp4', '_thumb.jpg');
-            thumbnailRes.body.media[0].url.should.equal(thumbnailUrl);
+            assert.equal(thumbnailRes.body.media[0].url, thumbnailUrl);
             assert.equal(thumbnailRes.body.media[0].ref, 'updated_thumbnail');
             media.push(thumbnailRes.body.media[0].url.replace(config.get('url'), ''));
         });
@@ -227,7 +227,7 @@ describe('Media API', function () {
                 .expect(200);
 
             const thumbnailUrl = res.body.media[0].url.replace('.mp4', '_thumb.jpg');
-            thumbnailRes.body.media[0].url.should.equal(thumbnailUrl);
+            assert.equal(thumbnailRes.body.media[0].url, thumbnailUrl);
             assert.equal(thumbnailRes.body.media[0].ref, 'updated_thumbnail_2');
 
             media.push(thumbnailRes.body.media[0].url.replace(config.get('url'), ''));

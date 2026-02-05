@@ -80,7 +80,7 @@ describe('Importing 5.x export', function () {
         const post1 = posts.data[0].toJSON();
         const post2 = posts.data[1].toJSON();
 
-        post1.authors[0].id.should.equal(user2.id);
-        post2.authors[0].id.should.equal(user2.id);
+        assert.equal(post1.authors[0].id, user2.id);
+        assert.equal(post2.authors[0].id, user2.id);
     });
 });

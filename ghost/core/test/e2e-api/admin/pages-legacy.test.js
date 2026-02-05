@@ -80,7 +80,7 @@ describe('Pages API', function () {
         assertExists(res.headers['x-cache-invalidate']);
 
         assertExists(res.headers.location);
-        res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('pages/')}${res.body.pages[0].id}/`);
+        assert.equal(res.headers.location, `http://127.0.0.1:2369${localUtils.API.getApiQuery('pages/')}${res.body.pages[0].id}/`);
 
         const model = await models.Post.findOne({
             id: res.body.pages[0].id

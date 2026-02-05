@@ -1159,7 +1159,7 @@ describe('Email renderer', function () {
                 }
             };
             let response = await emailRenderer.getSegments(post);
-            response.should.eql([null]);
+            assert.deepEqual(response, [null]);
 
             post = {
                 get: (key) => {
@@ -1169,7 +1169,7 @@ describe('Email renderer', function () {
                 }
             };
             response = await emailRenderer.getSegments(post);
-            response.should.eql([null]);
+            assert.deepEqual(response, [null]);
         });
 
         it('returns correct segments for post with members only card', async function () {
@@ -1197,7 +1197,7 @@ describe('Email renderer', function () {
                 }
             };
             let response = await emailRenderer.getSegments(post);
-            response.should.eql(['status:free', 'status:-free']);
+            assert.deepEqual(response, ['status:free', 'status:-free']);
         });
 
         it('returns correct segments for post with email card', async function () {
@@ -1225,7 +1225,7 @@ describe('Email renderer', function () {
                 }
             };
             let response = await emailRenderer.getSegments(post);
-            response.should.eql(['status:free', 'status:-free']);
+            assert.deepEqual(response, ['status:free', 'status:-free']);
         });
     });
 

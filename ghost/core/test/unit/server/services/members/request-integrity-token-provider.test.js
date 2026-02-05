@@ -26,7 +26,7 @@ describe('RequestIntegrityTokenProvider', function () {
             token.split(':').should.be.an.Array().with.lengthOf(3);
             const [timestamp, nonce, digest] = token.split(':');
 
-            timestamp.should.equal((new Date('2021-01-01').valueOf() + 100).toString());
+            assert.equal(timestamp, (new Date('2021-01-01').valueOf() + 100).toString());
 
             assert.match(nonce, /[0-9a-f]{16}/);
 

@@ -64,7 +64,7 @@ describe('Themes', function () {
                 assert.equal(configStub.calledWith('assetHash', null), true);
 
                 // Check te view cache was cleared
-                fakeBlogApp.cache.should.eql({});
+                assert.deepEqual(fakeBlogApp.cache, {});
 
                 // Check the views were set correctly
                 assert.equal(fakeBlogApp.set.calledOnce, true);
@@ -95,7 +95,7 @@ describe('Themes', function () {
                 assert.equal(configStub.calledWith('assetHash', null), true);
 
                 // Check te view cache was cleared
-                fakeBlogApp.cache.should.eql({});
+                assert.deepEqual(fakeBlogApp.cache, {});
 
                 // Check the views were set correctly
                 assert.equal(fakeBlogApp.set.calledOnce, true);

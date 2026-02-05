@@ -20,7 +20,7 @@ describe('Settings Model', function () {
             await models.Settings.populateDefaults();
 
             const settingsPopulated = await models.Settings.findAll();
-            settingsPopulated.length.should.equal(SETTINGS_LENGTH);
+            assert.equal(settingsPopulated.length, SETTINGS_LENGTH);
         });
 
         it('doesn\'t overwrite any existing settings', async function () {
@@ -43,7 +43,7 @@ describe('Settings Model', function () {
             await models.Settings.populateDefaults();
 
             const settingsPopulated = await models.Settings.findAll();
-            settingsPopulated.length.should.equal(SETTINGS_LENGTH);
+            assert.equal(settingsPopulated.length, SETTINGS_LENGTH);
 
             const titleSetting = settingsPopulated.models.find(s => s.get('key') === 'title');
             assert.equal(titleSetting.get('value'), 'Testing Defaults');

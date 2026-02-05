@@ -44,9 +44,9 @@ describe('lib/image: image size cache', function () {
         cacheStore.get(url).should.not.be.undefined;
         const image = cacheStore.get(url);
         assertExists(image.width);
-        image.width.should.be.equal(50);
+        assert.equal(image.width, 50);
         assertExists(image.height);
-        image.height.should.be.equal(50);
+        assert.equal(image.height, 50);
 
         // second call to check if values get returned from cache
         await cachedImageSizeFromUrl.getCachedImageSizeFromUrl(url);
@@ -57,9 +57,9 @@ describe('lib/image: image size cache', function () {
         cacheStore.get(url).should.not.be.undefined;
         const image2 = cacheStore.get(url);
         assertExists(image2.width);
-        image2.width.should.be.equal(50);
+        assert.equal(image2.width, 50);
         assertExists(image2.height);
-        image2.height.should.be.equal(50);
+        assert.equal(image2.height, 50);
     });
 
     it('can handle generic image-size errors', async function () {

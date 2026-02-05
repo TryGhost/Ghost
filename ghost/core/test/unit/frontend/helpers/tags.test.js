@@ -231,46 +231,38 @@ describe('{{tags}} helper', function () {
         it('will not output internal tags by default', function () {
             const rendered = tagsHelper.call({tags: tags});
 
-            String(rendered).should.equal(
-                '<a href="1">foo</a>, ' +
-                '<a href="3">bar</a>, ' +
-                '<a href="4">baz</a>, ' +
-                '<a href="5">buzz</a>'
-            );
+            assert.equal(String(rendered), '<a href="1">foo</a>, ' +
+            '<a href="3">bar</a>, ' +
+            '<a href="4">baz</a>, ' +
+            '<a href="5">buzz</a>');
         });
 
         it('should still correctly apply from & limit tags', function () {
             const rendered = tagsHelper.call({tags: tags}, {hash: {from: '2', limit: '2'}});
 
-            String(rendered).should.equal(
-                '<a href="3">bar</a>, ' +
-                '<a href="4">baz</a>'
-            );
+            assert.equal(String(rendered), '<a href="3">bar</a>, ' +
+            '<a href="4">baz</a>');
         });
 
         it('should output all tags with visibility="all"', function () {
             const rendered = tagsHelper.call({tags: tags}, {hash: {visibility: 'all'}});
 
-            String(rendered).should.equal(
-                '<a href="1">foo</a>, ' +
-                '<a href="2">#bar</a>, ' +
-                '<a href="3">bar</a>, ' +
-                '<a href="4">baz</a>, ' +
-                '<a href="5">buzz</a>'
-            );
+            assert.equal(String(rendered), '<a href="1">foo</a>, ' +
+            '<a href="2">#bar</a>, ' +
+            '<a href="3">bar</a>, ' +
+            '<a href="4">baz</a>, ' +
+            '<a href="5">buzz</a>');
         });
 
         it('should output all tags with visibility property set with visibility="public,internal"', function () {
             const rendered = tagsHelper.call({tags: tags}, {hash: {visibility: 'public,internal'}});
             assertExists(rendered);
 
-            String(rendered).should.equal(
-                '<a href="1">foo</a>, ' +
-                '<a href="2">#bar</a>, ' +
-                '<a href="3">bar</a>, ' +
-                '<a href="4">baz</a>, ' +
-                '<a href="5">buzz</a>'
-            );
+            assert.equal(String(rendered), '<a href="1">foo</a>, ' +
+            '<a href="2">#bar</a>, ' +
+            '<a href="3">bar</a>, ' +
+            '<a href="4">baz</a>, ' +
+            '<a href="5">buzz</a>');
         });
 
         it('Should output only internal tags with visibility="internal"', function () {

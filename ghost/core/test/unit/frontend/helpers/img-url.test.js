@@ -377,7 +377,7 @@ describe('{{img_url}} helper', function () {
                 }
             });
             assertExists(rendered);
-            rendered.should.equal(invalid);
+            assert.equal(rendered, invalid);
         });
 
         it('ignores invalid sizes', function () {

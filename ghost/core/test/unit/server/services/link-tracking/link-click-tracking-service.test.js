@@ -202,7 +202,7 @@ describe('LinkClickTrackingService', function () {
                     link: {to: 'https://example.com'}
                 }
             }, options);
-            should(result).eql({
+            assert.deepEqual(result, {
                 successful: 0,
                 unsuccessful: 0,
                 errors: [],
@@ -248,7 +248,7 @@ describe('LinkClickTrackingService', function () {
             const result = await service.bulkEdit(data, options);
 
             assert.equal(postLinkRepositoryStub.updateLinks.calledOnce, true);
-            should(result).eql({
+            assert.deepEqual(result, {
                 successful: 0,
                 unsuccessful: 0,
                 errors: [],
@@ -297,7 +297,7 @@ describe('LinkClickTrackingService', function () {
             const result = await service.bulkEdit(data, options);
 
             assert.equal(postLinkRepositoryStub.updateLinks.calledOnce, true);
-            should(result).eql({
+            assert.deepEqual(result, {
                 successful: 0,
                 unsuccessful: 0,
                 errors: [],

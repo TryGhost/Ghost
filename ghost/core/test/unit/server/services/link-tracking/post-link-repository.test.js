@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 
@@ -38,7 +39,7 @@ describe('UNIT: PostLinkRepository class', function () {
                 to: 'https://example.com',
                 updated_at: new Date('2022-10-20T00:00:00.000Z')
             }, {});
-            should(links).eql({
+            assert.deepEqual(links, {
                 bulk: {
                     action: 'updateLink',
                     meta: {

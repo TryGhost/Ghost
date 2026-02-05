@@ -19,7 +19,7 @@ describe('Themes', function () {
         });
 
         it('get() allows getting a single theme', function () {
-            themeList.get('casper').should.eql({foo: 'bar'});
+            assert.deepEqual(themeList.get('casper'), {foo: 'bar'});
         });
 
         it('get() with no args should do nothing', function () {
@@ -36,12 +36,12 @@ describe('Themes', function () {
             themeList.set('casper', {magic: 'update'});
 
             themeList.get('casper').should.not.eql(origCasper);
-            themeList.get('casper').should.eql({magic: 'update'});
+            assert.deepEqual(themeList.get('casper'), {magic: 'update'});
         });
 
         it('set() can add a new theme', function () {
             themeList.set('rasper', {color: 'red'});
-            themeList.get('rasper').should.eql({color: 'red'});
+            assert.deepEqual(themeList.get('rasper'), {color: 'red'});
         });
 
         it('del() removes a key from the list', function () {
@@ -73,8 +73,8 @@ describe('Themes', function () {
             themeList.init();
             const result = themeList.getAll();
             assertExists(result);
-            result.should.be.an.Object();
-            result.should.eql({});
+            assert(_.isPlainObject(result));
+            assert.deepEqual(result, {});
             assert.equal(Object.keys(result).length, 0);
         });
     });

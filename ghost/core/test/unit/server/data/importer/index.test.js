@@ -351,7 +351,7 @@ describe('Importer', function () {
                     const testDir = path.resolve('test/utils/fixtures/import/zips/zip-multiple-data-formats');
                     const extractSpy = sinon.stub(ImportManager, 'extractZip').returns(Promise.resolve(testDir));
 
-                    await should(ImportManager.processZip(testZip)).rejectedWith(/multiple data formats/);
+                    await assert.rejects(ImportManager.processZip(testZip), /multiple data formats/);
                     assert.equal(extractSpy.calledOnce, true);
                 });
 
@@ -359,7 +359,7 @@ describe('Importer', function () {
                     const testDir = path.resolve('test/utils/fixtures/import/zips/zip-empty');
                     const extractSpy = sinon.stub(ImportManager, 'extractZip').returns(Promise.resolve(testDir));
 
-                    await should(ImportManager.processZip(testZip)).rejectedWith(/not include any content/);
+                    await assert.rejects(ImportManager.processZip(testZip), /not include any content/);
                     assert.equal(extractSpy.calledOnce, true);
                 });
             });
@@ -481,7 +481,7 @@ describe('Importer', function () {
                     imageSpy.getCall(0).args[0].should.eql(expectedImages);
 
                     // we stubbed this as a noop but ImportManager calls with sequence, so we should get an array
-                    output.should.eql({images: expectedImages, data: expectedData});
+                    assert.deepEqual(output, {images: expectedImages, data: expectedData});
                     done();
                 }).catch(done);
             });
@@ -494,7 +494,7 @@ describe('Importer', function () {
             it('is currently a noop', function (done) {
                 const input = [{data: {}, images: []}];
                 ImportManager.generateReport(input).then(function (output) {
-                    output.should.equal(input);
+                    assert.equal(output, input);
                     done();
                 }).catch(done);
             });

@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
 const should = require('should');
 const _ = require('lodash');
@@ -46,11 +47,11 @@ const VALID_KEYS = {
 describe('schema validations', function () {
     it('matches the required format', function () {
         // The top-level export should be an object of table names to definitions
-        should(schema).be.Object();
+        assert(_.isPlainObject(schema));
 
         // Each table should be an object, and each column should be an object
         _.each(schema, function (table, tableName) {
-            should(table).be.Object();
+            assert(_.isPlainObject(table));
 
             _.each(table, function (column, columnName) {
                 if (['@@INDEXES@@', '@@UNIQUE_CONSTRAINTS@@'].includes(columnName)) {
@@ -58,15 +59,15 @@ describe('schema validations', function () {
                 }
 
                 // Ensure the column is an object
-                should(column).be.Object();
+                assert(_.isPlainObject(column));
 
                 // Ensure the `type` key exists on a column
                 assertExists(column.type, `${tableName}.${columnName}.type should exist`);
 
                 // Ensure the column type is one of the ones we allow
-                should(column.type).be.equalOneOf(Object.keys(VALID_KEYS));
+                assert(Object.keys(VALID_KEYS).includes(column.type));
 
-                should(_.difference(Object.keys(column), [...VALID_KEYS[column.type], 'type'])).be.Array().with.length(0);
+                assert.deepEqual(_.difference(Object.keys(column), [...VALID_KEYS[column.type], 'type']), []);
             });
         });
     });
@@ -79,8 +80,9 @@ describe('schema validations', function () {
                 const columnIsInValidation = _.get(column, 'validations.isIn');
                 // Check column's isIn validation is in correct format
                 if (columnIsInValidation) {
-                    should(columnIsInValidation).be.Array().with.length(1);
-                    should(columnIsInValidation[0]).be.Array();
+                    assert(Array.isArray(columnIsInValidation));
+                    assert.equal(columnIsInValidation.length, 1);
+                    assert(Array.isArray(columnIsInValidation[0]));
                 }
             });
         });

@@ -48,7 +48,7 @@ describe('RSS: Cache', function () {
                 assert.equal(generateSpy.callCount, 1);
 
                 // The data should be identical, no changing lastBuildDate
-                xmlData1.should.equal(xmlData2);
+                assert.equal(xmlData1, xmlData2);
 
                 done();
             })

@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const {assertExists} = require('../../../utils/assertions');
 const proxy = require('../../../../core/frontend/services/proxy');
 const {getFrontendKey} = proxy;
@@ -12,7 +13,7 @@ describe('{{content_api_key}} helper', function () {
             const result = await content_api_key();
             const expected = await getFrontendKey();
             assertExists(result);
-            String(result).should.equal(expected);
+            assert.equal(String(result), expected);
         });
     });
 });

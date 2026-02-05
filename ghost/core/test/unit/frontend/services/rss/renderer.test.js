@@ -30,7 +30,7 @@ describe('RSS: Renderer', function () {
 
         renderer.render(res, baseUrl).then(function () {
             assert.equal(rssCacheStub.calledOnce, true);
-            rssCacheStub.firstCall.args.should.eql(['/rss/', {}]);
+            assert.deepEqual(rssCacheStub.firstCall.args, ['/rss/', {}]);
 
             assert.equal(res.set.calledOnce, true);
             assert.equal(res.set.calledWith('Content-Type', 'application/rss+xml; charset=UTF-8'), true);
@@ -49,7 +49,7 @@ describe('RSS: Renderer', function () {
 
         renderer.render(res, baseUrl).then(function () {
             assert.equal(rssCacheStub.calledOnce, true);
-            rssCacheStub.firstCall.args.should.eql(['/rss/', {foo: 'bar'}]);
+            assert.deepEqual(rssCacheStub.firstCall.args, ['/rss/', {foo: 'bar'}]);
 
             assert.equal(res.set.calledOnce, true);
             assert.equal(res.set.calledWith('Content-Type', 'application/rss+xml; charset=UTF-8'), true);
@@ -69,7 +69,7 @@ describe('RSS: Renderer', function () {
 
         renderer.render(res, baseUrl, data).then(function () {
             assert.equal(rssCacheStub.calledOnce, true);
-            rssCacheStub.firstCall.args.should.eql(['/rss/', {foo: 'baz', fizz: 'buzz'}]);
+            assert.deepEqual(rssCacheStub.firstCall.args, ['/rss/', {foo: 'baz', fizz: 'buzz'}]);
 
             assert.equal(res.set.calledOnce, true);
             assert.equal(res.set.calledWith('Content-Type', 'application/rss+xml; charset=UTF-8'), true);
@@ -90,7 +90,7 @@ describe('RSS: Renderer', function () {
             assert.equal(err.message, 'Fake Error');
 
             assert.equal(rssCacheStub.calledOnce, true);
-            rssCacheStub.firstCall.args.should.eql(['/rss/', {}]);
+            assert.deepEqual(rssCacheStub.firstCall.args, ['/rss/', {}]);
 
             assert.equal(res.set.called, false);
             assert.equal(res.send.called, false);

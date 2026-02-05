@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
+const _ = require('lodash');
 
 const express = require('../../../../../core/shared/express');
 const themeEngine = require('../../../../../core/frontend/services/theme-engine');
@@ -378,7 +379,7 @@ describe('staticTheme', function () {
                 assert.equal(expressStaticStub.firstCall.args[0], 'my/fake/path');
 
                 const options = expressStaticStub.firstCall.args[1];
-                options.should.be.an.Object();
+                assert(_.isPlainObject(options));
                 options.should.have.property('maxAge');
                 options.should.have.property('fallthrough', true);
 
@@ -399,7 +400,7 @@ describe('staticTheme', function () {
                 assert.equal(expressStaticStub.firstCall.args[0], 'my/fake/path');
 
                 const options = expressStaticStub.firstCall.args[1];
-                options.should.be.an.Object();
+                assert(_.isPlainObject(options));
                 options.should.have.property('maxAge');
                 options.should.have.property('fallthrough', true);
 
@@ -420,7 +421,7 @@ describe('staticTheme', function () {
                 assert.equal(expressStaticStub.firstCall.args[0], 'my/fake/path');
 
                 const options = expressStaticStub.firstCall.args[1];
-                options.should.be.an.Object();
+                assert(_.isPlainObject(options));
                 options.should.have.property('maxAge');
                 options.should.have.property('fallthrough', true);
 
@@ -439,7 +440,7 @@ describe('staticTheme', function () {
                 assert.equal(expressStaticStub.firstCall.args[0], 'my/fake/path');
 
                 const options = expressStaticStub.firstCall.args[1];
-                options.should.be.an.Object();
+                assert(_.isPlainObject(options));
                 options.should.have.property('maxAge');
                 options.should.have.property('fallthrough', true);
 
@@ -502,7 +503,7 @@ describe('staticTheme', function () {
                 assert.equal(expressStaticStub.firstCall.args[0], 'my/fake/path');
 
                 const options = expressStaticStub.firstCall.args[1];
-                options.should.be.an.Object();
+                assert(_.isPlainObject(options));
                 options.should.have.property('maxAge');
                 options.should.have.property('fallthrough', false);
 
@@ -523,7 +524,7 @@ describe('staticTheme', function () {
                 assert.equal(expressStaticStub.firstCall.args[0], 'my/fake/path');
 
                 const options = expressStaticStub.firstCall.args[1];
-                options.should.be.an.Object();
+                assert(_.isPlainObject(options));
                 options.should.have.property('maxAge');
                 options.should.have.property('fallthrough', false);
 
@@ -544,7 +545,7 @@ describe('staticTheme', function () {
                 assert.equal(expressStaticStub.firstCall.args[0], 'my/fake/path');
 
                 const options = expressStaticStub.firstCall.args[1];
-                options.should.be.an.Object();
+                assert(_.isPlainObject(options));
                 options.should.have.property('maxAge');
                 options.should.have.property('fallthrough', false);
 

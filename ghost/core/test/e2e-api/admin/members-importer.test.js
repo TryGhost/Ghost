@@ -73,7 +73,7 @@ describe('Members Importer API', function () {
         assert.equal(importedMember1.name, 'joe');
         assert.equal(importedMember1.note, null);
         assert.equal(importedMember1.subscribed, true);
-        importedMember1.newsletters.length.should.equal(filteredNewsletters.length);
+        assert.equal(importedMember1.newsletters.length, filteredNewsletters.length);
         assert.equal(importedMember1.labels.length, 1);
         assert.equal(testUtils.API.isISO8601(importedMember1.created_at), true);
         assert.equal(importedMember1.comped, false);

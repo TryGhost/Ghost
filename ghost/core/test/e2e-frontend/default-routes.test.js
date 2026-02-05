@@ -345,15 +345,13 @@ describe('Default Frontend routing', function () {
                 .expect(200)
                 .expect(assertCorrectFrontendHeaders);
 
-            res.text.should.equal(
-                'User-agent: *\n' +
-                'Sitemap: http://127.0.0.1:2369/sitemap.xml\nDisallow: /ghost/\n' +
-                'Disallow: /email/\n' +
-                'Disallow: /members/api/comments/counts/\n' +
-                'Disallow: /r/\n' +
-                'Disallow: /webmentions/receive/\n' +
-                'Disallow: /.ghost/analytics/api/\n'
-            );
+            assert.equal(res.text, 'User-agent: *\n' +
+            'Sitemap: http://127.0.0.1:2369/sitemap.xml\nDisallow: /ghost/\n' +
+            'Disallow: /email/\n' +
+            'Disallow: /members/api/comments/counts/\n' +
+            'Disallow: /r/\n' +
+            'Disallow: /webmentions/receive/\n' +
+            'Disallow: /.ghost/analytics/api/\n');
         });
 
         it('should retrieve default favicon.ico', async function () {

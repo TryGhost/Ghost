@@ -30,7 +30,7 @@ describe('Ghost Admin - Storage Adapter Switching', function () {
             .expectStatus(200);
 
         let post = res.body.posts[0];
-        post.feature_image.should.equal(`${siteUrl}/content/images/feature.jpg`);
+        assert.equal(post.feature_image, `${siteUrl}/content/images/feature.jpg`);
         assert(post.lexical.includes(`${siteUrl}/content/files/document.pdf`));
         assert(post.lexical.includes(`${siteUrl}/content/media/video.mp4`));
 
@@ -43,7 +43,7 @@ describe('Ghost Admin - Storage Adapter Switching', function () {
             .expectStatus(200);
 
         post = res.body.posts[0];
-        post.feature_image.should.equal(`${siteUrl}/content/images/feature.jpg`);
+        assert.equal(post.feature_image, `${siteUrl}/content/images/feature.jpg`);
         assert(post.lexical.includes(`${cdnUrl}/content/files/document.pdf`));
         assert(post.lexical.includes(`${cdnUrl}/content/media/video.mp4`));
 
@@ -54,7 +54,7 @@ describe('Ghost Admin - Storage Adapter Switching', function () {
             .expectStatus(200);
 
         post = res.body.posts[0];
-        post.feature_image.should.equal(`${siteUrl}/content/images/feature.jpg`);
+        assert.equal(post.feature_image, `${siteUrl}/content/images/feature.jpg`);
         assert(post.lexical.includes(`${siteUrl}/content/files/document.pdf`));
         assert(post.lexical.includes(`${siteUrl}/content/media/video.mp4`));
 
@@ -67,7 +67,7 @@ describe('Ghost Admin - Storage Adapter Switching', function () {
             .expectStatus(200);
 
         post = res.body.posts[0];
-        post.feature_image.should.equal(`${siteUrl}/content/images/feature.jpg`);
+        assert.equal(post.feature_image, `${siteUrl}/content/images/feature.jpg`);
         assert(post.lexical.includes(`${newCdnUrl}/content/files/document.pdf`));
         assert(post.lexical.includes(`${newCdnUrl}/content/media/video.mp4`));
     });
@@ -79,7 +79,7 @@ describe('Ghost Admin - Storage Adapter Switching', function () {
 
         let post = res.body.posts[0];
         let mobiledoc = JSON.parse(post.mobiledoc);
-        mobiledoc.cards.find(c => c[0] === 'file')[1].src.should.equal(`${siteUrl}/content/files/document.pdf`);
+        assert.equal(mobiledoc.cards.find(c => c[0] === 'file')[1].src, `${siteUrl}/content/files/document.pdf`);
 
         urlUtilsHelper.stubUrlUtilsWithCdn({
             assetBaseUrls: {media: cdnUrl, files: cdnUrl}
@@ -91,8 +91,8 @@ describe('Ghost Admin - Storage Adapter Switching', function () {
 
         post = res.body.posts[0];
         mobiledoc = JSON.parse(post.mobiledoc);
-        mobiledoc.cards.find(c => c[0] === 'file')[1].src.should.equal(`${cdnUrl}/content/files/document.pdf`);
-        post.feature_image.should.equal(`${siteUrl}/content/images/feature.jpg`);
+        assert.equal(mobiledoc.cards.find(c => c[0] === 'file')[1].src, `${cdnUrl}/content/files/document.pdf`);
+        assert.equal(post.feature_image, `${siteUrl}/content/images/feature.jpg`);
     });
 
     it('Snippets also switch URLs correctly', async function () {

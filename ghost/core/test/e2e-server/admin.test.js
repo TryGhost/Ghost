@@ -130,7 +130,7 @@ describe('Admin Routing', function () {
                 .set('X-Forwarded-Proto', 'https')
                 .expect(200);
 
-            res.text.should.equal(prodTemplate);
+            assert.equal(res.text, prodTemplate);
         });
 
         it('serves assets when not in production', async function () {
@@ -140,7 +140,7 @@ describe('Admin Routing', function () {
                 .set('X-Forwarded-Proto', 'https')
                 .expect(200);
 
-            res.text.should.equal(devTemplate);
+            assert.equal(res.text, devTemplate);
         });
 
         it('generates it\'s own ETag header from file contents', async function () {

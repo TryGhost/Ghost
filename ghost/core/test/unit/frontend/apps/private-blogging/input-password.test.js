@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
 // We use the name input_password to match the helper for consistency:
 const should = require('should');
@@ -15,7 +16,7 @@ describe('{{input_password}} helper', function () {
         const rendered = input_password();
         assertExists(rendered);
 
-        String(rendered).should.equal(markup);
+        assert.equal(String(rendered), markup);
     });
 
     it('returns the correct input when a custom class is specified', function () {
@@ -31,7 +32,7 @@ describe('{{input_password}} helper', function () {
 
         assertExists(rendered);
 
-        String(rendered).should.equal(markup);
+        assert.equal(String(rendered), markup);
     });
 
     it('returns the correct input when a custom placeholder is specified', function () {
@@ -47,6 +48,6 @@ describe('{{input_password}} helper', function () {
 
         assertExists(rendered);
 
-        String(rendered).should.equal(markup);
+        assert.equal(String(rendered), markup);
     });
 });

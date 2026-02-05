@@ -79,8 +79,8 @@ describe('Unit: utils/serializers/output/mappers', function () {
             assert.equal(urlUtil.forTag.callCount, 1);
             assert.equal(urlUtil.forUser.callCount, 1);
 
-            urlUtil.forTag.getCall(0).args.should.eql(['id3', {id: 'id3', feature_image: 'value'}, frame.options]);
-            urlUtil.forUser.getCall(0).args.should.eql(['id4', {name: 'Ghosty', id: 'id4'}, frame.options]);
+            assert.deepEqual(urlUtil.forTag.getCall(0).args, ['id3', {id: 'id3', feature_image: 'value'}, frame.options]);
+            assert.deepEqual(urlUtil.forUser.getCall(0).args, ['id4', {name: 'Ghosty', id: 'id4'}, frame.options]);
         });
     });
 
@@ -105,7 +105,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
             mappers.users(user, frame);
 
             assert.equal(urlUtil.forUser.callCount, 1);
-            urlUtil.forUser.getCall(0).args.should.eql(['id1', user, frame.options]);
+            assert.deepEqual(urlUtil.forUser.getCall(0).args, ['id1', user, frame.options]);
             assert.equal(cleanUtil.author.callCount, 1);
         });
     });
@@ -131,7 +131,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
             mappers.tags(tag, frame);
 
             assert.equal(urlUtil.forTag.callCount, 1);
-            urlUtil.forTag.getCall(0).args.should.eql(['id3', tag, frame.options]);
+            assert.deepEqual(urlUtil.forTag.getCall(0).args, ['id3', tag, frame.options]);
             assert.equal(cleanUtil.tag.callCount, 1);
         });
     });
@@ -176,7 +176,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
 
             const mapped = mappers.snippets(snippet, frame);
 
-            mapped.should.eql({
+            assert.deepEqual(mapped, {
                 id: snippet.id,
                 name: snippet.name,
                 mobiledoc: snippet.mobiledoc,
@@ -200,7 +200,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
 
             const mapped = mappers.newsletters(newsletter, frame);
 
-            mapped.should.eql({
+            assert.deepEqual(mapped, {
                 id: newsletter.id,
                 uuid: newsletter.uuid,
                 name: newsletter.name,
@@ -252,7 +252,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
             });
 
             const mapped = mappers.emailBatches(model, frame);
-            mapped.should.eql({
+            assert.deepEqual(mapped, {
                 id: 'id1',
                 provider_id: 'provider_id1',
                 status: 'status1',
@@ -305,7 +305,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
             });
 
             const mapped = mappers.emailFailures(model, frame);
-            mapped.should.eql({
+            assert.deepEqual(mapped, {
                 id: 'id1',
                 code: 'code1',
                 enhanced_code: 'enhanced_code1',
@@ -349,7 +349,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
             });
 
             const mapped = mappers.emailFailures(model, frame);
-            mapped.should.eql({
+            assert.deepEqual(mapped, {
                 id: 'id1',
                 code: 'code1',
                 enhanced_code: 'enhanced_code1',
@@ -410,7 +410,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
             };
 
             const mapped = mappers.activityFeedEvents(model, frame);
-            mapped.should.eql({
+            assert.deepEqual(mapped, {
                 foo: 'bar',
                 type: 'comment_event',
                 data: {
@@ -483,7 +483,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
             };
 
             const mapped = mappers.activityFeedEvents(model, frame);
-            mapped.should.eql({
+            assert.deepEqual(mapped, {
                 foo: 'bar',
                 type: 'click_event',
                 data: {
@@ -535,7 +535,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
             };
 
             const mapped = mappers.activityFeedEvents(model, frame);
-            mapped.should.eql({
+            assert.deepEqual(mapped, {
                 foo: 'bar',
                 type: 'aggregated_click_event',
                 data: {
@@ -584,7 +584,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
             };
 
             const mapped = mappers.activityFeedEvents(model, frame);
-            mapped.should.eql({
+            assert.deepEqual(mapped, {
                 foo: 'bar',
                 type: 'feedback_event',
                 data: {
@@ -608,7 +608,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
             });
 
             const mapped2 = mappers.activityFeedEvents({...model, data: {...model.data, member: undefined, post: undefined}}, frame);
-            mapped2.should.eql({
+            assert.deepEqual(mapped2, {
                 foo: 'bar',
                 type: 'feedback_event',
                 data: {
@@ -656,7 +656,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
 
             const mapped = mappers.comments(model, frame);
 
-            mapped.should.eql({
+            assert.deepEqual(mapped, {
                 id: 'comment3',
                 html: '<p>comment 3</p>',
                 member: {
@@ -704,7 +704,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
 
             assert.equal(converterSpy.calledOnce, true, 'htmlToPlaintext.commentSnippet was not called');
 
-            mapped.should.eql({
+            assert.deepEqual(mapped, {
                 in_reply_to_snippet: 'First paragraph with link, and new line. Second paragraph',
                 member: null
             });
@@ -721,7 +721,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
 
             const mapped = mappers.comments(model, frame);
 
-            mapped.should.eql({
+            assert.deepEqual(mapped, {
                 id: 'comment1',
                 html: '<p>comment 1</p>',
                 member: null,

@@ -188,8 +188,8 @@ describe('Admin API - Max Limit Cap', function () {
                 .expectStatus(200);
 
             // Even though we requested 10, we should only get max 5
-            body.posts.length.should.equal(MAX_LIMIT);
-            body.meta.pagination.limit.should.equal(MAX_LIMIT);
+            assert.equal(body.posts.length, MAX_LIMIT);
+            assert.equal(body.meta.pagination.limit, MAX_LIMIT);
         });
 
         it(`should cap limit to ${MAX_LIMIT} when limit is "all"`, async function () {
@@ -197,8 +197,8 @@ describe('Admin API - Max Limit Cap', function () {
                 .expectStatus(200);
 
             // "all" should be capped to 5
-            body.posts.length.should.equal(MAX_LIMIT);
-            body.meta.pagination.limit.should.equal(MAX_LIMIT);
+            assert.equal(body.posts.length, MAX_LIMIT);
+            assert.equal(body.meta.pagination.limit, MAX_LIMIT);
         });
 
         it('should respect smaller limits', async function () {
@@ -227,7 +227,7 @@ describe('Admin API - Max Limit Cap', function () {
 
             // Even though we requested 10, we should only get max 5
             body.members.length.should.be.lessThanOrEqual(MAX_LIMIT);
-            body.meta.pagination.limit.should.equal(MAX_LIMIT);
+            assert.equal(body.meta.pagination.limit, MAX_LIMIT);
         });
 
         it('should cap limit to 5 when limit is "all"', async function () {
@@ -236,7 +236,7 @@ describe('Admin API - Max Limit Cap', function () {
 
             // "all" should be capped to 5
             body.members.length.should.be.lessThanOrEqual(MAX_LIMIT);
-            body.meta.pagination.limit.should.equal(MAX_LIMIT);
+            assert.equal(body.meta.pagination.limit, MAX_LIMIT);
         });
     });
 
@@ -246,8 +246,8 @@ describe('Admin API - Max Limit Cap', function () {
                 .expectStatus(200);
 
             // Even though we requested 10, we should only get max 5
-            body.tags.length.should.equal(MAX_LIMIT);
-            body.meta.pagination.limit.should.equal(MAX_LIMIT);
+            assert.equal(body.tags.length, MAX_LIMIT);
+            assert.equal(body.meta.pagination.limit, MAX_LIMIT);
         });
     });
 
@@ -258,7 +258,7 @@ describe('Admin API - Max Limit Cap', function () {
 
             // Even though we requested 10, we should only get max 5
             body.pages.length.should.be.lessThanOrEqual(MAX_LIMIT);
-            body.meta.pagination.limit.should.equal(MAX_LIMIT);
+            assert.equal(body.meta.pagination.limit, MAX_LIMIT);
         });
     });
 
@@ -320,8 +320,8 @@ describe('Admin API - Max Limit Cap', function () {
                 .expectStatus(200);
 
             // Invalid limit should be capped to 5
-            body.posts.length.should.equal(MAX_LIMIT);
-            body.meta.pagination.limit.should.equal(MAX_LIMIT);
+            assert.equal(body.posts.length, MAX_LIMIT);
+            assert.equal(body.meta.pagination.limit, MAX_LIMIT);
         });
 
         it('should handle limit=0', async function () {

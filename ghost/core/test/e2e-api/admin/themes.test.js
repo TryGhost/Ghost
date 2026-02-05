@@ -156,7 +156,7 @@ describe('Themes API', function () {
         assert.equal(addedTheme.active, false);
 
         // Note: at this point, the API should not return a valid_34324324 backup folder as a theme
-        _.map(jsonResponse3.themes, 'name').should.eql([
+        assert.deepEqual(_.map(jsonResponse3.themes, 'name'), [
             'broken-theme',
             'casper',
             'locale-theme',
@@ -186,7 +186,7 @@ describe('Themes API', function () {
         }
         tmpFolderContents.should.be.an.Array().with.lengthOf(12);
 
-        tmpFolderContents.should.eql([
+        assert.deepEqual(tmpFolderContents, [
             'broken-theme',
             'casper',
             'casper.zip',

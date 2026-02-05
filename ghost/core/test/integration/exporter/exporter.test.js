@@ -111,7 +111,7 @@ describe('Exporter', function () {
             //       because when `have.only.keys` fails there's no useful diff
             Object.keys(exportData.data).sort().should.eql(tables.sort());
             Object.keys(exportData.data).sort().should.containDeep(Object.keys(exportedBodyLatest().db[0].data));
-            exportData.meta.version.should.equal(ghostVersion.full);
+            assert.equal(exportData.meta.version, ghostVersion.full);
 
             // excludes table should contain no data
             const excludedTables = [

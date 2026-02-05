@@ -113,9 +113,9 @@ describe('Mail: Ghostmailer', function () {
     it('should fail to send messages when given insufficient data', async function () {
         mailer = new mail.GhostMailer();
 
-        await mailer.send().should.be.rejectedWith('Incomplete message data.');
-        await mailer.send({subject: '123'}).should.be.rejectedWith('Incomplete message data.');
-        await mailer.send({subject: '', html: '123'}).should.be.rejectedWith('Incomplete message data.');
+        await assert.rejects(mailer.send(), {message: 'Incomplete message data.'});
+        await assert.rejects(mailer.send({subject: '123'}), {message: 'Incomplete message data.'});
+        await assert.rejects(mailer.send({subject: '', html: '123'}), {message: 'Incomplete message data.'});
     });
 
     describe('Direct', function () {

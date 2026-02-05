@@ -94,7 +94,7 @@ describe('Invites API', function () {
             assert.equal(mailService.GhostMailer.prototype.send.called, true);
 
             assertExists(res.headers.location);
-            res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('invites/')}${res.body.invites[0].id}/`);
+            assert.equal(res.headers.location, `http://127.0.0.1:2369${localUtils.API.getApiQuery('invites/')}${res.body.invites[0].id}/`);
         });
 
         it('Can destroy an existing invite', async function () {
@@ -158,7 +158,7 @@ describe('Invites API', function () {
             assert.equal(mailService.GhostMailer.prototype.send.called, true);
 
             assertExists(res.headers.location);
-            res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('invites/')}${res.body.invites[0].id}/`);
+            assert.equal(res.headers.location, `http://127.0.0.1:2369${localUtils.API.getApiQuery('invites/')}${res.body.invites[0].id}/`);
         });
 
         it('Can add a new invite by API Key with the Editor Role', async function () {
@@ -185,7 +185,7 @@ describe('Invites API', function () {
             assert.equal(mailService.GhostMailer.prototype.send.called, true);
 
             assertExists(res.headers.location);
-            res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('invites/')}${res.body.invites[0].id}/`);
+            assert.equal(res.headers.location, `http://127.0.0.1:2369${localUtils.API.getApiQuery('invites/')}${res.body.invites[0].id}/`);
         });
 
         it('Can add a new invite by API Key with the Contributor Role', async function () {
@@ -212,7 +212,7 @@ describe('Invites API', function () {
             assert.equal(mailService.GhostMailer.prototype.send.called, true);
 
             assertExists(res.headers.location);
-            res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('invites/')}${res.body.invites[0].id}/`);
+            assert.equal(res.headers.location, `http://127.0.0.1:2369${localUtils.API.getApiQuery('invites/')}${res.body.invites[0].id}/`);
         });
 
         it('Can add a new invite by API Key with the Super Editor Role', async function () {
@@ -239,7 +239,7 @@ describe('Invites API', function () {
             assert.equal(mailService.GhostMailer.prototype.send.called, true);
 
             assertExists(res.headers.location);
-            res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('invites/')}${res.body.invites[0].id}/`);
+            assert.equal(res.headers.location, `http://127.0.0.1:2369${localUtils.API.getApiQuery('invites/')}${res.body.invites[0].id}/`);
         });
 
         it('Can not add a new invite by API Key with the Administrator Role', async function () {

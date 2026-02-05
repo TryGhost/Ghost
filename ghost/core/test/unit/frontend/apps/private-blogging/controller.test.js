@@ -82,7 +82,7 @@ describe('Private Controller', function () {
 
         res.render = function (view, context) {
             view.should.eql(defaultPath);
-            context.should.eql({error: 'Test Error'});
+            assert.deepEqual(context, {error: 'Test Error'});
             done();
         };
 

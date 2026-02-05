@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const {assertExists} = require('../../../utils/assertions');
 const should = require('should');
 
@@ -8,7 +9,7 @@ describe('{{excerpt}} Helper', function () {
     function shouldRenderToExpected(data, hash, expected) {
         const rendered = excerptHelper.call(data, hash);
         assertExists(rendered);
-        rendered.string.should.equal(expected);
+        assert.equal(rendered.string, expected);
     }
 
     it('renders empty string when html, excerpt, and custom_excerpt are null', function () {

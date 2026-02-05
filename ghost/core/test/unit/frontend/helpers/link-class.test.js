@@ -38,10 +38,10 @@ describe('{{link_class}} helper', function () {
     });
 
     it('throws an error for missing for=""', function () {
-        (function compileWith() {
+        assert.throws((function compileWith() {
             compile('{{link_class}}')
                 .with({});
-        }).should.throw();
+        }));
     });
 
     it('silently accepts an empty for...', function () {

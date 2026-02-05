@@ -73,7 +73,7 @@ describe('{{navigation}} helper', function () {
         const rendered = runHelper(optionsData);
 
         assertExists(rendered);
-        rendered.string.should.be.equal('');
+        assert.equal(rendered.string, '');
     });
 
     it('can handle relativeUrl not being set (e.g. for images/assets)', function () {

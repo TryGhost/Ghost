@@ -54,18 +54,18 @@ describe('{{date}} helper', function () {
             rendered = date.call({published_at: d}, context);
 
             assertExists(rendered);
-            String(rendered).should.equal(moment(d).tz(timezone).format(format));
+            assert.equal(String(rendered), moment(d).tz(timezone).format(format));
 
             rendered = date.call({}, d, context);
 
             assertExists(rendered);
-            String(rendered).should.equal(moment(d).tz(timezone).format(format));
+            assert.equal(String(rendered), moment(d).tz(timezone).format(format));
         });
 
         // No date falls back to now
         rendered = date.call({}, context);
         assertExists(rendered);
-        String(rendered).should.equal(moment().tz(timezone).format(format));
+        assert.equal(String(rendered), moment().tz(timezone).format(format));
     });
 
     it('creates properly localised date strings', function () {
@@ -102,18 +102,18 @@ describe('{{date}} helper', function () {
                 rendered = date.call({published_at: d}, context);
 
                 assertExists(rendered);
-                String(rendered).should.equal(moment(d).tz(timezone).locale(locale).format(format));
+                assert.equal(String(rendered), moment(d).tz(timezone).locale(locale).format(format));
 
                 rendered = date.call({}, d, context);
 
                 assertExists(rendered);
-                String(rendered).should.equal(moment(d).tz(timezone).locale(locale).format(format));
+                assert.equal(String(rendered), moment(d).tz(timezone).locale(locale).format(format));
             });
 
             // No date falls back to now
             rendered = date.call({}, context);
             assertExists(rendered);
-            String(rendered).should.equal(moment().tz(timezone).locale(locale).format(format));
+            assert.equal(String(rendered), moment().tz(timezone).locale(locale).format(format));
         });
     });
 
@@ -145,12 +145,12 @@ describe('{{date}} helper', function () {
             rendered = date.call({published_at: d}, context);
 
             assertExists(rendered);
-            String(rendered).should.equal(moment(d).tz(timezone).from(timeNow));
+            assert.equal(String(rendered), moment(d).tz(timezone).from(timeNow));
 
             rendered = date.call({}, d, context);
 
             assertExists(rendered);
-            String(rendered).should.equal(moment(d).tz(timezone).from(timeNow));
+            assert.equal(String(rendered), moment(d).tz(timezone).from(timeNow));
         });
 
         // No date falls back to now

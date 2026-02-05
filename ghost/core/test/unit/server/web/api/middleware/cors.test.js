@@ -62,7 +62,7 @@ describe('cors', function () {
         cors(req, res, next);
 
         sinon.assert.calledOnce(res.end);
-        res.headers['Access-Control-Allow-Origin'].should.equal(origin);
+        assert.equal(res.headers['Access-Control-Allow-Origin'], origin);
 
         done();
     });
@@ -77,7 +77,7 @@ describe('cors', function () {
         cors(req, res, next);
 
         sinon.assert.calledOnce(res.end);
-        res.headers['Access-Control-Allow-Origin'].should.equal(origin);
+        assert.equal(res.headers['Access-Control-Allow-Origin'], origin);
 
         done();
     });
@@ -109,7 +109,7 @@ describe('cors', function () {
         cors(req, res, next);
 
         sinon.assert.calledOnce(res.end);
-        res.headers['Access-Control-Allow-Origin'].should.equal(origin);
+        assert.equal(res.headers['Access-Control-Allow-Origin'], origin);
 
         done();
     });
@@ -131,7 +131,7 @@ describe('cors', function () {
         cors(req, res, next);
 
         sinon.assert.called(res.end);
-        res.headers['Access-Control-Allow-Origin'].should.equal(origin);
+        assert.equal(res.headers['Access-Control-Allow-Origin'], origin);
 
         done();
     });

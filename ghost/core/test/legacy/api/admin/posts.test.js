@@ -142,7 +142,7 @@ describe('Posts API', function () {
                     assertExists(jsonResponse.posts);
                     localUtils.API.checkResponse(jsonResponse, 'posts');
                     assert.equal(jsonResponse.posts.length, 1);
-                    jsonResponse.posts[0].id.should.equal(testUtils.DataGenerator.Content.posts[2].id);
+                    assert.equal(jsonResponse.posts[0].id, testUtils.DataGenerator.Content.posts[2].id);
                     assert.equal(jsonResponse.posts[0].meta_description, 'meta description for short and sweet');
 
                     localUtils.API.checkResponse(
@@ -317,7 +317,7 @@ describe('Posts API', function () {
                     assert.equal(res.body.posts[0].title, '(Untitled)');
 
                     assertExists(res.headers.location);
-                    res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('posts/')}${res.body.posts[0].id}/`);
+                    assert.equal(res.headers.location, `http://127.0.0.1:2369${localUtils.API.getApiQuery('posts/')}${res.body.posts[0].id}/`);
                 });
         });
 
@@ -456,7 +456,7 @@ describe('Posts API', function () {
             assertExists(res2.body.posts[0].title);
             assert.equal(res2.body.posts[0].title, 'Tags test 6');
             assert.equal(res2.body.posts[0].tags.length, 1);
-            res2.body.posts[0].tags[0].id.should.equal(res.body.posts[0].tags[0].id);
+            assert.equal(res2.body.posts[0].tags[0].id, res.body.posts[0].tags[0].id);
         });
 
         it('can add with tags - slug with spaces not automated', async function () {
@@ -502,7 +502,7 @@ describe('Posts API', function () {
             assertExists(res2.body.posts[0].title);
             assert.equal(res2.body.posts[0].title, 'Tags test 8');
             assert.equal(res2.body.posts[0].tags.length, 1);
-            res2.body.posts[0].tags[0].id.should.equal(res.body.posts[0].tags[0].id);
+            assert.equal(res2.body.posts[0].tags[0].id, res.body.posts[0].tags[0].id);
         });
 
         it('can add with tags - too long slug', async function () {
@@ -525,7 +525,7 @@ describe('Posts API', function () {
             assertExists(res.body.posts[0].title);
             assert.equal(res.body.posts[0].title, 'Tags test 9');
             assert.equal(res.body.posts[0].tags.length, 1);
-            res.body.posts[0].tags[0].slug.should.equal(tooLongSlug.substring(0, 185));
+            assert.equal(res.body.posts[0].tags[0].slug, tooLongSlug.substring(0, 185));
 
             // If we create another post again now that the very long tag exists,
             // we need to make sure it matches correctly and doesn't create a new tag again
@@ -547,7 +547,7 @@ describe('Posts API', function () {
             assertExists(res2.body.posts[0].title);
             assert.equal(res2.body.posts[0].title, 'Tags test 10');
             assert.equal(res2.body.posts[0].tags.length, 1);
-            res2.body.posts[0].tags[0].id.should.equal(res.body.posts[0].tags[0].id);
+            assert.equal(res2.body.posts[0].tags[0].id, res.body.posts[0].tags[0].id);
         });
     });
 
@@ -600,7 +600,7 @@ describe('Posts API', function () {
             assert.equal(res.body.posts[0].status, 'draft');
 
             assertExists(res.headers.location);
-            res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('posts/')}${res.body.posts[0].id}/`);
+            assert.equal(res.headers.location, `http://127.0.0.1:2369${localUtils.API.getApiQuery('posts/')}${res.body.posts[0].id}/`);
 
             const publishedRes = await request
                 .put(localUtils.API.getApiQuery(`posts/${res.body.posts[0].id}/?newsletter=${defaultNewsletterSlug}`))
@@ -643,7 +643,7 @@ describe('Posts API', function () {
             assert.equal(res.body.posts[0].status, 'draft');
 
             assertExists(res.headers.location);
-            res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('posts/')}${res.body.posts[0].id}/`);
+            assert.equal(res.headers.location, `http://127.0.0.1:2369${localUtils.API.getApiQuery('posts/')}${res.body.posts[0].id}/`);
 
             const publishedRes = await request
                 .put(localUtils.API.getApiQuery(`posts/${res.body.posts[0].id}/?email_segment=status:-free&newsletter=${defaultNewsletterSlug}`))
@@ -686,7 +686,7 @@ describe('Posts API', function () {
             assert.equal(res.body.posts[0].status, 'draft');
 
             assertExists(res.headers.location);
-            res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('posts/')}${res.body.posts[0].id}/`);
+            assert.equal(res.headers.location, `http://127.0.0.1:2369${localUtils.API.getApiQuery('posts/')}${res.body.posts[0].id}/`);
 
             const publishedRes = await request
                 .put(localUtils.API.getApiQuery(`posts/${res.body.posts[0].id}/?email_segment=status:-free&newsletter=${secondNewsletterSlug}`))
@@ -791,7 +791,7 @@ describe('Posts API', function () {
                 .then((res) => {
                     assertExists(res.body.posts);
                     assertExists(res.body.posts[0].canonical_url);
-                    res.body.posts[0].canonical_url.should.equal(`${config.get('url')}/canonical/url`);
+                    assert.equal(res.body.posts[0].canonical_url, `${config.get('url')}/canonical/url`);
                 });
         });
 
@@ -875,7 +875,7 @@ describe('Posts API', function () {
                 .then((res) => {
                     assertExists(res.body.posts);
                     assertExists(res.body.posts[0].title);
-                    res.body.posts[0].title.should.equal(untrimmedTitle.trim());
+                    assert.equal(res.body.posts[0].title, untrimmedTitle.trim());
                 });
         });
 

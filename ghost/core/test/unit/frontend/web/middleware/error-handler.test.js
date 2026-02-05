@@ -44,7 +44,7 @@ describe('Frontend Error Handler', function () {
         assert.equal(response.status.calledOnceWithExactly(statusCode), true);
         assert.equal(response.type.calledOnceWithExactly('text/plain'), true);
         assert.equal(response.send.calledOnce, true);
-        response.send.firstCall.args[0].should.equal(message);
+        assert.equal(response.send.firstCall.args[0], message);
         assert.equal(response.render.called, false);
     }
 

@@ -42,7 +42,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
             assert.equal(staticRoutesRouter.filter, undefined);
             assert.equal(staticRoutesRouter.getPermalinks(), undefined);
 
-            staticRoutesRouter.templates.should.eql(['test']);
+            assert.deepEqual(staticRoutesRouter.templates, ['test']);
 
             assert.equal(routerCreatedSpy.calledOnce, true);
             assert.equal(routerCreatedSpy.calledWith(staticRoutesRouter), true);
@@ -64,7 +64,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
 
             assert.equal(staticRoutesRouter.getPermalinks(), undefined);
             assert.equal(staticRoutesRouter.filter, undefined);
-            staticRoutesRouter.templates.should.eql([]);
+            assert.deepEqual(staticRoutesRouter.templates, []);
 
             assert.equal(routerCreatedSpy.calledOnce, true);
             assert.equal(routerCreatedSpy.calledWith(staticRoutesRouter), true);
@@ -84,10 +84,10 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
 
             res.routerOptions.should.have.properties('type', 'templates', 'defaultTemplate', 'context', 'data', 'contentType');
             assert.equal(res.routerOptions.type, 'custom');
-            res.routerOptions.templates.should.eql([]);
+            assert.deepEqual(res.routerOptions.templates, []);
             res.routerOptions.defaultTemplate.should.be.a.Function();
-            res.routerOptions.context.should.eql(['about']);
-            res.routerOptions.data.should.eql({});
+            assert.deepEqual(res.routerOptions.context, ['about']);
+            assert.deepEqual(res.routerOptions.data, {});
 
             assert.equal(res.routerOptions.contentType, undefined);
             assert.equal(res.locals.slug, undefined);
@@ -101,10 +101,10 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
 
             res.routerOptions.should.have.properties('type', 'templates', 'defaultTemplate', 'context', 'data', 'contentType');
             assert.equal(res.routerOptions.type, 'custom');
-            res.routerOptions.templates.should.eql([]);
+            assert.deepEqual(res.routerOptions.templates, []);
             res.routerOptions.defaultTemplate.should.be.a.Function();
-            res.routerOptions.context.should.eql(['index']);
-            res.routerOptions.data.should.eql({});
+            assert.deepEqual(res.routerOptions.context, ['index']);
+            assert.deepEqual(res.routerOptions.data, {});
 
             assert.equal(res.locals.slug, undefined);
         });
@@ -123,7 +123,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
 
                 assert.equal(staticRoutesRouter.getPermalinks(), undefined);
                 assert.equal(staticRoutesRouter.filter, 'tag:test');
-                staticRoutesRouter.templates.should.eql([]);
+                assert.deepEqual(staticRoutesRouter.templates, []);
                 assertExists(staticRoutesRouter.data);
 
                 assert.equal(routerCreatedSpy.calledOnce, true);
@@ -151,7 +151,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
                 assert.equal(staticRoutesRouter.getPermalinks(), undefined);
                 assert.equal(staticRoutesRouter.filter, 'tag:test');
 
-                staticRoutesRouter.templates.should.eql([]);
+                assert.deepEqual(staticRoutesRouter.templates, []);
 
                 assert.equal(routerCreatedSpy.calledOnce, true);
                 assert.equal(routerCreatedSpy.calledWith(staticRoutesRouter), true);
@@ -207,7 +207,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
 
                 staticRoutesRouter._prepareChannelContext(req, res, next);
                 assert.equal(next.calledOnce, true);
-                res.routerOptions.should.eql({
+                assert.deepEqual(res.routerOptions, {
                     type: 'channel',
                     context: ['channel'],
                     filter: 'tag:test',
@@ -227,7 +227,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
 
                 staticRoutesRouter._prepareChannelContext(req, res, next);
                 assert.equal(next.calledOnce, true);
-                res.routerOptions.should.eql({
+                assert.deepEqual(res.routerOptions, {
                     type: 'channel',
                     context: ['nothingcomparestoyou'],
                     name: 'nothingcomparestoyou',
@@ -247,7 +247,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
 
                 staticRoutesRouter._prepareChannelContext(req, res, next);
                 assert.equal(next.calledOnce, true);
-                res.routerOptions.should.eql({
+                assert.deepEqual(res.routerOptions, {
                     type: 'channel',
                     context: ['channel'],
                     filter: 'tag:test',
@@ -269,7 +269,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
 
                 staticRoutesRouter._prepareChannelContext(req, res, next);
                 assert.equal(next.calledOnce, true);
-                res.routerOptions.should.eql({
+                assert.deepEqual(res.routerOptions, {
                     type: 'channel',
                     context: ['channel'],
                     filter: 'tag:test',

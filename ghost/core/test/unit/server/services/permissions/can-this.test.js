@@ -81,21 +81,21 @@ describe('Permissions', function () {
         it('canThisResult gets build properly', function () {
             const canThisResult = permissions.canThis();
 
-            canThisResult.browse.should.be.an.Object();
+            assert(_.isPlainObject(canThisResult.browse));
             canThisResult.browse.post.should.be.a.Function();
 
-            canThisResult.edit.should.be.an.Object();
+            assert(_.isPlainObject(canThisResult.edit));
             canThisResult.edit.post.should.be.a.Function();
             canThisResult.edit.tag.should.be.a.Function();
             canThisResult.edit.user.should.be.a.Function();
             canThisResult.edit.page.should.be.a.Function();
 
-            canThisResult.add.should.be.an.Object();
+            assert(_.isPlainObject(canThisResult.add));
             canThisResult.add.post.should.be.a.Function();
             canThisResult.add.user.should.be.a.Function();
             canThisResult.add.page.should.be.a.Function();
 
-            canThisResult.destroy.should.be.an.Object();
+            assert(_.isPlainObject(canThisResult.destroy));
             canThisResult.destroy.post.should.be.a.Function();
             canThisResult.destroy.user.should.be.a.Function();
         });
@@ -133,7 +133,7 @@ describe('Permissions', function () {
                             assert.equal(err.errorType, 'NoPermissionError');
 
                             assert.equal(findPostSpy.callCount, 1);
-                            findPostSpy.firstCall.args[0].should.eql({id: 1, status: 'all'});
+                            assert.deepEqual(findPostSpy.firstCall.args[0], {id: 1, status: 'all'});
                             done();
                         });
                 });
@@ -150,7 +150,7 @@ describe('Permissions', function () {
                             assert.equal(err.errorType, 'NoPermissionError');
 
                             assert.equal(findPostSpy.callCount, 1);
-                            findPostSpy.firstCall.args[0].should.eql({id: 1, status: 'all'});
+                            assert.deepEqual(findPostSpy.firstCall.args[0], {id: 1, status: 'all'});
                             done();
                         });
                 });
@@ -182,7 +182,7 @@ describe('Permissions', function () {
                             assert.equal(err.errorType, 'NoPermissionError');
 
                             assert.equal(findPostSpy.callCount, 1);
-                            findPostSpy.firstCall.args[0].should.eql({id: 1, status: 'all'});
+                            assert.deepEqual(findPostSpy.firstCall.args[0], {id: 1, status: 'all'});
                             done();
                         });
                 });

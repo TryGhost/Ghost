@@ -100,7 +100,7 @@ describe('{{#recommendations}} helper', function () {
         // console.log('Actual:');
         // console.log(actual);
 
-        trimSpaces(actual).should.equal(trimSpaces(expected));
+        assert.equal(trimSpaces(actual), trimSpaces(expected));
     });
 
     describe('when there are no recommendations', function () {

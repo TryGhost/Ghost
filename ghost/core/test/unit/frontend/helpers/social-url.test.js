@@ -60,9 +60,8 @@ describe('{{social_url}} helper', function () {
 
     platforms.forEach((platform) => {
         it(`should output the ${platform.name} url when 'type="${platform.name}"' is provided`, function () {
-            compile(`{{social_url type="${platform.name}"}}`)
-                .with(socialData)
-                .should.equal(platform.expectedUrl);
+            assert.equal(compile(`{{social_url type="${platform.name}"}}`)
+                .with(socialData), platform.expectedUrl);
         });
     });
 

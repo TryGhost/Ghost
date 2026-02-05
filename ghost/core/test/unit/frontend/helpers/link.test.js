@@ -41,10 +41,10 @@ describe('{{link}} helper', function () {
 
     describe('basic behavior: simple links without context', function () {
         it('throws an error for missing href=""', function () {
-            (function compileWith() {
+            assert.throws((function compileWith() {
                 compile('{{#link}}text{{/link}}')
                     .with({});
-            }).should.throw();
+            }));
         });
 
         it('silently accepts an empty href...', function () {

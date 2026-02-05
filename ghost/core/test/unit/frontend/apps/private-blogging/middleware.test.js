@@ -265,7 +265,7 @@ describe('Private Blogging', function () {
 
                 privateBlogging.doLoginToPrivateSite(req, res, next);
                 assert.equal(res.redirect.called, true);
-                res.redirect.args[0][0].should.be.equal('/');
+                assert.equal(res.redirect.args[0][0], '/');
             });
 
             it('doLoginToPrivateSite should redirect to the relative path if r param is there', function () {
@@ -278,7 +278,7 @@ describe('Private Blogging', function () {
 
                 privateBlogging.doLoginToPrivateSite(req, res, next);
                 assert.equal(res.redirect.called, true);
-                res.redirect.args[0][0].should.be.equal('/test');
+                assert.equal(res.redirect.args[0][0], '/test');
             });
 
             it('doLoginToPrivateSite should preserve query string including UTM parameters', function () {
@@ -291,7 +291,7 @@ describe('Private Blogging', function () {
 
                 privateBlogging.doLoginToPrivateSite(req, res, next);
                 assert.equal(res.redirect.called, true);
-                res.redirect.args[0][0].should.be.equal('/?utm_source=twitter&utm_campaign=test');
+                assert.equal(res.redirect.args[0][0], '/?utm_source=twitter&utm_campaign=test');
             });
 
             it('doLoginToPrivateSite should preserve query string on paths', function () {
@@ -304,7 +304,7 @@ describe('Private Blogging', function () {
 
                 privateBlogging.doLoginToPrivateSite(req, res, next);
                 assert.equal(res.redirect.called, true);
-                res.redirect.args[0][0].should.be.equal('/welcome/?ref=newsletter&utm_medium=email');
+                assert.equal(res.redirect.args[0][0], '/welcome/?ref=newsletter&utm_medium=email');
             });
 
             it('doLoginToPrivateSite should redirect to "/" if r param is redirecting to another domain than the current instance', function () {
@@ -317,7 +317,7 @@ describe('Private Blogging', function () {
 
                 privateBlogging.doLoginToPrivateSite(req, res, next);
                 assert.equal(res.redirect.called, true);
-                res.redirect.args[0][0].should.be.equal('/');
+                assert.equal(res.redirect.args[0][0], '/');
             });
 
             describe('Bad Password', function () {
