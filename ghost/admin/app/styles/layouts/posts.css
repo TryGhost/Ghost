@@ -43,17 +43,22 @@
     min-width: 80px;
 }
 
-.gh-email-debug-settingstab-icon {
+.gh-email-debug-overviewtab-icon {
     width: 20px;
     height: 20px;
     margin-bottom: 11px;
     margin-top: 2px;
 }
 
-.gh-email-debug-settingstab-icon svg path,
-.gh-email-debug-settingstab-icon svg circle {
+.gh-email-debug-overviewtab-icon svg {
+    overflow: visible;
+}
+
+.gh-email-debug-overviewtab-icon svg path,
+.gh-email-debug-overviewtab-icon svg circle {
     stroke-width: 2;
 }
+
 
 .gh-email-debug .gh-list {
     border-bottom: none;
