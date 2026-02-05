@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../utils/assertions');
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyContentVersion, anyString} = matchers;
 
@@ -56,7 +57,7 @@ async function testOutput(member, asserts, filters = []) {
 
         let csv = Papa.parse(res.text, {header: true});
         let row = csv.data.find(r => r.id === member.id);
-        should.exist(row);
+        assertExists(row);
 
         asserts(row);
 

@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../../../../utils');
@@ -18,7 +19,7 @@ describe('Unit - services/routing/controllers/previews', function () {
 
     function failTest(done) {
         return function (err) {
-            should.exist(err);
+            assertExists(err);
             done(err);
         };
     }

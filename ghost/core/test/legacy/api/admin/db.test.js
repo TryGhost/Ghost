@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../utils/assertions');
 const path = require('path');
 const os = require('os');
 const fs = require('fs-extra');
@@ -48,7 +49,7 @@ describe('DB API', function () {
             .expect(200)
             .then((res) => {
                 const jsonResponse = res.body;
-                should.exist(jsonResponse.db);
+                assertExists(jsonResponse.db);
                 assert.equal(jsonResponse.db.length, 1);
 
                 // NOTE: default tables + 1 from include parameters
@@ -81,7 +82,7 @@ describe('DB API', function () {
             })
             .then((res) => {
                 const jsonResponse = res.body;
-                should.exist(jsonResponse.db);
+                assertExists(jsonResponse.db);
 
                 fs.ensureDirSync(exportFolder);
                 fs.writeJSONSync(exportPath, jsonResponse);
@@ -149,8 +150,8 @@ describe('DB API', function () {
             .expect(200);
 
         const jsonResponse = res.body;
-        should.exist(jsonResponse.db);
-        should.exist(jsonResponse.problems);
+        assertExists(jsonResponse.db);
+        assertExists(jsonResponse.problems);
         assert.equal(jsonResponse.problems.length, 2);
 
         const postsResponse = await request.get(localUtils.API.getApiQuery('posts/'))
@@ -196,8 +197,8 @@ describe('DB API', function () {
             .expect(200);
 
         const jsonResponse = res.body;
-        should.exist(jsonResponse.db);
-        should.exist(jsonResponse.problems);
+        assertExists(jsonResponse.db);
+        assertExists(jsonResponse.problems);
         assert.equal(jsonResponse.problems.length, 2);
 
         const res2 = await request.get(localUtils.API.getApiQuery('posts/'))
@@ -243,8 +244,8 @@ describe('DB API', function () {
             .expect(200);
 
         const jsonResponse = res.body;
-        should.exist(jsonResponse.db);
-        should.exist(jsonResponse.problems);
+        assertExists(jsonResponse.db);
+        assertExists(jsonResponse.problems);
         assert.equal(jsonResponse.problems.length, 2);
 
         const res2 = await request.get(localUtils.API.getApiQuery('posts/'))
@@ -290,8 +291,8 @@ describe('DB API', function () {
             .expect(200);
 
         const jsonResponse = res.body;
-        should.exist(jsonResponse.db);
-        should.exist(jsonResponse.problems);
+        assertExists(jsonResponse.db);
+        assertExists(jsonResponse.problems);
 
         // 2 expected problems:
         // - Theme not imported
@@ -339,7 +340,7 @@ describe('DB API', function () {
 
         // Check if we have a product
         const product = await models.Product.findOne({slug: 'ghost-inc'});
-        should.exist(product);
+        assertExists(product);
 
         assert.equal(product.get('name'), 'Ghost Inc.');
         assert.equal(product.get('description'), 'Our daily newsletter');
@@ -347,25 +348,25 @@ describe('DB API', function () {
 
         // Check settings
         const portalProducts = await models.Settings.findOne({key: 'portal_products'});
-        should.exist(portalProducts);
+        assertExists(portalProducts);
         JSON.parse(portalProducts.get('value')).should.deepEqual([]);
 
         // Check stripe products
         const stripeProduct = await models.StripeProduct.findOne({product_id: product.id});
-        should.exist(stripeProduct);
+        assertExists(stripeProduct);
         assert.equal(stripeProduct.get('stripe_product_id'), 'prod_d2c1708c21');
         assert.notEqual(stripeProduct.id, '60be1fc9bd3af33564cfb337');
 
         // Check newsletters
         const newsletter = await models.Newsletter.findOne({slug: 'test'});
-        should.exist(newsletter);
+        assertExists(newsletter);
         assert.equal(newsletter.get('name'), 'Ghost Inc.');
         // Make sure sender_email is not set
         assert.equal(newsletter.get('sender_email'), null);
 
         // Check posts
         const post = await models.Post.findOne({slug: 'test-newsletter'}, {withRelated: ['tiers']});
-        should.exist(post);
+        assertExists(post);
 
         post.get('newsletter_id').should.equal(newsletter.id);
         assert.equal(post.get('visibility'), 'public');
@@ -376,10 +377,10 @@ describe('DB API', function () {
 
         // Check stripe prices
         const monthlyPrice = await models.StripePrice.findOne({id: product.get('monthly_price_id')});
-        should.exist(monthlyPrice);
+        assertExists(monthlyPrice);
 
         const yearlyPrice = await models.StripePrice.findOne({id: product.get('yearly_price_id')});
-        should.exist(yearlyPrice);
+        assertExists(yearlyPrice);
 
         assert.equal(monthlyPrice.get('amount'), 500);
         assert.equal(monthlyPrice.get('currency'), 'usd');
@@ -441,7 +442,7 @@ describe('DB API (cleaned)', function () {
 
         // Check if we have a product
         const product = await models.Product.findOne({slug: 'ghost-inc'});
-        should.exist(product);
+        assertExists(product);
         product.id.should.equal(existingProduct.id);
         assert.equal(product.get('slug'), 'ghost-inc');
         assert.equal(product.get('name'), 'Ghost Inc.');
@@ -449,25 +450,25 @@ describe('DB API (cleaned)', function () {
 
         // Check settings
         const portalProducts = await models.Settings.findOne({key: 'portal_products'});
-        should.exist(portalProducts);
+        assertExists(portalProducts);
         JSON.parse(portalProducts.get('value')).should.deepEqual([]);
 
         // Check stripe products
         const stripeProduct = await models.StripeProduct.findOne({product_id: product.id});
-        should.exist(stripeProduct);
+        assertExists(stripeProduct);
         assert.equal(stripeProduct.get('stripe_product_id'), 'prod_d2c1708c21');
         assert.notEqual(stripeProduct.id, '60be1fc9bd3af33564cfb337');
 
         // Check newsletters
         const newsletter = await models.Newsletter.findOne({slug: 'test'});
-        should.exist(newsletter);
+        assertExists(newsletter);
         assert.equal(newsletter.get('name'), 'Ghost Inc.');
         // Make sure sender_email is not set
         assert.equal(newsletter.get('sender_email'), null);
 
         // Check posts
         const post = await models.Post.findOne({slug: 'test-newsletter'}, {withRelated: ['tiers']});
-        should.exist(post);
+        assertExists(post);
 
         post.get('newsletter_id').should.equal(newsletter.id);
         assert.equal(post.get('visibility'), 'public');
@@ -478,10 +479,10 @@ describe('DB API (cleaned)', function () {
 
         // Check stripe prices
         const monthlyPrice = await models.StripePrice.findOne({stripe_price_id: 'price_a425520db0'});
-        should.exist(monthlyPrice);
+        assertExists(monthlyPrice);
 
         const yearlyPrice = await models.StripePrice.findOne({stripe_price_id: 'price_d04baebb73'});
-        should.exist(yearlyPrice);
+        assertExists(yearlyPrice);
 
         assert.equal(monthlyPrice.get('amount'), 500);
         assert.equal(monthlyPrice.get('currency'), 'usd');

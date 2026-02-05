@@ -1,4 +1,5 @@
 const assert = require('assert/strict');
+const {assertExists} = require('../../../utils/assertions');
 const sinon = require('sinon');
 const should = require('should');
 
@@ -52,18 +53,18 @@ describe('{{date}} helper', function () {
         testDates.forEach(function (d) {
             rendered = date.call({published_at: d}, context);
 
-            should.exist(rendered);
+            assertExists(rendered);
             String(rendered).should.equal(moment(d).tz(timezone).format(format));
 
             rendered = date.call({}, d, context);
 
-            should.exist(rendered);
+            assertExists(rendered);
             String(rendered).should.equal(moment(d).tz(timezone).format(format));
         });
 
         // No date falls back to now
         rendered = date.call({}, context);
-        should.exist(rendered);
+        assertExists(rendered);
         String(rendered).should.equal(moment().tz(timezone).format(format));
     });
 
@@ -100,18 +101,18 @@ describe('{{date}} helper', function () {
             testDates.forEach(function (d) {
                 rendered = date.call({published_at: d}, context);
 
-                should.exist(rendered);
+                assertExists(rendered);
                 String(rendered).should.equal(moment(d).tz(timezone).locale(locale).format(format));
 
                 rendered = date.call({}, d, context);
 
-                should.exist(rendered);
+                assertExists(rendered);
                 String(rendered).should.equal(moment(d).tz(timezone).locale(locale).format(format));
             });
 
             // No date falls back to now
             rendered = date.call({}, context);
-            should.exist(rendered);
+            assertExists(rendered);
             String(rendered).should.equal(moment().tz(timezone).locale(locale).format(format));
         });
     });
@@ -143,18 +144,18 @@ describe('{{date}} helper', function () {
         testDates.forEach(function (d) {
             rendered = date.call({published_at: d}, context);
 
-            should.exist(rendered);
+            assertExists(rendered);
             String(rendered).should.equal(moment(d).tz(timezone).from(timeNow));
 
             rendered = date.call({}, d, context);
 
-            should.exist(rendered);
+            assertExists(rendered);
             String(rendered).should.equal(moment(d).tz(timezone).from(timeNow));
         });
 
         // No date falls back to now
         rendered = date.call({}, context);
-        should.exist(rendered);
+        assertExists(rendered);
         assert.equal(String(rendered), 'a few seconds ago');
     });
 
@@ -177,12 +178,12 @@ describe('{{date}} helper', function () {
 
         rendered = date.call({published_at: invalidDate}, context);
 
-        should.exist(rendered);
+        assertExists(rendered);
         assert.equal(String(rendered), 'a few seconds ago');
 
         rendered = date.call({}, invalidDate, context);
 
-        should.exist(rendered);
+        assertExists(rendered);
         assert.equal(String(rendered), 'a few seconds ago');
     });
 

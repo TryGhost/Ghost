@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const errors = require('@tryghost/errors');
 const rewire = require('rewire');
 const should = require('should');
@@ -42,10 +43,10 @@ describe('Unit: services/url/UrlService', function () {
     });
 
     it('instantiate', function () {
-        should.exist(urlService.utils);
-        should.exist(urlService.urls);
-        should.exist(urlService.resources);
-        should.exist(urlService.queue);
+        assertExists(urlService.utils);
+        assertExists(urlService.urls);
+        assertExists(urlService.resources);
+        assertExists(urlService.queue);
 
         urlService.urlGenerators.should.eql([]);
         assert.equal(urlService.hasFinished(), false);
@@ -80,7 +81,7 @@ describe('Unit: services/url/UrlService', function () {
             assert.equal(urlService.getResourceById('id12345'), true);
             done(new Error('expected error'));
         } catch (err) {
-            should.exist(err);
+            assertExists(err);
             assert.equal(err.code, 'URLSERVICE_RESOURCE_NOT_FOUND');
             done();
         }

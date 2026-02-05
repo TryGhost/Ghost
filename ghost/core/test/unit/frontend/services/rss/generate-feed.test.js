@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 const _ = require('lodash');
@@ -64,7 +65,7 @@ describe('RSS: Generate Feed', function () {
             data.posts = [];
 
             generateFeed(baseUrl, data).then(function (xmlData) {
-                should.exist(xmlData);
+                assertExists(xmlData);
 
                 // xml & rss tags
                 assert.match(xmlData, /^<\?xml version="1.0" encoding="UTF-8"\?>/);
@@ -98,7 +99,7 @@ describe('RSS: Generate Feed', function () {
             });
 
             generateFeed(baseUrl, data).then(function (xmlData) {
-                should.exist(xmlData);
+                assertExists(xmlData);
 
                 // item tags
                 assert.match(xmlData, /<item><title><!\[CDATA\[HTML Ipsum\]\]><\/title>/);
@@ -136,7 +137,7 @@ describe('RSS: Generate Feed', function () {
             data.posts = [postWithTags];
 
             generateFeed(baseUrl, data).then(function (xmlData) {
-                should.exist(xmlData);
+                assertExists(xmlData);
                 // item tags
                 assert.match(xmlData, /<title><!\[CDATA\[Short and Sweet\]\]>/);
                 assert.match(xmlData, /<description><!\[CDATA\[test stuff/);
@@ -154,7 +155,7 @@ describe('RSS: Generate Feed', function () {
             data.posts = [_.omit(posts[2], 'primary_author')];
 
             generateFeed(baseUrl, data).then(function (xmlData) {
-                should.exist(xmlData);
+                assertExists(xmlData);
 
                 // special/optional tags
                 assert.match(xmlData, /<title><!\[CDATA\[Short and Sweet\]\]>/);
@@ -172,7 +173,7 @@ describe('RSS: Generate Feed', function () {
             data.posts = [Object.assign({}, posts[2], {html: null})];
 
             generateFeed(baseUrl, data).then(function (xmlData) {
-                should.exist(xmlData);
+                assertExists(xmlData);
 
                 // special/optional tags
                 assert.match(xmlData, /<title><!\[CDATA\[Short and Sweet\]\]>/);
@@ -189,7 +190,7 @@ describe('RSS: Generate Feed', function () {
             data.posts = [posts[2]];
 
             generateFeed(baseUrl, data).then(function (xmlData) {
-                should.exist(xmlData);
+                assertExists(xmlData);
 
                 // special/optional tags
                 assert.match(xmlData, /<title><!\[CDATA\[Short and Sweet\]\]>/);
@@ -210,7 +211,7 @@ describe('RSS: Generate Feed', function () {
             });
 
             generateFeed(baseUrl, data).then(function (xmlData) {
-                should.exist(xmlData);
+                assertExists(xmlData);
 
                 // special/optional tags
                 assert.match(xmlData, /<title><!\[CDATA\[HTML Ipsum\]\]>/);
@@ -224,7 +225,7 @@ describe('RSS: Generate Feed', function () {
             data.posts = [posts[3]];
 
             generateFeed(baseUrl, data).then(function (xmlData) {
-                should.exist(xmlData);
+                assertExists(xmlData);
 
                 // anchor URL - <a href="#nowhere" title="Anchor URL">
                 assert.match(xmlData, /<a href="#nowhere" title="Anchor URL">/);

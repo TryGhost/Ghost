@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const errors = require('@tryghost/errors');
 const should = require('should');
 const sinon = require('sinon');
@@ -39,12 +40,12 @@ describe('lib/image: image size cache', function () {
 
         // first call to get result from `getImageSizeFromUrl`
 
-        should.exist(cacheStore);
+        assertExists(cacheStore);
         cacheStore.get(url).should.not.be.undefined;
         const image = cacheStore.get(url);
-        should.exist(image.width);
+        assertExists(image.width);
         image.width.should.be.equal(50);
-        should.exist(image.height);
+        assertExists(image.height);
         image.height.should.be.equal(50);
 
         // second call to check if values get returned from cache
@@ -55,9 +56,9 @@ describe('lib/image: image size cache', function () {
 
         cacheStore.get(url).should.not.be.undefined;
         const image2 = cacheStore.get(url);
-        should.exist(image2.width);
+        assertExists(image2.width);
         image2.width.should.be.equal(50);
-        should.exist(image2.height);
+        assertExists(image2.height);
         image2.height.should.be.equal(50);
     });
 

@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 const configUtils = require('../../../../utils/config-utils');
@@ -44,7 +45,7 @@ describe('UNIT - services/routing/ParentRouter', function () {
                 }
             };
 
-            should.exist(parentRouter._getSiteRouter(req));
+            assertExists(parentRouter._getSiteRouter(req));
         });
     });
 
@@ -343,7 +344,7 @@ describe('UNIT - services/routing/ParentRouter', function () {
                 }
             };
 
-            should.exist(parentRouter.isRedirectEnabled('tags', 'bacon'));
+            assertExists(parentRouter.isRedirectEnabled('tags', 'bacon'));
         });
 
         it('redirect (pages)', function () {
@@ -356,7 +357,7 @@ describe('UNIT - services/routing/ParentRouter', function () {
                 }
             };
 
-            should.exist(parentRouter.isRedirectEnabled('pages', 'home'));
+            assertExists(parentRouter.isRedirectEnabled('pages', 'home'));
         });
     });
 });

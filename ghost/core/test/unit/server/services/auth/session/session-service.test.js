@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 const express = require('express');
@@ -345,7 +346,7 @@ describe('SessionService', function () {
 
         // Generate the auth code
         const authCode = await sessionService.generateAuthCodeForUser(req, res);
-        should.exist(authCode);
+        assertExists(authCode);
 
         req.body = {
             token: authCode
@@ -394,7 +395,7 @@ describe('SessionService', function () {
 
         // Generate the auth code
         const authCode = await sessionService.generateAuthCodeForUser(req, res);
-        should.exist(authCode);
+        assertExists(authCode);
 
         req.body = {
             token: 'wrong-code'

@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const errors = require('@tryghost/errors');
 const should = require('should');
 const sinon = require('sinon');
@@ -183,7 +184,7 @@ describe('Local Images Storage', function () {
             localFileStore.save({
                 name: 'test-1.1.1'
             }).then(function (url) {
-                should.exist(url.match(/test-1.1.1/));
+                assertExists(url.match(/test-1.1.1/));
                 done();
             }).catch(done);
         });
@@ -192,7 +193,7 @@ describe('Local Images Storage', function () {
             localFileStore.save({
                 name: 'test-1.1.1.zip'
             }).then(function (url) {
-                should.exist(url.match(/test-1.1.1.zip/));
+                assertExists(url.match(/test-1.1.1.zip/));
                 done();
             }).catch(done);
         });
@@ -201,7 +202,7 @@ describe('Local Images Storage', function () {
             localFileStore.save({
                 name: 'test-1.1.1.jpeg'
             }).then(function (url) {
-                should.exist(url.match(/test-1.1.1.jpeg/));
+                assertExists(url.match(/test-1.1.1.jpeg/));
                 done();
             }).catch(done);
         });

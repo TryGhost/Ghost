@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 
@@ -9,7 +10,7 @@ const controllers = require('../../../../../../core/frontend/services/routing/co
 
 function failTest(done) {
     return function (err) {
-        should.exist(err);
+        assertExists(err);
         done(err);
     };
 }

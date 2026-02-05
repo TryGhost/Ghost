@@ -1,5 +1,6 @@
 const path = require('path');
 const assert = require('assert/strict');
+const {assertExists} = require('../../utils/assertions');
 const should = require('should');
 const supertest = require('supertest');
 const testUtils = require('../../utils');
@@ -45,9 +46,9 @@ describe('Members Importer API', function () {
         assert.equal(res.headers['x-cache-invalidate'], undefined);
         const jsonResponse = res.body;
 
-        should.exist(jsonResponse);
-        should.exist(jsonResponse.meta);
-        should.exist(jsonResponse.meta.stats);
+        assertExists(jsonResponse);
+        assertExists(jsonResponse.meta);
+        assertExists(jsonResponse.meta.stats);
 
         assert.equal(jsonResponse.meta.stats.imported, 2);
         assert.equal(jsonResponse.meta.stats.invalid.length, 0);
@@ -63,12 +64,12 @@ describe('Members Importer API', function () {
             .expect(200);
 
         const jsonResponse2 = res2.body;
-        should.exist(jsonResponse2);
-        should.exist(jsonResponse2.members);
+        assertExists(jsonResponse2);
+        assertExists(jsonResponse2.members);
         assert.equal(jsonResponse2.members.length, 2);
 
         const importedMember1 = jsonResponse2.members.find(m => m.email === 'jbloggs@example.com');
-        should.exist(importedMember1);
+        assertExists(importedMember1);
         assert.equal(importedMember1.name, 'joe');
         assert.equal(importedMember1.note, null);
         assert.equal(importedMember1.subscribed, true);
@@ -80,7 +81,7 @@ describe('Members Importer API', function () {
         assert.equal(importedMember1.subscriptions.length, 0);
 
         const importedMember2 = jsonResponse2.members.find(m => m.email === 'test@example.com');
-        should.exist(importedMember2);
+        assertExists(importedMember2);
         assert.equal(importedMember2.name, 'test');
         assert.equal(importedMember2.note, 'test note');
         assert.equal(importedMember2.subscribed, false);
@@ -112,10 +113,10 @@ describe('Members Importer API', function () {
 
     //             const jsonResponse = res.body;
 
-    //             should.exist(jsonResponse);
-    //             should.exist(jsonResponse.meta);
-    //             should.exist(jsonResponse.meta.stats);
-    //             should.exist(jsonResponse.meta.import_label);
+    //             assertExists(jsonResponse);
+    //             assertExists(jsonResponse.meta);
+    //             assertExists(jsonResponse.meta.stats);
+    //             assertExists(jsonResponse.meta.import_label);
 
     //             jsonResponse.meta.stats.imported.should.equal(8);
 
@@ -131,8 +132,8 @@ describe('Members Importer API', function () {
     //                 .then((res) => {
     //                     should.not.exist(res.headers['x-cache-invalidate']);
     //                     const jsonResponse = res.body;
-    //                     should.exist(jsonResponse);
-    //                     should.exist(jsonResponse.members);
+    //                     assertExists(jsonResponse);
+    //                     assertExists(jsonResponse.members);
     //                     jsonResponse.members.should.have.length(8);
     //                 })
     //                 .then(() => importLabel);
@@ -148,10 +149,10 @@ describe('Members Importer API', function () {
     //                 .then((res) => {
     //                     should.not.exist(res.headers['x-cache-invalidate']);
     //                     const jsonResponse = res.body;
-    //                     should.exist(jsonResponse);
-    //                     should.exist(jsonResponse.meta);
-    //                     should.exist(jsonResponse.meta.stats);
-    //                     should.exist(jsonResponse.meta.stats.successful);
+    //                     assertExists(jsonResponse);
+    //                     assertExists(jsonResponse.meta);
+    //                     assertExists(jsonResponse.meta.stats);
+    //                     assertExists(jsonResponse.meta.stats.successful);
     //                     assert.equal(jsonResponse.meta.stats.successful, 8);
     //                 })
     //                 .then(() => importLabel);
@@ -165,8 +166,8 @@ describe('Members Importer API', function () {
     //                 .expect(200)
     //                 .then((res) => {
     //                     const jsonResponse = res.body;
-    //                     should.exist(jsonResponse);
-    //                     should.exist(jsonResponse.members);
+    //                     assertExists(jsonResponse);
+    //                     assertExists(jsonResponse.members);
     //                     jsonResponse.members.should.have.length(0);
     //                 });
     //         });
@@ -210,10 +211,10 @@ describe('Members Importer API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
 
-        should.exist(bulkUnsubscribeResponse.body.bulk);
-        should.exist(bulkUnsubscribeResponse.body.bulk.meta);
-        should.exist(bulkUnsubscribeResponse.body.bulk.meta.stats);
-        should.exist(bulkUnsubscribeResponse.body.bulk.meta.stats.successful);
+        assertExists(bulkUnsubscribeResponse.body.bulk);
+        assertExists(bulkUnsubscribeResponse.body.bulk.meta);
+        assertExists(bulkUnsubscribeResponse.body.bulk.meta.stats);
+        assertExists(bulkUnsubscribeResponse.body.bulk.meta.stats.successful);
         assert.equal(bulkUnsubscribeResponse.body.bulk.meta.stats.successful, 8);
 
         const postUnsubscribeBrowseResponse = await request
@@ -266,10 +267,10 @@ describe('Members Importer API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
 
-        should.exist(bulkAddLabelResponse.body.bulk);
-        should.exist(bulkAddLabelResponse.body.bulk.meta);
-        should.exist(bulkAddLabelResponse.body.bulk.meta.stats);
-        should.exist(bulkAddLabelResponse.body.bulk.meta.stats.successful);
+        assertExists(bulkAddLabelResponse.body.bulk);
+        assertExists(bulkAddLabelResponse.body.bulk.meta);
+        assertExists(bulkAddLabelResponse.body.bulk.meta.stats);
+        assertExists(bulkAddLabelResponse.body.bulk.meta.stats.successful);
         assert.equal(bulkAddLabelResponse.body.bulk.meta.stats.successful, 8);
 
         const postLabelAddBrowseResponse = await request
@@ -298,10 +299,10 @@ describe('Members Importer API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
 
-        should.exist(bulkRemoveLabelResponse.body.bulk);
-        should.exist(bulkRemoveLabelResponse.body.bulk.meta);
-        should.exist(bulkRemoveLabelResponse.body.bulk.meta.stats);
-        should.exist(bulkRemoveLabelResponse.body.bulk.meta.stats.successful);
+        assertExists(bulkRemoveLabelResponse.body.bulk);
+        assertExists(bulkRemoveLabelResponse.body.bulk.meta);
+        assertExists(bulkRemoveLabelResponse.body.bulk.meta.stats);
+        assertExists(bulkRemoveLabelResponse.body.bulk.meta.stats.successful);
         assert.equal(bulkRemoveLabelResponse.body.bulk.meta.stats.successful, 8);
 
         const postLabelRemoveBrowseResponse = await request

@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../utils/assertions');
 const should = require('should');
 const supertest = require('supertest');
 const testUtils = require('../../../utils');
@@ -37,10 +38,10 @@ describe('Webhooks API', function () {
                 assert.equal(res.headers['x-cache-invalidate'], undefined);
                 const jsonResponse = res.body;
 
-                should.exist(jsonResponse);
-                should.exist(jsonResponse.webhooks);
-                should.exist(jsonResponse.webhooks[0].event);
-                should.exist(jsonResponse.webhooks[0].target_url);
+                assertExists(jsonResponse);
+                assertExists(jsonResponse.webhooks);
+                assertExists(jsonResponse.webhooks[0].event);
+                assertExists(jsonResponse.webhooks[0].target_url);
 
                 assert.equal(jsonResponse.webhooks[0].event, 'test.create');
                 assert.equal(jsonResponse.webhooks[0].target_url, 'http://example.com/webhooks/test/extra/canary');

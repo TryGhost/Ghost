@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../utils/assertions');
 const errors = require('@tryghost/errors');
 const should = require('should');
 const sinon = require('sinon');
@@ -253,19 +254,19 @@ describe('Post Model', function () {
 
                 models.Post.findOne({id: postId}).then(function (results) {
                     let post;
-                    should.exist(results);
+                    assertExists(results);
                     post = results.toJSON();
                     post.id.should.equal(postId);
                     assert.notEqual(post.title, 'new title');
 
                     return models.Post.edit({title: 'new title'}, _.extend({}, context, {id: postId}));
                 }).then(function (edited) {
-                    should.exist(edited);
+                    assertExists(edited);
                     assert.equal(edited.attributes.title, 'new title');
 
                     assert.equal(Object.keys(eventsTriggered).length, 2);
-                    should.exist(eventsTriggered['post.published.edited']);
-                    should.exist(eventsTriggered['post.edited']);
+                    assertExists(eventsTriggered['post.published.edited']);
+                    assertExists(eventsTriggered['post.edited']);
 
                     done();
                 }).catch(done);
@@ -276,7 +277,7 @@ describe('Post Model', function () {
 
                 models.Post.findOne({id: postId}).then(function (results) {
                     let post;
-                    should.exist(results);
+                    assertExists(results);
                     post = results.toJSON();
                     post.id.should.equal(postId);
 
@@ -296,21 +297,21 @@ describe('Post Model', function () {
 
                 models.Post.findOne({id: postId, status: 'draft'}).then(function (results) {
                     let post;
-                    should.exist(results);
+                    assertExists(results);
                     post = results.toJSON();
                     post.id.should.equal(postId);
                     assert.equal(post.status, 'draft');
 
                     return models.Post.edit({status: 'published'}, _.extend({}, context, {id: postId}));
                 }).then(function (edited) {
-                    should.exist(edited);
+                    assertExists(edited);
                     assert.equal(edited.attributes.status, 'published');
 
                     assert.equal(Object.keys(eventsTriggered).length, 4);
-                    should.exist(eventsTriggered['post.published']);
-                    should.exist(eventsTriggered['post.edited']);
-                    should.exist(eventsTriggered['tag.attached']);
-                    should.exist(eventsTriggered['user.attached']);
+                    assertExists(eventsTriggered['post.published']);
+                    assertExists(eventsTriggered['post.edited']);
+                    assertExists(eventsTriggered['tag.attached']);
+                    assertExists(eventsTriggered['user.attached']);
 
                     done();
                 }).catch(done);
@@ -321,19 +322,19 @@ describe('Post Model', function () {
 
                 models.Post.findOne({id: postId}).then(function (results) {
                     let post;
-                    should.exist(results);
+                    assertExists(results);
                     post = results.toJSON();
                     post.id.should.equal(postId);
                     assert.equal(post.status, 'published');
 
                     return models.Post.edit({status: 'draft'}, _.extend({}, context, {id: postId}));
                 }).then(function (edited) {
-                    should.exist(edited);
+                    assertExists(edited);
                     assert.equal(edited.attributes.status, 'draft');
 
                     assert.equal(Object.keys(eventsTriggered).length, 4);
-                    should.exist(eventsTriggered['post.unpublished']);
-                    should.exist(eventsTriggered['post.edited']);
+                    assertExists(eventsTriggered['post.unpublished']);
+                    assertExists(eventsTriggered['post.edited']);
 
                     done();
                 }).catch(done);
@@ -343,7 +344,7 @@ describe('Post Model', function () {
                 let post;
 
                 models.Post.findOne({status: 'draft'}).then(function (results) {
-                    should.exist(results);
+                    assertExists(results);
                     post = results.toJSON();
                     assert.equal(post.status, 'draft');
 
@@ -356,7 +357,7 @@ describe('Post Model', function () {
                 }).then(function () {
                     done(new Error('expected error'));
                 }).catch(function (err) {
-                    should.exist(err);
+                    assertExists(err);
                     assert.equal((err instanceof errors.ValidationError), true);
                     done();
                 });
@@ -368,7 +369,7 @@ describe('Post Model', function () {
                 models.Post.findOne({status: 'draft'}).then(function (results) {
                     let post;
 
-                    should.exist(results);
+                    assertExists(results);
                     post = results.toJSON();
                     assert.equal(post.status, 'draft');
 
@@ -377,15 +378,15 @@ describe('Post Model', function () {
                         published_at: newPublishedAt
                     }, _.extend({}, context, {id: post.id}));
                 }).then(function (edited) {
-                    should.exist(edited);
+                    assertExists(edited);
                     assert.equal(edited.attributes.status, 'scheduled');
 
                     // mysql does not store ms
                     assert.equal(moment(edited.attributes.published_at).startOf('seconds').diff(moment(newPublishedAt).startOf('seconds')), 0);
 
                     assert.equal(Object.keys(eventsTriggered).length, 2);
-                    should.exist(eventsTriggered['post.scheduled']);
-                    should.exist(eventsTriggered['post.edited']);
+                    assertExists(eventsTriggered['post.scheduled']);
+                    assertExists(eventsTriggered['post.edited']);
 
                     done();
                 }).catch(done);
@@ -395,7 +396,7 @@ describe('Post Model', function () {
                 models.Post.findOne({status: 'scheduled'}).then(function (results) {
                     let post;
 
-                    should.exist(results);
+                    assertExists(results);
                     post = results.toJSON();
                     assert.equal(post.status, 'scheduled');
 
@@ -403,12 +404,12 @@ describe('Post Model', function () {
                         status: 'draft'
                     }, _.extend({}, context, {id: post.id}));
                 }).then(function (edited) {
-                    should.exist(edited);
+                    assertExists(edited);
                     assert.equal(edited.attributes.status, 'draft');
 
                     assert.equal(Object.keys(eventsTriggered).length, 2);
-                    should.exist(eventsTriggered['post.unscheduled']);
-                    should.exist(eventsTriggered['post.edited']);
+                    assertExists(eventsTriggered['post.unscheduled']);
+                    assertExists(eventsTriggered['post.edited']);
 
                     done();
                 }).catch(done);
@@ -418,7 +419,7 @@ describe('Post Model', function () {
                 models.Post.findOne({status: 'scheduled'}).then(function (results) {
                     let post;
 
-                    should.exist(results);
+                    assertExists(results);
                     post = results.toJSON();
                     assert.equal(post.status, 'scheduled');
 
@@ -427,12 +428,12 @@ describe('Post Model', function () {
                         published_at: moment().add(20, 'days').toDate()
                     }, _.extend({}, context, {id: post.id}));
                 }).then(function (edited) {
-                    should.exist(edited);
+                    assertExists(edited);
                     assert.equal(edited.attributes.status, 'scheduled');
 
                     assert.equal(Object.keys(eventsTriggered).length, 2);
-                    should.exist(eventsTriggered['post.rescheduled']);
-                    should.exist(eventsTriggered['post.edited']);
+                    assertExists(eventsTriggered['post.rescheduled']);
+                    assertExists(eventsTriggered['post.edited']);
 
                     done();
                 }).catch(done);
@@ -442,7 +443,7 @@ describe('Post Model', function () {
                 models.Post.findOne({status: 'scheduled'}).then(function (results) {
                     let post;
 
-                    should.exist(results);
+                    assertExists(results);
                     post = results.toJSON();
                     assert.equal(post.status, 'scheduled');
 
@@ -450,7 +451,7 @@ describe('Post Model', function () {
                         status: 'scheduled'
                     }, _.extend({}, context, {id: post.id}));
                 }).then(function (edited) {
-                    should.exist(edited);
+                    assertExists(edited);
                     assert.equal(edited.attributes.status, 'scheduled');
 
                     // nothing has changed
@@ -464,7 +465,7 @@ describe('Post Model', function () {
                 let post;
 
                 models.Post.findOne({status: 'scheduled'}).then(function (results) {
-                    should.exist(results);
+                    assertExists(results);
                     post = results.toJSON();
                     assert.equal(post.status, 'scheduled');
 
@@ -472,8 +473,8 @@ describe('Post Model', function () {
                     return results.save();
                 }).then(function () {
                     assert.equal(Object.keys(eventsTriggered).length, 2);
-                    should.exist(eventsTriggered['post.edited']);
-                    should.exist(eventsTriggered['post.rescheduled']);
+                    assertExists(eventsTriggered['post.edited']);
+                    assertExists(eventsTriggered['post.rescheduled']);
                     eventsTriggered = {};
 
                     return new Promise((resolve) => {
@@ -484,11 +485,11 @@ describe('Post Model', function () {
                         status: 'scheduled'
                     }, _.extend({}, context, {id: post.id}));
                 }).then(function (edited) {
-                    should.exist(edited);
+                    assertExists(edited);
                     assert.equal(edited.attributes.status, 'scheduled');
 
                     assert.equal(Object.keys(eventsTriggered).length, 1);
-                    should.exist(eventsTriggered['post.edited']);
+                    assertExists(eventsTriggered['post.edited']);
 
                     done();
                 }).catch(done);
@@ -499,7 +500,7 @@ describe('Post Model', function () {
 
                 models.Post.findOne({id: postId}).then(function (results) {
                     let post;
-                    should.exist(results);
+                    assertExists(results);
                     post = results.toJSON();
                     post.id.should.equal(postId);
                     assert.equal(post.status, 'published');
@@ -511,7 +512,7 @@ describe('Post Model', function () {
                 }).then(function () {
                     done(new Error('change status from published to scheduled is not allowed right now!'));
                 }).catch(function (err) {
-                    should.exist(err);
+                    assertExists(err);
                     assert.equal((err instanceof errors.ValidationError), true);
                     done();
                 });
@@ -522,32 +523,32 @@ describe('Post Model', function () {
 
                 models.Post.findOne({id: postId, status: 'draft'}).then(function (results) {
                     let post;
-                    should.exist(results);
+                    assertExists(results);
                     post = results.toJSON();
                     post.id.should.equal(postId);
                     assert.equal(post.status, 'draft');
 
                     return models.Post.edit({type: 'page'}, _.extend({}, context, {id: postId}));
                 }).then(function (edited) {
-                    should.exist(edited);
+                    assertExists(edited);
                     assert.equal(edited.attributes.status, 'draft');
                     assert.equal(edited.attributes.type, 'page');
 
                     assert.equal(Object.keys(eventsTriggered).length, 2);
-                    should.exist(eventsTriggered['post.deleted']);
-                    should.exist(eventsTriggered['page.added']);
+                    assertExists(eventsTriggered['post.deleted']);
+                    assertExists(eventsTriggered['page.added']);
 
                     return models.Post.edit({type: 'post'}, _.extend({}, context, {id: postId}));
                 }).then(function (edited) {
-                    should.exist(edited);
+                    assertExists(edited);
                     assert.equal(edited.attributes.status, 'draft');
                     assert.equal(edited.attributes.type, 'post');
 
                     assert.equal(Object.keys(eventsTriggered).length, 4);
-                    should.exist(eventsTriggered['post.deleted']);
-                    should.exist(eventsTriggered['page.added']);
-                    should.exist(eventsTriggered['post.deleted']);
-                    should.exist(eventsTriggered['post.added']);
+                    assertExists(eventsTriggered['post.deleted']);
+                    assertExists(eventsTriggered['page.added']);
+                    assertExists(eventsTriggered['post.deleted']);
+                    assertExists(eventsTriggered['post.added']);
 
                     done();
                 }).catch(done);
@@ -556,7 +557,7 @@ describe('Post Model', function () {
             it('can convert draft to schedule AND post to page and back', function (done) {
                 models.Post.findOne({status: 'draft'}).then(function (results) {
                     let post;
-                    should.exist(results);
+                    assertExists(results);
                     post = results.toJSON();
                     assert.equal(post.status, 'draft');
 
@@ -566,26 +567,26 @@ describe('Post Model', function () {
                         published_at: moment().add(10, 'days')
                     }, _.extend({}, context, {id: post.id}));
                 }).then(function (edited) {
-                    should.exist(edited);
+                    assertExists(edited);
                     assert.equal(edited.attributes.status, 'scheduled');
                     assert.equal(edited.attributes.type, 'page');
 
                     assert.equal(Object.keys(eventsTriggered).length, 3);
-                    should.exist(eventsTriggered['post.deleted']);
-                    should.exist(eventsTriggered['page.added']);
-                    should.exist(eventsTriggered['page.scheduled']);
+                    assertExists(eventsTriggered['post.deleted']);
+                    assertExists(eventsTriggered['page.added']);
+                    assertExists(eventsTriggered['page.scheduled']);
 
                     return models.Post.edit({type: 'post'}, _.extend({}, context, {id: edited.id}));
                 }).then(function (edited) {
-                    should.exist(edited);
+                    assertExists(edited);
                     assert.equal(edited.attributes.status, 'scheduled');
                     assert.equal(edited.attributes.type, 'post');
 
                     assert.equal(Object.keys(eventsTriggered).length, 7);
-                    should.exist(eventsTriggered['page.unscheduled']);
-                    should.exist(eventsTriggered['page.deleted']);
-                    should.exist(eventsTriggered['post.added']);
-                    should.exist(eventsTriggered['post.scheduled']);
+                    assertExists(eventsTriggered['page.unscheduled']);
+                    assertExists(eventsTriggered['page.deleted']);
+                    assertExists(eventsTriggered['post.added']);
+                    assertExists(eventsTriggered['post.scheduled']);
 
                     done();
                 }).catch(done);
@@ -596,34 +597,34 @@ describe('Post Model', function () {
 
                 models.Post.findOne({id: postId}).then(function (results) {
                     let post;
-                    should.exist(results);
+                    assertExists(results);
                     post = results.toJSON();
                     post.id.should.equal(postId);
                     assert.equal(post.status, 'published');
 
                     return models.Post.edit({type: 'page'}, _.extend({}, context, {id: postId}));
                 }).then(function (edited) {
-                    should.exist(edited);
+                    assertExists(edited);
                     assert.equal(edited.attributes.status, 'published');
                     assert.equal(edited.attributes.type, 'page');
 
                     assert.equal(Object.keys(eventsTriggered).length, 4);
-                    should.exist(eventsTriggered['post.unpublished']);
-                    should.exist(eventsTriggered['post.deleted']);
-                    should.exist(eventsTriggered['page.added']);
-                    should.exist(eventsTriggered['page.published']);
+                    assertExists(eventsTriggered['post.unpublished']);
+                    assertExists(eventsTriggered['post.deleted']);
+                    assertExists(eventsTriggered['page.added']);
+                    assertExists(eventsTriggered['page.published']);
 
                     return models.Post.edit({type: 'post'}, _.extend({}, context, {id: postId}));
                 }).then(function (edited) {
-                    should.exist(edited);
+                    assertExists(edited);
                     assert.equal(edited.attributes.status, 'published');
                     assert.equal(edited.attributes.type, 'post');
 
                     assert.equal(Object.keys(eventsTriggered).length, 8);
-                    should.exist(eventsTriggered['page.unpublished']);
-                    should.exist(eventsTriggered['page.deleted']);
-                    should.exist(eventsTriggered['post.added']);
-                    should.exist(eventsTriggered['post.published']);
+                    assertExists(eventsTriggered['page.unpublished']);
+                    assertExists(eventsTriggered['page.deleted']);
+                    assertExists(eventsTriggered['post.added']);
+                    assertExists(eventsTriggered['post.published']);
 
                     done();
                 }).catch(done);
@@ -634,34 +635,34 @@ describe('Post Model', function () {
 
                 models.Post.findOne({id: postId, status: 'draft'}).then(function (results) {
                     let post;
-                    should.exist(results);
+                    assertExists(results);
                     post = results.toJSON();
                     post.id.should.equal(postId);
                     assert.equal(post.status, 'draft');
 
                     return models.Post.edit({type: 'page', status: 'published'}, _.extend({}, context, {id: postId}));
                 }).then(function (edited) {
-                    should.exist(edited);
+                    assertExists(edited);
                     assert.equal(edited.attributes.status, 'published');
                     assert.equal(edited.attributes.type, 'page');
 
                     assert.equal(Object.keys(eventsTriggered).length, 5);
-                    should.exist(eventsTriggered['post.deleted']);
-                    should.exist(eventsTriggered['page.added']);
-                    should.exist(eventsTriggered['page.published']);
-                    should.exist(eventsTriggered['tag.attached']);
-                    should.exist(eventsTriggered['user.attached']);
+                    assertExists(eventsTriggered['post.deleted']);
+                    assertExists(eventsTriggered['page.added']);
+                    assertExists(eventsTriggered['page.published']);
+                    assertExists(eventsTriggered['tag.attached']);
+                    assertExists(eventsTriggered['user.attached']);
 
                     return models.Post.edit({type: 'post', status: 'draft'}, _.extend({}, context, {id: postId}));
                 }).then(function (edited) {
-                    should.exist(edited);
+                    assertExists(edited);
                     assert.equal(edited.attributes.status, 'draft');
                     assert.equal(edited.attributes.type, 'post');
 
                     assert.equal(Object.keys(eventsTriggered).length, 8);
-                    should.exist(eventsTriggered['page.unpublished']);
-                    should.exist(eventsTriggered['page.deleted']);
-                    should.exist(eventsTriggered['post.added']);
+                    assertExists(eventsTriggered['page.unpublished']);
+                    assertExists(eventsTriggered['page.deleted']);
+                    assertExists(eventsTriggered['post.added']);
 
                     done();
                 }).catch(done);
@@ -672,7 +673,7 @@ describe('Post Model', function () {
 
                 models.Post.findOne({id: postId, status: 'draft'}).then(function (results) {
                     let post;
-                    should.exist(results);
+                    assertExists(results);
                     post = results.toJSON();
                     post.id.should.equal(postId);
                     assert.equal(post.status, 'draft');
@@ -683,14 +684,14 @@ describe('Post Model', function () {
                         published_by: 4
                     }, _.extend({}, context, {id: postId}));
                 }).then(function (edited) {
-                    should.exist(edited);
+                    assertExists(edited);
                     assert.equal(edited.attributes.status, 'published');
                     edited.attributes.published_by.should.equal(context.context.user);
 
                     // Test changing status and published_by on its own
                     return models.Post.edit({published_by: 4}, _.extend({}, context, {id: postId}));
                 }).then(function (edited) {
-                    should.exist(edited);
+                    assertExists(edited);
                     assert.equal(edited.attributes.status, 'published');
                     edited.attributes.published_by.should.equal(context.context.user);
 
@@ -735,7 +736,7 @@ describe('Post Model', function () {
                 models.Post.add(newPost, _.merge({withRelated: ['authors']}, context)).then(function (createdPost) {
                     return models.Post.findOne({id: createdPost.id, status: 'all'}, {withRelated: ['authors']});
                 }).then(function (createdPost) {
-                    should.exist(createdPost);
+                    assertExists(createdPost);
                     assert.equal(createdPost.has('uuid'), true);
                     assert.equal(createdPost.get('status'), 'draft');
                     assert.equal(createdPost.get('title'), newPost.title, 'title is correct');
@@ -763,8 +764,8 @@ describe('Post Model', function () {
                     createdPostUpdatedDate = createdPost.get('updated_at');
 
                     assert.equal(Object.keys(eventsTriggered).length, 2);
-                    should.exist(eventsTriggered['post.added']);
-                    should.exist(eventsTriggered['user.attached']);
+                    assertExists(eventsTriggered['post.added']);
+                    assertExists(eventsTriggered['user.attached']);
 
                     // Set the status to published to check that `published_at` is set.
                     return createdPost.save({status: 'published'}, context);
@@ -775,8 +776,8 @@ describe('Post Model', function () {
                     publishedPost.get('updated_at').should.not.equal(createdPostUpdatedDate);
 
                     assert.equal(Object.keys(eventsTriggered).length, 4);
-                    should.exist(eventsTriggered['post.published']);
-                    should.exist(eventsTriggered['post.edited']);
+                    assertExists(eventsTriggered['post.published']);
+                    assertExists(eventsTriggered['post.edited']);
 
                     done();
                 }).catch(done);
@@ -804,7 +805,7 @@ describe('Post Model', function () {
                 models.Post.add(newPost, _.merge({withRelated: ['authors']}, context)).then(function (createdPost) {
                     return models.Post.findOne({id: createdPost.id, status: 'all'}, {withRelated: ['authors']});
                 }).then(function (createdPost) {
-                    should.exist(createdPost);
+                    assertExists(createdPost);
                     assert.equal(createdPost.has('uuid'), true);
                     assert.equal(createdPost.get('status'), 'draft');
                     assert.equal(createdPost.get('title'), newPost.title, 'title is correct');
@@ -832,8 +833,8 @@ describe('Post Model', function () {
                     createdPostUpdatedDate = createdPost.get('updated_at');
 
                     assert.equal(Object.keys(eventsTriggered).length, 2);
-                    should.exist(eventsTriggered['post.added']);
-                    should.exist(eventsTriggered['user.attached']);
+                    assertExists(eventsTriggered['post.added']);
+                    assertExists(eventsTriggered['user.attached']);
 
                     // Set the status to published to check that `published_at` is set.
                     return createdPost.save({status: 'published'}, context);
@@ -844,8 +845,8 @@ describe('Post Model', function () {
                     publishedPost.get('updated_at').should.not.equal(createdPostUpdatedDate);
 
                     assert.equal(Object.keys(eventsTriggered).length, 4);
-                    should.exist(eventsTriggered['post.published']);
-                    should.exist(eventsTriggered['post.edited']);
+                    assertExists(eventsTriggered['post.published']);
+                    assertExists(eventsTriggered['post.edited']);
 
                     done();
                 }).catch(done);
@@ -860,13 +861,13 @@ describe('Post Model', function () {
                     title: 'published_at test',
                     mobiledoc: markdownToMobiledoc('This is some content')
                 }, context).then(function (newPost) {
-                    should.exist(newPost);
+                    assertExists(newPost);
                     new Date(newPost.get('published_at')).getTime().should.equal(previousPublishedAtDate.getTime());
 
                     assert.equal(Object.keys(eventsTriggered).length, 3);
-                    should.exist(eventsTriggered['post.added']);
-                    should.exist(eventsTriggered['post.published']);
-                    should.exist(eventsTriggered['user.attached']);
+                    assertExists(eventsTriggered['post.added']);
+                    assertExists(eventsTriggered['post.published']);
+                    assertExists(eventsTriggered['user.attached']);
 
                     done();
                 }).catch(done);
@@ -878,12 +879,12 @@ describe('Post Model', function () {
                     title: 'draft 1',
                     mobiledoc: markdownToMobiledoc('This is some content')
                 }, context).then(function (newPost) {
-                    should.exist(newPost);
+                    assertExists(newPost);
                     assert.equal(newPost.get('published_at'), null);
 
                     assert.equal(Object.keys(eventsTriggered).length, 2);
-                    should.exist(eventsTriggered['post.added']);
-                    should.exist(eventsTriggered['user.attached']);
+                    assertExists(eventsTriggered['post.added']);
+                    assertExists(eventsTriggered['user.attached']);
 
                     done();
                 }).catch(done);
@@ -899,7 +900,7 @@ describe('Post Model', function () {
                         name: testUtils.DataGenerator.forKnex.users[0].name
                     }]
                 }, _.merge({withRelated: ['authors']}, context)).then(function (newPost) {
-                    should.exist(newPost);
+                    assertExists(newPost);
                     newPost.toJSON().primary_author.id.should.eql(testUtils.DataGenerator.forKnex.users[0].id);
                     assert.equal(newPost.toJSON().authors.length, 1);
                     newPost.toJSON().authors[0].id.should.eql(testUtils.DataGenerator.forKnex.users[0].id);
@@ -914,12 +915,12 @@ describe('Post Model', function () {
                     title: 'draft 1',
                     mobiledoc: markdownToMobiledoc('This is some content')
                 }, context).then(function (newPost) {
-                    should.exist(newPost);
-                    should.exist(newPost.get('published_at'));
+                    assertExists(newPost);
+                    assertExists(newPost.get('published_at'));
 
                     assert.equal(Object.keys(eventsTriggered).length, 2);
-                    should.exist(eventsTriggered['post.added']);
-                    should.exist(eventsTriggered['user.attached']);
+                    assertExists(eventsTriggered['post.added']);
+                    assertExists(eventsTriggered['user.attached']);
 
                     done();
                 }).catch(done);
@@ -931,7 +932,7 @@ describe('Post Model', function () {
                     title: 'scheduled 1',
                     mobiledoc: markdownToMobiledoc('This is some content')
                 }, context).catch(function (err) {
-                    should.exist(err);
+                    assertExists(err);
                     assert.equal((err instanceof errors.ValidationError), true);
                     assert.equal(Object.keys(eventsTriggered).length, 0);
                     done();
@@ -945,7 +946,7 @@ describe('Post Model', function () {
                     title: 'scheduled 1',
                     mobiledoc: markdownToMobiledoc('This is some content')
                 }, context).catch(function (err) {
-                    should.exist(err);
+                    assertExists(err);
                     assert.equal((err instanceof errors.ValidationError), true);
                     assert.equal(Object.keys(eventsTriggered).length, 0);
                     done();
@@ -959,12 +960,12 @@ describe('Post Model', function () {
                     title: 'scheduled 1',
                     mobiledoc: markdownToMobiledoc('This is some content')
                 }, context);
-                should.exist(post);
+                assertExists(post);
 
                 assert.equal(Object.keys(eventsTriggered).length, 3);
-                should.exist(eventsTriggered['post.added']);
-                should.exist(eventsTriggered['post.scheduled']);
-                should.exist(eventsTriggered['user.attached']);
+                assertExists(eventsTriggered['post.added']);
+                assertExists(eventsTriggered['post.scheduled']);
+                assertExists(eventsTriggered['user.attached']);
             });
 
             it('add scheduled post with published_at 10 minutes in future -> we expect success', function (done) {
@@ -974,12 +975,12 @@ describe('Post Model', function () {
                     title: 'scheduled 1',
                     mobiledoc: markdownToMobiledoc('This is some content')
                 }, context).then(function (post) {
-                    should.exist(post);
+                    assertExists(post);
 
                     assert.equal(Object.keys(eventsTriggered).length, 3);
-                    should.exist(eventsTriggered['post.added']);
-                    should.exist(eventsTriggered['post.scheduled']);
-                    should.exist(eventsTriggered['user.attached']);
+                    assertExists(eventsTriggered['post.added']);
+                    assertExists(eventsTriggered['post.scheduled']);
+                    assertExists(eventsTriggered['user.attached']);
 
                     done();
                 }).catch(done);
@@ -1012,8 +1013,8 @@ describe('Post Model', function () {
                         JSON.parse(post.get('mobiledoc')).cards[0][1].markdown.should.equal('Test Content ' + num);
 
                         assert.equal(Object.keys(eventsTriggered).length, 2);
-                        should.exist(eventsTriggered['post.added']);
-                        should.exist(eventsTriggered['user.attached']);
+                        assertExists(eventsTriggered['post.added']);
+                        assertExists(eventsTriggered['user.attached']);
                         assert.equal(eventsTriggered['post.added'].length, 12);
                     });
 
@@ -1031,8 +1032,8 @@ describe('Post Model', function () {
                     assert.equal(createdPost.get('slug'), 'apprehensive-titles-have-too-many-spaces-and-m-dashes-and-also-n-dashes');
 
                     assert.equal(Object.keys(eventsTriggered).length, 2);
-                    should.exist(eventsTriggered['post.added']);
-                    should.exist(eventsTriggered['user.attached']);
+                    assertExists(eventsTriggered['post.added']);
+                    assertExists(eventsTriggered['user.attached']);
 
                     done();
                 }).catch(done);
@@ -1048,8 +1049,8 @@ describe('Post Model', function () {
                     assert.notEqual(createdPost.get('slug'), 'rss');
 
                     assert.equal(Object.keys(eventsTriggered).length, 2);
-                    should.exist(eventsTriggered['post.added']);
-                    should.exist(eventsTriggered['user.attached']);
+                    assertExists(eventsTriggered['post.added']);
+                    assertExists(eventsTriggered['user.attached']);
 
                     done();
                 });
@@ -1085,8 +1086,8 @@ describe('Post Model', function () {
                         firstPost.slug = createdFirstPost.get('slug');
 
                         assert.equal(Object.keys(eventsTriggered).length, 2);
-                        should.exist(eventsTriggered['post.added']);
-                        should.exist(eventsTriggered['user.attached']);
+                        assertExists(eventsTriggered['post.added']);
+                        assertExists(eventsTriggered['user.attached']);
 
                         // Create the second post
                         return models.Post.add(secondPost, context);
@@ -1095,8 +1096,8 @@ describe('Post Model', function () {
                         secondPost.slug = createdSecondPost.get('slug');
 
                         assert.equal(Object.keys(eventsTriggered).length, 2);
-                        should.exist(eventsTriggered['post.added']);
-                        should.exist(eventsTriggered['user.attached']);
+                        assertExists(eventsTriggered['post.added']);
+                        assertExists(eventsTriggered['user.attached']);
 
                         // Update with a conflicting slug from the first post
                         return createdSecondPost.save({
@@ -1109,7 +1110,7 @@ describe('Post Model', function () {
                         updatedSecondPost.get('slug').should.not.equal(firstPost.slug);
 
                         assert.equal(Object.keys(eventsTriggered).length, 3);
-                        should.exist(eventsTriggered['post.edited']);
+                        assertExists(eventsTriggered['post.edited']);
 
                         return models.Post.findOne({
                             id: updatedSecondPost.id,
@@ -1208,7 +1209,7 @@ describe('Post Model', function () {
                         post = await models.Post.findOne({
                             slug: 'post-with-all-media-types-mobiledoc'
                         }, {withRelated: ['posts_meta']});
-                        should.exist(post, 'Post with all media types (Mobiledoc) should exist');
+                        assertExists(post, 'Post with all media types (Mobiledoc) should exist');
                         postsMeta = post.related('posts_meta');
                         mobiledoc = JSON.parse(post.get('mobiledoc'));
                     });
@@ -1277,7 +1278,7 @@ describe('Post Model', function () {
                         post = await models.Post.findOne({
                             slug: 'post-with-all-media-types-lexical'
                         }, {withRelated: ['posts_meta']});
-                        should.exist(post, 'Post with all media types (Lexical) should exist');
+                        assertExists(post, 'Post with all media types (Lexical) should exist');
                         postsMeta = post.related('posts_meta');
                         lexicalString = post.get('lexical');
                     });
@@ -1473,7 +1474,7 @@ describe('Post Model', function () {
                 // Test that we have the post we expect, with exactly one tag
                 models.Post.findOne(firstItemData, {withRelated: ['tags']}).then(function (results) {
                     let post;
-                    should.exist(results);
+                    assertExists(results);
                     post = results.toJSON();
                     post.id.should.equal(firstItemData.id);
                     assert.equal(post.status, 'published');
@@ -1488,11 +1489,11 @@ describe('Post Model', function () {
                     assert.equal(deleted.author, undefined);
 
                     assert.equal(Object.keys(eventsTriggered).length, 5);
-                    should.exist(eventsTriggered['post.unpublished']);
-                    should.exist(eventsTriggered['post.deleted']);
-                    should.exist(eventsTriggered['user.detached']);
-                    should.exist(eventsTriggered['tag.detached']);
-                    should.exist(eventsTriggered['post.tag.detached']);
+                    assertExists(eventsTriggered['post.unpublished']);
+                    assertExists(eventsTriggered['post.deleted']);
+                    assertExists(eventsTriggered['user.detached']);
+                    assertExists(eventsTriggered['tag.detached']);
+                    assertExists(eventsTriggered['post.tag.detached']);
 
                     // Double check we can't find the post again
                     return models.Post.findOne(firstItemData);
@@ -1515,7 +1516,7 @@ describe('Post Model', function () {
                 // Test that we have the post we expect, with exactly one tag
                 models.Post.findOne(firstItemData, {withRelated: ['tags']}).then(function (results) {
                     let post;
-                    should.exist(results);
+                    assertExists(results);
                     post = results.toJSON();
                     post.id.should.equal(firstItemData.id);
                     assert.equal(post.tags.length, 1);
@@ -1529,10 +1530,10 @@ describe('Post Model', function () {
                     assert.equal(deleted.author, undefined);
 
                     assert.equal(Object.keys(eventsTriggered).length, 4);
-                    should.exist(eventsTriggered['post.deleted']);
-                    should.exist(eventsTriggered['tag.detached']);
-                    should.exist(eventsTriggered['post.tag.detached']);
-                    should.exist(eventsTriggered['user.detached']);
+                    assertExists(eventsTriggered['post.deleted']);
+                    assertExists(eventsTriggered['tag.detached']);
+                    assertExists(eventsTriggered['post.tag.detached']);
+                    assertExists(eventsTriggered['user.detached']);
 
                     // Double check we can't find the post again
                     return models.Post.findOne(firstItemData);
@@ -1555,7 +1556,7 @@ describe('Post Model', function () {
                 // Test that we have the post we expect, with exactly one tag
                 models.Post.findOne(firstItemData, {withRelated: ['tags']}).then(function (results) {
                     let page;
-                    should.exist(results);
+                    assertExists(results);
                     page = results.toJSON();
                     page.id.should.equal(firstItemData.id);
                     assert.equal(page.status, 'published');
@@ -1569,9 +1570,9 @@ describe('Post Model', function () {
                     assert.equal(deleted.author, undefined);
 
                     assert.equal(Object.keys(eventsTriggered).length, 3);
-                    should.exist(eventsTriggered['page.unpublished']);
-                    should.exist(eventsTriggered['page.deleted']);
-                    should.exist(eventsTriggered['user.detached']);
+                    assertExists(eventsTriggered['page.unpublished']);
+                    assertExists(eventsTriggered['page.deleted']);
+                    assertExists(eventsTriggered['user.detached']);
 
                     // Double check we can't find the post again
                     return models.Post.findOne(firstItemData);
@@ -1594,7 +1595,7 @@ describe('Post Model', function () {
                 // Test that we have the post we expect, with exactly one tag
                 models.Post.findOne(firstItemData, {withRelated: ['tags']}).then(function (results) {
                     let page;
-                    should.exist(results);
+                    assertExists(results);
                     page = results.toJSON();
                     page.id.should.equal(firstItemData.id);
 
@@ -1606,8 +1607,8 @@ describe('Post Model', function () {
                     assert.equal(deleted.author, undefined);
 
                     assert.equal(Object.keys(eventsTriggered).length, 2);
-                    should.exist(eventsTriggered['page.deleted']);
-                    should.exist(eventsTriggered['user.detached']);
+                    assertExists(eventsTriggered['page.deleted']);
+                    assertExists(eventsTriggered['user.detached']);
 
                     // Double check we can't find the post again
                     return models.Post.findOne(firstItemData);
@@ -1726,7 +1727,7 @@ describe('Post Model', function () {
                     return models.Post.findOne({id: createdPost.id, status: 'all'});
                 })
                 .then((createdPost) => {
-                    should.exist(createdPost);
+                    assertExists(createdPost);
 
                     return createdPost.save({mobiledoc: markdownToMobiledoc('b')}, context);
                 })
@@ -1757,7 +1758,7 @@ describe('Post Model', function () {
                     return models.Post.findOne({id: createdPost.id, status: 'all'});
                 })
                 .then((createdPost) => {
-                    should.exist(createdPost);
+                    assertExists(createdPost);
                     revisionedPost = createdPost;
 
                     return sequence(_.times(11, (i) => {
@@ -1794,7 +1795,7 @@ describe('Post Model', function () {
 
             return models.Post.add(newPost, options)
                 .then((createdPost) => {
-                    should.exist(createdPost);
+                    assertExists(createdPost);
                     unversionedPost = createdPost;
                     createdPost.get('mobiledoc').should.equal(markdownToMobiledoc('a'));
 
@@ -1811,7 +1812,7 @@ describe('Post Model', function () {
                     }, _.extend({}, context, {id: unversionedPost.id}));
                 })
                 .then((editedPost) => {
-                    should.exist(editedPost);
+                    assertExists(editedPost);
                     editedPost.get('mobiledoc').should.equal(markdownToMobiledoc('b'));
 
                     return models.MobiledocRevision
@@ -2007,7 +2008,7 @@ describe('Post Model', function () {
 
         it('should create the test data correctly', function (done) {
             // creates a test tag
-            should.exist(tagJSON);
+            assertExists(tagJSON);
             tagJSON.should.be.an.Array().with.lengthOf(3);
 
             assert.equal(tagJSON[0].name, 'existing tag a');
@@ -2015,9 +2016,9 @@ describe('Post Model', function () {
             assert.equal(tagJSON[2].name, 'existing_tag_c');
 
             // creates a test post with an array of tags in the correct order
-            should.exist(postJSON);
+            assertExists(postJSON);
             assert.equal(postJSON.title, 'HTML Ipsum');
-            should.exist(postJSON.tags);
+            assertExists(postJSON.tags);
             postJSON.tags.should.be.an.Array().and.have.lengthOf(3);
 
             assert.equal(postJSON.tags[0].name, 'tag1');

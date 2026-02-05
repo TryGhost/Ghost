@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 const meta_description = require('../../../../core/frontend/helpers/meta_description');
@@ -28,7 +29,7 @@ describe('{{meta_description}} helper', function () {
                 {data: {root: {context: ['home', 'index']}}}
             );
 
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(String(rendered), 'The professional publishing platform');
         });
 
@@ -38,7 +39,7 @@ describe('{{meta_description}} helper', function () {
                 {data: {root: {context: ['index', 'paged']}}}
             );
 
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(String(rendered), '');
         });
 
@@ -48,7 +49,7 @@ describe('{{meta_description}} helper', function () {
                 {data: {root: {context: ['tag']}}}
             );
 
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(String(rendered), '');
         });
 
@@ -58,7 +59,7 @@ describe('{{meta_description}} helper', function () {
                 {data: {root: {context: ['tag', 'paged']}}}
             );
 
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(String(rendered), '');
         });
 
@@ -68,7 +69,7 @@ describe('{{meta_description}} helper', function () {
                 {data: {root: {context: ['tag']}}}
             );
 
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(String(rendered), 'Rasper is the Cool Red Casper');
         });
 
@@ -78,7 +79,7 @@ describe('{{meta_description}} helper', function () {
                 {data: {root: {context: ['tag', 'paged']}}}
             );
 
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(String(rendered), '');
         });
 
@@ -88,7 +89,7 @@ describe('{{meta_description}} helper', function () {
                 {data: {root: {context: ['author']}}}
             );
 
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(String(rendered), 'I am a Duck.');
         });
 
@@ -98,7 +99,7 @@ describe('{{meta_description}} helper', function () {
                 {data: {root: {context: ['author', 'paged']}}}
             );
 
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(String(rendered), '');
         });
 
@@ -108,7 +109,7 @@ describe('{{meta_description}} helper', function () {
                 {data: {root: {context: ['post']}}}
             );
 
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(String(rendered), '');
         });
 
@@ -118,7 +119,7 @@ describe('{{meta_description}} helper', function () {
                 {data: {root: {context: ['post']}}}
             );
 
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(String(rendered), 'Nice post about stuff.');
         });
 
@@ -128,7 +129,7 @@ describe('{{meta_description}} helper', function () {
                 {data: {root: {context: ['home']}}}
             );
 
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(String(rendered), 'Nice post about stuff.');
         });
     });
@@ -144,7 +145,7 @@ describe('{{meta_description}} helper', function () {
                 {data: {root: {context: ['home', 'index']}}}
             );
 
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(String(rendered), 'Meta description of the professional publishing platform');
         });
 
@@ -154,7 +155,7 @@ describe('{{meta_description}} helper', function () {
                 {data: {root: {context: ['tag']}}}
             );
 
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(String(rendered), 'Rasper is the Cool Red Casper');
         });
     });

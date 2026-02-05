@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../utils/assertions');
 const _ = require('lodash');
 const should = require('should');
 const supertest = require('supertest');
@@ -30,16 +31,16 @@ describe('Integrations API', function () {
 
         // there is no enforced order for integrations which makes order different on SQLite and MySQL
         const zapierIntegration = _.find(res.body.integrations, {name: 'Zapier'}); // from migrations
-        should.exist(zapierIntegration);
+        assertExists(zapierIntegration);
 
         const testIntegration = _.find(res.body.integrations, {name: 'Test Integration'}); // from fixtures
-        should.exist(testIntegration);
+        assertExists(testIntegration);
 
         const exploreIntegration = _.find(res.body.integrations, {name: 'Test Core Integration'}); // from fixtures
-        should.exist(exploreIntegration);
+        assertExists(exploreIntegration);
 
         const selfServeMigrationIntegration = _.find(res.body.integrations, {name: 'Self-Serve Migration Integration'}); // from fixtures
-        should.exist(selfServeMigrationIntegration);
+        assertExists(selfServeMigrationIntegration);
     });
 
     it('Can not read internal integration', async function () {
@@ -74,16 +75,16 @@ describe('Integrations API', function () {
 
         const adminApiKey = integration.api_keys.find(findBy('type', 'admin'));
         assert.equal(adminApiKey.integration_id, integration.id);
-        should.exist(adminApiKey.secret);
+        assertExists(adminApiKey.secret);
 
         // check Admin API key secret format
         const [id, secret] = adminApiKey.secret.split(':');
-        should.exist(id);
+        assertExists(id);
         assert.equal(id, adminApiKey.id);
-        should.exist(secret);
+        assertExists(secret);
         assert.equal(secret.length, 64);
 
-        should.exist(res.headers.location);
+        assertExists(res.headers.location);
         res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('integrations/')}${res.body.integrations[0].id}/`);
     });
 
@@ -113,7 +114,7 @@ describe('Integrations API', function () {
         const webhook = integration.webhooks[0];
         assert.equal(webhook.integration_id, integration.id);
 
-        should.exist(res.headers.location);
+        assertExists(res.headers.location);
         res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('integrations/')}${res.body.integrations[0].id}/`);
     });
 
@@ -179,10 +180,10 @@ describe('Integrations API', function () {
         assert.equal(body.meta.pagination.prev, null);
 
         body.integrations.forEach((integration) => {
-            should.exist(integration.api_keys);
+            assertExists(integration.api_keys);
             if (integration.api_keys.length) {
                 integration.api_keys.forEach((apiKey) => {
-                    should.exist(apiKey.secret);
+                    assertExists(apiKey.secret);
 
                     if (apiKey.type === 'content') {
                         assert.equal(apiKey.secret.split(':').length, 1, `${integration.name} api key secret should have correct key format without ":"`);
@@ -273,7 +274,7 @@ describe('Integrations API', function () {
         const refreshedAction = actions.find((action) => {
             return action.event === 'refreshed';
         });
-        should.exist(refreshedAction);
+        assertExists(refreshedAction);
     });
 
     it('Can successfully add and delete a created integrations webhooks', async function () {

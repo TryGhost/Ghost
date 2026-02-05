@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 
@@ -58,7 +59,7 @@ describe('Unit - frontend/data/fetch-data', function () {
 
     it('should handle no options', function (done) {
         data.fetchData(null, null, locals).then(function (result) {
-            should.exist(result);
+            assertExists(result);
             result.should.be.an.Object().with.properties('posts', 'meta');
             result.should.not.have.property('data');
 
@@ -73,7 +74,7 @@ describe('Unit - frontend/data/fetch-data', function () {
 
     it('should handle path options with page/limit', function (done) {
         data.fetchData({page: 2, limit: 10}, null, locals).then(function (result) {
-            should.exist(result);
+            assertExists(result);
             result.should.be.an.Object().with.properties('posts', 'meta');
             result.should.not.have.property('data');
 
@@ -106,7 +107,7 @@ describe('Unit - frontend/data/fetch-data', function () {
         };
 
         data.fetchData(pathOptions, routerOptions, locals).then(function (result) {
-            should.exist(result);
+            assertExists(result);
             result.should.be.an.Object().with.properties('posts', 'meta', 'data');
             result.data.should.be.an.Object().with.properties('featured');
 
@@ -137,7 +138,7 @@ describe('Unit - frontend/data/fetch-data', function () {
         };
 
         data.fetchData(pathOptions, routerOptions, locals).then(function (result) {
-            should.exist(result);
+            assertExists(result);
 
             result.should.be.an.Object().with.properties('posts', 'meta', 'data');
             result.data.should.be.an.Object().with.properties('featured');
@@ -172,7 +173,7 @@ describe('Unit - frontend/data/fetch-data', function () {
         };
 
         data.fetchData(pathOptions, routerOptions, locals).then(function (result) {
-            should.exist(result);
+            assertExists(result);
             result.should.be.an.Object().with.properties('posts', 'meta', 'data');
             result.data.should.be.an.Object().with.properties('tag');
 

@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const should = require('should');
 const stripeConnect = require('../../../../../core/server/services/members/stripe-connect');
 
@@ -12,7 +13,7 @@ describe('Members - Stripe Connect', function () {
 
         should.ok(url instanceof URL, 'getStripeConnectOAuthUrl should return an instance of URL');
 
-        should.exist(session.get(stripeConnect.STATE_PROP), 'The session should have a state set');
+        assertExists(session.get(stripeConnect.STATE_PROP), 'The session should have a state set');
 
         assert.equal(url.origin, 'https://connect.stripe.com');
         assert.equal(url.pathname, '/oauth/authorize');

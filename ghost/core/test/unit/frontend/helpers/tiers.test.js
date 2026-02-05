@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../utils/assertions');
 const should = require('should');
 const tiersHelper = require('../../../../core/frontend/helpers/tiers');
 
@@ -11,7 +12,7 @@ describe('{{tiers}} helper', function () {
         ];
 
         const rendered = tiersHelper.call({tiers: tiers}, {hash: {}});
-        should.exist(rendered);
+        assertExists(rendered);
 
         assert.equal(String(rendered), 'tier 1, tier 2 and tier 3 tiers');
     });
@@ -24,7 +25,7 @@ describe('{{tiers}} helper', function () {
         ];
 
         const rendered = tiersHelper.call({tiers: tiers}, {hash: {separator: '|'}});
-        should.exist(rendered);
+        assertExists(rendered);
 
         assert.equal(String(rendered), 'tier 1|tier 2 and tier 3 tiers');
     });
@@ -37,7 +38,7 @@ describe('{{tiers}} helper', function () {
         ];
 
         const rendered = tiersHelper.call({tiers: tiers}, {hash: {lastSeparator: ' as well as '}});
-        should.exist(rendered);
+        assertExists(rendered);
 
         assert.equal(String(rendered), 'tier 1, tier 2 as well as tier 3 tiers');
     });
@@ -50,7 +51,7 @@ describe('{{tiers}} helper', function () {
         ];
 
         const rendered = tiersHelper.call({tiers: tiers}, {hash: {prefix: 'on '}});
-        should.exist(rendered);
+        assertExists(rendered);
 
         assert.equal(String(rendered), 'on tier 1, tier 2 and tier 3 tiers');
     });
@@ -63,7 +64,7 @@ describe('{{tiers}} helper', function () {
         ];
 
         const rendered = tiersHelper.call({tiers: tiers}, {hash: {suffix: ' products'}});
-        should.exist(rendered);
+        assertExists(rendered);
 
         assert.equal(String(rendered), 'tier 1, tier 2 and tier 3 products');
     });
@@ -76,7 +77,7 @@ describe('{{tiers}} helper', function () {
         ];
 
         const rendered = tiersHelper.call({tiers: tiers}, {hash: {suffix: ''}});
-        should.exist(rendered);
+        assertExists(rendered);
 
         assert.equal(String(rendered), 'tier 1, tier 2 and tier 3');
     });
@@ -89,7 +90,7 @@ describe('{{tiers}} helper', function () {
         ];
 
         const rendered = tiersHelper.call({tiers: tiers}, {hash: {prefix: 'on ', suffix: ' products'}});
-        should.exist(rendered);
+        assertExists(rendered);
 
         assert.equal(String(rendered), 'on tier 1, tier 2 and tier 3 products');
     });
@@ -102,14 +103,14 @@ describe('{{tiers}} helper', function () {
         ];
 
         const rendered = tiersHelper.call({tiers: tiers}, {hash: {suffix: ' &bull;', prefix: '&hellip; '}});
-        should.exist(rendered);
+        assertExists(rendered);
 
         assert.equal(String(rendered), '&hellip; tier 1, tier 2 and tier 3 &bull;');
     });
 
     it('does not add prefix or suffix if no tiers exist', function () {
         const rendered = tiersHelper.call({}, {hash: {prefix: 'on ', suffix: ' products'}});
-        should.exist(rendered);
+        assertExists(rendered);
 
         assert.equal(String(rendered), '');
     });

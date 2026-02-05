@@ -4,6 +4,7 @@
 // But then again testing real code, rather than mock code, might be more useful...
 
 const assert = require('node:assert/strict');
+const {assertExists} = require('../utils/assertions');
 const should = require('should');
 const path = require('path');
 const fs = require('fs');
@@ -18,7 +19,7 @@ let request;
 
 function assertCorrectHeaders(res) {
     assert.equal(res.headers['x-cache-invalidate'], undefined);
-    should.exist(res.headers.date);
+    assertExists(res.headers.date);
 }
 
 describe('Admin Routing', function () {
@@ -147,7 +148,7 @@ describe('Admin Routing', function () {
                 .set('X-Forwarded-Proto', 'https')
                 .expect(200);
 
-            should.exist(res.headers.etag);
+            assertExists(res.headers.etag);
             assert.equal(res.headers.etag, '8793333e8e91cde411b1336c58ec6ef3');
         });
     });
