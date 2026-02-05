@@ -44,7 +44,13 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
         commentsIsLoading: false,
         commentIdToHighlight: null,
         commentIdToScrollTo: initialCommentId,
-        pageUrl
+        pageUrl,
+        supportEmail: null,
+        isMember: false,
+        isAdmin: false,
+        isPaidOnly: false,
+        hasRequiredTier: true,
+        isCommentingDisabled: false
     });
 
     const iframeRef = React.createRef<HTMLIFrameElement>();
@@ -134,11 +140,23 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
                 if (admin) {
                     // this is a bit of a hack, but we need to fetch the comments fully populated if the user is an admin
                     const adminComments = await adminApi.browse({page: 1, postId: options.postId, order: state.order, memberUuid: state.member?.uuid});
-                    setState({
-                        ...state,
-                        adminApi: adminApi,
-                        comments: adminComments.comments,
-                        pagination: adminComments.meta.pagination
+                    setState((currentState) => {
+                        // Don't overwrite paginated comments when initSetup loaded
+                        // multiple pages (e.g., for permalink scrolling)
+                        if (currentState.pagination && currentState.pagination.page > 1) {
+                            return {
+                                adminApi,
+                                admin,
+                                isAdmin: true
+                            };
+                        }
+                        return {
+                            adminApi,
+                            admin,
+                            isAdmin: true,
+                            comments: adminComments.comments,
+                            pagination: adminComments.meta.pagination
+                        };
                     });
                 }
             } catch (e) {
@@ -149,7 +167,8 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
 
             setState({
                 adminApi,
-                admin
+                admin,
+                isAdmin: !!admin
             });
         } catch (e) {
             /* eslint-disable no-console */
@@ -278,7 +297,7 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
     /** Initialize comments setup once in viewport, fetch data and setup state */
     const initSetup = async () => {
         try {
-            const {member, labs} = await api.init();
+            const {member, labs, supportEmail} = await api.init();
             const {count, comments: initialComments, pagination: initialPagination} = await fetchComments();
 
             let comments = initialComments;
@@ -296,6 +315,12 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
                 }
             }
 
+            // Compute tier access values
+            const isMember = !!member;
+            const isPaidOnly = options.commentsEnabled === 'paid';
+            const isPaidMember = !!member?.paid;
+            const hasRequiredTier = isPaidMember || !isPaidOnly;
+
             setState({
                 member,
                 initStatus: 'success',
@@ -306,10 +331,14 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
                 labs: labs,
                 commentsIsLoading: false,
                 commentIdToHighlight: null,
-                commentIdToScrollTo: scrollTargetFound ? initialCommentId : null
+                commentIdToScrollTo: scrollTargetFound ? initialCommentId : null,
+                supportEmail,
+                isMember,
+                isPaidOnly,
+                hasRequiredTier,
+                isCommentingDisabled: member?.can_comment === false
             });
         } catch (e) {
-            /* eslint-disable no-console */
             console.error(`[Comments] Failed to initialize:`, e);
             /* eslint-enable no-console */
             setState({

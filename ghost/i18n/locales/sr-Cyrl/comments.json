@@ -17,7 +17,9 @@
     "Best": "",
     "Cancel": "Откажи",
     "Comment": "Коментар",
+    "Commenting disabled": "",
     "Complete your profile": "Попуните свој профил",
+    "Contact support": "",
     "Delete": "Избриши",
     "Deleted": "",
     "Deleted member": "Обрисан члан",
@@ -28,6 +30,7 @@
     "edited": "",
     "Enter your name": "Унесите своје име",
     "Expertise": "Експертиза",
+    "for more information.": "",
     "Founder @ Acme Inc": "Оснивач @ Acme Inc",
     "Full-time parent": "Родитељ пуним радним временом",
     "Head of Marketing at Acme, Inc": "Шеф маркетинга у Acme, Inc",
@@ -69,6 +72,8 @@
     "This comment has been hidden.": "Овај коментар је сакривен.",
     "This comment has been removed.": "Овај коментар је уклоњен.",
     "Upgrade now": "Надоградите сада",
+    "View in admin": "",
     "Yesterday": "Јуче",
+    "You can't post comments in this publication.": "",
     "Your request will be sent to the owner of this site.": "Ваш захтев ће бити послат власнику овог сајта."
 }

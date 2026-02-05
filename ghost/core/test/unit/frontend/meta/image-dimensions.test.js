@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const _ = require('lodash');
 const should = require('should');
 const sinon = require('sinon');
@@ -45,10 +46,10 @@ describe('getImageDimensions', function () {
 
         getImageDimensions(metaData).then(function (result) {
             should.exist(result);
-            sizeOfStub.calledWith(metaData.coverImage.url).should.be.true();
-            sizeOfStub.calledWith(metaData.authorImage.url).should.be.true();
-            sizeOfStub.calledWith(metaData.ogImage.url).should.be.true();
-            sizeOfStub.calledWith(metaData.site.logo.url).should.be.true();
+            assert.equal(sizeOfStub.calledWith(metaData.coverImage.url), true);
+            assert.equal(sizeOfStub.calledWith(metaData.authorImage.url), true);
+            assert.equal(sizeOfStub.calledWith(metaData.ogImage.url), true);
+            assert.equal(sizeOfStub.calledWith(metaData.site.logo.url), true);
             result.coverImage.should.have.property('dimensions');
             result.coverImage.should.have.property('url');
             result.coverImage.dimensions.should.have.property('width', 50);
@@ -98,10 +99,10 @@ describe('getImageDimensions', function () {
 
         getImageDimensions(metaData).then(function (result) {
             should.exist(result);
-            sizeOfStub.calledWith(metaData.coverImage.url).should.be.true();
-            sizeOfStub.calledWith(metaData.authorImage.url).should.be.true();
-            sizeOfStub.calledWith(metaData.ogImage.url).should.be.true();
-            sizeOfStub.calledWith(metaData.site.logo.url).should.be.true();
+            assert.equal(sizeOfStub.calledWith(metaData.coverImage.url), true);
+            assert.equal(sizeOfStub.calledWith(metaData.authorImage.url), true);
+            assert.equal(sizeOfStub.calledWith(metaData.ogImage.url), true);
+            assert.equal(sizeOfStub.calledWith(metaData.site.logo.url), true);
             result.coverImage.should.not.have.property('dimensions');
             result.coverImage.should.have.property('url');
             result.authorImage.should.not.have.property('dimensions');
@@ -144,10 +145,10 @@ describe('getImageDimensions', function () {
 
         getImageDimensions(metaData).then(function (result) {
             should.exist(result);
-            sizeOfStub.calledWith(metaData.coverImage.url).should.be.true();
-            sizeOfStub.calledWith(metaData.authorImage.url).should.be.true();
-            sizeOfStub.calledWith(metaData.ogImage.url).should.be.true();
-            sizeOfStub.calledWith(metaData.site.logo.url).should.be.true();
+            assert.equal(sizeOfStub.calledWith(metaData.coverImage.url), true);
+            assert.equal(sizeOfStub.calledWith(metaData.authorImage.url), true);
+            assert.equal(sizeOfStub.calledWith(metaData.ogImage.url), true);
+            assert.equal(sizeOfStub.calledWith(metaData.site.logo.url), true);
             result.coverImage.should.have.property('url');
             result.coverImage.should.have.property('dimensions');
             result.coverImage.dimensions.should.have.property('height', 480);
@@ -198,10 +199,10 @@ describe('getImageDimensions', function () {
 
         getImageDimensions(metaData).then(function (result) {
             should.exist(result);
-            sizeOfStub.calledWith(metaData.coverImage.url).should.be.true();
-            sizeOfStub.calledWith(metaData.authorImage.url).should.be.true();
-            sizeOfStub.calledWith(metaData.ogImage.url).should.be.true();
-            sizeOfStub.calledWith(metaData.site.logo.url).should.be.true();
+            assert.equal(sizeOfStub.calledWith(metaData.coverImage.url), true);
+            assert.equal(sizeOfStub.calledWith(metaData.authorImage.url), true);
+            assert.equal(sizeOfStub.calledWith(metaData.ogImage.url), true);
+            assert.equal(sizeOfStub.calledWith(metaData.site.logo.url), true);
             result.coverImage.should.have.property('dimensions');
             result.coverImage.should.have.property('url');
             result.coverImage.dimensions.should.have.property('height', 480);
@@ -258,27 +259,27 @@ describe('getImageDimensions', function () {
 
         getImageDimensions(metaData).then(function (result) {
             should.exist(result);
-            sizeOfStub.calledWith(originalMetaData.coverImage.url).should.be.true();
-            sizeOfStub.calledWith(originalMetaData.authorImage.url).should.be.true();
-            sizeOfStub.calledWith(originalMetaData.ogImage.url).should.be.true();
-            sizeOfStub.calledWith(originalMetaData.twitterImage).should.be.true();
-            sizeOfStub.calledWith(originalMetaData.site.logo.url).should.be.true();
+            assert.equal(sizeOfStub.calledWith(originalMetaData.coverImage.url), true);
+            assert.equal(sizeOfStub.calledWith(originalMetaData.authorImage.url), true);
+            assert.equal(sizeOfStub.calledWith(originalMetaData.ogImage.url), true);
+            assert.equal(sizeOfStub.calledWith(originalMetaData.twitterImage), true);
+            assert.equal(sizeOfStub.calledWith(originalMetaData.site.logo.url), true);
             result.coverImage.should.have.property('url');
-            result.coverImage.url.should.eql('http://mysite.com/content/images/size/w1200/mypostcoverimage.jpg');
+            assert.equal(result.coverImage.url, 'http://mysite.com/content/images/size/w1200/mypostcoverimage.jpg');
             result.coverImage.should.have.property('dimensions');
             result.coverImage.dimensions.should.have.property('width', 1200);
             result.coverImage.dimensions.should.have.property('height', 720);
             result.authorImage.should.have.property('url');
-            result.authorImage.url.should.eql('http://mysite.com/content/images/size/w1200/me.jpg');
+            assert.equal(result.authorImage.url, 'http://mysite.com/content/images/size/w1200/me.jpg');
             result.authorImage.should.have.property('dimensions');
             result.authorImage.dimensions.should.have.property('width', 1200);
             result.authorImage.dimensions.should.have.property('height', 720);
             result.ogImage.should.have.property('url');
-            result.ogImage.url.should.eql('http://mysite.com/content/images/size/w1200/super-facebook-image.jpg');
+            assert.equal(result.ogImage.url, 'http://mysite.com/content/images/size/w1200/super-facebook-image.jpg');
             result.ogImage.should.have.property('dimensions');
             result.ogImage.dimensions.should.have.property('width', 1200);
             result.ogImage.dimensions.should.have.property('height', 720);
-            result.twitterImage.should.eql('http://mysite.com/content/images/size/w1200/super-twitter-image.jpg');
+            assert.equal(result.twitterImage, 'http://mysite.com/content/images/size/w1200/super-twitter-image.jpg');
             done();
         }).catch(done);
     });
@@ -317,13 +318,13 @@ describe('getImageDimensions', function () {
         getImageDimensions(metaData).then(function (result) {
             should.exist(result);
             result.coverImage.should.have.property('url');
-            result.coverImage.url.should.eql('http://anothersite.com/some/storage/mypostcoverimage.jpg');
+            assert.equal(result.coverImage.url, 'http://anothersite.com/some/storage/mypostcoverimage.jpg');
             result.authorImage.should.have.property('url');
-            result.authorImage.url.should.eql('http://anothersite.com/some/storage/me.jpg');
+            assert.equal(result.authorImage.url, 'http://anothersite.com/some/storage/me.jpg');
             result.ogImage.should.have.property('url');
-            result.ogImage.url.should.eql('http://anothersite.com/some/storage/super-facebook-image.jpg');
+            assert.equal(result.ogImage.url, 'http://anothersite.com/some/storage/super-facebook-image.jpg');
             result.site.logo.should.have.property('url');
-            result.site.logo.url.should.eql('http://anothersite.com/some/storage/logo.jpg');
+            assert.equal(result.site.logo.url, 'http://anothersite.com/some/storage/logo.jpg');
             done();
         }).catch(done);
     });

@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../utils');
@@ -24,6 +25,7 @@ describe('Exporter', function () {
             const tables = [
                 'actions',
                 'api_keys',
+                'automated_email_recipients',
                 'automated_emails',
                 'benefits',
                 'brute',
@@ -131,7 +133,7 @@ describe('Exporter', function () {
 
             excludedTables.forEach((tableName) => {
                 // NOTE: why is this undefined? The key should probably not even be present
-                should.equal(exportData.data[tableName], undefined);
+                assert.equal(exportData.data[tableName], undefined);
             });
 
             // excludes settings with sensitive data
@@ -146,13 +148,13 @@ describe('Exporter', function () {
             ];
 
             excludedSettings.forEach((settingKey) => {
-                should.not.exist(_.find(exportData.data.settings, {key: settingKey}));
+                assert.equal(_.find(exportData.data.settings, {key: settingKey}), undefined);
             });
 
-            should.not.exist(_.find(exportData.data.settings, {key: 'permalinks'}));
+            assert.equal(_.find(exportData.data.settings, {key: 'permalinks'}), undefined);
 
             // should not export sqlite data
-            should.not.exist(exportData.data.sqlite_sequence);
+            assert.equal(exportData.data.sqlite_sequence, undefined);
             done();
         }).catch(done);
     });

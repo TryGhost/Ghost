@@ -27,7 +27,7 @@ const assert = require('assert/strict');
 const fixtureUtils = require('./fixture-utils');
 const cacheRules = require('./fixtures/cache-rules');
 const redirectsUtils = require('./redirects');
-const configUtils = require('./configUtils');
+const configUtils = require('./config-utils');
 const urlServiceUtils = require('./url-service-utils');
 const mockManager = require('./e2e-framework-mock-manager');
 const mentionsJobsService = require('../../core/server/services/mentions-jobs');
@@ -543,9 +543,9 @@ module.exports = {
     },
 
     // utilities
-    configUtils: require('./configUtils'),
+    configUtils: require('./config-utils'),
     dbUtils: require('./db-utils'),
-    urlUtils: require('./urlUtils'),
+    urlUtils: require('./url-utils'),
     resetRateLimits,
     cacheRules
 };

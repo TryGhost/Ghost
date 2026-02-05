@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const ObjectId = require('bson-objectid').default;
@@ -65,6 +66,6 @@ describe('getAuthorUrl', function () {
     });
 
     it('should return null if no author on data or context', function () {
-        should.not.exist(getAuthorUrl({}, true));
+        assert.equal(getAuthorUrl({}, true), null);
     });
 });

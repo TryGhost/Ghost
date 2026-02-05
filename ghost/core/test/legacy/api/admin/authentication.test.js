@@ -1,7 +1,7 @@
 const nock = require('nock');
 const assert = require('assert/strict');
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../../utils/e2e-framework');
-const {anyContentVersion, anyEtag, anyISODateTime, anyErrorId} = matchers;
+const {anyContentVersion, anyEtag, anyISODateTime, anyErrorId, stringMatching} = matchers;
 
 const {tokens} = require('@tryghost/security');
 const models = require('../../../../core/server/models');
@@ -388,7 +388,11 @@ describe('Authentication API', function () {
                     }]
                 })
                 .expectStatus(200)
-                .matchBodySnapshot()
+                .matchBodySnapshot({
+                    password_reset: [{
+                        emailVerificationToken: stringMatching(/^[0-9]{6}$/)
+                    }]
+                })
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
                     etag: anyEtag

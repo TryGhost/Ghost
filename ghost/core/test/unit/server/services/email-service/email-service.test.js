@@ -1,4 +1,4 @@
-const EmailService = require('../../../../../core/server/services/email-service/EmailService');
+const EmailService = require('../../../../../core/server/services/email-service/email-service');
 const assert = require('assert/strict');
 const sinon = require('sinon');
 const {createModel, createModelClass} = require('./utils');
@@ -125,6 +125,67 @@ describe('Email Service', function () {
             limited.members = false;
             limited.emails = false;
             await assert.doesNotReject(service.checkLimits());
+        });
+    });
+
+    describe('checkCanSendEmail', function () {
+        it('Throws if newsletter is null', async function () {
+            await assert.rejects(
+                service.checkCanSendEmail(null, 'all'),
+                /The post does not have a newsletter relation/
+            );
+        });
+
+        it('Throws if newsletter is archived', async function () {
+            const newsletter = createModel({
+                status: 'archived'
+            });
+            await assert.rejects(
+                service.checkCanSendEmail(newsletter, 'all'),
+                /Cannot send email to archived newsletters/
+            );
+        });
+
+        it('Throws if over member limit', async function () {
+            limited.members = true;
+            const newsletter = createModel({
+                status: 'active'
+            });
+            await assert.rejects(
+                service.checkCanSendEmail(newsletter, 'all'),
+                /Over limit/
+            );
+        });
+
+        it('Throws if over email limit', async function () {
+            limited.emails = true;
+            const newsletter = createModel({
+                status: 'active'
+            });
+            await assert.rejects(
+                service.checkCanSendEmail(newsletter, 'all'),
+                /Would go over limit/
+            );
+        });
+
+        it('Throws if verification is required', async function () {
+            verificicationRequired = true;
+            const newsletter = createModel({
+                status: 'active'
+            });
+            await assert.rejects(
+                service.checkCanSendEmail(newsletter, 'all'),
+                /Email sending is temporarily disabled/
+            );
+        });
+
+        it('Does not throw for active newsletter within limits', async function () {
+            limited.members = false;
+            limited.emails = false;
+            const newsletter = createModel({
+                status: 'active'
+            });
+            await assert.doesNotReject(service.checkCanSendEmail(newsletter, 'all'));
         });
     });
 

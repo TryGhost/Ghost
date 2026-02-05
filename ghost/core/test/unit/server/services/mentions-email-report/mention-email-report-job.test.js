@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-const MentionEmailReportJob = require('../../../../../core/server/services/mentions-email-report/MentionEmailReportJob');
+const MentionEmailReportJob = require('../../../../../core/server/services/mentions-email-report/mention-email-report-job');
 
 class MockMentionReportRecipientRepository {
     #recipients = [{

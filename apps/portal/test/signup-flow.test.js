@@ -89,8 +89,18 @@ const setup = async ({site, member = null}) => {
         });
     });
 
-    ghostApi.member.sendMagicLink = vi.fn(() => {
-        return Promise.resolve('success');
+    ghostApi.member.sendMagicLink = vi.fn(async ({email}) => {
+        if (email.endsWith('@test-inbox-link.example')) {
+            return {
+                inboxLinks: {
+                    provider: 'proton',
+                    android: 'https://fake-proton.example/',
+                    desktop: 'https://fake-proton.example/'
+                }
+            };
+        } else {
+            return {};
+        }
     });
 
     ghostApi.member.getIntegrityToken = vi.fn(() => {
@@ -240,6 +250,32 @@ describe('Signup', () => {
                 plan: 'free',
                 integrityToken: 'testtoken'
             });
+        });
+
+        test('with inbox link', async () => {
+            const {
+                emailInput,
+                nameInput,
+                popupIframeDocument,
+                chooseBtns
+            } = await setup({
+                site: {
+                    ...FixtureSite.singleTier.basic,
+                    labs: {inboxlinks: true}
+                }
+            });
+
+            fireEvent.change(nameInput, {target: {value: 'Jamie Larsen'}});
+            fireEvent.change(emailInput, {target: {value: 'test@test-inbox-link.example'}});
+
+            expect(emailInput).toHaveValue('test@test-inbox-link.example');
+            expect(nameInput).toHaveValue('Jamie Larsen');
+            fireEvent.click(chooseBtns[0]);
+
+            const inboxLinkButton = await within(popupIframeDocument).findByRole('link', {name: /open proton mail/i});
+            expect(inboxLinkButton).toBeInTheDocument();
+            expect(inboxLinkButton).toHaveAttribute('href', 'https://fake-proton.example/');
+            expect(inboxLinkButton).toHaveAttribute('target', '_blank');
         });
 
         test('without name field', async () => {

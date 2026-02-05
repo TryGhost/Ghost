@@ -5,6 +5,10 @@
   "author": "Ghost Foundation",
   "private": true,
   "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./lib/locale-data.json": "./lib/locale-data.json"
+  },
   "types": "./build/i18n.d.ts",
   "scripts": {
     "dev": "echo \"Implement me!\"",

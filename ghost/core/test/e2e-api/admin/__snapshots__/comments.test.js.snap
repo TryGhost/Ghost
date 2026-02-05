@@ -1,5 +1,41 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Admin Comments API API Key Permissions API key without comment permissions cannot browse comments 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": null,
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "You do not have permission to browse comments",
+      "property": null,
+      "type": "NoPermissionError",
+    },
+  ],
+}
+`;
+
+exports[`Admin Comments API API Key Permissions API key without comment permissions cannot hide comments 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "You do not have permission to edit comments",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Permission error, cannot edit comment.",
+      "property": null,
+      "type": "NoPermissionError",
+    },
+  ],
+}
+`;
+
 exports[`Admin Comments API Browse All Always includes member and post relations 1: [body] 1`] = `
 Object {
   "comments": Array [
@@ -17,6 +53,12 @@ Object {
       "in_reply_to_snippet": null,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -64,6 +106,12 @@ Object {
       "in_reply_to_snippet": null,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -94,6 +142,12 @@ Object {
       "in_reply_to_snippet": null,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -141,6 +195,12 @@ Object {
       "in_reply_to_snippet": null,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -188,6 +248,12 @@ Object {
       "in_reply_to_snippet": null,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -235,6 +301,12 @@ Object {
       "in_reply_to_snippet": null,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -265,6 +337,12 @@ Object {
       "in_reply_to_snippet": null,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -312,6 +390,12 @@ Object {
       "in_reply_to_snippet": null,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -356,14 +440,31 @@ Object {
       "html": "<p>Published reply</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "in_reply_to_id": null,
-      "in_reply_to_snippet": null,
+      "in_reply_to_snippet": "[removed]",
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
         "email": "member2@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "name": null,
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      },
+      "parent": Object {
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "edited_at": Nullable<StringMatching>,
+        "html": null,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "in_reply_to_id": Nullable<StringMatching>,
+        "in_reply_to_snippet": null,
+        "member": null,
+        "parent_id": Nullable<StringMatching>,
+        "status": "deleted",
       },
       "parent_id": Nullable<StringMatching>,
       "post": Object {
@@ -406,6 +507,12 @@ Object {
       "in_reply_to_snippet": null,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -453,6 +560,12 @@ Object {
       "in_reply_to_snippet": null,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -483,6 +596,12 @@ Object {
       "in_reply_to_snippet": null,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -530,6 +649,12 @@ Object {
       "in_reply_to_snippet": null,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -557,14 +682,31 @@ Object {
       "html": "<p>Reply</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "in_reply_to_id": null,
-      "in_reply_to_snippet": null,
+      "in_reply_to_snippet": "Parent",
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
         "email": "member2@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "name": null,
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      },
+      "parent": Object {
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "edited_at": Nullable<StringMatching>,
+        "html": "<p>Parent</p>",
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "in_reply_to_id": Nullable<StringMatching>,
+        "in_reply_to_snippet": null,
+        "member": null,
+        "parent_id": Nullable<StringMatching>,
+        "status": "published",
       },
       "parent_id": Nullable<StringMatching>,
       "post": Object {
@@ -607,6 +749,12 @@ Object {
       "in_reply_to_snippet": null,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -654,6 +802,12 @@ Object {
       "in_reply_to_snippet": null,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -684,6 +838,12 @@ Object {
       "in_reply_to_snippet": null,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -709,6 +869,125 @@ Object {
       "pages": 3,
       "prev": null,
       "total": 5,
+    },
+  },
+}
+`;
+
+exports[`Admin Comments API Comment Reports Can browse reporters for a comment 1: [body] 1`] = `
+Object {
+  "comment_reports": Array [
+    Object {
+      "comment_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "member": Object {
+        "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "email": "member2@test.com",
+        "email_count": 0,
+        "email_disabled": false,
+        "email_open_rate": 50,
+        "email_opened_count": 0,
+        "enable_comment_notifications": true,
+        "expertise": null,
+        "geolocation": null,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "last_commented_at": Nullable<StringMatching>,
+        "last_seen_at": Nullable<StringMatching>,
+        "name": null,
+        "note": null,
+        "status": "free",
+        "transient_id": Any<String>,
+        "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      },
+      "member_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    },
+    Object {
+      "comment_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "member": Object {
+        "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "email": "paid@test.com",
+        "email_count": 0,
+        "email_disabled": false,
+        "email_open_rate": 80,
+        "email_opened_count": 0,
+        "enable_comment_notifications": true,
+        "expertise": null,
+        "geolocation": null,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "last_commented_at": Nullable<StringMatching>,
+        "last_seen_at": Nullable<StringMatching>,
+        "name": "Egon Spengler",
+        "note": null,
+        "status": "paid",
+        "transient_id": Any<String>,
+        "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      },
+      "member_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": 15,
+      "next": null,
+      "page": 1,
+      "pages": 1,
+      "prev": null,
+      "total": 2,
+    },
+  },
+}
+`;
+
+exports[`Admin Comments API Comment Reports Returns 404 for non-existent comment 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Comment could not be found",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Resource not found error, cannot list comment_reports.",
+      "property": null,
+      "type": "NotFoundError",
+    },
+  ],
+}
+`;
+
+exports[`Admin Comments API Comment Reports Returns empty list for comment with no reports 1: [body] 1`] = `
+Object {
+  "comment_reports": Array [],
+  "meta": Object {
+    "pagination": Object {
+      "limit": 15,
+      "next": null,
+      "page": 1,
+      "pages": 1,
+      "prev": null,
+      "total": 0,
     },
   },
 }
@@ -912,6 +1191,132 @@ Object {
 }
 `;
 
+exports[`Admin Comments API browse by post Does return published replies 1: [body] 1`] = `
+Object {
+  "comments": Array [
+    Object {
+      "count": Object {
+        "likes": Any<Number>,
+        "replies": 3,
+        "reports": 0,
+      },
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "edited_at": null,
+      "html": "<p>This is a comment</p>",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "in_reply_to_id": null,
+      "in_reply_to_snippet": null,
+      "liked": Any<Boolean>,
+      "member": Object {
+        "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
+        "email": "member1@test.com",
+        "expertise": null,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Mr Egg",
+        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      },
+      "parent_id": Nullable<StringMatching>,
+      "replies": Array [
+        Object {
+          "count": Object {
+            "likes": Any<Number>,
+            "reports": 0,
+          },
+          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "edited_at": null,
+          "html": Any<String>,
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "in_reply_to_id": null,
+          "in_reply_to_snippet": null,
+          "liked": false,
+          "member": Object {
+            "avatar_image": Nullable<Any<String>>,
+            "can_comment": true,
+            "commenting": Object {
+              "disabled": false,
+              "disabled_reason": null,
+              "disabled_until": null,
+            },
+            "email": "member2@test.com",
+            "expertise": null,
+            "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+            "name": Nullable<Any<String>>,
+            "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+          },
+          "parent_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "status": Any<String>,
+        },
+        Object {
+          "count": Object {
+            "likes": Any<Number>,
+            "reports": 0,
+          },
+          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "edited_at": null,
+          "html": Any<String>,
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "in_reply_to_id": null,
+          "in_reply_to_snippet": null,
+          "liked": false,
+          "member": Object {
+            "avatar_image": Nullable<Any<String>>,
+            "can_comment": true,
+            "commenting": Object {
+              "disabled": false,
+              "disabled_reason": null,
+              "disabled_until": null,
+            },
+            "email": "paid@test.com",
+            "expertise": null,
+            "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+            "name": Nullable<Any<String>>,
+            "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+          },
+          "parent_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "status": Any<String>,
+        },
+        Object {
+          "count": Object {
+            "likes": Any<Number>,
+            "reports": 0,
+          },
+          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "edited_at": null,
+          "html": Any<String>,
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "in_reply_to_id": null,
+          "in_reply_to_snippet": null,
+          "liked": false,
+          "member": Object {
+            "avatar_image": Nullable<Any<String>>,
+            "can_comment": true,
+            "commenting": Object {
+              "disabled": false,
+              "disabled_reason": null,
+              "disabled_until": null,
+            },
+            "email": "trialing@test.com",
+            "expertise": null,
+            "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+            "name": Nullable<Any<String>>,
+            "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+          },
+          "parent_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "status": Any<String>,
+        },
+      ],
+      "status": "published",
+    },
+  ],
+}
+`;
+
 exports[`Admin Comments API browse by post does not return deleted comments 1: [body] 1`] = `
 Object {
   "comments": Array [],
@@ -946,6 +1351,12 @@ Object {
       "liked": Any<Boolean>,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -967,6 +1378,12 @@ Object {
           "liked": false,
           "member": Object {
             "avatar_image": null,
+            "can_comment": true,
+            "commenting": Object {
+              "disabled": false,
+              "disabled_reason": null,
+              "disabled_until": null,
+            },
             "email": "member1@test.com",
             "expertise": null,
             "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -989,6 +1406,12 @@ Object {
           "liked": false,
           "member": Object {
             "avatar_image": null,
+            "can_comment": true,
+            "commenting": Object {
+              "disabled": false,
+              "disabled_reason": null,
+              "disabled_until": null,
+            },
             "email": "member1@test.com",
             "expertise": null,
             "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1049,6 +1472,12 @@ Object {
       "liked": Any<Boolean>,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1070,6 +1499,12 @@ Object {
           "liked": false,
           "member": Object {
             "avatar_image": null,
+            "can_comment": true,
+            "commenting": Object {
+              "disabled": false,
+              "disabled_reason": null,
+              "disabled_until": null,
+            },
             "email": "member1@test.com",
             "expertise": null,
             "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1092,6 +1527,12 @@ Object {
           "liked": false,
           "member": Object {
             "avatar_image": null,
+            "can_comment": true,
+            "commenting": Object {
+              "disabled": false,
+              "disabled_reason": null,
+              "disabled_until": null,
+            },
             "email": "member1@test.com",
             "expertise": null,
             "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1136,6 +1577,12 @@ Object {
       "liked": Any<Boolean>,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1157,6 +1604,12 @@ Object {
           "liked": false,
           "member": Object {
             "avatar_image": null,
+            "can_comment": true,
+            "commenting": Object {
+              "disabled": false,
+              "disabled_reason": null,
+              "disabled_until": null,
+            },
             "email": "member1@test.com",
             "expertise": null,
             "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1201,6 +1654,12 @@ Object {
       "liked": Any<Boolean>,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,

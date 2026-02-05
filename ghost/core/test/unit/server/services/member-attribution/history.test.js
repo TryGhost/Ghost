@@ -1,6 +1,6 @@
 const should = require('should');
 
-const UrlHistory = require('../../../../../core/server/services/member-attribution/UrlHistory');
+const UrlHistory = require('../../../../../core/server/services/member-attribution/url-history');
 
 describe('UrlHistory', function () {
     it('sets history to empty array if invalid', function () {

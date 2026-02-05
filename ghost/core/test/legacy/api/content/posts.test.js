@@ -1,10 +1,11 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const supertest = require('supertest');
 const _ = require('lodash');
 const testUtils = require('../../../utils');
 const localUtils = require('./utils');
-const configUtils = require('../../../utils/configUtils');
-const urlUtils = require('../../../utils/urlUtils');
+const configUtils = require('../../../utils/config-utils');
+const urlUtils = require('../../../utils/url-utils');
 const config = require('../../../../core/shared/config');
 
 describe('api/endpoints/content/posts', function () {
@@ -111,31 +112,31 @@ describe('api/endpoints/content/posts', function () {
                     return done(err);
                 }
 
-                res.headers.vary.should.eql('Accept-Version, Accept-Encoding');
+                assert.equal(res.headers.vary, 'Accept-Version, Accept-Encoding');
                 should.exist(res.headers['access-control-allow-origin']);
-                should.not.exist(res.headers['x-cache-invalidate']);
+                assert.equal(res.headers['x-cache-invalidate'], undefined);
 
                 const jsonResponse = res.body;
                 should.exist(jsonResponse.posts);
                 localUtils.API.checkResponse(jsonResponse, 'posts');
-                jsonResponse.posts.should.have.length(13);
+                assert.equal(jsonResponse.posts.length, 13);
                 localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
                 localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
-                _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
+                assert.equal(_.isBoolean(jsonResponse.posts[0].featured), true);
 
                 // Default order 'published_at desc' check
-                jsonResponse.posts[0].slug.should.eql('welcome');
-                jsonResponse.posts[6].slug.should.eql('integrations');
+                assert.equal(jsonResponse.posts[0].slug, 'welcome');
+                assert.equal(jsonResponse.posts[6].slug, 'integrations');
 
                 // check meta response for this test
-                jsonResponse.meta.pagination.page.should.eql(1);
-                jsonResponse.meta.pagination.limit.should.eql(15);
-                jsonResponse.meta.pagination.pages.should.eql(1);
-                jsonResponse.meta.pagination.total.should.eql(13);
-                jsonResponse.meta.pagination.hasOwnProperty('next').should.be.true();
-                jsonResponse.meta.pagination.hasOwnProperty('prev').should.be.true();
-                should.not.exist(jsonResponse.meta.pagination.next);
-                should.not.exist(jsonResponse.meta.pagination.prev);
+                assert.equal(jsonResponse.meta.pagination.page, 1);
+                assert.equal(jsonResponse.meta.pagination.limit, 15);
+                assert.equal(jsonResponse.meta.pagination.pages, 1);
+                assert.equal(jsonResponse.meta.pagination.total, 13);
+                assert.equal(jsonResponse.meta.pagination.hasOwnProperty('next'), true);
+                assert.equal(jsonResponse.meta.pagination.hasOwnProperty('prev'), true);
+                assert.equal(jsonResponse.meta.pagination.next, null);
+                assert.equal(jsonResponse.meta.pagination.prev, null);
 
                 done();
             });
@@ -152,14 +153,14 @@ describe('api/endpoints/content/posts', function () {
                     return done(err);
                 }
 
-                res.headers.vary.should.eql('Accept-Version, Accept-Encoding');
+                assert.equal(res.headers.vary, 'Accept-Version, Accept-Encoding');
                 should.exist(res.headers['access-control-allow-origin']);
-                should.not.exist(res.headers['x-cache-invalidate']);
+                assert.equal(res.headers['x-cache-invalidate'], undefined);
 
                 const jsonResponse = res.body;
                 should.exist(jsonResponse.posts);
                 localUtils.API.checkResponse(jsonResponse, 'posts');
-                jsonResponse.posts.should.have.length(13);
+                assert.equal(jsonResponse.posts.length, 13);
                 localUtils.API.checkResponse(
                     jsonResponse.posts[0],
                     'post',
@@ -168,21 +169,21 @@ describe('api/endpoints/content/posts', function () {
                 );
 
                 localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
-                _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
+                assert.equal(_.isBoolean(jsonResponse.posts[0].featured), true);
 
                 // Default order 'published_at desc' check
-                jsonResponse.posts[0].slug.should.eql('welcome');
-                jsonResponse.posts[6].slug.should.eql('integrations');
+                assert.equal(jsonResponse.posts[0].slug, 'welcome');
+                assert.equal(jsonResponse.posts[6].slug, 'integrations');
 
                 // check meta response for this test
-                jsonResponse.meta.pagination.page.should.eql(1);
-                jsonResponse.meta.pagination.limit.should.eql(15);
-                jsonResponse.meta.pagination.pages.should.eql(1);
-                jsonResponse.meta.pagination.total.should.eql(13);
-                jsonResponse.meta.pagination.hasOwnProperty('next').should.be.true();
-                jsonResponse.meta.pagination.hasOwnProperty('prev').should.be.true();
-                should.not.exist(jsonResponse.meta.pagination.next);
-                should.not.exist(jsonResponse.meta.pagination.prev);
+                assert.equal(jsonResponse.meta.pagination.page, 1);
+                assert.equal(jsonResponse.meta.pagination.limit, 15);
+                assert.equal(jsonResponse.meta.pagination.pages, 1);
+                assert.equal(jsonResponse.meta.pagination.total, 13);
+                assert.equal(jsonResponse.meta.pagination.hasOwnProperty('next'), true);
+                assert.equal(jsonResponse.meta.pagination.hasOwnProperty('prev'), true);
+                assert.equal(jsonResponse.meta.pagination.next, null);
+                assert.equal(jsonResponse.meta.pagination.prev, null);
 
                 done();
             });
@@ -221,9 +222,9 @@ describe('api/endpoints/content/posts', function () {
                 const jsonResponse = res.body;
 
                 jsonResponse.posts.should.be.an.Array().with.lengthOf(3);
-                jsonResponse.posts[0].slug.should.equal('write');
-                jsonResponse.posts[1].slug.should.equal('ghostly-kitchen-sink');
-                jsonResponse.posts[2].slug.should.equal('grow');
+                assert.equal(jsonResponse.posts[0].slug, 'write');
+                assert.equal(jsonResponse.posts[1].slug, 'ghostly-kitchen-sink');
+                assert.equal(jsonResponse.posts[2].slug, 'grow');
             });
     });
 
@@ -236,9 +237,9 @@ describe('api/endpoints/content/posts', function () {
                 const jsonResponse = res.body;
 
                 jsonResponse.posts.should.be.an.Array().with.lengthOf(3);
-                jsonResponse.posts[0].slug.should.equal('write');
-                jsonResponse.posts[1].slug.should.equal('grow');
-                jsonResponse.posts[2].slug.should.equal('ghostly-kitchen-sink');
+                assert.equal(jsonResponse.posts[0].slug, 'write');
+                assert.equal(jsonResponse.posts[1].slug, 'grow');
+                assert.equal(jsonResponse.posts[2].slug, 'ghostly-kitchen-sink');
             });
     });
 
@@ -257,10 +258,10 @@ describe('api/endpoints/content/posts', function () {
                     return done(err);
                 }
 
-                res.headers.vary.should.eql('Accept-Version, Accept, Accept-Encoding');
+                assert.equal(res.headers.vary, 'Accept-Version, Accept, Accept-Encoding');
                 res.headers.location.should.eql(`http://localhost:9999/ghost/api/content/posts/?key=${validKey}`);
                 should.exist(res.headers['access-control-allow-origin']);
-                should.not.exist(res.headers['x-cache-invalidate']);
+                assert.equal(res.headers['x-cache-invalidate'], undefined);
                 done();
             });
     });
@@ -287,7 +288,7 @@ describe('api/endpoints/content/posts', function () {
                 localUtils.API.checkResponse(res.body.posts[0], 'post', null, null, ['id', 'title', 'slug', 'excerpt', 'plaintext']);
 
                 // excerpt should transform links to absolute URLs
-                res.body.posts[0].excerpt.should.match(/\* Aliquam/);
+                assert.match(res.body.posts[0].excerpt, /\* Aliquam/);
             });
     });
 
@@ -345,9 +346,9 @@ describe('api/endpoints/content/posts', function () {
                     const post = jsonResponse.posts[0];
 
                     localUtils.API.checkResponse(post, 'post', null, null, ['id', 'slug', 'html', 'plaintext']);
-                    post.slug.should.eql('free-to-see');
-                    post.html.should.not.eql('');
-                    post.plaintext.should.not.eql('');
+                    assert.equal(post.slug, 'free-to-see');
+                    assert.notEqual(post.html, '');
+                    assert.notEqual(post.plaintext, '');
                 });
         });
 
@@ -364,9 +365,9 @@ describe('api/endpoints/content/posts', function () {
                     const post = jsonResponse.posts[0];
 
                     localUtils.API.checkResponse(post, 'post', null, null);
-                    post.slug.should.eql('thou-shalt-not-be-seen');
-                    post.html.should.eql('');
-                    post.excerpt.should.eql('');
+                    assert.equal(post.slug, 'thou-shalt-not-be-seen');
+                    assert.equal(post.html, '');
+                    assert.equal(post.excerpt, '');
                 });
         });
 
@@ -383,9 +384,9 @@ describe('api/endpoints/content/posts', function () {
                     const post = jsonResponse.posts[0];
 
                     localUtils.API.checkResponse(post, 'post', null, null);
-                    post.slug.should.eql('thou-shalt-be-paid-for');
-                    post.html.should.eql('');
-                    post.excerpt.should.eql('');
+                    assert.equal(post.slug, 'thou-shalt-be-paid-for');
+                    assert.equal(post.html, '');
+                    assert.equal(post.excerpt, '');
                 });
         });
 
@@ -402,8 +403,8 @@ describe('api/endpoints/content/posts', function () {
                     const post = jsonResponse.posts[0];
 
                     localUtils.API.checkResponse(post, 'post', null, null, ['id', 'html', 'plaintext']);
-                    post.html.should.eql('');
-                    post.plaintext.should.eql('');
+                    assert.equal(post.html, '');
+                    assert.equal(post.plaintext, '');
                 });
         });
 
@@ -420,9 +421,9 @@ describe('api/endpoints/content/posts', function () {
                     const post = jsonResponse.posts[0];
 
                     localUtils.API.checkResponse(post, 'post', ['plaintext']);
-                    post.html.should.eql('<p>Free content</p>');
-                    post.plaintext.should.eql('Free content');
-                    post.excerpt.should.eql('Free content');
+                    assert.equal(post.html, '<p>Free content</p>');
+                    assert.equal(post.plaintext, 'Free content');
+                    assert.equal(post.excerpt, 'Free content');
                 });
         });
 
@@ -433,17 +434,17 @@ describe('api/endpoints/content/posts', function () {
                 .expect('Cache-Control', testUtils.cacheRules.public)
                 .expect(200)
                 .then((res) => {
-                    res.headers.vary.should.eql('Accept-Version, Accept-Encoding');
+                    assert.equal(res.headers.vary, 'Accept-Version, Accept-Encoding');
                     should.exist(res.headers['access-control-allow-origin']);
-                    should.not.exist(res.headers['x-cache-invalidate']);
+                    assert.equal(res.headers['x-cache-invalidate'], undefined);
 
                     const jsonResponse = res.body;
                     should.exist(jsonResponse.posts);
                     localUtils.API.checkResponse(jsonResponse, 'posts');
-                    jsonResponse.posts.should.have.length(15);
+                    assert.equal(jsonResponse.posts.length, 15);
                     localUtils.API.checkResponse(jsonResponse.posts[0], 'post', null, null);
                     localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
-                    _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
+                    assert.equal(_.isBoolean(jsonResponse.posts[0].featured), true);
 
                     const membersOnlySlugs = [
                         'thou-shalt-not-be-seen',
@@ -460,12 +461,12 @@ describe('api/endpoints/content/posts', function () {
 
                     jsonResponse.posts.forEach((post) => {
                         if (membersOnlySlugs.indexOf(post.slug) > -1) {
-                            post.html.should.eql('');
-                            post.excerpt.should.eql('');
+                            assert.equal(post.html, '');
+                            assert.equal(post.excerpt, '');
                             seen += 1;
                         } else if (freeToSeeSlugs.indexOf(post.slug) > -1) {
-                            post.html.should.not.eql('');
-                            post.excerpt.should.not.eql('');
+                            assert.notEqual(post.html, '');
+                            assert.notEqual(post.excerpt, '');
                             seen += 1;
                         }
                     });
@@ -473,14 +474,14 @@ describe('api/endpoints/content/posts', function () {
                     seen.should.eql(membersOnlySlugs.length + freeToSeeSlugs.length);
 
                     // check meta response for this test
-                    jsonResponse.meta.pagination.page.should.eql(1);
-                    jsonResponse.meta.pagination.limit.should.eql(15);
-                    jsonResponse.meta.pagination.pages.should.eql(2);
-                    jsonResponse.meta.pagination.total.should.eql(17);
-                    jsonResponse.meta.pagination.hasOwnProperty('next').should.be.true();
-                    jsonResponse.meta.pagination.hasOwnProperty('prev').should.be.true();
-                    jsonResponse.meta.pagination.next.should.eql(2);
-                    should.not.exist(jsonResponse.meta.pagination.prev);
+                    assert.equal(jsonResponse.meta.pagination.page, 1);
+                    assert.equal(jsonResponse.meta.pagination.limit, 15);
+                    assert.equal(jsonResponse.meta.pagination.pages, 2);
+                    assert.equal(jsonResponse.meta.pagination.total, 17);
+                    assert.equal(jsonResponse.meta.pagination.hasOwnProperty('next'), true);
+                    assert.equal(jsonResponse.meta.pagination.hasOwnProperty('prev'), true);
+                    assert.equal(jsonResponse.meta.pagination.next, 2);
+                    assert.equal(jsonResponse.meta.pagination.prev, null);
                 });
         });
     });

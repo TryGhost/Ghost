@@ -3,7 +3,7 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const {mapQuery} = require('@tryghost/mongo-utils');
 const postsPublicService = require('../../services/posts-public');
-const getPostServiceInstance = require('../../services/posts/posts-service');
+const getPostServiceInstance = require('../../services/posts/posts-service-instance');
 const postsService = getPostServiceInstance();
 
 const allowedIncludes = ['tags', 'authors', 'tiers', 'sentiment'];

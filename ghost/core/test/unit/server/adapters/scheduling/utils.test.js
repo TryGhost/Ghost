@@ -1,6 +1,7 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const fs = require('fs-extra');
-const configUtils = require('../../../../utils/configUtils');
+const configUtils = require('../../../../utils/config-utils');
 const schedulingUtils = require('../../../../../core/server/adapters/scheduling/utils');
 
 const schedulingPath = configUtils.config.getContentPath('adapters') + 'scheduling/';
@@ -79,7 +80,7 @@ describe('Scheduling: utils', function () {
             });
             schedulingUtils.createAdapter().catch(function (err) {
                 should.exist(err);
-                should.equal(err.errorType, 'IncorrectUsageError');
+                assert.equal(err.errorType, 'IncorrectUsageError');
                 done();
             });
         });

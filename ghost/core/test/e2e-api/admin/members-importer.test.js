@@ -42,16 +42,16 @@ describe('Members Importer API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(201);
 
-        should.not.exist(res.headers['x-cache-invalidate']);
+        assert.equal(res.headers['x-cache-invalidate'], undefined);
         const jsonResponse = res.body;
 
         should.exist(jsonResponse);
         should.exist(jsonResponse.meta);
         should.exist(jsonResponse.meta.stats);
 
-        jsonResponse.meta.stats.imported.should.equal(2);
-        jsonResponse.meta.stats.invalid.length.should.equal(0);
-        jsonResponse.meta.import_label.name.should.match(/^Import \d{4}-\d{2}-\d{2} \d{2}:\d{2}$/);
+        assert.equal(jsonResponse.meta.stats.imported, 2);
+        assert.equal(jsonResponse.meta.stats.invalid.length, 0);
+        assert.match(jsonResponse.meta.import_label.name, /^Import \d{4}-\d{2}-\d{2} \d{2}:\d{2}$/);
 
         const importLabel = jsonResponse.meta.import_label;
 
@@ -65,32 +65,32 @@ describe('Members Importer API', function () {
         const jsonResponse2 = res2.body;
         should.exist(jsonResponse2);
         should.exist(jsonResponse2.members);
-        jsonResponse2.members.should.have.length(2);
+        assert.equal(jsonResponse2.members.length, 2);
 
         const importedMember1 = jsonResponse2.members.find(m => m.email === 'jbloggs@example.com');
         should.exist(importedMember1);
-        importedMember1.name.should.equal('joe');
-        should(importedMember1.note).equal(null);
-        importedMember1.subscribed.should.equal(true);
+        assert.equal(importedMember1.name, 'joe');
+        assert.equal(importedMember1.note, null);
+        assert.equal(importedMember1.subscribed, true);
         importedMember1.newsletters.length.should.equal(filteredNewsletters.length);
-        importedMember1.labels.length.should.equal(1);
-        testUtils.API.isISO8601(importedMember1.created_at).should.be.true();
-        importedMember1.comped.should.equal(false);
+        assert.equal(importedMember1.labels.length, 1);
+        assert.equal(testUtils.API.isISO8601(importedMember1.created_at), true);
+        assert.equal(importedMember1.comped, false);
         importedMember1.subscriptions.should.not.be.undefined();
-        importedMember1.subscriptions.length.should.equal(0);
+        assert.equal(importedMember1.subscriptions.length, 0);
 
         const importedMember2 = jsonResponse2.members.find(m => m.email === 'test@example.com');
         should.exist(importedMember2);
-        importedMember2.name.should.equal('test');
-        should(importedMember2.note).equal('test note');
-        importedMember2.subscribed.should.equal(false);
-        importedMember2.newsletters.length.should.equal(0);
-        importedMember2.labels.length.should.equal(2);
-        testUtils.API.isISO8601(importedMember2.created_at).should.be.true();
-        importedMember2.created_at.should.equal('1991-10-02T20:30:31.000Z');
-        importedMember2.comped.should.equal(false);
+        assert.equal(importedMember2.name, 'test');
+        assert.equal(importedMember2.note, 'test note');
+        assert.equal(importedMember2.subscribed, false);
+        assert.equal(importedMember2.newsletters.length, 0);
+        assert.equal(importedMember2.labels.length, 2);
+        assert.equal(testUtils.API.isISO8601(importedMember2.created_at), true);
+        assert.equal(importedMember2.created_at, '1991-10-02T20:30:31.000Z');
+        assert.equal(importedMember2.comped, false);
         importedMember2.subscriptions.should.not.be.undefined();
-        importedMember2.subscriptions.length.should.equal(0);
+        assert.equal(importedMember2.subscriptions.length, 0);
     });
 
     //TODO: fix this test and uncomment it
@@ -152,7 +152,7 @@ describe('Members Importer API', function () {
     //                     should.exist(jsonResponse.meta);
     //                     should.exist(jsonResponse.meta.stats);
     //                     should.exist(jsonResponse.meta.stats.successful);
-    //                     should.equal(jsonResponse.meta.stats.successful, 8);
+    //                     assert.equal(jsonResponse.meta.stats.successful, 8);
     //                 })
     //                 .then(() => importLabel);
     //         })
@@ -191,7 +191,7 @@ describe('Members Importer API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
 
-        browseResponse.body.members.should.have.length(8);
+        assert.equal(browseResponse.body.members.length, 8);
         const allMembersSubscribed = browseResponse.body.members.every((member) => {
             return member.subscribed && member.newsletters.length > 0;
         });
@@ -214,7 +214,7 @@ describe('Members Importer API', function () {
         should.exist(bulkUnsubscribeResponse.body.bulk.meta);
         should.exist(bulkUnsubscribeResponse.body.bulk.meta.stats);
         should.exist(bulkUnsubscribeResponse.body.bulk.meta.stats.successful);
-        should.equal(bulkUnsubscribeResponse.body.bulk.meta.stats.successful, 8);
+        assert.equal(bulkUnsubscribeResponse.body.bulk.meta.stats.successful, 8);
 
         const postUnsubscribeBrowseResponse = await request
             .get(localUtils.API.getApiQuery('members/?filter=label:bulk-unsubscribe-test'))
@@ -223,7 +223,7 @@ describe('Members Importer API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
 
-        postUnsubscribeBrowseResponse.body.members.should.have.length(8);
+        assert.equal(postUnsubscribeBrowseResponse.body.members.length, 8);
         const allMembersUnsubscribed = postUnsubscribeBrowseResponse.body.members.every((member) => {
             return member.newsletters.length === 0;
         });
@@ -270,7 +270,7 @@ describe('Members Importer API', function () {
         should.exist(bulkAddLabelResponse.body.bulk.meta);
         should.exist(bulkAddLabelResponse.body.bulk.meta.stats);
         should.exist(bulkAddLabelResponse.body.bulk.meta.stats.successful);
-        should.equal(bulkAddLabelResponse.body.bulk.meta.stats.successful, 8);
+        assert.equal(bulkAddLabelResponse.body.bulk.meta.stats.successful, 8);
 
         const postLabelAddBrowseResponse = await request
             .get(localUtils.API.getApiQuery(`members/?filter=label:${labelToAdd.slug}`))
@@ -279,7 +279,7 @@ describe('Members Importer API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
 
-        postLabelAddBrowseResponse.body.members.should.have.length(8);
+        assert.equal(postLabelAddBrowseResponse.body.members.length, 8);
 
         const labelToRemove = newLabelResponse.body.labels[0];
 
@@ -302,7 +302,7 @@ describe('Members Importer API', function () {
         should.exist(bulkRemoveLabelResponse.body.bulk.meta);
         should.exist(bulkRemoveLabelResponse.body.bulk.meta.stats);
         should.exist(bulkRemoveLabelResponse.body.bulk.meta.stats.successful);
-        should.equal(bulkRemoveLabelResponse.body.bulk.meta.stats.successful, 8);
+        assert.equal(bulkRemoveLabelResponse.body.bulk.meta.stats.successful, 8);
 
         const postLabelRemoveBrowseResponse = await request
             .get(localUtils.API.getApiQuery(`members/?filter=label:${labelToRemove.slug}`))
@@ -311,7 +311,7 @@ describe('Members Importer API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
 
-        postLabelRemoveBrowseResponse.body.members.should.have.length(0);
+        assert.equal(postLabelRemoveBrowseResponse.body.members.length, 0);
     });
 
     it('Can handle empty body', async function () {

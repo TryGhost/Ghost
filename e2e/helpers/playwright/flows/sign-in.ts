@@ -12,7 +12,12 @@ export async function loginToGetAuthenticatedSession(page: Page, email: string, 
     await loginPage.waitForLoginPageAfterUserCreated();
     await loginPage.signIn(email, password);
     const analyticsPage = new AnalyticsOverviewPage(page);
-    await analyticsPage.header.waitFor({state: 'visible'});
+    // Wait for either Analytics header (normal mode) or billing iframe (force upgrade mode)
+    const billingIframe = page.getByTitle('Billing');
+    await Promise.race([
+        analyticsPage.header.waitFor({state: 'visible'}),
+        billingIframe.waitFor({state: 'visible'})
+    ]);
 }
 
 /**

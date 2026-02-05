@@ -1,4 +1,3 @@
-const should = require('should');
 const sinon = require('sinon');
 const ObjectId = require('bson-objectid').default;
 const _ = require('lodash');
@@ -6,46 +5,11 @@ const moment = require('moment');
 const assert = require('assert/strict');
 const testUtils = require('../../../../utils');
 const urlUtils = require('../../../../../core/shared/url-utils');
-const IndexGenerator = require('../../../../../core/frontend/services/sitemap/SiteMapIndexGenerator');
-const PostGenerator = require('../../../../../core/frontend/services/sitemap/PostMapGenerator');
-const PageGenerator = require('../../../../../core/frontend/services/sitemap/PageMapGenerator');
-const TagGenerator = require('../../../../../core/frontend/services/sitemap/TagsMapGenerator');
-const UserGenerator = require('../../../../../core/frontend/services/sitemap/UserMapGenerator');
-
-should.Assertion.add('ValidUrlNode', function (options) {
-    // Check urlNode looks correct
-    /*eslint no-invalid-this: "off"*/
-    let urlNode = this.obj;
-    let flatNode;
-
-    urlNode.should.be.an.Object().with.key('url');
-    urlNode.url.should.be.an.Array();
-
-    if (options.withImage) {
-        urlNode.url.should.have.lengthOf(3);
-    } else {
-        urlNode.url.should.have.lengthOf(2);
-    }
-
-    /**
-     * A urlNode looks something like:
-     * { url:
-     *   [ { loc: 'http://127.0.0.1:2369/author/' },
-     *     { lastmod: '2014-12-22T11:54:00.100Z' },
-     *     { 'image:image': [
-     *       { 'image:loc': 'post-100.jpg' },
-     *       { 'image:caption': 'post-100.jpg' }
-     *     ] }
-     *  ] }
-     */
-    flatNode = _.extend.apply(_, urlNode.url);
-
-    if (options.withImage) {
-        flatNode.should.be.an.Object().with.keys('loc', 'lastmod', 'image:image');
-    } else {
-        flatNode.should.be.an.Object().with.keys('loc', 'lastmod');
-    }
-});
+const IndexGenerator = require('../../../../../core/frontend/services/sitemap/site-map-index-generator');
+const PostGenerator = require('../../../../../core/frontend/services/sitemap/post-map-generator');
+const PageGenerator = require('../../../../../core/frontend/services/sitemap/page-map-generator');
+const TagGenerator = require('../../../../../core/frontend/services/sitemap/tags-map-generator');
+const UserGenerator = require('../../../../../core/frontend/services/sitemap/user-map-generator');
 
 describe('Generators', function () {
     let generator;
@@ -69,15 +33,15 @@ describe('Generators', function () {
         generator.getXml();
 
         // We end up with 10 nodes
-        Object.keys(generator.nodeLookup).should.be.Array().with.lengthOf(10);
+        assert.equal(Object.keys(generator.nodeLookup).length, 10);
 
         // But only 5 are output in the xml
-        generator.siteMapContent.get(1).match(/<loc>/g).should.be.Array().with.lengthOf(5);
+        assert.equal(generator.siteMapContent.get(1).match(/<loc>/g).length, 5);
     });
 
     it('default is 50k', function () {
         generator = new PostGenerator();
-        generator.maxPerPage.should.eql(50000);
+        assert.equal(generator.maxPerPage, 50000);
     });
 
     describe('IndexGenerator', function () {
@@ -102,10 +66,10 @@ describe('Generators', function () {
 
                 const xml = generator.getXml();
 
-                xml.should.match(/sitemap-tags.xml/);
-                xml.should.match(/sitemap-posts.xml/);
-                xml.should.match(/sitemap-pages.xml/);
-                xml.should.match(/sitemap-authors.xml/);
+                assert.match(xml, /sitemap-tags.xml/);
+                assert.match(xml, /sitemap-posts.xml/);
+                assert.match(xml, /sitemap-pages.xml/);
+                assert.match(xml, /sitemap-authors.xml/);
             });
 
             it('does not create entries for pages with no content', function () {
@@ -113,10 +77,10 @@ describe('Generators', function () {
 
                 const xml = generator.getXml();
 
-                xml.should.match(/sitemap-tags.xml/);
-                xml.should.not.match(/sitemap-posts.xml/);
-                xml.should.not.match(/sitemap-pages.xml/);
-                xml.should.not.match(/sitemap-authors.xml/);
+                assert.match(xml, /sitemap-tags.xml/);
+                assert.doesNotMatch(xml, /sitemap-posts.xml/);
+                assert.doesNotMatch(xml, /sitemap-pages.xml/);
+                assert.doesNotMatch(xml, /sitemap-authors.xml/);
             });
 
             it('creates multiple pages when there are too many posts', function () {
@@ -130,8 +94,8 @@ describe('Generators', function () {
                 }
                 const xml = generator.getXml();
 
-                xml.should.match(/sitemap-posts.xml/);
-                xml.should.match(/sitemap-posts-2.xml/);
+                assert.match(xml, /sitemap-posts.xml/);
+                assert.match(xml, /sitemap-posts-2.xml/);
             });
         });
     });
@@ -149,7 +113,24 @@ describe('Generators', function () {
                     slug: 'test'
                 }));
 
-                urlNode.should.be.a.ValidUrlNode({withImage: true});
+                assert(Array.isArray(urlNode.url));
+                assert.equal(urlNode.url.length, 3);
+
+                /**
+                 * A urlNode looks something like:
+                 * { url:
+                 *   [ { loc: 'http://127.0.0.1:2369/author/' },
+                 *     { lastmod: '2014-12-22T11:54:00.100Z' },
+                 *     { 'image:image': [
+                 *       { 'image:loc': 'post-100.jpg' },
+                 *       { 'image:caption': 'post-100.jpg' }
+                 *     ] }
+                 *  ] }
+                 */
+                const flatNode = _.extend.apply(_, urlNode.url);
+                assert('loc' in flatNode);
+                assert('lastmod' in flatNode);
+                assert('image:image' in flatNode);
             });
         });
 
@@ -161,7 +142,7 @@ describe('Generators', function () {
                     canonical_url: 'https://myblog.com/test/'
                 }
                 ));
-                isCanonical.should.eql(true);
+                assert.equal(isCanonical, true);
             });
             it('returns false if no canonical url', function () {
                 const isCanonical = generator.hasCanonicalUrl(testUtils.DataGenerator.forKnex.createPost({
@@ -170,7 +151,7 @@ describe('Generators', function () {
                     canonical_url: null
                 }
                 ));
-                isCanonical.should.eql(false);
+                assert.equal(isCanonical, false);
             });
         });
 
@@ -187,7 +168,7 @@ describe('Generators', function () {
                     canonical_url: 'https://external.com/test/'
                 }));
                 const xml = generator.getXml();
-                xml.should.not.match(/https:\/\/external.com\/test\//);
+                assert.doesNotMatch(xml, /https:\/\/external.com\/test\//);
             });
         });
 
@@ -201,9 +182,9 @@ describe('Generators', function () {
             it('get cached xml', function () {
                 sinon.spy(generator, 'generateXmlFromNodes');
                 generator.siteMapContent.set(1, 'something');
-                generator.getXml().should.eql('something');
+                assert.equal(generator.getXml(), 'something');
                 generator.siteMapContent.clear();
-                generator.generateXmlFromNodes.called.should.eql(false);
+                sinon.assert.notCalled(generator.generateXmlFromNodes);
             });
 
             it('compare content output', function () {
@@ -241,22 +222,22 @@ describe('Generators', function () {
 
                 const xml = generator.getXml();
 
-                xml.should.containEql('<loc>http://my-ghost-blog.com/url/100/</loc>');
-                xml.should.containEql('<loc>http://my-ghost-blog.com/url/200/</loc>');
-                xml.should.containEql('<loc>http://my-ghost-blog.com/url/300/</loc>');
+                assert(xml.includes('<loc>http://my-ghost-blog.com/url/100/</loc>'));
+                assert(xml.includes('<loc>http://my-ghost-blog.com/url/200/</loc>'));
+                assert(xml.includes('<loc>http://my-ghost-blog.com/url/300/</loc>'));
 
-                xml.should.containEql('<image:loc>http://my-ghost-blog.com/images/post-100.jpg</image:loc>');
+                assert(xml.includes('<image:loc>http://my-ghost-blog.com/images/post-100.jpg</image:loc>'));
                 // This should NOT be present
-                xml.should.not.containEql('<image:loc>http://my-ghost-blog.com/images/post-200.jpg</image:loc>');
-                xml.should.containEql('<image:loc>http://my-ghost-blog.com/images/post-300.jpg</image:loc>');
+                assert(!xml.includes('<image:loc>http://my-ghost-blog.com/images/post-200.jpg</image:loc>'));
+                assert(xml.includes('<image:loc>http://my-ghost-blog.com/images/post-300.jpg</image:loc>'));
 
                 // Validate order newest to oldest
                 idxFirst = xml.indexOf('<loc>http://my-ghost-blog.com/url/300/</loc>');
                 idxSecond = xml.indexOf('<loc>http://my-ghost-blog.com/url/200/</loc>');
                 idxThird = xml.indexOf('<loc>http://my-ghost-blog.com/url/100/</loc>');
 
-                idxFirst.should.be.below(idxSecond);
-                idxSecond.should.be.below(idxThird);
+                assert(idxFirst < idxSecond);
+                assert(idxSecond < idxThird);
             });
 
             it('creates multiple pages when there are too many posts', function () {
@@ -275,14 +256,14 @@ describe('Generators', function () {
 
                 for (let i = 0; i < 10; i++) {
                     const pageIndex = Math.floor(i / 5);
-                    pages[pageIndex].should.containEql(`<loc>http://my-ghost-blog.com/episode-${i}/</loc>`);
+                    assert(pages[pageIndex].includes(`<loc>http://my-ghost-blog.com/episode-${i}/</loc>`));
                 }
             });
 
             it('shouldn\'t break with out of bounds pages', function () {
-                should.not.exist(generator.getXml(-1));
-                should.not.exist(generator.getXml(99999));
-                should.not.exist(generator.getXml(0));
+                assert.equal(generator.getXml(-1), null);
+                assert.equal(generator.getXml(99999), null);
+                assert.equal(generator.getXml(0), null);
             });
         });
 
@@ -329,12 +310,12 @@ describe('Generators', function () {
 
             it('remove none existend url', function () {
                 generator.removeUrl('https://myblog.com/blog/podcast/featured/', testUtils.DataGenerator.forKnex.createPost());
-                Object.keys(generator.nodeLookup).length.should.eql(1);
+                assert.equal(Object.keys(generator.nodeLookup).length, 1);
             });
 
             it('remove existing url', function () {
                 generator.removeUrl('https://myblog.com/blog/test/', post);
-                Object.keys(generator.nodeLookup).length.should.eql(0);
+                assert.equal(Object.keys(generator.nodeLookup).length, 0);
             });
         });
     });
@@ -352,12 +333,12 @@ describe('Generators', function () {
 
                 generator.getXml();
 
-                generator.siteMapContent.get(1).should.containEql('<loc>http://my-ghost-blog.com/home/</loc>');
-                generator.siteMapContent.get(1).should.containEql('<loc>http://my-ghost-blog.com/magic/</loc>');
-                generator.siteMapContent.get(1).should.containEql('<loc>http://my-ghost-blog.com/subscribe/</loc>');
+                assert(generator.siteMapContent.get(1).includes('<loc>http://my-ghost-blog.com/home/</loc>'));
+                assert(generator.siteMapContent.get(1).includes('<loc>http://my-ghost-blog.com/magic/</loc>'));
+                assert(generator.siteMapContent.get(1).includes('<loc>http://my-ghost-blog.com/subscribe/</loc>'));
 
                 // <loc> should exist exactly one time
-                generator.siteMapContent.get(1).match(/<loc>/g).length.should.eql(3);
+                assert.equal(generator.siteMapContent.get(1).match(/<loc>/g).length, 3);
             });
             it('does not include pages containing canonical_url', function () {
                 generator.addUrl('https://myblog.com/test2/', testUtils.DataGenerator.forKnex.createPost({
@@ -371,7 +352,7 @@ describe('Generators', function () {
                     canonical_url: 'https://external.com/test/'
                 }));
                 const xml = generator.getXml();
-                xml.should.not.match(/https:\/\/external.com\/test\//);
+                assert.doesNotMatch(xml, /https:\/\/external.com\/test\//);
             });
         });
     });
@@ -389,19 +370,19 @@ describe('Generators', function () {
 
         describe('fn: validateImageUrl', function () {
             it('image url is localhost', function () {
-                generator.validateImageUrl('http://localhost:2368/content/images/1.jpg').should.be.true();
+                assert.equal(generator.validateImageUrl('http://localhost:2368/content/images/1.jpg'), true);
             });
 
             it('image url is https', function () {
-                generator.validateImageUrl('https://myblog.com/content/images/1.png').should.be.true();
+                assert.equal(generator.validateImageUrl('https://myblog.com/content/images/1.png'), true);
             });
 
             it('image url is external', function () {
-                generator.validateImageUrl('https://myblog.com/1.jpg').should.be.true();
+                assert.equal(generator.validateImageUrl('https://myblog.com/1.jpg'), true);
             });
 
             it('no host', function () {
-                generator.validateImageUrl('/content/images/1.jpg').should.be.false();
+                assert.equal(generator.validateImageUrl('/content/images/1.jpg'), false);
             });
         });
     });

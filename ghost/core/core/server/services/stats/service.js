@@ -10,7 +10,7 @@ class StatsServiceWrapper {
             return;
         }
 
-        const StatsService = require('./StatsService');
+        const StatsService = require('./stats-service');
         const db = require('../../data/db');
         const models = require('../../models');
         const urlService = require('../url');

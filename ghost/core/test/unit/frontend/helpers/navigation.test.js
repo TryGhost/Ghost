@@ -1,6 +1,7 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const hbs = require('../../../../core/frontend/services/theme-engine/engine');
-const configUtils = require('../../../utils/configUtils');
+const configUtils = require('../../../utils/config-utils');
 const path = require('path');
 
 const concat = require('../../../../core/frontend/helpers/concat');
@@ -81,9 +82,9 @@ describe('{{navigation}} helper', function () {
 
         optionsData.data.site.navigation = [singleItem];
         rendered = runHelper(optionsData);
-        rendered.string.should.containEql('li');
-        rendered.string.should.containEql('nav-foo');
-        rendered.string.should.containEql('/foo');
+        assert(rendered.string.includes('li'));
+        assert(rendered.string.includes('nav-foo'));
+        assert(rendered.string.includes('/foo'));
     });
 
     it('can render one item', function () {
@@ -95,9 +96,9 @@ describe('{{navigation}} helper', function () {
         rendered = runHelper(optionsData);
 
         should.exist(rendered);
-        rendered.string.should.containEql('li');
-        rendered.string.should.containEql('nav-foo');
-        rendered.string.should.containEql(testUrl);
+        assert(rendered.string.includes('li'));
+        assert(rendered.string.includes('nav-foo'));
+        assert(rendered.string.includes(testUrl));
     });
 
     it('can render multiple items', function () {
@@ -111,10 +112,10 @@ describe('{{navigation}} helper', function () {
         rendered = runHelper(optionsData);
 
         should.exist(rendered);
-        rendered.string.should.containEql('nav-foo');
-        rendered.string.should.containEql('nav-bar-baz-qux');
-        rendered.string.should.containEql(testUrl);
-        rendered.string.should.containEql(testUrl2);
+        assert(rendered.string.includes('nav-foo'));
+        assert(rendered.string.includes('nav-bar-baz-qux'));
+        assert(rendered.string.includes(testUrl));
+        assert(rendered.string.includes(testUrl2));
     });
 
     it('can annotate the current url', function () {
@@ -127,10 +128,10 @@ describe('{{navigation}} helper', function () {
         rendered = runHelper(optionsData);
 
         should.exist(rendered);
-        rendered.string.should.containEql('nav-foo');
-        rendered.string.should.containEql('nav-current');
-        rendered.string.should.containEql('nav-foo nav-current');
-        rendered.string.should.containEql('nav-bar"');
+        assert(rendered.string.includes('nav-foo'));
+        assert(rendered.string.includes('nav-current'));
+        assert(rendered.string.includes('nav-foo nav-current'));
+        assert(rendered.string.includes('nav-bar"'));
     });
 
     it('can annotate current url with trailing slash', function () {
@@ -143,10 +144,10 @@ describe('{{navigation}} helper', function () {
         rendered = runHelper(optionsData);
 
         should.exist(rendered);
-        rendered.string.should.containEql('nav-foo');
-        rendered.string.should.containEql('nav-current');
-        rendered.string.should.containEql('nav-foo nav-current');
-        rendered.string.should.containEql('nav-bar"');
+        assert(rendered.string.includes('nav-foo'));
+        assert(rendered.string.includes('nav-current'));
+        assert(rendered.string.includes('nav-foo nav-current'));
+        assert(rendered.string.includes('nav-bar"'));
     });
 
     it('doesn\'t html-escape URLs', function () {
@@ -157,9 +158,9 @@ describe('{{navigation}} helper', function () {
         rendered = runHelper(optionsData);
 
         should.exist(rendered);
-        rendered.string.should.not.containEql('&#x3D;');
-        rendered.string.should.not.containEql('&amp;');
-        rendered.string.should.containEql('/?foo=bar&baz=qux');
+        assert(!rendered.string.includes('&#x3D;'));
+        assert(!rendered.string.includes('&amp;'));
+        assert(rendered.string.includes('/?foo=bar&baz=qux'));
     });
 
     it('encodes URLs', function () {
@@ -170,9 +171,9 @@ describe('{{navigation}} helper', function () {
         rendered = runHelper(optionsData);
 
         should.exist(rendered);
-        rendered.string.should.containEql('foo=space%20bar');
-        rendered.string.should.not.containEql('<script>alert("gotcha")</script>');
-        rendered.string.should.containEql('%3Cscript%3Ealert(%22gotcha%22)%3C/script%3E');
+        assert(rendered.string.includes('foo=space%20bar'));
+        assert(!rendered.string.includes('<script>alert("gotcha")</script>'));
+        assert(rendered.string.includes('%3Cscript%3Ealert(%22gotcha%22)%3C/script%3E'));
     });
 
     it('doesn\'t double-encode URLs', function () {
@@ -183,7 +184,7 @@ describe('{{navigation}} helper', function () {
         rendered = runHelper(optionsData);
 
         should.exist(rendered);
-        rendered.string.should.not.containEql('foo=space%2520bar');
+        assert(!rendered.string.includes('foo=space%2520bar'));
     });
 
     describe('type="secondary"', function () {
@@ -197,9 +198,9 @@ describe('{{navigation}} helper', function () {
             rendered = runHelper(optionsData);
 
             should.exist(rendered);
-            rendered.string.should.containEql('li');
-            rendered.string.should.containEql('nav-foo');
-            rendered.string.should.containEql(testUrl);
+            assert(rendered.string.includes('li'));
+            assert(rendered.string.includes('nav-foo'));
+            assert(rendered.string.includes(testUrl));
         });
 
         it('can render multiple items', function () {
@@ -214,10 +215,10 @@ describe('{{navigation}} helper', function () {
             rendered = runHelper(optionsData);
 
             should.exist(rendered);
-            rendered.string.should.containEql('nav-foo');
-            rendered.string.should.containEql('nav-bar-baz-qux');
-            rendered.string.should.containEql(testUrl);
-            rendered.string.should.containEql(testUrl2);
+            assert(rendered.string.includes('nav-foo'));
+            assert(rendered.string.includes('nav-bar-baz-qux'));
+            assert(rendered.string.includes(testUrl));
+            assert(rendered.string.includes(testUrl2));
         });
     });
 });
@@ -257,11 +258,11 @@ describe('{{navigation}} helper with custom template', function () {
         rendered = runHelper(optionsData);
 
         should.exist(rendered);
-        rendered.string.should.containEql('Chaos is a ladder');
-        rendered.string.should.not.containEql('isHeader is set');
-        rendered.string.should.not.containEql('Jeremy Bearimy baby!');
-        rendered.string.should.containEql(testUrl);
-        rendered.string.should.containEql('Foo');
+        assert(rendered.string.includes('Chaos is a ladder'));
+        assert(!rendered.string.includes('isHeader is set'));
+        assert(!rendered.string.includes('Jeremy Bearimy baby!'));
+        assert(rendered.string.includes(testUrl));
+        assert(rendered.string.includes('Foo'));
     });
 
     it('can pass attributes through', function () {
@@ -274,11 +275,11 @@ describe('{{navigation}} helper with custom template', function () {
         rendered = runHelper(optionsData);
 
         should.exist(rendered);
-        rendered.string.should.not.containEql('Chaos is a ladder');
-        rendered.string.should.containEql('isHeader is set');
-        rendered.string.should.not.containEql('Jeremy Bearimy baby!');
-        rendered.string.should.containEql(testUrl);
-        rendered.string.should.containEql('Foo');
+        assert(!rendered.string.includes('Chaos is a ladder'));
+        assert(rendered.string.includes('isHeader is set'));
+        assert(!rendered.string.includes('Jeremy Bearimy baby!'));
+        assert(rendered.string.includes(testUrl));
+        assert(rendered.string.includes('Foo'));
     });
 
     it('sets isSecondary for type=secondary', function () {
@@ -291,11 +292,11 @@ describe('{{navigation}} helper with custom template', function () {
         rendered = runHelper(optionsData);
 
         should.exist(rendered);
-        rendered.string.should.not.containEql('Chaos is a ladder');
-        rendered.string.should.not.containEql('isHeader is set');
-        rendered.string.should.containEql('Jeremy Bearimy baby!');
-        rendered.string.should.containEql(testUrl);
-        rendered.string.should.containEql('Fighters');
+        assert(!rendered.string.includes('Chaos is a ladder'));
+        assert(!rendered.string.includes('isHeader is set'));
+        assert(rendered.string.includes('Jeremy Bearimy baby!'));
+        assert(rendered.string.includes(testUrl));
+        assert(rendered.string.includes('Fighters'));
     });
 
     describe('using compile', function () {
@@ -329,15 +330,13 @@ describe('{{navigation}} helper with custom template', function () {
         });
 
         it('can render both primary and secondary nav in order', function () {
-            compile('{{navigation}}{{navigation type="secondary"}}')
-                .with({})
-                .should.eql('\n\n\n\nPrime time!\n\n    <a href="">Foo</a>\n\n\n\n\nJeremy Bearimy baby!\n\n    <a href="">Fighters</a>\n');
+            assert.equal(compile('{{navigation}}{{navigation type="secondary"}}')
+                .with({}), '\n\n\n\nPrime time!\n\n    <a href="">Foo</a>\n\n\n\n\nJeremy Bearimy baby!\n\n    <a href="">Fighters</a>\n');
         });
 
         it('can render both primary and secondary nav in reverse order', function () {
-            compile('{{navigation type="secondary"}}{{navigation}}')
-                .with({})
-                .should.eql('\n\n\n\nJeremy Bearimy baby!\n\n    <a href="">Fighters</a>\n\n\n\n\nPrime time!\n\n    <a href="">Foo</a>\n');
+            assert.equal(compile('{{navigation type="secondary"}}{{navigation}}')
+                .with({}), '\n\n\n\nJeremy Bearimy baby!\n\n    <a href="">Fighters</a>\n\n\n\n\nPrime time!\n\n    <a href="">Foo</a>\n');
         });
     });
 });

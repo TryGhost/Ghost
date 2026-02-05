@@ -28,7 +28,8 @@ module.exports = {
     ],
     rules: {
         'ghost/filenames/match-exported-class': ['off'],
-        'ghost/filenames/match-regex': ['off'],
+        // Enforce kebab-case (lowercase with hyphens) for all filenames
+        'ghost/filenames/match-regex': ['error', '^[a-z0-9.-]+$', false],
         'no-shadow': ['error'],
 
         // TODO: migrate away from accessing controller in routes

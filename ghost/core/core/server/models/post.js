@@ -904,7 +904,7 @@ Post = ghostBookshelf.Model.extend({
             });
         }
         if (!model.get('mobiledoc') && !options.importing && !options.migrating) {
-            const {PostRevisions} = require('../lib/PostRevisions');
+            const {PostRevisions} = require('../lib/post-revisions');
             const postRevisions = new PostRevisions({
                 config: {
                     max_revisions: POST_REVISIONS_COUNT,

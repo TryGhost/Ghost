@@ -69,7 +69,35 @@ function NavMenuLabel({children, ...props}: NavMenuLabelProps) {
     );
 }
 
+type NavMenuButtonProps = React.ComponentProps<typeof SidebarMenuButton> & {
+    onClick?: () => void
+};
+function NavMenuButton({
+    onClick,
+    children,
+    ...props
+}: NavMenuButtonProps) {
+    const { isMobile, setOpenMobile } = useSidebar();
+
+    const handleClick = () => {
+        if (isMobile) {
+            setOpenMobile(false);
+        }
+        onClick?.();
+    };
+
+    return (
+        <SidebarMenuButton
+            onClick={handleClick}
+            {...props}
+        >
+            {children}
+        </SidebarMenuButton>
+    );
+}
+
 NavMenuItem.Link = NavMenuLink;
 NavMenuItem.Label = NavMenuLabel;
+NavMenuItem.Button = NavMenuButton;
 
-export { NavMenuItem, NavMenuLink, NavMenuLabel }
+export { NavMenuItem, NavMenuLink, NavMenuLabel, NavMenuButton }

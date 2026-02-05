@@ -12,7 +12,7 @@ import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
 import { useBrowseSettings } from "@tryghost/admin-x-framework/api/settings";
 import { getSettingValue } from "@tryghost/admin-x-framework/api/settings";
 import { hasAdminAccess } from "@tryghost/admin-x-framework/api/users";
-import { useNotificationsCountForUser } from "@tryghost/activitypub/src/hooks/use-activity-pub-queries";
+import { useNotificationsCountForUser } from "@tryghost/activitypub/src/index";
 import NetworkIcon from "./icons/network-icon";
 import { NavMenuItem } from "./nav-menu-item";
 import { useIsActiveLink } from "./use-is-active-link";

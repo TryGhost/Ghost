@@ -38,6 +38,7 @@ module.exports = {
         'no-useless-escape': 'off',
 
         'ghost/mocha/no-skipped-tests': 'error',
+        'ghost/filenames/match-regex': ['error', '^[a-z0-9-.]+$', null, true],
 
         // TODO: remove these custom rules and fix problems in test files
         'ghost/mocha/no-setup-in-describe': 'off',

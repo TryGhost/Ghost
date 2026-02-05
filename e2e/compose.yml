@@ -24,6 +24,7 @@ services:
     working_dir: /home/ghost
     command: ["yarn", "knex-migrator", "init"]
     environment:
+      NODE_OPTIONS: "--import=tsx"
       database__client: mysql2
       database__connection__host: mysql
       database__connection__user: root
@@ -52,7 +53,7 @@ services:
         condition: service_healthy
 
   analytics:
-    image: ghost/traffic-analytics:1.0.23
+    image: ghost/traffic-analytics:1.0.44
     platform: linux/amd64
     command: ["node", "--enable-source-maps", "dist/server.js"]
     entrypoint: [ "/app/entrypoint.sh" ]

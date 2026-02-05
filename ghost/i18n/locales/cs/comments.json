@@ -17,7 +17,9 @@
     "Best": "",
     "Cancel": "Zrušit",
     "Comment": "Komentář",
+    "Commenting disabled": "",
     "Complete your profile": "Dokončete svůj profil",
+    "Contact support": "",
     "Delete": "Smazat",
     "Deleted": "",
     "Deleted member": "Smazaný člen",
@@ -28,6 +30,7 @@
     "edited": "upraveno",
     "Enter your name": "Zadejte své jméno",
     "Expertise": "Odbornost",
+    "for more information.": "",
     "Founder @ Acme Inc": "Zakladatel @ Acme Inc",
     "Full-time parent": "Rodič na plný úvazek",
     "Head of Marketing at Acme, Inc": "Vedoucí marketingu v Acme, Inc",
@@ -69,6 +72,8 @@
     "This comment has been hidden.": "Tento komentář byl skryt.",
     "This comment has been removed.": "Tento komentář byl odstraněn.",
     "Upgrade now": "Upgradovat",
+    "View in admin": "",
     "Yesterday": "Včera",
+    "You can't post comments in this publication.": "",
     "Your request will be sent to the owner of this site.": "Vaše žádost bude odeslána vlastníkovi tohoto webu."
 }

@@ -60,11 +60,10 @@ async function mockChangelog(page: Page, entries: RawChangelogEntry[]): Promise<
 
 test.describe('Ghost Admin - What\'s New', () => {
     test.describe('banner notification', () => {
-        test('shows banner for new featured entries the user has not seen', async ({page}) => {
+        test('shows banner for new entries the user has not seen', async ({page}) => {
             await mockChangelog(page, [
                 createEntry(daysFromNow(1), {
-                    featured: true,
-                    title: 'New Featured Update',
+                    title: 'New Update',
                     excerpt: 'This is an exciting new feature'
                 })
             ]);
@@ -74,12 +73,12 @@ test.describe('Ghost Admin - What\'s New', () => {
             await banner.waitForBanner();
 
             await expect(banner.container).toBeVisible();
-            await expect(banner.title).toHaveText('New Featured Update');
+            await expect(banner.title).toHaveText('New Update');
             await expect(banner.excerpt).toHaveText('This is an exciting new feature');
         });
 
         test('does not show banner for entries from before user joined', async ({page}) => {
-            await mockChangelog(page, [createEntry(daysAgo(30), {featured: true})]);
+            await mockChangelog(page, [createEntry(daysAgo(30))]);
 
             const banner = new WhatsNewBanner(page);
             await banner.goto();
@@ -96,18 +95,9 @@ test.describe('Ghost Admin - What\'s New', () => {
             await expect(banner.container).toBeHidden();
         });
 
-        test('does not show banner when latest entry is not featured', async ({page}) => {
-            await mockChangelog(page, [createEntry(daysFromNow(1))]);
-
-            const banner = new WhatsNewBanner(page);
-            await banner.goto();
-
-            await expect(banner.container).toBeHidden();
-        });
-
         test.describe('dismissal behavior', () => {
             test('hides banner immediately when close button is clicked', async ({page}) => {
-                await mockChangelog(page, [createEntry(daysFromNow(1), {featured: true})]);
+                await mockChangelog(page, [createEntry(daysFromNow(1))]);
 
                 const banner = new WhatsNewBanner(page);
                 await banner.goto();
@@ -121,7 +111,7 @@ test.describe('Ghost Admin - What\'s New', () => {
             });
 
             test('hides banner immediately when link is clicked', async ({page}) => {
-                await mockChangelog(page, [createEntry(daysFromNow(1), {featured: true})]);
+                await mockChangelog(page, [createEntry(daysFromNow(1))]);
 
                 const banner = new WhatsNewBanner(page);
                 await banner.goto();
@@ -136,7 +126,7 @@ test.describe('Ghost Admin - What\'s New', () => {
 
             test('hides banner immediately when modal is opened', async ({page}) => {
                 await mockChangelog(page, [
-                    createEntry(daysFromNow(1), {featured: true, feature_image: 'https://ghost.org/image1.jpg'}),
+                    createEntry(daysFromNow(1), {feature_image: 'https://ghost.org/image1.jpg'}),
                     createEntry(daysAgo(5))
                 ]);
 
@@ -155,7 +145,7 @@ test.describe('Ghost Admin - What\'s New', () => {
             });
 
             test('banner remains hidden after reload when dismissed', async ({page}) => {
-                await mockChangelog(page, [createEntry(daysFromNow(1), {featured: true})]);
+                await mockChangelog(page, [createEntry(daysFromNow(1))]);
 
                 const banner = new WhatsNewBanner(page);
                 await banner.goto();
@@ -168,7 +158,7 @@ test.describe('Ghost Admin - What\'s New', () => {
             });
 
             test('banner reappears when a new entry is published after dismissal', async ({page}) => {
-                await mockChangelog(page, [createEntry(daysFromNow(1), {featured: true})]);
+                await mockChangelog(page, [createEntry(daysFromNow(1))]);
 
                 const banner = new WhatsNewBanner(page);
 
@@ -181,8 +171,7 @@ test.describe('Ghost Admin - What\'s New', () => {
 
                 await mockChangelog(page, [
                     createEntry(daysFromNow(2), {
-                        featured: true,
-                        title: 'Second Featured Update'
+                        title: 'Second Update'
                     })
                 ]);
 
@@ -190,7 +179,7 @@ test.describe('Ghost Admin - What\'s New', () => {
                 await banner.waitForBanner();
 
                 await expect(banner.container).toBeVisible();
-                await expect(banner.title).toHaveText('Second Featured Update');
+                await expect(banner.title).toHaveText('Second Update');
             });
         });
     });
@@ -199,7 +188,6 @@ test.describe('Ghost Admin - What\'s New', () => {
         test('shows modal with all entries when opened from user menu', async ({page}) => {
             await mockChangelog(page, [
                 createEntry(daysFromNow(1), {
-                    featured: true,
                     title: 'Latest Update',
                     excerpt: 'Latest feature',
                     feature_image: 'https://ghost.org/image1.jpg'

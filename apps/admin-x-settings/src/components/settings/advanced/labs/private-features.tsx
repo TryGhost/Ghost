@@ -32,10 +32,6 @@ const features: Feature[] = [{
     description: 'Enables the new Tags UI',
     flag: 'tagsX'
 }, {
-    title: 'UTM tracking',
-    description: 'Enables UTM tracking for web traffic and member attribution',
-    flag: 'utmTracking'
-}, {
     title: 'Email Unique ID',
     description: 'Enables {uniqueid} variable in emails for unique image URLs to bypass ESP image caching',
     flag: 'emailUniqueid'
@@ -44,29 +40,25 @@ const features: Feature[] = [{
     description: 'Enables features related to sending welcome emails to new members',
     flag: 'welcomeEmails'
 }, {
-    title: 'New Admin Experience',
-    description: 'Preview the next version of the admin interface',
-    flag: 'adminForward'
-}, {
-    title: 'Domain Warmup',
-    description: 'Enable custom sending domain warmup for gradual email volume increases',
-    flag: 'domainWarmup'
-},{
     title: 'Updated theme translation (beta)',
     description: 'Enable theme translation using i18next instead of the old translation package.',
     flag: 'themeTranslation'
 }, {
-    title: 'Comment Moderation',
-    description: 'Enhanced comment moderation interface with advanced filtering and management. Requires the new admin experience.',
-    flag: 'commentModeration'
+    title: 'IndexNow',
+    description: 'Automatically notify search engines when content is published or updated for faster indexing.',
+    flag: 'indexnow'
 }, {
-    title: 'Email Size Warnings',
-    description: 'Enable warnings in editor when content exceeds email cut-off size',
-    flag: 'emailSizeWarnings'
+    title: 'Featurebase Feedback',
+    description: 'Display a Feedback menu item in the admin sidebar. Requires the new admin experience.',
+    flag: 'featurebaseFeedback'
 }, {
-    title: 'Comment Permalinks',
-    description: 'Enable direct links to individual comments with automatic scrolling and highlighting',
-    flag: 'commentPermalinks'
+    title: 'Transistor',
+    description: 'Enable Transistor podcast integration',
+    flag: 'transistor'
+}, {
+    title: 'Inbox Links',
+    description: 'Enable mail app links on signup/signin',
+    flag: 'inboxlinks'
 }];
 
 const AlphaFeatures: React.FC = () => {
@@ -100,6 +92,7 @@ const AlphaFeatures: React.FC = () => {
         <List titleSeparator={false}>
             {allowedFeatures.map(feature => (
                 <LabItem
+                    key={feature.flag}
                     action={<FeatureToggle flag={feature.flag} label={feature.title} />}
                     detail={feature.description}
                     title={feature.title} />

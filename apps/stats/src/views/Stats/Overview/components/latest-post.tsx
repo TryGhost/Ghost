@@ -36,6 +36,9 @@ const LatestPost: React.FC<LatestPostProps> = ({
     // Get site title from settings or site data
     const siteTitle = site.title || String(settings.find(setting => setting.key === 'title')?.value || 'Ghost Site');
 
+    // Get site timezone from settings for displaying dates consistently
+    const siteTimezone = String(settings.find(setting => setting.key === 'timezone')?.value || 'Etc/UTC');
+
     // Calculate metrics to show outside of JSX
     const metricsToShow = latestPostStats ? getPostMetricsToDisplay(latestPostStats as Post, {
         membersTrackSources: appSettings?.analytics.membersTrackSources
@@ -104,7 +107,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                 <div className='mt-0.5 text-sm text-muted-foreground'>
                                     {latestPostStats.authors && latestPostStats.authors.length > 0 && (
                                         <div>
-                                            By {latestPostStats.authors.map(author => author.name).join(', ')} &ndash; {formatDisplayDate(latestPostStats.published_at)}
+                                            By {latestPostStats.authors.map(author => author.name).join(', ')} &ndash; {formatDisplayDate(latestPostStats.published_at, siteTimezone)}
                                         </div>
                                     )}
                                     <div className='mt-0.5'>

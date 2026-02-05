@@ -293,6 +293,14 @@
     }
 }
 
+.gh-editor-fullscreen-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
 .gh-editor-header {
     position: absolute;
     top: 0;
@@ -977,7 +985,6 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     width: 1.2rem;
     height: 1.2rem;
     margin-right: .5em;
-    padding-top: 2px;
     fill: var(--darkgrey);
 }
 

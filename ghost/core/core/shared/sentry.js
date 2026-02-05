@@ -1,7 +1,7 @@
 const config = require('./config');
-const SentryKnexTracingIntegration = require('./SentryKnexTracingIntegration');
+const SentryKnexTracingIntegration = require('./sentry-knex-tracing-integration');
 const sentryConfig = config.get('sentry');
-const errors = require('@tryghost/errors');
+let _errors;
 
 /**
  * @param {import('@sentry/node').Event} event
@@ -10,6 +10,7 @@ const errors = require('@tryghost/errors');
  */
 const beforeSend = function (event, hint) {
     try {
+        const errors = _errors || (_errors = require('@tryghost/errors'));
         const exception = hint.originalException;
         const code = exception?.code ?? null;
         const context = exception?.context ?? null;

@@ -6,7 +6,7 @@ const {queryStringToken} = regexes;
 const models = require('../../../core/server/models');
 const logging = require('@tryghost/logging');
 const settingsHelpers = require('../../../core/server/services/settings-helpers');
-const urlUtilsHelper = require('../../utils/urlUtils');
+const urlUtilsHelper = require('../../utils/url-utils');
 
 const assertMemberRelationCount = async (newsletterId, expectedCount) => {
     const relations = await dbUtils.knex('members_newsletters').where({newsletter_id: newsletterId}).pluck('id');

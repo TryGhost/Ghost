@@ -25,14 +25,16 @@
     "build": "nx run-many -t build",
     "build:clean": "nx reset && rimraf -g 'ghost/*/build' && rimraf -g 'ghost/*/tsconfig.tsbuildinfo'",
     "clean:hard": "node ./.github/scripts/clean.js",
-    "dev:forward": "nx run ghost-monorepo:docker:dev",
+    "dev": "nx run ghost-monorepo:docker:dev",
+    "dev:forward": "echo '***********************************************************************************************\n* Deprecation warning: This command will be removed in a future release, use yarn dev instead *\n***********************************************************************************************' && sleep 5 && yarn dev",
+    "dev:lexical": "EDITOR_URL=http://localhost:2368/ghost/assets/koenig-lexical/ yarn dev",
     "dev:analytics": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml' nx run ghost-monorepo:docker:dev",
     "dev:storage": "DEV_COMPOSE_FILES='-f compose.dev.storage.yaml' nx run ghost-monorepo:docker:dev",
     "dev:all": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml -f compose.dev.storage.yaml' nx run ghost-monorepo:docker:dev",
-    "dev:debug": "DEBUG_COLORS=true DEBUG=@tryghost*,ghost:* yarn dev",
-    "dev:admin": "node .github/scripts/dev.js --admin",
     "dev:ghost": "node .github/scripts/dev.js --ghost",
-    "dev": "node .github/scripts/dev.js",
+    "dev:legacy": "node .github/scripts/dev.js",
+    "dev:legacy:debug": "DEBUG_COLORS=true DEBUG=@tryghost*,ghost:* yarn dev:legacy",
+    "dev:legacy:admin": "node .github/scripts/dev.js --admin",
     "dev:tinybird": "node .github/scripts/dev-with-tinybird.js --tinybird",
     "fix": "yarn cache clean && rimraf -g '**/node_modules' && yarn && yarn nx reset",
     "knex-migrator": "yarn workspace ghost run knex-migrator",
@@ -65,6 +67,8 @@
     "test:unit": "nx run-many -t test:unit",
     "test:browser": "node .github/scripts/dev.js --browser-tests --all --",
     "test:e2e": "yarn workspace @tryghost/e2e test",
+    "test:e2e:analytics": "yarn workspace @tryghost/e2e test:analytics",
+    "test:e2e:all": "yarn workspace @tryghost/e2e test:all",  
     "test:e2e:debug": "DEBUG=@tryghost/e2e:* yarn test:e2e",
     "main": "yarn main:monorepo && yarn main:submodules",
     "main:monorepo": "git checkout main && git pull ${GHOST_UPSTREAM:-origin} main && yarn",
@@ -143,7 +147,8 @@
               "@tryghost/comments-ui",
               "@tryghost/signup-form",
               "@tryghost/sodo-search",
-              "@tryghost/announcement-bar"
+              "@tryghost/announcement-bar",
+              "@tryghost/parse-email-address"
             ]
           }
         ]

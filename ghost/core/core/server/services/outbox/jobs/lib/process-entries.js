@@ -1,7 +1,7 @@
 const logging = require('@tryghost/logging');
 const {MAX_RETRIES, OUTBOX_LOG_KEY} = require('./constants');
 const {OUTBOX_STATUSES} = require('../../../../models/outbox');
-const MemberCreatedEvent = require('../../../../../shared/events/MemberCreatedEvent');
+const MemberCreatedEvent = require('../../../../../shared/events/member-created-event');
 const memberCreatedHandler = require('../../handlers/member-created');
 
 const EVENT_HANDLERS = {

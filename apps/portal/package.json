@@ -1,11 +1,8 @@
 {
   "name": "@tryghost/portal",
-  "version": "2.56.3",
+  "version": "2.61.0",
   "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/TryGhost/Ghost.git"
-  },
+  "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
   "files": [
     "umd/",
@@ -25,7 +22,9 @@
     "test:watch": "vitest",
     "test:ci": "yarn test --coverage",
     "test:unit": "yarn test:ci",
-    "lint": "eslint src test --ext .js --cache",
+    "lint:code": "eslint src test --ext .js,.ts --cache",
+    "lint:types": "tsc --noEmit",
+    "lint": "yarn lint:code && yarn lint:types",
     "preship": "yarn lint",
     "ship": "node ../../.github/scripts/release-apps.js",
     "prepublishOnly": "yarn build"
@@ -72,7 +71,30 @@
       "react": {
         "version": "detect"
       }
-    }
+    },
+    "overrides": [
+      {
+        "files": [
+          "*.ts",
+          "*.tsx"
+        ],
+        "parser": "@typescript-eslint/parser",
+        "parserOptions": {
+          "sourceType": "module",
+          "ecmaVersion": 2022,
+          "ecmaFeatures": {
+            "jsx": true
+          },
+          "project": "./tsconfig.json"
+        },
+        "extends": [
+          "plugin:@typescript-eslint/recommended"
+        ],
+        "plugins": [
+          "@typescript-eslint"
+        ]
+      }
+    ]
   },
   "browserslist": {
     "production": [
@@ -88,6 +110,7 @@
   },
   "devDependencies": {
     "@babel/eslint-parser": "7.28.4",
+    "dompurify": "3.3.1",
     "@doist/react-interpolate": "2.2.1",
     "@sentry/react": "7.120.4",
     "@testing-library/jest-dom": "6.9.1",

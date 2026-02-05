@@ -32,6 +32,12 @@ const MainContent: React.FC = () => {
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
+                // Don't navigate away if a modal is open - let the modal handle ESC
+                const modalBackdrop = document.getElementById('modal-backdrop');
+                if (modalBackdrop) {
+                    return;
+                }
+
                 confirmIfDirty(isDirty, () => {
                     navigateAway('/');
                 });

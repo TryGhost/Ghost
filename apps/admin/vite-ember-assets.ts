@@ -90,11 +90,14 @@ export function emberAssetsPlugin() {
                 dev: true,
                 etag: true
             });
-            
+
+            const base = (server.config.base ?? '/ghost').replace(/\/$/, '');
+            const assetsPrefix = `${base}/assets/`;
+
             server.middlewares.use((req, res, next) => {
-                if (req.url?.startsWith('/ghost/assets/')) {
+                if (req.url?.startsWith(assetsPrefix)) {
                     const originalUrl = req.url;
-                    req.url = req.url.replace('/ghost/assets', '');
+                    req.url = req.url.replace(assetsPrefix, '/');
                     assetsMiddleware(req, res, () => {
                         req.url = originalUrl;
                         next();
@@ -127,8 +130,8 @@ export function emberAssetsPlugin() {
                         force: true
                     });
                     
-                    // Copy React index.html as index-forward.html
-                    const forwardIndexFile = path.resolve(GHOST_ADMIN_PATH, 'index-forward.html');
+                    // Copy React index.html, overwriting the existing index.html
+                    const forwardIndexFile = path.resolve(GHOST_ADMIN_PATH, 'index.html');
                     fs.copyFileSync(reactIndexFile, forwardIndexFile);
                 } catch (error) {
                     throw new Error(`Failed to copy admin assets: ${error instanceof Error ? error.message : String(error)}`);

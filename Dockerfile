@@ -57,6 +57,7 @@ COPY ghost/admin/lib/ember-power-calendar-utils/package.json ghost/admin/lib/emb
 COPY ghost/admin/package.json ghost/admin/package.json
 COPY ghost/core/package.json ghost/core/package.json
 COPY ghost/i18n/package.json ghost/i18n/package.json
+COPY ghost/parse-email-address/package.json ghost/parse-email-address/package.json
 
 COPY .github/scripts/install-deps.sh .github/scripts/install-deps.sh
 RUN --mount=type=cache,target=/usr/local/share/.cache/yarn,id=yarn-cache \
@@ -69,6 +70,14 @@ FROM development-base AS shade-builder
 WORKDIR /home/ghost
 COPY apps/shade apps/shade
 RUN cd apps/shade && yarn build
+
+# --------------------
+# parse-email-address Builder
+# --------------------
+FROM development-base AS parse-email-address-builder
+WORKDIR /home/ghost
+COPY ghost/parse-email-address ghost/parse-email-address
+RUN cd ghost/parse-email-address && yarn build
 
 # --------------------
 # Admin-x-design-system Builder
@@ -135,6 +144,7 @@ COPY --from=shade-builder /home/ghost/apps/shade apps/shade
 COPY --from=admin-x-design-system-builder /home/ghost/apps/admin-x-design-system apps/admin-x-design-system
 COPY --from=admin-x-framework-builder /home/ghost/apps/admin-x-framework/dist apps/admin-x-framework/dist
 COPY --from=admin-x-framework-builder /home/ghost/apps/admin-x-framework/types apps/admin-x-framework/types
+COPY ghost/i18n ghost/i18n
 RUN cd apps/admin-x-settings && yarn build
 
 # --------------------
@@ -181,6 +191,7 @@ COPY --from=posts-builder /home/ghost/apps/posts apps/posts
 COPY --from=stats-builder /home/ghost/apps/stats apps/stats
 COPY --from=admin-x-settings-builder /home/ghost/apps/admin-x-settings apps/admin-x-settings
 COPY --from=activitypub-builder /home/ghost/apps/activitypub apps/activitypub
+COPY ghost/i18n ghost/i18n
 # React admin needs the built Ember admin (vite-ember-assets plugin reads it at build time)
 COPY --from=admin-ember-builder /home/ghost/ghost/core/core/built/admin ghost/core/core/built/admin
 RUN cd apps/admin && yarn build
@@ -211,5 +222,6 @@ COPY --from=portal-builder /home/ghost/apps/portal/umd apps/portal/umd
 COPY --from=admin-x-settings-builder /home/ghost/apps/admin-x-settings/dist apps/admin-x-settings/dist
 COPY --from=activitypub-builder /home/ghost/apps/activitypub/dist apps/activitypub/dist
 COPY --from=admin-react-builder /home/ghost/ghost/core/core/built/admin ghost/core/core/built/admin
+COPY --from=parse-email-address-builder /home/ghost/ghost/parse-email-address/build ghost/parse-email-address/build
 
 CMD ["yarn", "dev"]

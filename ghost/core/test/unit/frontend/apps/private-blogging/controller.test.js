@@ -1,7 +1,8 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const path = require('path');
-const configUtils = require('../../../../utils/configUtils');
+const configUtils = require('../../../../utils/config-utils');
 const themeEngine = require('../../../../../core/frontend/services/theme-engine');
 const privateController = require('../../../../../core/frontend/apps/private-blogging/lib/router');
 
@@ -67,7 +68,7 @@ describe('Private Controller', function () {
         hasTemplateStub.withArgs('private').returns(true);
 
         res.render = function (view, context) {
-            view.should.eql('private');
+            assert.equal(view, 'private');
             should.exist(context);
             done();
         };

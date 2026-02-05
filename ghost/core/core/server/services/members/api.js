@@ -10,7 +10,7 @@ const signupEmail = require('./emails/signup');
 const signupPaidEmail = require('./emails/signup-paid');
 const subscribeEmail = require('./emails/subscribe');
 const updateEmail = require('./emails/update-email');
-const SingleUseTokenProvider = require('./SingleUseTokenProvider');
+const SingleUseTokenProvider = require('./single-use-token-provider');
 const urlUtils = require('../../../shared/url-utils');
 const labsService = require('../../../shared/labs');
 const offersService = require('../offers');
@@ -18,6 +18,7 @@ const tiersService = require('../tiers');
 const newslettersService = require('../newsletters');
 const memberAttributionService = require('../member-attribution');
 const emailSuppressionList = require('../email-suppression-list');
+const commentsService = require('../comments');
 const {t} = require('../i18n');
 const sentry = require('../../../shared/sentry');
 
@@ -239,7 +240,8 @@ function createApiInstance(config) {
             MemberFeedback: models.MemberFeedback,
             EmailSpamComplaintEvent: models.EmailSpamComplaintEvent,
             Outbox: models.Outbox,
-            AutomatedEmail: models.AutomatedEmail
+            AutomatedEmail: models.AutomatedEmail,
+            AutomatedEmailRecipient: models.AutomatedEmailRecipient
         },
         stripeAPIService: stripeService.api,
         tiersService: tiersService,
@@ -251,7 +253,8 @@ function createApiInstance(config) {
         settingsCache,
         sentry,
         settingsHelpers,
-        urlUtils
+        urlUtils,
+        commentsService
     });
 
     return membersApiInstance;

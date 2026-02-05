@@ -1,5 +1,6 @@
 const {agentProvider, fixtureManager} = require('../../utils/e2e-framework');
 const assert = require('assert/strict');
+const supertest = require('supertest');
 
 describe('Admin API', function () {
     let agent;
@@ -8,6 +9,14 @@ describe('Admin API', function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('users');
     });
+
+    /**
+     * Make requests bypassing URL normalization which adds trailing slashes.
+     */
+    function rawRequest(method, path) {
+        return supertest(agent.app)[method.toLowerCase()](path)
+            .set(agent.defaults.headers);
+    }
 
     function assertMatchesFixture(fixtureId, response) {
         const user = response.users[0];
@@ -169,6 +178,20 @@ describe('Admin API', function () {
             });
         });
 
+        describe('DELETE /db endpoint - trailing slash handling', function () {
+            it('Staff token should be blocked WITH trailing slash', async function () {
+                await agent.useStaffTokenForOwner();
+                const res = await rawRequest('DELETE', '/ghost/api/admin/db/');
+                assert.equal(res.status, 403, 'Request with trailing slash should be blocked');
+            });
+
+            it('Staff token should be blocked WITHOUT trailing slash', async function () {
+                await agent.useStaffTokenForOwner();
+                const res = await rawRequest('DELETE', '/ghost/api/admin/db');
+                assert.equal(res.status, 403, 'Request without trailing slash should also be blocked');
+            });
+        });
+
         describe('PUT /users/owner endpoint (transfer ownership)', function () {
             it('Owner staff token should be blocked', async function () {
                 await agent.useStaffTokenForOwner();
@@ -215,6 +238,32 @@ describe('Admin API', function () {
                         }]
                     })
                     .expectStatus(200);
+            });
+        });
+
+        describe('PUT /users/owner endpoint - trailing slash handling', function () {
+            it('Staff token should be blocked WITH trailing slash', async function () {
+                await agent.useStaffTokenForOwner();
+                const res = await rawRequest('PUT', '/ghost/api/admin/users/owner/')
+                    .send({
+                        owner: [{
+                            id: fixtureManager.get('users', 1).id,
+                            email: fixtureManager.get('users', 1).email
+                        }]
+                    });
+                assert.equal(res.status, 403, 'Request with trailing slash should be blocked');
+            });
+
+            it('Staff token should be blocked WITHOUT trailing slash', async function () {
+                await agent.useStaffTokenForOwner();
+                const res = await rawRequest('PUT', '/ghost/api/admin/users/owner')
+                    .send({
+                        owner: [{
+                            id: fixtureManager.get('users', 1).id,
+                            email: fixtureManager.get('users', 1).email
+                        }]
+                    });
+                assert.equal(res.status, 403, 'Request without trailing slash should also be blocked');
             });
         });
 

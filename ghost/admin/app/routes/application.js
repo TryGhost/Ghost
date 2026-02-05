@@ -49,8 +49,8 @@ export default Route.extend(ShortcutsRoute, {
     router: service(),
     session: service(),
     settings: service(),
+    stateBridge: service(),
     ui: service(),
-    whatsNew: service(),
     billing: service(),
     modals: service(),
 
@@ -232,6 +232,12 @@ export default Route.extend(ShortcutsRoute, {
             // enforce opening the BMA in a force upgrade state
             this.billing.openBillingWindow(this.router.currentURL, '/pro');
         }
+
+        // Notify React of the initial subscription state
+        // React uses this to derive forceUpgrade state (config.forceUpgrade && subscription.status !== 'active')
+        this.stateBridge.triggerSubscriptionChange({
+            subscription: this.billing.subscription
+        });
 
         // Preload settings to avoid a delay when opening
         // Skip preloading when running in AdminForward mode (React handles its own loading)

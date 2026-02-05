@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const rewire = require('rewire');
@@ -84,13 +85,13 @@ describe('templates', function () {
         it('returns fallback if there is no active_theme', function () {
             getActiveThemeStub.returns(undefined);
 
-            _private.pickTemplate(['tag-test', 'tag', 'index'], 'fallback').should.eql('fallback');
-            _private.pickTemplate(['page-my-post', 'page', 'post'], 'fallback').should.eql('fallback');
+            assert.equal(_private.pickTemplate(['tag-test', 'tag', 'index'], 'fallback'), 'fallback');
+            assert.equal(_private.pickTemplate(['page-my-post', 'page', 'post'], 'fallback'), 'fallback');
         });
 
         it('returns fallback if active_theme has no templates', function () {
-            _private.pickTemplate(['tag-test', 'tag', 'index'], 'fallback').should.eql('fallback');
-            _private.pickTemplate(['page-about', 'page', 'post'], 'fallback').should.eql('fallback');
+            assert.equal(_private.pickTemplate(['tag-test', 'tag', 'index'], 'fallback'), 'fallback');
+            assert.equal(_private.pickTemplate(['page-about', 'page', 'post'], 'fallback'), 'fallback');
         });
 
         describe('with many templates', function () {
@@ -104,14 +105,14 @@ describe('templates', function () {
             });
 
             it('returns first matching template', function () {
-                _private.pickTemplate(['page-about', 'page', 'post'], 'fallback').should.eql('page-about');
-                _private.pickTemplate(['page-magic', 'page', 'post'], 'fallback').should.eql('page');
-                _private.pickTemplate(['page', 'post'], 'fallback').should.eql('page');
+                assert.equal(_private.pickTemplate(['page-about', 'page', 'post'], 'fallback'), 'page-about');
+                assert.equal(_private.pickTemplate(['page-magic', 'page', 'post'], 'fallback'), 'page');
+                assert.equal(_private.pickTemplate(['page', 'post'], 'fallback'), 'page');
             });
 
             it('returns correctly if template list is a string', function () {
-                _private.pickTemplate('subscribe', 'fallback').should.eql('fallback');
-                _private.pickTemplate('post', 'fallback').should.eql('post');
+                assert.equal(_private.pickTemplate('subscribe', 'fallback'), 'fallback');
+                assert.equal(_private.pickTemplate('post', 'fallback'), 'post');
             });
         });
     });
@@ -130,7 +131,7 @@ describe('templates', function () {
 
             const view = _private.getTemplateForEntry({title: 'hey'}, 'page');
             should.exist(view);
-            view.should.eql('post');
+            assert.equal(view, 'post');
         });
 
         describe('with many templates', function () {
@@ -149,7 +150,7 @@ describe('templates', function () {
                     slug: 'test-post'
                 });
                 should.exist(view);
-                view.should.eql('post');
+                assert.equal(view, 'post');
             });
 
             it('post with custom slug template', function () {
@@ -159,7 +160,7 @@ describe('templates', function () {
                     slug: 'welcome-to-ghost'
                 });
                 should.exist(view);
-                view.should.eql('post-welcome-to-ghost');
+                assert.equal(view, 'post-welcome-to-ghost');
             });
 
             it('page without custom slug template', function () {
@@ -167,7 +168,7 @@ describe('templates', function () {
                     slug: 'contact'
                 }, 'page');
                 should.exist(view);
-                view.should.eql('page');
+                assert.equal(view, 'page');
             });
 
             it('page with custom slug template', function () {
@@ -175,7 +176,7 @@ describe('templates', function () {
                     slug: 'about'
                 }, 'page');
                 should.exist(view);
-                view.should.eql('page-about');
+                assert.equal(view, 'page-about');
             });
 
             it('post with custom template', function () {
@@ -186,7 +187,7 @@ describe('templates', function () {
                     custom_template: 'custom-about'
                 });
                 should.exist(view);
-                view.should.eql('custom-about');
+                assert.equal(view, 'custom-about');
             });
 
             it('page with custom template', function () {
@@ -197,7 +198,7 @@ describe('templates', function () {
                     custom_template: 'custom-about'
                 });
                 should.exist(view);
-                view.should.eql('custom-about');
+                assert.equal(view, 'custom-about');
             });
 
             it('post with custom template configured, but the template is missing', function () {
@@ -208,7 +209,7 @@ describe('templates', function () {
                     custom_template: 'custom-about'
                 });
                 should.exist(view);
-                view.should.eql('post');
+                assert.equal(view, 'post');
             });
 
             it('page with custom template configured, but the template is missing', function () {
@@ -218,7 +219,7 @@ describe('templates', function () {
                     custom_template: 'custom-about'
                 }, 'page');
                 should.exist(view);
-                view.should.eql('page');
+                assert.equal(view, 'page');
             });
 
             it('post with custom template configured, but slug template exists', function () {
@@ -231,7 +232,7 @@ describe('templates', function () {
                     custom_template: 'custom-about'
                 });
                 should.exist(view);
-                view.should.eql('post-about');
+                assert.equal(view, 'post-about');
             });
 
             it('post with custom template configured, but slug template exists, but can\'t be found', function () {
@@ -244,7 +245,7 @@ describe('templates', function () {
                     custom_template: 'custom-about'
                 });
                 should.exist(view);
-                view.should.eql('post');
+                assert.equal(view, 'post');
             });
         });
     });
@@ -267,7 +268,7 @@ describe('templates', function () {
             it('will return correct view for a tag', function () {
                 const view = _private.getTemplateForEntries({name: 'tag', slugTemplate: true}, {slugParam: 'development'});
                 should.exist(view);
-                view.should.eql('index');
+                assert.equal(view, 'index');
             });
         });
 
@@ -282,20 +283,20 @@ describe('templates', function () {
             it('will return correct view for a tag when template exists', function () {
                 const view = _private.getTemplateForEntries({name: 'tag', slugTemplate: true}, {slugParam: 'design'});
                 should.exist(view);
-                view.should.eql('tag-design');
+                assert.equal(view, 'tag-design');
             });
 
             it('will return correct view for a tag', function () {
                 const view = _private.getTemplateForEntries({name: 'tag', slugTemplate: true}, {slugParam: 'development'});
                 should.exist(view);
-                view.should.eql('tag');
+                assert.equal(view, 'tag');
             });
         });
 
         it('will fall back to index even if no index.hbs', function () {
             const view = _private.getTemplateForEntries({name: 'tag', slugTemplate: true}, {slugParam: 'development'});
             should.exist(view);
-            view.should.eql('index');
+            assert.equal(view, 'index');
         });
     });
 
@@ -311,33 +312,33 @@ describe('templates', function () {
         it('will fall back to default if there is no active_theme', function () {
             getActiveThemeStub.returns(undefined);
 
-            _private.getTemplateForError(500).should.match(/core\/server\/views\/error.hbs$/);
+            assert.match(_private.getTemplateForError(500), /core\/server\/views\/error.hbs$/);
         });
 
         it('will fall back to default for all statusCodes with no custom error templates', function () {
-            _private.getTemplateForError(500).should.match(/core\/server\/views\/error.hbs$/);
-            _private.getTemplateForError(503).should.match(/core\/server\/views\/error.hbs$/);
-            _private.getTemplateForError(422).should.match(/core\/server\/views\/error.hbs$/);
-            _private.getTemplateForError(404).should.match(/core\/server\/views\/error.hbs$/);
+            assert.match(_private.getTemplateForError(500), /core\/server\/views\/error.hbs$/);
+            assert.match(_private.getTemplateForError(503), /core\/server\/views\/error.hbs$/);
+            assert.match(_private.getTemplateForError(422), /core\/server\/views\/error.hbs$/);
+            assert.match(_private.getTemplateForError(404), /core\/server\/views\/error.hbs$/);
         });
 
         it('will use custom error.hbs for all statusCodes if there are no other templates', function () {
             hasTemplateStub.withArgs('error').returns(true);
 
-            _private.getTemplateForError(500).should.eql('error');
-            _private.getTemplateForError(503).should.eql('error');
-            _private.getTemplateForError(422).should.eql('error');
-            _private.getTemplateForError(404).should.eql('error');
+            assert.equal(_private.getTemplateForError(500), 'error');
+            assert.equal(_private.getTemplateForError(503), 'error');
+            assert.equal(_private.getTemplateForError(422), 'error');
+            assert.equal(_private.getTemplateForError(404), 'error');
         });
 
         it('will use more specific error-4xx.hbs for all 4xx statusCodes if available', function () {
             hasTemplateStub.withArgs('error').returns(true);
             hasTemplateStub.withArgs('error-4xx').returns(true);
 
-            _private.getTemplateForError(500).should.eql('error');
-            _private.getTemplateForError(503).should.eql('error');
-            _private.getTemplateForError(422).should.eql('error-4xx');
-            _private.getTemplateForError(404).should.eql('error-4xx');
+            assert.equal(_private.getTemplateForError(500), 'error');
+            assert.equal(_private.getTemplateForError(503), 'error');
+            assert.equal(_private.getTemplateForError(422), 'error-4xx');
+            assert.equal(_private.getTemplateForError(404), 'error-4xx');
         });
 
         it('will use explicit error-404.hbs for 404 statusCode if available', function () {
@@ -345,10 +346,10 @@ describe('templates', function () {
             hasTemplateStub.withArgs('error-4xx').returns(true);
             hasTemplateStub.withArgs('error-404').returns(true);
 
-            _private.getTemplateForError(500).should.eql('error');
-            _private.getTemplateForError(503).should.eql('error');
-            _private.getTemplateForError(422).should.eql('error-4xx');
-            _private.getTemplateForError(404).should.eql('error-404');
+            assert.equal(_private.getTemplateForError(500), 'error');
+            assert.equal(_private.getTemplateForError(503), 'error');
+            assert.equal(_private.getTemplateForError(422), 'error-4xx');
+            assert.equal(_private.getTemplateForError(404), 'error-404');
         });
 
         it('cascade works the same for 500 errors', function () {
@@ -356,10 +357,10 @@ describe('templates', function () {
             hasTemplateStub.withArgs('error-5xx').returns(true);
             hasTemplateStub.withArgs('error-503').returns(true);
 
-            _private.getTemplateForError(500).should.eql('error-5xx');
-            _private.getTemplateForError(503).should.eql('error-503');
-            _private.getTemplateForError(422).should.eql('error');
-            _private.getTemplateForError(404).should.eql('error');
+            assert.equal(_private.getTemplateForError(500), 'error-5xx');
+            assert.equal(_private.getTemplateForError(503), 'error-503');
+            assert.equal(_private.getTemplateForError(422), 'error');
+            assert.equal(_private.getTemplateForError(404), 'error');
         });
 
         it('cascade works with many specific templates', function () {
@@ -369,12 +370,12 @@ describe('templates', function () {
             hasTemplateStub.withArgs('error-4xx').returns(true);
             hasTemplateStub.withArgs('error-404').returns(true);
 
-            _private.getTemplateForError(500).should.eql('error-5xx');
-            _private.getTemplateForError(503).should.eql('error-503');
-            _private.getTemplateForError(422).should.eql('error-4xx');
-            _private.getTemplateForError(404).should.eql('error-404');
-            _private.getTemplateForError(401).should.eql('error-4xx');
-            _private.getTemplateForError(501).should.eql('error-5xx');
+            assert.equal(_private.getTemplateForError(500), 'error-5xx');
+            assert.equal(_private.getTemplateForError(503), 'error-503');
+            assert.equal(_private.getTemplateForError(422), 'error-4xx');
+            assert.equal(_private.getTemplateForError(404), 'error-404');
+            assert.equal(_private.getTemplateForError(401), 'error-4xx');
+            assert.equal(_private.getTemplateForError(501), 'error-5xx');
         });
     });
 
@@ -405,13 +406,13 @@ describe('templates', function () {
             templates.setTemplate(req, res, data);
 
             // It hasn't changed
-            res._template.should.eql('thing');
+            assert.equal(res._template, 'thing');
 
             // And nothing got called
-            stubs.pickTemplate.called.should.be.false();
-            stubs.getTemplateForEntry.called.should.be.false();
-            stubs.getTemplateForEntries.called.should.be.false();
-            stubs.getTemplateForError.called.should.be.false();
+            assert.equal(stubs.pickTemplate.called, false);
+            assert.equal(stubs.getTemplateForEntry.called, false);
+            assert.equal(stubs.getTemplateForEntries.called, false);
+            assert.equal(stubs.getTemplateForError.called, false);
         });
 
         it('defaults to index', function () {
@@ -421,13 +422,13 @@ describe('templates', function () {
             templates.setTemplate(req, res, data);
 
             // It should be index
-            res._template.should.eql('index');
+            assert.equal(res._template, 'index');
 
             // And nothing got called
-            stubs.pickTemplate.called.should.be.false();
-            stubs.getTemplateForEntry.called.should.be.false();
-            stubs.getTemplateForEntries.called.should.be.false();
-            stubs.getTemplateForError.called.should.be.false();
+            assert.equal(stubs.pickTemplate.called, false);
+            assert.equal(stubs.getTemplateForEntry.called, false);
+            assert.equal(stubs.getTemplateForEntries.called, false);
+            assert.equal(stubs.getTemplateForError.called, false);
         });
 
         it('calls pickTemplate for custom routes', function () {
@@ -441,15 +442,15 @@ describe('templates', function () {
             templates.setTemplate(req, res, data);
 
             // should be testFromPickTemplate
-            res._template.should.eql('testFromPickTemplate');
+            assert.equal(res._template, 'testFromPickTemplate');
 
             // Only pickTemplate got called
-            stubs.pickTemplate.called.should.be.true();
-            stubs.getTemplateForEntry.called.should.be.false();
-            stubs.getTemplateForEntries.called.should.be.false();
-            stubs.getTemplateForError.called.should.be.false();
+            assert.equal(stubs.pickTemplate.called, true);
+            assert.equal(stubs.getTemplateForEntry.called, false);
+            assert.equal(stubs.getTemplateForEntries.called, false);
+            assert.equal(stubs.getTemplateForError.called, false);
 
-            stubs.pickTemplate.calledWith('test', 'path/to/local/test.hbs').should.be.true();
+            assert.equal(stubs.pickTemplate.calledWith('test', 'path/to/local/test.hbs'), true);
         });
 
         it('calls getTemplateForEntry for entry routes', function () {
@@ -464,15 +465,15 @@ describe('templates', function () {
             templates.setTemplate(req, res, data);
 
             // should be getTemplateForEntry
-            res._template.should.eql('testFromEntry');
+            assert.equal(res._template, 'testFromEntry');
 
             // Only pickTemplate got called
-            stubs.pickTemplate.called.should.be.false();
-            stubs.getTemplateForEntry.called.should.be.true();
-            stubs.getTemplateForEntries.called.should.be.false();
-            stubs.getTemplateForError.called.should.be.false();
+            assert.equal(stubs.pickTemplate.called, false);
+            assert.equal(stubs.getTemplateForEntry.called, true);
+            assert.equal(stubs.getTemplateForEntries.called, false);
+            assert.equal(stubs.getTemplateForError.called, false);
 
-            stubs.getTemplateForEntry.calledWith({slug: 'test'}).should.be.true();
+            assert.equal(stubs.getTemplateForEntry.calledWith({slug: 'test'}), true);
         });
 
         it('calls getTemplateForEntries for type collection', function () {
@@ -487,15 +488,15 @@ describe('templates', function () {
             // Call setTemplate
             templates.setTemplate(req, res, data);
 
-            res._template.should.eql('testFromEntries');
+            assert.equal(res._template, 'testFromEntries');
 
             // Only pickTemplate got called
-            stubs.pickTemplate.called.should.be.false();
-            stubs.getTemplateForEntry.called.should.be.false();
-            stubs.getTemplateForEntries.called.should.be.true();
-            stubs.getTemplateForError.called.should.be.false();
+            assert.equal(stubs.pickTemplate.called, false);
+            assert.equal(stubs.getTemplateForEntry.called, false);
+            assert.equal(stubs.getTemplateForEntries.called, true);
+            assert.equal(stubs.getTemplateForError.called, false);
 
-            stubs.getTemplateForEntries.calledWith({testCollection: 'test', type: 'collection'}).should.be.true();
+            assert.equal(stubs.getTemplateForEntries.calledWith({testCollection: 'test', type: 'collection'}), true);
         });
 
         it('calls getTemplateForEntries for type channel', function () {
@@ -510,15 +511,15 @@ describe('templates', function () {
             // Call setTemplate
             templates.setTemplate(req, res, data);
 
-            res._template.should.eql('testFromEntries');
+            assert.equal(res._template, 'testFromEntries');
 
             // Only pickTemplate got called
-            stubs.pickTemplate.called.should.be.false();
-            stubs.getTemplateForEntry.called.should.be.false();
-            stubs.getTemplateForEntries.called.should.be.true();
-            stubs.getTemplateForError.called.should.be.false();
+            assert.equal(stubs.pickTemplate.called, false);
+            assert.equal(stubs.getTemplateForEntry.called, false);
+            assert.equal(stubs.getTemplateForEntries.called, true);
+            assert.equal(stubs.getTemplateForError.called, false);
 
-            stubs.getTemplateForEntries.calledWith({testChannel: 'test', type: 'channel'}).should.be.true();
+            assert.equal(stubs.getTemplateForEntries.calledWith({testChannel: 'test', type: 'channel'}), true);
         });
 
         it('calls getTemplateForError if there is an error', function () {
@@ -537,15 +538,15 @@ describe('templates', function () {
             templates.setTemplate(req, res, data);
 
             // should be testFromError
-            res._template.should.eql('testFromError');
+            assert.equal(res._template, 'testFromError');
 
             // Only pickTemplate got called
-            stubs.pickTemplate.called.should.be.false();
-            stubs.getTemplateForEntry.called.should.be.false();
-            stubs.getTemplateForEntries.called.should.be.false();
-            stubs.getTemplateForError.called.should.be.true();
+            assert.equal(stubs.pickTemplate.called, false);
+            assert.equal(stubs.getTemplateForEntry.called, false);
+            assert.equal(stubs.getTemplateForEntries.called, false);
+            assert.equal(stubs.getTemplateForError.called, true);
 
-            stubs.getTemplateForError.calledWith(404).should.be.true();
+            assert.equal(stubs.getTemplateForError.calledWith(404), true);
         });
     });
 });

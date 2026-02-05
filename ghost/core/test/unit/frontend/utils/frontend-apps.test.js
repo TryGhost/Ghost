@@ -1,6 +1,7 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const {getFrontendAppConfig, getDataAttributes} = require('../../../../core/frontend/utils/frontend-apps');
-const configUtils = require('../../../utils/configUtils');
+const configUtils = require('../../../utils/config-utils');
 
 describe('Frontend apps:', function () {
     describe('getFrontendAppConfig', function () {
@@ -16,9 +17,9 @@ describe('Frontend apps:', function () {
 
         it('should return app urls and version from config', async function () {
             const {stylesUrl, scriptUrl, appVersion} = getFrontendAppConfig('portal');
-            should.equal(appVersion, '1.0');
-            should.equal(stylesUrl, 'https://cdn.example.com/~1.0/main.css');
-            should.equal(scriptUrl, 'https://cdn.example.com/~1.0/portal.min.js');
+            assert.equal(appVersion, '1.0');
+            assert.equal(stylesUrl, 'https://cdn.example.com/~1.0/main.css');
+            assert.equal(scriptUrl, 'https://cdn.example.com/~1.0/portal.min.js');
         });
     });
 
@@ -29,13 +30,13 @@ describe('Frontend apps:', function () {
                 'example-version': '1.0'
             });
 
-            should.equal(dataAttributes, 'data-admin="test" data-example-version="1.0"');
+            assert.equal(dataAttributes, 'data-admin="test" data-example-version="1.0"');
         });
 
         it('should generate empty string for missing data object', async function () {
             const dataAttributes = getDataAttributes();
 
-            should.equal(dataAttributes, '');
+            assert.equal(dataAttributes, '');
         });
     });
 });

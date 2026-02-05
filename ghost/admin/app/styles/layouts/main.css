@@ -1686,19 +1686,6 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     }
 }
 
-
-/* What's new badges
-/* ---------------------------------------------------- */
-.gh-whats-new-badge-account {
-    top: -1px;
-    right: -3px;
-    border: 1px solid #fff;
-    width: 12px;
-    height: 12px;
-    background-color: var(--green);
-}
-
-
 /* Used on tags, settings, labs, design etc.
 /* TODO: remove and re-use gh-canvas...
 /* ---------------------------------------------------- */
@@ -2386,20 +2373,6 @@ section.gh-ds h2 {
     transition: all 0.3s ease;
   }
 
-.gh-sidebar-banner-close {
-    position: absolute;
-    top: 4px;
-    right: 8px;
-    padding: 5px;
-    color: var(--midlightgrey);
-    font-size: 2.2rem;
-    line-height: 1;
-}
-
-.gh-sidebar-banner-close:hover {
-    color: var(--midgrey);
-}
-
 .gh-sidebar-banner a > strong {
     display: block;
     margin-bottom: 10px;
@@ -2418,20 +2391,6 @@ section.gh-ds h2 {
 
 .gh-sidebar-banner a > p strong {
     color: #ff247d;
-}
-
-.gh-sidebar-banner-button {
-    margin-top: 20px;
-    border-radius: 5px;
-    width: 100%;
-}
-
-.gh-sidebar-banner-button span {
-    padding: 0 12px;
-    font-size: 1.4rem;
-    text-align-last: center;
-    height: 38px;
-    line-height: 38px;
 }
 
 .gh-sidebar-banner-container {
@@ -2478,20 +2437,6 @@ section.gh-ds h2 {
     overflow: hidden;
 }
 
-.gh-sidebar-banner-msg + .gh-sidebar-banner-button {
-    margin-top: 14px;
-}
-
-.gh-referral-toast {
-    padding: 25px;
-    margin: 0 0 50px;
-}
-
-.gh-referral-toast .gh-sidebar-banner-close {
-    top: 7px;
-    right: 10px;
-}
-
 .gh-sidebar-banner.gh-error-banner {
     box-shadow: 0px 0px 2px 0px rgba(0, 0, 0, 0.1), 0px 3px 8px 0px rgba(0, 0, 0, 0.06);
     margin-bottom: 32px;
@@ -2520,11 +2465,6 @@ section.gh-ds h2 {
     font-size: 1.3rem;
     margin-top: 4px;
     color: var(--darkgrey);
-}
-
-.gh-sidebar-banner.gh-error-banner .gh-sidebar-banner-button {
-    color: var(--white);
-    background-color: var(--red);
 }
 
 .admin-x-container-error {

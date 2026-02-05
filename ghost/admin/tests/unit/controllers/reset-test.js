@@ -15,23 +15,23 @@ describe('Unit: Controller: reset', function () {
             addObjects: sinon.stub()
         };
         controller.validate = sinon.stub().resolves();
-        
+
         controller.ghostPaths = {
             url: {
                 api: sinon.stub().returns('/api/endpoint')
             }
         };
-        
+
         controller.ajax = {
             put: sinon.stub().resolves({
-                password_reset: [{message: 'Password reset successful'}]
+                password_reset: [{message: 'Password reset successful', emailVerificationToken: '123456'}]
             })
         };
-        
+
         controller.notifications = {
             showNotification: sinon.stub()
         };
-        
+
         controller.session = {
             authenticate: sinon.stub().resolves()
         };
@@ -57,21 +57,21 @@ describe('Unit: Controller: reset', function () {
             {
                 identification: 'test@example.com',
                 password: 'newpassword123',
-                skipEmailVerification: true
+                token: '123456'
             }
         )).to.be.true;
     });
 
     it('handles validation errors correctly', async function () {
         const controller = this.owner.lookup('controller:reset');
-        
+
         controller.token = btoa('token|test@example.com|moredata');
         controller.newPassword = 'short';
         controller.ne2Password = 'short';
         controller.hasValidated = {
             addObjects: sinon.stub()
         };
-        
+
         // Simulate validation error
         controller.errors = {
             errorsFor: sinon.stub().returns([{message: 'Password too short'}]),
@@ -87,7 +87,7 @@ describe('Unit: Controller: reset', function () {
 
     it('handles API errors correctly', async function () {
         const controller = this.owner.lookup('controller:reset');
-        
+
         controller.token = btoa('token|test@example.com|moredata');
         controller.newPassword = 'newpassword123';
         controller.ne2Password = 'newpassword123';
@@ -95,18 +95,18 @@ describe('Unit: Controller: reset', function () {
             addObjects: sinon.stub()
         };
         controller.validate = sinon.stub().resolves();
-        
+
         controller.ghostPaths = {
             url: {
                 api: sinon.stub().returns('/api/endpoint')
             }
         };
-        
+
         const apiError = new Error('API Error');
         controller.ajax = {
             put: sinon.stub().rejects(apiError)
         };
-        
+
         controller.notifications = {
             showAPIError: sinon.stub()
         };
@@ -119,14 +119,14 @@ describe('Unit: Controller: reset', function () {
 
     it('handles password mismatch validation error', async function () {
         const controller = this.owner.lookup('controller:reset');
-        
+
         controller.token = btoa('token|test@example.com|moredata');
         controller.newPassword = 'newpassword123';
         controller.ne2Password = 'differentpassword';
         controller.hasValidated = {
             addObjects: sinon.stub()
         };
-        
+
         // Simulate ne2Password validation error
         controller.errors = {
             errorsFor: sinon.stub(),

@@ -1,6 +1,29 @@
 import {AdminPage} from '@/admin-pages';
 import {Locator, Page} from '@playwright/test';
 
+export type UserRole = 'Administrator' | 'Editor' | 'Author' | 'Contributor';
+
+export interface NavItem {
+    name: string;
+    path: RegExp;
+    directUrl: string;
+    roles: UserRole[];
+}
+
+/**
+ * Navigation items in the sidebar with their expected paths and role visibility.
+ * Used for navigation tests and force upgrade redirect validation.
+ */
+export const NAV_ITEMS: NavItem[] = [
+    {name: 'Analytics', path: /\/ghost\/#\/analytics\/?$/, directUrl: '/ghost/#/analytics', roles: ['Administrator']},
+    {name: 'Network', path: /\/ghost\/#\/(network|activitypub)\/?/, directUrl: '/ghost/#/activitypub', roles: ['Administrator']},
+    {name: 'View site', path: /\/ghost\/#\/site\/?$/, directUrl: '/ghost/#/site', roles: ['Administrator', 'Editor']},
+    {name: 'Posts', path: /\/ghost\/#\/posts\/?$/, directUrl: '/ghost/#/posts', roles: ['Administrator', 'Editor', 'Author', 'Contributor']},
+    {name: 'Pages', path: /\/ghost\/#\/pages\/?$/, directUrl: '/ghost/#/pages', roles: ['Administrator', 'Editor']},
+    {name: 'Tags', path: /\/ghost\/#\/tags\/?$/, directUrl: '/ghost/#/tags', roles: ['Administrator', 'Editor']},
+    {name: 'Members', path: /\/ghost\/#\/members\/?$/, directUrl: '/ghost/#/members', roles: ['Administrator', 'Editor']}
+];
+
 /**
  * SidebarPage uses semantic, accessibility-first locators.
  * This approach tests the UI as users interact with it, not implementation details.
@@ -26,19 +49,16 @@ export class SidebarPage extends AdminPage {
         this.sidebar = page.getByRole('navigation');
         this.postsToggle = this.sidebar.getByRole('button', {name: /toggle post views/i});
         this.userDropdownTrigger = page.locator('[data-test-nav="arrow-down"]');
-        this.nightShiftToggle = page.getByRole('button', {name: /dark mode/i}).or(page.getByRole('menuitem', {name: /dark mode/i}).getByRole('switch'));
+        this.nightShiftToggle = page.getByRole('menuitem', {name: /dark mode/i}).getByRole('switch');
         this.whatsNewButton = page.getByRole('menuitem', {name: /what's new/i});
         this.userProfileLink = page.getByRole('menuitem', {name: /your profile/i});
         this.signOutLink = page.getByRole('menuitem', {name: /sign out/i});
 
-        // TODO: Remove .first() and .gh-nav-member-count after React shell fully replaces Ember admin
         this.networkNotificationBadge = this.sidebar
             .getByRole('listitem').filter({hasText: /network/i})
-            .locator('[data-sidebar="menu-badge"], .gh-nav-member-count').first();
+            .locator('[data-sidebar="menu-badge"]');
         this.ghostProLink = this.sidebar.getByRole('link', {name: 'Ghost(Pro)'});
-        // Matches both React's link and Ember's button for the upgrade action
-        this.upgradeNowLink = this.sidebar.getByRole('link', {name: /upgrade/i})
-            .or(this.sidebar.getByRole('button', {name: /upgrade/i}));
+        this.upgradeNowLink = this.sidebar.getByRole('link', {name: /upgrade/i});
     }
 
     getNavLink(name: string): Locator {
@@ -66,20 +86,14 @@ export class SidebarPage extends AdminPage {
     }
 
     async isNightShiftEnabled(): Promise<boolean> {
-        // React uses a switch with aria-checked attribute
         const isChecked = await this.nightShiftToggle.getAttribute('aria-checked');
-        if (isChecked !== null) {
-            return isChecked === 'true';
-        }
-        // Ember uses a button with 'on' class
-        const classes = await this.nightShiftToggle.getAttribute('class');
-        return classes?.includes('on') ?? false;
+        return isChecked === 'true';
     }
 
     async waitForNightShiftEnabled(enabled: boolean): Promise<void> {
         const locator = enabled
-            ? this.page.locator('[aria-checked="true"], .nightshift-toggle.on')
-            : this.page.locator('[aria-checked="false"], .nightshift-toggle:not(.on)');
-        await locator.first().waitFor();
+            ? this.page.locator('[aria-checked="true"]')
+            : this.page.locator('[aria-checked="false"]');
+        await locator.waitFor();
     }
 }

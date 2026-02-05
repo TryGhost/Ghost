@@ -1,5 +1,5 @@
 const {parentPort} = require('worker_threads');
-const StartEmailAnalyticsJobEvent = require('../../events/StartEmailAnalyticsJobEvent');
+const StartEmailAnalyticsJobEvent = require('../../events/start-email-analytics-job-event');
 
 // recurring job to fetch analytics since the most recently seen event timestamp
 

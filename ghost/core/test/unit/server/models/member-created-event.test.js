@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
@@ -19,9 +20,9 @@ describe('Unit: models/MemberCreatedEvent', function () {
                     throw new Error('expected ValidationError');
                 })
                 .catch(function (err) {
-                    should(err).lengthOf(1);
-                    (err[0] instanceof errors.ValidationError).should.eql(true);
-                    err[0].context.should.match(/members_created_events\.attribution_type/);
+                    assert.equal(err.length, 1);
+                    assert.equal((err[0] instanceof errors.ValidationError), true);
+                    assert.match(err[0].context, /members_created_events\.attribution_type/);
                 });
         });
 
@@ -31,9 +32,9 @@ describe('Unit: models/MemberCreatedEvent', function () {
                     throw new Error('expected ValidationError');
                 })
                 .catch(function (err) {
-                    should(err).lengthOf(1);
-                    (err[0] instanceof errors.ValidationError).should.eql(true);
-                    err[0].context.should.match(/members_created_events\.member_id/);
+                    assert.equal(err.length, 1);
+                    assert.equal((err[0] instanceof errors.ValidationError), true);
+                    assert.match(err[0].context, /members_created_events\.member_id/);
                 });
         });
 
@@ -43,9 +44,9 @@ describe('Unit: models/MemberCreatedEvent', function () {
                     throw new Error('expected ValidationError');
                 })
                 .catch(function (err) {
-                    should(err).lengthOf(1);
-                    (err[0] instanceof errors.ValidationError).should.eql(true);
-                    err[0].context.should.match(/members_created_events\.source/);
+                    assert.equal(err.length, 1);
+                    assert.equal((err[0] instanceof errors.ValidationError), true);
+                    assert.match(err[0].context, /members_created_events\.source/);
                 });
         });
 
@@ -55,9 +56,9 @@ describe('Unit: models/MemberCreatedEvent', function () {
                     throw new Error('expected ValidationError');
                 })
                 .catch(function (err) {
-                    should(err).lengthOf(1);
-                    (err[0] instanceof errors.ValidationError).should.eql(true);
-                    err[0].context.should.match(/members_created_events\.source/);
+                    assert.equal(err.length, 1);
+                    assert.equal((err[0] instanceof errors.ValidationError), true);
+                    assert.match(err[0].context, /members_created_events\.source/);
                 });
         });
     });

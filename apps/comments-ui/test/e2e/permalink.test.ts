@@ -1,6 +1,6 @@
 import {E2E_PORT} from '../../playwright.config';
 import {FrameLocator, Page} from '@playwright/test';
-import {MOCKED_SITE_URL, MockedApi, initialize} from '../utils/e2e';
+import {MOCKED_SITE_URL, MockedApi, initialize, mockAdminAuthFrame} from '../utils/e2e';
 import {expect, test} from '@playwright/test';
 
 /**
@@ -141,6 +141,26 @@ test.describe('Comment Permalinks', async () => {
         // (the highlight uses bg-yellow-100 which appears briefly)
         const commentElement = commentsFrame.locator(`[id="${commentId}"]`);
         await expect(commentElement).toBeVisible();
+    });
+
+    test('shows highlight mark inside comment content when navigating via permalink', async ({page}) => {
+        const mockedApi = new MockedApi({});
+        mockedApi.setMember({});
+
+        const commentId = '64a1b2c3d4e5f6a7b8c9d0e1';
+        mockedApi.addComment({
+            id: commentId,
+            html: '<p>Comment to highlight</p>'
+        });
+
+        const commentsFrame = await setupPermalinkTest(page, mockedApi, `#ghost-comments-${commentId}`);
+
+        // The comment content container should contain a <mark> with the highlight class
+        const commentContent = commentsFrame.getByTestId('comment-content').first();
+        const mark = commentContent.locator('mark');
+        await expect(mark).toBeVisible();
+        await expect(mark).toHaveClass(/bg-yellow-300\/40/);
+        await expect(mark).toContainText('Comment to highlight');
     });
 
     test('handles invalid comment ID gracefully', async ({page}) => {
@@ -362,5 +382,82 @@ test.describe('Comment Permalinks', async () => {
         // The element should have the correct ID for highlighting
         const targetElement = commentsFrame.locator(`[id="${targetReplyId}"]`);
         await expect(targetElement).toBeVisible();
+    });
+
+    test('admin auth does not overwrite paginated comments loaded for permalink', async ({page}) => {
+        const mockedApi = new MockedApi({});
+        mockedApi.setMember({id: '1', uuid: '12345'});
+
+        const admin = MOCKED_SITE_URL + '/ghost/';
+        await mockAdminAuthFrame({page, admin});
+
+        // Add 25 comments — member API page size is 5, admin API page size is 20.
+        // The target (comment 25) is on member page 5 and admin page 2.
+        // initSetup paginates member API to find it, then initAdminAuth re-fetches
+        // admin page 1 only (20 comments), which must NOT overwrite the 25.
+        for (let i = 1; i <= 24; i++) {
+            mockedApi.addComment({
+                html: `<p>Filler comment ${i}</p>`
+            });
+        }
+
+        const targetId = 'aaa0000000000000000025';
+        mockedApi.addComment({
+            id: targetId,
+            html: '<p>Target comment beyond admin page 1</p>'
+        });
+
+        // Set up permalink test with admin URL in the script tag options
+        const sitePath = MOCKED_SITE_URL;
+
+        mockedApi.setSettings({
+            settings: {
+                labs: {
+                    commentPermalinks: true
+                }
+            }
+        });
+
+        await page.route(sitePath, async (route) => {
+            await route.fulfill({status: 200, body: '<html><head><meta charset="UTF-8" /></head><body></body></html>'});
+        });
+
+        const url = `http://localhost:${E2E_PORT}/comments-ui.min.js`;
+        await page.setViewportSize({width: 1000, height: 1000});
+        await page.goto(`${sitePath}#ghost-comments-${targetId}`);
+        await mockedApi.listen({page, path: sitePath});
+
+        const options = {
+            publication: 'Publisher Weekly',
+            count: true,
+            title: 'Title',
+            ghostComments: MOCKED_SITE_URL,
+            postId: mockedApi.postId,
+            api: MOCKED_SITE_URL,
+            admin,
+            key: '12345678'
+        };
+
+        await page.evaluate((data) => {
+            const scriptTag = document.createElement('script');
+            scriptTag.src = data.url;
+            for (const option of Object.keys(data.options)) {
+                scriptTag.dataset[option] = data.options[option];
+            }
+            document.body.appendChild(scriptTag);
+        }, {url, options});
+
+        const commentsFrame = page.frameLocator('iframe[title="comments-frame"]');
+
+        // Target comment should be visible after permalink pagination
+        await expect(commentsFrame.getByText('Target comment beyond admin page 1')).toBeVisible();
+
+        // Wait for admin auth to complete — the more button only renders
+        // when isAdmin is true, so its presence proves initAdminAuth has
+        // finished and React has flushed the state update
+        await expect(commentsFrame.locator('[data-testid="more-button"]').first()).toBeVisible();
+
+        // The target comment (beyond admin page 1) must STILL be visible
+        await expect(commentsFrame.getByText('Target comment beyond admin page 1')).toBeVisible();
     });
 });

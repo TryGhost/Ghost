@@ -241,7 +241,7 @@ const Form: React.FC<FormProps> = ({
     const [progress, setProgress] = useState<Progress>('default');
     const formEl = useRef(null);
 
-    const memberName = member?.name ?? comment?.member?.name;
+    const memberName = member?.name;
 
     if (progress === 'sending' || (memberName && isAskingDetails)) {
         // Force open
@@ -289,7 +289,6 @@ const Form: React.FC<FormProps> = ({
 };
 
 type FormWrapperProps = {
-    comment?: Comment;
     editor: Editor | null;
     isOpen: boolean;
     reduced: boolean;
@@ -298,7 +297,6 @@ type FormWrapperProps = {
 };
 
 const FormWrapper: React.FC<FormWrapperProps> = ({
-    comment,
     editor,
     isOpen,
     reduced,
@@ -307,8 +305,8 @@ const FormWrapper: React.FC<FormWrapperProps> = ({
 }) => {
     const {member, dispatchAction} = useAppContext();
 
-    const memberName = member?.name ?? comment?.member?.name;
-    const memberExpertise = member?.expertise ?? comment?.member?.expertise;
+    const memberName = member?.name;
+    const memberExpertise = member?.expertise;
 
     let openStyles = '';
     if (isOpen) {

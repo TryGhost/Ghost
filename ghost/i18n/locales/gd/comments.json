@@ -17,7 +17,9 @@
     "Best": "",
     "Cancel": "Sguir dheth",
     "Comment": "Beachd",
+    "Commenting disabled": "",
     "Complete your profile": "Lìon a-steach a' phròifil agad",
+    "Contact support": "",
     "Delete": "Sguab às",
     "Deleted": "Air a sguabadh às",
     "Deleted member": "Ball air a sguabadh às",
@@ -28,6 +30,7 @@
     "edited": "Air a dheasachadh",
     "Enter your name": "Cuir a-steach d’ ainm",
     "Expertise": "Sàr-eòlas",
+    "for more information.": "",
     "Founder @ Acme Inc": "Neach-stèidheachaidh @ Acme Inc",
     "Full-time parent": "Pàrant làn-ùine",
     "Head of Marketing at Acme, Inc": "Àrd-cheann Margaidheachd aig Acme, Inc",
@@ -69,6 +72,8 @@
     "This comment has been hidden.": "Chaidh am beachd seo a chur am falach.",
     "This comment has been removed.": "Chaidh am beachd seo a sguabadh às.",
     "Upgrade now": "Àrdaich a-nis",
+    "View in admin": "",
     "Yesterday": "An-dè",
+    "You can't post comments in this publication.": "",
     "Your request will be sent to the owner of this site.": "Thèid an iarrtas agad a chur gu neach-seilbh an làrach-lìn seo."
 }

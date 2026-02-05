@@ -1,7 +1,8 @@
+const assert = require('node:assert/strict');
 require('should');
 const sinon = require('sinon');
 const path = require('path');
-const configUtils = require('../../../../utils/configUtils');
+const configUtils = require('../../../../utils/config-utils');
 const controller = require('../../../../../core/server/web/admin/controller');
 
 describe('Admin App', function () {
@@ -26,22 +27,22 @@ describe('Admin App', function () {
             // default config: configUtils.set('adminFrameProtection', true);
             controller(req, res);
 
-            res.sendFile.called.should.be.true();
-            res.sendFile.calledWith(
+            assert.equal(res.sendFile.called, true);
+            assert.equal(res.sendFile.calledWith(
                 sinon.match.string,
                 sinon.match.hasNested('headers.X-Frame-Options', sinon.match('sameorigin'))
-            ).should.be.true();
+            ), true);
         });
 
         it('doesn\'t add x-frame-options header when adminFrameProtection is disabled', function () {
             configUtils.set('adminFrameProtection', false);
             controller(req, res);
 
-            res.sendFile.called.should.be.true();
-            res.sendFile.calledWith(
+            assert.equal(res.sendFile.called, true);
+            assert.equal(res.sendFile.calledWith(
                 sinon.match.string,
                 sinon.match.hasNested('headers.X-Frame-Options')
-            ).should.be.false();
+            ), false);
         });
     });
 });

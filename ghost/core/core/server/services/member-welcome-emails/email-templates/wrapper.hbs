@@ -3,23 +3,328 @@
   <head>
     <meta name="viewport" content="width=device-width">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="color-scheme" content="light only">
+    <meta name="supported-color-schemes" content="light">
     <title>{{subject}}</title>
     <style>
-      a { color: {{accentColor}}; }
+    /* -------------------------------------
+        RESPONSIVE AND MOBILE FRIENDLY STYLES
+    ------------------------------------- */
+    @media only screen and (max-width: 620px) {
+      table[class=body] h1 {
+        font-size: 28px !important;
+        margin-bottom: 10px !important;
+      }
+      table[class=body] p,
+            table[class=body] ul,
+            table[class=body] ol,
+            table[class=body] td,
+            table[class=body] span,
+            table[class=body] a {
+        font-size: 16px !important;
+      }
+      table[class=body] .wrapper,
+            table[class=body] .article {
+        padding: 10px !important;
+      }
+      table[class=body] .content {
+        padding: 0 !important;
+      }
+      table[class=body] .container {
+        padding: 0 !important;
+        width: 100% !important;
+      }
+      table[class=body] .main {
+        border-left-width: 0 !important;
+        border-radius: 0 !important;
+        border-right-width: 0 !important;
+      }
+      table[class=body] .btn table {
+        width: 100% !important;
+      }
+      table[class=body] .btn a {
+        width: 100% !important;
+      }
+      table[class=body] .img-responsive {
+        height: auto !important;
+        max-width: 100% !important;
+        width: auto !important;
+      }
+      table[class=body] p[class=small],
+      table[class=body] a[class=small] {
+        font-size: 11px !important;
+      }
+    }
+    /* -------------------------------------
+        PRESERVE THESE STYLES IN THE HEAD
+    ------------------------------------- */
+    @media all {
+      .ExternalClass {
+        width: 100%;
+      }
+      .ExternalClass,
+            .ExternalClass p,
+            .ExternalClass span,
+            .ExternalClass font,
+            .ExternalClass td,
+            .ExternalClass div {
+        line-height: 100%;
+      }
+      .recipient-link a {
+        color: inherit !important;
+        font-family: inherit !important;
+        font-size: inherit !important;
+        font-weight: inherit !important;
+        line-height: inherit !important;
+        text-decoration: none !important;
+      }
+      #MessageViewBody a {
+        color: inherit;
+        text-decoration: none;
+        font-size: inherit;
+        font-family: inherit;
+        font-weight: inherit;
+        line-height: inherit;
+      }
+    }
+
+    /* POST CONTENT STYLES */
+    hr {
+        position: relative;
+        display: block;
+        width: 100%;
+        margin: 3em 0;
+        padding: 0;
+        height: 1px;
+        background-color: transparent;
+        border: 0;
+        border-top: 1px solid #EEF5F8;
+    }
+
+    .kg-hr-card table {
+        width: 100%;
+    }
+
+    .kg-hr-card td {
+        margin: 0;
+        padding-top: 1.5em; /* account for elements above having bottom padding, we want 3em total */
+        padding-bottom: 3em;
+        font-size: 17px;
+    }
+    .kg-hr td {
+        margin: 0;
+        padding: 0;
+        border-top: 1px solid #EEF5F8;
+        font-size: 0;
+        line-height: 0;
+    }
+
+    h1:has(+ .kg-hr-card),
+    h2:has(+ .kg-hr-card),
+    h3:has(+ .kg-hr-card),
+    h4:has(+ .kg-hr-card),
+    h5:has(+ .kg-hr-card),
+    h6:has(+ .kg-hr-card) {
+        margin-bottom: 0;
+    }
+
+    h1 + .kg-hr-card td,
+    h2 + .kg-hr-card td,
+    h3 + .kg-hr-card td,
+    h4 + .kg-hr-card td,
+    h5 + .kg-hr-card td,
+    h6 + .kg-hr-card td {
+        padding-top: 3em;
+    }
+
+    .kg-hr-card + h1,
+    .kg-hr-card + h2,
+    .kg-hr-card + h3,
+    .kg-hr-card + h4,
+    .kg-hr-card + h5,
+    .kg-hr-card + h6 {
+        margin-top: 0;
+    }
+
+    a {
+      color: {{accentColor}};
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      color: #15212A;
+    }
+
+    p,
+    ul,
+    ol,
+    dl,
+    blockquote {
+        margin: 0 0 1.5em 0;
+        line-height: 1.6em;
+    }
+
+    ol,
+    ul {
+        padding-left: 1.3em;
+        padding-right: 1.5em;
+    }
+
+    ol ol,
+    ul ul,
+    ul ol,
+    ol ul {
+        margin: 0.5em 0 1em;
+    }
+
+    ul {
+        list-style: disc;
+    }
+
+    ul ul {
+        list-style: circle;
+    }
+
+    ul ul ul {
+        list-style: square;
+    }
+
+    ol {
+        list-style: decimal;
+    }
+
+    ol ol {
+        list-style: lower-alpha;
+    }
+
+    ol ol ol {
+        list-style: lower-roman;
+    }
+
+    ul,
+    ol {
+        max-width: 100%;
+    }
+
+    li {
+        margin: 0.5em 0;
+        padding-left: 0.3em;
+        line-height: 1.6em;
+        color: #15212A;
+    }
+
+    dt {
+        float: left;
+        margin: 0 20px 0 0;
+        width: 120px;
+        color: #15212A;
+        font-weight: 500;
+        text-align: right;
+    }
+
+    dd {
+        margin: 0 0 5px 0;
+        text-align: left;
+    }
+
+    blockquote {
+        margin: 0;
+        padding: 0;
+        border-left: {{accentColor}} 2px solid;
+        font-size: 17px;
+        font-weight: 500;
+        line-height: 1.6em;
+        letter-spacing: -0.2px;
+    }
+
+    blockquote.kg-blockquote-alt {
+        border-left: 0 none;
+        text-align: center;
+        font-size: 1.2em;
+        font-style: italic;
+        color: #15212a;
+        color: rgba(0, 0, 0, 0.6);
+    }
+
+    blockquote p {
+        margin: 2em 25px;
+        padding: 0 !important;
+        font-size: 1em;
+    }
+
+    blockquote.kg-blockquote-alt p {
+        margin-right: 50px;
+        margin-left: 50px;
+    }
+
+    blockquote small {
+        display: inline-block;
+        margin: 0.8em 0 0.8em 1.5em;
+        font-size: 0.9em;
+        opacity: 0.8;
+    }
+
+    blockquote cite {
+        font-weight: bold;
+    }
+    blockquote cite a {
+        font-weight: normal;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        margin-top: 0;
+        margin-bottom: 0.5em;
+        font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+        line-height: 1.11em;
+        font-weight: 600;
+        text-rendering: optimizeLegibility;
+        color: #15212A;
+    }
+
+    h1 {
+        font-size: 36px;
+    }
+
+    h2 {
+        font-size: 32px;
+    }
+
+    h3 {
+        font-size: 26px;
+    }
+
+    h4 {
+        font-size: 21px;
+        line-height: 1.2em;
+    }
+
+    h5 {
+        font-size: 19px;
+        line-height: 1.3em;
+    }
+
+    h6 {
+        font-size: 19px;
+        line-height: 1.3em;
+    }
     </style>
   </head>
-  <body style="background-color: #F5F8FA; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; font-size: 14px; line-height: 1.5em; margin: 0; padding: 0;">
-    <table border="0" cellpadding="0" cellspacing="0" class="body" style="border-collapse: separate; width: 100%; background-color: #F5F8FA;">
+  <body style="background-color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; -webkit-font-smoothing: antialiased; font-size: 14px; line-height: 1.5em; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%;">
+    <table border="0" cellpadding="0" cellspacing="0" class="body" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;">
       <tr>
-        <td style="vertical-align: top;">&nbsp;</td>
-        <td class="container" style="vertical-align: top; display: block; margin: 0 auto; max-width: 540px; padding: 10px; width: 540px;">
-          <div class="content" style="box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px; padding: 30px 20px;">
-            <table class="main" style="border-collapse: separate; width: 100%; background: #ffffff; border-radius: 8px;">
+        <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;">&nbsp;</td>
+        <td class="container" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; display: block; Margin: 0 auto; max-width: 540px; padding: 10px; width: 540px;">
+          <div class="content" style="box-sizing: border-box; display: block; Margin: 0 auto; max-width: 600px; padding: 30px 20px;">
+            <table class="main" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; background: #ffffff; border-radius: 8px;">
               <tr>
-                <td class="wrapper" style="box-sizing: border-box; padding: 40px;">
-                  <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; width: 100%;">
+                <td class="wrapper" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; box-sizing: border-box;">
+                  <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;">
                     <tr>
-                      <td style="font-size: 16px; color: #3A464C; font-weight: normal; line-height: 24px;">
+                      <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; line-height: 24px; vertical-align: top;">
                         {{{content}}}
                       </td>
                     </tr>
@@ -27,18 +332,19 @@
                 </td>
               </tr>
             </table>
-            <div class="footer" style="clear: both; margin-top: 20px; text-align: center; width: 100%;">
-              <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; width: 100%;">
-                <tr>
-                  <td class="content-block" style="color: #738A94; font-size: 13px; line-height: 16px; padding-bottom: 10px; padding-top: 10px; text-align: center;">
-                    <span class="recipient-link">{{siteTitle}}</span>
-                  </td>
-                </tr>
-              </table>
-            </div>
+            <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;">
+              <tr>
+                <td style="border-top: 1px solid #EEF5F8; padding-top: 24px;"></td>
+              </tr>
+              <tr>
+                <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 11px; color: #738A94; font-weight: normal; line-height: 16px; vertical-align: top; padding-top: 12px; text-align: center;">
+                  {{siteTitle}} &copy; {{year}} &mdash; <a class="small" href="{{managePreferencesUrl}}" style="text-decoration: underline; text-underline-offset: 2px; color: #738A94; font-size: 11px;">Manage your preferences</a>
+                </td>
+              </tr>
+            </table>
           </div>
         </td>
-        <td style="vertical-align: top;">&nbsp;</td>
+        <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;">&nbsp;</td>
       </tr>
     </table>
   </body>

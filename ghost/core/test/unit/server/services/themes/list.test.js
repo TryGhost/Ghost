@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const _ = require('lodash');
@@ -21,12 +22,12 @@ describe('Themes', function () {
         });
 
         it('get() with no args should do nothing', function () {
-            should.not.exist(themeList.get());
+            assert.equal(themeList.get(), undefined);
         });
 
         it('getAll() returns all themes', function () {
             themeList.getAll().should.be.an.Object().with.properties('casper', 'not-casper');
-            Object.keys(themeList.getAll()).should.have.length(2);
+            assert.equal(Object.keys(themeList.getAll()).length, 2);
         });
 
         it('set() updates an existing theme', function () {
@@ -46,7 +47,7 @@ describe('Themes', function () {
             should.exist(themeList.get('casper'));
             should.exist(themeList.get('not-casper'));
             themeList.del('casper');
-            should.not.exist(themeList.get('casper'));
+            assert.equal(themeList.get('casper'), undefined);
             should.exist(themeList.get('not-casper'));
         });
 
@@ -62,9 +63,9 @@ describe('Themes', function () {
             const setSpy = sinon.spy(themeList, 'set');
 
             themeList.init({test: {a: 'b'}, casper: {c: 'd'}});
-            setSpy.calledTwice.should.be.true();
-            setSpy.firstCall.calledWith('test', {a: 'b'}).should.be.true();
-            setSpy.secondCall.calledWith('casper', {c: 'd'}).should.be.true();
+            assert.equal(setSpy.calledTwice, true);
+            assert.equal(setSpy.firstCall.calledWith('test', {a: 'b'}), true);
+            assert.equal(setSpy.secondCall.calledWith('casper', {c: 'd'}), true);
         });
 
         it('init() with empty object resets the list', function () {
@@ -73,7 +74,7 @@ describe('Themes', function () {
             should.exist(result);
             result.should.be.an.Object();
             result.should.eql({});
-            Object.keys(result).should.have.length(0);
+            assert.equal(Object.keys(result).length, 0);
         });
     });
 });

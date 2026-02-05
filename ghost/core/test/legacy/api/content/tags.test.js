@@ -1,9 +1,10 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const supertest = require('supertest');
 const _ = require('lodash');
 const localUtils = require('./utils');
 const testUtils = require('../../../utils');
-const configUtils = require('../../../utils/configUtils');
+const configUtils = require('../../../utils/config-utils');
 const config = require('../../../../core/shared/config');
 
 let request;
@@ -42,11 +43,11 @@ describe('api/endpoints/content/tags', function () {
             .expect('Cache-Control', testUtils.cacheRules.public)
             .expect(200)
             .then((res) => {
-                should.not.exist(res.headers['x-cache-invalidate']);
+                assert.equal(res.headers['x-cache-invalidate'], undefined);
                 const jsonResponse = res.body;
                 should.exist(jsonResponse);
                 should.exist(jsonResponse.tags);
-                jsonResponse.tags.should.have.length(5);
+                assert.equal(jsonResponse.tags.length, 5);
                 localUtils.API.checkResponse(jsonResponse.tags[0], 'tag', ['count', 'url']);
 
                 jsonResponse.meta.pagination.should.have.property('page', 1);
@@ -58,10 +59,10 @@ describe('api/endpoints/content/tags', function () {
 
                 should.exist(jsonResponse.tags[0].count.posts);
                 // Each tag should have the correct count
-                _.find(jsonResponse.tags, {name: 'Getting Started'}).count.posts.should.eql(7);
-                _.find(jsonResponse.tags, {name: 'kitchen sink'}).count.posts.should.eql(2);
-                _.find(jsonResponse.tags, {name: 'bacon'}).count.posts.should.eql(2);
-                _.find(jsonResponse.tags, {name: 'chorizo'}).count.posts.should.eql(1);
+                assert.equal(_.find(jsonResponse.tags, {name: 'Getting Started'}).count.posts, 7);
+                assert.equal(_.find(jsonResponse.tags, {name: 'kitchen sink'}).count.posts, 2);
+                assert.equal(_.find(jsonResponse.tags, {name: 'bacon'}).count.posts, 2);
+                assert.equal(_.find(jsonResponse.tags, {name: 'chorizo'}).count.posts, 1);
             });
     });
 
@@ -74,9 +75,9 @@ describe('api/endpoints/content/tags', function () {
                 const jsonResponse = res.body;
 
                 jsonResponse.tags.should.be.an.Array().with.lengthOf(3);
-                jsonResponse.tags[0].slug.should.equal('kitchen-sink');
-                jsonResponse.tags[1].slug.should.equal('bacon');
-                jsonResponse.tags[2].slug.should.equal('chorizo');
+                assert.equal(jsonResponse.tags[0].slug, 'kitchen-sink');
+                assert.equal(jsonResponse.tags[1].slug, 'bacon');
+                assert.equal(jsonResponse.tags[2].slug, 'chorizo');
             });
     });
 });

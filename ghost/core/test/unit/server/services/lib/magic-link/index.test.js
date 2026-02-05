@@ -1,6 +1,6 @@
 const assert = require('assert/strict');
 const sinon = require('sinon');
-const MagicLink = require('../../../../../../core/server/services/lib/magic-link/MagicLink');
+const MagicLink = require('../../../../../../core/server/services/lib/magic-link/magic-link');
 
 const sandbox = sinon.createSandbox();
 

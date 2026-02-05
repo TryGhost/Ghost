@@ -1,6 +1,5 @@
-import React, {useCallback, useMemo} from 'react';
+import React, {useMemo} from 'react';
 import {
-    Button,
     Filter,
     FilterFieldConfig,
     Filters,
@@ -15,7 +14,7 @@ interface CommentsFiltersProps {
     filters: Filter[];
     onFiltersChange: (filters: Filter[]) => void;
     knownPosts: Array<{ id: string; title: string }>;
-    knownMembers: Array<{ id: string; name: string; email: string }>;
+    knownMembers: Array<{ id: string; name?: string; email?: string }>;
 }
 
 const CommentsFilters: React.FC<CommentsFiltersProps> = ({
@@ -78,8 +77,8 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
                 onSearchChange: posts.onSearchChange,
                 searchValue: posts.searchValue,
                 searchable: true,
-                className: 'w-80',
-                popoverContentClassName: 'w-80',
+                className: 'w-full max-w-80',
+                popoverContentClassName: 'w-full max-w-[calc(100vw-32px)] max-w-80',
                 operators: [
                     {value: 'is', label: 'is'},
                     {value: 'is_not', label: 'is not'}
@@ -96,8 +95,8 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
                     {value: 'not_contains', label: 'does not contain'}
                 ],
                 defaultOperator: 'contains',
-                className: 'w-48',
-                popoverContentClassName: 'w-48'
+                className: 'w-full max-w-48',
+                popoverContentClassName: 'w-full max-w-48'
             },
             {
                 key: 'status',
@@ -107,7 +106,12 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
                 options: [
                     {value: 'published', label: 'Published'},
                     {value: 'hidden', label: 'Hidden'}
-                ]
+                ],
+                operators: [
+                    {value: 'is', label: 'is'}
+                ],
+                searchable: false,
+                hideOperatorSelect: true
             },
             {
                 key: 'reported',
@@ -117,13 +121,14 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
                 options: [
                     {value: 'true', label: 'Yes'},
                     {value: 'false', label: 'No'}
-                ]
+                ],
+                searchable: false
             },
             {
                 key: 'created_at',
                 label: 'Date',
                 type: 'date',
-                className: 'w-32',
+                className: 'w-full max-w-32',
                 icon: <LucideIcon.Calendar className="size-4" />,
                 operators: [
                     {value: 'is', label: 'is'},
@@ -137,14 +142,10 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
 
     const hasFilters = filters.length > 0;
 
-    const handleClearFilters = useCallback(() => {
-        onFiltersChange([]);
-    }, [onFiltersChange]);
-
     const className = cn(
-        'flex flex-row justify-between',
-        !hasFilters && '[grid-area:actions] ',
-        hasFilters && 'col-start-1 col-end-4 row-start-3 pt-7 '
+        'flex flex-row',
+        !hasFilters && '[grid-area:actions] pt-5 justify-start sm:justify-end sm:pt-0',
+        hasFilters && 'col-start-1 col-end-4 row-start-3 pt-5'
     );
 
     return (
@@ -158,25 +159,21 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
                     )
                 }
                 addButtonText={hasFilters ? 'Add filter' : 'Filter'}
+                allowMultiple={false}
                 className={`[&>button]:order-last ${
-                    hasFilters && '[&>button]:border-none'
+                    hasFilters ? '[&>button]:border-none' : 'w-auto'
                 }`}
+                clearButtonClassName='font-normal text-muted-foreground'
+                clearButtonIcon={<LucideIcon.X />}
+                clearButtonText='Clear'
                 fields={filterFields}
                 filters={filters}
-                keyboardShortcut="f"
+                keyboardShortcut='f'
                 popoverAlign={hasFilters ? 'start' : 'end'}
+                showClearButton={hasFilters}
+                showSearchInput={false}
                 onChange={onFiltersChange}
             />
-            {hasFilters && (
-                <Button
-                    className="font-normal text-muted-foreground"
-                    variant="ghost"
-                    onClick={handleClearFilters}
-                >
-                    <LucideIcon.FunnelX />
-                    Clear
-                </Button>
-            )}
         </div>
     );
 };

@@ -35,7 +35,7 @@ function AppSidebarHeader({ ...props }: React.ComponentProps<typeof SidebarHeade
         <SidebarHeader {...props}>
             <div className="flex flex-col items-stretch gap-6">
                 <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
                         <div className="w-8 h-8 rounded-md bg-transparent border-0 flex-shrink-0">
                             <img
                                 src={siteIcon}
@@ -43,7 +43,7 @@ function AppSidebarHeader({ ...props }: React.ComponentProps<typeof SidebarHeade
                                 className="w-full h-full rounded-md object-cover"
                                 />
                         </div>
-                        <div className="font-semibold text-[15px] text-foreground overflow-hidden text-ellipsis whitespace-nowrap">
+                        <div className="font-semibold text-[15px] text-foreground overflow-hidden text-ellipsis whitespace-nowrap flex-1">
                             {title}
                         </div>
                     </div>

@@ -3,7 +3,7 @@ const should = require('should');
 const supertest = require('supertest');
 const _ = require('lodash');
 const url = require('url');
-const configUtils = require('../../utils/configUtils');
+const configUtils = require('../../utils/config-utils');
 const config = require('../../../core/shared/config');
 const testUtils = require('../../utils');
 const dbUtils = require('../../utils/db-utils');
@@ -31,11 +31,11 @@ describe('Tags Content API', function () {
             .expect('Cache-Control', testUtils.cacheRules.public)
             .expect(200);
 
-        should.not.exist(res.headers['x-cache-invalidate']);
+        assert.equal(res.headers['x-cache-invalidate'], undefined);
         const jsonResponse = res.body;
         should.exist(jsonResponse.tags);
         localUtils.API.checkResponse(jsonResponse, 'tags');
-        jsonResponse.tags.should.have.length(5);
+        assert.equal(jsonResponse.tags.length, 5);
         localUtils.API.checkResponse(jsonResponse.tags[0], 'tag', ['url']);
         localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
 
@@ -43,11 +43,11 @@ describe('Tags Content API', function () {
         // the ordering difference is described in https://github.com/TryGhost/Ghost/issues/6104
         // this condition should be removed once issue mentioned above ^ is resolved
         if (dbUtils.isMySQL()) {
-            jsonResponse.tags[0].name.should.eql('bacon');
-            jsonResponse.tags[3].name.should.eql('kitchen sink');
+            assert.equal(jsonResponse.tags[0].name, 'bacon');
+            assert.equal(jsonResponse.tags[3].name, 'kitchen sink');
         } else {
-            jsonResponse.tags[0].name.should.eql('Getting Started');
-            jsonResponse.tags[4].name.should.eql('kitchen sink');
+            assert.equal(jsonResponse.tags[0].name, 'Getting Started');
+            assert.equal(jsonResponse.tags[4].name, 'kitchen sink');
         }
 
         should.exist(res.body.tags[0].url);
@@ -62,11 +62,11 @@ describe('Tags Content API', function () {
             .expect('Cache-Control', testUtils.cacheRules.public)
             .expect(200);
 
-        should.not.exist(res.headers['x-cache-invalidate']);
+        assert.equal(res.headers['x-cache-invalidate'], undefined);
         const jsonResponse = res.body;
         should.exist(jsonResponse.tags);
         localUtils.API.checkResponse(jsonResponse, 'tags');
-        jsonResponse.tags.should.have.length(5);
+        assert.equal(jsonResponse.tags.length, 5);
         localUtils.API.checkResponse(jsonResponse.tags[0], 'tag', ['url']);
         localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
     });
@@ -78,11 +78,11 @@ describe('Tags Content API', function () {
             .expect('Cache-Control', testUtils.cacheRules.public)
             .expect(200);
 
-        should.not.exist(res.headers['x-cache-invalidate']);
+        assert.equal(res.headers['x-cache-invalidate'], undefined);
         const jsonResponse = res.body;
         should.exist(jsonResponse.tags);
         localUtils.API.checkResponse(jsonResponse, 'tags');
-        jsonResponse.tags.should.have.length(3);
+        assert.equal(jsonResponse.tags.length, 3);
         localUtils.API.checkResponse(jsonResponse.tags[0], 'tag', ['url']);
         localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
     });
@@ -100,10 +100,10 @@ describe('Tags Content API', function () {
         jsonResponse.tags.should.be.an.Array().with.lengthOf(5);
 
         // Each tag should have the correct count
-        _.find(jsonResponse.tags, {name: 'Getting Started'}).count.posts.should.eql(7);
-        _.find(jsonResponse.tags, {name: 'kitchen sink'}).count.posts.should.eql(2);
-        _.find(jsonResponse.tags, {name: 'bacon'}).count.posts.should.eql(2);
-        _.find(jsonResponse.tags, {name: 'chorizo'}).count.posts.should.eql(1);
+        assert.equal(_.find(jsonResponse.tags, {name: 'Getting Started'}).count.posts, 7);
+        assert.equal(_.find(jsonResponse.tags, {name: 'kitchen sink'}).count.posts, 2);
+        assert.equal(_.find(jsonResponse.tags, {name: 'bacon'}).count.posts, 2);
+        assert.equal(_.find(jsonResponse.tags, {name: 'chorizo'}).count.posts, 1);
     });
 
     it('Can use multiple fields and have valid url fields', async function () {

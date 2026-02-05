@@ -17,7 +17,9 @@
     "Best": "सर्वश्रेष्ठ",
     "Cancel": "रद्द करें",
     "Comment": "टिप्पणी",
+    "Commenting disabled": "",
     "Complete your profile": "अपनी प्रोफ़ाइल पूरी करें",
+    "Contact support": "",
     "Delete": "हटाएं",
     "Deleted": "हटा दिया गया",
     "Deleted member": "हटाए गए सदस्य",
@@ -28,6 +30,7 @@
     "edited": "संपादित किया गया",
     "Enter your name": "अपना नाम दर्ज करें",
     "Expertise": "विशेषज्ञता",
+    "for more information.": "",
     "Founder @ Acme Inc": "संस्थापक @ Acme Inc",
     "Full-time parent": "पूर्णकालिक माता-पिता",
     "Head of Marketing at Acme, Inc": "Acme, Inc में विपणन प्रमुख",
@@ -69,6 +72,8 @@
     "This comment has been hidden.": "इस टिप्पणी को छिपा दिया गया है।",
     "This comment has been removed.": "इस टिप्पणी को हटा दिया गया है।",
     "Upgrade now": "अब उन्नत करें",
+    "View in admin": "",
     "Yesterday": "कल",
+    "You can't post comments in this publication.": "",
     "Your request will be sent to the owner of this site.": "आपका अनुरोध इस साइट के मालिक को भेजा जाएगा।"
 }
