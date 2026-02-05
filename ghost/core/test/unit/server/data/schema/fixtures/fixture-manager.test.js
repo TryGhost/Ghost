@@ -101,7 +101,7 @@ describe('Migration Fixture Utils', function () {
             const processed = manager.fixtures;
 
             processed.relations[0].entries.should.have.property('user123');
-            processed.relations[0].entries.user123.should.deepEqual(['Owner', 'Admin']);
+            assert.deepEqual(processed.relations[0].entries.user123, ['Owner', 'Admin']);
             processed.relations[0].entries.should.not.have.property('__USER_ID__');
         });
 
@@ -155,7 +155,7 @@ describe('Migration Fixture Utils', function () {
             const manager = new FixtureManager(testFixtures, {});
             const processed = manager.fixtures;
 
-            processed.should.deepEqual(testFixtures);
+            assert.deepEqual(processed, testFixtures);
         });
 
         it('should pass models to placeholder functions', function () {

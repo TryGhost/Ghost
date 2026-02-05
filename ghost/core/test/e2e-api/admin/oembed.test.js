@@ -562,7 +562,7 @@ describe('Oembed API', function () {
             assert.equal(pageMock.isDone(), true);
             assert.equal(oembedMock.isDone(), true);
 
-            res.body.should.deepEqual({
+            assert.deepEqual(res.body, {
                 version: '1.0',
                 type: 'video',
                 html: '<p>Test</p>',
