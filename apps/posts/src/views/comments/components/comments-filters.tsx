@@ -122,7 +122,11 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
                     {value: 'true', label: 'Yes'},
                     {value: 'false', label: 'No'}
                 ],
-                searchable: false
+                operators: [
+                    {value: 'is', label: 'is'}
+                ],
+                searchable: false,
+                hideOperatorSelect: true
             },
             {
                 key: 'created_at',
