@@ -480,8 +480,8 @@ describe('Comments API', function () {
                 });
 
                 // check if hiddenComment.id and deletedComment.id are in the response
-                should(data2.body.comments.map(c => c.id)).containEql(hiddenComment.id);
-                should(data2.body.comments.map(c => c.id)).containEql(deletedComment.id);
+                assert(data2.body.comments.map(c => c.id).includes(hiddenComment.id));
+                assert(data2.body.comments.map(c => c.id).includes(deletedComment.id));
 
                 // check if the replies to hidden and deleted comments are in the response
                 data2.body.comments.forEach((comment) => {

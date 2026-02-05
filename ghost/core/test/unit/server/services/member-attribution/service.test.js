@@ -35,7 +35,8 @@ describe('MemberAttributionService', function () {
             });
             const attribution = await service.getAttributionFromContext({importer: true});
 
-            should(attribution).containEql({referrerSource: 'Imported', referrerMedium: 'Member Importer'});
+            assert.equal(attribution.referrerSource, 'Imported');
+            assert.equal(attribution.referrerMedium, 'Member Importer');
         });
 
         it('returns attribution for admin context', async function () {
@@ -44,7 +45,8 @@ describe('MemberAttributionService', function () {
             });
             const attribution = await service.getAttributionFromContext({user: 'abc'});
 
-            should(attribution).containEql({referrerSource: 'Created manually', referrerMedium: 'Ghost Admin'});
+            assert.equal(attribution.referrerSource, 'Created manually');
+            assert.equal(attribution.referrerMedium, 'Ghost Admin');
         });
 
         it('returns attribution for api without integration context', async function () {
@@ -55,7 +57,8 @@ describe('MemberAttributionService', function () {
                 api_key: 'abc'
             });
 
-            should(attribution).containEql({referrerSource: 'Created via API', referrerMedium: 'Admin API'});
+            assert.equal(attribution.referrerSource, 'Created via API');
+            assert.equal(attribution.referrerMedium, 'Admin API');
         });
 
         it('returns attribution for api with integration context', async function () {
@@ -76,7 +79,8 @@ describe('MemberAttributionService', function () {
                 integration: {id: 'integration_1'}
             });
 
-            should(attribution).containEql({referrerSource: 'Integration: Test Integration', referrerMedium: 'Admin API'});
+            assert.equal(attribution.referrerSource, 'Integration: Test Integration');
+            assert.equal(attribution.referrerMedium, 'Admin API');
         });
     });
 
