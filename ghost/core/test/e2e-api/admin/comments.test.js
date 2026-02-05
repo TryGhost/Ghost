@@ -1691,6 +1691,129 @@ describe(`Admin Comments API`, function () {
         });
     });
 
+    describe('Comment Likes', function () {
+        const likeMatcher = {
+            id: anyObjectId,
+            comment_id: anyObjectId,
+            member_id: anyObjectId,
+            created_at: anyISODateTime,
+            updated_at: anyISODateTime,
+            member: {
+                id: anyObjectId,
+                uuid: anyUuid,
+                created_at: anyISODateTime,
+                updated_at: anyISODateTime,
+                transient_id: anyString,
+                last_seen_at: nullable(anyISODateTime),
+                last_commented_at: nullable(anyISODateTime)
+            }
+        };
+
+        it('Can browse comment likes', async function () {
+            const comment = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Liked comment</p>'
+            });
+
+            // Add likes from different members
+            await models.CommentLike.add({
+                comment_id: comment.id,
+                member_id: fixtureManager.get('members', 1).id
+            });
+            await models.CommentLike.add({
+                comment_id: comment.id,
+                member_id: fixtureManager.get('members', 2).id
+            });
+
+            await adminApi.get(`/comments/${comment.id}/likes/`)
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    comment_likes: [likeMatcher, likeMatcher]
+                });
+        });
+
+        it('Returns empty list for comment with no likes', async function () {
+            const comment = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Unliked comment</p>'
+            });
+
+            await adminApi.get(`/comments/${comment.id}/likes/`)
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    comment_likes: []
+                });
+        });
+
+        it('Supports pagination', async function () {
+            const comment = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Popular comment</p>'
+            });
+
+            // Add likes from multiple members
+            await models.CommentLike.add({
+                comment_id: comment.id,
+                member_id: fixtureManager.get('members', 1).id
+            });
+            await models.CommentLike.add({
+                comment_id: comment.id,
+                member_id: fixtureManager.get('members', 2).id
+            });
+            await models.CommentLike.add({
+                comment_id: comment.id,
+                member_id: fixtureManager.get('members', 3).id
+            });
+
+            const res = await adminApi.get(`/comments/${comment.id}/likes/?limit=2`);
+            assert.equal(res.body.comment_likes.length, 2);
+            assert.equal(res.body.meta.pagination.total, 3);
+            assert.equal(res.body.meta.pagination.pages, 2);
+        });
+
+        it('Orders likes by created_at desc', async function () {
+            const comment = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Liked comment</p>'
+            });
+
+            // Add likes at different times
+            const olderLike = await models.CommentLike.add({
+                comment_id: comment.id,
+                member_id: fixtureManager.get('members', 1).id
+            });
+            await db.knex('comment_likes')
+                .where('id', olderLike.id)
+                .update({created_at: new Date('2023-01-01')});
+
+            const newerLike = await models.CommentLike.add({
+                comment_id: comment.id,
+                member_id: fixtureManager.get('members', 2).id
+            });
+            await db.knex('comment_likes')
+                .where('id', newerLike.id)
+                .update({created_at: new Date('2023-06-01')});
+
+            const res = await adminApi.get(`/comments/${comment.id}/likes/`);
+            assert.equal(res.body.comment_likes.length, 2);
+            // Newer like should be first
+            assert.equal(res.body.comment_likes[0].member_id, fixtureManager.get('members', 2).id);
+            assert.equal(res.body.comment_likes[1].member_id, fixtureManager.get('members', 1).id);
+        });
+
+        it('Returns 404 for non-existent comment', async function () {
+            const fakeCommentId = '507f1f77bcf86cd799439011';
+
+            await adminApi.get(`/comments/${fakeCommentId}/likes/`)
+                .expectStatus(404)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId
+                    }]
+                });
+        });
+    });
+
     describe('API Key Permissions', function () {
         let restrictedApiKeyId;
         let restrictedApiKeySecret;
