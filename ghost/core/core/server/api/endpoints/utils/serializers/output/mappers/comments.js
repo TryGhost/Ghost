@@ -60,8 +60,9 @@ const commentMapper = (model, frame) => {
     const isPublicRequest = utils.isMembersAPI(frame);
 
     // For admin requests, we want to show a snippet for ALL replies
-    // Use in_reply_to if available, otherwise fall back to parent for first-level replies
-    const replyToComment = jsonModel.in_reply_to || (!isPublicRequest && jsonModel.parent_id && jsonModel.parent);
+    // Use in_reply_to if available, otherwise fall back to parent for first-level replies only
+    // (first-level replies have parent_id but no in_reply_to_id)
+    const replyToComment = jsonModel.in_reply_to || (!isPublicRequest && jsonModel.parent_id && !jsonModel.in_reply_to_id && jsonModel.parent);
 
     if (replyToComment && (replyToComment.status === 'published' || (!isPublicRequest && replyToComment.status === 'hidden'))) {
         jsonModel.in_reply_to_snippet = htmlToPlaintext.commentSnippet(replyToComment.html);
@@ -71,7 +72,9 @@ const commentMapper = (model, frame) => {
         jsonModel.in_reply_to_snippet = null;
     }
 
-    if (!jsonModel.in_reply_to) {
+    // Only null out in_reply_to_id if it wasn't set in the original model
+    // (i.e., don't overwrite a valid in_reply_to_id just because the relation wasn't loaded)
+    if (!jsonModel.in_reply_to && !jsonModel.in_reply_to_id) {
         jsonModel.in_reply_to_id = null;
     }
 

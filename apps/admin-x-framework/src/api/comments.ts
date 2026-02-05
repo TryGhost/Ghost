@@ -151,7 +151,7 @@ export const useReadComment = createQueryWithId<CommentsResponseType>({
     dataType,
     path: (id: string) => `/comments/${id}/`,
     defaultSearchParams: {
-        include: 'member,post,count.replies,count.likes,count.reports,parent'
+        include: 'member,post,count.replies,count.direct_replies,count.likes,count.reports,parent,in_reply_to'
     }
 });
 
@@ -186,4 +186,21 @@ const useBrowseCommentLikesQuery = createQueryWithId<CommentLikesResponseType>({
 
 export const useBrowseCommentLikes = (commentId: string, options?: {enabled?: boolean}) => {
     return useBrowseCommentLikesQuery(commentId, {...options});
+};
+
+/**
+ * Fetches direct replies for a thread view.
+ * - For top-level comments: returns comments where parent_id matches AND in_reply_to_id is null
+ * - For nested comments: returns comments where in_reply_to_id matches
+ */
+export const useThreadComments = (commentId: string, options?: {enabled?: boolean}) => {
+    return useBrowseComments({
+        ...options,
+        searchParams: {
+            filter: `(parent_id:${commentId}+in_reply_to_id:null),in_reply_to_id:${commentId}`,
+            order: 'created_at asc',
+            include: 'member,post,count.direct_replies,count.likes,count.reports,parent,in_reply_to',
+            limit: '100'
+        }
+    });
 };
