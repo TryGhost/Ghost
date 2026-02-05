@@ -49,11 +49,11 @@ describe('External Request', function () {
                 assert.equal(requestMock.isDone(), true);
                 assertExists(res);
                 assertExists(res.body);
-                res.body.should.be.equal(expectedResponse.body);
+                assert.equal(res.body, expectedResponse.body);
                 assertExists(res.url);
-                res.statusCode.should.be.equal(expectedResponse.statusCode);
+                assert.equal(res.statusCode, expectedResponse.statusCode);
                 assertExists(res.statusCode);
-                res.url.should.be.equal(expectedResponse.url);
+                assert.equal(res.url, expectedResponse.url);
             });
         });
 
@@ -80,11 +80,11 @@ describe('External Request', function () {
                 assert.equal(requestMock.isDone(), true);
                 assertExists(res);
                 assertExists(res.body);
-                res.body.should.be.equal(expectedResponse.body);
+                assert.equal(res.body, expectedResponse.body);
                 assertExists(res.url);
-                res.statusCode.should.be.equal(expectedResponse.statusCode);
+                assert.equal(res.statusCode, expectedResponse.statusCode);
                 assertExists(res.statusCode);
-                res.url.should.be.equal(expectedResponse.url);
+                assert.equal(res.url, expectedResponse.url);
             });
         });
 
@@ -102,7 +102,7 @@ describe('External Request', function () {
                 throw new Error('Request should have rejected with non-permitted IP message');
             }, (err) => {
                 assertExists(err);
-                err.message.should.be.equal('URL resolves to a non-permitted private IP block');
+                assert.equal(err.message, 'URL resolves to a non-permitted private IP block');
             });
         });
 
@@ -120,7 +120,7 @@ describe('External Request', function () {
                 throw new Error('Request should have rejected with non-permitted IP message');
             }, (err) => {
                 assertExists(err);
-                err.message.should.be.equal('URL resolves to a non-permitted private IP block');
+                assert.equal(err.message, 'URL resolves to a non-permitted private IP block');
             });
         });
 
@@ -140,7 +140,7 @@ describe('External Request', function () {
                 throw new Error('Request should have rejected with non-permitted IP message');
             }, (err) => {
                 assertExists(err);
-                err.message.should.be.equal('URL resolves to a non-permitted private IP block');
+                assert.equal(err.message, 'URL resolves to a non-permitted private IP block');
                 assert.equal(requestMock.isDone(), false);
             });
         });
@@ -170,7 +170,7 @@ describe('External Request', function () {
                 throw new Error('Request should have rejected with non-permitted IP message');
             }, (err) => {
                 assertExists(err);
-                err.message.should.be.equal('URL resolves to a non-permitted private IP block');
+                assert.equal(err.message, 'URL resolves to a non-permitted private IP block');
                 assert.equal(requestMock.isDone(), true);
                 assert.equal(secondRequestMock.isDone(), false);
             });
@@ -211,11 +211,11 @@ describe('External Request', function () {
                 assert.equal(requestMock.isDone(), true);
                 assertExists(res);
                 assertExists(res.body);
-                res.body.should.be.equal(expectedResponse.body);
+                assert.equal(res.body, expectedResponse.body);
                 assertExists(res.url);
-                res.statusCode.should.be.equal(expectedResponse.statusCode);
+                assert.equal(res.statusCode, expectedResponse.statusCode);
                 assertExists(res.statusCode);
-                res.url.should.be.equal(expectedResponse.url);
+                assert.equal(res.url, expectedResponse.url);
             });
         });
 
@@ -248,11 +248,11 @@ describe('External Request', function () {
                 assert.equal(secondRequestMock.isDone(), true);
                 assertExists(res);
                 assertExists(res.body);
-                res.body.should.be.equal(expectedResponse.body);
+                assert.equal(res.body, expectedResponse.body);
                 assertExists(res.url);
-                res.statusCode.should.be.equal(expectedResponse.statusCode);
+                assert.equal(res.statusCode, expectedResponse.statusCode);
                 assertExists(res.statusCode);
-                res.url.should.be.equal(expectedResponse.url);
+                assert.equal(res.url, expectedResponse.url);
             });
         });
 
@@ -268,7 +268,7 @@ describe('External Request', function () {
                 throw new Error('Request should have rejected with invalid url message');
             }, (err) => {
                 assertExists(err);
-                err.code.should.be.equal('ERR_INVALID_URL');
+                assert.equal(err.code, 'ERR_INVALID_URL');
             });
         });
 
@@ -285,7 +285,7 @@ describe('External Request', function () {
             }, (err) => {
                 assertExists(err);
                 // got v11+ throws an error instead of the external requests lib
-                err.message.should.be.equal('No URL protocol specified');
+                assert.equal(err.message, 'No URL protocol specified');
             });
         });
 
@@ -306,7 +306,7 @@ describe('External Request', function () {
             }, (err) => {
                 assert.equal(requestMock.isDone(), true);
                 assertExists(err);
-                err.response.statusMessage.should.be.equal('Not Found');
+                assert.equal(err.response.statusMessage, 'Not Found');
             });
         });
 
@@ -328,7 +328,7 @@ describe('External Request', function () {
             }, (err) => {
                 assert.equal(requestMock.isDone(), true);
                 assertExists(err);
-                err.response.statusMessage.should.be.equal(`Internal Server Error`);
+                assert.equal(err.response.statusMessage, `Internal Server Error`);
             });
         });
     });

@@ -214,11 +214,11 @@ describe('Update Check', function () {
             assert.match(capturedData.database_type, /sqlite3|mysql/);
             capturedData.blog_id.should.be.a.String();
             capturedData.blog_id.should.not.be.empty();
-            capturedData.theme.should.be.equal('casperito');
+            assert.equal(capturedData.theme, 'casperito');
             assert.equal(capturedData.blog_created_at, 819846900);
-            capturedData.user_count.should.be.equal(2);
-            capturedData.post_count.should.be.equal(13);
-            capturedData.npm_version.should.be.equal('10.8.2');
+            assert.equal(capturedData.user_count, 2);
+            assert.equal(capturedData.post_count, 13);
+            assert.equal(capturedData.npm_version, '10.8.2');
         });
     });
 

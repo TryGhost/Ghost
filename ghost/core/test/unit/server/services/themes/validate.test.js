@@ -141,7 +141,7 @@ describe('Themes', function () {
                     checkedTheme.should.not.exist();
                 }).catch((error) => {
                     assert(error instanceof Error);
-                    error.message.should.be.equal('invalid zip file');
+                    assert.equal(error.message, 'invalid zip file');
                     assert.equal(checkZipStub.calledOnce, true);
                     assert.equal(checkZipStub.calledWith(testTheme), true);
                     sinon.assert.notCalled(checkStub);
