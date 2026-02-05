@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
+const _ = require('lodash');
 
 const models = require('../../../../../../core/server/models');
 const baseUtils = require('../../../../../../core/server/models/base/utils');
@@ -338,7 +339,7 @@ describe('Migration Fixture Utils', function () {
 
             fixtureManager.addFixturesForModel(postFixtures).then(function (result) {
                 assertExists(result);
-                result.should.be.an.Object();
+                assert(_.isPlainObject(result));
                 result.should.have.property('expected', 11);
                 result.should.have.property('done', 11);
 
@@ -359,7 +360,7 @@ describe('Migration Fixture Utils', function () {
 
             fixtureManager.addFixturesForModel(newsletterFixtures).then(function (result) {
                 assertExists(result);
-                result.should.be.an.Object();
+                assert(_.isPlainObject(result));
                 result.should.have.property('expected', 1);
                 result.should.have.property('done', 1);
 
@@ -380,7 +381,7 @@ describe('Migration Fixture Utils', function () {
 
             fixtureManager.addFixturesForModel(postFixtures).then(function (result) {
                 assertExists(result);
-                result.should.be.an.Object();
+                assert(_.isPlainObject(result));
                 result.should.have.property('expected', 11);
                 result.should.have.property('done', 0);
 
@@ -413,7 +414,7 @@ describe('Migration Fixture Utils', function () {
             fixtureManager.addFixturesForRelation(fixtures.relations[0]).then(function (result) {
                 const FIXTURE_COUNT = 137;
                 assertExists(result);
-                result.should.be.an.Object();
+                assert(_.isPlainObject(result));
                 result.should.have.property('expected', FIXTURE_COUNT);
                 result.should.have.property('done', FIXTURE_COUNT);
 
@@ -450,7 +451,7 @@ describe('Migration Fixture Utils', function () {
 
             fixtureManager.addFixturesForRelation(fixtures.relations[1]).then(function (result) {
                 assertExists(result);
-                result.should.be.an.Object();
+                assert(_.isPlainObject(result));
                 result.should.have.property('expected', 7);
                 result.should.have.property('done', 7);
 
@@ -487,7 +488,7 @@ describe('Migration Fixture Utils', function () {
 
             fixtureManager.addFixturesForRelation(fixtures.relations[1]).then(function (result) {
                 assertExists(result);
-                result.should.be.an.Object();
+                assert(_.isPlainObject(result));
                 result.should.have.property('expected', 7);
                 result.should.have.property('done', 0);
 
@@ -511,7 +512,7 @@ describe('Migration Fixture Utils', function () {
     describe('findModelFixtureEntry', function () {
         it('should fetch a single fixture entry', function () {
             const foundFixture = fixtureManager.findModelFixtureEntry('Integration', {slug: 'zapier'});
-            foundFixture.should.be.an.Object();
+            assert(_.isPlainObject(foundFixture));
             foundFixture.should.eql({
                 slug: 'zapier',
                 name: 'Zapier',
@@ -525,7 +526,7 @@ describe('Migration Fixture Utils', function () {
     describe('findModelFixtures', function () {
         it('should fetch a fixture with multiple entries', function () {
             const foundFixture = fixtureManager.findModelFixtures('Permission', {object_type: 'db'});
-            foundFixture.should.be.an.Object();
+            assert(_.isPlainObject(foundFixture));
             foundFixture.entries.should.be.an.Array().with.lengthOf(4);
             foundFixture.entries[0].should.eql({
                 name: 'Export database',
@@ -543,8 +544,8 @@ describe('Migration Fixture Utils', function () {
     describe('findPermissionRelationsForObject', function () {
         it('should fetch a fixture with multiple entries', function () {
             const foundFixture = fixtureManager.findPermissionRelationsForObject('db');
-            foundFixture.should.be.an.Object();
-            foundFixture.entries.should.be.an.Object();
+            assert(_.isPlainObject(foundFixture));
+            assert(_.isPlainObject(foundFixture.entries));
             foundFixture.entries.should.have.property('Administrator', {db: 'all'});
         });
     });

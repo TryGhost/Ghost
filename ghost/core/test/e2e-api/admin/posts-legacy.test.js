@@ -247,13 +247,13 @@ describe('Posts API', function () {
 
         localUtils.API.checkResponse(jsonResponse.posts[0], 'post', null, ['count', 'post_revisions']);
 
-        jsonResponse.posts[0].authors[0].should.be.an.Object();
+        assert(_.isPlainObject(jsonResponse.posts[0].authors[0]));
         localUtils.API.checkResponse(jsonResponse.posts[0].authors[0], 'user');
 
-        jsonResponse.posts[0].tags[0].should.be.an.Object();
+        assert(_.isPlainObject(jsonResponse.posts[0].tags[0]));
         localUtils.API.checkResponse(jsonResponse.posts[0].tags[0], 'tag', ['url']);
 
-        jsonResponse.posts[0].email.should.be.an.Object();
+        assert(_.isPlainObject(jsonResponse.posts[0].email));
         localUtils.API.checkResponse(jsonResponse.posts[0].email, 'email');
 
         jsonResponse.posts[0].newsletter.id.should.eql(testUtils.DataGenerator.Content.newsletters[0].id);

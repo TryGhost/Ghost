@@ -73,7 +73,7 @@ describe('Themes', function () {
             themeList.init();
             const result = themeList.getAll();
             assertExists(result);
-            result.should.be.an.Object();
+            assert(_.isPlainObject(result));
             result.should.eql({});
             assert.equal(Object.keys(result).length, 0);
         });

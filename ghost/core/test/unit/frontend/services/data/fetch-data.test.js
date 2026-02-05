@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
+const _ = require('lodash');
 
 const api = require('../../../../../core/frontend/services/proxy').api;
 const data = require('../../../../../core/frontend/services/data');
@@ -64,7 +65,7 @@ describe('Unit - frontend/data/fetch-data', function () {
             result.should.not.have.property('data');
 
             assert.equal(browsePostsStub.calledOnce, true);
-            browsePostsStub.firstCall.args[0].should.be.an.Object();
+            assert(_.isPlainObject(browsePostsStub.firstCall.args[0]));
             browsePostsStub.firstCall.args[0].should.have.property('include');
             browsePostsStub.firstCall.args[0].should.not.have.property('filter');
 
@@ -81,7 +82,7 @@ describe('Unit - frontend/data/fetch-data', function () {
             result.posts.length.should.eql(posts.length);
 
             assert.equal(browsePostsStub.calledOnce, true);
-            browsePostsStub.firstCall.args[0].should.be.an.Object();
+            assert(_.isPlainObject(browsePostsStub.firstCall.args[0]));
             browsePostsStub.firstCall.args[0].should.have.property('include');
             browsePostsStub.firstCall.args[0].should.have.property('limit', 10);
             browsePostsStub.firstCall.args[0].should.have.property('page', 2);
