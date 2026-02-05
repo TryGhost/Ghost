@@ -49,7 +49,7 @@ describe('{{#foreach}} helper', function () {
             runTest(_this, context, options);
 
             assert.equal(options.fn.called, true);
-            options.fn.getCalls().length.should.eql(_.size(context));
+            sinon.assert.callCount(options.fn, _.size(context));
 
             _.each(context, function (value, index) {
                 options.fn.getCall(index).args[0].should.eql(value);
@@ -74,7 +74,7 @@ describe('{{#foreach}} helper', function () {
             runTest(_this, context, options);
 
             assert.equal(options.fn.called, true);
-            options.fn.getCalls().length.should.eql(_.size(context));
+            sinon.assert.callCount(options.fn, _.size(context));
 
             _.each(_.keys(context), function (value, index) {
                 options.fn.getCall(index).args[0].should.eql(context[value]);
@@ -100,7 +100,7 @@ describe('{{#foreach}} helper', function () {
             runTest(_this, context, options);
 
             assert.equal(options.fn.called, true);
-            options.fn.getCalls().length.should.eql(_.size(context));
+            sinon.assert.callCount(options.fn, _.size(context));
 
             _.each(context, function (value, index) {
                 options.fn.getCall(index).args[0].should.eql(value);
@@ -142,7 +142,7 @@ describe('{{#foreach}} helper', function () {
             runTest(_this, context, options);
 
             assert.equal(options.fn.called, true);
-            options.fn.getCalls().length.should.eql(_.size(context));
+            sinon.assert.callCount(options.fn, _.size(context));
 
             _.each(_.keys(context), function (value, index) {
                 options.fn.getCall(index).args[0].should.eql(context[value]);
@@ -177,7 +177,7 @@ describe('{{#foreach}} helper', function () {
             runTest(_this, context, options);
 
             assert.equal(options.fn.called, true);
-            options.fn.getCalls().length.should.eql(_.size(context));
+            sinon.assert.callCount(options.fn, _.size(context));
 
             _.each(context, function (value, index) {
                 options.fn.getCall(index).args[0].should.eql(value);
@@ -219,7 +219,7 @@ describe('{{#foreach}} helper', function () {
             runTest(_this, context, options);
 
             assert.equal(options.fn.called, true);
-            options.fn.getCalls().length.should.eql(_.size(context));
+            sinon.assert.callCount(options.fn, _.size(context));
 
             _.each(_.keys(context), function (value, index) {
                 options.fn.getCall(index).args[0].should.eql(context[value]);
