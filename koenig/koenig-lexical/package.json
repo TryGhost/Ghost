@@ -65,7 +65,7 @@
     "@mdx-js/rollup": "^3.1.0",
     "@playwright/test": "^1.50.1",
     "@prettier/sync": "^0.6.0",
-    "@sentry/vite-plugin": "4.8.0",
+    "@sentry/vite-plugin": "4.9.0",
     "@storybook/addon-actions": "^9.0.0",
     "@storybook/addon-essentials": "^8.5.0",
     "@storybook/addon-interactions": "^8.5.0",
