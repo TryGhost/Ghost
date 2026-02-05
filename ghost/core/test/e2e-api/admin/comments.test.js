@@ -1,4 +1,5 @@
 const assert = require('assert/strict');
+require('should');
 const ObjectId = require('bson-objectid').default;
 const {
     agentProvider,
@@ -83,6 +84,7 @@ const dbFns = {
                 post_id: parent.get('post_id'),
                 member_id: reply.member_id,
                 parent_id: parent.get('id'),
+                in_reply_to_id: reply.in_reply_to_id,
                 html: reply.html || '<p>This is a reply</p>',
                 status: reply.status || 'published',
                 created_at: reply.created_at || new Date()
@@ -622,6 +624,77 @@ describe(`Admin Comments API`, function () {
             const comment = res.body.comments[0];
             const reply = comment.replies[1];
             assert.equal(reply.in_reply_to_snippet, 'Reply 1');
+        });
+    });
+
+    describe('Reply counts', function () {
+        it('returns correct count.replies and count.direct_replies for threaded comments', async function () {
+            const member0 = fixtureManager.get('members', 0).id;
+            const member1 = fixtureManager.get('members', 1).id;
+
+            // Root A
+            const rootA = await dbFns.addComment({member_id: member0, html: '<p>Root A</p>'});
+
+            // Reply B to A (direct reply — in_reply_to_id is null)
+            const replyB = await dbFns.addComment({
+                member_id: member1,
+                parent_id: rootA.get('id'),
+                html: '<p>Reply B</p>'
+            });
+
+            // Reply C to B (in_reply_to_id = B)
+            await dbFns.addComment({
+                member_id: member0,
+                parent_id: rootA.get('id'),
+                in_reply_to_id: replyB.get('id'),
+                html: '<p>Reply C to B</p>'
+            });
+
+            // Reply D to B (in_reply_to_id = B)
+            await dbFns.addComment({
+                member_id: member1,
+                parent_id: rootA.get('id'),
+                in_reply_to_id: replyB.get('id'),
+                html: '<p>Reply D to B</p>'
+            });
+
+            // Fetch root via admin API
+            const res = await adminApi.get(`/comments/post/${postId}/`);
+            const rootComment = res.body.comments[0];
+
+            // count.replies = 3 (B, C, D all have parent_id=A)
+            // count.direct_replies = 1 (only B is direct: parent_id=A AND in_reply_to_id IS NULL)
+            assert.equal(rootComment.count.replies, 3);
+            assert.equal(rootComment.count.direct_replies, 1);
+
+            // Child B (embedded in root's replies) should have count.direct_replies = 2
+            const childB = rootComment.replies.find(r => r.id === replyB.get('id'));
+            assert.equal(childB.count.direct_replies, 2);
+        });
+
+        it('admin count.replies includes hidden but not deleted', async function () {
+            const member0 = fixtureManager.get('members', 0).id;
+
+            const root = await dbFns.addComment({member_id: member0, html: '<p>Root</p>'});
+
+            // 1 hidden, 1 deleted, 1 published — all direct replies
+            await dbFns.addComment({
+                member_id: member0, parent_id: root.get('id'), html: '<p>Hidden</p>', status: 'hidden'
+            });
+            await dbFns.addComment({
+                member_id: member0, parent_id: root.get('id'), html: '<p>Deleted</p>', status: 'deleted'
+            });
+            await dbFns.addComment({
+                member_id: member0, parent_id: root.get('id'), html: '<p>Published</p>', status: 'published'
+            });
+
+            const res = await adminApi.get(`/comments/post/${postId}/`);
+            const rootComment = res.body.comments[0];
+
+            // Admin sees hidden + published = 2, not deleted
+            // count.replies = 2 (all are direct, so same as direct_replies)
+            assert.equal(rootComment.count.replies, 2);
+            assert.equal(rootComment.count.direct_replies, 2);
         });
     });
 
@@ -1218,7 +1291,7 @@ describe(`Admin Comments API`, function () {
     });
 
     describe('Browse All', function () {
-        // Matcher for comments (always includes member, post, and counts for admin)
+        // Matcher for root comments (includes count.replies alias)
         const commentMatcher = {
             id: anyObjectId,
             parent_id: nullable(anyObjectId),
@@ -1236,6 +1309,16 @@ describe(`Admin Comments API`, function () {
             count: {
                 likes: anyNumber,
                 replies: anyNumber,
+                direct_replies: anyNumber,
+                reports: anyNumber
+            }
+        };
+        // Matcher for child comments (no count.replies — alias is root-only)
+        const childCommentMatcher = {
+            ...commentMatcher,
+            count: {
+                likes: anyNumber,
+                direct_replies: anyNumber,
                 reports: anyNumber
             }
         };
@@ -1247,7 +1330,7 @@ describe(`Admin Comments API`, function () {
             created_at: anyISODateTime
         };
         const commentMatcherWithParent = {
-            ...commentMatcher,
+            ...childCommentMatcher,
             parent: parentMatcher
         };
 
@@ -1682,6 +1765,129 @@ describe(`Admin Comments API`, function () {
             const fakeCommentId = '507f1f77bcf86cd799439011';
 
             await adminApi.get(`/comments/${fakeCommentId}/reports/`)
+                .expectStatus(404)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId
+                    }]
+                });
+        });
+    });
+
+    describe('Comment Likes', function () {
+        const likeMatcher = {
+            id: anyObjectId,
+            comment_id: anyObjectId,
+            member_id: anyObjectId,
+            created_at: anyISODateTime,
+            updated_at: anyISODateTime,
+            member: {
+                id: anyObjectId,
+                uuid: anyUuid,
+                created_at: anyISODateTime,
+                updated_at: anyISODateTime,
+                transient_id: anyString,
+                last_seen_at: nullable(anyISODateTime),
+                last_commented_at: nullable(anyISODateTime)
+            }
+        };
+
+        it('Can browse comment likes', async function () {
+            const comment = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Liked comment</p>'
+            });
+
+            // Add likes from different members
+            await models.CommentLike.add({
+                comment_id: comment.id,
+                member_id: fixtureManager.get('members', 1).id
+            });
+            await models.CommentLike.add({
+                comment_id: comment.id,
+                member_id: fixtureManager.get('members', 2).id
+            });
+
+            await adminApi.get(`/comments/${comment.id}/likes/`)
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    comment_likes: [likeMatcher, likeMatcher]
+                });
+        });
+
+        it('Returns empty list for comment with no likes', async function () {
+            const comment = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Unliked comment</p>'
+            });
+
+            await adminApi.get(`/comments/${comment.id}/likes/`)
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    comment_likes: []
+                });
+        });
+
+        it('Supports pagination', async function () {
+            const comment = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Popular comment</p>'
+            });
+
+            // Add likes from multiple members
+            await models.CommentLike.add({
+                comment_id: comment.id,
+                member_id: fixtureManager.get('members', 1).id
+            });
+            await models.CommentLike.add({
+                comment_id: comment.id,
+                member_id: fixtureManager.get('members', 2).id
+            });
+            await models.CommentLike.add({
+                comment_id: comment.id,
+                member_id: fixtureManager.get('members', 3).id
+            });
+
+            const res = await adminApi.get(`/comments/${comment.id}/likes/?limit=2`);
+            assert.equal(res.body.comment_likes.length, 2);
+            assert.equal(res.body.meta.pagination.total, 3);
+            assert.equal(res.body.meta.pagination.pages, 2);
+        });
+
+        it('Orders likes by created_at desc', async function () {
+            const comment = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Liked comment</p>'
+            });
+
+            // Add likes at different times
+            const olderLike = await models.CommentLike.add({
+                comment_id: comment.id,
+                member_id: fixtureManager.get('members', 1).id
+            });
+            await db.knex('comment_likes')
+                .where('id', olderLike.id)
+                .update({created_at: new Date('2023-01-01')});
+
+            const newerLike = await models.CommentLike.add({
+                comment_id: comment.id,
+                member_id: fixtureManager.get('members', 2).id
+            });
+            await db.knex('comment_likes')
+                .where('id', newerLike.id)
+                .update({created_at: new Date('2023-06-01')});
+
+            const res = await adminApi.get(`/comments/${comment.id}/likes/`);
+            assert.equal(res.body.comment_likes.length, 2);
+            // Newer like should be first
+            assert.equal(res.body.comment_likes[0].member_id, fixtureManager.get('members', 2).id);
+            assert.equal(res.body.comment_likes[1].member_id, fixtureManager.get('members', 1).id);
+        });
+
+        it('Returns 404 for non-existent comment', async function () {
+            const fakeCommentId = '507f1f77bcf86cd799439011';
+
+            await adminApi.get(`/comments/${fakeCommentId}/likes/`)
                 .expectStatus(404)
                 .matchBodySnapshot({
                     errors: [{

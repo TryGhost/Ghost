@@ -29,6 +29,7 @@ export type Comment = {
     };
     count?: {
         replies?: number;
+        direct_replies?: number;
         likes?: number;
         reports?: number;
     };
@@ -37,6 +38,15 @@ export type Comment = {
 };
 
 export type CommentReport = {
+    id: string;
+    comment_id: string;
+    member_id: string;
+    created_at: string;
+    updated_at: string;
+    member?: Member;
+};
+
+export type CommentLike = {
     id: string;
     comment_id: string;
     member_id: string;
@@ -157,4 +167,23 @@ const useBrowseCommentReportsQuery = createQueryWithId<CommentReportsResponseTyp
 
 export const useBrowseCommentReports = (commentId: string, options?: {enabled?: boolean}) => {
     return useBrowseCommentReportsQuery(commentId, {...options});
+};
+
+export interface CommentLikesResponseType {
+    meta?: Meta;
+    comment_likes: CommentLike[];
+}
+
+const useBrowseCommentLikesQuery = createQueryWithId<CommentLikesResponseType>({
+    dataType: 'CommentLikesResponseType',
+    path: id => `/comments/${id}/likes/`,
+    defaultSearchParams: {
+        include: 'member',
+        limit: '100',
+        order: 'created_at desc'
+    }
+});
+
+export const useBrowseCommentLikes = (commentId: string, options?: {enabled?: boolean}) => {
+    return useBrowseCommentLikesQuery(commentId, {...options});
 };

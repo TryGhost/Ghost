@@ -201,7 +201,7 @@ class CommentsService {
      */
     async getAdminAllComments({includeNested, filter, mongoTransformer, reportCount, order, page, limit}) {
         return await this.models.Comment.findPage({
-            withRelated: ['member', 'post', 'count.replies', 'count.likes', 'count.reports', 'inReplyTo', 'parent'],
+            withRelated: ['member', 'post', 'count.replies', 'count.direct_replies', 'count.likes', 'count.reports', 'inReplyTo', 'parent'],
             filter,
             mongoTransformer,
             reportCount,
@@ -247,6 +247,31 @@ class CommentsService {
 
         const {page, limit} = options;
         const result = await this.models.CommentReport.findPage({
+            filter: `comment_id:'${commentId}'`,
+            withRelated: ['member'],
+            order: 'created_at desc',
+            page,
+            limit
+        });
+
+        return result;
+    }
+
+    /**
+     * Get likes for a comment (admin only)
+     * @param {string} commentId - The ID of the Comment to get likes for
+     * @param {any} options - Query options (page, limit)
+     */
+    async getCommentLikes(commentId, options = {}) {
+        const comment = await this.models.Comment.findOne({id: commentId});
+        if (!comment) {
+            throw new errors.NotFoundError({
+                message: tpl(messages.commentNotFound)
+            });
+        }
+
+        const {page, limit} = options;
+        const result = await this.models.CommentLike.findPage({
             filter: `comment_id:'${commentId}'`,
             withRelated: ['member'],
             order: 'created_at desc',
