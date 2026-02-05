@@ -54,7 +54,7 @@ const EmailPreview: React.FC<{
                         <div className='flex aspect-square size-10 items-center justify-center overflow-hidden rounded-full p-1 text-white' style={{
                             backgroundColor: color
                         }}>
-                            <img className='h-auto w-8' src={FakeLogo} />
+                            <img alt="Logo" className='h-auto w-8' src={FakeLogo} />
                         </div>
                     }
                     <div>
