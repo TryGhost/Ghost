@@ -36,7 +36,7 @@ describe('{{content}} helper', function () {
         const rendered = content.call({html: html});
 
         should.exist(rendered);
-        rendered.string.should.equal(html);
+        assert.equal(rendered.string, html);
     });
 
     it('can truncate html by word', function () {
@@ -145,10 +145,10 @@ describe('{{content}} helper with no access', function () {
             it('can render default template', function () {
                 const html = '';
                 const rendered = content.call({html: html, access: false}, optionsData);
-                rendered.string.should.containEql('gh-post-upgrade-cta');
-                rendered.string.should.containEql('gh-post-upgrade-cta-content');
-                rendered.string.should.containEql('"background-color: #abcdef"');
-                rendered.string.should.containEql('"color:#abcdef"');
+                assert(rendered.string.includes('gh-post-upgrade-cta'));
+                assert(rendered.string.includes('gh-post-upgrade-cta-content'));
+                assert(rendered.string.includes('"background-color: #abcdef"'));
+                assert(rendered.string.includes('"color:#abcdef"'));
 
                 should.exist(rendered);
             });
@@ -157,10 +157,10 @@ describe('{{content}} helper with no access', function () {
                 // html will be included when there is free content available
                 const html = 'Free content';
                 const rendered = content.call({html: html, access: false}, optionsData);
-                rendered.string.should.containEql('Free content');
-                rendered.string.should.containEql('gh-post-upgrade-cta');
-                rendered.string.should.containEql('gh-post-upgrade-cta-content');
-                rendered.string.should.containEql('"background-color: #abcdef"');
+                assert(rendered.string.includes('Free content'));
+                assert(rendered.string.includes('gh-post-upgrade-cta'));
+                assert(rendered.string.includes('gh-post-upgrade-cta-content'));
+                assert(rendered.string.includes('"background-color: #abcdef"'));
             });
 
             it('can render default template with right message for post resource', function () {
@@ -170,11 +170,11 @@ describe('{{content}} helper with no access', function () {
                     post: {}
                 };
                 const rendered = content.call({html: html, access: false, visibility: 'members'}, optionsData);
-                rendered.string.should.containEql('Free content');
-                rendered.string.should.containEql('gh-post-upgrade-cta');
-                rendered.string.should.containEql('gh-post-upgrade-cta-content');
-                rendered.string.should.containEql('"background-color: #abcdef"');
-                rendered.string.should.containEql('This post is for');
+                assert(rendered.string.includes('Free content'));
+                assert(rendered.string.includes('gh-post-upgrade-cta'));
+                assert(rendered.string.includes('gh-post-upgrade-cta-content'));
+                assert(rendered.string.includes('"background-color: #abcdef"'));
+                assert(rendered.string.includes('This post is for'));
             });
 
             it('can render default template with right message for page resource', function () {
@@ -184,11 +184,11 @@ describe('{{content}} helper with no access', function () {
                     context: ['page']
                 };
                 const rendered = content.call({html: html, access: false, visibility: 'members'}, optionsData);
-                rendered.string.should.containEql('Free content');
-                rendered.string.should.containEql('gh-post-upgrade-cta');
-                rendered.string.should.containEql('gh-post-upgrade-cta-content');
-                rendered.string.should.containEql('"background-color: #abcdef"');
-                rendered.string.should.containEql('This page is for');
+                assert(rendered.string.includes('Free content'));
+                assert(rendered.string.includes('gh-post-upgrade-cta'));
+                assert(rendered.string.includes('gh-post-upgrade-cta-content'));
+                assert(rendered.string.includes('"background-color: #abcdef"'));
+                assert(rendered.string.includes('This page is for'));
             });
 
             it('can render default template for upgrade case', function () {
@@ -198,9 +198,9 @@ describe('{{content}} helper with no access', function () {
                     id: '123'
                 };
                 const rendered = content.call({html: html, access: false, visibility: 'members'}, optionsData);
-                rendered.string.should.containEql('Free content');
-                rendered.string.should.containEql('Upgrade your account');
-                rendered.string.should.containEql('color:#abcdef');
+                assert(rendered.string.includes('Free content'));
+                assert(rendered.string.includes('Upgrade your account'));
+                assert(rendered.string.includes('color:#abcdef'));
             });
         });
     });
