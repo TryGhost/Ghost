@@ -29,7 +29,7 @@ const config = {
         ? [
             ['list', {printSteps: true}],
             ['blob'],
-            ['playwright-ctrf-json-reporter', {outputFile: 'ctrf-report.json'}]
+            ['playwright-ctrf-json-reporter', {outputDir: '.', outputFile: 'ctrf-report.json'}]
         ]
         : [['list', {printSteps: true}], ['html']],
     use: {
