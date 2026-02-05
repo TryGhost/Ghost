@@ -67,7 +67,7 @@ describe('schema validations', function () {
                 // Ensure the column type is one of the ones we allow
                 assert(Object.keys(VALID_KEYS).includes(column.type));
 
-                should(_.difference(Object.keys(column), [...VALID_KEYS[column.type], 'type'])).be.Array().with.length(0);
+                assert.deepEqual(_.difference(Object.keys(column), [...VALID_KEYS[column.type], 'type']), []);
             });
         });
     });
@@ -80,8 +80,9 @@ describe('schema validations', function () {
                 const columnIsInValidation = _.get(column, 'validations.isIn');
                 // Check column's isIn validation is in correct format
                 if (columnIsInValidation) {
-                    should(columnIsInValidation).be.Array().with.length(1);
-                    should(columnIsInValidation[0]).be.Array();
+                    assert(Array.isArray(columnIsInValidation));
+                    assert.equal(columnIsInValidation.length, 1);
+                    assert(Array.isArray(columnIsInValidation[0]));
                 }
             });
         });
