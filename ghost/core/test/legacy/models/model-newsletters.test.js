@@ -41,15 +41,16 @@ describe('Newsletter Model', function () {
             urlUtilsHelper.stubUrlUtilsWithCdn({
                 assetBaseUrls: {
                     media: cdnUrl,
-                    files: cdnUrl
+                    files: cdnUrl,
+                    image: cdnUrl
                 }
             }, sinon);
         });
 
-        it('transforms header_image to absolute site URL(NOT CDN)', async function () {
+        it('transforms header_image to CDN URL', async function () {
             const newsletter = await models.Newsletter.findOne({slug: 'new-newsletter'});
             assertExists(newsletter, 'New newsletter should exist');
-            assert.equal(newsletter.get('header_image'), `${siteUrl}/content/images/newsletter-header.jpg`);
+            assert.equal(newsletter.get('header_image'), `${cdnUrl}/content/images/newsletter-header.jpg`);
         });
     });
 });

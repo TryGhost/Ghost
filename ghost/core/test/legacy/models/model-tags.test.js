@@ -43,17 +43,18 @@ describe('Tag Model', function () {
             urlUtilsHelper.stubUrlUtilsWithCdn({
                 assetBaseUrls: {
                     media: cdnUrl,
-                    files: cdnUrl
+                    files: cdnUrl,
+                    image: cdnUrl
                 }
             }, sinon);
         });
 
-        it('transforms feature_image, og_image, and twitter_image to absolute site URLs(NOT CDN)', async function () {
+        it('transforms feature_image, og_image, and twitter_image to CDN URLs', async function () {
             const tag = await models.Tag.findOne({slug: 'tag-with-images'});
             assertExists(tag, 'Tag with images should exist');
-            assert.equal(tag.get('feature_image'), `${siteUrl}/content/images/tag-feature.jpg`);
-            assert.equal(tag.get('og_image'), `${siteUrl}/content/images/tag-og.jpg`);
-            assert.equal(tag.get('twitter_image'), `${siteUrl}/content/images/tag-twitter.jpg`);
+            assert.equal(tag.get('feature_image'), `${cdnUrl}/content/images/tag-feature.jpg`);
+            assert.equal(tag.get('og_image'), `${cdnUrl}/content/images/tag-og.jpg`);
+            assert.equal(tag.get('twitter_image'), `${cdnUrl}/content/images/tag-twitter.jpg`);
         });
     });
 });
