@@ -909,7 +909,7 @@ describe('Posts API', function () {
 
         assertExists(email);
         should(email.get('newsletter_id')).eql(newsletterId);
-        should(email.get('status')).equalOneOf('pending', 'submitted', 'submitting');
+        assert(['pending', 'submitted', 'submitting'].includes(email.get('status')));
     });
 
     it('Interprets sent as published for a post with email', async function () {
@@ -980,7 +980,7 @@ describe('Posts API', function () {
 
         assertExists(email);
         should(email.get('newsletter_id')).eql(newsletterId);
-        should(email.get('status')).equalOneOf('pending', 'submitted', 'submitting');
+        assert(['pending', 'submitted', 'submitting'].includes(email.get('status')));
     });
 
     it('Can publish an email_only post by setting status to published', async function () {
@@ -1050,7 +1050,7 @@ describe('Posts API', function () {
 
         should(email.get('newsletter_id')).eql(newsletterId);
         assert.equal(email.get('recipient_filter'), 'all');
-        should(email.get('status')).equalOneOf('pending', 'submitted', 'submitting');
+        assert(['pending', 'submitted', 'submitting'].includes(email.get('status')));
     });
 
     it('Can publish an email_only post with free filter', async function () {
@@ -1119,7 +1119,7 @@ describe('Posts API', function () {
 
         should(email.get('newsletter_id')).eql(newsletterId);
         assert.equal(email.get('recipient_filter'), 'status:free');
-        should(email.get('status')).equalOneOf('pending', 'submitted', 'submitting');
+        assert(['pending', 'submitted', 'submitting'].includes(email.get('status')));
     });
 
     it('Can publish an email_only post by setting the status to sent', async function () {
@@ -1188,7 +1188,7 @@ describe('Posts API', function () {
 
         should(email.get('newsletter_id')).eql(newsletterId);
         assert.equal(email.get('recipient_filter'), 'status:free');
-        should(email.get('status')).equalOneOf('pending', 'submitted', 'submitting');
+        assert(['pending', 'submitted', 'submitting'].includes(email.get('status')));
     });
 
     it('Can publish a scheduled post', async function () {
@@ -1281,7 +1281,7 @@ describe('Posts API', function () {
 
         should(email.get('newsletter_id')).eql(newsletterId);
         assert.equal(email.get('recipient_filter'), 'all');
-        should(email.get('status')).equalOneOf('pending', 'submitted', 'submitting');
+        assert(['pending', 'submitted', 'submitting'].includes(email.get('status')));
     });
 
     it('Can publish a scheduled post with custom email segment', async function () {
@@ -1372,7 +1372,7 @@ describe('Posts API', function () {
 
         should(email.get('newsletter_id')).eql(newsletterId);
         assert.equal(email.get('recipient_filter'), 'status:free');
-        should(email.get('status')).equalOneOf('pending', 'submitted', 'submitting');
+        assert(['pending', 'submitted', 'submitting'].includes(email.get('status')));
     });
 
     it('Can publish a scheduled post without newsletter', async function () {
@@ -1555,7 +1555,7 @@ describe('Posts API', function () {
 
         should(email.get('newsletter_id')).eql(newsletterId);
         assert.equal(email.get('recipient_filter'), 'all');
-        should(email.get('status')).equalOneOf('pending', 'submitted', 'submitting');
+        assert(['pending', 'submitted', 'submitting'].includes(email.get('status')));
     });
 
     it('Can\'t change the newsletter once it has been sent', async function () {
@@ -1618,7 +1618,7 @@ describe('Posts API', function () {
 
         should(email.get('newsletter_id')).eql(newsletterId);
         assert.equal(email.get('recipient_filter'), 'status:-free');
-        should(email.get('status')).equalOneOf('pending', 'submitted', 'submitting');
+        assert(['pending', 'submitted', 'submitting'].includes(email.get('status')));
 
         const unpublished = {
             status: 'draft',
@@ -1798,7 +1798,7 @@ describe('Posts API', function () {
 
             assertExists(email);
             should(email.get('newsletter_id')).eql(newsletterId);
-            should(email.get('status')).equalOneOf('pending', 'submitted', 'submitting');
+            assert(['pending', 'submitted', 'submitting'].includes(email.get('status')));
         });
 
         it('Can publish an email_only post', async function () {
@@ -1862,7 +1862,7 @@ describe('Posts API', function () {
 
             should(email.get('newsletter_id')).eql(newsletterId);
             assert.equal(email.get('recipient_filter'), 'all');
-            should(email.get('status')).equalOneOf('pending', 'submitted', 'submitting');
+            assert(['pending', 'submitted', 'submitting'].includes(email.get('status')));
         });
     });
 

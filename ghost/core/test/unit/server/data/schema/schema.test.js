@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
 const should = require('should');
 const _ = require('lodash');
@@ -64,7 +65,7 @@ describe('schema validations', function () {
                 assertExists(column.type, `${tableName}.${columnName}.type should exist`);
 
                 // Ensure the column type is one of the ones we allow
-                should(column.type).be.equalOneOf(Object.keys(VALID_KEYS));
+                assert(Object.keys(VALID_KEYS).includes(column.type));
 
                 should(_.difference(Object.keys(column), [...VALID_KEYS[column.type], 'type'])).be.Array().with.length(0);
             });
