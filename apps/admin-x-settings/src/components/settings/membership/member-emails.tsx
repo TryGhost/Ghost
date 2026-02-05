@@ -20,14 +20,14 @@ const EmailPreview: React.FC<{
     automatedEmail: AutomatedEmail,
     emailType: 'free' | 'paid',
     enabled: boolean,
-    isLoading: boolean,
+    isInitialLoading: boolean,
     onEdit: () => void,
     onToggle: () => void
 }> = ({
     automatedEmail,
     emailType,
     enabled,
-    isLoading,
+    isInitialLoading,
     onEdit,
     onToggle
 }) => {
@@ -38,13 +38,15 @@ const EmailPreview: React.FC<{
     const senderName = automatedEmail.sender_name || siteTitle || 'Your Site';
 
     return (
-        <button
-            className='flex w-full cursor-pointer items-center justify-between gap-6 rounded-lg border border-grey-100 bg-grey-50 p-5 text-left transition-all hover:border-grey-200 hover:shadow-sm dark:border-grey-925 dark:bg-grey-975 dark:hover:border-grey-800'
+        <div
+            className='relative flex w-full items-center justify-between gap-6 rounded-lg border border-grey-100 bg-grey-50 p-5 text-left transition-all hover:border-grey-200 hover:shadow-sm dark:border-grey-925 dark:bg-grey-975 dark:hover:border-grey-800'
             data-testid={`${emailType}-welcome-email-preview`}
-            type='button'
-            onClick={onEdit}
         >
-            <div className='flex w-full items-center justify-between'>
+            <button
+                className='flex w-full cursor-pointer items-center justify-between before:absolute before:inset-0 before:rounded-lg before:content-[""] focus-visible:outline-none focus-visible:before:ring-2 focus-visible:before:ring-green'
+                type='button'
+                onClick={onEdit}
+            >
                 <div className='flex items-start gap-3'>
                     {icon ?
                         <div className='size-10 min-h-10 min-w-10 rounded-sm bg-cover bg-center' style={{
@@ -54,27 +56,29 @@ const EmailPreview: React.FC<{
                         <div className='flex aspect-square size-10 items-center justify-center overflow-hidden rounded-full p-1 text-white' style={{
                             backgroundColor: color
                         }}>
-                            <img alt="Logo" className='h-auto w-8' src={FakeLogo} />
+                            <img alt="" className='h-auto w-8' src={FakeLogo} />
                         </div>
                     }
-                    <div>
+                    <div className='text-left'>
                         <div className='font-semibold'>{senderName}</div>
                         <div className='text-sm'>{automatedEmail.subject}</div>
                     </div>
                 </div>
                 <div className='text-sm font-semibold opacity-100 transition-all hover:opacity-80'>
                     Edit
-                    {/* <Icon name='pen' size='sm' /> */}
                 </div>
+            </button>
+            <div className='relative z-10 rounded-full has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-green'>
+                {isInitialLoading ? (
+                    <div className="h-4 w-7 rounded-full bg-grey-300 dark:bg-grey-800" />
+                ) : (
+                    <Toggle
+                        checked={enabled}
+                        onChange={onToggle}
+                    />
+                )}
             </div>
-            <div onClick={e => e.stopPropagation()}>
-                <Toggle
-                    checked={enabled}
-                    disabled={isLoading}
-                    onChange={onToggle}
-                />
-            </div>
-        </button>
+        </div>
     );
 };
 
@@ -97,11 +101,13 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const [siteTitle] = getSettingValues<string>(settings, ['title']);
 
     const {data: automatedEmailsData, isLoading} = useBrowseAutomatedEmails();
-    const {mutateAsync: addAutomatedEmail} = useAddAutomatedEmail();
-    const {mutateAsync: editAutomatedEmail} = useEditAutomatedEmail();
+    const {mutateAsync: addAutomatedEmail, isLoading: isAddingAutomatedEmail} = useAddAutomatedEmail();
+    const {mutateAsync: editAutomatedEmail, isLoading: isEditingAutomatedEmail} = useEditAutomatedEmail();
     const handleError = useHandleError();
 
     const automatedEmails = automatedEmailsData?.automated_emails || [];
+    const isMutating = isAddingAutomatedEmail || isEditingAutomatedEmail;
+    const isBusy = isLoading || isMutating;
 
     const freeWelcomeEmail = automatedEmails.find(email => email.slug === 'member-welcome-email-free');
     const paidWelcomeEmail = automatedEmails.find(email => email.slug === 'member-welcome-email-paid');
@@ -142,6 +148,10 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
         const existing = automatedEmails.find(email => email.slug === slug);
         const label = emailType === 'free' ? 'Free members' : 'Paid members';
 
+        if (isBusy) {
+            return;
+        }
+
         try {
             if (!existing) {
                 await createAutomatedEmail(emailType, 'active');
@@ -162,6 +172,10 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const handleEditClick = async (emailType: 'free' | 'paid') => {
         const slug = `member-welcome-email-${emailType}`;
         const existing = automatedEmails.find(email => email.slug === slug);
+
+        if (isBusy) {
+            return;
+        }
 
         if (!existing) {
             try {
@@ -197,11 +211,10 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     title='Free members welcome email'
                 />
                 <EmailPreview
-                    key={`free-${freeWelcomeEmailEnabled}`}
                     automatedEmail={freeEmailForDisplay}
                     emailType='free'
                     enabled={freeWelcomeEmailEnabled}
-                    isLoading={isLoading}
+                    isInitialLoading={isLoading}
                     onEdit={() => handleEditClick('free')}
                     onToggle={() => handleToggle('free')}
                 />
@@ -212,11 +225,10 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
                             title='Paid members welcome email'
                         />
                         <EmailPreview
-                            key={`paid-${paidWelcomeEmailEnabled}`}
                             automatedEmail={paidEmailForDisplay}
                             emailType='paid'
                             enabled={paidWelcomeEmailEnabled}
-                            isLoading={isLoading}
+                            isInitialLoading={isLoading}
                             onEdit={() => handleEditClick('paid')}
                             onToggle={() => handleToggle('paid')}
                         />
