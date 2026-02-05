@@ -118,7 +118,7 @@ describe('RSS: Generate Feed', function () {
                 const firstIndex = xmlData.indexOf(postEnd);
 
                 // The first title should be before the first content
-                xmlData.indexOf('HTML Ipsum').should.be.below(firstIndex);
+                assert(xmlData.indexOf('HTML Ipsum') < firstIndex);
                 // The second title should be after the first content
                 assert(xmlData.indexOf('Ghostly Kitchen Sink') > firstIndex);
 
