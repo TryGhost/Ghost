@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const getCoverImage = require('../../../../core/frontend/meta/cover-image');
 
@@ -40,7 +41,7 @@ describe('getCoverImage', function () {
             context: ['post'],
             post: {}
         });
-        should(coverImageUrl).equal(null);
+        assert.equal(coverImageUrl, null);
     });
 
     it('should return null if author missing cover', function () {
@@ -48,7 +49,7 @@ describe('getCoverImage', function () {
             context: ['author'],
             author: {}
         });
-        should(coverImageUrl).equal(null);
+        assert.equal(coverImageUrl, null);
     });
 
     it('should return null if home missing cover', function () {
@@ -56,6 +57,6 @@ describe('getCoverImage', function () {
             context: ['home'],
             home: {}
         });
-        should(coverImageUrl).equal(null);
+        assert.equal(coverImageUrl, null);
     });
 });

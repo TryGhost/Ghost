@@ -361,7 +361,7 @@ describe('DB API', function () {
         should.exist(newsletter);
         newsletter.get('name').should.equal('Ghost Inc.');
         // Make sure sender_email is not set
-        should(newsletter.get('sender_email')).equal(null);
+        assert.equal(newsletter.get('sender_email'), null);
 
         // Check posts
         const post = await models.Post.findOne({slug: 'test-newsletter'}, {withRelated: ['tiers']});
@@ -463,7 +463,7 @@ describe('DB API (cleaned)', function () {
         should.exist(newsletter);
         newsletter.get('name').should.equal('Ghost Inc.');
         // Make sure sender_email is not set
-        should(newsletter.get('sender_email')).equal(null);
+        assert.equal(newsletter.get('sender_email'), null);
 
         // Check posts
         const post = await models.Post.findOne({slug: 'test-newsletter'}, {withRelated: ['tiers']});

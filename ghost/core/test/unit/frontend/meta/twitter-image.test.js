@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const getTwitterImage = require('../../../../core/frontend/meta/twitter-image');
@@ -31,9 +32,7 @@ describe('getTwitterImage', function () {
 
         localSettingsCache.cover_image = '';
 
-        should(
-            getTwitterImage({context: ['home'], home: {}})
-        ).equal(null);
+        assert.equal(getTwitterImage({context: ['home'], home: {}}), null);
     });
 
     it('has correct fallbacks for context: post', function () {
@@ -67,9 +66,7 @@ describe('getTwitterImage', function () {
 
         localSettingsCache.cover_image = '';
 
-        should(
-            getTwitterImage({context: ['post'], post})
-        ).equal(null);
+        assert.equal(getTwitterImage({context: ['post'], post}), null);
     });
 
     it('has correct fallbacks for context: page', function () {
@@ -103,9 +100,7 @@ describe('getTwitterImage', function () {
 
         localSettingsCache.cover_image = '';
 
-        should(
-            getTwitterImage({context: ['page'], page})
-        ).equal(null);
+        assert.equal(getTwitterImage({context: ['page'], page}), null);
     });
 
     it('has correct fallbacks for context: page (legacy format)', function () {
@@ -139,9 +134,7 @@ describe('getTwitterImage', function () {
 
         localSettingsCache.cover_image = '';
 
-        should(
-            getTwitterImage({context: ['page'], post})
-        ).equal(null);
+        assert.equal(getTwitterImage({context: ['page'], post}), null);
     });
 
     it('has correct fallbacks for context: author', function () {
@@ -157,9 +150,7 @@ describe('getTwitterImage', function () {
 
         author.cover_image = '';
 
-        should(
-            getTwitterImage({context: ['author'], author})
-        ).equal(null);
+        assert.equal(getTwitterImage({context: ['author'], author}), null);
     });
 
     it('has correct fallbacks for context: author_paged', function () {
@@ -175,9 +166,7 @@ describe('getTwitterImage', function () {
 
         author.cover_image = '';
 
-        should(
-            getTwitterImage({context: ['author', 'paged'], author})
-        ).equal(null);
+        assert.equal(getTwitterImage({context: ['author', 'paged'], author}), null);
     });
 
     it('has correct fallbacks for context: tag', function () {
@@ -198,9 +187,7 @@ describe('getTwitterImage', function () {
 
         localSettingsCache.cover_image = '';
 
-        should(
-            getTwitterImage({context: ['tag'], tag})
-        ).equal(null);
+        assert.equal(getTwitterImage({context: ['tag'], tag}), null);
     });
 
     it('has correct fallbacks for context: tag_paged', function () {
@@ -221,8 +208,6 @@ describe('getTwitterImage', function () {
 
         localSettingsCache.cover_image = '';
 
-        should(
-            getTwitterImage({context: ['tag', 'paged'], tag})
-        ).equal(null);
+        assert.equal(getTwitterImage({context: ['tag', 'paged'], tag}), null);
     });
 });

@@ -304,7 +304,7 @@ describe('Unit: models/post', function () {
 
             const filter = enforcedFilters({}, options);
 
-            should(filter).equal(null);
+            assert.equal(filter, null);
         });
     });
 
@@ -322,7 +322,7 @@ describe('Unit: models/post', function () {
 
             const filter = defaultFilters({}, options);
 
-            should(filter).equal(null);
+            assert.equal(filter, null);
         });
 
         it('returns type:post filter for public context', function () {
