@@ -45,8 +45,7 @@ describe('Local Storage Base', function () {
 
             // urlToPath now returns relative path, not absolute path
             // This matches S3Storage behavior and allows callers to pass result to save/exists/delete
-            localStorageBase.urlToPath('http://example.com/blog/content/media/2021/11/media.mp4')
-                .should.eql('2021/11/media.mp4');
+            assert.equal(localStorageBase.urlToPath('http://example.com/blog/content/media/2021/11/media.mp4'), '2021/11/media.mp4');
         });
 
         it('throws if the url does not match current site', function () {
@@ -60,7 +59,7 @@ describe('Local Storage Base', function () {
                 localStorageBase.urlToPath('http://anothersite.com/blog/content/media/2021/11/media.mp4');
                 should.fail('urlToPath when urls do not match');
             } catch (error) {
-                error.message.should.eql('The URL "http://anothersite.com/blog/content/media/2021/11/media.mp4" is not a valid URL for this site.');
+                assert.equal(error.message, 'The URL "http://anothersite.com/blog/content/media/2021/11/media.mp4" is not a valid URL for this site.');
             }
         });
     });

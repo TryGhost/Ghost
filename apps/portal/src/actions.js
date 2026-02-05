@@ -87,13 +87,12 @@ async function signin({data, api, state}) {
             integrityToken,
             includeOTC: true
         };
-        const {otc_ref: otcRef, sniperLinks} = await api.member.sendMagicLink(payload);
+        const {otc_ref: otcRef, inboxLinks} = await api.member.sendMagicLink(payload);
         return {
             page: 'magiclink',
             lastPage: 'signin',
             ...(otcRef ? {otcRef} : {}),
-            // TODO: Display these sniperlinks in the UI. See NY-946.
-            sniperLinks,
+            inboxLinks,
             pageData: {
                 ...(state.pageData || {}),
                 email: (data?.email || '').trim()
@@ -113,7 +112,7 @@ async function signin({data, api, state}) {
 function startSigninOTCFromCustomForm({data, state}) {
     const email = (data?.email || '').trim();
     const otcRef = data?.otcRef;
-    const sniperLinks = data?.sniperLinks;
+    const inboxLinks = data?.inboxLinks;
 
     if (!otcRef) {
         return {};
@@ -124,8 +123,7 @@ function startSigninOTCFromCustomForm({data, state}) {
         page: 'magiclink',
         lastPage: 'signin',
         otcRef,
-        // TODO: Display these sniperlinks in the UI. See NY-946.
-        sniperLinks,
+        inboxLinks,
         pageData: {
             ...(state.pageData || {}),
             email
@@ -162,10 +160,10 @@ async function signup({data, state, api}) {
         let {plan, tierId, cadence, email, name, newsletters, offerId} = data;
         name = name?.trim();
 
-        let sniperLinks;
+        let inboxLinks;
         if (plan.toLowerCase() === 'free') {
             const integrityToken = await api.member.getIntegrityToken();
-            ({sniperLinks} = await api.member.sendMagicLink({emailType: 'signup', integrityToken, ...data, name}));
+            ({inboxLinks} = await api.member.sendMagicLink({emailType: 'signup', integrityToken, ...data, name}));
         } else {
             if (tierId && cadence) {
                 await api.member.checkoutPlan({plan, tierId, cadence, email, name, newsletters, offerId});
@@ -180,7 +178,7 @@ async function signup({data, state, api}) {
         return {
             page: 'magiclink',
             lastPage: 'signup',
-            sniperLinks,
+            inboxLinks,
             pageData: {
                 ...(state.pageData || {}),
                 email: (email || '').trim()

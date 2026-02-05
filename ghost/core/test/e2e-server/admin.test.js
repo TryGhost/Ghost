@@ -3,6 +3,7 @@
 // Mocking out the models to not touch the DB would turn these into unit tests, and should probably be done in future,
 // But then again testing real code, rather than mock code, might be more useful...
 
+const assert = require('node:assert/strict');
 const should = require('should');
 const path = require('path');
 const fs = require('fs');
@@ -16,7 +17,7 @@ const config = require('../../core/shared/config');
 let request;
 
 function assertCorrectHeaders(res) {
-    should.not.exist(res.headers['x-cache-invalidate']);
+    assert.equal(res.headers['x-cache-invalidate'], undefined);
     should.exist(res.headers.date);
 }
 
@@ -147,7 +148,7 @@ describe('Admin Routing', function () {
                 .expect(200);
 
             should.exist(res.headers.etag);
-            res.headers.etag.should.equal('8793333e8e91cde411b1336c58ec6ef3');
+            assert.equal(res.headers.etag, '8793333e8e91cde411b1336c58ec6ef3');
         });
     });
 });

@@ -102,12 +102,12 @@ describe('RouterController', function () {
                 end: () => {}
             });
 
-            getPaymentLinkSpy.calledOnce.should.be.true();
+            assert.equal(getPaymentLinkSpy.calledOnce, true);
 
             // Payment link is called with the offer id in metadata
-            getPaymentLinkSpy.calledWith(sinon.match({
+            assert.equal(getPaymentLinkSpy.calledWith(sinon.match({
                 metadata: {offer: 'offer_123'}
-            })).should.be.true();
+            })), true);
         });
 
         it('parses newsletters from the request body', async function () {
@@ -150,13 +150,13 @@ describe('RouterController', function () {
 
             const expectedNewsletters = JSON.stringify([{id: 'abc123'}, {id: 'def456'}]);
 
-            getPaymentLinkSpy.calledOnce.should.be.true();
+            assert.equal(getPaymentLinkSpy.calledOnce, true);
 
-            getPaymentLinkSpy.calledWith(sinon.match({
+            assert.equal(getPaymentLinkSpy.calledWith(sinon.match({
                 metadata: {
                     newsletters: expectedNewsletters
                 }
-            })).should.be.true();
+            })), true);
         });
 
         describe('_getSubscriptionCheckoutData', function () {
@@ -357,16 +357,16 @@ describe('RouterController', function () {
                     writeHead: () => {},
                     end: () => {}
                 });
-                getDonationLinkSpy.calledOnce.should.be.true();
+                assert.equal(getDonationLinkSpy.calledOnce, true);
 
-                getDonationLinkSpy.calledWith(sinon.match({
+                assert.equal(getDonationLinkSpy.calledWith(sinon.match({
                     successUrl: 'https://example.com/?type=success',
                     cancelUrl: 'https://example.com/?type=cancel',
                     personalNote: 'SVP leave a note here',
                     metadata: {
                         test: 'hello'
                     }
-                })).should.be.true();
+                })), true);
             });
             it('accepts requests without a personalNote included', async function () {
                 const routerController = new RouterController({
@@ -404,16 +404,16 @@ describe('RouterController', function () {
                     writeHead: () => {},
                     end: () => {}
                 });
-                getDonationLinkSpy.calledOnce.should.be.true();
+                assert.equal(getDonationLinkSpy.calledOnce, true);
 
-                getDonationLinkSpy.calledWith(sinon.match({
+                assert.equal(getDonationLinkSpy.calledWith(sinon.match({
                     successUrl: 'https://example.com/?type=success',
                     cancelUrl: 'https://example.com/?type=cancel',
                     personalNote: '',
                     metadata: {
                         test: 'hello'
                     }
-                })).should.be.true();
+                })), true);
             });
             it('silently discards too-long personal notes', async function () {
                 const routerController = new RouterController({
@@ -452,15 +452,15 @@ describe('RouterController', function () {
                     writeHead: () => {},
                     end: () => {}
                 });
-                getDonationLinkSpy.calledOnce.should.be.true();
-                getDonationLinkSpy.calledWith(sinon.match({
+                assert.equal(getDonationLinkSpy.calledOnce, true);
+                assert.equal(getDonationLinkSpy.calledWith(sinon.match({
                     successUrl: 'https://example.com/?type=success',
                     cancelUrl: 'https://example.com/?type=cancel',
                     personalNote: '',
                     metadata: {
                         test: 'hello'
                     }
-                })).should.be.true();
+                })), true);
             });
             it('silently discards invalid personal notes', async function () {
                 const routerController = new RouterController({
@@ -499,15 +499,15 @@ describe('RouterController', function () {
                     writeHead: () => {},
                     end: () => {}
                 });
-                getDonationLinkSpy.calledOnce.should.be.true();
-                getDonationLinkSpy.calledWith(sinon.match({
+                assert.equal(getDonationLinkSpy.calledOnce, true);
+                assert.equal(getDonationLinkSpy.calledWith(sinon.match({
                     successUrl: 'https://example.com/?type=success',
                     cancelUrl: 'https://example.com/?type=cancel',
                     personalNote: '',
                     metadata: {
                         test: 'hello'
                     }
-                })).should.be.true();
+                })), true);
             });
             it('strips any html from the personal note', async function () {
                 const routerController = new RouterController({
@@ -546,15 +546,15 @@ describe('RouterController', function () {
                     writeHead: () => {},
                     end: () => {}
                 });
-                getDonationLinkSpy.calledOnce.should.be.true();
-                getDonationLinkSpy.calledWith(sinon.match({
+                assert.equal(getDonationLinkSpy.calledOnce, true);
+                assert.equal(getDonationLinkSpy.calledWith(sinon.match({
                     successUrl: 'https://example.com/?type=success',
                     cancelUrl: 'https://example.com/?type=cancel',
                     personalNote: 'Leave a note here',
                     metadata: {
                         test: 'hello'
                     }
-                })).should.be.true();
+                })), true);
             });
         });
 
@@ -612,7 +612,7 @@ describe('RouterController', function () {
 
             await routerController.createCheckoutSession(req, res);
 
-            res.end.calledOnce.should.be.true();
+            assert.equal(res.end.calledOnce, true);
             const responseBody = JSON.parse(res.end.firstCall.args[0]);
             assert.equal(responseBody.welcomePageUrl, '/welcome-page/');
         });
@@ -670,7 +670,7 @@ describe('RouterController', function () {
 
             await routerController.createCheckoutSession(req, res);
 
-            res.end.calledOnce.should.be.true();
+            assert.equal(res.end.calledOnce, true);
             const responseBody = JSON.parse(res.end.firstCall.args[0]);
             assert.equal(responseBody.welcomePageUrl, undefined);
         });
@@ -753,10 +753,10 @@ describe('RouterController', function () {
 
                 await controller.sendMagicLink(req, res);
 
-                res.writeHead.calledOnceWith(201).should.be.true();
-                res.end.calledOnceWith('{}').should.be.true();
+                assert.equal(res.writeHead.calledOnceWith(201), true);
+                assert.equal(res.end.calledOnceWith('{}'), true);
 
-                sendEmailWithMagicLinkStub.calledOnce.should.be.true();
+                assert.equal(sendEmailWithMagicLinkStub.calledOnce, true);
                 sendEmailWithMagicLinkStub.args[0][0].tokenData.newsletters.should.eql([
                     {id: newsletters[0].id},
                     {id: newsletters[1].id},
@@ -865,7 +865,7 @@ describe('RouterController', function () {
                 const controller = createRouterController();
 
                 await controller.sendMagicLink(req, res).should.be.fulfilled();
-                sendEmailWithMagicLinkStub.calledOnce.should.be.true();
+                assert.equal(sendEmailWithMagicLinkStub.calledOnce, true);
             });
 
             it('Does not send emails when honeypot is filled', async function () {
@@ -874,7 +874,7 @@ describe('RouterController', function () {
                 req.body.honeypot = 'filled!';
 
                 await controller.sendMagicLink(req, res).should.be.fulfilled();
-                sendEmailWithMagicLinkStub.notCalled.should.be.true();
+                assert.equal(sendEmailWithMagicLinkStub.notCalled, true);
             });
         });
 
@@ -928,8 +928,8 @@ describe('RouterController', function () {
 
                 await routerController.sendMagicLink(req, res);
 
-                res.writeHead.calledWith(201, {'Content-Type': 'application/json'}).should.be.true();
-                res.end.calledWith(JSON.stringify({otc_ref: 'test-token-123'})).should.be.true();
+                assert.equal(res.writeHead.calledWith(201, {'Content-Type': 'application/json'}), true);
+                assert.equal(res.end.calledWith(JSON.stringify({otc_ref: 'test-token-123'})), true);
             });
 
             it('should not return otc_ref when no otcRef', async function () {
@@ -937,8 +937,8 @@ describe('RouterController', function () {
 
                 await routerController.sendMagicLink(req, res);
 
-                res.writeHead.calledWith(201).should.be.true();
-                res.end.calledWith('{}').should.be.true();
+                assert.equal(res.writeHead.calledWith(201), true);
+                assert.equal(res.end.calledWith('{}'), true);
             });
 
             it('should not return otc_ref when otcRef is undefined', async function () {
@@ -946,8 +946,8 @@ describe('RouterController', function () {
 
                 await routerController.sendMagicLink(req, res);
 
-                res.writeHead.calledWith(201).should.be.true();
-                res.end.calledWith('{}').should.be.true();
+                assert.equal(res.writeHead.calledWith(201), true);
+                assert.equal(res.end.calledWith('{}'), true);
             });
         });
     });

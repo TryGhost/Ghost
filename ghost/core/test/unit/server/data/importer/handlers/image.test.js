@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 require('should');
 const sinon = require('sinon');
 const _ = require('lodash');
@@ -15,24 +16,24 @@ describe('ImageHandler', function () {
     });
 
     it('has the correct interface', function () {
-        ImageHandler.type.should.eql('images');
+        assert.equal(ImageHandler.type, 'images');
         ImageHandler.extensions.should.be.instanceof(Array).and.have.lengthOf(8);
-        ImageHandler.extensions.should.containEql('.jpg');
-        ImageHandler.extensions.should.containEql('.jpeg');
-        ImageHandler.extensions.should.containEql('.gif');
-        ImageHandler.extensions.should.containEql('.png');
-        ImageHandler.extensions.should.containEql('.svg');
-        ImageHandler.extensions.should.containEql('.svgz');
-        ImageHandler.extensions.should.containEql('.ico');
-        ImageHandler.extensions.should.containEql('.webp');
+        assert(ImageHandler.extensions.includes('.jpg'));
+        assert(ImageHandler.extensions.includes('.jpeg'));
+        assert(ImageHandler.extensions.includes('.gif'));
+        assert(ImageHandler.extensions.includes('.png'));
+        assert(ImageHandler.extensions.includes('.svg'));
+        assert(ImageHandler.extensions.includes('.svgz'));
+        assert(ImageHandler.extensions.includes('.ico'));
+        assert(ImageHandler.extensions.includes('.webp'));
         ImageHandler.contentTypes.should.be.instanceof(Array).and.have.lengthOf(7);
-        ImageHandler.contentTypes.should.containEql('image/jpeg');
-        ImageHandler.contentTypes.should.containEql('image/png');
-        ImageHandler.contentTypes.should.containEql('image/gif');
-        ImageHandler.contentTypes.should.containEql('image/svg+xml');
-        ImageHandler.contentTypes.should.containEql('image/x-icon');
-        ImageHandler.contentTypes.should.containEql('image/vnd.microsoft.icon');
-        ImageHandler.contentTypes.should.containEql('image/webp');
+        assert(ImageHandler.contentTypes.includes('image/jpeg'));
+        assert(ImageHandler.contentTypes.includes('image/png'));
+        assert(ImageHandler.contentTypes.includes('image/gif'));
+        assert(ImageHandler.contentTypes.includes('image/svg+xml'));
+        assert(ImageHandler.contentTypes.includes('image/x-icon'));
+        assert(ImageHandler.contentTypes.includes('image/vnd.microsoft.icon'));
+        assert(ImageHandler.contentTypes.includes('image/webp'));
         ImageHandler.loadFile.should.be.instanceof(Function);
     });
 
@@ -48,11 +49,11 @@ describe('ImageHandler', function () {
         const storageSpy = sinon.spy(storage, 'getStorage');
 
         ImageHandler.loadFile(_.clone(file)).then(function () {
-            storageSpy.calledOnce.should.be.true();
-            storeSpy.calledOnce.should.be.true();
-            storeSpy.firstCall.args[0].originalPath.should.equal('test-image.jpeg');
-            storeSpy.firstCall.args[0].targetDir.should.match(/(\/|\\)content(\/|\\)images$/);
-            storeSpy.firstCall.args[0].newPath.should.eql('/content/images/test-image.jpeg');
+            assert.equal(storageSpy.calledOnce, true);
+            assert.equal(storeSpy.calledOnce, true);
+            assert.equal(storeSpy.firstCall.args[0].originalPath, 'test-image.jpeg');
+            assert.match(storeSpy.firstCall.args[0].targetDir, /(\/|\\)content(\/|\\)images$/);
+            assert.equal(storeSpy.firstCall.args[0].newPath, '/content/images/test-image.jpeg');
 
             done();
         }).catch(done);
@@ -70,11 +71,11 @@ describe('ImageHandler', function () {
         const storageSpy = sinon.spy(storage, 'getStorage');
 
         ImageHandler.loadFile(_.clone(file)).then(function () {
-            storageSpy.calledOnce.should.be.true();
-            storeSpy.calledOnce.should.be.true();
-            storeSpy.firstCall.args[0].originalPath.should.equal('photos/my-cat.jpeg');
-            storeSpy.firstCall.args[0].targetDir.should.match(/(\/|\\)content(\/|\\)images(\/|\\)photos$/);
-            storeSpy.firstCall.args[0].newPath.should.eql('/content/images/photos/my-cat.jpeg');
+            assert.equal(storageSpy.calledOnce, true);
+            assert.equal(storeSpy.calledOnce, true);
+            assert.equal(storeSpy.firstCall.args[0].originalPath, 'photos/my-cat.jpeg');
+            assert.match(storeSpy.firstCall.args[0].targetDir, /(\/|\\)content(\/|\\)images(\/|\\)photos$/);
+            assert.equal(storeSpy.firstCall.args[0].newPath, '/content/images/photos/my-cat.jpeg');
 
             done();
         }).catch(done);
@@ -92,11 +93,11 @@ describe('ImageHandler', function () {
         const storageSpy = sinon.spy(storage, 'getStorage');
 
         ImageHandler.loadFile(_.clone(file)).then(function () {
-            storageSpy.calledOnce.should.be.true();
-            storeSpy.calledOnce.should.be.true();
-            storeSpy.firstCall.args[0].originalPath.should.equal('content/images/my-cat.jpeg');
-            storeSpy.firstCall.args[0].targetDir.should.match(/(\/|\\)content(\/|\\)images$/);
-            storeSpy.firstCall.args[0].newPath.should.eql('/content/images/my-cat.jpeg');
+            assert.equal(storageSpy.calledOnce, true);
+            assert.equal(storeSpy.calledOnce, true);
+            assert.equal(storeSpy.firstCall.args[0].originalPath, 'content/images/my-cat.jpeg');
+            assert.match(storeSpy.firstCall.args[0].targetDir, /(\/|\\)content(\/|\\)images$/);
+            assert.equal(storeSpy.firstCall.args[0].newPath, '/content/images/my-cat.jpeg');
 
             done();
         }).catch(done);
@@ -116,11 +117,11 @@ describe('ImageHandler', function () {
         const storageSpy = sinon.spy(storage, 'getStorage');
 
         ImageHandler.loadFile(_.clone(file)).then(function () {
-            storageSpy.calledOnce.should.be.true();
-            storeSpy.calledOnce.should.be.true();
-            storeSpy.firstCall.args[0].originalPath.should.equal('test-image.jpeg');
-            storeSpy.firstCall.args[0].targetDir.should.match(/(\/|\\)content(\/|\\)images$/);
-            storeSpy.firstCall.args[0].newPath.should.eql('/subdir/content/images/test-image.jpeg');
+            assert.equal(storageSpy.calledOnce, true);
+            assert.equal(storeSpy.calledOnce, true);
+            assert.equal(storeSpy.firstCall.args[0].originalPath, 'test-image.jpeg');
+            assert.match(storeSpy.firstCall.args[0].targetDir, /(\/|\\)content(\/|\\)images$/);
+            assert.equal(storeSpy.firstCall.args[0].newPath, '/subdir/content/images/test-image.jpeg');
 
             done();
         }).catch(done);
@@ -148,20 +149,20 @@ describe('ImageHandler', function () {
         const storageSpy = sinon.spy(storage, 'getStorage');
 
         ImageHandler.loadFile(_.clone(files)).then(function () {
-            storageSpy.calledOnce.should.be.true();
-            storeSpy.callCount.should.eql(4);
-            storeSpy.firstCall.args[0].originalPath.should.equal('testing.png');
-            storeSpy.firstCall.args[0].targetDir.should.match(/(\/|\\)content(\/|\\)images$/);
-            storeSpy.firstCall.args[0].newPath.should.eql('/content/images/testing.png');
-            storeSpy.secondCall.args[0].originalPath.should.equal('photo/kitten.jpg');
-            storeSpy.secondCall.args[0].targetDir.should.match(/(\/|\\)content(\/|\\)images(\/|\\)photo$/);
-            storeSpy.secondCall.args[0].newPath.should.eql('/content/images/photo/kitten.jpg');
-            storeSpy.thirdCall.args[0].originalPath.should.equal('content/images/animated/bunny.gif');
-            storeSpy.thirdCall.args[0].targetDir.should.match(/(\/|\\)content(\/|\\)images(\/|\\)animated$/);
-            storeSpy.thirdCall.args[0].newPath.should.eql('/content/images/animated/bunny.gif');
-            storeSpy.lastCall.args[0].originalPath.should.equal('images/puppy.jpg');
-            storeSpy.lastCall.args[0].targetDir.should.match(/(\/|\\)content(\/|\\)images$/);
-            storeSpy.lastCall.args[0].newPath.should.eql('/content/images/puppy.jpg');
+            assert.equal(storageSpy.calledOnce, true);
+            assert.equal(storeSpy.callCount, 4);
+            assert.equal(storeSpy.firstCall.args[0].originalPath, 'testing.png');
+            assert.match(storeSpy.firstCall.args[0].targetDir, /(\/|\\)content(\/|\\)images$/);
+            assert.equal(storeSpy.firstCall.args[0].newPath, '/content/images/testing.png');
+            assert.equal(storeSpy.secondCall.args[0].originalPath, 'photo/kitten.jpg');
+            assert.match(storeSpy.secondCall.args[0].targetDir, /(\/|\\)content(\/|\\)images(\/|\\)photo$/);
+            assert.equal(storeSpy.secondCall.args[0].newPath, '/content/images/photo/kitten.jpg');
+            assert.equal(storeSpy.thirdCall.args[0].originalPath, 'content/images/animated/bunny.gif');
+            assert.match(storeSpy.thirdCall.args[0].targetDir, /(\/|\\)content(\/|\\)images(\/|\\)animated$/);
+            assert.equal(storeSpy.thirdCall.args[0].newPath, '/content/images/animated/bunny.gif');
+            assert.equal(storeSpy.lastCall.args[0].originalPath, 'images/puppy.jpg');
+            assert.match(storeSpy.lastCall.args[0].targetDir, /(\/|\\)content(\/|\\)images$/);
+            assert.equal(storeSpy.lastCall.args[0].newPath, '/content/images/puppy.jpg');
 
             done();
         }).catch(done);

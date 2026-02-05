@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const routing = require('../../../../core/frontend/services/routing');
@@ -17,12 +18,12 @@ describe('getRssUrl', function () {
             secure: false
         });
 
-        should.equal(rssUrl, '/rss/');
+        assert.equal(rssUrl, '/rss/');
     });
 
     it('forwards absolute flags', function () {
         getRssUrl({}, true);
 
-        routing.registry.getRssUrl.calledWith({absolute: true}).should.be.true();
+        assert.equal(routing.registry.getRssUrl.calledWith({absolute: true}), true);
     });
 });

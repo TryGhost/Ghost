@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 
 // Stuff we are testing
@@ -8,14 +9,14 @@ describe('{{post_class}} helper', function () {
         const rendered = post_class.call({});
 
         should.exist(rendered);
-        rendered.string.should.equal('post no-image');
+        assert.equal(rendered.string, 'post no-image');
     });
 
     it('can render class string without no-image class', function () {
         const rendered = post_class.call({feature_image: 'blah'});
 
         should.exist(rendered);
-        rendered.string.should.equal('post');
+        assert.equal(rendered.string, 'post');
     });
 
     it('can render featured class', function () {
@@ -23,7 +24,7 @@ describe('{{post_class}} helper', function () {
         const rendered = post_class.call(post);
 
         should.exist(rendered);
-        rendered.string.should.equal('post featured no-image');
+        assert.equal(rendered.string, 'post featured no-image');
     });
 
     it('can render featured class without no-image class', function () {
@@ -31,7 +32,7 @@ describe('{{post_class}} helper', function () {
         const rendered = post_class.call(post);
 
         should.exist(rendered);
-        rendered.string.should.equal('post featured');
+        assert.equal(rendered.string, 'post featured');
     });
 
     it('can render page class', function () {
@@ -39,7 +40,7 @@ describe('{{post_class}} helper', function () {
         const rendered = post_class.call(post);
 
         should.exist(rendered);
-        rendered.string.should.equal('post no-image page');
+        assert.equal(rendered.string, 'post no-image page');
     });
 
     it('can render page class without no-image class', function () {
@@ -47,6 +48,6 @@ describe('{{post_class}} helper', function () {
         const rendered = post_class.call(post);
 
         should.exist(rendered);
-        rendered.string.should.equal('post page');
+        assert.equal(rendered.string, 'post page');
     });
 });

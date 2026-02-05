@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const ObjectID = require('bson-objectid').default;
 const errors = require('../../../../../../../core/server/services/offers/domain/errors');
@@ -57,7 +58,7 @@ describe('Offer', function () {
                 stripe_coupon_id: 'coupon_123'
             }, mockUniqueChecker);
 
-            offer.stripeCouponId.should.equal('coupon_123');
+            assert.equal(offer.stripeCouponId, 'coupon_123');
         });
 
         it('Creates a valid instance of a trial Offer', async function () {
@@ -208,7 +209,7 @@ describe('Offer', function () {
 
             const offer = await Offer.create(data, mockUniqueChecker);
 
-            should.equal(offer.currency, null);
+            assert.equal(offer.currency, null);
         });
 
         it('Has a currency of null if the type is trial', async function () {
@@ -229,7 +230,7 @@ describe('Offer', function () {
 
             const offer = await Offer.create(data, mockUniqueChecker);
 
-            should.equal(offer.currency, null);
+            assert.equal(offer.currency, null);
         });
 
         it('Can handle ObjectID, string and no id', async function () {
@@ -297,7 +298,7 @@ describe('Offer', function () {
 
             const offer = await Offer.create(data, mockUniqueChecker);
 
-            should.equal(typeof offer.createdAt, 'string');
+            assert.equal(typeof offer.createdAt, 'string');
         });
     });
 
@@ -447,14 +448,14 @@ describe('Offer', function () {
             const offer = await Offer.createFromStripeCoupon(stripeCoupon, 'month', tier, mockUniqueChecker);
 
             should.ok(offer instanceof Offer);
-            should.equal(offer.code.value, 'stripe_coupon_abc');
-            should.equal(offer.status.value, 'archived');
-            should.equal(offer.stripeCouponId, 'stripe_coupon_abc');
-            should.equal(offer.type.value, 'percent');
-            should.equal(offer.amount.value, 25);
-            should.equal(offer.name.value, '25% off forever (stripe_coupon_abc)');
-            should.equal(offer.displayTitle.value, '25% off forever (stripe_coupon_abc)');
-            should.equal(offer.displayDescription.value, '');
+            assert.equal(offer.code.value, 'stripe_coupon_abc');
+            assert.equal(offer.status.value, 'archived');
+            assert.equal(offer.stripeCouponId, 'stripe_coupon_abc');
+            assert.equal(offer.type.value, 'percent');
+            assert.equal(offer.amount.value, 25);
+            assert.equal(offer.name.value, '25% off forever (stripe_coupon_abc)');
+            assert.equal(offer.displayTitle.value, '25% off forever (stripe_coupon_abc)');
+            assert.equal(offer.displayDescription.value, '');
         });
 
         it('Creates a valid fixed amount offer from a Stripe coupon', async function () {
@@ -473,13 +474,13 @@ describe('Offer', function () {
             const offer = await Offer.createFromStripeCoupon(stripeCoupon, 'year', tier, mockUniqueChecker);
 
             should.ok(offer instanceof Offer);
-            should.equal(offer.code.value, 'fixed_coupon_xyz');
-            should.equal(offer.status.value, 'archived');
-            should.equal(offer.stripeCouponId, 'fixed_coupon_xyz');
-            should.equal(offer.type.value, 'fixed');
-            should.equal(offer.amount.value, 1000);
-            should.equal(offer.currency.value, 'USD');
-            should.equal(offer.name.value, 'USD 10 off once (fixed_coupon_xyz)');
+            assert.equal(offer.code.value, 'fixed_coupon_xyz');
+            assert.equal(offer.status.value, 'archived');
+            assert.equal(offer.stripeCouponId, 'fixed_coupon_xyz');
+            assert.equal(offer.type.value, 'fixed');
+            assert.equal(offer.amount.value, 1000);
+            assert.equal(offer.currency.value, 'USD');
+            assert.equal(offer.name.value, 'USD 10 off once (fixed_coupon_xyz)');
         });
 
         it('Generates correct name for repeating duration with months', async function () {
@@ -497,9 +498,9 @@ describe('Offer', function () {
 
             const offer = await Offer.createFromStripeCoupon(stripeCoupon, 'month', tier, mockUniqueChecker);
 
-            should.equal(offer.name.value, '15% off for 6 months (SUMMER25)');
-            should.equal(offer.code.value, 'summer25');
-            should.equal(offer.status.value, 'archived');
+            assert.equal(offer.name.value, '15% off for 6 months (SUMMER25)');
+            assert.equal(offer.code.value, 'summer25');
+            assert.equal(offer.status.value, 'archived');
         });
 
         it('Generates correct name for percent off with "once" duration', async function () {
@@ -516,7 +517,7 @@ describe('Offer', function () {
 
             const offer = await Offer.createFromStripeCoupon(stripeCoupon, 'month', tier, mockUniqueChecker);
 
-            should.equal(offer.name.value, '10% off once (WELCOME10)');
+            assert.equal(offer.name.value, '10% off once (WELCOME10)');
         });
 
         it('Generates correct name for fixed amount with "forever" duration', async function () {
@@ -534,7 +535,7 @@ describe('Offer', function () {
 
             const offer = await Offer.createFromStripeCoupon(stripeCoupon, 'year', tier, mockUniqueChecker);
 
-            should.equal(offer.name.value, 'EUR 5 off forever (FLAT5OFF)');
+            assert.equal(offer.name.value, 'EUR 5 off forever (FLAT5OFF)');
         });
 
         it('Generates correct name for fixed amount with repeating duration', async function () {
@@ -553,7 +554,7 @@ describe('Offer', function () {
 
             const offer = await Offer.createFromStripeCoupon(stripeCoupon, 'month', tier, mockUniqueChecker);
 
-            should.equal(offer.name.value, 'GBP 2.5 off for 3 months (SAVE3MONTHS)');
+            assert.equal(offer.name.value, 'GBP 2.5 off for 3 months (SAVE3MONTHS)');
         });
 
         it('Sets cadence correctly from parameter', async function () {
@@ -569,7 +570,7 @@ describe('Offer', function () {
             };
 
             const monthlyOffer = await Offer.createFromStripeCoupon(stripeCoupon, 'month', tier, mockUniqueChecker);
-            should.equal(monthlyOffer.cadence.value, 'month');
+            assert.equal(monthlyOffer.cadence.value, 'month');
 
             const yearlyOffer = await Offer.createFromStripeCoupon(
                 {...stripeCoupon, id: 'yearly_coupon'},
@@ -577,7 +578,7 @@ describe('Offer', function () {
                 tier,
                 mockUniqueChecker
             );
-            should.equal(yearlyOffer.cadence.value, 'year');
+            assert.equal(yearlyOffer.cadence.value, 'year');
         });
 
         it('Associates offer with provided tier', async function () {
@@ -595,8 +596,8 @@ describe('Offer', function () {
 
             const offer = await Offer.createFromStripeCoupon(stripeCoupon, 'month', tier, mockUniqueChecker);
 
-            should.equal(offer.tier.id, tierId.toHexString());
-            should.equal(offer.tier.name, 'Premium');
+            assert.equal(offer.tier.id, tierId.toHexString());
+            assert.equal(offer.tier.name, 'Premium');
         });
 
         it('Is marked as a new offer', async function () {
@@ -613,7 +614,7 @@ describe('Offer', function () {
 
             const offer = await Offer.createFromStripeCoupon(stripeCoupon, 'month', tier, mockUniqueChecker);
 
-            should.equal(offer.isNew, true);
+            assert.equal(offer.isNew, true);
         });
     });
 });

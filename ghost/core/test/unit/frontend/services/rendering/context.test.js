@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../../../utils');
@@ -55,7 +56,7 @@ describe('Contexts', function () {
 
             should.exist(res.locals.context);
             res.locals.context.should.be.an.Array().with.lengthOf(1);
-            res.locals.context[0].should.eql('index');
+            assert.equal(res.locals.context[0], 'index');
         });
 
         it('should correctly identify / as home', function () {
@@ -68,8 +69,8 @@ describe('Contexts', function () {
             // Check context
             should.exist(res.locals.context);
             res.locals.context.should.be.an.Array().with.lengthOf(2);
-            res.locals.context[0].should.eql('home');
-            res.locals.context[1].should.eql('index');
+            assert.equal(res.locals.context[0], 'home');
+            assert.equal(res.locals.context[1], 'index');
         });
 
         it('will not identify / as index without config', function () {
@@ -82,7 +83,7 @@ describe('Contexts', function () {
             // Check context
             should.exist(res.locals.context);
             res.locals.context.should.be.an.Array().with.lengthOf(1);
-            res.locals.context[0].should.eql('home');
+            assert.equal(res.locals.context[0], 'home');
         });
 
         it('will not identify /page/2/ as index & paged without page param', function () {
@@ -93,7 +94,7 @@ describe('Contexts', function () {
 
             should.exist(res.locals.context);
             res.locals.context.should.be.an.Array().with.lengthOf(1);
-            res.locals.context[0].should.eql('index');
+            assert.equal(res.locals.context[0], 'index');
         });
 
         it('should identify /page/2/ as index & paged with page param', function () {
@@ -105,8 +106,8 @@ describe('Contexts', function () {
 
             should.exist(res.locals.context);
             res.locals.context.should.be.an.Array().with.lengthOf(2);
-            res.locals.context[0].should.eql('paged');
-            res.locals.context[1].should.eql('index');
+            assert.equal(res.locals.context[0], 'paged');
+            assert.equal(res.locals.context[1], 'index');
         });
     });
 
@@ -119,7 +120,7 @@ describe('Contexts', function () {
 
             should.exist(res.locals.context);
             res.locals.context.should.be.an.Array().with.lengthOf(1);
-            res.locals.context[0].should.eql('tag');
+            assert.equal(res.locals.context[0], 'tag');
         });
 
         it('will not identify tag channel url without config', function () {
@@ -140,7 +141,7 @@ describe('Contexts', function () {
 
             should.exist(res.locals.context);
             res.locals.context.should.be.an.Array().with.lengthOf(1);
-            res.locals.context[0].should.eql('tag');
+            assert.equal(res.locals.context[0], 'tag');
         });
 
         it('should correctly identify /page/2/ as paged with page param', function () {
@@ -152,8 +153,8 @@ describe('Contexts', function () {
 
             should.exist(res.locals.context);
             res.locals.context.should.be.an.Array().with.lengthOf(2);
-            res.locals.context[0].should.eql('paged');
-            res.locals.context[1].should.eql('tag');
+            assert.equal(res.locals.context[0], 'paged');
+            assert.equal(res.locals.context[1], 'tag');
         });
     });
 
@@ -166,7 +167,7 @@ describe('Contexts', function () {
 
             should.exist(res.locals.context);
             res.locals.context.should.be.an.Array().with.lengthOf(1);
-            res.locals.context[0].should.eql('author');
+            assert.equal(res.locals.context[0], 'author');
         });
 
         it('will not identify author channel url without config', function () {
@@ -187,7 +188,7 @@ describe('Contexts', function () {
 
             should.exist(res.locals.context);
             res.locals.context.should.be.an.Array().with.lengthOf(1);
-            res.locals.context[0].should.eql('author');
+            assert.equal(res.locals.context[0], 'author');
         });
 
         it('should correctly identify /page/2/ as paged with page param', function () {
@@ -199,8 +200,8 @@ describe('Contexts', function () {
 
             should.exist(res.locals.context);
             res.locals.context.should.be.an.Array().with.lengthOf(2);
-            res.locals.context[0].should.eql('paged');
-            res.locals.context[1].should.eql('author');
+            assert.equal(res.locals.context[0], 'paged');
+            assert.equal(res.locals.context[1], 'author');
         });
     });
 
@@ -213,8 +214,8 @@ describe('Contexts', function () {
 
             should.exist(res.locals.context);
             res.locals.context.should.be.an.Array().with.lengthOf(2);
-            res.locals.context[0].should.eql('custom-context');
-            res.locals.context[1].should.eql('test');
+            assert.equal(res.locals.context[0], 'custom-context');
+            assert.equal(res.locals.context[1], 'test');
         });
     });
 
@@ -227,7 +228,7 @@ describe('Contexts', function () {
 
             should.exist(res.locals.context);
             res.locals.context.should.be.an.Array().with.lengthOf(1);
-            res.locals.context[0].should.eql('post');
+            assert.equal(res.locals.context[0], 'post');
         });
     });
 
@@ -240,7 +241,7 @@ describe('Contexts', function () {
 
             should.exist(res.locals.context);
             res.locals.context.should.be.an.Array().with.lengthOf(1);
-            res.locals.context[0].should.eql('private');
+            assert.equal(res.locals.context[0], 'private');
         });
     });
 
@@ -255,7 +256,7 @@ describe('Contexts', function () {
 
             should.exist(res.locals.context);
             res.locals.context.should.be.an.Array().with.lengthOf(1);
-            res.locals.context[0].should.eql('post');
+            assert.equal(res.locals.context[0], 'post');
         });
     });
 });

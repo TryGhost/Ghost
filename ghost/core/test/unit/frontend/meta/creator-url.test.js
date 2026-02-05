@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const getCreatorTwitterUrl = require('../../../../core/frontend/meta/creator-url');
 
@@ -12,7 +13,7 @@ describe('getCreatorTwitterUrl', function () {
                     }
                 }
             });
-            twitterUrl.should.equal('https://twitter.com/user');
+            assert.equal(twitterUrl, 'https://twitter.com/user');
         });
 
     it('should return null if context does not contain author twitter url and is a post',
@@ -25,7 +26,7 @@ describe('getCreatorTwitterUrl', function () {
                     }
                 }
             });
-            should(twitterUrl).equal(null);
+            assert.equal(twitterUrl, null);
         });
 
     it('should return null if context does not contain author and is a post', function () {
@@ -33,7 +34,7 @@ describe('getCreatorTwitterUrl', function () {
             context: ['post'],
             post: {}
         });
-        should(twitterUrl).equal(null);
+        assert.equal(twitterUrl, null);
     });
 
     it('should return author twitter url if author and has url',
@@ -44,7 +45,7 @@ describe('getCreatorTwitterUrl', function () {
                     twitter: 'https://twitter.com/user'
                 }
             });
-            twitterUrl.should.equal('https://twitter.com/user');
+            assert.equal(twitterUrl, 'https://twitter.com/user');
         });
 
     it('should return null if context does not contain author twitter url and is a author',
@@ -55,13 +56,13 @@ describe('getCreatorTwitterUrl', function () {
                     twitter: ''
                 }
             });
-            should(twitterUrl).equal(null);
+            assert.equal(twitterUrl, null);
         });
 
     it('should return null if context is not a post', function () {
         const twitterUrl = getCreatorTwitterUrl({
             context: ['tag']
         });
-        should(twitterUrl).equal(null);
+        assert.equal(twitterUrl, null);
     });
 });

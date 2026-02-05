@@ -97,7 +97,7 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
-                fn.called.should.be.true();
+                assert.equal(fn.called, true);
                 fn.firstCall.args[0].should.be.an.Object().with.property('posts');
 
                 fn.firstCall.args[0].posts[0].feature_image_caption.should.be.an.instanceOf(SafeString);
@@ -126,10 +126,10 @@ describe('{{#get}} helper', function () {
                 'authors',
                 {hash: {}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
-                fn.called.should.be.true();
+                assert.equal(fn.called, true);
                 fn.firstCall.args[0].should.be.an.Object().with.property('authors');
                 fn.firstCall.args[0].authors.should.eql([]);
-                inverse.called.should.be.false();
+                assert.equal(inverse.called, false);
 
                 done();
             }).catch(done);
@@ -155,10 +155,10 @@ describe('{{#get}} helper', function () {
                 'newsletters',
                 {hash: {}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
-                fn.called.should.be.true();
+                assert.equal(fn.called, true);
                 fn.firstCall.args[0].should.be.an.Object().with.property('newsletters');
                 fn.firstCall.args[0].newsletters.should.eql([]);
-                inverse.called.should.be.false();
+                assert.equal(inverse.called, false);
 
                 done();
             }).catch(done);
@@ -172,11 +172,11 @@ describe('{{#get}} helper', function () {
                 'magic',
                 {hash: {}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
-                fn.called.should.be.false();
-                inverse.calledOnce.should.be.true();
+                assert.equal(fn.called, false);
+                assert.equal(inverse.calledOnce, true);
                 inverse.firstCall.args[1].should.be.an.Object().and.have.property('data');
                 inverse.firstCall.args[1].data.should.be.an.Object().and.have.property('error');
-                inverse.firstCall.args[1].data.error.should.eql('Invalid "magic" resource given to get helper');
+                assert.equal(inverse.firstCall.args[1].data.error, 'Invalid "magic" resource given to get helper');
 
                 done();
             }).catch(done);
@@ -188,11 +188,11 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {slug: 'thing!'}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
-                fn.called.should.be.false();
-                inverse.calledOnce.should.be.true();
+                assert.equal(fn.called, false);
+                assert.equal(inverse.calledOnce, true);
                 inverse.firstCall.args[1].should.be.an.Object().and.have.property('data');
                 inverse.firstCall.args[1].data.should.be.an.Object().and.have.property('error');
-                inverse.firstCall.args[1].data.error.should.match(/^Validation/);
+                assert.match(inverse.firstCall.args[1].data.error, /^Validation/);
 
                 done();
             }).catch(done);
@@ -204,8 +204,8 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {data: locals}
             ).then(function () {
-                fn.called.should.be.false();
-                inverse.called.should.be.false();
+                assert.equal(fn.called, false);
+                assert.equal(inverse.called, false);
 
                 done();
             }).catch(done);
@@ -240,7 +240,7 @@ describe('{{#get}} helper', function () {
             ).then(function () {
                 browseStub.firstCall.args.should.be.an.Array().with.lengthOf(1);
                 browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');
-                browseStub.firstCall.args[0].filter.should.eql('tags:[test,magic]');
+                assert.equal(browseStub.firstCall.args[0].filter, 'tags:[test,magic]');
 
                 done();
             }).catch(done);
@@ -254,7 +254,7 @@ describe('{{#get}} helper', function () {
             ).then(function () {
                 browseStub.firstCall.args.should.be.an.Array().with.lengthOf(1);
                 browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');
-                browseStub.firstCall.args[0].filter.should.eql('author:cameron');
+                assert.equal(browseStub.firstCall.args[0].filter, 'author:cameron');
 
                 done();
             }).catch(done);
@@ -268,7 +268,7 @@ describe('{{#get}} helper', function () {
             ).then(function () {
                 browseStub.firstCall.args.should.be.an.Array().with.lengthOf(1);
                 browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');
-                browseStub.firstCall.args[0].filter.should.eql('id:-3');
+                assert.equal(browseStub.firstCall.args[0].filter, 'id:-3');
 
                 done();
             }).catch(done);
@@ -282,7 +282,7 @@ describe('{{#get}} helper', function () {
             ).then(function () {
                 browseStub.firstCall.args.should.be.an.Array().with.lengthOf(1);
                 browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');
-                browseStub.firstCall.args[0].filter.should.eql('tags:test');
+                assert.equal(browseStub.firstCall.args[0].filter, 'tags:test');
 
                 done();
             }).catch(done);
@@ -310,7 +310,7 @@ describe('{{#get}} helper', function () {
             ).then(function () {
                 browseStub.firstCall.args.should.be.an.Array().with.lengthOf(1);
                 browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');
-                browseStub.firstCall.args[0].filter.should.eql('id:');
+                assert.equal(browseStub.firstCall.args[0].filter, 'id:');
 
                 done();
             }).catch(done);
@@ -324,7 +324,7 @@ describe('{{#get}} helper', function () {
             ).then(function () {
                 browseStub.firstCall.args.should.be.an.Array().with.lengthOf(1);
                 browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');
-                browseStub.firstCall.args[0].filter.should.eql('slug:bar');
+                assert.equal(browseStub.firstCall.args[0].filter, 'slug:bar');
 
                 done();
             }).catch(done);
@@ -351,7 +351,7 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {limit: 'all'}, data: locals, fn: fn, inverse: inverse}
             );
-            browseStub.firstCall.args[0].limit.should.eql(100);
+            assert.equal(browseStub.firstCall.args[0].limit, 100);
         });
 
         it('allows "all" when allowLimitAll is true', async function () {
@@ -363,7 +363,7 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {limit: 'all'}, data: locals, fn: fn, inverse: inverse}
             );
-            browseStub.firstCall.args[0].limit.should.eql('all');
+            assert.equal(browseStub.firstCall.args[0].limit, 'all');
         });
 
         it('caps numeric limits exceeding maxLimit', async function () {
@@ -373,7 +373,7 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {limit: 150}, data: locals, fn: fn, inverse: inverse}
             );
-            browseStub.firstCall.args[0].limit.should.eql(100);
+            assert.equal(browseStub.firstCall.args[0].limit, 100);
         });
 
         it('leaves numeric limits below maxLimit unchanged', async function () {
@@ -383,7 +383,7 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {limit: 50}, data: locals, fn: fn, inverse: inverse}
             );
-            browseStub.firstCall.args[0].limit.should.eql(50);
+            assert.equal(browseStub.firstCall.args[0].limit, 50);
         });
 
         it('uses custom maxLimit when configured', async function () {
@@ -395,7 +395,7 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {limit: 'all'}, data: locals, fn: fn, inverse: inverse}
             );
-            browseStub.firstCall.args[0].limit.should.eql(50);
+            assert.equal(browseStub.firstCall.args[0].limit, 50);
         });
 
         it('caps invalid string limits to maxLimit', async function () {
@@ -405,7 +405,7 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {limit: 'invalid'}, data: locals, fn: fn, inverse: inverse}
             );
-            browseStub.firstCall.args[0].limit.should.eql(100);
+            assert.equal(browseStub.firstCall.args[0].limit, 100);
         });
     });
 
@@ -466,9 +466,9 @@ describe('{{#get}} helper', function () {
             );
 
             // A log message will be output
-            logging.warn.calledOnce.should.be.true();
+            assert.equal(logging.warn.calledOnce, true);
             // The get helper will return as per usual
-            fn.calledOnce.should.be.true();
+            assert.equal(fn.calledOnce, true);
             fn.firstCall.args[0].should.be.an.Object().with.property('posts');
             fn.firstCall.args[0].posts.should.be.an.Array().with.lengthOf(1);
         });
@@ -484,9 +484,9 @@ describe('{{#get}} helper', function () {
 
             assert(result.toString().includes('data-aborted-get-helper'));
             // A log message will be output
-            logging.error.calledOnce.should.be.true();
+            assert.equal(logging.error.calledOnce, true);
             // The get helper gets called with an empty array of results
-            fn.calledOnce.should.be.true();
+            assert.equal(fn.calledOnce, true);
             fn.firstCall.args[0].should.be.an.Object().with.property('posts');
             fn.firstCall.args[0].posts.should.be.an.Array().with.lengthOf(0);
         });

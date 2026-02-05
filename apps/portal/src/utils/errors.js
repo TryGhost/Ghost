@@ -50,8 +50,8 @@ export function chooseBestErrorMessage(error, alreadyTranslatedDefaultMessage) {
         if (specialMessages.length === 0) {
             // This formatting is intentionally weird. It causes the i18n-parser to pick these strings up.
             // Do not redefine this t. It's a local function and needs to stay that way.
-            t('No member exists with this e-mail address. Please sign up first.');
-            t('No member exists with this e-mail address.');
+            t('No member exists with this email address. Please sign up first.');
+            t('No member exists with this email address.');
             t('This site is invite-only, contact the owner for access.');
             t('Unable to initiate checkout session');
             t('This site is not accepting payments at the moment.');
