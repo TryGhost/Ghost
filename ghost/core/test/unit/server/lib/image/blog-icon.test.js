@@ -178,7 +178,7 @@ describe('lib/image: blog icon', function () {
             blogIcon.getIconDimensions(path.join(__dirname, '../../../../utils/fixtures/images/favicon.ico'))
                 .then(function (result) {
                     assertExists(result);
-                    result.should.eql({
+                    assert.deepEqual(result, {
                         width: 48,
                         height: 48
                     });
@@ -191,7 +191,7 @@ describe('lib/image: blog icon', function () {
             blogIcon.getIconDimensions(path.join(__dirname, '../../../../utils/fixtures/images/favicon.png'))
                 .then(function (result) {
                     assertExists(result);
-                    result.should.eql({
+                    assert.deepEqual(result, {
                         width: 100,
                         height: 100
                     });
@@ -204,7 +204,7 @@ describe('lib/image: blog icon', function () {
             blogIcon.getIconDimensions(path.join(__dirname, '../../../../utils/fixtures/images/favicon_multi_sizes.ico'))
                 .then(function (result) {
                     assertExists(result);
-                    result.should.eql({
+                    assert.deepEqual(result, {
                         width: 64,
                         height: 64
                     });

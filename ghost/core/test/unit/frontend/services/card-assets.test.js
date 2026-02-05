@@ -50,7 +50,7 @@ describe('Card Asset Service', function () {
 
         await cardAssets.load(true);
 
-        cardAssets.files.should.eql(['cards.min.css']);
+        assert.deepEqual(cardAssets.files, ['cards.min.css']);
     });
 
     it('can correctly load nothing when config is false', async function () {
@@ -78,7 +78,7 @@ describe('Card Asset Service', function () {
                 config: themeDefaults.card_assets
             });
 
-            cardAssets.generateGlobs().should.eql({
+            assert.deepEqual(cardAssets.generateGlobs(), {
                 'cards.min.css': 'css/*.css',
                 'cards.min.js': 'js/*.js'
             });
@@ -89,7 +89,7 @@ describe('Card Asset Service', function () {
                 config: true
             });
 
-            cardAssets.generateGlobs().should.eql({
+            assert.deepEqual(cardAssets.generateGlobs(), {
                 'cards.min.css': 'css/*.css',
                 'cards.min.js': 'js/*.js'
             });
@@ -110,7 +110,7 @@ describe('Card Asset Service', function () {
                 }
             });
 
-            cardAssets.generateGlobs().should.eql({
+            assert.deepEqual(cardAssets.generateGlobs(), {
                 'cards.min.css': 'css/!(bookmarks).css',
                 'cards.min.js': 'js/!(bookmarks).js'
             });
@@ -123,7 +123,7 @@ describe('Card Asset Service', function () {
                 }
             });
 
-            cardAssets.generateGlobs().should.eql({
+            assert.deepEqual(cardAssets.generateGlobs(), {
                 'cards.min.css': 'css/@(gallery).css',
                 'cards.min.js': 'js/@(gallery).js'
             });
@@ -137,7 +137,7 @@ describe('Card Asset Service', function () {
                 }
             });
 
-            cardAssets.generateGlobs().should.eql({
+            assert.deepEqual(cardAssets.generateGlobs(), {
                 'cards.min.css': 'css/@(gallery).css',
                 'cards.min.js': 'js/@(gallery).js'
             });

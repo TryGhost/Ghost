@@ -294,7 +294,7 @@ describe('Update Check', function () {
             assert.equal(usersBrowseStub.calledTwice, true);
 
             // Second (non statistical) call should be looking for admin users with an 'active' status only
-            usersBrowseStub.args[1][0].should.eql({
+            assert.deepEqual(usersBrowseStub.args[1][0], {
                 limit: 'all',
                 include: ['roles'],
                 filter: 'status:active',

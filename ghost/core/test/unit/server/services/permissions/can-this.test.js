@@ -133,7 +133,7 @@ describe('Permissions', function () {
                             assert.equal(err.errorType, 'NoPermissionError');
 
                             assert.equal(findPostSpy.callCount, 1);
-                            findPostSpy.firstCall.args[0].should.eql({id: 1, status: 'all'});
+                            assert.deepEqual(findPostSpy.firstCall.args[0], {id: 1, status: 'all'});
                             done();
                         });
                 });
@@ -150,7 +150,7 @@ describe('Permissions', function () {
                             assert.equal(err.errorType, 'NoPermissionError');
 
                             assert.equal(findPostSpy.callCount, 1);
-                            findPostSpy.firstCall.args[0].should.eql({id: 1, status: 'all'});
+                            assert.deepEqual(findPostSpy.firstCall.args[0], {id: 1, status: 'all'});
                             done();
                         });
                 });
@@ -182,7 +182,7 @@ describe('Permissions', function () {
                             assert.equal(err.errorType, 'NoPermissionError');
 
                             assert.equal(findPostSpy.callCount, 1);
-                            findPostSpy.firstCall.args[0].should.eql({id: 1, status: 'all'});
+                            assert.deepEqual(findPostSpy.firstCall.args[0], {id: 1, status: 'all'});
                             done();
                         });
                 });

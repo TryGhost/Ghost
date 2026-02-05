@@ -20,7 +20,7 @@ describe('package-json parse', function () {
 
         parse(tmpFile.name)
             .then(function (pkg) {
-                pkg.should.eql({
+                assert.deepEqual(pkg, {
                     name: 'test',
                     version: '0.0.0'
                 });

@@ -63,7 +63,7 @@ describe('MrrStatsService', function () {
          * @param {string} currency - Expected currency
          */
         function assertMrrEntry(result, date, mrr, currency = 'usd') {
-            result.should.eql({
+            assert.deepEqual(result, {
                 date: date,
                 mrr: mrr,
                 currency: currency

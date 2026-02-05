@@ -757,7 +757,7 @@ describe('RouterController', function () {
                 assert.equal(res.end.calledOnceWith('{}'), true);
 
                 assert.equal(sendEmailWithMagicLinkStub.calledOnce, true);
-                sendEmailWithMagicLinkStub.args[0][0].tokenData.newsletters.should.eql([
+                assert.deepEqual(sendEmailWithMagicLinkStub.args[0][0].tokenData.newsletters, [
                     {id: newsletters[0].id},
                     {id: newsletters[1].id},
                     {id: newsletters[2].id}
@@ -1046,7 +1046,7 @@ describe('RouterController', function () {
                 {name: 'Newsletter 3'}
             ];
             const result = await routerController._validateNewsletters(requestedNewsletters);
-            result.should.eql([
+            assert.deepEqual(result, [
                 {id: 'abc123'},
                 {id: 'def456'},
                 {id: 'ghi789'}

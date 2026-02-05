@@ -96,7 +96,7 @@ describe('Unit: services/url/Queue', function () {
                 // 9 subscribers + start triggers run
                 assert.equal(queueRunSpy.callCount, 10);
                 assert.equal(notified, 9);
-                order.should.eql([0, 1, 2, 3, 4, 5, 6, 7, 8]);
+                assert.deepEqual(order, [0, 1, 2, 3, 4, 5, 6, 7, 8]);
                 done();
             });
 

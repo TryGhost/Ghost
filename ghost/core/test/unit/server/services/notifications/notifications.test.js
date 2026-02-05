@@ -257,7 +257,7 @@ describe('Notifications Service', function () {
             assert.equal(notifications.length, 0);
 
             assert.equal(settingsModelStub.called, true);
-            settingsModelStub.args[0][0].should.eql([{
+            assert.deepEqual(settingsModelStub.args[0][0], [{
                 key: 'notifications',
                 value: '[]'
             }]);

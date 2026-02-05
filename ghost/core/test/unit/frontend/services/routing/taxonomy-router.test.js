@@ -69,7 +69,7 @@ describe('UNIT - services/routing/TaxonomyRouter', function () {
         taxonomyRouter._prepareContext(req, res, next);
         assert.equal(next.calledOnce, true);
 
-        res.routerOptions.should.eql({
+        assert.deepEqual(res.routerOptions, {
             type: 'channel',
             name: 'tag',
             permalinks: '/tag/:slug/',

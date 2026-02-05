@@ -513,7 +513,7 @@ describe('Migration Fixture Utils', function () {
         it('should fetch a single fixture entry', function () {
             const foundFixture = fixtureManager.findModelFixtureEntry('Integration', {slug: 'zapier'});
             assert(_.isPlainObject(foundFixture));
-            foundFixture.should.eql({
+            assert.deepEqual(foundFixture, {
                 slug: 'zapier',
                 name: 'Zapier',
                 description: 'Built-in Zapier integration',
@@ -528,12 +528,12 @@ describe('Migration Fixture Utils', function () {
             const foundFixture = fixtureManager.findModelFixtures('Permission', {object_type: 'db'});
             assert(_.isPlainObject(foundFixture));
             foundFixture.entries.should.be.an.Array().with.lengthOf(4);
-            foundFixture.entries[0].should.eql({
+            assert.deepEqual(foundFixture.entries[0], {
                 name: 'Export database',
                 action_type: 'exportContent',
                 object_type: 'db'
             });
-            foundFixture.entries[3].should.eql({
+            assert.deepEqual(foundFixture.entries[3], {
                 name: 'Backup database',
                 action_type: 'backupContent',
                 object_type: 'db'
