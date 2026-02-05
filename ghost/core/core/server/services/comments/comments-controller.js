@@ -361,4 +361,16 @@ module.exports = class CommentsController {
             limit: frame.options.limit
         });
     }
+
+    /**
+     * Get likes for a specific comment (admin only)
+     * @param {Frame} frame
+     */
+    async getCommentLikes(frame) {
+        const commentId = frame.options.id;
+        return await this.service.getCommentLikes(commentId, {
+            page: frame.options.page,
+            limit: frame.options.limit
+        });
+    }
 };

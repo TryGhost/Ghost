@@ -258,6 +258,31 @@ class CommentsService {
     }
 
     /**
+     * Get likes for a comment (admin only)
+     * @param {string} commentId - The ID of the Comment to get likes for
+     * @param {any} options - Query options (page, limit)
+     */
+    async getCommentLikes(commentId, options = {}) {
+        const comment = await this.models.Comment.findOne({id: commentId});
+        if (!comment) {
+            throw new errors.NotFoundError({
+                message: tpl(messages.commentNotFound)
+            });
+        }
+
+        const {page, limit} = options;
+        const result = await this.models.CommentLike.findPage({
+            filter: `comment_id:'${commentId}'`,
+            withRelated: ['member'],
+            order: 'created_at desc',
+            page,
+            limit
+        });
+
+        return result;
+    }
+
+    /**
      * @param {string} id - The ID of the Comment to get
      * @param {any} options
      */

@@ -1,3 +1,4 @@
+import CommentLikesModal from './comment-likes-modal';
 import CommentReportsModal from './comment-reports-modal';
 import {Comment} from '@tryghost/admin-x-framework/api/comments';
 import {
@@ -66,12 +67,14 @@ export function CommentMetrics({
     onRepliesClick,
     className
 }: CommentMetricsProps) {
+    const [likesModalOpen, setLikesModalOpen] = useState(false);
     const [reportsModalOpen, setReportsModalOpen] = useState(false);
 
     const repliesCount = comment.count?.replies ?? comment.replies?.length ?? 0;
     const likesCount = comment.count?.likes ?? 0;
     const reportsCount = comment.count?.reports ?? 0;
     const hasReplies = repliesCount > 0;
+    const hasLikes = likesCount > 0;
     const hasReports = reportsCount > 0;
 
     return (
@@ -87,6 +90,7 @@ export function CommentMetrics({
                     count={likesCount}
                     icon={<LucideIcon.Heart size={16} strokeWidth={1.5} />}
                     label="Likes"
+                    onClick={hasLikes ? () => setLikesModalOpen(true) : undefined}
                 />
                 <Metric
                     className={hasReports ? 'font-semibold text-red' : undefined}
@@ -96,6 +100,11 @@ export function CommentMetrics({
                     onClick={hasReports ? () => setReportsModalOpen(true) : undefined}
                 />
             </div>
+            <CommentLikesModal
+                comment={comment}
+                open={likesModalOpen}
+                onOpenChange={setLikesModalOpen}
+            />
             <CommentReportsModal
                 comment={comment}
                 open={reportsModalOpen}
