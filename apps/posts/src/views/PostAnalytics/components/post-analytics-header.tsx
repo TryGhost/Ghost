@@ -1,7 +1,38 @@
 import React, {useMemo, useState} from 'react';
-import moment from 'moment-timezone';
-import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, H1, LucideIcon, Navbar, PageMenu, PageMenuItem, PostShareModal, formatNumber} from '@tryghost/shade';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    Breadcrumb,
+    BreadcrumbItem,
+    BreadcrumbLink,
+    BreadcrumbList,
+    BreadcrumbPage,
+    BreadcrumbSeparator,
+    Button,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuGroup,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+    H1,
+    LucideIcon,
+    Navbar,
+    PageMenu,
+    PageMenuItem,
+    PostShareModal,
+    formatDisplayDate,
+    formatDisplayTime,
+    formatNumber
+} from '@tryghost/shade';
 import {Post, useGlobalData} from '@src/providers/post-analytics-context';
+import {getSiteTimezone} from '@src/utils/get-site-timezone';
 import {hasBeenEmailed, isEmailOnly, isPublishedAndEmailed, isPublishedOnly, useActiveVisitors, useNavigate} from '@tryghost/admin-x-framework';
 import {useAppContext} from '@src/providers/posts-app-context';
 import {useDeletePost} from '@tryghost/admin-x-framework/api/posts';
@@ -22,7 +53,9 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
     const handleError = useHandleError();
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [isShareOpen, setIsShareOpen] = useState(false);
-    const {site, statsConfig, post, isPostLoading, postId} = useGlobalData();
+    const {settings, site, statsConfig, post, isPostLoading, postId} = useGlobalData();
+
+    const siteTimezone = getSiteTimezone(settings);
 
     // Use the active visitors hook with post-specific filtering
     const {activeVisitors, isLoading: isActiveVisitorsLoading} = useActiveVisitors({
@@ -187,9 +220,9 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                 </H1>
                                 {post?.published_at && (
                                     <div className='mt-0.5 flex items-center justify-start text-sm leading-[1.65em] text-muted-foreground'>
-                                        {isEmailOnly(post as Post) && `Sent on ${moment(post.published_at).format('D MMM YYYY')} at ${moment(post.published_at).format('HH:mm')}`}
-                                        {isPublishedOnly(post as Post) && `Published on your site on ${moment(post.published_at).format('D MMM YYYY')} at ${moment(post.published_at).format('HH:mm')}`}
-                                        {isPublishedAndEmailed(post as Post) && `Published and sent on ${moment(post.published_at).format('D MMM YYYY')} at ${moment(post.published_at).format('HH:mm')}`}
+                                        {isEmailOnly(post) && `Sent on ${formatDisplayDate(post.published_at, siteTimezone)} at ${formatDisplayTime(post.published_at, siteTimezone)}`}
+                                        {isPublishedOnly(post) && `Published on your site on ${formatDisplayDate(post.published_at, siteTimezone)} at ${formatDisplayTime(post.published_at, siteTimezone)}`}
+                                        {isPublishedAndEmailed(post) && `Published and sent on ${formatDisplayDate(post.published_at, siteTimezone)} at ${formatDisplayTime(post.published_at, siteTimezone)}`}
                                     </div>
                                 )}
                             </div>

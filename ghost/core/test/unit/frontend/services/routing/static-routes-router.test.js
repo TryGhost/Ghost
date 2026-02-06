@@ -1,3 +1,5 @@
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 const controllers = require('../../../../../core/frontend/services/routing/controllers');
@@ -35,20 +37,20 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
     describe('static routes', function () {
         it('instantiate: default', function () {
             const staticRoutesRouter = new StaticRoutesRouter('/about/', {templates: ['test']}, routerCreatedSpy);
-            should.exist(staticRoutesRouter.router);
+            assertExists(staticRoutesRouter.router);
 
-            should.not.exist(staticRoutesRouter.filter);
-            should.not.exist(staticRoutesRouter.getPermalinks());
+            assert.equal(staticRoutesRouter.filter, undefined);
+            assert.equal(staticRoutesRouter.getPermalinks(), undefined);
 
-            staticRoutesRouter.templates.should.eql(['test']);
+            assert.deepEqual(staticRoutesRouter.templates, ['test']);
 
-            routerCreatedSpy.calledOnce.should.be.true();
-            routerCreatedSpy.calledWith(staticRoutesRouter).should.be.true();
+            assert.equal(routerCreatedSpy.calledOnce, true);
+            assert.equal(routerCreatedSpy.calledWith(staticRoutesRouter), true);
 
-            mountRouteSpy.callCount.should.eql(1);
+            assert.equal(mountRouteSpy.callCount, 1);
 
             // parent route
-            mountRouteSpy.args[0][0].should.eql('/about/');
+            assert.equal(mountRouteSpy.args[0][0], '/about/');
             mountRouteSpy.args[0][1].should.eql(controllers.static);
         });
 
@@ -58,19 +60,19 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
                 filter: 'tag:test'
             }, routerCreatedSpy);
 
-            should.exist(staticRoutesRouter.router);
+            assertExists(staticRoutesRouter.router);
 
-            should.not.exist(staticRoutesRouter.getPermalinks());
-            should.not.exist(staticRoutesRouter.filter);
-            staticRoutesRouter.templates.should.eql([]);
+            assert.equal(staticRoutesRouter.getPermalinks(), undefined);
+            assert.equal(staticRoutesRouter.filter, undefined);
+            assert.deepEqual(staticRoutesRouter.templates, []);
 
-            routerCreatedSpy.calledOnce.should.be.true();
-            routerCreatedSpy.calledWith(staticRoutesRouter).should.be.true();
+            assert.equal(routerCreatedSpy.calledOnce, true);
+            assert.equal(routerCreatedSpy.calledWith(staticRoutesRouter), true);
 
-            mountRouteSpy.callCount.should.eql(1);
+            assert.equal(mountRouteSpy.callCount, 1);
 
             // parent route
-            mountRouteSpy.args[0][0].should.eql('/about/');
+            assert.equal(mountRouteSpy.args[0][0], '/about/');
             mountRouteSpy.args[0][1].should.eql(controllers.static);
         });
 
@@ -78,33 +80,33 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
             const staticRoutesRouter = new StaticRoutesRouter('/about/', {templates: []}, routerCreatedSpy);
 
             staticRoutesRouter._prepareStaticRouteContext(req, res, next);
-            next.called.should.be.true();
+            assert.equal(next.called, true);
 
             res.routerOptions.should.have.properties('type', 'templates', 'defaultTemplate', 'context', 'data', 'contentType');
-            res.routerOptions.type.should.eql('custom');
-            res.routerOptions.templates.should.eql([]);
+            assert.equal(res.routerOptions.type, 'custom');
+            assert.deepEqual(res.routerOptions.templates, []);
             res.routerOptions.defaultTemplate.should.be.a.Function();
-            res.routerOptions.context.should.eql(['about']);
-            res.routerOptions.data.should.eql({});
+            assert.deepEqual(res.routerOptions.context, ['about']);
+            assert.deepEqual(res.routerOptions.data, {});
 
-            should(res.routerOptions.contentType).be.undefined();
-            should.not.exist(res.locals.slug);
+            assert.equal(res.routerOptions.contentType, undefined);
+            assert.equal(res.locals.slug, undefined);
         });
 
         it('fn: _prepareStaticRouteContext (mainRoute=root)', function () {
             const staticRoutesRouter = new StaticRoutesRouter('/', {templates: []}, routerCreatedSpy);
 
             staticRoutesRouter._prepareStaticRouteContext(req, res, next);
-            next.called.should.be.true();
+            assert.equal(next.called, true);
 
             res.routerOptions.should.have.properties('type', 'templates', 'defaultTemplate', 'context', 'data', 'contentType');
-            res.routerOptions.type.should.eql('custom');
-            res.routerOptions.templates.should.eql([]);
+            assert.equal(res.routerOptions.type, 'custom');
+            assert.deepEqual(res.routerOptions.templates, []);
             res.routerOptions.defaultTemplate.should.be.a.Function();
-            res.routerOptions.context.should.eql(['index']);
-            res.routerOptions.data.should.eql({});
+            assert.deepEqual(res.routerOptions.context, ['index']);
+            assert.deepEqual(res.routerOptions.data, {});
 
-            should.not.exist(res.locals.slug);
+            assert.equal(res.locals.slug, undefined);
         });
     });
 
@@ -117,24 +119,24 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
                     filter: 'tag:test'
                 }, routerCreatedSpy);
 
-                should.exist(staticRoutesRouter.router);
+                assertExists(staticRoutesRouter.router);
 
-                should.not.exist(staticRoutesRouter.getPermalinks());
-                staticRoutesRouter.filter.should.eql('tag:test');
-                staticRoutesRouter.templates.should.eql([]);
-                should.exist(staticRoutesRouter.data);
+                assert.equal(staticRoutesRouter.getPermalinks(), undefined);
+                assert.equal(staticRoutesRouter.filter, 'tag:test');
+                assert.deepEqual(staticRoutesRouter.templates, []);
+                assertExists(staticRoutesRouter.data);
 
-                routerCreatedSpy.calledOnce.should.be.true();
-                routerCreatedSpy.calledWith(staticRoutesRouter).should.be.true();
+                assert.equal(routerCreatedSpy.calledOnce, true);
+                assert.equal(routerCreatedSpy.calledWith(staticRoutesRouter), true);
 
-                mountRouteSpy.callCount.should.eql(2);
+                assert.equal(mountRouteSpy.callCount, 2);
 
                 // parent route
-                mountRouteSpy.args[0][0].should.eql('/channel/');
+                assert.equal(mountRouteSpy.args[0][0], '/channel/');
                 mountRouteSpy.args[0][1].should.eql(controllers.channel);
 
                 // pagination feature
-                mountRouteSpy.args[1][0].should.eql('/channel/page/:page(\\d+)');
+                assert.equal(mountRouteSpy.args[1][0], '/channel/page/:page(\\d+)');
                 mountRouteSpy.args[1][1].should.eql(controllers.channel);
             });
 
@@ -144,24 +146,24 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
                     filter: 'tag:test'
                 }, routerCreatedSpy);
 
-                should.exist(staticRoutesRouter.router);
+                assertExists(staticRoutesRouter.router);
 
-                should.not.exist(staticRoutesRouter.getPermalinks());
-                staticRoutesRouter.filter.should.eql('tag:test');
+                assert.equal(staticRoutesRouter.getPermalinks(), undefined);
+                assert.equal(staticRoutesRouter.filter, 'tag:test');
 
-                staticRoutesRouter.templates.should.eql([]);
+                assert.deepEqual(staticRoutesRouter.templates, []);
 
-                routerCreatedSpy.calledOnce.should.be.true();
-                routerCreatedSpy.calledWith(staticRoutesRouter).should.be.true();
+                assert.equal(routerCreatedSpy.calledOnce, true);
+                assert.equal(routerCreatedSpy.calledWith(staticRoutesRouter), true);
 
-                mountRouteSpy.callCount.should.eql(2);
+                assert.equal(mountRouteSpy.callCount, 2);
 
                 // parent route
-                mountRouteSpy.args[0][0].should.eql('/channel/');
+                assert.equal(mountRouteSpy.args[0][0], '/channel/');
                 mountRouteSpy.args[0][1].should.eql(controllers.channel);
 
                 // pagination feature
-                mountRouteSpy.args[1][0].should.eql('/channel/page/:page(\\d+)');
+                assert.equal(mountRouteSpy.args[1][0], '/channel/page/:page(\\d+)');
                 mountRouteSpy.args[1][1].should.eql(controllers.channel);
             });
 
@@ -171,7 +173,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
                     data: {query: {}, router: {}}
                 }, routerCreatedSpy);
 
-                should.not.exist(staticRoutesRouter.filter);
+                assert.equal(staticRoutesRouter.filter, undefined);
             });
 
             it('initialize on subdirectory with controller+data+filter', function () {
@@ -183,14 +185,14 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
                     filter: 'author:michi'
                 }, routerCreatedSpy);
 
-                mountRouteSpy.callCount.should.eql(2);
+                assert.equal(mountRouteSpy.callCount, 2);
 
                 // parent route
-                mountRouteSpy.args[0][0].should.eql('/channel/');
+                assert.equal(mountRouteSpy.args[0][0], '/channel/');
                 mountRouteSpy.args[0][1].should.eql(controllers.channel);
 
                 // pagination feature
-                mountRouteSpy.args[1][0].should.eql('/channel/page/:page(\\d+)');
+                assert.equal(mountRouteSpy.args[1][0], '/channel/page/:page(\\d+)');
                 mountRouteSpy.args[1][1].should.eql(controllers.channel);
             });
         });
@@ -204,8 +206,8 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
                 }, routerCreatedSpy);
 
                 staticRoutesRouter._prepareChannelContext(req, res, next);
-                next.calledOnce.should.eql(true);
-                res.routerOptions.should.eql({
+                assert.equal(next.calledOnce, true);
+                assert.deepEqual(res.routerOptions, {
                     type: 'channel',
                     context: ['channel'],
                     filter: 'tag:test',
@@ -224,8 +226,8 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
                 }, routerCreatedSpy);
 
                 staticRoutesRouter._prepareChannelContext(req, res, next);
-                next.calledOnce.should.eql(true);
-                res.routerOptions.should.eql({
+                assert.equal(next.calledOnce, true);
+                assert.deepEqual(res.routerOptions, {
                     type: 'channel',
                     context: ['nothingcomparestoyou'],
                     name: 'nothingcomparestoyou',
@@ -244,8 +246,8 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
                 }, routerCreatedSpy);
 
                 staticRoutesRouter._prepareChannelContext(req, res, next);
-                next.calledOnce.should.eql(true);
-                res.routerOptions.should.eql({
+                assert.equal(next.calledOnce, true);
+                assert.deepEqual(res.routerOptions, {
                     type: 'channel',
                     context: ['channel'],
                     filter: 'tag:test',
@@ -266,8 +268,8 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
                 }, routerCreatedSpy);
 
                 staticRoutesRouter._prepareChannelContext(req, res, next);
-                next.calledOnce.should.eql(true);
-                res.routerOptions.should.eql({
+                assert.equal(next.calledOnce, true);
+                assert.deepEqual(res.routerOptions, {
                     type: 'channel',
                     context: ['channel'],
                     filter: 'tag:test',

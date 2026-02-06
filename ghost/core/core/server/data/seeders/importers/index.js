@@ -37,5 +37,6 @@ module.exports = [
     require('./recommendations-importer'),
     require('./recommendation-click-events-importer'),
     require('./recommendation-subscribe-events-importer'),
-    require('./comments-importer')
+    require('./comments-importer'),
+    require('./comment-reports-importer')
 ];

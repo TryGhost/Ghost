@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 
 const cacheControl = require('../../../../../../core/server/web/shared/middleware/cache-control');
@@ -18,55 +18,55 @@ describe('Cache-Control middleware', function () {
 
     it('correctly sets the public profile headers', function (done) {
         cacheControl('public')(null, res, function (a) {
-            should.not.exist(a);
-            res.set.calledOnce.should.be.true();
-            res.set.calledWith({'Cache-Control': 'public, max-age=0'}).should.be.true();
+            assert(!a);
+            sinon.assert.calledOnce(res.set);
+            sinon.assert.calledWith(res.set, {'Cache-Control': 'public, max-age=0'});
             done();
         });
     });
 
     it('correctly sets the public profile headers with custom maxAge', function (done) {
         cacheControl('public', {maxAge: 123456})(null, res, function (a) {
-            should.not.exist(a);
-            res.set.calledOnce.should.be.true();
-            res.set.calledWith({'Cache-Control': 'public, max-age=123456'}).should.be.true();
+            assert(!a);
+            sinon.assert.calledOnce(res.set);
+            sinon.assert.calledWith(res.set, {'Cache-Control': 'public, max-age=123456'});
             done();
         });
     });
 
     it('correctly sets the public profile headers with staleWhileRevalidate', function (done) {
         cacheControl('public', {maxAge: 1, staleWhileRevalidate: 9})(null, res, function (a) {
-            should.not.exist(a);
-            res.set.calledOnce.should.be.true();
-            res.set.calledWith({'Cache-Control': 'public, max-age=1, stale-while-revalidate=9'}).should.be.true();
+            assert(!a);
+            sinon.assert.calledOnce(res.set);
+            sinon.assert.calledWith(res.set, {'Cache-Control': 'public, max-age=1, stale-while-revalidate=9'});
             done();
         });
     });
 
     it('correctly sets the private profile headers', function (done) {
         cacheControl('private')(null, res, function (a) {
-            should.not.exist(a);
-            res.set.calledOnce.should.be.true();
-            res.set.calledWith({
+            assert(!a);
+            sinon.assert.calledOnce(res.set);
+            sinon.assert.calledWith(res.set, {
                 'Cache-Control': 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
-            }).should.be.true();
+            });
             done();
         });
     });
 
     it('correctly sets the noCache profile headers', function (done) {
         cacheControl('noCache')(null, res, function (a) {
-            should.not.exist(a);
-            res.set.calledOnce.should.be.true();
-            res.set.calledWith({'Cache-Control': 'no-cache, max-age=0, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'}).should.be.true();
+            assert(!a);
+            sinon.assert.calledOnce(res.set);
+            sinon.assert.calledWith(res.set, {'Cache-Control': 'no-cache, max-age=0, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'});
             done();
         });
     });
 
     it('will not set headers without a profile', function (done) {
         cacheControl()(null, res, function (a) {
-            should.not.exist(a);
-            res.set.called.should.be.false();
+            assert(!a);
+            sinon.assert.notCalled(res.set);
             done();
         });
     });
@@ -76,23 +76,23 @@ describe('Cache-Control middleware', function () {
         const privateCC = cacheControl('private');
 
         publicCC(null, res, function () {
-            res.set.calledOnce.should.be.true();
-            res.set.calledWith({'Cache-Control': 'public, max-age=0'}).should.be.true();
+            sinon.assert.calledOnce(res.set);
+            sinon.assert.calledWith(res.set, {'Cache-Control': 'public, max-age=0'});
 
             privateCC(null, res, function () {
-                res.set.calledTwice.should.be.true();
-                res.set.calledWith({
+                sinon.assert.calledTwice(res.set);
+                sinon.assert.calledWith(res.set, {
                     'Cache-Control': 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
-                }).should.be.true();
+                });
 
                 publicCC(null, res, function () {
-                    res.set.calledThrice.should.be.true();
-                    res.set.calledWith({'Cache-Control': 'public, max-age=0'});
+                    sinon.assert.calledThrice(res.set);
+                    sinon.assert.calledWith(res.set, {'Cache-Control': 'public, max-age=0'});
 
                     privateCC(null, res, function () {
-                        res.set.calledWith({
+                        sinon.assert.calledWith(res.set, {
                             'Cache-Control': 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
-                        }).should.be.true();
+                        });
                         done();
                     });
                 });

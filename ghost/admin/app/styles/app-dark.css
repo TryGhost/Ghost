@@ -53,8 +53,6 @@
 @import "layouts/auth.css";
 @import "layouts/content.css";
 @import "layouts/editor.css";
-@import "layouts/whatsnew.css";
-@import "layouts/whatsnew-modal.css";
 @import "layouts/tags.css";
 @import "layouts/members.css";
 @import "layouts/member-activity.css";
@@ -726,10 +724,6 @@ input:focus,
     background-color: transparent;
 }
 
-.gh-referral-toast-close:hover {
-    color: #fff;
-}
-
 .nightshift-toggle {
     background: var(--grey-800);
 }
@@ -1135,11 +1129,6 @@ input:focus,
 /* Opacity needed to display correctly in Safari */
 ::selection {
     background: rgba(88, 101, 116, 0.99);
-}
-
-.gh-whats-new-badge-account {
-    top: 0;
-    right: -2px;
 }
 
 .gh-list-scrolling thead th:first-child {

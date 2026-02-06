@@ -211,4 +211,57 @@ module.exports = class MemberController {
             res.end(err.message);
         }
     }
+
+    async applyOfferToSubscription(req, res) {
+        try {
+            const identity = req.body.identity;
+            const subscriptionId = req.params.id;
+            const offerId = req.body.offer_id;
+
+            if (!identity) {
+                res.writeHead(401);
+                return res.end('Unauthorized');
+            }
+
+            if (!offerId) {
+                throw new errors.BadRequestError({
+                    message: 'Missing offer_id'
+                });
+            }
+
+            let email;
+            try {
+                const claims = await this._tokenService.decodeToken(identity);
+                email = claims && claims.sub;
+            } catch (err) {
+                res.writeHead(401);
+                return res.end('Unauthorized');
+            }
+
+            if (!email) {
+                throw new errors.BadRequestError({
+                    message: 'Invalid token'
+                });
+            }
+
+            const coupon = await this._paymentsService.getCouponForOffer(offerId);
+
+            await this._memberRepository.applyOfferToSubscription({
+                email,
+                subscription: {
+                    subscription_id: subscriptionId
+                },
+                offerId,
+                couponId: coupon?.id
+            });
+
+            res.writeHead(204);
+            res.end();
+        } catch (err) {
+            res.writeHead(err.statusCode || 500, {
+                'Content-Type': 'text/plain;charset=UTF-8'
+            });
+            res.end(err.message);
+        }
+    }
 };

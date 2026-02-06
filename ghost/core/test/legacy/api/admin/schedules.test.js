@@ -1,3 +1,5 @@
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../utils/assertions');
 const _ = require('lodash');
 const should = require('should');
 const supertest = require('supertest');
@@ -85,7 +87,7 @@ describe('Schedules API', function () {
             return models.Post.add(post, {context: {internal: true}});
         }));
 
-        result.length.should.eql(5);
+        assert.equal(result.length, 5);
     });
 
     describe('publish', function () {
@@ -105,11 +107,11 @@ describe('Schedules API', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200);
 
-            should.exist(res.headers['x-cache-invalidate']);
+            assertExists(res.headers['x-cache-invalidate']);
             const jsonResponse = res.body;
-            should.exist(jsonResponse);
+            assertExists(jsonResponse);
             jsonResponse.posts[0].id.should.eql(resources[0].id);
-            jsonResponse.posts[0].status.should.eql('published');
+            assert.equal(jsonResponse.posts[0].status, 'published');
         });
 
         it('publishes page', async function () {
@@ -119,11 +121,11 @@ describe('Schedules API', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200);
 
-            should.exist(res.headers['x-cache-invalidate']);
+            assertExists(res.headers['x-cache-invalidate']);
             const jsonResponse = res.body;
-            should.exist(jsonResponse);
+            assertExists(jsonResponse);
             jsonResponse.pages[0].id.should.eql(resources[4].id);
-            jsonResponse.pages[0].status.should.eql('published');
+            assert.equal(jsonResponse.pages[0].status, 'published');
         });
 
         it('no access', function () {

@@ -1,3 +1,5 @@
+const assert = require('node:assert/strict');
+const {assertExists} = require('../utils/assertions');
 const should = require('should');
 const supertest = require('supertest');
 const path = require('path');
@@ -6,10 +8,10 @@ const testUtils = require('../utils');
 const configUtils = require('../utils/config-utils');
 
 function assertCorrectFrontendHeaders(res) {
-    should.not.exist(res.headers['x-cache-invalidate']);
-    should.not.exist(res.headers['X-CSRF-Token']);
-    should.not.exist(res.headers['set-cookie']);
-    should.exist(res.headers.date);
+    assert.equal(res.headers['x-cache-invalidate'], undefined);
+    assert.equal(res.headers['X-CSRF-Token'], undefined);
+    assert.equal(res.headers['set-cookie'], undefined);
+    assertExists(res.headers.date);
 }
 
 describe('Custom Frontend routing', function () {
@@ -57,7 +59,7 @@ describe('Custom Frontend routing', function () {
                 const year = todayMoment.format('YYYY');
                 const postLink = `/blog/${year}/welcome/`;
 
-                content.indexOf(postLink).should.be.above(0);
+                assert(content.indexOf(postLink) > 0);
             });
     });
 

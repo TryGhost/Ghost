@@ -827,7 +827,6 @@
 
 .no-posts-box {
     position: relative;
-    z-index: 600;
     display: flex;
     justify-content: center;
     align-items: center;

@@ -1,3 +1,5 @@
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 const supertest = require('supertest');
@@ -23,22 +25,22 @@ describe('Tag API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
 
-        should.not.exist(res.headers['x-cache-invalidate']);
+        assert.equal(res.headers['x-cache-invalidate'], undefined);
         const jsonResponse = res.body;
-        should.exist(jsonResponse);
-        should.exist(jsonResponse.tags);
-        jsonResponse.tags.should.have.length(7);
+        assertExists(jsonResponse);
+        assertExists(jsonResponse.tags);
+        assert.equal(jsonResponse.tags.length, 7);
         localUtils.API.checkResponse(jsonResponse.tags[0], 'tag', ['count', 'url']);
 
-        testUtils.API.isISO8601(jsonResponse.tags[0].created_at).should.be.true();
-        jsonResponse.tags[0].created_at.should.be.an.instanceof(String);
+        assert.equal(testUtils.API.isISO8601(jsonResponse.tags[0].created_at), true);
+        assert.equal(typeof jsonResponse.tags[0].created_at, 'string');
 
-        jsonResponse.meta.pagination.should.have.property('page', 1);
-        jsonResponse.meta.pagination.should.have.property('limit', 15);
-        jsonResponse.meta.pagination.should.have.property('pages', 1);
-        jsonResponse.meta.pagination.should.have.property('total', 7);
-        jsonResponse.meta.pagination.should.have.property('next', null);
-        jsonResponse.meta.pagination.should.have.property('prev', null);
+        assert.equal(jsonResponse.meta.pagination.page, 1);
+        assert.equal(jsonResponse.meta.pagination.limit, 15);
+        assert.equal(jsonResponse.meta.pagination.pages, 1);
+        assert.equal(jsonResponse.meta.pagination.total, 7);
+        assert.equal(jsonResponse.meta.pagination.next, null);
+        assert.equal(jsonResponse.meta.pagination.prev, null);
 
         // returns 404 because this tag has no published posts
         jsonResponse.tags[0].url.should.eql(`${config.get('url')}/404/`);
@@ -48,8 +50,8 @@ describe('Tag API', function () {
 
         // kitchen-sink has published posts, so it should have a valid URL
         kitchenSinkTag.url.should.eql(`${config.get('url')}/tag/kitchen-sink/`);
-        should.exist(kitchenSinkTag.count.posts);
-        kitchenSinkTag.count.posts.should.equal(2);
+        assertExists(kitchenSinkTag.count.posts);
+        assert.equal(kitchenSinkTag.count.posts, 2);
     });
 
     it('Can paginate tags', async function () {
@@ -60,7 +62,7 @@ describe('Tag API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
 
-        should.equal(res.body.meta.pagination.page, 2);
+        assert.equal(res.body.meta.pagination.page, 2);
     });
 
     it('Can read a tag', async function () {
@@ -71,14 +73,14 @@ describe('Tag API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
 
-        should.not.exist(res.headers['x-cache-invalidate']);
+        assert.equal(res.headers['x-cache-invalidate'], undefined);
         const jsonResponse = res.body;
-        should.exist(jsonResponse);
-        should.exist(jsonResponse.tags);
-        jsonResponse.tags.should.have.length(1);
+        assertExists(jsonResponse);
+        assertExists(jsonResponse.tags);
+        assert.equal(jsonResponse.tags.length, 1);
         localUtils.API.checkResponse(jsonResponse.tags[0], 'tag', ['count', 'url']);
-        should.exist(jsonResponse.tags[0].count.posts);
-        jsonResponse.tags[0].count.posts.should.equal(7);
+        assertExists(jsonResponse.tags[0].count.posts);
+        assert.equal(jsonResponse.tags[0].count.posts, 7);
 
         jsonResponse.tags[0].url.should.eql(`${config.get('url')}/tag/getting-started/`);
     });
@@ -96,17 +98,17 @@ describe('Tag API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(201);
 
-        should.exist(res.headers['x-cache-invalidate']);
+        assertExists(res.headers['x-cache-invalidate']);
         const jsonResponse = res.body;
-        should.exist(jsonResponse);
-        should.exist(jsonResponse.tags);
-        jsonResponse.tags.should.have.length(1);
+        assertExists(jsonResponse);
+        assertExists(jsonResponse.tags);
+        assert.equal(jsonResponse.tags.length, 1);
 
         localUtils.API.checkResponse(jsonResponse.tags[0], 'tag', ['url']);
-        testUtils.API.isISO8601(jsonResponse.tags[0].created_at).should.be.true();
+        assert.equal(testUtils.API.isISO8601(jsonResponse.tags[0].created_at), true);
 
-        should.exist(res.headers.location);
-        res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('tags/')}${res.body.tags[0].id}/`);
+        assertExists(res.headers.location);
+        assert.equal(res.headers.location, `http://127.0.0.1:2369${localUtils.API.getApiQuery('tags/')}${res.body.tags[0].id}/`);
     });
 
     it('Can add an internal tag', async function () {
@@ -125,15 +127,15 @@ describe('Tag API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(201);
 
-        should.exist(res.headers['x-cache-invalidate']);
+        assertExists(res.headers['x-cache-invalidate']);
         const jsonResponse = res.body;
-        should.exist(jsonResponse);
-        jsonResponse.tags[0].visibility.should.eql('internal');
-        jsonResponse.tags[0].name.should.eql('#test');
-        jsonResponse.tags[0].slug.should.eql('hash-test');
+        assertExists(jsonResponse);
+        assert.equal(jsonResponse.tags[0].visibility, 'internal');
+        assert.equal(jsonResponse.tags[0].name, '#test');
+        assert.equal(jsonResponse.tags[0].slug, 'hash-test');
 
-        should.exist(res.headers.location);
-        res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('tags/')}${res.body.tags[0].id}/`);
+        assertExists(res.headers.location);
+        assert.equal(res.headers.location, `http://127.0.0.1:2369${localUtils.API.getApiQuery('tags/')}${res.body.tags[0].id}/`);
     });
 
     it('Can edit a tag', async function () {
@@ -147,13 +149,13 @@ describe('Tag API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
 
-        should.exist(res.headers['x-cache-invalidate']);
+        assertExists(res.headers['x-cache-invalidate']);
         const jsonResponse = res.body;
-        should.exist(jsonResponse);
-        should.exist(jsonResponse.tags);
-        jsonResponse.tags.should.have.length(1);
+        assertExists(jsonResponse);
+        assertExists(jsonResponse.tags);
+        assert.equal(jsonResponse.tags.length, 1);
         localUtils.API.checkResponse(jsonResponse.tags[0], 'tag', ['url']);
-        jsonResponse.tags[0].description.should.eql('hey ho ab ins klo');
+        assert.equal(jsonResponse.tags[0].description, 'hey ho ab ins klo');
     });
 
     it('Can destroy a tag', async function () {
@@ -163,8 +165,8 @@ describe('Tag API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(204);
 
-        should.exist(res.headers['x-cache-invalidate']);
-        res.body.should.eql({});
+        assertExists(res.headers['x-cache-invalidate']);
+        assert.deepEqual(res.body, {});
     });
 
     it('Can destroy a non-existent tag', async function () {
@@ -174,7 +176,7 @@ describe('Tag API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(404);
 
-        res.body.errors[0].message.should.eql('Resource not found error, cannot delete tag.');
+        assert.equal(res.body.errors[0].message, 'Resource not found error, cannot delete tag.');
     });
 
     describe('URL transformations', function () {
@@ -194,9 +196,9 @@ describe('Tag API', function () {
 
             const tag = res.body.tags[0];
 
-            tag.feature_image.should.equal(`${siteUrl}/content/images/tag-feature.jpg`);
-            tag.og_image.should.equal(`${siteUrl}/content/images/tag-og.jpg`);
-            tag.twitter_image.should.equal(`${siteUrl}/content/images/tag-twitter.jpg`);
+            assert.equal(tag.feature_image, `${siteUrl}/content/images/tag-feature.jpg`);
+            assert.equal(tag.og_image, `${siteUrl}/content/images/tag-og.jpg`);
+            assert.equal(tag.twitter_image, `${siteUrl}/content/images/tag-twitter.jpg`);
         });
 
         it('Transforms image URLs to absolute site URLs even when CDN is configured', async function () {
@@ -213,9 +215,9 @@ describe('Tag API', function () {
 
             const tag = res.body.tags[0];
 
-            tag.feature_image.should.equal(`${siteUrl}/content/images/tag-feature.jpg`);
-            tag.og_image.should.equal(`${siteUrl}/content/images/tag-og.jpg`);
-            tag.twitter_image.should.equal(`${siteUrl}/content/images/tag-twitter.jpg`);
+            assert.equal(tag.feature_image, `${siteUrl}/content/images/tag-feature.jpg`);
+            assert.equal(tag.og_image, `${siteUrl}/content/images/tag-og.jpg`);
+            assert.equal(tag.twitter_image, `${siteUrl}/content/images/tag-twitter.jpg`);
         });
     });
 });

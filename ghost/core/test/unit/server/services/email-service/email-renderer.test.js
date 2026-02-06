@@ -1,6 +1,7 @@
 require('should');
 const EmailRenderer = require('../../../../../core/server/services/email-service/email-renderer');
 const assert = require('assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const cheerio = require('cheerio');
 const {createModel, createModelClass} = require('./utils');
 const linkReplacer = require('../../../../../core/server/services/lib/link-replacer');
@@ -492,35 +493,6 @@ describe('Email renderer', function () {
             assert.equal(replacements[0].getValue(member), '13 mars 2023');
         });
 
-        it('handles dates when the locale is fr and labs is disabled', function () {
-            emailRenderer = new EmailRenderer({
-                urlUtils: {
-                    urlFor: () => 'http://example.com/subdirectory/'
-                },
-                labs: {
-                    isSet: () => false
-                },
-                settingsCache: {
-                    get: (key) => {
-                        if (key === 'timezone') {
-                            return 'UTC';
-                        }
-                        if (key === 'locale') {
-                            return 'fr';
-                        }
-                    }
-                },
-                settingsHelpers: {getMembersValidationKey,createUnsubscribeUrl},
-                t: tFr
-            });
-            const html = '%%{created_at}%%';
-            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
-            assert.equal(replacements.length, 2);
-            assert.equal(replacements[0].token.toString(), '/%%\\{created_at\\}%%/g');
-            assert.equal(replacements[0].id, 'created_at');
-            assert.equal(replacements[0].getValue(member), '13 March 2023');
-        });
-
         it('handles dates when the locale is en (US)', function () {
             emailRenderer = new EmailRenderer({
                 urlUtils: {
@@ -941,7 +913,7 @@ describe('Email renderer', function () {
                 loaded: ['posts_meta']
             });
             let response = emailRenderer.getSubject(post);
-            response.should.equal('Test Newsletter');
+            assert.equal(response, 'Test Newsletter');
         });
 
         it('returns a post with correct subject from title', function () {
@@ -953,7 +925,7 @@ describe('Email renderer', function () {
                 loaded: ['posts_meta']
             });
             let response = emailRenderer.getSubject(post);
-            response.should.equal('Sample Post');
+            assert.equal(response, 'Sample Post');
         });
 
         it('adds [TEST] prefix for test emails', function () {
@@ -965,7 +937,7 @@ describe('Email renderer', function () {
                 loaded: ['posts_meta']
             });
             let response = emailRenderer.getSubject(post, true);
-            response.should.equal('[TEST] Sample Post');
+            assert.equal(response, '[TEST] Sample Post');
         });
     });
 
@@ -1000,7 +972,7 @@ describe('Email renderer', function () {
                 sender_name: 'Ghost'
             });
             const response = emailRenderer.getFromAddress({}, newsletter);
-            response.should.equal('"Ghost" <ghost@example.com>');
+            assert.equal(response, '"Ghost" <ghost@example.com>');
         });
 
         it('defaults to site title and domain', function () {
@@ -1009,7 +981,7 @@ describe('Email renderer', function () {
                 sender_name: ''
             });
             const response = emailRenderer.getFromAddress({}, newsletter);
-            response.should.equal('"Test Blog" <reply@example.com>');
+            assert.equal(response, '"Test Blog" <reply@example.com>');
         });
 
         it('changes localhost domain to proper domain in development', function () {
@@ -1018,7 +990,7 @@ describe('Email renderer', function () {
                 sender_name: ''
             });
             const response = emailRenderer.getFromAddress({}, newsletter);
-            response.should.equal('"Test Blog" <localhost@example.com>');
+            assert.equal(response, '"Test Blog" <localhost@example.com>');
         });
 
         it('ignores empty sender names', function () {
@@ -1028,7 +1000,7 @@ describe('Email renderer', function () {
                 sender_name: ''
             });
             const response = emailRenderer.getFromAddress({}, newsletter);
-            response.should.equal('example@example.com');
+            assert.equal(response, 'example@example.com');
         });
     });
 
@@ -1068,7 +1040,7 @@ describe('Email renderer', function () {
                 sender_reply_to: 'support'
             });
             const response = emailRenderer.getReplyToAddress({}, newsletter);
-            response.should.equal('support@example.com');
+            assert.equal(response, 'support@example.com');
         });
 
         it('[legacy] returns correct reply to address for newsletter', function () {
@@ -1188,7 +1160,7 @@ describe('Email renderer', function () {
                 }
             };
             let response = await emailRenderer.getSegments(post);
-            response.should.eql([null]);
+            assert.deepEqual(response, [null]);
 
             post = {
                 get: (key) => {
@@ -1198,7 +1170,7 @@ describe('Email renderer', function () {
                 }
             };
             response = await emailRenderer.getSegments(post);
-            response.should.eql([null]);
+            assert.deepEqual(response, [null]);
         });
 
         it('returns correct segments for post with members only card', async function () {
@@ -1226,7 +1198,7 @@ describe('Email renderer', function () {
                 }
             };
             let response = await emailRenderer.getSegments(post);
-            response.should.eql(['status:free', 'status:-free']);
+            assert.deepEqual(response, ['status:free', 'status:-free']);
         });
 
         it('returns correct segments for post with email card', async function () {
@@ -1254,7 +1226,7 @@ describe('Email renderer', function () {
                 }
             };
             let response = await emailRenderer.getSegments(post);
-            response.should.eql(['status:free', 'status:-free']);
+            assert.deepEqual(response, ['status:free', 'status:-free']);
         });
     });
 
@@ -1422,12 +1394,12 @@ describe('Email renderer', function () {
 
             const $ = cheerio.load(response.html);
 
-            response.plaintext.should.containEql('Test Post');
+            assert(response.plaintext.includes('Test Post'));
 
             // Unsubscribe button included
-            response.plaintext.should.containEql('Unsubscribe [%%{unsubscribe_url}%%]');
-            response.html.should.containEql('Unsubscribe');
-            response.replacements.length.should.eql(4);
+            assert(response.plaintext.includes('Unsubscribe [%%{unsubscribe_url}%%]'));
+            assert(response.html.includes('Unsubscribe'));
+            assert.equal(response.replacements.length, 4);
             response.replacements.should.match([
                 {
                     id: 'uuid'
@@ -1443,17 +1415,17 @@ describe('Email renderer', function () {
                 }
             ]);
 
-            response.plaintext.should.containEql('http://example.com');
-            should($('.preheader').text()).eql('Test plaintext for post');
-            response.html.should.containEql('Test Post');
-            response.html.should.containEql('http://example.com');
+            assert(response.plaintext.includes('http://example.com'));
+            assert.equal($('.preheader').text(), 'Test plaintext for post');
+            assert(response.html.includes('Test Post'));
+            assert(response.html.includes('http://example.com'));
 
             // Does not include Ghost badge
-            response.html.should.not.containEql('https://ghost.org/');
+            assert(!response.html.includes('https://ghost.org/'));
 
             // Test feedback buttons included
-            response.html.should.containEql('http://feedback-link.com/?score=1');
-            response.html.should.containEql('http://feedback-link.com/?score=0');
+            assert(response.html.includes('http://feedback-link.com/?score=1'));
+            assert(response.html.includes('http://feedback-link.com/?score=0'));
         });
 
         it('uses custom excerpt as preheader', async function () {
@@ -1476,7 +1448,7 @@ describe('Email renderer', function () {
             );
 
             const $ = cheerio.load(response.html);
-            should($('.preheader').text()).eql('Custom excerpt');
+            assert.equal($('.preheader').text(), 'Custom excerpt');
         });
 
         it('does not include members-only content in preheader for non-members', async function () {
@@ -1510,7 +1482,7 @@ describe('Email renderer', function () {
             );
 
             const $ = cheerio.load(response.html);
-            should($('.preheader').text()).eql('Lexical Test some text for both');
+            assert.equal($('.preheader').text(), 'Lexical Test some text for both');
         });
 
         it('does not include paid segmented content in preheader for non-paying members', async function () {
@@ -1544,7 +1516,7 @@ describe('Email renderer', function () {
             );
 
             const $ = cheerio.load(response.html);
-            should($('.preheader').text()).eql('Lexical Test some text for both');
+            assert.equal($('.preheader').text(), 'Lexical Test some text for both');
         });
 
         it('only includes first author if more than 2', async function () {
@@ -1602,7 +1574,7 @@ describe('Email renderer', function () {
                 options
             );
 
-            response.html.should.containEql('http://icon.example.com');
+            assert(response.html.includes('http://icon.example.com'));
             assert.match(response.html, /class="site-title"[^>]*?>Test Blog/);
             assert.match(response.html, /class="site-subtitle"[^>]*?>Test Newsletter/);
         });
@@ -1630,7 +1602,7 @@ describe('Email renderer', function () {
                 options
             );
 
-            response.html.should.containEql('http://icon.example.com');
+            assert(response.html.includes('http://icon.example.com'));
             assert.match(response.html, /class="site-title"[^>]*?>Test Newsletter/);
         });
 
@@ -1656,8 +1628,8 @@ describe('Email renderer', function () {
             assert.match(response.html, /https:\/\/ghost.org\//);
 
             // Test feedback buttons not included
-            response.html.should.not.containEql('http://feedback-link.com/?score=1');
-            response.html.should.not.containEql('http://feedback-link.com/?score=0');
+            assert(!response.html.includes('http://feedback-link.com/?score=1'));
+            assert(!response.html.includes('http://feedback-link.com/?score=0'));
         });
 
         it('includes newsletter footer as raw html', async function () {
@@ -1680,8 +1652,8 @@ describe('Email renderer', function () {
             );
 
             // Test footer
-            response.html.should.containEql('Test footer</p>'); // begin tag skipped because style is inlined in that tag
-            response.plaintext.should.containEql('Test footer');
+            assert(response.html.includes('Test footer</p>')); // begin tag skipped because style is inlined in that tag
+            assert(response.plaintext.includes('Test footer'));
         });
 
         it('works in dark mode', async function () {
@@ -1764,14 +1736,14 @@ describe('Email renderer', function () {
                     continue;
                 }
                 if (href.includes('unsubscribe_url')) {
-                    href.should.eql('%%{unsubscribe_url}%%');
+                    assert.equal(href, '%%{unsubscribe_url}%%');
                 } else if (href.includes('feedback-link.com')) {
-                    href.should.containEql('%%{uuid}%%');
+                    assert(href.includes('%%{uuid}%%'));
                 } else if (href.includes('https://ghost.org/?via=pbg-newsletter')) {
-                    href.should.not.containEql('tracked-link.com');
+                    assert(!href.includes('tracked-link.com'));
                 } else {
-                    href.should.containEql('tracked-link.com');
-                    href.should.containEql('m=%%{uuid}%%');
+                    assert(href.includes('tracked-link.com'));
+                    assert(href.includes('m=%%{uuid}%%'));
                 }
             }
 
@@ -1791,14 +1763,14 @@ describe('Email renderer', function () {
             ]);
 
             // Check uuid in replacements
-            response.replacements.length.should.eql(4);
-            response.replacements[0].id.should.eql('uuid');
+            assert.equal(response.replacements.length, 4);
+            assert.equal(response.replacements[0].id, 'uuid');
             response.replacements[0].token.should.eql(/%%\{uuid\}%%/g);
-            response.replacements[1].id.should.eql('key');
+            assert.equal(response.replacements[1].id, 'key');
             response.replacements[1].token.should.eql(/%%\{key\}%%/g);
-            response.replacements[2].id.should.eql('unsubscribe_url');
+            assert.equal(response.replacements[2].id, 'unsubscribe_url');
             response.replacements[2].token.should.eql(/%%\{unsubscribe_url\}%%/g);
-            response.replacements[3].id.should.eql('list_unsubscribe');
+            assert.equal(response.replacements[3].id, 'list_unsubscribe');
         });
 
         it('replaces all relative links if click tracking is disabled', async function () {
@@ -1876,14 +1848,14 @@ describe('Email renderer', function () {
                 const href = $(link).attr('href');
                 links.push(href);
                 if (href.includes('unsubscribe_url')) {
-                    href.should.eql('%%{unsubscribe_url}%%');
+                    assert.equal(href, '%%{unsubscribe_url}%%');
                 } else if (href.includes('feedback-link.com')) {
-                    href.should.containEql('%%{uuid}%%');
+                    assert(href.includes('%%{uuid}%%'));
                 } else if (href.includes('https://ghost.org/?via=pbg-newsletter')) {
-                    href.should.not.containEql('tracked-link.com');
+                    assert(!href.includes('tracked-link.com'));
                 } else {
-                    href.should.containEql('tracked-link.com');
-                    href.should.containEql('m=%%{uuid}%%');
+                    assert(href.includes('tracked-link.com'));
+                    assert(href.includes('m=%%{uuid}%%'));
                 }
             }
 
@@ -1901,14 +1873,64 @@ describe('Email renderer', function () {
             ]);
 
             // Check uuid in replacements
-            response.replacements.length.should.eql(4);
-            response.replacements[0].id.should.eql('uuid');
+            assert.equal(response.replacements.length, 4);
+            assert.equal(response.replacements[0].id, 'uuid');
             response.replacements[0].token.should.eql(/%%\{uuid\}%%/g);
-            response.replacements[1].id.should.eql('key');
+            assert.equal(response.replacements[1].id, 'key');
             response.replacements[1].token.should.eql(/%%\{key\}%%/g);
-            response.replacements[2].id.should.eql('unsubscribe_url');
+            assert.equal(response.replacements[2].id, 'unsubscribe_url');
             response.replacements[2].token.should.eql(/%%\{unsubscribe_url\}%%/g);
-            response.replacements[3].id.should.eql('list_unsubscribe');
+            assert.equal(response.replacements[3].id, 'list_unsubscribe');
+        });
+
+        it('tracks links containing %%{uuid}%% and preserves placeholder in destination', async function () {
+            const post = createModel(basePost);
+            const newsletter = createModel({
+                header_image: null,
+                name: 'Test Newsletter',
+                show_badge: false,
+                feedback_enabled: false,
+                show_post_title_section: true
+            });
+            const segment = null;
+            const options = {
+                clickTrackingEnabled: true
+            };
+
+            renderedPost = '<p>Lexical Test</p><p><a href="https://share.transistor.fm/e/episode?subscriber_id=%%{uuid}%%">Listen to episode</a></p>';
+
+            let response = await emailRenderer.renderBody(
+                post,
+                newsletter,
+                segment,
+                options
+            );
+
+            // Verify tracking was called for the Transistor link
+            assert.equal(addTrackingToUrlStub.called, true);
+            const transistorCall = addTrackingToUrlStub.getCalls().find(
+                call => call.args[0].href.includes('transistor.fm')
+            );
+            assertExists(transistorCall);
+
+            // The %%{uuid}%% placeholder should survive in the tracked URL destination
+            // When URL searchParams are manipulated, the placeholder gets URL-encoded
+            const href = transistorCall.args[0].href;
+            const hasPlaceholder = href.includes('%%{uuid}%%') ||
+                href.includes('%25%25%7Buuid%7D%25%25');
+            assert.equal(hasPlaceholder, true, 'URL should contain uuid placeholder');
+
+            // The final tracked link should be in the HTML
+            const $ = cheerio.load(response.html);
+            const links = [];
+            for (const link of $('a').toArray()) {
+                const linkHref = $(link).attr('href');
+                links.push(linkHref);
+            }
+
+            // The Transistor link should be tracked
+            const trackedTransistorLink = links.find(linkHref => linkHref.includes('tracked-link.com'));
+            assertExists(trackedTransistorLink);
         });
 
         it('removes data-gh-segment and renders paywall', async function () {
@@ -1976,16 +1998,16 @@ describe('Email renderer', function () {
                 options
             );
 
-            response.plaintext.should.containEql('Test Post');
-            response.plaintext.should.containEql('Unsubscribe [%%{unsubscribe_url}%%]');
-            response.plaintext.should.containEql('http://example.com');
+            assert(response.plaintext.includes('Test Post'));
+            assert(response.plaintext.includes('Unsubscribe [%%{unsubscribe_url}%%]'));
+            assert(response.plaintext.includes('http://example.com'));
 
             // Check contains the post name twice
             assert.equal(response.html.match(/Test Post/g).length, 3, 'Should contain the post name 3 times: in the title element, the preheader and in the post title section');
 
-            response.html.should.containEql('Unsubscribe');
-            response.html.should.containEql('http://example.com');
-            response.replacements.length.should.eql(4);
+            assert(response.html.includes('Unsubscribe'));
+            assert(response.html.includes('http://example.com'));
+            assert.equal(response.replacements.length, 4);
             response.replacements.should.match([
                 {
                     id: 'uuid'
@@ -2000,10 +2022,10 @@ describe('Email renderer', function () {
                     id: 'list_unsubscribe'
                 }
             ]);
-            response.html.should.not.containEql('members only section');
-            response.html.should.containEql('some text for both');
-            response.html.should.not.containEql('finishing part only for members');
-            response.html.should.containEql('Become a paid member of Test Blog to get access to all');
+            assert(!response.html.includes('members only section'));
+            assert(response.html.includes('some text for both'));
+            assert(!response.html.includes('finishing part only for members'));
+            assert(response.html.includes('Become a paid member of Test Blog to get access to all'));
 
             let responsePaid = await emailRenderer.renderBody(
                 post,
@@ -2011,10 +2033,10 @@ describe('Email renderer', function () {
                 'status:-free',
                 options
             );
-            responsePaid.html.should.containEql('members only section');
-            responsePaid.html.should.containEql('some text for both');
-            responsePaid.html.should.containEql('finishing part only for members');
-            responsePaid.html.should.not.containEql('Become a paid member of Test Blog to get access to all');
+            assert(responsePaid.html.includes('members only section'));
+            assert(responsePaid.html.includes('some text for both'));
+            assert(responsePaid.html.includes('finishing part only for members'));
+            assert(!responsePaid.html.includes('Become a paid member of Test Blog to get access to all'));
         });
 
         it('should output valid HTML and escape HTML characters in mobiledoc', async function () {
@@ -2147,7 +2169,7 @@ describe('Email renderer', function () {
                 await validateHtml(response.html);
 
                 assert.equal(response.html.match(/This is an excerpt/g).length, 1, 'Subtitle should only appear once (preheader, excerpt section skipped)');
-                response.html.should.not.containEql('post-excerpt-wrapper');
+                assert(!response.html.includes('post-excerpt-wrapper'));
             });
 
             it('does not render when enabled and customExcerpt is not present', async function () {
@@ -2168,7 +2190,7 @@ describe('Email renderer', function () {
 
                 await validateHtml(response.html);
 
-                response.html.should.not.containEql('post-excerpt-wrapper');
+                assert(!response.html.includes('post-excerpt-wrapper'));
             });
         });
 
@@ -3262,11 +3284,11 @@ describe('Email renderer', function () {
                 options
             );
 
-            response.html.should.not.containEql('members only section');
-            response.html.should.containEql('some text for both');
-            response.html.should.not.containEql('finishing part only for members');
-            response.html.should.containEql('Devenez un(e) abonn&#xE9;(e) payant de Cathy&#39;s Blog pour acc&#xE9;der &#xE0; du contenu exclusif');
-            response.plaintext.should.containEql('Devenez un(e) abonné(e) payant de Cathy\'s Blog pour accéder à du contenu exclusif');
+            assert(!response.html.includes('members only section'));
+            assert(response.html.includes('some text for both'));
+            assert(!response.html.includes('finishing part only for members'));
+            assert(response.html.includes('Devenez un(e) abonn&#xE9;(e) payant de Cathy&#39;s Blog pour acc&#xE9;der &#xE0; du contenu exclusif'));
+            assert(response.plaintext.includes('Devenez un(e) abonné(e) payant de Cathy\'s Blog pour accéder à du contenu exclusif'));
         });
     });
 });

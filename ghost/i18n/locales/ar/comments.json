@@ -17,7 +17,9 @@
     "Best": "",
     "Cancel": "إلغاء",
     "Comment": "تعليق",
+    "Commenting disabled": "",
     "Complete your profile": "إكمال ملفك الشخصى",
+    "Contact support": "",
     "Delete": "حذف",
     "Deleted": "",
     "Deleted member": "الاعضاء المحذوفين",
@@ -28,6 +30,7 @@
     "edited": "تم التعديل",
     "Enter your name": "اكتب اسمك",
     "Expertise": "مجال تخصصك",
+    "for more information.": "",
     "Founder @ Acme Inc": "مؤسس لدى شركة أكمي",
     "Full-time parent": "أب بدوام كامل",
     "Head of Marketing at Acme, Inc": "رئيس وحدة التسويق لدى شركة أكمى",
@@ -69,6 +72,8 @@
     "This comment has been hidden.": "تم اخفاء هذا التعليق",
     "This comment has been removed.": "تم حذف هذا التعليق",
     "Upgrade now": "قم بالترقية الآن",
+    "View in admin": "",
     "Yesterday": "أمس",
+    "You can't post comments in this publication.": "",
     "Your request will be sent to the owner of this site.": "سيتم ارسال طلبك لصاحب الموقع"
 }

@@ -32,7 +32,7 @@ test.describe('Recommendations', async () => {
         await page.goto('/');
 
         // Open add recommendation modal
-        const section = await page.getByTestId('recommendations');
+        const section = page.getByTestId('recommendations');
         await section.getByRole('button', {name: 'Add recommendation'}).click();
         const modal = page.getByTestId('add-recommendation-modal');
 
@@ -106,7 +106,7 @@ test.describe('Recommendations', async () => {
         }});
 
         await page.goto('/');
-        const section = await page.getByTestId('recommendations');
+        const section = page.getByTestId('recommendations');
         const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
         await section.getByRole('tab', {name: 'Your Recommendations'}).click();
 

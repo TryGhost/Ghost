@@ -1,3 +1,5 @@
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../utils/assertions');
 const crypto = require('crypto');
 const {agentProvider, mockManager, fixtureManager, matchers, configUtils} = require('../../utils/e2e-framework');
 const {anyEtag, anyObjectId, anyUuid, anyISODateTime, stringMatching} = matchers;
@@ -61,7 +63,7 @@ describe('Comments API', function () {
         it('can update comment notifications', async function () {
             // Only via updateMemberNewsletters
             let member = await models.Member.findOne({id: fixtureManager.get('members', 0).id}, {require: true});
-            member.get('enable_comment_notifications').should.eql(true, 'This test requires the initial value to be true');
+            assert.equal(member.get('enable_comment_notifications'), true, 'This test requires the initial value to be true');
 
             sinon.stub(settingsHelpers, 'getMembersValidationKey').returns('test');
             const hmac = crypto.createHmac('sha256', 'test').update(member.get('uuid')).digest('hex');
@@ -78,10 +80,10 @@ describe('Comments API', function () {
                 .matchBodySnapshot(buildMemberMatcher(1))
                 .expect(({body}) => {
                     body.email.should.eql(member.get('email'));
-                    body.enable_comment_notifications.should.eql(false);
+                    assert.equal(body.enable_comment_notifications, false);
                 });
             member = await models.Member.findOne({id: member.id}, {require: true});
-            member.get('enable_comment_notifications').should.eql(false);
+            assert.equal(member.get('enable_comment_notifications'), false);
         });
     });
 
@@ -119,10 +121,10 @@ describe('Comments API', function () {
                 .matchBodySnapshot(memberMatcher(2))
                 .expect(({body}) => {
                     body.email.should.eql(member.get('email'));
-                    body.expertise.should.eql('Head of Testing');
+                    assert.equal(body.expertise, 'Head of Testing');
                 });
             member = await models.Member.findOne({id: member.id}, {require: true});
-            member.get('expertise').should.eql('Head of Testing');
+            assert.equal(member.get('expertise'), 'Head of Testing');
         });
 
         it('trims whitespace from expertise', async function () {
@@ -138,10 +140,10 @@ describe('Comments API', function () {
                 .matchBodySnapshot(memberMatcher(2))
                 .expect(({body}) => {
                     body.email.should.eql(member.get('email'));
-                    body.expertise.should.eql('test');
+                    assert.equal(body.expertise, 'test');
                 });
             member = await models.Member.findOne({id: member.id}, {require: true});
-            member.get('expertise').should.eql('test');
+            assert.equal(member.get('expertise'), 'test');
         });
 
         it('can update name', async function () {
@@ -157,15 +159,15 @@ describe('Comments API', function () {
                 .matchBodySnapshot(memberMatcher(2))
                 .expect(({body}) => {
                     body.email.should.eql(member.get('email'));
-                    body.name.should.eql('Test User');
-                    body.firstname.should.eql('Test');
+                    assert.equal(body.name, 'Test User');
+                    assert.equal(body.firstname, 'Test');
                 });
             member = await models.Member.findOne({id: member.id}, {require: true});
-            member.get('name').should.eql('Test User');
+            assert.equal(member.get('name'), 'Test User');
         });
 
         it('can update comment notifications', async function () {
-            member.get('enable_comment_notifications').should.eql(true, 'This test requires the initial value to be true');
+            assert.equal(member.get('enable_comment_notifications'), true, 'This test requires the initial value to be true');
 
             // Via general way
             await membersAgent
@@ -180,10 +182,10 @@ describe('Comments API', function () {
                 .matchBodySnapshot(memberMatcher(2))
                 .expect(({body}) => {
                     body.email.should.eql(member.get('email'));
-                    body.enable_comment_notifications.should.eql(false);
+                    assert.equal(body.enable_comment_notifications, false);
                 });
             member = await models.Member.findOne({id: member.id}, {require: true});
-            member.get('enable_comment_notifications').should.eql(false);
+            assert.equal(member.get('enable_comment_notifications'), false);
 
             sinon.stub(settingsHelpers, 'getMembersValidationKey').returns('test');
             const hmac = crypto.createHmac('sha256', 'test').update(member.get('uuid')).digest('hex');
@@ -201,10 +203,10 @@ describe('Comments API', function () {
                 .matchBodySnapshot(buildMemberMatcher(2))
                 .expect(({body}) => {
                     body.email.should.eql(member.get('email'));
-                    body.enable_comment_notifications.should.eql(true);
+                    assert.equal(body.enable_comment_notifications, true);
                 });
             member = await models.Member.findOne({id: member.id}, {require: true});
-            member.get('enable_comment_notifications').should.eql(true);
+            assert.equal(member.get('enable_comment_notifications'), true);
         });
 
         it('can remove a member\'s email from the suppression list', async function () {
@@ -226,12 +228,12 @@ describe('Comments API', function () {
             // check that member is removed from suppression list
             const suppression = await models.Suppression.findOne({email: member.get('email')});
 
-            should(suppression).be.null();
+            assert.equal(suppression, null);
 
             // check that member's email is enabled
             await member.refresh();
 
-            should(member.get('email_disabled')).be.false();
+            assert.equal(member.get('email_disabled'), false);
         });
     });
 
@@ -269,7 +271,7 @@ describe('Comments API', function () {
                 .expectStatus(204)
                 .expectEmptyBody()
                 .expect(({headers}) => {
-                    should.not.exist(headers['set-cookie']);
+                    assert.equal(headers['set-cookie'], undefined);
                 });
         });
 
@@ -284,7 +286,7 @@ describe('Comments API', function () {
             await membersAgent
                 .get('/api/member/')
                 .expect(({headers}) => {
-                    should.exist(headers['set-cookie']);
+                    assertExists(headers['set-cookie']);
                     headers['set-cookie'].should.matchAny(/ghost-access=null;/);
                 })
                 .expectStatus(204)

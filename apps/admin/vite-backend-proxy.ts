@@ -1,7 +1,6 @@
 import type { Plugin, ProxyOptions } from "vite";
 import type { IncomingMessage } from "http";
-
-const GHOST_URL = process.env.GHOST_URL ?? "http://localhost:2368/";
+import { getSubdir, GHOST_URL } from "./vite.config";
 
 /**
  * Resolves the configured Ghost site URL by calling the admin api site endpoint
@@ -11,7 +10,7 @@ async function resolveGhostSiteUrl() {
     const MAX_ATTEMPTS = 20;
     for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
         try {
-            const siteEndpoint = new URL("/ghost/api/admin/site/", GHOST_URL);
+            const siteEndpoint = new URL('ghost/api/admin/site/', GHOST_URL);
             const response = await fetch(siteEndpoint);
             const data = (await response.json()) as { site: { url: string } };
             return {
@@ -51,8 +50,10 @@ function createAdminApiProxy(site: {
         }
     };
 
+    const subdir = getSubdir();
+
     return {
-        "^/ghost/api/.*": {
+        [`^${subdir}/ghost/api/.*`]: {
             target: site.url,
             changeOrigin: true,
             followRedirects: true,

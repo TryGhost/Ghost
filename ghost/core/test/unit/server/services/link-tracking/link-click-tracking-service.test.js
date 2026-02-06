@@ -202,7 +202,7 @@ describe('LinkClickTrackingService', function () {
                     link: {to: 'https://example.com'}
                 }
             }, options);
-            should(result).eql({
+            assert.deepEqual(result, {
                 successful: 0,
                 unsuccessful: 0,
                 errors: [],
@@ -247,8 +247,8 @@ describe('LinkClickTrackingService', function () {
 
             const result = await service.bulkEdit(data, options);
 
-            should(postLinkRepositoryStub.updateLinks.calledOnce).be.true();
-            should(result).eql({
+            assert.equal(postLinkRepositoryStub.updateLinks.calledOnce, true);
+            assert.deepEqual(result, {
                 successful: 0,
                 unsuccessful: 0,
                 errors: [],
@@ -256,7 +256,7 @@ describe('LinkClickTrackingService', function () {
             });
 
             const [filterOptions] = linkRedirectServiceStub.getFilteredIds.firstCall.args;
-            should(filterOptions.filter).equal('post_id:\'1\'+to:\'https://example.com/path\'');
+            assert.equal(filterOptions.filter, 'post_id:\'1\'+to:\'https://example.com/path\'');
         });
 
         //test for #parseLinkFilter method
@@ -296,8 +296,8 @@ describe('LinkClickTrackingService', function () {
 
             const result = await service.bulkEdit(data, options);
 
-            should(postLinkRepositoryStub.updateLinks.calledOnce).be.true();
-            should(result).eql({
+            assert.equal(postLinkRepositoryStub.updateLinks.calledOnce, true);
+            assert.deepEqual(result, {
                 successful: 0,
                 unsuccessful: 0,
                 errors: [],
@@ -305,7 +305,7 @@ describe('LinkClickTrackingService', function () {
             });
 
             const [filterOptions] = linkRedirectServiceStub.getFilteredIds.firstCall.args;
-            should(filterOptions.filter).equal('post_id:\'1\'+to:\'https://example.com/path%2Ftestpath\'');
+            assert.equal(filterOptions.filter, 'post_id:\'1\'+to:\'https://example.com/path%2Ftestpath\'');
         });
 
         //test for #parseLinkFilter method

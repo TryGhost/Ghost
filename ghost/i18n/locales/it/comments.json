@@ -17,7 +17,9 @@
     "Best": "Migliori",
     "Cancel": "Annulla",
     "Comment": "Commenta",
+    "Commenting disabled": "",
     "Complete your profile": "Completa il tuo profilo",
+    "Contact support": "",
     "Delete": "Elimina",
     "Deleted": "Eliminato",
     "Deleted member": "Utente eliminato",
@@ -28,6 +30,7 @@
     "edited": "modificato",
     "Enter your name": "Inserisci il tuo nome",
     "Expertise": "Competenze",
+    "for more information.": "",
     "Founder @ Acme Inc": "Megadirettore Galattico",
     "Full-time parent": "Genitore a tempo pieno",
     "Head of Marketing at Acme, Inc": "Ragioniere presso Megaditta",
@@ -69,6 +72,8 @@
     "This comment has been hidden.": "Questo commento è stato nascosto.",
     "This comment has been removed.": "Questo commento è stato rimosso.",
     "Upgrade now": "Abbonati ora",
+    "View in admin": "",
     "Yesterday": "Ieri",
+    "You can't post comments in this publication.": "",
     "Your request will be sent to the owner of this site.": "La tua richiesta sarà inviata al proprietario del sito."
 }

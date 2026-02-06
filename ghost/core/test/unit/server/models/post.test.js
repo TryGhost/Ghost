@@ -1,4 +1,6 @@
 /* eslint no-invalid-this:0 */
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../utils/assertions');
 const errors = require('@tryghost/errors');
 const should = require('should');
 const sinon = require('sinon');
@@ -41,9 +43,9 @@ describe('Unit: models/post', function () {
                 limit: 3,
                 withRelated: ['tags']
             }).then(() => {
-                queries.length.should.eql(2);
-                queries[0].sql.should.eql('select count(distinct posts.id) as aggregate from `posts` where ((`posts`.`id` != ? and `posts`.`id` in (select `posts_tags`.`post_id` from `posts_tags` inner join `tags` on `tags`.`id` = `posts_tags`.`tag_id` where `tags`.`slug` in (?, ?))) and (`posts`.`type` = ? and `posts`.`status` = ?))');
-                queries[0].bindings.should.eql([
+                assert.equal(queries.length, 2);
+                assert.equal(queries[0].sql, 'select count(distinct posts.id) as aggregate from `posts` where ((`posts`.`id` != ? and `posts`.`id` in (select `posts_tags`.`post_id` from `posts_tags` inner join `tags` on `tags`.`id` = `posts_tags`.`tag_id` where `tags`.`slug` in (?, ?))) and (`posts`.`type` = ? and `posts`.`status` = ?))');
+                assert.deepEqual(queries[0].bindings, [
                     testUtils.filterData.data.posts[3].id,
                     'photo',
                     'video',
@@ -51,8 +53,8 @@ describe('Unit: models/post', function () {
                     'published'
                 ]);
 
-                queries[1].sql.should.eql('select `posts`.* from `posts` where ((`posts`.`id` != ? and `posts`.`id` in (select `posts_tags`.`post_id` from `posts_tags` inner join `tags` on `tags`.`id` = `posts_tags`.`tag_id` where `tags`.`slug` in (?, ?))) and (`posts`.`type` = ? and `posts`.`status` = ?)) order by (SELECT count(*) FROM posts_tags WHERE post_id = posts.id) DESC, CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
-                queries[1].bindings.should.eql([
+                assert.equal(queries[1].sql, 'select `posts`.* from `posts` where ((`posts`.`id` != ? and `posts`.`id` in (select `posts_tags`.`post_id` from `posts_tags` inner join `tags` on `tags`.`id` = `posts_tags`.`tag_id` where `tags`.`slug` in (?, ?))) and (`posts`.`type` = ? and `posts`.`status` = ?)) order by (SELECT count(*) FROM posts_tags WHERE post_id = posts.id) DESC, CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
+                assert.deepEqual(queries[1].bindings, [
                     testUtils.filterData.data.posts[3].id,
                     'photo',
                     'video',
@@ -76,9 +78,9 @@ describe('Unit: models/post', function () {
                 filter: 'authors:[leslie,pat]+(tag:hash-audio,feature_image:-null)',
                 withRelated: ['authors', 'tags']
             }).then(() => {
-                queries.length.should.eql(2);
-                queries[0].sql.should.eql('select count(distinct posts.id) as aggregate from `posts` where (((`posts`.`feature_image` is not null or `posts`.`id` in (select `posts_tags`.`post_id` from `posts_tags` inner join `tags` on `tags`.`id` = `posts_tags`.`tag_id` where `tags`.`slug` = ?)) and `posts`.`id` in (select `posts_authors`.`post_id` from `posts_authors` inner join `users` as `authors` on `authors`.`id` = `posts_authors`.`author_id` where `authors`.`slug` in (?, ?))) and (`posts`.`type` = ? and `posts`.`status` = ?))');
-                queries[0].bindings.should.eql([
+                assert.equal(queries.length, 2);
+                assert.equal(queries[0].sql, 'select count(distinct posts.id) as aggregate from `posts` where (((`posts`.`feature_image` is not null or `posts`.`id` in (select `posts_tags`.`post_id` from `posts_tags` inner join `tags` on `tags`.`id` = `posts_tags`.`tag_id` where `tags`.`slug` = ?)) and `posts`.`id` in (select `posts_authors`.`post_id` from `posts_authors` inner join `users` as `authors` on `authors`.`id` = `posts_authors`.`author_id` where `authors`.`slug` in (?, ?))) and (`posts`.`type` = ? and `posts`.`status` = ?))');
+                assert.deepEqual(queries[0].bindings, [
                     'hash-audio',
                     'leslie',
                     'pat',
@@ -86,8 +88,8 @@ describe('Unit: models/post', function () {
                     'published'
                 ]);
 
-                queries[1].sql.should.eql('select `posts`.* from `posts` where (((`posts`.`feature_image` is not null or `posts`.`id` in (select `posts_tags`.`post_id` from `posts_tags` inner join `tags` on `tags`.`id` = `posts_tags`.`tag_id` where `tags`.`slug` = ?)) and `posts`.`id` in (select `posts_authors`.`post_id` from `posts_authors` inner join `users` as `authors` on `authors`.`id` = `posts_authors`.`author_id` where `authors`.`slug` in (?, ?))) and (`posts`.`type` = ? and `posts`.`status` = ?)) order by (SELECT count(*) FROM posts_authors WHERE post_id = posts.id) DESC, CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
-                queries[1].bindings.should.eql([
+                assert.equal(queries[1].sql, 'select `posts`.* from `posts` where (((`posts`.`feature_image` is not null or `posts`.`id` in (select `posts_tags`.`post_id` from `posts_tags` inner join `tags` on `tags`.`id` = `posts_tags`.`tag_id` where `tags`.`slug` = ?)) and `posts`.`id` in (select `posts_authors`.`post_id` from `posts_authors` inner join `users` as `authors` on `authors`.`id` = `posts_authors`.`author_id` where `authors`.`slug` in (?, ?))) and (`posts`.`type` = ? and `posts`.`status` = ?)) order by (SELECT count(*) FROM posts_authors WHERE post_id = posts.id) DESC, CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
+                assert.deepEqual(queries[1].bindings, [
                     'hash-audio',
                     'leslie',
                     'pat',
@@ -112,16 +114,16 @@ describe('Unit: models/post', function () {
                 limit: 5,
                 withRelated: ['tags']
             }).then(() => {
-                queries.length.should.eql(2);
-                queries[0].sql.should.eql('select count(distinct posts.id) as aggregate from `posts` where (`posts`.`published_at` > ? and (`posts`.`type` = ? and `posts`.`status` = ?))');
-                queries[0].bindings.should.eql([
+                assert.equal(queries.length, 2);
+                assert.equal(queries[0].sql, 'select count(distinct posts.id) as aggregate from `posts` where (`posts`.`published_at` > ? and (`posts`.`type` = ? and `posts`.`status` = ?))');
+                assert.deepEqual(queries[0].bindings, [
                     '2015-07-20',
                     'post',
                     'published'
                 ]);
 
-                queries[1].sql.should.eql('select `posts`.* from `posts` where (`posts`.`published_at` > ? and (`posts`.`type` = ? and `posts`.`status` = ?)) order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
-                queries[1].bindings.should.eql([
+                assert.equal(queries[1].sql, 'select `posts`.* from `posts` where (`posts`.`published_at` > ? and (`posts`.`type` = ? and `posts`.`status` = ?)) order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
+                assert.deepEqual(queries[1].bindings, [
                     '2015-07-20',
                     'post',
                     'published',
@@ -144,17 +146,17 @@ describe('Unit: models/post', function () {
                     filter: 'primary_tag:photo',
                     withRelated: ['tags']
                 }).then(() => {
-                    queries.length.should.eql(2);
-                    queries[0].sql.should.eql('select count(distinct posts.id) as aggregate from `posts` where ((`posts`.`id` in (select `posts_tags`.`post_id` from `posts_tags` inner join `tags` on `tags`.`id` = `posts_tags`.`tag_id` and `posts_tags`.`sort_order` = 0 where `tags`.`slug` = ? and `tags`.`visibility` = ?)) and (`posts`.`type` = ? and `posts`.`status` = ?))');
-                    queries[0].bindings.should.eql([
+                    assert.equal(queries.length, 2);
+                    assert.equal(queries[0].sql, 'select count(distinct posts.id) as aggregate from `posts` where ((`posts`.`id` in (select `posts_tags`.`post_id` from `posts_tags` inner join `tags` on `tags`.`id` = `posts_tags`.`tag_id` and `posts_tags`.`sort_order` = 0 where `tags`.`slug` = ? and `tags`.`visibility` = ?)) and (`posts`.`type` = ? and `posts`.`status` = ?))');
+                    assert.deepEqual(queries[0].bindings, [
                         'photo',
                         'public',
                         'post',
                         'published'
                     ]);
 
-                    queries[1].sql.should.eql('select `posts`.* from `posts` where ((`posts`.`id` in (select `posts_tags`.`post_id` from `posts_tags` inner join `tags` on `tags`.`id` = `posts_tags`.`tag_id` and `posts_tags`.`sort_order` = 0 where `tags`.`slug` = ? and `tags`.`visibility` = ?)) and (`posts`.`type` = ? and `posts`.`status` = ?)) order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
-                    queries[1].bindings.should.eql([
+                    assert.equal(queries[1].sql, 'select `posts`.* from `posts` where ((`posts`.`id` in (select `posts_tags`.`post_id` from `posts_tags` inner join `tags` on `tags`.`id` = `posts_tags`.`tag_id` and `posts_tags`.`sort_order` = 0 where `tags`.`slug` = ? and `tags`.`visibility` = ?)) and (`posts`.`type` = ? and `posts`.`status` = ?)) order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
+                    assert.deepEqual(queries[1].bindings, [
                         'photo',
                         'public',
                         'post',
@@ -177,17 +179,17 @@ describe('Unit: models/post', function () {
                     filter: 'primary_author:leslie',
                     withRelated: ['authors']
                 }).then(() => {
-                    queries.length.should.eql(2);
-                    queries[0].sql.should.eql('select count(distinct posts.id) as aggregate from `posts` where ((`posts`.`id` in (select `posts_authors`.`post_id` from `posts_authors` inner join `users` as `authors` on `authors`.`id` = `posts_authors`.`author_id` and `posts_authors`.`sort_order` = 0 where `authors`.`slug` = ? and `authors`.`visibility` = ?)) and (`posts`.`type` = ? and `posts`.`status` = ?))');
-                    queries[0].bindings.should.eql([
+                    assert.equal(queries.length, 2);
+                    assert.equal(queries[0].sql, 'select count(distinct posts.id) as aggregate from `posts` where ((`posts`.`id` in (select `posts_authors`.`post_id` from `posts_authors` inner join `users` as `authors` on `authors`.`id` = `posts_authors`.`author_id` and `posts_authors`.`sort_order` = 0 where `authors`.`slug` = ? and `authors`.`visibility` = ?)) and (`posts`.`type` = ? and `posts`.`status` = ?))');
+                    assert.deepEqual(queries[0].bindings, [
                         'leslie',
                         'public',
                         'post',
                         'published'
                     ]);
 
-                    queries[1].sql.should.eql('select `posts`.* from `posts` where ((`posts`.`id` in (select `posts_authors`.`post_id` from `posts_authors` inner join `users` as `authors` on `authors`.`id` = `posts_authors`.`author_id` and `posts_authors`.`sort_order` = 0 where `authors`.`slug` = ? and `authors`.`visibility` = ?)) and (`posts`.`type` = ? and `posts`.`status` = ?)) order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
-                    queries[1].bindings.should.eql([
+                    assert.equal(queries[1].sql, 'select `posts`.* from `posts` where ((`posts`.`id` in (select `posts_authors`.`post_id` from `posts_authors` inner join `users` as `authors` on `authors`.`id` = `posts_authors`.`author_id` and `posts_authors`.`sort_order` = 0 where `authors`.`slug` = ? and `authors`.`visibility` = ?)) and (`posts`.`type` = ? and `posts`.`status` = ?)) order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
+                    assert.deepEqual(queries[1].bindings, [
                         'leslie',
                         'public',
                         'post',
@@ -220,10 +222,10 @@ describe('Unit: models/post', function () {
                         }]
                     }
                 }).then(() => {
-                    queries.length.should.eql(1);
+                    assert.equal(queries.length, 1);
 
-                    queries[0].sql.should.eql('select `posts`.* from `posts` where ((`posts`.`status` in (?, ?) and `posts`.`status` = ?) and (`posts`.`type` = ?)) order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC');
-                    queries[0].bindings.should.eql([
+                    assert.equal(queries[0].sql, 'select `posts`.* from `posts` where ((`posts`.`status` in (?, ?) and `posts`.`status` = ?) and (`posts`.`type` = ?)) order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC');
+                    assert.deepEqual(queries[0].bindings, [
                         'published',
                         'draft',
                         'published',
@@ -247,8 +249,8 @@ describe('Unit: models/post', function () {
 
             const json = toJSON(post, {formats: ['mobiledoc']});
 
-            should.not.exist(json.mobiledoc_revisions);
-            should.exist(json.mobiledoc);
+            assert.equal(json.mobiledoc_revisions, undefined);
+            assertExists(json.mobiledoc);
         });
 
         it('ensure post revisions are exposed', function () {
@@ -259,8 +261,8 @@ describe('Unit: models/post', function () {
 
             const json = toJSON(post, {formats: ['lexical']});
 
-            should.exist(json.post_revisions);
-            should.exist(json.lexical);
+            assertExists(json.post_revisions);
+            assertExists(json.lexical);
         });
     });
 
@@ -273,7 +275,7 @@ describe('Unit: models/post', function () {
             };
 
             const filter = new models.Post().extraFilters(options);
-            filter.should.eql('status:published');
+            assert.equal(filter, 'status:published');
         });
     });
 
@@ -291,7 +293,7 @@ describe('Unit: models/post', function () {
 
             const filter = enforcedFilters({}, options);
 
-            filter.should.equal('status:published');
+            assert.equal(filter, 'status:published');
         });
 
         it('returns no status filter for non public context', function () {
@@ -303,7 +305,7 @@ describe('Unit: models/post', function () {
 
             const filter = enforcedFilters({}, options);
 
-            should(filter).equal(null);
+            assert.equal(filter, null);
         });
     });
 
@@ -321,7 +323,7 @@ describe('Unit: models/post', function () {
 
             const filter = defaultFilters({}, options);
 
-            should(filter).equal(null);
+            assert.equal(filter, null);
         });
 
         it('returns type:post filter for public context', function () {
@@ -333,7 +335,7 @@ describe('Unit: models/post', function () {
 
             const filter = defaultFilters({}, options);
 
-            filter.should.equal('type:post');
+            assert.equal(filter, 'type:post');
         });
 
         it('returns type:post+status:published filter for non public context', function () {
@@ -343,7 +345,7 @@ describe('Unit: models/post', function () {
 
             const filter = defaultFilters({}, options);
 
-            filter.should.equal('type:post+status:published');
+            assert.equal(filter, 'type:post+status:published');
         });
     });
 
@@ -398,7 +400,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
+                        assert(error instanceof errors.NoPermissionError);
                         done();
                     }).catch(done);
                 });
@@ -426,7 +428,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
+                        assert(error instanceof errors.NoPermissionError);
                         done();
                     }).catch(done);
                 });
@@ -453,9 +455,9 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
-                        should(mockPostObj.get.called).be.false();
-                        should(mockPostObj.related.calledTwice).be.false();
+                        assert(error instanceof errors.NoPermissionError);
+                        assert.equal(mockPostObj.get.called, false);
+                        assert.equal(mockPostObj.related.calledTwice, false);
                         done();
                     });
                 });
@@ -481,10 +483,10 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         true,
                         false
                     ).then((result) => {
-                        should.exist(result);
-                        should(result.excludedAttrs).deepEqual(['authors', 'tags']);
-                        should(mockPostObj.get.callCount).eql(2);
-                        should(mockPostObj.related.callCount).eql(2);
+                        assertExists(result);
+                        assert.deepEqual(result.excludedAttrs, ['authors', 'tags']);
+                        assert.equal(mockPostObj.get.callCount, 2);
+                        assert.equal(mockPostObj.related.callCount, 2);
                         done();
                     }).catch(done);
                 });
@@ -512,9 +514,9 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
-                        should(mockPostObj.get.callCount).eql(2);
-                        should(mockPostObj.related.callCount).eql(1);
+                        assert(error instanceof errors.NoPermissionError);
+                        assert.equal(mockPostObj.get.callCount, 2);
+                        assert.equal(mockPostObj.related.callCount, 1);
                         done();
                     });
                 });
@@ -541,8 +543,8 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
-                        should(mockPostObj.related.callCount).eql(1);
+                        assert(error instanceof errors.NoPermissionError);
+                        assert.equal(mockPostObj.related.callCount, 1);
                         done();
                     });
                 });
@@ -568,10 +570,10 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         true,
                         false
                     ).then((result) => {
-                        should.exist(result);
-                        should(result.excludedAttrs).deepEqual(['authors', 'tags']);
-                        should(mockPostObj.get.callCount).eql(2);
-                        should(mockPostObj.related.callCount).eql(1);
+                        assertExists(result);
+                        assert.deepEqual(result.excludedAttrs, ['authors', 'tags']);
+                        assert.equal(mockPostObj.get.callCount, 2);
+                        assert.equal(mockPostObj.related.callCount, 1);
                     });
                 });
             });
@@ -596,8 +598,8 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
-                        should(mockPostObj.get.called).be.false();
+                        assert(error instanceof errors.NoPermissionError);
+                        assert.equal(mockPostObj.get.called, false);
                         done();
                     });
                 });
@@ -621,8 +623,8 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
-                        should(mockPostObj.get.called).be.false();
+                        assert(error instanceof errors.NoPermissionError);
+                        assert.equal(mockPostObj.get.called, false);
                         done();
                     });
                 });
@@ -646,8 +648,8 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
-                        should(mockPostObj.get.called).be.false();
+                        assert(error instanceof errors.NoPermissionError);
+                        assert.equal(mockPostObj.get.called, false);
                         done();
                     });
                 });
@@ -669,9 +671,9 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         true,
                         true
                     ).then((result) => {
-                        should.exist(result);
-                        should(result.excludedAttrs).deepEqual(['authors', 'tags']);
-                        should(mockPostObj.get.called).be.false();
+                        assertExists(result);
+                        assert.deepEqual(result.excludedAttrs, ['authors', 'tags']);
+                        assert.equal(mockPostObj.get.called, false);
                         done();
                     }).catch(done);
                 });
@@ -699,9 +701,9 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
-                        should(mockPostObj.get.calledOnce).be.true();
-                        should(mockPostObj.related.calledOnce).be.true();
+                        assert(error instanceof errors.NoPermissionError);
+                        assert.equal(mockPostObj.get.calledOnce, true);
+                        assert.equal(mockPostObj.related.calledOnce, true);
                         done();
                     });
                 });
@@ -728,9 +730,9 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
-                        should(mockPostObj.get.calledOnce).be.true();
-                        should(mockPostObj.related.calledOnce).be.true();
+                        assert(error instanceof errors.NoPermissionError);
+                        assert.equal(mockPostObj.get.calledOnce, true);
+                        assert.equal(mockPostObj.related.calledOnce, true);
                         done();
                     });
                 });
@@ -755,10 +757,10 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         true,
                         true
                     ).then((result) => {
-                        should.exist(result);
-                        should(result.excludedAttrs).deepEqual(['authors', 'tags']);
-                        should(mockPostObj.get.calledOnce).be.true();
-                        should(mockPostObj.related.calledOnce).be.true();
+                        assertExists(result);
+                        assert.deepEqual(result.excludedAttrs, ['authors', 'tags']);
+                        assert.equal(mockPostObj.get.calledOnce, true);
+                        assert.equal(mockPostObj.related.calledOnce, true);
                     });
                 });
             });
@@ -788,9 +790,9 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
-                        should(mockPostObj.get.called).be.false();
-                        should(mockPostObj.related.calledOnce).be.true();
+                        assert(error instanceof errors.NoPermissionError);
+                        assert.equal(mockPostObj.get.called, false);
+                        assert.equal(mockPostObj.related.calledOnce, true);
                         done();
                     });
                 });
@@ -818,9 +820,9 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
-                        should(mockPostObj.get.called).be.false();
-                        should(mockPostObj.related.calledOnce).be.true();
+                        assert(error instanceof errors.NoPermissionError);
+                        assert.equal(mockPostObj.get.called, false);
+                        assert.equal(mockPostObj.related.calledOnce, true);
                         done();
                     });
                 });
@@ -847,9 +849,9 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
-                        should(mockPostObj.get.called).be.false();
-                        should(mockPostObj.related.calledTwice).be.true();
+                        assert(error instanceof errors.NoPermissionError);
+                        assert.equal(mockPostObj.get.called, false);
+                        assert.equal(mockPostObj.related.calledTwice, true);
                         done();
                     });
                 });
@@ -876,9 +878,9 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
-                        should(mockPostObj.get.called).be.false();
-                        should(mockPostObj.related.calledTwice).be.true();
+                        assert(error instanceof errors.NoPermissionError);
+                        assert.equal(mockPostObj.get.called, false);
+                        assert.equal(mockPostObj.related.calledTwice, true);
                         done();
                     });
                 });
@@ -902,7 +904,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         true,
                         true
                     ).then(() => {
-                        should(mockPostObj.related.calledOnce).be.true();
+                        assert.equal(mockPostObj.related.calledOnce, true);
                     });
                 });
             });
@@ -927,8 +929,8 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
-                        should(mockPostObj.get.called).be.false();
+                        assert(error instanceof errors.NoPermissionError);
+                        assert.equal(mockPostObj.get.called, false);
                         done();
                     });
                 });
@@ -955,8 +957,8 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
-                        should(mockPostObj.get.called).be.false();
+                        assert(error instanceof errors.NoPermissionError);
+                        assert.equal(mockPostObj.get.called, false);
                         done();
                     });
                 });
@@ -986,9 +988,9 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                 ).then(() => {
                     done(new Error('Permissible function should have rejected.'));
                 }).catch((error) => {
-                    error.should.be.an.instanceof(errors.NoPermissionError);
-                    should(mockPostObj.get.called).be.false();
-                    should(mockPostObj.related.calledOnce).be.true();
+                    assert(error instanceof errors.NoPermissionError);
+                    assert.equal(mockPostObj.get.called, false);
+                    assert.equal(mockPostObj.related.calledOnce, true);
                     done();
                 });
             });
@@ -1010,7 +1012,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     true,
                     true
                 ).then(() => {
-                    should(mockPostObj.get.called).be.false();
+                    assert.equal(mockPostObj.get.called, false);
                 });
             });
 
@@ -1035,8 +1037,8 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     true,
                     true
                 ).then(() => {
-                    should(mockPostObj.get.called).be.false();
-                    should(mockPostObj.related.calledOnce).be.true();
+                    assert.equal(mockPostObj.get.called, false);
+                    assert.equal(mockPostObj.related.calledOnce, true);
                     done();
                 }).catch(() => {
                     done(new Error('Permissible function should have passed for owner.'));
@@ -1064,8 +1066,8 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     true,
                     true
                 ).then(() => {
-                    should(mockPostObj.get.called).be.false();
-                    should(mockPostObj.related.calledOnce).be.true();
+                    assert.equal(mockPostObj.get.called, false);
+                    assert.equal(mockPostObj.related.calledOnce, true);
                     done();
                 }).catch(() => {
                     done(new Error('Permissible function should have passed for administrator.'));

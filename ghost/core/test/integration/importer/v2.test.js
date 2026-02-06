@@ -4,6 +4,7 @@ const testUtils = require('../../utils');
 const moment = require('moment-timezone');
 const ObjectId = require('bson-objectid').default;
 const assert = require('assert/strict');
+const {assertExists} = require('../../utils/assertions');
 const _ = require('lodash');
 const validator = require('@tryghost/validator');
 
@@ -43,9 +44,9 @@ describe('Importer', function () {
         it('ensure return structure', function () {
             return dataImporter.doImport(exportedBodyV2().db[0], importOptions)
                 .then(function (importResult) {
-                    should.exist(importResult);
-                    importResult.hasOwnProperty('data').should.be.true();
-                    importResult.hasOwnProperty('problems').should.be.true();
+                    assertExists(importResult);
+                    assert.equal(importResult.hasOwnProperty('data'), true);
+                    assert.equal(importResult.hasOwnProperty('problems'), true);
                 });
         });
 
@@ -78,18 +79,18 @@ describe('Importer', function () {
 
             return dataImporter.doImport(exportData, importOptions)
                 .then(function (importResult) {
-                    should.exist(importResult.data.posts);
-                    importResult.data.posts.length.should.equal(2);
-                    importResult.problems.length.should.eql(1);
+                    assertExists(importResult.data.posts);
+                    assert.equal(importResult.data.posts.length, 2);
+                    assert.equal(importResult.problems.length, 1);
 
                     importResult.problems[0].message.should.eql('Date is in a wrong format and invalid. ' +
                         'It was replaced with the current timestamp.');
-                    importResult.problems[0].help.should.eql('Post');
+                    assert.equal(importResult.problems[0].help, 'Post');
 
-                    moment(importResult.data.posts[0].created_at).isValid().should.eql(true);
-                    moment(importResult.data.posts[0].updated_at).format().should.eql('2013-10-18T23:58:44Z');
-                    moment(importResult.data.posts[0].published_at).format().should.eql('2013-12-29T11:58:30Z');
-                    moment(importResult.data.tags[0].updated_at).format().should.eql('2016-07-17T12:02:54Z');
+                    assert.equal(moment(importResult.data.posts[0].created_at).isValid(), true);
+                    assert.equal(moment(importResult.data.posts[0].updated_at).format(), '2013-10-18T23:58:44Z');
+                    assert.equal(moment(importResult.data.posts[0].published_at).format(), '2013-12-29T11:58:30Z');
+                    assert.equal(moment(importResult.data.tags[0].updated_at).format(), '2016-07-17T12:02:54Z');
 
                     // Ensure sqlite3 & mysql import of dates works as expected
                     assert.equal(moment(importResult.data.posts[1].created_at).valueOf(), 1388318310000);
@@ -109,12 +110,12 @@ describe('Importer', function () {
 
             return dataImporter.doImport(exportData, importOptions)
                 .then(function (importResult) {
-                    importResult.problems.length.should.eql(1);
-                    importResult.problems[0].message.should.eql('Theme not imported, please upload in Settings - Design');
+                    assert.equal(importResult.problems.length, 1);
+                    assert.equal(importResult.problems[0].message, 'Theme not imported, please upload in Settings - Design');
                     return models.Settings.findOne(_.merge({key: 'active_theme'}, testUtils.context.internal));
                 })
                 .then(function (result) {
-                    result.attributes.value.should.eql('source');
+                    assert.equal(result.attributes.value, 'source');
                 });
         });
 
@@ -131,12 +132,12 @@ describe('Importer', function () {
 
             return dataImporter.doImport(exportData, importOptions)
                 .then(function (importResult) {
-                    should.exist(importResult.data.users);
-                    importResult.data.users.length.should.equal(1);
-                    importResult.problems.length.should.eql(1);
+                    assertExists(importResult.data.users);
+                    assert.equal(importResult.data.users.length, 1);
+                    assert.equal(importResult.problems.length, 1);
 
-                    importResult.problems[0].message.should.eql('Entry was not imported and ignored. Detected duplicated entry.');
-                    importResult.problems[0].help.should.eql('User');
+                    assert.equal(importResult.problems[0].message, 'Entry was not imported and ignored. Detected duplicated entry.');
+                    assert.equal(importResult.problems[0].help, 'User');
                 });
         });
 
@@ -153,12 +154,12 @@ describe('Importer', function () {
 
             return dataImporter.doImport(exportData, importOptions)
                 .then(function (importResult) {
-                    should.exist(importResult.data.posts);
-                    importResult.data.posts.length.should.equal(1);
-                    importResult.problems.length.should.eql(1);
+                    assertExists(importResult.data.posts);
+                    assert.equal(importResult.data.posts.length, 1);
+                    assert.equal(importResult.problems.length, 1);
 
-                    importResult.problems[0].message.should.eql('Entry was not imported and ignored. Detected duplicated entry.');
-                    importResult.problems[0].help.should.eql('Post');
+                    assert.equal(importResult.problems[0].message, 'Entry was not imported and ignored. Detected duplicated entry.');
+                    assert.equal(importResult.problems[0].help, 'Post');
                 });
         });
 
@@ -175,15 +176,15 @@ describe('Importer', function () {
 
             return dataImporter.doImport(exportData, importOptions)
                 .then(function (importResult) {
-                    should.exist(importResult.data.posts);
-                    importResult.data.posts.length.should.equal(2);
-                    importResult.problems.length.should.eql(0);
+                    assertExists(importResult.data.posts);
+                    assert.equal(importResult.data.posts.length, 2);
+                    assert.equal(importResult.problems.length, 0);
 
-                    importResult.data.posts[0].title.should.equal('duplicate title');
-                    importResult.data.posts[1].title.should.equal('duplicate title');
+                    assert.equal(importResult.data.posts[0].title, 'duplicate title');
+                    assert.equal(importResult.data.posts[1].title, 'duplicate title');
 
-                    importResult.data.posts[0].slug.should.equal('duplicate-title');
-                    importResult.data.posts[1].slug.should.equal('duplicate-title-2');
+                    assert.equal(importResult.data.posts[0].slug, 'duplicate-title');
+                    assert.equal(importResult.data.posts[1].slug, 'duplicate-title-2');
                 });
         });
 
@@ -225,20 +226,20 @@ describe('Importer', function () {
 
             return dataImporter.doImport(exportData, importOptions)
                 .then(function (importResult) {
-                    should.exist(importResult.data.tags);
-                    should.exist(importResult.originalData.posts_tags);
+                    assertExists(importResult.data.tags);
+                    assertExists(importResult.originalData.posts_tags);
 
-                    importResult.data.tags.length.should.equal(1);
+                    assert.equal(importResult.data.tags.length, 1);
 
                     // Check we imported all posts_tags associations
-                    importResult.originalData.posts_tags.length.should.equal(2);
+                    assert.equal(importResult.originalData.posts_tags.length, 2);
 
                     // Check the post_tag.tag_id was updated when we removed duplicate tag
                     _.every(importResult.originalData.posts_tags, function (postTag) {
                         return postTag.tag_id !== 2;
                     });
 
-                    importResult.problems.length.should.equal(0);
+                    assert.equal(importResult.problems.length, 0);
                 });
         });
 
@@ -261,9 +262,9 @@ describe('Importer', function () {
                     ]);
                 })
                 .then(function (data) {
-                    data[0].data.length.should.eql(1);
-                    data[0].data[0].toJSON().slug.should.eql('welcome-to-ghost-2');
-                    data[0].data[0].toJSON().tags.length.should.eql(0);
+                    assert.equal(data[0].data.length, 1);
+                    assert.equal(data[0].data[0].toJSON().slug, 'welcome-to-ghost-2');
+                    assert.equal(data[0].data[0].toJSON().tags.length, 0);
                 });
         });
 
@@ -278,9 +279,9 @@ describe('Importer', function () {
                     return models.Post.findPage(testUtils.context.internal);
                 })
                 .then(function (result) {
-                    result.data.length.should.equal(exportData.data.posts.length, 'Wrong number of posts');
-                    result.data[0].toJSON().status.should.eql('scheduled');
-                    result.data[1].toJSON().status.should.eql('published');
+                    assert.equal(result.data.length, exportData.data.posts.length, 'Wrong number of posts');
+                    assert.equal(result.data[0].toJSON().status, 'scheduled');
+                    assert.equal(result.data[1].toJSON().status, 'published');
                 });
         });
 
@@ -299,9 +300,9 @@ describe('Importer', function () {
                     ]);
                 })
                 .then(function (importedData) {
-                    should.exist(importedData);
+                    assertExists(importedData);
 
-                    importedData.length.should.equal(4, 'Did not get data successfully');
+                    assert.equal(importedData.length, 4, 'Did not get data successfully');
 
                     const users = importedData[0];
                     const posts = importedData[1].data;
@@ -309,11 +310,11 @@ describe('Importer', function () {
                     const tags = importedData[3];
 
                     // we always have 1 user, the owner user we added
-                    users.length.should.equal(1, 'There should only be one user');
+                    assert.equal(users.length, 1, 'There should only be one user');
 
-                    settings.length.should.be.above(0, 'Wrong number of settings');
-                    posts.length.should.equal(exportData.data.posts.length, 'no new posts');
-                    tags.length.should.equal(exportData.data.tags.length, 'no new tags');
+                    assert(settings.length > 0, 'Wrong number of settings');
+                    assert.equal(posts.length, exportData.data.posts.length, 'no new posts');
+                    assert.equal(tags.length, exportData.data.tags.length, 'no new tags');
                 });
         });
 
@@ -330,15 +331,15 @@ describe('Importer', function () {
                     return models.User.findAll(Object.assign({withRelated: ['roles']}, testUtils.context.internal));
                 })
                 .then(function (result) {
-                    result.models.length.should.eql(2);
+                    assert.equal(result.models.length, 2);
 
-                    result.models[0].get('email').should.equal(testUtils.DataGenerator.Content.users[0].email);
-                    result.models[0].get('slug').should.equal(testUtils.DataGenerator.Content.users[0].slug);
-                    result.models[0].get('name').should.equal(testUtils.DataGenerator.Content.users[0].name);
+                    assert.equal(result.models[0].get('email'), testUtils.DataGenerator.Content.users[0].email);
+                    assert.equal(result.models[0].get('slug'), testUtils.DataGenerator.Content.users[0].slug);
+                    assert.equal(result.models[0].get('name'), testUtils.DataGenerator.Content.users[0].name);
 
-                    result.models[1].get('email').should.equal(exportData.data.users[0].email);
-                    result.models[1].get('slug').should.equal(exportData.data.users[0].slug);
-                    result.models[1].get('name').should.equal(exportData.data.users[0].name);
+                    assert.equal(result.models[1].get('email'), exportData.data.users[0].email);
+                    assert.equal(result.models[1].get('slug'), exportData.data.users[0].slug);
+                    assert.equal(result.models[1].get('name'), exportData.data.users[0].name);
 
                     return models.User.isPasswordCorrect({
                         hashedPassword: result.models[0].get('password'),
@@ -354,7 +355,7 @@ describe('Importer', function () {
 
             return dataImporter.doImport(exportData, importOptions)
                 .then(function (importResult) {
-                    importResult.problems.length.should.eql(0);
+                    assert.equal(importResult.problems.length, 0);
                     importResult.data.posts[0].comment_id.should.eql(exportData.data.posts[0].id.toString());
                 });
         });
@@ -383,28 +384,28 @@ describe('Importer', function () {
 
             return dataImporter.doImport(exportData, importOptions)
                 .then(function () {
-                    (1).should.eql(0, 'Allowed import of duplicate data.');
+                    assert.equal((1), 0, 'Allowed import of duplicate data.');
                 })
                 .catch(function (response) {
-                    response.length.should.equal(6);
+                    assert.equal(response.length, 6);
                     // NOTE: a duplicated tag.slug is a warning
-                    response[0].errorType.should.equal('ValidationError');
-                    response[0].message.should.eql('Value in [users.bio] exceeds maximum length of 250 characters.');
+                    assert.equal(response[0].errorType, 'ValidationError');
+                    assert.equal(response[0].message, 'Value in [users.bio] exceeds maximum length of 250 characters.');
 
-                    response[1].errorType.should.equal('ValidationError');
-                    response[1].message.should.eql('Validation (isEmail) failed for email');
+                    assert.equal(response[1].errorType, 'ValidationError');
+                    assert.equal(response[1].message, 'Validation (isEmail) failed for email');
 
-                    response[2].errorType.should.equal('ValidationError');
-                    response[2].message.should.eql('Value in [tags.meta_title] exceeds maximum length of 300 characters.');
+                    assert.equal(response[2].errorType, 'ValidationError');
+                    assert.equal(response[2].message, 'Value in [tags.meta_title] exceeds maximum length of 300 characters.');
 
-                    response[3].errorType.should.equal('ValidationError');
-                    response[3].message.should.eql('Value in [settings.key] cannot be blank.');
+                    assert.equal(response[3].errorType, 'ValidationError');
+                    assert.equal(response[3].message, 'Value in [settings.key] cannot be blank.');
 
-                    response[4].message.should.eql('Value in [posts.title] cannot be blank.');
-                    response[4].errorType.should.eql('ValidationError');
+                    assert.equal(response[4].message, 'Value in [posts.title] cannot be blank.');
+                    assert.equal(response[4].errorType, 'ValidationError');
 
-                    response[5].errorType.should.equal('ValidationError');
-                    response[5].message.should.eql('Value in [posts.title] exceeds maximum length of 255 characters.');
+                    assert.equal(response[5].errorType, 'ValidationError');
+                    assert.equal(response[5].message, 'Value in [posts.title] exceeds maximum length of 255 characters.');
                 });
         });
 
@@ -416,11 +417,11 @@ describe('Importer', function () {
 
             return dataImporter.doImport(exportData, importOptions)
                 .then(function (importedData) {
-                    importedData.problems.length.should.eql(1);
+                    assert.equal(importedData.problems.length, 1);
 
                     importedData.problems[0].message.should.eql('Entry was imported, but we were not able to ' +
                         'resolve the following user references: author_id, published_by. The user does not exist, fallback to owner user.');
-                    importedData.problems[0].help.should.eql('Post');
+                    assert.equal(importedData.problems[0].help, 'Post');
 
                     // Grab the data from tables
                     return Promise.all([
@@ -432,15 +433,15 @@ describe('Importer', function () {
                     ]);
                 })
                 .then(function (importedData) {
-                    should.exist(importedData);
+                    assertExists(importedData);
 
-                    importedData.length.should.equal(2, 'Did not get data successfully');
+                    assert.equal(importedData.length, 2, 'Did not get data successfully');
 
                     const users = importedData[0].data.map(model => model.toJSON());
                     const posts = importedData[1].data.map(model => model.toJSON());
 
-                    posts.length.should.equal(1, 'Wrong number of posts');
-                    users.length.should.equal(2, 'Wrong number of users');
+                    assert.equal(posts.length, 1, 'Wrong number of posts');
+                    assert.equal(users.length, 2, 'Wrong number of users');
 
                     // NOTE: we fallback to owner user for invalid user references
 
@@ -502,28 +503,28 @@ describe('Importer', function () {
                     const posts = result[0].data.map(model => model.toJSON());
                     const tags = result[1].data.map(model => model.toJSON());
 
-                    posts.length.should.equal(exportData.data.posts.length, 'Wrong number of posts');
+                    assert.equal(posts.length, exportData.data.posts.length, 'Wrong number of posts');
 
                     // post1
                     posts[0].slug.should.eql(exportData.data.posts[0].slug);
-                    posts[0].tags.length.should.eql(1);
+                    assert.equal(posts[0].tags.length, 1);
                     posts[0].tags[0].slug.should.eql(exportData.data.tags[0].slug);
 
                     // post3, has a specific sort_order
                     posts[1].slug.should.eql(exportData.data.posts[2].slug);
-                    posts[1].tags.length.should.eql(3);
+                    assert.equal(posts[1].tags.length, 3);
                     posts[1].tags[0].slug.should.eql(exportData.data.tags[2].slug);
                     posts[1].tags[1].slug.should.eql(exportData.data.tags[0].slug);
                     posts[1].tags[2].slug.should.eql(exportData.data.tags[1].slug);
 
                     // post2, sort_order property is missing (order depends on the posts_tags entries)
                     posts[2].slug.should.eql(exportData.data.posts[1].slug);
-                    posts[2].tags.length.should.eql(2);
+                    assert.equal(posts[2].tags.length, 2);
                     posts[2].tags[0].slug.should.eql(exportData.data.tags[1].slug);
                     posts[2].tags[1].slug.should.eql(exportData.data.tags[0].slug);
 
                     // test tags
-                    tags.length.should.equal(exportData.data.tags.length, 'no new tags');
+                    assert.equal(tags.length, exportData.data.tags.length, 'no new tags');
                 });
         });
 
@@ -600,51 +601,51 @@ describe('Importer', function () {
                     const tags = result[1].data.map(model => model.toJSON(tagOptions));
                     const users = result[2].data.map(model => model.toJSON(userOptions));
 
-                    posts.length.should.equal(exportData.data.posts.length, 'Wrong number of posts');
+                    assert.equal(posts.length, exportData.data.posts.length, 'Wrong number of posts');
 
                     // findPage returns the posts in correct order (latest created post is the first)
-                    posts[0].title.should.equal(exportData.data.posts[2].title);
-                    posts[1].title.should.equal(exportData.data.posts[1].title);
-                    posts[2].title.should.equal(exportData.data.posts[0].title);
+                    assert.equal(posts[0].title, exportData.data.posts[2].title);
+                    assert.equal(posts[1].title, exportData.data.posts[1].title);
+                    assert.equal(posts[2].title, exportData.data.posts[0].title);
 
-                    posts[0].slug.should.equal(exportData.data.posts[2].slug);
-                    posts[1].slug.should.equal(exportData.data.posts[1].slug);
-                    posts[2].slug.should.equal(exportData.data.posts[0].slug);
+                    assert.equal(posts[0].slug, exportData.data.posts[2].slug);
+                    assert.equal(posts[1].slug, exportData.data.posts[1].slug);
+                    assert.equal(posts[2].slug, exportData.data.posts[0].slug);
 
-                    posts[0].primary_author.id.should.equal(users[1].id);
-                    posts[1].primary_author.id.should.equal(users[4].id);
-                    posts[2].primary_author.id.should.equal(users[1].id);
+                    assert.equal(posts[0].primary_author.id, users[1].id);
+                    assert.equal(posts[1].primary_author.id, users[4].id);
+                    assert.equal(posts[2].primary_author.id, users[1].id);
 
-                    posts[0].published_by.should.equal(users[4].id);
-                    posts[1].published_by.should.equal(users[2].id);
-                    posts[2].published_by.should.equal(users[2].id);
+                    assert.equal(posts[0].published_by, users[4].id);
+                    assert.equal(posts[1].published_by, users[2].id);
+                    assert.equal(posts[2].published_by, users[2].id);
 
-                    tags.length.should.equal(exportData.data.tags.length, 'Wrong number of tags');
+                    assert.equal(tags.length, exportData.data.tags.length, 'Wrong number of tags');
 
                     // 4 imported users + 1 owner user
-                    users.length.should.equal(exportData.data.users.length + 1, 'Wrong number of users');
+                    assert.equal(users.length, exportData.data.users.length + 1, 'Wrong number of users');
 
-                    users[0].email.should.equal(testUtils.DataGenerator.Content.users[0].email);
-                    users[1].email.should.equal(exportData.data.users[0].email);
-                    users[2].email.should.equal(exportData.data.users[1].email);
-                    users[3].email.should.equal(exportData.data.users[2].email);
-                    users[4].email.should.equal(exportData.data.users[3].email);
+                    assert.equal(users[0].email, testUtils.DataGenerator.Content.users[0].email);
+                    assert.equal(users[1].email, exportData.data.users[0].email);
+                    assert.equal(users[2].email, exportData.data.users[1].email);
+                    assert.equal(users[3].email, exportData.data.users[2].email);
+                    assert.equal(users[4].email, exportData.data.users[3].email);
 
-                    users[0].status.should.equal('active');
-                    users[1].status.should.equal('locked');
-                    users[2].status.should.equal('locked');
-                    users[3].status.should.equal('locked');
-                    users[4].status.should.equal('locked');
+                    assert.equal(users[0].status, 'active');
+                    assert.equal(users[1].status, 'locked');
+                    assert.equal(users[2].status, 'locked');
+                    assert.equal(users[3].status, 'locked');
+                    assert.equal(users[4].status, 'locked');
 
-                    users[1].created_at.toISOString().should.equal(moment(exportData.data.users[0].created_at).startOf('seconds').toISOString());
-                    users[2].created_at.toISOString().should.equal(moment(exportData.data.users[1].created_at).startOf('seconds').toISOString());
-                    users[3].created_at.toISOString().should.equal(moment(exportData.data.users[2].created_at).startOf('seconds').toISOString());
-                    users[4].created_at.toISOString().should.equal(moment(exportData.data.users[3].created_at).startOf('seconds').toISOString());
+                    assert.equal(users[1].created_at.toISOString(), moment(exportData.data.users[0].created_at).startOf('seconds').toISOString());
+                    assert.equal(users[2].created_at.toISOString(), moment(exportData.data.users[1].created_at).startOf('seconds').toISOString());
+                    assert.equal(users[3].created_at.toISOString(), moment(exportData.data.users[2].created_at).startOf('seconds').toISOString());
+                    assert.equal(users[4].created_at.toISOString(), moment(exportData.data.users[3].created_at).startOf('seconds').toISOString());
 
-                    users[1].updated_at.toISOString().should.equal(moment(exportData.data.users[0].updated_at).startOf('seconds').toISOString());
-                    users[2].updated_at.toISOString().should.equal(moment(exportData.data.users[1].updated_at).startOf('seconds').toISOString());
-                    users[3].updated_at.toISOString().should.equal(moment(exportData.data.users[2].updated_at).startOf('seconds').toISOString());
-                    users[4].updated_at.toISOString().should.equal(moment(exportData.data.users[3].updated_at).startOf('seconds').toISOString());
+                    assert.equal(users[1].updated_at.toISOString(), moment(exportData.data.users[0].updated_at).startOf('seconds').toISOString());
+                    assert.equal(users[2].updated_at.toISOString(), moment(exportData.data.users[1].updated_at).startOf('seconds').toISOString());
+                    assert.equal(users[3].updated_at.toISOString(), moment(exportData.data.users[2].updated_at).startOf('seconds').toISOString());
+                    assert.equal(users[4].updated_at.toISOString(), moment(exportData.data.users[3].updated_at).startOf('seconds').toISOString());
 
                     users[0].roles[0].id.should.eql(testUtils.DataGenerator.Content.roles[3].id);
                     users[1].roles[0].id.should.eql(testUtils.DataGenerator.Content.roles[0].id);
@@ -683,10 +684,10 @@ describe('Importer', function () {
                 }).then(function (result) {
                     const users = result[0].data.map(model => model.toJSON());
 
-                    users.length.should.eql(2);
+                    assert.equal(users.length, 2);
                     users[1].slug.should.eql(exportData.data.users[0].slug);
                     users[1].slug.should.eql(exportData.data.users[0].slug);
-                    users[1].roles.length.should.eql(1);
+                    assert.equal(users[1].roles.length, 1);
                     users[1].roles[0].id.should.eql(testUtils.DataGenerator.Content.roles[4].id);
                 });
         });
@@ -719,7 +720,7 @@ describe('Importer', function () {
 
             return dataImporter.doImport(exportData, importOptions)
                 .then(function (imported) {
-                    imported.problems.length.should.eql(0);
+                    assert.equal(imported.problems.length, 0);
 
                     return Promise.all([
                         models.Tag.findPage(Object.assign({order: 'slug ASC'}, testUtils.context.internal)),
@@ -729,14 +730,14 @@ describe('Importer', function () {
                     const tags = result[0].data.map(model => model.toJSON());
                     const posts = result[1].data.map(model => model.toJSON());
 
-                    posts.length.should.eql(1);
-                    tags.length.should.eql(3);
+                    assert.equal(posts.length, 1);
+                    assert.equal(tags.length, 3);
 
-                    posts[0].tags.length.should.eql(3);
-                    tags[0].name.should.eql('first tag');
-                    tags[0].slug.should.eql('first-tag');
-                    tags[1].name.should.eql('second tag');
-                    tags[2].name.should.eql('third tag');
+                    assert.equal(posts[0].tags.length, 3);
+                    assert.equal(tags[0].name, 'first tag');
+                    assert.equal(tags[0].slug, 'first-tag');
+                    assert.equal(tags[1].name, 'second tag');
+                    assert.equal(tags[2].name, 'third tag');
                 });
         });
 
@@ -755,7 +756,7 @@ describe('Importer', function () {
 
             return dataImporter.doImport(exportData, importOptions)
                 .then(function (imported) {
-                    imported.problems.length.should.eql(0);
+                    assert.equal(imported.problems.length, 0);
 
                     return Promise.all([
                         models.Tag.findPage(Object.assign({order: 'slug ASC'}, testUtils.context.internal)),
@@ -765,11 +766,11 @@ describe('Importer', function () {
                     const tags = result[0].data.map(model => model.toJSON());
                     const posts = result[1].data.map(model => model.toJSON());
 
-                    posts.length.should.eql(1);
-                    tags.length.should.eql(1);
+                    assert.equal(posts.length, 1);
+                    assert.equal(tags.length, 1);
 
-                    posts[0].tags.length.should.eql(1);
-                    tags[0].slug.should.eql('tag-1');
+                    assert.equal(posts[0].tags.length, 1);
+                    assert.equal(tags[0].slug, 'tag-1');
                 });
         });
 
@@ -783,13 +784,13 @@ describe('Importer', function () {
 
             return dataImporter.doImport(exportData, importOptions)
                 .then(function (imported) {
-                    imported.problems.length.should.eql(0);
+                    assert.equal(imported.problems.length, 0);
                     return models.Settings.findOne(_.merge({key: 'labs'}, testUtils.context.internal));
                 })
                 .then(function (result) {
-                    should.equal(result.attributes.key, 'labs');
-                    should.equal(result.attributes.group, 'labs');
-                    should.equal(result.attributes.value, '{"additionalPaymentMethods":true}');
+                    assert.equal(result.attributes.key, 'labs');
+                    assert.equal(result.attributes.group, 'labs');
+                    assert.equal(result.attributes.value, '{"additionalPaymentMethods":true}');
                 });
         });
 
@@ -803,13 +804,13 @@ describe('Importer', function () {
 
             return dataImporter.doImport(exportData, importOptions)
                 .then(function (imported) {
-                    imported.problems.length.should.eql(0);
+                    assert.equal(imported.problems.length, 0);
                     return models.Settings.findOne(_.merge({key: 'labs'}, testUtils.context.internal));
                 })
                 .then(function (result) {
-                    should.equal(result.attributes.key, 'labs');
-                    should.equal(result.attributes.group, 'labs');
-                    should.equal(result.attributes.value, '{}');
+                    assert.equal(result.attributes.key, 'labs');
+                    assert.equal(result.attributes.group, 'labs');
+                    assert.equal(result.attributes.value, '{}');
                 });
         });
 
@@ -823,11 +824,11 @@ describe('Importer', function () {
 
             return dataImporter.doImport(exportData, importOptions)
                 .then(function (imported) {
-                    imported.problems.length.should.eql(0);
+                    assert.equal(imported.problems.length, 0);
                     return models.Settings.findOne(_.merge({key: 'slack_url'}, testUtils.context.internal));
                 })
                 .then(function (result) {
-                    result.attributes.value.should.eql('');
+                    assert.equal(result.attributes.value, '');
                 });
         });
 
@@ -841,11 +842,11 @@ describe('Importer', function () {
 
             return dataImporter.doImport(exportData, importOptions)
                 .then(function (imported) {
-                    imported.problems.length.should.eql(0);
+                    assert.equal(imported.problems.length, 0);
                     return models.Settings.findOne(_.merge({key: 'slack_url'}, testUtils.context.internal));
                 })
                 .then(function (result) {
-                    result.attributes.value.should.eql('');
+                    assert.equal(result.attributes.value, '');
                 });
         });
 
@@ -868,17 +869,17 @@ describe('Importer', function () {
 
             return dataImporter.doImport(exportData, importOptions)
                 .then(function (imported) {
-                    imported.problems.length.should.eql(0);
+                    assert.equal(imported.problems.length, 0);
                     return models.Settings.findOne(_.merge({key: 'locale'}, testUtils.context.internal));
                 })
                 .then(function (result) {
-                    result.attributes.value.should.eql('ua');
+                    assert.equal(result.attributes.value, 'ua');
                 })
                 .then(function () {
                     return models.Settings.findOne(_.merge({key: 'timezone'}, testUtils.context.internal));
                 })
                 .then(function (result) {
-                    result.attributes.value.should.eql('Pacific/Auckland');
+                    assert.equal(result.attributes.value, 'Pacific/Auckland');
                 });
         });
 
@@ -896,11 +897,11 @@ describe('Importer', function () {
 
             return dataImporter.doImport(exportData, importOptions)
                 .then(function (imported) {
-                    imported.problems.length.should.eql(0);
+                    assert.equal(imported.problems.length, 0);
                     return models.Settings.findOne(_.merge({key: 'locale'}, testUtils.context.internal));
                 })
                 .then(function (result) {
-                    result.attributes.value.should.eql('ua');
+                    assert.equal(result.attributes.value, 'ua');
                 });
         });
 
@@ -919,29 +920,29 @@ describe('Importer', function () {
 
             return dataImporter.doImport(exportData, importOptions)
                 .then(function (imported) {
-                    imported.problems.length.should.eql(0);
+                    assert.equal(imported.problems.length, 0);
                     return models.Settings.findOne(_.merge({key: 'portal_button'}, testUtils.context.internal));
                 })
                 .then(function (result) {
-                    result.attributes.value.should.eql(true);
+                    assert.equal(result.attributes.value, true);
                     return models.Settings.findOne(_.merge({key: 'is_private'}, testUtils.context.internal));
                 })
                 .then(function (result) {
-                    result.attributes.value.should.eql(false);
+                    assert.equal(result.attributes.value, false);
 
                     return db
                         .knex('settings')
                         .where('key', 'portal_button');
                 })
                 .then(function (result) {
-                    result[0].value.should.eql('true');
+                    assert.equal(result[0].value, 'true');
 
                     return db
                         .knex('settings')
                         .where('key', 'is_private');
                 })
                 .then(function (result) {
-                    result[0].value.should.eql('false');
+                    assert.equal(result[0].value, 'false');
                 });
         });
 
@@ -963,7 +964,7 @@ describe('Importer', function () {
                 }).then(function (result) {
                     const posts = result[0].data.map(model => model.toJSON());
 
-                    posts.length.should.eql(2);
+                    assert.equal(posts.length, 2);
                     posts[0].comment_id.should.eql(exportData.data.posts[1].id);
                     posts[1].comment_id.should.eql(exportData.data.posts[0].comment_id);
                 });
@@ -1016,9 +1017,9 @@ describe('Importer', function () {
             return dataImporter.doImport(exportData, importOptions)
                 .then(function (imported) {
                     // one user is a duplicate
-                    imported.problems.length.should.eql(2);
-                    imported.problems[0].context.should.match(/user4@ghost.org/);
-                    imported.problems[1].context.should.match(/user5/);
+                    assert.equal(imported.problems.length, 2);
+                    assert.match(imported.problems[0].context, /user4@ghost.org/);
+                    assert.match(imported.problems[1].context, /user5/);
 
                     return Promise.all([
                         models.Post.findPage(Object.assign({withRelated: ['authors']}, testUtils.context.internal)),
@@ -1030,24 +1031,24 @@ describe('Importer', function () {
 
                     // 2 duplicates, 1 owner, 4 imported users
                     users.length.should.eql(exportData.data.users.length - 2 + 1);
-                    posts.length.should.eql(3);
+                    assert.equal(posts.length, 3);
 
                     // has 4 posts_authors relations, but 3 of them are invalid
                     posts[0].slug.should.eql(exportData.data.posts[2].slug);
-                    posts[0].authors.length.should.eql(1);
+                    assert.equal(posts[0].authors.length, 1);
                     posts[0].authors[0].id.should.eql(users[4].id);
                     posts[0].primary_author.id.should.eql(users[4].id);
 
                     // no valid authors reference, use owner author_id
                     posts[1].slug.should.eql(exportData.data.posts[1].slug);
-                    posts[1].authors.length.should.eql(1);
+                    assert.equal(posts[1].authors.length, 1);
                     posts[1].primary_author.id.should.eql(testUtils.DataGenerator.Content.users[0].id);
                     posts[1].authors[0].id.should.eql(testUtils.DataGenerator.Content.users[0].id);
 
                     posts[2].slug.should.eql(exportData.data.posts[0].slug);
-                    posts[2].authors.length.should.eql(3);
+                    assert.equal(posts[2].authors.length, 3);
                     posts[2].primary_author.id.should.eql(users[2].id);
-                    posts[2].authors.length.should.eql(3);
+                    assert.equal(posts[2].authors.length, 3);
                     posts[2].authors[0].id.should.eql(users[2].id);
                     posts[2].authors[1].id.should.eql(users[1].id);
                     posts[2].authors[2].id.should.eql(users[3].id);
@@ -1088,10 +1089,10 @@ describe('Importer', function () {
                 }).then(function (result) {
                     const posts = result[0].data.map(model => model.toJSON(options));
 
-                    posts.length.should.eql(1);
+                    assert.equal(posts.length, 1);
 
-                    posts[0].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[["image",{"src":"source","cardWidth":"wide"}],["markdown",{"markdown":"# Post Content"}]],"sections":[[10,0],[10,1]],"ghostVersion":"3.0"}');
-                    posts[0].html.should.eql('<figure class="kg-card kg-image-card kg-width-wide"><img src="source" class="kg-image" alt loading="lazy"></figure><!--kg-card-begin: markdown--><h1 id="postcontent">Post Content</h1>\n<!--kg-card-end: markdown-->');
+                    assert.equal(posts[0].mobiledoc, '{"version":"0.3.1","markups":[],"atoms":[],"cards":[["image",{"src":"source","cardWidth":"wide"}],["markdown",{"markdown":"# Post Content"}]],"sections":[[10,0],[10,1]],"ghostVersion":"3.0"}');
+                    assert.equal(posts[0].html, '<figure class="kg-card kg-image-card kg-width-wide"><img src="source" class="kg-image" alt loading="lazy"></figure><!--kg-card-begin: markdown--><h1 id="postcontent">Post Content</h1>\n<!--kg-card-end: markdown-->');
                 });
         });
 
@@ -1149,13 +1150,13 @@ describe('Importer', function () {
                 }).then(function (result) {
                     const posts = result[0].data.map(model => model.toJSON(options));
 
-                    posts.length.should.eql(2);
+                    assert.equal(posts.length, 2);
 
-                    posts[0].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[["markdown",{"markdown":"## Post Content"}],["image",{"src":"source2","cardWidth":"not-wide"}]],"sections":[[10,0],[10,1]],"ghostVersion":"3.0"}');
-                    posts[0].html.should.eql('<!--kg-card-begin: markdown--><h2 id="postcontent">Post Content</h2>\n<!--kg-card-end: markdown--><figure class="kg-card kg-image-card kg-width-not-wide"><img src="source2" class="kg-image" alt loading="lazy"></figure>');
+                    assert.equal(posts[0].mobiledoc, '{"version":"0.3.1","markups":[],"atoms":[],"cards":[["markdown",{"markdown":"## Post Content"}],["image",{"src":"source2","cardWidth":"not-wide"}]],"sections":[[10,0],[10,1]],"ghostVersion":"3.0"}');
+                    assert.equal(posts[0].html, '<!--kg-card-begin: markdown--><h2 id="postcontent">Post Content</h2>\n<!--kg-card-end: markdown--><figure class="kg-card kg-image-card kg-width-not-wide"><img src="source2" class="kg-image" alt loading="lazy"></figure>');
 
-                    posts[1].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[["image",{"src":"source","cardWidth":"wide"}],["markdown",{"markdown":"# Post Content"}]],"sections":[[10,0],[10,1]],"ghostVersion":"3.0"}');
-                    posts[1].html.should.eql('<figure class="kg-card kg-image-card kg-width-wide"><img src="source" class="kg-image" alt loading="lazy"></figure><!--kg-card-begin: markdown--><h1 id="postcontent">Post Content</h1>\n<!--kg-card-end: markdown-->');
+                    assert.equal(posts[1].mobiledoc, '{"version":"0.3.1","markups":[],"atoms":[],"cards":[["image",{"src":"source","cardWidth":"wide"}],["markdown",{"markdown":"# Post Content"}]],"sections":[[10,0],[10,1]],"ghostVersion":"3.0"}');
+                    assert.equal(posts[1].html, '<figure class="kg-card kg-image-card kg-width-wide"><img src="source" class="kg-image" alt loading="lazy"></figure><!--kg-card-begin: markdown--><h1 id="postcontent">Post Content</h1>\n<!--kg-card-end: markdown-->');
                 });
         });
 
@@ -1272,10 +1273,10 @@ describe('Importer', function () {
                     const tags = result[1].data.map(model => model.toJSON(tagOptions));
                     const users = result[2].data.map(model => model.toJSON(userOptions));
 
-                    posts.length.should.equal(exportData.data.posts.length + testUtils.DataGenerator.Content.posts.length, 'Wrong number of posts');
-                    tags.length.should.equal(exportData.data.tags.length + testUtils.DataGenerator.Content.tags.length, 'Wrong number of tags');
+                    assert.equal(posts.length, exportData.data.posts.length + testUtils.DataGenerator.Content.posts.length, 'Wrong number of posts');
+                    assert.equal(tags.length, exportData.data.tags.length + testUtils.DataGenerator.Content.tags.length, 'Wrong number of tags');
                     // the test env only inserts the user defined in the `forKnex` array
-                    users.length.should.equal(exportData.data.users.length + testUtils.DataGenerator.forKnex.users.length, 'Wrong number of users');
+                    assert.equal(users.length, exportData.data.users.length + testUtils.DataGenerator.forKnex.users.length, 'Wrong number of users');
                 });
         });
     });

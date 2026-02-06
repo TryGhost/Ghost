@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const fs = require('fs-extra');
@@ -41,9 +42,9 @@ describe('Themes', function () {
                         const themeResult = themeList.getAll();
 
                         // Loader doesn't return anything
-                        should.not.exist(result);
+                        assert.equal(result, undefined);
 
-                        themeResult.should.eql({
+                        assert.deepEqual(themeResult, {
                             casper: {
                                 name: 'casper',
                                 path: join(themePath.name, 'casper'),
@@ -74,9 +75,9 @@ describe('Themes', function () {
                         const themeResult = themeList.getAll();
 
                         // Loader doesn't return anything
-                        should.not.exist(result);
+                        assert.equal(result, undefined);
 
-                        themeResult.should.eql({
+                        assert.deepEqual(themeResult, {
                             casper: {
                                 name: 'casper',
                                 path: join(themePath.name, 'casper'),
@@ -113,7 +114,7 @@ describe('Themes', function () {
 
                 loader.loadOneTheme('casper')
                     .then(function (themeResult) {
-                        themeResult.should.eql({
+                        assert.deepEqual(themeResult, {
                             name: 'casper',
                             path: join(themePath.name, 'casper'),
                             'package.json': {name: 'casper', version: '0.1.2'}
@@ -134,7 +135,7 @@ describe('Themes', function () {
                         done('Should have thrown an error');
                     })
                     .catch(function (err) {
-                        err.message.should.eql('Package not found');
+                        assert.equal(err.message, 'Package not found');
                         done();
                     });
             });

@@ -1,6 +1,6 @@
-import {Locator, Page} from '@playwright/test';
 import {PageHttpLogger} from './page-http-logger';
 import {appConfig} from '@/helpers/utils/app-config';
+import type {Locator, Page, Response} from '@playwright/test';
 
 export interface pageGotoOptions {
     referer?: string;
@@ -31,9 +31,9 @@ export class BasePage {
         await this.page.reload();
     }
 
-    async goto(url?: string, options?: pageGotoOptions) {
+    async goto(url?: string, options?: pageGotoOptions): Promise<null | Response> {
         const urlToVisit = url || this.pageUrl;
-        await this.page.goto(urlToVisit, options);
+        return await this.page.goto(urlToVisit, options);
     }
 
     async pressKey(key: string) {

@@ -73,8 +73,6 @@ export class GhostManager {
                 mail__options__secure: 'false',
                 // other services configuration
                 portal__url: config.portalUrl || `http://localhost:${PORTAL.PORT}/portal.min.js`,
-                // Enable admin-forward feature flag if specified
-                ...(process.env.USE_REACT_SHELL === 'true' ? {labs__adminForward: 'true'} : {}),
                 ...(config.config ? config.config : {})
             } as Record<string, string>;
 

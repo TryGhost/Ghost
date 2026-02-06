@@ -1,9 +1,11 @@
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../../../utils/assertions');
 const should = require('should');
 const middleware = require('../../../../../../../core/server/web/api/endpoints/content/middleware');
 
 describe('Content API middleware', function () {
     it('exports an authenticatePublic middleware', function () {
-        should.exist(middleware.authenticatePublic);
+        assertExists(middleware.authenticatePublic);
     });
 
     describe('authenticatePublic', function () {
@@ -11,7 +13,7 @@ describe('Content API middleware', function () {
             const firstMiddleware = middleware.authenticatePublic[0];
             const brute = require('../../../../../../../core/server/web/shared/middleware/brute');
 
-            should.equal(firstMiddleware, brute.contentApiKey);
+            assert.equal(firstMiddleware, brute.contentApiKey);
         });
     });
 });

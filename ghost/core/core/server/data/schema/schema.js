@@ -435,6 +435,7 @@ module.exports = {
         email_disabled: {type: 'boolean', nullable: false, defaultTo: false},
         last_seen_at: {type: 'dateTime', nullable: true},
         last_commented_at: {type: 'dateTime', nullable: true},
+        commenting: {type: 'text', maxlength: 65535, nullable: true},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
         '@@INDEXES@@': [
@@ -698,6 +699,8 @@ module.exports = {
         updated_at: {type: 'dateTime', nullable: true},
         mrr: {type: 'integer', unsigned: true, nullable: false, defaultTo: 0},
         offer_id: {type: 'string', maxlength: 24, nullable: true, unique: false, references: 'offers.id'},
+        discount_start: {type: 'dateTime', nullable: true},
+        discount_end: {type: 'dateTime', nullable: true},
         trial_start_at: {type: 'dateTime', nullable: true},
         trial_end_at: {type: 'dateTime', nullable: true},
         /* Below fields are now redundant as we link stripe_price_id to stripe_prices table */
@@ -1149,5 +1152,15 @@ module.exports = {
             ['slug'],
             ['status']
         ]
+    },
+    automated_email_recipients: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        automated_email_id: {type: 'string', maxlength: 24, nullable: false, references: 'automated_emails.id'},
+        member_id: {type: 'string', maxlength: 24, nullable: false, index: true},
+        member_uuid: {type: 'string', maxlength: 36, nullable: false},
+        member_email: {type: 'string', maxlength: 191, nullable: false},
+        member_name: {type: 'string', maxlength: 191, nullable: true},
+        created_at: {type: 'dateTime', nullable: false},
+        updated_at: {type: 'dateTime', nullable: true}
     }
 };

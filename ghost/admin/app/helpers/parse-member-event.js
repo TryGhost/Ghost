@@ -104,6 +104,10 @@ export default class ParseMemberEventHelper extends Helper {
             icon = 'sent-email';
         }
 
+        if (event.type === 'automated_email_sent_event') {
+            icon = 'sent-email';
+        }
+
         if (event.type === 'email_delivered_event') {
             icon = 'received-email';
         }
@@ -195,6 +199,12 @@ export default class ParseMemberEventHelper extends Helper {
 
         if (event.type === 'email_sent_event') {
             return 'sent email';
+        }
+
+        if (event.type === 'automated_email_sent_event') {
+            const slug = event.data.automatedEmail?.slug || '';
+            const emailType = slug.includes('paid') ? 'Paid' : 'Free';
+            return `received welcome email (${emailType})`;
         }
 
         if (event.type === 'email_delivered_event') {

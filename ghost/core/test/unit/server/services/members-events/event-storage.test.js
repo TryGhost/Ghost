@@ -1,4 +1,3 @@
-require('should');
 const sinon = require('sinon');
 
 const {MemberCreatedEvent, SubscriptionCreatedEvent} = require('../../../../../core/shared/events');

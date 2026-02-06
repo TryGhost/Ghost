@@ -6,6 +6,7 @@ import {
     useSidebar,
 } from "@tryghost/shade";
 import { useIsActiveLink } from "./use-is-active-link";
+import { useSidebarVisibility } from "@/ember-bridge/ember-bridge";
 
 const ICON_STROKE_WIDTH = 1.5;
 
@@ -34,8 +35,10 @@ function MobileNavBarButton({ to, activeOnSubpath = false, children, ...props }:
 
 export function MobileNavBar() {
     const { isMobile } = useSidebar();
+    const sidebarVisible = useSidebarVisibility();
 
-    if (!isMobile) {
+
+    if (!isMobile || !sidebarVisible) {
         return <></>
     }
 

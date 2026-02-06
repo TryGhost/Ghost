@@ -103,6 +103,18 @@ describe('SignupPage', () => {
         expect(freeTrialMessage).not.toBeInTheDocument();
     });
 
+    test('sanitizes malicious XSS in signup terms HTML', () => {
+        const siteData = getSiteData({membersSignupAccess: 'all'});
+        siteData.portal_signup_terms_html = '<img src=x onerror=alert(\'XSS\')>';
+
+        const {container} = setup({site: siteData});
+
+        const termsContent = container.querySelector('.gh-portal-signup-terms-content');
+        expect(termsContent).toBeInTheDocument();
+        expect(termsContent.innerHTML).toBe('');
+        expect(termsContent.querySelector('img')).toBeNull();
+    });
+
     describe('when members are disabled', () => {
         test('renders an informative message', () => {
             setup({

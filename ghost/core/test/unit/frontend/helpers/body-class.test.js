@@ -1,3 +1,5 @@
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../utils/assertions');
 const should = require('should');
 const themeList = require('../../../../core/server/services/themes/list');
 const sinon = require('sinon');
@@ -44,9 +46,9 @@ describe('{{body_class}} helper', function () {
         options.data.root.context = ['home'];
 
         const rendered = body_class.call({}, options);
-        should.exist(rendered);
+        assertExists(rendered);
 
-        rendered.string.should.equal('home-template');
+        assert.equal(rendered.string, 'home-template');
     });
 
     describe('can render class string for context', function () {
@@ -64,7 +66,7 @@ describe('{{body_class}} helper', function () {
                 {relativeUrl: '/'}
             );
 
-            rendered.string.should.equal('home-template');
+            assert.equal(rendered.string, 'home-template');
         });
 
         it('a post', function () {
@@ -73,7 +75,7 @@ describe('{{body_class}} helper', function () {
                 {relativeUrl: '/a-post-title', post: {}}
             );
 
-            rendered.string.should.equal('post-template');
+            assert.equal(rendered.string, 'post-template');
         });
 
         it('paginated index', function () {
@@ -82,7 +84,7 @@ describe('{{body_class}} helper', function () {
                 {relativeUrl: '/page/4'}
             );
 
-            rendered.string.should.equal('paged');
+            assert.equal(rendered.string, 'paged');
         });
 
         it('tag page', function () {
@@ -91,7 +93,7 @@ describe('{{body_class}} helper', function () {
                 {relativeUrl: '/tag/foo', tag: {slug: 'foo'}}
             );
 
-            rendered.string.should.equal('tag-template tag-foo');
+            assert.equal(rendered.string, 'tag-template tag-foo');
         });
 
         it('paginated tag page', function () {
@@ -100,7 +102,7 @@ describe('{{body_class}} helper', function () {
                 {relativeUrl: '/tag/foo/page/2', tag: {slug: 'foo'}}
             );
 
-            rendered.string.should.equal('tag-template tag-foo paged');
+            assert.equal(rendered.string, 'tag-template tag-foo paged');
         });
 
         it('author page', function () {
@@ -109,7 +111,7 @@ describe('{{body_class}} helper', function () {
                 {relativeUrl: '/author/bar', author: {slug: 'bar'}}
             );
 
-            rendered.string.should.equal('author-template author-bar');
+            assert.equal(rendered.string, 'author-template author-bar');
         });
 
         it('paginated author page', function () {
@@ -118,7 +120,7 @@ describe('{{body_class}} helper', function () {
                 {relativeUrl: '/author/bar/page/2', author: {slug: 'bar'}}
             );
 
-            rendered.string.should.equal('author-template author-bar paged');
+            assert.equal(rendered.string, 'author-template author-bar paged');
         });
 
         it('private route for password protection', function () {
@@ -127,7 +129,7 @@ describe('{{body_class}} helper', function () {
                 {relativeUrl: '/private/'}
             );
 
-            rendered.string.should.equal('private-template');
+            assert.equal(rendered.string, 'private-template');
         });
 
         it('post with tags', function () {
@@ -136,7 +138,7 @@ describe('{{body_class}} helper', function () {
                 {relativeUrl: '/my-awesome-post/', post: {tags: [{slug: 'foo'}, {slug: 'bar'}]}}
             );
 
-            rendered.string.should.equal('post-template tag-foo tag-bar');
+            assert.equal(rendered.string, 'post-template tag-foo tag-bar');
         });
 
         it('a static page', function () {
@@ -145,7 +147,7 @@ describe('{{body_class}} helper', function () {
                 {relativeUrl: '/about', page: {page: true, slug: 'about'}}
             );
 
-            rendered.string.should.equal('page-template page-about');
+            assert.equal(rendered.string, 'page-template page-about');
         });
 
         it('a static page with custom template (is now the same as one without)', function () {
@@ -158,7 +160,7 @@ describe('{{body_class}} helper', function () {
                 }
             );
 
-            rendered.string.should.equal('page-template page-about');
+            assert.equal(rendered.string, 'page-template page-about');
         });
     });
 
@@ -200,7 +202,7 @@ describe('{{body_class}} helper', function () {
                 {relativeUrl: '/my-awesome-post/', post: {tags: [{slug: 'foo'}, {slug: 'bar'}]}}
             );
 
-            rendered.string.should.equal('post-template tag-foo tag-bar gh-font-heading-space-grotesk gh-font-body-noto-sans');
+            assert.equal(rendered.string, 'post-template tag-foo tag-bar gh-font-heading-space-grotesk gh-font-body-noto-sans');
         });
 
         it('includes custom font for post when set in settings cache and no preview', function () {
@@ -212,7 +214,7 @@ describe('{{body_class}} helper', function () {
                 {relativeUrl: '/my-awesome-post/', post: {tags: [{slug: 'foo'}, {slug: 'bar'}]}}
             );
 
-            rendered.string.should.equal('post-template tag-foo tag-bar gh-font-heading-space-grotesk gh-font-body-noto-sans');
+            assert.equal(rendered.string, 'post-template tag-foo tag-bar gh-font-heading-space-grotesk gh-font-body-noto-sans');
         });
 
         it('does not include custom font classes when custom fonts are not enabled', function () {
@@ -221,7 +223,7 @@ describe('{{body_class}} helper', function () {
                 {relativeUrl: '/my-awesome-post/', post: {tags: [{slug: 'foo'}, {slug: 'bar'}]}}
             );
 
-            rendered.string.should.equal('post-template tag-foo tag-bar');
+            assert.equal(rendered.string, 'post-template tag-foo tag-bar');
         });
 
         it('includes custom font classes for home page when set in options data object', function () {
@@ -234,7 +236,7 @@ describe('{{body_class}} helper', function () {
                 {relativeUrl: '/'}
             );
 
-            rendered.string.should.equal('home-template gh-font-heading-space-grotesk');
+            assert.equal(rendered.string, 'home-template gh-font-heading-space-grotesk');
         });
 
         it('does not inject custom fonts when preview is set and default font was selected (empty string)', function () {
@@ -251,7 +253,7 @@ describe('{{body_class}} helper', function () {
                 {relativeUrl: '/'}
             );
 
-            rendered.string.should.equal('home-template');
+            assert.equal(rendered.string, 'home-template');
         });
 
         it('can handle preview being set and custom font keys missing', function () {
@@ -265,7 +267,7 @@ describe('{{body_class}} helper', function () {
                 {relativeUrl: '/my-awesome-post/', post: {tags: [{slug: 'foo'}, {slug: 'bar'}]}}
             );
 
-            rendered.string.should.equal('post-template tag-foo tag-bar');
+            assert.equal(rendered.string, 'post-template tag-foo tag-bar');
         });
     });
 });

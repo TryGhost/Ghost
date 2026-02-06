@@ -17,7 +17,9 @@
     "Best": "最多讚",
     "Cancel": "取消",
     "Comment": "留言",
+    "Commenting disabled": "",
     "Complete your profile": "完成您的註冊資訊",
+    "Contact support": "",
     "Delete": "刪除",
     "Deleted": "已刪除",
     "Deleted member": "刪除會員",
@@ -28,6 +30,7 @@
     "edited": "已編輯",
     "Enter your name": "輸入您的稱呼",
     "Expertise": "專業背景",
+    "for more information.": "",
     "Founder @ Acme Inc": "Acme Inc的創辦人",
     "Full-time parent": "全職父母",
     "Head of Marketing at Acme, Inc": "Acme, Inc市場部負責人",
@@ -69,6 +72,8 @@
     "This comment has been hidden.": "該則留言已被隱藏。",
     "This comment has been removed.": "該則留言已被移除。",
     "Upgrade now": "立即升級",
+    "View in admin": "",
     "Yesterday": "昨天",
+    "You can't post comments in this publication.": "",
     "Your request will be sent to the owner of this site.": "您的請求將被發送給網站所有者。"
 }

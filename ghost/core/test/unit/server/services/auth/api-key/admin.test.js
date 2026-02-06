@@ -1,3 +1,5 @@
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../../utils/assertions');
 const errors = require('@tryghost/errors');
 const jwt = require('jsonwebtoken');
 const should = require('should');
@@ -51,7 +53,7 @@ describe('Admin API Key Auth', function () {
         const res = {};
 
         apiKeyAuth.admin.authenticate(req, res, (err) => {
-            should.not.exist(err);
+            assert.equal(err, undefined);
             req.api_key.should.eql(this.fakeApiKey);
             done();
         });
@@ -76,7 +78,7 @@ describe('Admin API Key Auth', function () {
         const res = {};
 
         apiKeyAuth.admin.authenticate(req, res, (err) => {
-            should.not.exist(err);
+            assert.equal(err, undefined);
             req.api_key.should.eql(this.fakeApiKey);
             done();
         });
@@ -101,7 +103,7 @@ describe('Admin API Key Auth', function () {
         const res = {};
 
         apiKeyAuth.admin.authenticate(req, res, (err) => {
-            should.not.exist(err);
+            assert.equal(err, undefined);
             req.api_key.should.eql(this.fakeApiKey);
             done();
         });
@@ -126,10 +128,10 @@ describe('Admin API Key Auth', function () {
         const res = {};
 
         apiKeyAuth.admin.authenticate(req, res, (err) => {
-            should.exist(err);
-            should.equal(err instanceof errors.UnauthorizedError, true);
-            err.code.should.eql('INVALID_JWT');
-            should.not.exist(req.api_key);
+            assertExists(err);
+            assert.equal(err instanceof errors.UnauthorizedError, true);
+            assert.equal(err.code, 'INVALID_JWT');
+            assert.equal(req.api_key, undefined);
             done();
         });
     });
@@ -144,10 +146,10 @@ describe('Admin API Key Auth', function () {
         const res = {};
 
         apiKeyAuth.admin.authenticate(req, res, function next(err) {
-            should.exist(err);
-            should.equal(err instanceof errors.UnauthorizedError, true);
-            err.code.should.eql('INVALID_AUTH_HEADER');
-            should.not.exist(req.api_key);
+            assertExists(err);
+            assert.equal(err instanceof errors.UnauthorizedError, true);
+            assert.equal(err.code, 'INVALID_AUTH_HEADER');
+            assert.equal(req.api_key, undefined);
             done();
         });
     });
@@ -162,10 +164,10 @@ describe('Admin API Key Auth', function () {
         const res = {};
 
         apiKeyAuth.admin.authenticate(req, res, function next(err) {
-            should.exist(err);
-            should.equal(err instanceof errors.BadRequestError, true);
-            err.code.should.eql('INVALID_JWT');
-            should.not.exist(req.api_key);
+            assertExists(err);
+            assert.equal(err instanceof errors.BadRequestError, true);
+            assert.equal(err.code, 'INVALID_JWT');
+            assert.equal(req.api_key, undefined);
             done();
         });
     });
@@ -189,10 +191,10 @@ describe('Admin API Key Auth', function () {
         const res = {};
 
         apiKeyAuth.admin.authenticate(req, res, function next(err) {
-            should.exist(err);
-            should.equal(err instanceof errors.UnauthorizedError, true);
-            err.code.should.eql('UNKNOWN_ADMIN_API_KEY');
-            should.not.exist(req.api_key);
+            assertExists(err);
+            assert.equal(err instanceof errors.UnauthorizedError, true);
+            assert.equal(err.code, 'UNKNOWN_ADMIN_API_KEY');
+            assert.equal(req.api_key, undefined);
             done();
         });
     });
@@ -218,11 +220,11 @@ describe('Admin API Key Auth', function () {
         const res = {};
 
         apiKeyAuth.admin.authenticate(req, res, function next(err) {
-            should.exist(err);
-            should.equal(err instanceof errors.UnauthorizedError, true);
-            err.code.should.eql('INVALID_JWT');
-            err.message.should.match(/jwt expired/);
-            should.not.exist(req.api_key);
+            assertExists(err);
+            assert.equal(err instanceof errors.UnauthorizedError, true);
+            assert.equal(err.code, 'INVALID_JWT');
+            assert.match(err.message, /jwt expired/);
+            assert.equal(req.api_key, undefined);
             done();
         });
     });
@@ -248,11 +250,11 @@ describe('Admin API Key Auth', function () {
         const res = {};
 
         apiKeyAuth.admin.authenticate(req, res, function next(err) {
-            should.exist(err);
-            should.equal(err instanceof errors.UnauthorizedError, true);
-            err.code.should.eql('INVALID_JWT');
-            err.message.should.match(/maxAge exceeded/);
-            should.not.exist(req.api_key);
+            assertExists(err);
+            assert.equal(err instanceof errors.UnauthorizedError, true);
+            assert.equal(err.code, 'INVALID_JWT');
+            assert.match(err.message, /maxAge exceeded/);
+            assert.equal(req.api_key, undefined);
             done();
         });
     });
@@ -278,10 +280,10 @@ describe('Admin API Key Auth', function () {
         this.fakeApiKey.type = 'content';
 
         apiKeyAuth.admin.authenticate(req, res, function next(err) {
-            should.exist(err);
-            should.equal(err instanceof errors.UnauthorizedError, true);
-            err.code.should.eql('INVALID_API_KEY_TYPE');
-            should.not.exist(req.api_key);
+            assertExists(err);
+            assert.equal(err instanceof errors.UnauthorizedError, true);
+            assert.equal(err.code, 'INVALID_API_KEY_TYPE');
+            assert.equal(req.api_key, undefined);
             done();
         });
     });

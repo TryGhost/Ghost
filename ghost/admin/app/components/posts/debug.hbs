@@ -71,8 +71,8 @@
                             <LinkTo @route="member" @model={{failure.member.id}} class="gh-email-debug-member">
                                 <GhMemberAvatar @member={{failure.member.record}} @containerClass="w9 h9 mr3 flex-shrink-0" />
                                 <div>
-                                    <h3 class="ma0 pa0 gh-members-list-name">{{failure.recipient.name}}</h3>
-                                    <p class="ma0 pa0 middarkgrey f8 gh-members-list-email">{{failure.recipient.email}}</p>
+                                    <h3 class="ma0 pa0 gh-members-list-name" title={{failure.recipient.name}}>{{failure.recipient.name}}</h3>
+                                    <p class="ma0 pa0 middarkgrey f8 gh-members-list-email" title={{failure.recipient.email}}>{{failure.recipient.email}}</p>
                                 </div>
                             </LinkTo>
                         {{else}}
@@ -83,8 +83,8 @@
                                     </div>
                                 </figure>
                                 <div>
-                                    <h3 class="ma0 pa0 gh-members-list-name">{{failure.recipient.name}}</h3>
-                                    <p class="ma0 pa0 middarkgrey f8 gh-members-list-email">{{failure.recipient.email}}</p>
+                                    <h3 class="ma0 pa0 gh-members-list-name" title={{failure.recipient.name}}>{{failure.recipient.name}}</h3>
+                                    <p class="ma0 pa0 middarkgrey f8 gh-members-list-email" title={{failure.recipient.email}}>{{failure.recipient.email}}</p>
                                 </div>
                             </div>
                         {{/if}}
@@ -128,8 +128,8 @@
                             <LinkTo @route="member" @model={{failure.member.id}} class="gh-email-debug-member">
                                 <GhMemberAvatar @member={{failure.member.record}} @containerClass="w9 h9 mr3 flex-shrink-0" />
                                 <div>
-                                    <h3 class="ma0 pa0 gh-members-list-name">{{failure.recipient.name}}</h3>
-                                    <p class="ma0 pa0 middarkgrey f8 gh-members-list-email">{{failure.recipient.email}}</p>
+                                    <h3 class="ma0 pa0 gh-members-list-name" title={{failure.recipient.name}}>{{failure.recipient.name}}</h3>
+                                    <p class="ma0 pa0 middarkgrey f8 gh-members-list-email" title={{failure.recipient.email}}>{{failure.recipient.email}}</p>
                                 </div>
                             </LinkTo>
                         {{else}}
@@ -140,8 +140,8 @@
                                     </div>
                                 </figure>
                                 <div>
-                                    <h3 class="ma0 pa0 gh-members-list-name">{{failure.recipient.name}}</h3>
-                                    <p class="ma0 pa0 middarkgrey f8 gh-members-list-email">{{failure.recipient.email}}</p>
+                                    <h3 class="ma0 pa0 gh-members-list-name" title={{failure.recipient.name}}>{{failure.recipient.name}}</h3>
+                                    <p class="ma0 pa0 middarkgrey f8 gh-members-list-email" title={{failure.recipient.email}}>{{failure.recipient.email}}</p>
                                 </div>
                             </div>
                         {{/if}}
@@ -250,8 +250,8 @@
         </tabs.tabPanel>
 
         <tabs.tab>
-            <div class="gh-email-debug-settingstab-icon">{{svg-jar "settings"}}</div>
-            <p><span class="analytics-tab-label">Settings</span></p>
+            <div class="gh-email-debug-overviewtab-icon">{{svg-jar "info"}}</div>
+            <p><span class="analytics-tab-label">Overview</span></p>
         </tabs.tab>
 
         <tabs.tabPanel>
