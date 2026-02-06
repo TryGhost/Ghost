@@ -207,8 +207,8 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
             <SettingGroupContent className="!gap-y-0" columns={1}>
                 <Separator />
                 <EmailSettingRow
-                    description='Email new free members receive when they join your site.'
-                    title='Free members welcome email'
+                    description='Sent to new free members right after they join your site.'
+                    title='Free members'
                 />
                 <EmailPreview
                     automatedEmail={freeEmailForDisplay}
@@ -221,8 +221,8 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 {checkStripeEnabled(settings, config) && (
                     <div className='mt-4'>
                         <EmailSettingRow
-                            description='Sent to new paid members as soon as they start their subscription.'
-                            title='Paid members welcome email'
+                            description='Sent to new paid members right after they start their subscription.'
+                            title='Paid members'
                         />
                         <EmailPreview
                             automatedEmail={paidEmailForDisplay}
