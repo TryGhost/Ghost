@@ -94,7 +94,7 @@ export function setupAdminAPI({adminUrl}: {adminUrl: string}) {
 
             return response;
         },
-        async replies({commentId, afterReplyId, limit, memberUuid}: {commentId: string; afterReplyId?: string; limit?: number, memberUuid?: string}) {
+        async replies({commentId, afterReplyId, limit, memberUuid}: {commentId: string; afterReplyId?: string; limit?: number | 'all', memberUuid?: string}) {
             const params = new URLSearchParams();
 
             if (limit) {

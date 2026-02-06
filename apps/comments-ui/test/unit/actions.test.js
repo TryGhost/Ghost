@@ -10,21 +10,19 @@ describe('Actions', function () {
                     {id: '3'}
                 ]
             };
-            const api = {
-                comments: {
-                    browse: () => Promise.resolve({
-                        comments: [
-                            {id: '2'},
-                            {id: '3'},
-                            {id: '4'}
-                        ],
-                        meta: {
-                            pagination: {}
-                        }
-                    })
-                }
+            const commentApi = {
+                browse: () => Promise.resolve({
+                    comments: [
+                        {id: '2'},
+                        {id: '3'},
+                        {id: '4'}
+                    ],
+                    meta: {
+                        pagination: {}
+                    }
+                })
             };
-            const newState = await Actions.loadMoreComments({state, api, options: {postId: '1'}, order: 'desc'});
+            const newState = await Actions.loadMoreComments({state, commentApi, options: {postId: '1'}, order: 'desc'});
             expect(newState.comments).toEqual([
                 {id: '1'},
                 {id: '2'},

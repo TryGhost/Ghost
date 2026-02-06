@@ -10,6 +10,7 @@ import {Avatar, BlankAvatar} from './avatar';
 import {Comment, OpenCommentForm, useAppContext, useLabs} from '../../app-context';
 import {Transition} from '@headlessui/react';
 import {buildCommentPermalink, findCommentById, formatExplicitTime, getCommentInReplyToSnippet, getMemberNameFromComment} from '../../utils/helpers';
+import {useCommentApi} from '../comment-api-provider';
 import {useRelativeTime} from '../../utils/hooks';
 
 type AnimatedCommentProps = {
@@ -40,7 +41,8 @@ const AnimatedComment: React.FC<AnimatedCommentProps> = ({comment, parent}) => {
 };
 
 export const CommentComponent: React.FC<CommentProps> = ({comment, parent}) => {
-    const {dispatchAction, isAdmin} = useAppContext();
+    const {dispatchAction} = useAppContext();
+    const {isAdmin} = useCommentApi();
     const {showDeletedMessage, showHiddenMessage, showCommentContent} = useCommentVisibility(comment, isAdmin);
 
     const openEditMode = useCallback(() => {
@@ -83,7 +85,8 @@ type PublishedCommentProps = CommentProps & {
     openEditMode: () => void;
 }
 const PublishedComment: React.FC<PublishedCommentProps> = ({comment, parent, openEditMode}) => {
-    const {dispatchAction, openCommentForms, isAdmin, commentIdToHighlight} = useAppContext();
+    const {dispatchAction, openCommentForms, commentIdToHighlight} = useAppContext();
+    const {isAdmin} = useCommentApi();
 
     // Determine if the comment should be displayed with reduced opacity
     const isHidden = isAdmin && comment.status === 'hidden';
@@ -160,7 +163,8 @@ type UnpublishedCommentProps = {
     openEditMode: () => void;
 }
 const UnpublishedComment: React.FC<UnpublishedCommentProps> = ({comment, openEditMode}) => {
-    const {isAdmin, openCommentForms, t} = useAppContext();
+    const {openCommentForms, t} = useAppContext();
+    const {isAdmin} = useCommentApi();
 
     const avatar = (isAdmin && comment.status !== 'deleted')
         ? <Avatar member={comment.member} />
@@ -406,7 +410,8 @@ type CommentMenuProps = {
     className?: string;
 };
 const CommentMenu: React.FC<CommentMenuProps> = ({comment, openReplyForm, highlightReplyButton, openEditMode, className = ''}) => {
-    const {member, t, isMember, isAdmin, isCommentingDisabled} = useAppContext();
+    const {member, t, isMember, isCommentingDisabled} = useAppContext();
+    const {isAdmin} = useCommentApi();
 
     const isPublished = comment.status === 'published';
     const isOwnComment = member && comment.member?.uuid === member?.uuid;

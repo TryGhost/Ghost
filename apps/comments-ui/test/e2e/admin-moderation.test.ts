@@ -44,15 +44,7 @@ test.describe('Admin moderation', async () => {
         });
     }
 
-    test('skips rendering the auth frame with no comments', async ({page}) => {
-        await initializeTest(page);
-
-        const iframeElement = page.locator('iframe[data-frame="admin-auth"]');
-        await expect(iframeElement).toHaveCount(0);
-    });
-
-    test('renders the auth frame when there are comments', async ({page}) => {
-        mockedApi.addComment({html: '<p>This is comment 1</p>'});
+    test('renders the auth frame when admin URL is set', async ({page}) => {
         await initializeTest(page);
 
         const iframeElement = page.locator('iframe[data-frame="admin-auth"]');

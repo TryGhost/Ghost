@@ -1,20 +1,24 @@
 import {Comment, useAppContext, useLabs} from '../../../app-context';
+import {useAdminActions} from '../../admin-actions';
+import {useCommentApi} from '../../comment-api-provider';
 
 type Props = {
     comment: Comment;
     close: () => void;
 };
 const AdminContextMenu: React.FC<Props> = ({comment, close}) => {
-    const {dispatchAction, t, adminUrl} = useAppContext();
+    const {t} = useAppContext();
+    const {adminUrl} = useCommentApi();
     const labs = useLabs();
+    const adminActions = useAdminActions();
 
     const hideComment = () => {
-        dispatchAction('hideComment', comment);
+        adminActions.hideComment(comment.id);
         close();
     };
 
     const showComment = () => {
-        dispatchAction('showComment', comment);
+        adminActions.showComment(comment.id);
         close();
     };
 
