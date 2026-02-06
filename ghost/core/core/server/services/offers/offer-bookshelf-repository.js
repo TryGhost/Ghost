@@ -125,10 +125,9 @@ class OfferBookshelfRepository {
                 redemptionCount: count,
                 redemption_type: json.redemption_type,
                 status: json.active ? 'active' : 'archived',
-                tier: {
-                    id: json.product.id,
-                    name: json.product.name
-                },
+                tier: json.product && json.product.id
+                    ? {id: json.product.id, name: json.product.name}
+                    : null,
                 created_at: json.created_at,
                 last_redeemed: lastRedeemedObject.length > 0 ? lastRedeemedObject[0].created_at : null
             }, null);
@@ -225,7 +224,7 @@ class OfferBookshelfRepository {
             discount_type: offer.type.value === 'fixed' ? 'amount' : offer.type.value,
             discount_amount: offer.amount.value,
             interval: offer.cadence.value,
-            product_id: offer.tier.id,
+            product_id: offer.tier ? offer.tier.id : null,
             duration: offer.duration.value.type,
             duration_in_months: offer.duration.value.type === 'repeating' ? offer.duration.value.months : null,
             currency: offer.currency ? offer.currency.value : null,
