@@ -620,7 +620,7 @@ describe('Acceptance: Editor', function () {
             expect(
                 find('[data-test-breadcrumb]').getAttribute('href'),
                 'breadcrumb link'
-            ).to.equal(`#posts-x`);
+            ).to.equal(`#/posts/analytics/${post.id}`);
         });
 
         it('does not render analytics breadcrumb for a new post', async function () {

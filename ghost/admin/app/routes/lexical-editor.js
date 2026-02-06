@@ -17,13 +17,25 @@ export default AuthenticatedRoute.extend({
     },
 
     setupController(controller, model, transition) {
-        if (transition.from?.name?.startsWith('posts-x') && transition.to?.name !== 'lexical-editor.new') {
-            // Extract the analytics path from window.location.href to preserve the exact tab
-            let currentUrl = window.location.href;
-            // Convert editor URL back to analytics URL and extract just the hash portion
-            let analyticsUrl = currentUrl.replace('/editor/', '/').replace(/\/edit$/, '');
-            let hashMatch = analyticsUrl.match(/#(.+)/);
-            controller.fromAnalytics = hashMatch ? hashMatch[1] : 'posts-x';
+        if (transition.to?.name === 'lexical-editor.new') {
+            return;
+        }
+
+        if (transition.from?.name?.includes('posts-x')) {
+            // Came from post analytics - reconstruct the full analytics URL including tab
+            let postId = transition.from?.parent?.params?.post_id || transition.from?.params?.post_id;
+            if (!postId) {
+                // Fallback: extract post ID from the editor URL hash
+                let hashMatch = window.location.hash.match(/\/editor\/\w+\/([a-f0-9]+)/);
+                postId = hashMatch?.[1] || model?.id;
+            }
+            let sub = transition.from?.params?.sub;
+            controller.fromAnalytics = sub
+                ? `/posts/analytics/${postId}/${sub}`
+                : `/posts/analytics/${postId}`;
+        } else if (transition.from?.name?.includes('stats-x')) {
+            // Came from stats overview
+            controller.fromAnalytics = '/analytics';
         }
     },
 
