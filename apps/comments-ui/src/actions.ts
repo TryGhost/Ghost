@@ -409,8 +409,28 @@ function closePopup() {
     };
 }
 
-async function openCommentForm({data: newForm, api, state}: {data: OpenCommentForm, api: GhostApi, state: EditableAppContext}) {
-    let otherStateChanges = {};
+// Sync action: immediately adds a form to openCommentForms state.
+// This is separated from the async openCommentForm so the reply form appears
+// instantly without waiting for loadMoreReplies to complete.
+function addOpenCommentForm({data: newForm, state}: {data: OpenCommentForm, state: EditableAppContext}) {
+    // We want to keep the number of displayed forms to a minimum so when opening a
+    // new form, we close any existing forms that are empty or have had no changes
+    const openFormsAfterAutoclose = state.openCommentForms.filter(form => form.hasUnsavedChanges);
+
+    // avoid multiple forms being open for the same id
+    // (e.g. if "Reply" is hit on two different replies, we don't want two forms open at the bottom of that comment thread)
+    const openFormIndexForId = openFormsAfterAutoclose.findIndex(form => form.id === newForm.id);
+    if (openFormIndexForId > -1) {
+        openFormsAfterAutoclose[openFormIndexForId] = newForm;
+        return {openCommentForms: openFormsAfterAutoclose};
+    } else {
+        return {openCommentForms: [...openFormsAfterAutoclose, newForm]};
+    }
+}
+
+async function openCommentForm({data: newForm, api, state, dispatchAction}: {data: OpenCommentForm, api: GhostApi, state: EditableAppContext, dispatchAction: DispatchActionType}) {
+    // Immediately show the form via sync action (avoids race with initAdminAuth)
+    dispatchAction('addOpenCommentForm', newForm);
 
     // When opening a reply form, we load in all of the replies for the parent comment so that
     // the reply shown after posting appears in the correct place based on ordering
@@ -421,25 +441,11 @@ async function openCommentForm({data: newForm, api, state}: {data: OpenCommentFo
         if (comment) {
             // we don't want the admin api to load reply data for replying to a reply, so we pass isReply: true
             // TODO: why don't we want the admin api to load reply data for replying to a reply?
-            const newCommentsState = await loadMoreReplies({state, api, data: {comment, limit: 'all'}, isReply: true});
-            otherStateChanges = {...otherStateChanges, ...newCommentsState};
+            return await loadMoreReplies({state, api, data: {comment, limit: 'all'}, isReply: true});
         }
     }
 
-    // We want to keep the number of displayed forms to a minimum so when opening a
-    // new form, we close any existing forms that are empty or have had no changes
-    const openFormsAfterAutoclose = state.openCommentForms.filter(form => form.hasUnsavedChanges);
-
-    // avoid multiple forms being open for the same id
-    // (e.g. if "Reply" is hit on two different replies, we don't want two forms open at the bottom of that comment thread)
-    const openFormIndexForId = openFormsAfterAutoclose.findIndex(form => form.id === newForm.id);
-    if (openFormIndexForId > -1) {
-        openFormsAfterAutoclose[openFormIndexForId] = newForm;
-
-        return {openCommentForms: openFormsAfterAutoclose, ...otherStateChanges};
-    } else {
-        return {openCommentForms: [...openFormsAfterAutoclose, newForm], ...otherStateChanges};
-    };
+    return {};
 }
 
 function setHighlightComment({data: commentId}: {data: string | null}) {
@@ -489,6 +495,7 @@ function setScrollTarget({data: commentId}: {data: string | null}) {
 export const SyncActions = {
     openPopup,
     closePopup,
+    addOpenCommentForm,
     closeCommentForm,
     setCommentFormHasUnsavedChanges,
     setScrollTarget
