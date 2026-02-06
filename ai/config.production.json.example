@@ -1,0 +1,52 @@
+{
+  "url": "https://yourdomain.com",
+  "mail": {
+    "transport": "ses",
+    "from": "noreply@yourdomain.com",
+    "options": {
+      "region": "us-east-1",
+      "accessKeyId": "YOUR_AWS_ACCESS_KEY_ID",
+      "secretAccessKey": "YOUR_AWS_SECRET_ACCESS_KEY"
+    }
+  },
+  "adapters": {
+    "email": {
+      "active": "ses",
+      "ses": {
+        "region": "us-east-1",
+        "accessKeyId": "YOUR_AWS_ACCESS_KEY_ID",
+        "secretAccessKey": "YOUR_AWS_SECRET_ACCESS_KEY",
+        "fromEmail": "noreply@yourdomain.com",
+        "configurationSet": "ses-analytics"
+      }
+    }
+  },
+  "emailAnalytics": {
+    "ses": {
+      "queueUrl": "https://sqs.us-east-1.amazonaws.com/YOUR_ACCOUNT_ID/ses-events-queue",
+      "region": "us-east-1",
+      "accessKeyId": "YOUR_AWS_ACCESS_KEY_ID",
+      "secretAccessKey": "YOUR_AWS_SECRET_ACCESS_KEY"
+    }
+  },
+  "database": {
+    "client": "mysql",
+    "connection": {
+      "host": "localhost",
+      "user": "ghost",
+      "password": "YOUR_DATABASE_PASSWORD",
+      "database": "ghost_production"
+    }
+  },
+  "server": {
+    "host": "0.0.0.0",
+    "port": 2368
+  },
+  "privacy": {
+    "useRpcPing": false,
+    "useUpdateCheck": true
+  },
+  "paths": {
+    "contentPath": "content/"
+  }
+}
