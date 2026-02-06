@@ -127,7 +127,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
 
     if (imageURL) {
         let image = (
-            <div className={imageContainerClassName} style={{
+            <div className={imageContainerClassName} data-testid="image-upload-container" style={{
                 width: (unstyled ? '' : width),
                 height: (unstyled ? '' : height)
             }}>
@@ -142,7 +142,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                         {editButtonContent}
                     </button>
                     }
-                    <button className={deleteButtonClassName} type='button' onClick={onDelete}>
+                    <button className={deleteButtonClassName} data-testid="image-delete-button" type='button' onClick={onDelete}>
                         {deleteButtonContent}
                     </button>
                 </div>
