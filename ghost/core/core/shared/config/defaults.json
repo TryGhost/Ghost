@@ -186,6 +186,12 @@
         },
         "theme": {
             "maxAge": 31536000
+        },
+        "assets": {
+            "contentBasedHash": {
+                "enabled": false,
+                "maxSize": 100000
+            }
         }
     },
     "optimization": {
