@@ -146,7 +146,7 @@ function getAssetUrl(assetPath, hasMinFile) {
     const hashPath = assetPath.includes('#') ? assetPath.slice(0, assetPath.indexOf('#')) : assetPath;
     let hash;
     // Use file-based SHA256 hash if enabled via config (defaults to false for backwards compatibility)
-    if (config.get('caching:assets:contentBasedHash')) {
+    if (config.get('caching:assets:contentBasedHash:enabled')) {
         if (isThemeAsset) {
             // For theme assets, use file-based SHA256 hash
             hash = getThemeAssetHash(hashPath);

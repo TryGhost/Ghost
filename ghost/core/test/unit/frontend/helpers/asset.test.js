@@ -113,7 +113,7 @@ describe('{{asset}} helper', function () {
     describe('with contentBasedHash enabled', function () {
         before(function () {
             configUtils.set({assetHash: 'abc'});
-            configUtils.set({'caching:assets:contentBasedHash': true});
+            configUtils.set({'caching:assets:contentBasedHash:enabled': true});
         });
 
         after(async function () {
