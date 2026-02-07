@@ -13,8 +13,15 @@ const fs = require('fs');
 // This is longer than the legacy 10-char global hash, making it easy to distinguish
 const HASH_LENGTH = 16;
 
+// Maximum cache entries - safeguard against runaway memory usage from bugs
+// 100,000 entries ≈ 25MB worst case, allows even largest themes without restriction
+const MAX_CACHE_SIZE = 100000;
+
 // Cache structure: { filePath: { hash: string, mtimeMs: number } }
 const hashCache = new Map();
+
+// Configurable limit (for testing purposes)
+let maxCacheSize = MAX_CACHE_SIZE;
 
 /**
  * Calculate SHA256 hash of a file's contents
@@ -38,6 +45,11 @@ function getHashForFile(filePath) {
             .update(content)
             .digest('base64url')
             .substring(0, HASH_LENGTH);
+
+        // Clear cache if it exceeds the size limit (safeguard against bugs)
+        if (hashCache.size >= maxCacheSize) {
+            hashCache.clear();
+        }
 
         // Cache the result
         hashCache.set(filePath, {hash, mtimeMs});
@@ -68,8 +80,18 @@ function getCacheSize() {
     return hashCache.size;
 }
 
+/**
+ * Set the maximum cache size (for testing purposes only)
+ * @param {number} size - New maximum size, or null to reset to default
+ */
+function setMaxCacheSize(size) {
+    maxCacheSize = size === null ? MAX_CACHE_SIZE : size;
+}
+
 module.exports = {
     getHashForFile,
     clearCache,
-    getCacheSize
+    getCacheSize,
+    setMaxCacheSize,
+    MAX_CACHE_SIZE
 };
