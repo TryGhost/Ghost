@@ -185,7 +185,7 @@ describe('getAssetUrl', function () {
 
         beforeEach(function () {
             // Enable content-based asset hashing
-            configUtils.set('caching:assets:contentBasedHash', true);
+            configUtils.set('caching:assets:contentBasedHash:enabled', true);
         });
 
         afterEach(function () {
