@@ -124,4 +124,43 @@ describe('Asset Hash Service', function () {
             hash.should.equal(expectedHash);
         });
     });
+
+    describe('cache size limit', function () {
+        afterEach(function () {
+            // Reset to default after each test
+            assetHash.setMaxCacheSize(null);
+        });
+
+        it('should have a reasonable MAX_CACHE_SIZE constant', function () {
+            assetHash.MAX_CACHE_SIZE.should.equal(100000);
+        });
+
+        it('should clear cache when size limit is reached', function () {
+            // Use a small cache size for testing
+            const testCacheSize = 5;
+            assetHash.setMaxCacheSize(testCacheSize);
+
+            // Stub fs operations
+            const statStub = sinon.stub(fs, 'statSync');
+            const readStub = sinon.stub(fs, 'readFileSync');
+
+            // Fill the cache up to the limit
+            for (let i = 0; i < testCacheSize; i++) {
+                statStub.returns({mtimeMs: i});
+                readStub.returns(`content-${i}`);
+                assetHash.getHashForFile(`/fake/path/file-${i}.js`);
+            }
+
+            // Cache should be at max size
+            assetHash.getCacheSize().should.equal(testCacheSize);
+
+            // Adding one more entry should clear the cache and add the new entry
+            statStub.returns({mtimeMs: 999999});
+            readStub.returns('new-content');
+            assetHash.getHashForFile('/fake/path/new-file.js');
+
+            // Cache should now only have the one new entry
+            assetHash.getCacheSize().should.equal(1);
+        });
+    });
 });
