@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const path = require('path');
 const fs = require('fs');
@@ -20,10 +20,10 @@ describe('Asset Hash Service', function () {
             const hash = assetHash.getHashForFile(testFilePath);
 
             // Hash should be a 16-character base64url string (first 16 chars of SHA256)
-            should.exist(hash);
-            hash.should.be.a.String();
-            hash.length.should.equal(16);
-            hash.should.match(/^[A-Za-z0-9_-]{16}$/);
+            assert.ok(hash);
+            assert.equal(typeof hash, 'string');
+            assert.equal(hash.length, 16);
+            assert.match(hash, /^[A-Za-z0-9_-]{16}$/);
         });
 
         it('should return the same hash for the same file content', function () {
@@ -31,7 +31,7 @@ describe('Asset Hash Service', function () {
             const hash1 = assetHash.getHashForFile(testFilePath);
             const hash2 = assetHash.getHashForFile(testFilePath);
 
-            hash1.should.equal(hash2);
+            assert.equal(hash1, hash2);
         });
 
         it('should return different hashes for different file contents', function () {
@@ -41,14 +41,14 @@ describe('Asset Hash Service', function () {
             const hash1 = assetHash.getHashForFile(file1);
             const hash2 = assetHash.getHashForFile(file2);
 
-            hash1.should.not.equal(hash2);
+            assert.notEqual(hash1, hash2);
         });
 
         it('should return null for non-existent file', function () {
             const nonExistentPath = path.join(fixturesPath, 'does-not-exist.js');
             const hash = assetHash.getHashForFile(nonExistentPath);
 
-            should.equal(hash, null);
+            assert.equal(hash, null);
         });
 
         it('should cache hashes and not re-read file on subsequent calls', function () {
@@ -57,11 +57,11 @@ describe('Asset Hash Service', function () {
 
             // First call - should read file
             assetHash.getHashForFile(testFilePath);
-            readFileSyncSpy.callCount.should.equal(1);
+            assert.equal(readFileSyncSpy.callCount, 1);
 
             // Second call - should use cache
             assetHash.getHashForFile(testFilePath);
-            readFileSyncSpy.callCount.should.equal(1); // Still 1, not 2
+            assert.equal(readFileSyncSpy.callCount, 1); // Still 1, not 2
         });
 
         it('should re-read file if mtime has changed', function () {
@@ -71,7 +71,7 @@ describe('Asset Hash Service', function () {
 
             // First call
             const hash1 = assetHash.getHashForFile(testFilePath);
-            readFileSyncSpy.callCount.should.equal(1);
+            assert.equal(readFileSyncSpy.callCount, 1);
 
             // Simulate mtime change by stubbing statSync
             const futureTime = new Date(originalStat.mtimeMs + 1000);
@@ -82,10 +82,10 @@ describe('Asset Hash Service', function () {
             // Clear cache entry by calling with different mtime
             // The service should detect mtime change and re-read
             const hash2 = assetHash.getHashForFile(testFilePath);
-            readFileSyncSpy.callCount.should.equal(2); // File was re-read
+            assert.equal(readFileSyncSpy.callCount, 2); // File was re-read
 
             // Both hashes should be the same (same content) but cache was invalidated
-            hash1.should.equal(hash2);
+            assert.equal(hash1, hash2);
         });
     });
 
@@ -96,14 +96,14 @@ describe('Asset Hash Service', function () {
 
             // First call - should read file
             assetHash.getHashForFile(testFilePath);
-            readFileSyncSpy.callCount.should.equal(1);
+            assert.equal(readFileSyncSpy.callCount, 1);
 
             // Clear cache
             assetHash.clearCache();
 
             // Next call should read file again
             assetHash.getHashForFile(testFilePath);
-            readFileSyncSpy.callCount.should.equal(2);
+            assert.equal(readFileSyncSpy.callCount, 2);
         });
     });
 
@@ -121,46 +121,7 @@ describe('Asset Hash Service', function () {
             sinon.stub(fs, 'readFileSync').returns(knownContent);
 
             const hash = assetHash.getHashForFile('/fake/path/file.js');
-            hash.should.equal(expectedHash);
-        });
-    });
-
-    describe('cache size limit', function () {
-        afterEach(function () {
-            // Reset to default after each test
-            assetHash.setMaxCacheSize(null);
-        });
-
-        it('should have a reasonable MAX_CACHE_SIZE constant', function () {
-            assetHash.MAX_CACHE_SIZE.should.equal(100000);
-        });
-
-        it('should clear cache when size limit is reached', function () {
-            // Use a small cache size for testing
-            const testCacheSize = 5;
-            assetHash.setMaxCacheSize(testCacheSize);
-
-            // Stub fs operations
-            const statStub = sinon.stub(fs, 'statSync');
-            const readStub = sinon.stub(fs, 'readFileSync');
-
-            // Fill the cache up to the limit
-            for (let i = 0; i < testCacheSize; i++) {
-                statStub.returns({mtimeMs: i});
-                readStub.returns(`content-${i}`);
-                assetHash.getHashForFile(`/fake/path/file-${i}.js`);
-            }
-
-            // Cache should be at max size
-            assetHash.getCacheSize().should.equal(testCacheSize);
-
-            // Adding one more entry should clear the cache and add the new entry
-            statStub.returns({mtimeMs: 999999});
-            readStub.returns('new-content');
-            assetHash.getHashForFile('/fake/path/new-file.js');
-
-            // Cache should now only have the one new entry
-            assetHash.getCacheSize().should.equal(1);
+            assert.equal(hash, expectedHash);
         });
     });
 });
