@@ -1,3 +1,5 @@
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../utils');
@@ -27,10 +29,10 @@ describe('Tag Model', function () {
     describe('URL transformations without CDN config', function () {
         it('transforms feature_image, og_image, and twitter_image to absolute site URLs', async function () {
             const tag = await models.Tag.findOne({slug: 'tag-with-images'});
-            should.exist(tag, 'Tag with images should exist');
-            tag.get('feature_image').should.equal(`${siteUrl}/content/images/tag-feature.jpg`);
-            tag.get('og_image').should.equal(`${siteUrl}/content/images/tag-og.jpg`);
-            tag.get('twitter_image').should.equal(`${siteUrl}/content/images/tag-twitter.jpg`);
+            assertExists(tag, 'Tag with images should exist');
+            assert.equal(tag.get('feature_image'), `${siteUrl}/content/images/tag-feature.jpg`);
+            assert.equal(tag.get('og_image'), `${siteUrl}/content/images/tag-og.jpg`);
+            assert.equal(tag.get('twitter_image'), `${siteUrl}/content/images/tag-twitter.jpg`);
         });
     });
 
@@ -48,10 +50,10 @@ describe('Tag Model', function () {
 
         it('transforms feature_image, og_image, and twitter_image to absolute site URLs(NOT CDN)', async function () {
             const tag = await models.Tag.findOne({slug: 'tag-with-images'});
-            should.exist(tag, 'Tag with images should exist');
-            tag.get('feature_image').should.equal(`${siteUrl}/content/images/tag-feature.jpg`);
-            tag.get('og_image').should.equal(`${siteUrl}/content/images/tag-og.jpg`);
-            tag.get('twitter_image').should.equal(`${siteUrl}/content/images/tag-twitter.jpg`);
+            assertExists(tag, 'Tag with images should exist');
+            assert.equal(tag.get('feature_image'), `${siteUrl}/content/images/tag-feature.jpg`);
+            assert.equal(tag.get('og_image'), `${siteUrl}/content/images/tag-og.jpg`);
+            assert.equal(tag.get('twitter_image'), `${siteUrl}/content/images/tag-twitter.jpg`);
         });
     });
 });

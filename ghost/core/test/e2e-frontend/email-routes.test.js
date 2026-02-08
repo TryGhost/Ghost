@@ -2,6 +2,8 @@
 // As it stands, these tests depend on the database, and as such are integration tests.
 // Mocking out the models to not touch the DB would turn these into unit tests, and should probably be done in future,
 // But then again testing real code, rather than mock code, might be more useful...
+const assert = require('node:assert/strict');
+const {assertExists} = require('../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 const supertest = require('supertest');
@@ -45,12 +47,12 @@ describe('Frontend Routing: Email Routes', function () {
 
         const $ = cheerio.load(res.text);
 
-        $('title').text().should.equal('I am visible through email route!');
+        assert.equal($('title').text(), 'I am visible through email route!');
 
-        should.not.exist(res.headers['x-cache-invalidate']);
-        should.not.exist(res.headers['X-CSRF-Token']);
-        should.not.exist(res.headers['set-cookie']);
-        should.exist(res.headers.date);
+        assert.equal(res.headers['x-cache-invalidate'], undefined);
+        assert.equal(res.headers['X-CSRF-Token'], undefined);
+        assert.equal(res.headers['set-cookie'], undefined);
+        assertExists(res.headers.date);
     });
 
     it('404s for draft email only post', function () {

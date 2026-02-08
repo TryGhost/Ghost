@@ -249,15 +249,15 @@ describe('Email Preview API', function () {
                 .expectStatus(200)
                 .expect(({body}) => {
                     const html = body.email_previews[0].html;
-                    html.should.containEql(`${siteUrl}/content/images/feature.jpg`);
-                    html.should.containEql(`${siteUrl}/content/images/inline.jpg`);
-                    html.should.containEql(`${siteUrl}/content/images/gallery-1.jpg`);
-                    html.should.containEql(`${siteUrl}/content/images/video-thumb.jpg`);
-                    html.should.containEql(`${siteUrl}/content/images/audio-thumb.jpg`);
-                    html.should.containEql(`${siteUrl}/content/images/snippet-inline.jpg`);
-                    html.should.containEql(`${siteUrl}/content/images/snippet-video-thumb.jpg`);
-                    html.should.containEql(`${siteUrl}/content/images/snippet-audio-thumb.jpg`);
-                    html.should.not.containEql('__GHOST_URL__');
+                    assert(html.includes(`${siteUrl}/content/images/feature.jpg`));
+                    assert(html.includes(`${siteUrl}/content/images/inline.jpg`));
+                    assert(html.includes(`${siteUrl}/content/images/gallery-1.jpg`));
+                    assert(html.includes(`${siteUrl}/content/images/video-thumb.jpg`));
+                    assert(html.includes(`${siteUrl}/content/images/audio-thumb.jpg`));
+                    assert(html.includes(`${siteUrl}/content/images/snippet-inline.jpg`));
+                    assert(html.includes(`${siteUrl}/content/images/snippet-video-thumb.jpg`));
+                    assert(html.includes(`${siteUrl}/content/images/snippet-audio-thumb.jpg`));
+                    assert(!html.includes('__GHOST_URL__'));
                 });
         });
 
@@ -270,15 +270,15 @@ describe('Email Preview API', function () {
                 .expectStatus(200)
                 .expect(({body}) => {
                     const html = body.email_previews[0].html;
-                    html.should.containEql(`${siteUrl}/content/images/feature.jpg`);
-                    html.should.containEql(`${siteUrl}/content/images/inline.jpg`);
-                    html.should.containEql(`${siteUrl}/content/images/gallery-1.jpg`);
-                    html.should.containEql(`${siteUrl}/content/images/video-thumb.jpg`);
-                    html.should.containEql(`${siteUrl}/content/images/audio-thumb.jpg`);
-                    html.should.containEql(`${siteUrl}/content/images/snippet-inline.jpg`);
-                    html.should.containEql(`${siteUrl}/content/images/snippet-video-thumb.jpg`);
-                    html.should.containEql(`${siteUrl}/content/images/snippet-audio-thumb.jpg`);
-                    html.should.not.containEql('__GHOST_URL__');
+                    assert(html.includes(`${siteUrl}/content/images/feature.jpg`));
+                    assert(html.includes(`${siteUrl}/content/images/inline.jpg`));
+                    assert(html.includes(`${siteUrl}/content/images/gallery-1.jpg`));
+                    assert(html.includes(`${siteUrl}/content/images/video-thumb.jpg`));
+                    assert(html.includes(`${siteUrl}/content/images/audio-thumb.jpg`));
+                    assert(html.includes(`${siteUrl}/content/images/snippet-inline.jpg`));
+                    assert(html.includes(`${siteUrl}/content/images/snippet-video-thumb.jpg`));
+                    assert(html.includes(`${siteUrl}/content/images/snippet-audio-thumb.jpg`));
+                    assert(!html.includes('__GHOST_URL__'));
                 });
         });
 
@@ -296,15 +296,15 @@ describe('Email Preview API', function () {
                 .expectStatus(200)
                 .expect(({body}) => {
                     const html = body.email_previews[0].html;
-                    html.should.containEql(`${siteUrl}/content/images/feature.jpg`);
-                    html.should.containEql(`${siteUrl}/content/images/inline.jpg`);
-                    html.should.containEql(`${siteUrl}/content/images/gallery-1.jpg`);
-                    html.should.containEql(`${siteUrl}/content/images/video-thumb.jpg`);
-                    html.should.containEql(`${siteUrl}/content/images/audio-thumb.jpg`);
-                    html.should.containEql(`${siteUrl}/content/images/snippet-inline.jpg`);
-                    html.should.containEql(`${siteUrl}/content/images/snippet-video-thumb.jpg`);
-                    html.should.containEql(`${siteUrl}/content/images/snippet-audio-thumb.jpg`);
-                    html.should.not.containEql('__GHOST_URL__');
+                    assert(html.includes(`${siteUrl}/content/images/feature.jpg`));
+                    assert(html.includes(`${siteUrl}/content/images/inline.jpg`));
+                    assert(html.includes(`${siteUrl}/content/images/gallery-1.jpg`));
+                    assert(html.includes(`${siteUrl}/content/images/video-thumb.jpg`));
+                    assert(html.includes(`${siteUrl}/content/images/audio-thumb.jpg`));
+                    assert(html.includes(`${siteUrl}/content/images/snippet-inline.jpg`));
+                    assert(html.includes(`${siteUrl}/content/images/snippet-video-thumb.jpg`));
+                    assert(html.includes(`${siteUrl}/content/images/snippet-audio-thumb.jpg`));
+                    assert(!html.includes('__GHOST_URL__'));
                 });
         });
 
@@ -322,15 +322,15 @@ describe('Email Preview API', function () {
                 .expectStatus(200)
                 .expect(({body}) => {
                     const html = body.email_previews[0].html;
-                    html.should.containEql(`${siteUrl}/content/images/feature.jpg`);
-                    html.should.containEql(`${siteUrl}/content/images/inline.jpg`);
-                    html.should.containEql(`${siteUrl}/content/images/gallery-1.jpg`);
-                    html.should.containEql(`${siteUrl}/content/images/video-thumb.jpg`);
-                    html.should.containEql(`${siteUrl}/content/images/audio-thumb.jpg`);
-                    html.should.containEql(`${siteUrl}/content/images/snippet-inline.jpg`);
-                    html.should.containEql(`${siteUrl}/content/images/snippet-video-thumb.jpg`);
-                    html.should.containEql(`${siteUrl}/content/images/snippet-audio-thumb.jpg`);
-                    html.should.not.containEql('__GHOST_URL__');
+                    assert(html.includes(`${siteUrl}/content/images/feature.jpg`));
+                    assert(html.includes(`${siteUrl}/content/images/inline.jpg`));
+                    assert(html.includes(`${siteUrl}/content/images/gallery-1.jpg`));
+                    assert(html.includes(`${siteUrl}/content/images/video-thumb.jpg`));
+                    assert(html.includes(`${siteUrl}/content/images/audio-thumb.jpg`));
+                    assert(html.includes(`${siteUrl}/content/images/snippet-inline.jpg`));
+                    assert(html.includes(`${siteUrl}/content/images/snippet-video-thumb.jpg`));
+                    assert(html.includes(`${siteUrl}/content/images/snippet-audio-thumb.jpg`));
+                    assert(!html.includes('__GHOST_URL__'));
                 });
         });
     });

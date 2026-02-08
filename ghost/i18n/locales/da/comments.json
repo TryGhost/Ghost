@@ -17,7 +17,9 @@
     "Best": "",
     "Cancel": "Annuller",
     "Comment": "Kommentér",
+    "Commenting disabled": "",
     "Complete your profile": "Færdiggør din profil",
+    "Contact support": "",
     "Delete": "Slet",
     "Deleted": "Slettet",
     "Deleted member": "Slettet medlem",
@@ -28,6 +30,7 @@
     "edited": "redigeret",
     "Enter your name": "Indtast dit navn",
     "Expertise": "Ekspertise",
+    "for more information.": "",
     "Founder @ Acme Inc": "Grundlægger @ Acme Inc",
     "Full-time parent": "Forældre på fuld tid",
     "Head of Marketing at Acme, Inc": "Chef for marking hos Acme, Inc",
@@ -69,6 +72,8 @@
     "This comment has been hidden.": "Denne kommentar er blevet skjult.",
     "This comment has been removed.": "Denne kommentar er blevet fjernet.",
     "Upgrade now": "Opgrader nu",
+    "View in admin": "",
     "Yesterday": "I går",
+    "You can't post comments in this publication.": "",
     "Your request will be sent to the owner of this site.": "Din anmodning vil blive sendt til ejeren af dette site."
 }

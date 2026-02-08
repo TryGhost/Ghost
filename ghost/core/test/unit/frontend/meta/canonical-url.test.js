@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const rewire = require('rewire');
 const urlUtils = require('../../../../core/shared/url-utils');
@@ -30,32 +31,32 @@ describe('getCanonicalUrl', function () {
         getUrlStub.withArgs(post, false).returns('/post-url/');
         urlJoinStub.withArgs('http://localhost:9999', '/post-url/').returns('canonical url');
 
-        getCanonicalUrl(post).should.eql('canonical url');
+        assert.equal(getCanonicalUrl(post), 'canonical url');
 
-        urlJoinStub.calledOnce.should.be.true();
-        urlForStub.calledOnce.should.be.true();
-        getUrlStub.calledOnce.should.be.true();
+        assert.equal(urlJoinStub.calledOnce, true);
+        assert.equal(urlForStub.calledOnce, true);
+        assert.equal(getUrlStub.calledOnce, true);
     });
 
     it('should return canonical url field if present', function () {
         const post = testUtils.DataGenerator.forKnex.createPost({canonical_url: 'https://example.com/canonical'});
 
-        getCanonicalUrl({
+        assert.equal(getCanonicalUrl({
             context: ['post'],
             post: post
-        }).should.eql('https://example.com/canonical');
+        }), 'https://example.com/canonical');
 
-        getUrlStub.called.should.equal(false);
+        assert.equal(getUrlStub.called, false);
     });
 
     it('should return home if empty secure data', function () {
         getUrlStub.withArgs({secure: true}, false).returns('/');
         urlJoinStub.withArgs('http://localhost:9999', '/').returns('canonical url');
 
-        getCanonicalUrl({secure: true}).should.eql('canonical url');
+        assert.equal(getCanonicalUrl({secure: true}), 'canonical url');
 
-        urlJoinStub.calledOnce.should.be.true();
-        urlForStub.calledOnce.should.be.true();
-        getUrlStub.calledOnce.should.be.true();
+        assert.equal(urlJoinStub.calledOnce, true);
+        assert.equal(urlForStub.calledOnce, true);
+        assert.equal(getUrlStub.calledOnce, true);
     });
 });

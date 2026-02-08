@@ -220,6 +220,17 @@ export const formatDisplayDate = (dateString: string, timezone?: string): string
     return isCurrentYear ? `${day} ${monthName}` : `${day} ${monthName} ${year}`;
 };
 
+/**
+ * Format a plain time in a given time zone.
+ *
+ * @example
+ * formatDisplayTime('2020-04-20T18:09:12.345Z', 'Africa/Lagos')
+ * // 7:09pm
+ */
+export const formatDisplayTime = (dateString: string, timezone: string): string => (
+    moment(dateString).tz(timezone).format('h:mma')
+);
+
 // Helper function to format timestamp
 export const formatTimestamp = (timestamp: string) => {
     const date = new Date(timestamp);
@@ -636,7 +647,7 @@ export const getMemberInitials = (member: {name?: string}) => {
     const name = formatMemberName(member);
     const words = name.split(' ');
     if (words.length >= 2) {
-        return (words[0][0] + words[1][0]).toUpperCase();
+        return (words[0][0] + words[words.length - 1][0]).toUpperCase();
     }
     return name.substring(0, 2).toUpperCase();
 };

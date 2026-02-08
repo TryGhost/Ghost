@@ -814,6 +814,10 @@ export const getUpdatedOfferPrice = ({offer, price, useFormatted = false}) => {
     return updatedAmount;
 };
 
+export const isRetentionOffer = ({offer}) => {
+    return offer.redemption_type === 'retention';
+};
+
 export const isActiveOffer = ({site, offer}) => {
     if (offer?.status !== 'active') {
         return false;
@@ -903,7 +907,6 @@ export function getUrlHistory() {
         // Failed to access sessionStorage or something related to that.
         // Log a warning, as this shouldn't happen on a modern browser.
 
-        /* eslint-disable no-console */
         console.warn(`[Portal] Failed to load member URL history:`, error);
     }
 }

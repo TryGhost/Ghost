@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {renderHook} from '@testing-library/react';
 import {setupStatsAppMocks} from '../../utils/test-helpers';

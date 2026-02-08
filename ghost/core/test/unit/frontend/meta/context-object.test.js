@@ -1,3 +1,5 @@
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 const getContextObject = require('../../../../core/frontend/meta/context-object.js');
@@ -9,7 +11,7 @@ describe('getContextObject', function () {
     let contextObject;
 
     it('should be a function', function () {
-        should.exist(getContextObject);
+        assertExists(getContextObject);
     });
 
     it('should return post context object for a post', function () {
@@ -17,7 +19,7 @@ describe('getContextObject', function () {
         context = ['post'];
         contextObject = getContextObject(data, context);
 
-        should.exist(contextObject);
+        assertExists(contextObject);
         contextObject.should.eql(data.post);
     });
 
@@ -26,7 +28,7 @@ describe('getContextObject', function () {
         context = ['page'];
         contextObject = getContextObject(data, context);
 
-        should.exist(contextObject);
+        assertExists(contextObject);
         contextObject.should.eql(data.post);
     });
 
@@ -35,7 +37,7 @@ describe('getContextObject', function () {
         context = ['news', 'page'];
         contextObject = getContextObject(data, context);
 
-        should.exist(contextObject);
+        assertExists(contextObject);
         contextObject.should.eql(data.page);
     });
 
@@ -57,8 +59,8 @@ describe('getContextObject', function () {
             context = ['unknown'];
             contextObject = getContextObject(data, context);
 
-            should.exist(contextObject);
-            contextObject.should.have.property('cover_image', 'test.png');
+            assertExists(contextObject);
+            assert.equal(contextObject.cover_image, 'test.png');
         });
     });
 });

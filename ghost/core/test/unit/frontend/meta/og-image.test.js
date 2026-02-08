@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const getOgImage = require('../../../../core/frontend/meta/og-image');
@@ -31,9 +32,7 @@ describe('getOgImage', function () {
 
         localSettingsCache.cover_image = '';
 
-        should(
-            getOgImage({context: ['home'], home: {}})
-        ).equal(null);
+        assert.equal(getOgImage({context: ['home'], home: {}}), null);
     });
 
     it('has correct fallbacks for context: post', function () {
@@ -55,21 +54,15 @@ describe('getOgImage', function () {
 
         post.feature_image = '';
 
-        should(
-            getOgImage({context: ['post'], post})
-        ).endWith('settings-og.jpg');
+        assert(getOgImage({context: ['post'], post}).endsWith('settings-og.jpg'));
 
         localSettingsCache.og_image = '';
 
-        should(
-            getOgImage({context: ['post'], post})
-        ).endWith('settings-cover.jpg');
+        assert(getOgImage({context: ['post'], post}).endsWith('settings-cover.jpg'));
 
         localSettingsCache.cover_image = '';
 
-        should(
-            getOgImage({context: ['post'], post})
-        ).equal(null);
+        assert.equal(getOgImage({context: ['post'], post}), null);
     });
 
     it('has correct fallbacks for context: page', function () {
@@ -91,21 +84,15 @@ describe('getOgImage', function () {
 
         page.feature_image = '';
 
-        should(
-            getOgImage({context: ['page'], page})
-        ).endWith('settings-og.jpg');
+        assert(getOgImage({context: ['page'], page}).endsWith('settings-og.jpg'));
 
         localSettingsCache.og_image = '';
 
-        should(
-            getOgImage({context: ['page'], page})
-        ).endWith('settings-cover.jpg');
+        assert(getOgImage({context: ['page'], page}).endsWith('settings-cover.jpg'));
 
         localSettingsCache.cover_image = '';
 
-        should(
-            getOgImage({context: ['page'], page})
-        ).equal(null);
+        assert.equal(getOgImage({context: ['page'], page}), null);
     });
 
     it('has correct fallbacks for context: page (legacy format)', function () {
@@ -127,21 +114,15 @@ describe('getOgImage', function () {
 
         post.feature_image = '';
 
-        should(
-            getOgImage({context: ['page'], post})
-        ).endWith('settings-og.jpg');
+        assert(getOgImage({context: ['page'], post}).endsWith('settings-og.jpg'));
 
         localSettingsCache.og_image = '';
 
-        should(
-            getOgImage({context: ['page'], post})
-        ).endWith('settings-cover.jpg');
+        assert(getOgImage({context: ['page'], post}).endsWith('settings-cover.jpg'));
 
         localSettingsCache.cover_image = '';
 
-        should(
-            getOgImage({context: ['page'], post})
-        ).equal(null);
+        assert.equal(getOgImage({context: ['page'], post}), null);
     });
 
     it('has correct fallbacks for context: author', function () {
@@ -157,9 +138,7 @@ describe('getOgImage', function () {
 
         author.cover_image = '';
 
-        should(
-            getOgImage({context: ['author'], author})
-        ).equal(null);
+        assert.equal(getOgImage({context: ['author'], author}), null);
     });
 
     it('has correct fallbacks for context: author_paged', function () {
@@ -175,9 +154,7 @@ describe('getOgImage', function () {
 
         author.cover_image = '';
 
-        should(
-            getOgImage({context: ['author', 'paged'], author})
-        ).equal(null);
+        assert.equal(getOgImage({context: ['author', 'paged'], author}), null);
     });
 
     it('has correct fallbacks for context: tag', function () {
@@ -198,9 +175,7 @@ describe('getOgImage', function () {
 
         localSettingsCache.cover_image = '';
 
-        should(
-            getOgImage({context: ['tag'], tag})
-        ).equal(null);
+        assert.equal(getOgImage({context: ['tag'], tag}), null);
     });
 
     it('has correct fallbacks for context: tag_paged', function () {
@@ -221,8 +196,6 @@ describe('getOgImage', function () {
 
         localSettingsCache.cover_image = '';
 
-        should(
-            getOgImage({context: ['tag', 'paged'], tag})
-        ).equal(null);
+        assert.equal(getOgImage({context: ['tag', 'paged'], tag}), null);
     });
 });

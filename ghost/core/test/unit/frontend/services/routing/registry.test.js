@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const registry = require('../../../../../core/frontend/services/routing/registry');
@@ -16,7 +17,7 @@ describe('UNIT: services/routing/registry', function () {
 
     describe('fn: getRssUrl', function () {
         it('no url available', function () {
-            should.not.exist(registry.getRssUrl());
+            assert.equal(registry.getRssUrl(), null);
         });
 
         it('single collection, no index collection', function () {
@@ -26,7 +27,7 @@ describe('UNIT: services/routing/registry', function () {
                 getRssUrl: sinon.stub().returns('/podcast/rss/')
             });
 
-            registry.getRssUrl().should.eql('/podcast/rss/');
+            assert.equal(registry.getRssUrl(), '/podcast/rss/');
         });
 
         it('single collection, no index collection, rss disabled', function () {
@@ -36,7 +37,7 @@ describe('UNIT: services/routing/registry', function () {
                 getRssUrl: sinon.stub().returns(null)
             });
 
-            should.not.exist(registry.getRssUrl());
+            assert.equal(registry.getRssUrl(), null);
         });
 
         it('index collection', function () {
@@ -52,7 +53,7 @@ describe('UNIT: services/routing/registry', function () {
                 getRssUrl: sinon.stub().returns('/rss/')
             });
 
-            registry.getRssUrl().should.eql('/rss/');
+            assert.equal(registry.getRssUrl(), '/rss/');
         });
 
         it('multiple collections without index collection', function () {
@@ -68,7 +69,7 @@ describe('UNIT: services/routing/registry', function () {
                 getRssUrl: sinon.stub().returns('/podcast/rss/')
             });
 
-            registry.getRssUrl().should.eql('/blog/rss/');
+            assert.equal(registry.getRssUrl(), '/blog/rss/');
         });
 
         it('multiple collections without index, first has RSS disabled', function () {
@@ -84,7 +85,7 @@ describe('UNIT: services/routing/registry', function () {
                 getRssUrl: sinon.stub().returns('/podcast/rss/')
             });
 
-            registry.getRssUrl().should.eql('/podcast/rss/');
+            assert.equal(registry.getRssUrl(), '/podcast/rss/');
         });
 
         it('multiple collections without index, all have RSS disabled', function () {
@@ -100,7 +101,7 @@ describe('UNIT: services/routing/registry', function () {
                 getRssUrl: sinon.stub().returns(null)
             });
 
-            should.not.exist(registry.getRssUrl());
+            assert.equal(registry.getRssUrl(), null);
         });
     });
 });

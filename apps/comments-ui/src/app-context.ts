@@ -9,7 +9,8 @@ export type Member = {
     uuid: string,
     name: string,
     avatar_image: string,
-    expertise: string
+    expertise: string,
+    can_comment?: boolean
 }
 
 export type Comment = {
@@ -86,7 +87,13 @@ export type EditableAppContext = {
     commentsIsLoading?: boolean,
     commentIdToHighlight: string | null,
     commentIdToScrollTo: string | null,
-    pageUrl: string
+    pageUrl: string,
+    supportEmail: string | null,
+    isMember: boolean,
+    isAdmin: boolean,
+    isPaidOnly: boolean,
+    hasRequiredTier: boolean,
+    isCommentingDisabled: boolean
 }
 
 export type TranslationFunction = (key: string, replacements?: Record<string, string | number>) => string;

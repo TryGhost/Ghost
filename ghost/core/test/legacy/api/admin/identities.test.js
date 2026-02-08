@@ -1,3 +1,5 @@
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../utils/assertions');
 const should = require('should');
 const supertest = require('supertest');
 const jwt = require('jsonwebtoken');
@@ -48,10 +50,10 @@ describe('Identities API', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200)
                 .then((res) => {
-                    should.not.exist(res.headers['x-cache-invalidate']);
+                    assert.equal(res.headers['x-cache-invalidate'], undefined);
                     const jsonResponse = res.body;
-                    should.exist(jsonResponse);
-                    should.exist(jsonResponse.identities);
+                    assertExists(jsonResponse);
+                    assertExists(jsonResponse.identities);
 
                     identity = jsonResponse.identities[0];
                 })
@@ -59,8 +61,8 @@ describe('Identities API', function () {
                     return verifyJWKS(`${request.app}/ghost/.well-known/jwks.json`, identity.token);
                 })
                 .then((decoded) => {
-                    decoded.sub.should.equal('jbloggs@example.com');
-                    decoded.role.should.equal('Owner');
+                    assert.equal(decoded.sub, 'jbloggs@example.com');
+                    assert.equal(decoded.role, 'Owner');
                 });
         });
     });
@@ -94,10 +96,10 @@ describe('Identities API', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200)
                 .then((res) => {
-                    should.not.exist(res.headers['x-cache-invalidate']);
+                    assert.equal(res.headers['x-cache-invalidate'], undefined);
                     const jsonResponse = res.body;
-                    should.exist(jsonResponse);
-                    should.exist(jsonResponse.identities);
+                    assertExists(jsonResponse);
+                    assertExists(jsonResponse.identities);
 
                     identity = jsonResponse.identities[0];
                 })
@@ -105,8 +107,8 @@ describe('Identities API', function () {
                     return verifyJWKS(`${request.app}/ghost/.well-known/jwks.json`, identity.token);
                 })
                 .then((decoded) => {
-                    decoded.sub.should.equal('admin+1@ghost.org');
-                    decoded.role.should.equal('Administrator');
+                    assert.equal(decoded.sub, 'admin+1@ghost.org');
+                    assert.equal(decoded.role, 'Administrator');
                 });
         });
     });

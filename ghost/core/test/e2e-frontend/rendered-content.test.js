@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const supertest = require('supertest');
 
@@ -29,16 +30,16 @@ describe('Post Rendering', function () {
                 .expect('Content-Type', /html/)
                 .expect(200)
                 .expect((res) => {
-                    res.text.should.containEql(`${siteUrl}/content/images/feature.jpg`);
-                    res.text.should.containEql(`${siteUrl}/content/images/inline.jpg`);
-                    res.text.should.containEql(`${siteUrl}/content/files/document.pdf`);
-                    res.text.should.containEql(`${siteUrl}/content/media/video.mp4`);
-                    res.text.should.containEql(`${siteUrl}/content/media/audio.mp3`);
-                    res.text.should.containEql(`${siteUrl}/content/images/snippet-inline.jpg`);
-                    res.text.should.containEql(`${siteUrl}/content/files/snippet-document.pdf`);
-                    res.text.should.containEql(`${siteUrl}/content/media/snippet-video.mp4`);
-                    res.text.should.containEql(`${siteUrl}/content/media/snippet-audio.mp3`);
-                    res.text.should.not.containEql('__GHOST_URL__');
+                    assert(res.text.includes(`${siteUrl}/content/images/feature.jpg`));
+                    assert(res.text.includes(`${siteUrl}/content/images/inline.jpg`));
+                    assert(res.text.includes(`${siteUrl}/content/files/document.pdf`));
+                    assert(res.text.includes(`${siteUrl}/content/media/video.mp4`));
+                    assert(res.text.includes(`${siteUrl}/content/media/audio.mp3`));
+                    assert(res.text.includes(`${siteUrl}/content/images/snippet-inline.jpg`));
+                    assert(res.text.includes(`${siteUrl}/content/files/snippet-document.pdf`));
+                    assert(res.text.includes(`${siteUrl}/content/media/snippet-video.mp4`));
+                    assert(res.text.includes(`${siteUrl}/content/media/snippet-audio.mp3`));
+                    assert(!res.text.includes('__GHOST_URL__'));
                 });
         });
 
@@ -47,16 +48,16 @@ describe('Post Rendering', function () {
                 .expect('Content-Type', /html/)
                 .expect(200)
                 .expect((res) => {
-                    res.text.should.containEql(`${siteUrl}/content/images/feature.jpg`);
-                    res.text.should.containEql(`${siteUrl}/content/images/inline.jpg`);
-                    res.text.should.containEql(`${siteUrl}/content/files/document.pdf`);
-                    res.text.should.containEql(`${siteUrl}/content/media/video.mp4`);
-                    res.text.should.containEql(`${siteUrl}/content/media/audio.mp3`);
-                    res.text.should.containEql(`${siteUrl}/content/images/snippet-inline.jpg`);
-                    res.text.should.containEql(`${siteUrl}/content/files/snippet-document.pdf`);
-                    res.text.should.containEql(`${siteUrl}/content/media/snippet-video.mp4`);
-                    res.text.should.containEql(`${siteUrl}/content/media/snippet-audio.mp3`);
-                    res.text.should.not.containEql('__GHOST_URL__');
+                    assert(res.text.includes(`${siteUrl}/content/images/feature.jpg`));
+                    assert(res.text.includes(`${siteUrl}/content/images/inline.jpg`));
+                    assert(res.text.includes(`${siteUrl}/content/files/document.pdf`));
+                    assert(res.text.includes(`${siteUrl}/content/media/video.mp4`));
+                    assert(res.text.includes(`${siteUrl}/content/media/audio.mp3`));
+                    assert(res.text.includes(`${siteUrl}/content/images/snippet-inline.jpg`));
+                    assert(res.text.includes(`${siteUrl}/content/files/snippet-document.pdf`));
+                    assert(res.text.includes(`${siteUrl}/content/media/snippet-video.mp4`));
+                    assert(res.text.includes(`${siteUrl}/content/media/snippet-audio.mp3`));
+                    assert(!res.text.includes('__GHOST_URL__'));
                 });
         });
 
@@ -70,16 +71,16 @@ describe('Post Rendering', function () {
                 .expect('Content-Type', /html/)
                 .expect(200)
                 .expect((res) => {
-                    res.text.should.containEql(`${cdnUrl}/content/files/document.pdf`);
-                    res.text.should.containEql(`${cdnUrl}/content/media/video.mp4`);
-                    res.text.should.containEql(`${cdnUrl}/content/media/audio.mp3`);
-                    res.text.should.containEql(`${cdnUrl}/content/files/snippet-document.pdf`);
-                    res.text.should.containEql(`${cdnUrl}/content/media/snippet-video.mp4`);
-                    res.text.should.containEql(`${cdnUrl}/content/media/snippet-audio.mp3`);
-                    res.text.should.containEql(`${siteUrl}/content/images/feature.jpg`);
-                    res.text.should.containEql(`${siteUrl}/content/images/inline.jpg`);
-                    res.text.should.containEql(`${siteUrl}/content/images/snippet-inline.jpg`);
-                    res.text.should.not.containEql('__GHOST_URL__');
+                    assert(res.text.includes(`${cdnUrl}/content/files/document.pdf`));
+                    assert(res.text.includes(`${cdnUrl}/content/media/video.mp4`));
+                    assert(res.text.includes(`${cdnUrl}/content/media/audio.mp3`));
+                    assert(res.text.includes(`${cdnUrl}/content/files/snippet-document.pdf`));
+                    assert(res.text.includes(`${cdnUrl}/content/media/snippet-video.mp4`));
+                    assert(res.text.includes(`${cdnUrl}/content/media/snippet-audio.mp3`));
+                    assert(res.text.includes(`${siteUrl}/content/images/feature.jpg`));
+                    assert(res.text.includes(`${siteUrl}/content/images/inline.jpg`));
+                    assert(res.text.includes(`${siteUrl}/content/images/snippet-inline.jpg`));
+                    assert(!res.text.includes('__GHOST_URL__'));
                 });
         });
 
@@ -93,16 +94,16 @@ describe('Post Rendering', function () {
                 .expect('Content-Type', /html/)
                 .expect(200)
                 .expect((res) => {
-                    res.text.should.containEql(`${cdnUrl}/content/files/document.pdf`);
-                    res.text.should.containEql(`${cdnUrl}/content/media/video.mp4`);
-                    res.text.should.containEql(`${cdnUrl}/content/media/audio.mp3`);
-                    res.text.should.containEql(`${cdnUrl}/content/files/snippet-document.pdf`);
-                    res.text.should.containEql(`${cdnUrl}/content/media/snippet-video.mp4`);
-                    res.text.should.containEql(`${cdnUrl}/content/media/snippet-audio.mp3`);
-                    res.text.should.containEql(`${siteUrl}/content/images/feature.jpg`);
-                    res.text.should.containEql(`${siteUrl}/content/images/inline.jpg`);
-                    res.text.should.containEql(`${siteUrl}/content/images/snippet-inline.jpg`);
-                    res.text.should.not.containEql('__GHOST_URL__');
+                    assert(res.text.includes(`${cdnUrl}/content/files/document.pdf`));
+                    assert(res.text.includes(`${cdnUrl}/content/media/video.mp4`));
+                    assert(res.text.includes(`${cdnUrl}/content/media/audio.mp3`));
+                    assert(res.text.includes(`${cdnUrl}/content/files/snippet-document.pdf`));
+                    assert(res.text.includes(`${cdnUrl}/content/media/snippet-video.mp4`));
+                    assert(res.text.includes(`${cdnUrl}/content/media/snippet-audio.mp3`));
+                    assert(res.text.includes(`${siteUrl}/content/images/feature.jpg`));
+                    assert(res.text.includes(`${siteUrl}/content/images/inline.jpg`));
+                    assert(res.text.includes(`${siteUrl}/content/images/snippet-inline.jpg`));
+                    assert(!res.text.includes('__GHOST_URL__'));
                 });
         });
     });
@@ -113,16 +114,16 @@ describe('Post Rendering', function () {
                 .expect(200)
                 .expect('Content-Type', 'application/rss+xml; charset=utf-8')
                 .expect((res) => {
-                    res.text.should.containEql(`${siteUrl}/content/images/feature.jpg`);
-                    res.text.should.containEql(`${siteUrl}/content/images/inline.jpg`);
-                    res.text.should.containEql(`${siteUrl}/content/files/document.pdf`);
-                    res.text.should.containEql(`${siteUrl}/content/media/video.mp4`);
-                    res.text.should.containEql(`${siteUrl}/content/media/audio.mp3`);
-                    res.text.should.containEql(`${siteUrl}/content/images/snippet-inline.jpg`);
-                    res.text.should.containEql(`${siteUrl}/content/files/snippet-document.pdf`);
-                    res.text.should.containEql(`${siteUrl}/content/media/snippet-video.mp4`);
-                    res.text.should.containEql(`${siteUrl}/content/media/snippet-audio.mp3`);
-                    res.text.should.not.containEql('__GHOST_URL__');
+                    assert(res.text.includes(`${siteUrl}/content/images/feature.jpg`));
+                    assert(res.text.includes(`${siteUrl}/content/images/inline.jpg`));
+                    assert(res.text.includes(`${siteUrl}/content/files/document.pdf`));
+                    assert(res.text.includes(`${siteUrl}/content/media/video.mp4`));
+                    assert(res.text.includes(`${siteUrl}/content/media/audio.mp3`));
+                    assert(res.text.includes(`${siteUrl}/content/images/snippet-inline.jpg`));
+                    assert(res.text.includes(`${siteUrl}/content/files/snippet-document.pdf`));
+                    assert(res.text.includes(`${siteUrl}/content/media/snippet-video.mp4`));
+                    assert(res.text.includes(`${siteUrl}/content/media/snippet-audio.mp3`));
+                    assert(!res.text.includes('__GHOST_URL__'));
                 });
         });
 
@@ -136,16 +137,16 @@ describe('Post Rendering', function () {
                 .expect(200)
                 .expect('Content-Type', 'application/rss+xml; charset=utf-8')
                 .expect((res) => {
-                    res.text.should.containEql(`${cdnUrl}/content/files/document.pdf`);
-                    res.text.should.containEql(`${cdnUrl}/content/media/video.mp4`);
-                    res.text.should.containEql(`${cdnUrl}/content/media/audio.mp3`);
-                    res.text.should.containEql(`${cdnUrl}/content/files/snippet-document.pdf`);
-                    res.text.should.containEql(`${cdnUrl}/content/media/snippet-video.mp4`);
-                    res.text.should.containEql(`${cdnUrl}/content/media/snippet-audio.mp3`);
-                    res.text.should.containEql(`${siteUrl}/content/images/feature.jpg`);
-                    res.text.should.containEql(`${siteUrl}/content/images/inline.jpg`);
-                    res.text.should.containEql(`${siteUrl}/content/images/snippet-inline.jpg`);
-                    res.text.should.not.containEql('__GHOST_URL__');
+                    assert(res.text.includes(`${cdnUrl}/content/files/document.pdf`));
+                    assert(res.text.includes(`${cdnUrl}/content/media/video.mp4`));
+                    assert(res.text.includes(`${cdnUrl}/content/media/audio.mp3`));
+                    assert(res.text.includes(`${cdnUrl}/content/files/snippet-document.pdf`));
+                    assert(res.text.includes(`${cdnUrl}/content/media/snippet-video.mp4`));
+                    assert(res.text.includes(`${cdnUrl}/content/media/snippet-audio.mp3`));
+                    assert(res.text.includes(`${siteUrl}/content/images/feature.jpg`));
+                    assert(res.text.includes(`${siteUrl}/content/images/inline.jpg`));
+                    assert(res.text.includes(`${siteUrl}/content/images/snippet-inline.jpg`));
+                    assert(!res.text.includes('__GHOST_URL__'));
                 });
         });
     });

@@ -17,7 +17,9 @@
     "Best": "",
     "Cancel": "বাতিল করুন",
     "Comment": "মন্তব্য",
+    "Commenting disabled": "",
     "Complete your profile": "আপনার প্রোফাইল সম্পূর্ণ করুন",
+    "Contact support": "",
     "Delete": "মুছে ফেলুন",
     "Deleted": "",
     "Deleted member": "মুছে ফেলা সদস্য",
@@ -28,6 +30,7 @@
     "edited": "",
     "Enter your name": "আপনার নাম লিখুন",
     "Expertise": "বিশেষজ্ঞতা",
+    "for more information.": "",
     "Founder @ Acme Inc": "প্রতিষ্ঠাতা @ বাংলাদেশ ট্রেড হাব",
     "Full-time parent": "পূর্ণকালীন অভিভাবক",
     "Head of Marketing at Acme, Inc": "মার্কেটিং প্রধান @ বাংলাদেশ ট্রেড হাব",
@@ -69,6 +72,8 @@
     "This comment has been hidden.": "এই মন্তব্য লুকানো হয়েছে।",
     "This comment has been removed.": "এই মন্তব্য মুছে ফেলা হয়েছে।",
     "Upgrade now": "এখনই আপগ্রেড করুন",
+    "View in admin": "",
     "Yesterday": "গতকাল",
+    "You can't post comments in this publication.": "",
     "Your request will be sent to the owner of this site.": "আপনার অনুরোধ সাইটের মালিকের কাছে পাঠানো হবে।"
 }

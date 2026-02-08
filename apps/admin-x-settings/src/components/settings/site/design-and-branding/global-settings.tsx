@@ -255,7 +255,7 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
                         </ImageUpload>
                     </div>
                 </div>
-                <div className='mt-2 flex items-start justify-between'>
+                <div className='mt-2 flex items-start justify-between' data-testid="publication-cover">
                     <div>
                         <div>Publication cover</div>
                         <Hint className='!mt-0 mr-5 max-w-[160px]'>Usually as a large banner image on your index pages</Hint>

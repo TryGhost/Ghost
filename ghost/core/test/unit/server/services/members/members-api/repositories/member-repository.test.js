@@ -5,7 +5,6 @@ const errors = require('@tryghost/errors');
 const DomainEvents = require('@tryghost/domain-events');
 const MemberRepository = require('../../../../../../../core/server/services/members/members-api/repositories/member-repository');
 const {SubscriptionCreatedEvent, OfferRedemptionEvent} = require('../../../../../../../core/shared/events');
-const config = require('../../../../../../../core/shared/config');
 
 const mockOfferRedemption = {
     add: sinon.stub(),
@@ -141,7 +140,7 @@ describe('MemberRepository', function () {
 
                 assert.fail('setComplimentarySubscription should have thrown');
             } catch (err) {
-                productRepository.getDefaultProduct.calledWith({withRelated: ['stripePrices'], transacting: true}).should.be.true();
+                assert.equal(productRepository.getDefaultProduct.calledWith({withRelated: ['stripePrices'], transacting: true}), true);
                 assert.equal(err.message, 'Could not find Product "default"');
             }
         });
@@ -228,7 +227,7 @@ describe('MemberRepository', function () {
                 context: {}
             });
 
-            MemberSubscribeEvent.add.calledTwice.should.be.true();
+            assert.equal(MemberSubscribeEvent.add.calledTwice, true);
         });
     });
 
@@ -318,7 +317,14 @@ describe('MemberRepository', function () {
 
             stripeAPIService = {
                 configured: true,
-                getSubscription: sinon.stub().resolves(subscriptionData)
+                getSubscription: sinon.stub().resolves(subscriptionData),
+                getCustomer: sinon.stub().resolves({
+                    id: 'cus_123',
+                    invoice_settings: {
+                        default_payment_method: null
+                    },
+                    subscriptions: {data: []}
+                })
             };
 
             productRepository = {
@@ -366,8 +372,8 @@ describe('MemberRepository', function () {
                 context: {}
             });
 
-            subscriptionCreatedNotifySpy.calledOnce.should.be.true();
-            offerRedemptionNotifySpy.called.should.be.false();
+            assert.equal(subscriptionCreatedNotifySpy.calledOnce, true);
+            assert.equal(offerRedemptionNotifySpy.called, false);
         });
 
         it('dispatches the offer redemption event for a new member starting a subscription', async function (){
@@ -401,21 +407,21 @@ describe('MemberRepository', function () {
                 context: {}
             });
 
-            subscriptionCreatedNotifySpy.calledOnce.should.be.true();
-            subscriptionCreatedNotifySpy.calledWith(sinon.match((event) => {
+            assert.equal(subscriptionCreatedNotifySpy.calledOnce, true);
+            assert.equal(subscriptionCreatedNotifySpy.calledWith(sinon.match((event) => {
                 if (event.data.offerId === 'offer_123') {
                     return true;
                 }
                 return false;
-            })).should.be.true();
+            })), true);
 
-            offerRedemptionNotifySpy.called.should.be.true();
-            offerRedemptionNotifySpy.calledWith(sinon.match((event) => {
+            assert.equal(offerRedemptionNotifySpy.called, true);
+            assert.equal(offerRedemptionNotifySpy.calledWith(sinon.match((event) => {
                 if (event.data.offerId === 'offer_123') {
                     return true;
                 }
                 return false;
-            })).should.be.true();
+            })), true);
         });
 
         it('dispatches the offer redemption event for an existing member upgrading to a paid subscription', async function (){
@@ -450,15 +456,15 @@ describe('MemberRepository', function () {
                 context: {}
             });
 
-            subscriptionCreatedNotifySpy.calledOnce.should.be.false();
+            assert.equal(subscriptionCreatedNotifySpy.calledOnce, false);
 
-            offerRedemptionNotifySpy.called.should.be.true();
-            offerRedemptionNotifySpy.calledWith(sinon.match((event) => {
+            assert.equal(offerRedemptionNotifySpy.called, true);
+            assert.equal(offerRedemptionNotifySpy.calledWith(sinon.match((event) => {
                 if (event.data.offerId === 'offer_123') {
                     return true;
                 }
                 return false;
-            })).should.be.true();
+            })), true);
         });
 
         it('creates an offer from a Stripe coupon', async function () {
@@ -522,13 +528,13 @@ describe('MemberRepository', function () {
                 context: {}
             });
 
-            offersAPI.ensureOfferForStripeCoupon.calledOnce.should.be.true();
+            assert.equal(offersAPI.ensureOfferForStripeCoupon.calledOnce, true);
             // Verify the coupon, cadence, tier, and options are passed correctly
-            offersAPI.ensureOfferForStripeCoupon.firstCall.args[0].should.deepEqual(stripeCoupon);
-            offersAPI.ensureOfferForStripeCoupon.firstCall.args[1].should.equal('month');
-            offersAPI.ensureOfferForStripeCoupon.firstCall.args[2].should.deepEqual({id: 'tier_1', name: 'Tier One'});
-            offersAPI.ensureOfferForStripeCoupon.firstCall.args[3].transacting.should.equal(transacting);
-            StripeCustomerSubscription.add.firstCall.args[0].offer_id.should.equal('offer_new');
+            assert.deepEqual(offersAPI.ensureOfferForStripeCoupon.firstCall.args[0], stripeCoupon);
+            assert.equal(offersAPI.ensureOfferForStripeCoupon.firstCall.args[1], 'month');
+            assert.deepEqual(offersAPI.ensureOfferForStripeCoupon.firstCall.args[2], {id: 'tier_1', name: 'Tier One'});
+            assert.equal(offersAPI.ensureOfferForStripeCoupon.firstCall.args[3].transacting, transacting);
+            assert.equal(StripeCustomerSubscription.add.firstCall.args[0].offer_id, 'offer_new');
         });
 
         it('sets offer_id to null if Stripe coupon is known to be incompatible with Ghost offers', async function () {
@@ -600,10 +606,10 @@ describe('MemberRepository', function () {
             });
 
             // Verify ensureOfferForStripeCoupon was called
-            offersAPI.ensureOfferForStripeCoupon.calledOnce.should.be.true();
+            assert.equal(offersAPI.ensureOfferForStripeCoupon.calledOnce, true);
 
             // Verify subscription was still created, but without an offer_id
-            StripeCustomerSubscription.add.calledOnce.should.be.true();
+            assert.equal(StripeCustomerSubscription.add.calledOnce, true);
             assert.equal(StripeCustomerSubscription.add.firstCall.args[0].offer_id, null);
         });
 
@@ -680,10 +686,391 @@ describe('MemberRepository', function () {
             );
 
             // Verify ensureOfferForStripeCoupon was called
-            offersAPI.ensureOfferForStripeCoupon.calledOnce.should.be.true();
+            assert.equal(offersAPI.ensureOfferForStripeCoupon.calledOnce, true);
 
             // Verify subscription was NOT created because the error was rethrown
-            StripeCustomerSubscription.add.called.should.be.false();
+            assert.equal(StripeCustomerSubscription.add.called, false);
+        });
+
+        it('persists discount_start and discount_end for a new subscription', async function () {
+            const discountStart = 1768940436;
+            const discountEnd = 1784578836;
+
+            const subscriptionWithDiscount = {
+                ...subscriptionData,
+                discount: {
+                    id: 'di_1SrlPkB8iNXqDnZRX03bQHnQ',
+                    coupon: {
+                        id: 'H4H47PbG',
+                        percent_off: 20,
+                        duration: 'repeating',
+                        duration_in_months: 6
+                    },
+                    start: discountStart,
+                    end: discountEnd
+                }
+            };
+
+            const repo = new MemberRepository({
+                stripeAPIService: {
+                    ...stripeAPIService,
+                    getSubscription: sinon.stub().resolves(subscriptionWithDiscount)
+                },
+                StripeCustomerSubscription,
+                MemberPaidSubscriptionEvent,
+                MemberProductEvent,
+                productRepository,
+                offersAPI,
+                labsService,
+                Member,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            // No existing subscription
+            sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+
+            await repo.linkSubscription({
+                subscription: subscriptionWithDiscount
+            }, {
+                transacting: {
+                    executionPromise: Promise.resolve()
+                },
+                context: {}
+            });
+
+            // Verify discount_start and discount_end are set correctly
+            assert.equal(StripeCustomerSubscription.add.calledOnce, true);
+            const addedSubscriptionData = StripeCustomerSubscription.add.firstCall.args[0];
+
+            assert.ok(addedSubscriptionData.discount_start instanceof Date);
+            assert.ok(addedSubscriptionData.discount_end instanceof Date);
+            assert.equal(addedSubscriptionData.discount_start.getTime(), discountStart * 1000);
+            assert.equal(addedSubscriptionData.discount_end.getTime(), discountEnd * 1000);
+        });
+
+        it('persists discount_start and discount_end for an existing subscription', async function () {
+            const discountStart = 1768940436;
+            const discountEnd = 1784578836;
+
+            const subscriptionWithDiscount = {
+                ...subscriptionData,
+                discount: {
+                    id: 'di_1SrlPkB8iNXqDnZRX03bQHnQ',
+                    coupon: {
+                        id: 'H4H47PbG',
+                        percent_off: 20,
+                        duration: 'repeating',
+                        duration_in_months: 6
+                    },
+                    start: discountStart,
+                    end: discountEnd
+                }
+            };
+
+            const repo = new MemberRepository({
+                stripeAPIService: {
+                    ...stripeAPIService,
+                    getSubscription: sinon.stub().resolves(subscriptionWithDiscount)
+                },
+                StripeCustomerSubscription,
+                MemberPaidSubscriptionEvent,
+                MemberProductEvent,
+                productRepository,
+                offersAPI,
+                labsService,
+                Member,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            // Existing subscription
+            sinon.stub(repo, 'getSubscriptionByStripeID').resolves({
+                get: sinon.stub().withArgs('offer_id').returns(null)
+            });
+
+            await repo.linkSubscription({
+                subscription: subscriptionWithDiscount
+            }, {
+                transacting: {
+                    executionPromise: Promise.resolve()
+                },
+                context: {}
+            });
+
+            // Verify edit was called (not add) since subscription exists
+            assert.equal(StripeCustomerSubscription.add.called, false);
+            assert.equal(StripeCustomerSubscription.edit.calledOnce, true);
+
+            const editedSubscriptionData = StripeCustomerSubscription.edit.firstCall.args[0];
+
+            assert.ok(editedSubscriptionData.discount_start instanceof Date);
+            assert.ok(editedSubscriptionData.discount_end instanceof Date);
+            assert.equal(editedSubscriptionData.discount_start.getTime(), discountStart * 1000);
+            assert.equal(editedSubscriptionData.discount_end.getTime(), discountEnd * 1000);
+        });
+
+        it('nullifies discount_start and discount_end when discount is removed from Stripe subscription', async function () {
+            const repo = new MemberRepository({
+                stripeAPIService,
+                StripeCustomerSubscription,
+                MemberPaidSubscriptionEvent,
+                MemberProductEvent,
+                productRepository,
+                labsService,
+                Member,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+
+            const subscriptionWithNoDiscount = {
+                ...subscriptionData,
+                discount: null
+            };
+
+            await repo.linkSubscription({
+                subscription: subscriptionWithNoDiscount
+            }, {
+                transacting: {
+                    executionPromise: Promise.resolve()
+                },
+                context: {}
+            });
+
+            assert.equal(StripeCustomerSubscription.add.calledOnce, true);
+            const addedSubscriptionData = StripeCustomerSubscription.add.firstCall.args[0];
+
+            assert.equal(addedSubscriptionData.discount_start, null);
+            assert.equal(addedSubscriptionData.discount_end, null);
+        });
+
+        it('falls back to customer default payment method when subscription has none', async function () {
+            const repo = new MemberRepository({
+                stripeAPIService: {
+                    ...stripeAPIService,
+                    getSubscription: sinon.stub().resolves({
+                        ...subscriptionData,
+                        default_payment_method: null
+                    }),
+                    getCustomer: sinon.stub().resolves({
+                        id: 'cus_123',
+                        invoice_settings: {
+                            default_payment_method: 'pm_customer_default'
+                        },
+                        subscriptions: {data: []}
+                    }),
+                    getCardPaymentMethod: sinon.stub().resolves({
+                        id: 'pm_customer_default',
+                        type: 'card',
+                        card: {
+                            last4: '8888'
+                        }
+                    })
+                },
+                StripeCustomerSubscription,
+                MemberPaidSubscriptionEvent,
+                MemberProductEvent,
+                productRepository,
+                labsService,
+                Member,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+
+            await repo.linkSubscription({
+                subscription: subscriptionData
+            }, {
+                transacting: {
+                    executionPromise: Promise.resolve()
+                },
+                context: {}
+            });
+
+            StripeCustomerSubscription.add.calledOnce.should.be.true();
+            const addedData = StripeCustomerSubscription.add.firstCall.args[0];
+            assert.equal(addedData.default_payment_card_last4, '8888');
+        });
+
+        it('sets card last4 to null when neither subscription nor customer has a default payment method', async function () {
+            const repo = new MemberRepository({
+                stripeAPIService: {
+                    ...stripeAPIService,
+                    getSubscription: sinon.stub().resolves({
+                        ...subscriptionData,
+                        default_payment_method: null
+                    }),
+                    getCustomer: sinon.stub().resolves({
+                        id: 'cus_123',
+                        invoice_settings: {
+                            default_payment_method: null
+                        },
+                        subscriptions: {data: []}
+                    })
+                },
+                StripeCustomerSubscription,
+                MemberPaidSubscriptionEvent,
+                MemberProductEvent,
+                productRepository,
+                labsService,
+                Member,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+
+            await repo.linkSubscription({
+                subscription: subscriptionData
+            }, {
+                transacting: {
+                    executionPromise: Promise.resolve()
+                },
+                context: {}
+            });
+
+            StripeCustomerSubscription.add.calledOnce.should.be.true();
+            const addedData = StripeCustomerSubscription.add.firstCall.args[0];
+            assert.equal(addedData.default_payment_card_last4, null);
+        });
+
+        it('uses subscription default payment method when available', async function () {
+            const repo = new MemberRepository({
+                stripeAPIService: {
+                    ...stripeAPIService,
+                    getSubscription: sinon.stub().resolves({
+                        ...subscriptionData,
+                        default_payment_method: 'pm_sub_default'
+                    }),
+                    getCardPaymentMethod: sinon.stub().resolves({
+                        id: 'pm_sub_default',
+                        type: 'card',
+                        card: {
+                            last4: '4242'
+                        }
+                    })
+                },
+                StripeCustomerSubscription,
+                MemberPaidSubscriptionEvent,
+                MemberProductEvent,
+                productRepository,
+                labsService,
+                Member,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+
+            await repo.linkSubscription({
+                subscription: subscriptionData
+            }, {
+                transacting: {
+                    executionPromise: Promise.resolve()
+                },
+                context: {}
+            });
+
+            StripeCustomerSubscription.add.calledOnce.should.be.true();
+            const addedData = StripeCustomerSubscription.add.firstCall.args[0];
+            assert.equal(addedData.default_payment_card_last4, '4242');
+        });
+
+        it('handles expanded customer object on subscription when falling back', async function () {
+            const repo = new MemberRepository({
+                stripeAPIService: {
+                    ...stripeAPIService,
+                    getSubscription: sinon.stub().resolves({
+                        ...subscriptionData,
+                        customer: {id: 'cus_123', object: 'customer'},
+                        default_payment_method: null
+                    }),
+                    getCustomer: sinon.stub().resolves({
+                        id: 'cus_123',
+                        invoice_settings: {
+                            default_payment_method: {id: 'pm_expanded', type: 'card', card: {last4: '1234'}}
+                        },
+                        subscriptions: {data: []}
+                    }),
+                    getCardPaymentMethod: sinon.stub().resolves({
+                        id: 'pm_expanded',
+                        type: 'card',
+                        card: {
+                            last4: '1234'
+                        }
+                    })
+                },
+                StripeCustomerSubscription,
+                MemberPaidSubscriptionEvent,
+                MemberProductEvent,
+                productRepository,
+                labsService,
+                Member,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+
+            await repo.linkSubscription({
+                subscription: {...subscriptionData, customer: {id: 'cus_123', object: 'customer'}}
+            }, {
+                transacting: {
+                    executionPromise: Promise.resolve()
+                },
+                context: {}
+            });
+
+            StripeCustomerSubscription.add.calledOnce.should.be.true();
+            const addedData = StripeCustomerSubscription.add.firstCall.args[0];
+            assert.equal(addedData.default_payment_card_last4, '1234');
+        });
+
+        it('handles discounts with no end date (e.g. forever discounts)', async function () {
+            const discountStart = 1768940436;
+
+            const subscriptionWithForeverDiscount = {
+                ...subscriptionData,
+                discount: {
+                    id: 'di_forever',
+                    coupon: {
+                        id: 'forever_coupon',
+                        percent_off: 20,
+                        duration: 'forever'
+                    },
+                    start: discountStart,
+                    end: null
+                }
+            };
+
+            const repo = new MemberRepository({
+                stripeAPIService: {
+                    ...stripeAPIService,
+                    getSubscription: sinon.stub().resolves(subscriptionWithForeverDiscount)
+                },
+                StripeCustomerSubscription,
+                MemberPaidSubscriptionEvent,
+                MemberProductEvent,
+                productRepository,
+                offersAPI,
+                labsService,
+                Member,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+
+            await repo.linkSubscription({
+                subscription: subscriptionWithForeverDiscount
+            }, {
+                transacting: {
+                    executionPromise: Promise.resolve()
+                },
+                context: {}
+            });
+
+            assert.equal(StripeCustomerSubscription.add.calledOnce, true);
+            const addedSubscriptionData = StripeCustomerSubscription.add.firstCall.args[0];
+
+            assert.ok(addedSubscriptionData.discount_start instanceof Date);
+            assert.equal(addedSubscriptionData.discount_start.getTime(), discountStart * 1000);
+            assert.equal(addedSubscriptionData.discount_end, null);
         });
     });
 
@@ -694,6 +1081,7 @@ describe('MemberRepository', function () {
         let MemberSubscribeEvent;
         let newslettersService;
         let AutomatedEmail;
+        let labsService;
         const oldNodeEnv = process.env.NODE_ENV;
 
         beforeEach(function () {
@@ -755,6 +1143,15 @@ describe('MemberRepository', function () {
                     })
                 })
             };
+
+            labsService = {
+                isSet: sinon.stub().callsFake((flag) => {
+                    if (flag === 'welcomeEmails') {
+                        return true;
+                    }
+                    return false;
+                })
+            };
         });
 
         afterEach(function () {
@@ -762,8 +1159,6 @@ describe('MemberRepository', function () {
         });
 
         it('creates outbox entry for allowed source', async function () {
-            sinon.stub(config, 'get').withArgs('memberWelcomeEmailTestInbox').returns('test-inbox@example.com');
-
             const repo = new MemberRepository({
                 Member,
                 Outbox,
@@ -771,6 +1166,7 @@ describe('MemberRepository', function () {
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
                 AutomatedEmail,
+                labsService,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -787,8 +1183,8 @@ describe('MemberRepository', function () {
             assert.equal(payload.source, 'member');
         });
 
-        it('does NOT create outbox entry when config is not set', async function () {
-            sinon.stub(config, 'get').withArgs('memberWelcomeEmailTestInbox').returns(undefined);
+        it('does NOT create outbox entry when welcomeEmails labs flag is off', async function () {
+            labsService.isSet.withArgs('welcomeEmails').returns(false);
 
             const repo = new MemberRepository({
                 Member,
@@ -797,6 +1193,7 @@ describe('MemberRepository', function () {
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
                 AutomatedEmail,
+                labsService,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -806,8 +1203,6 @@ describe('MemberRepository', function () {
         });
 
         it('does not create outbox entry for disallowed sources', async function () {
-            sinon.stub(config, 'get').withArgs('memberWelcomeEmailTestInbox').returns('test-inbox@example.com');
-
             const repo = new MemberRepository({
                 Member,
                 Outbox,
@@ -815,6 +1210,7 @@ describe('MemberRepository', function () {
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
                 AutomatedEmail,
+                labsService,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -832,8 +1228,6 @@ describe('MemberRepository', function () {
         });
 
         it('includes timestamp in outbox payload', async function () {
-            sinon.stub(config, 'get').withArgs('memberWelcomeEmailTestInbox').returns('test-inbox@example.com');
-
             const repo = new MemberRepository({
                 Member,
                 Outbox,
@@ -841,6 +1235,7 @@ describe('MemberRepository', function () {
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
                 AutomatedEmail,
+                labsService,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -852,8 +1247,6 @@ describe('MemberRepository', function () {
         });
 
         it('passes transaction to outbox entry creation', async function () {
-            sinon.stub(config, 'get').withArgs('memberWelcomeEmailTestInbox').returns('test-inbox@example.com');
-
             const repo = new MemberRepository({
                 Member,
                 Outbox,
@@ -861,6 +1254,7 @@ describe('MemberRepository', function () {
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
                 AutomatedEmail,
+                labsService,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -871,8 +1265,6 @@ describe('MemberRepository', function () {
         });
 
         it('does NOT create outbox entry when welcome email is inactive', async function () {
-            sinon.stub(config, 'get').withArgs('memberWelcomeEmailTestInbox').returns('test-inbox@example.com');
-
             AutomatedEmail.findOne.resolves({
                 get: sinon.stub().callsFake((key) => {
                     const data = {lexical: '{"root":{}}', status: 'inactive'};
@@ -887,6 +1279,7 @@ describe('MemberRepository', function () {
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
                 AutomatedEmail,
+                labsService,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -895,8 +1288,6 @@ describe('MemberRepository', function () {
             sinon.assert.notCalled(Outbox.add);
         });
         it('does NOT create outbox entry when member is signing up for a paid subscription (stripeCustomer is present)', async function () {
-            sinon.stub(config, 'get').withArgs('memberWelcomeEmailTestInbox').returns('test-inbox@example.com');
-
             const StripeCustomer = {
                 upsert: sinon.stub().resolves()
             };
@@ -909,6 +1300,7 @@ describe('MemberRepository', function () {
                 newslettersService,
                 AutomatedEmail,
                 StripeCustomer,
+                labsService,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -949,6 +1341,7 @@ describe('MemberRepository', function () {
         let stripeAPIService;
         let productRepository;
         let AutomatedEmail;
+        let labsService;
         let subscriptionData;
 
         beforeEach(function () {
@@ -1052,7 +1445,14 @@ describe('MemberRepository', function () {
 
             stripeAPIService = {
                 configured: true,
-                getSubscription: sinon.stub().resolves(subscriptionData)
+                getSubscription: sinon.stub().resolves(subscriptionData),
+                getCustomer: sinon.stub().resolves({
+                    id: 'cus_123',
+                    invoice_settings: {
+                        default_payment_method: null
+                    },
+                    subscriptions: {data: []}
+                })
             };
 
             productRepository = {
@@ -1071,6 +1471,15 @@ describe('MemberRepository', function () {
                     })
                 })
             };
+
+            labsService = {
+                isSet: sinon.stub().callsFake((flag) => {
+                    if (flag === 'welcomeEmails') {
+                        return true;
+                    }
+                    return false;
+                })
+            };
         });
 
         afterEach(function () {
@@ -1078,8 +1487,6 @@ describe('MemberRepository', function () {
         });
 
         it('creates outbox entry when member status changes to paid', async function () {
-            sinon.stub(config, 'get').withArgs('memberWelcomeEmailTestInbox').returns('test-inbox@example.com');
-
             Member.edit.resolves({
                 attributes: {status: 'paid'},
                 _previousAttributes: {status: 'free'},
@@ -1099,6 +1506,7 @@ describe('MemberRepository', function () {
                 stripeAPIService,
                 productRepository,
                 AutomatedEmail,
+                labsService,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -1124,8 +1532,8 @@ describe('MemberRepository', function () {
             assert.ok(payload.timestamp);
         });
 
-        it('does NOT create outbox entry when config is not set', async function () {
-            sinon.stub(config, 'get').withArgs('memberWelcomeEmailTestInbox').returns(undefined);
+        it('does NOT create outbox entry when welcomeEmails labs flag is off', async function () {
+            labsService.isSet.withArgs('welcomeEmails').returns(false);
 
             Member.edit.resolves({
                 attributes: {status: 'paid'},
@@ -1146,6 +1554,7 @@ describe('MemberRepository', function () {
                 stripeAPIService,
                 productRepository,
                 AutomatedEmail,
+                labsService,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -1165,8 +1574,6 @@ describe('MemberRepository', function () {
         });
 
         it('does NOT create outbox entry for disallowed sources', async function () {
-            sinon.stub(config, 'get').withArgs('memberWelcomeEmailTestInbox').returns('test-inbox@example.com');
-
             Member.edit.resolves({
                 attributes: {status: 'paid'},
                 _previousAttributes: {status: 'free'},
@@ -1186,6 +1593,7 @@ describe('MemberRepository', function () {
                 stripeAPIService,
                 productRepository,
                 AutomatedEmail,
+                labsService,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -1213,8 +1621,6 @@ describe('MemberRepository', function () {
         });
 
         it('does NOT create outbox entry when paid welcome email is inactive', async function () {
-            sinon.stub(config, 'get').withArgs('memberWelcomeEmailTestInbox').returns('test-inbox@example.com');
-
             Member.edit.resolves({
                 attributes: {status: 'paid'},
                 _previousAttributes: {status: 'free'},
@@ -1241,6 +1647,7 @@ describe('MemberRepository', function () {
                 stripeAPIService,
                 productRepository,
                 AutomatedEmail,
+                labsService,
                 OfferRedemption: mockOfferRedemption
             });
 

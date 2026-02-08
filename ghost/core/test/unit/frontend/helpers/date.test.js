@@ -1,4 +1,5 @@
 const assert = require('assert/strict');
+const {assertExists} = require('../../../utils/assertions');
 const sinon = require('sinon');
 const should = require('should');
 
@@ -52,19 +53,19 @@ describe('{{date}} helper', function () {
         testDates.forEach(function (d) {
             rendered = date.call({published_at: d}, context);
 
-            should.exist(rendered);
-            String(rendered).should.equal(moment(d).tz(timezone).format(format));
+            assertExists(rendered);
+            assert.equal(String(rendered), moment(d).tz(timezone).format(format));
 
             rendered = date.call({}, d, context);
 
-            should.exist(rendered);
-            String(rendered).should.equal(moment(d).tz(timezone).format(format));
+            assertExists(rendered);
+            assert.equal(String(rendered), moment(d).tz(timezone).format(format));
         });
 
         // No date falls back to now
         rendered = date.call({}, context);
-        should.exist(rendered);
-        String(rendered).should.equal(moment().tz(timezone).format(format));
+        assertExists(rendered);
+        assert.equal(String(rendered), moment().tz(timezone).format(format));
     });
 
     it('creates properly localised date strings', function () {
@@ -100,19 +101,19 @@ describe('{{date}} helper', function () {
             testDates.forEach(function (d) {
                 rendered = date.call({published_at: d}, context);
 
-                should.exist(rendered);
-                String(rendered).should.equal(moment(d).tz(timezone).locale(locale).format(format));
+                assertExists(rendered);
+                assert.equal(String(rendered), moment(d).tz(timezone).locale(locale).format(format));
 
                 rendered = date.call({}, d, context);
 
-                should.exist(rendered);
-                String(rendered).should.equal(moment(d).tz(timezone).locale(locale).format(format));
+                assertExists(rendered);
+                assert.equal(String(rendered), moment(d).tz(timezone).locale(locale).format(format));
             });
 
             // No date falls back to now
             rendered = date.call({}, context);
-            should.exist(rendered);
-            String(rendered).should.equal(moment().tz(timezone).locale(locale).format(format));
+            assertExists(rendered);
+            assert.equal(String(rendered), moment().tz(timezone).locale(locale).format(format));
         });
     });
 
@@ -143,19 +144,19 @@ describe('{{date}} helper', function () {
         testDates.forEach(function (d) {
             rendered = date.call({published_at: d}, context);
 
-            should.exist(rendered);
-            String(rendered).should.equal(moment(d).tz(timezone).from(timeNow));
+            assertExists(rendered);
+            assert.equal(String(rendered), moment(d).tz(timezone).from(timeNow));
 
             rendered = date.call({}, d, context);
 
-            should.exist(rendered);
-            String(rendered).should.equal(moment(d).tz(timezone).from(timeNow));
+            assertExists(rendered);
+            assert.equal(String(rendered), moment(d).tz(timezone).from(timeNow));
         });
 
         // No date falls back to now
         rendered = date.call({}, context);
-        should.exist(rendered);
-        String(rendered).should.equal('a few seconds ago');
+        assertExists(rendered);
+        assert.equal(String(rendered), 'a few seconds ago');
     });
 
     it('ignores an invalid date, defaulting to now', function () {
@@ -177,13 +178,13 @@ describe('{{date}} helper', function () {
 
         rendered = date.call({published_at: invalidDate}, context);
 
-        should.exist(rendered);
-        String(rendered).should.equal('a few seconds ago');
+        assertExists(rendered);
+        assert.equal(String(rendered), 'a few seconds ago');
 
         rendered = date.call({}, invalidDate, context);
 
-        should.exist(rendered);
-        String(rendered).should.equal('a few seconds ago');
+        assertExists(rendered);
+        assert.equal(String(rendered), 'a few seconds ago');
     });
 
     it('allows user to override the site\'s locale and timezone', function () {
@@ -201,18 +202,18 @@ describe('{{date}} helper', function () {
 
         // Using the site locale by default, none specified in hash
         const published_at = '2013-12-31T23:58:58.593+02:00';
-        String(date.call({published_at}, context)).should.equal('水, 01 1月 2014 06:58:58 +0900');
+        assert.equal(String(date.call({published_at}, context)), '水, 01 1月 2014 06:58:58 +0900');
 
         // Overriding the site locale and timezone in hash
         context.hash.timezone = 'Europe/Paris';
         context.hash.locale = 'fr-fr';
-        String(date.call({published_at}, context)).should.equal('mar., 31 déc. 2013 22:58:58 +0100');
+        assert.equal(String(date.call({published_at}, context)), 'mar., 31 déc. 2013 22:58:58 +0100');
 
         context.hash.timezone = 'Europe/Moscow';
         context.hash.locale = 'ru-ru';
-        String(date.call({published_at}, context)).should.equal('ср, 01 янв. 2014 01:58:58 +0400');
+        assert.equal(String(date.call({published_at}, context)), 'ср, 01 янв. 2014 01:58:58 +0400');
 
         context.hash.locale = 'en-us';
-        String(date.call({published_at}, context)).should.equal('Wed, 01 Jan 2014 01:58:58 +0400');
+        assert.equal(String(date.call({published_at}, context)), 'Wed, 01 Jan 2014 01:58:58 +0400');
     });
 });

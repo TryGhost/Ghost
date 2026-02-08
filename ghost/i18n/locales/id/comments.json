@@ -17,7 +17,9 @@
     "Best": "",
     "Cancel": "Batal",
     "Comment": "Komentar",
+    "Commenting disabled": "",
     "Complete your profile": "Lengkapi profil Anda",
+    "Contact support": "",
     "Delete": "Hapus",
     "Deleted": "",
     "Deleted member": "Anggota dihapus",
@@ -28,6 +30,7 @@
     "edited": "diedit",
     "Enter your name": "Masukkan nama Anda",
     "Expertise": "Keahlian",
+    "for more information.": "",
     "Founder @ Acme Inc": "Founder @ Acme Inc",
     "Full-time parent": "Orang tua penuh waktu",
     "Head of Marketing at Acme, Inc": "Direktur Pemasaran di Acme, Inc",
@@ -69,6 +72,8 @@
     "This comment has been hidden.": "Komentar ini telah disembunyikan.",
     "This comment has been removed.": "Komentar ini telah dihapus.",
     "Upgrade now": "Daftar sekarang",
+    "View in admin": "",
     "Yesterday": "Kemarin",
+    "You can't post comments in this publication.": "",
     "Your request will be sent to the owner of this site.": "Permintaan Anda akan dikirim kepada pemilik situs ini."
 }

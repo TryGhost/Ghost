@@ -1,3 +1,5 @@
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 const cheerio = require('cheerio');
@@ -58,8 +60,8 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        response.statusCode.should.eql(200);
-                        response.template.should.eql('post');
+                        assert.equal(response.statusCode, 200);
+                        assert.equal(response.template, 'post');
                     });
             });
 
@@ -72,8 +74,8 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        response.statusCode.should.eql(404);
-                        response.template.should.eql('error-404');
+                        assert.equal(response.statusCode, 404);
+                        assert.equal(response.template, 'error-404');
                     });
             });
 
@@ -86,8 +88,8 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        response.statusCode.should.eql(200);
-                        response.template.should.eql('page');
+                        assert.equal(response.statusCode, 200);
+                        assert.equal(response.template, 'page');
                     });
             });
 
@@ -100,12 +102,12 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        response.statusCode.should.eql(200);
-                        response.template.should.eql('author');
+                        assert.equal(response.statusCode, 200);
+                        assert.equal(response.template, 'author');
 
                         const bodyClasses = response.body.match(/<body[^>]*class="([^"]*?)">/)[1].split(' ');
-                        bodyClasses.should.containEql('author-template');
-                        bodyClasses.should.containEql('author-joe-bloggs');
+                        assert(bodyClasses.includes('author-template'));
+                        assert(bodyClasses.includes('author-joe-bloggs'));
                     });
             });
 
@@ -117,12 +119,12 @@ describe('Frontend behavior tests', function () {
                 };
 
                 const response = await localUtils.mockExpress.invoke(app, req);
-                response.statusCode.should.eql(200);
-                response.template.should.eql('tag');
+                assert.equal(response.statusCode, 200);
+                assert.equal(response.template, 'tag');
 
-                postSpy.args[0][0].filter.should.eql('tags:\'bacon\'+tags.visibility:public');
-                postSpy.args[0][0].page.should.eql(1);
-                postSpy.args[0][0].limit.should.eql(2);
+                assert.equal(postSpy.args[0][0].filter, 'tags:\'bacon\'+tags.visibility:public');
+                assert.equal(postSpy.args[0][0].page, 1);
+                assert.equal(postSpy.args[0][0].limit, 2);
             });
 
             it('serve tag rss', function () {
@@ -134,7 +136,7 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        response.statusCode.should.eql(200);
+                        assert.equal(response.statusCode, 200);
                     });
             });
 
@@ -149,17 +151,17 @@ describe('Frontend behavior tests', function () {
                     .then(function (response) {
                         const $ = cheerio.load(response.body);
 
-                        response.statusCode.should.eql(200);
-                        response.template.should.eql('index');
+                        assert.equal(response.statusCode, 200);
+                        assert.equal(response.template, 'index');
 
-                        $('.post-card').length.should.equal(2);
+                        assert.equal($('.post-card').length, 2);
 
-                        should.exist(response.res.locals.context);
-                        should.exist(response.res.locals.version);
-                        should.exist(response.res.locals.safeVersion);
-                        should.exist(response.res.locals.safeVersion);
-                        should.exist(response.res.locals.relativeUrl);
-                        should.exist(response.res.routerOptions);
+                        assertExists(response.res.locals.context);
+                        assertExists(response.res.locals.version);
+                        assertExists(response.res.locals.safeVersion);
+                        assertExists(response.res.locals.safeVersion);
+                        assertExists(response.res.locals.relativeUrl);
+                        assertExists(response.res.routerOptions);
                     });
             });
 
@@ -174,10 +176,10 @@ describe('Frontend behavior tests', function () {
                     .then(function (response) {
                         const $ = cheerio.load(response.body);
 
-                        response.statusCode.should.eql(200);
-                        response.template.should.eql('index');
+                        assert.equal(response.statusCode, 200);
+                        assert.equal(response.template, 'index');
 
-                        $('.post-card').length.should.equal(2);
+                        assert.equal($('.post-card').length, 2);
                     });
             });
 
@@ -190,7 +192,7 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        response.statusCode.should.eql(200);
+                        assert.equal(response.statusCode, 200);
                     });
             });
         });
@@ -206,8 +208,8 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        response.statusCode.should.eql(301);
-                        response.headers.location.should.eql('/prettify-me/');
+                        assert.equal(response.statusCode, 301);
+                        assert.equal(response.headers.location, '/prettify-me/');
                     });
             });
         });
@@ -224,8 +226,8 @@ describe('Frontend behavior tests', function () {
 
                     return localUtils.mockExpress.invoke(app, req)
                         .then(function (response) {
-                            response.statusCode.should.eql(301);
-                            response.headers.location.should.eql('/');
+                            assert.equal(response.statusCode, 301);
+                            assert.equal(response.headers.location, '/');
                         });
                 });
             });
@@ -241,8 +243,8 @@ describe('Frontend behavior tests', function () {
 
                     return localUtils.mockExpress.invoke(app, req)
                         .then(function (response) {
-                            response.statusCode.should.eql(301);
-                            response.headers.location.should.eql('/rss/');
+                            assert.equal(response.statusCode, 301);
+                            assert.equal(response.headers.location, '/rss/');
                         });
                 });
             });
@@ -271,8 +273,8 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        response.statusCode.should.eql(301);
-                        response.headers.location.should.eql('https://example.com/html-ipsum/');
+                        assert.equal(response.statusCode, 301);
+                        assert.equal(response.headers.location, 'https://example.com/html-ipsum/');
                     });
             });
 
@@ -286,8 +288,8 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        response.statusCode.should.eql(301);
-                        response.headers.location.should.eql('https://example.com/html-ipsum/');
+                        assert.equal(response.statusCode, 301);
+                        assert.equal(response.headers.location, 'https://example.com/html-ipsum/');
                     });
             });
         });
@@ -303,8 +305,8 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        response.statusCode.should.eql(301);
-                        response.headers.location.should.eql('https://example.com/favicon.png');
+                        assert.equal(response.statusCode, 301);
+                        assert.equal(response.headers.location, 'https://example.com/favicon.png');
                     });
             });
 
@@ -318,8 +320,8 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        response.statusCode.should.eql(301);
-                        response.headers.location.should.eql('https://example.com/assets/css/main.css');
+                        assert.equal(response.statusCode, 301);
+                        assert.equal(response.headers.location, 'https://example.com/assets/css/main.css');
                     });
             });
         });
@@ -379,8 +381,8 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        response.statusCode.should.eql(200);
-                        response.template.should.eql('home');
+                        assert.equal(response.statusCode, 200);
+                        assert.equal(response.template, 'home');
                     });
             });
 
@@ -393,7 +395,7 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        response.statusCode.should.eql(200);
+                        assert.equal(response.statusCode, 200);
                     });
             });
 
@@ -406,8 +408,8 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        response.statusCode.should.eql(200);
-                        response.template.should.eql('post');
+                        assert.equal(response.statusCode, 200);
+                        assert.equal(response.template, 'post');
                     });
             });
 
@@ -422,10 +424,10 @@ describe('Frontend behavior tests', function () {
                     .then(function (response) {
                         const $ = cheerio.load(response.body);
 
-                        response.statusCode.should.eql(200);
-                        response.template.should.eql('index');
+                        assert.equal(response.statusCode, 200);
+                        assert.equal(response.template, 'index');
 
-                        $('.post-card').length.should.equal(2);
+                        assert.equal($('.post-card').length, 2);
                     });
             });
 
@@ -438,8 +440,8 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        response.statusCode.should.eql(200);
-                        response.template.should.eql('something');
+                        assert.equal(response.statusCode, 200);
+                        assert.equal(response.template, 'something');
                     });
             });
         });
@@ -484,8 +486,8 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        response.statusCode.should.eql(200);
-                        response.template.should.eql('something');
+                        assert.equal(response.statusCode, 200);
+                        assert.equal(response.template, 'something');
                     });
             });
         });
@@ -539,8 +541,8 @@ describe('Frontend behavior tests', function () {
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         // We can't find a post with the slug "featured"
-                        response.statusCode.should.eql(404);
-                        response.template.should.eql('error-404');
+                        assert.equal(response.statusCode, 404);
+                        assert.equal(response.template, 'error-404');
                     });
             });
 
@@ -553,8 +555,8 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        response.statusCode.should.eql(200);
-                        response.template.should.eql('post');
+                        assert.equal(response.statusCode, 200);
+                        assert.equal(response.template, 'post');
                     });
             });
 
@@ -567,8 +569,8 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        response.statusCode.should.eql(404);
-                        response.template.should.eql('error-404');
+                        assert.equal(response.statusCode, 404);
+                        assert.equal(response.template, 'error-404');
                     });
             });
 
@@ -581,8 +583,8 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        response.statusCode.should.eql(404);
-                        response.template.should.eql('error-404');
+                        assert.equal(response.statusCode, 404);
+                        assert.equal(response.template, 'error-404');
                     });
             });
         });
@@ -629,8 +631,8 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        response.statusCode.should.eql(200);
-                        response.template.should.eql('post');
+                        assert.equal(response.statusCode, 200);
+                        assert.equal(response.template, 'post');
                     });
             });
 
@@ -643,8 +645,8 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        response.statusCode.should.eql(404);
-                        response.template.should.eql('error-404');
+                        assert.equal(response.statusCode, 404);
+                        assert.equal(response.template, 'error-404');
                     });
             });
 
@@ -657,8 +659,8 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        response.statusCode.should.eql(200);
-                        response.template.should.eql('page');
+                        assert.equal(response.statusCode, 200);
+                        assert.equal(response.template, 'page');
                     });
             });
         });
@@ -705,8 +707,8 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        response.statusCode.should.eql(200);
-                        response.template.should.eql('post');
+                        assert.equal(response.statusCode, 200);
+                        assert.equal(response.template, 'post');
                     });
             });
 
@@ -719,8 +721,8 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        response.statusCode.should.eql(404);
-                        response.template.should.eql('error-404');
+                        assert.equal(response.statusCode, 404);
+                        assert.equal(response.template, 'error-404');
                     });
             });
 
@@ -733,8 +735,8 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        response.statusCode.should.eql(404);
-                        response.template.should.eql('error-404');
+                        assert.equal(response.statusCode, 404);
+                        assert.equal(response.template, 'error-404');
                     });
             });
 
@@ -747,8 +749,8 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        response.statusCode.should.eql(200);
-                        response.template.should.eql('page');
+                        assert.equal(response.statusCode, 200);
+                        assert.equal(response.template, 'page');
                     });
             });
         });
@@ -852,8 +854,8 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        response.statusCode.should.eql(200);
-                        response.template.should.eql('index');
+                        assert.equal(response.statusCode, 200);
+                        assert.equal(response.template, 'index');
                     });
             });
 
@@ -866,7 +868,7 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        response.statusCode.should.eql(301);
+                        assert.equal(response.statusCode, 301);
                     });
             });
 
@@ -879,8 +881,8 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        response.statusCode.should.eql(200);
-                        response.template.should.eql('index');
+                        assert.equal(response.statusCode, 200);
+                        assert.equal(response.template, 'index');
                     });
             });
 
@@ -893,7 +895,7 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        response.statusCode.should.eql(200);
+                        assert.equal(response.statusCode, 200);
                     });
             });
 
@@ -906,7 +908,7 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        response.statusCode.should.eql(200);
+                        assert.equal(response.statusCode, 200);
                     });
             });
         });
@@ -954,8 +956,8 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        response.statusCode.should.eql(200);
-                        response.template.should.eql('default');
+                        assert.equal(response.statusCode, 200);
+                        assert.equal(response.template, 'default');
                     });
             });
 
@@ -968,8 +970,8 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        response.statusCode.should.eql(200);
-                        response.template.should.eql('index');
+                        assert.equal(response.statusCode, 200);
+                        assert.equal(response.template, 'index');
                     });
             });
         });
@@ -1015,8 +1017,8 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        response.statusCode.should.eql(200);
-                        response.template.should.eql('default');
+                        assert.equal(response.statusCode, 200);
+                        assert.equal(response.template, 'default');
                     });
             });
         });
@@ -1063,8 +1065,8 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        response.statusCode.should.eql(200);
-                        response.template.should.eql('home');
+                        assert.equal(response.statusCode, 200);
+                        assert.equal(response.template, 'home');
                     });
             });
 
@@ -1077,8 +1079,8 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        response.statusCode.should.eql(200);
-                        response.template.should.eql('something');
+                        assert.equal(response.statusCode, 200);
+                        assert.equal(response.template, 'something');
                     });
             });
         });
@@ -1243,10 +1245,10 @@ describe('Frontend behavior tests', function () {
                     .then(function (response) {
                         const $ = cheerio.load(response.body);
 
-                        response.statusCode.should.eql(200);
-                        response.template.should.eql('index');
+                        assert.equal(response.statusCode, 200);
+                        assert.equal(response.template, 'index');
 
-                        $('.post-card').length.should.equal(2);
+                        assert.equal($('.post-card').length, 2);
                     });
             });
 
@@ -1259,8 +1261,8 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        response.statusCode.should.eql(200);
-                        response.headers['content-type'].should.eql('application/rss+xml; charset=UTF-8');
+                        assert.equal(response.statusCode, 200);
+                        assert.equal(response.headers['content-type'], 'application/rss+xml; charset=UTF-8');
                     });
             });
 
@@ -1275,11 +1277,11 @@ describe('Frontend behavior tests', function () {
                     .then(function (response) {
                         const $ = cheerio.load(response.body);
 
-                        response.statusCode.should.eql(200);
-                        response.template.should.eql('default');
+                        assert.equal(response.statusCode, 200);
+                        assert.equal(response.template, 'default');
 
                         // default template does not list posts
-                        $('.post-card').length.should.equal(0);
+                        assert.equal($('.post-card').length, 0);
                     });
             });
 
@@ -1292,8 +1294,8 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        response.statusCode.should.eql(200);
-                        response.template.should.eql('channel3');
+                        assert.equal(response.statusCode, 200);
+                        assert.equal(response.template, 'channel3');
                     });
             });
 
@@ -1308,10 +1310,10 @@ describe('Frontend behavior tests', function () {
                     .then(function (response) {
                         const $ = cheerio.load(response.body);
 
-                        response.statusCode.should.eql(200);
-                        response.template.should.eql('index');
+                        assert.equal(response.statusCode, 200);
+                        assert.equal(response.template, 'index');
 
-                        $('.post-card').length.should.equal(6);
+                        assert.equal($('.post-card').length, 6);
                     });
             });
 
@@ -1326,10 +1328,10 @@ describe('Frontend behavior tests', function () {
                     .then(function (response) {
                         const $ = cheerio.load(response.body);
 
-                        response.statusCode.should.eql(200);
-                        response.template.should.eql('index');
+                        assert.equal(response.statusCode, 200);
+                        assert.equal(response.template, 'index');
 
-                        $('.post-card').length.should.equal(10);
+                        assert.equal($('.post-card').length, 10);
                     });
             });
 
@@ -1344,10 +1346,10 @@ describe('Frontend behavior tests', function () {
                     .then(function (response) {
                         const $ = cheerio.load(response.body);
 
-                        response.statusCode.should.eql(200);
-                        response.template.should.eql('index');
+                        assert.equal(response.statusCode, 200);
+                        assert.equal(response.template, 'index');
 
-                        $('.post-card').length.should.equal(10);
+                        assert.equal($('.post-card').length, 10);
                     });
             });
 
@@ -1360,8 +1362,8 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        response.statusCode.should.eql(301);
-                        response.headers.location.should.eql('/channel1/');
+                        assert.equal(response.statusCode, 301);
+                        assert.equal(response.headers.location, '/channel1/');
                     });
             });
 
@@ -1374,8 +1376,8 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        response.statusCode.should.eql(301);
-                        response.headers.location.should.eql('/channel6/');
+                        assert.equal(response.statusCode, 301);
+                        assert.equal(response.headers.location, '/channel6/');
                     });
             });
 
@@ -1388,7 +1390,7 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        response.statusCode.should.eql(200);
+                        assert.equal(response.statusCode, 200);
                     });
             });
 
@@ -1402,7 +1404,7 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        response.statusCode.should.eql(200);
+                        assert.equal(response.statusCode, 200);
                     });
             });
         });
@@ -1472,7 +1474,7 @@ describe('Frontend behavior tests', function () {
 
             return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
-                    response.statusCode.should.eql(200);
+                    assert.equal(response.statusCode, 200);
                 });
         });
 
@@ -1485,7 +1487,7 @@ describe('Frontend behavior tests', function () {
 
             return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
-                    response.statusCode.should.eql(404);
+                    assert.equal(response.statusCode, 404);
                 });
         });
 
@@ -1498,7 +1500,7 @@ describe('Frontend behavior tests', function () {
 
             return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
-                    response.statusCode.should.eql(404);
+                    assert.equal(response.statusCode, 404);
                 });
         });
 
@@ -1511,7 +1513,7 @@ describe('Frontend behavior tests', function () {
 
             return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
-                    response.statusCode.should.eql(200);
+                    assert.equal(response.statusCode, 200);
                 });
         });
 
@@ -1524,10 +1526,10 @@ describe('Frontend behavior tests', function () {
 
             return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
-                    response.statusCode.should.eql(200);
-                    response.template.should.eql('podcast/rss');
-                    response.headers['content-type'].should.eql('application/rss+xml');
-                    response.body.match(/<link>/g).length.should.eql(2);
+                    assert.equal(response.statusCode, 200);
+                    assert.equal(response.template, 'podcast/rss');
+                    assert.equal(response.headers['content-type'], 'application/rss+xml');
+                    assert.equal(response.body.match(/<link>/g).length, 2);
                 });
         });
 
@@ -1541,8 +1543,8 @@ describe('Frontend behavior tests', function () {
             return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
                     const $ = cheerio.load(response.body);
-                    response.statusCode.should.eql(200);
-                    $('head link')[1].attribs.href.should.eql('http://127.0.0.1:2369/rss/');
+                    assert.equal(response.statusCode, 200);
+                    assert.equal($('head link')[1].attribs.href, 'http://127.0.0.1:2369/rss/');
                 });
         });
     });

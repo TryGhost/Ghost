@@ -92,8 +92,12 @@ export class CommentsSection {
         const comment = this.getCommentComponentByText(commentToManageText);
         await comment.getByRole('button', {name: 'Reply'}).click();
 
-        await this.commentsFrame.getByTestId('reply-form').getByTestId('editor').fill(replyText);
-        await this.addReplyButton.click();
+        const replyForm = this.commentsFrame.getByTestId('reply-form');
+        const replyEditor = replyForm.getByTestId('editor');
+        await replyEditor.focus();
+        await replyEditor.fill(replyText);
+
+        await replyForm.getByRole('button', {name: 'Add reply'}).click();
     }
 
     async getCommentActionButtons(commentToManageText: string): Promise<{

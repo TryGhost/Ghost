@@ -1,3 +1,5 @@
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 const express = require('../../../../../core/shared/express')._express;
@@ -39,33 +41,33 @@ describe('UNIT - services/routing/CollectionRouter', function () {
         it('default', function () {
             const collectionRouter = new CollectionRouter('/', {permalink: '/:slug/'}, RESOURCE_CONFIG, routerCreatedSpy);
 
-            should.exist(collectionRouter.router);
+            assertExists(collectionRouter.router);
 
-            should.not.exist(collectionRouter.filter);
-            collectionRouter.getResourceType().should.eql('posts');
-            collectionRouter.templates.should.eql([]);
-            collectionRouter.getPermalinks().getValue().should.eql('/:slug/');
+            assert.equal(collectionRouter.filter, undefined);
+            assert.equal(collectionRouter.getResourceType(), 'posts');
+            assert.deepEqual(collectionRouter.templates, []);
+            assert.equal(collectionRouter.getPermalinks().getValue(), '/:slug/');
 
-            routerCreatedSpy.calledOnce.should.be.true();
-            routerCreatedSpy.calledWith(collectionRouter).should.be.true();
+            assert.equal(routerCreatedSpy.calledOnce, true);
+            assert.equal(routerCreatedSpy.calledWith(collectionRouter), true);
 
-            mountRouteSpy.callCount.should.eql(3);
-            express.Router.param.callCount.should.eql(2);
+            assert.equal(mountRouteSpy.callCount, 3);
+            assert.equal(express.Router.param.callCount, 2);
 
             // parent route
-            mountRouteSpy.args[0][0].should.eql('/');
+            assert.equal(mountRouteSpy.args[0][0], '/');
             mountRouteSpy.args[0][1].should.eql(controllers.collection);
 
             // pagination feature
-            mountRouteSpy.args[1][0].should.eql('/page/:page(\\d+)');
+            assert.equal(mountRouteSpy.args[1][0], '/page/:page(\\d+)');
             mountRouteSpy.args[1][1].should.eql(controllers.collection);
 
             // permalinks
-            mountRouteSpy.args[2][0].should.eql('/:slug/:options(edit)?/');
+            assert.equal(mountRouteSpy.args[2][0], '/:slug/:options(edit)?/');
             mountRouteSpy.args[2][1].should.eql(controllers.entry);
 
-            mountRouterSpy.callCount.should.eql(1);
-            mountRouterSpy.args[0][0].should.eql('/');
+            assert.equal(mountRouterSpy.callCount, 1);
+            assert.equal(mountRouterSpy.args[0][0], '/');
             mountRouterSpy.args[0][1].should.eql(collectionRouter.rssRouter.router());
         });
 
@@ -74,58 +76,58 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             const collectionRouter2 = new CollectionRouter('/podcast/', {permalink: '/:slug/'}, RESOURCE_CONFIG, routerCreatedSpy);
             const collectionRouter3 = new CollectionRouter('/hello/world/', {permalink: '/:slug/'}, RESOURCE_CONFIG, routerCreatedSpy);
 
-            collectionRouter1.routerName.should.eql('index');
-            collectionRouter2.routerName.should.eql('podcast');
-            collectionRouter3.routerName.should.eql('helloworld');
+            assert.equal(collectionRouter1.routerName, 'index');
+            assert.equal(collectionRouter2.routerName, 'podcast');
+            assert.equal(collectionRouter3.routerName, 'helloworld');
 
-            collectionRouter1.context.should.eql(['index']);
-            collectionRouter2.context.should.eql(['podcast']);
-            collectionRouter3.context.should.eql(['helloworld']);
+            assert.deepEqual(collectionRouter1.context, ['index']);
+            assert.deepEqual(collectionRouter2.context, ['podcast']);
+            assert.deepEqual(collectionRouter3.context, ['helloworld']);
         });
 
         it('collection lives under /blog/', function () {
             const collectionRouter = new CollectionRouter('/blog/', {permalink: '/blog/:year/:slug/'}, RESOURCE_CONFIG, routerCreatedSpy);
 
-            should.exist(collectionRouter.router);
+            assertExists(collectionRouter.router);
 
-            should.not.exist(collectionRouter.filter);
-            collectionRouter.getResourceType().should.eql('posts');
-            collectionRouter.templates.should.eql([]);
-            collectionRouter.getPermalinks().getValue().should.eql('/blog/:year/:slug/');
+            assert.equal(collectionRouter.filter, undefined);
+            assert.equal(collectionRouter.getResourceType(), 'posts');
+            assert.deepEqual(collectionRouter.templates, []);
+            assert.equal(collectionRouter.getPermalinks().getValue(), '/blog/:year/:slug/');
 
-            routerCreatedSpy.calledOnce.should.be.true();
-            routerCreatedSpy.calledWith(collectionRouter).should.be.true();
+            assert.equal(routerCreatedSpy.calledOnce, true);
+            assert.equal(routerCreatedSpy.calledWith(collectionRouter), true);
 
-            mountRouteSpy.callCount.should.eql(3);
+            assert.equal(mountRouteSpy.callCount, 3);
 
             // parent route
-            mountRouteSpy.args[0][0].should.eql('/blog/');
+            assert.equal(mountRouteSpy.args[0][0], '/blog/');
             mountRouteSpy.args[0][1].should.eql(controllers.collection);
 
             // pagination feature
-            mountRouteSpy.args[1][0].should.eql('/blog/page/:page(\\d+)');
+            assert.equal(mountRouteSpy.args[1][0], '/blog/page/:page(\\d+)');
             mountRouteSpy.args[1][1].should.eql(controllers.collection);
 
             // permalinks
-            mountRouteSpy.args[2][0].should.eql('/blog/:year/:slug/:options(edit)?/');
+            assert.equal(mountRouteSpy.args[2][0], '/blog/:year/:slug/:options(edit)?/');
             mountRouteSpy.args[2][1].should.eql(controllers.entry);
 
-            mountRouterSpy.callCount.should.eql(1);
-            mountRouterSpy.args[0][0].should.eql('/blog/');
+            assert.equal(mountRouterSpy.callCount, 1);
+            assert.equal(mountRouterSpy.args[0][0], '/blog/');
             mountRouterSpy.args[0][1].should.eql(collectionRouter.rssRouter.router());
         });
 
         it('with custom filter', function () {
             const collectionRouter = new CollectionRouter('/', {permalink: '/:slug/', filter: 'featured:true'}, RESOURCE_CONFIG, routerCreatedSpy);
 
-            collectionRouter.filter.should.eql('featured:true');
+            assert.equal(collectionRouter.filter, 'featured:true');
         });
 
         it('with templates', function () {
             const collectionRouter = new CollectionRouter('/magic/', {permalink: '/:slug/', templates: ['home', 'index']}, RESOURCE_CONFIG, routerCreatedSpy);
 
             // they are getting reversed because we unshift the templates in the helper
-            collectionRouter.templates.should.eql(['index', 'home']);
+            assert.deepEqual(collectionRouter.templates, ['index', 'home']);
         });
     });
 
@@ -135,8 +137,8 @@ describe('UNIT - services/routing/CollectionRouter', function () {
 
             collectionRouter._prepareEntriesContext(req, res, next);
 
-            next.calledOnce.should.be.true();
-            res.routerOptions.should.eql({
+            assert.equal(next.calledOnce, true);
+            assert.deepEqual(res.routerOptions, {
                 type: 'collection',
                 filter: undefined,
                 permalinks: '/:slug/:options(edit)?/',
@@ -163,8 +165,8 @@ describe('UNIT - services/routing/CollectionRouter', function () {
 
             collectionRouter._prepareEntriesContext(req, res, next);
 
-            next.calledOnce.should.be.true();
-            res.routerOptions.should.eql({
+            assert.equal(next.calledOnce, true);
+            assert.deepEqual(res.routerOptions, {
                 type: 'collection',
                 filter: undefined,
                 permalinks: '/:slug/:options(edit)?/',

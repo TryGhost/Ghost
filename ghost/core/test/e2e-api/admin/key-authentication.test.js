@@ -1,3 +1,5 @@
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../utils/assertions');
 const should = require('should');
 const supertest = require('supertest');
 const testUtils = require('../../utils');
@@ -75,7 +77,7 @@ describe('Admin API key authentication', function () {
             .expect(201);
 
         // falls back to owner user
-        res.body.posts[0].authors.length.should.eql(1);
+        assert.equal(res.body.posts[0].authors.length, 1);
     });
 
     it('Can read users', async function () {
@@ -116,8 +118,8 @@ describe('Admin API key authentication', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(403);
 
-            firstResponse.body.errors[0].type.should.equal('HostLimitError');
-            firstResponse.body.errors[0].message.should.equal('Custom limit error message');
+            assert.equal(firstResponse.body.errors[0].type, 'HostLimitError');
+            assert.equal(firstResponse.body.errors[0].message, 'Custom limit error message');
             sinon.assert.calledOnce(loggingStub);
 
             // CASE: Test with a different API key, related to a core integration
@@ -127,7 +129,7 @@ describe('Admin API key authentication', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200);
 
-            should.exist(secondResponse.body.explore);
+            assertExists(secondResponse.body.explore);
         });
     });
 });

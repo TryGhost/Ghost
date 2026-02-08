@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 
 const {OfferPercentageAmount, OfferFixedAmount, OfferTrialAmount} = require('../../../../../../../core/server/services/offers/domain/models/offer-amount');
@@ -8,7 +9,7 @@ describe('OfferAmount', function () {
             it('Will only create an OfferPercentageAmount containing an integer between 1 & 100 (inclusive)', function () {
                 try {
                     OfferPercentageAmount.create();
-                    should.fail();
+                    assert.fail();
                 } catch (err) {
                     should.ok(
                         err instanceof OfferPercentageAmount.InvalidOfferAmount,
@@ -18,7 +19,7 @@ describe('OfferAmount', function () {
 
                 try {
                     OfferPercentageAmount.create('1');
-                    should.fail();
+                    assert.fail();
                 } catch (err) {
                     should.ok(
                         err instanceof OfferPercentageAmount.InvalidOfferAmount,
@@ -28,7 +29,7 @@ describe('OfferAmount', function () {
 
                 try {
                     OfferPercentageAmount.create(-1);
-                    should.fail();
+                    assert.fail();
                 } catch (err) {
                     should.ok(
                         err instanceof OfferPercentageAmount.InvalidOfferAmount,
@@ -38,7 +39,7 @@ describe('OfferAmount', function () {
 
                 try {
                     OfferPercentageAmount.create(200);
-                    should.fail();
+                    assert.fail();
                 } catch (err) {
                     should.ok(
                         err instanceof OfferPercentageAmount.InvalidOfferAmount,
@@ -48,7 +49,7 @@ describe('OfferAmount', function () {
 
                 try {
                     OfferPercentageAmount.create(3.14);
-                    should.fail();
+                    assert.fail();
                 } catch (err) {
                     should.ok(
                         err instanceof OfferPercentageAmount.InvalidOfferAmount,
@@ -63,7 +64,7 @@ describe('OfferAmount', function () {
         it('Exposes a number on the value property', function () {
             const cadence = OfferPercentageAmount.create(42);
 
-            should.ok(typeof cadence.value === 'number');
+            assert(typeof cadence.value === 'number');
         });
     });
 
@@ -72,7 +73,7 @@ describe('OfferAmount', function () {
             it('Will only create an OfferFixedAmount containing an integer greater than 0', function () {
                 try {
                     OfferFixedAmount.create();
-                    should.fail();
+                    assert.fail();
                 } catch (err) {
                     should.ok(
                         err instanceof OfferFixedAmount.InvalidOfferAmount,
@@ -82,7 +83,7 @@ describe('OfferAmount', function () {
 
                 try {
                     OfferFixedAmount.create('1');
-                    should.fail();
+                    assert.fail();
                 } catch (err) {
                     should.ok(
                         err instanceof OfferFixedAmount.InvalidOfferAmount,
@@ -92,7 +93,7 @@ describe('OfferAmount', function () {
 
                 try {
                     OfferFixedAmount.create(-1);
-                    should.fail();
+                    assert.fail();
                 } catch (err) {
                     should.ok(
                         err instanceof OfferFixedAmount.InvalidOfferAmount,
@@ -102,7 +103,7 @@ describe('OfferAmount', function () {
 
                 try {
                     OfferFixedAmount.create(3.14);
-                    should.fail();
+                    assert.fail();
                 } catch (err) {
                     should.ok(
                         err instanceof OfferFixedAmount.InvalidOfferAmount,
@@ -117,7 +118,7 @@ describe('OfferAmount', function () {
         it('Exposes a number on the value property', function () {
             const cadence = OfferFixedAmount.create(42);
 
-            should.ok(typeof cadence.value === 'number');
+            assert(typeof cadence.value === 'number');
         });
     });
 
@@ -126,7 +127,7 @@ describe('OfferAmount', function () {
             it('Will only create an OfferTrialAmount containing an integer greater than 0', function () {
                 try {
                     OfferTrialAmount.create();
-                    should.fail();
+                    assert.fail();
                 } catch (err) {
                     should.ok(
                         err instanceof OfferTrialAmount.InvalidOfferAmount,
@@ -136,7 +137,7 @@ describe('OfferAmount', function () {
 
                 try {
                     OfferTrialAmount.create('1');
-                    should.fail();
+                    assert.fail();
                 } catch (err) {
                     should.ok(
                         err instanceof OfferTrialAmount.InvalidOfferAmount,
@@ -146,7 +147,7 @@ describe('OfferAmount', function () {
 
                 try {
                     OfferTrialAmount.create(-1);
-                    should.fail();
+                    assert.fail();
                 } catch (err) {
                     should.ok(
                         err instanceof OfferTrialAmount.InvalidOfferAmount,
@@ -156,7 +157,7 @@ describe('OfferAmount', function () {
 
                 try {
                     OfferTrialAmount.create(3.14);
-                    should.fail();
+                    assert.fail();
                 } catch (err) {
                     should.ok(
                         err instanceof OfferTrialAmount.InvalidOfferAmount,
@@ -171,7 +172,7 @@ describe('OfferAmount', function () {
         it('Exposes a number on the value property', function () {
             const cadence = OfferTrialAmount.create(42);
 
-            should.ok(typeof cadence.value === 'number');
+            assert(typeof cadence.value === 'number');
         });
     });
 });

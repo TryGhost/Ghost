@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const i18nLib = require('@tryghost/i18n');
 const should = require('should');
 const CommentsServiceEmailRenderer = require('../../../../../core/server/services/comments/comments-service-email-renderer');
@@ -19,11 +20,11 @@ describe('Comments Service Email Renderer', function () {
             const result = await renderer.renderEmailTemplate('new-comment-reply', templateData);
 
             // assert
-            should(result.html).containEql('Hey there,</p>');
-            should(result.html).containEql('This message was sent from <a class="small" href="https://ghost.org"');
-            should(result.html).containEql('Someone just replied to your comment on <a href="https://ghost.org/post"');
-            should(result.text).containEql('Hey there,');
-            should(result.text).containEql('Someone just replied to your comment on Test Post.');
+            assert(result.html.includes('Hey there,</p>'));
+            assert(result.html.includes('This message was sent from <a class="small" href="https://ghost.org"'));
+            assert(result.html.includes('Someone just replied to your comment on <a href="https://ghost.org/post"'));
+            assert(result.text.includes('Hey there,'));
+            assert(result.text.includes('Someone just replied to your comment on Test Post.'));
         });
 
         it('should correctly handle apostrophes in post titles and site names', async function () {
@@ -41,9 +42,9 @@ describe('Comments Service Email Renderer', function () {
             const result = await renderer.renderEmailTemplate('new-comment-reply', templateData);
 
             // assert
-            should(result.html).containEql('Hey there,</p>');
-            should(result.html).containEql('This message was sent from <a class="small" href="https://ghost.org" style="text-decoration: underline; color: #738A94; font-size: 11px;">Cathy\'s blog</a>');
-            should(result.text).containEql('Someone just replied to your comment on Test post\'s the best post.');
+            assert(result.html.includes('Hey there,</p>'));
+            assert(result.html.includes('This message was sent from <a class="small" href="https://ghost.org" style="text-decoration: underline; color: #738A94; font-size: 11px;">Cathy\'s blog</a>'));
+            assert(result.text.includes('Someone just replied to your comment on Test post\'s the best post.'));
         });
 
         it('should render html and text templates with German locale', async function () {
@@ -61,11 +62,11 @@ describe('Comments Service Email Renderer', function () {
             const result = await renderer.renderEmailTemplate('new-comment-reply', templateData);
 
             // assert
-            should(result.html).containEql('Hallo,</p>');
-            should(result.html).containEql('Diese Nachricht wurde von <a class="small" href="https://ghost.de"');
-            should(result.html).containEql('Jemand hat auf deinen Kommentar zu <a href="https://ghost.de/post"');
-            should(result.text).containEql('Hallo,');
-            should(result.text).containEql('Jemand hat auf deinen Kommentar zu Testbeitrag geantwortet.');
+            assert(result.html.includes('Hallo,</p>'));
+            assert(result.html.includes('Diese Nachricht wurde von <a class="small" href="https://ghost.de"'));
+            assert(result.html.includes('Jemand hat auf deinen Kommentar zu <a href="https://ghost.de/post"'));
+            assert(result.text.includes('Hallo,'));
+            assert(result.text.includes('Jemand hat auf deinen Kommentar zu Testbeitrag geantwortet.'));
         });
     });
 });

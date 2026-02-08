@@ -2,12 +2,14 @@ import * as assert from 'assert/strict';
 import {
     cn,
     debounce,
-    kebabToPascalCase, 
-    formatQueryDate, 
-    formatDisplayDate, 
+    kebabToPascalCase,
+    formatQueryDate,
+    formatDisplayDate,
+    formatDisplayTime,
     formatNumber,
     formatDuration,
-    formatPercentage
+    formatPercentage,
+    getMemberInitials
 } from '@/lib/utils';
 import moment from 'moment-timezone';
 import {vi} from 'vitest';
@@ -178,6 +180,23 @@ describe('utils', function () {
         });
     });
 
+    describe('formatDisplayTime function', function () {
+        it('formats time in the provided timezone', function () {
+            const formatted = formatDisplayTime('2020-04-20T18:09:12.345Z', 'Africa/Lagos');
+            assert.equal(formatted, '7:09pm');
+        });
+
+        it('handles timezones with negative offsets', function () {
+            const formatted = formatDisplayTime('2020-04-20T18:09:12.345Z', 'America/New_York');
+            assert.equal(formatted, '2:09pm');
+        });
+
+        it('handles times that cross a date boundary', function () {
+            const formatted = formatDisplayTime('2020-04-20T00:30:00.000Z', 'America/Los_Angeles');
+            assert.equal(formatted, '5:30pm');
+        });
+    });
+
     describe('formatNumber function', function () {
         it('formats a number with thousand separators', function () {
             let formatted = formatNumber(1000);
@@ -258,6 +277,28 @@ describe('utils', function () {
 
             formatted = formatPercentage(100);
             assert.equal(formatted, '10,000%');
+        });
+    });
+
+    describe('getMemberInitials function', function () {
+        it('returns initials from first and last name', function () {
+            const initials = getMemberInitials({name: 'John Doe'});
+            assert.equal(initials, 'JD');
+        });
+
+        it('returns initials from first and last word for names with middle name', function () {
+            const initials = getMemberInitials({name: 'John Michael Doe'});
+            assert.equal(initials, 'JD');
+        });
+
+        it('returns first two characters for single word names', function () {
+            const initials = getMemberInitials({name: 'John'});
+            assert.equal(initials, 'JO');
+        });
+
+        it('handles empty name by using fallback', function () {
+            const initials = getMemberInitials({name: ''});
+            assert.equal(initials, 'UM'); // "Unknown Member" -> "UM"
         });
     });
 }); 

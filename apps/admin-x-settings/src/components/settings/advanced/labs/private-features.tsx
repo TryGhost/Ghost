@@ -40,21 +40,9 @@ const features: Feature[] = [{
     description: 'Enables features related to sending welcome emails to new members',
     flag: 'welcomeEmails'
 }, {
-    title: 'New Admin Experience',
-    description: 'Preview the next version of the admin interface',
-    flag: 'adminForward'
-}, {
     title: 'Updated theme translation (beta)',
     description: 'Enable theme translation using i18next instead of the old translation package.',
     flag: 'themeTranslation'
-}, {
-    title: 'Comment Moderation',
-    description: 'Enhanced comment moderation interface with advanced filtering and management. Requires the new admin experience.',
-    flag: 'commentModeration'
-}, {
-    title: 'Comment Permalinks',
-    description: 'Enable direct links to individual comments with automatic scrolling and highlighting',
-    flag: 'commentPermalinks'
 }, {
     title: 'IndexNow',
     description: 'Automatically notify search engines when content is published or updated for faster indexing.',
@@ -68,9 +56,9 @@ const features: Feature[] = [{
     description: 'Enable Transistor podcast integration',
     flag: 'transistor'
 }, {
-    title: 'Disable Member Commenting',
-    description: 'Allow staff to disable commenting for individual members',
-    flag: 'disableMemberCommenting'
+    title: 'Inbox Links',
+    description: 'Enable mail app links on signup/signin',
+    flag: 'inboxlinks'
 }];
 
 const AlphaFeatures: React.FC = () => {
