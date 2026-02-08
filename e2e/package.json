@@ -27,7 +27,7 @@
   "devDependencies": {
     "@eslint/js": "9.37.0",
     "@faker-js/faker": "8.4.1",
-    "@playwright/test": "1.55.1",
+    "@playwright/test": "1.58.1",
     "@tryghost/debug": "0.1.35",
     "@tryghost/logging": "2.4.23",
     "@types/dockerode": "3.3.44",
