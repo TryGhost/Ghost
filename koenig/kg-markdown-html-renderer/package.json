@@ -36,6 +36,6 @@
     "markdown-it-mark": "^4.0.0",
     "markdown-it-sub": "^2.0.0",
     "markdown-it-sup": "^2.0.0",
-    "semver": "^7.7.0"
+    "semver": "^7.7.3"
   }
 }

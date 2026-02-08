@@ -25,6 +25,6 @@
     "sinon": "21.0.1"
   },
   "dependencies": {
-    "semver": "^7.7.0"
+    "semver": "^7.7.3"
   }
 }
