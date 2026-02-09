@@ -85,7 +85,7 @@ describe('Integrations API', function () {
         assert.equal(secret.length, 64);
 
         assertExists(res.headers.location);
-        assert.equal(res.headers.location, `${config.get('url')}${localUtils.API.getApiQuery('integrations/')}${res.body.integrations[0].id}/`);
+        assert.equal(new URL(res.headers.location).pathname, `/ghost/api/admin/integrations/${res.body.integrations[0].id}/`);
     });
 
     it('Can successfully create a single integration with a webhook', async function () {
@@ -115,7 +115,7 @@ describe('Integrations API', function () {
         assert.equal(webhook.integration_id, integration.id);
 
         assertExists(res.headers.location);
-        assert.equal(res.headers.location, `${config.get('url')}${localUtils.API.getApiQuery('integrations/')}${res.body.integrations[0].id}/`);
+        assert.equal(new URL(res.headers.location).pathname, `/ghost/api/admin/integrations/${res.body.integrations[0].id}/`);
     });
 
     it('Can successfully get a created integration', async function () {
