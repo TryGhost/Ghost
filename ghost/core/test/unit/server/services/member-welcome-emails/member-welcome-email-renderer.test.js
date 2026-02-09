@@ -306,5 +306,53 @@ describe('MemberWelcomeEmailRenderer', function () {
             assert(!result.html.includes('}%%'));
             assert.equal(result.subject, 'Welcome !');
         });
+
+        it('removes code wrappers around replacement strings', async function () {
+            lexicalRenderStub.resolves('<p>Hello <code>{first_name}</code></p>');
+            const renderer = new MemberWelcomeEmailRenderer();
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Welcome!',
+                member: {name: 'John Doe', email: 'john@example.com'},
+                siteSettings: defaultSiteSettings
+            });
+
+            assert(!result.html.includes('<code>{first_name}</code>'));
+            assert(result.html.includes('Hello John'));
+        });
+
+        it('preserves code blocks that are not replacement strings', async function () {
+            lexicalRenderStub.resolves('<p>Here is some code: <code>if (x) { return y; }</code> and a greeting for <code>{first_name}</code></p>');
+            const renderer = new MemberWelcomeEmailRenderer();
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Welcome!',
+                member: {name: 'John Doe', email: 'john@example.com'},
+                siteSettings: defaultSiteSettings
+            });
+
+            // Regular code should remain wrapped in <code>
+            assert(result.html.match(/<code[^>]*>.*?if.*?return.*?<\/code>/));
+            // Replacement string should have code wrapper removed and be substituted
+            assert(result.html.includes('a greeting for John'));
+            assert(!result.html.includes('{first_name}'));
+        });
+
+        it('removes code wrappers around replacement strings with fallback', async function () {
+            lexicalRenderStub.resolves('<p>Hey <code>{first_name, "friend"}</code></p>');
+            const renderer = new MemberWelcomeEmailRenderer();
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Welcome!',
+                member: {email: 'john@example.com'},
+                siteSettings: defaultSiteSettings
+            });
+
+            assert(!result.html.includes('<code>{first_name, "friend"}</code>'));
+            assert(result.html.includes('Hey friend'));
+        });
     });
 });
