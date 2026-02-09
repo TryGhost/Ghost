@@ -117,7 +117,7 @@ describe('Helpers - ', () => {
             expect(value).toBe(false);
         });
 
-        test('returns true for active null-tier offer', () => {
+        test('returns true for active retention offer', () => {
             const nullTierOffer = {
                 ...FixtureOffer,
                 tier: null,
