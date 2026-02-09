@@ -4,6 +4,7 @@ const logging = require('@tryghost/logging');
 const {
     canWelcomeEmailReplaceSignupPaidEmail
 } = require('../../../lib/member-signup-contexts');
+/** @typedef {import('../../../lib/member-signup-contexts').SignupContext} SignupContext */
 
 /**
  * Handles `checkout.session.completed` webhook events
@@ -264,7 +265,7 @@ module.exports = class CheckoutSessionEventService {
         }
 
         if (checkoutType !== 'upgrade') {
-            const ghostSignupContext = _.get(session, 'metadata.ghostSignupContext');
+            const ghostSignupContext = /** @type {SignupContext | undefined} */ (session.metadata?.ghostSignupContext);
             const shouldSkipSignupEmailWhenWelcomeEmailActive = canWelcomeEmailReplaceSignupPaidEmail(ghostSignupContext);
 
             if (shouldSkipSignupEmailWhenWelcomeEmailActive) {

@@ -8,6 +8,7 @@ const {isEmail} = require('@tryghost/validator');
 const normalizeEmail = require('../utils/normalize-email');
 const {getInboxLinks} = require('../../../../lib/get-inbox-links');
 const {SIGNUP_CONTEXTS} = require('../../../lib/member-signup-contexts');
+/** @typedef {import('../../../lib/member-signup-contexts').SignupContext} SignupContext */
 
 const messages = {
     emailRequired: 'Email is required.',
@@ -476,6 +477,7 @@ module.exports = class RouterController {
         }
 
         const member = options.member;
+        /** @type {SignupContext} */
         let ghostSignupContext = (options.isAuthenticated && member) ? SIGNUP_CONTEXTS.ALREADY_AUTHENTICATED : SIGNUP_CONTEXTS.NEEDS_MAGIC_LINK_EMAIL;
 
         if (!member && options.email) {
