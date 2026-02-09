@@ -10,7 +10,7 @@ const iconv = require('iconv-lite');
 const path = require('path');
 
 // Some sites block non-standard user agents so we need to mimic a typical browser
-const USER_AGENT = 'Mozilla/5.0 (compatible; Ghost/5.0; +https://ghost.org/)';
+const USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36';
 
 const messages = {
     noUrlProvided: 'No url provided.',
