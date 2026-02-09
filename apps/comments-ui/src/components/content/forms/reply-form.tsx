@@ -1,6 +1,7 @@
 import {Comment, OpenCommentForm, useAppContext} from '../../../app-context';
 import {Form, FormWrapper} from './form';
 import {isMobile, scrollToElement} from '../../../utils/helpers';
+import {useAddReply} from '../../../utils/query';
 import {useCallback, useMemo} from 'react';
 import {useEditor} from '../../../utils/hooks';
 import {useRefCallback} from '../../../utils/hooks';
@@ -13,6 +14,7 @@ type Props = {
 const ReplyForm: React.FC<Props> = ({openForm, parent}) => {
     const {postId, dispatchAction, t} = useAppContext();
     const [, setForm] = useRefCallback<HTMLDivElement>(scrollToElement);
+    const addReplyMutation = useAddReply();
 
     const config = useMemo(() => ({
         placeholder: t('Reply to comment'),
@@ -22,9 +24,10 @@ const ReplyForm: React.FC<Props> = ({openForm, parent}) => {
     const {editor} = useEditor(config);
 
     const submit = useCallback(async ({html}) => {
-        // Send comment to server
-        await dispatchAction('addReply', {
-            parent: parent,
+        // Send reply using React Query mutation
+        // Mutation handles invalidation, useComments subscribers auto-refetch
+        await addReplyMutation.mutateAsync({
+            parentId: parent.id,
             reply: {
                 post_id: postId,
                 in_reply_to_id: openForm.in_reply_to_id,
@@ -32,7 +35,7 @@ const ReplyForm: React.FC<Props> = ({openForm, parent}) => {
                 html
             }
         });
-    }, [parent, postId, openForm, dispatchAction]);
+    }, [parent.id, postId, openForm, addReplyMutation]);
 
     const close = useCallback(() => {
         dispatchAction('closeCommentForm', openForm.id);

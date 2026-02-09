@@ -1,15 +1,27 @@
 import {Actions} from '../../src/actions';
+import {commentKeys, queryClient} from '../../src/utils/query';
 
 describe('Actions', function () {
     describe('loadMoreComments', function () {
+        beforeEach(() => {
+            queryClient.clear();
+        });
+
         it('deduplicates comments', async function () {
-            const state = {
+            const postId = '1';
+            const order = 'desc';
+
+            // Pre-populate cache with existing comments
+            queryClient.setQueryData(commentKeys.list(postId, order), {
                 comments: [
                     {id: '1'},
                     {id: '2'},
                     {id: '3'}
-                ]
-            };
+                ],
+                pagination: {page: 1}
+            });
+
+            const state = {order};
             const api = {
                 comments: {
                     browse: () => Promise.resolve({
@@ -19,13 +31,17 @@ describe('Actions', function () {
                             {id: '4'}
                         ],
                         meta: {
-                            pagination: {}
+                            pagination: {page: 2}
                         }
                     })
                 }
             };
-            const newState = await Actions.loadMoreComments({state, api, options: {postId: '1'}, order: 'desc'});
-            expect(newState.comments).toEqual([
+
+            await Actions.loadMoreComments({state, api, options: {postId}, order});
+
+            // Check the cache was updated correctly
+            const cached = queryClient.getQueryData(commentKeys.list(postId, order));
+            expect(cached.comments).toEqual([
                 {id: '1'},
                 {id: '2'},
                 {id: '3'},

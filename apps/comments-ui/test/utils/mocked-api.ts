@@ -67,12 +67,13 @@ export class MockedApi {
             post_id: this.postId
         });
 
-        // If this is a reply, add it to the parent's replies array
+        // If this is a reply, add it to the parent's replies array (not to top-level comments)
         if (overrides.parent_id) {
             const parent = this.comments.find(c => c.id === overrides.parent_id);
             if (parent) {
                 parent.replies.push(fixture);
                 parent.count.replies = parent.replies.length;
+                return; // Don't add replies to top-level comments array
             }
         }
 

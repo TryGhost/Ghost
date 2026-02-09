@@ -1,6 +1,13 @@
 import Content from '../../../../src/components/content/content';
 import {AppContext} from '../../../../src/app-context';
+import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {render, screen} from '@testing-library/react';
+
+const testQueryClient = new QueryClient({
+    defaultOptions: {
+        queries: {staleTime: Infinity}
+    }
+});
 
 const contextualRender = (ui, {appContext, ...renderOptions}) => {
     const member = appContext?.member ?? null;
@@ -23,11 +30,14 @@ const contextualRender = (ui, {appContext, ...renderOptions}) => {
         hasRequiredTier,
         isCommentingDisabled,
         t: str => str,
+        api: {comments: {}},
         ...appContext
     };
 
     return render(
-        <AppContext.Provider value={contextWithDefaults}>{ui}</AppContext.Provider>,
+        <QueryClientProvider client={testQueryClient}>
+            <AppContext.Provider value={contextWithDefaults}>{ui}</AppContext.Provider>
+        </QueryClientProvider>,
         renderOptions
     );
 };

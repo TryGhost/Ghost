@@ -2,6 +2,7 @@
 import React, {useContext} from 'react';
 import {ActionType, Actions, SyncActionType, SyncActions} from './actions';
 import {AdminApi} from './utils/admin-api';
+import {GhostApi} from './utils/api';
 import {Page} from './pages';
 
 export type Member = {
@@ -71,13 +72,6 @@ export type EditableAppContext = {
     initStatus: string,
     member: null | any,
     admin: null | any,
-    comments: Comment[],
-    pagination: {
-        page: number,
-        limit: number,
-        pages: number,
-        total: number
-    } | null,
     commentCount: number,
     openCommentForms: OpenCommentForm[],
     popup: Page | null,
@@ -102,7 +96,8 @@ export type AppContextType = EditableAppContext & CommentsOptions & {
     // This part makes sure we can add automatic data and return types to the actions when using context.dispatchAction('actionName', data)
     t: TranslationFunction,
     dispatchAction: <T extends ActionType | SyncActionType>(action: T, data: Parameters<(typeof Actions & typeof SyncActions)[T]>[0] extends { data: any } ? Parameters<(typeof Actions & typeof SyncActions)[T]>[0]['data'] : any) => T extends ActionType ? Promise<void> : void,
-    openFormCount: number
+    openFormCount: number,
+    api: GhostApi
 }
 
 // Copy time from AppContextType

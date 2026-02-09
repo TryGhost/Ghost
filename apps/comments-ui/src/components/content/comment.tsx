@@ -10,6 +10,7 @@ import {Avatar, BlankAvatar} from './avatar';
 import {Comment, OpenCommentForm, useAppContext, useLabs} from '../../app-context';
 import {Transition} from '@headlessui/react';
 import {buildCommentPermalink, findCommentById, formatExplicitTime, getCommentInReplyToSnippet, getMemberNameFromComment} from '../../utils/helpers';
+import {useComments} from '../../utils/query';
 import {useRelativeTime} from '../../utils/hooks';
 
 type AnimatedCommentProps = {
@@ -269,7 +270,9 @@ const AuthorName: React.FC<{comment: Comment}> = ({comment}) => {
 };
 
 export const RepliedToSnippet: React.FC<{comment: Comment}> = ({comment}) => {
-    const {comments, dispatchAction, t, pageUrl} = useAppContext();
+    const {dispatchAction, t, pageUrl} = useAppContext();
+    const commentsQuery = useComments();
+    const comments = commentsQuery.data?.comments ?? [];
     const labs = useLabs();
     const inReplyToComment = findCommentById(comments, comment.in_reply_to_id);
 

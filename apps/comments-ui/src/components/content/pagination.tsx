@@ -1,8 +1,11 @@
 import {formatNumber} from '../../utils/helpers';
 import {useAppContext} from '../../app-context';
+import {useComments} from '../../utils/query';
 
 const Pagination = () => {
-    const {pagination, dispatchAction, t} = useAppContext();
+    const {dispatchAction, t} = useAppContext();
+    const commentsQuery = useComments();
+    const pagination = commentsQuery.data?.pagination;
 
     const loadMore = () => {
         dispatchAction('loadMoreComments', {});

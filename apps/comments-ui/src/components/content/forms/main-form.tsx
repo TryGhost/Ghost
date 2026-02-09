@@ -1,6 +1,7 @@
 import React, {useCallback, useEffect, useMemo, useRef} from 'react';
 import {Form, FormWrapper} from './form';
 import {scrollToElement} from '../../../utils/helpers';
+import {useAddComment} from '../../../utils/query';
 import {useAppContext} from '../../../app-context';
 import {useEditor} from '../../../utils/hooks';
 
@@ -9,7 +10,8 @@ type Props = {
 };
 
 const MainForm: React.FC<Props> = ({commentsCount}) => {
-    const {postId, dispatchAction, t} = useAppContext();
+    const {postId, t} = useAppContext();
+    const addCommentMutation = useAddComment();
 
     const editorConfig = useMemo(() => ({
         placeholder: (commentsCount === 0 ? t('Start the conversation') : t('Join the discussion')),
@@ -19,15 +21,16 @@ const MainForm: React.FC<Props> = ({commentsCount}) => {
     const {editor, hasContent} = useEditor(editorConfig);
 
     const submit = useCallback(async ({html}) => {
-        // Send comment to server
-        await dispatchAction('addComment', {
+        // Send comment using React Query mutation
+        // Mutation handles invalidation, useComments subscribers auto-refetch
+        await addCommentMutation.mutateAsync({
             post_id: postId,
             status: 'published',
             html
         });
 
         editor?.commands.clearContent();
-    }, [postId, dispatchAction, editor]);
+    }, [postId, addCommentMutation, editor]);
 
     // C keyboard shortcut to focus main form
     const formEl = useRef(null);

@@ -9,6 +9,7 @@ import {SortingForm} from './forms/sorting-form';
 import {parseCommentIdFromHash} from '../../utils/helpers';
 import {useAppContext, useLabs} from '../../app-context';
 import {useCallback, useEffect, useRef} from 'react';
+import {useComments} from '../../utils/query';
 
 /**
  * Find the iframe element that contains the current window, if any.
@@ -73,8 +74,15 @@ function onIframeResize(
 
 const Content = () => {
     const labs = useLabs();
-    const {pagination, comments, commentCount, title, showCount, commentsIsLoading, t, dispatchAction, commentIdToScrollTo, isMember, isPaidOnly, hasRequiredTier, isCommentingDisabled} = useAppContext();
+    const {commentCount, title, showCount, t, dispatchAction, commentIdToScrollTo, isMember, isPaidOnly, hasRequiredTier, isCommentingDisabled, initStatus, commentsIsLoading: contextLoading} = useAppContext();
     const containerRef = useRef<HTMLDivElement>(null);
+
+    // Fetch comments via React Query - enabled only after init completes
+    const commentsQuery = useComments();
+    const comments = commentsQuery.data?.comments ?? [];
+    const pagination = commentsQuery.data?.pagination ?? null;
+    // Show loading: initial fetch, during refetch, or when action sets loading state (e.g., sorting)
+    const commentsIsLoading = commentsQuery.isLoading || commentsQuery.isFetching || contextLoading || initStatus !== 'success';
 
     const scrollToComment = useCallback((element: HTMLElement, commentId: string) => {
         element.scrollIntoView({behavior: 'smooth', block: 'center'});

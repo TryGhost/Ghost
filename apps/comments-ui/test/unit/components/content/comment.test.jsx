@@ -1,27 +1,47 @@
 import {AppContext} from '../../../../src/app-context';
 import {CommentComponent, RepliedToSnippet} from '../../../../src/components/content/comment';
+import {QueryClientProvider} from '@tanstack/react-query';
 import {buildComment} from '../../../utils/fixtures';
+import {commentKeys, queryClient} from '../../../../src/utils/query';
 import {render, screen} from '@testing-library/react';
 
-const contextualRender = (ui, {appContext, ...renderOptions}) => {
+const contextualRender = (ui, {appContext, comments = [], ...renderOptions}) => {
+    const postId = 'test-post';
+    const order = 'desc';
+
+    // Pre-populate React Query cache with comments
+    queryClient.setQueryData(commentKeys.list(postId, order), {
+        comments,
+        pagination: {page: 1, limit: 20, pages: 1, total: comments.length}
+    });
+
     const contextWithDefaults = {
         commentsEnabled: 'all',
-        comments: [],
         openCommentForms: [],
         member: null,
         pageUrl: 'https://example.com/post',
         commentIdToScrollTo: null,
+        postId,
+        order,
+        initStatus: 'success',
+        api: {},
         t: str => str,
         ...appContext
     };
 
     return render(
-        <AppContext.Provider value={contextWithDefaults}>{ui}</AppContext.Provider>,
+        <QueryClientProvider client={queryClient}>
+            <AppContext.Provider value={contextWithDefaults}>{ui}</AppContext.Provider>
+        </QueryClientProvider>,
         renderOptions
     );
 };
 
 describe('<CommentComponent>', function () {
+    beforeEach(() => {
+        queryClient.clear();
+    });
+
     it('renders reply-to-reply content', function () {
         const reply1 = buildComment({
             html: '<p>First reply</p>'
@@ -34,9 +54,8 @@ describe('<CommentComponent>', function () {
         const parent = buildComment({
             replies: [reply1, reply2]
         });
-        const appContext = {comments: [parent]};
 
-        contextualRender(<CommentComponent comment={reply2} parent={parent} />, {appContext});
+        contextualRender(<CommentComponent comment={reply2} parent={parent} />, {comments: [parent]});
 
         expect(screen.getByText('First reply')).toBeInTheDocument();
     });
@@ -46,9 +65,8 @@ describe('<CommentComponent>', function () {
             status: 'published',
             member: {uuid: '123'}
         });
-        const appContext = {comments: [comment]};
 
-        const {container} = contextualRender(<CommentComponent comment={comment} />, {appContext});
+        const {container} = contextualRender(<CommentComponent comment={comment} />, {comments: [comment]});
         expect(container.querySelector('[data-member-uuid="123"]')).toBeInTheDocument();
     });
 
@@ -57,14 +75,17 @@ describe('<CommentComponent>', function () {
             status: 'hidden',
             member: {uuid: '123'}
         });
-        const appContext = {comments: [comment]};
 
-        const {container} = contextualRender(<CommentComponent comment={comment} />, {appContext});
+        const {container} = contextualRender(<CommentComponent comment={comment} />, {comments: [comment]});
         expect(container.querySelector('[data-member-uuid="123"]')).not.toBeInTheDocument();
     });
 });
 
 describe('<RepliedToSnippet>', function () {
+    beforeEach(() => {
+        queryClient.clear();
+    });
+
     it('renders a link when replied-to comment is published', function () {
         const reply1 = buildComment({
             html: '<p>First reply</p>'
@@ -77,9 +98,8 @@ describe('<RepliedToSnippet>', function () {
         const parent = buildComment({
             replies: [reply1, reply2]
         });
-        const appContext = {comments: [parent]};
 
-        contextualRender(<RepliedToSnippet comment={reply2} />, {appContext});
+        contextualRender(<RepliedToSnippet comment={reply2} />, {comments: [parent]});
 
         const element = screen.getByTestId('comment-in-reply-to');
         expect(element).toBeInstanceOf(HTMLAnchorElement);
@@ -98,9 +118,8 @@ describe('<RepliedToSnippet>', function () {
         const parent = buildComment({
             replies: [reply1, reply2]
         });
-        const appContext = {comments: [parent]};
 
-        contextualRender(<RepliedToSnippet comment={reply2} />, {appContext});
+        contextualRender(<RepliedToSnippet comment={reply2} />, {comments: [parent]});
 
         const element = screen.getByTestId('comment-in-reply-to');
         expect(element).toBeInstanceOf(HTMLSpanElement);
@@ -115,9 +134,8 @@ describe('<RepliedToSnippet>', function () {
         const parent = buildComment({
             replies: [reply2]
         });
-        const appContext = {comments: [parent]};
 
-        contextualRender(<RepliedToSnippet comment={reply2} />, {appContext});
+        contextualRender(<RepliedToSnippet comment={reply2} />, {comments: [parent]});
 
         const element = screen.getByTestId('comment-in-reply-to');
         expect(element).toBeInstanceOf(HTMLSpanElement);

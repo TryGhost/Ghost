@@ -9,6 +9,8 @@ import setupGhostApi from './utils/api';
 import {ActionHandler, SyncActionHandler, isSyncAction} from './actions';
 import {AppContext, Comment, DispatchActionType, EditableAppContext} from './app-context';
 import {CommentsFrame} from './components/frame';
+import {QueryClientProvider} from '@tanstack/react-query';
+import {commentKeys, queryClient} from './utils/query';
 import {setupAdminAPI} from './utils/admin-api';
 import {useOptions} from './utils/options';
 
@@ -33,8 +35,6 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
         initStatus: 'running',
         member: null,
         admin: null,
-        comments: [],
-        pagination: null,
         commentCount: 0,
         openCommentForms: [],
         popup: null,
@@ -115,7 +115,8 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
         ...state,
         t: i18n.t,
         dispatchAction: dispatchAction as DispatchActionType,
-        openFormCount: useMemo(() => state.openCommentForms.length, [state.openCommentForms])
+        openFormCount: useMemo(() => state.openCommentForms.length, [state.openCommentForms]),
+        api
     };
 
     const initAdminAuth = async () => {
@@ -140,23 +141,25 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
                 if (admin) {
                     // this is a bit of a hack, but we need to fetch the comments fully populated if the user is an admin
                     const adminComments = await adminApi.browse({page: 1, postId: options.postId, order: state.order, memberUuid: state.member?.uuid});
-                    setState((currentState) => {
-                        // Don't overwrite paginated comments when initSetup loaded
-                        // multiple pages (e.g., for permalink scrolling)
-                        if (currentState.pagination && currentState.pagination.page > 1) {
-                            return {
-                                adminApi,
-                                admin,
-                                isAdmin: true
-                            };
-                        }
-                        return {
-                            adminApi,
-                            admin,
-                            isAdmin: true,
+
+                    // Check current pagination state to decide if we should update cache
+                    const currentData = queryClient.getQueryData<{comments: Comment[]; pagination: {page: number}}>(
+                        commentKeys.list(options.postId, state.order)
+                    );
+
+                    // Don't overwrite paginated comments when initSetup loaded
+                    // multiple pages (e.g., for permalink scrolling)
+                    if (!currentData?.pagination || currentData.pagination.page <= 1) {
+                        queryClient.setQueryData(commentKeys.list(options.postId, state.order), {
                             comments: adminComments.comments,
                             pagination: adminComments.meta.pagination
-                        };
+                        });
+                    }
+
+                    setState({
+                        adminApi,
+                        admin,
+                        isAdmin: true
                     });
                 }
             } catch (e) {
@@ -321,13 +324,19 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
             const isPaidMember = !!member?.paid;
             const hasRequiredTier = isPaidMember || !isPaidOnly;
 
+            // Pre-populate React Query cache with fetched comments
+            // This allows useComments() to use this data without refetching
+            const order = 'count__likes desc, created_at desc';
+            queryClient.setQueryData(commentKeys.list(options.postId, order), {
+                comments,
+                pagination
+            });
+
             setState({
                 member,
                 initStatus: 'success',
-                comments,
-                pagination,
                 commentCount: count,
-                order: 'count__likes desc, created_at desc',
+                order,
                 labs: labs,
                 commentsIsLoading: false,
                 commentIdToHighlight: null,
@@ -384,13 +393,15 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
     const done = state.initStatus === 'success';
 
     return (
-        <AppContext.Provider value={context}>
-            <CommentsFrame ref={iframeRef}>
-                <ContentBox done={done} />
-            </CommentsFrame>
-            {state.comments.length > 0 ? <AuthFrame adminUrl={options.adminUrl} onLoad={initAdminAuth}/> : null}
-            <PopupBox />
-        </AppContext.Provider>
+        <QueryClientProvider client={queryClient}>
+            <AppContext.Provider value={context}>
+                <CommentsFrame ref={iframeRef}>
+                    <ContentBox done={done} />
+                </CommentsFrame>
+                {state.commentCount > 0 ? <AuthFrame adminUrl={options.adminUrl} onLoad={initAdminAuth}/> : null}
+                <PopupBox />
+            </AppContext.Provider>
+        </QueryClientProvider>
     );
 };
 
