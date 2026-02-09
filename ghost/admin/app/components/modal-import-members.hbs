@@ -89,7 +89,7 @@
                     <div class="gh-member-import-errorlist">
                         <ul>
                         {{#each this.importResponse.errorList as |error|}}
-                            <li>{{error.message}} ({{error.count}}) </li>
+                            <li>{{error.message}} ({{format-number error.count}}) </li>
                         {{/each}}
                         </ul>
                     </div>
