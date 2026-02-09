@@ -16,8 +16,14 @@ describe('RouterController', function () {
     let getDonationLinkSpy;
     let settingsCache;
     let settingsHelpers;
+    let emailAddressService;
 
     beforeEach(async function () {
+        // Mock emailAddressService for inbox links sender address transformation
+        emailAddressService = {
+            getMembersSupportAddress: sinon.stub().returns('noreply@example.com')
+        };
+
         getPaymentLinkSpy = sinon.spy();
         getDonationLinkSpy = sinon.spy();
         tiersService = {
@@ -90,7 +96,8 @@ describe('RouterController', function () {
                 stripeAPIService,
                 labsService,
                 settingsCache,
-                settingsHelpers
+                settingsHelpers,
+                emailAddressService
             });
 
             await routerController.createCheckoutSession({
@@ -126,7 +133,8 @@ describe('RouterController', function () {
                 labsService,
                 settingsCache,
                 settingsHelpers,
-                newslettersService: newslettersServiceStub
+                newslettersService: newslettersServiceStub,
+                emailAddressService
             });
             const newsletters = [
                 {id: 'abc123', name: 'Newsletter 1'},
@@ -693,6 +701,7 @@ describe('RouterController', function () {
                     sendEmailWithMagicLink: sendEmailWithMagicLinkStub,
                     settingsCache,
                     settingsHelpers,
+                    emailAddressService,
                     ...deps
                 });
             };
@@ -848,6 +857,7 @@ describe('RouterController', function () {
                     sendEmailWithMagicLink: sendEmailWithMagicLinkStub,
                     settingsCache,
                     settingsHelpers,
+                    emailAddressService,
                     ...deps
                 });
             };
@@ -923,7 +933,8 @@ describe('RouterController', function () {
                     settingsHelpers,
                     newslettersService: {},
                     sentry: {},
-                    urlUtils: {}
+                    urlUtils: {},
+                    emailAddressService
                 });
 
                 routerController._handleSignin = handleSigninStub;
@@ -1035,7 +1046,8 @@ describe('RouterController', function () {
                 stripeAPIService,
                 labsService,
                 settingsCache,
-                newslettersService: newslettersServiceStub
+                newslettersService: newslettersServiceStub,
+                emailAddressService
             });
         });
 

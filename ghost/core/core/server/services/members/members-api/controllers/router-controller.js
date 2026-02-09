@@ -75,6 +75,7 @@ module.exports = class RouterController {
      * @param {any} deps.settingsCache
      * @param {any} deps.settingsHelpers
      * @param {any} deps.urlUtils
+     * @param {any} deps.emailAddressService
      */
     constructor({
         offersAPI,
@@ -93,7 +94,8 @@ module.exports = class RouterController {
         sentry,
         settingsCache,
         settingsHelpers,
-        urlUtils
+        urlUtils,
+        emailAddressService
     }) {
         this._offersAPI = offersAPI;
         this._paymentsService = paymentsService;
@@ -112,6 +114,7 @@ module.exports = class RouterController {
         this._settingsCache = settingsCache;
         this._settingsHelpers = settingsHelpers;
         this._urlUtils = urlUtils;
+        this._emailAddressService = emailAddressService;
     }
 
     async ensureStripe(_req, res, next) {
@@ -733,7 +736,7 @@ module.exports = class RouterController {
 
             const inboxLinks = await getInboxLinks({
                 recipient: normalizedEmail,
-                sender: this._settingsHelpers.getMembersSupportAddress(),
+                sender: this._emailAddressService.getMembersSupportAddress(),
                 dnsResolver: this.#inboxLinksDnsResolver
             });
             if (inboxLinks) {
