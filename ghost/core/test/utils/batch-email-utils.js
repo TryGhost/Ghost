@@ -159,7 +159,7 @@ function testCleanedSnapshot({html, plaintext}, ignoreReplacements) {
 async function matchEmailSnapshot() {
     const lastEmail = await getLastEmail();
     const defaultNewsletter = await lastEmail.emailModel.getLazyRelation('newsletter');
-    const linkRegexp = /http:\/\/127\.0\.0\.1:2369\/r\/\w+/g;
+    const linkRegexp = /http:\/\/127\.0\.0\.1:\d+\/r\/\w+/g;
 
     const ignoreReplacements = [
         {
