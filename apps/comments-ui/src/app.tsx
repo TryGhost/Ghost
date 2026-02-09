@@ -1,16 +1,14 @@
 /* eslint-disable no-shadow */
 
-import AuthFrame from './auth-frame';
 import ContentBox from './components/content-box';
 import PopupBox from './components/popup-box';
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import i18nLib from '@tryghost/i18n';
 import setupGhostApi from './utils/api';
 import {ActionHandler, SyncActionHandler, isSyncAction} from './actions';
 import {AppContext, Comment, DispatchActionType, EditableAppContext} from './app-context';
+import {CommentApiProvider, useCommentApi} from './components/comment-api-provider';
 import {CommentsFrame} from './components/frame';
-import {createCommentApi} from './components/comment-api-provider';
-import {setupAdminAPI} from './utils/admin-api';
 import {useOptions} from './utils/options';
 
 type AppProps = {
@@ -19,8 +17,6 @@ type AppProps = {
     pageUrl: string;
 };
 
-const ALLOWED_MODERATORS = ['Owner', 'Administrator', 'Super Editor'];
-
 /**
  * Check if a comment ID exists in the comments array (either as a top-level comment or reply)
  */
@@ -28,12 +24,15 @@ function isCommentLoaded(comments: Comment[], targetId: string): boolean {
     return comments.some(c => c.id === targetId || c.replies?.some(r => r.id === targetId));
 }
 
-const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
-    const options = useOptions(scriptTag);
+const AppContent: React.FC<{
+    options: ReturnType<typeof useOptions>;
+    initialCommentId: string | null;
+    pageUrl: string;
+}> = ({options, initialCommentId, pageUrl}) => {
+    const {commentApi, member, labs, supportEmail} = useCommentApi();
     const [state, setFullState] = useState<EditableAppContext>({
         initStatus: 'running',
         member: null,
-        admin: null,
         comments: [],
         pagination: null,
         commentCount: 0,
@@ -41,7 +40,6 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
         popup: null,
         labs: {},
         order: 'count__likes desc, created_at desc',
-        adminApi: null,
         commentsIsLoading: false,
         commentIdToHighlight: null,
         commentIdToScrollTo: initialCommentId,
@@ -55,15 +53,7 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
         isCommentingDisabled: false
     });
 
-    const iframeRef = React.createRef<HTMLIFrameElement>();
-
-    const api = React.useMemo(() => {
-        return setupGhostApi({
-            siteUrl: options.siteUrl,
-            apiUrl: options.apiUrl!,
-            apiKey: options.apiKey!
-        });
-    }, [options]);
+    const iframeRef = useRef<HTMLIFrameElement>(null);
 
     const setState = useCallback((newState: Partial<EditableAppContext> | ((state: EditableAppContext) => Partial<EditableAppContext>)) => {
         setFullState((state) => {
@@ -96,7 +86,6 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
         // allow for async actions within it's updater function so this is the best option.
         return new Promise((resolve) => {
             setState((state) => {
-                const commentApi = createCommentApi(api, state.adminApi ?? null, state.member?.uuid);
                 ActionHandler({action, data, state, commentApi, options, dispatchAction: dispatchAction as DispatchActionType}).then((updatedState) => {
                     const newState = {...updatedState};
                     resolve(newState);
@@ -107,7 +96,7 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
                 return {};
             });
         });
-    }, [api, options]); // Do not add state or context as a dependency here -> infinite render loop
+    }, [commentApi, options]); // Do not add state or context as a dependency here -> infinite render loop
 
     const i18n = useMemo(() => {
         return i18nLib(options.locale, 'comments');
@@ -121,68 +110,10 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
         openFormCount: useMemo(() => state.openCommentForms.length, [state.openCommentForms])
     };
 
-    const initAdminAuth = async () => {
-        if (state.adminApi || !options.adminUrl) {
-            return;
-        }
-
-        try {
-            const adminApi = setupAdminAPI({
-                adminUrl: options.adminUrl
-            });
-
-            let admin = null;
-            try {
-                admin = await adminApi.getUser();
-
-                // remove 'admin' for any roles (author, contributor, editor) who can't moderate comments
-                if (!admin || !(admin.roles.some(role => ALLOWED_MODERATORS.includes(role.name)))) {
-                    admin = null;
-                }
-
-                if (admin) {
-                    // this is a bit of a hack, but we need to fetch the comments fully populated if the user is an admin
-                    const adminComments = await adminApi.browse({page: 1, postId: options.postId, order: state.order, memberUuid: state.member?.uuid});
-                    setState((currentState) => {
-                        // Don't overwrite comments when initSetup loaded extra data
-                        // for permalink scrolling (multiple pages or expanded replies)
-                        if ((currentState.pagination && currentState.pagination.page > 1) || initialCommentId) {
-                            return {
-                                adminApi,
-                                admin,
-                                isAdmin: true
-                            };
-                        }
-                        return {
-                            adminApi,
-                            admin,
-                            isAdmin: true,
-                            comments: adminComments.comments,
-                            pagination: adminComments.meta.pagination
-                        };
-                    });
-                }
-            } catch (e) {
-                // Loading of admin failed. Could be not signed in, or a different error (not important)
-                // eslint-disable-next-line no-console
-                console.warn(`[Comments] Failed to fetch admin endpoint:`, e);
-            }
-
-            setState({
-                adminApi,
-                admin,
-                isAdmin: !!admin
-            });
-        } catch (e) {
-            /* eslint-disable no-console */
-            console.error(`[Comments] Failed to initialize admin authentication:`, e);
-        }
-    };
-
-    /** Fetch first few comments  */
+    /** Fetch first few comments using the resolved commentApi */
     const fetchComments = async () => {
-        const dataPromise = api.comments.browse({page: 1, postId: options.postId, order: state.order});
-        const countPromise = api.comments.count({postId: options.postId});
+        const dataPromise = commentApi.browse({page: 1, postId: options.postId, order: state.order});
+        const countPromise = commentApi.count({postId: options.postId});
 
         const [data, count] = await Promise.all([dataPromise, countPromise]);
 
@@ -199,7 +130,7 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
      */
     const fetchScrollTarget = async (targetId: string): Promise<Comment | null> => {
         try {
-            const response = await api.comments.read(targetId);
+            const response = await commentApi.read(targetId);
             const comment = response.comments?.[0];
             return (comment && comment.status === 'published') ? comment : null;
         } catch {
@@ -224,7 +155,7 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
                 break;
             }
 
-            const nextPage = await api.comments.browse({
+            const nextPage = await commentApi.browse({
                 page: pagination.page + 1,
                 postId: options.postId,
                 order: state.order
@@ -237,10 +168,47 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
     };
 
     /**
-     * Load additional comment pages and/or replies until the scroll
-     * target is found. After paginating to the parent comment, if the
-     * target reply isn't in the inline replies (partial API response),
-     * fetch all replies from the server.
+     * Load all replies for a parent comment if the target reply isn't already loaded.
+     */
+    const loadRepliesForComment = async (
+        parentId: string,
+        comments: Comment[]
+    ): Promise<Comment[]> => {
+        const parent = comments.find(c => c.id === parentId);
+        const hasMoreReplies = parent && parent.count.replies > parent.replies.length;
+
+        if (!hasMoreReplies) {
+            return comments;
+        }
+
+        let allReplies: Comment[] = [];
+        let hasMore = true;
+        let afterReplyId: string | undefined;
+
+        while (hasMore) {
+            const response = await commentApi.replies({
+                commentId: parentId,
+                afterReplyId,
+                limit: 100
+            });
+            allReplies = [...allReplies, ...response.comments];
+            hasMore = !!response.meta?.pagination?.next;
+
+            if (response.comments.length > 0) {
+                afterReplyId = response.comments[response.comments.length - 1]?.id;
+            } else {
+                hasMore = false;
+            }
+        }
+
+        return comments.map(c => (c.id === parentId
+            ? {...c, replies: allReplies}
+            : c
+        ));
+    };
+
+    /**
+     * Load additional comment pages and/or replies until the scroll target is found.
      */
     const loadScrollTarget = async (
         targetId: string,
@@ -261,10 +229,9 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
         return {comments, pagination, found: isCommentLoaded(comments, targetId)};
     };
 
-    /** Initialize comments setup once in viewport, fetch data and setup state */
+    /** Initialize comments setup - called after provider is resolved */
     const initSetup = async () => {
         try {
-            const {member, labs, supportEmail} = await api.init();
             const {count, comments: initialComments, pagination: initialPagination} = await fetchComments();
 
             let comments = initialComments;
@@ -302,13 +269,14 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
                 showMissingCommentNotice: !!initialCommentId && !scrollTargetFound,
                 supportEmail,
                 isMember,
+                isAdmin: commentApi.isAdmin,
                 isPaidOnly,
                 hasRequiredTier,
                 isCommentingDisabled: member?.can_comment === false
             });
         } catch (e) {
+            // eslint-disable-next-line no-console
             console.error(`[Comments] Failed to initialize:`, e);
-            /* eslint-enable no-console */
             setState({
                 initStatus: 'failed'
             });
@@ -356,9 +324,33 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
             <CommentsFrame ref={iframeRef}>
                 <ContentBox done={done} />
             </CommentsFrame>
-            {state.comments.length > 0 ? <AuthFrame adminUrl={options.adminUrl} onLoad={initAdminAuth}/> : null}
             <PopupBox />
         </AppContext.Provider>
+    );
+};
+
+const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
+    const options = useOptions(scriptTag);
+
+    const api = useMemo(() => {
+        return setupGhostApi({
+            siteUrl: options.siteUrl,
+            apiUrl: options.apiUrl!,
+            apiKey: options.apiKey!
+        });
+    }, [options]);
+
+    return (
+        <CommentApiProvider
+            adminUrl={options.adminUrl}
+            api={api}
+        >
+            <AppContent
+                initialCommentId={initialCommentId}
+                options={options}
+                pageUrl={pageUrl}
+            />
+        </CommentApiProvider>
     );
 };
 
