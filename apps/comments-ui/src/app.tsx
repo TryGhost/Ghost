@@ -9,6 +9,7 @@ import setupGhostApi from './utils/api';
 import {ActionHandler, SyncActionHandler, isSyncAction} from './actions';
 import {AppContext, Comment, DispatchActionType, EditableAppContext} from './app-context';
 import {CommentsFrame} from './components/frame';
+import {createCommentApi} from './components/comment-api-provider';
 import {setupAdminAPI} from './utils/admin-api';
 import {useOptions} from './utils/options';
 
@@ -81,7 +82,7 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
             // because updates to state may be asynchronous
             // so calling dispatchAction('counterUp') multiple times, may yield unexpected results if we don't use a callback function
             setState((state) => {
-                return SyncActionHandler({action, data, state, api, adminApi: state.adminApi!, options});
+                return SyncActionHandler({action, data, state, options});
             });
             return;
         }
@@ -94,7 +95,8 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
         // allow for async actions within it's updater function so this is the best option.
         return new Promise((resolve) => {
             setState((state) => {
-                ActionHandler({action, data, state, api, adminApi: state.adminApi!, options, dispatchAction: dispatchAction as DispatchActionType}).then((updatedState) => {
+                const commentApi = createCommentApi(api, state.adminApi ?? null, state.member?.uuid);
+                ActionHandler({action, data, state, commentApi, options, dispatchAction: dispatchAction as DispatchActionType}).then((updatedState) => {
                     const newState = {...updatedState};
                     resolve(newState);
                     setState(newState);
