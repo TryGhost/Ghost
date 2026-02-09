@@ -127,6 +127,16 @@ describe('Helpers - ', () => {
             expect(value).toBe(true);
         });
 
+        test('returns false for active null-tier non-retention offer', () => {
+            const nullTierSignupOffer = {
+                ...FixtureOffer,
+                tier: null,
+                redemption_type: 'signup'
+            };
+            const value = isActiveOffer({offer: nullTierSignupOffer, site: FixturesSite.singleTier.basic});
+            expect(value).toBe(false);
+        });
+
         test('returns false for archived null-tier offer', () => {
             const archivedNullTierOffer = {
                 ...FixtureOffer,

@@ -823,9 +823,9 @@ export const isActiveOffer = ({site, offer}) => {
         return false;
     }
 
-    // Null-tier offers (retention) are active if their status is active
+    // Null-tier offers are only valid for retention
     if (!offer.tier) {
-        return true;
+        return isRetentionOffer({offer});
     }
 
     // Check if the corresponding tier has been archived
