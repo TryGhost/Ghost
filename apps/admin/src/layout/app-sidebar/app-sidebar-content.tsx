@@ -31,7 +31,7 @@ function AppSidebarContent() {
                 <NavContent />
                 <NavGhostPro />
             </div>
-            <div className={`flex flex-col gap-2 sidebar:gap-4 ${banner && 'pb-[180px]'}`}>
+            <div className={`flex flex-col gap-2 sidebar:gap-4 ${showUpgradeBanner && 'pb-[254px]'} ${showWhatsNewBanner && 'pb-[180px]'}`}>
                 {banner &&
                     <div className="fixed left-6 bottom-[96px] max-w-[254px] z-50">
                         {banner}
