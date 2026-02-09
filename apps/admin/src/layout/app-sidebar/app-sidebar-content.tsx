@@ -1,6 +1,7 @@
 import {
     SidebarContent,
 } from "@tryghost/shade"
+import type { ReactNode } from "react";
 
 import WhatsNewBanner from "@/whats-new/components/whats-new-banner";
 
@@ -11,19 +12,32 @@ import NavSettings from "./nav-settings";
 import ThemeErrorsBanner from "./theme-errors-banner";
 import UpgradeBanner from "./upgrade-banner";
 import { useUpgradeStatus } from "./hooks/use-upgrade-status";
+import { useWhatsNewStatus } from "./hooks/use-whats-new-status";
 
 function AppSidebarContent() {
     const { showUpgradeBanner, trialDaysRemaining } = useUpgradeStatus();
+    const { showWhatsNewBanner } = useWhatsNewStatus();
+    let banner: ReactNode = null;
+
+    if (showUpgradeBanner) {
+        banner = <UpgradeBanner trialDaysRemaining={trialDaysRemaining} />;
+    } else if (showWhatsNewBanner) {
+        banner = <WhatsNewBanner />;
+    }
 
     return (
-        <SidebarContent className="px-3 pt-4 justify-between">
+        <SidebarContent className={`px-3 pt-4 ${!banner && 'justify-between'}`}>
             <div className="flex flex-col gap-2 sidebar:gap-4">
                 <NavMain />
                 <NavContent />
                 <NavGhostPro />
             </div>
-            <div className="flex flex-col gap-2 sidebar:gap-4">
-                {showUpgradeBanner ? <UpgradeBanner trialDaysRemaining={trialDaysRemaining} /> : <WhatsNewBanner />}
+            <div className={`flex flex-col gap-2 sidebar:gap-4 ${banner && 'pb-[180px]'}`}>
+                {banner &&
+                    <div className="fixed left-6 bottom-[96px] max-w-[254px] z-50">
+                        {banner}
+                    </div>
+                }
                 <ThemeErrorsBanner />
                 <NavSettings className="pb-0" />
             </div>
