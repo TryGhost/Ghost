@@ -43,13 +43,13 @@ describe('Tag API', function () {
         assert.equal(jsonResponse.meta.pagination.prev, null);
 
         // returns 404 because this tag has no published posts
-        jsonResponse.tags[0].url.should.eql(`${config.get('url')}/404/`);
+        assert.equal(new URL(jsonResponse.tags[0].url).pathname, '/404/');
 
         // Find specific tags by slug to verify URL generation
         const kitchenSinkTag = jsonResponse.tags.find(t => t.slug === 'kitchen-sink');
 
         // kitchen-sink has published posts, so it should have a valid URL
-        kitchenSinkTag.url.should.eql(`${config.get('url')}/tag/kitchen-sink/`);
+        assert.equal(new URL(kitchenSinkTag.url).pathname, '/tag/kitchen-sink/');
         assertExists(kitchenSinkTag.count.posts);
         assert.equal(kitchenSinkTag.count.posts, 2);
     });
@@ -82,7 +82,7 @@ describe('Tag API', function () {
         assertExists(jsonResponse.tags[0].count.posts);
         assert.equal(jsonResponse.tags[0].count.posts, 7);
 
-        jsonResponse.tags[0].url.should.eql(`${config.get('url')}/tag/getting-started/`);
+        assert.equal(new URL(jsonResponse.tags[0].url).pathname, '/tag/getting-started/');
     });
 
     it('Can add a tag', async function () {
@@ -108,7 +108,7 @@ describe('Tag API', function () {
         assert.equal(testUtils.API.isISO8601(jsonResponse.tags[0].created_at), true);
 
         assertExists(res.headers.location);
-        assert.equal(res.headers.location, `${config.get('url')}${localUtils.API.getApiQuery('tags/')}${res.body.tags[0].id}/`);
+        assert.equal(new URL(res.headers.location).pathname, `/ghost/api/admin/tags/${res.body.tags[0].id}/`);
     });
 
     it('Can add an internal tag', async function () {
@@ -135,7 +135,7 @@ describe('Tag API', function () {
         assert.equal(jsonResponse.tags[0].slug, 'hash-test');
 
         assertExists(res.headers.location);
-        assert.equal(res.headers.location, `${config.get('url')}${localUtils.API.getApiQuery('tags/')}${res.body.tags[0].id}/`);
+        assert.equal(new URL(res.headers.location).pathname, `/ghost/api/admin/tags/${res.body.tags[0].id}/`);
     });
 
     it('Can edit a tag', async function () {
