@@ -1,6 +1,6 @@
 import CommentContent from './comment-content';
 import React from 'react';
-import {Button, LucideIcon} from '@tryghost/shade';
+import {Button, LoadingIndicator, LucideIcon} from '@tryghost/shade';
 import {Comment, useHideComment, useShowComment} from '@tryghost/admin-x-framework/api/comments';
 import {CommentAvatar} from './comment-avatar';
 import {CommentHeader} from './comment-header';
@@ -130,13 +130,19 @@ interface CommentThreadListProps {
     replies: Comment[];
     selectedCommentId: string;
     commentPermalinksEnabled?: boolean;
+    fetchNextPage: () => void;
+    hasNextPage?: boolean;
+    isFetchingNextPage: boolean;
 }
 
 const CommentThreadList: React.FC<CommentThreadListProps> = ({
     selectedComment,
     replies,
     selectedCommentId,
-    commentPermalinksEnabled
+    commentPermalinksEnabled,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage
 }) => {
     // All replies are children of the selected comment (flat structure from API)
     const commentWithReplies: Comment = {...selectedComment, replies};
@@ -149,6 +155,24 @@ const CommentThreadList: React.FC<CommentThreadListProps> = ({
                 isSelectedComment={true}
                 selectedCommentId={selectedCommentId}
             />
+            {hasNextPage && (
+                <div className="flex justify-center pb-4">
+                    <Button
+                        disabled={isFetchingNextPage}
+                        variant="outline"
+                        onClick={() => fetchNextPage()}
+                    >
+                        {isFetchingNextPage ? (
+                            <>
+                                <LoadingIndicator size="sm" />
+                                Loading...
+                            </>
+                        ) : (
+                            'Load more replies'
+                        )}
+                    </Button>
+                </div>
+            )}
         </div>
     );
 };
