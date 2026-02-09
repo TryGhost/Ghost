@@ -1,11 +1,13 @@
 import {Comment, useAppContext, useLabs} from '../../../app-context';
+import {useCommentApi} from '../../comment-api-provider';
 
 type Props = {
     comment: Comment;
     close: () => void;
 };
 const AdminContextMenu: React.FC<Props> = ({comment, close}) => {
-    const {dispatchAction, t, adminUrl} = useAppContext();
+    const {dispatchAction, t} = useAppContext();
+    const {adminUrl} = useCommentApi();
     const labs = useLabs();
 
     const hideComment = () => {

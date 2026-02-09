@@ -2,10 +2,11 @@ import CommentContextMenu from '../../../../../src/components/content/context-me
 import React from 'react';
 import sinon from 'sinon';
 import {AppContext} from '../../../../../src/app-context';
+import {CommentApiContext} from '../../../../../src/components/comment-api-provider';
 import {buildComment} from '../../../../utils/fixtures';
 import {render, screen} from '@testing-library/react';
 
-const contextualRender = (ui, {appContext, ...renderOptions}) => {
+const contextualRender = (ui, {appContext, commentApiContext, ...renderOptions} = {}) => {
     const contextWithDefaults = {
         member: null,
         dispatchAction: () => {},
@@ -13,8 +14,21 @@ const contextualRender = (ui, {appContext, ...renderOptions}) => {
         ...appContext
     };
 
+    const commentApiWithDefaults = {
+        commentApi: {isAdmin: false},
+        admin: null,
+        adminComments: null,
+        isAdmin: false,
+        adminUrl: undefined,
+        initAdminAuth: async () => {},
+        setMember: () => {},
+        ...commentApiContext
+    };
+
     return render(
-        <AppContext.Provider value={contextWithDefaults}>{ui}</AppContext.Provider>,
+        <CommentApiContext.Provider value={commentApiWithDefaults}>
+            <AppContext.Provider value={contextWithDefaults}>{ui}</AppContext.Provider>
+        </CommentApiContext.Provider>,
         renderOptions
     );
 };
@@ -26,7 +40,7 @@ describe('<CommentContextMenu>', () => {
 
     it('has display-below classes when in viewport', () => {
         const comment = buildComment();
-        contextualRender(<CommentContextMenu comment={comment} />, {appContext: {admin: true}});
+        contextualRender(<CommentContextMenu comment={comment} />, {commentApiContext: {isAdmin: true}});
         expect(screen.getByTestId('comment-context-menu-inner')).toHaveClass('top-0');
     });
 
@@ -34,7 +48,7 @@ describe('<CommentContextMenu>', () => {
         sinon.stub(HTMLElement.prototype, 'getBoundingClientRect').returns({bottom: 2000});
 
         const comment = buildComment();
-        contextualRender(<CommentContextMenu comment={comment} />, {appContext: {admin: true}});
+        contextualRender(<CommentContextMenu comment={comment} />, {commentApiContext: {isAdmin: true}});
         expect(screen.getByTestId('comment-context-menu-inner')).toHaveClass('bottom-full', 'mb-6');
     });
 });

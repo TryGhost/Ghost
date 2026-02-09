@@ -66,10 +66,12 @@ const ALLOWED_MODERATORS = ['Owner', 'Administrator', 'Super Editor'];
 
 type CommentApiContextType = {
     commentApi: CommentApi;
+    isAdmin: boolean;
+    adminUrl: string | undefined;
     initAdminAuth: (memberUuid?: string) => Promise<void>;
 };
 
-const CommentApiContext = createContext<CommentApiContextType | null>(null);
+export const CommentApiContext = createContext<CommentApiContextType | null>(null);
 
 export function useCommentApi(): CommentApiContextType {
     const context = useContext(CommentApiContext);
@@ -125,8 +127,10 @@ export function CommentApiProvider({
 
     const contextValue = useMemo(() => ({
         commentApi,
+        isAdmin: commentApi.isAdmin,
+        adminUrl,
         initAdminAuth
-    }), [commentApi, initAdminAuth]);
+    }), [commentApi, adminUrl, initAdminAuth]);
 
     return (
         <CommentApiContext.Provider value={contextValue}>
