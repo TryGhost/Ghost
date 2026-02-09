@@ -1,9 +1,10 @@
 import {AppContext} from '../../../../src/app-context';
+import {CommentApiContext} from '../../../../src/components/comment-api-provider';
 import {CommentComponent, RepliedToSnippet} from '../../../../src/components/content/comment';
 import {buildComment} from '../../../utils/fixtures';
 import {render, screen} from '@testing-library/react';
 
-const contextualRender = (ui, {appContext, ...renderOptions}) => {
+const contextualRender = (ui, {appContext, commentApiContext, ...renderOptions} = {}) => {
     const contextWithDefaults = {
         commentsEnabled: 'all',
         comments: [],
@@ -15,8 +16,21 @@ const contextualRender = (ui, {appContext, ...renderOptions}) => {
         ...appContext
     };
 
+    const commentApiWithDefaults = {
+        commentApi: {isAdmin: false},
+        admin: null,
+        adminComments: null,
+        isAdmin: false,
+        adminUrl: undefined,
+        initAdminAuth: async () => {},
+        setMember: () => {},
+        ...commentApiContext
+    };
+
     return render(
-        <AppContext.Provider value={contextWithDefaults}>{ui}</AppContext.Provider>,
+        <CommentApiContext.Provider value={commentApiWithDefaults}>
+            <AppContext.Provider value={contextWithDefaults}>{ui}</AppContext.Provider>
+        </CommentApiContext.Provider>,
         renderOptions
     );
 };
