@@ -477,7 +477,7 @@ table.body h2 span {
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                             <tr class=\\"header-image-row\\">
                                                 <td class=\\"header-image\\" width=\\"100%\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding-top: 24px; padding-bottom: 16px;\\" valign=\\"top\\">
-                                                    <a href=\\"http://127.0.0.1:2369/r/2368ccf6?m=member-uuid\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\">
+                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\">
                                                         <img src=\\"http://127.0.0.1:2369/content/images/2022/05/test.jpg\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
                                                     </a>
                                                 </td>
@@ -487,10 +487,10 @@ table.body h2 span {
                                                 <td class=\\"site-info\\" width=\\"100%\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding-top: 32px;\\" valign=\\"top\\">
                                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
                                                             <tr>
-                                                                <td class=\\"site-url \\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212A; font-size: 16px; letter-spacing: -0.1px; font-weight: 700; text-transform: uppercase; text-align: center;\\" valign=\\"top\\" align=\\"center\\"><div style=\\"width: 100% !important;\\"><a href=\\"http://127.0.0.1:2369/r/d26f765a?m=member-uuid\\" class=\\"site-title\\" style=\\"text-decoration: none; color: #15212A; overflow-wrap: anywhere;\\" target=\\"_blank\\">Ghost</a></div></td>
+                                                                <td class=\\"site-url \\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212A; font-size: 16px; letter-spacing: -0.1px; font-weight: 700; text-transform: uppercase; text-align: center;\\" valign=\\"top\\" align=\\"center\\"><div style=\\"width: 100% !important;\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"site-title\\" style=\\"text-decoration: none; color: #15212A; overflow-wrap: anywhere;\\" target=\\"_blank\\">Ghost</a></div></td>
                                                             </tr>
                                                             <tr>
-                                                                <td class=\\"site-url site-url-bottom-padding\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212A; font-size: 16px; letter-spacing: -0.1px; font-weight: 700; text-transform: uppercase; text-align: center; padding-bottom: 12px;\\" valign=\\"top\\" align=\\"center\\"><div style=\\"width: 100% !important;\\"><a href=\\"http://127.0.0.1:2369/r/3d4acfcf?m=member-uuid\\" class=\\"site-subtitle\\" style=\\"text-decoration: none; color: #15212a; color: rgba(0, 0, 0, 0.6); font-size: 13px; font-weight: 400; text-transform: none; overflow-wrap: anywhere;\\" target=\\"_blank\\">Daily newsletter</a></div></td>
+                                                                <td class=\\"site-url site-url-bottom-padding\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212A; font-size: 16px; letter-spacing: -0.1px; font-weight: 700; text-transform: uppercase; text-align: center; padding-bottom: 12px;\\" valign=\\"top\\" align=\\"center\\"><div style=\\"width: 100% !important;\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"site-subtitle\\" style=\\"text-decoration: none; color: #15212a; color: rgba(0, 0, 0, 0.6); font-size: 13px; font-weight: 400; text-transform: none; overflow-wrap: anywhere;\\" target=\\"_blank\\">Daily newsletter</a></div></td>
                                                             </tr>
 
                                                     </table>
@@ -502,7 +502,7 @@ table.body h2 span {
                                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
                                                         <tr>
                                                             <td style=\\"vertical-align: top; font-family: Georgia, serif; letter-spacing: -0.01em; font-size: 36px; line-height: 1.1; font-weight: 700; text-align: center; color: #000000;\\" valign=\\"top\\" align=\\"center\\">
-                                                                <a href=\\"http://127.0.0.1:2369/r/b57c7382?m=member-uuid\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; text-align: center; line-height: 1.1em; overflow-wrap: anywhere; color: #000000;\\" target=\\"_blank\\">A random test post</a>
+                                                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; text-align: center; line-height: 1.1em; overflow-wrap: anywhere; color: #000000;\\" target=\\"_blank\\">A random test post</a>
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -516,12 +516,12 @@ table.body h2 span {
                                                                 By Joe Bloggs &#x2022; <span class=\\"post-meta-date\\" style=\\"white-space: nowrap;\\">date </span>
                                                             </td>
                                                             <td class=\\"post-meta post-meta-center view-online desktop\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: rgba(0, 0, 0, 0.6); font-size: 13px; font-weight: 400; text-align: center; display: none;\\" valign=\\"top\\" align=\\"center\\">
-                                                                <a href=\\"http://127.0.0.1:2369/r/85b6dfdc?m=member-uuid\\" class=\\"view-online-link\\" style=\\"word-wrap: none; white-space: nowrap; color: #15212a; color: rgba(0, 0, 0, 0.6); overflow-wrap: anywhere; text-decoration: underline;\\" target=\\"_blank\\">View in browser</a>
+                                                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"view-online-link\\" style=\\"word-wrap: none; white-space: nowrap; color: #15212a; color: rgba(0, 0, 0, 0.6); overflow-wrap: anywhere; text-decoration: underline;\\" target=\\"_blank\\">View in browser</a>
                                                             </td>
                                                         </tr>
                                                         <tr class=\\"post-meta post-meta-center view-online-mobile\\" style=\\"color: #15212a; color: rgba(0, 0, 0, 0.6); font-size: 13px; font-weight: 400; text-align: center;\\" align=\\"center\\">
                                                             <td height=\\"20\\" class=\\"view-online\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212a; color: rgba(0, 0, 0, 0.6); font-size: 13px; font-weight: 400; text-align: center; text-decoration: underline;\\" valign=\\"top\\" align=\\"center\\">
-                                                                <a href=\\"http://127.0.0.1:2369/r/276dbe98?m=member-uuid\\" class=\\"view-online-link\\" style=\\"word-wrap: none; white-space: nowrap; color: #15212a; color: rgba(0, 0, 0, 0.6); overflow-wrap: anywhere; text-decoration: underline;\\" target=\\"_blank\\">View in browser</a>
+                                                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"view-online-link\\" style=\\"word-wrap: none; white-space: nowrap; color: #15212a; color: rgba(0, 0, 0, 0.6); overflow-wrap: anywhere; text-decoration: underline;\\" target=\\"_blank\\">View in browser</a>
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -639,7 +639,7 @@ table.body h2 span {
 
 
 
-http://127.0.0.1:2369/r/2368ccf6?m=member-uuid
+http://127.0.0.1:2369/r/xxxxxx?m=member-uuid
 
 
 
@@ -649,13 +649,10 @@ http://127.0.0.1:2369/r/2368ccf6?m=member-uuid
 
 
 
-Ghost [http://127.0.0.1:2369/r/d26f765a?m=member-uuid]
+Ghost [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
-Daily newsletter [http://127.0.0.1:2369/r/3d4acfcf?m=member-uuid]
-
-
-
+Daily newsletter [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 
@@ -666,7 +663,10 @@ Daily newsletter [http://127.0.0.1:2369/r/3d4acfcf?m=member-uuid]
 
 
 
-A random test post [http://127.0.0.1:2369/r/b57c7382?m=member-uuid]
+
+
+
+A random test post [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 
@@ -682,12 +682,12 @@ A random test post [http://127.0.0.1:2369/r/b57c7382?m=member-uuid]
 By Joe Bloggs • date
 
 
-View in browser [http://127.0.0.1:2369/r/85b6dfdc?m=member-uuid]
+View in browser [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 
 
-View in browser [http://127.0.0.1:2369/r/276dbe98?m=member-uuid]
+View in browser [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 
@@ -1252,7 +1252,7 @@ table.body h2 span {
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                             <tr class=\\"header-image-row\\">
                                                 <td class=\\"header-image\\" width=\\"100%\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding-top: 24px; padding-bottom: 16px;\\" valign=\\"top\\">
-                                                    <a href=\\"http://127.0.0.1:2369/r/39170c6c?m=member-uuid\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\">
+                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\">
                                                         <img src=\\"http://127.0.0.1:2369/content/images/2022/05/test.jpg\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
                                                     </a>
                                                 </td>
@@ -1262,10 +1262,10 @@ table.body h2 span {
                                                 <td class=\\"site-info\\" width=\\"100%\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding-top: 32px;\\" valign=\\"top\\">
                                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
                                                             <tr>
-                                                                <td class=\\"site-url \\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212A; font-size: 16px; letter-spacing: -0.1px; font-weight: 700; text-transform: uppercase; text-align: center;\\" valign=\\"top\\" align=\\"center\\"><div style=\\"width: 100% !important;\\"><a href=\\"http://127.0.0.1:2369/r/657962f3?m=member-uuid\\" class=\\"site-title\\" style=\\"text-decoration: none; color: #15212A; overflow-wrap: anywhere;\\" target=\\"_blank\\">Ghost</a></div></td>
+                                                                <td class=\\"site-url \\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212A; font-size: 16px; letter-spacing: -0.1px; font-weight: 700; text-transform: uppercase; text-align: center;\\" valign=\\"top\\" align=\\"center\\"><div style=\\"width: 100% !important;\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"site-title\\" style=\\"text-decoration: none; color: #15212A; overflow-wrap: anywhere;\\" target=\\"_blank\\">Ghost</a></div></td>
                                                             </tr>
                                                             <tr>
-                                                                <td class=\\"site-url site-url-bottom-padding\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212A; font-size: 16px; letter-spacing: -0.1px; font-weight: 700; text-transform: uppercase; text-align: center; padding-bottom: 12px;\\" valign=\\"top\\" align=\\"center\\"><div style=\\"width: 100% !important;\\"><a href=\\"http://127.0.0.1:2369/r/fa400e83?m=member-uuid\\" class=\\"site-subtitle\\" style=\\"text-decoration: none; color: #15212a; color: rgba(0, 0, 0, 0.6); font-size: 13px; font-weight: 400; text-transform: none; overflow-wrap: anywhere;\\" target=\\"_blank\\">Daily newsletter</a></div></td>
+                                                                <td class=\\"site-url site-url-bottom-padding\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212A; font-size: 16px; letter-spacing: -0.1px; font-weight: 700; text-transform: uppercase; text-align: center; padding-bottom: 12px;\\" valign=\\"top\\" align=\\"center\\"><div style=\\"width: 100% !important;\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"site-subtitle\\" style=\\"text-decoration: none; color: #15212a; color: rgba(0, 0, 0, 0.6); font-size: 13px; font-weight: 400; text-transform: none; overflow-wrap: anywhere;\\" target=\\"_blank\\">Daily newsletter</a></div></td>
                                                             </tr>
 
                                                     </table>
@@ -1277,7 +1277,7 @@ table.body h2 span {
                                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
                                                         <tr>
                                                             <td style=\\"vertical-align: top; font-family: Georgia, serif; letter-spacing: -0.01em; font-size: 36px; line-height: 1.1; font-weight: 700; text-align: center; color: #000000;\\" valign=\\"top\\" align=\\"center\\">
-                                                                <a href=\\"http://127.0.0.1:2369/r/aa1dfd3e?m=member-uuid\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; text-align: center; line-height: 1.1em; overflow-wrap: anywhere; color: #000000;\\" target=\\"_blank\\">A random test post</a>
+                                                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; text-align: center; line-height: 1.1em; overflow-wrap: anywhere; color: #000000;\\" target=\\"_blank\\">A random test post</a>
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -1291,12 +1291,12 @@ table.body h2 span {
                                                                 By Joe Bloggs &#x2022; <span class=\\"post-meta-date\\" style=\\"white-space: nowrap;\\">date </span>
                                                             </td>
                                                             <td class=\\"post-meta post-meta-center view-online desktop\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: rgba(0, 0, 0, 0.6); font-size: 13px; font-weight: 400; text-align: center; display: none;\\" valign=\\"top\\" align=\\"center\\">
-                                                                <a href=\\"http://127.0.0.1:2369/r/a4af3bd9?m=member-uuid\\" class=\\"view-online-link\\" style=\\"word-wrap: none; white-space: nowrap; color: #15212a; color: rgba(0, 0, 0, 0.6); overflow-wrap: anywhere; text-decoration: underline;\\" target=\\"_blank\\">View in browser</a>
+                                                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"view-online-link\\" style=\\"word-wrap: none; white-space: nowrap; color: #15212a; color: rgba(0, 0, 0, 0.6); overflow-wrap: anywhere; text-decoration: underline;\\" target=\\"_blank\\">View in browser</a>
                                                             </td>
                                                         </tr>
                                                         <tr class=\\"post-meta post-meta-center view-online-mobile\\" style=\\"color: #15212a; color: rgba(0, 0, 0, 0.6); font-size: 13px; font-weight: 400; text-align: center;\\" align=\\"center\\">
                                                             <td height=\\"20\\" class=\\"view-online\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212a; color: rgba(0, 0, 0, 0.6); font-size: 13px; font-weight: 400; text-align: center; text-decoration: underline;\\" valign=\\"top\\" align=\\"center\\">
-                                                                <a href=\\"http://127.0.0.1:2369/r/7640b5e3?m=member-uuid\\" class=\\"view-online-link\\" style=\\"word-wrap: none; white-space: nowrap; color: #15212a; color: rgba(0, 0, 0, 0.6); overflow-wrap: anywhere; text-decoration: underline;\\" target=\\"_blank\\">View in browser</a>
+                                                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"view-online-link\\" style=\\"word-wrap: none; white-space: nowrap; color: #15212a; color: rgba(0, 0, 0, 0.6); overflow-wrap: anywhere; text-decoration: underline;\\" target=\\"_blank\\">View in browser</a>
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -1414,7 +1414,7 @@ table.body h2 span {
 
 
 
-http://127.0.0.1:2369/r/39170c6c?m=member-uuid
+http://127.0.0.1:2369/r/xxxxxx?m=member-uuid
 
 
 
@@ -1424,13 +1424,10 @@ http://127.0.0.1:2369/r/39170c6c?m=member-uuid
 
 
 
-Ghost [http://127.0.0.1:2369/r/657962f3?m=member-uuid]
+Ghost [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
-Daily newsletter [http://127.0.0.1:2369/r/fa400e83?m=member-uuid]
-
-
-
+Daily newsletter [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 
@@ -1441,7 +1438,10 @@ Daily newsletter [http://127.0.0.1:2369/r/fa400e83?m=member-uuid]
 
 
 
-A random test post [http://127.0.0.1:2369/r/aa1dfd3e?m=member-uuid]
+
+
+
+A random test post [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 
@@ -1457,12 +1457,12 @@ A random test post [http://127.0.0.1:2369/r/aa1dfd3e?m=member-uuid]
 By Joe Bloggs • date
 
 
-View in browser [http://127.0.0.1:2369/r/a4af3bd9?m=member-uuid]
+View in browser [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 
 
-View in browser [http://127.0.0.1:2369/r/7640b5e3?m=member-uuid]
+View in browser [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 
@@ -7851,7 +7851,7 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                             <tr class=\\"header-image-row\\">
                                                 <td class=\\"header-image\\" width=\\"100%\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding-top: 24px; padding-bottom: 16px;\\" valign=\\"top\\">
-                                                    <a href=\\"http://127.0.0.1:2369/r/3207b378?m=member-uuid\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\">
+                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\">
                                                         <img src=\\"http://127.0.0.1:2369/content/images/2022/05/test.jpg\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
                                                     </a>
                                                 </td>
@@ -7861,10 +7861,10 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
                                                 <td class=\\"site-info\\" width=\\"100%\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding-top: 32px;\\" valign=\\"top\\">
                                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
                                                             <tr>
-                                                                <td class=\\"site-url \\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212A; font-size: 16px; letter-spacing: -0.1px; font-weight: 700; text-transform: uppercase; text-align: center;\\" valign=\\"top\\" align=\\"center\\"><div style=\\"width: 100% !important;\\"><a href=\\"http://127.0.0.1:2369/r/a4cd75bc?m=member-uuid\\" class=\\"site-title\\" style=\\"text-decoration: none; color: #15212A; overflow-wrap: anywhere;\\" target=\\"_blank\\">Ghost</a></div></td>
+                                                                <td class=\\"site-url \\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212A; font-size: 16px; letter-spacing: -0.1px; font-weight: 700; text-transform: uppercase; text-align: center;\\" valign=\\"top\\" align=\\"center\\"><div style=\\"width: 100% !important;\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"site-title\\" style=\\"text-decoration: none; color: #15212A; overflow-wrap: anywhere;\\" target=\\"_blank\\">Ghost</a></div></td>
                                                             </tr>
                                                             <tr>
-                                                                <td class=\\"site-url site-url-bottom-padding\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212A; font-size: 16px; letter-spacing: -0.1px; font-weight: 700; text-transform: uppercase; text-align: center; padding-bottom: 12px;\\" valign=\\"top\\" align=\\"center\\"><div style=\\"width: 100% !important;\\"><a href=\\"http://127.0.0.1:2369/r/b7be15d0?m=member-uuid\\" class=\\"site-subtitle\\" style=\\"text-decoration: none; color: #15212a; color: rgba(0, 0, 0, 0.6); font-size: 13px; font-weight: 400; text-transform: none; overflow-wrap: anywhere;\\" target=\\"_blank\\">Daily newsletter</a></div></td>
+                                                                <td class=\\"site-url site-url-bottom-padding\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212A; font-size: 16px; letter-spacing: -0.1px; font-weight: 700; text-transform: uppercase; text-align: center; padding-bottom: 12px;\\" valign=\\"top\\" align=\\"center\\"><div style=\\"width: 100% !important;\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"site-subtitle\\" style=\\"text-decoration: none; color: #15212a; color: rgba(0, 0, 0, 0.6); font-size: 13px; font-weight: 400; text-transform: none; overflow-wrap: anywhere;\\" target=\\"_blank\\">Daily newsletter</a></div></td>
                                                             </tr>
 
                                                     </table>
@@ -7876,7 +7876,7 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
                                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
                                                         <tr>
                                                             <td style=\\"vertical-align: top; font-family: Georgia, serif; letter-spacing: -0.01em; font-size: 36px; line-height: 1.1; font-weight: 700; text-align: center; color: #000000;\\" valign=\\"top\\" align=\\"center\\">
-                                                                <a href=\\"http://127.0.0.1:2369/r/dd9ec690?m=member-uuid\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; text-align: center; line-height: 1.1em; overflow-wrap: anywhere; color: #000000;\\" target=\\"_blank\\">A random test post</a>
+                                                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; text-align: center; line-height: 1.1em; overflow-wrap: anywhere; color: #000000;\\" target=\\"_blank\\">A random test post</a>
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -7890,12 +7890,12 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
                                                                 By Joe Bloggs &#x2022; <span class=\\"post-meta-date\\" style=\\"white-space: nowrap;\\">date </span>
                                                             </td>
                                                             <td class=\\"post-meta post-meta-center view-online desktop\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: rgba(0, 0, 0, 0.6); font-size: 13px; font-weight: 400; text-align: center; display: none;\\" valign=\\"top\\" align=\\"center\\">
-                                                                <a href=\\"http://127.0.0.1:2369/r/d016d1a6?m=member-uuid\\" class=\\"view-online-link\\" style=\\"word-wrap: none; white-space: nowrap; color: #15212a; color: rgba(0, 0, 0, 0.6); overflow-wrap: anywhere; text-decoration: underline;\\" target=\\"_blank\\">View in browser</a>
+                                                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"view-online-link\\" style=\\"word-wrap: none; white-space: nowrap; color: #15212a; color: rgba(0, 0, 0, 0.6); overflow-wrap: anywhere; text-decoration: underline;\\" target=\\"_blank\\">View in browser</a>
                                                             </td>
                                                         </tr>
                                                         <tr class=\\"post-meta post-meta-center view-online-mobile\\" style=\\"color: #15212a; color: rgba(0, 0, 0, 0.6); font-size: 13px; font-weight: 400; text-align: center;\\" align=\\"center\\">
                                                             <td height=\\"20\\" class=\\"view-online\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212a; color: rgba(0, 0, 0, 0.6); font-size: 13px; font-weight: 400; text-align: center; text-decoration: underline;\\" valign=\\"top\\" align=\\"center\\">
-                                                                <a href=\\"http://127.0.0.1:2369/r/6b56f8ab?m=member-uuid\\" class=\\"view-online-link\\" style=\\"word-wrap: none; white-space: nowrap; color: #15212a; color: rgba(0, 0, 0, 0.6); overflow-wrap: anywhere; text-decoration: underline;\\" target=\\"_blank\\">View in browser</a>
+                                                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"view-online-link\\" style=\\"word-wrap: none; white-space: nowrap; color: #15212a; color: rgba(0, 0, 0, 0.6); overflow-wrap: anywhere; text-decoration: underline;\\" target=\\"_blank\\">View in browser</a>
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -7948,7 +7948,7 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
 <table class=\\"kg-card kg-hr-card\\" role=\\"presentation\\" width=\\"100%\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\"><tbody><tr><td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212A; margin: 0; padding-top: 1.5em; padding-bottom: 3em; font-size: 17px;\\" valign=\\"top\\"><!--[if !mso]><!-- --><hr style=\\"position: relative; width: 100%; margin: 3em 0; padding: 0; height: 1px; background-color: transparent; border: 0; border-top: 1px solid #e0e7eb; display: none;\\"><!--<![endif]--><table class=\\"kg-hr\\" role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\"><tbody><tr><td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212A; padding-top: 1.5em; padding-bottom: 3em; margin: 0; padding: 0; border-top: 1px solid #e0e7eb; font-size: 0; line-height: 0;\\" valign=\\"top\\">&#xA0;</td></tr></tbody></table></td></tr></tbody></table><div class=\\"kg-card kg-gallery-card kg-width-wide kg-card-hascaption\\" style=\\"margin: 0 0 1.5em; padding: 0;\\"><div class=\\"kg-gallery-container\\" style=\\"margin-top: -20px;\\"><div class=\\"kg-gallery-row\\"><div class=\\"kg-gallery-image\\"><img src=\\"https://plus.unsplash.com/premium_photo-1700558685152-81f821a40724?q=80&amp;w=2070&amp;auto=format&amp;fit=crop&amp;ixlib=rb-4.0.3&amp;ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D\\" width=\\"600\\" height=\\"400\\" loading=\\"lazy\\" alt style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; padding-top: 20px; width: 100%; height: auto;\\"></div></div></div><div class=\\"kg-card-figcaption\\" style=\\"text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; padding-top: 10px; padding-bottom: 10px; line-height: 1.5em; color: #15212a; color: rgba(0, 0, 0, 0.6); font-size: 13px;\\"><p dir=\\"ltr\\" style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; color: inherit;\\"><span style=\\"white-space: pre-wrap;\\">A gallery.</span></p></div></div><div>
         <!--[if !mso !vml]-->
             <div class=\\"kg-card kg-bookmark-card kg-card-hascaption\\" style=\\"margin: 0 0 1.5em; padding: 0; width: 100%;\\">
-                <a class=\\"kg-bookmark-container\\" href=\\"http://127.0.0.1:2369/r/af2f7a1e?m=member-uuid\\" style=\\"display: flex; min-height: 148px; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; border-radius: 3px; background-color: #ffffff; background-color: rgba(255, 255, 255, 0.25); border: 1px solid #e0e7eb; border: 1px solid rgba(0, 0, 0, 0.12); overflow-wrap: anywhere; color: #FF1A75; text-decoration: none;\\" target=\\"_blank\\">
+                <a class=\\"kg-bookmark-container\\" href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"display: flex; min-height: 148px; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; border-radius: 3px; background-color: #ffffff; background-color: rgba(255, 255, 255, 0.25); border: 1px solid #e0e7eb; border: 1px solid rgba(0, 0, 0, 0.12); overflow-wrap: anywhere; color: #FF1A75; text-decoration: none;\\" target=\\"_blank\\">
                     <div class=\\"kg-bookmark-content\\" style=\\"display: inline-block; width: 100%; padding: 20px;\\">
                         <div class=\\"kg-bookmark-title\\" style=\\"color: #15212A; font-size: 15px; line-height: 1.5em; font-weight: 600;\\">Ghost: Independent technology for modern publishing</div>
                         <div class=\\"kg-bookmark-description\\" style=\\"display: -webkit-box; overflow-y: hidden; margin-top: 12px; max-height: 40px; color: #15212a; color: rgba(0, 0, 0, 0.6); font-size: 13px; line-height: 1.5em; font-weight: 400; -webkit-line-clamp: 2; -webkit-box-orient: vertical;\\">Beautiful, modern publishing with newsletters and premium subscriptions built-in. Used by<span class=\\"desktop-only\\"> Sky, 404Media, Lever News, Ta</span>&#x2026;</div>
@@ -8012,24 +8012,24 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
                 </tr>
             </table>
             <div class=\\"kg-bookmark-spacer--outlook\\" style=\\"height: 1.5em;\\">&nbsp;</div>
-        <![endif]--></div><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; color: #15212A;\\"><span style=\\"white-space: pre-wrap;\\">Hey </span><span>Vinz</span><span style=\\"white-space: pre-wrap;\\">,</span></p><!--members-only--><table class=\\"kg-card kg-button-card\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\"><tbody><tr><td class=\\"kg-card-spacing\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 0 0 1.5em 0;\\" valign=\\"top\\"><table class=\\"btn\\" border=\\"0\\" cellspacing=\\"0\\" cellpadding=\\"0\\" align=\\"center\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; box-sizing: border-box; width: auto;\\" width=\\"auto\\"><tbody><tr><td align=\\"center\\" style=\\"font-size: 18px; vertical-align: top; color: #15212A; padding: 8px 20px 9px; background-color: #FF1A75; border-radius: 6px; text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;\\" valign=\\"top\\" bgcolor=\\"#FF1A75\\"><a href=\\"http://127.0.0.1:2369/r/dedcd05f?m=member-uuid\\" style=\\"overflow-wrap: anywhere; box-sizing: border-box; color: #FFFFFF; cursor: pointer; display: inline-block; font-size: 15px; font-weight: 600; margin: 0; text-decoration: none;\\" target=\\"_blank\\">Click me, I&#39;m a button!</a></td></tr></tbody></table></td></tr></tbody></table><div class=\\"kg-card kg-callout-card kg-callout-card-blue\\" style=\\"display: flex; margin: 0 0 1.5em 0; padding: 24px; border-radius: 8px; background: #E9F6FB;\\"><div class=\\"kg-callout-emoji\\" style=\\"padding-right: 12px; font-size: 20px;\\">&#x1F4A1;</div><div class=\\"kg-callout-text\\" style=\\"color: inherit;\\">I had an idea...</div></div><table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" class=\\"kg-toggle-card\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-radius: 4px; margin-bottom: 24px; width: 100%; background-color: #ffffff; background-color: rgba(255, 255, 255, 0.25); border: 1px solid #e0e7eb; border: 1px solid rgba(0, 0, 0, 0.12);\\" bgcolor=\\"rgba(255, 255, 255, 0.25)\\"><tbody><tr><td class=\\"kg-toggle-heading\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; margin: 0; padding: 24px 24px 12px;\\" valign=\\"top\\"><h4 style=\\"margin-top: 0; text-rendering: optimizeLegibility; font-size: 21px; line-height: 1.2em; font-family: Georgia, serif; letter-spacing: -0.01em; margin: 0; font-weight: 700; color: #15212A;\\"><span style=\\"white-space: pre-wrap;\\">Spoiler alert!</span></h4></td></tr><tr><td class=\\"kg-toggle-content\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212A; font-size: 16px; line-height: 1.5; padding: 0 24px 24px;\\" valign=\\"top\\"><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; margin-bottom: 0; color: inherit;\\"><span style=\\"white-space: pre-wrap;\\">Just kidding</span></p></td></tr></tbody></table><table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" class=\\"kg-audio-card\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto; width: 100%; margin: 0 auto 1.5em; border-radius: 3px; background-color: #ffffff; background-color: rgba(255, 255, 255, 0.25); border: 1px solid #e0e7eb; border: 1px solid rgba(0, 0, 0, 0.12);\\" width=\\"100%\\" bgcolor=\\"rgba(255, 255, 255, 0.25)\\">
+        <![endif]--></div><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; color: #15212A;\\"><span style=\\"white-space: pre-wrap;\\">Hey </span><span>Vinz</span><span style=\\"white-space: pre-wrap;\\">,</span></p><!--members-only--><table class=\\"kg-card kg-button-card\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\"><tbody><tr><td class=\\"kg-card-spacing\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 0 0 1.5em 0;\\" valign=\\"top\\"><table class=\\"btn\\" border=\\"0\\" cellspacing=\\"0\\" cellpadding=\\"0\\" align=\\"center\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; box-sizing: border-box; width: auto;\\" width=\\"auto\\"><tbody><tr><td align=\\"center\\" style=\\"font-size: 18px; vertical-align: top; color: #15212A; padding: 8px 20px 9px; background-color: #FF1A75; border-radius: 6px; text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;\\" valign=\\"top\\" bgcolor=\\"#FF1A75\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; box-sizing: border-box; color: #FFFFFF; cursor: pointer; display: inline-block; font-size: 15px; font-weight: 600; margin: 0; text-decoration: none;\\" target=\\"_blank\\">Click me, I&#39;m a button!</a></td></tr></tbody></table></td></tr></tbody></table><div class=\\"kg-card kg-callout-card kg-callout-card-blue\\" style=\\"display: flex; margin: 0 0 1.5em 0; padding: 24px; border-radius: 8px; background: #E9F6FB;\\"><div class=\\"kg-callout-emoji\\" style=\\"padding-right: 12px; font-size: 20px;\\">&#x1F4A1;</div><div class=\\"kg-callout-text\\" style=\\"color: inherit;\\">I had an idea...</div></div><table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" class=\\"kg-toggle-card\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-radius: 4px; margin-bottom: 24px; width: 100%; background-color: #ffffff; background-color: rgba(255, 255, 255, 0.25); border: 1px solid #e0e7eb; border: 1px solid rgba(0, 0, 0, 0.12);\\" bgcolor=\\"rgba(255, 255, 255, 0.25)\\"><tbody><tr><td class=\\"kg-toggle-heading\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; margin: 0; padding: 24px 24px 12px;\\" valign=\\"top\\"><h4 style=\\"margin-top: 0; text-rendering: optimizeLegibility; font-size: 21px; line-height: 1.2em; font-family: Georgia, serif; letter-spacing: -0.01em; margin: 0; font-weight: 700; color: #15212A;\\"><span style=\\"white-space: pre-wrap;\\">Spoiler alert!</span></h4></td></tr><tr><td class=\\"kg-toggle-content\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212A; font-size: 16px; line-height: 1.5; padding: 0 24px 24px;\\" valign=\\"top\\"><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; margin-bottom: 0; color: inherit;\\"><span style=\\"white-space: pre-wrap;\\">Just kidding</span></p></td></tr></tbody></table><table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" class=\\"kg-audio-card\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto; width: 100%; margin: 0 auto 1.5em; border-radius: 3px; background-color: #ffffff; background-color: rgba(255, 255, 255, 0.25); border: 1px solid #e0e7eb; border: 1px solid rgba(0, 0, 0, 0.12);\\" width=\\"100%\\" bgcolor=\\"rgba(255, 255, 255, 0.25)\\">
                 <tbody><tr>
                     <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
                         <table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                             <tbody><tr>
                                 <td width=\\"60\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
-                                    <a href=\\"http://127.0.0.1:2369/r/ebae1476?m=member-uuid\\" style=\\"overflow-wrap: anywhere; color: #FF1A75; text-decoration: underline; display: block; width: 60px; height: 60px; padding-top: 4px; padding-right: 16px; padding-bottom: 4px; padding-left: 4px; border-radius: 2px;\\" target=\\"_blank\\">
+                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; color: #FF1A75; text-decoration: underline; display: block; width: 60px; height: 60px; padding-top: 4px; padding-right: 16px; padding-bottom: 4px; padding-left: 4px; border-radius: 2px;\\" target=\\"_blank\\">
                                         
                                         <img src=\\"https://static.ghost.org/v4.0.0/images/audio-file-icon.png\\" class=\\"kg-audio-thumbnail placeholder\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; width: 24px; height: 24px; padding: 18px; border-radius: 2px; background-color: #FF1A75;\\" width=\\"24\\" height=\\"24\\">
                                         
                                     </a>
                                 </td>
                                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; color: #15212A; position: relative; vertical-align: center;\\" valign=\\"center\\">
-                                    <a href=\\"http://127.0.0.1:2369/r/9efe3eed?m=member-uuid\\" style=\\"overflow-wrap: anywhere; color: #FF1A75; text-decoration: underline; position: absolute; display: block; top: 0; right: 0; bottom: 0; left: 0;\\" target=\\"_blank\\"></a>
+                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; color: #FF1A75; text-decoration: underline; position: absolute; display: block; top: 0; right: 0; bottom: 0; left: 0;\\" target=\\"_blank\\"></a>
                                     <table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                         <tbody><tr>
                                             <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
-                                                <a href=\\"http://127.0.0.1:2369/r/f3dcf0fd?m=member-uuid\\" class=\\"kg-audio-title\\" style=\\"display: block; padding-right: 20px; padding-bottom: 4px; padding-top: 4px; font-size: 16px; font-weight: 600; line-height: 18px; overflow-wrap: anywhere; text-decoration: none; color: #15212A;\\" target=\\"_blank\\">Sample</a>
+                                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"kg-audio-title\\" style=\\"display: block; padding-right: 20px; padding-bottom: 4px; padding-top: 4px; font-size: 16px; font-weight: 600; line-height: 18px; overflow-wrap: anywhere; text-decoration: none; color: #15212A;\\" target=\\"_blank\\">Sample</a>
                                             </td>
                                         </tr>
                                         <tr>
@@ -8037,10 +8037,10 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
                                                 <table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                                     <tbody><tr>
                                                         <td width=\\"24\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; color: #15212A; vertical-align: middle;\\" valign=\\"middle\\">
-                                                            <a href=\\"http://127.0.0.1:2369/r/a8366b37?m=member-uuid\\" class=\\"kg-audio-play-button\\" style=\\"display: block; box-sizing: border-box; width: 16px; height: 16px; border-style: solid; border-width: 8px 0px 8px 16px; border-color: transparent transparent transparent currentColor; overflow-wrap: anywhere; text-decoration: underline; color: #15212A;\\" target=\\"_blank\\"></a>
+                                                            <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"kg-audio-play-button\\" style=\\"display: block; box-sizing: border-box; width: 16px; height: 16px; border-style: solid; border-width: 8px 0px 8px 16px; border-color: transparent transparent transparent currentColor; overflow-wrap: anywhere; text-decoration: underline; color: #15212A;\\" target=\\"_blank\\"></a>
                                                         </td>
                                                         <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; color: #15212A; vertical-align: middle;\\" valign=\\"middle\\">
-                                                            <a href=\\"http://127.0.0.1:2369/r/5504d9f3?m=member-uuid\\" class=\\"kg-audio-duration\\" style=\\"display: block; font-size: 13px; overflow-wrap: anywhere; text-decoration: none; color: #15212a; color: rgba(0, 0, 0, 0.6);\\" target=\\"_blank\\">1:45<span class=\\"kg-audio-link\\" style=\\"color: #15212a; color: rgba(0, 0, 0, 0.6);\\"> &#x2022; Click to play audio</span></a>
+                                                            <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"kg-audio-duration\\" style=\\"display: block; font-size: 13px; overflow-wrap: anywhere; text-decoration: none; color: #15212a; color: rgba(0, 0, 0, 0.6);\\" target=\\"_blank\\">1:45<span class=\\"kg-audio-link\\" style=\\"color: #15212a; color: rgba(0, 0, 0, 0.6);\\"> &#x2022; Click to play audio</span></a>
                                                         </td>
                                                     </tr>
                                                 </tbody></table>
@@ -8054,7 +8054,7 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
                 </tr>
             </tbody></table><div class=\\"kg-card kg-video-card kg-width-regular kg-card-hascaption\\" style=\\"margin: 0 0 1.5em; padding: 0;\\">
             <!--[if !mso !vml]-->
-            <a class=\\"kg-video-preview\\" href=\\"http://127.0.0.1:2369/r/8c649fdb?m=member-uuid\\" aria-label=\\"Play video\\" style=\\"background-color: #1d1f21; background-image: radial-gradient(circle at center, #5b5f66, #1d1f21); display: block; overflow-wrap: anywhere; color: #FF1A75; mso-hide: all; text-decoration: none;\\" target=\\"_blank\\">
+            <a class=\\"kg-video-preview\\" href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" aria-label=\\"Play video\\" style=\\"background-color: #1d1f21; background-image: radial-gradient(circle at center, #5b5f66, #1d1f21); display: block; overflow-wrap: anywhere; color: #FF1A75; mso-hide: all; text-decoration: none;\\" target=\\"_blank\\">
                 <table cellpadding=\\"0\\" cellspacing=\\"0\\" border=\\"0\\" width=\\"100%\\" background=\\"https://main.ghost.org/content/media/2023/12/sample_640x360_thumb.jpg\\" role=\\"presentation\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; background-size: cover; min-height: 200px; overflow: hidden; background: url(&#39;https://main.ghost.org/content/media/2023/12/sample_640x360_thumb.jpg&#39;) left top / cover; mso-hide: all;\\">
                     <tbody><tr style=\\"mso-hide: all\\">
                         <td width=\\"25%\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; visibility: hidden; mso-hide: all;\\" valign=\\"top\\">
@@ -8107,7 +8107,7 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
                         
                             <tr>
                                 <td class=\\"kg-product-button-wrapper\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; margin-top: 0; padding-top: 16px; padding-bottom: 0;\\" valign=\\"top\\">
-                                    <table class=\\"btn\\" border=\\"0\\" cellspacing=\\"0\\" cellpadding=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; box-sizing: border-box; width: 100%;\\" width=\\"100%\\"><tbody><tr><td align=\\"center\\" width=\\"100%\\" style=\\"font-size: 18px; vertical-align: top; color: #15212A; padding: 8px 20px 9px; background-color: #FF1A75; border-radius: 6px; text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;\\" valign=\\"top\\" bgcolor=\\"#FF1A75\\"><a href=\\"http://127.0.0.1:2369/r/abcfc38b?m=member-uuid\\" style=\\"overflow-wrap: anywhere; box-sizing: border-box; color: #FFFFFF; cursor: pointer; display: inline-block; font-size: 15px; font-weight: 600; margin: 0; text-decoration: none;\\" target=\\"_blank\\">Click here</a></td></tr></tbody></table>
+                                    <table class=\\"btn\\" border=\\"0\\" cellspacing=\\"0\\" cellpadding=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; box-sizing: border-box; width: 100%;\\" width=\\"100%\\"><tbody><tr><td align=\\"center\\" width=\\"100%\\" style=\\"font-size: 18px; vertical-align: top; color: #15212A; padding: 8px 20px 9px; background-color: #FF1A75; border-radius: 6px; text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;\\" valign=\\"top\\" bgcolor=\\"#FF1A75\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; box-sizing: border-box; color: #FFFFFF; cursor: pointer; display: inline-block; font-size: 15px; font-weight: 600; margin: 0; text-decoration: none;\\" target=\\"_blank\\">Click here</a></td></tr></tbody></table>
                                 </td>
                             </tr>
                         
@@ -8146,7 +8146,7 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
                 </tr>
             </tbody></table>
         </div><div class=\\"kg-card kg-embed-card\\" style=\\"margin: 0 0 1.5em; padding: 0;\\"><!--[if !mso !vml]-->
-            <a class=\\"kg-video-preview\\" href=\\"http://127.0.0.1:2369/r/3a6a26c2?m=member-uuid\\" aria-label=\\"Play video\\" style=\\"background-color: #1d1f21; background-image: radial-gradient(circle at center, #5b5f66, #1d1f21); display: block; overflow-wrap: anywhere; color: #FF1A75; mso-hide: all; text-decoration: none;\\" target=\\"_blank\\">
+            <a class=\\"kg-video-preview\\" href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" aria-label=\\"Play video\\" style=\\"background-color: #1d1f21; background-image: radial-gradient(circle at center, #5b5f66, #1d1f21); display: block; overflow-wrap: anywhere; color: #FF1A75; mso-hide: all; text-decoration: none;\\" target=\\"_blank\\">
                 <table cellpadding=\\"0\\" cellspacing=\\"0\\" border=\\"0\\" width=\\"100%\\" background=\\"https://i.ytimg.com/vi/jfKfPfyJRdk/hqdefault.jpg\\" role=\\"presentation\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; background-size: cover; min-height: 200px; overflow: hidden; background: url(&#39;https://i.ytimg.com/vi/jfKfPfyJRdk/hqdefault.jpg&#39;) left top / cover; mso-hide: all;\\">
                     <tbody><tr style=\\"mso-hide: all\\">
                         <td width=\\"25%\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; visibility: hidden; mso-hide: all;\\" valign=\\"top\\">
@@ -8175,20 +8175,20 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
                             <td valign=\\"middle\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; color: #15212A; vertical-align: middle;\\">
                                 
                                 <table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\"><tbody><tr><td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
-                                    <a href=\\"http://127.0.0.1:2369/r/c4fb6c4a?m=member-uuid\\" class=\\"kg-file-title\\" style=\\"display: block; width: 100%; padding-left: 12px; padding-top: 8px; font-size: 17px; font-weight: bold; line-height: 1.3em; overflow-wrap: anywhere; text-decoration: none; color: #15212A;\\" target=\\"_blank\\">test</a>
+                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"kg-file-title\\" style=\\"display: block; width: 100%; padding-left: 12px; padding-top: 8px; font-size: 17px; font-weight: bold; line-height: 1.3em; overflow-wrap: anywhere; text-decoration: none; color: #15212A;\\" target=\\"_blank\\">test</a>
                                 </td></tr></tbody></table>
                                 
                                 
                                 <table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\"><tbody><tr><td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
-                                    <a href=\\"http://127.0.0.1:2369/r/3b76574a?m=member-uuid\\" class=\\"kg-file-description\\" style=\\"display: block; width: 100%; padding-left: 12px; padding-top: 2px; font-size: 15px; line-height: 1.4em; overflow-wrap: anywhere; text-decoration: none; color: #15212a; color: rgba(0, 0, 0, 0.6);\\" target=\\"_blank\\">A tiny text file.</a>
+                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"kg-file-description\\" style=\\"display: block; width: 100%; padding-left: 12px; padding-top: 2px; font-size: 15px; line-height: 1.4em; overflow-wrap: anywhere; text-decoration: none; color: #15212a; color: rgba(0, 0, 0, 0.6);\\" target=\\"_blank\\">A tiny text file.</a>
                                 </td></tr></tbody></table>
                                 
                                 <table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\"><tbody><tr><td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
-                                    <a href=\\"http://127.0.0.1:2369/r/e69dad52?m=member-uuid\\" class=\\"kg-file-meta\\" style=\\"display: block; width: 100%; padding-left: 12px; padding-top: 4px; padding-bottom: 8px; font-size: 13px; line-height: 1.4em; overflow-wrap: anywhere; color: #FF1A75; text-decoration: none;\\" target=\\"_blank\\"><span class=\\"kg-file-name\\" style=\\"font-weight: 500; color: #15212A;\\">test.txt</span> &#x2022; 16 Bytes</a>
+                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"kg-file-meta\\" style=\\"display: block; width: 100%; padding-left: 12px; padding-top: 4px; padding-bottom: 8px; font-size: 13px; line-height: 1.4em; overflow-wrap: anywhere; color: #FF1A75; text-decoration: none;\\" target=\\"_blank\\"><span class=\\"kg-file-name\\" style=\\"font-weight: 500; color: #15212A;\\">test.txt</span> &#x2022; 16 Bytes</a>
                                 </td></tr></tbody></table>
                             </td>
                             <td width=\\"80\\" valign=\\"middle\\" class=\\"kg-file-thumbnail\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; color: #15212A; position: relative; vertical-align: middle; text-align: center; border-radius: 2px; background-color: #FF1A75;\\" align=\\"center\\" bgcolor=\\"#FF1A75\\">
-                                <a href=\\"http://127.0.0.1:2369/r/9ec729c3?m=member-uuid\\" style=\\"overflow-wrap: anywhere; color: #FF1A75; text-decoration: underline; display: block; top: 0; right: 0; bottom: 0; left: 0;\\" target=\\"_blank\\">
+                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; color: #FF1A75; text-decoration: underline; display: block; top: 0; right: 0; bottom: 0; left: 0;\\" target=\\"_blank\\">
                                     <img src=\\"https://static.ghost.org/v4.0.0/images/download-icon-darkmode.png\\" style=\\"border: none; -ms-interpolation-mode: bicubic; margin-top: 6px; height: 24px; width: 24px; max-width: 24px;\\" width=\\"24\\" height=\\"24\\">
                                 </a>
                             </td>
@@ -8223,7 +8223,7 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
                         
                             <tr>
                                 <td class=\\"kg-cta-button-container\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding-top: 20px;\\" valign=\\"top\\">
-                                    <table class=\\"btn\\" border=\\"0\\" cellspacing=\\"0\\" cellpadding=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; box-sizing: border-box; width: auto; margin-left: auto; margin-right: auto;\\" width=\\"auto\\"><tbody><tr><td align=\\"center\\" style=\\"font-size: 18px; vertical-align: top; color: #15212A; padding: 8px 20px 9px; border-radius: 6px; text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; background-color: #000000;\\" bgcolor=\\"#000000\\" valign=\\"top\\"><a href=\\"http://127.0.0.1:2369/r/743d77d0?m=member-uuid\\" style=\\"overflow-wrap: anywhere; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 15px; font-weight: 600; margin: 0; text-decoration: none; color: #FFFFFF;\\" target=\\"_blank\\">Learn more</a></td></tr></tbody></table>
+                                    <table class=\\"btn\\" border=\\"0\\" cellspacing=\\"0\\" cellpadding=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; box-sizing: border-box; width: auto; margin-left: auto; margin-right: auto;\\" width=\\"auto\\"><tbody><tr><td align=\\"center\\" style=\\"font-size: 18px; vertical-align: top; color: #15212A; padding: 8px 20px 9px; border-radius: 6px; text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; background-color: #000000;\\" bgcolor=\\"#000000\\" valign=\\"top\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 15px; font-weight: 600; margin: 0; text-decoration: none; color: #FFFFFF;\\" target=\\"_blank\\">Learn more</a></td></tr></tbody></table>
                                 </td>
                             </tr>
                         
@@ -8231,7 +8231,7 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
                 </td>
             </tr>
         
-        </tbody></table><table class=\\"kg-card kg-transistor-card\\" cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; margin-top: 1.5em;\\"><tbody><tr><td align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 24px 0; text-align: center;\\" valign=\\"top\\"><a href=\\"http://127.0.0.1:2369/r/b921705c?m=member-uuid\\" style=\\"overflow-wrap: anywhere; color: #FF1A75; text-decoration: none;\\" target=\\"_blank\\"><img src=\\"data:image/svg+xml,%3Csvg%20viewBox%3D%225%200.5%20144%20144%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22%2315171A%22%3E%3Cpath%20d%3D%22M77%20120.3c-2.6%200-4.8-2.1-4.8-4.8V29.4c0-2.6%202.1-4.8%204.8-4.8s4.8%202.1%204.8%204.8v86.2c0%202.6-2.2%204.7-4.8%204.7z%22%2F%3E%3Cpath%20d%3D%22M57%2077.3H34c-2.6%200-4.8-2.1-4.8-4.8%200-2.6%202.1-4.8%204.8-4.8h23c2.6%200%204.8%202.1%204.8%204.8%200%202.6-2.1%204.8-4.8%204.8z%22%2F%3E%3Cpath%20d%3D%22M120.1%2077.3h-23c-2.6%200-4.8-2.1-4.8-4.8%200-2.6%202.1-4.8%204.8-4.8h23c2.6%200%204.8%202.1%204.8%204.8%200%202.6-2.2%204.8-4.8%204.8z%22%2F%3E%3Cpath%20d%3D%22M77%20144.5c-39.7%200-72-32.3-72-72s32.3-72%2072-72%2072%2032.3%2072%2072-32.3%2072-72%2072zM77%2010c-34.4%200-62.4%2028-62.4%2062.4%200%2034.4%2028%2062.4%2062.4%2062.4%2034.4%200%2062.4-28%2062.4-62.4C139.4%2038%20111.4%2010%2077%2010z%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E\\" width=\\"56\\" height=\\"56\\" alt=\\"Transistor\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; border-radius: 8px; display: block; margin: 0 auto 12px auto;\\"></a><a href=\\"http://127.0.0.1:2369/r/097d9eea?m=member-uuid\\" style=\\"overflow-wrap: anywhere; font-weight: 600; text-decoration: none; color: #15171A; font-size: 16px; display: block;\\" target=\\"_blank\\"> Listen on Transistor </a><a href=\\"http://127.0.0.1:2369/r/95a783c7?m=member-uuid\\" style=\\"overflow-wrap: anywhere; color: #738a94; font-size: 14px; text-decoration: none; display: block; margin-top: 4px;\\" target=\\"_blank\\"> Get your private podcast feed </a></td></tr></tbody></table>
+        </tbody></table><table class=\\"kg-card kg-transistor-card\\" cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; margin-top: 1.5em;\\"><tbody><tr><td align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 24px 0; text-align: center;\\" valign=\\"top\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; color: #FF1A75; text-decoration: none;\\" target=\\"_blank\\"><img src=\\"data:image/svg+xml,%3Csvg%20viewBox%3D%225%200.5%20144%20144%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22%2315171A%22%3E%3Cpath%20d%3D%22M77%20120.3c-2.6%200-4.8-2.1-4.8-4.8V29.4c0-2.6%202.1-4.8%204.8-4.8s4.8%202.1%204.8%204.8v86.2c0%202.6-2.2%204.7-4.8%204.7z%22%2F%3E%3Cpath%20d%3D%22M57%2077.3H34c-2.6%200-4.8-2.1-4.8-4.8%200-2.6%202.1-4.8%204.8-4.8h23c2.6%200%204.8%202.1%204.8%204.8%200%202.6-2.1%204.8-4.8%204.8z%22%2F%3E%3Cpath%20d%3D%22M120.1%2077.3h-23c-2.6%200-4.8-2.1-4.8-4.8%200-2.6%202.1-4.8%204.8-4.8h23c2.6%200%204.8%202.1%204.8%204.8%200%202.6-2.2%204.8-4.8%204.8z%22%2F%3E%3Cpath%20d%3D%22M77%20144.5c-39.7%200-72-32.3-72-72s32.3-72%2072-72%2072%2032.3%2072%2072-32.3%2072-72%2072zM77%2010c-34.4%200-62.4%2028-62.4%2062.4%200%2034.4%2028%2062.4%2062.4%2062.4%2034.4%200%2062.4-28%2062.4-62.4C139.4%2038%20111.4%2010%2077%2010z%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E\\" width=\\"56\\" height=\\"56\\" alt=\\"Transistor\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; border-radius: 8px; display: block; margin: 0 auto 12px auto;\\"></a><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; font-weight: 600; text-decoration: none; color: #15171A; font-size: 16px; display: block;\\" target=\\"_blank\\"> Listen on Transistor </a><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; color: #738a94; font-size: 14px; text-decoration: none; display: block; margin-top: 4px;\\" target=\\"_blank\\"> Get your private podcast feed </a></td></tr></tbody></table>
                                                 <!-- POST CONTENT END -->
 
                                             </td>
@@ -8306,7 +8306,7 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
 
 
 
-http://127.0.0.1:2369/r/3207b378?m=member-uuid
+http://127.0.0.1:2369/r/xxxxxx?m=member-uuid
 
 
 
@@ -8316,13 +8316,10 @@ http://127.0.0.1:2369/r/3207b378?m=member-uuid
 
 
 
-Ghost [http://127.0.0.1:2369/r/a4cd75bc?m=member-uuid]
+Ghost [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
-Daily newsletter [http://127.0.0.1:2369/r/b7be15d0?m=member-uuid]
-
-
-
+Daily newsletter [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 
@@ -8333,7 +8330,10 @@ Daily newsletter [http://127.0.0.1:2369/r/b7be15d0?m=member-uuid]
 
 
 
-A random test post [http://127.0.0.1:2369/r/dd9ec690?m=member-uuid]
+
+
+
+A random test post [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 
@@ -8349,12 +8349,12 @@ A random test post [http://127.0.0.1:2369/r/dd9ec690?m=member-uuid]
 By Joe Bloggs • date
 
 
-View in browser [http://127.0.0.1:2369/r/d016d1a6?m=member-uuid]
+View in browser [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 
 
-View in browser [http://127.0.0.1:2369/r/6b56f8ab?m=member-uuid]
+View in browser [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 
@@ -8448,7 +8448,7 @@ Ghost - The Professional Publishing Platform
 
 
 
-[http://127.0.0.1:2369/r/af2f7a1e?m=member-uuid]
+[http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 My favorite website.
@@ -8458,7 +8458,7 @@ My favorite website.
 
 Hey Vinz,
 
-Click me, I'm a button! [http://127.0.0.1:2369/r/dedcd05f?m=member-uuid]
+Click me, I'm a button! [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 💡I had an idea...
 
@@ -8478,29 +8478,29 @@ Just kidding
 
 
 
-http://127.0.0.1:2369/r/ebae1476?m=member-uuid
+http://127.0.0.1:2369/r/xxxxxx?m=member-uuid
 
 
-http://127.0.0.1:2369/r/9efe3eed?m=member-uuid
-
-
-
-
-
-Sample [http://127.0.0.1:2369/r/f3dcf0fd?m=member-uuid]
+http://127.0.0.1:2369/r/xxxxxx?m=member-uuid
 
 
 
+
+
+Sample [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 
 
 
 
-http://127.0.0.1:2369/r/a8366b37?m=member-uuid
 
 
-1:45 • Click to play audio [http://127.0.0.1:2369/r/5504d9f3?m=member-uuid]
+
+http://127.0.0.1:2369/r/xxxxxx?m=member-uuid
+
+
+1:45 • Click to play audio [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 
@@ -8530,7 +8530,7 @@ http://127.0.0.1:2369/r/a8366b37?m=member-uuid
 
 
 
-[http://127.0.0.1:2369/r/8c649fdb?m=member-uuid]
+[http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 
@@ -8577,7 +8577,7 @@ with Ghost
 
 
 
-Click here [http://127.0.0.1:2369/r/abcfc38b?m=member-uuid]
+Click here [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 
@@ -8639,7 +8639,7 @@ This header renders properly in all email clients!
 
 
 
-[http://127.0.0.1:2369/r/3a6a26c2?m=member-uuid]
+[http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 
@@ -8666,20 +8666,20 @@ A tiny little script.
 
 
 
-test [http://127.0.0.1:2369/r/c4fb6c4a?m=member-uuid]
+test [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 
 
 
 
-A tiny text file. [http://127.0.0.1:2369/r/3b76574a?m=member-uuid]
+A tiny text file. [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 
 
 
-test.txt • 16 Bytes [http://127.0.0.1:2369/r/e69dad52?m=member-uuid]
+test.txt • 16 Bytes [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 
@@ -8687,7 +8687,7 @@ test.txt • 16 Bytes [http://127.0.0.1:2369/r/e69dad52?m=member-uuid]
 
 
 
-http://127.0.0.1:2369/r/9ec729c3?m=member-uuid
+http://127.0.0.1:2369/r/xxxxxx?m=member-uuid
 
 
 
@@ -8732,7 +8732,7 @@ Here’s a basic CTA card
 
 
 
-Learn more [http://127.0.0.1:2369/r/743d77d0?m=member-uuid]
+Learn more [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 
@@ -8742,7 +8742,7 @@ Learn more [http://127.0.0.1:2369/r/743d77d0?m=member-uuid]
 
 
 
-http://127.0.0.1:2369/r/b921705c?m=member-uuid Listen on Transistor [http://127.0.0.1:2369/r/097d9eea?m=member-uuid] Get your private podcast feed [http://127.0.0.1:2369/r/95a783c7?m=member-uuid]
+http://127.0.0.1:2369/r/xxxxxx?m=member-uuid Listen on Transistor [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid] Get your private podcast feed [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 
@@ -9306,7 +9306,7 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                             <tr class=\\"header-image-row\\">
                                                 <td class=\\"header-image\\" width=\\"100%\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding-top: 24px; padding-bottom: 16px;\\" valign=\\"top\\">
-                                                    <a href=\\"http://127.0.0.1:2369/r/c10d31ed?m=member-uuid\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\">
+                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\">
                                                         <img src=\\"http://127.0.0.1:2369/content/images/2022/05/test.jpg\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
                                                     </a>
                                                 </td>
@@ -9316,10 +9316,10 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
                                                 <td class=\\"site-info\\" width=\\"100%\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding-top: 32px;\\" valign=\\"top\\">
                                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
                                                             <tr>
-                                                                <td class=\\"site-url \\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212A; font-size: 16px; letter-spacing: -0.1px; font-weight: 700; text-transform: uppercase; text-align: center;\\" valign=\\"top\\" align=\\"center\\"><div style=\\"width: 100% !important;\\"><a href=\\"http://127.0.0.1:2369/r/384c88fe?m=member-uuid\\" class=\\"site-title\\" style=\\"text-decoration: none; color: #15212A; overflow-wrap: anywhere;\\" target=\\"_blank\\">Ghost</a></div></td>
+                                                                <td class=\\"site-url \\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212A; font-size: 16px; letter-spacing: -0.1px; font-weight: 700; text-transform: uppercase; text-align: center;\\" valign=\\"top\\" align=\\"center\\"><div style=\\"width: 100% !important;\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"site-title\\" style=\\"text-decoration: none; color: #15212A; overflow-wrap: anywhere;\\" target=\\"_blank\\">Ghost</a></div></td>
                                                             </tr>
                                                             <tr>
-                                                                <td class=\\"site-url site-url-bottom-padding\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212A; font-size: 16px; letter-spacing: -0.1px; font-weight: 700; text-transform: uppercase; text-align: center; padding-bottom: 12px;\\" valign=\\"top\\" align=\\"center\\"><div style=\\"width: 100% !important;\\"><a href=\\"http://127.0.0.1:2369/r/54c67097?m=member-uuid\\" class=\\"site-subtitle\\" style=\\"text-decoration: none; color: #15212a; color: rgba(0, 0, 0, 0.6); font-size: 13px; font-weight: 400; text-transform: none; overflow-wrap: anywhere;\\" target=\\"_blank\\">Daily newsletter</a></div></td>
+                                                                <td class=\\"site-url site-url-bottom-padding\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212A; font-size: 16px; letter-spacing: -0.1px; font-weight: 700; text-transform: uppercase; text-align: center; padding-bottom: 12px;\\" valign=\\"top\\" align=\\"center\\"><div style=\\"width: 100% !important;\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"site-subtitle\\" style=\\"text-decoration: none; color: #15212a; color: rgba(0, 0, 0, 0.6); font-size: 13px; font-weight: 400; text-transform: none; overflow-wrap: anywhere;\\" target=\\"_blank\\">Daily newsletter</a></div></td>
                                                             </tr>
 
                                                     </table>
@@ -9331,7 +9331,7 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
                                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
                                                         <tr>
                                                             <td style=\\"vertical-align: top; font-family: Georgia, serif; letter-spacing: -0.01em; font-size: 36px; line-height: 1.1; font-weight: 700; text-align: center; color: #000000;\\" valign=\\"top\\" align=\\"center\\">
-                                                                <a href=\\"http://127.0.0.1:2369/r/7f2ecae0?m=member-uuid\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; text-align: center; line-height: 1.1em; overflow-wrap: anywhere; color: #000000;\\" target=\\"_blank\\">A random test post</a>
+                                                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; text-align: center; line-height: 1.1em; overflow-wrap: anywhere; color: #000000;\\" target=\\"_blank\\">A random test post</a>
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -9345,12 +9345,12 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
                                                                 By Joe Bloggs &#x2022; <span class=\\"post-meta-date\\" style=\\"white-space: nowrap;\\">date </span>
                                                             </td>
                                                             <td class=\\"post-meta post-meta-center view-online desktop\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: rgba(0, 0, 0, 0.6); font-size: 13px; font-weight: 400; text-align: center; display: none;\\" valign=\\"top\\" align=\\"center\\">
-                                                                <a href=\\"http://127.0.0.1:2369/r/8a4e9a45?m=member-uuid\\" class=\\"view-online-link\\" style=\\"word-wrap: none; white-space: nowrap; color: #15212a; color: rgba(0, 0, 0, 0.6); overflow-wrap: anywhere; text-decoration: underline;\\" target=\\"_blank\\">View in browser</a>
+                                                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"view-online-link\\" style=\\"word-wrap: none; white-space: nowrap; color: #15212a; color: rgba(0, 0, 0, 0.6); overflow-wrap: anywhere; text-decoration: underline;\\" target=\\"_blank\\">View in browser</a>
                                                             </td>
                                                         </tr>
                                                         <tr class=\\"post-meta post-meta-center view-online-mobile\\" style=\\"color: #15212a; color: rgba(0, 0, 0, 0.6); font-size: 13px; font-weight: 400; text-align: center;\\" align=\\"center\\">
                                                             <td height=\\"20\\" class=\\"view-online\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212a; color: rgba(0, 0, 0, 0.6); font-size: 13px; font-weight: 400; text-align: center; text-decoration: underline;\\" valign=\\"top\\" align=\\"center\\">
-                                                                <a href=\\"http://127.0.0.1:2369/r/dfcbae2f?m=member-uuid\\" class=\\"view-online-link\\" style=\\"word-wrap: none; white-space: nowrap; color: #15212a; color: rgba(0, 0, 0, 0.6); overflow-wrap: anywhere; text-decoration: underline;\\" target=\\"_blank\\">View in browser</a>
+                                                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"view-online-link\\" style=\\"word-wrap: none; white-space: nowrap; color: #15212a; color: rgba(0, 0, 0, 0.6); overflow-wrap: anywhere; text-decoration: underline;\\" target=\\"_blank\\">View in browser</a>
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -9403,7 +9403,7 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
 <table class=\\"kg-card kg-hr-card\\" role=\\"presentation\\" width=\\"100%\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\"><tbody><tr><td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212A; margin: 0; padding-top: 1.5em; padding-bottom: 3em; font-size: 17px;\\" valign=\\"top\\"><!--[if !mso]><!-- --><hr style=\\"position: relative; width: 100%; margin: 3em 0; padding: 0; height: 1px; background-color: transparent; border: 0; border-top: 1px solid #e0e7eb; display: none;\\"><!--<![endif]--><table class=\\"kg-hr\\" role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\"><tbody><tr><td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212A; padding-top: 1.5em; padding-bottom: 3em; margin: 0; padding: 0; border-top: 1px solid #e0e7eb; font-size: 0; line-height: 0;\\" valign=\\"top\\">&#xA0;</td></tr></tbody></table></td></tr></tbody></table><div class=\\"kg-card kg-gallery-card kg-width-wide kg-card-hascaption\\" style=\\"margin: 0 0 1.5em; padding: 0;\\"><div class=\\"kg-gallery-container\\" style=\\"margin-top: -20px;\\"><div class=\\"kg-gallery-row\\"><div class=\\"kg-gallery-image\\"><img src=\\"https://plus.unsplash.com/premium_photo-1700558685152-81f821a40724?q=80&amp;w=2070&amp;auto=format&amp;fit=crop&amp;ixlib=rb-4.0.3&amp;ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D\\" width=\\"600\\" height=\\"400\\" loading=\\"lazy\\" alt style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; padding-top: 20px; width: 100%; height: auto;\\"></div></div></div><div class=\\"kg-card-figcaption\\" style=\\"text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; padding-top: 10px; padding-bottom: 10px; line-height: 1.5em; color: #15212a; color: rgba(0, 0, 0, 0.6); font-size: 13px;\\"><p dir=\\"ltr\\" style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; color: inherit;\\"><span style=\\"white-space: pre-wrap;\\">A gallery.</span></p></div></div><div>
         <!--[if !mso !vml]-->
             <div class=\\"kg-card kg-bookmark-card kg-card-hascaption\\" style=\\"margin: 0 0 1.5em; padding: 0; width: 100%;\\">
-                <a class=\\"kg-bookmark-container\\" href=\\"http://127.0.0.1:2369/r/16b5e766?m=member-uuid\\" style=\\"display: flex; min-height: 148px; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; border-radius: 3px; background-color: #ffffff; background-color: rgba(255, 255, 255, 0.25); border: 1px solid #e0e7eb; border: 1px solid rgba(0, 0, 0, 0.12); overflow-wrap: anywhere; color: #FF1A75; text-decoration: none;\\" target=\\"_blank\\">
+                <a class=\\"kg-bookmark-container\\" href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"display: flex; min-height: 148px; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; border-radius: 3px; background-color: #ffffff; background-color: rgba(255, 255, 255, 0.25); border: 1px solid #e0e7eb; border: 1px solid rgba(0, 0, 0, 0.12); overflow-wrap: anywhere; color: #FF1A75; text-decoration: none;\\" target=\\"_blank\\">
                     <div class=\\"kg-bookmark-content\\" style=\\"display: inline-block; width: 100%; padding: 20px;\\">
                         <div class=\\"kg-bookmark-title\\" style=\\"color: #15212A; font-size: 15px; line-height: 1.5em; font-weight: 600;\\">Ghost: Independent technology for modern publishing</div>
                         <div class=\\"kg-bookmark-description\\" style=\\"display: -webkit-box; overflow-y: hidden; margin-top: 12px; max-height: 40px; color: #15212a; color: rgba(0, 0, 0, 0.6); font-size: 13px; line-height: 1.5em; font-weight: 400; -webkit-line-clamp: 2; -webkit-box-orient: vertical;\\">Beautiful, modern publishing with newsletters and premium subscriptions built-in. Used by<span class=\\"desktop-only\\"> Sky, 404Media, Lever News, Ta</span>&#x2026;</div>
@@ -9467,24 +9467,24 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
                 </tr>
             </table>
             <div class=\\"kg-bookmark-spacer--outlook\\" style=\\"height: 1.5em;\\">&nbsp;</div>
-        <![endif]--></div><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; color: #15212A;\\"><span style=\\"white-space: pre-wrap;\\">Hey </span><span>there</span><span style=\\"white-space: pre-wrap;\\">,</span></p><div><hr style=\\"position: relative; display: block; width: 100%; margin: 3em 0; padding: 0; height: 1px; background-color: transparent; border: 0; border-top: 1px solid #e0e7eb;\\"><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; color: #15212A;\\"><span style=\\"white-space: pre-wrap;\\">Hello there, fellow users of electronic mail.</span></p><hr style=\\"position: relative; display: block; width: 100%; margin: 3em 0; padding: 0; height: 1px; background-color: transparent; border: 0; border-top: 1px solid #e0e7eb;\\"></div><!--members-only--><table class=\\"kg-card kg-button-card\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\"><tbody><tr><td class=\\"kg-card-spacing\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 0 0 1.5em 0;\\" valign=\\"top\\"><table class=\\"btn\\" border=\\"0\\" cellspacing=\\"0\\" cellpadding=\\"0\\" align=\\"center\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; box-sizing: border-box; width: auto;\\" width=\\"auto\\"><tbody><tr><td align=\\"center\\" style=\\"font-size: 18px; vertical-align: top; color: #15212A; padding: 8px 20px 9px; background-color: #FF1A75; border-radius: 6px; text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;\\" valign=\\"top\\" bgcolor=\\"#FF1A75\\"><a href=\\"http://127.0.0.1:2369/r/802cfb6b?m=member-uuid\\" style=\\"overflow-wrap: anywhere; box-sizing: border-box; color: #FFFFFF; cursor: pointer; display: inline-block; font-size: 15px; font-weight: 600; margin: 0; text-decoration: none;\\" target=\\"_blank\\">Click me, I&#39;m a button!</a></td></tr></tbody></table></td></tr></tbody></table><div class=\\"kg-card kg-callout-card kg-callout-card-blue\\" style=\\"display: flex; margin: 0 0 1.5em 0; padding: 24px; border-radius: 8px; background: #E9F6FB;\\"><div class=\\"kg-callout-emoji\\" style=\\"padding-right: 12px; font-size: 20px;\\">&#x1F4A1;</div><div class=\\"kg-callout-text\\" style=\\"color: inherit;\\">I had an idea...</div></div><table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" class=\\"kg-toggle-card\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-radius: 4px; margin-bottom: 24px; width: 100%; background-color: #ffffff; background-color: rgba(255, 255, 255, 0.25); border: 1px solid #e0e7eb; border: 1px solid rgba(0, 0, 0, 0.12);\\" bgcolor=\\"rgba(255, 255, 255, 0.25)\\"><tbody><tr><td class=\\"kg-toggle-heading\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; margin: 0; padding: 24px 24px 12px;\\" valign=\\"top\\"><h4 style=\\"margin-top: 0; text-rendering: optimizeLegibility; font-size: 21px; line-height: 1.2em; font-family: Georgia, serif; letter-spacing: -0.01em; margin: 0; font-weight: 700; color: #15212A;\\"><span style=\\"white-space: pre-wrap;\\">Spoiler alert!</span></h4></td></tr><tr><td class=\\"kg-toggle-content\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212A; font-size: 16px; line-height: 1.5; padding: 0 24px 24px;\\" valign=\\"top\\"><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; margin-bottom: 0; color: inherit;\\"><span style=\\"white-space: pre-wrap;\\">Just kidding</span></p></td></tr></tbody></table><table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" class=\\"kg-audio-card\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto; width: 100%; margin: 0 auto 1.5em; border-radius: 3px; background-color: #ffffff; background-color: rgba(255, 255, 255, 0.25); border: 1px solid #e0e7eb; border: 1px solid rgba(0, 0, 0, 0.12);\\" width=\\"100%\\" bgcolor=\\"rgba(255, 255, 255, 0.25)\\">
+        <![endif]--></div><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; color: #15212A;\\"><span style=\\"white-space: pre-wrap;\\">Hey </span><span>there</span><span style=\\"white-space: pre-wrap;\\">,</span></p><div><hr style=\\"position: relative; display: block; width: 100%; margin: 3em 0; padding: 0; height: 1px; background-color: transparent; border: 0; border-top: 1px solid #e0e7eb;\\"><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; color: #15212A;\\"><span style=\\"white-space: pre-wrap;\\">Hello there, fellow users of electronic mail.</span></p><hr style=\\"position: relative; display: block; width: 100%; margin: 3em 0; padding: 0; height: 1px; background-color: transparent; border: 0; border-top: 1px solid #e0e7eb;\\"></div><!--members-only--><table class=\\"kg-card kg-button-card\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\"><tbody><tr><td class=\\"kg-card-spacing\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 0 0 1.5em 0;\\" valign=\\"top\\"><table class=\\"btn\\" border=\\"0\\" cellspacing=\\"0\\" cellpadding=\\"0\\" align=\\"center\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; box-sizing: border-box; width: auto;\\" width=\\"auto\\"><tbody><tr><td align=\\"center\\" style=\\"font-size: 18px; vertical-align: top; color: #15212A; padding: 8px 20px 9px; background-color: #FF1A75; border-radius: 6px; text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;\\" valign=\\"top\\" bgcolor=\\"#FF1A75\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; box-sizing: border-box; color: #FFFFFF; cursor: pointer; display: inline-block; font-size: 15px; font-weight: 600; margin: 0; text-decoration: none;\\" target=\\"_blank\\">Click me, I&#39;m a button!</a></td></tr></tbody></table></td></tr></tbody></table><div class=\\"kg-card kg-callout-card kg-callout-card-blue\\" style=\\"display: flex; margin: 0 0 1.5em 0; padding: 24px; border-radius: 8px; background: #E9F6FB;\\"><div class=\\"kg-callout-emoji\\" style=\\"padding-right: 12px; font-size: 20px;\\">&#x1F4A1;</div><div class=\\"kg-callout-text\\" style=\\"color: inherit;\\">I had an idea...</div></div><table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" class=\\"kg-toggle-card\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-radius: 4px; margin-bottom: 24px; width: 100%; background-color: #ffffff; background-color: rgba(255, 255, 255, 0.25); border: 1px solid #e0e7eb; border: 1px solid rgba(0, 0, 0, 0.12);\\" bgcolor=\\"rgba(255, 255, 255, 0.25)\\"><tbody><tr><td class=\\"kg-toggle-heading\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; margin: 0; padding: 24px 24px 12px;\\" valign=\\"top\\"><h4 style=\\"margin-top: 0; text-rendering: optimizeLegibility; font-size: 21px; line-height: 1.2em; font-family: Georgia, serif; letter-spacing: -0.01em; margin: 0; font-weight: 700; color: #15212A;\\"><span style=\\"white-space: pre-wrap;\\">Spoiler alert!</span></h4></td></tr><tr><td class=\\"kg-toggle-content\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212A; font-size: 16px; line-height: 1.5; padding: 0 24px 24px;\\" valign=\\"top\\"><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; margin-bottom: 0; color: inherit;\\"><span style=\\"white-space: pre-wrap;\\">Just kidding</span></p></td></tr></tbody></table><table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" class=\\"kg-audio-card\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto; width: 100%; margin: 0 auto 1.5em; border-radius: 3px; background-color: #ffffff; background-color: rgba(255, 255, 255, 0.25); border: 1px solid #e0e7eb; border: 1px solid rgba(0, 0, 0, 0.12);\\" width=\\"100%\\" bgcolor=\\"rgba(255, 255, 255, 0.25)\\">
                 <tbody><tr>
                     <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
                         <table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                             <tbody><tr>
                                 <td width=\\"60\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
-                                    <a href=\\"http://127.0.0.1:2369/r/77ff68c0?m=member-uuid\\" style=\\"overflow-wrap: anywhere; color: #FF1A75; text-decoration: underline; display: block; width: 60px; height: 60px; padding-top: 4px; padding-right: 16px; padding-bottom: 4px; padding-left: 4px; border-radius: 2px;\\" target=\\"_blank\\">
+                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; color: #FF1A75; text-decoration: underline; display: block; width: 60px; height: 60px; padding-top: 4px; padding-right: 16px; padding-bottom: 4px; padding-left: 4px; border-radius: 2px;\\" target=\\"_blank\\">
                                         
                                         <img src=\\"https://static.ghost.org/v4.0.0/images/audio-file-icon.png\\" class=\\"kg-audio-thumbnail placeholder\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; width: 24px; height: 24px; padding: 18px; border-radius: 2px; background-color: #FF1A75;\\" width=\\"24\\" height=\\"24\\">
                                         
                                     </a>
                                 </td>
                                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; color: #15212A; position: relative; vertical-align: center;\\" valign=\\"center\\">
-                                    <a href=\\"http://127.0.0.1:2369/r/df03ca25?m=member-uuid\\" style=\\"overflow-wrap: anywhere; color: #FF1A75; text-decoration: underline; position: absolute; display: block; top: 0; right: 0; bottom: 0; left: 0;\\" target=\\"_blank\\"></a>
+                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; color: #FF1A75; text-decoration: underline; position: absolute; display: block; top: 0; right: 0; bottom: 0; left: 0;\\" target=\\"_blank\\"></a>
                                     <table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                         <tbody><tr>
                                             <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
-                                                <a href=\\"http://127.0.0.1:2369/r/f2242684?m=member-uuid\\" class=\\"kg-audio-title\\" style=\\"display: block; padding-right: 20px; padding-bottom: 4px; padding-top: 4px; font-size: 16px; font-weight: 600; line-height: 18px; overflow-wrap: anywhere; text-decoration: none; color: #15212A;\\" target=\\"_blank\\">Sample</a>
+                                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"kg-audio-title\\" style=\\"display: block; padding-right: 20px; padding-bottom: 4px; padding-top: 4px; font-size: 16px; font-weight: 600; line-height: 18px; overflow-wrap: anywhere; text-decoration: none; color: #15212A;\\" target=\\"_blank\\">Sample</a>
                                             </td>
                                         </tr>
                                         <tr>
@@ -9492,10 +9492,10 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
                                                 <table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                                     <tbody><tr>
                                                         <td width=\\"24\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; color: #15212A; vertical-align: middle;\\" valign=\\"middle\\">
-                                                            <a href=\\"http://127.0.0.1:2369/r/4d4eafa7?m=member-uuid\\" class=\\"kg-audio-play-button\\" style=\\"display: block; box-sizing: border-box; width: 16px; height: 16px; border-style: solid; border-width: 8px 0px 8px 16px; border-color: transparent transparent transparent currentColor; overflow-wrap: anywhere; text-decoration: underline; color: #15212A;\\" target=\\"_blank\\"></a>
+                                                            <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"kg-audio-play-button\\" style=\\"display: block; box-sizing: border-box; width: 16px; height: 16px; border-style: solid; border-width: 8px 0px 8px 16px; border-color: transparent transparent transparent currentColor; overflow-wrap: anywhere; text-decoration: underline; color: #15212A;\\" target=\\"_blank\\"></a>
                                                         </td>
                                                         <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; color: #15212A; vertical-align: middle;\\" valign=\\"middle\\">
-                                                            <a href=\\"http://127.0.0.1:2369/r/de20bc89?m=member-uuid\\" class=\\"kg-audio-duration\\" style=\\"display: block; font-size: 13px; overflow-wrap: anywhere; text-decoration: none; color: #15212a; color: rgba(0, 0, 0, 0.6);\\" target=\\"_blank\\">1:45<span class=\\"kg-audio-link\\" style=\\"color: #15212a; color: rgba(0, 0, 0, 0.6);\\"> &#x2022; Click to play audio</span></a>
+                                                            <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"kg-audio-duration\\" style=\\"display: block; font-size: 13px; overflow-wrap: anywhere; text-decoration: none; color: #15212a; color: rgba(0, 0, 0, 0.6);\\" target=\\"_blank\\">1:45<span class=\\"kg-audio-link\\" style=\\"color: #15212a; color: rgba(0, 0, 0, 0.6);\\"> &#x2022; Click to play audio</span></a>
                                                         </td>
                                                     </tr>
                                                 </tbody></table>
@@ -9509,7 +9509,7 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
                 </tr>
             </tbody></table><div class=\\"kg-card kg-video-card kg-width-regular kg-card-hascaption\\" style=\\"margin: 0 0 1.5em; padding: 0;\\">
             <!--[if !mso !vml]-->
-            <a class=\\"kg-video-preview\\" href=\\"http://127.0.0.1:2369/r/8b00fbf9?m=member-uuid\\" aria-label=\\"Play video\\" style=\\"background-color: #1d1f21; background-image: radial-gradient(circle at center, #5b5f66, #1d1f21); display: block; overflow-wrap: anywhere; color: #FF1A75; mso-hide: all; text-decoration: none;\\" target=\\"_blank\\">
+            <a class=\\"kg-video-preview\\" href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" aria-label=\\"Play video\\" style=\\"background-color: #1d1f21; background-image: radial-gradient(circle at center, #5b5f66, #1d1f21); display: block; overflow-wrap: anywhere; color: #FF1A75; mso-hide: all; text-decoration: none;\\" target=\\"_blank\\">
                 <table cellpadding=\\"0\\" cellspacing=\\"0\\" border=\\"0\\" width=\\"100%\\" background=\\"https://main.ghost.org/content/media/2023/12/sample_640x360_thumb.jpg\\" role=\\"presentation\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; background-size: cover; min-height: 200px; overflow: hidden; background: url(&#39;https://main.ghost.org/content/media/2023/12/sample_640x360_thumb.jpg&#39;) left top / cover; mso-hide: all;\\">
                     <tbody><tr style=\\"mso-hide: all\\">
                         <td width=\\"25%\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; visibility: hidden; mso-hide: all;\\" valign=\\"top\\">
@@ -9562,7 +9562,7 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
                         
                             <tr>
                                 <td class=\\"kg-product-button-wrapper\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; margin-top: 0; padding-top: 16px; padding-bottom: 0;\\" valign=\\"top\\">
-                                    <table class=\\"btn\\" border=\\"0\\" cellspacing=\\"0\\" cellpadding=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; box-sizing: border-box; width: 100%;\\" width=\\"100%\\"><tbody><tr><td align=\\"center\\" width=\\"100%\\" style=\\"font-size: 18px; vertical-align: top; color: #15212A; padding: 8px 20px 9px; background-color: #FF1A75; border-radius: 6px; text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;\\" valign=\\"top\\" bgcolor=\\"#FF1A75\\"><a href=\\"http://127.0.0.1:2369/r/74014b7d?m=member-uuid\\" style=\\"overflow-wrap: anywhere; box-sizing: border-box; color: #FFFFFF; cursor: pointer; display: inline-block; font-size: 15px; font-weight: 600; margin: 0; text-decoration: none;\\" target=\\"_blank\\">Click here</a></td></tr></tbody></table>
+                                    <table class=\\"btn\\" border=\\"0\\" cellspacing=\\"0\\" cellpadding=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; box-sizing: border-box; width: 100%;\\" width=\\"100%\\"><tbody><tr><td align=\\"center\\" width=\\"100%\\" style=\\"font-size: 18px; vertical-align: top; color: #15212A; padding: 8px 20px 9px; background-color: #FF1A75; border-radius: 6px; text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;\\" valign=\\"top\\" bgcolor=\\"#FF1A75\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; box-sizing: border-box; color: #FFFFFF; cursor: pointer; display: inline-block; font-size: 15px; font-weight: 600; margin: 0; text-decoration: none;\\" target=\\"_blank\\">Click here</a></td></tr></tbody></table>
                                 </td>
                             </tr>
                         
@@ -9601,7 +9601,7 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
                 </tr>
             </tbody></table>
         </div><div class=\\"kg-card kg-embed-card\\" style=\\"margin: 0 0 1.5em; padding: 0;\\"><!--[if !mso !vml]-->
-            <a class=\\"kg-video-preview\\" href=\\"http://127.0.0.1:2369/r/61d6e9f2?m=member-uuid\\" aria-label=\\"Play video\\" style=\\"background-color: #1d1f21; background-image: radial-gradient(circle at center, #5b5f66, #1d1f21); display: block; overflow-wrap: anywhere; color: #FF1A75; mso-hide: all; text-decoration: none;\\" target=\\"_blank\\">
+            <a class=\\"kg-video-preview\\" href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" aria-label=\\"Play video\\" style=\\"background-color: #1d1f21; background-image: radial-gradient(circle at center, #5b5f66, #1d1f21); display: block; overflow-wrap: anywhere; color: #FF1A75; mso-hide: all; text-decoration: none;\\" target=\\"_blank\\">
                 <table cellpadding=\\"0\\" cellspacing=\\"0\\" border=\\"0\\" width=\\"100%\\" background=\\"https://i.ytimg.com/vi/jfKfPfyJRdk/hqdefault.jpg\\" role=\\"presentation\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; background-size: cover; min-height: 200px; overflow: hidden; background: url(&#39;https://i.ytimg.com/vi/jfKfPfyJRdk/hqdefault.jpg&#39;) left top / cover; mso-hide: all;\\">
                     <tbody><tr style=\\"mso-hide: all\\">
                         <td width=\\"25%\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; visibility: hidden; mso-hide: all;\\" valign=\\"top\\">
@@ -9630,20 +9630,20 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
                             <td valign=\\"middle\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; color: #15212A; vertical-align: middle;\\">
                                 
                                 <table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\"><tbody><tr><td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
-                                    <a href=\\"http://127.0.0.1:2369/r/85fff475?m=member-uuid\\" class=\\"kg-file-title\\" style=\\"display: block; width: 100%; padding-left: 12px; padding-top: 8px; font-size: 17px; font-weight: bold; line-height: 1.3em; overflow-wrap: anywhere; text-decoration: none; color: #15212A;\\" target=\\"_blank\\">test</a>
+                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"kg-file-title\\" style=\\"display: block; width: 100%; padding-left: 12px; padding-top: 8px; font-size: 17px; font-weight: bold; line-height: 1.3em; overflow-wrap: anywhere; text-decoration: none; color: #15212A;\\" target=\\"_blank\\">test</a>
                                 </td></tr></tbody></table>
                                 
                                 
                                 <table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\"><tbody><tr><td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
-                                    <a href=\\"http://127.0.0.1:2369/r/0279d1b8?m=member-uuid\\" class=\\"kg-file-description\\" style=\\"display: block; width: 100%; padding-left: 12px; padding-top: 2px; font-size: 15px; line-height: 1.4em; overflow-wrap: anywhere; text-decoration: none; color: #15212a; color: rgba(0, 0, 0, 0.6);\\" target=\\"_blank\\">A tiny text file.</a>
+                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"kg-file-description\\" style=\\"display: block; width: 100%; padding-left: 12px; padding-top: 2px; font-size: 15px; line-height: 1.4em; overflow-wrap: anywhere; text-decoration: none; color: #15212a; color: rgba(0, 0, 0, 0.6);\\" target=\\"_blank\\">A tiny text file.</a>
                                 </td></tr></tbody></table>
                                 
                                 <table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\"><tbody><tr><td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
-                                    <a href=\\"http://127.0.0.1:2369/r/186d0a16?m=member-uuid\\" class=\\"kg-file-meta\\" style=\\"display: block; width: 100%; padding-left: 12px; padding-top: 4px; padding-bottom: 8px; font-size: 13px; line-height: 1.4em; overflow-wrap: anywhere; color: #FF1A75; text-decoration: none;\\" target=\\"_blank\\"><span class=\\"kg-file-name\\" style=\\"font-weight: 500; color: #15212A;\\">test.txt</span> &#x2022; 16 Bytes</a>
+                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"kg-file-meta\\" style=\\"display: block; width: 100%; padding-left: 12px; padding-top: 4px; padding-bottom: 8px; font-size: 13px; line-height: 1.4em; overflow-wrap: anywhere; color: #FF1A75; text-decoration: none;\\" target=\\"_blank\\"><span class=\\"kg-file-name\\" style=\\"font-weight: 500; color: #15212A;\\">test.txt</span> &#x2022; 16 Bytes</a>
                                 </td></tr></tbody></table>
                             </td>
                             <td width=\\"80\\" valign=\\"middle\\" class=\\"kg-file-thumbnail\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; color: #15212A; position: relative; vertical-align: middle; text-align: center; border-radius: 2px; background-color: #FF1A75;\\" align=\\"center\\" bgcolor=\\"#FF1A75\\">
-                                <a href=\\"http://127.0.0.1:2369/r/0333f205?m=member-uuid\\" style=\\"overflow-wrap: anywhere; color: #FF1A75; text-decoration: underline; display: block; top: 0; right: 0; bottom: 0; left: 0;\\" target=\\"_blank\\">
+                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; color: #FF1A75; text-decoration: underline; display: block; top: 0; right: 0; bottom: 0; left: 0;\\" target=\\"_blank\\">
                                     <img src=\\"https://static.ghost.org/v4.0.0/images/download-icon-darkmode.png\\" style=\\"border: none; -ms-interpolation-mode: bicubic; margin-top: 6px; height: 24px; width: 24px; max-width: 24px;\\" width=\\"24\\" height=\\"24\\">
                                 </a>
                             </td>
@@ -9678,7 +9678,7 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
                         
                             <tr>
                                 <td class=\\"kg-cta-button-container\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding-top: 20px;\\" valign=\\"top\\">
-                                    <table class=\\"btn\\" border=\\"0\\" cellspacing=\\"0\\" cellpadding=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; box-sizing: border-box; width: auto; margin-left: auto; margin-right: auto;\\" width=\\"auto\\"><tbody><tr><td align=\\"center\\" style=\\"font-size: 18px; vertical-align: top; color: #15212A; padding: 8px 20px 9px; border-radius: 6px; text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; background-color: #000000;\\" bgcolor=\\"#000000\\" valign=\\"top\\"><a href=\\"http://127.0.0.1:2369/r/f97ba61e?m=member-uuid\\" style=\\"overflow-wrap: anywhere; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 15px; font-weight: 600; margin: 0; text-decoration: none; color: #FFFFFF;\\" target=\\"_blank\\">Learn more</a></td></tr></tbody></table>
+                                    <table class=\\"btn\\" border=\\"0\\" cellspacing=\\"0\\" cellpadding=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; box-sizing: border-box; width: auto; margin-left: auto; margin-right: auto;\\" width=\\"auto\\"><tbody><tr><td align=\\"center\\" style=\\"font-size: 18px; vertical-align: top; color: #15212A; padding: 8px 20px 9px; border-radius: 6px; text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; background-color: #000000;\\" bgcolor=\\"#000000\\" valign=\\"top\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 15px; font-weight: 600; margin: 0; text-decoration: none; color: #FFFFFF;\\" target=\\"_blank\\">Learn more</a></td></tr></tbody></table>
                                 </td>
                             </tr>
                         
@@ -9686,7 +9686,7 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
                 </td>
             </tr>
         
-        </tbody></table><table class=\\"kg-card kg-transistor-card\\" cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; margin-top: 1.5em;\\"><tbody><tr><td align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 24px 0; text-align: center;\\" valign=\\"top\\"><a href=\\"http://127.0.0.1:2369/r/a50b0460?m=member-uuid\\" style=\\"overflow-wrap: anywhere; color: #FF1A75; text-decoration: none;\\" target=\\"_blank\\"><img src=\\"data:image/svg+xml,%3Csvg%20viewBox%3D%225%200.5%20144%20144%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22%2315171A%22%3E%3Cpath%20d%3D%22M77%20120.3c-2.6%200-4.8-2.1-4.8-4.8V29.4c0-2.6%202.1-4.8%204.8-4.8s4.8%202.1%204.8%204.8v86.2c0%202.6-2.2%204.7-4.8%204.7z%22%2F%3E%3Cpath%20d%3D%22M57%2077.3H34c-2.6%200-4.8-2.1-4.8-4.8%200-2.6%202.1-4.8%204.8-4.8h23c2.6%200%204.8%202.1%204.8%204.8%200%202.6-2.1%204.8-4.8%204.8z%22%2F%3E%3Cpath%20d%3D%22M120.1%2077.3h-23c-2.6%200-4.8-2.1-4.8-4.8%200-2.6%202.1-4.8%204.8-4.8h23c2.6%200%204.8%202.1%204.8%204.8%200%202.6-2.2%204.8-4.8%204.8z%22%2F%3E%3Cpath%20d%3D%22M77%20144.5c-39.7%200-72-32.3-72-72s32.3-72%2072-72%2072%2032.3%2072%2072-32.3%2072-72%2072zM77%2010c-34.4%200-62.4%2028-62.4%2062.4%200%2034.4%2028%2062.4%2062.4%2062.4%2034.4%200%2062.4-28%2062.4-62.4C139.4%2038%20111.4%2010%2077%2010z%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E\\" width=\\"56\\" height=\\"56\\" alt=\\"Transistor\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; border-radius: 8px; display: block; margin: 0 auto 12px auto;\\"></a><a href=\\"http://127.0.0.1:2369/r/1c8be355?m=member-uuid\\" style=\\"overflow-wrap: anywhere; font-weight: 600; text-decoration: none; color: #15171A; font-size: 16px; display: block;\\" target=\\"_blank\\"> Listen on Transistor </a><a href=\\"http://127.0.0.1:2369/r/5da9462c?m=member-uuid\\" style=\\"overflow-wrap: anywhere; color: #738a94; font-size: 14px; text-decoration: none; display: block; margin-top: 4px;\\" target=\\"_blank\\"> Get your private podcast feed </a></td></tr></tbody></table>
+        </tbody></table><table class=\\"kg-card kg-transistor-card\\" cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; margin-top: 1.5em;\\"><tbody><tr><td align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 24px 0; text-align: center;\\" valign=\\"top\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; color: #FF1A75; text-decoration: none;\\" target=\\"_blank\\"><img src=\\"data:image/svg+xml,%3Csvg%20viewBox%3D%225%200.5%20144%20144%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22%2315171A%22%3E%3Cpath%20d%3D%22M77%20120.3c-2.6%200-4.8-2.1-4.8-4.8V29.4c0-2.6%202.1-4.8%204.8-4.8s4.8%202.1%204.8%204.8v86.2c0%202.6-2.2%204.7-4.8%204.7z%22%2F%3E%3Cpath%20d%3D%22M57%2077.3H34c-2.6%200-4.8-2.1-4.8-4.8%200-2.6%202.1-4.8%204.8-4.8h23c2.6%200%204.8%202.1%204.8%204.8%200%202.6-2.1%204.8-4.8%204.8z%22%2F%3E%3Cpath%20d%3D%22M120.1%2077.3h-23c-2.6%200-4.8-2.1-4.8-4.8%200-2.6%202.1-4.8%204.8-4.8h23c2.6%200%204.8%202.1%204.8%204.8%200%202.6-2.2%204.8-4.8%204.8z%22%2F%3E%3Cpath%20d%3D%22M77%20144.5c-39.7%200-72-32.3-72-72s32.3-72%2072-72%2072%2032.3%2072%2072-32.3%2072-72%2072zM77%2010c-34.4%200-62.4%2028-62.4%2062.4%200%2034.4%2028%2062.4%2062.4%2062.4%2034.4%200%2062.4-28%2062.4-62.4C139.4%2038%20111.4%2010%2077%2010z%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E\\" width=\\"56\\" height=\\"56\\" alt=\\"Transistor\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; border-radius: 8px; display: block; margin: 0 auto 12px auto;\\"></a><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; font-weight: 600; text-decoration: none; color: #15171A; font-size: 16px; display: block;\\" target=\\"_blank\\"> Listen on Transistor </a><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; color: #738a94; font-size: 14px; text-decoration: none; display: block; margin-top: 4px;\\" target=\\"_blank\\"> Get your private podcast feed </a></td></tr></tbody></table>
                                                 <!-- POST CONTENT END -->
 
                                             </td>
@@ -9761,7 +9761,7 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
 
 
 
-http://127.0.0.1:2369/r/c10d31ed?m=member-uuid
+http://127.0.0.1:2369/r/xxxxxx?m=member-uuid
 
 
 
@@ -9771,13 +9771,10 @@ http://127.0.0.1:2369/r/c10d31ed?m=member-uuid
 
 
 
-Ghost [http://127.0.0.1:2369/r/384c88fe?m=member-uuid]
+Ghost [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
-Daily newsletter [http://127.0.0.1:2369/r/54c67097?m=member-uuid]
-
-
-
+Daily newsletter [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 
@@ -9788,7 +9785,10 @@ Daily newsletter [http://127.0.0.1:2369/r/54c67097?m=member-uuid]
 
 
 
-A random test post [http://127.0.0.1:2369/r/7f2ecae0?m=member-uuid]
+
+
+
+A random test post [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 
@@ -9804,12 +9804,12 @@ A random test post [http://127.0.0.1:2369/r/7f2ecae0?m=member-uuid]
 By Joe Bloggs • date
 
 
-View in browser [http://127.0.0.1:2369/r/8a4e9a45?m=member-uuid]
+View in browser [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 
 
-View in browser [http://127.0.0.1:2369/r/dfcbae2f?m=member-uuid]
+View in browser [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 
@@ -9903,7 +9903,7 @@ Ghost - The Professional Publishing Platform
 
 
 
-[http://127.0.0.1:2369/r/16b5e766?m=member-uuid]
+[http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 My favorite website.
@@ -9919,7 +9919,7 @@ Hello there, fellow users of electronic mail.
 
 ----------------------------------------
 
-Click me, I'm a button! [http://127.0.0.1:2369/r/802cfb6b?m=member-uuid]
+Click me, I'm a button! [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 💡I had an idea...
 
@@ -9939,29 +9939,29 @@ Just kidding
 
 
 
-http://127.0.0.1:2369/r/77ff68c0?m=member-uuid
+http://127.0.0.1:2369/r/xxxxxx?m=member-uuid
 
 
-http://127.0.0.1:2369/r/df03ca25?m=member-uuid
-
-
-
-
-
-Sample [http://127.0.0.1:2369/r/f2242684?m=member-uuid]
+http://127.0.0.1:2369/r/xxxxxx?m=member-uuid
 
 
 
+
+
+Sample [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 
 
 
 
-http://127.0.0.1:2369/r/4d4eafa7?m=member-uuid
 
 
-1:45 • Click to play audio [http://127.0.0.1:2369/r/de20bc89?m=member-uuid]
+
+http://127.0.0.1:2369/r/xxxxxx?m=member-uuid
+
+
+1:45 • Click to play audio [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 
@@ -9991,7 +9991,7 @@ http://127.0.0.1:2369/r/4d4eafa7?m=member-uuid
 
 
 
-[http://127.0.0.1:2369/r/8b00fbf9?m=member-uuid]
+[http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 
@@ -10038,7 +10038,7 @@ with Ghost
 
 
 
-Click here [http://127.0.0.1:2369/r/74014b7d?m=member-uuid]
+Click here [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 
@@ -10100,7 +10100,7 @@ This header renders properly in all email clients!
 
 
 
-[http://127.0.0.1:2369/r/61d6e9f2?m=member-uuid]
+[http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 
@@ -10127,20 +10127,20 @@ A tiny little script.
 
 
 
-test [http://127.0.0.1:2369/r/85fff475?m=member-uuid]
+test [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 
 
 
 
-A tiny text file. [http://127.0.0.1:2369/r/0279d1b8?m=member-uuid]
+A tiny text file. [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 
 
 
-test.txt • 16 Bytes [http://127.0.0.1:2369/r/186d0a16?m=member-uuid]
+test.txt • 16 Bytes [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 
@@ -10148,7 +10148,7 @@ test.txt • 16 Bytes [http://127.0.0.1:2369/r/186d0a16?m=member-uuid]
 
 
 
-http://127.0.0.1:2369/r/0333f205?m=member-uuid
+http://127.0.0.1:2369/r/xxxxxx?m=member-uuid
 
 
 
@@ -10193,7 +10193,7 @@ Here’s a basic CTA card
 
 
 
-Learn more [http://127.0.0.1:2369/r/f97ba61e?m=member-uuid]
+Learn more [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 
@@ -10203,7 +10203,7 @@ Learn more [http://127.0.0.1:2369/r/f97ba61e?m=member-uuid]
 
 
 
-http://127.0.0.1:2369/r/a50b0460?m=member-uuid Listen on Transistor [http://127.0.0.1:2369/r/1c8be355?m=member-uuid] Get your private podcast feed [http://127.0.0.1:2369/r/5da9462c?m=member-uuid]
+http://127.0.0.1:2369/r/xxxxxx?m=member-uuid Listen on Transistor [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid] Get your private podcast feed [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 

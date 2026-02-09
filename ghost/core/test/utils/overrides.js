@@ -36,7 +36,7 @@ if (sessionPort !== canonicalTestPort && snapshotExports.snapshotManager) {
 
     // Deep-replace port strings in plain objects/arrays, leaving matcher
     // instances (AsymmetricMatcher, RegExp, etc.) untouched.
-    function normalizePort(obj) {
+    const normalizePort = (obj) => {
         if (obj === null || obj === undefined) {
             return obj;
         }
@@ -58,7 +58,7 @@ if (sessionPort !== canonicalTestPort && snapshotExports.snapshotManager) {
             result[key] = normalizePort(obj[key]);
         }
         return result;
-    }
+    };
 
     snapshotManager.match = function (received, properties, hint) {
         const normalized = JSON.parse(
