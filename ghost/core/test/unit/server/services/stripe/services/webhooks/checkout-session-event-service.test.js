@@ -693,22 +693,23 @@ describe('CheckoutSessionEventService', function () {
         });
 
         describe('signup email logic', function () {
-            it('should send signup email when requestSrc is not portal (custom membership page)', async function () {
+            it('should send signup email for direct checkout flow even when welcome email is active', async function () {
                 api.getCustomer.resolves(customer);
                 memberRepository.get.resolves(null);
-                session.metadata.requestSrc = undefined;
-                isPaidWelcomeEmailActive.resolves(true); // Even if welcome email is active
+                session.metadata.ghostSignupFlow = 'direct_checkout';
+                isPaidWelcomeEmailActive.resolves(true);
 
                 await service.handleSubscriptionEvent(session);
 
                 assert(sendSignupEmail.calledOnce);
                 assert(sendSignupEmail.calledWith('customer@example.com'));
+                assert(!isPaidWelcomeEmailActive.called);
             });
 
-            it('should send signup email when requestSrc is portal but welcome email is not active', async function () {
+            it('should send signup email when flow is pre_checkout_magic_link and welcome email is not active', async function () {
                 api.getCustomer.resolves(customer);
                 memberRepository.get.resolves(null);
-                session.metadata.requestSrc = 'portal';
+                session.metadata.ghostSignupFlow = 'pre_checkout_magic_link';
                 isPaidWelcomeEmailActive.resolves(false);
 
                 await service.handleSubscriptionEvent(session);
@@ -717,10 +718,10 @@ describe('CheckoutSessionEventService', function () {
                 assert(sendSignupEmail.calledWith('customer@example.com'));
             });
 
-            it('should NOT send signup email when requestSrc is portal AND welcome email is active', async function () {
+            it('should NOT send signup email when flow is pre_checkout_magic_link and welcome email is active', async function () {
                 api.getCustomer.resolves(customer);
                 memberRepository.get.resolves(null);
-                session.metadata.requestSrc = 'portal';
+                session.metadata.ghostSignupFlow = 'pre_checkout_magic_link';
                 isPaidWelcomeEmailActive.resolves(true);
 
                 await service.handleSubscriptionEvent(session);
@@ -728,23 +729,47 @@ describe('CheckoutSessionEventService', function () {
                 assert(!sendSignupEmail.called);
             });
 
-            it('should NOT send signup email on upgrade regardless of requestSrc or welcome email', async function () {
+            it('should send signup email when flow is authenticated_member_checkout and welcome email is not active', async function () {
                 api.getCustomer.resolves(customer);
-                memberRepository.get.resolves(member);
-                session.metadata.checkoutType = 'upgrade';
-                session.metadata.requestSrc = 'portal';
+                memberRepository.get.resolves(null);
+                session.metadata.ghostSignupFlow = 'authenticated_member_checkout';
                 isPaidWelcomeEmailActive.resolves(false);
+
+                await service.handleSubscriptionEvent(session);
+
+                assert(sendSignupEmail.calledOnce);
+                assert(sendSignupEmail.calledWith('customer@example.com'));
+            });
+
+            it('should NOT send signup email when flow is authenticated_member_checkout and welcome email is active', async function () {
+                api.getCustomer.resolves(customer);
+                memberRepository.get.resolves(null);
+                session.metadata.ghostSignupFlow = 'authenticated_member_checkout';
+                isPaidWelcomeEmailActive.resolves(true);
 
                 await service.handleSubscriptionEvent(session);
 
                 assert(!sendSignupEmail.called);
             });
 
-            it('should NOT send signup email on upgrade from custom membership page', async function () {
+            it('should send signup email when flow metadata is missing for backward compatibility', async function () {
+                api.getCustomer.resolves(customer);
+                memberRepository.get.resolves(null);
+                delete session.metadata.ghostSignupFlow;
+                isPaidWelcomeEmailActive.resolves(true);
+
+                await service.handleSubscriptionEvent(session);
+
+                assert(sendSignupEmail.calledOnce);
+                assert(sendSignupEmail.calledWith('customer@example.com'));
+                assert(!isPaidWelcomeEmailActive.called);
+            });
+
+            it('should NOT send signup email on upgrade regardless of flow or welcome email', async function () {
                 api.getCustomer.resolves(customer);
                 memberRepository.get.resolves(member);
                 session.metadata.checkoutType = 'upgrade';
-                session.metadata.requestSrc = undefined;
+                session.metadata.ghostSignupFlow = 'pre_checkout_magic_link';
                 isPaidWelcomeEmailActive.resolves(false);
 
                 await service.handleSubscriptionEvent(session);

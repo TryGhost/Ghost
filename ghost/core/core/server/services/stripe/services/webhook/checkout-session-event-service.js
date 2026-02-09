@@ -2,6 +2,11 @@ const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 
+const GHOST_SIGNUP_FLOWS = {
+    PRE_CHECKOUT_MAGIC_LINK: 'pre_checkout_magic_link',
+    AUTHENTICATED_MEMBER_CHECKOUT: 'authenticated_member_checkout'
+};
+
 /**
  * Handles `checkout.session.completed` webhook events
  *
@@ -261,18 +266,16 @@ module.exports = class CheckoutSessionEventService {
         }
 
         if (checkoutType !== 'upgrade') {
-            const requestSrc = _.get(session, 'metadata.requestSrc');
+            const ghostSignupFlow = _.get(session, 'metadata.ghostSignupFlow');
+            const shouldSkipSignupEmailWhenWelcomeEmailActive = ghostSignupFlow === GHOST_SIGNUP_FLOWS.PRE_CHECKOUT_MAGIC_LINK || ghostSignupFlow === GHOST_SIGNUP_FLOWS.AUTHENTICATED_MEMBER_CHECKOUT;
 
-            // Only consider skipping if this was a Portal-initiated checkout
-            if (requestSrc === 'portal') {
+            if (shouldSkipSignupEmailWhenWelcomeEmailActive) {
                 const isPaidWelcomeEmailActive = await this.deps.isPaidWelcomeEmailActive();
                 if (!isPaidWelcomeEmailActive) {
                     this.deps.sendSignupEmail(customer.email);
                 }
-                // If welcome email is active, skip signup email (welcome email replaces it)
             } else {
-                // Non-Portal checkouts (custom membership pages) always get the signup email
-                // because they need the magic link to sign in
+                // Direct checkout flows do not have a pre-checkout sign-in path.
                 this.deps.sendSignupEmail(customer.email);
             }
         }
