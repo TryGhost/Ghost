@@ -43,6 +43,8 @@ export class SidebarPage extends AdminPage {
     public readonly networkNotificationBadge: Locator;
     public readonly ghostProLink: Locator;
     public readonly upgradeNowLink: Locator;
+    public readonly themeErrorBanner: Locator;
+    public readonly themeErrorDialog: Locator;
 
     constructor(page: Page) {
         super(page);
@@ -59,6 +61,8 @@ export class SidebarPage extends AdminPage {
             .locator('[data-sidebar="menu-badge"]');
         this.ghostProLink = this.sidebar.getByRole('link', {name: 'Ghost(Pro)'});
         this.upgradeNowLink = this.sidebar.getByRole('link', {name: /upgrade/i});
+        this.themeErrorBanner = page.getByRole('status').filter({hasText: /your theme has errors/i});
+        this.themeErrorDialog = page.getByRole('dialog').filter({hasText: /theme errors/i});
     }
 
     getNavLink(name: string): Locator {
