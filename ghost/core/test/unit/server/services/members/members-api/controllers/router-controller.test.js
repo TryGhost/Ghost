@@ -167,7 +167,7 @@ describe('RouterController', function () {
             })), true);
         });
 
-        it('sets ghostSignupFlow to pre_checkout_magic_link when checkout creates a signup magic link', async function () {
+        it('sets ghostSignupContext to has_precheckout_magic_link when checkout creates a signup magic link', async function () {
             const magicLinkService = {
                 getMagicLink: sinon.stub().resolves('https://example.com/members/?token=abc123&action=signup')
             };
@@ -204,12 +204,12 @@ describe('RouterController', function () {
             assert.equal(getPaymentLinkSpy.calledWith(sinon.match({
                 successUrl: 'https://example.com/members/?token=abc123&action=signup',
                 metadata: {
-                    ghostSignupFlow: 'pre_checkout_magic_link'
+                    ghostSignupContext: 'has_precheckout_magic_link'
                 }
             })), true);
         });
 
-        it('sets ghostSignupFlow to authenticated_member_checkout for authenticated members', async function () {
+        it('sets ghostSignupContext to already_authenticated for authenticated members', async function () {
             const member = {
                 get: sinon.stub().withArgs('status').returns('free')
             };
@@ -247,12 +247,12 @@ describe('RouterController', function () {
 
             assert.equal(getPaymentLinkSpy.calledWith(sinon.match({
                 metadata: {
-                    ghostSignupFlow: 'authenticated_member_checkout'
+                    ghostSignupContext: 'already_authenticated'
                 }
             })), true);
         });
 
-        it('sets ghostSignupFlow to direct_checkout when there is no member context or customer email', async function () {
+        it('sets ghostSignupContext to needs_magic_link_email when there is no member context or customer email', async function () {
             const routerController = new RouterController({
                 tiersService,
                 paymentsService,
@@ -278,7 +278,7 @@ describe('RouterController', function () {
 
             assert.equal(getPaymentLinkSpy.calledWith(sinon.match({
                 metadata: {
-                    ghostSignupFlow: 'direct_checkout'
+                    ghostSignupContext: 'needs_magic_link_email'
                 }
             })), true);
         });

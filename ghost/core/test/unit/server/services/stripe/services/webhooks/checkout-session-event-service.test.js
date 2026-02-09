@@ -696,7 +696,7 @@ describe('CheckoutSessionEventService', function () {
             it('should send signup email for direct checkout flow even when welcome email is active', async function () {
                 api.getCustomer.resolves(customer);
                 memberRepository.get.resolves(null);
-                session.metadata.ghostSignupFlow = 'direct_checkout';
+                session.metadata.ghostSignupContext = 'needs_magic_link_email';
                 isPaidWelcomeEmailActive.resolves(true);
 
                 await service.handleSubscriptionEvent(session);
@@ -706,10 +706,10 @@ describe('CheckoutSessionEventService', function () {
                 assert(!isPaidWelcomeEmailActive.called);
             });
 
-            it('should send signup email when flow is pre_checkout_magic_link and welcome email is not active', async function () {
+            it('should send signup email when flow is has_precheckout_magic_link and welcome email is not active', async function () {
                 api.getCustomer.resolves(customer);
                 memberRepository.get.resolves(null);
-                session.metadata.ghostSignupFlow = 'pre_checkout_magic_link';
+                session.metadata.ghostSignupContext = 'has_precheckout_magic_link';
                 isPaidWelcomeEmailActive.resolves(false);
 
                 await service.handleSubscriptionEvent(session);
@@ -718,10 +718,10 @@ describe('CheckoutSessionEventService', function () {
                 assert(sendSignupEmail.calledWith('customer@example.com'));
             });
 
-            it('should NOT send signup email when flow is pre_checkout_magic_link and welcome email is active', async function () {
+            it('should NOT send signup email when flow is has_precheckout_magic_link and welcome email is active', async function () {
                 api.getCustomer.resolves(customer);
                 memberRepository.get.resolves(null);
-                session.metadata.ghostSignupFlow = 'pre_checkout_magic_link';
+                session.metadata.ghostSignupContext = 'has_precheckout_magic_link';
                 isPaidWelcomeEmailActive.resolves(true);
 
                 await service.handleSubscriptionEvent(session);
@@ -729,10 +729,10 @@ describe('CheckoutSessionEventService', function () {
                 assert(!sendSignupEmail.called);
             });
 
-            it('should send signup email when flow is authenticated_member_checkout and welcome email is not active', async function () {
+            it('should send signup email when flow is already_authenticated and welcome email is not active', async function () {
                 api.getCustomer.resolves(customer);
                 memberRepository.get.resolves(null);
-                session.metadata.ghostSignupFlow = 'authenticated_member_checkout';
+                session.metadata.ghostSignupContext = 'already_authenticated';
                 isPaidWelcomeEmailActive.resolves(false);
 
                 await service.handleSubscriptionEvent(session);
@@ -741,10 +741,10 @@ describe('CheckoutSessionEventService', function () {
                 assert(sendSignupEmail.calledWith('customer@example.com'));
             });
 
-            it('should NOT send signup email when flow is authenticated_member_checkout and welcome email is active', async function () {
+            it('should NOT send signup email when flow is already_authenticated and welcome email is active', async function () {
                 api.getCustomer.resolves(customer);
                 memberRepository.get.resolves(null);
-                session.metadata.ghostSignupFlow = 'authenticated_member_checkout';
+                session.metadata.ghostSignupContext = 'already_authenticated';
                 isPaidWelcomeEmailActive.resolves(true);
 
                 await service.handleSubscriptionEvent(session);
@@ -755,7 +755,7 @@ describe('CheckoutSessionEventService', function () {
             it('should send signup email when flow metadata is missing for backward compatibility', async function () {
                 api.getCustomer.resolves(customer);
                 memberRepository.get.resolves(null);
-                delete session.metadata.ghostSignupFlow;
+                delete session.metadata.ghostSignupContext;
                 isPaidWelcomeEmailActive.resolves(true);
 
                 await service.handleSubscriptionEvent(session);
@@ -769,7 +769,7 @@ describe('CheckoutSessionEventService', function () {
                 api.getCustomer.resolves(customer);
                 memberRepository.get.resolves(member);
                 session.metadata.checkoutType = 'upgrade';
-                session.metadata.ghostSignupFlow = 'pre_checkout_magic_link';
+                session.metadata.ghostSignupContext = 'has_precheckout_magic_link';
                 isPaidWelcomeEmailActive.resolves(false);
 
                 await service.handleSubscriptionEvent(session);
