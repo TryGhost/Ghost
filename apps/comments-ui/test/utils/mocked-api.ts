@@ -66,6 +66,16 @@ export class MockedApi {
             ...overrides,
             post_id: this.postId
         });
+
+        // If this is a reply, add it to the parent's replies array
+        if (overrides.parent_id) {
+            const parent = this.comments.find(c => c.id === overrides.parent_id);
+            if (parent) {
+                parent.replies.push(fixture);
+                parent.count.replies = parent.replies.length;
+            }
+        }
+
         this.comments.push(fixture);
     }
 
