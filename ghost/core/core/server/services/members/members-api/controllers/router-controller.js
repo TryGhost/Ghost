@@ -7,6 +7,7 @@ const errors = require('@tryghost/errors');
 const {isEmail} = require('@tryghost/validator');
 const normalizeEmail = require('../utils/normalize-email');
 const {getInboxLinks} = require('../../../../lib/get-inbox-links');
+const emailAddressService = require('../../../../services/email-address');
 
 const messages = {
     emailRequired: 'Email is required.',
@@ -731,9 +732,16 @@ module.exports = class RouterController {
                 }
             }
 
+            // Get the actual sender address that will be used when sending the email
+            // This may differ from the configured support address on managed email platforms (Ghost Pro)
+            // where emails are sent from a Ghost-managed domain for DMARC compliance
+            const configuredSenderAddress = this._settingsHelpers.getMembersSupportAddress();
+            const actualSenderAddresses = emailAddressService.service.getAddressFromString(configuredSenderAddress);
+            const actualSenderAddress = actualSenderAddresses.from.address;
+
             const inboxLinks = await getInboxLinks({
                 recipient: normalizedEmail,
-                sender: this._settingsHelpers.getMembersSupportAddress(),
+                sender: actualSenderAddress,
                 dnsResolver: this.#inboxLinksDnsResolver
             });
             if (inboxLinks) {
