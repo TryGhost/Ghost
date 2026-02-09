@@ -7,6 +7,7 @@ const errors = require('@tryghost/errors');
 const {isEmail} = require('@tryghost/validator');
 const normalizeEmail = require('../utils/normalize-email');
 const {getInboxLinks} = require('../../../../lib/get-inbox-links');
+const {SIGNUP_CONTEXTS} = require('../../../lib/member-signup-contexts');
 
 const messages = {
     emailRequired: 'Email is required.',
@@ -31,16 +32,6 @@ const messages = {
     otcNotSupported: 'OTC verification not supported.',
     invalidCode: 'Invalid verification code.',
     failedToVerifyCode: 'Failed to verify code, please try again.'
-};
-
-// Signup context describes the sign-in state when the Stripe checkout session is created.
-// NEEDS_MAGIC_LINK_EMAIL: No guaranteed sign-in path exists yet (custom/direct checkout paths).
-// HAS_PRECHECKOUT_MAGIC_LINK: Ghost generated a signup magic-link before Stripe (standard Portal flow).
-// ALREADY_AUTHENTICATED: Request came from a signed-in member identity (for example, opening a paid signup link directly).
-const GHOST_SIGNUP_CONTEXTS = {
-    NEEDS_MAGIC_LINK_EMAIL: 'needs_magic_link_email',
-    HAS_PRECHECKOUT_MAGIC_LINK: 'has_precheckout_magic_link',
-    ALREADY_AUTHENTICATED: 'already_authenticated'
 };
 
 // helper utility for logic shared between sendMagicLink and verifyOTC
@@ -485,7 +476,7 @@ module.exports = class RouterController {
         }
 
         const member = options.member;
-        let ghostSignupContext = (options.isAuthenticated && member) ? GHOST_SIGNUP_CONTEXTS.ALREADY_AUTHENTICATED : GHOST_SIGNUP_CONTEXTS.NEEDS_MAGIC_LINK_EMAIL;
+        let ghostSignupContext = (options.isAuthenticated && member) ? SIGNUP_CONTEXTS.ALREADY_AUTHENTICATED : SIGNUP_CONTEXTS.NEEDS_MAGIC_LINK_EMAIL;
 
         if (!member && options.email) {
             // Create a signup link if there is no member with this email address
@@ -502,7 +493,7 @@ module.exports = class RouterController {
                 // Redirect to the original success url after sign up
                 referrer: options.successUrl
             });
-            ghostSignupContext = GHOST_SIGNUP_CONTEXTS.HAS_PRECHECKOUT_MAGIC_LINK;
+            ghostSignupContext = SIGNUP_CONTEXTS.HAS_PRECHECKOUT_MAGIC_LINK;
         }
 
         if (member) {

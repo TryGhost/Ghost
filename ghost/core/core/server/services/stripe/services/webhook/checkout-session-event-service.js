@@ -1,16 +1,9 @@
 const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
-
-// Mirrors checkout-session creation context:
-// NEEDS_MAGIC_LINK_EMAIL => direct/custom checkout path.
-// HAS_PRECHECKOUT_MAGIC_LINK => standard Portal flow created a pre-checkout signup link.
-// ALREADY_AUTHENTICATED => checkout request originated from an authenticated member.
-const GHOST_SIGNUP_CONTEXTS = {
-    NEEDS_MAGIC_LINK_EMAIL: 'needs_magic_link_email',
-    HAS_PRECHECKOUT_MAGIC_LINK: 'has_precheckout_magic_link',
-    ALREADY_AUTHENTICATED: 'already_authenticated'
-};
+const {
+    canWelcomeEmailReplaceSignupPaidEmail
+} = require('../../../lib/member-signup-contexts');
 
 /**
  * Handles `checkout.session.completed` webhook events
@@ -272,7 +265,7 @@ module.exports = class CheckoutSessionEventService {
 
         if (checkoutType !== 'upgrade') {
             const ghostSignupContext = _.get(session, 'metadata.ghostSignupContext');
-            const shouldSkipSignupEmailWhenWelcomeEmailActive = ghostSignupContext === GHOST_SIGNUP_CONTEXTS.HAS_PRECHECKOUT_MAGIC_LINK || ghostSignupContext === GHOST_SIGNUP_CONTEXTS.ALREADY_AUTHENTICATED;
+            const shouldSkipSignupEmailWhenWelcomeEmailActive = canWelcomeEmailReplaceSignupPaidEmail(ghostSignupContext);
 
             if (shouldSkipSignupEmailWhenWelcomeEmailActive) {
                 const isPaidWelcomeEmailActive = await this.deps.isPaidWelcomeEmailActive();
