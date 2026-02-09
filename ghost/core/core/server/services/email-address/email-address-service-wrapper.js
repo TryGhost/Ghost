@@ -33,6 +33,9 @@ class EmailAddressServiceWrapper {
             getFallbackEmail: () => {
                 return config.get('hostSettings:managedEmail:fallbackAddress') || null;
             },
+            getMembersSupportAddress: () => {
+                return settingsHelpers.getMembersSupportAddress();
+            },
             isValidEmailAddress: (emailAddress) => {
                 return validator.isEmail(emailAddress);
             }
