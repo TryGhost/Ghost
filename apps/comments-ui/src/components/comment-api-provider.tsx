@@ -1,5 +1,6 @@
+import React, {createContext, useCallback, useContext, useMemo, useState} from 'react';
 import {AddComment, Comment, Member} from '../app-context';
-import {AdminApi} from '../utils/admin-api';
+import {AdminApi, setupAdminAPI} from '../utils/admin-api';
 import {GhostApi} from '../utils/api';
 
 type BaseCommentApi = {
@@ -59,4 +60,77 @@ export function createCommentApi(api: GhostApi, adminApi: AdminApi | null, membe
         report: p => api.comments.report(p),
         updateMember: data => api.member.update(data)
     };
+}
+
+const ALLOWED_MODERATORS = ['Owner', 'Administrator', 'Super Editor'];
+
+type CommentApiContextType = {
+    commentApi: CommentApi;
+    initAdminAuth: (memberUuid?: string) => Promise<void>;
+};
+
+const CommentApiContext = createContext<CommentApiContextType | null>(null);
+
+export function useCommentApi(): CommentApiContextType {
+    const context = useContext(CommentApiContext);
+    if (!context) {
+        throw new Error('useCommentApi must be used within a CommentApiProvider');
+    }
+    return context;
+}
+
+type CommentApiProviderProps = {
+    children: React.ReactNode;
+    api: GhostApi;
+    adminUrl: string | undefined;
+};
+
+export function CommentApiProvider({
+    children,
+    api,
+    adminUrl
+}: CommentApiProviderProps) {
+    const [adminApi, setAdminApi] = useState<AdminApi | null>(null);
+    const [memberUuid, setMemberUuid] = useState<string | undefined>(undefined);
+
+    const initAdminAuth = useCallback(async (currentMemberUuid?: string): Promise<void> => {
+        if (!adminUrl || adminApi) {
+            return;
+        }
+
+        setMemberUuid(currentMemberUuid);
+
+        try {
+            const newAdminApi = setupAdminAPI({adminUrl});
+
+            try {
+                const admin = await newAdminApi.getUser();
+
+                if (admin?.roles?.some((role: {name: string}) => ALLOWED_MODERATORS.includes(role.name))) {
+                    setAdminApi(newAdminApi);
+                }
+            } catch (e) {
+                // eslint-disable-next-line no-console
+                console.warn(`[Comments] Failed to fetch admin endpoint:`, e);
+            }
+        } catch (e) {
+            // eslint-disable-next-line no-console
+            console.error(`[Comments] Failed to initialize admin authentication:`, e);
+        }
+    }, [adminUrl, adminApi]);
+
+    const commentApi = useMemo(() => {
+        return createCommentApi(api, adminApi, memberUuid);
+    }, [api, adminApi, memberUuid]);
+
+    const contextValue = useMemo(() => ({
+        commentApi,
+        initAdminAuth
+    }), [commentApi, initAdminAuth]);
+
+    return (
+        <CommentApiContext.Provider value={contextValue}>
+            {children}
+        </CommentApiContext.Provider>
+    );
 }
