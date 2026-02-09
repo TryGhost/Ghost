@@ -17,7 +17,7 @@ describe('Cache', function () {
             const getAll = cache.getAll();
 
             getAll.should.have.size(2);
-            getAll.should.deepEqual({
+            assert.deepEqual(getAll, {
                 one: 1,
                 two: 2
             });
@@ -45,7 +45,7 @@ describe('Cache', function () {
 
             getAll.should.have.size(1);
             getAll.should.not.have.keys('one', 'two');
-            getAll.should.deepEqual({
+            assert.deepEqual(getAll, {
                 three: 3
             });
         });
@@ -109,7 +109,7 @@ describe('Cache', function () {
             const returned = cache.getAll();
 
             returned.should.have.size(2);
-            returned.should.deepEqual({
+            assert.deepEqual(returned, {
                 one: 1,
                 two: 2
             });
@@ -144,7 +144,7 @@ describe('Cache', function () {
 
             cache.clear();
 
-            cache.getAll().should.deepEqual({});
+            assert.deepEqual(cache.getAll(), {});
             assert.equal(cache.get('one'), undefined);
         });
     });

@@ -17,7 +17,8 @@ describe('ImageHandler', function () {
 
     it('has the correct interface', function () {
         assert.equal(ImageHandler.type, 'images');
-        ImageHandler.extensions.should.be.instanceof(Array).and.have.lengthOf(8);
+        assert(Array.isArray(ImageHandler.extensions));
+        assert.equal(ImageHandler.extensions.length, 8);
         assert(ImageHandler.extensions.includes('.jpg'));
         assert(ImageHandler.extensions.includes('.jpeg'));
         assert(ImageHandler.extensions.includes('.gif'));
@@ -26,7 +27,8 @@ describe('ImageHandler', function () {
         assert(ImageHandler.extensions.includes('.svgz'));
         assert(ImageHandler.extensions.includes('.ico'));
         assert(ImageHandler.extensions.includes('.webp'));
-        ImageHandler.contentTypes.should.be.instanceof(Array).and.have.lengthOf(7);
+        assert(Array.isArray(ImageHandler.contentTypes));
+        assert.equal(ImageHandler.contentTypes.length, 7);
         assert(ImageHandler.contentTypes.includes('image/jpeg'));
         assert(ImageHandler.contentTypes.includes('image/png'));
         assert(ImageHandler.contentTypes.includes('image/gif'));
@@ -34,7 +36,7 @@ describe('ImageHandler', function () {
         assert(ImageHandler.contentTypes.includes('image/x-icon'));
         assert(ImageHandler.contentTypes.includes('image/vnd.microsoft.icon'));
         assert(ImageHandler.contentTypes.includes('image/webp'));
-        ImageHandler.loadFile.should.be.instanceof(Function);
+        assert.equal(typeof ImageHandler.loadFile, 'function');
     });
 
     it('can load a single file', function (done) {

@@ -209,16 +209,16 @@ describe('Update Check', function () {
             assert.equal(scope.isDone(), true);
 
             assert.equal(capturedData.ghost_version, '4.0.0');
-            capturedData.node_version.should.equal(process.versions.node);
-            capturedData.env.should.equal(process.env.NODE_ENV);
+            assert.equal(capturedData.node_version, process.versions.node);
+            assert.equal(capturedData.env, process.env.NODE_ENV);
             assert.match(capturedData.database_type, /sqlite3|mysql/);
             capturedData.blog_id.should.be.a.String();
             capturedData.blog_id.should.not.be.empty();
-            capturedData.theme.should.be.equal('casperito');
+            assert.equal(capturedData.theme, 'casperito');
             assert.equal(capturedData.blog_created_at, 819846900);
-            capturedData.user_count.should.be.equal(2);
-            capturedData.post_count.should.be.equal(13);
-            capturedData.npm_version.should.be.equal('10.8.2');
+            assert.equal(capturedData.user_count, 2);
+            assert.equal(capturedData.post_count, 13);
+            assert.equal(capturedData.npm_version, '10.8.2');
         });
     });
 
@@ -294,7 +294,7 @@ describe('Update Check', function () {
             assert.equal(usersBrowseStub.calledTwice, true);
 
             // Second (non statistical) call should be looking for admin users with an 'active' status only
-            usersBrowseStub.args[1][0].should.eql({
+            assert.deepEqual(usersBrowseStub.args[1][0], {
                 limit: 'all',
                 include: ['roles'],
                 filter: 'status:active',

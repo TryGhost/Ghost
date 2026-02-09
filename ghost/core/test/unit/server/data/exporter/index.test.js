@@ -79,7 +79,7 @@ describe('Exporter', function () {
 
                 for (let call = 0; call < expectedCallCount; call++) {
                     const arg = knexMock.getCall(call).args[0];
-                    arg.should.be.equalOneOf(expectedTables);
+                    assert(expectedTables.includes(arg));
                     expectedTables = expectedTables.filter(item => item !== arg);
                 }
                 expectedTables.should.be.empty();
@@ -131,7 +131,7 @@ describe('Exporter', function () {
 
                 for (let call = 0; call < expectedCallCount; call++) {
                     const arg = knexMock.getCall(call).args[0];
-                    arg.should.be.equalOneOf(expectedTables);
+                    assert(expectedTables.includes(arg));
                     expectedTables = expectedTables.filter(item => item !== arg);
                 }
                 expectedTables.should.be.empty();

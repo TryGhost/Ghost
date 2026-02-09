@@ -60,7 +60,7 @@ describe('SessionService', function () {
         assert.equal(req.session.user_id, 'egg');
 
         const actualUser = await sessionService.getUserForSession(req, res);
-        should.ok(findUserById.calledWith(sinon.match({id: 'egg'})));
+        assert(findUserById.calledWith(sinon.match({id: 'egg'})));
 
         const expectedUser = await findUserById.returnValues[0];
         assert.equal(actualUser, expectedUser);
@@ -106,9 +106,10 @@ describe('SessionService', function () {
         });
         const res = Object.create(express.response);
 
-        const error = `Request made from incorrect origin. Expected 'origin' received 'other-origin'.`;
-
-        await sessionService.getUserForSession(req, res).should.be.rejectedWith(error);
+        await assert.rejects(
+            sessionService.getUserForSession(req, res),
+            {message: `Request made from incorrect origin. Expected 'origin' received 'other-origin'.`}
+        );
     });
 
     it('Doesn\'t throw an error when the csrf verification fails when bypassed', async function () {
@@ -148,7 +149,7 @@ describe('SessionService', function () {
             bypassCsrfProtection: true
         };
 
-        await sessionService.getUserForSession(req, res).should.be.fulfilled();
+        await sessionService.getUserForSession(req, res);
     });
 
     it('Can verify a user session', async function () {
@@ -503,7 +504,7 @@ describe('SessionService', function () {
 
         await sessionService.sendAuthCodeToUser(req, res);
 
-        should.ok(mailer.send.calledOnce);
+        assert(mailer.send.calledOnce);
         const emailArgs = mailer.send.firstCall.args[0];
         assert.equal(emailArgs.to, 'test@example.com');
         assert.match(emailArgs.subject, /Ghost sign in verification code/);
@@ -551,10 +552,9 @@ describe('SessionService', function () {
         const req = Object.create(express.request);
         const res = Object.create(express.response);
 
-        await should(sessionService.sendAuthCodeToUser(req, res))
-            .rejectedWith({
-                message: 'Failed to send email. Please check your site configuration and try again.'
-            });
+        await assert.rejects(sessionService.sendAuthCodeToUser(req, res), {
+            message: 'Failed to send email. Please check your site configuration and try again.'
+        });
     });
 
     it('Can create a verified session for SSO', async function () {
@@ -640,10 +640,9 @@ describe('SessionService', function () {
         const req = Object.create(express.request);
         const res = Object.create(express.response);
 
-        await should(sessionService.sendAuthCodeToUser(req, res))
-            .rejectedWith({
-                message: 'Could not fetch user from the session.'
-            });
+        await assert.rejects(sessionService.sendAuthCodeToUser(req, res), {
+            message: 'Could not fetch user from the session.'
+        });
     });
 
     it('Can remove verified session', async function () {

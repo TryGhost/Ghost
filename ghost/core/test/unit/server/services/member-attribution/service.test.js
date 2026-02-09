@@ -108,7 +108,7 @@ describe('MemberAttributionService', function () {
                     return null;
                 }
             };
-            should(service.getEventAttribution(model)).eql({
+            assert.deepEqual(service.getEventAttribution(model), {
                 id: null,
                 url: null,
                 title: 'added',
@@ -148,7 +148,7 @@ describe('MemberAttributionService', function () {
                     return null;
                 }
             };
-            should(service.getEventAttribution(model)).eql({
+            assert.deepEqual(service.getEventAttribution(model), {
                 id: null,
                 type: 'url',
                 url: '/my/url/',
@@ -199,7 +199,7 @@ describe('MemberAttributionService', function () {
                     return {};
                 }
             };
-            should(service.getEventAttribution(model)).eql({
+            assert.deepEqual(service.getEventAttribution(model), {
                 id: 'test_user_id',
                 type: 'user',
                 url: '/my/url/',
@@ -230,7 +230,7 @@ describe('MemberAttributionService', function () {
             const service = new MemberAttributionService({
                 attributionBuilder: {
                     getAttribution: async function (history) {
-                        should(history).have.property('length', 0);
+                        assert.equal(history.length, 0);
                         return {success: true};
                     }
                 },

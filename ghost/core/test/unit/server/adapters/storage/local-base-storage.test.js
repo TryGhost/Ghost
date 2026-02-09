@@ -57,7 +57,7 @@ describe('Local Storage Base', function () {
 
             try {
                 localStorageBase.urlToPath('http://anothersite.com/blog/content/media/2021/11/media.mp4');
-                should.fail('urlToPath when urls do not match');
+                assert.fail('urlToPath when urls do not match');
             } catch (error) {
                 assert.equal(error.message, 'The URL "http://anothersite.com/blog/content/media/2021/11/media.mp4" is not a valid URL for this site.');
             }

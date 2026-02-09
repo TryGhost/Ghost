@@ -256,7 +256,7 @@ describe('Post Model', function () {
                     let post;
                     assertExists(results);
                     post = results.toJSON();
-                    post.id.should.equal(postId);
+                    assert.equal(post.id, postId);
                     assert.notEqual(post.title, 'new title');
 
                     return models.Post.edit({title: 'new title'}, _.extend({}, context, {id: postId}));
@@ -279,7 +279,7 @@ describe('Post Model', function () {
                     let post;
                     assertExists(results);
                     post = results.toJSON();
-                    post.id.should.equal(postId);
+                    assert.equal(post.id, postId);
 
                     return models.Post.edit({
                         custom_excerpt: new Array(302).join('a')
@@ -299,7 +299,7 @@ describe('Post Model', function () {
                     let post;
                     assertExists(results);
                     post = results.toJSON();
-                    post.id.should.equal(postId);
+                    assert.equal(post.id, postId);
                     assert.equal(post.status, 'draft');
 
                     return models.Post.edit({status: 'published'}, _.extend({}, context, {id: postId}));
@@ -324,7 +324,7 @@ describe('Post Model', function () {
                     let post;
                     assertExists(results);
                     post = results.toJSON();
-                    post.id.should.equal(postId);
+                    assert.equal(post.id, postId);
                     assert.equal(post.status, 'published');
 
                     return models.Post.edit({status: 'draft'}, _.extend({}, context, {id: postId}));
@@ -502,7 +502,7 @@ describe('Post Model', function () {
                     let post;
                     assertExists(results);
                     post = results.toJSON();
-                    post.id.should.equal(postId);
+                    assert.equal(post.id, postId);
                     assert.equal(post.status, 'published');
 
                     return models.Post.edit({
@@ -525,7 +525,7 @@ describe('Post Model', function () {
                     let post;
                     assertExists(results);
                     post = results.toJSON();
-                    post.id.should.equal(postId);
+                    assert.equal(post.id, postId);
                     assert.equal(post.status, 'draft');
 
                     return models.Post.edit({type: 'page'}, _.extend({}, context, {id: postId}));
@@ -599,7 +599,7 @@ describe('Post Model', function () {
                     let post;
                     assertExists(results);
                     post = results.toJSON();
-                    post.id.should.equal(postId);
+                    assert.equal(post.id, postId);
                     assert.equal(post.status, 'published');
 
                     return models.Post.edit({type: 'page'}, _.extend({}, context, {id: postId}));
@@ -637,7 +637,7 @@ describe('Post Model', function () {
                     let post;
                     assertExists(results);
                     post = results.toJSON();
-                    post.id.should.equal(postId);
+                    assert.equal(post.id, postId);
                     assert.equal(post.status, 'draft');
 
                     return models.Post.edit({type: 'page', status: 'published'}, _.extend({}, context, {id: postId}));
@@ -675,7 +675,7 @@ describe('Post Model', function () {
                     let post;
                     assertExists(results);
                     post = results.toJSON();
-                    post.id.should.equal(postId);
+                    assert.equal(post.id, postId);
                     assert.equal(post.status, 'draft');
 
                     // Test changing status and published_by at the same time
@@ -686,14 +686,14 @@ describe('Post Model', function () {
                 }).then(function (edited) {
                     assertExists(edited);
                     assert.equal(edited.attributes.status, 'published');
-                    edited.attributes.published_by.should.equal(context.context.user);
+                    assert.equal(edited.attributes.published_by, context.context.user);
 
                     // Test changing status and published_by on its own
                     return models.Post.edit({published_by: 4}, _.extend({}, context, {id: postId}));
                 }).then(function (edited) {
                     assertExists(edited);
                     assert.equal(edited.attributes.status, 'published');
-                    edited.attributes.published_by.should.equal(context.context.user);
+                    assert.equal(edited.attributes.published_by, context.context.user);
 
                     done();
                 }).catch(done);
@@ -742,10 +742,10 @@ describe('Post Model', function () {
                     assert.equal(createdPost.get('title'), newPost.title, 'title is correct');
                     assert.equal(createdPost.get('mobiledoc'), newPost.mobiledoc, 'mobiledoc is correct');
                     assert.equal(createdPost.has('html'), true);
-                    createdPost.get('html').should.equal(newPostDB.html);
+                    assert.equal(createdPost.get('html'), newPostDB.html);
                     assert.equal(createdPost.has('plaintext'), true);
                     assert.match(createdPost.get('plaintext'), /^testing/);
-                    createdPost.get('slug').should.equal(newPostDB.slug + '-2');
+                    assert.equal(createdPost.get('slug'), newPostDB.slug + '-2');
                     assert.equal((!!createdPost.get('featured')), false);
                     assert.equal((!!createdPost.get('page')), false);
 
@@ -755,9 +755,9 @@ describe('Post Model', function () {
                     // testing for nulls
                     assert.equal((createdPost.get('feature_image') === null), true);
 
-                    createdPost.get('created_at').should.be.above(new Date(0).getTime());
-                    createdPost.relations.authors.models[0].id.should.equal(testUtils.DataGenerator.Content.users[0].id);
-                    createdPost.get('updated_at').should.be.above(new Date(0).getTime());
+                    assert(createdPost.get('created_at') > new Date(0).getTime());
+                    assert.equal(createdPost.relations.authors.models[0].id, testUtils.DataGenerator.Content.users[0].id);
+                    assert(createdPost.get('updated_at') > new Date(0).getTime());
                     assert.equal(createdPost.get('published_at'), null);
                     assert.equal(createdPost.get('published_by'), null);
 
@@ -770,9 +770,9 @@ describe('Post Model', function () {
                     // Set the status to published to check that `published_at` is set.
                     return createdPost.save({status: 'published'}, context);
                 }).then(function (publishedPost) {
-                    publishedPost.get('published_at').should.be.instanceOf(Date);
-                    publishedPost.get('published_by').should.equal(testUtils.DataGenerator.Content.users[0].id);
-                    publishedPost.get('updated_at').should.be.instanceOf(Date);
+                    assert(publishedPost.get('published_at') instanceof Date);
+                    assert.equal(publishedPost.get('published_by'), testUtils.DataGenerator.Content.users[0].id);
+                    assert(publishedPost.get('updated_at') instanceof Date);
                     publishedPost.get('updated_at').should.not.equal(createdPostUpdatedDate);
 
                     assert.equal(Object.keys(eventsTriggered).length, 4);
@@ -811,7 +811,7 @@ describe('Post Model', function () {
                     assert.equal(createdPost.get('title'), newPost.title, 'title is correct');
                     assert.equal(createdPost.get('mobiledoc'), newPost.mobiledoc, 'mobiledoc is correct');
                     assert.equal(createdPost.has('html'), true);
-                    createdPost.get('html').should.equal(newPostDB.html);
+                    assert.equal(createdPost.get('html'), newPostDB.html);
                     assert.equal(createdPost.has('plaintext'), true);
                     assert.match(createdPost.get('plaintext'), /^testing/);
                     // createdPost.get('slug').should.equal(newPostDB.slug + '-3');
@@ -824,9 +824,9 @@ describe('Post Model', function () {
                     // testing for nulls
                     assert.equal((createdPost.get('feature_image') === null), true);
 
-                    createdPost.get('created_at').should.be.above(new Date(0).getTime());
-                    createdPost.relations.authors.models[0].id.should.equal(testUtils.DataGenerator.Content.users[0].id);
-                    createdPost.get('updated_at').should.be.above(new Date(0).getTime());
+                    assert(createdPost.get('created_at') > new Date(0).getTime());
+                    assert.equal(createdPost.relations.authors.models[0].id, testUtils.DataGenerator.Content.users[0].id);
+                    assert(createdPost.get('updated_at') > new Date(0).getTime());
                     assert.equal(createdPost.get('published_at'), null);
                     assert.equal(createdPost.get('published_by'), null);
 
@@ -839,9 +839,9 @@ describe('Post Model', function () {
                     // Set the status to published to check that `published_at` is set.
                     return createdPost.save({status: 'published'}, context);
                 }).then(function (publishedPost) {
-                    publishedPost.get('published_at').should.be.instanceOf(Date);
-                    publishedPost.get('published_by').should.equal(testUtils.DataGenerator.Content.users[0].id);
-                    publishedPost.get('updated_at').should.be.instanceOf(Date);
+                    assert(publishedPost.get('published_at') instanceof Date);
+                    assert.equal(publishedPost.get('published_by'), testUtils.DataGenerator.Content.users[0].id);
+                    assert(publishedPost.get('updated_at') instanceof Date);
                     publishedPost.get('updated_at').should.not.equal(createdPostUpdatedDate);
 
                     assert.equal(Object.keys(eventsTriggered).length, 4);
@@ -862,7 +862,7 @@ describe('Post Model', function () {
                     mobiledoc: markdownToMobiledoc('This is some content')
                 }, context).then(function (newPost) {
                     assertExists(newPost);
-                    new Date(newPost.get('published_at')).getTime().should.equal(previousPublishedAtDate.getTime());
+                    assert.equal(new Date(newPost.get('published_at')).getTime(), previousPublishedAtDate.getTime());
 
                     assert.equal(Object.keys(eventsTriggered).length, 3);
                     assertExists(eventsTriggered['post.added']);
@@ -1009,8 +1009,8 @@ describe('Post Model', function () {
                             return;
                         }
 
-                        post.get('slug').should.equal('test-title-' + num);
-                        JSON.parse(post.get('mobiledoc')).cards[0][1].markdown.should.equal('Test Content ' + num);
+                        assert.equal(post.get('slug'), 'test-title-' + num);
+                        assert.equal(JSON.parse(post.get('mobiledoc')).cards[0][1].markdown, 'Test Content ' + num);
 
                         assert.equal(Object.keys(eventsTriggered).length, 2);
                         assertExists(eventsTriggered['post.added']);
@@ -1215,59 +1215,59 @@ describe('Post Model', function () {
                     });
 
                     it('transforms feature_image, og_image, and twitter_image to absolute site URLs', function () {
-                        post.get('feature_image').should.equal(`${siteUrl}/content/images/feature.jpg`);
-                        postsMeta.get('og_image').should.equal(`${siteUrl}/content/images/og.jpg`);
-                        postsMeta.get('twitter_image').should.equal(`${siteUrl}/content/images/twitter.jpg`);
+                        assert.equal(post.get('feature_image'), `${siteUrl}/content/images/feature.jpg`);
+                        assert.equal(postsMeta.get('og_image'), `${siteUrl}/content/images/og.jpg`);
+                        assert.equal(postsMeta.get('twitter_image'), `${siteUrl}/content/images/twitter.jpg`);
                     });
 
                     it('transforms all media card URLs to absolute site URLs', function () {
                         // Image card
                         const imageCard = mobiledoc.cards.find(card => card[0] === 'image' && card[1].src.includes('inline.jpg'));
-                        imageCard[1].src.should.equal(`${siteUrl}/content/images/inline.jpg`);
+                        assert.equal(imageCard[1].src, `${siteUrl}/content/images/inline.jpg`);
 
                         // Gallery card
                         const galleryCard = mobiledoc.cards.find(card => card[0] === 'gallery');
-                        galleryCard[1].images[0].src.should.equal(`${siteUrl}/content/images/gallery-1.jpg`);
-                        galleryCard[1].images[1].src.should.equal(`${siteUrl}/content/images/gallery-2.jpg`);
-                        galleryCard[1].images[2].src.should.equal(`${siteUrl}/content/images/gallery-3.jpg`);
+                        assert.equal(galleryCard[1].images[0].src, `${siteUrl}/content/images/gallery-1.jpg`);
+                        assert.equal(galleryCard[1].images[1].src, `${siteUrl}/content/images/gallery-2.jpg`);
+                        assert.equal(galleryCard[1].images[2].src, `${siteUrl}/content/images/gallery-3.jpg`);
 
                         // File card
                         const fileCard = mobiledoc.cards.find(card => card[0] === 'file' && card[1].src.includes('document.pdf'));
-                        fileCard[1].src.should.equal(`${siteUrl}/content/files/document.pdf`);
+                        assert.equal(fileCard[1].src, `${siteUrl}/content/files/document.pdf`);
 
                         // Video card
                         const videoCard = mobiledoc.cards.find(card => card[0] === 'video' && card[1].src.includes('video.mp4') && !card[1].src.includes('snippet'));
-                        videoCard[1].src.should.equal(`${siteUrl}/content/media/video.mp4`);
-                        videoCard[1].thumbnailSrc.should.equal(`${siteUrl}/content/images/video-thumb.jpg`);
+                        assert.equal(videoCard[1].src, `${siteUrl}/content/media/video.mp4`);
+                        assert.equal(videoCard[1].thumbnailSrc, `${siteUrl}/content/images/video-thumb.jpg`);
 
                         // Audio card
                         const audioCard = mobiledoc.cards.find(card => card[0] === 'audio' && card[1].src.includes('audio.mp3') && !card[1].src.includes('snippet'));
-                        audioCard[1].src.should.equal(`${siteUrl}/content/media/audio.mp3`);
-                        audioCard[1].thumbnailSrc.should.equal(`${siteUrl}/content/images/audio-thumb.jpg`);
+                        assert.equal(audioCard[1].src, `${siteUrl}/content/media/audio.mp3`);
+                        assert.equal(audioCard[1].thumbnailSrc, `${siteUrl}/content/images/audio-thumb.jpg`);
 
                         // Link markup
                         const linkMarkup = mobiledoc.markups.find(markup => markup[0] === 'a');
-                        linkMarkup[1][1].should.equal(`${siteUrl}/snippet-link`);
+                        assert.equal(linkMarkup[1][1], `${siteUrl}/snippet-link`);
                     });
 
                     it('transforms inserted snippet URLs to absolute site URLs', function () {
                         // Snippet image
                         const snippetImage = mobiledoc.cards.find(card => card[0] === 'image' && card[1].src.includes('snippet-inline'));
-                        snippetImage[1].src.should.equal(`${siteUrl}/content/images/snippet-inline.jpg`);
+                        assert.equal(snippetImage[1].src, `${siteUrl}/content/images/snippet-inline.jpg`);
 
                         // Snippet file
                         const snippetFile = mobiledoc.cards.find(card => card[0] === 'file' && card[1].src.includes('snippet-document'));
-                        snippetFile[1].src.should.equal(`${siteUrl}/content/files/snippet-document.pdf`);
+                        assert.equal(snippetFile[1].src, `${siteUrl}/content/files/snippet-document.pdf`);
 
                         // Snippet video
                         const snippetVideo = mobiledoc.cards.find(card => card[0] === 'video' && card[1].src.includes('snippet-video'));
-                        snippetVideo[1].src.should.equal(`${siteUrl}/content/media/snippet-video.mp4`);
-                        snippetVideo[1].thumbnailSrc.should.equal(`${siteUrl}/content/images/snippet-video-thumb.jpg`);
+                        assert.equal(snippetVideo[1].src, `${siteUrl}/content/media/snippet-video.mp4`);
+                        assert.equal(snippetVideo[1].thumbnailSrc, `${siteUrl}/content/images/snippet-video-thumb.jpg`);
 
                         // Snippet audio
                         const snippetAudio = mobiledoc.cards.find(card => card[0] === 'audio' && card[1].src.includes('snippet-audio'));
-                        snippetAudio[1].src.should.equal(`${siteUrl}/content/media/snippet-audio.mp3`);
-                        snippetAudio[1].thumbnailSrc.should.equal(`${siteUrl}/content/images/snippet-audio-thumb.jpg`);
+                        assert.equal(snippetAudio[1].src, `${siteUrl}/content/media/snippet-audio.mp3`);
+                        assert.equal(snippetAudio[1].thumbnailSrc, `${siteUrl}/content/images/snippet-audio-thumb.jpg`);
                     });
                 });
 
@@ -1284,9 +1284,9 @@ describe('Post Model', function () {
                     });
 
                     it('transforms feature_image, og_image, and twitter_image to absolute site URLs', function () {
-                        post.get('feature_image').should.equal(`${siteUrl}/content/images/feature.jpg`);
-                        postsMeta.get('og_image').should.equal(`${siteUrl}/content/images/og.jpg`);
-                        postsMeta.get('twitter_image').should.equal(`${siteUrl}/content/images/twitter.jpg`);
+                        assert.equal(post.get('feature_image'), `${siteUrl}/content/images/feature.jpg`);
+                        assert.equal(postsMeta.get('og_image'), `${siteUrl}/content/images/og.jpg`);
+                        assert.equal(postsMeta.get('twitter_image'), `${siteUrl}/content/images/twitter.jpg`);
                     });
 
                     it('transforms all media URLs to absolute site URLs', function () {
@@ -1335,21 +1335,21 @@ describe('Post Model', function () {
                         const post = await models.Post.findOne({slug: 'post-with-all-media-types-mobiledoc'}, {withRelated: ['tags']});
                         const mobiledoc = JSON.parse(post.get('mobiledoc'));
                         const fileCard = mobiledoc.cards.find(card => card[0] === 'file');
-                        fileCard[1].src.should.equal(`${cdnUrl}/content/files/document.pdf`);
+                        assert.equal(fileCard[1].src, `${cdnUrl}/content/files/document.pdf`);
                     });
 
                     it('transforms video card src to media CDN URL', async function () {
                         const post = await models.Post.findOne({slug: 'post-with-all-media-types-mobiledoc'}, {withRelated: ['tags']});
                         const mobiledoc = JSON.parse(post.get('mobiledoc'));
                         const videoCard = mobiledoc.cards.find(card => card[0] === 'video');
-                        videoCard[1].src.should.equal(`${cdnUrl}/content/media/video.mp4`);
+                        assert.equal(videoCard[1].src, `${cdnUrl}/content/media/video.mp4`);
                     });
 
                     it('transforms audio card src to media CDN URL', async function () {
                         const post = await models.Post.findOne({slug: 'post-with-all-media-types-mobiledoc'}, {withRelated: ['tags']});
                         const mobiledoc = JSON.parse(post.get('mobiledoc'));
                         const audioCard = mobiledoc.cards.find(card => card[0] === 'audio');
-                        audioCard[1].src.should.equal(`${cdnUrl}/content/media/audio.mp3`);
+                        assert.equal(audioCard[1].src, `${cdnUrl}/content/media/audio.mp3`);
                     });
 
                     it('transforms inserted snippet file/media URLs to CDN URLs', async function () {
@@ -1362,7 +1362,7 @@ describe('Post Model', function () {
 
                     it('transforms feature_image to absolute site URL(NOT CDN)', async function () {
                         const post = await models.Post.findOne({slug: 'post-with-all-media-types-mobiledoc'}, {withRelated: ['tags']});
-                        post.get('feature_image').should.equal(`${siteUrl}/content/images/feature.jpg`);
+                        assert.equal(post.get('feature_image'), `${siteUrl}/content/images/feature.jpg`);
                     });
 
                     it('transforms gallery images to absolute site URL(NOT CDN)', async function () {
@@ -1379,14 +1379,14 @@ describe('Post Model', function () {
                         const post = await models.Post.findOne({slug: 'post-with-all-media-types-mobiledoc'}, {withRelated: ['tags']});
                         const mobiledoc = JSON.parse(post.get('mobiledoc'));
                         const imageCard = mobiledoc.cards.find(card => card[0] === 'image');
-                        imageCard[1].src.should.equal(`${siteUrl}/content/images/inline.jpg`);
+                        assert.equal(imageCard[1].src, `${siteUrl}/content/images/inline.jpg`);
                     });
 
                     it('transforms video thumbnailSrc to absolute site URL(NOT CDN)', async function () {
                         const post = await models.Post.findOne({slug: 'post-with-all-media-types-mobiledoc'}, {withRelated: ['tags']});
                         const mobiledoc = JSON.parse(post.get('mobiledoc'));
                         const videoCard = mobiledoc.cards.find(card => card[0] === 'video');
-                        videoCard[1].thumbnailSrc.should.equal(`${siteUrl}/content/images/video-thumb.jpg`);
+                        assert.equal(videoCard[1].thumbnailSrc, `${siteUrl}/content/images/video-thumb.jpg`);
                     });
                 });
 
@@ -1414,7 +1414,7 @@ describe('Post Model', function () {
 
                     it('transforms feature_image to absolute site URL(NOT CDN)', async function () {
                         const post = await models.Post.findOne({slug: 'post-with-all-media-types-lexical'}, {withRelated: ['tags']});
-                        post.get('feature_image').should.equal(`${siteUrl}/content/images/feature.jpg`);
+                        assert.equal(post.get('feature_image'), `${siteUrl}/content/images/feature.jpg`);
                     });
 
                     it('transforms gallery images to absolute site URL(NOT CDN)', async function () {
@@ -1476,10 +1476,10 @@ describe('Post Model', function () {
                     let post;
                     assertExists(results);
                     post = results.toJSON();
-                    post.id.should.equal(firstItemData.id);
+                    assert.equal(post.id, firstItemData.id);
                     assert.equal(post.status, 'published');
                     assert.equal(post.tags.length, 2);
-                    post.tags[0].id.should.equal(testUtils.DataGenerator.Content.tags[0].id);
+                    assert.equal(post.tags[0].id, testUtils.DataGenerator.Content.tags[0].id);
 
                     // Destroy the post
                     return results.destroy();
@@ -1518,9 +1518,9 @@ describe('Post Model', function () {
                     let post;
                     assertExists(results);
                     post = results.toJSON();
-                    post.id.should.equal(firstItemData.id);
+                    assert.equal(post.id, firstItemData.id);
                     assert.equal(post.tags.length, 1);
-                    post.tags[0].id.should.equal(testUtils.DataGenerator.Content.tags[3].id);
+                    assert.equal(post.tags[0].id, testUtils.DataGenerator.Content.tags[3].id);
 
                     // Destroy the post
                     return results.destroy(firstItemData);
@@ -1558,7 +1558,7 @@ describe('Post Model', function () {
                     let page;
                     assertExists(results);
                     page = results.toJSON();
-                    page.id.should.equal(firstItemData.id);
+                    assert.equal(page.id, firstItemData.id);
                     assert.equal(page.status, 'published');
                     assert.equal(page.type, 'page');
 
@@ -1597,7 +1597,7 @@ describe('Post Model', function () {
                     let page;
                     assertExists(results);
                     page = results.toJSON();
-                    page.id.should.equal(firstItemData.id);
+                    assert.equal(page.id, firstItemData.id);
 
                     // Destroy the page
                     return results.destroy(firstItemData);
@@ -1732,7 +1732,7 @@ describe('Post Model', function () {
                     return createdPost.save({mobiledoc: markdownToMobiledoc('b')}, context);
                 })
                 .then((updatedPost) => {
-                    updatedPost.get('mobiledoc').should.equal(markdownToMobiledoc('b'));
+                    assert.equal(updatedPost.get('mobiledoc'), markdownToMobiledoc('b'));
 
                     return models.MobiledocRevision
                         .findAll({
@@ -1742,8 +1742,8 @@ describe('Post Model', function () {
                 .then((mobiledocRevisions) => {
                     assert.equal(mobiledocRevisions.length, 2);
 
-                    mobiledocRevisions.toJSON()[0].mobiledoc.should.equal(markdownToMobiledoc('b'));
-                    mobiledocRevisions.toJSON()[1].mobiledoc.should.equal(markdownToMobiledoc('a'));
+                    assert.equal(mobiledocRevisions.toJSON()[0].mobiledoc, markdownToMobiledoc('b'));
+                    assert.equal(mobiledocRevisions.toJSON()[1].mobiledoc, markdownToMobiledoc('a'));
                 });
         });
 
@@ -1777,8 +1777,8 @@ describe('Post Model', function () {
                 .then((mobiledocRevisions) => {
                     assert.equal(mobiledocRevisions.length, 10);
 
-                    mobiledocRevisions.toJSON()[0].mobiledoc.should.equal(markdownToMobiledoc('revision: 11'));
-                    mobiledocRevisions.toJSON()[9].mobiledoc.should.equal(markdownToMobiledoc('revision: 2'));
+                    assert.equal(mobiledocRevisions.toJSON()[0].mobiledoc, markdownToMobiledoc('revision: 11'));
+                    assert.equal(mobiledocRevisions.toJSON()[9].mobiledoc, markdownToMobiledoc('revision: 2'));
                 });
         });
 
@@ -1797,7 +1797,7 @@ describe('Post Model', function () {
                 .then((createdPost) => {
                     assertExists(createdPost);
                     unversionedPost = createdPost;
-                    createdPost.get('mobiledoc').should.equal(markdownToMobiledoc('a'));
+                    assert.equal(createdPost.get('mobiledoc'), markdownToMobiledoc('a'));
 
                     return models.MobiledocRevision
                         .findAll({
@@ -1813,7 +1813,7 @@ describe('Post Model', function () {
                 })
                 .then((editedPost) => {
                     assertExists(editedPost);
-                    editedPost.get('mobiledoc').should.equal(markdownToMobiledoc('b'));
+                    assert.equal(editedPost.get('mobiledoc'), markdownToMobiledoc('b'));
 
                     return models.MobiledocRevision
                         .findAll({
@@ -1823,8 +1823,8 @@ describe('Post Model', function () {
                 .then((mobiledocRevisions) => {
                     assert.equal(mobiledocRevisions.length, 2);
 
-                    mobiledocRevisions.toJSON()[0].mobiledoc.should.equal(markdownToMobiledoc('b'));
-                    mobiledocRevisions.toJSON()[1].mobiledoc.should.equal(markdownToMobiledoc('a'));
+                    assert.equal(mobiledocRevisions.toJSON()[0].mobiledoc, markdownToMobiledoc('b'));
+                    assert.equal(mobiledocRevisions.toJSON()[1].mobiledoc, markdownToMobiledoc('a'));
                 });
         });
     });
@@ -1850,7 +1850,7 @@ describe('Post Model', function () {
 
             const preReassignPosts = await models.Post.findAll({context: {internal: true}});
             // The posts:mu fixture creates two posts per staff member.
-            preReassignPosts.length.should.equal(2 * staffCount);
+            assert.equal(preReassignPosts.length, 2 * staffCount);
 
             const preReassignOwnerWithPosts = await models.Post.findAll({
                 filter: `authors:${ownerData.slug}`,
@@ -1862,7 +1862,7 @@ describe('Post Model', function () {
 
             const postReassignPosts = await models.Post.findAll({context: {internal: true}});
             // All posts should remain
-            postReassignPosts.length.should.equal(2 * staffCount);
+            assert.equal(postReassignPosts.length, 2 * staffCount);
 
             const postReassignOwnerWithPosts = await models.Post.findAll({
                 filter: `authors:${ownerData.slug}`,

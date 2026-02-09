@@ -65,7 +65,7 @@ describe('Mail: Ghostmailer', function () {
         configUtils.set({mail: SMTP});
         mailer = new mail.GhostMailer();
 
-        mailer.should.have.property('transport');
+        assert('transport' in mailer);
         assert.equal(mailer.transport.transporter.name, 'SMTP');
         mailer.transport.sendMail.should.be.a.Function();
     });
@@ -75,7 +75,7 @@ describe('Mail: Ghostmailer', function () {
 
         mailer = new mail.GhostMailer();
 
-        mailer.should.have.property('transport');
+        assert('transport' in mailer);
         assert.equal(mailer.transport.transporter.name, 'SMTP (direct)');
     });
 
@@ -113,9 +113,9 @@ describe('Mail: Ghostmailer', function () {
     it('should fail to send messages when given insufficient data', async function () {
         mailer = new mail.GhostMailer();
 
-        await mailer.send().should.be.rejectedWith('Incomplete message data.');
-        await mailer.send({subject: '123'}).should.be.rejectedWith('Incomplete message data.');
-        await mailer.send({subject: '', html: '123'}).should.be.rejectedWith('Incomplete message data.');
+        await assert.rejects(mailer.send(), {message: 'Incomplete message data.'});
+        await assert.rejects(mailer.send({subject: '123'}), {message: 'Incomplete message data.'});
+        await assert.rejects(mailer.send({subject: '', html: '123'}), {message: 'Incomplete message data.'});
     });
 
     describe('Direct', function () {

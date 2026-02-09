@@ -757,7 +757,7 @@ describe('RouterController', function () {
                 assert.equal(res.end.calledOnceWith('{}'), true);
 
                 assert.equal(sendEmailWithMagicLinkStub.calledOnce, true);
-                sendEmailWithMagicLinkStub.args[0][0].tokenData.newsletters.should.eql([
+                assert.deepEqual(sendEmailWithMagicLinkStub.args[0][0].tokenData.newsletters, [
                     {id: newsletters[0].id},
                     {id: newsletters[1].id},
                     {id: newsletters[2].id}
@@ -786,7 +786,10 @@ describe('RouterController', function () {
                     newslettersService: newslettersServiceStub
                 });
 
-                await controller.sendMagicLink(req, res).should.be.rejectedWith(`Cannot subscribe to invalid newsletters ${INVALID_NEWSLETTER_NAME}`);
+                await assert.rejects(
+                    controller.sendMagicLink(req, res),
+                    {message: `Cannot subscribe to invalid newsletters ${INVALID_NEWSLETTER_NAME}`}
+                );
             });
 
             it('validates archived newsletters', async function () {
@@ -826,7 +829,10 @@ describe('RouterController', function () {
                     newslettersService: newslettersServiceStub
                 });
 
-                await controller.sendMagicLink(req, res).should.be.rejectedWith(`Cannot subscribe to archived newsletters Newsletter 2`);
+                await assert.rejects(
+                    controller.sendMagicLink(req, res),
+                    {message: `Cannot subscribe to archived newsletters Newsletter 2`}
+                );
             });
         });
 
@@ -864,7 +870,7 @@ describe('RouterController', function () {
             it('Sends emails when honeypot is not filled', async function () {
                 const controller = createRouterController();
 
-                await controller.sendMagicLink(req, res).should.be.fulfilled();
+                await controller.sendMagicLink(req, res);
                 assert.equal(sendEmailWithMagicLinkStub.calledOnce, true);
             });
 
@@ -873,7 +879,7 @@ describe('RouterController', function () {
 
                 req.body.honeypot = 'filled!';
 
-                await controller.sendMagicLink(req, res).should.be.fulfilled();
+                await controller.sendMagicLink(req, res);
                 assert.equal(sendEmailWithMagicLinkStub.notCalled, true);
             });
         });
@@ -1040,7 +1046,7 @@ describe('RouterController', function () {
                 {name: 'Newsletter 3'}
             ];
             const result = await routerController._validateNewsletters(requestedNewsletters);
-            result.should.eql([
+            assert.deepEqual(result, [
                 {id: 'abc123'},
                 {id: 'def456'},
                 {id: 'ghi789'}

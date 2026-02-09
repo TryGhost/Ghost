@@ -33,7 +33,7 @@ describe('Members Importer API', function () {
 
     it('Can import CSV', async function () {
         const filteredNewsletters = newsletters.filter(n => n.get('subscribe_on_signup'));
-        filteredNewsletters.length.should.be.greaterThan(0, 'For this test to work, we need at least one newsletter fixture with subscribe_on_signup = true');
+        assert(filteredNewsletters.length > 0, 'For this test to work, we need at least one newsletter fixture with subscribe_on_signup = true');
 
         const res = await request
             .post(localUtils.API.getApiQuery(`members/upload/`))
@@ -73,11 +73,11 @@ describe('Members Importer API', function () {
         assert.equal(importedMember1.name, 'joe');
         assert.equal(importedMember1.note, null);
         assert.equal(importedMember1.subscribed, true);
-        importedMember1.newsletters.length.should.equal(filteredNewsletters.length);
+        assert.equal(importedMember1.newsletters.length, filteredNewsletters.length);
         assert.equal(importedMember1.labels.length, 1);
         assert.equal(testUtils.API.isISO8601(importedMember1.created_at), true);
         assert.equal(importedMember1.comped, false);
-        importedMember1.subscriptions.should.not.be.undefined();
+        assertExists(importedMember1.subscriptions);
         assert.equal(importedMember1.subscriptions.length, 0);
 
         const importedMember2 = jsonResponse2.members.find(m => m.email === 'test@example.com');
@@ -90,7 +90,7 @@ describe('Members Importer API', function () {
         assert.equal(testUtils.API.isISO8601(importedMember2.created_at), true);
         assert.equal(importedMember2.created_at, '1991-10-02T20:30:31.000Z');
         assert.equal(importedMember2.comped, false);
-        importedMember2.subscriptions.should.not.be.undefined();
+        assertExists(importedMember2.subscriptions);
         assert.equal(importedMember2.subscriptions.length, 0);
     });
 
@@ -175,7 +175,7 @@ describe('Members Importer API', function () {
 
     it('Can bulk unsubscribe members with filter', async function () {
         const filteredNewsletters = newsletters.filter(n => n.get('subscribe_on_signup'));
-        filteredNewsletters.length.should.be.greaterThan(0, 'For this test to work, we need at least one newsletter fixture with subscribe_on_signup = true');
+        assert(filteredNewsletters.length > 0, 'For this test to work, we need at least one newsletter fixture with subscribe_on_signup = true');
 
         // import our dummy data for deletion
         await request
@@ -197,7 +197,7 @@ describe('Members Importer API', function () {
             return member.subscribed && member.newsletters.length > 0;
         });
 
-        should.ok(allMembersSubscribed);
+        assert(allMembersSubscribed);
 
         const bulkUnsubscribeResponse = await request
             .put(localUtils.API.getApiQuery('members/bulk/?filter=label:bulk-unsubscribe-test'))
@@ -229,7 +229,7 @@ describe('Members Importer API', function () {
             return member.newsletters.length === 0;
         });
 
-        should.ok(allMembersUnsubscribed);
+        assert(allMembersUnsubscribed);
     });
 
     it('Can bulk add and remove labels to members with filter', async function () {

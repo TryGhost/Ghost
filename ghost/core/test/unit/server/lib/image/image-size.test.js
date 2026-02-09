@@ -50,9 +50,9 @@ describe('lib/image: image size', function () {
             imageSize.getImageSizeFromUrl(url).then(function (res) {
                 assert.equal(requestMock.isDone(), true);
                 assertExists(res);
-                res.width.should.be.equal(expectedImageObject.width);
-                res.height.should.be.equal(expectedImageObject.height);
-                res.url.should.be.equal(expectedImageObject.url);
+                assert.equal(res.width, expectedImageObject.width);
+                assert.equal(res.height, expectedImageObject.height);
+                assert.equal(res.url, expectedImageObject.url);
                 done();
             }).catch(done);
         });
@@ -85,9 +85,9 @@ describe('lib/image: image size', function () {
             imageSize.getImageSizeFromUrl(url).then(function (res) {
                 assert.equal(requestMock.isDone(), false);
                 assertExists(res);
-                res.width.should.be.equal(expectedImageObject.width);
-                res.height.should.be.equal(expectedImageObject.height);
-                res.url.should.be.equal(expectedImageObject.url);
+                assert.equal(res.width, expectedImageObject.width);
+                assert.equal(res.height, expectedImageObject.height);
+                assert.equal(res.url, expectedImageObject.url);
                 done();
             }).catch(done);
         });
@@ -115,9 +115,9 @@ describe('lib/image: image size', function () {
             imageSize.getImageSizeFromUrl(url).then(function (res) {
                 assert.equal(requestMock.isDone(), true);
                 assertExists(res);
-                res.width.should.be.equal(expectedImageObject.width);
-                res.height.should.be.equal(expectedImageObject.height);
-                res.url.should.be.equal(expectedImageObject.url);
+                assert.equal(res.width, expectedImageObject.width);
+                assert.equal(res.height, expectedImageObject.height);
+                assert.equal(res.url, expectedImageObject.url);
                 done();
             }).catch(done);
         });
@@ -147,9 +147,9 @@ describe('lib/image: image size', function () {
                 assert.equal(requestMockNotFound.isDone(), false);
                 assert.equal(requestMock.isDone(), true);
                 assertExists(res);
-                res.width.should.be.equal(expectedImageObject.width);
-                res.height.should.be.equal(expectedImageObject.height);
-                res.url.should.be.equal(expectedImageObject.url);
+                assert.equal(res.width, expectedImageObject.width);
+                assert.equal(res.height, expectedImageObject.height);
+                assert.equal(res.url, expectedImageObject.url);
                 done();
             }).catch(done);
         });
@@ -196,9 +196,9 @@ describe('lib/image: image size', function () {
             imageSize.getImageSizeFromUrl(url).then(function (res) {
                 assert.equal(requestMock.isDone(), true);
                 assertExists(res);
-                res.width.should.be.equal(expectedImageObject.width);
-                res.height.should.be.equal(expectedImageObject.height);
-                res.url.should.be.equal(expectedImageObject.url);
+                assert.equal(res.width, expectedImageObject.width);
+                assert.equal(res.height, expectedImageObject.height);
+                assert.equal(res.url, expectedImageObject.url);
                 done();
             }).catch(done);
         });
@@ -226,9 +226,9 @@ describe('lib/image: image size', function () {
             imageSize.getImageSizeFromUrl(url).then(function (res) {
                 assert.equal(requestMock.isDone(), true);
                 assertExists(res);
-                res.width.should.be.equal(expectedImageObject.width);
-                res.height.should.be.equal(expectedImageObject.height);
-                res.url.should.be.equal(expectedImageObject.url);
+                assert.equal(res.width, expectedImageObject.width);
+                assert.equal(res.height, expectedImageObject.height);
+                assert.equal(res.url, expectedImageObject.url);
                 done();
             }).catch(done);
         });
@@ -263,9 +263,9 @@ describe('lib/image: image size', function () {
                 assert.equal(requestMock.isDone(), true);
                 assert.equal(secondRequestMock.isDone(), true);
                 assertExists(res);
-                res.width.should.be.equal(expectedImageObject.width);
-                res.height.should.be.equal(expectedImageObject.height);
-                res.url.should.be.equal(expectedImageObject.url);
+                assert.equal(res.width, expectedImageObject.width);
+                assert.equal(res.height, expectedImageObject.height);
+                assert.equal(res.url, expectedImageObject.url);
                 done();
             }).catch(done);
         });
@@ -309,11 +309,11 @@ describe('lib/image: image size', function () {
                 assert.equal(requestMock.isDone(), false);
                 assertExists(res);
                 assertExists(res.width);
-                res.width.should.be.equal(expectedImageObject.width);
+                assert.equal(res.width, expectedImageObject.width);
                 assertExists(res.height);
-                res.height.should.be.equal(expectedImageObject.height);
+                assert.equal(res.height, expectedImageObject.height);
                 assertExists(res.url);
-                res.url.should.be.equal(expectedImageObject.url);
+                assert.equal(res.url, expectedImageObject.url);
                 done();
             }).catch(done);
         });
@@ -337,8 +337,8 @@ describe('lib/image: image size', function () {
                 .catch(function (err) {
                     assert.equal(requestMock.isDone(), true);
                     assertExists(err);
-                    err.errorType.should.be.equal('NotFoundError');
-                    err.message.should.be.equal('Image not found.');
+                    assert.equal(err.errorType, 'NotFoundError');
+                    assert.equal(err.message, 'Image not found.');
                     done();
                 }).catch(done);
         });
@@ -375,8 +375,8 @@ describe('lib/image: image size', function () {
                 .catch(function (err) {
                     assert.equal(requestMock.isDone(), false);
                     assertExists(err);
-                    err.errorType.should.be.equal('NotFoundError');
-                    err.message.should.be.equal('Image not found.');
+                    assert.equal(err.errorType, 'NotFoundError');
+                    assert.equal(err.message, 'Image not found.');
                     done();
                 }).catch(done);
         });
@@ -395,8 +395,8 @@ describe('lib/image: image size', function () {
             imageSize.getImageSizeFromUrl(url)
                 .catch(function (err) {
                     assertExists(err);
-                    err.errorType.should.be.equal('InternalServerError');
-                    err.message.should.be.equal('URL empty or invalid.');
+                    assert.equal(err.errorType, 'InternalServerError');
+                    assert.equal(err.message, 'URL empty or invalid.');
                     done();
                 }).catch(done);
         });
@@ -429,8 +429,8 @@ describe('lib/image: image size', function () {
                 .catch(function (err) {
                     assert.equal(requestMock.isDone(), true);
                     assertExists(err);
-                    err.errorType.should.be.equal('InternalServerError');
-                    err.message.should.be.equal('Request timed out.');
+                    assert.equal(err.errorType, 'InternalServerError');
+                    assert.equal(err.message, 'Request timed out.');
                     done();
                 }).catch(done);
         });
@@ -452,12 +452,12 @@ describe('lib/image: image size', function () {
 
             imageSize.getImageSizeFromUrl(url)
                 .then(() => {
-                    true.should.be.false('succeeded when expecting failure');
+                    assert.equal(true, false, 'succeeded when expecting failure');
                 })
                 .catch(function (err) {
                     assert.equal(requestMock.isDone(), true);
                     assertExists(err);
-                    err.errorType.should.be.equal('InternalServerError');
+                    assert.equal(err.errorType, 'InternalServerError');
                     done();
                 }).catch(done);
         });
@@ -486,12 +486,12 @@ describe('lib/image: image size', function () {
 
             imageSize.getImageSizeFromUrl(url)
                 .then(() => {
-                    true.should.be.false('succeeded when expecting failure');
+                    assert.equal(true, false, 'succeeded when expecting failure');
                 })
                 .catch(function (err) {
                     assert.equal(requestMock.isDone(), false);
                     assertExists(err);
-                    err.errorType.should.be.equal('InternalServerError');
+                    assert.equal(err.errorType, 'InternalServerError');
                     done();
                 }).catch(done);
         });
@@ -512,8 +512,8 @@ describe('lib/image: image size', function () {
             imageSize.getImageSizeFromUrl(url)
                 .catch(function (err) {
                     assertExists(err);
-                    err.errorType.should.be.equal('InternalServerError');
-                    err.message.should.be.equal('Unknown Request error.');
+                    assert.equal(err.errorType, 'InternalServerError');
+                    assert.equal(err.message, 'Unknown Request error.');
                     done();
                 }).catch(done);
         });
@@ -544,8 +544,8 @@ describe('lib/image: image size', function () {
                 .catch(function (err) {
                     assert.equal(requestMock.isDone(), true);
                     assertExists(err);
-                    err.errorType.should.be.equal('InternalServerError');
-                    err.message.should.be.equal('Probe unresponsive.');
+                    assert.equal(err.errorType, 'InternalServerError');
+                    assert.equal(err.message, 'Probe unresponsive.');
                     done();
                 }).catch(done);
         });
@@ -586,11 +586,11 @@ describe('lib/image: image size', function () {
             imageSize.getImageSizeFromStoragePath(url).then(function (res) {
                 assertExists(res);
                 assertExists(res.width);
-                res.width.should.be.equal(expectedImageObject.width);
+                assert.equal(res.width, expectedImageObject.width);
                 assertExists(res.height);
-                res.height.should.be.equal(expectedImageObject.height);
+                assert.equal(res.height, expectedImageObject.height);
                 assertExists(res.url);
-                res.url.should.be.equal(expectedImageObject.url);
+                assert.equal(res.url, expectedImageObject.url);
                 done();
             }).catch(done);
         });
@@ -629,11 +629,11 @@ describe('lib/image: image size', function () {
             imageSize.getImageSizeFromStoragePath(url).then(function (res) {
                 assertExists(res);
                 assertExists(res.width);
-                res.width.should.be.equal(expectedImageObject.width);
+                assert.equal(res.width, expectedImageObject.width);
                 assertExists(res.height);
-                res.height.should.be.equal(expectedImageObject.height);
+                assert.equal(res.height, expectedImageObject.height);
                 assertExists(res.url);
-                res.url.should.be.equal(expectedImageObject.url);
+                assert.equal(res.url, expectedImageObject.url);
                 done();
             }).catch(done);
         });
@@ -672,11 +672,11 @@ describe('lib/image: image size', function () {
             imageSize.getImageSizeFromStoragePath(url).then(function (res) {
                 assertExists(res);
                 assertExists(res.width);
-                res.width.should.be.equal(expectedImageObject.width);
+                assert.equal(res.width, expectedImageObject.width);
                 assertExists(res.height);
-                res.height.should.be.equal(expectedImageObject.height);
+                assert.equal(res.height, expectedImageObject.height);
                 assertExists(res.url);
-                res.url.should.be.equal(expectedImageObject.url);
+                assert.equal(res.url, expectedImageObject.url);
                 done();
             }).catch(done);
         });
@@ -715,11 +715,11 @@ describe('lib/image: image size', function () {
             imageSize.getImageSizeFromStoragePath(url).then(function (res) {
                 assertExists(res);
                 assertExists(res.width);
-                res.width.should.be.equal(expectedImageObject.width);
+                assert.equal(res.width, expectedImageObject.width);
                 assertExists(res.height);
-                res.height.should.be.equal(expectedImageObject.height);
+                assert.equal(res.height, expectedImageObject.height);
                 assertExists(res.url);
-                res.url.should.be.equal(expectedImageObject.url);
+                assert.equal(res.url, expectedImageObject.url);
                 done();
             }).catch(done);
         });

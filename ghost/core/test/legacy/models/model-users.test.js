@@ -191,9 +191,9 @@ describe('User Model', function run() {
                 createdAt = user.get('created_at');
                 updatedAt = user.get('updated_at');
 
-                lastLogin.should.be.an.instanceof(Date);
-                createdAt.should.be.an.instanceof(Date);
-                updatedAt.should.be.an.instanceof(Date);
+                assert(lastLogin instanceof Date);
+                assert(createdAt instanceof Date);
+                assert(updatedAt instanceof Date);
 
                 done();
             }).catch(done);
@@ -278,7 +278,7 @@ describe('User Model', function run() {
                 let user;
                 assertExists(results);
                 user = results.toJSON();
-                user.id.should.equal(firstUser);
+                assert.equal(user.id, firstUser);
                 assert.equal(user.website, null);
 
                 return UserModel.edit({website: 'http://some.newurl.com'}, {id: firstUser});

@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertObjectMatches} = require('../../utils/assertions');
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyContentVersion, anyEtag, anyObjectId, anyLocationFor, anyErrorId, anyISODateTime} = matchers;
 const should = require('should');
@@ -403,7 +404,7 @@ describe('Offers API', function () {
             })
             .expect(({body}) => {
                 // Test if all the changes were applied, and that the code has been slugified
-                body.offers[0].should.match({...updatedOffer, code: 'cyber-monday'});
+                assertObjectMatches(body.offers[0], {...updatedOffer, code: 'cyber-monday'});
             });
     });
 

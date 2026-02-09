@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 const redirectGhostToAdmin = require('../../../../../core/frontend/web/middleware/redirect-ghost-to-admin');
@@ -67,7 +68,7 @@ describe('Redirect Ghost To Admin', function () {
 
             // Find the ghost redirect route
             const ghostRoute = router.stack.find(layer => layer.regexp.source.includes('ghost'));
-            ghostRoute.should.not.be.undefined();
+            assertExists(ghostRoute);
         });
 
         it('admin redirect route should match the correct regex pattern', function () {

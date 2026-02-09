@@ -3,7 +3,7 @@ const should = require('should');
 const sinon = require('sinon');
 const _ = require('lodash');
 const foreach = require('../../../../core/frontend/helpers/foreach');
-const {assertObjectMatches} = require('../../../utils/assertions');
+const {assertExists, assertObjectMatches} = require('../../../utils/assertions');
 const {registerHelper, shouldCompileToExpected} = require('./utils/handlebars');
 
 describe('{{#foreach}} helper', function () {
@@ -49,7 +49,7 @@ describe('{{#foreach}} helper', function () {
             runTest(_this, context, options);
 
             assert.equal(options.fn.called, true);
-            options.fn.getCalls().length.should.eql(_.size(context));
+            sinon.assert.callCount(options.fn, _.size(context));
 
             _.each(context, function (value, index) {
                 options.fn.getCall(index).args[0].should.eql(value);
@@ -74,7 +74,7 @@ describe('{{#foreach}} helper', function () {
             runTest(_this, context, options);
 
             assert.equal(options.fn.called, true);
-            options.fn.getCalls().length.should.eql(_.size(context));
+            sinon.assert.callCount(options.fn, _.size(context));
 
             _.each(_.keys(context), function (value, index) {
                 options.fn.getCall(index).args[0].should.eql(context[value]);
@@ -100,19 +100,19 @@ describe('{{#foreach}} helper', function () {
             runTest(_this, context, options);
 
             assert.equal(options.fn.called, true);
-            options.fn.getCalls().length.should.eql(_.size(context));
+            sinon.assert.callCount(options.fn, _.size(context));
 
             _.each(context, function (value, index) {
                 options.fn.getCall(index).args[0].should.eql(value);
-                should(options.fn.getCall(index).args[1].data).not.be.undefined();
+                assertExists(options.fn.getCall(index).args[1].data);
 
                 // Expected properties
                 assertObjectMatches(resultData[index].data, expected[index]);
 
                 // Incrementing properties
-                resultData[index].data.should.have.property('key', index);
-                resultData[index].data.should.have.property('index', index);
-                resultData[index].data.should.have.property('number', index + 1);
+                assert.equal(resultData[index].data.key, index);
+                assert.equal(resultData[index].data.index, index);
+                assert.equal(resultData[index].data.number, index + 1);
             });
 
             resultData[_.size(context) - 1].data.should.eql(options.fn.lastCall.args[1].data);
@@ -142,19 +142,19 @@ describe('{{#foreach}} helper', function () {
             runTest(_this, context, options);
 
             assert.equal(options.fn.called, true);
-            options.fn.getCalls().length.should.eql(_.size(context));
+            sinon.assert.callCount(options.fn, _.size(context));
 
             _.each(_.keys(context), function (value, index) {
                 options.fn.getCall(index).args[0].should.eql(context[value]);
-                should(options.fn.getCall(index).args[1].data).not.be.undefined();
+                assertExists(options.fn.getCall(index).args[1].data);
 
                 // Expected properties
                 assertObjectMatches(resultData[index].data, expected[index]);
 
                 // Incrementing properties
-                resultData[index].data.should.have.property('key', value);
-                resultData[index].data.should.have.property('index', index);
-                resultData[index].data.should.have.property('number', index + 1);
+                assert.equal(resultData[index].data.key, value);
+                assert.equal(resultData[index].data.index, index);
+                assert.equal(resultData[index].data.number, index + 1);
             });
 
             resultData[_.size(context) - 1].data.should.eql(options.fn.lastCall.args[1].data);
@@ -177,19 +177,19 @@ describe('{{#foreach}} helper', function () {
             runTest(_this, context, options);
 
             assert.equal(options.fn.called, true);
-            options.fn.getCalls().length.should.eql(_.size(context));
+            sinon.assert.callCount(options.fn, _.size(context));
 
             _.each(context, function (value, index) {
                 options.fn.getCall(index).args[0].should.eql(value);
-                should(options.fn.getCall(index).args[1].data).not.be.undefined();
+                assertExists(options.fn.getCall(index).args[1].data);
 
                 // Expected properties
                 assertObjectMatches(resultData[index].data, expected[index]);
 
                 // Incrementing properties
-                resultData[index].data.should.have.property('key', index);
-                resultData[index].data.should.have.property('index', index);
-                resultData[index].data.should.have.property('number', index + 1);
+                assert.equal(resultData[index].data.key, index);
+                assert.equal(resultData[index].data.index, index);
+                assert.equal(resultData[index].data.number, index + 1);
             });
 
             resultData[_.size(context) - 1].data.should.eql(options.fn.lastCall.args[1].data);
@@ -219,19 +219,19 @@ describe('{{#foreach}} helper', function () {
             runTest(_this, context, options);
 
             assert.equal(options.fn.called, true);
-            options.fn.getCalls().length.should.eql(_.size(context));
+            sinon.assert.callCount(options.fn, _.size(context));
 
             _.each(_.keys(context), function (value, index) {
                 options.fn.getCall(index).args[0].should.eql(context[value]);
-                should(options.fn.getCall(index).args[1].data).not.be.undefined();
+                assertExists(options.fn.getCall(index).args[1].data);
 
                 // Expected properties
                 assertObjectMatches(resultData[index].data, expected[index]);
 
                 // Incrementing properties
-                resultData[index].data.should.have.property('key', value);
-                resultData[index].data.should.have.property('index', index);
-                resultData[index].data.should.have.property('number', index + 1);
+                assert.equal(resultData[index].data.key, value);
+                assert.equal(resultData[index].data.index, index);
+                assert.equal(resultData[index].data.number, index + 1);
             });
 
             resultData[_.size(context) - 1].data.should.eql(options.fn.lastCall.args[1].data);

@@ -349,7 +349,7 @@ describe('DB API', function () {
         // Check settings
         const portalProducts = await models.Settings.findOne({key: 'portal_products'});
         assertExists(portalProducts);
-        JSON.parse(portalProducts.get('value')).should.deepEqual([]);
+        assert.deepEqual(JSON.parse(portalProducts.get('value')), []);
 
         // Check stripe products
         const stripeProduct = await models.StripeProduct.findOne({product_id: product.id});
@@ -368,7 +368,7 @@ describe('DB API', function () {
         const post = await models.Post.findOne({slug: 'test-newsletter'}, {withRelated: ['tiers']});
         assertExists(post);
 
-        post.get('newsletter_id').should.equal(newsletter.id);
+        assert.equal(post.get('newsletter_id'), newsletter.id);
         assert.equal(post.get('visibility'), 'public');
         assert.equal(post.get('email_recipient_filter'), 'status:-free');
 
@@ -443,7 +443,7 @@ describe('DB API (cleaned)', function () {
         // Check if we have a product
         const product = await models.Product.findOne({slug: 'ghost-inc'});
         assertExists(product);
-        product.id.should.equal(existingProduct.id);
+        assert.equal(product.id, existingProduct.id);
         assert.equal(product.get('slug'), 'ghost-inc');
         assert.equal(product.get('name'), 'Ghost Inc.');
         assert.equal(product.get('description'), 'Our daily newsletter');
@@ -451,7 +451,7 @@ describe('DB API (cleaned)', function () {
         // Check settings
         const portalProducts = await models.Settings.findOne({key: 'portal_products'});
         assertExists(portalProducts);
-        JSON.parse(portalProducts.get('value')).should.deepEqual([]);
+        assert.deepEqual(JSON.parse(portalProducts.get('value')), []);
 
         // Check stripe products
         const stripeProduct = await models.StripeProduct.findOne({product_id: product.id});
@@ -470,7 +470,7 @@ describe('DB API (cleaned)', function () {
         const post = await models.Post.findOne({slug: 'test-newsletter'}, {withRelated: ['tiers']});
         assertExists(post);
 
-        post.get('newsletter_id').should.equal(newsletter.id);
+        assert.equal(post.get('newsletter_id'), newsletter.id);
         assert.equal(post.get('visibility'), 'public');
         assert.equal(post.get('email_recipient_filter'), 'status:-free');
 

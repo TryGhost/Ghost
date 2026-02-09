@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
+const _ = require('lodash');
 const hbs = require('../../../../../core/frontend/services/theme-engine/engine');
 const middleware = require('../../../../../core/frontend/services/theme-engine').middleware;
 // is only exposed via themeEngine.getActive()
@@ -309,7 +310,7 @@ describe('Themes middleware', function () {
                     data.custom.should.be.an.Object().with.properties('header_typography');
                     assert.equal(data.custom.header_typography, 'Serif');
 
-                    data.custom.should.not.have.property('unknown_setting');
+                    assert(!('unknown_setting' in data.custom));
 
                     done();
                 } catch (error) {
@@ -334,7 +335,7 @@ describe('Themes middleware', function () {
 
                     data.should.be.an.Object().with.properties('site', 'custom');
 
-                    data.custom.should.be.an.Object();
+                    assert(_.isPlainObject(data.custom));
                     data.custom.should.be.empty();
 
                     done();
@@ -360,7 +361,7 @@ describe('Themes middleware', function () {
 
                     data.should.be.an.Object().with.properties('site', 'custom');
 
-                    data.custom.should.be.an.Object();
+                    assert(_.isPlainObject(data.custom));
                     data.custom.should.be.empty();
 
                     done();

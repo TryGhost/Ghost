@@ -48,7 +48,7 @@ describe('Unit: models/tag', function () {
                 assert.equal(queries.length, 1);
 
                 assert.equal(queries[0].sql, 'select `tags`.*, (select count(`posts`.`id`) from `posts` left outer join `posts_tags` on `posts`.`id` = `posts_tags`.`post_id` where posts_tags.tag_id = tags.id) as `count__posts` from `tags` where `count`.`posts` >= ? order by `count__posts` DESC');
-                queries[0].bindings.should.eql([
+                assert.deepEqual(queries[0].bindings, [
                     1
                 ]);
             });

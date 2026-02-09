@@ -30,7 +30,7 @@ describe('Unit: services/settings/settings-utils', function () {
 
             const result = getOrGenerateSiteUuid();
 
-            result.should.equal(testUuid.toLowerCase());
+            assert.equal(result, testUuid.toLowerCase());
             assert.equal(configGetStub.calledOnce, true);
             assert.equal(loggingInfoStub.calledOnce, true);
         });
@@ -86,7 +86,7 @@ describe('Unit: services/settings/settings-utils', function () {
 
             const result = getOrGenerateSiteUuid();
 
-            result.should.equal(testUuid.toLowerCase());
+            assert.equal(result, testUuid.toLowerCase());
             assert.equal(result, '550e8400-e29b-41d4-a716-446655440000');
         });
 
@@ -96,7 +96,7 @@ describe('Unit: services/settings/settings-utils', function () {
 
             const result = getOrGenerateSiteUuid();
 
-            result.should.equal(testUuid.toLowerCase());
+            assert.equal(result, testUuid.toLowerCase());
             assert.equal(result, '550e8400-e29b-41d4-a716-446655440000');
         });
 
@@ -107,8 +107,8 @@ describe('Unit: services/settings/settings-utils', function () {
             const result1 = getOrGenerateSiteUuid();
             const result2 = getOrGenerateSiteUuid();
 
-            result1.should.equal(result2);
-            result1.should.equal(testUuid.toLowerCase());
+            assert.equal(result1, result2);
+            assert.equal(result1, testUuid.toLowerCase());
             // Config should only be called once due to caching
             assert.equal(configGetStub.calledOnce, true);
         });

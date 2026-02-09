@@ -78,7 +78,7 @@ describe('Scheduling: Post Scheduler', function () {
 
                 assert.equal(adapter.schedule.calledOnce, true);
 
-                adapter.schedule.args[0][0].time.should.equal(moment(post.get('published_at')).valueOf());
+                assert.equal(adapter.schedule.args[0][0].time, moment(post.get('published_at')).valueOf());
                 adapter.schedule.args[0][0].url.should.startWith(urlUtils.urlJoin('http://scheduler.local:1111/', 'schedules', 'posts', post.get('id'), '?token='));
                 assert.equal(adapter.schedule.args[0][0].extra.httpMethod, 'PUT');
                 assert.equal(null, adapter.schedule.args[0][0].extra.oldTime);

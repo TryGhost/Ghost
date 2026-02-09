@@ -48,7 +48,7 @@ describe('Unit: services/url/UrlService', function () {
         assertExists(urlService.resources);
         assertExists(urlService.queue);
 
-        urlService.urlGenerators.should.eql([]);
+        assert.deepEqual(urlService.urlGenerators, []);
         assert.equal(urlService.hasFinished(), false);
 
         assert.equal(urlService.queue.addListener.calledTwice, true);

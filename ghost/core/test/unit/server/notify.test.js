@@ -34,8 +34,8 @@ describe('Notify', function () {
             eventSpy.restore();
         });
 
-        it('it resolves a promise', function () {
-            notify.notifyServerStarted().should.be.fulfilled();
+        it('it resolves a promise', async function () {
+            await notify.notifyServerStarted();
         });
 
         it('it communicates with IPC correctly on success', function () {
@@ -45,7 +45,7 @@ describe('Notify', function () {
 
             let message = process.send.firstCall.args[0];
             message.should.be.an.Object().with.properties('started', 'debug');
-            message.should.not.have.property('error');
+            assert(!('error' in message));
             assert.equal(message.started, true);
         });
 
@@ -71,7 +71,7 @@ describe('Notify', function () {
 
             let message = socketStub.firstCall.args[1];
             message.should.be.an.Object().with.properties('started', 'debug');
-            message.should.not.have.property('error');
+            assert(!('error' in message));
             assert.equal(message.started, true);
         });
 

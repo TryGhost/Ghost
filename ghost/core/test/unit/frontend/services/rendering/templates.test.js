@@ -17,60 +17,60 @@ describe('templates', function () {
 
     describe('[private fn] getEntriesTemplateHierarchy', function () {
         it('should return just index for empty options', function () {
-            _private.getEntriesTemplateHierarchy({}).should.eql(['index']);
+            assert.deepEqual(_private.getEntriesTemplateHierarchy({}), ['index']);
         });
 
         it('should return just index if collection name is index', function () {
-            _private.getEntriesTemplateHierarchy({name: 'index'}).should.eql(['index']);
+            assert.deepEqual(_private.getEntriesTemplateHierarchy({name: 'index'}), ['index']);
         });
 
         it('should return custom templates even if the collection is index', function () {
-            _private.getEntriesTemplateHierarchy({name: 'index', templates: ['something']}).should.eql(['something', 'index']);
+            assert.deepEqual(_private.getEntriesTemplateHierarchy({name: 'index', templates: ['something']}), ['something', 'index']);
         });
 
         it('should return collection name', function () {
-            _private.getEntriesTemplateHierarchy({name: 'podcast'}).should.eql(['podcast', 'index']);
+            assert.deepEqual(_private.getEntriesTemplateHierarchy({name: 'podcast'}), ['podcast', 'index']);
         });
 
         it('should return custom templates', function () {
-            _private.getEntriesTemplateHierarchy({name: 'podcast', templates: ['mozart']}).should.eql(['mozart', 'podcast', 'index']);
+            assert.deepEqual(_private.getEntriesTemplateHierarchy({name: 'podcast', templates: ['mozart']}), ['mozart', 'podcast', 'index']);
         });
 
         it('should return just index if collection name is index even if slug is set', function () {
-            _private.getEntriesTemplateHierarchy({name: 'index', slugTemplate: true}, {slugParam: 'test'}).should.eql(['index']);
+            assert.deepEqual(_private.getEntriesTemplateHierarchy({name: 'index', slugTemplate: true}, {slugParam: 'test'}), ['index']);
         });
 
         it('should return collection, index if collection has name', function () {
-            _private.getEntriesTemplateHierarchy({name: 'tag'}).should.eql(['tag', 'index']);
+            assert.deepEqual(_private.getEntriesTemplateHierarchy({name: 'tag'}), ['tag', 'index']);
         });
 
         it('should return collection-slug, collection, index if collection has name & slug + slugTemplate set', function () {
-            _private.getEntriesTemplateHierarchy({
+            assert.deepEqual(_private.getEntriesTemplateHierarchy({
                 name: 'tag',
                 slugTemplate: true
-            }, {slugParam: 'test'}).should.eql(['tag-test', 'tag', 'index']);
+            }, {slugParam: 'test'}), ['tag-test', 'tag', 'index']);
         });
 
         it('should return front, collection-slug, collection, index if name, slugParam+slugTemplate & frontPageTemplate+pageParam=1 is set', function () {
-            _private.getEntriesTemplateHierarchy({
+            assert.deepEqual(_private.getEntriesTemplateHierarchy({
                 name: 'tag',
                 slugTemplate: true,
                 frontPageTemplate: 'front-tag'
-            }, {page: 1, path: '/', slugParam: 'test'}).should.eql(['front-tag', 'tag-test', 'tag', 'index']);
+            }, {page: 1, path: '/', slugParam: 'test'}), ['front-tag', 'tag-test', 'tag', 'index']);
         });
 
         it('should return home, index for index collection if front is set and pageParam = 1', function () {
-            _private.getEntriesTemplateHierarchy({
+            assert.deepEqual(_private.getEntriesTemplateHierarchy({
                 name: 'index',
                 frontPageTemplate: 'home'
-            }, {path: '/'}).should.eql(['home', 'index']);
+            }, {path: '/'}), ['home', 'index']);
         });
 
         it('should not use frontPageTemplate if not / collection', function () {
-            _private.getEntriesTemplateHierarchy({
+            assert.deepEqual(_private.getEntriesTemplateHierarchy({
                 name: 'index',
                 frontPageTemplate: 'home'
-            }, {path: '/magic/'}).should.eql(['index']);
+            }, {path: '/magic/'}), ['index']);
         });
     });
 

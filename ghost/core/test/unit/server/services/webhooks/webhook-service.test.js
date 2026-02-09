@@ -33,7 +33,7 @@ describe('Webhook Service', function () {
 
         try {
             await webhookService.add(fakeWebhook, {});
-            should.fail('should have thrown');
+            assert.fail('should have thrown');
         } catch (err) {
             assert.equal(err.name, 'CustomTestError');
         }

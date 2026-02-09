@@ -100,7 +100,7 @@ describe('{{#get}} helper', function () {
                 assert.equal(fn.called, true);
                 fn.firstCall.args[0].should.be.an.Object().with.property('posts');
 
-                fn.firstCall.args[0].posts[0].feature_image_caption.should.be.an.instanceOf(SafeString);
+                assert(fn.firstCall.args[0].posts[0].feature_image_caption instanceof SafeString);
 
                 done();
             }).catch(done);
@@ -128,7 +128,7 @@ describe('{{#get}} helper', function () {
             ).then(function () {
                 assert.equal(fn.called, true);
                 fn.firstCall.args[0].should.be.an.Object().with.property('authors');
-                fn.firstCall.args[0].authors.should.eql([]);
+                assert.deepEqual(fn.firstCall.args[0].authors, []);
                 assert.equal(inverse.called, false);
 
                 done();
@@ -157,7 +157,7 @@ describe('{{#get}} helper', function () {
             ).then(function () {
                 assert.equal(fn.called, true);
                 fn.firstCall.args[0].should.be.an.Object().with.property('newsletters');
-                fn.firstCall.args[0].newsletters.should.eql([]);
+                assert.deepEqual(fn.firstCall.args[0].newsletters, []);
                 assert.equal(inverse.called, false);
 
                 done();

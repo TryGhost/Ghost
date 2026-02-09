@@ -47,10 +47,10 @@ describe('NewslettersImporter', function () {
             const newsletter1 = importer.dataToImport[0];
             const newsletter2 = importer.dataToImport[1];
 
-            newsletter1.name.should.be.eql('Daily newsletter');
+            assert.equal(newsletter1.name, 'Daily newsletter');
             assert.equal(newsletter1.sender_email, undefined);
 
-            newsletter2.name.should.be.eql('Weekly roundup');
+            assert.equal(newsletter2.name, 'Weekly roundup');
             assert.equal(newsletter2.sender_email, undefined);
         });
     });

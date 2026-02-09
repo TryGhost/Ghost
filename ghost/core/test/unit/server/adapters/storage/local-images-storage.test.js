@@ -91,7 +91,7 @@ describe('Local Images Storage', function () {
     it('should create month and year directory', function (done) {
         localFileStore.save(image).then(function () {
             assert.equal(fsMkdirsStub.calledOnce, true);
-            fsMkdirsStub.args[0][0].should.equal(path.resolve('./content/images/2013/09'));
+            assert.equal(fsMkdirsStub.args[0][0], path.resolve('./content/images/2013/09'));
 
             done();
         }).catch(done);
@@ -101,7 +101,7 @@ describe('Local Images Storage', function () {
         localFileStore.save(image).then(function () {
             assert.equal(fsCopyStub.calledOnce, true);
             assert.equal(fsCopyStub.args[0][0], 'tmp/123456.jpg');
-            fsCopyStub.args[0][1].should.equal(path.resolve('./content/images/2013/09/IMAGE.jpg'));
+            assert.equal(fsCopyStub.args[0][1], path.resolve('./content/images/2013/09/IMAGE.jpg'));
 
             done();
         }).catch(done);

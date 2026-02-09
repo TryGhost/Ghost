@@ -75,8 +75,8 @@ describe('Version Mismatch', function () {
 
         assert.equal(nextStub.calledOnce, true);
         assert.equal(nextStub.firstCall.args.length, 1);
-        nextStub.firstCall.args[0].should.have.property('errorType', 'BadRequestError');
-        nextStub.firstCall.args[0].should.have.property('statusCode', 400);
+        assert.equal(nextStub.firstCall.args[0].errorType, 'BadRequestError');
+        assert.equal(nextStub.firstCall.args[0].statusCode, 400);
     });
 
     it('should throw VersionMismatchError if client version is earlier by a major version', function () {
@@ -87,8 +87,8 @@ describe('Version Mismatch', function () {
 
         assert.equal(nextStub.calledOnce, true);
         assert.equal(nextStub.firstCall.args.length, 1);
-        nextStub.firstCall.args[0].should.have.property('errorType', 'VersionMismatchError');
-        nextStub.firstCall.args[0].should.have.property('statusCode', 400);
+        assert.equal(nextStub.firstCall.args[0].errorType, 'VersionMismatchError');
+        assert.equal(nextStub.firstCall.args[0].statusCode, 400);
     });
 
     it('should throw VersionMismatchError if client version is later than server', function () {
@@ -99,8 +99,8 @@ describe('Version Mismatch', function () {
 
         assert.equal(nextStub.calledOnce, true);
         assert.equal(nextStub.firstCall.args.length, 1);
-        nextStub.firstCall.args[0].should.have.property('errorType', 'VersionMismatchError');
-        nextStub.firstCall.args[0].should.have.property('statusCode', 400);
+        assert.equal(nextStub.firstCall.args[0].errorType, 'VersionMismatchError');
+        assert.equal(nextStub.firstCall.args[0].statusCode, 400);
     });
 
     it('should throw VersionMismatchError if client version is later by a major version', function () {
@@ -111,8 +111,8 @@ describe('Version Mismatch', function () {
 
         assert.equal(nextStub.calledOnce, true);
         assert.equal(nextStub.firstCall.args.length, 1);
-        nextStub.firstCall.args[0].should.have.property('errorType', 'VersionMismatchError');
-        nextStub.firstCall.args[0].should.have.property('statusCode', 400);
+        assert.equal(nextStub.firstCall.args[0].errorType, 'VersionMismatchError');
+        assert.equal(nextStub.firstCall.args[0].statusCode, 400);
     });
 
     it('should call next if pre-release is allowed', function () {
@@ -133,7 +133,7 @@ describe('Version Mismatch', function () {
 
         assert.equal(nextStub.calledOnce, true);
         assert.equal(nextStub.firstCall.args.length, 1);
-        nextStub.firstCall.args[0].should.have.property('errorType', 'VersionMismatchError');
-        nextStub.firstCall.args[0].should.have.property('statusCode', 400);
+        assert.equal(nextStub.firstCall.args[0].errorType, 'VersionMismatchError');
+        assert.equal(nextStub.firstCall.args[0].statusCode, 400);
     });
 });

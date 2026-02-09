@@ -53,27 +53,27 @@ describe('{{navigation}} helper', function () {
     it('should throw errors on invalid data', function () {
         // Test 1: navigation = string
         optionsData.data.site.navigation = 'not an object';
-        runHelperThunk(optionsData).should.throwError('navigation data is not an object or is a function');
+        assert.throws(runHelperThunk(optionsData), {message: 'navigation data is not an object or is a function'});
 
         // Test 2: navigation = function
         optionsData.data.site.navigation = function () {
         };
-        runHelperThunk(optionsData).should.throwError('navigation data is not an object or is a function');
+        assert.throws(runHelperThunk(optionsData), {message: 'navigation data is not an object or is a function'});
 
         // Test 3: invalid label
         optionsData.data.site.navigation = [{label: 1, url: 'bar'}];
-        runHelperThunk(optionsData).should.throwError('Invalid value, Url and Label must be strings');
+        assert.throws(runHelperThunk(optionsData), {message: 'Invalid value, Url and Label must be strings'});
 
         // Test 4: invalid url
         optionsData.data.site.navigation = [{label: 'foo', url: 1}];
-        runHelperThunk(optionsData).should.throwError('Invalid value, Url and Label must be strings');
+        assert.throws(runHelperThunk(optionsData), {message: 'Invalid value, Url and Label must be strings'});
     });
 
     it('can render empty nav', function () {
         const rendered = runHelper(optionsData);
 
         assertExists(rendered);
-        rendered.string.should.be.equal('');
+        assert.equal(rendered.string, '');
     });
 
     it('can handle relativeUrl not being set (e.g. for images/assets)', function () {

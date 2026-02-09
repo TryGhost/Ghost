@@ -188,8 +188,8 @@ describe('Admin API - Max Limit Cap', function () {
                 .expectStatus(200);
 
             // Even though we requested 10, we should only get max 5
-            body.posts.length.should.equal(MAX_LIMIT);
-            body.meta.pagination.limit.should.equal(MAX_LIMIT);
+            assert.equal(body.posts.length, MAX_LIMIT);
+            assert.equal(body.meta.pagination.limit, MAX_LIMIT);
         });
 
         it(`should cap limit to ${MAX_LIMIT} when limit is "all"`, async function () {
@@ -197,8 +197,8 @@ describe('Admin API - Max Limit Cap', function () {
                 .expectStatus(200);
 
             // "all" should be capped to 5
-            body.posts.length.should.equal(MAX_LIMIT);
-            body.meta.pagination.limit.should.equal(MAX_LIMIT);
+            assert.equal(body.posts.length, MAX_LIMIT);
+            assert.equal(body.meta.pagination.limit, MAX_LIMIT);
         });
 
         it('should respect smaller limits', async function () {
@@ -216,7 +216,7 @@ describe('Admin API - Max Limit Cap', function () {
                 .expectStatus(200);
 
             // Check CSV file has more than MAX_LIMIT rows + 1 for header row
-            text.split('\n').length.should.be.greaterThan(MAX_LIMIT + 1);
+            assert(text.split('\n').length > MAX_LIMIT + 1);
         });
     });
 
@@ -226,8 +226,8 @@ describe('Admin API - Max Limit Cap', function () {
                 .expectStatus(200);
 
             // Even though we requested 10, we should only get max 5
-            body.members.length.should.be.lessThanOrEqual(MAX_LIMIT);
-            body.meta.pagination.limit.should.equal(MAX_LIMIT);
+            assert(body.members.length <= MAX_LIMIT);
+            assert.equal(body.meta.pagination.limit, MAX_LIMIT);
         });
 
         it('should cap limit to 5 when limit is "all"', async function () {
@@ -235,8 +235,8 @@ describe('Admin API - Max Limit Cap', function () {
                 .expectStatus(200);
 
             // "all" should be capped to 5
-            body.members.length.should.be.lessThanOrEqual(MAX_LIMIT);
-            body.meta.pagination.limit.should.equal(MAX_LIMIT);
+            assert(body.members.length <= MAX_LIMIT);
+            assert.equal(body.meta.pagination.limit, MAX_LIMIT);
         });
     });
 
@@ -246,8 +246,8 @@ describe('Admin API - Max Limit Cap', function () {
                 .expectStatus(200);
 
             // Even though we requested 10, we should only get max 5
-            body.tags.length.should.equal(MAX_LIMIT);
-            body.meta.pagination.limit.should.equal(MAX_LIMIT);
+            assert.equal(body.tags.length, MAX_LIMIT);
+            assert.equal(body.meta.pagination.limit, MAX_LIMIT);
         });
     });
 
@@ -257,8 +257,8 @@ describe('Admin API - Max Limit Cap', function () {
                 .expectStatus(200);
 
             // Even though we requested 10, we should only get max 5
-            body.pages.length.should.be.lessThanOrEqual(MAX_LIMIT);
-            body.meta.pagination.limit.should.equal(MAX_LIMIT);
+            assert(body.pages.length <= MAX_LIMIT);
+            assert.equal(body.meta.pagination.limit, MAX_LIMIT);
         });
     });
 
@@ -320,8 +320,8 @@ describe('Admin API - Max Limit Cap', function () {
                 .expectStatus(200);
 
             // Invalid limit should be capped to 5
-            body.posts.length.should.equal(MAX_LIMIT);
-            body.meta.pagination.limit.should.equal(MAX_LIMIT);
+            assert.equal(body.posts.length, MAX_LIMIT);
+            assert.equal(body.meta.pagination.limit, MAX_LIMIT);
         });
 
         it('should handle limit=0', async function () {
@@ -331,7 +331,7 @@ describe('Admin API - Max Limit Cap', function () {
             // limit=0 is treated as no limit by Ghost, which uses default page size
             // The actual behavior depends on Ghost's internal handling
             // Since we have 14 posts in test data, we get all 14
-            body.posts.length.should.be.lessThanOrEqual(15);
+            assert(body.posts.length <= 15);
         });
     });
 });

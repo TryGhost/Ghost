@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const express = require('express');
 const sinon = require('sinon');
 const should = require('should');
@@ -30,15 +31,15 @@ describe('SessionFromToken', function () {
 
         await handler(req, res, next);
 
-        should.ok(getTokenFromRequest.calledOnceWith(req));
+        assert(getTokenFromRequest.calledOnceWith(req));
         const token = await getTokenFromRequest.returnValues[0];
 
-        should.ok(getLookupFromToken.calledOnceWith(token));
+        assert(getLookupFromToken.calledOnceWith(token));
         const email = await getLookupFromToken.returnValues[0];
 
-        should.ok(findUserByLookup.calledOnceWith(email));
+        assert(findUserByLookup.calledOnceWith(email));
         const foundUser = await findUserByLookup.returnValues[0];
 
-        should.ok(createSession.calledOnceWith(req, res, foundUser));
+        assert(createSession.calledOnceWith(req, res, foundUser));
     });
 });

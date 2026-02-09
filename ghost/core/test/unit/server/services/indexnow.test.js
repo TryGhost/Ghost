@@ -391,7 +391,7 @@ describe('IndexNow', function () {
             settingsCacheStub.withArgs('indexnow_api_key').returns(expectedKey);
 
             const key = indexnow.getApiKey();
-            key.should.equal(expectedKey);
+            assert.equal(key, expectedKey);
         });
 
         it('should return null when no key is set', function () {

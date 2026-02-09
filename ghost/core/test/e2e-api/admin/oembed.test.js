@@ -352,8 +352,8 @@ describe('Oembed API', function () {
         assert.equal(attackerPageMock.isDone(), true);
 
         // Check if the internal service was called - this indicates SSRF occurred
-        internalServiceThumbnailMock.isDone().should.be.false('Thumbnail SSRF occurred');
-        internalServiceIconMock.isDone().should.be.false('Icon SSRF occurred');
+        assert.equal(internalServiceThumbnailMock.isDone(), false, 'Thumbnail SSRF occurred');
+        assert.equal(internalServiceIconMock.isDone(), false, 'Icon SSRF occurred');
 
         // Body contains the fallback data after requests failed
         assert.equal(res.body.metadata.icon, 'https://static.ghost.org/v5.0.0/images/link-icon.svg');
@@ -562,7 +562,7 @@ describe('Oembed API', function () {
             assert.equal(pageMock.isDone(), true);
             assert.equal(oembedMock.isDone(), true);
 
-            res.body.should.deepEqual({
+            assert.deepEqual(res.body, {
                 version: '1.0',
                 type: 'video',
                 html: '<p>Test</p>',

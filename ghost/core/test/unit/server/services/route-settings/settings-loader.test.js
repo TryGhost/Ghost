@@ -79,7 +79,7 @@ describe('UNIT > SettingsLoader:', function () {
 
             assert.equal(fsReadFileSpy.calledOnce, true);
             assert.equal(fsReadFileSpy.calledWith(expectedSettingsFile), true);
-            yamlParserStub.callCount.should.be.eql(1);
+            sinon.assert.calledOnce(yamlParserStub);
         });
 
         it('can handle errors from YAML parser', async function () {
@@ -98,9 +98,9 @@ describe('UNIT > SettingsLoader:', function () {
                 throw new Error('Should have failed already');
             } catch (err) {
                 assertExists(err);
-                err.message.should.be.eql('could not parse yaml file');
-                err.context.should.be.eql('bad indentation of a mapping entry at line 5, column 10');
-                assert.equal(yamlParserStub.calledOnce, true);
+                assert.equal(err.message, 'could not parse yaml file');
+                assert.equal(err.context, 'bad indentation of a mapping entry at line 5, column 10');
+                sinon.assert.calledOnce(yamlParserStub);
             }
         });
 

@@ -530,10 +530,10 @@ describe('MemberRepository', function () {
 
             assert.equal(offersAPI.ensureOfferForStripeCoupon.calledOnce, true);
             // Verify the coupon, cadence, tier, and options are passed correctly
-            offersAPI.ensureOfferForStripeCoupon.firstCall.args[0].should.deepEqual(stripeCoupon);
+            assert.deepEqual(offersAPI.ensureOfferForStripeCoupon.firstCall.args[0], stripeCoupon);
             assert.equal(offersAPI.ensureOfferForStripeCoupon.firstCall.args[1], 'month');
-            offersAPI.ensureOfferForStripeCoupon.firstCall.args[2].should.deepEqual({id: 'tier_1', name: 'Tier One'});
-            offersAPI.ensureOfferForStripeCoupon.firstCall.args[3].transacting.should.equal(transacting);
+            assert.deepEqual(offersAPI.ensureOfferForStripeCoupon.firstCall.args[2], {id: 'tier_1', name: 'Tier One'});
+            assert.equal(offersAPI.ensureOfferForStripeCoupon.firstCall.args[3].transacting, transacting);
             assert.equal(StripeCustomerSubscription.add.firstCall.args[0].offer_id, 'offer_new');
         });
 

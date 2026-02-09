@@ -53,7 +53,7 @@ describe('Scheduling Default Adapter', function () {
             assert.equal(scope.adapter._execute.calledTwice, true);
 
             Object.keys(scope.adapter.allJobs).length.should.eql(dates.length - 2);
-            Object.keys(scope.adapter.allJobs).should.eql([
+            assert.deepEqual(Object.keys(scope.adapter.allJobs), [
                 moment(dates[2]).valueOf().toString(),
                 moment(dates[6]).valueOf().toString(),
                 moment(dates[4]).valueOf().toString(),
@@ -165,7 +165,7 @@ describe('Scheduling Default Adapter', function () {
 
             clock.tick(200);
 
-            scope.adapter._execute.callCount.should.be.greaterThan(1);
+            assert(scope.adapter._execute.callCount > 1);
             done();
         });
 

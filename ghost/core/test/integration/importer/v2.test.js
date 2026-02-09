@@ -312,7 +312,7 @@ describe('Importer', function () {
                     // we always have 1 user, the owner user we added
                     assert.equal(users.length, 1, 'There should only be one user');
 
-                    settings.length.should.be.above(0, 'Wrong number of settings');
+                    assert(settings.length > 0, 'Wrong number of settings');
                     assert.equal(posts.length, exportData.data.posts.length, 'no new posts');
                     assert.equal(tags.length, exportData.data.tags.length, 'no new tags');
                 });
@@ -333,13 +333,13 @@ describe('Importer', function () {
                 .then(function (result) {
                     assert.equal(result.models.length, 2);
 
-                    result.models[0].get('email').should.equal(testUtils.DataGenerator.Content.users[0].email);
-                    result.models[0].get('slug').should.equal(testUtils.DataGenerator.Content.users[0].slug);
-                    result.models[0].get('name').should.equal(testUtils.DataGenerator.Content.users[0].name);
+                    assert.equal(result.models[0].get('email'), testUtils.DataGenerator.Content.users[0].email);
+                    assert.equal(result.models[0].get('slug'), testUtils.DataGenerator.Content.users[0].slug);
+                    assert.equal(result.models[0].get('name'), testUtils.DataGenerator.Content.users[0].name);
 
-                    result.models[1].get('email').should.equal(exportData.data.users[0].email);
-                    result.models[1].get('slug').should.equal(exportData.data.users[0].slug);
-                    result.models[1].get('name').should.equal(exportData.data.users[0].name);
+                    assert.equal(result.models[1].get('email'), exportData.data.users[0].email);
+                    assert.equal(result.models[1].get('slug'), exportData.data.users[0].slug);
+                    assert.equal(result.models[1].get('name'), exportData.data.users[0].name);
 
                     return models.User.isPasswordCorrect({
                         hashedPassword: result.models[0].get('password'),
@@ -604,32 +604,32 @@ describe('Importer', function () {
                     assert.equal(posts.length, exportData.data.posts.length, 'Wrong number of posts');
 
                     // findPage returns the posts in correct order (latest created post is the first)
-                    posts[0].title.should.equal(exportData.data.posts[2].title);
-                    posts[1].title.should.equal(exportData.data.posts[1].title);
-                    posts[2].title.should.equal(exportData.data.posts[0].title);
+                    assert.equal(posts[0].title, exportData.data.posts[2].title);
+                    assert.equal(posts[1].title, exportData.data.posts[1].title);
+                    assert.equal(posts[2].title, exportData.data.posts[0].title);
 
-                    posts[0].slug.should.equal(exportData.data.posts[2].slug);
-                    posts[1].slug.should.equal(exportData.data.posts[1].slug);
-                    posts[2].slug.should.equal(exportData.data.posts[0].slug);
+                    assert.equal(posts[0].slug, exportData.data.posts[2].slug);
+                    assert.equal(posts[1].slug, exportData.data.posts[1].slug);
+                    assert.equal(posts[2].slug, exportData.data.posts[0].slug);
 
-                    posts[0].primary_author.id.should.equal(users[1].id);
-                    posts[1].primary_author.id.should.equal(users[4].id);
-                    posts[2].primary_author.id.should.equal(users[1].id);
+                    assert.equal(posts[0].primary_author.id, users[1].id);
+                    assert.equal(posts[1].primary_author.id, users[4].id);
+                    assert.equal(posts[2].primary_author.id, users[1].id);
 
-                    posts[0].published_by.should.equal(users[4].id);
-                    posts[1].published_by.should.equal(users[2].id);
-                    posts[2].published_by.should.equal(users[2].id);
+                    assert.equal(posts[0].published_by, users[4].id);
+                    assert.equal(posts[1].published_by, users[2].id);
+                    assert.equal(posts[2].published_by, users[2].id);
 
                     assert.equal(tags.length, exportData.data.tags.length, 'Wrong number of tags');
 
                     // 4 imported users + 1 owner user
                     assert.equal(users.length, exportData.data.users.length + 1, 'Wrong number of users');
 
-                    users[0].email.should.equal(testUtils.DataGenerator.Content.users[0].email);
-                    users[1].email.should.equal(exportData.data.users[0].email);
-                    users[2].email.should.equal(exportData.data.users[1].email);
-                    users[3].email.should.equal(exportData.data.users[2].email);
-                    users[4].email.should.equal(exportData.data.users[3].email);
+                    assert.equal(users[0].email, testUtils.DataGenerator.Content.users[0].email);
+                    assert.equal(users[1].email, exportData.data.users[0].email);
+                    assert.equal(users[2].email, exportData.data.users[1].email);
+                    assert.equal(users[3].email, exportData.data.users[2].email);
+                    assert.equal(users[4].email, exportData.data.users[3].email);
 
                     assert.equal(users[0].status, 'active');
                     assert.equal(users[1].status, 'locked');
@@ -637,15 +637,15 @@ describe('Importer', function () {
                     assert.equal(users[3].status, 'locked');
                     assert.equal(users[4].status, 'locked');
 
-                    users[1].created_at.toISOString().should.equal(moment(exportData.data.users[0].created_at).startOf('seconds').toISOString());
-                    users[2].created_at.toISOString().should.equal(moment(exportData.data.users[1].created_at).startOf('seconds').toISOString());
-                    users[3].created_at.toISOString().should.equal(moment(exportData.data.users[2].created_at).startOf('seconds').toISOString());
-                    users[4].created_at.toISOString().should.equal(moment(exportData.data.users[3].created_at).startOf('seconds').toISOString());
+                    assert.equal(users[1].created_at.toISOString(), moment(exportData.data.users[0].created_at).startOf('seconds').toISOString());
+                    assert.equal(users[2].created_at.toISOString(), moment(exportData.data.users[1].created_at).startOf('seconds').toISOString());
+                    assert.equal(users[3].created_at.toISOString(), moment(exportData.data.users[2].created_at).startOf('seconds').toISOString());
+                    assert.equal(users[4].created_at.toISOString(), moment(exportData.data.users[3].created_at).startOf('seconds').toISOString());
 
-                    users[1].updated_at.toISOString().should.equal(moment(exportData.data.users[0].updated_at).startOf('seconds').toISOString());
-                    users[2].updated_at.toISOString().should.equal(moment(exportData.data.users[1].updated_at).startOf('seconds').toISOString());
-                    users[3].updated_at.toISOString().should.equal(moment(exportData.data.users[2].updated_at).startOf('seconds').toISOString());
-                    users[4].updated_at.toISOString().should.equal(moment(exportData.data.users[3].updated_at).startOf('seconds').toISOString());
+                    assert.equal(users[1].updated_at.toISOString(), moment(exportData.data.users[0].updated_at).startOf('seconds').toISOString());
+                    assert.equal(users[2].updated_at.toISOString(), moment(exportData.data.users[1].updated_at).startOf('seconds').toISOString());
+                    assert.equal(users[3].updated_at.toISOString(), moment(exportData.data.users[2].updated_at).startOf('seconds').toISOString());
+                    assert.equal(users[4].updated_at.toISOString(), moment(exportData.data.users[3].updated_at).startOf('seconds').toISOString());
 
                     users[0].roles[0].id.should.eql(testUtils.DataGenerator.Content.roles[3].id);
                     users[1].roles[0].id.should.eql(testUtils.DataGenerator.Content.roles[0].id);
