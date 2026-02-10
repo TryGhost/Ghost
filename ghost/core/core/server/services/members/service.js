@@ -8,6 +8,7 @@ const makeMembersCSVImporter = require('./importer');
 const MembersStats = require('./stats/members-stats');
 const memberJobs = require('./jobs');
 const logging = require('@tryghost/logging');
+const metrics = require('@tryghost/metrics');
 const urlUtils = require('../../../shared/url-utils');
 const labsService = require('../../../shared/labs');
 const settingsCache = require('../../../shared/settings-cache');
@@ -108,6 +109,32 @@ const initVerificationTrigger = () => {
                     to: escalationAddress
                 });
             }
+        },
+        trackVerificationTrigger: async ({amount, source, throwOnTrigger, triggerData}) => {
+            const hostSettings = config.get('hostSettings') || {};
+            const emailVerificationSettings = _.get(hostSettings, 'emailVerification') || {};
+
+            await metrics.metric('email-verification-trigger', {
+                value: amount,
+                source: source,
+                throwOnTrigger: throwOnTrigger,
+                site: {
+                    id: _.get(hostSettings, 'siteId'),
+                    title: settingsCache.get('title'),
+                    url: urlUtils.getSiteUrl()
+                },
+                verification: {
+                    verified: config.get('hostSettings:emailVerification:verified') === true,
+                    required: settingsCache.get('email_verification_required') === true,
+                    escalationAddressConfigured: Boolean(emailVerificationSettings.escalationAddress),
+                    thresholds: {
+                        api: emailVerificationSettings.apiThreshold,
+                        admin: emailVerificationSettings.adminThreshold,
+                        import: emailVerificationSettings.importThreshold
+                    }
+                },
+                trigger: triggerData || {}
+            });
         },
         membersStats,
         Settings: models.Settings,

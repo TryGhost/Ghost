@@ -102,6 +102,76 @@ describe('Email verification flow', function () {
         settingsStub.callCount.should.eql(1);
     });
 
+    it('Tracks verification trigger with context payload', async function () {
+        const emailStub = sinon.stub().resolves(null);
+        const settingsStub = sinon.stub().resolves(null);
+        const trackVerificationTriggerStub = sinon.stub().resolves(null);
+        const trigger = new VerificationTrigger({
+            Settings: {
+                edit: settingsStub
+            },
+            isVerified: () => false,
+            isVerificationRequired: () => false,
+            sendVerificationEmail: emailStub,
+            trackVerificationTrigger: trackVerificationTriggerStub
+        });
+
+        await trigger._startVerificationProcess({
+            amount: 10,
+            throwOnTrigger: false,
+            source: 'import',
+            triggerData: {
+                windowDays: 30,
+                eventsTotal: 10,
+                membersTotal: 15,
+                threshold: {
+                    configured: 2,
+                    effective: 5
+                }
+            }
+        });
+
+        trackVerificationTriggerStub.callCount.should.eql(1);
+        trackVerificationTriggerStub.lastCall.firstArg.should.eql({
+            amount: 10,
+            source: 'import',
+            throwOnTrigger: false,
+            triggerData: {
+                windowDays: 30,
+                eventsTotal: 10,
+                membersTotal: 15,
+                threshold: {
+                    configured: 2,
+                    effective: 5
+                }
+            }
+        });
+    });
+
+    it('Does not fail verification flow if tracking hook throws', async function () {
+        const emailStub = sinon.stub().resolves(null);
+        const settingsStub = sinon.stub().resolves(null);
+        const trigger = new VerificationTrigger({
+            Settings: {
+                edit: settingsStub
+            },
+            isVerified: () => false,
+            isVerificationRequired: () => false,
+            sendVerificationEmail: emailStub,
+            trackVerificationTrigger: sinon.stub().throws(new Error('tracking failed'))
+        });
+
+        const result = await trigger._startVerificationProcess({
+            amount: 10,
+            throwOnTrigger: false,
+            source: 'api'
+        });
+
+        result.should.eql({
+            needsVerification: true
+        });
+    });
+
     it('Does not trigger verification when already verified', async function () {
         const emailStub = sinon.stub().resolves(null);
         const settingsStub = sinon.stub().resolves(null);
@@ -270,6 +340,7 @@ describe('Email verification flow', function () {
     it('Triggers when a number of members are imported', async function () {
         const emailStub = sinon.stub().resolves(null);
         const settingsStub = sinon.stub().resolves(null);
+        const trackVerificationTriggerStub = sinon.stub().resolves(null);
         const eventStub = sinon.stub().callsFake(async (_unused, {source}) => {
             if (source === 'member') {
                 return {
@@ -298,6 +369,7 @@ describe('Email verification flow', function () {
             isVerified: () => false,
             isVerificationRequired: () => false,
             sendVerificationEmail: emailStub,
+            trackVerificationTrigger: trackVerificationTriggerStub,
             eventRepository: {
                 getSignupEvents: eventStub
             }
@@ -317,6 +389,22 @@ describe('Email verification flow', function () {
             subject: 'Email needs verification',
             message: 'Email verification needed for site: {siteUrl}, has imported: {amountTriggered} members in the last 30 days.',
             amountTriggered: 10
+        });
+
+        trackVerificationTriggerStub.callCount.should.eql(1);
+        trackVerificationTriggerStub.lastCall.firstArg.should.eql({
+            amount: 10,
+            source: 'import',
+            throwOnTrigger: false,
+            triggerData: {
+                windowDays: 30,
+                eventsTotal: 10,
+                membersTotal: 15,
+                threshold: {
+                    configured: 2,
+                    effective: 5
+                }
+            }
         });
     });
 

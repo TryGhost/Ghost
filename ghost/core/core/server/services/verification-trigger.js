@@ -20,6 +20,7 @@ class VerificationTrigger {
      * @param {() => boolean} deps.isVerified Check Ghost config to see if we are already verified
      * @param {() => boolean} deps.isVerificationRequired Check Ghost settings to see whether verification has been requested
      * @param {(content: {subject: string, message: string, amountTriggered: number}) => Promise<void>} deps.sendVerificationEmail Sends an email to the escalation address to confirm that customer needs to be verified
+     * @param {(eventData: {amount: number, source: string, throwOnTrigger: boolean, triggerData?: object}) => Promise<void> | void} [deps.trackVerificationTrigger] Structured instrumentation hook for triggered verifications
      * @param {any} deps.Settings Ghost Settings model
      * @param {any} deps.eventRepository For querying events
      */
@@ -30,6 +31,7 @@ class VerificationTrigger {
         isVerified,
         isVerificationRequired,
         sendVerificationEmail,
+        trackVerificationTrigger = () => {},
         Settings,
         eventRepository
     }) {
@@ -39,6 +41,7 @@ class VerificationTrigger {
         this._isVerified = isVerified;
         this._isVerificationRequired = isVerificationRequired;
         this._sendVerificationEmail = sendVerificationEmail;
+        this._trackVerificationTrigger = trackVerificationTrigger;
         this._Settings = Settings;
         this._eventRepository = eventRepository;
 
@@ -85,15 +88,26 @@ class VerificationTrigger {
                 }
             });
 
+            const eventsTotal = events.meta.pagination.total;
             const membersTotal = (await this._eventRepository.getSignupEvents({}, {
                 source: 'member'
             })).meta.pagination.total;
+            const triggerThreshold = Math.max(sourceThreshold, membersTotal);
 
-            if (events.meta.pagination.total > Math.max(sourceThreshold, membersTotal)) {
+            if (eventsTotal > triggerThreshold) {
                 await this._startVerificationProcess({
-                    amount: events.meta.pagination.total,
+                    amount: eventsTotal,
                     throwOnTrigger: false,
-                    source: source
+                    source: source,
+                    triggerData: {
+                        windowDays: 30,
+                        eventsTotal: eventsTotal,
+                        membersTotal: membersTotal,
+                        threshold: {
+                            configured: sourceThreshold,
+                            effective: triggerThreshold
+                        }
+                    }
                 });
             }
         }
@@ -146,18 +160,28 @@ class VerificationTrigger {
             }
         });
 
+        const eventsTotal = events.meta.pagination.total;
         const membersTotal = (await this._eventRepository.getSignupEvents({}, {
             source: 'member'
         })).meta.pagination.total;
 
         // Import threshold is either the total number of members (discounting any created by imports in
         // the last 30 days) or the threshold defined in config, whichever is greater.
-        const importThreshold = Math.max(membersTotal - events.meta.pagination.total, this._importTriggerThreshold);
-        if (isFinite(importThreshold) && events.meta.pagination.total > importThreshold) {
+        const importThreshold = Math.max(membersTotal - eventsTotal, this._importTriggerThreshold);
+        if (isFinite(importThreshold) && eventsTotal > importThreshold) {
             await this._startVerificationProcess({
-                amount: events.meta.pagination.total,
+                amount: eventsTotal,
                 throwOnTrigger: false,
-                source: 'import'
+                source: 'import',
+                triggerData: {
+                    windowDays: 30,
+                    eventsTotal: eventsTotal,
+                    membersTotal: membersTotal,
+                    threshold: {
+                        configured: this._importTriggerThreshold,
+                        effective: importThreshold
+                    }
+                }
             });
         }
     }
@@ -172,13 +196,15 @@ class VerificationTrigger {
      * @param {object} config
      * @param {number} config.amount The amount of members that triggered the verification process
      * @param {boolean} config.throwOnTrigger Whether to throw if verification is needed
-     * @param {string} config.source Source of the verification trigger - currently either 'api' or 'import'
+     * @param {string} config.source Source of the verification trigger - currently one of 'api', 'admin', 'import'
+     * @param {object} [config.triggerData] Structured trigger context payload for instrumentation
      * @returns {Promise<IVerificationResult>} Object containing property "needsVerification" - true when triggered
      */
     async _startVerificationProcess({
         amount,
         throwOnTrigger,
-        source
+        source,
+        triggerData
     }) {
         if (!this._isVerified()) {
             // Only trigger flag change and escalation email the first time
@@ -203,6 +229,13 @@ class VerificationTrigger {
                     amountTriggered: amount
                 });
 
+                this._emitVerificationTriggerEvent({
+                    amount: amount,
+                    source: source,
+                    throwOnTrigger: throwOnTrigger,
+                    triggerData: triggerData
+                });
+
                 if (throwOnTrigger) {
                     throw new errors.HostLimitError({
                         message: messages.emailVerificationNeeded,
@@ -219,6 +252,14 @@ class VerificationTrigger {
         return {
             needsVerification: false
         };
+    }
+
+    _emitVerificationTriggerEvent(eventData) {
+        try {
+            Promise.resolve(this._trackVerificationTrigger(eventData)).catch(() => {});
+        } catch (_err) {
+            // Instrumentation should never block verification flow.
+        }
     }
 }
 
