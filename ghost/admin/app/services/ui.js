@@ -49,7 +49,6 @@ export default class UiService extends Service {
 
     @tracked _isFullScreen = false;
     @tracked mainClass = '';
-    @tracked showMobileMenu = false;
 
     get isFullScreen() {
         return this._isFullScreen;
@@ -57,7 +56,7 @@ export default class UiService extends Service {
 
     set isFullScreen(value) {
         this._isFullScreen = value;
-        // Trigger sidebar visibility event whenever fullscreen mode changes
+        // Notify React admin when fullscreen mode changes so it can hide/show its sidebar
         this.stateBridge.setSidebarVisible(!value);
     }
 
@@ -105,17 +104,6 @@ export default class UiService extends Service {
     @action
     closeMenus() {
         this.dropdown.closeDropdowns();
-        this.showMobileMenu = false;
-    }
-
-    @action
-    closeMobileMenu() {
-        this.showMobileMenu = false;
-    }
-
-    @action
-    openMobileMenu() {
-        this.showMobileMenu = true;
     }
 
     @action
@@ -189,10 +177,5 @@ export default class UiService extends Service {
         document.body.removeEventListener('dragleave', this.bodyDragLeaveHandler, {capture: true});
         document.body.removeEventListener('dragend', this.cancelDrag, {capture: true});
         document.body.removeEventListener('drop', this.cancelDrag, {capture: true});
-    }
-
-    @action
-    toggleMobileMenu() {
-        this.showMobileMenu = !this.showMobileMenu;
     }
 }

@@ -184,7 +184,7 @@ export default Route.extend(ShortcutsRoute, {
         },
 
         openSearchModal() {
-            // Don't open the search modal if the sidebar is hidden
+            // Don't open the search modal in fullscreen mode
             // e.g. in the editor or settings screens
             if (this.ui.isFullScreen) {
                 return;
@@ -194,7 +194,7 @@ export default Route.extend(ShortcutsRoute, {
         },
 
         openSettings() {
-            // Don't open the settings screen if the sidebar is hidden
+            // Don't open the settings screen in fullscreen mode
             // e.g. in the editor or settings screens
             if (this.ui.isFullScreen) {
                 return;

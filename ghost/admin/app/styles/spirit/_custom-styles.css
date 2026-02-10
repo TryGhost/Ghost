@@ -136,10 +136,6 @@ button, .btn-base {
 /*
 * Client styles
 ---------------------------------------------------------- */
-.gh-nav-link:hover {
-    background: rgba(62,176,239,.15);
-}
-
 .gh-logo svg g {
     fill: white;
     opacity: 1.0;
