@@ -84,6 +84,7 @@ Object {
     "support_email_address": "noreply@127.0.0.1",
     "timezone": "Etc/UTC",
     "title": "Ghost",
+    "transistor_portal_settings": null,
     "twitter": "@ghost",
     "twitter_description": null,
     "twitter_image": null,
