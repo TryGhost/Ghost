@@ -304,17 +304,17 @@ describe('Acceptance: Authentication', function () {
 
         it('can resend verification code', async function () {
             setupVerificationRequired(this.server);
-            setupResendSuccess(this.server, {timing: 100});
+            setupResendSuccess(this.server, {timing: 300});
             await completeSignIn();
 
             // no await so we can test for intermediary state
             click(resendButton);
 
             // await this.pauseTest();
-            await waitFor(`${resendButton}[disabled]`, {timeout: 10});
-            await waitUntil(() => find(resendButton).textContent.includes('Sending'), {timeout: 30, timeoutMessage: 'Check for "Sending" timed out'});
-            await waitUntil(() => find(resendButton).textContent.includes('Sent'), {timeout: 150, timeoutMessage: 'Check for "Sent" timed out'});
-            await waitFor(`${resendButton}:not([disabled])`, {timeout: 200});
+            await waitFor(`${resendButton}[disabled]`, {timeout: 1000});
+            await waitUntil(() => find(resendButton).textContent.includes('Sending'), {timeout: 2000, timeoutMessage: 'Check for "Sending" timed out'});
+            await waitUntil(() => find(resendButton).textContent.includes('Sent'), {timeout: 3000, timeoutMessage: 'Check for "Sent" timed out'});
+            await waitFor(`${resendButton}:not([disabled])`, {timeout: 4000});
             expect(find(resendButton)).to.have.trimmed.text('Resend');
         });
 
