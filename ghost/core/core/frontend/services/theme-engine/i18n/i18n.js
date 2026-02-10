@@ -3,7 +3,6 @@ const logging = require('@tryghost/logging');
 const fs = require('fs-extra');
 const path = require('path');
 const MessageFormat = require('intl-messageformat');
-const jp = require('jsonpath');
 const isString = require('lodash/isString');
 const isObject = require('lodash/isObject');
 const isEqual = require('lodash/isEqual');
@@ -128,29 +127,25 @@ class I18n {
     }
 
     /**
-     * Do the lookup within the JSON file using jsonpath
+     * Do the lookup within the translation strings
      *
      * @param {String} msgPath
      */
     _getCandidateString(msgPath) {
-        // Our default string mode is "dot" for dot-notation, e.g. $.something.like.this used in the backend
-        // Both jsonpath's dot-notation and bracket-notation start with '$' E.g.: $.store.book.title or $['store']['book']['title']
-        // While bracket-notation allows any Unicode characters in keys (i.e. for themes / fulltext mode) E.g. $['Read more']
-        // dot-notation allows only word characters in keys for backend messages (that is \w or [A-Za-z0-9_] in RegExp)
-        let jsonPath = `$.${msgPath}`;
         let fallback = null;
 
         if (this._stringMode === 'fulltext') {
-            jsonPath = jp.stringify(['$', msgPath]);
-            // In fulltext mode we can use the passed string as a fallback
             fallback = msgPath;
+        } else if (/[^\w.]/.test(msgPath)) {
+            // In dot mode, keys must only contain word characters and dots.
+            // Reject anything else to match previous behavior.
+            this._handleInvalidKeyError(msgPath, new errors.InternalServerError({message: 'Invalid dot-notation path'}));
         }
 
-        try {
-            return jp.value(this._strings, jsonPath) || fallback;
-        } catch (err) {
-            this._handleInvalidKeyError(msgPath, err);
-        }
+        // Use array form [msgPath] for fulltext mode to prevent lodash splitting on dots.
+        // Use string form for dot mode so lodash splits 'a.b.c' into nested lookup.
+        const lookupPath = this._stringMode === 'fulltext' ? [msgPath] : msgPath;
+        return get(this._strings, lookupPath) || fallback;
     }
 
     /**
