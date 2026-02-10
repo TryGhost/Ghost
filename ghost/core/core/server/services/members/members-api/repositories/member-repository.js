@@ -277,6 +277,7 @@ module.exports = class MemberRepository {
      * @param {string} [data.offerId]
      * @param {import('@tryghost/member-attribution/lib/Attribution').AttributionResource} [data.attribution]
      * @param {boolean} [data.email_disabled]
+     * @param {'paid'|null} [data.signupIntent]
      * @param {*} options
      * @returns
      */
@@ -290,7 +291,7 @@ module.exports = class MemberRepository {
             options.batch_id = ObjectId().toHexString();
         }
 
-        const {labels, stripeCustomer, offerId, attribution} = data;
+        const {labels, stripeCustomer, offerId, attribution, signupIntent} = data;
 
         if (labels) {
             labels.forEach((label, index) => {
@@ -361,7 +362,7 @@ module.exports = class MemberRepository {
         if (welcomeEmailsEnabled && WELCOME_EMAIL_SOURCES.includes(source)) {
             const freeWelcomeEmail = this._AutomatedEmail ? await this._AutomatedEmail.findOne({slug: MEMBER_WELCOME_EMAIL_SLUGS.free}) : null;
             const isFreeWelcomeEmailActive = freeWelcomeEmail && freeWelcomeEmail.get('lexical') && freeWelcomeEmail.get('status') === 'active';
-            const isFreeSignup = !stripeCustomer;
+            const isFreeSignup = !stripeCustomer && signupIntent !== 'paid';
 
             const runMemberCreation = async (transacting) => {
                 const newMember = await this._Member.add({

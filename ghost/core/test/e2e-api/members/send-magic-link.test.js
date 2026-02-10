@@ -77,6 +77,20 @@ describe('sendMagicLink', function () {
         assert.equal(member.email, email);
     });
 
+    it('Allows member creation from signup-paid magic link token', async function () {
+        const email = 'new-paid-signup-token@test.com';
+        const magicLink = await membersService.api.getMagicLink(email, 'signup-paid');
+        const magicLinkUrl = new URL(magicLink);
+        const token = magicLinkUrl.searchParams.get('token');
+
+        const tokenData = await membersService.api.getTokenDataFromMagicLinkToken(token);
+        assert.equal(tokenData.email, email);
+        assert.equal(tokenData.type, 'signup-paid');
+
+        const member = await membersService.api.getMemberDataFromMagicLinkToken(token);
+        assert.equal(member.email, email);
+    });
+
     it('Does not send email when logging in to email that does not exist on invite-only site', async function () {
         settingsCache.set('members_signup_access', {value: 'invite'});
 

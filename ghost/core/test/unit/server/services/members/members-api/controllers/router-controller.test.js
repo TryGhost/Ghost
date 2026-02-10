@@ -183,7 +183,8 @@ describe('RouterController', function () {
                 settingsCache,
                 settingsHelpers,
                 magicLinkService,
-                memberRepository
+                memberRepository,
+                emailAddressService
             });
 
             await routerController.createCheckoutSession({
@@ -206,6 +207,9 @@ describe('RouterController', function () {
                 metadata: {
                     ghostSignupContext: 'has_precheckout_magic_link'
                 }
+            })), true);
+            assert.equal(magicLinkService.getMagicLink.calledWith(sinon.match({
+                type: 'signup-paid'
             })), true);
         });
 
