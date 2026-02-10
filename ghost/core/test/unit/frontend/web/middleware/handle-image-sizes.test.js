@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const storage = require('../../../../../core/server/adapters/storage');
@@ -139,7 +140,7 @@ describe('handleImageSizes middleware', function () {
             const fakeRes = {
                 redirect(url) {
                     try {
-                        url.should.equal('/blog/content/images/image.jpg');
+                        assert.equal(url, '/blog/content/images/image.jpg');
                     } catch (e) {
                         return done(e);
                     }
@@ -163,7 +164,7 @@ describe('handleImageSizes middleware', function () {
             const fakeRes = {
                 redirect(url) {
                     try {
-                        url.should.equal('/blog/content/images/image.jpg');
+                        assert.equal(url, '/blog/content/images/image.jpg');
                     } catch (e) {
                         return done(e);
                     }
@@ -187,7 +188,7 @@ describe('handleImageSizes middleware', function () {
             const fakeRes = {
                 redirect(url) {
                     try {
-                        url.should.equal('/blog/content/images/image.jpg');
+                        assert.equal(url, '/blog/content/images/image.jpg');
                     } catch (e) {
                         return done(e);
                     }
@@ -223,7 +224,7 @@ describe('handleImageSizes middleware', function () {
             const fakeRes = {
                 redirect(url) {
                     try {
-                        url.should.equal('/blog/content/images/blank.png');
+                        assert.equal(url, '/blog/content/images/blank.png');
                     } catch (e) {
                         return done(e);
                     }
@@ -250,7 +251,7 @@ describe('handleImageSizes middleware', function () {
             const fakeRes = {
                 redirect(url) {
                     try {
-                        url.should.equal('/blog/content/images/blank.png');
+                        assert.equal(url, '/blog/content/images/blank.png');
                     } catch (e) {
                         return done(e);
                     }
@@ -277,7 +278,7 @@ describe('handleImageSizes middleware', function () {
             const fakeRes = {
                 redirect(url) {
                     try {
-                        url.should.equal('/blog/content/images/blank.png');
+                        assert.equal(url, '/blog/content/images/blank.png');
                     } catch (e) {
                         return done(e);
                     }
@@ -318,7 +319,7 @@ describe('handleImageSizes middleware', function () {
             const fakeRes = {
                 redirect(url) {
                     try {
-                        url.should.equal('/blog/content/images/blank.png');
+                        assert.equal(url, '/blog/content/images/blank.png');
                     } catch (e) {
                         return done(e);
                     }
@@ -385,7 +386,7 @@ describe('handleImageSizes middleware', function () {
                     return done(err);
                 }
                 try {
-                    spy.calledOnceWithExactly({path: '/blank_o.png'}).should.be.true();
+                    assert.equal(spy.calledOnceWithExactly({path: '/blank_o.png'}), true);
                 } catch (e) {
                     return done(e);
                 }
@@ -419,8 +420,8 @@ describe('handleImageSizes middleware', function () {
                     return done(err);
                 }
                 try {
-                    spy.calledOnceWithExactly({path: '/blank_o.png'}).should.be.true();
-                    typeStub.calledOnceWithExactly('webp').should.be.true();
+                    assert.equal(spy.calledOnceWithExactly({path: '/blank_o.png'}), true);
+                    assert.equal(typeStub.calledOnceWithExactly('webp'), true);
                 } catch (e) {
                     return done(e);
                 }
@@ -440,7 +441,7 @@ describe('handleImageSizes middleware', function () {
             const fakeRes = {
                 redirect(url) {
                     try {
-                        url.should.equal('/blog/content/images/blank.svg');
+                        assert.equal(url, '/blog/content/images/blank.svg');
                     } catch (e) {
                         return done(e);
                     }
@@ -469,7 +470,7 @@ describe('handleImageSizes middleware', function () {
             const fakeRes = {
                 redirect(url) {
                     try {
-                        url.should.equal('/blog/content/images/blank.png');
+                        assert.equal(url, '/blog/content/images/blank.png');
                     } catch (e) {
                         return done(e);
                     }
@@ -498,7 +499,7 @@ describe('handleImageSizes middleware', function () {
             const fakeRes = {
                 redirect(url) {
                     try {
-                        url.should.equal('/blog/content/images/blank.ico');
+                        assert.equal(url, '/blog/content/images/blank.ico');
                     } catch (e) {
                         return done(e);
                     }
@@ -527,7 +528,7 @@ describe('handleImageSizes middleware', function () {
             const fakeRes = {
                 redirect(url) {
                     try {
-                        url.should.equal('/blog/content/images/blank.png');
+                        assert.equal(url, '/blog/content/images/blank.png');
                     } catch (e) {
                         return done(e);
                     }
@@ -567,13 +568,13 @@ describe('handleImageSizes middleware', function () {
                     return done(err);
                 }
                 try {
-                    resizeFromBufferStub.calledOnceWithExactly(buffer, {
+                    assert.equal(resizeFromBufferStub.calledOnceWithExactly(buffer, {
                         withoutEnlargement: false,
                         width: 1000,
                         format: 'png',
                         timeout: handleImageSizes.RESIZE_TIMEOUT_SECONDS
-                    }).should.be.true();
-                    typeStub.calledOnceWithExactly('png').should.be.true();
+                    }), true);
+                    assert.equal(typeStub.calledOnceWithExactly('png'), true);
                 } catch (e) {
                     return done(e);
                 }
@@ -607,13 +608,13 @@ describe('handleImageSizes middleware', function () {
                     return done(err);
                 }
                 try {
-                    resizeFromBufferStub.calledOnceWithExactly(buffer, {
+                    assert.equal(resizeFromBufferStub.calledOnceWithExactly(buffer, {
                         withoutEnlargement: true,
                         width: 1000,
                         format: 'webp',
                         timeout: handleImageSizes.RESIZE_TIMEOUT_SECONDS
-                    }).should.be.true();
-                    typeStub.calledOnceWithExactly('webp').should.be.true();
+                    }), true);
+                    assert.equal(typeStub.calledOnceWithExactly('webp'), true);
                 } catch (e) {
                     return done(e);
                 }
@@ -647,13 +648,13 @@ describe('handleImageSizes middleware', function () {
                     return done(err);
                 }
                 try {
-                    resizeFromBufferStub.calledOnceWithExactly(buffer, {
+                    assert.equal(resizeFromBufferStub.calledOnceWithExactly(buffer, {
                         withoutEnlargement: true,
                         width: 1000,
                         format: 'avif',
                         timeout: handleImageSizes.RESIZE_TIMEOUT_SECONDS
-                    }).should.be.true();
-                    typeStub.calledOnceWithExactly('image/avif').should.be.true();
+                    }), true);
+                    assert.equal(typeStub.calledOnceWithExactly('image/avif'), true);
                 } catch (e) {
                     return done(e);
                 }
@@ -687,13 +688,13 @@ describe('handleImageSizes middleware', function () {
                     return done(err);
                 }
                 try {
-                    resizeFromBufferStub.calledOnceWithExactly(buffer, {
+                    assert.equal(resizeFromBufferStub.calledOnceWithExactly(buffer, {
                         withoutEnlargement: true,
                         width: 1000,
                         format: 'webp',
                         timeout: handleImageSizes.RESIZE_TIMEOUT_SECONDS
-                    }).should.be.true();
-                    typeStub.calledOnceWithExactly('webp').should.be.true();
+                    }), true);
+                    assert.equal(typeStub.calledOnceWithExactly('webp'), true);
                 } catch (e) {
                     return done(e);
                 }
@@ -727,13 +728,13 @@ describe('handleImageSizes middleware', function () {
                     return done(err);
                 }
                 try {
-                    resizeFromBufferStub.calledOnceWithExactly(buffer, {
+                    assert.equal(resizeFromBufferStub.calledOnceWithExactly(buffer, {
                         withoutEnlargement: true,
                         width: 1000,
                         format: 'gif',
                         timeout: handleImageSizes.RESIZE_TIMEOUT_SECONDS
-                    }).should.be.true();
-                    typeStub.calledOnceWithExactly('gif').should.be.true();
+                    }), true);
+                    assert.equal(typeStub.calledOnceWithExactly('gif'), true);
                 } catch (e) {
                     return done(e);
                 }

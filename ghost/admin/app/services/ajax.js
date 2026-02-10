@@ -353,7 +353,7 @@ class ajaxService extends AjaxService {
             const contentVersion = semverCoerce(headers['content-version']);
             const appVersion = semverCoerce(config.APP.version);
 
-            if (semverLt(appVersion, contentVersion)) {
+            if (semverLt(appVersion, contentVersion) && !this.feature.inAdminForward) {
                 this.upgradeStatus.refreshRequired = true;
             }
         }

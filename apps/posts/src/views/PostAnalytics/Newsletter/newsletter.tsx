@@ -1,4 +1,3 @@
-// import AudienceSelect from './components/audience-select';
 import Feedback from './components/feedback';
 import KpiCard, {KpiCardContent, KpiCardLabel, KpiCardMoreButton, KpiCardValue} from '../components/kpi-card';
 import PostAnalyticsContent from '../components/post-analytics-content';
@@ -14,6 +13,7 @@ import {useEffect, useMemo, useRef, useState} from 'react';
 import {usePostNewsletterStats} from '@hooks/use-post-newsletter-stats';
 import {useResponsiveChartSize} from '@hooks/use-responsive-chart-size';
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface postAnalyticsProps {}
 
 const FunnelArrow: React.FC = () => {

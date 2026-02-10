@@ -1,1 +1,1 @@
-module.exports = require('./TinybirdServiceWrapper');
+module.exports = require('./tinybird-service-wrapper');

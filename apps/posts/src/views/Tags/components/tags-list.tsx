@@ -11,7 +11,7 @@ import {
 } from '@tryghost/shade';
 import {Tag} from '@tryghost/admin-x-framework/api/tags';
 import {forwardRef, useRef} from 'react';
-import {useInfiniteVirtualScroll} from './VirtualTable/use-infinite-virtual-scroll';
+import {useInfiniteVirtualScroll} from '@components/virtual-table/use-infinite-virtual-scroll';
 
 const SpacerRow = ({height}: { height: number }) => (
     <tr aria-hidden="true" className="flex lg:table-row">

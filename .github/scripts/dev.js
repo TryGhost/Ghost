@@ -280,6 +280,18 @@ async function handleStripe() {
     }
     debug('at least one command provided');
 
+    debug('resetting nx');
+    await exec("yarn nx reset --onlyDaemon");
+    debug('nx reset');
+    await exec("yarn nx daemon --start");
+    debug('nx daemon started');
+
+    // Wait for daemon to be fully ready by verifying it responds
+    debug('verifying daemon is ready');
+    await new Promise(resolve => setTimeout(resolve, 200));
+    await exec("yarn nx daemon --version");
+    debug('daemon verified ready');
+
     console.log(`Running projects: ${commands.map(c => chalk.green(c.name)).join(', ')}`);
 
     debug('creating concurrently promise');

@@ -3,7 +3,7 @@ import {site as FixturesSite, member as FixtureMember} from './utils/test-fixtur
 import {fireEvent, appRender, within} from './utils/test-utils';
 import setupGhostApi from '../src/utils/api';
 import * as helpers from '../src/utils/helpers';
-import {formSubmitHandler, planClickHandler} from '../src/data-attributes';
+import {formSubmitHandler, planClickHandler, handleDataAttributes} from '../src/data-attributes';
 import {vi} from 'vitest';
 
 // Mock data
@@ -170,6 +170,35 @@ describe('Member Data attributes:', () => {
             expect(window.fetch).toHaveBeenLastCalledWith('https://portal.localhost/members/api/send-magic-link/', {body: expectedBody, headers: {'Content-Type': 'application/json'}, method: 'POST'});
         });
 
+        test('trims whitespace from name on signup', async () => {
+            // Simulate a name input with leading/trailing whitespace
+            const {event, form, errorEl, siteUrl, submitHandler} = getMockData();
+            const originalQuerySelector = event.target.querySelector;
+            event.target.querySelector = vi.fn((selector) => {
+                if (selector === 'input[data-members-name]') {
+                    return {value: '  Jamie Larsen  '};
+                }
+                return originalQuerySelector(selector);
+            });
+
+            // Capture the request body sent to the API
+            let capturedRequestBody;
+            window.fetch.mockImplementation((url, options) => {
+                if (url.includes('send-magic-link')) {
+                    capturedRequestBody = JSON.parse(options.body);
+                    return Promise.resolve({ok: true, json: async () => ({success: true})});
+                }
+                if (url.includes('integrity-token')) {
+                    return Promise.resolve({ok: true, text: async () => 'token'});
+                }
+                return Promise.resolve({});
+            });
+
+            await formSubmitHandler({event, form, errorEl, siteUrl, submitHandler});
+
+            expect(capturedRequestBody.name).toBe('Jamie Larsen');
+        });
+
         test('requests OTC magic link and opens Portal when flagged with data-members-otc=true', async () => {
             const {event, form, errorEl, siteUrl, submitHandler} = getMockData();
             form.dataset.membersForm = 'signin';
@@ -183,7 +212,6 @@ describe('Member Data attributes:', () => {
                 return originalQuerySelector(selector);
             });
 
-            const labs = {};
             const doAction = vi.fn(() => Promise.resolve());
 
             const json = async () => ({otc_ref: 'otc_test_ref'});
@@ -206,7 +234,7 @@ describe('Member Data attributes:', () => {
                 return Promise.resolve({ok: true});
             });
 
-            await formSubmitHandler({event, form, errorEl, siteUrl, submitHandler, labs, doAction});
+            await formSubmitHandler({event, form, errorEl, siteUrl, submitHandler, doAction});
 
             const magicLinkCall = window.fetch.mock.calls.find(([fetchUrl]) => fetchUrl.includes('send-magic-link'));
             const requestBody = JSON.parse(magicLinkCall[1].body);
@@ -231,7 +259,6 @@ describe('Member Data attributes:', () => {
                 return originalQuerySelector(selector);
             });
 
-            const labs = {};
             const actionErrorMessage = new Error('failed to start OTC sign-in');
             const doAction = vi.fn(() => {
                 throw actionErrorMessage;
@@ -259,7 +286,7 @@ describe('Member Data attributes:', () => {
                 return Promise.resolve({ok: true});
             });
 
-            await formSubmitHandler({event, form, errorEl, siteUrl, submitHandler, labs, doAction, captureException});
+            await formSubmitHandler({event, form, errorEl, siteUrl, submitHandler, doAction, captureException});
 
             expect(doAction).toHaveBeenCalledWith('startSigninOTCFromCustomForm', {
                 email: 'jamie@example.com',
@@ -345,6 +372,227 @@ describe('Member Data attributes:', () => {
                 },
                 method: 'POST'
             });
+        });
+    });
+
+    describe('data-members-manage-billing', () => {
+        test('opens Stripe billing portal on click', async () => {
+            const siteUrl = 'https://portal.localhost';
+            const billingPortalUrl = 'https://billing.stripe.com/session/test_session';
+
+            // Setup fetch mock for billing portal
+            window.fetch.mockImplementation((url) => {
+                if (url.includes('api/session')) {
+                    return Promise.resolve({
+                        ok: true,
+                        text: async () => 'session-identity'
+                    });
+                }
+                if (url.includes('create-stripe-billing-portal-session')) {
+                    return Promise.resolve({
+                        ok: true,
+                        json: async () => ({url: billingPortalUrl})
+                    });
+                }
+                return Promise.resolve({});
+            });
+
+            // Create element with data attribute
+            document.body.innerHTML = `
+                <button data-members-manage-billing>Manage Billing</button>
+            `;
+
+            handleDataAttributes({siteUrl});
+
+            const button = document.querySelector('[data-members-manage-billing]');
+            button.click();
+
+            // Wait for promises to resolve
+            await new Promise((resolve) => {
+                setTimeout(resolve, 0);
+            });
+
+            expect(window.fetch).toHaveBeenCalledWith(
+                'https://portal.localhost/members/api/session',
+                {credentials: 'same-origin'}
+            );
+            expect(window.fetch).toHaveBeenCalledWith(
+                'https://portal.localhost/members/api/create-stripe-billing-portal-session/',
+                {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        identity: 'session-identity',
+                        returnUrl: undefined
+                    })
+                }
+            );
+            expect(window.location.assign).toHaveBeenCalledWith(billingPortalUrl);
+        });
+
+        test('passes return URL when data-members-return is specified', async () => {
+            const siteUrl = 'https://portal.localhost';
+            const billingPortalUrl = 'https://billing.stripe.com/session/test_session';
+
+            window.fetch.mockImplementation((url) => {
+                if (url.includes('api/session')) {
+                    return Promise.resolve({
+                        ok: true,
+                        text: async () => 'session-identity'
+                    });
+                }
+                if (url.includes('create-stripe-billing-portal-session')) {
+                    return Promise.resolve({
+                        ok: true,
+                        json: async () => ({url: billingPortalUrl})
+                    });
+                }
+                return Promise.resolve({});
+            });
+
+            document.body.innerHTML = `
+                <button data-members-manage-billing data-members-return="/account/">Manage Billing</button>
+            `;
+
+            handleDataAttributes({siteUrl});
+
+            const button = document.querySelector('[data-members-manage-billing]');
+            button.click();
+
+            await new Promise((resolve) => {
+                setTimeout(resolve, 0);
+            });
+
+            expect(window.fetch).toHaveBeenCalledWith(
+                'https://portal.localhost/members/api/create-stripe-billing-portal-session/',
+                {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        identity: 'session-identity',
+                        returnUrl: 'https://portal.localhost/account/'
+                    })
+                }
+            );
+        });
+
+        test('adds loading class while processing', async () => {
+            const siteUrl = 'https://portal.localhost';
+
+            // Create a promise we can control
+            window.fetch.mockImplementation((url) => {
+                if (url.includes('api/session')) {
+                    return new Promise((resolve) => {
+                        resolve({
+                            ok: true,
+                            text: async () => 'session-identity'
+                        });
+                    });
+                }
+                return Promise.resolve({});
+            });
+
+            document.body.innerHTML = `
+                <button data-members-manage-billing>Manage Billing</button>
+            `;
+
+            handleDataAttributes({siteUrl});
+
+            const button = document.querySelector('[data-members-manage-billing]');
+            button.click();
+
+            expect(button.classList.contains('loading')).toBe(true);
+        });
+
+        test('shows error and re-enables click handler on API failure', async () => {
+            const siteUrl = 'https://portal.localhost';
+            const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+            window.fetch.mockImplementation((url) => {
+                if (url.includes('api/session')) {
+                    return Promise.resolve({
+                        ok: true,
+                        text: async () => 'session-identity'
+                    });
+                }
+                if (url.includes('create-stripe-billing-portal-session')) {
+                    return Promise.resolve({
+                        ok: false,
+                        json: async () => ({errors: [{message: 'Failed'}]})
+                    });
+                }
+                return Promise.resolve({});
+            });
+
+            document.body.innerHTML = `
+                <button data-members-manage-billing>
+                    Manage Billing
+                    <span data-members-error></span>
+                </button>
+            `;
+
+            handleDataAttributes({siteUrl});
+
+            const button = document.querySelector('[data-members-manage-billing]');
+            button.click();
+
+            await new Promise((resolve) => {
+                setTimeout(resolve, 0);
+            });
+
+            expect(button.classList.contains('error')).toBe(true);
+            expect(button.classList.contains('loading')).toBe(false);
+
+            const errorEl = button.querySelector('[data-members-error]');
+            expect(errorEl.innerText).toBe('Could not create Stripe billing portal session');
+
+            consoleSpy.mockRestore();
+        });
+
+        test('handles session fetch failure', async () => {
+            const siteUrl = 'https://portal.localhost';
+            const billingPortalUrl = 'https://billing.stripe.com/session/test_session';
+
+            window.fetch.mockImplementation((url) => {
+                if (url.includes('api/session')) {
+                    return Promise.resolve({
+                        ok: false
+                    });
+                }
+                if (url.includes('create-stripe-billing-portal-session')) {
+                    return Promise.resolve({
+                        ok: true,
+                        json: async () => ({url: billingPortalUrl})
+                    });
+                }
+                return Promise.resolve({});
+            });
+
+            document.body.innerHTML = `
+                <button data-members-manage-billing>Manage Billing</button>
+            `;
+
+            handleDataAttributes({siteUrl});
+
+            const button = document.querySelector('[data-members-manage-billing]');
+            button.click();
+
+            await new Promise((resolve) => {
+                setTimeout(resolve, 0);
+            });
+
+            // Should still call billing portal endpoint with null identity
+            expect(window.fetch).toHaveBeenCalledWith(
+                'https://portal.localhost/members/api/create-stripe-billing-portal-session/',
+                {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        identity: null,
+                        returnUrl: undefined
+                    })
+                }
+            );
         });
     });
 
@@ -686,7 +934,7 @@ describe('Portal Data attributes:', () => {
                 })
                 .mockResolvedValueOnce({
                     ok: false,
-                    json: async () => ({errors: [{message: 'No member exists with this e-mail address. Please sign up first.'}]}),
+                    json: async () => ({errors: [{message: 'No member exists with this email address. Please sign up first.'}]}),
                     status: 400
                 });
 
@@ -694,7 +942,7 @@ describe('Portal Data attributes:', () => {
 
             expect(window.fetch).toHaveBeenCalledTimes(2);
             expect(form.classList.add).toHaveBeenCalledWith('error');
-            expect(errorEl.innerText).toBe('No member exists with this e-mail address. Please sign up first.');
+            expect(errorEl.innerText).toBe('No member exists with this email address. Please sign up first.');
         });
     });
 });

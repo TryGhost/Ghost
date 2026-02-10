@@ -1,4 +1,4 @@
 module.exports = {
-    StripeLiveEnabledEvent: require('./StripeLiveEnabledEvent'),
-    StripeLiveDisabledEvent: require('./StripeLiveDisabledEvent')
+    StripeLiveEnabledEvent: require('./stripe-live-enabled-event'),
+    StripeLiveDisabledEvent: require('./stripe-live-disabled-event')
 };

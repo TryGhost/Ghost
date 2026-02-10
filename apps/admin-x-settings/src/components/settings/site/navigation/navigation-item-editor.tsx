@@ -36,6 +36,7 @@ const NavigationItemEditor: React.FC<NavigationItemEditorProps> = ({baseUrl, ite
                             e.preventDefault();
                             addItem?.();
                         }
+                        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                         !!item.errors.label && clearError?.('label');
                     }}
                 />
@@ -63,6 +64,7 @@ const NavigationItemEditor: React.FC<NavigationItemEditorProps> = ({baseUrl, ite
                             updateItem?.({url: urls.save || ''});
                             addItem?.();
                         }
+                        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                         !!item.errors.url && clearError?.('url');
                     }}
                 />

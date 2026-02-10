@@ -1,4 +1,5 @@
-const should = require('should');
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const sinon = require('sinon');
 const urlUtils = require('../../../../../core/shared/url-utils');
 
@@ -28,8 +29,8 @@ describe('storage utils', function () {
             urlGetSubdirStub.returns('');
 
             result = storageUtils.getLocalImagesStoragePath(url);
-            should.exist(result);
-            result.should.be.equal('/2017/07/ghost-logo.png');
+            assertExists(result);
+            assert.equal(result, '/2017/07/ghost-logo.png');
         });
 
         it('should return local file storage path for absolute URL with subdirectory', function () {
@@ -42,8 +43,8 @@ describe('storage utils', function () {
             urlGetSubdirStub.returns('/blog');
 
             result = storageUtils.getLocalImagesStoragePath(url);
-            should.exist(result);
-            result.should.be.equal('/2017/07/ghost-logo.png');
+            assertExists(result);
+            assert.equal(result, '/2017/07/ghost-logo.png');
         });
 
         it('should return local file storage path for relative URL', function () {
@@ -56,8 +57,8 @@ describe('storage utils', function () {
             urlGetSubdirStub.returns('');
 
             result = storageUtils.getLocalImagesStoragePath(filePath);
-            should.exist(result);
-            result.should.be.equal('/2017/07/ghost-logo.png');
+            assertExists(result);
+            assert.equal(result, '/2017/07/ghost-logo.png');
         });
 
         it('should return local file storage path for relative URL with subdirectory', function () {
@@ -70,8 +71,8 @@ describe('storage utils', function () {
             urlGetSubdirStub.returns('/blog');
 
             result = storageUtils.getLocalImagesStoragePath(filePath);
-            should.exist(result);
-            result.should.be.equal('/2017/07/ghost-logo.png');
+            assertExists(result);
+            assert.equal(result, '/2017/07/ghost-logo.png');
         });
 
         it('should not sanitize URL if not local file storage', function () {
@@ -84,8 +85,8 @@ describe('storage utils', function () {
             urlGetSubdirStub.returns('');
 
             result = storageUtils.getLocalImagesStoragePath(url);
-            should.exist(result);
-            result.should.be.equal('http://example-blog.com/ghost-logo.png');
+            assertExists(result);
+            assert.equal(result, 'http://example-blog.com/ghost-logo.png');
         });
     });
 
@@ -100,8 +101,8 @@ describe('storage utils', function () {
             urlGetSubdirStub.returns('');
 
             result = storageUtils.isLocalImage(url);
-            should.exist(result);
-            result.should.be.equal(true);
+            assertExists(result);
+            assert.equal(result, true);
         });
 
         it('should return true when absolute URL with subdirectory and local file', function () {
@@ -114,8 +115,8 @@ describe('storage utils', function () {
             urlGetSubdirStub.returns('/blog');
 
             result = storageUtils.isLocalImage(url);
-            should.exist(result);
-            result.should.be.equal(true);
+            assertExists(result);
+            assert.equal(result, true);
         });
 
         it('should return true when relative URL and local file', function () {
@@ -128,8 +129,8 @@ describe('storage utils', function () {
             urlGetSubdirStub.returns('');
 
             result = storageUtils.isLocalImage(url);
-            should.exist(result);
-            result.should.be.equal(true);
+            assertExists(result);
+            assert.equal(result, true);
         });
 
         it('should return true when relative URL and local file (blog subdir)', function () {
@@ -142,8 +143,8 @@ describe('storage utils', function () {
             urlGetSubdirStub.returns('/blog');
 
             result = storageUtils.isLocalImage(url);
-            should.exist(result);
-            result.should.be.equal(true);
+            assertExists(result);
+            assert.equal(result, true);
         });
 
         it('should return false when no local file', function () {
@@ -156,8 +157,8 @@ describe('storage utils', function () {
             urlGetSubdirStub.returns('');
 
             result = storageUtils.isLocalImage(url);
-            should.exist(result);
-            result.should.be.equal(false);
+            assertExists(result);
+            assert.equal(result, false);
         });
     });
 });

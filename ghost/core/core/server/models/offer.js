@@ -6,6 +6,10 @@ const Offer = ghostBookshelf.Model.extend({
     actionsCollectCRUD: true,
     actionsResourceType: 'offer',
 
+    defaults: {
+        redemption_type: 'signup'
+    },
+
     product() {
         return this.belongsTo('Product', 'product_id', 'id');
     }

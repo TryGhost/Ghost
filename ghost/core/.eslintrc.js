@@ -10,8 +10,6 @@ module.exports = {
         'plugin:ghost/node'
     ],
     rules: {
-        // @TODO: remove this rule once it's turned into "error" in the base plugin
-        'no-shadow': 'error',
         'no-var': 'error',
         'one-var': ['error', 'never']
     },
@@ -101,9 +99,29 @@ module.exports = {
             }
         },
         {
+            // Enforce kebab-case filenames across core/
+            // Excludes folders for special cases like adapters which need specific file namings
+            files: [
+                'core/**/*.{js,ts}'
+            ],
+            excludedFiles: [
+                // Adapter filenames must match the name specified in config (e.g. adapters.cache.active: "Redis").
+                // The adapter-manager loads adapters by constructing a path from the config value.
+                // See: core/shared/config/defaults.json, core/server/services/adapter-manager
+                'core/server/adapters/**'
+            ],
+            rules: {
+                'ghost/filenames/match-exported-class': 'off',
+                'ghost/filenames/match-regex': ['error', '^[a-z0-9.-]+$', false]
+            }
+        },
+        {
+            // Helper filenames use underscores because they map directly to Handlebars helper names
+            // e.g., ghost_head.js → {{ghost_head}}. Renaming would break all themes.
+            // See: core/frontend/services/helpers/registry.js:26
             files: ['core/frontend/helpers/**', 'core/frontend/apps/*/lib/helpers/**'],
             rules: {
-                'ghost/filenames/match-regex': ['off', '^[a-z0-9-.]$', null, true]
+                'ghost/filenames/match-regex': ['error', '^[a-z0-9_.-]+$', false]
             }
         },
         /**

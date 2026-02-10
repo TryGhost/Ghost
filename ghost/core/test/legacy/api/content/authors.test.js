@@ -1,8 +1,9 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const supertest = require('supertest');
 const localUtils = require('./utils');
 const testUtils = require('../../../utils');
-const configUtils = require('../../../utils/configUtils');
+const configUtils = require('../../../utils/config-utils');
 const config = require('../../../../core/shared/config');
 const DataGenerator = require('../../../utils/fixtures/data-generator');
 
@@ -104,7 +105,7 @@ describe('Authors Content API', function () {
             .expect('Cache-Control', testUtils.cacheRules.public)
             .expect(200)
             .then((res) => {
-                should.not.exist(res.headers['x-cache-invalidate']);
+                assert.equal(res.headers['x-cache-invalidate'], undefined);
 
                 // We don't expose any other attrs.
                 localUtils.API.checkResponse(res.body.authors[0], 'author', null, null, ['id', 'name']);
@@ -120,9 +121,9 @@ describe('Authors Content API', function () {
                 const jsonResponse = res.body;
 
                 jsonResponse.authors.should.be.an.Array().with.lengthOf(3);
-                jsonResponse.authors[0].slug.should.equal('joe-bloggs');
-                jsonResponse.authors[1].slug.should.equal('ghost');
-                jsonResponse.authors[2].slug.should.equal('slimer-mcectoplasm');
+                assert.equal(jsonResponse.authors[0].slug, 'joe-bloggs');
+                assert.equal(jsonResponse.authors[1].slug, 'ghost');
+                assert.equal(jsonResponse.authors[2].slug, 'slimer-mcectoplasm');
             });
     });
 });

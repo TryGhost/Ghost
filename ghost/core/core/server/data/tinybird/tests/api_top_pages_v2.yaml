@@ -1,0 +1,135 @@
+
+- name: Date range
+  description: All fixture data
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC
+  expected_result: |
+    {"post_uuid":"6b8635fb-292f-4422-9fe4-d76cfab2ba31","pathname":"\/blog\/hello-world\/","visits":9}
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":8}
+    {"post_uuid":"","pathname":"\/","visits":7}
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1dd","pathname":"\/blog\/hello-world\/","visits":1}
+
+- name: Filtered by location - UK
+  description: Filtered by location - UK
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&location=GB
+  expected_result: |
+    {"post_uuid":"6b8635fb-292f-4422-9fe4-d76cfab2ba31","pathname":"\/blog\/hello-world\/","visits":6}
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":4}
+    {"post_uuid":"","pathname":"\/","visits":4}
+
+- name: Filtered by pathname - /about/
+  description: Filtered by pathname - /about/
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&pathname=%2Fabout%2F
+  expected_result: |
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":8}
+
+- name: Filtered by post_uuid - 06b1b0c9-fb53-4a15-a060-3db3fde7b1fc (/about/)
+  description: Filtered by post_uuid - 06b1b0c9-fb53-4a15-a060-3db3fde7b1fc (/about/)
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&post_uuid=06b1b0c9-fb53-4a15-a060-3db3fde7b1fc
+  expected_result: |
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":8}
+
+- name: Filtered by source - bing.com
+  description: Filtered by source - bing.com
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&source=bing.com
+  expected_result: |
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":2}
+    {"post_uuid":"","pathname":"\/","visits":1}
+    {"post_uuid":"6b8635fb-292f-4422-9fe4-d76cfab2ba31","pathname":"\/blog\/hello-world\/","visits":1}
+
+- name: Filtered by member status - paid
+  description: Filtered by member status - paid
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&member_status=paid
+  expected_result: |
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":3}
+    {"post_uuid":"6b8635fb-292f-4422-9fe4-d76cfab2ba31","pathname":"\/blog\/hello-world\/","visits":3}
+    {"post_uuid":"","pathname":"\/","visits":2}
+
+- name: Filtered by member status - undefined
+  description: Filtered by member status - undefined
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&member_status=undefined
+  expected_result: |
+    {"post_uuid":"6b8635fb-292f-4422-9fe4-d76cfab2ba31","pathname":"\/blog\/hello-world\/","visits":4}
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":2}
+    {"post_uuid":"","pathname":"\/","visits":1}
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1dd","pathname":"\/blog\/hello-world\/","visits":1}
+
+- name: Filtered by timezone - America/Los_Angeles
+  description: Filtered by timezone - America/Los_Angeles
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=America/Los_Angeles
+  expected_result: |
+    {"post_uuid":"6b8635fb-292f-4422-9fe4-d76cfab2ba31","pathname":"\/blog\/hello-world\/","visits":8}
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":7}
+    {"post_uuid":"","pathname":"\/","visits":5}
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1dd","pathname":"\/blog\/hello-world\/","visits":1}
+
+- name: Test with multiple filters combined
+  description: Test with multiple filters combined
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&source=bing.com&pathname=%2Fabout%2F
+  expected_result: |
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":2}
+
+- name: Test with post_type - post
+  description: Test with post_type - post
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&post_type=post
+  expected_result: |
+    {"post_uuid":"6b8635fb-292f-4422-9fe4-d76cfab2ba31","pathname":"\/blog\/hello-world\/","visits":9}
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1dd","pathname":"\/blog\/hello-world\/","visits":1}
+
+- name: Test with post_type - page
+  description: Test with post_type - page
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&post_type=page
+  expected_result: |
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":8}
+    {"post_uuid":"","pathname":"\/","visits":7}
+
+- name: Filtered by utm_source - google
+  description: Filtered by utm_source - google
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&utm_source=google
+  expected_result: |
+    {"post_uuid":"6b8635fb-292f-4422-9fe4-d76cfab2ba31","pathname":"\/blog\/hello-world\/","visits":2}
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1dd","pathname":"\/blog\/hello-world\/","visits":1}
+
+- name: Filtered by utm_medium - social
+  description: Filtered by utm_medium - social
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&utm_medium=social
+  expected_result: |
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":3}
+    {"post_uuid":"","pathname":"\/","visits":3}
+    {"post_uuid":"6b8635fb-292f-4422-9fe4-d76cfab2ba31","pathname":"\/blog\/hello-world\/","visits":2}
+
+- name: Filtered by utm_campaign - brand_awareness
+  description: Filtered by utm_campaign - brand_awareness
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&utm_campaign=brand_awareness
+  expected_result: |
+    {"post_uuid":"","pathname":"\/","visits":2}
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":1}
+    {"post_uuid":"6b8635fb-292f-4422-9fe4-d76cfab2ba31","pathname":"\/blog\/hello-world\/","visits":1}
+
+- name: Filtered by utm_term - discount
+  description: Filtered by utm_term - discount
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&utm_term=discount
+  expected_result: |
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":1}
+    {"post_uuid":"6b8635fb-292f-4422-9fe4-d76cfab2ba31","pathname":"\/blog\/hello-world\/","visits":1}
+
+- name: Filtered by utm_content - post_123
+  description: Filtered by utm_content - post_123
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&utm_content=post_123
+  expected_result: |
+    {"post_uuid":"","pathname":"\/","visits":1}
+
+- name: Test with multiple UTM filters combined
+  description: Test with multiple UTM filters combined
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&utm_source=google&utm_medium=cpc
+  expected_result: |
+    {"post_uuid":"6b8635fb-292f-4422-9fe4-d76cfab2ba31","pathname":"\/blog\/hello-world\/","visits":1}
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1dd","pathname":"\/blog\/hello-world\/","visits":1}
+
+- name: Filtered by device - desktop
+  description: Filtered by device - desktop (excludes bot session)
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&device=desktop
+  expected_result: |
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":8}
+    {"post_uuid":"6b8635fb-292f-4422-9fe4-d76cfab2ba31","pathname":"\/blog\/hello-world\/","visits":8}
+    {"post_uuid":"","pathname":"\/","visits":7}
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1dd","pathname":"\/blog\/hello-world\/","visits":1}

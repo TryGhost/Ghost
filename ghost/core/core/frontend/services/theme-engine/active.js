@@ -11,6 +11,7 @@
  * No properties marked with an _ should be used directly.
  *
  */
+const fs = require('fs-extra');
 const join = require('path').join;
 
 const _ = require('lodash');
@@ -54,6 +55,8 @@ class ActiveTheme {
         this._config = themeConfig.create(this._packageInfo);
 
         this.initI18n();
+
+        this._hasRobotsTxt = fs.existsSync(join(this._path, 'robots.txt'));
     }
 
     get name() {
@@ -82,6 +85,10 @@ class ActiveTheme {
 
     hasTemplate(templateName) {
         return this._templates.indexOf(templateName) > -1;
+    }
+
+    hasRobotsTxt() {
+        return this._hasRobotsTxt;
     }
 
     updateTemplateOptions(options) {

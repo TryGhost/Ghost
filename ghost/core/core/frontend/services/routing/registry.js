@@ -61,6 +61,7 @@ module.exports = {
      *
      * - index collection (/)
      * - if you only have one collection, we take this rss url
+     * - if you have multiple collections without index, take the first one with RSS enabled
      */
     /**
      * @description Helper to figure out the primary rss url.
@@ -96,6 +97,14 @@ module.exports = {
             if (rssUrl) {
                 return rssUrl;
             }
+        } else if (collectionRouters && collectionRouters.length > 1) {
+            // CASE: multiple collections without index - return first one with RSS enabled
+            for (const router of collectionRouters) {
+                rssUrl = router.getRssUrl(options);
+                if (rssUrl) {
+                    return rssUrl;
+                }
+            }
         }
 
         return rssUrl;
@@ -113,9 +122,18 @@ module.exports = {
      */
     resetAllRouters() {
         _.each(routers, (value) => {
-            value.reset();
+            if (value && typeof value.reset === 'function') {
+                value.reset();
+            }
         });
 
+        routers = {};
+    },
+
+    /**
+     * @description Clear all routers (for testing).
+     */
+    clearAllRouters() {
         routers = {};
     }
 };

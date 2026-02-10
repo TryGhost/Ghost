@@ -117,7 +117,7 @@ describe('Members API: edit subscriptions', function () {
         assert.equal('canceled', editRes.body.members[0].subscriptions[0].status);
     });
 
-    it('Can cancel a subscription for a member with both comped and paid subscriptions', async function () {
+    it('Comp product is removed when a comped member upgrades to a paid subscription', async function () {
         const email = 'comped-paid-combination@example.com';
 
         // Create this member with a comped product
@@ -137,7 +137,7 @@ describe('Members API: edit subscriptions', function () {
         assert.equal(member.related('stripeSubscriptions').length, 0);
         assert.equal(member.related('products').length, 1, 'This member should have one product');
 
-        // Subscribe this to a paid product
+        // Subscribe this to a paid product — comp should be removed
         const customer1 = stripeMocker.createCustomer({
             email
         });
@@ -150,14 +150,13 @@ describe('Members API: edit subscriptions', function () {
 
         member = await models.Member.findOne({email}, {require: true, withRelated: ['products', 'stripeCustomers', 'stripeSubscriptions']});
 
-        // Assert this member is subscribed to two products
+        // Comp product should be removed, only paid product remains
         assert.equal(member.related('stripeCustomers').length, 1);
         assert.equal(member.related('stripeSubscriptions').length, 1);
-        assert.equal(member.related('products').length, 2, 'This member should have two products');
-        assert.deepEqual(member.related('products').models.map(m => m.get('slug')).sort(), ['default-product', 'gold']);
+        assert.equal(member.related('products').length, 1, 'This member should have one product (paid only)');
+        assert.deepEqual(member.related('products').models.map(m => m.get('slug')).sort(), ['default-product']);
 
         // Cancel the paid subscription at period end
-        // Now update one of those subscriptions immediately
         await agent
             .put(`/members/${member.id}/subscriptions/${subscription1.id}`)
             .body({
@@ -181,12 +180,12 @@ describe('Members API: edit subscriptions', function () {
                 etag: anyEtag
             });
 
-        // Assert products didn't change
+        // Paid product still present while subscription is active
         member = await models.Member.findOne({email}, {require: true, withRelated: ['products', 'stripeCustomers', 'stripeSubscriptions']});
         assert.equal(member.related('stripeCustomers').length, 1);
         assert.equal(member.related('stripeSubscriptions').length, 1);
-        assert.equal(member.related('products').length, 2, 'This member should have two products');
-        assert.deepEqual(member.related('products').models.map(m => m.get('slug')).sort(), ['default-product', 'gold']);
+        assert.equal(member.related('products').length, 1, 'This member should have one product');
+        assert.deepEqual(member.related('products').models.map(m => m.get('slug')).sort(), ['default-product']);
 
         // Now cancel for real
         await agent
@@ -212,12 +211,11 @@ describe('Members API: edit subscriptions', function () {
                 etag: anyEtag
             });
 
-        // Assert product is removed, but comped is maintained
+        // Member should now be free with no products
         member = await models.Member.findOne({email}, {require: true, withRelated: ['products', 'stripeCustomers', 'stripeSubscriptions']});
         assert.equal(member.related('stripeCustomers').length, 1);
         assert.equal(member.related('stripeSubscriptions').length, 1);
-        assert.equal(member.related('products').length, 1, 'This member should have one product');
-        assert.deepEqual(member.related('products').models.map(m => m.get('slug')).sort(), ['gold']);
+        assert.equal(member.related('products').length, 0, 'This member should have no products');
     });
 
     it('Can cancel a subscription for a member with duplicate customers', async function () {

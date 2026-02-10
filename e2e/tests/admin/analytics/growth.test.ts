@@ -31,7 +31,7 @@ test.describe('Ghost Admin - Growth', () => {
     test('empty top content card - sources', async () => {
         await growthPage.topContent.sourcesButton.click();
 
-        await expect(growthPage.topContent.contentCard).toContainText('How readers found your site in the last 30 days');
+        await expect(growthPage.topContent.contentCard).toContainText('Which sources drove the most growth in the last 30 days');
         await expect(growthPage.topContent.contentCard).toContainText('No conversions');
     });
 });

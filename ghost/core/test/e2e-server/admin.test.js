@@ -3,21 +3,23 @@
 // Mocking out the models to not touch the DB would turn these into unit tests, and should probably be done in future,
 // But then again testing real code, rather than mock code, might be more useful...
 
+const assert = require('node:assert/strict');
+const {assertExists} = require('../utils/assertions');
 const should = require('should');
 const path = require('path');
 const fs = require('fs');
 
 const supertest = require('supertest');
 const testUtils = require('../utils');
-const configUtils = require('../utils/configUtils');
-const urlUtils = require('../utils/urlUtils');
+const configUtils = require('../utils/config-utils');
+const urlUtils = require('../utils/url-utils');
 const adminUtils = require('../utils/admin-utils');
 const config = require('../../core/shared/config');
 let request;
 
 function assertCorrectHeaders(res) {
-    should.not.exist(res.headers['x-cache-invalidate']);
-    should.exist(res.headers.date);
+    assert.equal(res.headers['x-cache-invalidate'], undefined);
+    assertExists(res.headers.date);
 }
 
 describe('Admin Routing', function () {
@@ -128,7 +130,7 @@ describe('Admin Routing', function () {
                 .set('X-Forwarded-Proto', 'https')
                 .expect(200);
 
-            res.text.should.equal(prodTemplate);
+            assert.equal(res.text, prodTemplate);
         });
 
         it('serves assets when not in production', async function () {
@@ -138,7 +140,7 @@ describe('Admin Routing', function () {
                 .set('X-Forwarded-Proto', 'https')
                 .expect(200);
 
-            res.text.should.equal(devTemplate);
+            assert.equal(res.text, devTemplate);
         });
 
         it('generates it\'s own ETag header from file contents', async function () {
@@ -146,8 +148,8 @@ describe('Admin Routing', function () {
                 .set('X-Forwarded-Proto', 'https')
                 .expect(200);
 
-            should.exist(res.headers.etag);
-            res.headers.etag.should.equal('8793333e8e91cde411b1336c58ec6ef3');
+            assertExists(res.headers.etag);
+            assert.equal(res.headers.etag, '8793333e8e91cde411b1336c58ec6ef3');
         });
     });
 });

@@ -1,3 +1,5 @@
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../utils/assertions');
 const should = require('should');
 
 // Stuff we are testing
@@ -15,8 +17,8 @@ describe('{{plural}} helper', function () {
             }
         });
 
-        should.exist(rendered);
-        rendered.string.should.equal(expected);
+        assertExists(rendered);
+        assert.equal(rendered.string, expected);
     });
 
     it('will show no-value string with placement', function () {
@@ -30,8 +32,8 @@ describe('{{plural}} helper', function () {
             }
         });
 
-        should.exist(rendered);
-        rendered.string.should.equal(expected);
+        assertExists(rendered);
+        assert.equal(rendered.string, expected);
     });
 
     it('will show singular string', function () {
@@ -45,8 +47,8 @@ describe('{{plural}} helper', function () {
             }
         });
 
-        should.exist(rendered);
-        rendered.string.should.equal(expected);
+        assertExists(rendered);
+        assert.equal(rendered.string, expected);
     });
 
     it('will show plural string', function () {
@@ -60,7 +62,7 @@ describe('{{plural}} helper', function () {
             }
         });
 
-        should.exist(rendered);
-        rendered.string.should.equal(expected);
+        assertExists(rendered);
+        assert.equal(rendered.string, expected);
     });
 });

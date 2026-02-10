@@ -19,7 +19,6 @@ describe.skip('Integration: Component: tags/tag-form', function () {
     setupRenderingTest();
 
     beforeEach(function () {
-        /* eslint-disable camelcase */
         let tag = EmberObject.create({
             id: 1,
             name: 'Test',

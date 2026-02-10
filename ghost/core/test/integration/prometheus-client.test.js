@@ -1,5 +1,5 @@
 const assert = require('assert').strict;
-const configUtils = require('../utils/configUtils');
+const configUtils = require('../utils/config-utils');
 
 function clearModuleCache() {
     delete require.cache[require.resolve('../../core/shared/prometheus-client')];

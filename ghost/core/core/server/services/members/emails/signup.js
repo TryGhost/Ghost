@@ -4,6 +4,8 @@ module.exports = ({t, siteTitle, email, url, accentColor = '#15212A', siteDomain
   <head>
     <meta name="viewport" content="width=device-width">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="color-scheme" content="light only">
+    <meta name="supported-color-schemes" content="light">
     <title>🙌 ${t('Complete your sign up to {siteTitle}!', {siteTitle, interpolation: {escapeValue: false}})}</title>
     <style>
     /* -------------------------------------

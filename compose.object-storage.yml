@@ -54,7 +54,7 @@ services:
       - MINIO_ROOT_PASSWORD=minio-pass
       - MINIO_BUCKET=ghost-dev
     volumes:
-      - ./.docker/minio/setup.sh:/setup.sh:ro
+      - ./docker/minio/setup.sh:/setup.sh:ro
     depends_on:
       minio:
         condition: service_healthy

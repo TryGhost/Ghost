@@ -1,4 +1,4 @@
-const MentionEmailReportJob = require('./MentionEmailReportJob');
+const MentionEmailReportJob = require('./mention-email-report-job');
 
 /**
  * @typedef {MentionEmailReportJob.MentionReport} MentionReport
@@ -140,7 +140,7 @@ module.exports = {
         const mentionsJobs = require('../mentions-jobs');
 
         const DomainEvents = require('@tryghost/domain-events');
-        const StartMentionEmailReportJob = require('./StartMentionEmailReportJob');
+        const StartMentionEmailReportJob = require('./start-mention-email-report-job');
 
         const labs = require('../../../shared/labs');
         DomainEvents.subscribe(StartMentionEmailReportJob, () => {

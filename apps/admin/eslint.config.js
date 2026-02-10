@@ -7,20 +7,6 @@ import { globalIgnores } from 'eslint/config'
 import noRelativeImportPaths from 'eslint-plugin-no-relative-import-paths'
 import ghostPlugin from 'eslint-plugin-ghost';
 
-// Patch the filenames/match-regex rule to add schema for ESLint 9 compatibility
-// TODO: Remove once eslint-plugin-ghost is updated
-const matchRegexRule = ghostPlugin.rules['filenames/match-regex'];
-ghostPlugin.rules['filenames/match-regex'] = {
-  create: matchRegexRule,
-  meta: {
-    schema: [
-      { type: 'string' },
-      { type: 'boolean' },
-      { type: 'boolean' }
-    ]
-  }
-};
-
 export default tseslint.config([
   globalIgnores(['dist']),
   {

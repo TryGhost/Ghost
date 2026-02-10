@@ -4,7 +4,7 @@ import enLocale from 'i18n-iso-countries/langs/en.json';
 import {Button, Filter, FilterFieldConfig, Filters, LucideIcon} from '@tryghost/shade';
 import {STATS_LABEL_MAPPINGS, UNKNOWN_LOCATION_VALUES} from '@src/utils/constants';
 import {formatQueryDate, getRangeDates} from '@tryghost/shade';
-import {getAudienceFromFilterValues, getAudienceQueryParam} from './audience-select';
+import {getAudienceFromFilterValues, getAudienceQueryParam} from '@src/utils/audience';
 import {useAppContext} from '@src/providers/posts-app-context';
 import {useGlobalData} from '@src/providers/post-analytics-context';
 import {useTinybirdQuery} from '@tryghost/admin-x-framework';
@@ -13,7 +13,6 @@ countries.registerLocale(enLocale);
 
 interface StatsFilterProps extends Omit<React.ComponentProps<typeof Filters>, 'fields' | 'onChange'> {
     filters: Filter[];
-    utmTrackingEnabled?: boolean;
     onChange?: (filters: Filter[]) => void;
 }
 
@@ -121,9 +120,19 @@ const buildFilterParams = (
     return params;
 };
 
+interface UseTinybirdFilterOptionsConfig {
+    enabled?: boolean;
+}
+
 // Generic hook to fetch filter options from Tinybird
 // Handles the common pattern: fetch data, transform to options, ensure selected value is included
-const useTinybirdFilterOptions = (fieldKey: string, currentFilters: Filter[] = [], postUuid?: string) => {
+const useTinybirdFilterOptions = (
+    fieldKey: string,
+    currentFilters: Filter[] = [],
+    postUuid?: string,
+    config: UseTinybirdFilterOptionsConfig = {}
+) => {
+    const {enabled = true} = config;
     const {statsConfig, range} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
 
@@ -158,7 +167,7 @@ const useTinybirdFilterOptions = (fieldKey: string, currentFilters: Filter[] = [
         endpoint: definition?.endpoint || '',
         statsConfig,
         params,
-        enabled: !!definition
+        enabled: enabled && !!definition
     });
 
     const options = useMemo(() => {
@@ -189,10 +198,13 @@ const useTinybirdFilterOptions = (fieldKey: string, currentFilters: Filter[] = [
     return {options, loading};
 };
 
-function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: StatsFilterProps) {
+function StatsFilter({filters, onChange, ...props}: StatsFilterProps) {
     const {appSettings} = useAppContext();
     const {post} = useGlobalData();
     const postUuid = post?.uuid;
+
+    // Track which filter field is currently being selected (lazy loading)
+    const [activeFilterField, setActiveFilterField] = useState<string | null>(null);
 
     // Track screen width for responsive popover alignment
     const [isMobile, setIsMobile] = useState(false);
@@ -223,16 +235,25 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
         return appSettings?.paidMembersEnabled ? options : options.filter(opt => opt.value !== 'paid');
     }, [appSettings?.paidMembersEnabled]);
 
+    // Helper: determine if a filter field should fetch options
+    // Enable fetching when the field is active OR has an applied filter value (for label display)
+    const shouldFetchOptions = useCallback((fieldKey: string) => {
+        const isActive = activeFilterField === fieldKey;
+        const hasAppliedFilter = filters.some(f => f.field === fieldKey);
+        return isActive || hasAppliedFilter;
+    }, [activeFilterField, filters]);
+
     // Fetch options for all Tinybird-backed fields using the generic hook
     // Options are contextual - filtered based on currently applied filters and post_uuid
-    const {options: utmSourceOptions} = useTinybirdFilterOptions('utm_source', filters, postUuid);
-    const {options: utmMediumOptions} = useTinybirdFilterOptions('utm_medium', filters, postUuid);
-    const {options: utmCampaignOptions} = useTinybirdFilterOptions('utm_campaign', filters, postUuid);
-    const {options: utmContentOptions} = useTinybirdFilterOptions('utm_content', filters, postUuid);
-    const {options: utmTermOptions} = useTinybirdFilterOptions('utm_term', filters, postUuid);
-    const {options: sourceOptions} = useTinybirdFilterOptions('source', filters, postUuid);
-    const {options: deviceOptions} = useTinybirdFilterOptions('device', filters, postUuid);
-    const {options: locationOptions} = useTinybirdFilterOptions('location', filters, postUuid);
+    // Lazy loading: only fetch when field is active or has applied filter
+    const {options: utmSourceOptions, loading: utmSourceLoading} = useTinybirdFilterOptions('utm_source', filters, postUuid, {enabled: shouldFetchOptions('utm_source')});
+    const {options: utmMediumOptions, loading: utmMediumLoading} = useTinybirdFilterOptions('utm_medium', filters, postUuid, {enabled: shouldFetchOptions('utm_medium')});
+    const {options: utmCampaignOptions, loading: utmCampaignLoading} = useTinybirdFilterOptions('utm_campaign', filters, postUuid, {enabled: shouldFetchOptions('utm_campaign')});
+    const {options: utmContentOptions, loading: utmContentLoading} = useTinybirdFilterOptions('utm_content', filters, postUuid, {enabled: shouldFetchOptions('utm_content')});
+    const {options: utmTermOptions, loading: utmTermLoading} = useTinybirdFilterOptions('utm_term', filters, postUuid, {enabled: shouldFetchOptions('utm_term')});
+    const {options: sourceOptions, loading: sourceLoading} = useTinybirdFilterOptions('source', filters, postUuid, {enabled: shouldFetchOptions('source')});
+    const {options: deviceOptions, loading: deviceLoading} = useTinybirdFilterOptions('device', filters, postUuid, {enabled: shouldFetchOptions('device')});
+    const {options: locationOptions, loading: locationLoading} = useTinybirdFilterOptions('location', filters, postUuid, {enabled: shouldFetchOptions('location')});
 
     // Note: Only 'is' operator supported - Tinybird pipes only support exact match
     const supportedOperators = useMemo(() => [
@@ -242,7 +263,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
     // Grouped fields - memoized to avoid recreation on every render
     // Note: No 'post' filter in this context since we're already viewing a specific post
     const groupedFields: FilterFieldConfig[] = useMemo(() => {
-        const utmFields: FilterFieldConfig[] = utmTrackingEnabled ? [
+        const utmFields: FilterFieldConfig[] = [
             {
                 key: 'utm_source',
                 label: 'UTM Source',
@@ -253,6 +274,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 defaultOperator: 'is',
                 hideOperatorSelect: true,
                 options: utmSourceOptions,
+                isLoading: utmSourceLoading,
                 searchable: true,
                 selectedOptionsClassName: 'hidden'
             },
@@ -266,6 +288,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 defaultOperator: 'is',
                 hideOperatorSelect: true,
                 options: utmMediumOptions,
+                isLoading: utmMediumLoading,
                 className: 'w-60',
                 popoverContentClassName: 'w-60',
                 searchable: true,
@@ -281,6 +304,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 defaultOperator: 'is',
                 hideOperatorSelect: true,
                 options: utmCampaignOptions,
+                isLoading: utmCampaignLoading,
                 className: 'w-60',
                 popoverContentClassName: 'w-60',
                 searchable: true,
@@ -296,6 +320,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 defaultOperator: 'is',
                 hideOperatorSelect: true,
                 options: utmContentOptions,
+                isLoading: utmContentLoading,
                 className: 'w-60',
                 popoverContentClassName: 'w-60',
                 searchable: true,
@@ -311,12 +336,13 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 defaultOperator: 'is',
                 hideOperatorSelect: true,
                 options: utmTermOptions,
+                isLoading: utmTermLoading,
                 className: 'w-60',
                 popoverContentClassName: 'w-60',
                 searchable: true,
                 selectedOptionsClassName: 'hidden'
             }
-        ] : [];
+        ];
 
         return [
             {
@@ -342,6 +368,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                         defaultOperator: 'is',
                         hideOperatorSelect: true,
                         options: sourceOptions,
+                        isLoading: sourceLoading,
                         className: 'w-60',
                         popoverContentClassName: 'w-60',
                         searchable: true,
@@ -357,6 +384,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                         defaultOperator: 'is',
                         hideOperatorSelect: true,
                         options: deviceOptions,
+                        isLoading: deviceLoading,
                         selectedOptionsClassName: 'hidden'
                     },
                     {
@@ -369,17 +397,18 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                         defaultOperator: 'is',
                         hideOperatorSelect: true,
                         options: locationOptions,
+                        isLoading: locationLoading,
                         searchable: true,
                         selectedOptionsClassName: 'hidden'
                     }
                 ]
             },
-            ...(utmTrackingEnabled ? [{
+            {
                 group: 'UTM parameters',
                 fields: utmFields
-            }] : [])
+            }
         ];
-    }, [utmTrackingEnabled, utmSourceOptions, utmMediumOptions, utmCampaignOptions, utmContentOptions, utmTermOptions, supportedOperators, audienceOptions, sourceOptions, deviceOptions, locationOptions]);
+    }, [utmSourceOptions, utmSourceLoading, utmMediumOptions, utmMediumLoading, utmCampaignOptions, utmCampaignLoading, utmContentOptions, utmContentLoading, utmTermOptions, utmTermLoading, supportedOperators, audienceOptions, sourceOptions, sourceLoading, deviceOptions, deviceLoading, locationOptions, locationLoading]);
 
     // Show clear button when there's at least one filter
     const hasFilters = filters.length > 0;
@@ -402,6 +431,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 keyboardShortcut="f"
                 popoverAlign={isMobile ? 'start' : (hasFilters ? 'start' : 'end')}
                 showSearchInput={false}
+                onActiveFieldChange={setActiveFilterField}
                 onChange={onChange || (() => {})}
                 {...props}
             />

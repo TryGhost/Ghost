@@ -13,7 +13,11 @@ export const getStatEndpointUrl = (config?: StatsConfig | null, endpointName?: s
     } else {
         baseUrl = config.endpoint || '';
     }
-    return `${baseUrl}/v0/pipes/${endpointName}.json?${params}`;
+
+    // Append version suffix if provided (e.g., "v2" -> "api_kpis_v2")
+    const finalEndpointName = config.version ? `${endpointName}_${config.version}` : endpointName;
+
+    return `${baseUrl}/v0/pipes/${finalEndpointName}.json?${params}`;
 };
 
 export const getToken = () => {

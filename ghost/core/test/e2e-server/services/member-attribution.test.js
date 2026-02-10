@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const {agentProvider, fixtureManager, configUtils} = require('../../utils/e2e-framework');
 const should = require('should');
 const models = require('../../../core/server/models');
@@ -105,7 +106,7 @@ describe('Member Attribution Service', function () {
             it('resolves pages', async function () {
                 const id = fixtureManager.get('posts', 5).id;
                 const post = await models.Post.where('id', id).fetch({require: true});
-                should(post.get('type')).eql('page');
+                assert.equal(post.get('type'), 'page');
 
                 const url = urlService.getUrlByResourceId(post.id, {absolute: false, withSubdirectory: true});
 
@@ -227,7 +228,7 @@ describe('Member Attribution Service', function () {
                 const urlWithoutSubdirectory = urlService.getUrlByResourceId(post.id, {absolute: false, withSubdirectory: false});
 
                 // Check if we are actually testing with subdirectories
-                should(url).startWith('/subdirectory/');
+                assert(url.startsWith('/subdirectory/'));
 
                 const attribution = await memberAttributionService.service.getAttribution([
                     {
@@ -261,7 +262,7 @@ describe('Member Attribution Service', function () {
                 const absoluteUrl = urlService.getUrlByResourceId(post.id, {absolute: true, withSubdirectory: true});
 
                 // Check if we are actually testing with subdirectories
-                should(url).startWith('/subdirectory/');
+                assert(url.startsWith('/subdirectory/'));
 
                 const attribution = await memberAttributionService.service.getAttribution([
                     {
@@ -291,7 +292,7 @@ describe('Member Attribution Service', function () {
             it('resolves pages', async function () {
                 const id = fixtureManager.get('posts', 5).id;
                 const post = await models.Post.where('id', id).fetch({require: true});
-                should(post.get('type')).eql('page');
+                assert.equal(post.get('type'), 'page');
 
                 const url = urlService.getUrlByResourceId(post.id, {absolute: false, withSubdirectory: true});
                 const urlWithoutSubdirectory = urlService.getUrlByResourceId(post.id, {absolute: false, withSubdirectory: false});

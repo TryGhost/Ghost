@@ -17,7 +17,9 @@
     "Best": "ਸਭ ਤੋਂ ਵਧੀਆ",
     "Cancel": "ਰੱਦ ਕਰੋ",
     "Comment": "ਟਿੱਪਣੀ",
+    "Commenting disabled": "",
     "Complete your profile": "ਆਪਣਾ ਨਿੱਜੀ ਪੰਨਾ ਪੂਰਾ ਕਰੋ",
+    "Contact support": "",
     "Delete": "ਮਿਟਾਓ",
     "Deleted": "ਮਿਟਾਇਆ ਗਿਆ",
     "Deleted member": "ਮਿਟਾਇਆ ਗਿਆ ਮੈਂਬਰ",
@@ -28,6 +30,7 @@
     "edited": "ਸੰਪਾਦਿਤ",
     "Enter your name": "ਆਪਣਾ ਨਾਮ ਦਰਜ ਕਰੋ",
     "Expertise": "ਮੁਹਾਰਤ",
+    "for more information.": "",
     "Founder @ Acme Inc": "ਸੰਸਥਾਪਕ @ ਫਲਾਣੀ ਕੰਪਨੀ",
     "Full-time parent": "ਘਰੇਲੂ ਮਾਪਾ",
     "Head of Marketing at Acme, Inc": "ਮਾਰਕੀਟਿੰਗ ਮੁਖੀ, ਫਲਾਣੀ ਕੰਪਨੀ ਵਿਖੇ",
@@ -69,6 +72,8 @@
     "This comment has been hidden.": "ਇਹ ਟਿੱਪਣੀ ਛੁਪਾ ਦਿੱਤੀ ਗਈ ਹੈ।",
     "This comment has been removed.": "ਇਹ ਟਿੱਪਣੀ ਹਟਾ ਦਿੱਤੀ ਗਈ ਹੈ।",
     "Upgrade now": "ਹੁਣੇ ਅੱਪਗਰੇਡ ਕਰੋ",
+    "View in admin": "",
     "Yesterday": "ਕੱਲ੍ਹ",
+    "You can't post comments in this publication.": "",
     "Your request will be sent to the owner of this site.": "ਤੁਹਾਡੀ ਬੇਨਤੀ ਇਸ ਸਾਈਟ ਦੇ ਸੰਚਾਲਕ ਨੂੰ ਭੇਜੀ ਜਾਵੇਗੀ।"
 }

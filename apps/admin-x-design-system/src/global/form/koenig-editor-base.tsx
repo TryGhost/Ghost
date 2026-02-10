@@ -6,7 +6,7 @@ import ErrorBoundary from '../error-boundary';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type FetchKoenigLexical = () => Promise<any>
 
-export type NodeType = 'DEFAULT_NODES' | 'BASIC_NODES' | 'MINIMAL_NODES';
+export type NodeType = 'DEFAULT_NODES' | 'BASIC_NODES' | 'MINIMAL_NODES' | 'EMAIL_NODES';
 
 export interface KoenigEditorBaseProps {
     onBlur?: () => void
@@ -16,6 +16,8 @@ export interface KoenigEditorBaseProps {
     darkMode?: boolean
     singleParagraph?: boolean
     className?: string
+    inheritFontStyles?: boolean
+    loadingFallback?: React.ReactNode
 }
 
 declare global {
@@ -123,7 +125,8 @@ export const KoenigWrapper: React.FC<KoenigWrapperProps> = ({
     const transformers = {
         DEFAULT_NODES: koenig.DEFAULT_TRANSFORMERS,
         BASIC_NODES: koenig.BASIC_TRANSFORMERS,
-        MINIMAL_NODES: koenig.MINIMAL_TRANSFORMERS
+        MINIMAL_NODES: koenig.MINIMAL_TRANSFORMERS,
+        EMAIL_NODES: koenig.EMAIL_TRANSFORMERS
     };
 
     const defaultNodes = nodes || 'DEFAULT_NODES';
@@ -164,16 +167,19 @@ const KoenigEditorBase: React.FC<KoenigEditorBaseInternalProps> = ({
     children,
     initialEditorState,
     onChange,
+    inheritFontStyles = true,
+    loadingFallback,
     ...props
 }) => {
     const {fetchKoenigLexical, darkMode} = useDesignSystem();
     const editorResource = useMemo(() => loadKoenig(fetchKoenigLexical), [fetchKoenigLexical]);
+    const inheritClasses = inheritFontStyles ? '[&_*]:!font-inherit [&_*]:!text-inherit' : '';
 
     return (
         <div className={className || 'w-full'}>
-            <div className="koenig-react-editor w-full [&_*]:!font-inherit [&_*]:!text-inherit">
+            <div className={`koenig-react-editor w-full ${inheritClasses}`}>
                 <ErrorBoundary name='editor'>
-                    <Suspense fallback={<p className="koenig-react-editor-loading">Loading editor...</p>}>
+                    <Suspense fallback={loadingFallback || <p className="koenig-react-editor-loading">Loading editor...</p>}>
                         <KoenigWrapper
                             {...props}
                             darkMode={darkMode}

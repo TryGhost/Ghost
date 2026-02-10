@@ -39,6 +39,9 @@ export {RouterProvider, useNavigate, useBaseRoute, useRouteHasParams, resetScrol
 export {useNavigationStack} from './providers/navigation-stack-provider';
 export {Link, NavLink, Outlet, useLocation, useParams, useSearchParams, redirect, matchRoutes, matchPath, useMatch, useMatches} from 'react-router';
 
+// Lazy component loader
+export {lazyComponent} from './utils/lazy-component';
+
 // Data fetching
 export type {InfiniteData} from '@tanstack/react-query';
 export {useQueryClient} from '@tanstack/react-query';
@@ -46,3 +49,5 @@ export {useQueryClient} from '@tanstack/react-query';
 // API
 export type {TinybirdToken, TinybirdTokenResponseType} from './api/tinybird';
 export {getTinybirdToken} from './api/tinybird';
+export type {FeaturebaseToken, FeaturebaseTokenResponseType} from './api/featurebase';
+export {getFeaturebaseToken} from './api/featurebase';

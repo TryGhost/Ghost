@@ -16,10 +16,11 @@ export type Offer = {
     currency: string | null;
     status: string;
     redemption_count: number;
+    redemption_type: 'signup' | 'retention';
     tier: {
         id: string;
         name?: string;
-    },
+    } | null,
     created_at?: string;
     last_redeemed? : string;
 }

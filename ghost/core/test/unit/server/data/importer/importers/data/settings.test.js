@@ -1,6 +1,8 @@
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../../../utils/assertions');
 const find = require('lodash/find');
 const should = require('should');
-const SettingsImporter = require('../../../../../../../core/server/data/importer/importers/data/SettingsImporter');
+const SettingsImporter = require('../../../../../../../core/server/data/importer/importers/data/settings-importer');
 
 describe('SettingsImporter', function () {
     describe('#beforeImport', function () {
@@ -19,7 +21,7 @@ describe('SettingsImporter', function () {
 
             const passwordSetting = find(importer.dataToImport, {key: 'password'});
 
-            should.equal(passwordSetting, undefined);
+            assert.equal(passwordSetting, undefined);
         });
 
         it('Removes the is_private setting', function () {
@@ -37,7 +39,7 @@ describe('SettingsImporter', function () {
 
             const passwordSetting = find(importer.dataToImport, {key: 'is_private'});
 
-            should.equal(passwordSetting, undefined);
+            assert.equal(passwordSetting, undefined);
         });
 
         it('Does not overwrite members from address', function () {
@@ -52,7 +54,7 @@ describe('SettingsImporter', function () {
 
             const membersFromAddress = find(importer.dataToImport, {key: 'members_from_address'});
 
-            should.not.exist(membersFromAddress);
+            assert.equal(membersFromAddress, undefined);
         });
 
         it('Does not overwrite members support address', function () {
@@ -67,7 +69,7 @@ describe('SettingsImporter', function () {
 
             const membersSupportAddress = find(importer.dataToImport, {key: 'members_support_address'});
 
-            should.not.exist(membersSupportAddress);
+            assert.equal(membersSupportAddress, undefined);
         });
 
         it('Does not overwrite email_verification_required setting', function () {
@@ -83,7 +85,7 @@ describe('SettingsImporter', function () {
 
             const emailVerificationRequired = find(importer.dataToImport, {key: 'email_verification_required'});
 
-            should.not.exist(emailVerificationRequired);
+            assert.equal(emailVerificationRequired, undefined);
         });
 
         it('Does not overwrite site_uuid setting', function () {
@@ -99,7 +101,7 @@ describe('SettingsImporter', function () {
 
             const siteUuid = find(importer.dataToImport, {key: 'site_uuid'});
 
-            should.not.exist(siteUuid);
+            assert.equal(siteUuid, undefined);
         });
 
         it('Adds a problem if the existing data is_private is false, and new data is_private is true', function () {
@@ -125,7 +127,7 @@ describe('SettingsImporter', function () {
                 message: 'IMPORTANT: Content in this import was previously published on a private Ghost install, but the current site is public. Are your privacy settings up to date?'
             });
 
-            should.exist(problem);
+            assertExists(problem);
         });
 
         it('Adds a problem if unable to parse data from slack configuration', function () {
@@ -148,7 +150,7 @@ describe('SettingsImporter', function () {
                 message: 'Failed to parse the value of slack setting value'
             });
 
-            should.exist(problem);
+            assertExists(problem);
         });
 
         it('Ignores slack URL from import files in all forms', function () {
@@ -168,11 +170,11 @@ describe('SettingsImporter', function () {
 
             importer.beforeImport();
 
-            importer.problems.length.should.equal(0);
+            assert.equal(importer.problems.length, 0);
 
-            importer.dataToImport.length.should.equal(1);
-            importer.dataToImport[0].key.should.equal('slack_username');
-            importer.dataToImport[0].value.should.equal('Test Name');
+            assert.equal(importer.dataToImport.length, 1);
+            assert.equal(importer.dataToImport[0].key, 'slack_username');
+            assert.equal(importer.dataToImport[0].value, 'Test Name');
         });
 
         it('Renames the members_allow_free_signup setting', function () {
@@ -186,12 +188,12 @@ describe('SettingsImporter', function () {
 
             importer.beforeImport();
 
-            importer.problems.length.should.equal(0);
+            assert.equal(importer.problems.length, 0);
 
-            importer.dataToImport.length.should.equal(1);
-            importer.dataToImport[0].key.should.equal('members_signup_access');
-            importer.dataToImport[0].value.should.equal('invite');
-            importer.dataToImport[0].type.should.equal('string');
+            assert.equal(importer.dataToImport.length, 1);
+            assert.equal(importer.dataToImport[0].key, 'members_signup_access');
+            assert.equal(importer.dataToImport[0].value, 'invite');
+            assert.equal(importer.dataToImport[0].type, 'string');
         });
     });
 });

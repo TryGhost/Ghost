@@ -385,7 +385,7 @@ export const ColorPickerFormat = ({
                 setSaturation(newColor.saturationl());
                 setLightness(newColor.lightness());
             }
-        } catch (error) {
+        } catch {
             // Invalid color, ignore
         }
     };

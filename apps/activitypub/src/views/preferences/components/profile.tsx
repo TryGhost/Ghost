@@ -304,11 +304,11 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
 
                 await navigator.clipboard.write([clipboardItem]);
                 toast.success('Image copied to clipboard');
-            } catch (error) {
+            } catch {
                 toast.error('Failed to copy image');
             }
             setIsProcessing(false);
-        } catch (error) {
+        } catch {
             toast.error('Failed to copy image');
             setIsProcessing(false);
         }

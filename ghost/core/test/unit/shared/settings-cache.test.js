@@ -1,14 +1,12 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const _ = require('lodash');
 const events = require('../../../core/server/lib/common/events');
 
 // Testing  the Private API
-let CacheManager = require('../../../core/shared/settings-cache/CacheManager');
+let CacheManager = require('../../../core/shared/settings-cache/cache-manager');
 const publicSettings = require('../../../core/shared/settings-cache/public');
 const InMemoryCache = require('../../../core/server/adapters/cache/MemoryCache');
-
-should.equal(true, true);
 
 function createCacheManager(settingsOverrides = {}) {
     const cacheStore = new InMemoryCache();
@@ -32,36 +30,36 @@ describe('UNIT: settings cache', function () {
 
     it('.get() does not auto convert string into number', function () {
         cache.set('key1', {value: '1'});
-        (typeof cache.get('key1')).should.eql('string');
+        assert.equal(typeof cache.get('key1'), 'string');
     });
 
     it('.get() does not auto convert string into number: float', function () {
         cache.set('key1', {value: '1.4'});
-        (typeof cache.get('key1')).should.eql('string');
+        assert.equal(typeof cache.get('key1'), 'string');
     });
 
     it('.get() parses stringified JSON', function () {
         cache.set('key2', {value: '{"a":"1","b":"hallo","c":{"d":[]},"e":2}'});
-        (typeof cache.get('key2')).should.eql('object');
-        cache.get('key2').a.should.eql('1');
-        cache.get('key2').b.should.eql('hallo');
-        cache.get('key2').c.should.eql({d: []});
-        cache.get('key2').e.should.eql(2);
+        assert.equal(typeof cache.get('key2'), 'object');
+        assert.equal(cache.get('key2').a, '1');
+        assert.equal(cache.get('key2').b, 'hallo');
+        assert.deepEqual(cache.get('key2').c, {d: []});
+        assert.equal(cache.get('key2').e, 2);
     });
 
     it('.get() respects the resolve option', function () {
         cache.set('foo', {value: 'bar'});
-        cache.get('foo', {resolve: false}).should.be.an.Object().with.property('value', 'bar');
-        cache.get('foo', {resolve: true}).should.be.a.String().and.eql('bar');
+        assert.deepEqual(cache.get('foo', {resolve: false}), {value: 'bar'});
+        assert.equal(cache.get('foo', {resolve: true}), 'bar');
     });
 
     it('.get() can handle miscellaneous values', function () {
-        // THis value is not set
-        should(cache.get('bar')).be.undefined();
+        // This value is not set
+        assert.equal(cache.get('bar'), undefined);
 
         // Using set with a string instead of an object
         cache.set('foo', 'bar');
-        should(cache.get('foo')).eql(null);
+        assert.equal(cache.get('foo'), null);
 
         // Various built-in values
         cache.set('null', {value: null});
@@ -72,13 +70,13 @@ describe('UNIT: settings cache', function () {
         cache.set('object', {value: {}});
         cache.set('array', {value: []});
 
-        should(cache.get('null')).eql(null);
-        should(cache.get('nan')).eql(null);
+        assert.equal(cache.get('null'), null);
+        assert.equal(cache.get('nan'), null);
 
-        should(cache.get('true')).eql(true);
-        should(cache.get('false')).eql(false);
-        should(cache.get('object')).eql({});
-        should(cache.get('array')).eql([]);
+        assert.equal(cache.get('true'), true);
+        assert.equal(cache.get('false'), false);
+        assert.deepEqual(cache.get('object'), {});
+        assert.deepEqual(cache.get('array'), []);
 
         // Built-ins as strings
         cache.set('empty', {value: ''});
@@ -89,13 +87,13 @@ describe('UNIT: settings cache', function () {
         cache.set('stringobj', {value: '{}'});
         cache.set('stringarr', {value: '[]'});
 
-        should(cache.get('empty')).eql(null);
-        should(cache.get('stringnull')).eql(null);
-        should(cache.get('stringnan')).eql('NaN');
-        should(cache.get('stringtrue')).eql(true);
-        should(cache.get('stringfalse')).eql(false);
-        should(cache.get('stringobj')).eql({});
-        should(cache.get('stringarr')).eql([]);
+        assert.equal(cache.get('empty'), null);
+        assert.equal(cache.get('stringnull'), null);
+        assert.equal(cache.get('stringnan'), 'NaN');
+        assert.equal(cache.get('stringtrue'), true);
+        assert.equal(cache.get('stringfalse'), false);
+        assert.deepEqual(cache.get('stringobj'), {});
+        assert.deepEqual(cache.get('stringarr'), []);
     });
 
     it('.get() respects settingsOverrides', function () {
@@ -103,18 +101,18 @@ describe('UNIT: settings cache', function () {
             email_track_clicks: false
         });
         cache.set('email_track_clicks', {value: true});
-        should(cache.get('email_track_clicks')).eql(false);
-        should(cache.get('email_track_clicks', {resolve: false})).eql({value: false, is_read_only: true});
+        assert.equal(cache.get('email_track_clicks'), false);
+        assert.deepEqual(cache.get('email_track_clicks', {resolve: false}), {value: false, is_read_only: true});
     });
 
     it('.get() only returns an override if the key is set to begin with', function () {
-        should(cache.get('email_track_clicks', {resolve: false})).eql(undefined);
+        assert.equal(cache.get('email_track_clicks', {resolve: false}), undefined);
     });
 
     it('.getAll() returns all values', function () {
         cache.set('key1', {value: '1'});
-        cache.get('key1').should.eql('1');
-        cache.getAll().should.eql({key1: {value: '1'}});
+        assert.equal(cache.get('key1'), '1');
+        assert.deepEqual(cache.getAll(), {key1: {value: '1'}});
     });
 
     it('.getAll() respects settingsOverrides', function () {
@@ -128,7 +126,7 @@ describe('UNIT: settings cache', function () {
             value: true,
             type: 'boolean'
         });
-        cache.getAll().should.eql({email_track_clicks: {
+        assert.deepEqual(cache.getAll(), {email_track_clicks: {
             id: '67996cef430e5905ab385357',
             group: 'email',
             key: 'email_track_clicks',
@@ -145,8 +143,8 @@ describe('UNIT: settings cache', function () {
         });
         cache.set('setting1', {value: true});
         cache.set('setting2', {value: 'original'});
-        should(cache.get('setting1')).eql(false);
-        should(cache.get('setting2')).eql('test');
+        assert.equal(cache.get('setting1'), false);
+        assert.equal(cache.get('setting2'), 'test');
     });
 
     it('.getPublic() correctly filters and formats public values', function () {
@@ -155,7 +153,7 @@ describe('UNIT: settings cache', function () {
         cache.set('timezone', {value: 'PST'});
         cache.set('secondary_navigation', {value: false});
 
-        cache.getAll().should.eql({
+        assert.deepEqual(cache.getAll(), {
             key1: {value: 'something'},
             title: {value: 'hello world'},
             timezone: {value: 'PST'},
@@ -167,7 +165,7 @@ describe('UNIT: settings cache', function () {
         values.timezone = 'PST';
         values.secondary_navigation = false;
 
-        cache.getPublic().should.eql(values);
+        assert.deepEqual(cache.getPublic(), values);
     });
 
     it('.reset() and .init() do not double up events', function () {
@@ -182,29 +180,29 @@ describe('UNIT: settings cache', function () {
 
         let cacheStore = new InMemoryCache();
         cache.init(events, settingsCollection, [], cacheStore);
-        cache.get('key1').should.equal('init value');
+        assert.equal(cache.get('key1'), 'init value');
 
         // check handler only called once on settings.edit
-        setSpy.callCount.should.equal(1);
+        sinon.assert.calledOnce(setSpy);
         events.emit('settings.edited', {
             get: () => 'key1',
             toJSON: () => ({value: 'first edit'})
         });
-        setSpy.callCount.should.equal(2);
-        cache.get('key1').should.equal('first edit');
+        sinon.assert.calledTwice(setSpy);
+        assert.equal(cache.get('key1'), 'first edit');
 
         // init does a reset by default
         let cacheStoreForReset = new InMemoryCache();
         cache.init(events, settingsCollection, [], cacheStoreForReset);
-        setSpy.callCount.should.equal(3);
-        cache.get('key1').should.equal('init value');
+        sinon.assert.calledThrice(setSpy);
+        assert.equal(cache.get('key1'), 'init value');
 
         // edit again, check event only fired once
         events.emit('settings.edited', {
             get: () => 'key1',
             toJSON: () => ({value: 'second edit'})
         });
-        setSpy.callCount.should.equal(4);
-        cache.get('key1').should.equal('second edit');
+        sinon.assert.callCount(setSpy, 4);
+        assert.equal(cache.get('key1'), 'second edit');
     });
 });

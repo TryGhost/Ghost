@@ -1,3 +1,5 @@
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 const express = require('express');
@@ -55,19 +57,19 @@ describe('SessionService', function () {
 
         await sessionService.createSessionForUser(req, res, user);
 
-        should.equal(req.session.user_id, 'egg');
+        assert.equal(req.session.user_id, 'egg');
 
         const actualUser = await sessionService.getUserForSession(req, res);
-        should.ok(findUserById.calledWith(sinon.match({id: 'egg'})));
+        assert(findUserById.calledWith(sinon.match({id: 'egg'})));
 
         const expectedUser = await findUserById.returnValues[0];
-        should.equal(actualUser, expectedUser);
+        assert.equal(actualUser, expectedUser);
 
         await sessionService.removeUserForSession(req, res);
-        should.equal(req.session.user_id, undefined);
+        assert.equal(req.session.user_id, undefined);
 
         const removedUser = await sessionService.getUserForSession(req, res);
-        should.equal(removedUser, null);
+        assert.equal(removedUser, null);
     });
 
     it('Throws an error when the csrf verification fails', async function () {
@@ -104,9 +106,10 @@ describe('SessionService', function () {
         });
         const res = Object.create(express.response);
 
-        const error = `Request made from incorrect origin. Expected 'origin' received 'other-origin'.`;
-
-        await sessionService.getUserForSession(req, res).should.be.rejectedWith(error);
+        await assert.rejects(
+            sessionService.getUserForSession(req, res),
+            {message: `Request made from incorrect origin. Expected 'origin' received 'other-origin'.`}
+        );
     });
 
     it('Doesn\'t throw an error when the csrf verification fails when bypassed', async function () {
@@ -146,7 +149,7 @@ describe('SessionService', function () {
             bypassCsrfProtection: true
         };
 
-        await sessionService.getUserForSession(req, res).should.be.fulfilled();
+        await sessionService.getUserForSession(req, res);
     });
 
     it('Can verify a user session', async function () {
@@ -190,19 +193,120 @@ describe('SessionService', function () {
         const user = {id: 'egg'};
 
         await sessionService.createSessionForUser(req, res, user);
-        should.equal(req.session.user_id, 'egg');
-        should.equal(req.session.verified, undefined);
+        assert.equal(req.session.user_id, 'egg');
+        assert.equal(req.session.verified, undefined);
 
         await sessionService.verifySession(req, res);
-        should.equal(req.session.verified, true);
+        assert.equal(req.session.verified, true);
 
         await sessionService.removeUserForSession(req, res);
-        should.equal(req.session.user_id, undefined);
-        should.equal(req.session.verified, true);
+        assert.equal(req.session.user_id, undefined);
+        assert.equal(req.session.verified, true);
 
         await sessionService.createSessionForUser(req, res, user);
-        should.equal(req.session.user_id, 'egg');
-        should.equal(req.session.verified, true);
+        assert.equal(req.session.user_id, 'egg');
+        assert.equal(req.session.verified, true);
+    });
+
+    it('#createSessionForUser verifies session when valid token is provided on request', async function () {
+        const getSession = async (req) => {
+            if (req.session) {
+                return req.session;
+            }
+            req.session = {
+                destroy: sinon.spy(cb => cb())
+            };
+            return req.session;
+        };
+
+        const findUserById = sinon.spy(async ({id}) => ({id}));
+        const getOriginOfRequest = sinon.stub().returns('origin');
+
+        const isStaffDeviceVerificationDisabled = sinon.stub().returns(false);
+
+        const sessionService = SessionService({
+            getSession,
+            findUserById,
+            getOriginOfRequest,
+            getSettingsCache,
+            isStaffDeviceVerificationDisabled
+        });
+
+        const req = Object.create(express.request, {
+            ip: {
+                value: '0.0.0.0'
+            },
+            headers: {
+                value: {
+                    cookie: 'thing'
+                }
+            },
+            get: {
+                value: () => 'Fake'
+            }
+        });
+        const res = Object.create(express.response);
+        const user = {id: 'egg'};
+
+        // Generate a valid token first
+        req.session = {user_id: 'egg'};
+        const validToken = await sessionService.generateAuthCodeForUser(req, res);
+        delete req.session;
+
+        // Now create session with token on request body
+        req.body = {token: validToken};
+        await sessionService.createSessionForUser(req, res, user);
+
+        assert.equal(req.session.user_id, 'egg');
+        assert.equal(req.session.verified, true);
+    });
+
+    it('#createSessionForUser does not verify session when invalid token is provided on request', async function () {
+        const getSession = async (req) => {
+            if (req.session) {
+                return req.session;
+            }
+            req.session = {
+                destroy: sinon.spy(cb => cb())
+            };
+            return req.session;
+        };
+
+        const findUserById = sinon.spy(async ({id}) => ({id}));
+        const getOriginOfRequest = sinon.stub().returns('origin');
+
+        const isStaffDeviceVerificationDisabled = sinon.stub().returns(false);
+
+        const sessionService = SessionService({
+            getSession,
+            findUserById,
+            getOriginOfRequest,
+            getSettingsCache,
+            isStaffDeviceVerificationDisabled
+        });
+
+        const req = Object.create(express.request, {
+            ip: {
+                value: '0.0.0.0'
+            },
+            headers: {
+                value: {
+                    cookie: 'thing'
+                }
+            },
+            get: {
+                value: () => 'Fake'
+            }
+        });
+        const res = Object.create(express.response);
+        const user = {id: 'egg'};
+
+        // Provide an invalid token on request body
+        req.body = {token: '000000'};
+        await sessionService.createSessionForUser(req, res, user);
+
+        assert.equal(req.session.user_id, 'egg');
+        assert.equal(req.session.verified, undefined);
     });
 
     it('Generates a valid auth code and verifies it correctly', async function () {
@@ -243,7 +347,7 @@ describe('SessionService', function () {
 
         // Generate the auth code
         const authCode = await sessionService.generateAuthCodeForUser(req, res);
-        should.exist(authCode);
+        assertExists(authCode);
 
         req.body = {
             token: authCode
@@ -251,7 +355,7 @@ describe('SessionService', function () {
 
         // Verify the auth code
         const isValid = await sessionService.verifyAuthCodeForUser(req, res);
-        should.equal(isValid, true);
+        assert.equal(isValid, true);
     });
 
     it('Fails to verify an incorrect auth code', async function () {
@@ -292,7 +396,7 @@ describe('SessionService', function () {
 
         // Generate the auth code
         const authCode = await sessionService.generateAuthCodeForUser(req, res);
-        should.exist(authCode);
+        assertExists(authCode);
 
         req.body = {
             token: 'wrong-code'
@@ -300,7 +404,7 @@ describe('SessionService', function () {
 
         // Verify an incorrect auth code
         const isValid = await sessionService.verifyAuthCodeForUser(req, res);
-        should.equal(isValid, false);
+        assert.equal(isValid, false);
     });
 
     it('Generates a different auth code for a different secret', async function () {
@@ -400,10 +504,10 @@ describe('SessionService', function () {
 
         await sessionService.sendAuthCodeToUser(req, res);
 
-        should.ok(mailer.send.calledOnce);
+        assert(mailer.send.calledOnce);
         const emailArgs = mailer.send.firstCall.args[0];
-        should.equal(emailArgs.to, 'test@example.com');
-        emailArgs.subject.should.match(/Ghost sign in verification code/);
+        assert.equal(emailArgs.to, 'test@example.com');
+        assert.match(emailArgs.subject, /Ghost sign in verification code/);
     });
 
     it('throws an error when mail fails to send', async function () {
@@ -448,10 +552,9 @@ describe('SessionService', function () {
         const req = Object.create(express.request);
         const res = Object.create(express.response);
 
-        await should(sessionService.sendAuthCodeToUser(req, res))
-            .rejectedWith({
-                message: 'Failed to send email. Please check your site configuration and try again.'
-            });
+        await assert.rejects(sessionService.sendAuthCodeToUser(req, res), {
+            message: 'Failed to send email. Please check your site configuration and try again.'
+        });
     });
 
     it('Can create a verified session for SSO', async function () {
@@ -494,8 +597,8 @@ describe('SessionService', function () {
 
         await sessionService.createVerifiedSessionForUser(req, res, user);
 
-        should.equal(req.session.user_id, 'egg');
-        should.equal(req.session.verified, true);
+        assert.equal(req.session.user_id, 'egg');
+        assert.equal(req.session.verified, true);
     });
 
     it('Throws if the user id is invalid', async function () {
@@ -537,10 +640,9 @@ describe('SessionService', function () {
         const req = Object.create(express.request);
         const res = Object.create(express.response);
 
-        await should(sessionService.sendAuthCodeToUser(req, res))
-            .rejectedWith({
-                message: 'Could not fetch user from the session.'
-            });
+        await assert.rejects(sessionService.sendAuthCodeToUser(req, res), {
+            message: 'Could not fetch user from the session.'
+        });
     });
 
     it('Can remove verified session', async function () {
@@ -585,19 +687,19 @@ describe('SessionService', function () {
         const user = {id: 'egg'};
 
         await sessionService.createSessionForUser(req, res, user);
-        should.equal(req.session.user_id, 'egg');
-        should.equal(req.session.verified, undefined);
+        assert.equal(req.session.user_id, 'egg');
+        assert.equal(req.session.verified, undefined);
 
         await sessionService.verifySession(req, res);
-        should.equal(req.session.verified, true);
+        assert.equal(req.session.verified, true);
 
         await sessionService.removeUserForSession(req, res);
-        should.equal(req.session.user_id, undefined);
-        should.equal(req.session.verified, undefined);
+        assert.equal(req.session.user_id, undefined);
+        assert.equal(req.session.verified, undefined);
 
         await sessionService.createSessionForUser(req, res, user);
-        should.equal(req.session.user_id, 'egg');
-        should.equal(req.session.verified, undefined);
+        assert.equal(req.session.user_id, 'egg');
+        assert.equal(req.session.verified, undefined);
     });
 
     describe('isVerificationRequired', function () {
@@ -609,7 +711,7 @@ describe('SessionService', function () {
             });
 
             const result = sessionService.isVerificationRequired();
-            should.equal(result, true);
+            assert.equal(result, true);
         });
 
         it('returns false when require_email_mfa is false', async function () {
@@ -620,7 +722,7 @@ describe('SessionService', function () {
             });
 
             const result = sessionService.isVerificationRequired();
-            should.equal(result, false);
+            assert.equal(result, false);
         });
 
         it('returns false when require_email_mfa is not set', async function () {
@@ -631,7 +733,7 @@ describe('SessionService', function () {
             });
 
             const result = sessionService.isVerificationRequired();
-            should.equal(result, false);
+            assert.equal(result, false);
         });
     });
 });

@@ -1,7 +1,9 @@
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const should = require('should');
 const fs = require('fs-extra');
 const StorageBase = require('ghost-storage-base');
-const configUtils = require('../../../../utils/configUtils');
+const configUtils = require('../../../../utils/config-utils');
 const storage = require('../../../../../core/server/adapters/storage');
 const LocalStorageBase = require('../../../../../core/server/adapters/storage/LocalStorageBase');
 
@@ -26,8 +28,8 @@ describe('storage: index_spec', function () {
 
     it('default image storage is local file storage', function () {
         const chosenStorage = storage.getStorage();
-        (chosenStorage instanceof StorageBase).should.eql(true);
-        (chosenStorage instanceof LocalStorageBase).should.eql(true);
+        assert.equal((chosenStorage instanceof StorageBase), true);
+        assert.equal((chosenStorage instanceof LocalStorageBase), true);
     });
 
     it('custom adapter', function () {
@@ -55,10 +57,10 @@ describe('storage: index_spec', function () {
 
         fs.writeFileSync(scope.adapter, jsFile);
 
-        configUtils.config.get('storage:active').should.eql('custom-adapter');
+        assert.equal(configUtils.config.get('storage:active'), 'custom-adapter');
         chosenStorage = storage.getStorage();
-        (chosenStorage instanceof LocalStorageBase).should.eql(false);
-        (chosenStorage instanceof StorageBase).should.eql(true);
+        assert.equal((chosenStorage instanceof LocalStorageBase), false);
+        assert.equal((chosenStorage instanceof StorageBase), true);
     });
 
     it('create bad adapter: exists fn is missing', function () {
@@ -89,8 +91,8 @@ describe('storage: index_spec', function () {
         try {
             storage.getStorage();
         } catch (err) {
-            should.exist(err);
-            should.equal(err.errorType, 'IncorrectUsageError');
+            assertExists(err);
+            assert.equal(err.errorType, 'IncorrectUsageError');
         }
     });
 });

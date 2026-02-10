@@ -2,10 +2,7 @@
   "name": "@tryghost/announcement-bar",
   "version": "1.1.12",
   "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/TryGhost/Ghost.git"
-  },
+  "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
   "files": [
     "umd/",

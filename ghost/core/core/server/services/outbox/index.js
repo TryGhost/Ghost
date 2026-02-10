@@ -1,6 +1,6 @@
 const logging = require('@tryghost/logging');
 const jobs = require('./jobs');
-const StartOutboxProcessingEvent = require('./events/StartOutboxProcessingEvent');
+const StartOutboxProcessingEvent = require('./events/start-outbox-processing-event');
 const domainEvents = require('@tryghost/domain-events');
 const processOutbox = require('./jobs/lib/process-outbox');
 const {OUTBOX_LOG_KEY} = require('./jobs/lib/constants');

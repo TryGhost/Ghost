@@ -1,9 +1,11 @@
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 
 const ghostVersion = require('@tryghost/version');
 const moment = require('moment');
-const Notifications = require('../../../../../core/server/services/notifications/Notifications');
+const Notifications = require('../../../../../core/server/services/notifications/notifications');
 const {owner} = require('../../../../utils/fixtures/context');
 
 describe('Notifications Service', function () {
@@ -31,20 +33,20 @@ describe('Notifications Service', function () {
                 }]
             });
 
-            allNotifications.length.should.equal(0);
-            notificationsToAdd.length.should.equal(1);
+            assert.equal(allNotifications.length, 0);
+            assert.equal(notificationsToAdd.length, 1);
 
             const createdNotification = notificationsToAdd[0];
 
-            createdNotification.id.should.not.be.undefined();
-            createdNotification.custom.should.be.true();
-            createdNotification.createdAt.should.not.be.undefined();
-            createdNotification.status.should.equal('alert');
-            createdNotification.type.should.equal('info');
-            createdNotification.dismissible.should.be.false();
-            createdNotification.top.should.be.true();
-            createdNotification.message.should.equal('Hello test world!');
-            createdNotification.createdAtVersion.should.equal('4.1.0');
+            assertExists(createdNotification.id);
+            assert.equal(createdNotification.custom, true);
+            assertExists(createdNotification.createdAt);
+            assert.equal(createdNotification.status, 'alert');
+            assert.equal(createdNotification.type, 'info');
+            assert.equal(createdNotification.dismissible, false);
+            assert.equal(createdNotification.top, true);
+            assert.equal(createdNotification.message, 'Hello test world!');
+            assert.equal(createdNotification.createdAtVersion, '4.1.0');
         });
     });
 
@@ -68,8 +70,8 @@ describe('Notifications Service', function () {
 
             const notifications = notificationSvc.browse({user: owner});
 
-            should.exist(notifications);
-            notifications.length.should.equal(1);
+            assertExists(notifications);
+            assert.equal(notifications.length, 1);
         });
 
         it('can browse major version upgrade notifications', function () {
@@ -97,8 +99,8 @@ describe('Notifications Service', function () {
 
             const notifications = notificationSvc.browse({user: owner});
 
-            should.exist(notifications);
-            notifications.length.should.equal(1);
+            assertExists(notifications);
+            assert.equal(notifications.length, 1);
         });
 
         it('cannot see 2.0 version upgrade notifications in Ghost 3.0', function () {
@@ -126,8 +128,8 @@ describe('Notifications Service', function () {
 
             const notifications = notificationSvc.browse({user: owner});
 
-            should.exist(notifications);
-            notifications.length.should.equal(0);
+            assertExists(notifications);
+            assert.equal(notifications.length, 0);
         });
 
         it('cannot see 4.0 version upgrade notifications in Ghost 4.0', function () {
@@ -155,8 +157,8 @@ describe('Notifications Service', function () {
 
             const notifications = notificationSvc.browse({user: owner});
 
-            should.exist(notifications);
-            notifications.length.should.equal(0);
+            assertExists(notifications);
+            assert.equal(notifications.length, 0);
         });
 
         it('cannot see 5.0 version upgrade notifications in Ghost 5.0', function () {
@@ -184,8 +186,8 @@ describe('Notifications Service', function () {
 
             const notifications = notificationSvc.browse({user: owner});
 
-            should.exist(notifications);
-            notifications.length.should.equal(0);
+            assertExists(notifications);
+            assert.equal(notifications.length, 0);
         });
 
         it('filters out outdated notifications', function () {
@@ -226,10 +228,10 @@ describe('Notifications Service', function () {
 
             const notifications = notificationSvc.browse({user: owner});
 
-            should.exist(notifications);
-            notifications.length.should.equal(2);
-            notifications[0].message.should.equal('should be visible');
-            notifications[1].message.should.equal('visible even though without a created at property');
+            assertExists(notifications);
+            assert.equal(notifications.length, 2);
+            assert.equal(notifications[0].message, 'should be visible');
+            assert.equal(notifications[1].message, 'visible even though without a created at property');
         });
     });
 
@@ -251,11 +253,11 @@ describe('Notifications Service', function () {
 
             const notifications = notificationSvc.browse({user: owner});
 
-            should.exist(notifications);
-            notifications.length.should.equal(0);
+            assertExists(notifications);
+            assert.equal(notifications.length, 0);
 
-            settingsModelStub.called.should.equal(true);
-            settingsModelStub.args[0][0].should.eql([{
+            assert.equal(settingsModelStub.called, true);
+            assert.deepEqual(settingsModelStub.args[0][0], [{
                 key: 'notifications',
                 value: '[]'
             }]);
@@ -279,10 +281,10 @@ describe('Notifications Service', function () {
 
             const notifications = notificationSvc.browse({user: owner});
 
-            should.exist(notifications);
-            notifications.length.should.equal(1);
+            assertExists(notifications);
+            assert.equal(notifications.length, 1);
 
-            settingsModelStub.called.should.equal(false);
+            assert.equal(settingsModelStub.called, false);
         });
     });
 });

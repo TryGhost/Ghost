@@ -1,5 +1,5 @@
 const {parentPort} = require('worker_threads');
-const StartMentionEmailReportJob = require('./StartMentionEmailReportJob');
+const StartMentionEmailReportJob = require('./start-mention-email-report-job');
 
 if (parentPort) {
     parentPort.postMessage({

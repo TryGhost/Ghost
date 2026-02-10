@@ -1,9 +1,11 @@
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const should = require('should');
 
 const path = require('path');
 const fs = require('fs').promises;
 const os = require('os');
-const Minifier = require('../../../../../core/frontend/services/assets-minification/Minifier');
+const Minifier = require('../../../../../core/frontend/services/assets-minification/minifier');
 
 describe('Minifier', function () {
     let minifier;
@@ -91,27 +93,27 @@ describe('Minifier', function () {
 
             const outputPath = minifier.getFullDest(result[0]);
             const content = await fs.readFile(outputPath, {encoding: 'utf8'});
-            content.should.match(/randomword/);
+            assert.match(content, /randomword/);
         });
     });
 
     describe('Bad inputs', function () {
         it('cannot create a minifier without src and dest', function () {
-            (function noObject(){
+            assert.throws((function noObject(){
                 new Minifier();
-            }).should.throw();
+            }));
 
-            (function emptyObject() {
+            assert.throws((function emptyObject() {
                 new Minifier({});
-            }).should.throw();
+            }));
 
-            (function missingSrc() {
+            assert.throws((function missingSrc() {
                 new Minifier({dest: 'a'});
-            }).should.throw();
+            }));
 
-            (function missingDest() {
+            assert.throws((function missingDest() {
                 new Minifier({src: 'a'});
-            }).should.throw();
+            }));
         });
 
         it('can only handle css and js files', async function () {
@@ -121,9 +123,9 @@ describe('Minifier', function () {
                 });
                 should.fail(minifier, 'Should have errored');
             } catch (err) {
-                should.exist(err);
-                err.errorType.should.eql('IncorrectUsageError');
-                err.message.should.match(/Unexpected destination/);
+                assertExists(err);
+                assert.equal(err.errorType, 'IncorrectUsageError');
+                assert.match(err.message, /Unexpected destination/);
             }
         });
 
@@ -135,9 +137,9 @@ describe('Minifier', function () {
                 });
                 should.fail(minifier, 'Should have errored');
             } catch (err) {
-                should.exist(err);
-                err.errorType.should.eql('IncorrectUsageError');
-                err.message.should.match(/Unable to read/);
+                assertExists(err);
+                assert.equal(err.errorType, 'IncorrectUsageError');
+                assert.match(err.message, /Unable to read/);
             }
         });
 

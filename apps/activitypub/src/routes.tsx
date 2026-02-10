@@ -1,18 +1,6 @@
 import AppError from '@components/layout/error';
-import BlueskySharing from '@views/preferences/components/bluesky-sharing';
-import Explore from '@views/explore';
-import Feed from './views/feed/feed';
-import Inbox from '@views/inbox';
-import Moderation from '@views/preferences/components/moderation';
-import Note from './views/feed/note';
-import Notifications from '@views/notifications';
-import Onboarding from '@components/layout/onboarding';
-import OnboardingStep1 from '@components/layout/onboarding/step-1';
-import OnboardingStep2 from '@components/layout/onboarding/step-2';
-import OnboardingStep3 from '@components/layout/onboarding/step-3';
-import Preferences from '@views/preferences';
-import Profile from '@views/profile';
-import {Navigate, Outlet, RouteObject} from '@tryghost/admin-x-framework';
+
+import {Navigate, Outlet, RouteObject, lazyComponent} from '@tryghost/admin-x-framework';
 
 const basePath = import.meta.env.VITE_TEST ? '' : 'activitypub';
 
@@ -44,83 +32,83 @@ export const routes: CustomRouteObject[] = [
             },
             {
                 path: 'reader',
-                element: <Inbox />,
+                lazy: lazyComponent(() => import('./views/inbox')),
                 pageTitle: 'Reader'
             },
             {
                 path: 'reader/:postId',
-                element: <Inbox />,
+                lazy: lazyComponent(() => import('./views/inbox')),
                 pageTitle: 'Reader'
             },
             {
                 path: 'notes',
-                element: <Feed />,
+                lazy: lazyComponent(() => import('./views/feed/feed')),
                 pageTitle: 'Notes'
             },
             {
                 path: 'notes/:postId',
-                element: <Note />,
+                lazy: lazyComponent(() => import('./views/feed/note')),
                 pageTitle: 'Note'
             },
             {
                 path: 'notifications',
-                element: <Notifications />,
+                lazy: lazyComponent(() => import('./views/notifications')),
                 pageTitle: 'Notifications'
             },
             {
                 path: 'explore',
-                element: <Explore />,
+                lazy: lazyComponent(() => import('./views/explore')),
                 pageTitle: 'Explore'
             },
             {
                 path: 'explore/:topic',
-                element: <Explore />,
+                lazy: lazyComponent(() => import('./views/explore')),
                 pageTitle: 'Explore'
             },
             {
                 path: 'profile',
-                element: <Profile />,
+                lazy: lazyComponent(() => import('./views/profile')),
                 pageTitle: 'Profile'
             },
             {
                 path: 'profile/likes',
-                element: <Profile />,
+                lazy: lazyComponent(() => import('./views/profile')),
                 pageTitle: 'Profile'
             },
             {
                 path: 'profile/following',
-                element: <Profile />,
+                lazy: lazyComponent(() => import('./views/profile')),
                 pageTitle: 'Profile'
             },
             {
                 path: 'profile/followers',
-                element: <Profile />,
+                lazy: lazyComponent(() => import('./views/profile')),
                 pageTitle: 'Profile'
             },
             {
                 path: 'profile/:handle/:tab?',
-                element: <Profile />,
+                lazy: lazyComponent(() => import('./views/profile')),
                 pageTitle: 'Profile'
             },
             {
                 path: 'preferences',
-                element: <Preferences />,
+                lazy: lazyComponent(() => import('./views/preferences')),
                 pageTitle: 'Preferences'
             },
             {
                 path: 'preferences/moderation',
-                element: <Moderation />,
+                lazy: lazyComponent(() => import('./views/preferences/components/moderation')),
                 pageTitle: 'Moderation',
                 showBackButton: true
             },
             {
                 path: 'preferences/bluesky-sharing',
-                element: <BlueskySharing />,
+                lazy: lazyComponent(() => import('./views/preferences/components/bluesky-sharing')),
                 showBackButton: true
             },
             {
                 path: 'welcome',
-                element: <Onboarding />,
+                lazy: lazyComponent(() => import('./components/layout/onboarding')),
                 pageTitle: 'Welcome',
                 children: [
                     {
@@ -129,15 +117,15 @@ export const routes: CustomRouteObject[] = [
                     },
                     {
                         path: '1',
-                        element: <OnboardingStep1 />
+                        lazy: lazyComponent(() => import('./components/layout/onboarding/step-1'))
                     },
                     {
                         path: '2',
-                        element: <OnboardingStep2 />
+                        lazy: lazyComponent(() => import('./components/layout/onboarding/step-2'))
                     },
                     {
                         path: '3',
-                        element: <OnboardingStep3 />
+                        lazy: lazyComponent(() => import('./components/layout/onboarding/step-3'))
                     },
                     {
                         path: '*',
@@ -147,7 +135,7 @@ export const routes: CustomRouteObject[] = [
             },
             {
                 path: '*',
-                element: <AppError />
+                lazy: lazyComponent(() => import('./components/layout/error'))
             }
         ]
     }

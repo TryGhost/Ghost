@@ -37,6 +37,17 @@
                 />
             </div>
         {{/liquid-if}}
+
+        {{#if @publishOptions.willEmail}}
+            <Editor::EmailSizeWarning @post={{@publishOptions.post}} as |overLimit emailSizeKb| >
+                {{#if overLimit}}
+                    <p class="gh-box gh-content-box pa gh-publish-setting-email-warning {{if (eq this.openSection "publishType") "open"}}">
+                        <div class="gh-email-preview-clip-title mb">This email is <span class="yellow-d1">{{emailSizeKb}}kB</span></div>
+                        <div class="gh-email-preview-clip-description">Email newsletters may get clipped in the inbox behind a “View entire message” link when they’re over 100kB.</div>
+                    </p>
+                {{/if}}
+            </Editor::EmailSizeWarning>
+        {{/if}}
     </div>
 
     {{#unless @publishOptions.emailUnavailable}}

@@ -17,7 +17,9 @@
     "Best": "",
     "Cancel": "Ακύρωση",
     "Comment": "Σχόλιο",
+    "Commenting disabled": "",
     "Complete your profile": "Ολοκληρώστε το προφίλ σας",
+    "Contact support": "",
     "Delete": "Διαγραφή",
     "Deleted": "",
     "Deleted member": "Διαγραμμένο μέλος",
@@ -28,6 +30,7 @@
     "edited": "Επεξεργασμένο",
     "Enter your name": "Εισάγετε το όνομά σας",
     "Expertise": "Εξειδίκευση",
+    "for more information.": "",
     "Founder @ Acme Inc": "Ιδρυτής @ Acme Inc",
     "Full-time parent": "Γονέας πλήρους απασχόλησης",
     "Head of Marketing at Acme, Inc": "Επικεφαλής Μάρκετινγκ στην Acme, Inc",
@@ -69,6 +72,8 @@
     "This comment has been hidden.": "Αυτό το σχόλιο έχει κρυφτεί.",
     "This comment has been removed.": "Αυτό το σχόλιο έχει αφαιρεθεί.",
     "Upgrade now": "Αναβάθμιση τώρα",
+    "View in admin": "",
     "Yesterday": "Χθες",
+    "You can't post comments in this publication.": "",
     "Your request will be sent to the owner of this site.": "Το αίτημά σας θα σταλεί στον ιδιοκτήτη αυτού του ιστότοπου."
 }

@@ -15,7 +15,7 @@ export function setupAdminAPI({adminUrl}: {adminUrl: string}) {
         let data = null;
         try {
             data = JSON.parse(event.data);
-        } catch (err) {
+        } catch {
             return;
         }
 

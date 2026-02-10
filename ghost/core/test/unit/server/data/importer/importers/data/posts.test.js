@@ -1,6 +1,8 @@
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../../../utils/assertions');
 const should = require('should');
 const find = require('lodash/find');
-const PostsImporter = require('../../../../../../../core/server/data/importer/importers/data/PostsImporter');
+const PostsImporter = require('../../../../../../../core/server/data/importer/importers/data/posts-importer');
 
 describe('PostsImporter', function () {
     describe('#beforeImport', function () {
@@ -24,28 +26,28 @@ describe('PostsImporter', function () {
             importer.beforeImport();
 
             const pageFalse = find(importer.dataToImport, {slug: 'page-false'});
-            should.exist(pageFalse);
+            assertExists(pageFalse);
             should.not.exist(pageFalse.page, 'pageFalse.page should not exist');
-            should.exist(pageFalse.type, 'pageFalse.type should exist');
-            pageFalse.type.should.equal('post');
+            assertExists(pageFalse.type, 'pageFalse.type should exist');
+            assert.equal(pageFalse.type, 'post');
 
             const pageTrue = find(importer.dataToImport, {slug: 'page-true'});
-            should.exist(pageTrue);
+            assertExists(pageTrue);
             should.not.exist(pageTrue.page, 'pageTrue.page should not exist');
-            should.exist(pageTrue.type, 'pageTrue.type should exist');
-            pageTrue.type.should.equal('page');
+            assertExists(pageTrue.type, 'pageTrue.type should exist');
+            assert.equal(pageTrue.type, 'page');
 
             const typePost = find(importer.dataToImport, {slug: 'type-post'});
-            should.exist(typePost);
+            assertExists(typePost);
             should.not.exist(typePost.page, 'typePost.page should not exist');
-            should.exist(typePost.type, 'typePost.type should exist');
-            typePost.type.should.equal('post');
+            assertExists(typePost.type, 'typePost.type should exist');
+            assert.equal(typePost.type, 'post');
 
             const typePage = find(importer.dataToImport, {slug: 'type-page'});
-            should.exist(typePage);
+            assertExists(typePage);
             should.not.exist(typePage.page, 'typePage.page should not exist');
-            should.exist(typePage.type, 'typePage.type should exist');
-            typePage.type.should.equal('page');
+            assertExists(typePage.type, 'typePage.type should exist');
+            assert.equal(typePage.type, 'page');
         });
 
         it('gives precedence to post.type when post.page is also present', function () {
@@ -72,20 +74,20 @@ describe('PostsImporter', function () {
             importer.beforeImport();
 
             const pageFalseTypePage = find(importer.dataToImport, {slug: 'page-false-type-page'});
-            should.exist(pageFalseTypePage);
-            pageFalseTypePage.type.should.equal('page', 'pageFalseTypePage.type');
+            assertExists(pageFalseTypePage);
+            assert.equal(pageFalseTypePage.type, 'page', 'pageFalseTypePage.type');
 
             const pageTrueTypePage = find(importer.dataToImport, {slug: 'page-true-type-page'});
-            should.exist(pageTrueTypePage);
-            pageTrueTypePage.type.should.equal('page', 'pageTrueTypePage.type');
+            assertExists(pageTrueTypePage);
+            assert.equal(pageTrueTypePage.type, 'page', 'pageTrueTypePage.type');
 
             const pageFalseTypePost = find(importer.dataToImport, {slug: 'page-false-type-post'});
-            should.exist(pageFalseTypePost);
-            pageFalseTypePost.type.should.equal('post', 'pageFalseTypePost.type');
+            assertExists(pageFalseTypePost);
+            assert.equal(pageFalseTypePost.type, 'post', 'pageFalseTypePost.type');
 
             const pageTrueTypePost = find(importer.dataToImport, {slug: 'page-true-type-post'});
-            should.exist(pageTrueTypePost);
-            pageTrueTypePost.type.should.equal('post', 'pageTrueTypePost.type');
+            assertExists(pageTrueTypePost);
+            assert.equal(pageTrueTypePost.type, 'post', 'pageTrueTypePost.type');
         });
 
         it('Does not remove the newsletter_id column', function () {
@@ -99,8 +101,8 @@ describe('PostsImporter', function () {
             importer.beforeImport();
 
             const postWithoutNewsletter = find(importer.dataToImport, {slug: 'post-with-newsletter'});
-            should.exist(postWithoutNewsletter);
-            should.exist(postWithoutNewsletter.newsletter_id);
+            assertExists(postWithoutNewsletter);
+            assertExists(postWithoutNewsletter.newsletter_id);
         });
 
         it('Maps send_email_when_published', function () {
@@ -114,9 +116,9 @@ describe('PostsImporter', function () {
             importer.beforeImport();
 
             const post = find(importer.dataToImport, {slug: 'post-with-newsletter'});
-            should.exist(post);
-            post.email_recipient_filter.should.eql('all');
-            should.not.exist(post.send_email_when_published);
+            assertExists(post);
+            assert.equal(post.email_recipient_filter, 'all');
+            assert.equal(post.send_email_when_published, undefined);
             // @TODO: need to check this mapping
             //post.newsletter_id.should.eql();
         });
@@ -133,8 +135,8 @@ describe('PostsImporter', function () {
             importer.beforeImport();
 
             const post = find(importer.dataToImport, {slug: 'post-with-newsletter'});
-            should.exist(post);
-            should.equal(post.mobiledoc, null);
+            assertExists(post);
+            assert.equal(post.mobiledoc, undefined);
         });
     });
 });

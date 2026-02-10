@@ -1,11 +1,11 @@
-const MentionController = require('./MentionController');
-const WebmentionMetadata = require('./WebmentionMetadata');
-const MentionsAPI = require('./MentionsAPI');
-const MentionSendingService = require('./MentionSendingService');
-const MentionDiscoveryService = require('./MentionDiscoveryService');
-const BookshelfMentionRepository = require('./BookshelfMentionRepository');
-const ResourceService = require('./ResourceService');
-const RoutingService = require('./RoutingService');
+const MentionController = require('./mention-controller');
+const WebmentionMetadata = require('./webmention-metadata');
+const MentionsAPI = require('./mentions-api');
+const MentionSendingService = require('./mention-sending-service');
+const MentionDiscoveryService = require('./mention-discovery-service');
+const BookshelfMentionRepository = require('./bookshelf-mention-repository');
+const ResourceService = require('./resource-service');
+const RoutingService = require('./routing-service');
 const models = require('../../models');
 const events = require('../../lib/common/events');
 const externalRequest = require('../../../server/lib/request-external.js');
@@ -23,13 +23,13 @@ function getPostUrl(post) {
 }
 
 module.exports = {
-    /** @type {import('./MentionsAPI')} */
+    /** @type {import('./mentions-api')} */
     api: null,
-    /** @type {import('./BookshelfMentionRepository')} */
+    /** @type {import('./bookshelf-mention-repository')} */
     repository: null,
     controller: new MentionController(),
     metadata: new WebmentionMetadata(),
-    /** @type {import('./MentionSendingService')} */
+    /** @type {import('./mention-sending-service')} */
     sendingService: null,
     didInit: false,
     async init() {

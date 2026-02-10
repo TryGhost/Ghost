@@ -14,7 +14,7 @@ const settingsService = require('../../core/server/services/settings/settings-se
 const adapterManager = require('../../core/server/services/adapter-manager');
 
 // Other Test Utilities
-const configUtils = require('./configUtils');
+const configUtils = require('./config-utils');
 const dbUtils = require('./db-utils');
 const urlServiceUtils = require('./url-service-utils');
 const redirects = require('./redirects');

@@ -9,7 +9,7 @@ const imageLib = require('../../../../core/server/lib/image');
 const boot = require('../../../../core/boot');
 
 // Other Test Utilities
-const configUtils = require('../../../utils/configUtils');
+const configUtils = require('../../../utils/config-utils');
 const urlServiceUtils = require('../../../utils/url-service-utils');
 
 module.exports = {

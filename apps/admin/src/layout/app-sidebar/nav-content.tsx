@@ -2,6 +2,7 @@ import React from "react"
 
 import {
     Button,
+    formatNumber,
     LucideIcon,
     SidebarGroup,
     SidebarGroupContent,
@@ -16,12 +17,14 @@ import { useMemberCount } from "./hooks/use-member-count";
 import { useNavigationExpanded } from "./hooks/use-navigation-preferences";
 import { NavCustomViews } from "./nav-custom-views";
 import { useEmberRouting } from "@/ember-bridge";
+import { useFeatureFlag } from "@/hooks/use-feature-flag";
 
 function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const { data: currentUser } = useCurrentUser();
     const [postsExpanded, setPostsExpanded] = useNavigationExpanded('posts');
     const memberCount = useMemberCount();
     const routing = useEmberRouting();
+    const commentModerationEnabled = useFeatureFlag('commentModeration');
 
     const showTags = currentUser && canManageTags(currentUser);
     const showMembers = currentUser && canManageMembers(currentUser);
@@ -132,8 +135,20 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                                 <NavMenuItem.Label>Members</NavMenuItem.Label>
                             </NavMenuItem.Link>
                             {memberCount != null && (
-                                <SidebarMenuBadge>{memberCount}</SidebarMenuBadge>
+                                <SidebarMenuBadge>{(formatNumber as (value: number) => string)(memberCount)}</SidebarMenuBadge>
                             )}
+                        </NavMenuItem>
+                    )}
+
+                    {showMembers && commentModerationEnabled && (
+                        <NavMenuItem>
+                            <NavMenuItem.Link
+                                to="comments"
+                                activeOnSubpath
+                            >
+                                <LucideIcon.MessagesSquare />
+                                <NavMenuItem.Label>Comments</NavMenuItem.Label>
+                            </NavMenuItem.Link>
                         </NavMenuItem>
                     )}
                 </SidebarMenu>

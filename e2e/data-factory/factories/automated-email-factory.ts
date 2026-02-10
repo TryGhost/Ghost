@@ -26,7 +26,7 @@ export class AutomatedEmailFactory extends Factory<Partial<AutomatedEmail>, Auto
             status: 'active',
             name: 'Welcome Email (Free)',
             slug: 'member-welcome-email-free',
-            subject: 'Welcome to {{site.title}}!',
+            subject: 'Welcome to {site_title}!',
             lexical: JSON.stringify(this.defaultLexicalContent()),
             sender_name: null,
             sender_email: null,
@@ -45,7 +45,7 @@ export class AutomatedEmailFactory extends Factory<Partial<AutomatedEmail>, Auto
                     type: 'paragraph',
                     children: [{
                         type: 'text',
-                        text: 'Welcome to {{site.title}}!'
+                        text: 'Welcome to {site_title}!'
                     }]
                 }],
                 direction: null,

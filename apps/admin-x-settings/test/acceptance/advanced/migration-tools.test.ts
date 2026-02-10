@@ -10,24 +10,19 @@ test.describe('Migration tools', async () => {
         await page.goto('/');
 
         const migrationSection = page.getByTestId('migrationtools');
+        await expect(migrationSection).toBeVisible();
 
-        await migrationSection.getByRole('button', {name: 'Substack'}).click();
-        await expectExternalNavigate(page, {route: '/migrate/substack'});
+        const migrators = [
+            {name: 'Substack', route: '/migrate/substack'},
+            {name: 'WordPress', route: '/migrate/wordpress'},
+            {name: 'Medium', route: '/migrate/medium'},
+            {name: 'Mailchimp', route: '/migrate/mailchimp'}
+        ];
 
-        await page.goto('/');
-
-        await migrationSection.getByRole('button', {name: 'WordPress'}).click();
-        await expectExternalNavigate(page, {route: '/migrate/wordpress'});
-
-        await page.goto('/');
-
-        await migrationSection.getByRole('button', {name: 'Medium'}).click();
-        await expectExternalNavigate(page, {route: '/migrate/medium'});
-
-        await page.goto('/');
-
-        await migrationSection.getByRole('button', {name: 'Mailchimp'}).click();
-        await expectExternalNavigate(page, {route: '/migrate/mailchimp'});
+        for (const {name, route} of migrators) {
+            await migrationSection.getByRole('button', {name}).click();
+            await expectExternalNavigate(page, {route});
+        }
     });
 
     // test('Universal import', async ({page}) => {
@@ -72,6 +67,7 @@ test.describe('Migration tools', async () => {
         await page.goto('/');
 
         const migrationSection = page.getByTestId('migrationtools');
+        await expect(migrationSection).toBeVisible();
 
         await migrationSection.getByRole('tab', {name: 'Export'}).click();
 
@@ -79,6 +75,6 @@ test.describe('Migration tools', async () => {
 
         await expect(page.locator('iframe#iframeDownload')).toHaveAttribute('src', /\/db\/$/);
 
-        expect(lastApiRequests.downloadAllContent).toBeTruthy();
+        await expect.poll(() => lastApiRequests.downloadAllContent).toBeTruthy();
     });
 });

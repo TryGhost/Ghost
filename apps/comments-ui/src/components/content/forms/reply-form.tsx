@@ -45,7 +45,7 @@ const ReplyForm: React.FC<Props> = ({openForm, parent}) => {
     return (
         <div ref={setForm} data-testid="reply-form">
             <div className='mt-[-16px] pr-2'>
-                <FormWrapper comment={parent} editor={editor} isOpen={true} openForm={openForm} reduced={isMobile()}>
+                <FormWrapper editor={editor} isOpen={true} openForm={openForm} reduced={isMobile()}>
                     <Form
                         close={close}
                         editor={editor}

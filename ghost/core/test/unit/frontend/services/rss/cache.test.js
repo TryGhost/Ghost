@@ -1,7 +1,8 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const rewire = require('rewire');
-const configUtils = require('../../../../utils/configUtils');
+const configUtils = require('../../../../utils/config-utils');
 const rssCache = rewire('../../../../../core/frontend/services/rss/cache');
 
 describe('RSS: Cache', function () {
@@ -35,7 +36,7 @@ describe('RSS: Cache', function () {
                 xmlData1 = _xmlData;
 
                 // We should have called generateFeed
-                generateSpy.callCount.should.eql(1);
+                assert.equal(generateSpy.callCount, 1);
 
                 // Call RSS again to check that we didn't rebuild
                 return rssCache.getXML('/rss/', data);
@@ -44,10 +45,10 @@ describe('RSS: Cache', function () {
                 // Assertions
 
                 // We should not have called generateFeed again
-                generateSpy.callCount.should.eql(1);
+                assert.equal(generateSpy.callCount, 1);
 
                 // The data should be identical, no changing lastBuildDate
-                xmlData1.should.equal(xmlData2);
+                assert.equal(xmlData1, xmlData2);
 
                 done();
             })

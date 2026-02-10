@@ -27,7 +27,9 @@ module.exports.formattedMemberResponse = function formattedMemberResponse(member
         subscriptions: member.subscriptions || [],
         paid: member.status !== 'free',
         created_at: member.created_at,
-        enable_comment_notifications: member.enable_comment_notifications
+        enable_comment_notifications: member.enable_comment_notifications,
+        can_comment: member.can_comment,
+        commenting: member.commenting
     };
     if (member.newsletters) {
         data.newsletters = formatNewsletterResponse(member.newsletters);

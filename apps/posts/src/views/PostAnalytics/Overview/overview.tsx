@@ -176,7 +176,7 @@ const Overview: React.FC = () => {
                                         MRR impact
                                         </KpiCardLabel>
                                         <KpiCardContent>
-                                            <KpiCardValue className='text-[2.2rem]'>{currencySymbol}{centsToDollars(totals?.mrr || 0)}</KpiCardValue>
+                                            <KpiCardValue className='text-[2.2rem]'>{currencySymbol}{formatNumber(centsToDollars(totals?.mrr || 0))}</KpiCardValue>
                                         </KpiCardContent>
                                     </KpiCard>
                                 </>

@@ -236,7 +236,7 @@ export const testDataFactories = {
  * Mock timer utilities
  */
 export function mockTimers() {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const vitest = require('vitest');
     vitest.vi.useFakeTimers();
 

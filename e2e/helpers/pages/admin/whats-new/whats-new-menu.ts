@@ -11,14 +11,10 @@ export class WhatsNewMenu extends AdminPage {
     constructor(page: Page) {
         super(page);
 
-        // TODO: Remove .first() after React shell fully replaces Ember admin
-        // During migration, both shells render the arrow-down icon
-        this.userMenuTrigger = page.locator('[data-test-nav="arrow-down"]').first();
+        this.userMenuTrigger = page.locator('[data-test-nav="arrow-down"]');
         this.whatsNewMenuItem = page.getByRole('menuitem', {name: /What’s new\?/i});
-        // TODO: Remove .first() after React shell fully replaces Ember admin
-        // During migration, both shells render badges - .first() selects React's
-        this.avatarBadge = page.locator('[data-test-whats-new-avatar-badge]').first();
-        this.menuBadge = page.locator('[data-test-whats-new-menu-badge]').first();
+        this.avatarBadge = page.locator('[data-test-whats-new-avatar-badge]');
+        this.menuBadge = page.locator('[data-test-whats-new-menu-badge]');
     }
 
     async openUserMenu(): Promise<void> {

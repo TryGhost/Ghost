@@ -1,3 +1,4 @@
+// @ts-expect-error - semver subpath has no types
 import semverParse from 'semver/functions/parse';
 
 // This function needs to support:
@@ -29,7 +30,7 @@ export function linkToGitHubReleases(version: string): string {
         }
 
         return `https://github.com/TryGhost/Ghost/releases/tag/v${cleanedVersion}`;
-    } catch (e) {
+    } catch {
         return '';
     }
 }

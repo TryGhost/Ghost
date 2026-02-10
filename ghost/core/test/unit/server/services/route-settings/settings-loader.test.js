@@ -1,10 +1,12 @@
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const sinon = require('sinon');
 const should = require('should');
 const rewire = require('rewire');
 const fs = require('fs-extra');
 const path = require('path');
 const errors = require('@tryghost/errors');
-const SettingsLoader = rewire('../../../../../core/server/services/route-settings/SettingsLoader');
+const SettingsLoader = rewire('../../../../../core/server/services/route-settings/settings-loader');
 
 describe('UNIT > SettingsLoader:', function () {
     afterEach(function () {
@@ -52,9 +54,9 @@ describe('UNIT > SettingsLoader:', function () {
             const fsReadFileStub = sinon.stub(fs, 'readFile').returns(settingsStubFile);
 
             const result = await settingsLoader.loadSettings();
-            should.exist(result);
+            assertExists(result);
             result.should.be.an.Object().with.properties('routes', 'collections', 'taxonomies');
-            fsReadFileStub.calledOnce.should.be.true();
+            assert.equal(fsReadFileStub.calledOnce, true);
         });
 
         it('can find yaml settings file and returns a settings object', async function () {
@@ -72,12 +74,12 @@ describe('UNIT > SettingsLoader:', function () {
                 settingFilePath: expectedSettingsFile
             });
             const setting = await settingsLoader.loadSettings();
-            should.exist(setting);
+            assertExists(setting);
             setting.should.be.an.Object().with.properties('routes', 'collections', 'taxonomies');
 
-            fsReadFileSpy.calledOnce.should.be.true();
-            fsReadFileSpy.calledWith(expectedSettingsFile).should.be.true();
-            yamlParserStub.callCount.should.be.eql(1);
+            assert.equal(fsReadFileSpy.calledOnce, true);
+            assert.equal(fsReadFileSpy.calledWith(expectedSettingsFile), true);
+            sinon.assert.calledOnce(yamlParserStub);
         });
 
         it('can handle errors from YAML parser', async function () {
@@ -95,10 +97,10 @@ describe('UNIT > SettingsLoader:', function () {
                 await settingsLoader.loadSettings();
                 throw new Error('Should have failed already');
             } catch (err) {
-                should.exist(err);
-                err.message.should.be.eql('could not parse yaml file');
-                err.context.should.be.eql('bad indentation of a mapping entry at line 5, column 10');
-                yamlParserStub.calledOnce.should.be.true();
+                assertExists(err);
+                assert.equal(err.message, 'could not parse yaml file');
+                assert.equal(err.context, 'bad indentation of a mapping entry at line 5, column 10');
+                sinon.assert.calledOnce(yamlParserStub);
             }
         });
 
@@ -128,9 +130,9 @@ describe('UNIT > SettingsLoader:', function () {
                 await settingsLoader.loadSettings();
                 throw new Error('Should have failed already');
             } catch (err) {
-                err.message.should.match(/Error trying to load YAML setting for routes from/);
-                fsReadFileStub.calledWith(expectedSettingsFile).should.be.true();
-                yamlParserStub.calledOnce.should.be.false();
+                assert.match(err.message, /Error trying to load YAML setting for routes from/);
+                assert.equal(fsReadFileStub.calledWith(expectedSettingsFile), true);
+                assert.equal(yamlParserStub.calledOnce, false);
             }
         });
     });

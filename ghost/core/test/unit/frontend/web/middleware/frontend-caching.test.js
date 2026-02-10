@@ -1,7 +1,7 @@
 const assert = require('node:assert').strict;
 const sinon = require('sinon');
 const testUtils = require('../../../../utils');
-const configUtils = require('../../../../utils/configUtils');
+const configUtils = require('../../../../utils/config-utils');
 
 const frontendCaching = require('../../../../../core/frontend/web/middleware/frontend-caching');
 

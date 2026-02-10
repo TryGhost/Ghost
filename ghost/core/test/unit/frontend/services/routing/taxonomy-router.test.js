@@ -1,0 +1,84 @@
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
+const should = require('should');
+const sinon = require('sinon');
+const settingsCache = require('../../../../../core/shared/settings-cache');
+const controllers = require('../../../../../core/frontend/services/routing/controllers');
+const TaxonomyRouter = require('../../../../../core/frontend/services/routing/taxonomy-router');
+
+const RESOURCE_CONFIG = require('../../../../../core/frontend/services/routing/config');
+
+describe('UNIT - services/routing/TaxonomyRouter', function () {
+    let req;
+    let res;
+    let next;
+    let routerCreatedSpy;
+
+    beforeEach(function () {
+        sinon.stub(settingsCache, 'get').withArgs('permalinks').returns('/:slug/');
+
+        routerCreatedSpy = sinon.spy();
+
+        sinon.spy(TaxonomyRouter.prototype, 'mountRoute');
+        sinon.spy(TaxonomyRouter.prototype, 'mountRouter');
+
+        req = sinon.stub();
+        res = sinon.stub();
+        next = sinon.stub();
+
+        res.locals = {};
+    });
+
+    afterEach(function () {
+        sinon.restore();
+    });
+
+    it('instantiate', function () {
+        const taxonomyRouter = new TaxonomyRouter('tag', '/tag/:slug/', {}, routerCreatedSpy);
+
+        assertExists(taxonomyRouter.router);
+        assertExists(taxonomyRouter.rssRouter);
+
+        assert.equal(taxonomyRouter.taxonomyKey, 'tag');
+        assert.equal(taxonomyRouter.getPermalinks().getValue(), '/tag/:slug/');
+
+        assert.equal(routerCreatedSpy.calledOnce, true);
+        assert.equal(routerCreatedSpy.calledWith(taxonomyRouter), true);
+
+        assert.equal(taxonomyRouter.mountRouter.callCount, 1);
+        assert.equal(taxonomyRouter.mountRouter.args[0][0], '/tag/:slug/');
+        taxonomyRouter.mountRouter.args[0][1].should.eql(taxonomyRouter.rssRouter.router());
+
+        assert.equal(taxonomyRouter.mountRoute.callCount, 3);
+
+        // permalink route
+        assert.equal(taxonomyRouter.mountRoute.args[0][0], '/tag/:slug/');
+        taxonomyRouter.mountRoute.args[0][1].should.eql(controllers.channel);
+
+        // pagination feature
+        assert.equal(taxonomyRouter.mountRoute.args[1][0], '/tag/:slug/page/:page(\\d+)');
+        taxonomyRouter.mountRoute.args[1][1].should.eql(controllers.channel);
+
+        // edit feature
+        assert.equal(taxonomyRouter.mountRoute.args[2][0], '/tag/:slug/edit');
+        taxonomyRouter.mountRoute.args[2][1].should.eql(taxonomyRouter._redirectEditOption.bind(taxonomyRouter));
+    });
+
+    it('_prepareContext behaves as expected', function () {
+        const taxonomyRouter = new TaxonomyRouter('tag', '/tag/:slug/', RESOURCE_CONFIG, routerCreatedSpy);
+        taxonomyRouter._prepareContext(req, res, next);
+        assert.equal(next.calledOnce, true);
+
+        assert.deepEqual(res.routerOptions, {
+            type: 'channel',
+            name: 'tag',
+            permalinks: '/tag/:slug/',
+            resourceType: RESOURCE_CONFIG.QUERY.tag.resource,
+            data: {tag: RESOURCE_CONFIG.QUERY.tag},
+            filter: RESOURCE_CONFIG.TAXONOMIES.tag.filter,
+            context: ['tag'],
+            slugTemplate: true,
+            identifier: taxonomyRouter.identifier
+        });
+    });
+});

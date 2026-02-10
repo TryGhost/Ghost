@@ -22,9 +22,10 @@ export interface RecommendationResponseType {
     recommendations: Recommendation[]
 }
 
-export interface RecommendationEditResponseType extends RecommendationResponseType {
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface RecommendationEditResponseType extends RecommendationResponseType {}
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface RecommendationDeleteResponseType {}
 
 const dataType = 'RecommendationResponseType';

@@ -67,7 +67,7 @@ const SourcesTable: React.FC<SourcesTableProps> = ({headerStyle = 'table', child
                                 {appSettings?.paidMembersEnabled &&
                                 <>
                                     <TableCell className='text-right font-mono text-sm'>+{formatNumber(row.paid_members || 0)}</TableCell>
-                                    <TableCell className='text-right font-mono text-sm'>+${centsToDollars(row.mrr || 0)}</TableCell>
+                                    <TableCell className='text-right font-mono text-sm'>+${formatNumber(centsToDollars(row.mrr || 0))}</TableCell>
                                 </>
                                 }
                             </TableRow>

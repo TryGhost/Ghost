@@ -279,6 +279,48 @@ describe('useGrowthStats', () => {
             expect(result.current.mrrData.length).toBeGreaterThan(1);
         });
 
+        it('uses earliest data point when no MRR data exists before dateFrom', async () => {
+            // Simulate the bug: API returns MRR data starting AFTER dateFrom
+            // For a 90-day range, dateFrom would be ~90 days ago
+            // But the MRR data only starts 15 days into that range
+            const startDate = moment().subtract(89, 'days');
+            const dateFrom = startDate.format('YYYY-MM-DD');
+
+            // MRR data starts 15 days AFTER dateFrom (no data before range)
+            const firstMrrDate = moment(startDate).add(15, 'days').format('YYYY-MM-DD');
+            const secondMrrDate = moment(startDate).add(16, 'days').format('YYYY-MM-DD');
+
+            const lateMrrData = [
+                {date: firstMrrDate, mrr: 17286, currency: 'usd'},
+                {date: secondMrrDate, mrr: 17286, currency: 'usd'}
+            ];
+
+            // Update getRangeDates mock to return predictable dates
+            mockedGetRangeDates.mockImplementation(() => ({
+                startDate,
+                endDate: moment()
+            }));
+
+            mockSuccess(mockedUseMrrHistory, {
+                stats: lateMrrData,
+                meta: {
+                    totals: [{mrr: 17286, currency: 'usd'}]
+                }
+            });
+
+            const {result} = renderHook(() => useGrowthStats(90));
+
+            await waitFor(() => {
+                expect(result.current.isLoading).toBe(false);
+            });
+
+            // The first data point should be at dateFrom (synthetic start point)
+            expect(result.current.mrrData[0].date).toBe(dateFrom);
+
+            // The MRR value should be the earliest available value (17286), NOT 0
+            expect(result.current.mrrData[0].mrr).toBe(17286);
+        });
+
         it('handles range=1 correctly', async () => {
             const {result} = renderHook(() => useGrowthStats(1));
 

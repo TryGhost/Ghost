@@ -1,7 +1,9 @@
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 const path = require('path');
-const configUtils = require('../../../../utils/configUtils');
+const configUtils = require('../../../../utils/config-utils');
 const themeEngine = require('../../../../../core/frontend/services/theme-engine');
 const privateController = require('../../../../../core/frontend/apps/private-blogging/lib/router');
 
@@ -56,7 +58,7 @@ describe('Private Controller', function () {
     it('Should render default password page when theme has no password template', function (done) {
         res.render = function (view, context) {
             view.should.eql(defaultPath);
-            should.exist(context);
+            assertExists(context);
             done();
         };
 
@@ -67,8 +69,8 @@ describe('Private Controller', function () {
         hasTemplateStub.withArgs('private').returns(true);
 
         res.render = function (view, context) {
-            view.should.eql('private');
-            should.exist(context);
+            assert.equal(view, 'private');
+            assertExists(context);
             done();
         };
 
@@ -80,7 +82,7 @@ describe('Private Controller', function () {
 
         res.render = function (view, context) {
             view.should.eql(defaultPath);
-            context.should.eql({error: 'Test Error'});
+            assert.deepEqual(context, {error: 'Test Error'});
             done();
         };
 

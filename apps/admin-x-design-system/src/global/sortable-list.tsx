@@ -14,7 +14,7 @@ export interface SortableItemContainerProps {
     isDragging: boolean;
     dragHandleAttributes?: DraggableAttributes;
     // TODO: figure out a stricter alternative for Function
-    // eslint-disable-next-line @typescript-eslint/ban-types
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     dragHandleListeners?: Record<string, Function>;
     dragHandleClass?: string;
     style?: React.CSSProperties;

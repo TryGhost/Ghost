@@ -23,7 +23,8 @@ module.exports = {
             'signupForm',
             'stats',
             'security',
-            'exploreTestimonialsUrl'
+            'exploreTestimonialsUrl',
+            'featurebase'
         ];
 
         frame.response = {

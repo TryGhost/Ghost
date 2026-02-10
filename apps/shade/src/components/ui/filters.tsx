@@ -28,6 +28,7 @@ import {cn} from '@/lib/utils';
 export interface FilterI18nConfig {
   // UI Labels
     addFilter: string;
+    clearFilters: string;
     searchFields: string;
     noFieldsFound: string;
     noResultsFound: string;
@@ -103,6 +104,7 @@ export interface FilterI18nConfig {
 export const DEFAULT_I18N: FilterI18nConfig = {
     // UI Labels
     addFilter: '',
+    clearFilters: 'Clear',
     searchFields: 'Search fields...',
     noFieldsFound: 'No fields found.',
     noResultsFound: 'No results found.',
@@ -322,7 +324,7 @@ const filterAddButtonVariants = cva(
 
 const filterOperatorVariants = cva(
     [
-        'focus-visible:z-1 relative flex shrink-0 items-center text-muted-foreground transition hover:text-foreground data-[state=open]:text-foreground',
+        'focus-visible:z-1 relative flex shrink-0 items-center whitespace-nowrap text-muted-foreground transition hover:text-foreground data-[state=open]:text-foreground',
         'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring'
     ],
     {
@@ -379,7 +381,7 @@ const filterFieldLabelVariants = cva(
 
 const filterFieldValueVariants = cva(
     [
-        'focus-visible:z-1 relative flex shrink-0 items-center gap-1 text-foreground transition',
+        'focus-visible:z-1 relative flex min-w-0 shrink items-center gap-1 text-foreground transition',
         'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring'
     ],
     {
@@ -442,7 +444,7 @@ const filterFieldBetweenVariants = cva('flex shrink-0 items-center text-muted-fo
     }
 });
 
-const filtersContainerVariants = cva('flex flex-wrap items-center', {
+const filtersContainerVariants = cva('relative flex flex-wrap items-center', {
     variants: {
         variant: {
             solid: 'gap-2',
@@ -460,7 +462,7 @@ const filtersContainerVariants = cva('flex flex-wrap items-center', {
     }
 });
 
-const filterItemVariants = cva('flex items-center', {
+const filterItemVariants = cva('flex max-w-[calc(100vw-32px)] items-center', {
     variants: {
         variant: {
             solid: 'gap-px',
@@ -665,6 +667,7 @@ function FilterRemoveButton({className, icon = <X />, ...props}: FilterRemoveBut
 export interface FilterOption<T = unknown> {
     value: T;
     label: string;
+    detail?: string;
     icon?: React.ReactNode;
     metadata?: Record<string, unknown>;
 }
@@ -733,6 +736,7 @@ export interface FilterFieldConfig<T = unknown> {
     allowCustomValues?: boolean;
     className?: string;
     popoverContentClassName?: string;
+    triggerClassName?: string;
     selectedOptionsClassName?: string;
     // Grouping options (legacy support)
     groupLabel?: string;
@@ -741,6 +745,10 @@ export interface FilterFieldConfig<T = unknown> {
     offLabel?: string;
     // Input event handlers
     onInputChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    // Search event handler for select/multiselect fields
+    onSearchChange?: (searchTerm: string) => void;
+    // Controlled search value for select/multiselect fields
+    searchValue?: string;
     // Shows loading indicator in the dropdown
     isLoading?: boolean;
     // Default operator to use when creating a filter for this field
@@ -946,7 +954,7 @@ function FilterOperatorDropdown<T = unknown>({field, operator, values, onChange}
     // If hideOperatorSelect is true, just render the operator as plain text
     if (field.hideOperatorSelect) {
         return (
-            <div className="flex items-center self-stretch border border-r-[0px] px-3 text-sm text-muted-foreground">
+            <div className="flex items-center self-stretch whitespace-nowrap border border-r-[0px] px-3 text-sm text-muted-foreground">
                 {operatorLabel}
             </div>
         );
@@ -998,10 +1006,17 @@ function SelectOptionsPopover<T = unknown>({
     inline = false
 }: SelectOptionsPopoverProps<T>) {
     const [open, setOpen] = useState(false);
-    const [searchInput, setSearchInput] = useState('');
+    const [searchInput, setSearchInput] = useState(field.searchValue || '');
     // Track selected options separately so they persist during async search
     const [cachedSelectedOptions, setCachedSelectedOptions] = useState<FilterOption<T>[]>([]);
     const context = useFilterContext();
+
+    // Sync searchInput with controlled searchValue
+    useEffect(() => {
+        if (field.searchValue !== undefined) {
+            setSearchInput(field.searchValue);
+        }
+    }, [field.searchValue]);
 
     const isMultiSelect = field.type === 'multiselect' || values.length > 1;
     const effectiveValues = (field.value !== undefined ? (field.value as T[]) : values) || [];
@@ -1037,15 +1052,18 @@ function SelectOptionsPopover<T = unknown>({
 
         if (optionsFromField.length > 0) {
             setCachedSelectedOptions((prev) => {
-                // Merge new options with existing cached ones, avoiding duplicates
-                const merged = [...prev];
-                for (const opt of optionsFromField) {
-                    if (!merged.some(m => m.value === opt.value)) {
-                        merged.push(opt);
+                // Build result by iterating over selected values
+                const result: FilterOption<T>[] = [];
+                for (const value of effectiveValues) {
+                    // Prefer new option, fall back to cached option
+                    const option = optionsFromField.find(opt => opt.value === value)
+                        ?? prev.find(opt => opt.value === value);
+                    if (option) {
+                        result.push(option);
                     }
                 }
-                // Remove options that are no longer selected
-                return merged.filter(m => effectiveValues.includes(m.value));
+
+                return result;
             });
         }
     }, [optionsFromField, effectiveValues]);
@@ -1059,11 +1077,15 @@ function SelectOptionsPopover<T = unknown>({
 
     const handleSearchChange = (value: string) => {
         setSearchInput(value);
+        field.onSearchChange?.(value);
     };
 
     const handleClose = () => {
         setOpen(false);
-        setTimeout(() => setSearchInput(''), 200);
+        // Only clear search if not controlled
+        if (field.searchValue === undefined) {
+            setTimeout(() => setSearchInput(''), 200);
+        }
         onClose?.();
     };
 
@@ -1115,7 +1137,10 @@ function SelectOptionsPopover<T = unknown>({
                                         }}
                                     >
                                         {option.icon && option.icon}
-                                        <span className="truncate text-accent-foreground" title={option.label}>{option.label}</span>
+                                        <div className="flex flex-col overflow-hidden">
+                                            <span className="truncate text-accent-foreground" title={option.label}>{option.label}</span>
+                                            {option.detail && <span className="truncate text-sm text-muted-foreground" title={option.detail}>{option.detail}</span>}
+                                        </div>
                                         <Check className="ms-auto text-primary" />
                                     </CommandItem>
                                 ))}
@@ -1131,7 +1156,7 @@ function SelectOptionsPopover<T = unknown>({
                                         <CommandItem
                                             key={String(option.value)}
                                             className="group flex items-center gap-2"
-                                            value={option.label}
+                                            value={option.label + (option.detail ? ` - ${option.detail}` : '')}
                                             onSelect={() => {
                                                 if (isMultiSelect) {
                                                     const newValues = [...effectiveValues, option.value] as T[];
@@ -1159,7 +1184,10 @@ function SelectOptionsPopover<T = unknown>({
                                             }}
                                         >
                                             {option.icon && option.icon}
-                                            <span className="truncate text-accent-foreground" title={option.label}>{option.label}</span>
+                                            <div className="flex flex-col overflow-hidden">
+                                                <span className="truncate text-accent-foreground" title={option.label}>{option.label}</span>
+                                                {option.detail && <span className="truncate text-sm text-muted-foreground" title={option.detail}>{option.detail}</span>}
+                                            </div>
                                             <Check className="ms-auto text-primary opacity-0" />
                                         </CommandItem>
                                     ))}
@@ -1177,32 +1205,32 @@ function SelectOptionsPopover<T = unknown>({
             open={open}
             onOpenChange={(isOpen) => {
                 setOpen(isOpen);
-                if (!isOpen) {
+                if (!isOpen && field.searchValue === undefined) {
                     setTimeout(() => setSearchInput(''), 200);
                 }
             }}
         >
             <PopoverTrigger
-                className={filterFieldValueVariants({
+                className={cn(filterFieldValueVariants({
                     variant: context.variant,
                     size: context.size,
                     cursorPointer: context.cursorPointer
-                })}
+                }), field.triggerClassName ?? 'max-w-[240px]')}
             >
-                <div className="flex items-center gap-1.5">
+                <div className="flex min-w-0 items-center gap-1.5">
                     {field.customValueRenderer ? (
                         field.customValueRenderer(values, field.options || [])
                     ) : (
                         <>
-                            {selectedOptions.length > 0 && (
-                                <div className={cn('-space-x-0.5 flex items-center', field.selectedOptionsClassName)}>
+                            {selectedOptions.length > 0 && selectedOptions.some(option => option.icon) && (
+                                <div className={cn('-space-x-0.5 flex shrink-0 items-center', field.selectedOptionsClassName)}>
                                     {selectedOptions.slice(0, 3).map(option => (
                                         <div key={String(option.value)}>{option.icon}</div>
                                     ))}
                                 </div>
                             )}
                             {selectedOptions.length === 1
-                                ? selectedOptions[0].label
+                                ? <span className="min-w-0 truncate text-accent-foreground" title={selectedOptions[0].detail ? `${selectedOptions[0].label} - ${selectedOptions[0].detail}` : selectedOptions[0].label}>{selectedOptions[0].label}</span>
                                 : selectedOptions.length > 1
                                     ? `${selectedOptions.length} ${context.i18n.selectedCount}`
                                     : context.i18n.select}
@@ -1256,7 +1284,10 @@ function SelectOptionsPopover<T = unknown>({
                                         }}
                                     >
                                         {option.icon && option.icon}
-                                        <span className="truncate text-accent-foreground">{option.label}</span>
+                                        <div className="flex flex-col overflow-hidden">
+                                            <span className="truncate text-accent-foreground" title={option.label}>{option.label}</span>
+                                            {option.detail && <span className="truncate text-sm text-muted-foreground" title={option.detail}>{option.detail}</span>}
+                                        </div>
                                         <Check className="ms-auto text-primary" />
                                     </CommandItem>
                                 ))}
@@ -1272,7 +1303,7 @@ function SelectOptionsPopover<T = unknown>({
                                         <CommandItem
                                             key={String(option.value)}
                                             className="group flex items-center gap-2"
-                                            value={option.label}
+                                            value={option.label + (option.detail ? ` - ${option.detail}` : '')}
                                             onSelect={() => {
                                                 if (isMultiSelect) {
                                                     const newValues = [...values, option.value] as T[];
@@ -1292,7 +1323,10 @@ function SelectOptionsPopover<T = unknown>({
                                             }}
                                         >
                                             {option.icon && option.icon}
-                                            <span className="truncate text-accent-foreground">{option.label}</span>
+                                            <div className="flex flex-col overflow-hidden">
+                                                <span className="truncate text-accent-foreground" title={option.label}>{option.label}</span>
+                                                {option.detail && <span className="truncate text-sm text-muted-foreground" title={option.detail}>{option.detail}</span>}
+                                            </div>
                                             <Check className="ms-auto text-primary opacity-0" />
                                         </CommandItem>
                                     ))}
@@ -1308,11 +1342,19 @@ function SelectOptionsPopover<T = unknown>({
 
 function FilterValueSelector<T = unknown>({field, values, onChange, operator}: FilterValueSelectorProps<T>) {
     const [open, setOpen] = useState(false);
-    const [searchInput, setSearchInput] = useState('');
+    const [searchInput, setSearchInput] = useState(field.searchValue || '');
     const context = useFilterContext();
+
+    // Sync searchInput with controlled searchValue
+    useEffect(() => {
+        if (field.searchValue !== undefined) {
+            setSearchInput(field.searchValue);
+        }
+    }, [field.searchValue]);
 
     const handleSearchChange = (value: string) => {
         setSearchInput(value);
+        field.onSearchChange?.(value);
     };
 
     // Focus the search input when the popover opens
@@ -1426,7 +1468,7 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
             return (
                 <div className="flex items-center" data-slot="filters-item">
                     <FilterInput
-                        className={cn('w-36', field.className)}
+                        className={cn('w-36 max-w-full', field.className)}
                         field={field}
                         type="datetime-local"
                         value={startDateTime}
@@ -1440,7 +1482,7 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
                         {context.i18n.to}
                     </div>
                     <FilterInput
-                        className={cn('w-36', field.className)}
+                        className={cn('w-36 max-w-full', field.className)}
                         field={field}
                         type="datetime-local"
                         value={endDateTime}
@@ -1453,7 +1495,7 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
 
         return (
             <FilterInput
-                className={cn('w-36', field.className)}
+                className={cn('w-36 max-w-full', field.className)}
                 field={field}
                 type="datetime-local"
                 value={(values[0] as string) || ''}
@@ -1517,7 +1559,7 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
                 })}
             >
                 <FilterInput
-                    className={cn('w-24', field.className)}
+                    className={cn('w-24 max-w-full', field.className)}
                     field={field}
                     type="date"
                     value={startDate}
@@ -1531,7 +1573,7 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
                     {context.i18n.to}
                 </div>
                 <FilterInput
-                    className={cn('w-24', field.className)}
+                    className={cn('w-24 max-w-full', field.className)}
                     field={field}
                     type="date"
                     value={endDate}
@@ -1551,7 +1593,7 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
             return (
                 <div className="flex items-center" data-slot="filters-item">
                     <FilterInput
-                        className={cn('w-16', field.className)}
+                        className={cn('w-16 max-w-full', field.className)}
                         field={field}
                         max={field.max}
                         min={field.min}
@@ -1570,7 +1612,7 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
                         {context.i18n.to}
                     </div>
                     <FilterInput
-                        className={cn('w-16', field.className)}
+                        className={cn('w-16 max-w-full', field.className)}
                         field={field}
                         max={field.max}
                         min={field.min}
@@ -1632,7 +1674,7 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
             open={open}
             onOpenChange={(isOpen) => {
                 setOpen(isOpen);
-                if (!isOpen) {
+                if (!isOpen && field.searchValue === undefined) {
                     setTimeout(() => setSearchInput(''), 200);
                 }
             }}
@@ -1644,20 +1686,20 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
                     cursorPointer: context.cursorPointer
                 })}
             >
-                <div className="flex items-center gap-1.5">
+                <div className="flex w-full min-w-0 items-center gap-1.5">
                     {field.customValueRenderer ? (
                         field.customValueRenderer(values, field.options || [])
                     ) : (
                         <>
                             {selectedOptions.length > 0 && (
-                                <div className="flex items-center -space-x-1.5">
+                                <div className="flex shrink-0 items-center -space-x-1.5">
                                     {selectedOptions.slice(0, 3).map(option => (
                                         <div key={String(option.value)}>{option.icon}</div>
                                     ))}
                                 </div>
                             )}
                             {selectedOptions.length === 1
-                                ? selectedOptions[0].label
+                                ? <span className="min-w-0 truncate text-accent-foreground" title={selectedOptions[0].detail ? `${selectedOptions[0].label} - ${selectedOptions[0].detail}` : selectedOptions[0].label}>{selectedOptions[0].label}</span>
                                 : selectedOptions.length > 1
                                     ? `${selectedOptions.length} ${context.i18n.selectedCount}`
                                     : context.i18n.select}
@@ -1801,7 +1843,7 @@ export const FiltersContent = <T = unknown,>({filters, fields, onChange}: Filter
     );
 
     return (
-        <div className={cn(filtersContainerVariants({variant: context.variant, size: context.size}), context.className)}>
+        <div className={cn(filtersContainerVariants({variant: context.variant, size: context.size}), filters.length > 0 && 'w-full', context.className)}>
             {filters.map((filter) => {
                 const field = fieldsMap[filter.field];
                 if (!field) {
@@ -1857,6 +1899,12 @@ interface FiltersProps<T = unknown> {
     addButtonIcon?: React.ReactNode;
     addButtonClassName?: string;
     addButton?: React.ReactNode;
+    showClearButton?: boolean;
+    clearButtonText?: string;
+    clearButtonIcon?: React.ReactNode;
+    clearButtonClassName?: string;
+    clearButton?: React.ReactNode;
+    onClear?: () => void;
     variant?: 'solid' | 'outline';
     size?: 'sm' | 'md' | 'lg';
     radius?: 'md' | 'full';
@@ -1868,6 +1916,7 @@ interface FiltersProps<T = unknown> {
     popoverContentClassName?: string;
     popoverAlign?: 'start' | 'center' | 'end';
     keyboardShortcut?: string;
+    onActiveFieldChange?: (fieldKey: string | null) => void;
 }
 
 export function Filters<T = unknown>({
@@ -1880,6 +1929,12 @@ export function Filters<T = unknown>({
     addButtonIcon,
     addButtonClassName,
     addButton,
+    showClearButton = false,
+    clearButtonText,
+    clearButtonIcon,
+    clearButtonClassName,
+    clearButton,
+    onClear,
     variant = 'outline',
     size = 'md',
     radius = 'md',
@@ -1890,11 +1945,17 @@ export function Filters<T = unknown>({
     allowMultiple = true,
     popoverContentClassName,
     popoverAlign = 'start',
-    keyboardShortcut
+    keyboardShortcut,
+    onActiveFieldChange
 }: FiltersProps<T>) {
     const [addFilterOpen, setAddFilterOpen] = useState(false);
     const [selectedFieldKeyForOptions, setSelectedFieldKeyForOptions] = useState<string | null>(null);
     const [tempSelectedValues, setTempSelectedValues] = useState<unknown[]>([]);
+
+    // Notify parent when active field changes
+    useEffect(() => {
+        onActiveFieldChange?.(selectedFieldKeyForOptions);
+    }, [selectedFieldKeyForOptions, onActiveFieldChange]);
 
     // Keyboard shortcut handler
     useEffect(() => {
@@ -2043,6 +2104,26 @@ export function Filters<T = unknown>({
             if (!field.key) {
                 return;
             }
+            // Check if this filter already exists
+            const existingFilter = filters.find(f => f.field === field.key);
+            if (existingFilter) {
+                // Update existing filter
+                const updatedFilters = filters.map(f => (
+                    f.id === existingFilter.id
+                        ? {...f, values: values as T[]}
+                        : f
+                ));
+                onChange(updatedFilters);
+
+                // Always update tempSelectedValues to keep inline multiselect in sync
+                setTempSelectedValues(values as T[]);
+
+                if (closePopover) {
+                    setAddFilterOpen(false);
+                    setSelectedFieldKeyForOptions(null);
+                }
+                return;
+            }
 
             const defaultOperator = field.defaultOperator || (field.type === 'multiselect' ? 'is_any_of' : 'is');
 
@@ -2111,7 +2192,48 @@ export function Filters<T = unknown>({
                 allowMultiple
             }}
         >
-            <div className={cn(filtersContainerVariants({variant, size}), className)}>
+            <div className={cn(
+                filtersContainerVariants({variant, size}),
+                filters.length > 0 && 'w-full',
+                showClearButton && filters.length > 0 && 'sm:pr-24',
+                className
+            )}>
+                {filters.map((filter) => {
+                    const field = fieldsMap[filter.field];
+                    if (!field) {
+                        return null;
+                    }
+
+                    return (
+                        <div key={filter.id} className={filterItemVariants({variant})} data-slot="filter-item">
+                            {/* Field Label */}
+                            <div className={filterFieldLabelVariants({variant: variant, size: size, radius: radius})}>
+                                {field.icon}
+                                {field.label}
+                            </div>
+
+                            {/* Operator Dropdown */}
+                            <FilterOperatorDropdown<T>
+                                field={field}
+                                operator={filter.operator}
+                                values={filter.values}
+                                onChange={operator => updateFilter(filter.id, {operator})}
+                            />
+
+                            {/* Value Selector */}
+                            <FilterValueSelector<T>
+                                field={field}
+                                operator={filter.operator}
+                                values={filter.values}
+                                onChange={values => updateFilter(filter.id, {values})}
+                            />
+
+                            {/* Remove Button */}
+                            <FilterRemoveButton onClick={() => removeFilter(filter.id)} />
+                        </div>
+                    );
+                })}
+
                 {showAddButton && selectableFields.length > 0 && (
                     <Popover
                         open={addFilterOpen}
@@ -2270,6 +2392,11 @@ export function Filters<T = unknown>({
                                                 return <CommandSeparator key={sepKey} />;
                                             }
 
+                                            // If allowMultiple is false, filter out fields that already have filters
+                                            if (!allowMultiple && filters.some(filter => filter.field === field.key)) {
+                                                return null;
+                                            }
+
                                             // Regular field
                                             return (
                                                 <CommandItem key={field.key} onSelect={() => field.key && addFilter(field.key)}>
@@ -2285,41 +2412,37 @@ export function Filters<T = unknown>({
                     </Popover>
                 )}
 
-                {filters.map((filter) => {
-                    const field = fieldsMap[filter.field];
-                    if (!field) {
-                        return null;
-                    }
-
-                    return (
-                        <div key={filter.id} className={filterItemVariants({variant})} data-slot="filter-item">
-                            {/* Field Label */}
-                            <div className={filterFieldLabelVariants({variant: variant, size: size, radius: radius})}>
-                                {field.icon}
-                                {field.label}
-                            </div>
-
-                            {/* Operator Dropdown */}
-                            <FilterOperatorDropdown<T>
-                                field={field}
-                                operator={filter.operator}
-                                values={filter.values}
-                                onChange={operator => updateFilter(filter.id, {operator})}
-                            />
-
-                            {/* Value Selector */}
-                            <FilterValueSelector<T>
-                                field={field}
-                                operator={filter.operator}
-                                values={filter.values}
-                                onChange={values => updateFilter(filter.id, {values})}
-                            />
-
-                            {/* Remove Button */}
-                            <FilterRemoveButton onClick={() => removeFilter(filter.id)} />
-                        </div>
-                    );
-                })}
+                {/* Clear Button */}
+                {showClearButton && filters.length > 0 && (
+                    clearButton ? (
+                        clearButton
+                    ) : (
+                        <button
+                            className={cn(
+                                filterAddButtonVariants({
+                                    variant: variant,
+                                    size: size,
+                                    cursorPointer: cursorPointer,
+                                    radius: radius
+                                }),
+                                'border-0 bg-transparent hover:bg-transparent hover:text-foreground',
+                                'sm:absolute sm:right-0 sm:top-0',
+                                clearButtonClassName
+                            )}
+                            type='button'
+                            onClick={() => {
+                                if (onClear) {
+                                    onClear();
+                                } else {
+                                    onChange([]);
+                                }
+                            }}
+                        >
+                            {clearButtonIcon || <X />}
+                            {clearButtonText || mergedI18n.clearFilters}
+                        </button>
+                    )
+                )}
             </div>
         </FilterContext.Provider>
     );

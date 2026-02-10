@@ -5,7 +5,7 @@ const debug = baseDebug('e2e:helpers:utils:email');
 
 // Look for magic link pattern in the email message body
 // Ghost magic links typically look like: http://localhost:30000/members/?token=...&action=signup
-export function extractMagicLink(emailMessageBody: string): string {
+export function extractMagicLink(emailMessageBody: string, expectedActionInUrl: 'signup' | 'signin' = 'signup'): string {
     const magicLinkRegex = /https?:\/\/[^\s]+\/members\/\?token=[^\s&]+(&action=\w+)?(&r=[^\s]+)?/gi;
     const matches = emailMessageBody.match(magicLinkRegex);
 
@@ -18,8 +18,8 @@ export function extractMagicLink(emailMessageBody: string): string {
             throw new Error('Magic link missing token parameter');
         }
 
-        if (!magicLink.includes('action=signup')) {
-            throw new Error('Magic link missing action=signup parameter');
+        if (!magicLink.includes(`action=${expectedActionInUrl}`)) {
+            throw new Error(`Magic link missing action=${expectedActionInUrl} parameter`);
         }
 
         return magicLink;

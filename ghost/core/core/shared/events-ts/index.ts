@@ -1,8 +1,8 @@
-export * from './PostDeletedEvent';
+export * from './post-deleted-event';
 
-export * from './PostsBulkDestroyedEvent';
-export * from './PostsBulkUnpublishedEvent';
-export * from './PostsBulkUnscheduledEvent';
-export * from './PostsBulkFeaturedEvent';
-export * from './PostsBulkUnfeaturedEvent';
-export * from './PostsBulkAddTagsEvent';
+export * from './posts-bulk-destroyed-event';
+export * from './posts-bulk-unpublished-event';
+export * from './posts-bulk-unscheduled-event';
+export * from './posts-bulk-featured-event';
+export * from './posts-bulk-unfeatured-event';
+export * from './posts-bulk-add-tags-event';

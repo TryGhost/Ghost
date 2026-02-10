@@ -1,7 +1,7 @@
 const assert = require('assert/strict');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
-const SingleUseTokenProvider = require('../../../core/server/services/members/SingleUseTokenProvider');
+const SingleUseTokenProvider = require('../../../core/server/services/members/single-use-token-provider');
 const settingsCache = require('../../../core/shared/settings-cache');
 const {agentProvider, fixtureManager, mockManager, matchers, configUtils} = require('../../utils/e2e-framework');
 const {stringMatching, anyEtag, anyUuid, anyContentLength, anyContentVersion} = matchers;
@@ -10,7 +10,7 @@ const membersService = require('../../../core/server/services/members');
 const {anyErrorId} = matchers;
 
 // Updated to reflect current total based on test output
-const CURRENT_SETTINGS_COUNT = 92;
+const CURRENT_SETTINGS_COUNT = 93;
 
 const settingsMatcher = {};
 
@@ -33,10 +33,10 @@ const matchSettingsArray = (length) => {
         settingsArray[26] = publicHashSettingMatcher;
     }
 
-    if (length > 59) {
+    if (length > 60) {
         // Added a setting that is alphabetically before 'labs'? then you need to increment this counter.
         // Item at index x is the lab settings, which changes as we add and remove features
-        settingsArray[59] = labsSettingMatcher;
+        settingsArray[60] = labsSettingMatcher;
     }
 
     return settingsArray;

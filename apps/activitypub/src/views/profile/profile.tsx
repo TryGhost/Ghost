@@ -10,6 +10,7 @@ import {useParams} from '@tryghost/admin-x-framework';
 
 export type ProfileTab = 'posts' | 'likes' | 'following' | 'followers';
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface ProfileProps {}
 
 const PostsTab:React.FC<{handle: string}> = ({handle}) => {

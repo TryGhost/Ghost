@@ -7,6 +7,7 @@ import {run} from '@ember/runloop';
 
 const emberDataTypeMapping = {
     AutomatedEmailsResponseType: null, // automated emails only exist in React admin
+    CommentsResponseType: null, // comments only exist in React admin
     IntegrationsResponseType: {type: 'integration'},
     InvitesResponseType: {type: 'invite'},
     OffersResponseType: {type: 'offer'},
@@ -75,17 +76,23 @@ export default class StateBridgeService extends Service.extend(Evented) {
 
         const {type, singleton} = emberDataTypeMapping[dataType];
 
+        // Clone the response before pushing to the Ember store because
+        // pushPayload mutates the object in place (e.g. renaming keys via
+        // serializer attrs). Without cloning, React code holding a reference
+        // to the same object would see the mutated property names.
+        const clonedResponse = structuredClone(response);
+
         if (singleton) {
             // Special singleton objects like settings don't work with pushPayload, we need to add the ID explicitly
             this.store.push(this.store.serializerFor(type).normalizeSingleResponse(
                 this.store,
                 this.store.modelFor(type),
-                response,
+                clonedResponse,
                 null,
                 'queryRecord'
             ));
         } else {
-            this.store.pushPayload(type, response);
+            this.store.pushPayload(type, clonedResponse);
         }
 
         if (dataType === 'UsersResponseType' && response.users[0]?.id === this.session.user?.id) {
@@ -202,9 +209,7 @@ export default class StateBridgeService extends Service.extend(Evented) {
 
     @action
     triggerSubscriptionChange(data) {
-        this.trigger('subscriptionChange', {
-            ...data
-        });
+        this.trigger('subscriptionChange', data);
     }
 
     @action

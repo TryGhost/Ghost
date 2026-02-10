@@ -17,7 +17,9 @@
     "Best": "",
     "Cancel": "Цуцлах",
     "Comment": "Сэтгэгдэл",
+    "Commenting disabled": "",
     "Complete your profile": "Профайлаа бүрэн бөглөнө үү",
+    "Contact support": "",
     "Delete": "Устгах",
     "Deleted": "Устгагдсан",
     "Deleted member": "Устгагдсан гишүүн",
@@ -28,6 +30,7 @@
     "edited": "засагдсан",
     "Enter your name": "Нэрээ оруулна уу",
     "Expertise": "Мэргэжил",
+    "for more information.": "",
     "Founder @ Acme Inc": "Acme Inc-н үүсгэн байгуулагч",
     "Full-time parent": "Бүтэн цагийн эцэг/эх",
     "Head of Marketing at Acme, Inc": "Acme, Inc-н маркетингийн удирдлага",
@@ -69,6 +72,8 @@
     "This comment has been hidden.": "Энэ сэтгэгдэл нуугдсан.",
     "This comment has been removed.": "Энэ сэтгэгдэл хасагдсан.",
     "Upgrade now": "Одоо шинэчлэх",
+    "View in admin": "",
     "Yesterday": "Өчигдөр",
+    "You can't post comments in this publication.": "",
     "Your request will be sent to the owner of this site.": "Таны хүсэлт энэ сайтын эзэмшигч рүү илгээгдэнэ."
 }
