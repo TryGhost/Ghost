@@ -1,5 +1,5 @@
 SCHEMA >
-    `site_uuid` LowCardinality(String),
+    `site_uuid` String,
     `day` Date,
     `post_uuid` String,
     `pathname` String,

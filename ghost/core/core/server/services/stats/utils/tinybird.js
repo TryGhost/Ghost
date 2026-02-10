@@ -35,11 +35,8 @@ const create = ({config, request, settingsCache, tinybirdService}) => {
 
         // Use version from options if provided, otherwise fall back to config
         // Pattern: api_kpis -> api_kpis_v2 (single underscore + version)
-        // Special case: version='none' means use unversioned endpoint (for testing)
-        let version = options.version !== undefined ? options.version : statsConfig?.version;
-        if (version === 'none' || version === '') {
-            version = null; // Force unversioned endpoint
-        }
+        // Pass empty string to force unversioned endpoint
+        const version = options.version !== undefined ? options.version : statsConfig?.version;
         const pipeUrl = version ?
             `/v0/pipes/${pipeName}_${version}.json` :
             `/v0/pipes/${pipeName}.json`;
