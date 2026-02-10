@@ -7,22 +7,22 @@ test.describe('Migration tools', async () => {
             ...globalDataRequests
         }});
 
-        const openMigrator = async (name: string, route: string) => {
-            const migrationSection = page.getByTestId('migrationtools');
-            await expect(migrationSection).toBeVisible();
-
-            await migrationSection.getByRole('button', {name}).click();
-            await expectExternalNavigate(page, {route});
-
-            await page.goBack();
-        };
-
         await page.goto('/');
 
-        await openMigrator('Substack', '/migrate/substack');
-        await openMigrator('WordPress', '/migrate/wordpress');
-        await openMigrator('Medium', '/migrate/medium');
-        await openMigrator('Mailchimp', '/migrate/mailchimp');
+        const migrationSection = page.getByTestId('migrationtools');
+        await expect(migrationSection).toBeVisible();
+
+        const migrators = [
+            {name: 'Substack', route: '/migrate/substack'},
+            {name: 'WordPress', route: '/migrate/wordpress'},
+            {name: 'Medium', route: '/migrate/medium'},
+            {name: 'Mailchimp', route: '/migrate/mailchimp'}
+        ];
+
+        for (const {name, route} of migrators) {
+            await migrationSection.getByRole('button', {name}).click();
+            await expectExternalNavigate(page, {route});
+        }
     });
 
     // test('Universal import', async ({page}) => {

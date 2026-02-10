@@ -1,5 +1,5 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, limitRequests, mockApi, responseFixtures, settingsWithStripe} from '@tryghost/admin-x-framework/test/acceptance';
+import {expectExternalNavigate, globalDataRequests, limitRequests, mockApi, responseFixtures, settingsWithStripe} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('Tier settings', async () => {
     test('Supports creating a new tier', async ({page}) => {
@@ -252,12 +252,7 @@ test.describe('Tier settings', async () => {
         const limitModal = page.getByTestId('limit-modal');
         await limitModal.getByRole('button', {name: 'Upgrade'}).click();
 
-        // The route should be updated to /pro
-        const newPageUrl = page.url();
-        const newPageUrlObject = new URL(newPageUrl);
-        const decodedUrl = decodeURIComponent(newPageUrlObject.pathname);
-
-        expect(decodedUrl).toMatch(/\/\{\"route\":\"\/pro\",\"isExternal\":true\}$/);
+        await expectExternalNavigate(page, {route: '/pro'});
     });
 
     test('Allows access to Stripe Connect with limitStripeConnect and Stripe already set up', async ({page}) => {
@@ -339,11 +334,6 @@ test.describe('Tier settings', async () => {
         const limitModal = page.getByTestId('limit-modal');
         await limitModal.getByRole('button', {name: 'Upgrade'}).click();
 
-        // The route should be updated to /pro
-        const newPageUrl = page.url();
-        const newPageUrlObject = new URL(newPageUrl);
-        const decodedUrl = decodeURIComponent(newPageUrlObject.pathname);
-
-        expect(decodedUrl).toMatch(/\/\{\"route\":\"\/pro\",\"isExternal\":true\}$/);
+        await expectExternalNavigate(page, {route: '/pro'});
     });
 });

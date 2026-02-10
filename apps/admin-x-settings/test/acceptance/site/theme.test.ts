@@ -1,5 +1,5 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, limitRequests, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
+import {expectExternalNavigate, globalDataRequests, limitRequests, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('Theme settings', async () => {
     test('Browsing and installing default themes', async ({page}) => {
@@ -229,13 +229,7 @@ test.describe('Theme settings', async () => {
 
         await limitModal.getByRole('button', {name: 'Upgrade'}).click();
 
-        // The route should be updated
-        const newPageUrl = page.url();
-        const newPageUrlObject = new URL(newPageUrl);
-        const decodedUrl = decodeURIComponent(newPageUrlObject.pathname);
-
-        // expect the route to be updated to /pro
-        expect(decodedUrl).toMatch(/\/\{\"route\":\"\/pro\",\"isExternal\":true\}$/);
+        await expectExternalNavigate(page, {route: '/pro'});
     });
 
     test('Prevents overwriting the default theme', async ({page}) => {
@@ -355,12 +349,7 @@ test.describe('Theme settings', async () => {
         const limitModal = page.getByTestId('limit-modal');
         await limitModal.getByRole('button', {name: 'Upgrade'}).click();
 
-        // The route should be updated to /pro
-        const newPageUrl = page.url();
-        const newPageUrlObject = new URL(newPageUrl);
-        const decodedUrl = decodeURIComponent(newPageUrlObject.pathname);
-
-        expect(decodedUrl).toMatch(/\/\{"route":"\/pro","isExternal":true\}$/);
+        await expectExternalNavigate(page, {route: '/pro'});
     });
 
     test('Allows changing theme when multiple themes are allowed', async ({page}) => {
