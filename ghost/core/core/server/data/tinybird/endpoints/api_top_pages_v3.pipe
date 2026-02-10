@@ -36,7 +36,7 @@ SQL >
         site_uuid = {{ String(site_uuid, 'mock_site_uuid', description="Tenant ID", required=True) }}
         AND day >= toDate({{ Date(date_from, description="Start date for filtering", required=True) }}, {{ String(timezone, 'Etc/UTC', description="Site timezone", required=True) }})
         AND day <= toDate({{ Date(date_to, description="End date for filtering", required=True) }}, {{ String(timezone, 'Etc/UTC', description="Site timezone", required=True) }})
-        AND day < toDate(now(), {{ String(timezone, 'Etc/UTC', description="Site timezone", required=True) }})
+        AND day != toDate(now(), {{ String(timezone, 'Etc/UTC', description="Site timezone", required=True) }})
         {% if defined(member_status) %}
             AND member_status IN (
                 SELECT arrayJoin(
