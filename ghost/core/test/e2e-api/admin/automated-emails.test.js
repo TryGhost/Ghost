@@ -1,6 +1,7 @@
 const {agentProvider, fixtureManager, matchers, dbUtils} = require('../../utils/e2e-framework');
 const {anyContentVersion, anyObjectId, anyISODateTime, anyErrorId, anyEtag, anyLocationFor} = matchers;
 const sinon = require('sinon');
+const logging = require('@tryghost/logging');
 const mailService = require('../../../core/server/services/mail');
 
 const matchAutomatedEmail = {
@@ -282,6 +283,72 @@ describe('Automated Emails API', function () {
                     'content-version': anyContentVersion,
                     etag: anyEtag
                 });
+        });
+
+        describe('Structured logging', function () {
+            let infoStub;
+
+            beforeEach(function () {
+                infoStub = sinon.stub(logging, 'info');
+            });
+
+            afterEach(function () {
+                sinon.restore();
+            });
+
+            it('Logs when a welcome email is enabled', async function () {
+                const automatedEmail = await createAutomatedEmail({status: 'inactive'});
+
+                await agent
+                    .put(`automated_emails/${automatedEmail.id}`)
+                    .body({automated_emails: [{
+                        name: 'Welcome Email (Free)',
+                        status: 'active'
+                    }]})
+                    .expectStatus(200);
+
+                sinon.assert.calledWithMatch(infoStub, sinon.match.string, {
+                    event: 'welcome_email.enabled',
+                    automated_email_id: automatedEmail.id,
+                    slug: 'member-welcome-email-free',
+                    enabled: true
+                });
+            });
+
+            it('Logs when a welcome email is disabled', async function () {
+                const automatedEmail = await createAutomatedEmail({status: 'active'});
+
+                await agent
+                    .put(`automated_emails/${automatedEmail.id}`)
+                    .body({automated_emails: [{
+                        name: 'Welcome Email (Free)',
+                        status: 'inactive'
+                    }]})
+                    .expectStatus(200);
+
+                sinon.assert.calledWithMatch(infoStub, sinon.match.string, {
+                    event: 'welcome_email.disabled',
+                    automated_email_id: automatedEmail.id,
+                    slug: 'member-welcome-email-free',
+                    enabled: false
+                });
+            });
+
+            it('Does not log when status does not change', async function () {
+                const automatedEmail = await createAutomatedEmail({status: 'inactive'});
+
+                await agent
+                    .put(`automated_emails/${automatedEmail.id}`)
+                    .body({automated_emails: [{
+                        name: 'Welcome Email (Free)',
+                        subject: 'Updated subject only'
+                    }]})
+                    .expectStatus(200);
+
+                sinon.assert.neverCalledWithMatch(infoStub, sinon.match.any, {
+                    event: sinon.match(/^welcome_email\.(enabled|disabled)$/)
+                });
+            });
         });
     });
 
