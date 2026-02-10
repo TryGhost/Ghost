@@ -341,6 +341,8 @@ export default class LexicalEditorController extends Controller {
     @action
     async updateExcerpt(excerpt) {
         this.post.customExcerptScratch = excerpt;
+        // Temporarily set customExcerpt for validation, it will be properly set in beforeSaveTask
+        this.post.customExcerpt = excerpt;
         try {
             await this.post.validate({property: 'customExcerpt'});
             this.excerptErrorMessage = '';
