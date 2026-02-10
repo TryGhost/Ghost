@@ -8,14 +8,16 @@ test.describe('Migration tools', async () => {
         }});
 
         const openMigrator = async (name: string, route: string) => {
-            await page.goto('/');
-
             const migrationSection = page.getByTestId('migrationtools');
             await expect(migrationSection).toBeVisible();
 
             await migrationSection.getByRole('button', {name}).click();
             await expectExternalNavigate(page, {route});
+
+            await page.goBack();
         };
+
+        await page.goto('/');
 
         await openMigrator('Substack', '/migrate/substack');
         await openMigrator('WordPress', '/migrate/wordpress');
