@@ -758,7 +758,7 @@ export default class App extends React.Component {
                 const offerData = await this.GhostApi.site.offer({offerId});
                 const offer = offerData?.offers[0];
 
-                if (!offer) {
+                if (!offer || !offer.tier) {
                     return;
                 }
 
