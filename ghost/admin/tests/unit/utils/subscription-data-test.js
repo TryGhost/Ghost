@@ -147,6 +147,16 @@ describe('Unit: Util: subscription-data', function () {
             expect(trialUntil(sub)).to.equal('31 May 2222');
         });
 
+        it('returns the trial end date for trial offers', function () {
+            let sub = {status: 'active', trial_end_at: '2222-05-31', offer: {type: 'trial'}};
+            expect(trialUntil(sub)).to.equal('31 May 2222');
+        });
+
+        it('returns undefined for free_months offers', function () {
+            let sub = {status: 'active', trial_end_at: '2222-05-31', offer: {type: 'free_months'}};
+            expect(trialUntil(sub)).to.be.undefined;
+        });
+
         it('returns undefined for subscriptions not in trial', function () {
             let sub = {status: 'active'};
             expect(trialUntil(sub)).to.be.undefined;
@@ -285,6 +295,37 @@ describe('Unit: Util: subscription-data', function () {
                 trialUntil: '31 May 2222',
                 priceLabel: 'Free trial',
                 validityDetails: ' – Ends 31 May 2222'
+            });
+        });
+
+        it('returns renews details for free_months offers', function () {
+            let sub = {
+                id: 'defined',
+                status: 'active',
+                cancel_at_period_end: false,
+                current_period_end: '2222-05-31',
+                trial_end_at: '2222-05-31',
+                offer: {
+                    type: 'free_months'
+                },
+                tier: null,
+                price: {
+                    currency: 'usd',
+                    amount: 5000,
+                    nickname: 'Free tier'
+                }
+            };
+            let data = getSubscriptionData(sub);
+
+            expect(data).to.include({
+                isComplimentary: false,
+                compExpiry: undefined,
+                hasEnded: false,
+                validUntil: '31 May 2222',
+                willEndSoon: false,
+                trialUntil: undefined,
+                priceLabel: 'Free tier',
+                validityDetails: ' – Renews 31 May 2222'
             });
         });
 

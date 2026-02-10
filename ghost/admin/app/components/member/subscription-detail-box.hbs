@@ -35,6 +35,12 @@
                     <span class="gh-cp-membertier-pricelabel"> {{@sub.offer.name}} </span>
                     &ndash; {{@sub.offer.amount}} days free
                 </div>
+                {{else if (eq @sub.offer.type "free_months")}}
+                <div>
+                    <h4>Offer</h4>
+                    <span class="gh-cp-membertier-pricelabel"> {{@sub.offer.name}} </span>
+                    &ndash; {{@sub.offer.amount}} {{if (eq @sub.offer.amount 1) "month" "months"}} free
+                </div>
                 {{else}}
                 <div>
                     <h4>Offer</h4>
