@@ -40,7 +40,7 @@ const Offers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const signupOffers = allOffers.filter(offer => offer.redemption_type === 'signup');
 
     const activeOffers = signupOffers
-        .map(offer => ({...offer, tier: paidActiveTiers.find(tier => tier.id === offer.tier.id)}))
+        .map(offer => ({...offer, tier: paidActiveTiers.find(tier => tier.id === offer.tier?.id)}))
         .filter((offer): offer is Offer & {tier: Tier} => offer.status === 'active' && !!offer.tier);
 
     activeOffers.sort((a, b) => {

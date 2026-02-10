@@ -7,6 +7,8 @@ const errors = require('@tryghost/errors');
 const {isEmail} = require('@tryghost/validator');
 const normalizeEmail = require('../utils/normalize-email');
 const {getInboxLinks} = require('../../../../lib/get-inbox-links');
+const {SIGNUP_CONTEXTS} = require('../../../lib/member-signup-contexts');
+/** @typedef {import('../../../lib/member-signup-contexts').SignupContext} SignupContext */
 
 const messages = {
     emailRequired: 'Email is required.',
@@ -392,6 +394,12 @@ module.exports = class RouterController {
                 });
             }
 
+            if (!offer.tier) {
+                throw new BadRequestError({
+                    message: 'Offer does not have a tier'
+                });
+            }
+
             tier = await this._tiersService.api.read(offer.tier.id);
             cadence = offer.cadence;
         } else if (tierId) {
@@ -469,6 +477,8 @@ module.exports = class RouterController {
         }
 
         const member = options.member;
+        /** @type {SignupContext} */
+        let ghostSignupContext = (options.isAuthenticated && member) ? SIGNUP_CONTEXTS.ALREADY_AUTHENTICATED : SIGNUP_CONTEXTS.NEEDS_MAGIC_LINK_EMAIL;
 
         if (!member && options.email) {
             // Create a signup link if there is no member with this email address
@@ -485,6 +495,7 @@ module.exports = class RouterController {
                 // Redirect to the original success url after sign up
                 referrer: options.successUrl
             });
+            ghostSignupContext = SIGNUP_CONTEXTS.HAS_PRECHECKOUT_MAGIC_LINK;
         }
 
         if (member) {
@@ -508,6 +519,9 @@ module.exports = class RouterController {
                 });
             }
         }
+
+        // Set by server to distinguish between checkout flows in Stripe webhooks.
+        options.metadata.ghostSignupContext = ghostSignupContext;
 
         try {
             const paymentLink = await this._paymentsService.getPaymentLink(options);

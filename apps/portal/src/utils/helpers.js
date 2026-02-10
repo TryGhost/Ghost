@@ -823,6 +823,11 @@ export const isActiveOffer = ({site, offer}) => {
         return false;
     }
 
+    // Null-tier offers are only valid for retention
+    if (!offer.tier) {
+        return isRetentionOffer({offer});
+    }
+
     // Check if the corresponding tier has been archived
     const product = getProductFromId({site, productId: offer.tier.id});
     return !!product;
