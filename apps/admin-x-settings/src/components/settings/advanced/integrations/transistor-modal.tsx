@@ -1,8 +1,8 @@
 import APIKeys from './api-keys';
-import BookmarkThumb from '../../../../assets/images/stripe-thumb.jpg';
+// import BookmarkThumb from '../../../../assets/images/stripe-thumb.jpg';
 import IntegrationHeader from './integration-header';
 import NiceModal from '@ebay/nice-modal-react';
-import {ConfirmationModal, Form, Icon, Modal, Separator, Toggle} from '@tryghost/admin-x-design-system';
+import {ConfirmationModal, Form, Icon, Modal, Toggle} from '@tryghost/admin-x-design-system';
 import {type Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {useBrowseIntegrations} from '@tryghost/admin-x-framework/api/integrations';
@@ -27,6 +27,7 @@ const TransistorModal = NiceModal.create(() => {
     const [useInPortal, setUseInPortal] = useState(true);
     const [useInEditor, setUseInEditor] = useState(true);
     const [okLabel, setOkLabel] = useState('Save');
+    const learnMoreUrl = 'https://ghost.org/integrations/transistor/';
 
     useEffect(() => {
         setEnabled(transistorEnabled || false);
@@ -88,6 +89,18 @@ const TransistorModal = NiceModal.create(() => {
             }}
             cancelLabel='Close'
             dirty={enabled !== transistorEnabled}
+            leftButtonProps={{
+                label: (
+                    <div className='flex items-center gap-2'>
+                        Learn more
+                        {/* <Icon name='arrow-top-right' size="xs" /> */}
+                    </div>
+                ),
+                color: 'outline',
+                onClick: () => {
+                    window.open(learnMoreUrl, '_blank', 'noopener,noreferrer');
+                }
+            }}
             okColor={okLabel === 'Saved' ? 'green' : 'black'}
             okLabel={okLabel}
             testId='transistor-modal'
@@ -121,36 +134,39 @@ const TransistorModal = NiceModal.create(() => {
                                 },
                                 {label: 'API URL', text: window.location.origin + getGhostPaths().subdir}
                             ]} />
-                            <div className='-mt-6 flex flex-col gap-8'>
-                                <Separator />
-                                <Toggle
-                                    checked={useInPortal}
-                                    direction='rtl'
-                                    hint={
-                                        <>
-                                            Enables a link to the available podcasts in <span className='green'>Member Account page</span> in Portal.
-                                        </>
-                                    }
-                                    label='Use in Portal'
-                                    onChange={(e) => {
-                                        setUseInPortal(e.target.checked);
-                                    }}
-                                />
-                                <Toggle
-                                    checked={useInEditor}
-                                    direction='rtl'
-                                    hint='Enables a Transistor card that can be added to posts and pages.'
-                                    label='Use in the Ghost editor'
-                                    onChange={(e) => {
-                                        setUseInEditor(e.target.checked);
-                                    }}
-                                />
+                            <div className='-mt-8 text-xs text-grey-700'>
+                                Paste the API key and URL in your <span className='text-green'>Transistor settings</span>.
                             </div>
                         </>
                     )}
                 </Form>
                 {enabled &&
-                    <div className='flex flex-col items-center'>
+                <>
+                    <div className='mt-6 flex flex-col gap-8 rounded-sm border p-7'>
+                        <Toggle
+                            checked={useInPortal}
+                            direction='rtl'
+                            hint={
+                                <>
+                                    Enables a link to the available podcasts in <span className='green'>Member Account page</span> in Portal.
+                                </>
+                            }
+                            label='Use in Portal'
+                            onChange={(e) => {
+                                setUseInPortal(e.target.checked);
+                            }}
+                        />
+                        <Toggle
+                            checked={useInEditor}
+                            direction='rtl'
+                            hint='Enables a Transistor card that can be added to posts and pages.'
+                            label='Use in the Ghost editor'
+                            onChange={(e) => {
+                                setUseInEditor(e.target.checked);
+                            }}
+                        />
+                    </div>
+                    {/* <div className='flex flex-col items-center'>
                         <a className='w-100 mt-5 flex flex-col items-stretch justify-between overflow-hidden rounded-md bg-grey-75 transition-all hover:border-grey-400 hover:bg-grey-100 md:flex-row' href="https://ghost.org/resources/managing-your-stripe-account/?ref=admin" rel="noopener noreferrer" target="_blank">
                             <div className='order-2 px-7 py-5  md:order-1'>
                                 <div className='font-bold'>How to set up and manage your Transistor integration</div>
@@ -160,7 +176,8 @@ const TransistorModal = NiceModal.create(() => {
                                 <img alt="Bookmark Thumb" className='min-h-full min-w-full shrink-0' src={BookmarkThumb} />
                             </div>
                         </a>
-                    </div>
+                    </div> */}
+                </>
                 }
             </div>
         </Modal>
