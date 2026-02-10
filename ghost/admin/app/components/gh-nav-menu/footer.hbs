@@ -1,18 +1,4 @@
 <div class="gh-nav-bottom">
-    {{#if this.hasThemeErrors}}
-    <div class="gh-sidebar-banner gh-error-banner">
-        <button class="gh-sidebar-banner-container" type="button" {{on "click" (fn this.openThemeErrors null)}}>
-            <div>
-                {{svg-jar "warning-fill" class="gh-sidebar-banner-icon"}}
-            </div>
-            <div>
-                <span class="gh-sidebar-banner-subhead">Your theme has errors</span>
-                <div class="gh-sidebar-banner-msg">Some functionality on your site may be limited &rarr;</div>
-            </div>
-        </button>
-    </div>
-    {{/if}}
-
     <div class="flex items-center justify-between">
         <div class="pe-all">
             <GhBasicDropdown @horizontalPosition="left" @verticalPosition="above" @calculatePosition={{this.userDropdownPosition}} as |dropdown|>
