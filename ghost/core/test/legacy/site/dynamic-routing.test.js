@@ -2,6 +2,8 @@
 // As it stands, these tests depend on the database, and as such are integration tests.
 // These tests are here to cover the headers sent with requests and high-level redirects that can't be
 // tested with the unit tests
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../utils/assertions');
 const should = require('should');
 const supertest = require('supertest');
 const sinon = require('sinon');
@@ -21,10 +23,10 @@ describe('Dynamic Routing', function () {
                 return done(err);
             }
 
-            should.not.exist(res.headers['x-cache-invalidate']);
-            should.not.exist(res.headers['X-CSRF-Token']);
-            should.not.exist(res.headers['set-cookie']);
-            should.exist(res.headers.date);
+            assert.equal(res.headers['x-cache-invalidate'], undefined);
+            assert.equal(res.headers['X-CSRF-Token'], undefined);
+            assert.equal(res.headers['set-cookie'], undefined);
+            assertExists(res.headers.date);
 
             done();
         };
@@ -58,14 +60,14 @@ describe('Dynamic Routing', function () {
 
                     const $ = cheerio.load(res.text);
 
-                    should.not.exist(res.headers['x-cache-invalidate']);
-                    should.not.exist(res.headers['X-CSRF-Token']);
-                    should.not.exist(res.headers['set-cookie']);
-                    should.exist(res.headers.date);
+                    assert.equal(res.headers['x-cache-invalidate'], undefined);
+                    assert.equal(res.headers['X-CSRF-Token'], undefined);
+                    assert.equal(res.headers['set-cookie'], undefined);
+                    assertExists(res.headers.date);
 
-                    $('title').text().should.equal('Ghost');
-                    $('body.home-template').length.should.equal(1);
-                    $('article.post').length.should.equal(7);
+                    assert.equal($('title').text(), 'Ghost');
+                    assert.equal($('body.home-template').length, 1);
+                    assert.equal($('article.post').length, 7);
 
                     done();
                 });
@@ -131,13 +133,13 @@ describe('Dynamic Routing', function () {
 
                     const $ = cheerio.load(res.text);
 
-                    should.not.exist(res.headers['x-cache-invalidate']);
-                    should.not.exist(res.headers['X-CSRF-Token']);
-                    should.not.exist(res.headers['set-cookie']);
-                    should.exist(res.headers.date);
+                    assert.equal(res.headers['x-cache-invalidate'], undefined);
+                    assert.equal(res.headers['X-CSRF-Token'], undefined);
+                    assert.equal(res.headers['set-cookie'], undefined);
+                    assertExists(res.headers.date);
 
-                    $('body').attr('class').should.eql('tag-template tag-getting-started has-sans-title has-sans-body');
-                    $('article.post').length.should.equal(5);
+                    assert.equal($('body').attr('class'), 'tag-template tag-getting-started has-sans-title has-sans-body');
+                    assert.equal($('article.post').length, 5);
 
                     done();
                 });

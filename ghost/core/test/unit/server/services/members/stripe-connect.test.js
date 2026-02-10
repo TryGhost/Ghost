@@ -1,3 +1,5 @@
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const should = require('should');
 const stripeConnect = require('../../../../../core/server/services/members/stripe-connect');
 
@@ -11,14 +13,14 @@ describe('Members - Stripe Connect', function () {
 
         should.ok(url instanceof URL, 'getStripeConnectOAuthUrl should return an instance of URL');
 
-        should.exist(session.get(stripeConnect.STATE_PROP), 'The session should have a state set');
+        assertExists(session.get(stripeConnect.STATE_PROP), 'The session should have a state set');
 
-        should.equal(url.origin, 'https://connect.stripe.com');
-        should.equal(url.pathname, '/oauth/authorize');
+        assert.equal(url.origin, 'https://connect.stripe.com');
+        assert.equal(url.pathname, '/oauth/authorize');
 
-        should.equal(url.searchParams.get('response_type'), 'code');
-        should.equal(url.searchParams.get('scope'), 'read_write');
-        should.equal(url.searchParams.get('state'), session.get(stripeConnect.STATE_PROP));
+        assert.equal(url.searchParams.get('response_type'), 'code');
+        assert.equal(url.searchParams.get('scope'), 'read_write');
+        assert.equal(url.searchParams.get('state'), session.get(stripeConnect.STATE_PROP));
     });
 
     it('getStripeConnectTokenData returns token data when the state is correct', async function () {
@@ -35,9 +37,9 @@ describe('Members - Stripe Connect', function () {
 
         const tokenData = await stripeConnect.getStripeConnectTokenData(encodedData, getSessionProp);
 
-        should.equal(tokenData.public_key, data.p);
-        should.equal(tokenData.secret_key, data.a);
-        should.equal(tokenData.livemode, data.l);
+        assert.equal(tokenData.public_key, data.p);
+        assert.equal(tokenData.secret_key, data.a);
+        assert.equal(tokenData.livemode, data.l);
     });
 
     it('getStripeConnectTokenData throws when the state is incorrect', async function () {
@@ -55,7 +57,7 @@ describe('Members - Stripe Connect', function () {
         await stripeConnect.getStripeConnectTokenData(encodedData, getSessionProp).then(() => {
             throw new Error('The token data should not be returned if the state is incorrect');
         }, (error) => {
-            should.ok(error);
+            assert(error);
         });
     });
 });

@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 
 const ThemeI18n = require('../../../../../core/frontend/services/theme-engine/i18n').ThemeI18n;
@@ -5,6 +6,6 @@ const ThemeI18n = require('../../../../../core/frontend/services/theme-engine/i1
 describe('ThemeI18n Class behavior', function () {
     it('defaults to en', function () {
         const i18n = new ThemeI18n();
-        i18n.locale().should.eql('en');
+        assert.equal(i18n.locale(), 'en');
     });
 });

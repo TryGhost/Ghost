@@ -1,3 +1,5 @@
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../utils/assertions');
 const errors = require('@tryghost/errors');
 const should = require('should');
 const sinon = require('sinon');
@@ -88,51 +90,51 @@ describe('Post Model', function () {
                     it('can findPage, with various options', function (done) {
                         models.Post.findPage({page: 2})
                             .then(function (paginationResult) {
-                                paginationResult.meta.pagination.page.should.equal(2);
-                                paginationResult.meta.pagination.limit.should.equal(15);
-                                paginationResult.meta.pagination.pages.should.equal(4);
-                                paginationResult.data.length.should.equal(15);
+                                assert.equal(paginationResult.meta.pagination.page, 2);
+                                assert.equal(paginationResult.meta.pagination.limit, 15);
+                                assert.equal(paginationResult.meta.pagination.pages, 4);
+                                assert.equal(paginationResult.data.length, 15);
 
                                 return models.Post.findPage({page: 5});
                             }).then(function (paginationResult) {
-                                paginationResult.meta.pagination.page.should.equal(5);
-                                paginationResult.meta.pagination.limit.should.equal(15);
-                                paginationResult.meta.pagination.pages.should.equal(4);
-                                paginationResult.data.length.should.equal(0);
+                                assert.equal(paginationResult.meta.pagination.page, 5);
+                                assert.equal(paginationResult.meta.pagination.limit, 15);
+                                assert.equal(paginationResult.meta.pagination.pages, 4);
+                                assert.equal(paginationResult.data.length, 0);
 
                                 return models.Post.findPage({limit: 30});
                             }).then(function (paginationResult) {
-                                paginationResult.meta.pagination.page.should.equal(1);
-                                paginationResult.meta.pagination.limit.should.equal(30);
-                                paginationResult.meta.pagination.pages.should.equal(2);
-                                paginationResult.data.length.should.equal(30);
+                                assert.equal(paginationResult.meta.pagination.page, 1);
+                                assert.equal(paginationResult.meta.pagination.limit, 30);
+                                assert.equal(paginationResult.meta.pagination.pages, 2);
+                                assert.equal(paginationResult.data.length, 30);
 
                                 // Test featured pages
                                 return models.Post.findPage({limit: 10, filter: 'featured:true'});
                             }).then(function (paginationResult) {
-                                paginationResult.meta.pagination.page.should.equal(1);
-                                paginationResult.meta.pagination.limit.should.equal(10);
-                                paginationResult.meta.pagination.pages.should.equal(1);
-                                paginationResult.data.length.should.equal(2);
+                                assert.equal(paginationResult.meta.pagination.page, 1);
+                                assert.equal(paginationResult.meta.pagination.limit, 10);
+                                assert.equal(paginationResult.meta.pagination.pages, 1);
+                                assert.equal(paginationResult.data.length, 2);
 
                                 // Test both boolean formats for featured pages
                                 return models.Post.findPage({limit: 10, filter: 'featured:1'});
                             }).then(function (paginationResult) {
-                                paginationResult.meta.pagination.page.should.equal(1);
-                                paginationResult.meta.pagination.limit.should.equal(10);
-                                paginationResult.meta.pagination.pages.should.equal(1);
-                                paginationResult.data.length.should.equal(2);
+                                assert.equal(paginationResult.meta.pagination.page, 1);
+                                assert.equal(paginationResult.meta.pagination.limit, 10);
+                                assert.equal(paginationResult.meta.pagination.pages, 1);
+                                assert.equal(paginationResult.data.length, 2);
 
                                 return models.Post.findPage({limit: 10, page: 2, status: 'all'});
                             }).then(function (paginationResult) {
-                                paginationResult.meta.pagination.pages.should.equal(11);
+                                assert.equal(paginationResult.meta.pagination.pages, 11);
 
                                 return models.Post.findPage({limit: 'all', status: 'all'});
                             }).then(function (paginationResult) {
-                                paginationResult.meta.pagination.page.should.equal(1);
-                                paginationResult.meta.pagination.limit.should.equal('all');
-                                paginationResult.meta.pagination.pages.should.equal(1);
-                                paginationResult.data.length.should.equal(110);
+                                assert.equal(paginationResult.meta.pagination.page, 1);
+                                assert.equal(paginationResult.meta.pagination.limit, 'all');
+                                assert.equal(paginationResult.meta.pagination.pages, 1);
+                                assert.equal(paginationResult.data.length, 110);
 
                                 done();
                             }).catch(done);
@@ -142,31 +144,31 @@ describe('Post Model', function () {
                         // Test tag filter
                         models.Post.findPage({page: 1, filter: 'tags:bacon'})
                             .then(function (paginationResult) {
-                                paginationResult.meta.pagination.page.should.equal(1);
-                                paginationResult.meta.pagination.limit.should.equal(15);
-                                paginationResult.meta.pagination.pages.should.equal(1);
-                                paginationResult.data.length.should.equal(2);
+                                assert.equal(paginationResult.meta.pagination.page, 1);
+                                assert.equal(paginationResult.meta.pagination.limit, 15);
+                                assert.equal(paginationResult.meta.pagination.pages, 1);
+                                assert.equal(paginationResult.data.length, 2);
 
                                 return models.Post.findPage({page: 1, filter: 'tags:kitchen-sink'});
                             }).then(function (paginationResult) {
-                                paginationResult.meta.pagination.page.should.equal(1);
-                                paginationResult.meta.pagination.limit.should.equal(15);
-                                paginationResult.meta.pagination.pages.should.equal(1);
-                                paginationResult.data.length.should.equal(2);
+                                assert.equal(paginationResult.meta.pagination.page, 1);
+                                assert.equal(paginationResult.meta.pagination.limit, 15);
+                                assert.equal(paginationResult.meta.pagination.pages, 1);
+                                assert.equal(paginationResult.data.length, 2);
 
                                 return models.Post.findPage({page: 1, filter: 'tags:injection'});
                             }).then(function (paginationResult) {
-                                paginationResult.meta.pagination.page.should.equal(1);
-                                paginationResult.meta.pagination.limit.should.equal(15);
-                                paginationResult.meta.pagination.pages.should.equal(2);
-                                paginationResult.data.length.should.equal(15);
+                                assert.equal(paginationResult.meta.pagination.page, 1);
+                                assert.equal(paginationResult.meta.pagination.limit, 15);
+                                assert.equal(paginationResult.meta.pagination.pages, 2);
+                                assert.equal(paginationResult.data.length, 15);
 
                                 return models.Post.findPage({page: 2, filter: 'tags:injection'});
                             }).then(function (paginationResult) {
-                                paginationResult.meta.pagination.page.should.equal(2);
-                                paginationResult.meta.pagination.limit.should.equal(15);
-                                paginationResult.meta.pagination.pages.should.equal(2);
-                                paginationResult.data.length.should.equal(11);
+                                assert.equal(paginationResult.meta.pagination.page, 2);
+                                assert.equal(paginationResult.meta.pagination.limit, 15);
+                                assert.equal(paginationResult.meta.pagination.pages, 2);
+                                assert.equal(paginationResult.data.length, 11);
 
                                 done();
                             }).catch(done);
@@ -223,7 +225,7 @@ describe('Post Model', function () {
                         });
                 }).catch(function () {
                     // txn was rolled back
-                    Object.keys(eventsTriggered).length.should.eql(0);
+                    assert.equal(Object.keys(eventsTriggered).length, 0);
                 });
             });
 
@@ -243,7 +245,7 @@ describe('Post Model', function () {
                         });
                 }).then(function () {
                     // txn was successful
-                    Object.keys(eventsTriggered).length.should.eql(4);
+                    assert.equal(Object.keys(eventsTriggered).length, 4);
                 });
             });
 
@@ -252,19 +254,19 @@ describe('Post Model', function () {
 
                 models.Post.findOne({id: postId}).then(function (results) {
                     let post;
-                    should.exist(results);
+                    assertExists(results);
                     post = results.toJSON();
-                    post.id.should.equal(postId);
-                    post.title.should.not.equal('new title');
+                    assert.equal(post.id, postId);
+                    assert.notEqual(post.title, 'new title');
 
                     return models.Post.edit({title: 'new title'}, _.extend({}, context, {id: postId}));
                 }).then(function (edited) {
-                    should.exist(edited);
-                    edited.attributes.title.should.equal('new title');
+                    assertExists(edited);
+                    assert.equal(edited.attributes.title, 'new title');
 
-                    Object.keys(eventsTriggered).length.should.eql(2);
-                    should.exist(eventsTriggered['post.published.edited']);
-                    should.exist(eventsTriggered['post.edited']);
+                    assert.equal(Object.keys(eventsTriggered).length, 2);
+                    assertExists(eventsTriggered['post.published.edited']);
+                    assertExists(eventsTriggered['post.edited']);
 
                     done();
                 }).catch(done);
@@ -275,9 +277,9 @@ describe('Post Model', function () {
 
                 models.Post.findOne({id: postId}).then(function (results) {
                     let post;
-                    should.exist(results);
+                    assertExists(results);
                     post = results.toJSON();
-                    post.id.should.equal(postId);
+                    assert.equal(post.id, postId);
 
                     return models.Post.edit({
                         custom_excerpt: new Array(302).join('a')
@@ -285,7 +287,7 @@ describe('Post Model', function () {
                 }).then(function () {
                     done(new Error('expected validation error'));
                 }).catch(function (err) {
-                    err[0].name.should.eql('ValidationError');
+                    assert.equal(err[0].name, 'ValidationError');
                     done();
                 });
             });
@@ -295,21 +297,21 @@ describe('Post Model', function () {
 
                 models.Post.findOne({id: postId, status: 'draft'}).then(function (results) {
                     let post;
-                    should.exist(results);
+                    assertExists(results);
                     post = results.toJSON();
-                    post.id.should.equal(postId);
-                    post.status.should.equal('draft');
+                    assert.equal(post.id, postId);
+                    assert.equal(post.status, 'draft');
 
                     return models.Post.edit({status: 'published'}, _.extend({}, context, {id: postId}));
                 }).then(function (edited) {
-                    should.exist(edited);
-                    edited.attributes.status.should.equal('published');
+                    assertExists(edited);
+                    assert.equal(edited.attributes.status, 'published');
 
-                    Object.keys(eventsTriggered).length.should.eql(4);
-                    should.exist(eventsTriggered['post.published']);
-                    should.exist(eventsTriggered['post.edited']);
-                    should.exist(eventsTriggered['tag.attached']);
-                    should.exist(eventsTriggered['user.attached']);
+                    assert.equal(Object.keys(eventsTriggered).length, 4);
+                    assertExists(eventsTriggered['post.published']);
+                    assertExists(eventsTriggered['post.edited']);
+                    assertExists(eventsTriggered['tag.attached']);
+                    assertExists(eventsTriggered['user.attached']);
 
                     done();
                 }).catch(done);
@@ -320,19 +322,19 @@ describe('Post Model', function () {
 
                 models.Post.findOne({id: postId}).then(function (results) {
                     let post;
-                    should.exist(results);
+                    assertExists(results);
                     post = results.toJSON();
-                    post.id.should.equal(postId);
-                    post.status.should.equal('published');
+                    assert.equal(post.id, postId);
+                    assert.equal(post.status, 'published');
 
                     return models.Post.edit({status: 'draft'}, _.extend({}, context, {id: postId}));
                 }).then(function (edited) {
-                    should.exist(edited);
-                    edited.attributes.status.should.equal('draft');
+                    assertExists(edited);
+                    assert.equal(edited.attributes.status, 'draft');
 
-                    Object.keys(eventsTriggered).length.should.eql(4);
-                    should.exist(eventsTriggered['post.unpublished']);
-                    should.exist(eventsTriggered['post.edited']);
+                    assert.equal(Object.keys(eventsTriggered).length, 4);
+                    assertExists(eventsTriggered['post.unpublished']);
+                    assertExists(eventsTriggered['post.edited']);
 
                     done();
                 }).catch(done);
@@ -342,9 +344,9 @@ describe('Post Model', function () {
                 let post;
 
                 models.Post.findOne({status: 'draft'}).then(function (results) {
-                    should.exist(results);
+                    assertExists(results);
                     post = results.toJSON();
-                    post.status.should.equal('draft');
+                    assert.equal(post.status, 'draft');
 
                     results.set('published_at', null);
                     return results.save();
@@ -355,8 +357,8 @@ describe('Post Model', function () {
                 }).then(function () {
                     done(new Error('expected error'));
                 }).catch(function (err) {
-                    should.exist(err);
-                    (err instanceof errors.ValidationError).should.eql(true);
+                    assertExists(err);
+                    assert.equal((err instanceof errors.ValidationError), true);
                     done();
                 });
             });
@@ -367,24 +369,24 @@ describe('Post Model', function () {
                 models.Post.findOne({status: 'draft'}).then(function (results) {
                     let post;
 
-                    should.exist(results);
+                    assertExists(results);
                     post = results.toJSON();
-                    post.status.should.equal('draft');
+                    assert.equal(post.status, 'draft');
 
                     return models.Post.edit({
                         status: 'scheduled',
                         published_at: newPublishedAt
                     }, _.extend({}, context, {id: post.id}));
                 }).then(function (edited) {
-                    should.exist(edited);
-                    edited.attributes.status.should.equal('scheduled');
+                    assertExists(edited);
+                    assert.equal(edited.attributes.status, 'scheduled');
 
                     // mysql does not store ms
-                    moment(edited.attributes.published_at).startOf('seconds').diff(moment(newPublishedAt).startOf('seconds')).should.eql(0);
+                    assert.equal(moment(edited.attributes.published_at).startOf('seconds').diff(moment(newPublishedAt).startOf('seconds')), 0);
 
-                    Object.keys(eventsTriggered).length.should.eql(2);
-                    should.exist(eventsTriggered['post.scheduled']);
-                    should.exist(eventsTriggered['post.edited']);
+                    assert.equal(Object.keys(eventsTriggered).length, 2);
+                    assertExists(eventsTriggered['post.scheduled']);
+                    assertExists(eventsTriggered['post.edited']);
 
                     done();
                 }).catch(done);
@@ -394,20 +396,20 @@ describe('Post Model', function () {
                 models.Post.findOne({status: 'scheduled'}).then(function (results) {
                     let post;
 
-                    should.exist(results);
+                    assertExists(results);
                     post = results.toJSON();
-                    post.status.should.equal('scheduled');
+                    assert.equal(post.status, 'scheduled');
 
                     return models.Post.edit({
                         status: 'draft'
                     }, _.extend({}, context, {id: post.id}));
                 }).then(function (edited) {
-                    should.exist(edited);
-                    edited.attributes.status.should.equal('draft');
+                    assertExists(edited);
+                    assert.equal(edited.attributes.status, 'draft');
 
-                    Object.keys(eventsTriggered).length.should.eql(2);
-                    should.exist(eventsTriggered['post.unscheduled']);
-                    should.exist(eventsTriggered['post.edited']);
+                    assert.equal(Object.keys(eventsTriggered).length, 2);
+                    assertExists(eventsTriggered['post.unscheduled']);
+                    assertExists(eventsTriggered['post.edited']);
 
                     done();
                 }).catch(done);
@@ -417,21 +419,21 @@ describe('Post Model', function () {
                 models.Post.findOne({status: 'scheduled'}).then(function (results) {
                     let post;
 
-                    should.exist(results);
+                    assertExists(results);
                     post = results.toJSON();
-                    post.status.should.equal('scheduled');
+                    assert.equal(post.status, 'scheduled');
 
                     return models.Post.edit({
                         status: 'scheduled',
                         published_at: moment().add(20, 'days').toDate()
                     }, _.extend({}, context, {id: post.id}));
                 }).then(function (edited) {
-                    should.exist(edited);
-                    edited.attributes.status.should.equal('scheduled');
+                    assertExists(edited);
+                    assert.equal(edited.attributes.status, 'scheduled');
 
-                    Object.keys(eventsTriggered).length.should.eql(2);
-                    should.exist(eventsTriggered['post.rescheduled']);
-                    should.exist(eventsTriggered['post.edited']);
+                    assert.equal(Object.keys(eventsTriggered).length, 2);
+                    assertExists(eventsTriggered['post.rescheduled']);
+                    assertExists(eventsTriggered['post.edited']);
 
                     done();
                 }).catch(done);
@@ -441,19 +443,19 @@ describe('Post Model', function () {
                 models.Post.findOne({status: 'scheduled'}).then(function (results) {
                     let post;
 
-                    should.exist(results);
+                    assertExists(results);
                     post = results.toJSON();
-                    post.status.should.equal('scheduled');
+                    assert.equal(post.status, 'scheduled');
 
                     return models.Post.edit({
                         status: 'scheduled'
                     }, _.extend({}, context, {id: post.id}));
                 }).then(function (edited) {
-                    should.exist(edited);
-                    edited.attributes.status.should.equal('scheduled');
+                    assertExists(edited);
+                    assert.equal(edited.attributes.status, 'scheduled');
 
                     // nothing has changed
-                    Object.keys(eventsTriggered).length.should.eql(0);
+                    assert.equal(Object.keys(eventsTriggered).length, 0);
 
                     done();
                 }).catch(done);
@@ -463,16 +465,16 @@ describe('Post Model', function () {
                 let post;
 
                 models.Post.findOne({status: 'scheduled'}).then(function (results) {
-                    should.exist(results);
+                    assertExists(results);
                     post = results.toJSON();
-                    post.status.should.equal('scheduled');
+                    assert.equal(post.status, 'scheduled');
 
                     results.set('published_at', moment().add(2, 'minutes').add(2, 'seconds').toDate());
                     return results.save();
                 }).then(function () {
-                    Object.keys(eventsTriggered).length.should.eql(2);
-                    should.exist(eventsTriggered['post.edited']);
-                    should.exist(eventsTriggered['post.rescheduled']);
+                    assert.equal(Object.keys(eventsTriggered).length, 2);
+                    assertExists(eventsTriggered['post.edited']);
+                    assertExists(eventsTriggered['post.rescheduled']);
                     eventsTriggered = {};
 
                     return new Promise((resolve) => {
@@ -483,11 +485,11 @@ describe('Post Model', function () {
                         status: 'scheduled'
                     }, _.extend({}, context, {id: post.id}));
                 }).then(function (edited) {
-                    should.exist(edited);
-                    edited.attributes.status.should.equal('scheduled');
+                    assertExists(edited);
+                    assert.equal(edited.attributes.status, 'scheduled');
 
-                    Object.keys(eventsTriggered).length.should.eql(1);
-                    should.exist(eventsTriggered['post.edited']);
+                    assert.equal(Object.keys(eventsTriggered).length, 1);
+                    assertExists(eventsTriggered['post.edited']);
 
                     done();
                 }).catch(done);
@@ -498,10 +500,10 @@ describe('Post Model', function () {
 
                 models.Post.findOne({id: postId}).then(function (results) {
                     let post;
-                    should.exist(results);
+                    assertExists(results);
                     post = results.toJSON();
-                    post.id.should.equal(postId);
-                    post.status.should.equal('published');
+                    assert.equal(post.id, postId);
+                    assert.equal(post.status, 'published');
 
                     return models.Post.edit({
                         status: 'scheduled',
@@ -510,8 +512,8 @@ describe('Post Model', function () {
                 }).then(function () {
                     done(new Error('change status from published to scheduled is not allowed right now!'));
                 }).catch(function (err) {
-                    should.exist(err);
-                    (err instanceof errors.ValidationError).should.eql(true);
+                    assertExists(err);
+                    assert.equal((err instanceof errors.ValidationError), true);
                     done();
                 });
             });
@@ -521,32 +523,32 @@ describe('Post Model', function () {
 
                 models.Post.findOne({id: postId, status: 'draft'}).then(function (results) {
                     let post;
-                    should.exist(results);
+                    assertExists(results);
                     post = results.toJSON();
-                    post.id.should.equal(postId);
-                    post.status.should.equal('draft');
+                    assert.equal(post.id, postId);
+                    assert.equal(post.status, 'draft');
 
                     return models.Post.edit({type: 'page'}, _.extend({}, context, {id: postId}));
                 }).then(function (edited) {
-                    should.exist(edited);
-                    edited.attributes.status.should.equal('draft');
-                    edited.attributes.type.should.equal('page');
+                    assertExists(edited);
+                    assert.equal(edited.attributes.status, 'draft');
+                    assert.equal(edited.attributes.type, 'page');
 
-                    Object.keys(eventsTriggered).length.should.eql(2);
-                    should.exist(eventsTriggered['post.deleted']);
-                    should.exist(eventsTriggered['page.added']);
+                    assert.equal(Object.keys(eventsTriggered).length, 2);
+                    assertExists(eventsTriggered['post.deleted']);
+                    assertExists(eventsTriggered['page.added']);
 
                     return models.Post.edit({type: 'post'}, _.extend({}, context, {id: postId}));
                 }).then(function (edited) {
-                    should.exist(edited);
-                    edited.attributes.status.should.equal('draft');
-                    edited.attributes.type.should.equal('post');
+                    assertExists(edited);
+                    assert.equal(edited.attributes.status, 'draft');
+                    assert.equal(edited.attributes.type, 'post');
 
-                    Object.keys(eventsTriggered).length.should.eql(4);
-                    should.exist(eventsTriggered['post.deleted']);
-                    should.exist(eventsTriggered['page.added']);
-                    should.exist(eventsTriggered['post.deleted']);
-                    should.exist(eventsTriggered['post.added']);
+                    assert.equal(Object.keys(eventsTriggered).length, 4);
+                    assertExists(eventsTriggered['post.deleted']);
+                    assertExists(eventsTriggered['page.added']);
+                    assertExists(eventsTriggered['post.deleted']);
+                    assertExists(eventsTriggered['post.added']);
 
                     done();
                 }).catch(done);
@@ -555,9 +557,9 @@ describe('Post Model', function () {
             it('can convert draft to schedule AND post to page and back', function (done) {
                 models.Post.findOne({status: 'draft'}).then(function (results) {
                     let post;
-                    should.exist(results);
+                    assertExists(results);
                     post = results.toJSON();
-                    post.status.should.equal('draft');
+                    assert.equal(post.status, 'draft');
 
                     return models.Post.edit({
                         type: 'page',
@@ -565,26 +567,26 @@ describe('Post Model', function () {
                         published_at: moment().add(10, 'days')
                     }, _.extend({}, context, {id: post.id}));
                 }).then(function (edited) {
-                    should.exist(edited);
-                    edited.attributes.status.should.equal('scheduled');
-                    edited.attributes.type.should.equal('page');
+                    assertExists(edited);
+                    assert.equal(edited.attributes.status, 'scheduled');
+                    assert.equal(edited.attributes.type, 'page');
 
-                    Object.keys(eventsTriggered).length.should.eql(3);
-                    should.exist(eventsTriggered['post.deleted']);
-                    should.exist(eventsTriggered['page.added']);
-                    should.exist(eventsTriggered['page.scheduled']);
+                    assert.equal(Object.keys(eventsTriggered).length, 3);
+                    assertExists(eventsTriggered['post.deleted']);
+                    assertExists(eventsTriggered['page.added']);
+                    assertExists(eventsTriggered['page.scheduled']);
 
                     return models.Post.edit({type: 'post'}, _.extend({}, context, {id: edited.id}));
                 }).then(function (edited) {
-                    should.exist(edited);
-                    edited.attributes.status.should.equal('scheduled');
-                    edited.attributes.type.should.equal('post');
+                    assertExists(edited);
+                    assert.equal(edited.attributes.status, 'scheduled');
+                    assert.equal(edited.attributes.type, 'post');
 
-                    Object.keys(eventsTriggered).length.should.eql(7);
-                    should.exist(eventsTriggered['page.unscheduled']);
-                    should.exist(eventsTriggered['page.deleted']);
-                    should.exist(eventsTriggered['post.added']);
-                    should.exist(eventsTriggered['post.scheduled']);
+                    assert.equal(Object.keys(eventsTriggered).length, 7);
+                    assertExists(eventsTriggered['page.unscheduled']);
+                    assertExists(eventsTriggered['page.deleted']);
+                    assertExists(eventsTriggered['post.added']);
+                    assertExists(eventsTriggered['post.scheduled']);
 
                     done();
                 }).catch(done);
@@ -595,34 +597,34 @@ describe('Post Model', function () {
 
                 models.Post.findOne({id: postId}).then(function (results) {
                     let post;
-                    should.exist(results);
+                    assertExists(results);
                     post = results.toJSON();
-                    post.id.should.equal(postId);
-                    post.status.should.equal('published');
+                    assert.equal(post.id, postId);
+                    assert.equal(post.status, 'published');
 
                     return models.Post.edit({type: 'page'}, _.extend({}, context, {id: postId}));
                 }).then(function (edited) {
-                    should.exist(edited);
-                    edited.attributes.status.should.equal('published');
-                    edited.attributes.type.should.equal('page');
+                    assertExists(edited);
+                    assert.equal(edited.attributes.status, 'published');
+                    assert.equal(edited.attributes.type, 'page');
 
-                    Object.keys(eventsTriggered).length.should.eql(4);
-                    should.exist(eventsTriggered['post.unpublished']);
-                    should.exist(eventsTriggered['post.deleted']);
-                    should.exist(eventsTriggered['page.added']);
-                    should.exist(eventsTriggered['page.published']);
+                    assert.equal(Object.keys(eventsTriggered).length, 4);
+                    assertExists(eventsTriggered['post.unpublished']);
+                    assertExists(eventsTriggered['post.deleted']);
+                    assertExists(eventsTriggered['page.added']);
+                    assertExists(eventsTriggered['page.published']);
 
                     return models.Post.edit({type: 'post'}, _.extend({}, context, {id: postId}));
                 }).then(function (edited) {
-                    should.exist(edited);
-                    edited.attributes.status.should.equal('published');
-                    edited.attributes.type.should.equal('post');
+                    assertExists(edited);
+                    assert.equal(edited.attributes.status, 'published');
+                    assert.equal(edited.attributes.type, 'post');
 
-                    Object.keys(eventsTriggered).length.should.eql(8);
-                    should.exist(eventsTriggered['page.unpublished']);
-                    should.exist(eventsTriggered['page.deleted']);
-                    should.exist(eventsTriggered['post.added']);
-                    should.exist(eventsTriggered['post.published']);
+                    assert.equal(Object.keys(eventsTriggered).length, 8);
+                    assertExists(eventsTriggered['page.unpublished']);
+                    assertExists(eventsTriggered['page.deleted']);
+                    assertExists(eventsTriggered['post.added']);
+                    assertExists(eventsTriggered['post.published']);
 
                     done();
                 }).catch(done);
@@ -633,34 +635,34 @@ describe('Post Model', function () {
 
                 models.Post.findOne({id: postId, status: 'draft'}).then(function (results) {
                     let post;
-                    should.exist(results);
+                    assertExists(results);
                     post = results.toJSON();
-                    post.id.should.equal(postId);
-                    post.status.should.equal('draft');
+                    assert.equal(post.id, postId);
+                    assert.equal(post.status, 'draft');
 
                     return models.Post.edit({type: 'page', status: 'published'}, _.extend({}, context, {id: postId}));
                 }).then(function (edited) {
-                    should.exist(edited);
-                    edited.attributes.status.should.equal('published');
-                    edited.attributes.type.should.equal('page');
+                    assertExists(edited);
+                    assert.equal(edited.attributes.status, 'published');
+                    assert.equal(edited.attributes.type, 'page');
 
-                    Object.keys(eventsTriggered).length.should.eql(5);
-                    should.exist(eventsTriggered['post.deleted']);
-                    should.exist(eventsTriggered['page.added']);
-                    should.exist(eventsTriggered['page.published']);
-                    should.exist(eventsTriggered['tag.attached']);
-                    should.exist(eventsTriggered['user.attached']);
+                    assert.equal(Object.keys(eventsTriggered).length, 5);
+                    assertExists(eventsTriggered['post.deleted']);
+                    assertExists(eventsTriggered['page.added']);
+                    assertExists(eventsTriggered['page.published']);
+                    assertExists(eventsTriggered['tag.attached']);
+                    assertExists(eventsTriggered['user.attached']);
 
                     return models.Post.edit({type: 'post', status: 'draft'}, _.extend({}, context, {id: postId}));
                 }).then(function (edited) {
-                    should.exist(edited);
-                    edited.attributes.status.should.equal('draft');
-                    edited.attributes.type.should.equal('post');
+                    assertExists(edited);
+                    assert.equal(edited.attributes.status, 'draft');
+                    assert.equal(edited.attributes.type, 'post');
 
-                    Object.keys(eventsTriggered).length.should.eql(8);
-                    should.exist(eventsTriggered['page.unpublished']);
-                    should.exist(eventsTriggered['page.deleted']);
-                    should.exist(eventsTriggered['post.added']);
+                    assert.equal(Object.keys(eventsTriggered).length, 8);
+                    assertExists(eventsTriggered['page.unpublished']);
+                    assertExists(eventsTriggered['page.deleted']);
+                    assertExists(eventsTriggered['post.added']);
 
                     done();
                 }).catch(done);
@@ -671,10 +673,10 @@ describe('Post Model', function () {
 
                 models.Post.findOne({id: postId, status: 'draft'}).then(function (results) {
                     let post;
-                    should.exist(results);
+                    assertExists(results);
                     post = results.toJSON();
-                    post.id.should.equal(postId);
-                    post.status.should.equal('draft');
+                    assert.equal(post.id, postId);
+                    assert.equal(post.status, 'draft');
 
                     // Test changing status and published_by at the same time
                     return models.Post.edit({
@@ -682,16 +684,16 @@ describe('Post Model', function () {
                         published_by: 4
                     }, _.extend({}, context, {id: postId}));
                 }).then(function (edited) {
-                    should.exist(edited);
-                    edited.attributes.status.should.equal('published');
-                    edited.attributes.published_by.should.equal(context.context.user);
+                    assertExists(edited);
+                    assert.equal(edited.attributes.status, 'published');
+                    assert.equal(edited.attributes.published_by, context.context.user);
 
                     // Test changing status and published_by on its own
                     return models.Post.edit({published_by: 4}, _.extend({}, context, {id: postId}));
                 }).then(function (edited) {
-                    should.exist(edited);
-                    edited.attributes.status.should.equal('published');
-                    edited.attributes.published_by.should.equal(context.context.user);
+                    assertExists(edited);
+                    assert.equal(edited.attributes.status, 'published');
+                    assert.equal(edited.attributes.published_by, context.context.user);
 
                     done();
                 }).catch(done);
@@ -734,48 +736,48 @@ describe('Post Model', function () {
                 models.Post.add(newPost, _.merge({withRelated: ['authors']}, context)).then(function (createdPost) {
                     return models.Post.findOne({id: createdPost.id, status: 'all'}, {withRelated: ['authors']});
                 }).then(function (createdPost) {
-                    should.exist(createdPost);
-                    createdPost.has('uuid').should.equal(true);
-                    createdPost.get('status').should.equal('draft');
-                    createdPost.get('title').should.equal(newPost.title, 'title is correct');
-                    createdPost.get('mobiledoc').should.equal(newPost.mobiledoc, 'mobiledoc is correct');
-                    createdPost.has('html').should.equal(true);
-                    createdPost.get('html').should.equal(newPostDB.html);
-                    createdPost.has('plaintext').should.equal(true);
-                    createdPost.get('plaintext').should.match(/^testing/);
-                    createdPost.get('slug').should.equal(newPostDB.slug + '-2');
-                    (!!createdPost.get('featured')).should.equal(false);
-                    (!!createdPost.get('page')).should.equal(false);
+                    assertExists(createdPost);
+                    assert.equal(createdPost.has('uuid'), true);
+                    assert.equal(createdPost.get('status'), 'draft');
+                    assert.equal(createdPost.get('title'), newPost.title, 'title is correct');
+                    assert.equal(createdPost.get('mobiledoc'), newPost.mobiledoc, 'mobiledoc is correct');
+                    assert.equal(createdPost.has('html'), true);
+                    assert.equal(createdPost.get('html'), newPostDB.html);
+                    assert.equal(createdPost.has('plaintext'), true);
+                    assert.match(createdPost.get('plaintext'), /^testing/);
+                    assert.equal(createdPost.get('slug'), newPostDB.slug + '-2');
+                    assert.equal((!!createdPost.get('featured')), false);
+                    assert.equal((!!createdPost.get('page')), false);
 
-                    should.equal(createdPost.get('locale'), null);
-                    should.equal(createdPost.get('visibility'), 'public');
+                    assert.equal(createdPost.get('locale'), null);
+                    assert.equal(createdPost.get('visibility'), 'public');
 
                     // testing for nulls
-                    (createdPost.get('feature_image') === null).should.equal(true);
+                    assert.equal((createdPost.get('feature_image') === null), true);
 
-                    createdPost.get('created_at').should.be.above(new Date(0).getTime());
-                    createdPost.relations.authors.models[0].id.should.equal(testUtils.DataGenerator.Content.users[0].id);
-                    createdPost.get('updated_at').should.be.above(new Date(0).getTime());
-                    should.equal(createdPost.get('published_at'), null);
-                    should.equal(createdPost.get('published_by'), null);
+                    assert(createdPost.get('created_at') > new Date(0).getTime());
+                    assert.equal(createdPost.relations.authors.models[0].id, testUtils.DataGenerator.Content.users[0].id);
+                    assert(createdPost.get('updated_at') > new Date(0).getTime());
+                    assert.equal(createdPost.get('published_at'), null);
+                    assert.equal(createdPost.get('published_by'), null);
 
                     createdPostUpdatedDate = createdPost.get('updated_at');
 
-                    Object.keys(eventsTriggered).length.should.eql(2);
-                    should.exist(eventsTriggered['post.added']);
-                    should.exist(eventsTriggered['user.attached']);
+                    assert.equal(Object.keys(eventsTriggered).length, 2);
+                    assertExists(eventsTriggered['post.added']);
+                    assertExists(eventsTriggered['user.attached']);
 
                     // Set the status to published to check that `published_at` is set.
                     return createdPost.save({status: 'published'}, context);
                 }).then(function (publishedPost) {
-                    publishedPost.get('published_at').should.be.instanceOf(Date);
-                    publishedPost.get('published_by').should.equal(testUtils.DataGenerator.Content.users[0].id);
-                    publishedPost.get('updated_at').should.be.instanceOf(Date);
+                    assert(publishedPost.get('published_at') instanceof Date);
+                    assert.equal(publishedPost.get('published_by'), testUtils.DataGenerator.Content.users[0].id);
+                    assert(publishedPost.get('updated_at') instanceof Date);
                     publishedPost.get('updated_at').should.not.equal(createdPostUpdatedDate);
 
-                    Object.keys(eventsTriggered).length.should.eql(4);
-                    should.exist(eventsTriggered['post.published']);
-                    should.exist(eventsTriggered['post.edited']);
+                    assert.equal(Object.keys(eventsTriggered).length, 4);
+                    assertExists(eventsTriggered['post.published']);
+                    assertExists(eventsTriggered['post.edited']);
 
                     done();
                 }).catch(done);
@@ -803,48 +805,48 @@ describe('Post Model', function () {
                 models.Post.add(newPost, _.merge({withRelated: ['authors']}, context)).then(function (createdPost) {
                     return models.Post.findOne({id: createdPost.id, status: 'all'}, {withRelated: ['authors']});
                 }).then(function (createdPost) {
-                    should.exist(createdPost);
-                    createdPost.has('uuid').should.equal(true);
-                    createdPost.get('status').should.equal('draft');
-                    createdPost.get('title').should.equal(newPost.title, 'title is correct');
-                    createdPost.get('mobiledoc').should.equal(newPost.mobiledoc, 'mobiledoc is correct');
-                    createdPost.has('html').should.equal(true);
-                    createdPost.get('html').should.equal(newPostDB.html);
-                    createdPost.has('plaintext').should.equal(true);
-                    createdPost.get('plaintext').should.match(/^testing/);
+                    assertExists(createdPost);
+                    assert.equal(createdPost.has('uuid'), true);
+                    assert.equal(createdPost.get('status'), 'draft');
+                    assert.equal(createdPost.get('title'), newPost.title, 'title is correct');
+                    assert.equal(createdPost.get('mobiledoc'), newPost.mobiledoc, 'mobiledoc is correct');
+                    assert.equal(createdPost.has('html'), true);
+                    assert.equal(createdPost.get('html'), newPostDB.html);
+                    assert.equal(createdPost.has('plaintext'), true);
+                    assert.match(createdPost.get('plaintext'), /^testing/);
                     // createdPost.get('slug').should.equal(newPostDB.slug + '-3');
-                    (!!createdPost.get('featured')).should.equal(false);
-                    (!!createdPost.get('page')).should.equal(false);
+                    assert.equal((!!createdPost.get('featured')), false);
+                    assert.equal((!!createdPost.get('page')), false);
 
-                    should.equal(createdPost.get('locale'), null);
-                    should.equal(createdPost.get('visibility'), 'paid');
+                    assert.equal(createdPost.get('locale'), null);
+                    assert.equal(createdPost.get('visibility'), 'paid');
 
                     // testing for nulls
-                    (createdPost.get('feature_image') === null).should.equal(true);
+                    assert.equal((createdPost.get('feature_image') === null), true);
 
-                    createdPost.get('created_at').should.be.above(new Date(0).getTime());
-                    createdPost.relations.authors.models[0].id.should.equal(testUtils.DataGenerator.Content.users[0].id);
-                    createdPost.get('updated_at').should.be.above(new Date(0).getTime());
-                    should.equal(createdPost.get('published_at'), null);
-                    should.equal(createdPost.get('published_by'), null);
+                    assert(createdPost.get('created_at') > new Date(0).getTime());
+                    assert.equal(createdPost.relations.authors.models[0].id, testUtils.DataGenerator.Content.users[0].id);
+                    assert(createdPost.get('updated_at') > new Date(0).getTime());
+                    assert.equal(createdPost.get('published_at'), null);
+                    assert.equal(createdPost.get('published_by'), null);
 
                     createdPostUpdatedDate = createdPost.get('updated_at');
 
-                    Object.keys(eventsTriggered).length.should.eql(2);
-                    should.exist(eventsTriggered['post.added']);
-                    should.exist(eventsTriggered['user.attached']);
+                    assert.equal(Object.keys(eventsTriggered).length, 2);
+                    assertExists(eventsTriggered['post.added']);
+                    assertExists(eventsTriggered['user.attached']);
 
                     // Set the status to published to check that `published_at` is set.
                     return createdPost.save({status: 'published'}, context);
                 }).then(function (publishedPost) {
-                    publishedPost.get('published_at').should.be.instanceOf(Date);
-                    publishedPost.get('published_by').should.equal(testUtils.DataGenerator.Content.users[0].id);
-                    publishedPost.get('updated_at').should.be.instanceOf(Date);
+                    assert(publishedPost.get('published_at') instanceof Date);
+                    assert.equal(publishedPost.get('published_by'), testUtils.DataGenerator.Content.users[0].id);
+                    assert(publishedPost.get('updated_at') instanceof Date);
                     publishedPost.get('updated_at').should.not.equal(createdPostUpdatedDate);
 
-                    Object.keys(eventsTriggered).length.should.eql(4);
-                    should.exist(eventsTriggered['post.published']);
-                    should.exist(eventsTriggered['post.edited']);
+                    assert.equal(Object.keys(eventsTriggered).length, 4);
+                    assertExists(eventsTriggered['post.published']);
+                    assertExists(eventsTriggered['post.edited']);
 
                     done();
                 }).catch(done);
@@ -859,13 +861,13 @@ describe('Post Model', function () {
                     title: 'published_at test',
                     mobiledoc: markdownToMobiledoc('This is some content')
                 }, context).then(function (newPost) {
-                    should.exist(newPost);
-                    new Date(newPost.get('published_at')).getTime().should.equal(previousPublishedAtDate.getTime());
+                    assertExists(newPost);
+                    assert.equal(new Date(newPost.get('published_at')).getTime(), previousPublishedAtDate.getTime());
 
-                    Object.keys(eventsTriggered).length.should.eql(3);
-                    should.exist(eventsTriggered['post.added']);
-                    should.exist(eventsTriggered['post.published']);
-                    should.exist(eventsTriggered['user.attached']);
+                    assert.equal(Object.keys(eventsTriggered).length, 3);
+                    assertExists(eventsTriggered['post.added']);
+                    assertExists(eventsTriggered['post.published']);
+                    assertExists(eventsTriggered['user.attached']);
 
                     done();
                 }).catch(done);
@@ -877,12 +879,12 @@ describe('Post Model', function () {
                     title: 'draft 1',
                     mobiledoc: markdownToMobiledoc('This is some content')
                 }, context).then(function (newPost) {
-                    should.exist(newPost);
-                    should.not.exist(newPost.get('published_at'));
+                    assertExists(newPost);
+                    assert.equal(newPost.get('published_at'), null);
 
-                    Object.keys(eventsTriggered).length.should.eql(2);
-                    should.exist(eventsTriggered['post.added']);
-                    should.exist(eventsTriggered['user.attached']);
+                    assert.equal(Object.keys(eventsTriggered).length, 2);
+                    assertExists(eventsTriggered['post.added']);
+                    assertExists(eventsTriggered['user.attached']);
 
                     done();
                 }).catch(done);
@@ -898,9 +900,9 @@ describe('Post Model', function () {
                         name: testUtils.DataGenerator.forKnex.users[0].name
                     }]
                 }, _.merge({withRelated: ['authors']}, context)).then(function (newPost) {
-                    should.exist(newPost);
+                    assertExists(newPost);
                     newPost.toJSON().primary_author.id.should.eql(testUtils.DataGenerator.forKnex.users[0].id);
-                    newPost.toJSON().authors.length.should.eql(1);
+                    assert.equal(newPost.toJSON().authors.length, 1);
                     newPost.toJSON().authors[0].id.should.eql(testUtils.DataGenerator.forKnex.users[0].id);
                     done();
                 }).catch(done);
@@ -913,12 +915,12 @@ describe('Post Model', function () {
                     title: 'draft 1',
                     mobiledoc: markdownToMobiledoc('This is some content')
                 }, context).then(function (newPost) {
-                    should.exist(newPost);
-                    should.exist(newPost.get('published_at'));
+                    assertExists(newPost);
+                    assertExists(newPost.get('published_at'));
 
-                    Object.keys(eventsTriggered).length.should.eql(2);
-                    should.exist(eventsTriggered['post.added']);
-                    should.exist(eventsTriggered['user.attached']);
+                    assert.equal(Object.keys(eventsTriggered).length, 2);
+                    assertExists(eventsTriggered['post.added']);
+                    assertExists(eventsTriggered['user.attached']);
 
                     done();
                 }).catch(done);
@@ -930,9 +932,9 @@ describe('Post Model', function () {
                     title: 'scheduled 1',
                     mobiledoc: markdownToMobiledoc('This is some content')
                 }, context).catch(function (err) {
-                    should.exist(err);
-                    (err instanceof errors.ValidationError).should.eql(true);
-                    Object.keys(eventsTriggered).length.should.eql(0);
+                    assertExists(err);
+                    assert.equal((err instanceof errors.ValidationError), true);
+                    assert.equal(Object.keys(eventsTriggered).length, 0);
                     done();
                 });
             });
@@ -944,9 +946,9 @@ describe('Post Model', function () {
                     title: 'scheduled 1',
                     mobiledoc: markdownToMobiledoc('This is some content')
                 }, context).catch(function (err) {
-                    should.exist(err);
-                    (err instanceof errors.ValidationError).should.eql(true);
-                    Object.keys(eventsTriggered).length.should.eql(0);
+                    assertExists(err);
+                    assert.equal((err instanceof errors.ValidationError), true);
+                    assert.equal(Object.keys(eventsTriggered).length, 0);
                     done();
                 });
             });
@@ -958,12 +960,12 @@ describe('Post Model', function () {
                     title: 'scheduled 1',
                     mobiledoc: markdownToMobiledoc('This is some content')
                 }, context);
-                should.exist(post);
+                assertExists(post);
 
-                Object.keys(eventsTriggered).length.should.eql(3);
-                should.exist(eventsTriggered['post.added']);
-                should.exist(eventsTriggered['post.scheduled']);
-                should.exist(eventsTriggered['user.attached']);
+                assert.equal(Object.keys(eventsTriggered).length, 3);
+                assertExists(eventsTriggered['post.added']);
+                assertExists(eventsTriggered['post.scheduled']);
+                assertExists(eventsTriggered['user.attached']);
             });
 
             it('add scheduled post with published_at 10 minutes in future -> we expect success', function (done) {
@@ -973,12 +975,12 @@ describe('Post Model', function () {
                     title: 'scheduled 1',
                     mobiledoc: markdownToMobiledoc('This is some content')
                 }, context).then(function (post) {
-                    should.exist(post);
+                    assertExists(post);
 
-                    Object.keys(eventsTriggered).length.should.eql(3);
-                    should.exist(eventsTriggered['post.added']);
-                    should.exist(eventsTriggered['post.scheduled']);
-                    should.exist(eventsTriggered['user.attached']);
+                    assert.equal(Object.keys(eventsTriggered).length, 3);
+                    assertExists(eventsTriggered['post.added']);
+                    assertExists(eventsTriggered['post.scheduled']);
+                    assertExists(eventsTriggered['user.attached']);
 
                     done();
                 }).catch(done);
@@ -995,7 +997,7 @@ describe('Post Model', function () {
                     };
                 })).then(function (createdPosts) {
                     // Should have created 12 posts
-                    createdPosts.length.should.equal(12);
+                    assert.equal(createdPosts.length, 12);
 
                     // Should have unique slugs and contents
                     _(createdPosts).each(function (post, i) {
@@ -1003,17 +1005,17 @@ describe('Post Model', function () {
 
                         // First one has normal title
                         if (num === 1) {
-                            post.get('slug').should.equal('test-title');
+                            assert.equal(post.get('slug'), 'test-title');
                             return;
                         }
 
-                        post.get('slug').should.equal('test-title-' + num);
-                        JSON.parse(post.get('mobiledoc')).cards[0][1].markdown.should.equal('Test Content ' + num);
+                        assert.equal(post.get('slug'), 'test-title-' + num);
+                        assert.equal(JSON.parse(post.get('mobiledoc')).cards[0][1].markdown, 'Test Content ' + num);
 
-                        Object.keys(eventsTriggered).length.should.eql(2);
-                        should.exist(eventsTriggered['post.added']);
-                        should.exist(eventsTriggered['user.attached']);
-                        eventsTriggered['post.added'].length.should.eql(12);
+                        assert.equal(Object.keys(eventsTriggered).length, 2);
+                        assertExists(eventsTriggered['post.added']);
+                        assertExists(eventsTriggered['user.attached']);
+                        assert.equal(eventsTriggered['post.added'].length, 12);
                     });
 
                     done();
@@ -1027,11 +1029,11 @@ describe('Post Model', function () {
                 };
 
                 models.Post.add(newPost, context).then(function (createdPost) {
-                    createdPost.get('slug').should.equal('apprehensive-titles-have-too-many-spaces-and-m-dashes-and-also-n-dashes');
+                    assert.equal(createdPost.get('slug'), 'apprehensive-titles-have-too-many-spaces-and-m-dashes-and-also-n-dashes');
 
-                    Object.keys(eventsTriggered).length.should.eql(2);
-                    should.exist(eventsTriggered['post.added']);
-                    should.exist(eventsTriggered['user.attached']);
+                    assert.equal(Object.keys(eventsTriggered).length, 2);
+                    assertExists(eventsTriggered['post.added']);
+                    assertExists(eventsTriggered['user.attached']);
 
                     done();
                 }).catch(done);
@@ -1044,11 +1046,11 @@ describe('Post Model', function () {
                 };
 
                 models.Post.add(newPost, context).then(function (createdPost) {
-                    createdPost.get('slug').should.not.equal('rss');
+                    assert.notEqual(createdPost.get('slug'), 'rss');
 
-                    Object.keys(eventsTriggered).length.should.eql(2);
-                    should.exist(eventsTriggered['post.added']);
-                    should.exist(eventsTriggered['user.attached']);
+                    assert.equal(Object.keys(eventsTriggered).length, 2);
+                    assertExists(eventsTriggered['post.added']);
+                    assertExists(eventsTriggered['user.attached']);
 
                     done();
                 });
@@ -1061,7 +1063,7 @@ describe('Post Model', function () {
                 };
 
                 models.Post.add(newPost, context).then(function (createdPost) {
-                    createdPost.get('slug').should.equal('bhute-dhddkii-bhrvnnaaraa-aahet');
+                    assert.equal(createdPost.get('slug'), 'bhute-dhddkii-bhrvnnaaraa-aahet');
                     done();
                 }).catch(done);
             });
@@ -1083,9 +1085,9 @@ describe('Post Model', function () {
                         // Store the slug for later
                         firstPost.slug = createdFirstPost.get('slug');
 
-                        Object.keys(eventsTriggered).length.should.eql(2);
-                        should.exist(eventsTriggered['post.added']);
-                        should.exist(eventsTriggered['user.attached']);
+                        assert.equal(Object.keys(eventsTriggered).length, 2);
+                        assertExists(eventsTriggered['post.added']);
+                        assertExists(eventsTriggered['user.attached']);
 
                         // Create the second post
                         return models.Post.add(secondPost, context);
@@ -1093,9 +1095,9 @@ describe('Post Model', function () {
                     // Store the slug for comparison later
                         secondPost.slug = createdSecondPost.get('slug');
 
-                        Object.keys(eventsTriggered).length.should.eql(2);
-                        should.exist(eventsTriggered['post.added']);
-                        should.exist(eventsTriggered['user.attached']);
+                        assert.equal(Object.keys(eventsTriggered).length, 2);
+                        assertExists(eventsTriggered['post.added']);
+                        assertExists(eventsTriggered['user.attached']);
 
                         // Update with a conflicting slug from the first post
                         return createdSecondPost.save({
@@ -1107,8 +1109,8 @@ describe('Post Model', function () {
                         // Should not have a conflicted slug from the first
                         updatedSecondPost.get('slug').should.not.equal(firstPost.slug);
 
-                        Object.keys(eventsTriggered).length.should.eql(3);
-                        should.exist(eventsTriggered['post.edited']);
+                        assert.equal(Object.keys(eventsTriggered).length, 3);
+                        assertExists(eventsTriggered['post.edited']);
 
                         return models.Post.findOne({
                             id: updatedSecondPost.id,
@@ -1140,19 +1142,19 @@ describe('Post Model', function () {
                 };
 
                 models.Post.add(post, context).then((createdPost) => {
-                    createdPost.get('mobiledoc').should.equal('{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"http://127.0.0.1:2369/content/images/card.jpg"}]],"markups":[["a",["href","http://127.0.0.1:2369/test"]]],"sections":[[1,"p",[[0,[0],1,"Testing"]]],[10,0]]}');
-                    createdPost.get('html').should.equal('<p><a href="http://127.0.0.1:2369/test">Testing</a></p><figure class="kg-card kg-image-card"><img src="http://127.0.0.1:2369/content/images/card.jpg" class="kg-image" alt loading="lazy"></figure>');
-                    createdPost.get('plaintext').should.containEql('Testing');
-                    createdPost.get('custom_excerpt').should.equal('Testing <a href="http://127.0.0.1:2369/internal">links</a> in custom excerpts');
-                    createdPost.get('codeinjection_head').should.equal('<script src="http://127.0.0.1:2369/assets/head.js"></script>');
-                    createdPost.get('codeinjection_foot').should.equal('<script src="http://127.0.0.1:2369/assets/foot.js"></script>');
-                    createdPost.get('feature_image').should.equal('http://127.0.0.1:2369/content/images/feature.png');
-                    createdPost.get('canonical_url').should.equal('http://127.0.0.1:2369/canonical');
+                    assert.equal(createdPost.get('mobiledoc'), '{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"http://127.0.0.1:2369/content/images/card.jpg"}]],"markups":[["a",["href","http://127.0.0.1:2369/test"]]],"sections":[[1,"p",[[0,[0],1,"Testing"]]],[10,0]]}');
+                    assert.equal(createdPost.get('html'), '<p><a href="http://127.0.0.1:2369/test">Testing</a></p><figure class="kg-card kg-image-card"><img src="http://127.0.0.1:2369/content/images/card.jpg" class="kg-image" alt loading="lazy"></figure>');
+                    assert(createdPost.get('plaintext').includes('Testing'));
+                    assert.equal(createdPost.get('custom_excerpt'), 'Testing <a href="http://127.0.0.1:2369/internal">links</a> in custom excerpts');
+                    assert.equal(createdPost.get('codeinjection_head'), '<script src="http://127.0.0.1:2369/assets/head.js"></script>');
+                    assert.equal(createdPost.get('codeinjection_foot'), '<script src="http://127.0.0.1:2369/assets/foot.js"></script>');
+                    assert.equal(createdPost.get('feature_image'), 'http://127.0.0.1:2369/content/images/feature.png');
+                    assert.equal(createdPost.get('canonical_url'), 'http://127.0.0.1:2369/canonical');
 
                     const postMeta = createdPost.relations.posts_meta;
 
-                    postMeta.get('og_image').should.equal('http://127.0.0.1:2369/content/images/og.png');
-                    postMeta.get('twitter_image').should.equal('http://127.0.0.1:2369/content/images/twitter.png');
+                    assert.equal(postMeta.get('og_image'), 'http://127.0.0.1:2369/content/images/og.png');
+                    assert.equal(postMeta.get('twitter_image'), 'http://127.0.0.1:2369/content/images/twitter.png');
 
                     // ensure canonical_url is not transformed when protocol does not match
                     return createdPost.save({
@@ -1161,22 +1163,22 @@ describe('Post Model', function () {
                         feature_image: 'http://127.0.0.1:2369/content/images/updated_feature.png'
                     });
                 }).then((updatedPost) => {
-                    updatedPost.get('canonical_url').should.equal('https://127.0.0.1:2369/https-internal');
-                    updatedPost.get('feature_image').should.equal('http://127.0.0.1:2369/content/images/updated_feature.png');
+                    assert.equal(updatedPost.get('canonical_url'), 'https://127.0.0.1:2369/https-internal');
+                    assert.equal(updatedPost.get('feature_image'), 'http://127.0.0.1:2369/content/images/updated_feature.png');
 
                     return updatedPost;
                 }).then((updatedPost) => {
                     return db.knex('posts').where({id: updatedPost.id});
                 }).then((knexResult) => {
                     const [knexPost] = knexResult;
-                    knexPost.mobiledoc.should.equal('{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"__GHOST_URL__/content/images/card.jpg"}]],"markups":[["a",["href","__GHOST_URL__/test"]]],"sections":[[1,"p",[[0,[0],1,"Testing"]]],[10,0]]}');
-                    knexPost.html.should.equal('<p><a href="__GHOST_URL__/test">Testing</a></p><figure class="kg-card kg-image-card"><img src="__GHOST_URL__/content/images/card.jpg" class="kg-image" alt loading="lazy"></figure>');
-                    knexPost.plaintext.should.containEql('Testing');
-                    knexPost.custom_excerpt.should.equal('Testing <a href="__GHOST_URL__/internal">links</a> in custom excerpts');
-                    knexPost.codeinjection_head.should.equal('<script src="__GHOST_URL__/assets/head.js"></script>');
-                    knexPost.codeinjection_foot.should.equal('<script src="__GHOST_URL__/assets/foot.js"></script>');
-                    knexPost.feature_image.should.equal('__GHOST_URL__/content/images/updated_feature.png');
-                    knexPost.canonical_url.should.equal('https://127.0.0.1:2369/https-internal');
+                    assert.equal(knexPost.mobiledoc, '{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"__GHOST_URL__/content/images/card.jpg"}]],"markups":[["a",["href","__GHOST_URL__/test"]]],"sections":[[1,"p",[[0,[0],1,"Testing"]]],[10,0]]}');
+                    assert.equal(knexPost.html, '<p><a href="__GHOST_URL__/test">Testing</a></p><figure class="kg-card kg-image-card"><img src="__GHOST_URL__/content/images/card.jpg" class="kg-image" alt loading="lazy"></figure>');
+                    assert(knexPost.plaintext.includes('Testing'));
+                    assert.equal(knexPost.custom_excerpt, 'Testing <a href="__GHOST_URL__/internal">links</a> in custom excerpts');
+                    assert.equal(knexPost.codeinjection_head, '<script src="__GHOST_URL__/assets/head.js"></script>');
+                    assert.equal(knexPost.codeinjection_foot, '<script src="__GHOST_URL__/assets/foot.js"></script>');
+                    assert.equal(knexPost.feature_image, '__GHOST_URL__/content/images/updated_feature.png');
+                    assert.equal(knexPost.canonical_url, 'https://127.0.0.1:2369/https-internal');
 
                     done();
                 }).catch(done);
@@ -1190,11 +1192,11 @@ describe('Post Model', function () {
                 };
 
                 const createdPost = await models.Post.add(post, context);
-                createdPost.get('lexical').should.equal(`{"root":{"children":[{"type":"image","src":"http://127.0.0.1:2369/content/images/card.jpg"},{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"local link","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"link","version":1,"rel":null,"target":null,"url":"http://127.0.0.1:2369/local"}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1},{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"external link","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"link","version":1,"rel":null,"target":null,"url":"https://example.com/external"}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`, 'Post.add result');
+                assert.equal(createdPost.get('lexical'), `{"root":{"children":[{"type":"image","src":"http://127.0.0.1:2369/content/images/card.jpg"},{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"local link","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"link","version":1,"rel":null,"target":null,"url":"http://127.0.0.1:2369/local"}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1},{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"external link","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"link","version":1,"rel":null,"target":null,"url":"https://example.com/external"}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`, 'Post.add result');
 
                 const knexResult = await db.knex('posts').where({id: createdPost.id});
                 const [knexPost] = knexResult;
-                knexPost.lexical.should.equal('{"root":{"children":[{"type":"image","src":"__GHOST_URL__/content/images/card.jpg"},{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"local link","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"link","version":1,"rel":null,"target":null,"url":"__GHOST_URL__/local"}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1},{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"external link","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"link","version":1,"rel":null,"target":null,"url":"https://example.com/external"}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}', 'knex result');
+                assert.equal(knexPost.lexical, '{"root":{"children":[{"type":"image","src":"__GHOST_URL__/content/images/card.jpg"},{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"local link","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"link","version":1,"rel":null,"target":null,"url":"__GHOST_URL__/local"}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1},{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"external link","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"link","version":1,"rel":null,"target":null,"url":"https://example.com/external"}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}', 'knex result');
             });
 
             describe('URL transformations without CDN config', function () {
@@ -1207,65 +1209,65 @@ describe('Post Model', function () {
                         post = await models.Post.findOne({
                             slug: 'post-with-all-media-types-mobiledoc'
                         }, {withRelated: ['posts_meta']});
-                        should.exist(post, 'Post with all media types (Mobiledoc) should exist');
+                        assertExists(post, 'Post with all media types (Mobiledoc) should exist');
                         postsMeta = post.related('posts_meta');
                         mobiledoc = JSON.parse(post.get('mobiledoc'));
                     });
 
                     it('transforms feature_image, og_image, and twitter_image to absolute site URLs', function () {
-                        post.get('feature_image').should.equal(`${siteUrl}/content/images/feature.jpg`);
-                        postsMeta.get('og_image').should.equal(`${siteUrl}/content/images/og.jpg`);
-                        postsMeta.get('twitter_image').should.equal(`${siteUrl}/content/images/twitter.jpg`);
+                        assert.equal(post.get('feature_image'), `${siteUrl}/content/images/feature.jpg`);
+                        assert.equal(postsMeta.get('og_image'), `${siteUrl}/content/images/og.jpg`);
+                        assert.equal(postsMeta.get('twitter_image'), `${siteUrl}/content/images/twitter.jpg`);
                     });
 
                     it('transforms all media card URLs to absolute site URLs', function () {
                         // Image card
                         const imageCard = mobiledoc.cards.find(card => card[0] === 'image' && card[1].src.includes('inline.jpg'));
-                        imageCard[1].src.should.equal(`${siteUrl}/content/images/inline.jpg`);
+                        assert.equal(imageCard[1].src, `${siteUrl}/content/images/inline.jpg`);
 
                         // Gallery card
                         const galleryCard = mobiledoc.cards.find(card => card[0] === 'gallery');
-                        galleryCard[1].images[0].src.should.equal(`${siteUrl}/content/images/gallery-1.jpg`);
-                        galleryCard[1].images[1].src.should.equal(`${siteUrl}/content/images/gallery-2.jpg`);
-                        galleryCard[1].images[2].src.should.equal(`${siteUrl}/content/images/gallery-3.jpg`);
+                        assert.equal(galleryCard[1].images[0].src, `${siteUrl}/content/images/gallery-1.jpg`);
+                        assert.equal(galleryCard[1].images[1].src, `${siteUrl}/content/images/gallery-2.jpg`);
+                        assert.equal(galleryCard[1].images[2].src, `${siteUrl}/content/images/gallery-3.jpg`);
 
                         // File card
                         const fileCard = mobiledoc.cards.find(card => card[0] === 'file' && card[1].src.includes('document.pdf'));
-                        fileCard[1].src.should.equal(`${siteUrl}/content/files/document.pdf`);
+                        assert.equal(fileCard[1].src, `${siteUrl}/content/files/document.pdf`);
 
                         // Video card
                         const videoCard = mobiledoc.cards.find(card => card[0] === 'video' && card[1].src.includes('video.mp4') && !card[1].src.includes('snippet'));
-                        videoCard[1].src.should.equal(`${siteUrl}/content/media/video.mp4`);
-                        videoCard[1].thumbnailSrc.should.equal(`${siteUrl}/content/images/video-thumb.jpg`);
+                        assert.equal(videoCard[1].src, `${siteUrl}/content/media/video.mp4`);
+                        assert.equal(videoCard[1].thumbnailSrc, `${siteUrl}/content/images/video-thumb.jpg`);
 
                         // Audio card
                         const audioCard = mobiledoc.cards.find(card => card[0] === 'audio' && card[1].src.includes('audio.mp3') && !card[1].src.includes('snippet'));
-                        audioCard[1].src.should.equal(`${siteUrl}/content/media/audio.mp3`);
-                        audioCard[1].thumbnailSrc.should.equal(`${siteUrl}/content/images/audio-thumb.jpg`);
+                        assert.equal(audioCard[1].src, `${siteUrl}/content/media/audio.mp3`);
+                        assert.equal(audioCard[1].thumbnailSrc, `${siteUrl}/content/images/audio-thumb.jpg`);
 
                         // Link markup
                         const linkMarkup = mobiledoc.markups.find(markup => markup[0] === 'a');
-                        linkMarkup[1][1].should.equal(`${siteUrl}/snippet-link`);
+                        assert.equal(linkMarkup[1][1], `${siteUrl}/snippet-link`);
                     });
 
                     it('transforms inserted snippet URLs to absolute site URLs', function () {
                         // Snippet image
                         const snippetImage = mobiledoc.cards.find(card => card[0] === 'image' && card[1].src.includes('snippet-inline'));
-                        snippetImage[1].src.should.equal(`${siteUrl}/content/images/snippet-inline.jpg`);
+                        assert.equal(snippetImage[1].src, `${siteUrl}/content/images/snippet-inline.jpg`);
 
                         // Snippet file
                         const snippetFile = mobiledoc.cards.find(card => card[0] === 'file' && card[1].src.includes('snippet-document'));
-                        snippetFile[1].src.should.equal(`${siteUrl}/content/files/snippet-document.pdf`);
+                        assert.equal(snippetFile[1].src, `${siteUrl}/content/files/snippet-document.pdf`);
 
                         // Snippet video
                         const snippetVideo = mobiledoc.cards.find(card => card[0] === 'video' && card[1].src.includes('snippet-video'));
-                        snippetVideo[1].src.should.equal(`${siteUrl}/content/media/snippet-video.mp4`);
-                        snippetVideo[1].thumbnailSrc.should.equal(`${siteUrl}/content/images/snippet-video-thumb.jpg`);
+                        assert.equal(snippetVideo[1].src, `${siteUrl}/content/media/snippet-video.mp4`);
+                        assert.equal(snippetVideo[1].thumbnailSrc, `${siteUrl}/content/images/snippet-video-thumb.jpg`);
 
                         // Snippet audio
                         const snippetAudio = mobiledoc.cards.find(card => card[0] === 'audio' && card[1].src.includes('snippet-audio'));
-                        snippetAudio[1].src.should.equal(`${siteUrl}/content/media/snippet-audio.mp3`);
-                        snippetAudio[1].thumbnailSrc.should.equal(`${siteUrl}/content/images/snippet-audio-thumb.jpg`);
+                        assert.equal(snippetAudio[1].src, `${siteUrl}/content/media/snippet-audio.mp3`);
+                        assert.equal(snippetAudio[1].thumbnailSrc, `${siteUrl}/content/images/snippet-audio-thumb.jpg`);
                     });
                 });
 
@@ -1276,54 +1278,54 @@ describe('Post Model', function () {
                         post = await models.Post.findOne({
                             slug: 'post-with-all-media-types-lexical'
                         }, {withRelated: ['posts_meta']});
-                        should.exist(post, 'Post with all media types (Lexical) should exist');
+                        assertExists(post, 'Post with all media types (Lexical) should exist');
                         postsMeta = post.related('posts_meta');
                         lexicalString = post.get('lexical');
                     });
 
                     it('transforms feature_image, og_image, and twitter_image to absolute site URLs', function () {
-                        post.get('feature_image').should.equal(`${siteUrl}/content/images/feature.jpg`);
-                        postsMeta.get('og_image').should.equal(`${siteUrl}/content/images/og.jpg`);
-                        postsMeta.get('twitter_image').should.equal(`${siteUrl}/content/images/twitter.jpg`);
+                        assert.equal(post.get('feature_image'), `${siteUrl}/content/images/feature.jpg`);
+                        assert.equal(postsMeta.get('og_image'), `${siteUrl}/content/images/og.jpg`);
+                        assert.equal(postsMeta.get('twitter_image'), `${siteUrl}/content/images/twitter.jpg`);
                     });
 
                     it('transforms all media URLs to absolute site URLs', function () {
                         // Verify all expected URLs are present as absolute URLs
-                        lexicalString.should.containEql(`${siteUrl}/content/images/inline.jpg`);
-                        lexicalString.should.containEql(`${siteUrl}/content/images/gallery-1.jpg`);
-                        lexicalString.should.containEql(`${siteUrl}/content/images/gallery-2.jpg`);
-                        lexicalString.should.containEql(`${siteUrl}/content/images/gallery-3.jpg`);
-                        lexicalString.should.containEql(`${siteUrl}/content/files/document.pdf`);
-                        lexicalString.should.containEql(`${siteUrl}/content/media/video.mp4`);
-                        lexicalString.should.containEql(`${siteUrl}/content/images/video-thumb.jpg`);
-                        lexicalString.should.containEql(`${siteUrl}/content/media/audio.mp3`);
-                        lexicalString.should.containEql(`${siteUrl}/content/images/audio-thumb.jpg`);
-                        lexicalString.should.containEql(`${siteUrl}/snippet-link`);
+                        assert(lexicalString.includes(`${siteUrl}/content/images/inline.jpg`));
+                        assert(lexicalString.includes(`${siteUrl}/content/images/gallery-1.jpg`));
+                        assert(lexicalString.includes(`${siteUrl}/content/images/gallery-2.jpg`));
+                        assert(lexicalString.includes(`${siteUrl}/content/images/gallery-3.jpg`));
+                        assert(lexicalString.includes(`${siteUrl}/content/files/document.pdf`));
+                        assert(lexicalString.includes(`${siteUrl}/content/media/video.mp4`));
+                        assert(lexicalString.includes(`${siteUrl}/content/images/video-thumb.jpg`));
+                        assert(lexicalString.includes(`${siteUrl}/content/media/audio.mp3`));
+                        assert(lexicalString.includes(`${siteUrl}/content/images/audio-thumb.jpg`));
+                        assert(lexicalString.includes(`${siteUrl}/snippet-link`));
 
                         // Verify no __GHOST_URL__ placeholders remain
-                        lexicalString.should.not.containEql('__GHOST_URL__');
+                        assert(!lexicalString.includes('__GHOST_URL__'));
                     });
 
                     it('transforms inserted snippet URLs to absolute site URLs', function () {
-                        lexicalString.should.containEql(`${siteUrl}/content/images/snippet-inline.jpg`);
-                        lexicalString.should.containEql(`${siteUrl}/content/files/snippet-document.pdf`);
-                        lexicalString.should.containEql(`${siteUrl}/content/media/snippet-video.mp4`);
-                        lexicalString.should.containEql(`${siteUrl}/content/images/snippet-video-thumb.jpg`);
-                        lexicalString.should.containEql(`${siteUrl}/content/media/snippet-audio.mp3`);
-                        lexicalString.should.containEql(`${siteUrl}/content/images/snippet-audio-thumb.jpg`);
+                        assert(lexicalString.includes(`${siteUrl}/content/images/snippet-inline.jpg`));
+                        assert(lexicalString.includes(`${siteUrl}/content/files/snippet-document.pdf`));
+                        assert(lexicalString.includes(`${siteUrl}/content/media/snippet-video.mp4`));
+                        assert(lexicalString.includes(`${siteUrl}/content/images/snippet-video-thumb.jpg`));
+                        assert(lexicalString.includes(`${siteUrl}/content/media/snippet-audio.mp3`));
+                        assert(lexicalString.includes(`${siteUrl}/content/images/snippet-audio-thumb.jpg`));
                     });
                 });
             });
 
             describe('URL transformations with CDN config', function () {
-                const siteUrl = 'http://127.0.0.1:2369';
                 const cdnUrl = 'https://cdn.example.com/c/site-uuid';
 
                 beforeEach(function () {
                     urlUtilsHelper.stubUrlUtilsWithCdn({
                         assetBaseUrls: {
                             media: cdnUrl,
-                            files: cdnUrl
+                            files: cdnUrl,
+                            image: cdnUrl
                         }
                     }, sinon);
                 });
@@ -1333,58 +1335,58 @@ describe('Post Model', function () {
                         const post = await models.Post.findOne({slug: 'post-with-all-media-types-mobiledoc'}, {withRelated: ['tags']});
                         const mobiledoc = JSON.parse(post.get('mobiledoc'));
                         const fileCard = mobiledoc.cards.find(card => card[0] === 'file');
-                        fileCard[1].src.should.equal(`${cdnUrl}/content/files/document.pdf`);
+                        assert.equal(fileCard[1].src, `${cdnUrl}/content/files/document.pdf`);
                     });
 
                     it('transforms video card src to media CDN URL', async function () {
                         const post = await models.Post.findOne({slug: 'post-with-all-media-types-mobiledoc'}, {withRelated: ['tags']});
                         const mobiledoc = JSON.parse(post.get('mobiledoc'));
                         const videoCard = mobiledoc.cards.find(card => card[0] === 'video');
-                        videoCard[1].src.should.equal(`${cdnUrl}/content/media/video.mp4`);
+                        assert.equal(videoCard[1].src, `${cdnUrl}/content/media/video.mp4`);
                     });
 
                     it('transforms audio card src to media CDN URL', async function () {
                         const post = await models.Post.findOne({slug: 'post-with-all-media-types-mobiledoc'}, {withRelated: ['tags']});
                         const mobiledoc = JSON.parse(post.get('mobiledoc'));
                         const audioCard = mobiledoc.cards.find(card => card[0] === 'audio');
-                        audioCard[1].src.should.equal(`${cdnUrl}/content/media/audio.mp3`);
+                        assert.equal(audioCard[1].src, `${cdnUrl}/content/media/audio.mp3`);
                     });
 
                     it('transforms inserted snippet file/media URLs to CDN URLs', async function () {
                         const post = await models.Post.findOne({slug: 'post-with-all-media-types-mobiledoc'}, {withRelated: ['tags']});
                         const mobiledocString = post.get('mobiledoc');
-                        mobiledocString.should.containEql(`${cdnUrl}/content/files/snippet-document.pdf`);
-                        mobiledocString.should.containEql(`${cdnUrl}/content/media/snippet-video.mp4`);
-                        mobiledocString.should.containEql(`${cdnUrl}/content/media/snippet-audio.mp3`);
+                        assert(mobiledocString.includes(`${cdnUrl}/content/files/snippet-document.pdf`));
+                        assert(mobiledocString.includes(`${cdnUrl}/content/media/snippet-video.mp4`));
+                        assert(mobiledocString.includes(`${cdnUrl}/content/media/snippet-audio.mp3`));
                     });
 
-                    it('transforms feature_image to absolute site URL(NOT CDN)', async function () {
+                    it('transforms feature_image to CDN URL', async function () {
                         const post = await models.Post.findOne({slug: 'post-with-all-media-types-mobiledoc'}, {withRelated: ['tags']});
-                        post.get('feature_image').should.equal(`${siteUrl}/content/images/feature.jpg`);
+                        assert.equal(post.get('feature_image'), `${cdnUrl}/content/images/feature.jpg`);
                     });
 
-                    it('transforms gallery images to absolute site URL(NOT CDN)', async function () {
+                    it('transforms gallery images to CDN URL', async function () {
                         const post = await models.Post.findOne({slug: 'post-with-all-media-types-mobiledoc'}, {withRelated: ['tags']});
                         const mobiledoc = JSON.parse(post.get('mobiledoc'));
                         const galleryCard = mobiledoc.cards.find(card => card[0] === 'gallery');
                         galleryCard[1].images.forEach((image) => {
-                            image.src.should.startWith(siteUrl);
-                            image.src.should.containEql('/content/images/');
+                            assert(image.src.startsWith(cdnUrl));
+                            assert(image.src.includes('/content/images/'));
                         });
                     });
 
-                    it('transforms inline images to absolute site URL(NOT CDN)', async function () {
+                    it('transforms inline images to CDN URL', async function () {
                         const post = await models.Post.findOne({slug: 'post-with-all-media-types-mobiledoc'}, {withRelated: ['tags']});
                         const mobiledoc = JSON.parse(post.get('mobiledoc'));
                         const imageCard = mobiledoc.cards.find(card => card[0] === 'image');
-                        imageCard[1].src.should.equal(`${siteUrl}/content/images/inline.jpg`);
+                        assert.equal(imageCard[1].src, `${cdnUrl}/content/images/inline.jpg`);
                     });
 
-                    it('transforms video thumbnailSrc to absolute site URL(NOT CDN)', async function () {
+                    it('transforms video thumbnailSrc to CDN URL', async function () {
                         const post = await models.Post.findOne({slug: 'post-with-all-media-types-mobiledoc'}, {withRelated: ['tags']});
                         const mobiledoc = JSON.parse(post.get('mobiledoc'));
                         const videoCard = mobiledoc.cards.find(card => card[0] === 'video');
-                        videoCard[1].thumbnailSrc.should.equal(`${siteUrl}/content/images/video-thumb.jpg`);
+                        assert.equal(videoCard[1].thumbnailSrc, `${cdnUrl}/content/images/video-thumb.jpg`);
                     });
                 });
 
@@ -1392,47 +1394,47 @@ describe('Post Model', function () {
                     it('transforms file URLs to files CDN URL', async function () {
                         const post = await models.Post.findOne({slug: 'post-with-all-media-types-lexical'}, {withRelated: ['tags']});
                         const lexicalString = post.get('lexical');
-                        lexicalString.should.containEql(`${cdnUrl}/content/files/document.pdf`);
+                        assert(lexicalString.includes(`${cdnUrl}/content/files/document.pdf`));
                     });
 
                     it('transforms video/audio URLs to media CDN URL', async function () {
                         const post = await models.Post.findOne({slug: 'post-with-all-media-types-lexical'}, {withRelated: ['tags']});
                         const lexicalString = post.get('lexical');
-                        lexicalString.should.containEql(`${cdnUrl}/content/media/video.mp4`);
-                        lexicalString.should.containEql(`${cdnUrl}/content/media/audio.mp3`);
+                        assert(lexicalString.includes(`${cdnUrl}/content/media/video.mp4`));
+                        assert(lexicalString.includes(`${cdnUrl}/content/media/audio.mp3`));
                     });
 
                     it('transforms inserted snippet file/media URLs to CDN URLs', async function () {
                         const post = await models.Post.findOne({slug: 'post-with-all-media-types-lexical'}, {withRelated: ['tags']});
                         const lexicalString = post.get('lexical');
-                        lexicalString.should.containEql(`${cdnUrl}/content/files/snippet-document.pdf`);
-                        lexicalString.should.containEql(`${cdnUrl}/content/media/snippet-video.mp4`);
-                        lexicalString.should.containEql(`${cdnUrl}/content/media/snippet-audio.mp3`);
+                        assert(lexicalString.includes(`${cdnUrl}/content/files/snippet-document.pdf`));
+                        assert(lexicalString.includes(`${cdnUrl}/content/media/snippet-video.mp4`));
+                        assert(lexicalString.includes(`${cdnUrl}/content/media/snippet-audio.mp3`));
                     });
 
-                    it('transforms feature_image to absolute site URL(NOT CDN)', async function () {
+                    it('transforms feature_image to CDN URL', async function () {
                         const post = await models.Post.findOne({slug: 'post-with-all-media-types-lexical'}, {withRelated: ['tags']});
-                        post.get('feature_image').should.equal(`${siteUrl}/content/images/feature.jpg`);
+                        assert.equal(post.get('feature_image'), `${cdnUrl}/content/images/feature.jpg`);
                     });
 
-                    it('transforms gallery images to absolute site URL(NOT CDN)', async function () {
-                        const post = await models.Post.findOne({slug: 'post-with-all-media-types-lexical'}, {withRelated: ['tags']});
-                        const lexicalString = post.get('lexical');
-                        lexicalString.should.containEql(`${siteUrl}/content/images/gallery-1.jpg`);
-                        lexicalString.should.containEql(`${siteUrl}/content/images/gallery-2.jpg`);
-                    });
-
-                    it('transforms inline images to absolute site URL(NOT CDN)', async function () {
+                    it('transforms gallery images to CDN URL', async function () {
                         const post = await models.Post.findOne({slug: 'post-with-all-media-types-lexical'}, {withRelated: ['tags']});
                         const lexicalString = post.get('lexical');
-                        lexicalString.should.containEql(`${siteUrl}/content/images/inline.jpg`);
+                        assert(lexicalString.includes(`${cdnUrl}/content/images/gallery-1.jpg`));
+                        assert(lexicalString.includes(`${cdnUrl}/content/images/gallery-2.jpg`));
                     });
 
-                    it('transforms video/audio thumbnails to absolute site URL(NOT CDN)', async function () {
+                    it('transforms inline images to CDN URL', async function () {
                         const post = await models.Post.findOne({slug: 'post-with-all-media-types-lexical'}, {withRelated: ['tags']});
                         const lexicalString = post.get('lexical');
-                        lexicalString.should.containEql(`${siteUrl}/content/images/video-thumb.jpg`);
-                        lexicalString.should.containEql(`${siteUrl}/content/images/audio-thumb.jpg`);
+                        assert(lexicalString.includes(`${cdnUrl}/content/images/inline.jpg`));
+                    });
+
+                    it('transforms video/audio thumbnails to CDN URL', async function () {
+                        const post = await models.Post.findOne({slug: 'post-with-all-media-types-lexical'}, {withRelated: ['tags']});
+                        const lexicalString = post.get('lexical');
+                        assert(lexicalString.includes(`${cdnUrl}/content/images/video-thumb.jpg`));
+                        assert(lexicalString.includes(`${cdnUrl}/content/images/audio-thumb.jpg`));
                     });
                 });
             });
@@ -1472,31 +1474,31 @@ describe('Post Model', function () {
                 // Test that we have the post we expect, with exactly one tag
                 models.Post.findOne(firstItemData, {withRelated: ['tags']}).then(function (results) {
                     let post;
-                    should.exist(results);
+                    assertExists(results);
                     post = results.toJSON();
-                    post.id.should.equal(firstItemData.id);
-                    post.status.should.equal('published');
-                    post.tags.should.have.length(2);
-                    post.tags[0].id.should.equal(testUtils.DataGenerator.Content.tags[0].id);
+                    assert.equal(post.id, firstItemData.id);
+                    assert.equal(post.status, 'published');
+                    assert.equal(post.tags.length, 2);
+                    assert.equal(post.tags[0].id, testUtils.DataGenerator.Content.tags[0].id);
 
                     // Destroy the post
                     return results.destroy();
                 }).then(function (response) {
                     const deleted = response.toJSON();
 
-                    should.equal(deleted.author, undefined);
+                    assert.equal(deleted.author, undefined);
 
-                    Object.keys(eventsTriggered).length.should.eql(5);
-                    should.exist(eventsTriggered['post.unpublished']);
-                    should.exist(eventsTriggered['post.deleted']);
-                    should.exist(eventsTriggered['user.detached']);
-                    should.exist(eventsTriggered['tag.detached']);
-                    should.exist(eventsTriggered['post.tag.detached']);
+                    assert.equal(Object.keys(eventsTriggered).length, 5);
+                    assertExists(eventsTriggered['post.unpublished']);
+                    assertExists(eventsTriggered['post.deleted']);
+                    assertExists(eventsTriggered['user.detached']);
+                    assertExists(eventsTriggered['tag.detached']);
+                    assertExists(eventsTriggered['post.tag.detached']);
 
                     // Double check we can't find the post again
                     return models.Post.findOne(firstItemData);
                 }).then(function (newResults) {
-                    should.equal(newResults, null);
+                    assert.equal(newResults, null);
 
                     // Double check we can't find any related tags
                     return ghostBookshelf.knex.select().table('posts_tags').where('post_id', firstItemData.id);
@@ -1514,29 +1516,29 @@ describe('Post Model', function () {
                 // Test that we have the post we expect, with exactly one tag
                 models.Post.findOne(firstItemData, {withRelated: ['tags']}).then(function (results) {
                     let post;
-                    should.exist(results);
+                    assertExists(results);
                     post = results.toJSON();
-                    post.id.should.equal(firstItemData.id);
-                    post.tags.should.have.length(1);
-                    post.tags[0].id.should.equal(testUtils.DataGenerator.Content.tags[3].id);
+                    assert.equal(post.id, firstItemData.id);
+                    assert.equal(post.tags.length, 1);
+                    assert.equal(post.tags[0].id, testUtils.DataGenerator.Content.tags[3].id);
 
                     // Destroy the post
                     return results.destroy(firstItemData);
                 }).then(function (response) {
                     const deleted = response.toJSON();
 
-                    should.equal(deleted.author, undefined);
+                    assert.equal(deleted.author, undefined);
 
-                    Object.keys(eventsTriggered).length.should.eql(4);
-                    should.exist(eventsTriggered['post.deleted']);
-                    should.exist(eventsTriggered['tag.detached']);
-                    should.exist(eventsTriggered['post.tag.detached']);
-                    should.exist(eventsTriggered['user.detached']);
+                    assert.equal(Object.keys(eventsTriggered).length, 4);
+                    assertExists(eventsTriggered['post.deleted']);
+                    assertExists(eventsTriggered['tag.detached']);
+                    assertExists(eventsTriggered['post.tag.detached']);
+                    assertExists(eventsTriggered['user.detached']);
 
                     // Double check we can't find the post again
                     return models.Post.findOne(firstItemData);
                 }).then(function (newResults) {
-                    should.equal(newResults, null);
+                    assert.equal(newResults, null);
 
                     // Double check we can't find any related tags
                     return ghostBookshelf.knex.select().table('posts_tags').where('post_id', firstItemData.id);
@@ -1554,28 +1556,28 @@ describe('Post Model', function () {
                 // Test that we have the post we expect, with exactly one tag
                 models.Post.findOne(firstItemData, {withRelated: ['tags']}).then(function (results) {
                     let page;
-                    should.exist(results);
+                    assertExists(results);
                     page = results.toJSON();
-                    page.id.should.equal(firstItemData.id);
-                    page.status.should.equal('published');
-                    page.type.should.equal('page');
+                    assert.equal(page.id, firstItemData.id);
+                    assert.equal(page.status, 'published');
+                    assert.equal(page.type, 'page');
 
                     // Destroy the page
                     return results.destroy(firstItemData);
                 }).then(function (response) {
                     const deleted = response.toJSON();
 
-                    should.equal(deleted.author, undefined);
+                    assert.equal(deleted.author, undefined);
 
-                    Object.keys(eventsTriggered).length.should.eql(3);
-                    should.exist(eventsTriggered['page.unpublished']);
-                    should.exist(eventsTriggered['page.deleted']);
-                    should.exist(eventsTriggered['user.detached']);
+                    assert.equal(Object.keys(eventsTriggered).length, 3);
+                    assertExists(eventsTriggered['page.unpublished']);
+                    assertExists(eventsTriggered['page.deleted']);
+                    assertExists(eventsTriggered['user.detached']);
 
                     // Double check we can't find the post again
                     return models.Post.findOne(firstItemData);
                 }).then(function (newResults) {
-                    should.equal(newResults, null);
+                    assert.equal(newResults, null);
 
                     // Double check we can't find any related tags
                     return ghostBookshelf.knex.select().table('posts_tags').where('post_id', firstItemData.id);
@@ -1593,25 +1595,25 @@ describe('Post Model', function () {
                 // Test that we have the post we expect, with exactly one tag
                 models.Post.findOne(firstItemData, {withRelated: ['tags']}).then(function (results) {
                     let page;
-                    should.exist(results);
+                    assertExists(results);
                     page = results.toJSON();
-                    page.id.should.equal(firstItemData.id);
+                    assert.equal(page.id, firstItemData.id);
 
                     // Destroy the page
                     return results.destroy(firstItemData);
                 }).then(function (response) {
                     const deleted = response.toJSON();
 
-                    should.equal(deleted.author, undefined);
+                    assert.equal(deleted.author, undefined);
 
-                    Object.keys(eventsTriggered).length.should.eql(2);
-                    should.exist(eventsTriggered['page.deleted']);
-                    should.exist(eventsTriggered['user.detached']);
+                    assert.equal(Object.keys(eventsTriggered).length, 2);
+                    assertExists(eventsTriggered['page.deleted']);
+                    assertExists(eventsTriggered['user.detached']);
 
                     // Double check we can't find the post again
                     return models.Post.findOne(firstItemData);
                 }).then(function (newResults) {
-                    should.equal(newResults, null);
+                    assert.equal(newResults, null);
 
                     // Double check we can't find any related tags
                     return ghostBookshelf.knex.select().table('posts_tags').where('post_id', firstItemData.id);
@@ -1650,7 +1652,7 @@ describe('Post Model', function () {
                         throw new Error('expected no success');
                     })
                     .catch(function (err) {
-                        err.code.should.eql('UPDATE_COLLISION');
+                        assert.equal(err.code, 'UPDATE_COLLISION');
                     });
             });
 
@@ -1665,7 +1667,7 @@ describe('Post Model', function () {
                         throw new Error('expected no success');
                     })
                     .catch(function (err) {
-                        err.code.should.eql('UPDATE_COLLISION');
+                        assert.equal(err.code, 'UPDATE_COLLISION');
                     });
             });
 
@@ -1680,7 +1682,7 @@ describe('Post Model', function () {
                         throw new Error('expected no success');
                     })
                     .catch(function (err) {
-                        err.code.should.eql('UPDATE_COLLISION');
+                        assert.equal(err.code, 'UPDATE_COLLISION');
                     });
             });
 
@@ -1725,12 +1727,12 @@ describe('Post Model', function () {
                     return models.Post.findOne({id: createdPost.id, status: 'all'});
                 })
                 .then((createdPost) => {
-                    should.exist(createdPost);
+                    assertExists(createdPost);
 
                     return createdPost.save({mobiledoc: markdownToMobiledoc('b')}, context);
                 })
                 .then((updatedPost) => {
-                    updatedPost.get('mobiledoc').should.equal(markdownToMobiledoc('b'));
+                    assert.equal(updatedPost.get('mobiledoc'), markdownToMobiledoc('b'));
 
                     return models.MobiledocRevision
                         .findAll({
@@ -1738,10 +1740,10 @@ describe('Post Model', function () {
                         });
                 })
                 .then((mobiledocRevisions) => {
-                    should.equal(mobiledocRevisions.length, 2);
+                    assert.equal(mobiledocRevisions.length, 2);
 
-                    mobiledocRevisions.toJSON()[0].mobiledoc.should.equal(markdownToMobiledoc('b'));
-                    mobiledocRevisions.toJSON()[1].mobiledoc.should.equal(markdownToMobiledoc('a'));
+                    assert.equal(mobiledocRevisions.toJSON()[0].mobiledoc, markdownToMobiledoc('b'));
+                    assert.equal(mobiledocRevisions.toJSON()[1].mobiledoc, markdownToMobiledoc('a'));
                 });
         });
 
@@ -1756,7 +1758,7 @@ describe('Post Model', function () {
                     return models.Post.findOne({id: createdPost.id, status: 'all'});
                 })
                 .then((createdPost) => {
-                    should.exist(createdPost);
+                    assertExists(createdPost);
                     revisionedPost = createdPost;
 
                     return sequence(_.times(11, (i) => {
@@ -1773,10 +1775,10 @@ describe('Post Model', function () {
                     })
                 )
                 .then((mobiledocRevisions) => {
-                    should.equal(mobiledocRevisions.length, 10);
+                    assert.equal(mobiledocRevisions.length, 10);
 
-                    mobiledocRevisions.toJSON()[0].mobiledoc.should.equal(markdownToMobiledoc('revision: 11'));
-                    mobiledocRevisions.toJSON()[9].mobiledoc.should.equal(markdownToMobiledoc('revision: 2'));
+                    assert.equal(mobiledocRevisions.toJSON()[0].mobiledoc, markdownToMobiledoc('revision: 11'));
+                    assert.equal(mobiledocRevisions.toJSON()[9].mobiledoc, markdownToMobiledoc('revision: 2'));
                 });
         });
 
@@ -1793,9 +1795,9 @@ describe('Post Model', function () {
 
             return models.Post.add(newPost, options)
                 .then((createdPost) => {
-                    should.exist(createdPost);
+                    assertExists(createdPost);
                     unversionedPost = createdPost;
-                    createdPost.get('mobiledoc').should.equal(markdownToMobiledoc('a'));
+                    assert.equal(createdPost.get('mobiledoc'), markdownToMobiledoc('a'));
 
                     return models.MobiledocRevision
                         .findAll({
@@ -1803,15 +1805,15 @@ describe('Post Model', function () {
                         });
                 })
                 .then((mobiledocRevisions) => {
-                    should.equal(mobiledocRevisions.length, 0);
+                    assert.equal(mobiledocRevisions.length, 0);
 
                     return models.Post.edit({
                         mobiledoc: markdownToMobiledoc('b')
                     }, _.extend({}, context, {id: unversionedPost.id}));
                 })
                 .then((editedPost) => {
-                    should.exist(editedPost);
-                    editedPost.get('mobiledoc').should.equal(markdownToMobiledoc('b'));
+                    assertExists(editedPost);
+                    assert.equal(editedPost.get('mobiledoc'), markdownToMobiledoc('b'));
 
                     return models.MobiledocRevision
                         .findAll({
@@ -1819,10 +1821,10 @@ describe('Post Model', function () {
                         });
                 })
                 .then((mobiledocRevisions) => {
-                    should.equal(mobiledocRevisions.length, 2);
+                    assert.equal(mobiledocRevisions.length, 2);
 
-                    mobiledocRevisions.toJSON()[0].mobiledoc.should.equal(markdownToMobiledoc('b'));
-                    mobiledocRevisions.toJSON()[1].mobiledoc.should.equal(markdownToMobiledoc('a'));
+                    assert.equal(mobiledocRevisions.toJSON()[0].mobiledoc, markdownToMobiledoc('b'));
+                    assert.equal(mobiledocRevisions.toJSON()[1].mobiledoc, markdownToMobiledoc('a'));
                 });
         });
     });
@@ -1848,26 +1850,26 @@ describe('Post Model', function () {
 
             const preReassignPosts = await models.Post.findAll({context: {internal: true}});
             // The posts:mu fixture creates two posts per staff member.
-            preReassignPosts.length.should.equal(2 * staffCount);
+            assert.equal(preReassignPosts.length, 2 * staffCount);
 
             const preReassignOwnerWithPosts = await models.Post.findAll({
                 filter: `authors:${ownerData.slug}`,
                 context: {internal: true}
             });
-            preReassignOwnerWithPosts.length.should.equal(2);
+            assert.equal(preReassignOwnerWithPosts.length, 2);
 
             await models.Post.reassignByAuthor(authorData);
 
             const postReassignPosts = await models.Post.findAll({context: {internal: true}});
             // All posts should remain
-            postReassignPosts.length.should.equal(2 * staffCount);
+            assert.equal(postReassignPosts.length, 2 * staffCount);
 
             const postReassignOwnerWithPosts = await models.Post.findAll({
                 filter: `authors:${ownerData.slug}`,
                 context: {internal: true}
             });
             // 2 own and 2 reassigned from the other author
-            postReassignOwnerWithPosts.length.should.equal(4);
+            assert.equal(postReassignOwnerWithPosts.length, 4);
         });
 
         it('can reassign posts with mixed primary and secondary authors', async function () {
@@ -1914,14 +1916,14 @@ describe('Post Model', function () {
                 context: {internal: true}
             });
             // 2 from 'posts:mu' fixtures and 3 inserted in the test case
-            preReassignAuthorWithPosts.length.should.equal(5);
+            assert.equal(preReassignAuthorWithPosts.length, 5);
 
             const preReassignOtherAuthorWithPosts = await models.Post.findAll({
                 filter: `authors:${otherAuthorDate.slug}`,
                 context: {internal: true}
             });
             // 2 from 'posts:mu' fixtures and 1 inserted in the test case
-            preReassignOtherAuthorWithPosts.length.should.equal(3);
+            assert.equal(preReassignOtherAuthorWithPosts.length, 3);
 
             await models.Post.reassignByAuthor(authorData);
 
@@ -1930,21 +1932,21 @@ describe('Post Model', function () {
                 context: {internal: true}
             });
             // author under test should own nothing after reassignment
-            postReassignAuthorWithPosts.length.should.equal(0);
+            assert.equal(postReassignAuthorWithPosts.length, 0);
 
             const postReassignOtherAuthorWithPosts = await models.Post.findAll({
                 filter: `authors:${otherAuthorDate.slug}`,
                 context: {internal: true}
             });
             // should stay the same as preassignment for another author
-            postReassignOtherAuthorWithPosts.length.should.equal(3);
+            assert.equal(postReassignOtherAuthorWithPosts.length, 3);
 
             const postReassignOwnerWithPosts = await models.Post.findAll({
                 filter: `authors:${ownerData.slug}`,
                 context: {internal: true}
             });
             // 5 from this test case's author under test + 4 from the test above (if executed exclusively will fail)
-            postReassignOwnerWithPosts.length.should.equal(9);
+            assert.equal(postReassignOwnerWithPosts.length, 9);
         });
     });
 
@@ -2006,22 +2008,22 @@ describe('Post Model', function () {
 
         it('should create the test data correctly', function (done) {
             // creates a test tag
-            should.exist(tagJSON);
+            assertExists(tagJSON);
             tagJSON.should.be.an.Array().with.lengthOf(3);
 
-            tagJSON[0].name.should.eql('existing tag a');
-            tagJSON[1].name.should.eql('existing-tag-b');
-            tagJSON[2].name.should.eql('existing_tag_c');
+            assert.equal(tagJSON[0].name, 'existing tag a');
+            assert.equal(tagJSON[1].name, 'existing-tag-b');
+            assert.equal(tagJSON[2].name, 'existing_tag_c');
 
             // creates a test post with an array of tags in the correct order
-            should.exist(postJSON);
-            postJSON.title.should.eql('HTML Ipsum');
-            should.exist(postJSON.tags);
+            assertExists(postJSON);
+            assert.equal(postJSON.title, 'HTML Ipsum');
+            assertExists(postJSON.tags);
             postJSON.tags.should.be.an.Array().and.have.lengthOf(3);
 
-            postJSON.tags[0].name.should.eql('tag1');
-            postJSON.tags[1].name.should.eql('tag2');
-            postJSON.tags[2].name.should.eql('tag3');
+            assert.equal(postJSON.tags[0].name, 'tag1');
+            assert.equal(postJSON.tags[1].name, 'tag2');
+            assert.equal(postJSON.tags[2].name, 'tag3');
 
             done();
         });
@@ -2036,9 +2038,9 @@ describe('Post Model', function () {
             return models.Post.edit(newJSON, editOptions).then(function (updatedPost) {
                 updatedPost = updatedPost.toJSON({withRelated: ['tags']});
 
-                updatedPost.tags.should.have.lengthOf(1);
+                assert.equal(updatedPost.tags.length, 1);
                 updatedPost.tags[0].name.should.eql(postJSON.tags[0].name);
-                updatedPost.tags[0].slug.should.eql('eins');
+                assert.equal(updatedPost.tags[0].slug, 'eins');
                 updatedPost.tags[0].id.should.eql(postJSON.tags[0].id);
             });
         });
@@ -2067,7 +2069,7 @@ describe('Post Model', function () {
                 .then(function (updatedPost) {
                     updatedPost = updatedPost.toJSON({withRelated: ['tags']});
 
-                    updatedPost.tags.should.have.lengthOf(1);
+                    assert.equal(updatedPost.tags.length, 1);
                     updatedPost.tags[0].should.have.properties({
                         name: postJSON.tags[0].name,
                         slug: postJSON.tags[0].slug,
@@ -2097,7 +2099,7 @@ describe('Post Model', function () {
             return models.Post.edit(newJSON, editOptions).then(function (updatedPost) {
                 updatedPost = updatedPost.toJSON({withRelated: ['tags']});
 
-                updatedPost.tags.should.have.lengthOf(3);
+                assert.equal(updatedPost.tags.length, 3);
                 updatedPost.tags[0].should.have.properties({
                     name: 'tag4'
                 });
@@ -2127,7 +2129,7 @@ describe('Post Model', function () {
             return models.Post.edit(newJSON, editOptions).then(function (updatedPost) {
                 updatedPost = updatedPost.toJSON({withRelated: ['tags']});
 
-                updatedPost.tags.should.have.lengthOf(3);
+                assert.equal(updatedPost.tags.length, 3);
 
                 updatedPost.tags[0].should.have.properties({name: 'C', slug: 'c'});
                 updatedPost.tags[1].should.have.properties({name: 'C++', slug: 'c-2'});
@@ -2147,7 +2149,7 @@ describe('Post Model', function () {
             return models.Post.edit(newJSON, editOptions).then(function (updatedPost) {
                 updatedPost = updatedPost.toJSON({withRelated: ['tags']});
 
-                updatedPost.tags.should.have.lengthOf(1);
+                assert.equal(updatedPost.tags.length, 1);
             });
         });
     });

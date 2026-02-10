@@ -106,7 +106,7 @@ export async function formSubmitHandler(
                     doAction('startSigninOTCFromCustomForm', {
                         email: (email || '').trim(),
                         otcRef,
-                        sniperLinks: responseBody?.sniperLinks
+                        inboxLinks: responseBody?.inboxLinks
                     });
                 } catch (e) {
                     // eslint-disable-next-line no-console
@@ -205,7 +205,7 @@ export function planClickHandler({event, el, errorEl, siteUrl, site, member, cli
     });
 }
 
-export function handleDataAttributes({siteUrl, site = {}, member, labs = {}, doAction, captureException} = {}) {
+export function handleDataAttributes({siteUrl, site = {}, member, doAction, captureException} = {}) {
     if (!siteUrl) {
         return;
     }
@@ -214,7 +214,7 @@ export function handleDataAttributes({siteUrl, site = {}, member, labs = {}, doA
     Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'), function (form) {
         let errorEl = form.querySelector('[data-members-error]');
         function submitHandler(event) {
-            formSubmitHandler({event, errorEl, form, siteUrl, submitHandler, labs, doAction, captureException});
+            formSubmitHandler({event, errorEl, form, siteUrl, submitHandler, doAction, captureException});
         }
         form.addEventListener('submit', submitHandler);
     });

@@ -814,9 +814,18 @@ export const getUpdatedOfferPrice = ({offer, price, useFormatted = false}) => {
     return updatedAmount;
 };
 
+export const isRetentionOffer = ({offer}) => {
+    return offer.redemption_type === 'retention';
+};
+
 export const isActiveOffer = ({site, offer}) => {
     if (offer?.status !== 'active') {
         return false;
+    }
+
+    // Null-tier offers are only valid for retention
+    if (!offer.tier) {
+        return isRetentionOffer({offer});
     }
 
     // Check if the corresponding tier has been archived

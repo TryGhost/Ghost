@@ -76,13 +76,13 @@ export class MySQLManager {
 
     /**
      * Used for cleanup of leftover databases from interrupted tests.
-     * This removes all databases matching the pattern 'ghost_%' except 'ghost_testing' (the base database).
+     * This removes all databases matching the pattern 'ghost_%' except base databases.
      */
     async dropAllTestDatabases(): Promise<void> {
         try {
             debug('Finding all test databases to clean up...');
 
-            const query = 'SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE \'ghost_%\' AND schema_name != \'ghost_testing\'';
+            const query = 'SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE \'ghost_%\' AND schema_name NOT IN (\'ghost_testing\', \'ghost_e2e_base\', \'ghost_dev\')';
             const output = await this.exec(`mysql -uroot -proot -N -e "${query}"`);
 
             const databaseNames = this.parseDatabaseNames(output);

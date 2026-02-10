@@ -1,3 +1,5 @@
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../../../utils/assertions');
 const should = require('should');
 const serializers = require('../../../../../../../core/server/api/endpoints/utils/serializers');
 
@@ -18,8 +20,8 @@ describe('Unit: endpoints/utils/serializers/output/all', function () {
                 response: response
             });
 
-            should.not.exist(response.posts[0].published_by);
-            should.exist(response.posts[0].title);
+            assert.equal(response.posts[0].published_by, undefined);
+            assertExists(response.posts[0].title);
 
             response = {
                 post:
@@ -33,8 +35,8 @@ describe('Unit: endpoints/utils/serializers/output/all', function () {
                 response: response
             });
 
-            should.not.exist(response.post.published_by);
-            should.exist(response.post.title);
+            assert.equal(response.post.published_by, undefined);
+            assertExists(response.post.title);
 
             response = {
                 pages: [
@@ -56,10 +58,10 @@ describe('Unit: endpoints/utils/serializers/output/all', function () {
                 response: response
             });
 
-            should.not.exist(response.pages[0].published_by);
-            should.not.exist(response.pages[1].published_by);
-            should.exist(response.pages[0].authors);
-            should.exist(response.pages[0].authors[0].slug);
+            assert.equal(response.pages[0].published_by, undefined);
+            assert.equal(response.pages[1].published_by, undefined);
+            assertExists(response.pages[0].authors);
+            assertExists(response.pages[0].authors[0].slug);
         });
     });
 });

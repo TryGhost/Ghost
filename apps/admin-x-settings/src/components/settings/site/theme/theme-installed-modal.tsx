@@ -24,7 +24,7 @@ export const ThemeProblemView = ({problem}:{problem: ThemeProblem}) => {
                             <div dangerouslySetInnerHTML={{__html: problem.details}} className='mb-4' />
                             <Heading level={6}>Affected files:</Heading>
                             <ul className='mt-1'>
-                                {problem.failures.map(failure => <li><code>{failure.ref}</code>{failure.message ? `: ${failure.message}` : ''}</li>)}
+                                {problem.failures.map(failure => <li key={failure.ref}><code>{failure.ref}</code>{failure.message ? `: ${failure.message}` : ''}</li>)}
                             </ul>
                         </div> :
                         null
@@ -46,11 +46,12 @@ const ThemeInstalledModal: React.FC<{
     const {refreshActiveThemeData} = useCustomFonts();
     const handleError = useHandleError();
 
+    /* eslint-disable react/no-array-index-key */
     let errorPrompt = null;
-    if (installedTheme && installedTheme.gscan_errors) {
+    if (installedTheme && installedTheme.errors) {
         errorPrompt = <div className="mt-6">
             <List hint={<>Highly recommended to fix, functionality <strong>could</strong> be restricted</>} title="Errors">
-                {installedTheme.gscan_errors?.map(error => <ThemeProblemView problem={error} />)}
+                {installedTheme.errors?.map((error, index) => <ThemeProblemView key={index} problem={error} />)}
             </List>
         </div>;
     }
@@ -59,12 +60,13 @@ const ThemeInstalledModal: React.FC<{
     if (installedTheme && installedTheme.warnings) {
         warningPrompt = <div className="mt-10">
             <List title="Warnings">
-                {installedTheme.warnings?.map(warning => <ThemeProblemView problem={warning} />)}
+                {installedTheme.warnings?.map((warning, index) => <ThemeProblemView key={index} problem={warning} />)}
             </List>
         </div>;
     }
+    /* eslint-enable react/no-array-index-key */
 
-    let okLabel = `Activate${installedTheme.gscan_errors?.length ? ' with errors' : ''}`;
+    let okLabel = `Activate${installedTheme.errors?.length ? ' with errors' : ''}`;
 
     if (installedTheme.active) {
         okLabel = 'OK';

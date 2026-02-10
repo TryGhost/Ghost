@@ -1,3 +1,5 @@
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 const hbs = require('../../../../core/frontend/services/theme-engine/engine');
@@ -36,11 +38,11 @@ describe('{{cancel_link}} helper', function () {
             };
         };
 
-        runHelper('not an object').should.throw();
-        runHelper(function () { }).should.throw();
-        runHelper({}).should.throw();
-        runHelper({id: ''}).should.throw();
-        runHelper({cancel_at_period_end: ''}).should.throw();
+        assert.throws(runHelper('not an object'));
+        assert.throws(runHelper(function () { }));
+        assert.throws(runHelper({}));
+        assert.throws(runHelper({id: ''}));
+        assert.throws(runHelper({cancel_at_period_end: ''}));
     });
 
     it('can render cancel subscription link', function () {
@@ -48,10 +50,10 @@ describe('{{cancel_link}} helper', function () {
             id: 'sub_cancel',
             cancel_at_period_end: false
         });
-        should.exist(rendered);
+        assertExists(rendered);
 
         rendered.string.should.match(defaultLinkClass);
-        rendered.string.should.match(/data-members-cancel-subscription="sub_cancel"/);
+        assert.match(rendered.string, /data-members-cancel-subscription="sub_cancel"/);
         rendered.string.should.match(defaultCancelLinkText);
 
         rendered.string.should.match(defaultErrorElementClass);
@@ -62,10 +64,10 @@ describe('{{cancel_link}} helper', function () {
             id: 'sub_continue',
             cancel_at_period_end: true
         });
-        should.exist(rendered);
+        assertExists(rendered);
 
         rendered.string.should.match(defaultLinkClass);
-        rendered.string.should.match(/data-members-continue-subscription="sub_continue"/);
+        assert.match(rendered.string, /data-members-continue-subscription="sub_continue"/);
         rendered.string.should.match(defaultContinueLinkText);
     });
 
@@ -78,9 +80,9 @@ describe('{{cancel_link}} helper', function () {
                 class: 'custom-link-class'
             }
         });
-        should.exist(rendered);
+        assertExists(rendered);
 
-        rendered.string.should.match(/custom-link-class/);
+        assert.match(rendered.string, /custom-link-class/);
     });
 
     it('can render custom error class', function () {
@@ -92,9 +94,9 @@ describe('{{cancel_link}} helper', function () {
                 errorClass: 'custom-error-class'
             }
         });
-        should.exist(rendered);
+        assertExists(rendered);
 
-        rendered.string.should.match(/custom-error-class/);
+        assert.match(rendered.string, /custom-error-class/);
     });
 
     it('can render custom cancel subscription link attributes', function () {
@@ -106,9 +108,9 @@ describe('{{cancel_link}} helper', function () {
                 cancelLabel: 'custom cancel link text'
             }
         });
-        should.exist(rendered);
+        assertExists(rendered);
 
-        rendered.string.should.match(/custom cancel link text/);
+        assert.match(rendered.string, /custom cancel link text/);
     });
 
     it('can render custom continue subscription link attributes', function () {
@@ -120,9 +122,9 @@ describe('{{cancel_link}} helper', function () {
                 continueLabel: 'custom continue link text'
             }
         });
-        should.exist(rendered);
+        assertExists(rendered);
 
-        rendered.string.should.match(/custom continue link text/);
+        assert.match(rendered.string, /custom continue link text/);
     });
 
     it('is disabled if labs flag is not set', function () {
@@ -134,10 +136,10 @@ describe('{{cancel_link}} helper', function () {
             cancel_at_period_end: true
         });
 
-        should.exist(rendered);
+        assertExists(rendered);
 
-        rendered.string.should.match(/^<script/);
-        rendered.string.should.match(/helper is not available/);
+        assert.match(rendered.string, /^<script/);
+        assert.match(rendered.string, /helper is not available/);
 
         sinon.assert.calledOnce(loggingStub);
     });

@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const path = require('path');
 const configUtils = require('../../../utils/config-utils');
 
@@ -18,9 +18,9 @@ describe('Adapter Config', function () {
 
     describe('Storage', function () {
         it('should default to local-file-store', function () {
-            configUtils.config.get('paths').should.have.property('internalAdaptersPath', path.join(configUtils.config.get('paths').corePath, '/server/adapters/'));
+            assert.equal(configUtils.config.get('paths').internalAdaptersPath, path.join(configUtils.config.get('paths').corePath, '/server/adapters/'));
 
-            configUtils.config.get('storage').should.have.property('active', 'LocalImagesStorage');
+            assert.equal(configUtils.config.get('storage').active, 'LocalImagesStorage');
         });
 
         it('no effect: setting a custom active storage as string', function () {
@@ -31,8 +31,8 @@ describe('Adapter Config', function () {
                 }
             });
 
-            configUtils.config.get('storage').should.have.property('active', 's3');
-            configUtils.config.get('storage').should.have.property('s3', {});
+            assert.equal(configUtils.config.get('storage').active, 's3');
+            assert.deepEqual(configUtils.config.get('storage').s3, {});
         });
 
         it('able to set storage for themes (but not officially supported!)', function () {
@@ -45,7 +45,7 @@ describe('Adapter Config', function () {
                 }
             });
 
-            configUtils.config.get('storage').should.have.property('active', {
+            assert.deepEqual(configUtils.config.get('storage').active, {
                 images: 'local-file-store',
                 themes: 's3'
             });
@@ -61,7 +61,7 @@ describe('Adapter Config', function () {
                 }
             });
 
-            configUtils.config.get('storage').should.have.property('active', {
+            assert.deepEqual(configUtils.config.get('storage').active, {
                 images: 's2',
                 themes: 'local-file-store'
             });

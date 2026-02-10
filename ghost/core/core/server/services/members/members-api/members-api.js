@@ -78,7 +78,9 @@ module.exports = function MembersAPI({
     settingsCache,
     sentry,
     settingsHelpers,
-    urlUtils
+    urlUtils,
+    commentsService,
+    emailAddressService
 }) {
     const tokenService = new TokenService({
         privateKey,
@@ -157,7 +159,8 @@ module.exports = function MembersAPI({
         memberAttributionService,
         emailSuppressionList,
         settingsHelpers,
-        nextPaymentCalculator
+        nextPaymentCalculator,
+        commentsService
     });
 
     const geolocationService = new GeolocationService();
@@ -211,7 +214,8 @@ module.exports = function MembersAPI({
         settingsCache,
         settingsHelpers,
         sentry,
-        urlUtils
+        urlUtils,
+        emailAddressService
     });
 
     const wellKnownController = new WellKnownController({

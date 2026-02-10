@@ -1,3 +1,5 @@
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../../../utils/assertions');
 const should = require('should');
 const ObjectID = require('bson-objectid').default;
 const errors = require('../../../../../../../core/server/services/offers/domain/errors');
@@ -57,7 +59,7 @@ describe('Offer', function () {
                 stripe_coupon_id: 'coupon_123'
             }, mockUniqueChecker);
 
-            offer.stripeCouponId.should.equal('coupon_123');
+            assert.equal(offer.stripeCouponId, 'coupon_123');
         });
 
         it('Creates a valid instance of a trial Offer', async function () {
@@ -96,9 +98,9 @@ describe('Offer', function () {
                     id: ObjectID()
                 }
             }, mockUniqueChecker).then(() => {
-                should.fail('Expected an error');
+                assert.fail('Expected an error');
             }, (err) => {
-                should.ok(err);
+                assert(err);
             });
         });
 
@@ -117,9 +119,9 @@ describe('Offer', function () {
                     id: ObjectID()
                 }
             }, mockUniqueChecker).then(() => {
-                should.fail('Expected an error');
+                assert.fail('Expected an error');
             }, (err) => {
-                should.ok(err);
+                assert(err);
             });
         });
 
@@ -138,9 +140,9 @@ describe('Offer', function () {
                     id: ObjectID()
                 }
             }, mockUniqueChecker).then(() => {
-                should.fail('Expected an error');
+                assert.fail('Expected an error');
             }, (err) => {
-                should.ok(err);
+                assert(err);
             });
         });
 
@@ -162,7 +164,7 @@ describe('Offer', function () {
 
             const offer = await Offer.create(data, mockUniqueChecker);
 
-            should.ok(offer.name.equals(OfferName.create(data.name)));
+            assert(offer.name.equals(OfferName.create(data.name)));
         });
 
         it('Errors if the repeating duration is applied to the year cadence', async function () {
@@ -184,9 +186,9 @@ describe('Offer', function () {
 
             try {
                 await Offer.create(data, mockUniqueChecker);
-                should.fail();
+                assert.fail();
             } catch (err) {
-                should.ok(err instanceof errors.InvalidOfferDuration);
+                assert(err instanceof errors.InvalidOfferDuration);
             }
         });
 
@@ -208,7 +210,7 @@ describe('Offer', function () {
 
             const offer = await Offer.create(data, mockUniqueChecker);
 
-            should.equal(offer.currency, null);
+            assert.equal(offer.currency, null);
         });
 
         it('Has a currency of null if the type is trial', async function () {
@@ -229,7 +231,7 @@ describe('Offer', function () {
 
             const offer = await Offer.create(data, mockUniqueChecker);
 
-            should.equal(offer.currency, null);
+            assert.equal(offer.currency, null);
         });
 
         it('Can handle ObjectID, string and no id', async function () {
@@ -273,9 +275,9 @@ describe('Offer', function () {
             await Offer.create(data, mockUniqueChecker);
 
             await Offer.create({...data, redemptionCount: 2}, mockUniqueChecker).then(() => {
-                should.fail('Expected an error');
+                assert.fail('Expected an error');
             }, (err) => {
-                should.ok(err);
+                assert(err);
             });
         });
 
@@ -297,7 +299,93 @@ describe('Offer', function () {
 
             const offer = await Offer.create(data, mockUniqueChecker);
 
-            should.equal(typeof offer.createdAt, 'string');
+            assert.equal(typeof offer.createdAt, 'string');
+        });
+    });
+
+    describe('Tier and redemption type validation', function () {
+        it('Creates a retention offer with null tier', async function () {
+            const offer = await Offer.create({
+                id: ObjectID(),
+                name: 'Retention Offer',
+                code: 'retention-offer',
+                display_title: 'Stay with us',
+                display_description: 'A discount for staying',
+                cadence: 'month',
+                type: 'percent',
+                amount: 10,
+                duration: 'forever',
+                redemption_type: 'retention',
+                tier: null
+            }, mockUniqueChecker);
+
+            should.ok(offer instanceof Offer);
+            assert.equal(offer.tier, null);
+            assert.equal(offer.redemptionType.value, 'retention');
+        });
+
+        it('Throws when creating a retention offer with a tier', async function () {
+            try {
+                await Offer.create({
+                    id: ObjectID(),
+                    name: 'Bad Retention Offer',
+                    code: 'bad-retention',
+                    display_title: '',
+                    display_description: '',
+                    cadence: 'month',
+                    type: 'percent',
+                    amount: 10,
+                    duration: 'forever',
+                    redemption_type: 'retention',
+                    tier: {
+                        id: ObjectID()
+                    }
+                }, mockUniqueChecker);
+                should.fail('Expected an error');
+            } catch (err) {
+                should.ok(err instanceof errors.InvalidOfferTier);
+            }
+        });
+
+        it('Throws when creating a signup offer without a tier', async function () {
+            try {
+                await Offer.create({
+                    id: ObjectID(),
+                    name: 'Bad Signup Offer',
+                    code: 'bad-signup',
+                    display_title: '',
+                    display_description: '',
+                    cadence: 'month',
+                    type: 'percent',
+                    amount: 10,
+                    duration: 'forever',
+                    redemption_type: 'signup',
+                    tier: null
+                }, mockUniqueChecker);
+                should.fail('Expected an error');
+            } catch (err) {
+                should.ok(err instanceof errors.InvalidOfferTier);
+            }
+        });
+
+        it('Throws when creating an offer without a tier and no redemption_type (defaults to signup)', async function () {
+            try {
+                await Offer.create({
+                    id: ObjectID(),
+                    name: 'No Tier Default',
+                    code: 'no-tier-default',
+                    display_title: '',
+                    display_description: '',
+                    cadence: 'month',
+                    type: 'percent',
+                    amount: 10,
+                    duration: 'forever',
+                    tier: null
+                }, mockUniqueChecker);
+                should.fail('Expected an error');
+            } catch (err) {
+                should.ok(err instanceof errors.InvalidOfferTier);
+            }
         });
     });
 
@@ -322,9 +410,9 @@ describe('Offer', function () {
             const offer = await Offer.create(data, mockUniqueChecker);
 
             await offer.updateCode(OfferCode.create('dupe'), mockUniqueChecker).then(() => {
-                should.fail('Expected an error');
+                assert.fail('Expected an error');
             }, (err) => {
-                should.ok(err);
+                assert(err);
             });
 
             const offer2 = await Offer.create({...data, code: 'dupe'}, createUniqueChecker());
@@ -353,9 +441,9 @@ describe('Offer', function () {
 
             await offer.updateCode(OfferCode.create('changed'), mockUniqueChecker);
             await offer.updateCode(OfferCode.create('changed-again'), mockUniqueChecker).then(() => {
-                should.fail('Expected an error');
+                assert.fail('Expected an error');
             }, (err) => {
-                should.ok(err);
+                assert(err);
             });
         });
     });
@@ -383,9 +471,9 @@ describe('Offer', function () {
             await offer.updateName(OfferName.create('Unique!'), mockUniqueChecker);
 
             await offer.updateName(OfferName.create('dupe'), mockUniqueChecker).then(() => {
-                should.fail('Expected an error');
+                assert.fail('Expected an error');
             }, (err) => {
-                should.ok(err);
+                assert(err);
             });
 
             const offer2 = await Offer.create({...data, name: 'dupe'}, createUniqueChecker());
@@ -414,20 +502,20 @@ describe('Offer', function () {
 
             const offer = await Offer.create(data, mockUniqueChecker);
 
-            should.exist(offer.id);
-            should.exist(offer.name);
-            should.exist(offer.code);
-            should.exist(offer.currency);
-            should.exist(offer.duration);
-            should.exist(offer.status);
-            should.exist(offer.redemptionCount);
-            should.exist(offer.displayTitle);
-            should.exist(offer.displayDescription);
-            should.exist(offer.tier);
-            should.exist(offer.cadence);
-            should.exist(offer.type);
-            should.exist(offer.amount);
-            should.exist(offer.isNew);
+            assertExists(offer.id);
+            assertExists(offer.name);
+            assertExists(offer.code);
+            assertExists(offer.currency);
+            assertExists(offer.duration);
+            assertExists(offer.status);
+            assertExists(offer.redemptionCount);
+            assertExists(offer.displayTitle);
+            assertExists(offer.displayDescription);
+            assertExists(offer.tier);
+            assertExists(offer.cadence);
+            assertExists(offer.type);
+            assertExists(offer.amount);
+            assertExists(offer.isNew);
         });
     });
 
@@ -446,15 +534,15 @@ describe('Offer', function () {
 
             const offer = await Offer.createFromStripeCoupon(stripeCoupon, 'month', tier, mockUniqueChecker);
 
-            should.ok(offer instanceof Offer);
-            should.equal(offer.code.value, 'stripe_coupon_abc');
-            should.equal(offer.status.value, 'archived');
-            should.equal(offer.stripeCouponId, 'stripe_coupon_abc');
-            should.equal(offer.type.value, 'percent');
-            should.equal(offer.amount.value, 25);
-            should.equal(offer.name.value, '25% off forever (stripe_coupon_abc)');
-            should.equal(offer.displayTitle.value, '25% off forever (stripe_coupon_abc)');
-            should.equal(offer.displayDescription.value, '');
+            assert(offer instanceof Offer);
+            assert.equal(offer.code.value, 'stripe_coupon_abc');
+            assert.equal(offer.status.value, 'archived');
+            assert.equal(offer.stripeCouponId, 'stripe_coupon_abc');
+            assert.equal(offer.type.value, 'percent');
+            assert.equal(offer.amount.value, 25);
+            assert.equal(offer.name.value, '25% off forever (stripe_coupon_abc)');
+            assert.equal(offer.displayTitle.value, '25% off forever (stripe_coupon_abc)');
+            assert.equal(offer.displayDescription.value, '');
         });
 
         it('Creates a valid fixed amount offer from a Stripe coupon', async function () {
@@ -472,14 +560,14 @@ describe('Offer', function () {
 
             const offer = await Offer.createFromStripeCoupon(stripeCoupon, 'year', tier, mockUniqueChecker);
 
-            should.ok(offer instanceof Offer);
-            should.equal(offer.code.value, 'fixed_coupon_xyz');
-            should.equal(offer.status.value, 'archived');
-            should.equal(offer.stripeCouponId, 'fixed_coupon_xyz');
-            should.equal(offer.type.value, 'fixed');
-            should.equal(offer.amount.value, 1000);
-            should.equal(offer.currency.value, 'USD');
-            should.equal(offer.name.value, 'USD 10 off once (fixed_coupon_xyz)');
+            assert(offer instanceof Offer);
+            assert.equal(offer.code.value, 'fixed_coupon_xyz');
+            assert.equal(offer.status.value, 'archived');
+            assert.equal(offer.stripeCouponId, 'fixed_coupon_xyz');
+            assert.equal(offer.type.value, 'fixed');
+            assert.equal(offer.amount.value, 1000);
+            assert.equal(offer.currency.value, 'USD');
+            assert.equal(offer.name.value, 'USD 10 off once (fixed_coupon_xyz)');
         });
 
         it('Generates correct name for repeating duration with months', async function () {
@@ -497,9 +585,9 @@ describe('Offer', function () {
 
             const offer = await Offer.createFromStripeCoupon(stripeCoupon, 'month', tier, mockUniqueChecker);
 
-            should.equal(offer.name.value, '15% off for 6 months (SUMMER25)');
-            should.equal(offer.code.value, 'summer25');
-            should.equal(offer.status.value, 'archived');
+            assert.equal(offer.name.value, '15% off for 6 months (SUMMER25)');
+            assert.equal(offer.code.value, 'summer25');
+            assert.equal(offer.status.value, 'archived');
         });
 
         it('Generates correct name for percent off with "once" duration', async function () {
@@ -516,7 +604,7 @@ describe('Offer', function () {
 
             const offer = await Offer.createFromStripeCoupon(stripeCoupon, 'month', tier, mockUniqueChecker);
 
-            should.equal(offer.name.value, '10% off once (WELCOME10)');
+            assert.equal(offer.name.value, '10% off once (WELCOME10)');
         });
 
         it('Generates correct name for fixed amount with "forever" duration', async function () {
@@ -534,7 +622,7 @@ describe('Offer', function () {
 
             const offer = await Offer.createFromStripeCoupon(stripeCoupon, 'year', tier, mockUniqueChecker);
 
-            should.equal(offer.name.value, 'EUR 5 off forever (FLAT5OFF)');
+            assert.equal(offer.name.value, 'EUR 5 off forever (FLAT5OFF)');
         });
 
         it('Generates correct name for fixed amount with repeating duration', async function () {
@@ -553,7 +641,7 @@ describe('Offer', function () {
 
             const offer = await Offer.createFromStripeCoupon(stripeCoupon, 'month', tier, mockUniqueChecker);
 
-            should.equal(offer.name.value, 'GBP 2.5 off for 3 months (SAVE3MONTHS)');
+            assert.equal(offer.name.value, 'GBP 2.5 off for 3 months (SAVE3MONTHS)');
         });
 
         it('Sets cadence correctly from parameter', async function () {
@@ -569,7 +657,7 @@ describe('Offer', function () {
             };
 
             const monthlyOffer = await Offer.createFromStripeCoupon(stripeCoupon, 'month', tier, mockUniqueChecker);
-            should.equal(monthlyOffer.cadence.value, 'month');
+            assert.equal(monthlyOffer.cadence.value, 'month');
 
             const yearlyOffer = await Offer.createFromStripeCoupon(
                 {...stripeCoupon, id: 'yearly_coupon'},
@@ -577,7 +665,7 @@ describe('Offer', function () {
                 tier,
                 mockUniqueChecker
             );
-            should.equal(yearlyOffer.cadence.value, 'year');
+            assert.equal(yearlyOffer.cadence.value, 'year');
         });
 
         it('Associates offer with provided tier', async function () {
@@ -595,8 +683,8 @@ describe('Offer', function () {
 
             const offer = await Offer.createFromStripeCoupon(stripeCoupon, 'month', tier, mockUniqueChecker);
 
-            should.equal(offer.tier.id, tierId.toHexString());
-            should.equal(offer.tier.name, 'Premium');
+            assert.equal(offer.tier.id, tierId.toHexString());
+            assert.equal(offer.tier.name, 'Premium');
         });
 
         it('Is marked as a new offer', async function () {
@@ -613,7 +701,7 @@ describe('Offer', function () {
 
             const offer = await Offer.createFromStripeCoupon(stripeCoupon, 'month', tier, mockUniqueChecker);
 
-            should.equal(offer.isNew, true);
+            assert.equal(offer.isNew, true);
         });
     });
 });

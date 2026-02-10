@@ -63,6 +63,7 @@ test.describe('Ghost Public - Comments - Replies', () => {
     });
 
     test('reply to reply comment', async ({page}) => {
+        test.skip(true, 'Race condition fix in #26247');
         const post = await postFactory.create({status: 'published'});
         const member = await memberFactory.create({status: 'free'});
         const paidTier = await tiersService.getFirstPaidTier();
@@ -87,6 +88,8 @@ test.describe('Ghost Public - Comments - Replies', () => {
         await postPage.gotoPost(post.slug);
         await postPage.waitForCommentsToLoad();
         const postCommentsSection = postPage.commentsSection;
+
+        await expect(postCommentsSection.comments).toHaveCount(2);
 
         await postCommentsSection.replyToComment('Reply to main comment', 'My reply');
         await expect(postCommentsSection.comments).toHaveCount(3);

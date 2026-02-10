@@ -1,5 +1,8 @@
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
+const _ = require('lodash');
 
 const api = require('../../../../../core/frontend/services/proxy').api;
 const data = require('../../../../../core/frontend/services/data');
@@ -57,14 +60,14 @@ describe('Unit - frontend/data/fetch-data', function () {
 
     it('should handle no options', function (done) {
         data.fetchData(null, null, locals).then(function (result) {
-            should.exist(result);
+            assertExists(result);
             result.should.be.an.Object().with.properties('posts', 'meta');
-            result.should.not.have.property('data');
+            assert(!('data' in result));
 
-            browsePostsStub.calledOnce.should.be.true();
-            browsePostsStub.firstCall.args[0].should.be.an.Object();
-            browsePostsStub.firstCall.args[0].should.have.property('include');
-            browsePostsStub.firstCall.args[0].should.not.have.property('filter');
+            assert.equal(browsePostsStub.calledOnce, true);
+            assert(_.isPlainObject(browsePostsStub.firstCall.args[0]));
+            assert('include' in browsePostsStub.firstCall.args[0]);
+            assert(!('filter' in browsePostsStub.firstCall.args[0]));
 
             done();
         }).catch(done);
@@ -72,17 +75,17 @@ describe('Unit - frontend/data/fetch-data', function () {
 
     it('should handle path options with page/limit', function (done) {
         data.fetchData({page: 2, limit: 10}, null, locals).then(function (result) {
-            should.exist(result);
+            assertExists(result);
             result.should.be.an.Object().with.properties('posts', 'meta');
-            result.should.not.have.property('data');
+            assert(!('data' in result));
 
             result.posts.length.should.eql(posts.length);
 
-            browsePostsStub.calledOnce.should.be.true();
-            browsePostsStub.firstCall.args[0].should.be.an.Object();
-            browsePostsStub.firstCall.args[0].should.have.property('include');
-            browsePostsStub.firstCall.args[0].should.have.property('limit', 10);
-            browsePostsStub.firstCall.args[0].should.have.property('page', 2);
+            assert.equal(browsePostsStub.calledOnce, true);
+            assert(_.isPlainObject(browsePostsStub.firstCall.args[0]));
+            assert('include' in browsePostsStub.firstCall.args[0]);
+            assert.equal(browsePostsStub.firstCall.args[0].limit, 10);
+            assert.equal(browsePostsStub.firstCall.args[0].page, 2);
 
             done();
         }).catch(done);
@@ -105,17 +108,17 @@ describe('Unit - frontend/data/fetch-data', function () {
         };
 
         data.fetchData(pathOptions, routerOptions, locals).then(function (result) {
-            should.exist(result);
+            assertExists(result);
             result.should.be.an.Object().with.properties('posts', 'meta', 'data');
             result.data.should.be.an.Object().with.properties('featured');
 
             result.posts.length.should.eql(posts.length);
             result.data.featured.length.should.eql(posts.length);
 
-            browsePostsStub.calledTwice.should.be.true();
-            browsePostsStub.firstCall.args[0].should.have.property('include', 'authors,tags,tiers');
-            browsePostsStub.secondCall.args[0].should.have.property('filter', 'featured:true');
-            browsePostsStub.secondCall.args[0].should.have.property('limit', 3);
+            assert.equal(browsePostsStub.calledTwice, true);
+            assert.equal(browsePostsStub.firstCall.args[0].include, 'authors,tags,tiers');
+            assert.equal(browsePostsStub.secondCall.args[0].filter, 'featured:true');
+            assert.equal(browsePostsStub.secondCall.args[0].limit, 3);
             done();
         }).catch(done);
     });
@@ -136,7 +139,7 @@ describe('Unit - frontend/data/fetch-data', function () {
         };
 
         data.fetchData(pathOptions, routerOptions, locals).then(function (result) {
-            should.exist(result);
+            assertExists(result);
 
             result.should.be.an.Object().with.properties('posts', 'meta', 'data');
             result.data.should.be.an.Object().with.properties('featured');
@@ -144,11 +147,11 @@ describe('Unit - frontend/data/fetch-data', function () {
             result.posts.length.should.eql(posts.length);
             result.data.featured.length.should.eql(posts.length);
 
-            browsePostsStub.calledTwice.should.be.true();
-            browsePostsStub.firstCall.args[0].should.have.property('include', 'authors,tags,tiers');
-            browsePostsStub.firstCall.args[0].should.have.property('page', 2);
-            browsePostsStub.secondCall.args[0].should.have.property('filter', 'featured:true');
-            browsePostsStub.secondCall.args[0].should.have.property('limit', 3);
+            assert.equal(browsePostsStub.calledTwice, true);
+            assert.equal(browsePostsStub.firstCall.args[0].include, 'authors,tags,tiers');
+            assert.equal(browsePostsStub.firstCall.args[0].page, 2);
+            assert.equal(browsePostsStub.secondCall.args[0].filter, 'featured:true');
+            assert.equal(browsePostsStub.secondCall.args[0].limit, 3);
             done();
         }).catch(done);
     });
@@ -171,18 +174,18 @@ describe('Unit - frontend/data/fetch-data', function () {
         };
 
         data.fetchData(pathOptions, routerOptions, locals).then(function (result) {
-            should.exist(result);
+            assertExists(result);
             result.should.be.an.Object().with.properties('posts', 'meta', 'data');
             result.data.should.be.an.Object().with.properties('tag');
 
             result.posts.length.should.eql(posts.length);
             result.data.tag.length.should.eql(tags.length);
 
-            browsePostsStub.calledOnce.should.be.true();
-            browsePostsStub.firstCall.args[0].should.have.property('include');
-            browsePostsStub.firstCall.args[0].should.have.property('filter', 'tags:testing');
-            browsePostsStub.firstCall.args[0].should.not.have.property('slug');
-            readTagsStub.firstCall.args[0].should.have.property('slug', 'testing');
+            assert.equal(browsePostsStub.calledOnce, true);
+            assert('include' in browsePostsStub.firstCall.args[0]);
+            assert.equal(browsePostsStub.firstCall.args[0].filter, 'tags:testing');
+            assert(!('slug' in browsePostsStub.firstCall.args[0]));
+            assert.equal(readTagsStub.firstCall.args[0].slug, 'testing');
             done();
         }).catch(done);
     });

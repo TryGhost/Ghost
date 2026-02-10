@@ -1,3 +1,5 @@
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../../utils/assertions');
 const errors = require('@tryghost/errors');
 const should = require('should');
 const sinon = require('sinon');
@@ -11,7 +13,7 @@ const dataService = require('../../../../../../core/frontend/services/data');
 
 function failTest(done) {
     return function (err) {
-        should.exist(err);
+        assertExists(err);
         done(err);
     };
 }
@@ -44,7 +46,7 @@ describe('Unit - services/routing/controllers/collection', function () {
         sinon.stub(themeEngine, 'getActive').returns({
             updateTemplateOptions: sinon.stub(),
             config: function (key) {
-                key.should.eql('posts_per_page');
+                assert.equal(key, 'posts_per_page');
                 return postsPerPage;
             }
         });
@@ -85,10 +87,10 @@ describe('Unit - services/routing/controllers/collection', function () {
             });
 
         controllers.collection(req, res, failTest(done)).then(function () {
-            themeEngine.getActive.calledOnce.should.be.true();
-            security.string.safe.calledOnce.should.be.false();
-            fetchDataStub.calledOnce.should.be.true();
-            ownsStub.calledOnce.should.be.true();
+            assert.equal(themeEngine.getActive.calledOnce, true);
+            assert.equal(security.string.safe.calledOnce, false);
+            assert.equal(fetchDataStub.calledOnce, true);
+            assert.equal(ownsStub.calledOnce, true);
             done();
         }).catch(done);
     });
@@ -107,10 +109,10 @@ describe('Unit - services/routing/controllers/collection', function () {
             });
 
         controllers.collection(req, res, failTest(done)).then(function () {
-            themeEngine.getActive.calledOnce.should.be.true();
-            security.string.safe.calledOnce.should.be.false();
-            fetchDataStub.calledOnce.should.be.true();
-            ownsStub.calledOnce.should.be.true();
+            assert.equal(themeEngine.getActive.calledOnce, true);
+            assert.equal(security.string.safe.calledOnce, false);
+            assert.equal(fetchDataStub.calledOnce, true);
+            assert.equal(ownsStub.calledOnce, true);
             done();
         }).catch(done);
     });
@@ -130,11 +132,11 @@ describe('Unit - services/routing/controllers/collection', function () {
             });
 
         controllers.collection(req, res, failTest(done)).then(function () {
-            themeEngine.getActive.calledOnce.should.be.true();
-            themeEngine.getActive().updateTemplateOptions.withArgs({data: {config: {posts_per_page: 3}}}).calledOnce.should.be.true();
-            security.string.safe.calledOnce.should.be.false();
-            fetchDataStub.calledOnce.should.be.true();
-            ownsStub.calledOnce.should.be.true();
+            assert.equal(themeEngine.getActive.calledOnce, true);
+            assert.equal(themeEngine.getActive().updateTemplateOptions.withArgs({data: {config: {posts_per_page: 3}}}).calledOnce, true);
+            assert.equal(security.string.safe.calledOnce, false);
+            assert.equal(fetchDataStub.calledOnce, true);
+            assert.equal(ownsStub.calledOnce, true);
             done();
         }).catch(done);
     });
@@ -153,13 +155,13 @@ describe('Unit - services/routing/controllers/collection', function () {
             });
 
         controllers.collection(req, res, function (err) {
-            (err instanceof errors.NotFoundError).should.be.true();
+            assert.equal((err instanceof errors.NotFoundError), true);
 
-            themeEngine.getActive.calledOnce.should.be.true();
-            security.string.safe.calledOnce.should.be.false();
-            fetchDataStub.calledOnce.should.be.true();
-            renderStub.calledOnce.should.be.false();
-            ownsStub.calledOnce.should.be.false();
+            assert.equal(themeEngine.getActive.calledOnce, true);
+            assert.equal(security.string.safe.calledOnce, false);
+            assert.equal(fetchDataStub.calledOnce, true);
+            assert.equal(renderStub.calledOnce, false);
+            assert.equal(ownsStub.calledOnce, false);
             done();
         });
     });
@@ -178,10 +180,10 @@ describe('Unit - services/routing/controllers/collection', function () {
             });
 
         controllers.collection(req, res, failTest(done)).then(function () {
-            themeEngine.getActive.calledOnce.should.be.true();
-            security.string.safe.calledOnce.should.be.true();
-            fetchDataStub.calledOnce.should.be.true();
-            ownsStub.calledOnce.should.be.true();
+            assert.equal(themeEngine.getActive.calledOnce, true);
+            assert.equal(security.string.safe.calledOnce, true);
+            assert.equal(fetchDataStub.calledOnce, true);
+            assert.equal(ownsStub.calledOnce, true);
             done();
         }).catch(done);
     });
@@ -200,10 +202,10 @@ describe('Unit - services/routing/controllers/collection', function () {
             });
 
         controllers.collection(req, res, failTest(done)).then(function () {
-            themeEngine.getActive.calledOnce.should.be.true();
-            security.string.safe.calledOnce.should.be.false();
-            fetchDataStub.calledOnce.should.be.true();
-            ownsStub.calledOnce.should.be.true();
+            assert.equal(themeEngine.getActive.calledOnce, true);
+            assert.equal(security.string.safe.calledOnce, false);
+            assert.equal(fetchDataStub.calledOnce, true);
+            assert.equal(ownsStub.calledOnce, true);
             done();
         }).catch(done);
     });
@@ -238,10 +240,10 @@ describe('Unit - services/routing/controllers/collection', function () {
             });
 
         controllers.collection(req, res, failTest(done)).then(function () {
-            themeEngine.getActive.calledOnce.should.be.true();
-            security.string.safe.calledOnce.should.be.false();
-            fetchDataStub.calledOnce.should.be.true();
-            ownsStub.callCount.should.eql(4);
+            assert.equal(themeEngine.getActive.calledOnce, true);
+            assert.equal(security.string.safe.calledOnce, false);
+            assert.equal(fetchDataStub.calledOnce, true);
+            assert.equal(ownsStub.callCount, 4);
             done();
         }).catch(done);
     });

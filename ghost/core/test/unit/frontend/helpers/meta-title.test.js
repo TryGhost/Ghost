@@ -1,3 +1,5 @@
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 const configUtils = require('../../../utils/config-utils');
@@ -25,8 +27,8 @@ describe('{{meta_title}} helper', function () {
                 {data: {root: {context: ['home']}}}
             );
 
-            should.exist(rendered);
-            String(rendered).should.equal('Ghost');
+            assertExists(rendered);
+            assert.equal(String(rendered), 'Ghost');
         });
 
         it('returns correct title for paginated page', function () {
@@ -35,8 +37,8 @@ describe('{{meta_title}} helper', function () {
                 {data: {root: {context: [], pagination: {total: 2, page: 2}}}}
             );
 
-            should.exist(rendered);
-            String(rendered).should.equal('Ghost (Page 2)');
+            assertExists(rendered);
+            assert.equal(String(rendered), 'Ghost (Page 2)');
         });
 
         it('returns correct title for a post', function () {
@@ -45,8 +47,8 @@ describe('{{meta_title}} helper', function () {
                 {data: {root: {context: ['post']}}}
             );
 
-            should.exist(rendered);
-            String(rendered).should.equal('Post Title');
+            assertExists(rendered);
+            assert.equal(String(rendered), 'Post Title');
         });
 
         it('returns correct title for a post with meta_title set', function () {
@@ -55,8 +57,8 @@ describe('{{meta_title}} helper', function () {
                 {data: {root: {context: ['post']}}}
             );
 
-            should.exist(rendered);
-            String(rendered).should.equal('Awesome Post');
+            assertExists(rendered);
+            assert.equal(String(rendered), 'Awesome Post');
         });
 
         it('returns correct title for a page with meta_title set', function () {
@@ -65,8 +67,8 @@ describe('{{meta_title}} helper', function () {
                 {data: {root: {context: ['page']}}}
             );
 
-            should.exist(rendered);
-            String(rendered).should.equal('All about my awesomeness');
+            assertExists(rendered);
+            assert.equal(String(rendered), 'All about my awesomeness');
         });
 
         it('returns correct title for a tag page', function () {
@@ -77,8 +79,8 @@ describe('{{meta_title}} helper', function () {
                 {data: {root: {context: ['tag']}}}
             );
 
-            should.exist(rendered);
-            String(rendered).should.equal('Rasper Red - Ghost');
+            assertExists(rendered);
+            assert.equal(String(rendered), 'Rasper Red - Ghost');
         });
 
         it('returns correct title for a paginated tag page', function () {
@@ -87,8 +89,8 @@ describe('{{meta_title}} helper', function () {
                 {data: {root: {context: ['tag', 'paged'], pagination: {total: 2, page: 2}}}}
             );
 
-            should.exist(rendered);
-            String(rendered).should.equal('Rasper Red - Ghost (Page 2)');
+            assertExists(rendered);
+            assert.equal(String(rendered), 'Rasper Red - Ghost (Page 2)');
         });
 
         it('uses tag meta_title to override default response on tag page', function () {
@@ -97,8 +99,8 @@ describe('{{meta_title}} helper', function () {
                 {data: {root: {context: ['tag']}}}
             );
 
-            should.exist(rendered);
-            String(rendered).should.equal('Sasper Red');
+            assertExists(rendered);
+            assert.equal(String(rendered), 'Sasper Red');
         });
 
         it('uses tag meta_title to override default response on paginated tag page', function () {
@@ -107,8 +109,8 @@ describe('{{meta_title}} helper', function () {
                 {data: {root: {context: ['tag']}}}
             );
 
-            should.exist(rendered);
-            String(rendered).should.equal('Sasper Red');
+            assertExists(rendered);
+            assert.equal(String(rendered), 'Sasper Red');
         });
 
         it('returns correct title for an author page', function () {
@@ -117,8 +119,8 @@ describe('{{meta_title}} helper', function () {
                 {data: {root: {context: ['author']}}}
             );
 
-            should.exist(rendered);
-            String(rendered).should.equal('Donald Duck - Ghost');
+            assertExists(rendered);
+            assert.equal(String(rendered), 'Donald Duck - Ghost');
         });
 
         it('returns correct title for a paginated author page', function () {
@@ -127,8 +129,8 @@ describe('{{meta_title}} helper', function () {
                 {data: {root: {context: ['author', 'paged'], pagination: {total: 2, page: 2}}}}
             );
 
-            should.exist(rendered);
-            String(rendered).should.equal('Donald Duck - Ghost (Page 2)');
+            assertExists(rendered);
+            assert.equal(String(rendered), 'Donald Duck - Ghost (Page 2)');
         });
 
         it('returns correctly escaped title of a post', function () {
@@ -137,8 +139,8 @@ describe('{{meta_title}} helper', function () {
                 {data: {root: {context: ['post']}}}
             );
 
-            should.exist(rendered);
-            String(rendered).should.equal('Post Title "</>');
+            assertExists(rendered);
+            assert.equal(String(rendered), 'Post Title "</>');
         });
 
         it('returns meta_title on post when used within {{#foreach posts}}', function () {
@@ -147,8 +149,8 @@ describe('{{meta_title}} helper', function () {
                 {data: {root: {context: ['home']}}}
             );
 
-            should.exist(rendered);
-            String(rendered).should.equal('Awesome Post');
+            assertExists(rendered);
+            assert.equal(String(rendered), 'Awesome Post');
         });
     });
 
@@ -166,8 +168,8 @@ describe('{{meta_title}} helper', function () {
                 {data: {root: {context: ['home']}}}
             );
 
-            should.exist(rendered);
-            String(rendered).should.equal('Meta Title Ghost');
+            assertExists(rendered);
+            assert.equal(String(rendered), 'Meta Title Ghost');
         });
 
         it('returns correct title for paginated page', function () {
@@ -176,8 +178,8 @@ describe('{{meta_title}} helper', function () {
                 {data: {root: {context: [], pagination: {total: 2, page: 2}}}}
             );
 
-            should.exist(rendered);
-            String(rendered).should.equal('Ghost (Page 2)');
+            assertExists(rendered);
+            assert.equal(String(rendered), 'Ghost (Page 2)');
         });
 
         it('returns correct title for a tag page', function () {
@@ -188,8 +190,8 @@ describe('{{meta_title}} helper', function () {
                 {data: {root: {context: ['tag']}}}
             );
 
-            should.exist(rendered);
-            String(rendered).should.equal('Rasper Red - Ghost');
+            assertExists(rendered);
+            assert.equal(String(rendered), 'Rasper Red - Ghost');
         });
 
         it('returns correct title for an author page', function () {
@@ -198,8 +200,8 @@ describe('{{meta_title}} helper', function () {
                 {data: {root: {context: ['author']}}}
             );
 
-            should.exist(rendered);
-            String(rendered).should.equal('Donald Duck - Ghost');
+            assertExists(rendered);
+            assert.equal(String(rendered), 'Donald Duck - Ghost');
         });
 
         it('returns correct title for a paginated author page', function () {
@@ -208,8 +210,8 @@ describe('{{meta_title}} helper', function () {
                 {data: {root: {context: ['author', 'paged'], pagination: {total: 2, page: 2}}}}
             );
 
-            should.exist(rendered);
-            String(rendered).should.equal('Donald Duck - Ghost (Page 2)');
+            assertExists(rendered);
+            assert.equal(String(rendered), 'Donald Duck - Ghost (Page 2)');
         });
     });
 });

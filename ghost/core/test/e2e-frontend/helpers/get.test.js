@@ -1,4 +1,5 @@
 const assert = require('assert/strict');
+const {assertExists} = require('../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../utils');
@@ -37,7 +38,7 @@ function testPosts(posts, map) {
         const expectData = map[postID];
 
         const post = posts.find(p => p.id === postID);
-        should.exist(post);
+        assertExists(post);
 
         post.should.match(expectData);
     }
@@ -87,10 +88,10 @@ describe('e2e {{#get}} helper', function () {
 
     // Assert fixtures are correct
     it('has valid fixtures', function () {
-        publicPost.visibility.should.eql('public');
-        membersPost.visibility.should.eql('members');
-        paidPost.visibility.should.eql('paid');
-        basicTierPost.visibility.should.eql('tiers');
+        assert.equal(publicPost.visibility, 'public');
+        assert.equal(membersPost.visibility, 'members');
+        assert.equal(paidPost.visibility, 'paid');
+        assert.equal(basicTierPost.visibility, 'tiers');
     });
 
     beforeEach(function () {

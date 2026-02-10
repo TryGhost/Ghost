@@ -207,12 +207,12 @@ describe('BillingPortalManager', function () {
 
             assert.deepEqual(options, {
                 business_profile: {
-                    headline: 'Manage your My Ghost Site subscription'
+                    headline: 'Subscription & payment details'
                 },
                 features: {
                     invoice_history: {enabled: true},
                     payment_method_update: {enabled: true},
-                    subscription_cancel: {enabled: true}
+                    subscription_cancel: {enabled: false}
                 },
                 default_return_url: 'https://example.com'
             });
@@ -240,7 +240,7 @@ describe('BillingPortalManager', function () {
                         enabled: true
                     },
                     subscription_cancel: {
-                        enabled: true
+                        enabled: false
                     }
                 }
             });
@@ -258,7 +258,7 @@ describe('BillingPortalManager', function () {
 
             const options = manager.getConfigurationOptions();
 
-            assert.equal(options.business_profile.headline, 'Manage your Awesome Blog subscription');
+            assert.equal(options.business_profile.headline, 'Subscription & payment details');
         });
     });
 });

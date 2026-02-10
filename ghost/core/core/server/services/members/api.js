@@ -18,6 +18,8 @@ const tiersService = require('../tiers');
 const newslettersService = require('../newsletters');
 const memberAttributionService = require('../member-attribution');
 const emailSuppressionList = require('../email-suppression-list');
+const commentsService = require('../comments');
+const emailAddressService = require('../email-address');
 const {t} = require('../i18n');
 const sentry = require('../../../shared/sentry');
 
@@ -252,7 +254,9 @@ function createApiInstance(config) {
         settingsCache,
         sentry,
         settingsHelpers,
-        urlUtils
+        urlUtils,
+        commentsService,
+        emailAddressService: emailAddressService.service
     });
 
     return membersApiInstance;

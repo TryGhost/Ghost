@@ -1,3 +1,5 @@
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 const path = require('path');
@@ -48,44 +50,44 @@ describe('Themes API', function () {
             .expect(200);
 
         const jsonResponse = res.body;
-        should.exist(jsonResponse.themes);
+        assertExists(jsonResponse.themes);
         localUtils.API.checkResponse(jsonResponse, 'themes');
-        jsonResponse.themes.length.should.eql(7);
+        assert.equal(jsonResponse.themes.length, 7);
 
         localUtils.API.checkResponse(jsonResponse.themes[0], 'theme');
-        jsonResponse.themes[0].name.should.eql('broken-theme');
+        assert.equal(jsonResponse.themes[0].name, 'broken-theme');
         jsonResponse.themes[0].package.should.be.an.Object().with.properties('name', 'version');
-        jsonResponse.themes[0].active.should.be.false();
+        assert.equal(jsonResponse.themes[0].active, false);
 
         localUtils.API.checkResponse(jsonResponse.themes[1], 'theme');
-        jsonResponse.themes[1].name.should.eql('casper');
+        assert.equal(jsonResponse.themes[1].name, 'casper');
         jsonResponse.themes[1].package.should.be.an.Object().with.properties('name', 'version');
-        jsonResponse.themes[1].active.should.be.false();
+        assert.equal(jsonResponse.themes[1].active, false);
 
         localUtils.API.checkResponse(jsonResponse.themes[2], 'theme');
-        jsonResponse.themes[2].name.should.eql('locale-theme');
+        assert.equal(jsonResponse.themes[2].name, 'locale-theme');
         jsonResponse.themes[2].package.should.be.an.Object().with.properties('name', 'version');
-        jsonResponse.themes[2].active.should.be.false();
+        assert.equal(jsonResponse.themes[2].active, false);
 
         localUtils.API.checkResponse(jsonResponse.themes[3], 'theme');
-        jsonResponse.themes[3].name.should.eql('members-test-theme');
+        assert.equal(jsonResponse.themes[3].name, 'members-test-theme');
         jsonResponse.themes[3].package.should.be.an.Object().with.properties('name', 'version');
-        jsonResponse.themes[3].active.should.be.false();
+        assert.equal(jsonResponse.themes[3].active, false);
 
         localUtils.API.checkResponse(jsonResponse.themes[4], 'theme', 'templates');
-        jsonResponse.themes[4].name.should.eql('source');
+        assert.equal(jsonResponse.themes[4].name, 'source');
         jsonResponse.themes[4].package.should.be.an.Object().with.properties('name', 'version');
-        jsonResponse.themes[4].active.should.be.true();
+        assert.equal(jsonResponse.themes[4].active, true);
 
         localUtils.API.checkResponse(jsonResponse.themes[5], 'theme');
-        jsonResponse.themes[5].name.should.eql('test-theme');
+        assert.equal(jsonResponse.themes[5].name, 'test-theme');
         jsonResponse.themes[5].package.should.be.an.Object().with.properties('name', 'version');
-        jsonResponse.themes[5].active.should.be.false();
+        assert.equal(jsonResponse.themes[5].active, false);
 
         localUtils.API.checkResponse(jsonResponse.themes[6], 'theme');
-        jsonResponse.themes[6].name.should.eql('test-theme-channels');
-        jsonResponse.themes[6].package.should.be.false();
-        jsonResponse.themes[6].active.should.be.false();
+        assert.equal(jsonResponse.themes[6].name, 'test-theme-channels');
+        assert.equal(jsonResponse.themes[6].package, false);
+        assert.equal(jsonResponse.themes[6].active, false);
     });
 
     it('Can download a theme', async function () {
@@ -108,14 +110,14 @@ describe('Themes API', function () {
         const res = await uploadTheme({themePath: path.join(__dirname, '..', '..', 'utils', 'fixtures', 'themes', 'valid.zip')});
         const jsonResponse = res.body;
 
-        should.not.exist(res.headers['x-cache-invalidate']);
+        assert.equal(res.headers['x-cache-invalidate'], undefined);
 
-        should.exist(jsonResponse.themes);
+        assertExists(jsonResponse.themes);
         localUtils.API.checkResponse(jsonResponse, 'themes');
-        jsonResponse.themes.length.should.eql(1);
+        assert.equal(jsonResponse.themes.length, 1);
         localUtils.API.checkResponse(jsonResponse.themes[0], 'theme');
-        jsonResponse.themes[0].name.should.eql('valid');
-        jsonResponse.themes[0].active.should.be.false();
+        assert.equal(jsonResponse.themes[0].name, 'valid');
+        assert.equal(jsonResponse.themes[0].active, false);
 
         // Note: at this point, the tmpFolder can legitimately still contain a valid_34324324 backup
         // As it is deleted asynchronously
@@ -126,8 +128,8 @@ describe('Themes API', function () {
             }
         });
 
-        tmpFolderContents.should.containEql('valid');
-        tmpFolderContents.should.containEql('valid.zip');
+        assert(tmpFolderContents.includes('valid'));
+        assert(tmpFolderContents.includes('valid.zip'));
 
         // Check the Themes API returns the correct result
         const res3 = await ownerRequest
@@ -137,24 +139,24 @@ describe('Themes API', function () {
 
         const jsonResponse3 = res3.body;
 
-        should.exist(jsonResponse3.themes);
+        assertExists(jsonResponse3.themes);
         localUtils.API.checkResponse(jsonResponse3, 'themes');
-        jsonResponse3.themes.length.should.eql(8);
+        assert.equal(jsonResponse3.themes.length, 8);
 
         // Source should be present and still active
         const sourceTheme = _.find(jsonResponse3.themes, {name: 'source'});
-        should.exist(sourceTheme);
+        assertExists(sourceTheme);
         localUtils.API.checkResponse(sourceTheme, 'theme', 'templates');
-        sourceTheme.active.should.be.true();
+        assert.equal(sourceTheme.active, true);
 
         // The added theme should be here
         const addedTheme = _.find(jsonResponse3.themes, {name: 'valid'});
-        should.exist(addedTheme);
+        assertExists(addedTheme);
         localUtils.API.checkResponse(addedTheme, 'theme');
-        addedTheme.active.should.be.false();
+        assert.equal(addedTheme.active, false);
 
         // Note: at this point, the API should not return a valid_34324324 backup folder as a theme
-        _.map(jsonResponse3.themes, 'name').should.eql([
+        assert.deepEqual(_.map(jsonResponse3.themes, 'name'), [
             'broken-theme',
             'casper',
             'locale-theme',
@@ -184,7 +186,7 @@ describe('Themes API', function () {
         }
         tmpFolderContents.should.be.an.Array().with.lengthOf(12);
 
-        tmpFolderContents.should.eql([
+        assert.deepEqual(tmpFolderContents, [
             'broken-theme',
             'casper',
             'casper.zip',
@@ -207,31 +209,31 @@ describe('Themes API', function () {
 
         const jsonResponse2 = res2.body;
 
-        should.exist(jsonResponse2.themes);
+        assertExists(jsonResponse2.themes);
         localUtils.API.checkResponse(jsonResponse2, 'themes');
-        jsonResponse2.themes.length.should.eql(7);
+        assert.equal(jsonResponse2.themes.length, 7);
 
         // Source should be present and still active
         const sourceTheme = _.find(jsonResponse2.themes, {name: 'source'});
-        should.exist(sourceTheme);
+        assertExists(sourceTheme);
         localUtils.API.checkResponse(sourceTheme, 'theme', 'templates');
-        sourceTheme.active.should.be.true();
+        assert.equal(sourceTheme.active, true);
 
         // The deleted theme should not be here
         const deletedTheme = _.find(jsonResponse2.themes, {name: 'valid'});
-        should.not.exist(deletedTheme);
+        assert.equal(deletedTheme, undefined);
     });
 
     it('Can upload a theme, which has warnings', async function () {
         const res = await uploadTheme({themePath: path.join(__dirname, '/../../utils/fixtures/themes/warnings.zip')});
         const jsonResponse = res.body;
 
-        should.exist(jsonResponse.themes);
+        assertExists(jsonResponse.themes);
         localUtils.API.checkResponse(jsonResponse, 'themes');
-        jsonResponse.themes.length.should.eql(1);
+        assert.equal(jsonResponse.themes.length, 1);
         localUtils.API.checkResponse(jsonResponse.themes[0], 'theme', ['warnings']);
-        jsonResponse.themes[0].name.should.eql('warnings');
-        jsonResponse.themes[0].active.should.be.false();
+        assert.equal(jsonResponse.themes[0].name, 'warnings');
+        assert.equal(jsonResponse.themes[0].active, false);
         jsonResponse.themes[0].warnings.should.be.an.Array();
 
         // Delete the theme to clean up after the test
@@ -249,19 +251,19 @@ describe('Themes API', function () {
 
         const jsonResponse = res.body;
 
-        should.exist(jsonResponse.themes);
+        assertExists(jsonResponse.themes);
         localUtils.API.checkResponse(jsonResponse, 'themes');
-        jsonResponse.themes.length.should.eql(7);
+        assert.equal(jsonResponse.themes.length, 7);
 
         const sourceTheme = _.find(jsonResponse.themes, {name: 'source'});
-        should.exist(sourceTheme);
+        assertExists(sourceTheme);
         localUtils.API.checkResponse(sourceTheme, 'theme', 'templates');
-        sourceTheme.active.should.be.true();
+        assert.equal(sourceTheme.active, true);
 
         const testTheme = _.find(jsonResponse.themes, {name: 'test-theme'});
-        should.exist(testTheme);
+        assertExists(testTheme);
         localUtils.API.checkResponse(testTheme, 'theme');
-        testTheme.active.should.be.false();
+        assert.equal(testTheme.active, false);
 
         // Finally activate the new theme
         const res2 = await ownerRequest
@@ -271,18 +273,18 @@ describe('Themes API', function () {
 
         const jsonResponse2 = res2.body;
 
-        should.exist(res2.headers['x-cache-invalidate']);
-        should.exist(jsonResponse2.themes);
+        assertExists(res2.headers['x-cache-invalidate']);
+        assertExists(jsonResponse2.themes);
         localUtils.API.checkResponse(jsonResponse2, 'themes');
-        jsonResponse2.themes.length.should.eql(1);
+        assert.equal(jsonResponse2.themes.length, 1);
 
         const sourceTheme2 = _.find(jsonResponse2.themes, {name: 'source'});
-        should.not.exist(sourceTheme2);
+        assert.equal(sourceTheme2, undefined);
 
         const testTheme2 = _.find(jsonResponse2.themes, {name: 'test-theme'});
-        should.exist(testTheme2);
+        assertExists(testTheme2);
         localUtils.API.checkResponse(testTheme2, 'theme', ['warnings', 'templates']);
-        testTheme2.active.should.be.true();
+        assert.equal(testTheme2.active, true);
         testTheme2.warnings.should.be.an.Array();
 
         // Result should be the same
@@ -310,17 +312,17 @@ describe('Themes API', function () {
             .post(localUtils.API.getApiQuery('themes/install/?source=github&ref=TryGhost/Test'))
             .set('Origin', config.get('url'));
 
-        githubZipball.isDone().should.be.true();
-        githubDownload.isDone().should.be.true();
+        assert.equal(githubZipball.isDone(), true);
+        assert.equal(githubDownload.isDone(), true);
 
         const jsonResponse = res.body;
 
-        should.exist(jsonResponse.themes);
+        assertExists(jsonResponse.themes);
         localUtils.API.checkResponse(jsonResponse, 'themes');
-        jsonResponse.themes.length.should.eql(1);
+        assert.equal(jsonResponse.themes.length, 1);
         localUtils.API.checkResponse(jsonResponse.themes[0], 'theme', ['warnings']);
-        jsonResponse.themes[0].name.should.eql('test');
-        jsonResponse.themes[0].active.should.be.false();
+        assert.equal(jsonResponse.themes[0].name, 'test');
+        assert.equal(jsonResponse.themes[0].active, false);
         jsonResponse.themes[0].warnings.should.be.an.Array();
 
         // Delete the theme to clean up after the test
@@ -353,17 +355,17 @@ describe('Themes API', function () {
             .post(localUtils.API.getApiQuery('themes/install/?source=github&ref=TryGhost/Starter'))
             .set('Origin', config.get('url'));
 
-        githubZipball.isDone().should.be.true();
-        githubDownload.isDone().should.be.true();
+        assert.equal(githubZipball.isDone(), true);
+        assert.equal(githubDownload.isDone(), true);
 
         const jsonResponse = res.body;
 
-        should.exist(jsonResponse.themes);
+        assertExists(jsonResponse.themes);
         localUtils.API.checkResponse(jsonResponse, 'themes');
-        jsonResponse.themes.length.should.eql(1);
+        assert.equal(jsonResponse.themes.length, 1);
         localUtils.API.checkResponse(jsonResponse.themes[0], 'theme', ['warnings']);
-        jsonResponse.themes[0].name.should.eql('starter');
-        jsonResponse.themes[0].active.should.be.false();
+        assert.equal(jsonResponse.themes[0].name, 'starter');
+        assert.equal(jsonResponse.themes[0].active, false);
         jsonResponse.themes[0].warnings.should.be.an.Array();
 
         // Delete the theme to clean up after the test
@@ -401,14 +403,14 @@ describe('Themes API', function () {
             .expect(403);
 
         // The GitHub API calls should NOT be made (limit check happens before download)
-        githubZipball.isDone().should.be.false();
-        githubDownload.isDone().should.be.false();
+        assert.equal(githubZipball.isDone(), false);
+        assert.equal(githubDownload.isDone(), false);
 
         const jsonResponse = res.body;
 
-        should.exist(jsonResponse.errors);
-        jsonResponse.errors[0].type.should.eql('HostLimitError');
-        jsonResponse.errors[0].message.should.match(/Upgrade to use customThemes feature\./);
+        assertExists(jsonResponse.errors);
+        assert.equal(jsonResponse.errors[0].type, 'HostLimitError');
+        assert.match(jsonResponse.errors[0].message, /Upgrade to use customThemes feature\./);
 
         // Clean up only the limit service mocks
         mockManager.restoreLimitService();
@@ -429,13 +431,13 @@ describe('Themes API', function () {
         const res = await uploadTheme({themePath: path.join(__dirname, '..', '..', 'utils', 'fixtures', 'themes', 'valid.zip')});
         const jsonResponse = res.body;
 
-        should.exist(res.headers['x-cache-invalidate']);
+        assertExists(res.headers['x-cache-invalidate']);
 
-        should.exist(jsonResponse.themes);
+        assertExists(jsonResponse.themes);
         localUtils.API.checkResponse(jsonResponse, 'themes');
-        jsonResponse.themes.length.should.eql(1);
+        assert.equal(jsonResponse.themes.length, 1);
         localUtils.API.checkResponse(jsonResponse.themes[0], 'theme', 'templates');
-        jsonResponse.themes[0].name.should.eql('valid');
-        jsonResponse.themes[0].active.should.be.true();
+        assert.equal(jsonResponse.themes[0].name, 'valid');
+        assert.equal(jsonResponse.themes[0].active, true);
     });
 });

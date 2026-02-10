@@ -7,7 +7,6 @@ const useReactShell = process.env.USE_REACT_SHELL === 'true';
 
 test.describe('Ghost Admin - Disable Commenting', () => {
     test.skip(!useReactShell, 'Skipping: requires USE_REACT_SHELL=true');
-    test.use({labs: {disableMemberCommenting: true}});
 
     let postFactory: PostFactory;
     let memberFactory: MemberFactory;
@@ -90,6 +89,75 @@ test.describe('Ghost Admin - Disable Commenting', () => {
         // Verify UI is still interactive by opening menu again
         await commentsPage.openMoreMenu(commentRow);
         await expect(commentsPage.disableCommentingMenuItem).toBeVisible();
+    });
+
+    test('hide comments checkbox appears in modal', async ({page}) => {
+        const post = await postFactory.create({status: 'published'});
+        const member = await memberFactory.create();
+        await commentFactory.create({
+            post_id: post.id,
+            member_id: member.id,
+            html: '<p>Test comment for hide checkbox</p>'
+        });
+
+        const commentsPage = new CommentsPage(page);
+        await commentsPage.goto();
+        await commentsPage.waitForComments();
+
+        const commentRow = commentsPage.getCommentRowByText('Test comment for hide checkbox');
+        await commentsPage.openMoreMenu(commentRow);
+        await commentsPage.clickDisableCommenting();
+
+        await expect(commentsPage.hideCommentsCheckbox).toBeVisible();
+    });
+
+    test('disabling with hide comments checked marks comments as hidden', async ({page}) => {
+        const post = await postFactory.create({status: 'published'});
+        const member = await memberFactory.create();
+        await commentFactory.create({
+            post_id: post.id,
+            member_id: member.id,
+            html: '<p>Comment that should be hidden</p>'
+        });
+
+        const commentsPage = new CommentsPage(page);
+        await commentsPage.goto();
+        await commentsPage.waitForComments();
+
+        const commentRow = commentsPage.getCommentRowByText('Comment that should be hidden');
+        await expect(commentRow).toBeVisible();
+        await expect(commentRow.getByText('Hidden', {exact: true})).toBeHidden();
+
+        await commentsPage.openMoreMenu(commentRow);
+        await commentsPage.clickDisableCommenting();
+        await commentsPage.hideCommentsCheckbox.check();
+        await commentsPage.confirmDisableCommenting();
+
+        await expect(commentRow.getByText('Hidden', {exact: true})).toBeVisible();
+        await expect(commentsPage.commentingDisabledIndicator(commentRow)).toBeVisible();
+    });
+
+    test('disabling without hide comments checked keeps comments visible', async ({page}) => {
+        const post = await postFactory.create({status: 'published'});
+        const member = await memberFactory.create();
+        await commentFactory.create({
+            post_id: post.id,
+            member_id: member.id,
+            html: '<p>Comment that should stay visible</p>'
+        });
+
+        const commentsPage = new CommentsPage(page);
+        await commentsPage.goto();
+        await commentsPage.waitForComments();
+
+        const commentRow = commentsPage.getCommentRowByText('Comment that should stay visible');
+        await commentsPage.openMoreMenu(commentRow);
+        await commentsPage.clickDisableCommenting();
+        await commentsPage.confirmDisableCommenting();
+
+        await expect(commentsPage.disableCommentsModal).toBeHidden();
+        await expect(commentRow).toBeVisible();
+        await expect(commentsPage.commentingDisabledIndicator(commentRow)).toBeVisible();
     });
 
     test.describe('disable/enable commenting flow', () => {

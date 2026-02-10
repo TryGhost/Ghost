@@ -1,4 +1,3 @@
-const should = require('should');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
 const helpers = require('../../../../../core/frontend/services/rendering');
@@ -18,8 +17,7 @@ describe('handleError', function () {
         const notFoundError = new errors.NotFoundError({message: 'Something wasn\'t found'});
         helpers.handleError(next)(notFoundError);
 
-        next.calledOnce.should.be.true();
-        next.firstCall.args.should.be.empty();
+        sinon.assert.calledOnceWithExactly(next);
     });
 
     it('should call next with error for other errors', function () {
@@ -28,9 +26,6 @@ describe('handleError', function () {
 
         helpers.handleError(next)(otherError);
 
-        next.calledOnce.should.be.true();
-        next.firstCall.args.should.have.lengthOf(1);
-        next.firstCall.args[0].should.be.an.Object();
-        next.firstCall.args[0].should.be.instanceof(Error);
+        sinon.assert.calledOnceWithExactly(next, sinon.match(Error));
     });
 });

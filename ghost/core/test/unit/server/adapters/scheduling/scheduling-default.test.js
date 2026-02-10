@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const moment = require('moment');
@@ -47,12 +48,12 @@ describe('Scheduling Default Adapter', function () {
             });
 
             // 2 jobs get immediately executed
-            should.not.exist(scope.adapter.allJobs[moment(dates[1]).valueOf()]);
-            should.not.exist(scope.adapter.allJobs[moment(dates[7]).valueOf()]);
-            scope.adapter._execute.calledTwice.should.eql(true);
+            assert.equal(scope.adapter.allJobs[moment(dates[1]).valueOf()], undefined);
+            assert.equal(scope.adapter.allJobs[moment(dates[7]).valueOf()], undefined);
+            assert.equal(scope.adapter._execute.calledTwice, true);
 
             Object.keys(scope.adapter.allJobs).length.should.eql(dates.length - 2);
-            Object.keys(scope.adapter.allJobs).should.eql([
+            assert.deepEqual(Object.keys(scope.adapter.allJobs), [
                 moment(dates[2]).valueOf().toString(),
                 moment(dates[6]).valueOf().toString(),
                 moment(dates[4]).valueOf().toString(),
@@ -96,7 +97,7 @@ describe('Scheduling Default Adapter', function () {
 
             clock.tick(50);
 
-            scope.adapter._pingUrl.calledOnce.should.eql(true);
+            assert.equal(scope.adapter._pingUrl.calledOnce, true);
             done();
         });
 
@@ -124,7 +125,7 @@ describe('Scheduling Default Adapter', function () {
             });
 
             clock.tick(50);
-            scope.adapter._pingUrl.calledOnce.should.eql(true);
+            assert.equal(scope.adapter._pingUrl.calledOnce, true);
             done();
         });
 
@@ -137,7 +138,7 @@ describe('Scheduling Default Adapter', function () {
             const allJobs = {};
 
             sinon.stub(scope.adapter, '_execute').callsFake(function (nextJobs) {
-                Object.keys(nextJobs).length.should.eql(121);
+                assert.equal(Object.keys(nextJobs).length, 121);
                 Object.keys(scope.adapter.allJobs).length.should.eql(1000 - 121);
                 done();
             });
@@ -164,7 +165,7 @@ describe('Scheduling Default Adapter', function () {
 
             clock.tick(200);
 
-            scope.adapter._execute.callCount.should.be.greaterThan(1);
+            assert(scope.adapter._execute.callCount > 1);
             done();
         });
 
@@ -234,15 +235,15 @@ describe('Scheduling Default Adapter', function () {
                     return retry();
                 }
 
-                Object.keys(scope.adapter.deletedJobs).length.should.eql(2);
-                pinged.should.eql(2);
+                assert.equal(Object.keys(scope.adapter.deletedJobs).length, 2);
+                assert.equal(pinged, 2);
                 done();
             })();
         });
 
         it('delete job (unschedule): time is null', function () {
             scope.adapter._deleteJob({time: null, url: '/test'});
-            Object.keys(scope.adapter.deletedJobs).length.should.eql(0);
+            assert.equal(Object.keys(scope.adapter.deletedJobs).length, 0);
         });
 
         describe('pingUrl', function () {
@@ -290,7 +291,7 @@ describe('Scheduling Default Adapter', function () {
                 });
 
                 clock.runToLast();
-                ping.isDone().should.be.true();
+                assert.equal(ping.isDone(), true);
             });
 
             it('pingUrl (PUT, and detect publish in the past)', async function () {
@@ -308,7 +309,7 @@ describe('Scheduling Default Adapter', function () {
                 });
 
                 clock.runToLast();
-                ping.isDone().should.be.true();
+                assert.equal(ping.isDone(), true);
             });
 
             it('pingUrl (GET, and detect publish in the past)', async function () {
@@ -326,7 +327,7 @@ describe('Scheduling Default Adapter', function () {
                 });
 
                 clock.runToLast();
-                ping.isDone().should.be.true();
+                assert.equal(ping.isDone(), true);
             });
 
             it('pingUrl, but blog returns 503', function (done) {

@@ -44,7 +44,6 @@
 @import "components/browser-preview.css";
 @import "components/filter-builder.css";
 @import "components/pintura.css";
-@import "components/theme-errors.css";
 @import "components/modal-about.css";
 
 
@@ -55,8 +54,6 @@
 @import "layouts/auth.css";
 @import "layouts/content.css";
 @import "layouts/editor.css";
-@import "layouts/whatsnew.css";
-@import "layouts/whatsnew-modal.css";
 @import "layouts/tags.css";
 @import "layouts/members.css";
 @import "layouts/posts.css";

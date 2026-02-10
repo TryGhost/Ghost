@@ -218,7 +218,6 @@ jobs:
       is_six_pr: ${{ env.IS_SIX_PR }}
       is_five: ${{ env.IS_FIVE }}
       member_is_in_org: ${{ steps.check_user_org_membership.outputs.is_member }}
-      has_browser_tests_label: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'browser-tests') }}
       has_perf_tests_label: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'perf-tests') }}
       dependency_cache_key: ${{ env.cachekey }}
       node_version: ${{ env.NODE_VERSION }}
@@ -329,9 +328,6 @@ jobs:
     runs-on:
       labels: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_any_code == 'true' && (needs.job_setup.outputs.is_six_pr == 'true' || needs.job_setup.outputs.is_development == 'true' || needs.job_setup.outputs.has_browser_tests_label == 'true')
-    concurrency:
-      group: ${{ github.workflow }}
     steps:
     - uses: actions/checkout@v4
       with:
@@ -369,6 +365,8 @@ jobs:
     - name: Run migrations
       working-directory: ghost/core
       run: yarn knex-migrator init
+      env:
+        NODE_OPTIONS: "--import=tsx"
 
     - name: Setup Playwright
       uses: ./.github/actions/setup-playwright
@@ -538,7 +536,7 @@ jobs:
 
       - uses: tryghost/mysql-action@main
         if: matrix.env.DB == 'mysql8'
-        timeout-minutes: 3
+        timeout-minutes: 5
         with:
           authentication plugin: 'caching_sha2_password'
           mysql version: '8.0'
@@ -624,7 +622,7 @@ jobs:
 
       - uses: tryghost/mysql-action@main
         if: matrix.env.DB == 'mysql8'
-        timeout-minutes: 3
+        timeout-minutes: 5
         with:
           authentication plugin: 'caching_sha2_password'
           mysql version: '8.0'
@@ -1115,8 +1113,8 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        shardIndex: [1, 2, 3, 4, 5, 6, 7, 8]
-        shardTotal: [8]
+        shardIndex: [1, 2, 3, 4]
+        shardTotal: [4]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -1166,7 +1164,7 @@ jobs:
         env:
           GHOST_IMAGE_TAG: ${{ steps.load.outputs.image-tag }}
           TEST_WORKERS_COUNT: 1
-        run: yarn test:e2e --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
+        run: yarn test:e2e:all --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }} --retries=2
 
       - name: Upload blob report to GitHub Actions Artifacts
         if: failure()

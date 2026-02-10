@@ -1,3 +1,5 @@
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../utils/assertions');
 const should = require('should');
 
 // Stuff we are testing
@@ -9,7 +11,7 @@ describe('{{encode}} helper', function () {
         const expected = '%24pecial!Charact3r(De%5Biver%5Dy)Foo%20%23Bar';
         const escaped = encode(uri);
 
-        should.exist(escaped);
-        String(escaped).should.equal(expected);
+        assertExists(escaped);
+        assert.equal(String(escaped), expected);
     });
 });

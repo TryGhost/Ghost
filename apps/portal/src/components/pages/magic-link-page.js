@@ -1,11 +1,11 @@
 import React from 'react';
 import ActionButton from '../common/action-button';
 import CloseButton from '../common/close-button';
-import SniperLinkButton from '../common/sniper-link-button';
+import InboxLinkButton from '../common/inbox-link-button';
 import AppContext from '../../app-context';
 import {ReactComponent as EnvelopeIcon} from '../../images/icons/envelope.svg';
 import {t} from '../../utils/i18n';
-import {isAndroidChrome} from '../../utils/is-android-chrome';
+import {isInviteOnly} from '../../utils/helpers';
 
 export const MagicLinkStyles = `
     .gh-portal-icon-envelope {
@@ -98,7 +98,8 @@ export default class MagicLinkPage extends React.Component {
         return {
             signin: {
                 withOTC: t('An email has been sent to {submittedEmailOrInbox}. Click the link inside or enter your code below.', {submittedEmailOrInbox}),
-                withoutOTC: t('A login link has been sent to your inbox. If it doesn\'t arrive in 3 minutes, be sure to check your spam folder.')
+                withoutOTC: t('A login link has been sent to your inbox. If it doesn\'t arrive in 3 minutes, be sure to check your spam folder.'),
+                withoutOTCInviteOnly: t('If you have an account, a sign in link will be sent to you shortly. Please check your inbox and spam folder.')
             },
             signup: t('To complete signup, click the confirmation link in your inbox. If it doesn\'t arrive within 3 minutes, check your spam folder!')
         };
@@ -120,7 +121,16 @@ export default class MagicLinkPage extends React.Component {
             return descriptionConfig.signup;
         }
 
-        return otcRef ? descriptionConfig.signin.withOTC : descriptionConfig.signin.withoutOTC;
+        if (otcRef) {
+            return descriptionConfig.signin.withOTC;
+        }
+
+        const {site} = this.context;
+        if (isInviteOnly({site})) {
+            return descriptionConfig.signin.withoutOTCInviteOnly;
+        }
+
+        return descriptionConfig.signin.withoutOTC;
     }
 
     renderFormHeader() {
@@ -163,16 +173,10 @@ export default class MagicLinkPage extends React.Component {
     }
 
     renderCloseButton() {
-        const {site, sniperLinks} = this.context;
-        const isSniperLinksEnabled = Boolean(site.labs?.sniperlinks);
-        if (isSniperLinksEnabled && sniperLinks) {
-            return (
-                <SniperLinkButton
-                    href={isAndroidChrome(navigator) ? sniperLinks.android : sniperLinks.desktop}
-                    label={t('Open email')}
-                    brandColor={this.context.brandColor}
-                />
-            );
+        const {site, inboxLinks} = this.context;
+        const isInboxLinksEnabled = site.labs?.inboxlinks !== false;
+        if (isInboxLinksEnabled && inboxLinks) {
+            return <InboxLinkButton inboxLinks={inboxLinks} />;
         } else {
             return (
                 <ActionButton
@@ -240,7 +244,8 @@ export default class MagicLinkPage extends React.Component {
     }
 
     renderOTCForm() {
-        const {action, actionErrorMessage, otcRef} = this.context;
+        const {action, actionErrorMessage, otcRef, site, inboxLinks} = this.context;
+        const isInboxLinksEnabled = site.labs?.inboxlinks !== false;
         const errors = this.state.errors || {};
 
         if (!otcRef) {
@@ -283,16 +288,20 @@ export default class MagicLinkPage extends React.Component {
                     }
                 </section>
 
-                <footer className='gh-portal-signin-footer'>
-                    <ActionButton
-                        style={{width: '100%'}}
-                        onClick={e => this.handleSubmit(e)}
-                        brandColor={this.context.brandColor}
-                        label={isRunning ? t('Verifying...') : t('Continue')}
-                        isRunning={isRunning}
-                        retry={isError}
-                        disabled={isRunning}
-                    />
+                <footer className='gh-portal-signin-footer gh-button-row'>
+                    {isInboxLinksEnabled && inboxLinks && !this.state.otc ? (
+                        <InboxLinkButton inboxLinks={inboxLinks} />
+                    ) : (
+                        <ActionButton
+                            style={{width: '100%'}}
+                            onClick={e => this.handleSubmit(e)}
+                            brandColor={this.context.brandColor}
+                            label={isRunning ? t('Verifying...') : t('Continue')}
+                            isRunning={isRunning}
+                            retry={isError}
+                            disabled={isRunning}
+                        />
+                    )}
                 </footer>
             </form>
         );

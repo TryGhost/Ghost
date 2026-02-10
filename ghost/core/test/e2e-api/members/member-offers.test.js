@@ -105,13 +105,10 @@ describe('Members API - Member Offers', function () {
 
             const subscription = member.related('stripeSubscriptions').models[0];
             const stripePrice = subscription.related('stripePrice');
-            const stripeProduct = stripePrice.related('stripeProduct');
-            const product = stripeProduct.related('product');
 
-            const tierId = product.id;
             const cadence = stripePrice.get('interval');
 
-            // Create a retention offer for this tier and cadence
+            // Create a retention offer for this cadence (no tier - applies to any tier)
             const offer = await models.Offer.add({
                 name: 'Test Retention Offer',
                 code: 'test-retention',
@@ -122,7 +119,7 @@ describe('Members API - Member Offers', function () {
                 duration: 'repeating',
                 duration_in_months: 3,
                 interval: cadence,
-                product_id: tierId,
+                product_id: null,
                 currency: null,
                 active: true,
                 redemption_type: 'retention'
@@ -150,6 +147,93 @@ describe('Members API - Member Offers', function () {
                 assert.equal(body.offers[0].redemption_type, 'retention');
             } finally {
                 // Clean up
+                await models.Offer.destroy({id: offer.id});
+            }
+        });
+
+        it('returns null-tier retention offers for any paid member', async function () {
+            const member = await models.Member.findOne({email: 'paid@test.com'}, {
+                withRelated: [
+                    'stripeSubscriptions',
+                    'stripeSubscriptions.stripePrice'
+                ]
+            });
+
+            const subscription = member.related('stripeSubscriptions').models[0];
+            const stripePrice = subscription.related('stripePrice');
+            const cadence = stripePrice.get('interval');
+
+            // Create a retention offer with no tier (product_id: null)
+            const offer = await models.Offer.add({
+                name: 'Null Tier Retention',
+                code: 'null-tier-retention',
+                portal_title: '15% off',
+                portal_description: 'Stay with us!',
+                discount_type: 'percent',
+                discount_amount: 15,
+                duration: 'forever',
+                interval: cadence,
+                product_id: null,
+                currency: null,
+                active: true,
+                redemption_type: 'retention'
+            });
+
+            try {
+                const token = await getIdentityToken('paid@test.com');
+
+                const {body} = await membersAgent
+                    .post('/api/member/offers')
+                    .body({identity: token})
+                    .expectStatus(200);
+
+                assert.equal(body.offers.length, 1);
+                assert.equal(body.offers[0].id, offer.id);
+                assert.equal(body.offers[0].tier, null);
+            } finally {
+                await models.Offer.destroy({id: offer.id});
+            }
+        });
+
+        it('does not return null-tier retention offer when cadence does not match', async function () {
+            const member = await models.Member.findOne({email: 'paid@test.com'}, {
+                withRelated: [
+                    'stripeSubscriptions',
+                    'stripeSubscriptions.stripePrice'
+                ]
+            });
+
+            const subscription = member.related('stripeSubscriptions').models[0];
+            const stripePrice = subscription.related('stripePrice');
+            const cadence = stripePrice.get('interval');
+            const wrongCadence = cadence === 'month' ? 'year' : 'month';
+
+            // Create a retention offer with no tier but wrong cadence
+            const offer = await models.Offer.add({
+                name: 'Wrong Cadence Null Tier',
+                code: 'wrong-cadence-null-tier',
+                portal_title: '15% off',
+                portal_description: 'Stay with us!',
+                discount_type: 'percent',
+                discount_amount: 15,
+                duration: 'forever',
+                interval: wrongCadence,
+                product_id: null,
+                currency: null,
+                active: true,
+                redemption_type: 'retention'
+            });
+
+            try {
+                const token = await getIdentityToken('paid@test.com');
+
+                const {body} = await membersAgent
+                    .post('/api/member/offers')
+                    .body({identity: token})
+                    .expectStatus(200);
+
+                assert.deepEqual(body, {offers: []});
+            } finally {
                 await models.Offer.destroy({id: offer.id});
             }
         });
@@ -183,7 +267,7 @@ describe('Members API - Member Offers', function () {
                 discount_amount: 20,
                 duration: 'once',
                 interval: cadence,
-                product_id: tierId,
+                product_id: null,
                 currency: null,
                 active: true,
                 redemption_type: 'retention'
@@ -295,7 +379,7 @@ describe('Members API - Member Offers', function () {
                 discount_amount: 20,
                 duration: 'once',
                 interval: cadence,
-                product_id: tierId,
+                product_id: null,
                 currency: null,
                 active: true,
                 redemption_type: 'retention'
@@ -333,61 +417,11 @@ describe('Members API - Member Offers', function () {
             }
         });
 
-        it('returns 400 when offer tier does not match subscription', async function () {
-            const {subscription} = await getMemberSubscription('paid@test.com');
-            const stripePrice = subscription.related('stripePrice');
-
-            const stripeSubscriptionId = subscription.get('subscription_id');
-            const cadence = stripePrice.get('interval');
-
-            // Create a different tier for testing
-            const differentTier = await models.Product.add({
-                name: 'Different Tier',
-                slug: 'different-tier-test',
-                type: 'paid',
-                currency: 'usd',
-                monthly_price: 1000,
-                yearly_price: 10000,
-                visibility: 'public'
-            });
-
-            // Create a retention offer for a different tier
-            const retentionOffer = await models.Offer.add({
-                name: 'Wrong Tier Retention',
-                code: 'wrong-tier-retention',
-                portal_title: '20% off',
-                portal_description: 'Stay with us!',
-                discount_type: 'percent',
-                discount_amount: 20,
-                duration: 'once',
-                interval: cadence,
-                product_id: differentTier.id,
-                currency: null,
-                active: true,
-                redemption_type: 'retention'
-            });
-
-            try {
-                const token = await getIdentityToken('paid@test.com');
-
-                await membersAgent
-                    .post(`/api/subscriptions/${stripeSubscriptionId}/apply-offer`)
-                    .body({identity: token, offer_id: retentionOffer.id})
-                    .expectStatus(400);
-            } finally {
-                await models.Offer.destroy({id: retentionOffer.id});
-                await models.Product.destroy({id: differentTier.id});
-            }
-        });
-
         it('returns 400 when offer cadence does not match subscription', async function () {
             const {subscription} = await getMemberSubscription('paid@test.com');
             const stripePrice = subscription.related('stripePrice');
-            const stripeProduct = stripePrice.related('stripeProduct');
-            const product = stripeProduct.related('product');
 
             const stripeSubscriptionId = subscription.get('subscription_id');
-            const tierId = product.id;
             const cadence = stripePrice.get('interval');
             // Use opposite cadence
             const wrongCadence = cadence === 'month' ? 'year' : 'month';
@@ -402,7 +436,7 @@ describe('Members API - Member Offers', function () {
                 discount_amount: 20,
                 duration: 'once',
                 interval: wrongCadence,
-                product_id: tierId,
+                product_id: null,
                 currency: null,
                 active: true,
                 redemption_type: 'retention'
@@ -423,11 +457,8 @@ describe('Members API - Member Offers', function () {
         it('returns 400 when offer is inactive', async function () {
             const {subscription} = await getMemberSubscription('paid@test.com');
             const stripePrice = subscription.related('stripePrice');
-            const stripeProduct = stripePrice.related('stripeProduct');
-            const product = stripeProduct.related('product');
 
             const stripeSubscriptionId = subscription.get('subscription_id');
-            const tierId = product.id;
             const cadence = stripePrice.get('interval');
 
             // Create an inactive retention offer
@@ -440,7 +471,7 @@ describe('Members API - Member Offers', function () {
                 discount_amount: 20,
                 duration: 'once',
                 interval: cadence,
-                product_id: tierId,
+                product_id: null,
                 currency: null,
                 active: false,
                 redemption_type: 'retention'
@@ -499,11 +530,8 @@ describe('Members API - Member Offers', function () {
         it('returns 400 when subscription is canceled', async function () {
             const {subscription} = await getMemberSubscription('paid@test.com');
             const stripePrice = subscription.related('stripePrice');
-            const stripeProduct = stripePrice.related('stripeProduct');
-            const product = stripeProduct.related('product');
 
             const stripeSubscriptionId = subscription.get('subscription_id');
-            const tierId = product.id;
             const cadence = stripePrice.get('interval');
 
             // Temporarily set subscription to canceled status
@@ -520,7 +548,7 @@ describe('Members API - Member Offers', function () {
                 discount_amount: 20,
                 duration: 'once',
                 interval: cadence,
-                product_id: tierId,
+                product_id: null,
                 currency: null,
                 active: true,
                 redemption_type: 'retention'
@@ -539,14 +567,53 @@ describe('Members API - Member Offers', function () {
             }
         });
 
+        it('returns 400 when subscription is in a trial period', async function () {
+            const {subscription} = await getMemberSubscription('paid@test.com');
+            const stripePrice = subscription.related('stripePrice');
+
+            const stripeSubscriptionId = subscription.get('subscription_id');
+            const cadence = stripePrice.get('interval');
+
+            // Temporarily set subscription to have an active trial period
+            const futureDate = new Date();
+            futureDate.setDate(futureDate.getDate() + 7);
+            await subscription.save({trial_end_at: futureDate}, {patch: true});
+
+            // Create a retention offer
+            const retentionOffer = await models.Offer.add({
+                name: 'Test Retention Trial',
+                code: 'test-retention-trial',
+                portal_title: '20% off',
+                portal_description: 'Stay with us!',
+                discount_type: 'percent',
+                discount_amount: 20,
+                duration: 'once',
+                interval: cadence,
+                product_id: null,
+                currency: null,
+                active: true,
+                redemption_type: 'retention'
+            });
+
+            try {
+                const token = await getIdentityToken('paid@test.com');
+
+                await membersAgent
+                    .post(`/api/subscriptions/${stripeSubscriptionId}/apply-offer`)
+                    .body({identity: token, offer_id: retentionOffer.id})
+                    .expectStatus(400);
+            } finally {
+                await subscription.save({trial_end_at: null}, {patch: true});
+                await models.Offer.destroy({id: retentionOffer.id});
+            }
+        });
+
         it('successfully applies retention offer to subscription', async function () {
             const {subscription} = await getMemberSubscription('paid@test.com');
             const stripePrice = subscription.related('stripePrice');
             const stripeProduct = stripePrice.related('stripeProduct');
-            const product = stripeProduct.related('product');
 
             const stripeSubscriptionId = subscription.get('subscription_id');
-            const tierId = product.id;
             const cadence = stripePrice.get('interval');
 
             // Add a mock coupon to the stripe mocker so the subscription update works
@@ -574,12 +641,27 @@ describe('Members API - Member Offers', function () {
             };
             mockManager.stripeMocker.prices.push(mockPrice);
 
+            // Add the customer to the stripe mocker so getCustomer works
+            const customerId = subscription.get('customer_id');
+            mockManager.stripeMocker.customers.push({
+                id: customerId,
+                object: 'customer',
+                email: 'paid@test.com',
+                invoice_settings: {
+                    default_payment_method: null
+                },
+                subscriptions: {
+                    type: 'list',
+                    data: []
+                }
+            });
+
             // Add the subscription to the stripe mocker so it can be updated
             mockManager.stripeMocker.subscriptions.push({
                 id: stripeSubscriptionId,
                 object: 'subscription',
                 status: 'active',
-                customer: subscription.get('customer_id'),
+                customer: customerId,
                 cancel_at_period_end: false,
                 current_period_end: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60,
                 start_date: Math.floor(Date.now() / 1000) - 30 * 24 * 60 * 60,
@@ -602,7 +684,7 @@ describe('Members API - Member Offers', function () {
                 duration: 'repeating',
                 duration_in_months: 3,
                 interval: cadence,
-                product_id: tierId,
+                product_id: null,
                 currency: null,
                 active: true,
                 redemption_type: 'retention',

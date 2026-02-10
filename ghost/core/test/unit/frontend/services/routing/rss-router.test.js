@@ -1,3 +1,5 @@
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
 const configUtils = require('../../../../utils/config-utils');
@@ -22,30 +24,30 @@ describe('UNIT - services/routing/RSSRouter', function () {
         it('default', function () {
             const rssRouter = new RSSRouter();
 
-            should.exist(rssRouter.router);
-            rssRouter.route.value.should.eql('/rss/');
+            assertExists(rssRouter.router);
+            assert.equal(rssRouter.route.value, '/rss/');
 
-            rssRouter.mountRoute.callCount.should.eql(2);
+            assert.equal(rssRouter.mountRoute.callCount, 2);
 
-            rssRouter.mountRoute.args[0][0].should.eql('/rss/');
+            assert.equal(rssRouter.mountRoute.args[0][0], '/rss/');
             rssRouter.mountRoute.args[0][1].should.eql(controllers.rss);
 
-            rssRouter.mountRoute.args[1][0].should.eql('/feed/');
+            assert.equal(rssRouter.mountRoute.args[1][0], '/feed/');
         });
 
         it('subdirectory is enabled', function () {
             configUtils.set('url', 'http://localhost:22222/blog/');
             const rssRouter = new RSSRouter();
 
-            should.exist(rssRouter.router);
-            rssRouter.route.value.should.eql('/rss/');
+            assertExists(rssRouter.router);
+            assert.equal(rssRouter.route.value, '/rss/');
 
-            rssRouter.mountRoute.callCount.should.eql(2);
+            assert.equal(rssRouter.mountRoute.callCount, 2);
 
-            rssRouter.mountRoute.args[0][0].should.eql('/rss/');
+            assert.equal(rssRouter.mountRoute.args[0][0], '/rss/');
             rssRouter.mountRoute.args[0][1].should.eql(controllers.rss);
 
-            rssRouter.mountRoute.args[1][0].should.eql('/feed/');
+            assert.equal(rssRouter.mountRoute.args[1][0], '/feed/');
         });
     });
 });

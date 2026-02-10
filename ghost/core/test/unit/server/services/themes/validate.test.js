@@ -7,6 +7,7 @@ const assert = require('assert/strict');
 const adapterManager = require('../../../../../core/server/services/adapter-manager');
 const InMemoryCache = require('../../../../../core/server/adapters/cache/MemoryCache');
 const logging = require('@tryghost/logging');
+const _ = require('lodash');
 
 describe('Themes', function () {
     let checkZipStub;
@@ -47,13 +48,13 @@ describe('Themes', function () {
 
             return validate.check(testTheme.name, testTheme, {isZip: true})
                 .then((checkedTheme) => {
-                    checkZipStub.calledOnce.should.be.true();
-                    checkZipStub.calledWith(testTheme).should.be.true();
-                    checkStub.callCount.should.be.equal(0);
-                    formatStub.calledOnce.should.be.true();
-                    checkedTheme.should.be.an.Object();
+                    assert.equal(checkZipStub.calledOnce, true);
+                    assert.equal(checkZipStub.calledWith(testTheme), true);
+                    sinon.assert.notCalled(checkStub);
+                    assert.equal(formatStub.calledOnce, true);
+                    assert(_.isPlainObject(checkedTheme));
 
-                    should.equal(validate.canActivate(checkedTheme), true);
+                    assert.equal(validate.canActivate(checkedTheme), true);
                 });
         });
 
@@ -63,13 +64,13 @@ describe('Themes', function () {
 
             return validate.check(testTheme.name, testTheme, {isZip: false})
                 .then((checkedTheme) => {
-                    checkZipStub.callCount.should.be.equal(0);
-                    checkStub.calledOnce.should.be.true();
-                    checkStub.calledWith(testTheme.path).should.be.true();
-                    formatStub.calledOnce.should.be.true();
-                    checkedTheme.should.be.an.Object();
+                    sinon.assert.notCalled(checkZipStub);
+                    assert.equal(checkStub.calledOnce, true);
+                    assert.equal(checkStub.calledWith(testTheme.path), true);
+                    assert.equal(formatStub.calledOnce, true);
+                    assert(_.isPlainObject(checkedTheme));
 
-                    should.equal(validate.canActivate(checkedTheme), true);
+                    assert.equal(validate.canActivate(checkedTheme), true);
                 });
         });
 
@@ -93,12 +94,12 @@ describe('Themes', function () {
 
             return validate.check(testTheme.name, testTheme, {isZip: true})
                 .then((checkedTheme) => {
-                    checkZipStub.calledOnce.should.be.true();
-                    checkZipStub.calledWith(testTheme).should.be.true();
-                    checkStub.callCount.should.be.equal(0);
-                    formatStub.calledOnce.should.be.true();
+                    assert.equal(checkZipStub.calledOnce, true);
+                    assert.equal(checkZipStub.calledWith(testTheme), true);
+                    sinon.assert.notCalled(checkStub);
+                    assert.equal(formatStub.calledOnce, true);
 
-                    should.equal(validate.canActivate(checkedTheme), false);
+                    assert.equal(validate.canActivate(checkedTheme), false);
                 });
         });
 
@@ -122,12 +123,12 @@ describe('Themes', function () {
 
             return validate.check(testTheme.name, testTheme, {isZip: false})
                 .then((checkedTheme) => {
-                    checkStub.calledOnce.should.be.true();
-                    checkStub.calledWith(testTheme.path).should.be.true();
-                    checkZipStub.callCount.should.be.equal(0);
-                    formatStub.calledOnce.should.be.true();
+                    assert.equal(checkStub.calledOnce, true);
+                    assert.equal(checkStub.calledWith(testTheme.path), true);
+                    sinon.assert.notCalled(checkZipStub);
+                    assert.equal(formatStub.calledOnce, true);
 
-                    should.equal(validate.canActivate(checkedTheme), false);
+                    assert.equal(validate.canActivate(checkedTheme), false);
                 });
         });
 
@@ -139,12 +140,12 @@ describe('Themes', function () {
                 .then((checkedTheme) => {
                     checkedTheme.should.not.exist();
                 }).catch((error) => {
-                    error.should.be.an.Object();
-                    error.message.should.be.equal('invalid zip file');
-                    checkZipStub.calledOnce.should.be.true();
-                    checkZipStub.calledWith(testTheme).should.be.true();
-                    checkStub.callCount.should.be.equal(0);
-                    formatStub.calledOnce.should.be.false();
+                    assert(error instanceof Error);
+                    assert.equal(error.message, 'invalid zip file');
+                    assert.equal(checkZipStub.calledOnce, true);
+                    assert.equal(checkZipStub.calledWith(testTheme), true);
+                    sinon.assert.notCalled(checkStub);
+                    assert.equal(formatStub.calledOnce, false);
                 });
         });
     });

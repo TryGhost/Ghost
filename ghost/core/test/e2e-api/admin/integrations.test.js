@@ -1,3 +1,5 @@
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../utils/assertions');
 const _ = require('lodash');
 const should = require('should');
 const supertest = require('supertest');
@@ -25,20 +27,20 @@ describe('Integrations API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
 
-        should.equal(res.body.integrations.length, 6);
+        assert.equal(res.body.integrations.length, 6);
 
         // there is no enforced order for integrations which makes order different on SQLite and MySQL
         const zapierIntegration = _.find(res.body.integrations, {name: 'Zapier'}); // from migrations
-        should.exist(zapierIntegration);
+        assertExists(zapierIntegration);
 
         const testIntegration = _.find(res.body.integrations, {name: 'Test Integration'}); // from fixtures
-        should.exist(testIntegration);
+        assertExists(testIntegration);
 
         const exploreIntegration = _.find(res.body.integrations, {name: 'Test Core Integration'}); // from fixtures
-        should.exist(exploreIntegration);
+        assertExists(exploreIntegration);
 
         const selfServeMigrationIntegration = _.find(res.body.integrations, {name: 'Self-Serve Migration Integration'}); // from fixtures
-        should.exist(selfServeMigrationIntegration);
+        assertExists(selfServeMigrationIntegration);
     });
 
     it('Can not read internal integration', async function () {
@@ -61,29 +63,29 @@ describe('Integrations API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(201);
 
-        should.equal(res.body.integrations.length, 1);
+        assert.equal(res.body.integrations.length, 1);
 
         const [integration] = res.body.integrations;
-        should.equal(integration.name, 'Dis-Integrate!!');
+        assert.equal(integration.name, 'Dis-Integrate!!');
 
-        should.equal(integration.api_keys.length, 2);
+        assert.equal(integration.api_keys.length, 2);
 
         const contentApiKey = integration.api_keys.find(findBy('type', 'content'));
-        should.equal(contentApiKey.integration_id, integration.id);
+        assert.equal(contentApiKey.integration_id, integration.id);
 
         const adminApiKey = integration.api_keys.find(findBy('type', 'admin'));
-        should.equal(adminApiKey.integration_id, integration.id);
-        should.exist(adminApiKey.secret);
+        assert.equal(adminApiKey.integration_id, integration.id);
+        assertExists(adminApiKey.secret);
 
         // check Admin API key secret format
         const [id, secret] = adminApiKey.secret.split(':');
-        should.exist(id);
-        should.equal(id, adminApiKey.id);
-        should.exist(secret);
-        secret.length.should.equal(64);
+        assertExists(id);
+        assert.equal(id, adminApiKey.id);
+        assertExists(secret);
+        assert.equal(secret.length, 64);
 
-        should.exist(res.headers.location);
-        res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('integrations/')}${res.body.integrations[0].id}/`);
+        assertExists(res.headers.location);
+        assert.equal(res.headers.location, `http://127.0.0.1:2369${localUtils.API.getApiQuery('integrations/')}${res.body.integrations[0].id}/`);
     });
 
     it('Can successfully create a single integration with a webhook', async function () {
@@ -102,18 +104,18 @@ describe('Integrations API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(201);
 
-        should.equal(res.body.integrations.length, 1);
+        assert.equal(res.body.integrations.length, 1);
 
         const [integration] = res.body.integrations;
-        should.equal(integration.name, 'Integratatron4000');
+        assert.equal(integration.name, 'Integratatron4000');
 
-        should.equal(integration.webhooks.length, 1);
+        assert.equal(integration.webhooks.length, 1);
 
         const webhook = integration.webhooks[0];
-        should.equal(webhook.integration_id, integration.id);
+        assert.equal(webhook.integration_id, integration.id);
 
-        should.exist(res.headers.location);
-        res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('integrations/')}${res.body.integrations[0].id}/`);
+        assertExists(res.headers.location);
+        assert.equal(res.headers.location, `http://127.0.0.1:2369${localUtils.API.getApiQuery('integrations/')}${res.body.integrations[0].id}/`);
     });
 
     it('Can successfully get a created integration', async function () {
@@ -134,15 +136,15 @@ describe('Integrations API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
 
-        should.equal(res2.body.integrations.length, 1);
+        assert.equal(res2.body.integrations.length, 1);
 
         const [integration] = res2.body.integrations;
 
-        should.equal(integration.id, createdIntegration.id);
-        should.equal(integration.name, createdIntegration.name);
-        should.equal(integration.slug, createdIntegration.slug);
-        should.equal(integration.description, createdIntegration.description);
-        should.equal(integration.icon_image, createdIntegration.icon_image);
+        assert.equal(integration.id, createdIntegration.id);
+        assert.equal(integration.name, createdIntegration.name);
+        assert.equal(integration.slug, createdIntegration.slug);
+        assert.equal(integration.description, createdIntegration.description);
+        assert.equal(integration.icon_image, createdIntegration.icon_image);
     });
 
     it('Can successfully get *all* created integrations with api_keys', async function () {
@@ -172,21 +174,21 @@ describe('Integrations API', function () {
 
         const body = res.body;
         // This is the only page
-        should.equal(body.meta.pagination.page, 1);
-        should.equal(body.meta.pagination.pages, 1);
-        should.equal(body.meta.pagination.next, null);
-        should.equal(body.meta.pagination.prev, null);
+        assert.equal(body.meta.pagination.page, 1);
+        assert.equal(body.meta.pagination.pages, 1);
+        assert.equal(body.meta.pagination.next, null);
+        assert.equal(body.meta.pagination.prev, null);
 
         body.integrations.forEach((integration) => {
-            should.exist(integration.api_keys);
+            assertExists(integration.api_keys);
             if (integration.api_keys.length) {
                 integration.api_keys.forEach((apiKey) => {
-                    should.exist(apiKey.secret);
+                    assertExists(apiKey.secret);
 
                     if (apiKey.type === 'content') {
-                        should.equal(apiKey.secret.split(':').length, 1, `${integration.name} api key secret should have correct key format without ":"`);
+                        assert.equal(apiKey.secret.split(':').length, 1, `${integration.name} api key secret should have correct key format without ":"`);
                     } else if (apiKey.type === 'admin') {
-                        should.equal(apiKey.secret.split(':').length, 2, `${integration.name} api key secret should have correct key format with ":"`);
+                        assert.equal(apiKey.secret.split(':').length, 2, `${integration.name} api key secret should have correct key format with ":"`);
                     }
                 });
             }
@@ -223,9 +225,9 @@ describe('Integrations API', function () {
 
         const [updatedIntegration] = res2.body.integrations;
 
-        should.equal(updatedIntegration.id, createdIntegration.id);
-        should.equal(updatedIntegration.name, 'Awesome Integration Name');
-        should.equal(updatedIntegration.description, 'Finally got round to writing this...');
+        assert.equal(updatedIntegration.id, createdIntegration.id);
+        assert.equal(updatedIntegration.name, 'Awesome Integration Name');
+        assert.equal(updatedIntegration.description, 'Finally got round to writing this...');
     });
 
     it('Can successfully refresh an integration api key', async function () {
@@ -259,7 +261,7 @@ describe('Integrations API', function () {
 
         const [updatedIntegration] = res2.body.integrations;
         const updatedAdminApiKey = updatedIntegration.api_keys.find(key => key.type === 'admin');
-        should.equal(updatedIntegration.id, createdIntegration.id);
+        assert.equal(updatedIntegration.id, createdIntegration.id);
         updatedAdminApiKey.secret.should.not.eql(adminApiKey.secret);
 
         const res3 = await request.get(localUtils.API.getApiQuery(`actions/?filter=resource_id:'${adminApiKey.id}'&include=actor`))
@@ -272,7 +274,7 @@ describe('Integrations API', function () {
         const refreshedAction = actions.find((action) => {
             return action.event === 'refreshed';
         });
-        should.exist(refreshedAction);
+        assertExists(refreshedAction);
     });
 
     it('Can successfully add and delete a created integrations webhooks', async function () {
@@ -307,10 +309,10 @@ describe('Integrations API', function () {
 
         const [updatedIntegration] = res2.body.integrations;
 
-        should.equal(updatedIntegration.webhooks.length, 1);
+        assert.equal(updatedIntegration.webhooks.length, 1);
 
         const webhook = updatedIntegration.webhooks[0];
-        should.equal(webhook.integration_id, updatedIntegration.id);
+        assert.equal(webhook.integration_id, updatedIntegration.id);
 
         await request.put(localUtils.API.getApiQuery(`integrations/${createdIntegration.id}/`))
             .set('Origin', config.get('url'))
@@ -328,7 +330,7 @@ describe('Integrations API', function () {
             .expect(200);
 
         const [updatedIntegration2] = res3.body.integrations;
-        should.equal(updatedIntegration2.webhooks.length, 0);
+        assert.equal(updatedIntegration2.webhooks.length, 0);
     });
 
     it('Can successfully delete a created integration', async function () {
@@ -361,7 +363,7 @@ describe('Integrations API', function () {
             .set('Origin', config.get('url'))
             .expect(404);
 
-        editRes.body.errors[0].context.should.eql('Integration not found.');
+        assert.equal(editRes.body.errors[0].context, 'Integration not found.');
     });
 
     describe('As Administrator', function () {
