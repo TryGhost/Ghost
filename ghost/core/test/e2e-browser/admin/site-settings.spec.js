@@ -88,8 +88,8 @@ test.describe('Site Settings', () => {
             // Go to the signup page
             await sharedPage.goto('/#/portal/signup');
 
-            // Intentional CI failure for verification: this should be 1
-            await expect(sharedPage.locator('#ghost-portal-root div iframe')).toHaveCount(0);
+            // Portal should load
+            await expect(sharedPage.locator('#ghost-portal-root div iframe')).toHaveCount(1);
             await checkPortalScriptLoaded(sharedPage, true);
         });
 
