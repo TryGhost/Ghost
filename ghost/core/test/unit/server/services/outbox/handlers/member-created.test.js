@@ -74,7 +74,11 @@ describe('member-created handler', function () {
 
         sinon.assert.calledOnce(loggingStub.error);
         const errorCall = loggingStub.error.getCall(0);
-        assert.ok(errorCall.args[0].message.includes('Failed to track automated email send'));
+        assert.equal(errorCall.args[0].event, 'outbox.member_created.tracking_failed');
+        assert.equal(errorCall.args[0].message, 'Failed to track automated welcome email send');
+        assert.equal(errorCall.args[0].member_email, 'test@example.com');
+        assert.equal(errorCall.args[0].member_name, 'Test Member');
+        assert.equal(errorCall.args[0].member_id, 'member123');
         assert.equal(errorCall.args[0].err, dbError);
     });
 
@@ -91,7 +95,8 @@ describe('member-created handler', function () {
 
         sinon.assert.calledOnce(memberWelcomeEmailServiceStub.api.send);
         sinon.assert.calledOnce(loggingStub.warn);
-        assert.ok(loggingStub.warn.getCall(0).args[0].includes('No automated email slug found'));
+        assert.equal(loggingStub.warn.getCall(0).args[0].event, 'outbox.member_created.slug_missing');
+        assert.equal(loggingStub.warn.getCall(0).args[0].member_status, 'comped');
         sinon.assert.notCalled(AutomatedEmailRecipientStub.add);
     });
 });

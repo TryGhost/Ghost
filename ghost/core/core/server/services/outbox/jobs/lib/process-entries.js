@@ -43,7 +43,13 @@ async function markEntryCompleted({db, entryId}) {
 async function processEntry({db, entry}) {
     const handler = EVENT_HANDLERS[entry.event_type];
     if (!handler) {
-        logging.warn(`${OUTBOX_LOG_KEY} No handler for event type: ${entry.event_type}`);
+        logging.warn({
+            event: 'outbox.entry.handler_missing',
+            message: 'No handler found for outbox event type',
+            log_key: OUTBOX_LOG_KEY,
+            outbox_entry_id: entry.id,
+            event_type: entry.event_type
+        });
         await updateFailedEntry({db, entryId: entry.id, retryCount: entry.retry_count, errorMessage: `No handler for event type: ${entry.event_type}`});
         return {success: false};
     }
@@ -57,9 +63,27 @@ async function processEntry({db, entry}) {
         await updateFailedEntry({db, entryId: entry.id, retryCount: entry.retry_count, errorMessage});
 
         if (!payload) {
-            logging.error(`${handler.LOG_KEY} Failed to parse payload for entry ${entry.id}: ${errorMessage}`);
+            logging.error({
+                event: 'outbox.entry.payload_parse_failed',
+                message: 'Failed to parse outbox entry payload',
+                log_key: handler.LOG_KEY,
+                outbox_entry_id: entry.id,
+                event_type: entry.event_type,
+                error_message: errorMessage,
+                err
+            });
         } else {
-            logging.error(`${handler.LOG_KEY} Failed to send to ${handler.getLogInfo(payload)}: ${errorMessage}`);
+            logging.error({
+                event: 'outbox.entry.handler_failed',
+                message: 'Outbox handler failed while processing entry',
+                log_key: handler.LOG_KEY,
+                outbox_entry_id: entry.id,
+                event_type: entry.event_type,
+                recipient: handler.getLogInfo(payload),
+                ...(handler.getLogContext ? handler.getLogContext(payload) : {}),
+                error_message: errorMessage,
+                err
+            });
         }
 
         return {success: false};
@@ -70,7 +94,17 @@ async function processEntry({db, entry}) {
     } catch (err) {
         const cleanupError = err?.message ?? 'Unknown error';
         await markEntryCompleted({db, entryId: entry.id});
-        logging.error(`${handler.LOG_KEY} Sent to ${handler.getLogInfo(payload)} but failed to delete outbox entry ${entry.id}: ${cleanupError}`);
+        logging.error({
+            event: 'outbox.entry.cleanup_failed',
+            message: 'Outbox entry processed but cleanup failed',
+            log_key: handler.LOG_KEY,
+            outbox_entry_id: entry.id,
+            event_type: entry.event_type,
+            recipient: handler.getLogInfo(payload),
+            ...(handler.getLogContext ? handler.getLogContext(payload) : {}),
+            error_message: cleanupError,
+            err
+        });
     }
 
     return {success: true};

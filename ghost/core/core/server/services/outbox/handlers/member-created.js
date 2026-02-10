@@ -12,13 +12,24 @@ async function handle({payload}) {
     try {
         const slug = MEMBER_WELCOME_EMAIL_SLUGS[payload.status];
         if (!slug) {
-            logging.warn(`${LOG_KEY} No automated email slug found for member status: ${payload.status}`);
+            logging.warn({
+                event: 'outbox.member_created.slug_missing',
+                message: 'Automated email slug not found for member status',
+                log_key: LOG_KEY,
+                ...getLogContext(payload)
+            });
             return;
         }
 
         const automatedEmail = await AutomatedEmail.findOne({slug});
         if (!automatedEmail) {
-            logging.warn(`${LOG_KEY} No automated email found for slug: ${slug}`);
+            logging.warn({
+                event: 'outbox.member_created.automated_email_missing',
+                message: 'Automated email not found for slug',
+                log_key: LOG_KEY,
+                automated_email_slug: slug,
+                ...getLogContext(payload)
+            });
             return;
         }
 
@@ -31,7 +42,10 @@ async function handle({payload}) {
         });
     } catch (err) {
         logging.error({
-            message: `${LOG_KEY} Failed to track automated email send`,
+            event: 'outbox.member_created.tracking_failed',
+            message: 'Failed to track automated welcome email send',
+            log_key: LOG_KEY,
+            ...getLogContext(payload),
             err
         });
     }
@@ -42,8 +56,19 @@ function getLogInfo(payload) {
     return payload?.name ? `${payload.name} (${email})` : email;
 }
 
+function getLogContext(payload) {
+    return {
+        member_status: payload?.status ?? null,
+        member_id: payload?.memberId ?? null,
+        member_uuid: payload?.uuid ?? null,
+        member_email: payload?.email ?? null,
+        member_name: payload?.name ?? null
+    };
+}
+
 module.exports = {
     handle,
     getLogInfo,
+    getLogContext,
     LOG_KEY
 };

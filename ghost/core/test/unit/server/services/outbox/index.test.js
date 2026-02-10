@@ -1,5 +1,6 @@
 const sinon = require('sinon');
 const rewire = require('rewire');
+const assert = require('node:assert/strict');
 const DomainEvents = require('@tryghost/domain-events');
 const StartOutboxProcessingEvent = require('../../../../../core/server/services/outbox/events/start-outbox-processing-event');
 
@@ -8,11 +9,32 @@ describe('Outbox Service', function () {
     let processOutboxStub;
     let loggingStub;
     let jobsStub;
+    let originalProcessOutboxModule;
+    let processOutboxPath;
 
     beforeEach(function () {
+        processOutboxPath = require.resolve('../../../../../core/server/services/outbox/jobs/lib/process-outbox');
+        originalProcessOutboxModule = require.cache[processOutboxPath];
+        require.cache[processOutboxPath] = {
+            id: processOutboxPath,
+            filename: processOutboxPath,
+            loaded: true,
+            exports: async function () {
+                return {
+                    level: 'info',
+                    event: 'outbox.job.completed',
+                    message: 'Outbox processing completed'
+                };
+            }
+        };
+
         service = rewire('../../../../../core/server/services/outbox/index.js');
 
-        processOutboxStub = sinon.stub().resolves('Processed');
+        processOutboxStub = sinon.stub().resolves({
+            level: 'info',
+            event: 'outbox.job.completed',
+            message: 'Outbox processing completed'
+        });
         loggingStub = {info: sinon.stub(), error: sinon.stub()};
         jobsStub = {scheduleOutboxJob: sinon.stub()};
 
@@ -22,6 +44,12 @@ describe('Outbox Service', function () {
     });
 
     afterEach(async function () {
+        if (originalProcessOutboxModule) {
+            require.cache[processOutboxPath] = originalProcessOutboxModule;
+        } else {
+            delete require.cache[processOutboxPath];
+        }
+
         sinon.restore();
         await DomainEvents.allSettled();
     });
@@ -47,6 +75,7 @@ describe('Outbox Service', function () {
 
             sinon.assert.notCalled(processOutboxStub);
             sinon.assert.calledOnce(loggingStub.info);
+            assert.equal(loggingStub.info.firstCall.args[0].event, 'outbox.job.already_running');
         });
     });
 });

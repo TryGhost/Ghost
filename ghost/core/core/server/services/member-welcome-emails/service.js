@@ -50,8 +50,16 @@ class MemberWelcomeEmailService {
     }
 
     async send({member, memberStatus}) {
-        const name = member?.name ? `${member.name} at ` : '';
-        logging.info(`${MEMBER_WELCOME_EMAIL_LOG_KEY} Sending welcome email to ${name}${member?.email}`);
+        logging.info({
+            event: 'member_welcome_email.send.started',
+            message: 'Starting welcome email send',
+            log_key: MEMBER_WELCOME_EMAIL_LOG_KEY,
+            member_status: memberStatus,
+            member_id: member?.id ?? null,
+            member_uuid: member?.uuid ?? null,
+            member_email: member?.email ?? null,
+            member_name: member?.name ?? null
+        });
 
         const memberWelcomeEmail = this.#memberWelcomeEmails[memberStatus];
 
@@ -160,4 +168,3 @@ class MemberWelcomeEmailServiceWrapper {
 }
 
 module.exports = new MemberWelcomeEmailServiceWrapper();
-

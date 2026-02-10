@@ -24,16 +24,27 @@ class OutboxServiceWrapper {
 
     async startProcessing() {
         if (this.processing) {
-            logging.info(`${OUTBOX_LOG_KEY}: Outbox job already running, skipping`);
+            logging.info({
+                event: 'outbox.job.already_running',
+                message: 'Outbox job already running, skipping',
+                log_key: OUTBOX_LOG_KEY
+            });
             return;
         }
         this.processing = true;
 
         try {
-            const statusMessage = await processOutbox();
-            logging.info(statusMessage);
+            const status = await processOutbox();
+            const logLevel = status?.level || 'info';
+            const logMethod = logLevel === 'error' ? 'error' : (logLevel === 'warn' ? 'warn' : 'info');
+            logging[logMethod](status);
         } catch (e) {
-            logging.error(e, `${OUTBOX_LOG_KEY}: Error while processing outbox`);
+            logging.error({
+                event: 'outbox.job.unhandled_error',
+                message: 'Unhandled error while processing outbox',
+                log_key: OUTBOX_LOG_KEY,
+                err: e
+            });
         } finally {
             this.processing = false;
         }

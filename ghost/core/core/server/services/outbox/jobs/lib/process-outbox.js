@@ -43,7 +43,12 @@ async function processOutbox() {
     const jobStartISO = new Date(jobStartMs).toISOString().slice(0, 19).replace('T', ' ');
 
     if (!labs.isSet('welcomeEmails')) {
-        return `${OUTBOX_LOG_KEY} Welcome emails feature is disabled`;
+        return {
+            level: 'info',
+            event: 'outbox.job.feature_disabled',
+            message: 'Outbox processing skipped because welcome emails feature is disabled',
+            log_key: OUTBOX_LOG_KEY
+        };
     }
 
     memberWelcomeEmailService.init();
@@ -51,8 +56,20 @@ async function processOutbox() {
         await memberWelcomeEmailService.api.loadMemberWelcomeEmails();
     } catch (err) {
         const errorMessage = err?.message ?? 'Unknown error';
-        logging.error(`${OUTBOX_LOG_KEY} Service initialization failed: ${errorMessage}`);
-        return `${OUTBOX_LOG_KEY} Job aborted: Service initialization failed`;
+        logging.error({
+            event: 'outbox.job.initialization_failed',
+            message: 'Outbox processing aborted due to welcome email service initialization failure',
+            log_key: OUTBOX_LOG_KEY,
+            error_message: errorMessage,
+            err
+        });
+        return {
+            level: 'error',
+            event: 'outbox.job.initialization_failed',
+            message: 'Outbox processing aborted due to welcome email service initialization failure',
+            log_key: OUTBOX_LOG_KEY,
+            error_message: errorMessage
+        };
     }
 
     let totalProcessed = 0;
@@ -75,16 +92,40 @@ async function processOutbox() {
         totalProcessed += processed;
         totalFailed += failed;
 
-        logging.info(`${OUTBOX_LOG_KEY} Batch complete: ${processed} processed, ${failed} failed in ${(batchDurationMs / 1000).toFixed(2)}s (${batchRate} entries/sec)`);
+        logging.info({
+            event: 'outbox.job.batch_complete',
+            message: 'Outbox processing batch completed',
+            log_key: OUTBOX_LOG_KEY,
+            batch_processed: processed,
+            batch_failed: failed,
+            batch_duration_ms: batchDurationMs,
+            batch_rate_entries_per_sec: Number(batchRate)
+        });
     }
 
     const durationMs = Date.now() - jobStartMs;
 
     if (totalProcessed + totalFailed === 0) {
-        return `${OUTBOX_LOG_KEY} ${MESSAGES.NO_ENTRIES}`;
+        return {
+            level: 'info',
+            event: 'outbox.job.no_entries',
+            message: MESSAGES.NO_ENTRIES,
+            log_key: OUTBOX_LOG_KEY,
+            total_processed: totalProcessed,
+            total_failed: totalFailed,
+            duration_ms: durationMs
+        };
     }
 
-    return `${OUTBOX_LOG_KEY} Job complete: Processed ${totalProcessed} outbox entries, ${totalFailed} failed in ${(durationMs / 1000).toFixed(2)}s`;
+    return {
+        level: 'info',
+        event: 'outbox.job.completed',
+        message: 'Outbox processing completed',
+        log_key: OUTBOX_LOG_KEY,
+        total_processed: totalProcessed,
+        total_failed: totalFailed,
+        duration_ms: durationMs
+    };
 }
 
 module.exports = processOutbox;
