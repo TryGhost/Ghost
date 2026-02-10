@@ -20,7 +20,7 @@ export type Offer = {
     tier: {
         id: string;
         name?: string;
-    },
+    } | null,
     created_at?: string;
     last_redeemed? : string;
 }

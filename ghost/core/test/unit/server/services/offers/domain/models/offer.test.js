@@ -303,6 +303,92 @@ describe('Offer', function () {
         });
     });
 
+    describe('Tier and redemption type validation', function () {
+        it('Creates a retention offer with null tier', async function () {
+            const offer = await Offer.create({
+                id: ObjectID(),
+                name: 'Retention Offer',
+                code: 'retention-offer',
+                display_title: 'Stay with us',
+                display_description: 'A discount for staying',
+                cadence: 'month',
+                type: 'percent',
+                amount: 10,
+                duration: 'forever',
+                redemption_type: 'retention',
+                tier: null
+            }, mockUniqueChecker);
+
+            should.ok(offer instanceof Offer);
+            assert.equal(offer.tier, null);
+            assert.equal(offer.redemptionType.value, 'retention');
+        });
+
+        it('Throws when creating a retention offer with a tier', async function () {
+            try {
+                await Offer.create({
+                    id: ObjectID(),
+                    name: 'Bad Retention Offer',
+                    code: 'bad-retention',
+                    display_title: '',
+                    display_description: '',
+                    cadence: 'month',
+                    type: 'percent',
+                    amount: 10,
+                    duration: 'forever',
+                    redemption_type: 'retention',
+                    tier: {
+                        id: ObjectID()
+                    }
+                }, mockUniqueChecker);
+                should.fail('Expected an error');
+            } catch (err) {
+                should.ok(err instanceof errors.InvalidOfferTier);
+            }
+        });
+
+        it('Throws when creating a signup offer without a tier', async function () {
+            try {
+                await Offer.create({
+                    id: ObjectID(),
+                    name: 'Bad Signup Offer',
+                    code: 'bad-signup',
+                    display_title: '',
+                    display_description: '',
+                    cadence: 'month',
+                    type: 'percent',
+                    amount: 10,
+                    duration: 'forever',
+                    redemption_type: 'signup',
+                    tier: null
+                }, mockUniqueChecker);
+                should.fail('Expected an error');
+            } catch (err) {
+                should.ok(err instanceof errors.InvalidOfferTier);
+            }
+        });
+
+        it('Throws when creating an offer without a tier and no redemption_type (defaults to signup)', async function () {
+            try {
+                await Offer.create({
+                    id: ObjectID(),
+                    name: 'No Tier Default',
+                    code: 'no-tier-default',
+                    display_title: '',
+                    display_description: '',
+                    cadence: 'month',
+                    type: 'percent',
+                    amount: 10,
+                    duration: 'forever',
+                    tier: null
+                }, mockUniqueChecker);
+                should.fail('Expected an error');
+            } catch (err) {
+                should.ok(err instanceof errors.InvalidOfferTier);
+            }
+        });
+    });
+
     describe('#updateCode', function () {
         it('Requires the code to be unique if it has changed', async function () {
             const data = {

@@ -224,6 +224,107 @@ describe('Offers API', function () {
         trialOffer = body.offers[0];
     });
 
+    it('Can add a retention offer without a tier', async function () {
+        const newOffer = {
+            name: 'Stay With Us',
+            code: 'stay-with-us',
+            display_title: 'Stay With Us',
+            display_description: '10% off if you stay',
+            type: 'percent',
+            cadence: 'month',
+            amount: 10,
+            duration: 'forever',
+            duration_in_months: null,
+            currency_restriction: false,
+            currency: null,
+            status: 'active',
+            redemption_count: 0,
+            redemption_type: 'retention',
+            tier: null
+        };
+
+        await agent
+            .post(`offers/`)
+            .body({offers: [newOffer]})
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag,
+                location: anyLocationFor('offers')
+            })
+            .matchBodySnapshot({
+                offers: [{
+                    id: anyObjectId,
+                    tier: null,
+                    created_at: anyISODateTime
+                }]
+            })
+            .expect(({body}) => {
+                body.offers[0].redemption_type.should.eql('retention');
+                should(body.offers[0].tier).be.null();
+            });
+    });
+
+    it('Cannot create a signup offer without a tier', async function () {
+        sinon.stub(logging, 'error');
+
+        const newOffer = {
+            name: 'Bad Signup Offer',
+            code: 'bad-signup',
+            type: 'percent',
+            cadence: 'month',
+            amount: 10,
+            duration: 'once',
+            redemption_type: 'signup',
+            tier: null
+        };
+
+        await agent
+            .post(`offers/`)
+            .body({offers: [newOffer]})
+            .expectStatus(400)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId
+                }]
+            });
+    });
+
+    it('Cannot create a retention offer with a tier', async function () {
+        sinon.stub(logging, 'error');
+
+        const newOffer = {
+            name: 'Bad Retention Offer',
+            code: 'bad-retention',
+            type: 'percent',
+            cadence: 'month',
+            amount: 10,
+            duration: 'forever',
+            redemption_type: 'retention',
+            tier: {
+                id: defaultTier.id
+            }
+        };
+
+        await agent
+            .post(`offers/`)
+            .body({offers: [newOffer]})
+            .expectStatus(400)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId
+                }]
+            });
+    });
+
     it('Cannot create offer with same code', async function () {
         sinon.stub(logging, 'error');
 
@@ -326,13 +427,20 @@ describe('Offers API', function () {
                 etag: anyEtag
             })
             .matchBodySnapshot({
-                offers: new Array(5).fill({
-                    id: anyObjectId,
-                    tier: {
-                        id: anyObjectId
-                    },
-                    created_at: anyISODateTime
-                })
+                offers: [
+                    ...new Array(5).fill({
+                        id: anyObjectId,
+                        tier: {
+                            id: anyObjectId
+                        },
+                        created_at: anyISODateTime
+                    }),
+                    {
+                        id: anyObjectId,
+                        tier: null,
+                        created_at: anyISODateTime
+                    }
+                ]
             });
     });
 
@@ -535,13 +643,20 @@ describe('Offers API', function () {
                 etag: anyEtag
             })
             .matchBodySnapshot({
-                offers: new Array(4).fill({
-                    id: anyObjectId,
-                    tier: {
-                        id: anyObjectId
-                    },
-                    created_at: anyISODateTime
-                })
+                offers: [
+                    ...new Array(4).fill({
+                        id: anyObjectId,
+                        tier: {
+                            id: anyObjectId
+                        },
+                        created_at: anyISODateTime
+                    }),
+                    {
+                        id: anyObjectId,
+                        tier: null,
+                        created_at: anyISODateTime
+                    }
+                ]
             });
     });
 

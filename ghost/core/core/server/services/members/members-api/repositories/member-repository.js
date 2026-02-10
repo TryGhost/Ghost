@@ -1769,7 +1769,7 @@ module.exports = class MemberRepository {
             });
         }
 
-        if (offer.tier.id !== tierId) {
+        if (offer.tier && offer.tier.id !== tierId) {
             throw new errors.BadRequestError({
                 message: tpl(messages.offerTierMismatch)
             });

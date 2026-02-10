@@ -165,12 +165,12 @@ class OffersAPI {
                 return [];
             }
 
-            // Filter by tier and cadence
-            let available = allOffers.filter(offer => offer.tier.id === tierId && offer.cadence.value === cadence);
+            // Filter by tier and cadence - Null-tier offers (retention) match any tier with the correct cadence
+            let available = allOffers.filter(offer => (offer.tier === null || offer.tier.id === tierId) && offer.cadence.value === cadence);
             debug(`listOffersAvailableToSubscription: ${available.length} offers match tier and cadence`);
 
             if (available.length === 0) {
-                const tierIds = [...new Set(allOffers.map(o => o.tier.id))];
+                const tierIds = [...new Set(allOffers.filter(o => o.tier !== null).map(o => o.tier.id))];
                 const cadences = [...new Set(allOffers.map(o => o.cadence.value))];
                 debug(`listOffersAvailableToSubscription: no offers match - available tiers: [${tierIds.join(', ')}], available cadences: [${cadences.join(', ')}]`);
 
