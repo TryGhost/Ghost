@@ -49,8 +49,14 @@ class MemberWelcomeEmailService {
     }
 
     async send({member, memberStatus}) {
+        if (!member.email) {
+            throw new errors.IncorrectUsageError({
+                message: MESSAGES.MISSING_RECIPIENT_EMAIL
+            });
+        }
+
         const name = member?.name ? `${member.name} at ` : '';
-        logging.info(`${MEMBER_WELCOME_EMAIL_LOG_KEY} Sending welcome email to ${name}${member?.email}`);
+        logging.info(`${MEMBER_WELCOME_EMAIL_LOG_KEY} Sending welcome email to ${name}${member.email}`);
 
         const memberWelcomeEmail = this.#memberWelcomeEmails[memberStatus];
 
@@ -75,12 +81,6 @@ class MemberWelcomeEmailService {
             },
             siteSettings: this.#getSiteSettings()
         });
-
-        if (!member.email) {
-            throw new errors.IncorrectUsageError({
-                message: MESSAGES.MISSING_RECIPIENT_EMAIL
-            });
-        }
 
         await this.#mailer.send({
             to: member.email,
