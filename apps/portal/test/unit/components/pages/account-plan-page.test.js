@@ -1,4 +1,4 @@
-import {generateAccountPlanFixture, getSiteData, getProductsData} from '../../../../src/utils/fixtures-generator';
+import {generateAccountPlanFixture, getSiteData, getProductsData, getOfferData} from '../../../../src/utils/fixtures-generator';
 import {render, fireEvent} from '../../../utils/test-utils';
 import AccountPlanPage from '../../../../src/components/pages/account-plan-page';
 
@@ -83,5 +83,94 @@ describe('Account Plan Page', () => {
 
         const confirmCancelButton = queryByRole('button', {name: 'Confirm cancellation'});
         expect(confirmCancelButton).toBeInTheDocument();
+    });
+
+    test('triggers cancellation flow when opened with cancel pageData', () => {
+        const overrides = generateAccountPlanFixture();
+        const subscriptionId = overrides.member.subscriptions[0].id;
+        const {queryByText, queryByRole} = customSetup({
+            ...overrides,
+            pageData: {action: 'cancel', subscriptionId}
+        });
+
+        // Should immediately show cancellation confirmation
+        const cancellationMessage = queryByText(/If you cancel your subscription now, you will continue to have access until/i);
+        expect(cancellationMessage).toBeInTheDocument();
+
+        const confirmCancelButton = queryByRole('button', {name: 'Confirm cancellation'});
+        expect(confirmCancelButton).toBeInTheDocument();
+    });
+
+    test('shows retention offer when opened with cancel pageData and retention offers exist', () => {
+        const overrides = generateAccountPlanFixture();
+        const subscriptionId = overrides.member.subscriptions[0].id;
+        const paidProduct = overrides.site.products.find(p => p.type === 'paid');
+        const retentionOffer = getOfferData({
+            redemptionType: 'retention',
+            name: 'Stay with us',
+            amount: 20,
+            type: 'percent',
+            cadence: 'month',
+            tierId: paidProduct.id,
+            tierName: paidProduct.name
+        });
+        const {queryByText} = customSetup({
+            ...overrides,
+            offers: [retentionOffer],
+            pageData: {action: 'cancel', subscriptionId}
+        });
+
+        // Should show retention offer message instead of cancellation confirmation
+        const offerMessage = queryByText(/We'd hate to see you go/i);
+        expect(offerMessage).toBeInTheDocument();
+    });
+
+    test('clears pageData after triggering cancellation so it does not re-trigger on remount', () => {
+        const overrides = generateAccountPlanFixture();
+        const subscriptionId = overrides.member.subscriptions[0].id;
+        const pageData = {action: 'cancel', subscriptionId};
+
+        // First mount: should trigger cancellation flow
+        const {unmount, queryByText} = customSetup({
+            ...overrides,
+            pageData
+        });
+
+        const cancellationMessage = queryByText(/If you cancel your subscription now, you will continue to have access until/i);
+        expect(cancellationMessage).toBeInTheDocument();
+
+        // pageData.action should have been cleared
+        expect(pageData.action).toBeNull();
+
+        unmount();
+
+        // Second mount with the same pageData object: should NOT trigger cancellation flow
+        const {queryByText: queryByText2, queryByRole: queryByRole2} = customSetup({
+            ...overrides,
+            pageData
+        });
+
+        const cancellationMessage2 = queryByText2(/If you cancel your subscription now/i);
+        expect(cancellationMessage2).not.toBeInTheDocument();
+
+        // Should show the normal plan page
+        const cancelButton = queryByRole2('button', {name: 'Cancel subscription'});
+        expect(cancelButton).toBeInTheDocument();
+    });
+
+    test('does not trigger cancellation flow when pageData has no cancel action', () => {
+        const overrides = generateAccountPlanFixture();
+        const {queryByText, queryByRole} = customSetup({
+            ...overrides,
+            pageData: {someOtherData: true}
+        });
+
+        // Should not show cancellation confirmation
+        const cancellationMessage = queryByText(/If you cancel your subscription now/i);
+        expect(cancellationMessage).not.toBeInTheDocument();
+
+        // Should show the normal plan page with cancel button available
+        const cancelButton = queryByRole('button', {name: 'Cancel subscription'});
+        expect(cancelButton).toBeInTheDocument();
     });
 });

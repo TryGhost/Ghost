@@ -109,6 +109,7 @@ export default class App extends React.Component {
                 siteUrl,
                 site: contextState.site,
                 member: contextState.member,
+                offers: contextState.offers,
                 doAction: contextState.doAction,
                 captureException: Sentry.captureException
             });
