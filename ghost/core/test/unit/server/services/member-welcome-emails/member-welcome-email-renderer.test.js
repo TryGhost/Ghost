@@ -354,5 +354,20 @@ describe('MemberWelcomeEmailRenderer', function () {
             assert(!result.html.includes('<code>{first_name, "friend"}</code>'));
             assert(result.html.includes('Hey friend'));
         });
+
+        it('removes code wrappers around replacement strings with fallback (no comma)', async function () {
+            lexicalRenderStub.resolves('<p>Hey <code>{first_name "friend"}</code></p>');
+            const renderer = new MemberWelcomeEmailRenderer();
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Welcome!',
+                member: {email: 'john@example.com'},
+                siteSettings: defaultSiteSettings
+            });
+
+            assert(!result.html.includes('<code>{first_name "friend"}</code>'));
+            assert(result.html.includes('Hey friend'));
+        });
     });
 });

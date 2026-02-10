@@ -99,7 +99,7 @@ class MemberWelcomeEmailRenderer {
         // Remove <code> wrappers around replacement strings (Lexical treats curly braces as inline code)
         const tokenIds = definitions.map(d => d.id).join('|');
         content = content.replace(
-            new RegExp(`<code>(\\{(?:${tokenIds})(?:,\\s*"[^"]*")?\\})<\\/code>`, 'g'),
+            new RegExp(`<code>(\\{(?:${tokenIds})(?:\\s*,?\\s*"[^"]*")?\\})<\\/code>`, 'g'),
             '$1'
         );
 
@@ -131,4 +131,3 @@ class MemberWelcomeEmailRenderer {
 }
 
 module.exports = MemberWelcomeEmailRenderer;
-
