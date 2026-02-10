@@ -290,9 +290,9 @@ describe('Snippets API', function () {
             assert(!snippet.lexical.includes('__GHOST_URL__'));
         });
 
-        it('Can read Mobiledoc snippet with CDN URLs for media/files when configured', async function () {
+        it('Can read Mobiledoc snippet with CDN URLs when configured', async function () {
             urlUtilsHelper.stubUrlUtilsWithCdn({
-                assetBaseUrls: {media: cdnUrl, files: cdnUrl}
+                assetBaseUrls: {media: cdnUrl, files: cdnUrl, image: cdnUrl}
             }, sinon);
 
             const res = await agent
@@ -302,18 +302,20 @@ describe('Snippets API', function () {
             const snippet = res.body.snippets[0];
             const mobiledoc = JSON.parse(snippet.mobiledoc);
 
-            // Images stay on site URL
-            assert.equal(mobiledoc.cards.find(c => c[0] === 'image')[1].src, `${siteUrl}/content/images/snippet-inline.jpg`);
-            // Media/files use CDN URL
+            // All assets use CDN URL
+            assert.equal(mobiledoc.cards.find(c => c[0] === 'image')[1].src, `${cdnUrl}/content/images/snippet-inline.jpg`);
             assert.equal(mobiledoc.cards.find(c => c[0] === 'file')[1].src, `${cdnUrl}/content/files/snippet-document.pdf`);
             assert.equal(mobiledoc.cards.find(c => c[0] === 'video')[1].src, `${cdnUrl}/content/media/snippet-video.mp4`);
             assert.equal(mobiledoc.cards.find(c => c[0] === 'audio')[1].src, `${cdnUrl}/content/media/snippet-audio.mp3`);
+            // Video/audio thumbnails use CDN URL
+            assert.equal(mobiledoc.cards.find(c => c[0] === 'video')[1].thumbnailSrc, `${cdnUrl}/content/images/snippet-video-thumb.jpg`);
+            assert.equal(mobiledoc.cards.find(c => c[0] === 'audio')[1].thumbnailSrc, `${cdnUrl}/content/images/snippet-audio-thumb.jpg`);
             assert(!snippet.mobiledoc.includes('__GHOST_URL__'));
         });
 
-        it('Can read Lexical snippet with CDN URLs for media/files when configured', async function () {
+        it('Can read Lexical snippet with CDN URLs when configured', async function () {
             urlUtilsHelper.stubUrlUtilsWithCdn({
-                assetBaseUrls: {media: cdnUrl, files: cdnUrl}
+                assetBaseUrls: {media: cdnUrl, files: cdnUrl, image: cdnUrl}
             }, sinon);
 
             const res = await agent
@@ -322,12 +324,14 @@ describe('Snippets API', function () {
 
             const snippet = res.body.snippets[0];
 
-            // Images stay on site URL
-            assert(snippet.lexical.includes(`${siteUrl}/content/images/snippet-inline.jpg`));
-            // Media/files use CDN URL
+            // All assets use CDN URL
+            assert(snippet.lexical.includes(`${cdnUrl}/content/images/snippet-inline.jpg`));
             assert(snippet.lexical.includes(`${cdnUrl}/content/files/snippet-document.pdf`));
             assert(snippet.lexical.includes(`${cdnUrl}/content/media/snippet-video.mp4`));
             assert(snippet.lexical.includes(`${cdnUrl}/content/media/snippet-audio.mp3`));
+            // Video/audio thumbnails use CDN URL
+            assert(snippet.lexical.includes(`${cdnUrl}/content/images/snippet-video-thumb.jpg`));
+            assert(snippet.lexical.includes(`${cdnUrl}/content/images/snippet-audio-thumb.jpg`));
             assert(!snippet.lexical.includes('__GHOST_URL__'));
         });
     });

@@ -102,7 +102,8 @@ describe('Snippet Model', function () {
             urlUtilsHelper.stubUrlUtilsWithCdn({
                 assetBaseUrls: {
                     media: cdnUrl,
-                    files: cdnUrl
+                    files: cdnUrl,
+                    image: cdnUrl
                 }
             }, sinon);
         });
@@ -135,22 +136,22 @@ describe('Snippet Model', function () {
                 assert.equal(audioCard[1].src, `${cdnUrl}/content/media/snippet-audio.mp3`);
             });
 
-            it('transforms image card src to absolute site URL(NOT CDN)', async function () {
+            it('transforms image card src to CDN URL', async function () {
                 const snippets = await models.Snippet.findAll();
                 const snippet = snippets.models.find(s => s.get('name') === 'Snippet with all media types - Mobiledoc');
                 const mobiledoc = JSON.parse(snippet.get('mobiledoc'));
 
                 const imageCard = mobiledoc.cards.find(card => card[0] === 'image');
-                assert.equal(imageCard[1].src, `${siteUrl}/content/images/snippet-inline.jpg`);
+                assert.equal(imageCard[1].src, `${cdnUrl}/content/images/snippet-inline.jpg`);
             });
 
-            it('transforms video thumbnailSrc to absolute site URL(NOT CDN)', async function () {
+            it('transforms video thumbnailSrc to CDN URL', async function () {
                 const snippets = await models.Snippet.findAll();
                 const snippet = snippets.models.find(s => s.get('name') === 'Snippet with all media types - Mobiledoc');
                 const mobiledoc = JSON.parse(snippet.get('mobiledoc'));
 
                 const videoCard = mobiledoc.cards.find(card => card[0] === 'video');
-                assert.equal(videoCard[1].thumbnailSrc, `${siteUrl}/content/images/snippet-video-thumb.jpg`);
+                assert.equal(videoCard[1].thumbnailSrc, `${cdnUrl}/content/images/snippet-video-thumb.jpg`);
             });
         });
 
@@ -172,14 +173,14 @@ describe('Snippet Model', function () {
                 assert(lexicalString.includes(`${cdnUrl}/content/media/snippet-audio.mp3`));
             });
 
-            it('transforms image URLs to absolute site URL(NOT CDN)', async function () {
+            it('transforms image URLs to CDN URL', async function () {
                 const snippets = await models.Snippet.findAll();
                 const snippet = snippets.models.find(s => s.get('name') === 'Snippet with all media types - Lexical');
                 const lexicalString = snippet.get('lexical');
 
-                assert(lexicalString.includes(`${siteUrl}/content/images/snippet-inline.jpg`));
-                assert(lexicalString.includes(`${siteUrl}/content/images/snippet-video-thumb.jpg`));
-                assert(lexicalString.includes(`${siteUrl}/content/images/snippet-audio-thumb.jpg`));
+                assert(lexicalString.includes(`${cdnUrl}/content/images/snippet-inline.jpg`));
+                assert(lexicalString.includes(`${cdnUrl}/content/images/snippet-video-thumb.jpg`));
+                assert(lexicalString.includes(`${cdnUrl}/content/images/snippet-audio-thumb.jpg`));
             });
         });
     });
