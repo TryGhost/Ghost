@@ -45,7 +45,7 @@ const Sidebar: React.FC<{
         {
             id: 'accountPage',
             title: 'Account page',
-            contents: <AccountPage errors={errors} setError={setError} updateSetting={updateSetting} />
+            contents: <AccountPage errors={errors} localSettings={localSettings} setError={setError} updateSetting={updateSetting} />
         }
     ];
 
