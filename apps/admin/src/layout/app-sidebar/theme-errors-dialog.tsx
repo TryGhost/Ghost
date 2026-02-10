@@ -23,7 +23,7 @@ function ThemeErrorItem({error}: {error: ThemeProblem}) {
     return (
         <li className="border-b border-border last:border-0">
             <button
-                className="flex w-full items-center gap-2 py-3 text-left text-sm font-medium hover:text-black"
+                className="flex w-full items-center gap-2 py-3 text-left text-sm font-medium"
                 type="button"
                 onClick={() => setExpanded(!expanded)}
             >

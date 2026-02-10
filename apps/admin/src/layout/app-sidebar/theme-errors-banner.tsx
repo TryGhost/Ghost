@@ -14,7 +14,7 @@ function ThemeErrorsBanner() {
     return (
         <>
             <Banner
-                className="mx-2 my-5 cursor-pointer"
+                className="mx-2 cursor-pointer"
                 role="status"
                 size="md"
                 variant="destructive"
@@ -23,7 +23,7 @@ function ThemeErrorsBanner() {
                 <div className="flex items-start gap-3">
                     <LucideIcon.AlertTriangle className="mt-0.5 size-4 shrink-0 text-red-600" />
                     <div>
-                        <div className="text-sm font-semibold text-red-900">Your theme has errors</div>
+                        <div className="font-semibold text-red-900">Your theme has errors</div>
                         <div className="text-xs text-red-700">Some functionality on your site may be limited &rarr;</div>
                     </div>
                 </div>
