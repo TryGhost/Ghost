@@ -11,19 +11,15 @@ const messages = {
     automatedEmailNotFound: 'Automated email not found.'
 };
 
-const logWelcomeEmailStatusTransition = (beforeModel, afterModel) => {
-    if (!beforeModel || !afterModel) {
+const logWelcomeEmailStatusTransition = ({automatedEmailId, slug, previousStatus, currentStatus}) => {
+    if (!automatedEmailId || !slug) {
         return;
     }
-
-    const slug = afterModel.get('slug');
 
     if (!MEMBER_WELCOME_EMAIL_SLUG_SET.has(slug)) {
         return;
     }
 
-    const previousStatus = beforeModel.get('status');
-    const currentStatus = afterModel.get('status');
     const hasChangedStatus = previousStatus !== currentStatus;
     const isEnableTransition = previousStatus === 'inactive' && currentStatus === 'active';
     const isDisableTransition = previousStatus === 'active' && currentStatus === 'inactive';
@@ -34,7 +30,7 @@ const logWelcomeEmailStatusTransition = (beforeModel, afterModel) => {
 
     logging.info('Welcome email status changed', {
         event: isEnableTransition ? 'welcome_email.enabled' : 'welcome_email.disabled',
-        automated_email_id: afterModel.id,
+        automated_email_id: automatedEmailId,
         slug,
         enabled: currentStatus === 'active'
     });
@@ -115,6 +111,8 @@ const controller = {
         async query(frame) {
             const data = frame.data.automated_emails[0];
             const currentModel = await models.AutomatedEmail.findOne({id: frame.options.id}, frame.options);
+            const previousStatus = currentModel?.get('status');
+            const slug = currentModel?.get('slug') || data.slug;
             const model = await models.AutomatedEmail.edit(data, frame.options);
             if (!model) {
                 throw new errors.NotFoundError({
@@ -122,7 +120,12 @@ const controller = {
                 });
             }
 
-            logWelcomeEmailStatusTransition(currentModel, model);
+            logWelcomeEmailStatusTransition({
+                automatedEmailId: model.id,
+                slug,
+                previousStatus,
+                currentStatus: model.get('status')
+            });
 
             return model;
         }
