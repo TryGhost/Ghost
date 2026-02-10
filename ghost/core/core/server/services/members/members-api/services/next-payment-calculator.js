@@ -7,8 +7,8 @@
  * @prop {string} offer_id
  * @prop {string} start
  * @prop {string|null} end
- * @prop {'once'|'repeating'|'forever'} duration
- * @prop {'percent'|'fixed'} type
+ * @prop {'once'|'repeating'|'forever'|'free_months'} duration
+ * @prop {'percent'|'fixed'|'free_months'} type
  * @prop {number} amount
  */
 
@@ -47,36 +47,29 @@ class NextPaymentCalculator {
         const interval = subscription.plan.interval;
         const currency = subscription.plan.currency;
         const offer = subscription.offer || null;
+        const defaultNextPayment = {
+            original_amount: originalAmount,
+            amount: originalAmount,
+            interval,
+            currency,
+            discount: null
+        };
 
         if (!offer || offer.type === 'trial') {
-            return {
-                original_amount: originalAmount,
-                amount: originalAmount,
-                interval,
-                currency,
-                discount: null
-            };
+            return defaultNextPayment;
         }
 
         const activeDiscount = this._getActiveDiscount(subscription, offer);
 
         if (!activeDiscount) {
-            return {
-                original_amount: originalAmount,
-                amount: originalAmount,
-                interval,
-                currency,
-                discount: null
-            };
+            return defaultNextPayment;
         }
 
         const discountedAmount = this._calculateDiscountedAmount(originalAmount, offer);
 
         return {
-            original_amount: originalAmount,
+            ...defaultNextPayment,
             amount: discountedAmount,
-            interval,
-            currency,
             discount: {
                 offer_id: offer.id,
                 start: activeDiscount.start ? new Date(activeDiscount.start).toISOString() : null,
@@ -106,6 +99,21 @@ class NextPaymentCalculator {
      * @returns {ActiveDiscount|null}
      */
     _getActiveDiscount(subscription, offer) {
+        // Free months are based on trial periods in Stripe: they're active if the trial period is still ongoing
+        if (offer.type === 'free_months') {
+            const end = new Date(subscription.trial_end_at);
+
+            if (new Date() >= end) {
+                return null;
+            }
+
+            return {
+                start: subscription.trial_start_at,
+                end
+            };
+        }
+
+        // Other offers are based on a Stripe coupon, with a discount_start / discount_end
         if (subscription.discount_start) {
             return {
                 start: subscription.discount_start,
@@ -113,7 +121,7 @@ class NextPaymentCalculator {
             };
         }
 
-        // Backportability for signup offers without discount_start / discount_end
+        // Backportability for old signup offers without discount_start / discount_end
         if (offer.redemption_type !== 'signup') {
             return null;
         }
