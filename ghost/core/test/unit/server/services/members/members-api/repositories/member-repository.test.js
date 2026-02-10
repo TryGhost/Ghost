@@ -1329,6 +1329,27 @@ describe('MemberRepository', function () {
             // The free welcome email should NOT be sent when stripeCustomer is present
             sinon.assert.notCalled(Outbox.add);
         });
+
+        it('does NOT create outbox entry when member signup intent is paid', async function () {
+            const repo = new MemberRepository({
+                Member,
+                Outbox,
+                MemberStatusEvent,
+                MemberSubscribeEventModel: MemberSubscribeEvent,
+                newslettersService,
+                AutomatedEmail,
+                labsService,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            await repo.create({
+                email: 'test@example.com',
+                name: 'Test Member',
+                signupIntent: 'paid'
+            }, {});
+
+            sinon.assert.notCalled(Outbox.add);
+        });
     });
 
     describe('linkSubscription - outbox integration', function () {

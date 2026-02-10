@@ -167,6 +167,46 @@ describe('RouterController', function () {
             })), true);
         });
 
+        it('creates pre-checkout magic links with signup-paid type for paid checkout flows', async function () {
+            const magicLinkService = {
+                getMagicLink: sinon.stub().resolves('https://example.com/members/?token=abc123&action=signup')
+            };
+            const memberRepository = {
+                get: sinon.stub().resolves(null)
+            };
+            const routerController = new RouterController({
+                tiersService,
+                paymentsService,
+                offersAPI,
+                stripeAPIService,
+                labsService,
+                settingsCache,
+                settingsHelpers,
+                magicLinkService,
+                memberRepository,
+                emailAddressService
+            });
+
+            await routerController.createCheckoutSession({
+                body: {
+                    tierId: 'tier_123',
+                    cadence: 'month',
+                    customerEmail: 'new-member@example.com',
+                    successUrl: 'https://example.com/paid-success',
+                    cancelUrl: 'https://example.com/cancel',
+                    metadata: {}
+                }
+            }, {
+                writeHead: () => {},
+                end: () => {}
+            });
+
+            assert.equal(magicLinkService.getMagicLink.calledOnce, true);
+            assert.equal(magicLinkService.getMagicLink.calledWith(sinon.match({
+                type: 'signup-paid'
+            })), true);
+        });
+
         describe('_getSubscriptionCheckoutData', function () {
             it('returns a BadRequestError if both offerId and tierId are missing', async function () {
                 const routerController = new RouterController({

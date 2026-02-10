@@ -487,7 +487,7 @@ module.exports = class RouterController {
                         url: options.metadata.attribution_url ?? null
                     }
                 },
-                type: 'signup',
+                type: 'signup-paid',
                 // Redirect to the original success url after sign up
                 referrer: options.successUrl
             });

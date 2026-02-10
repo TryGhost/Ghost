@@ -274,7 +274,7 @@ module.exports = function MembersAPI({
         }
 
         // Note: old tokens can still have a missing type (we can remove this after a couple of weeks)
-        if (type && !['signup', 'subscribe'].includes(type)) {
+        if (type && !['signup', 'signup-paid', 'subscribe'].includes(type)) {
             // Don't allow sign up
             // Note that we use the type from inside the magic token so this behaviour can't be changed
             return null;
@@ -291,7 +291,15 @@ module.exports = function MembersAPI({
             }
         }
 
-        const newMember = await users.create({name, email, labels, newsletters, attribution, geolocation});
+        const newMember = await users.create({
+            name,
+            email,
+            labels,
+            newsletters,
+            attribution,
+            geolocation,
+            signupIntent: type === 'signup-paid' ? 'paid' : null
+        });
 
         await MemberLoginEvent.add({member_id: newMember.id});
         return getMemberIdentityData(email);
