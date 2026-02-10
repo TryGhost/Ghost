@@ -1,6 +1,5 @@
 import APIKeys from './api-keys';
 import BookmarkThumb from '../../../../assets/images/stripe-thumb.jpg';
-import GhostLogoPink from '../../../../assets/images/orb-pink.png';
 import IntegrationHeader from './integration-header';
 import NiceModal from '@ebay/nice-modal-react';
 import {ConfirmationModal, Form, Icon, Modal, Separator, Toggle} from '@tryghost/admin-x-design-system';
