@@ -1,7 +1,6 @@
 const {expect} = require('@playwright/test');
 const test = require('../fixtures/ghost-test');
 const {deleteAllMembers, createTier, createOffer, completeStripeSubscription} = require('../utils');
-const models = require('../../../core/server/models');
 const offersService = require('../../../core/server/services/offers');
 const ObjectID = require('bson-objectid').default;
 
@@ -345,14 +344,6 @@ test.describe('Portal', () => {
             await sharedPage.goto('/ghost');
             await deleteAllMembers(sharedPage);
 
-            const tierName = `Retention Tier ${new ObjectID().toHexString().slice(0, 8)}`;
-            await createTier(sharedPage, {
-                name: tierName,
-                monthlyPrice: 6,
-                yearlyPrice: 60
-            });
-
-            const product = await models.Product.findOne({name: tierName}, {require: true});
             const suffix = new ObjectID().toHexString().slice(0, 8);
             const offerCode = `retention-${suffix}`;
 
@@ -367,10 +358,7 @@ test.describe('Portal', () => {
                 duration: 'once',
                 duration_in_months: null,
                 status: 'active',
-                tier: {
-                    id: product.id,
-                    name: product.get('name')
-                },
+                tier: null,
                 redemption_type: 'retention'
             });
 
