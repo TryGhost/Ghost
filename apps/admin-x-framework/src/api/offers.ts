@@ -14,7 +14,7 @@ export type Offer = {
     duration_in_months: number | null;
     currency_restriction: boolean;
     currency: string | null;
-    status: 'active' | 'archived';
+    status: string;
     redemption_count: number;
     redemption_type: 'signup' | 'retention';
     tier: {
