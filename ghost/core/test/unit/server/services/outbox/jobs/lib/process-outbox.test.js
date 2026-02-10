@@ -40,7 +40,7 @@ describe('process-outbox', function () {
             exports: {
                 knex: {
                     raw: sinon.stub().returns('CURRENT_TIMESTAMP'),
-                    transaction: async (fn) => await fn(sinon.stub())
+                    transaction: async fn => await fn(sinon.stub())
                 }
             }
         };
