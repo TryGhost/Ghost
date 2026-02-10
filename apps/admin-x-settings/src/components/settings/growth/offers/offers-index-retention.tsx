@@ -1,8 +1,10 @@
+import OffersRetention from './offers-retention';
 import {Button, type Tab, TabView} from '@tryghost/admin-x-design-system';
 import {ButtonGroup, type ButtonProps, showToast} from '@tryghost/admin-x-design-system';
 import {Icon} from '@tryghost/admin-x-design-system';
+import {LucideIcon} from '@tryghost/shade';
 import {Modal} from '@tryghost/admin-x-design-system';
-import {SortMenu} from '@tryghost/admin-x-design-system';
+import {Popover} from '@tryghost/admin-x-design-system';
 import {type Tier, getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {Tooltip} from '@tryghost/admin-x-design-system';
 import {currencyToDecimal, getSymbol} from '../../../../utils/currency';
@@ -92,14 +94,82 @@ export const CopyLinkButton: React.FC<{offerCode: string}> = ({offerCode}) => {
 
 export const EmptyState: React.FC<{title?: string, description: string, buttonAction: () => void, buttonLabel: string}> = ({title = 'No offers found', description, buttonAction, buttonLabel}) => (
     <div className='flex h-full grow flex-col items-center justify-center text-center'>
-        <Icon className='-mt-14' colorClass='text-grey-700 -mt-6' name='tags-block' size='xl' />
-        <h1 className='mt-6 text-2xl'>{title}</h1>
-        <p className='mt-3 max-w-[420px] text-[1.6rem]'>{description}</p>
-        <Button className="mt-8" color="grey" label={buttonLabel} onClick={buttonAction}></Button>
+        <Icon className='-mt-14' colorClass='text-grey-700 -mt-6' name='tags-block' size='lg' />
+        <h1 className='mt-4 text-xl'>{title}</h1>
+        <p className='mt-1.5 max-w-[420px]'>{description}</p>
+        <Button className="mt-6" color="grey" label={buttonLabel} onClick={buttonAction}></Button>
     </div>
 );
 
-export const OffersIndexModal = () => {
+const OffersFilterPopover: React.FC<{
+    statusFilter: 'active' | 'archived';
+    setStatusFilter: (status: 'active' | 'archived') => void;
+    sortOption: string;
+    sortDirection: string;
+    onSortChange: (option: string) => void;
+    onDirectionChange: () => void;
+}> = ({statusFilter, setStatusFilter, sortOption, sortDirection, onSortChange, onDirectionChange}) => {
+    return (
+        <Popover
+            position='end'
+            trigger={
+                <button className='flex cursor-pointer items-center justify-center rounded p-1 hover:bg-grey-100 dark:hover:bg-grey-800' type='button'>
+                    <LucideIcon.ListFilter className='text-grey-700' size={16} strokeWidth={1.5} />
+                </button>
+            }
+        >
+            <div className='flex min-w-[220px] flex-col'>
+                <div className='cursor-default select-none border-b border-b-grey-200 p-2 pl-3 text-xs font-semibold uppercase tracking-wide text-grey-700 dark:border-b-grey-800'>Status</div>
+                <div className='flex flex-col py-1'>
+                    {(['active', 'archived'] as const).map(status => (
+                        <button
+                            key={status}
+                            className='group relative mx-1 flex cursor-pointer items-center rounded-[2.5px] px-8 py-1.5 text-left text-sm hover:bg-grey-100 dark:hover:bg-grey-800'
+                            type='button'
+                            onClick={() => setStatusFilter(status)}
+                        >
+                            {statusFilter === status && <Icon className='absolute left-2' name='check' size='xs' />}
+                            {status.charAt(0).toUpperCase() + status.slice(1)}
+                        </button>
+                    ))}
+                </div>
+                <div className='cursor-default select-none border-y border-y-grey-200 p-2 pl-3 text-xs font-semibold uppercase tracking-wide text-grey-700 dark:border-grey-800'>Sort by</div>
+                <div className='flex flex-col py-1'>
+                    {[
+                        {id: 'date-added', label: 'Date added'},
+                        {id: 'name', label: 'Name'},
+                        {id: 'redemptions', label: 'Redemptions'}
+                    ].map(item => (
+                        <button
+                            key={item.id}
+                            className='group relative mx-1 flex cursor-pointer items-center rounded-[2.5px] px-8 py-1.5 pr-12 text-left text-sm hover:bg-grey-100 dark:hover:bg-grey-800'
+                            type='button'
+                            onClick={() => onSortChange(item.id)}
+                        >
+                            {sortOption === item.id && <Icon className='absolute left-2' name='check' size='xs' />}
+                            {item.label}
+                            {sortOption === item.id && (
+                                <button
+                                    className='absolute right-1 flex size-6 cursor-pointer items-center justify-center rounded-full hover:bg-grey-300 dark:hover:bg-grey-700'
+                                    title={sortDirection === 'asc' ? 'Ascending' : 'Descending'}
+                                    type='button'
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onDirectionChange();
+                                    }}
+                                >
+                                    <Icon name={sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'} size='xs' />
+                                </button>
+                            )}
+                        </button>
+                    ))}
+                </div>
+            </div>
+        </Popover>
+    );
+};
+
+export const OffersIndexModal: React.FC<{defaultTab?: string}> = ({defaultTab}) => {
     const modal = useModal();
     const {updateRoute} = useRouting();
     const {data: {offers: allOffers = []} = {}, isFetching: isFetchingOffers} = useBrowseOffers();
@@ -115,14 +185,15 @@ export const OffersIndexModal = () => {
     });
 
     let offersTabs: Tab[] = [
-        {id: 'active', title: 'Active'},
-        {id: 'archived', title: 'Archived'}
+        {id: 'signup', title: 'Signup'},
+        {id: 'retention', title: 'Retention'}
     ];
 
     const {sortingState, setSortingState} = useSortingState();
     const offersSorting = sortingState?.find(sorting => sorting.type === 'offers');
 
-    const [selectedTab, setSelectedTab] = useState('active');
+    const [selectedTab, setSelectedTab] = useState(defaultTab || 'signup');
+    const [statusFilter, setStatusFilter] = useState<'active' | 'archived'>('active');
 
     const sortOption = offersSorting?.option || 'date-added';
     const sortDirection = offersSorting?.direction || 'desc';
@@ -148,23 +219,22 @@ export const OffersIndexModal = () => {
 
     const paidActiveTiers = getPaidActiveTiers(allTiers || []);
 
+    const filteredOffers = sortedOffers.filter((offer) => {
+        const offerTier = allTiers?.find(tier => tier.id === offer?.tier.id);
+        return (statusFilter === 'active' && (offer.status === 'active' && offerTier && offerTier.active === true)) ||
+        (statusFilter === 'archived' && (offer.status === 'archived' || (offerTier && offerTier.active === false)));
+    });
+
     const listLayoutOutput = <div className='overflow-x-auto'>
-        <table className='m-0 w-full'>
-            {(selectedTab === 'active' && activeOffers.length > 0) || (selectedTab === 'archived' && archivedOffers.length > 0) ?
-                <tr className='border-b border-b-grey-300 dark:border-grey-800'>
-                    <th className='px-5 py-2.5 pl-0 text-xs font-normal text-grey-700'>{selectedTab === 'active' ? activeOffers.length : archivedOffers.length} {selectedTab === 'active' ? (activeOffers.length !== 1 ? 'offers' : 'offer') : (archivedOffers.length !== 1 ? 'offers' : 'offer')}</th>
-                    <th className='px-5 py-2.5 text-xs font-normal text-grey-700'>Terms</th>
-                    <th className='px-5 py-2.5 text-xs font-normal text-grey-700'>Price</th>
-                    <th className='px-5 py-2.5 text-xs font-normal text-grey-700'>Redemptions</th>
-                    <th className='min-w-[80px] px-5 py-2.5 pr-0 text-xs font-normal text-grey-700'></th>
-                </tr> :
-                null
-            }
-            {sortedOffers.filter((offer) => {
-                const offerTier = allTiers?.find(tier => tier.id === offer?.tier.id);
-                return (selectedTab === 'active' && (offer.status === 'active' && offerTier && offerTier.active === true)) ||
-                (selectedTab === 'archived' && (offer.status === 'archived' || (offerTier && offerTier.active === false)));
-            }).map((offer) => {
+        <table className='m-0 w-full table-fixed'>
+            <colgroup>
+                <col />
+                <col className='w-[220px]' />
+                <col className='w-[220px]' />
+                <col className='w-[220px]' />
+                <col className='w-[80px]' />
+            </colgroup>
+            {filteredOffers.map((offer) => {
                 const offerTier = allTiers?.find(tier => tier.id === offer?.tier.id);
 
                 if (!offerTier) {
@@ -192,6 +262,23 @@ export const OffersIndexModal = () => {
         </table>
     </div>;
 
+    const handleSortChange = (selectedOption: string) => {
+        setSortingState?.([{
+            type: 'offers',
+            option: selectedOption,
+            direction: sortDirection
+        }]);
+    };
+
+    const handleDirectionChange = () => {
+        const newDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+        setSortingState?.([{
+            type: 'offers',
+            option: sortOption,
+            direction: newDirection
+        }]);
+    };
+
     const buttons: ButtonProps[] = [
         {
             key: 'cancel-modal',
@@ -201,11 +288,11 @@ export const OffersIndexModal = () => {
                 updateRoute('offers');
             }
         },
-        {
+        ...(selectedTab === 'signup' ? [{
             key: 'new-offer',
             icon: 'add',
             label: 'New offer',
-            color: 'green',
+            color: 'green' as const,
             onClick: () => {
                 if (paidActiveTiers.length === 0) {
                     showToast({
@@ -216,7 +303,7 @@ export const OffersIndexModal = () => {
                     updateRoute('offers/new');
                 }
             }
-        }
+        }] : [])
     ];
 
     return <Modal
@@ -240,42 +327,49 @@ export const OffersIndexModal = () => {
                     selectedTab={selectedTab}
                     tabs={offersTabs}
                     topRightContent={
-                        (selectedTab === 'active' && activeOffers.length > 0) || (selectedTab === 'archived' && archivedOffers.length > 0) ?
-                            <div className='pt-1'>
-                                <SortMenu
-                                    direction={sortDirection as 'asc' | 'desc'}
-                                    items={[
-                                        {id: 'date-added', label: 'Date added', selected: sortOption === 'date-added', direction: sortDirection as 'asc' | 'desc'},
-                                        {id: 'name', label: 'Name', selected: sortOption === 'name', direction: sortDirection as 'asc' | 'desc'},
-                                        {id: 'redemptions', label: 'Redemptions', selected: sortOption === 'redemptions', direction: sortDirection as 'asc' | 'desc'}
-                                    ]}
-                                    position='end'
-                                    triggerButtonProps={{
-                                        link: true
-                                    }}
-                                    onDirectionChange={(selectedDirection) => {
-                                        const newDirection = selectedDirection === 'asc' ? 'desc' : 'asc';
-                                        setSortingState?.([{
-                                            type: 'offers',
-                                            option: sortOption,
-                                            direction: newDirection
-                                        }]);
-                                    }}
-                                    onSortChange={(selectedOption) => {
-                                        setSortingState?.([{
-                                            type: 'offers',
-                                            option: selectedOption,
-                                            direction: sortDirection
-                                        }]);
-                                    }}
-                                />
+                        selectedTab === 'signup' && filteredOffers.length > 0 ?
+                            <div className='flex items-center'>
+                                <span className='w-[220px] px-5 text-xs uppercase text-grey-700'>Terms</span>
+                                <span className='w-[220px] px-5 text-xs uppercase text-grey-700'>Price</span>
+                                <span className='w-[220px] px-5 text-xs uppercase text-grey-700'>Redemptions</span>
+                                <span className='flex w-[80px] items-center justify-end'>
+                                    <OffersFilterPopover
+                                        setStatusFilter={setStatusFilter}
+                                        sortDirection={sortDirection}
+                                        sortOption={sortOption}
+                                        statusFilter={statusFilter}
+                                        onDirectionChange={handleDirectionChange}
+                                        onSortChange={handleSortChange}
+                                    />
+                                </span>
                             </div> :
-                            null
+                            selectedTab === 'signup' ?
+                                <div className='flex items-center'>
+                                    <OffersFilterPopover
+                                        setStatusFilter={setStatusFilter}
+                                        sortDirection={sortDirection}
+                                        sortOption={sortOption}
+                                        statusFilter={statusFilter}
+                                        onDirectionChange={handleDirectionChange}
+                                        onSortChange={handleSortChange}
+                                    />
+                                </div> :
+                                selectedTab === 'retention' ?
+                                    <div className='flex items-center pt-[3px]'>
+                                        <span className='w-[220px] px-5 text-xs uppercase text-grey-700'>Terms</span>
+                                        <span className='w-[220px] px-5 text-xs uppercase text-grey-700'>Redemptions</span>
+                                        <span className='w-[220px] px-5 text-xs uppercase text-grey-700'>Status</span>
+                                        <span className='w-[80px]'></span>
+                                    </div> :
+                                    null
                     }
-                    onTabChange={setSelectedTab}
+                    onTabChange={(tab) => {
+                        setSelectedTab(tab);
+                        updateRoute(tab === 'retention' ? 'offers/edit/retention' : 'offers/edit');
+                    }}
                 />
             </header>
-            {selectedTab === 'active' && activeOffers.length === 0 && !isFetchingOffers ?
+            {selectedTab === 'signup' && statusFilter === 'active' && activeOffers.length === 0 && !isFetchingOffers ?
                 <EmptyState
                     buttonAction={() => updateRoute('offers/new')}
                     buttonLabel='Create an offer'
@@ -283,15 +377,16 @@ export const OffersIndexModal = () => {
                 /> :
                 null
             }
-            {selectedTab === 'archived' && archivedOffers.length === 0 && !isFetchingOffers ?
+            {selectedTab === 'signup' && statusFilter === 'archived' && archivedOffers.length === 0 && !isFetchingOffers ?
                 <EmptyState
-                    buttonAction={() => setSelectedTab('active')}
+                    buttonAction={() => setStatusFilter('active')}
                     buttonLabel='Back to active'
                     description='All archived offers will be shown here.'
                 /> :
                 null
             }
-            {listLayoutOutput}
+            {selectedTab === 'retention' && <OffersRetention />}
+            {selectedTab === 'signup' && listLayoutOutput}
         </div>
     </Modal>;
 };

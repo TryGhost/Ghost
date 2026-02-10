@@ -59,6 +59,10 @@ const features: Feature[] = [{
     title: 'Inbox Links',
     description: 'Enable mail app links on signup/signin',
     flag: 'inboxlinks'
+}, {
+    title: 'Retention Offers',
+    description: 'Enable retention offers for canceling members',
+    flag: 'retentionOffers'
 }];
 
 const AlphaFeatures: React.FC = () => {
