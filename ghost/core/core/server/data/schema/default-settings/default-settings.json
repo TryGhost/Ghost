@@ -486,6 +486,11 @@
                 "isIn": [["true", "false"]]
             },
             "type": "boolean"
+        },
+        "transistor_portal_settings": {
+            "defaultValue": "{\"enabled\":true,\"heading\":\"Podcasts\",\"description\":\"Access your RSS feeds\",\"button_text\":\"Manage\",\"url_template\":\"https://partner.transistor.fm/ghost/{memberUuid}\"}",
+            "type": "object",
+            "flags": "PUBLIC"
         }
     },
     "views": {

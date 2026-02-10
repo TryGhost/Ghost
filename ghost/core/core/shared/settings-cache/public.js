@@ -50,5 +50,6 @@ module.exports = {
     support_email_address: 'support_email_address',
     editor_default_email_recipients: 'editor_default_email_recipients',
     labs: 'labs',
+    transistor_portal_settings: 'transistor_portal_settings',
     site_uuid: 'site_uuid'
 };
