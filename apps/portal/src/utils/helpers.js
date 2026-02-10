@@ -533,11 +533,20 @@ export function getSubFreeTrialDaysLeft({sub} = {}) {
     return Math.ceil(((freeTrialEnd - today) / ONE_DAY));
 }
 
+export function subscriptionIsInTrial({sub} = {}) {
+    return Boolean(!sub?.offer && sub?.trial_end_at && !isInThePast(new Date(sub?.trial_end_at)));
+}
+
+export function subscriptionHasTrialOffer({sub} = {}) {
+    return Boolean(sub?.offer?.type === 'trial' && sub?.trial_end_at && !isInThePast(new Date(sub?.trial_end_at)));
+}
+
 export function subscriptionHasFreeTrial({sub} = {}) {
-    if (sub?.trial_end_at && !isInThePast(new Date(sub?.trial_end_at))) {
-        return true;
-    }
-    return false;
+    return subscriptionIsInTrial({sub}) || subscriptionHasTrialOffer({sub});
+}
+
+export function subscriptionHasFreeMonthsOffer({sub} = {}) {
+    return Boolean(sub?.offer?.type === 'free_months' && sub?.trial_end_at && !isInThePast(new Date(sub?.trial_end_at)));
 }
 
 export function isInThePast(date) {
@@ -800,6 +809,7 @@ export const getOfferOffAmount = ({offer}) => {
 export const getUpdatedOfferPrice = ({offer, price, useFormatted = false}) => {
     const originalAmount = price.amount;
     let updatedAmount;
+
     if (offer.type === 'fixed' && isSameCurrency(offer.currency, price.currency)) {
         updatedAmount = ((originalAmount - offer.amount)) / 100;
         updatedAmount = updatedAmount > 0 ? updatedAmount : 0;
@@ -811,6 +821,7 @@ export const getUpdatedOfferPrice = ({offer, price, useFormatted = false}) => {
     if (useFormatted) {
         return Intl.NumberFormat('en', {currency: price?.currency, style: 'currency'}).format(updatedAmount);
     }
+
     return updatedAmount;
 };
 

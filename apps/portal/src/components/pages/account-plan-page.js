@@ -256,22 +256,38 @@ function formatOfferDiscount(offer) {
     } else if (offer.type === 'fixed') {
         const symbol = offer.currency ? getCurrencySymbol(offer.currency) : '';
         return `${symbol}${offer.amount / 100} off`;
+    } else if (offer.type === 'free_months') {
+        const months = offer.amount;
+        return months === 1 ? '1 month free' : `${months} months free`;
     }
     return '';
 }
 
-function formatOfferDuration(offer) {
-    if (offer.duration === 'once') {
-        return 'your next payment';
-    } else if (offer.duration === 'forever') {
-        return 'forever';
-    } else if (offer.duration === 'repeating' && offer.duration_in_months) {
-        const months = offer.duration_in_months;
-        if (months === 1) {
-            return 'for the next month';
-        }
-        return `for the next ${months} months`;
+function getOfferMessage(offer, originalPrice, currency) {
+    if (offer.type === 'free_months') {
+        const months = offer.amount;
+        const monthLabel = months === 1 ? '1 month' : `${months} months`;
+        const dayLabel = months * 30;
+
+        return `Enjoy ${monthLabel} on us. Your next billing date will be pushed back by ${dayLabel} days.`;
     }
+
+    if (offer.duration === 'forever') {
+        return `Enjoy ${offer.amount}% off forever.`;
+    }
+
+    if (offer.duration === 'once') {
+        return `Save ${offer.amount}% on your next billing cycle. Then ${currency}${originalPrice}/${offer.cadence}.`;
+    }
+
+    if (offer.duration === 'repeating' && offer.duration_in_months === 1) {
+        return `Save ${offer.amount}% on your next billing cycle. Then ${currency}${originalPrice}/${offer.cadence}.`;
+    }
+
+    if (offer.duration === 'repeating' && offer.duration_in_months > 1) {
+        return `Save ${offer.amount}% on your next ${offer.duration_in_months} billing cycles. Then ${currency}${originalPrice}/${offer.cadence}.`;
+    }
+
     return '';
 }
 
@@ -280,18 +296,11 @@ const RetentionOfferSection = ({offer, product, price, onAcceptOffer, onDeclineO
     const isAcceptingOffer = action === 'applyOffer:running';
 
     const originalPrice = formatNumber(price.amount / 100);
+    const currency = getCurrencySymbol(price.currency);
     const discountedPrice = formatNumber(getUpdatedOfferPrice({offer, price}));
-    const currencySymbol = getCurrencySymbol(price.currency);
-
     const discountText = formatOfferDiscount(offer);
-    const durationText = formatOfferDuration(offer);
-    const intervalLabel = offer.cadence === 'month' ? 'month' : 'year';
 
-    let offerMessage = `${discountText} ${durationText}.`;
-
-    if (offer.duration !== 'forever') {
-        offerMessage += ` Renews at ${currencySymbol}${originalPrice}/${intervalLabel}.`;
-    }
+    const offerMessage = getOfferMessage(offer, originalPrice, currency);
 
     // TODO: Add i18n once copy is finalized
     return (
@@ -308,13 +317,17 @@ const RetentionOfferSection = ({offer, product, price, onAcceptOffer, onDeclineO
 
                 <div className="gh-portal-offer-details">
                     <div className="gh-portal-retention-offer-price">
-                        <div className="gh-portal-product-price">
-                            <span className="currency-sign">{currencySymbol}</span>
-                            <span className="amount">{discountedPrice}</span>
-                        </div>
-                        <div className="gh-portal-offer-oldprice">
-                            {currencySymbol}{originalPrice}
-                        </div>
+                        {!(offer.type === 'free_months') && (
+                            <>
+                                <div className="gh-portal-product-price">
+                                    <span className="currency-sign">{currency}</span>
+                                    <span className="amount">{discountedPrice}</span>
+                                </div>
+                                <div className="gh-portal-offer-oldprice">
+                                    {currency}{originalPrice}
+                                </div>
+                            </>
+                        )}
                     </div>
                     <p className="footnote">
                         {offerMessage}
@@ -418,9 +431,11 @@ const PlansContainer = ({
     if (confirmationType === 'offerRetention' && pendingOffer) {
         const offerProduct = getProductFromId({site, productId: pendingOffer.tier.id});
         const offerPrice = pendingOffer.cadence === 'month' ? offerProduct?.monthlyPrice : offerProduct?.yearlyPrice;
+        const isFreeMonthsOffer = pendingOffer.type === 'free_months';
+        const isPercentOffer = pendingOffer.type === 'percent';
 
-        // Skip retention offer if product or price data is invalid
-        if (offerProduct && offerPrice) {
+        // Skip retention offer if product, price or offer is invalid
+        if (offerProduct && offerPrice && (isFreeMonthsOffer || isPercentOffer)) {
             return (
                 <RetentionOfferSection
                     offer={pendingOffer}

@@ -1,4 +1,34 @@
-import {hasAvailablePrices, getAllProductsForSite, getAvailableProducts, getCurrencySymbol, getFreeProduct, getMemberName, getMemberSubscription, getPriceFromSubscription, getPriceIdFromPageQuery, getSupportAddress, getDefaultNewsletterSender, getUrlHistory, hasMultipleProducts, isActiveOffer, isRetentionOffer, isInviteOnly, isPaidMember, isPaidMembersOnly, isSameCurrency, transformApiTiersData, isSigninAllowed, isSignupAllowed, getCompExpiry, isInThePast, hasNewsletterSendingEnabled} from '../../src/utils/helpers';
+import {
+    hasAvailablePrices,
+    getAllProductsForSite,
+    getAvailableProducts,
+    getCurrencySymbol,
+    getFreeProduct,
+    getMemberName,
+    getMemberSubscription,
+    getPriceFromSubscription,
+    getPriceIdFromPageQuery,
+    getSupportAddress,
+    getDefaultNewsletterSender,
+    getUrlHistory,
+    hasMultipleProducts,
+    isActiveOffer,
+    isRetentionOffer,
+    isInviteOnly,
+    isPaidMember,
+    isPaidMembersOnly,
+    isSameCurrency,
+    transformApiTiersData,
+    isSigninAllowed,
+    isSignupAllowed,
+    getCompExpiry,
+    isInThePast,
+    hasNewsletterSendingEnabled,
+    subscriptionHasFreeMonthsOffer,
+    subscriptionHasFreeTrial,
+    subscriptionHasTrialOffer,
+    subscriptionIsInTrial
+} from '../../src/utils/helpers';
 import * as Fixtures from '../../src/utils/fixtures-generator';
 import {site as FixturesSite, member as FixtureMember, offer as FixtureOffer, transformTierFixture as TransformFixtureTiers} from './test-fixtures';
 import {isComplimentaryMember} from '../../src/utils/helpers';
@@ -549,6 +579,135 @@ describe('Helpers - ', () => {
 
             expect(isInThePast(pastDate)).toEqual(true);
             expect(isInThePast(futureDate)).toEqual(false);
+        });
+    });
+
+    describe('subscriptionIsInTrial', () => {
+        it('returns true for active trial subscriptions', () => {
+            const futureDate = new Date();
+            futureDate.setDate(futureDate.getDate() + 3);
+            const sub = {
+                offer: null,
+                trial_end_at: futureDate.toISOString()
+            };
+
+            expect(subscriptionIsInTrial({sub})).toBe(true);
+        });
+
+        it('returns false for trial offers', () => {
+            const futureDate = new Date();
+            futureDate.setDate(futureDate.getDate() + 3);
+            const sub = {
+                offer: {type: 'trial'},
+                trial_end_at: futureDate.toISOString()
+            };
+
+            expect(subscriptionIsInTrial({sub})).toBe(false);
+        });
+
+        it('returns false for free_months offers', () => {
+            const futureDate = new Date();
+            futureDate.setDate(futureDate.getDate() + 3);
+            const sub = {
+                offer: {type: 'free_months'},
+                trial_end_at: futureDate.toISOString()
+            };
+
+            expect(subscriptionIsInTrial({sub})).toBe(false);
+        });
+    });
+
+    describe('subscriptionHasTrialOffer', () => {
+        it('returns true for active trial offers', () => {
+            const futureDate = new Date();
+            futureDate.setDate(futureDate.getDate() + 3);
+            const sub = {
+                offer: {type: 'trial'},
+                trial_end_at: futureDate.toISOString()
+            };
+
+            expect(subscriptionHasTrialOffer({sub})).toBe(true);
+        });
+
+        it('returns false for trial subscriptions (no offer)', () => {
+            const futureDate = new Date();
+            futureDate.setDate(futureDate.getDate() + 3);
+            const sub = {
+                offer: null,
+                trial_end_at: futureDate.toISOString()
+            };
+
+            expect(subscriptionHasTrialOffer({sub})).toBe(false);
+        });
+    });
+
+    describe('subscriptionHasFreeTrial', () => {
+        it('returns true for trial subscriptions', () => {
+            const futureDate = new Date();
+            futureDate.setDate(futureDate.getDate() + 3);
+            const sub = {
+                offer: null,
+                trial_end_at: futureDate.toISOString()
+            };
+
+            expect(subscriptionHasFreeTrial({sub})).toBe(true);
+        });
+
+        it('returns true for active trial offers', () => {
+            const futureDate = new Date();
+            futureDate.setDate(futureDate.getDate() + 3);
+            const sub = {
+                offer: {type: 'trial'},
+                trial_end_at: futureDate.toISOString()
+            };
+
+            expect(subscriptionHasFreeTrial({sub})).toBe(true);
+        });
+
+        it('returns false for free_months offers', () => {
+            const futureDate = new Date();
+            futureDate.setDate(futureDate.getDate() + 3);
+            const sub = {
+                offer: {type: 'free_months'},
+                trial_end_at: futureDate.toISOString()
+            };
+
+            expect(subscriptionHasFreeTrial({sub})).toBe(false);
+        });
+    });
+
+    describe('subscriptionHasFreeMonthsOffer', () => {
+        it('returns true for active free_months offers', () => {
+            const futureDate = new Date();
+            futureDate.setDate(futureDate.getDate() + 3);
+            const sub = {
+                offer: {type: 'free_months'},
+                trial_end_at: futureDate.toISOString()
+            };
+
+            expect(subscriptionHasFreeMonthsOffer({sub})).toBe(true);
+        });
+
+        it('returns false for trial offers', () => {
+            const futureDate = new Date();
+            futureDate.setDate(futureDate.getDate() + 3);
+            const sub = {
+                offer: {type: 'trial'},
+                trial_end_at: futureDate.toISOString()
+            };
+
+            expect(subscriptionHasFreeMonthsOffer({sub})).toBe(false);
+        });
+
+        it('returns false for trial subscriptions', () => {
+            const futureDate = new Date();
+            futureDate.setDate(futureDate.getDate() + 3);
+            const sub = {
+                offer: null,
+                trial_end_at: futureDate.toISOString()
+            };
+
+            expect(subscriptionHasFreeMonthsOffer({sub})).toBe(false);
         });
     });
 
