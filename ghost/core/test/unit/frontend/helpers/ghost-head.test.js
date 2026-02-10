@@ -415,7 +415,7 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '0.3'
                 }
             }));
-            sinon.assert.calledOnce(loggingErrorStub);
+            sinon.assert.notCalled(loggingErrorStub);
         });
 
         it('returns structured data on first index page', async function () {
