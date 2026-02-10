@@ -42,7 +42,6 @@
 @import "components/stacks.css";
 @import "components/browser-preview.css";
 @import "components/filter-builder.css";
-@import "components/theme-errors.css";
 @import "components/modal-about.css";
 
 
@@ -1485,10 +1484,6 @@ Onboarding checklist: Share publication modal */
 
 .gh-share-links li a:hover {
     background: #394047;
-}
-
-.gh-sidebar-banner.gh-error-banner {
-    background: var(--lightgrey-d1);
 }
 
 
