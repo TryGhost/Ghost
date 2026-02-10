@@ -172,7 +172,6 @@
     "intl-messageformat": "5.4.3",
     "js-yaml": "4.1.0",
     "jsonc-parser": "3.3.1",
-    "jsonpath": "1.2.1",
     "jsonwebtoken": "8.5.1",
     "juice": "9.1.0",
     "keypair": "1.0.4",

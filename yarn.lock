@@ -18594,7 +18594,7 @@ escodegen@^1.8.1:
   optionalDependencies:
     source-map "~0.6.1"
 
-escodegen@^2.0.0, escodegen@^2.1.0:
+escodegen@^2.0.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/escodegen/-/escodegen-2.1.0.tgz#ba93bbb7a43986d29d6041f99f5262da773e2e17"
   integrity sha512-2NlIDTwUWJN0mRPQOdtQBzbUHvdGY2P1VXSyU83Q3xKxM7WHX2Ql8dKq782Q9TgQUNOLEzEYu9bzLNj1q88I5w==
@@ -18985,11 +18985,6 @@ esprima@1.2.2:
   version "1.2.2"
   resolved "https://registry.yarnpkg.com/esprima/-/esprima-1.2.2.tgz#76a0fd66fcfe154fd292667dc264019750b1657b"
   integrity sha512-+JpPZam9w5DuJ3Q67SqsMGtiHKENSMRVoxvArfJZK01/BfLEObtZ6orJa/MtoGNR/rfMgp5837T41PAmTwAv/A==
-
-esprima@1.2.5:
-  version "1.2.5"
-  resolved "https://registry.yarnpkg.com/esprima/-/esprima-1.2.5.tgz#0993502feaf668138325756f30f9a51feeec11e9"
-  integrity sha512-S9VbPDU0adFErpDai3qDkjq8+G05ONtKzcyNrPKg/ZKa+tf879nX2KexNU95b31UoTJjRLInNBHHHjFPoCd7lQ==
 
 esprima@^4.0.0, esprima@^4.0.1, esprima@~4.0.0:
   version "4.0.1"
@@ -23454,15 +23449,6 @@ jsonpath@1.1.1:
     esprima "1.2.2"
     static-eval "2.0.2"
     underscore "1.12.1"
-
-jsonpath@1.2.1:
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/jsonpath/-/jsonpath-1.2.1.tgz#2b74a4bcc78948e43e33ac971138ce0c68bce701"
-  integrity sha512-Jl6Jhk0jG+kP3yk59SSeGq7LFPR4JQz1DU0K+kXTysUhMostbhU3qh5mjTuf0PqFcXpAT7kvmMt9WxV10NyIgQ==
-  dependencies:
-    esprima "1.2.5"
-    static-eval "2.1.1"
-    underscore "1.13.6"
 
 jsonwebtoken@8.5.1:
   version "8.5.1"
@@ -31372,13 +31358,6 @@ static-eval@2.0.2:
   dependencies:
     escodegen "^1.8.1"
 
-static-eval@2.1.1:
-  version "2.1.1"
-  resolved "https://registry.yarnpkg.com/static-eval/-/static-eval-2.1.1.tgz#71ac6a13aa32b9e14c5b5f063c362176b0d584ba"
-  integrity sha512-MgWpQ/ZjGieSVB3eOJVs4OA2LT/q1vx98KPCTTQPzq/aLr0YUXTsgryTXr4SLfR0ZfUUCiedM9n/ABeDIyy4mA==
-  dependencies:
-    escodegen "^2.1.0"
-
 static-extend@^0.1.1:
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/static-extend/-/static-extend-0.1.2.tgz#60809c39cbff55337226fd5e0b520f341f1fb5c6"
@@ -33149,7 +33128,7 @@ underscore@1.12.1:
   resolved "https://registry.yarnpkg.com/underscore/-/underscore-1.12.1.tgz#7bb8cc9b3d397e201cf8553336d262544ead829e"
   integrity sha512-hEQt0+ZLDVUMhebKxL4x1BTtDY7bavVofhZ9KZ4aI26X9SRaE+Y3m83XUL1UP2jn8ynjndwCCpEHdUG+9pP1Tw==
 
-underscore@1.13.6, underscore@>=1.8.3:
+underscore@>=1.8.3:
   version "1.13.6"
   resolved "https://registry.yarnpkg.com/underscore/-/underscore-1.13.6.tgz#04786a1f589dc6c09f761fc5f45b89e935136441"
   integrity sha512-+A5Sja4HP1M08MaXya7p5LvjuM7K6q/2EaC0+iovj/wOcMsTzMvDFbasi/oSapiwOlt252IqsKqPjCl7huKS0A==
