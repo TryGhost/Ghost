@@ -48,6 +48,13 @@
                                 <header>
                                     <h1>This site is private.</h1>
                                 </header>
+                                <div id="cookie-warning" style="display: none;">
+                                    <p>Your browser is blocking the cookies needed to view this site. To preview your private site, try one of the following:</p>
+                                    <ul>
+                                        <li>Open the site directly in a new tab</li>
+                                        <li>Disable third-party cookie blocking in your browser settings</li>
+                                    </ul>
+                                </div>
                                 <form class="gh-signin" method="post" novalidate="novalidate">
                                     <div class="form-group{{#if error}} error{{/if}}">
                                             {{input_password class="gh-input" placeholder="Password"}}
@@ -63,5 +70,22 @@
                 </main>
             </div>
         </div>
+        <script>
+            (function() {
+                if (window.self === window.top) return;
+
+                try {
+                    document.cookie = 'ghost_cookie_test=1; SameSite=Lax; path=/';
+                    var cookiesWork = document.cookie.indexOf('ghost_cookie_test') !== -1;
+                    document.cookie = 'ghost_cookie_test=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+                    if (cookiesWork) return;
+                } catch (e) {
+                    // Cookie access threw - cookies are blocked
+                }
+
+                var warning = document.getElementById('cookie-warning');
+                if (warning) warning.style.display = 'block';
+            })();
+        </script>
     </body>
 </html>

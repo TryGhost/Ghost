@@ -712,6 +712,30 @@ h2 {
     box-shadow: none;
 }
 
+#cookie-warning {
+    margin-bottom: 24px;
+    padding: 16px 20px;
+    background: #FFF4E5;
+    border: 1px solid #FFD699;
+    border-radius: 8px;
+    font-size: 1.5rem;
+    line-height: 1.5;
+    color: #6E4600;
+}
+
+#cookie-warning p {
+    margin: 0 0 8px;
+}
+
+#cookie-warning ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+#cookie-warning li {
+    margin-bottom: 4px;
+}
+
 @media (max-width: 500px) {
     .gh-flow-content {
         padding: 0;
