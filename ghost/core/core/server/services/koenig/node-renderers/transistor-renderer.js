@@ -16,14 +16,9 @@ function renderTransistorNode(node, options = {}) {
 function frontendTemplate(node, document, options) {
     const figure = document.createElement('figure');
     figure.setAttribute('class', 'kg-card kg-transistor-card');
-    const memberUuid = options.memberUuid;
 
-    if (!memberUuid) {
-        // Transistor does not support public/non-member embeds for now, so we return null
-        return null;
-    }
-
-    const embedUrl = new URL(`https://partner.transistor.fm/ghost/embed/${memberUuid}`);
+    // Use {uuid} placeholder - content.js will substitute with member UUID at request time
+    const embedUrl = new URL(`https://partner.transistor.fm/ghost/embed/{uuid}`);
 
     if (node.accentColor) {
         embedUrl.searchParams.set('color', node.accentColor.replace(/^#/, ''));
@@ -34,7 +29,7 @@ function frontendTemplate(node, document, options) {
 
     const iframe = document.createElement('iframe');
     iframe.setAttribute('width', '100%');
-    iframe.setAttribute('height', '400');
+    iframe.setAttribute('height', '325');
     iframe.setAttribute('title', 'Transistor podcasts');
     iframe.setAttribute('frameborder', 'no');
     iframe.setAttribute('scrolling', 'no');
