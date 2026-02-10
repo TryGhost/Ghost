@@ -152,7 +152,6 @@ describe('Unit: endpoints/utils/serializers/output/utils/post-gating', function 
 
                 gating.forPost(attrs, frame);
 
-                // Non-encoded {uuid} should NOT be replaced
                 assert.equal(attrs.html, '<iframe src="https://partner.transistor.fm/ghost/embed/{uuid}"></iframe>');
             });
         });
