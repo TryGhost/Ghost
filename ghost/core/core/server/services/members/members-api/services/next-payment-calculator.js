@@ -7,8 +7,8 @@
  * @prop {string} offer_id
  * @prop {string} start
  * @prop {string|null} end
- * @prop {'once'|'repeating'|'forever'} duration
- * @prop {'percent'|'fixed'} type
+ * @prop {'once'|'repeating'|'forever'|'free_months'} duration
+ * @prop {'percent'|'fixed'|'free_months'} type
  * @prop {number} amount
  */
 
@@ -18,6 +18,7 @@
  * @prop {number} amount
  * @prop {string} interval
  * @prop {string} currency
+ * @prop {string} date
  * @prop {SubscriptionDiscount|null} discount
  */
 
@@ -47,14 +48,37 @@ class NextPaymentCalculator {
         const interval = subscription.plan.interval;
         const currency = subscription.plan.currency;
         const offer = subscription.offer || null;
+        const date = this._toISOString(subscription.current_period_end);
 
         if (!offer || offer.type === 'trial') {
             return {
                 original_amount: originalAmount,
                 amount: originalAmount,
+                date,
                 interval,
                 currency,
                 discount: null
+            };
+        }
+
+        if (offer.type === 'free_months') {
+            const start = this._toISOString(subscription.trial_start_at);
+            const end = this._toISOString(subscription.trial_end_at);
+
+            return {
+                original_amount: originalAmount,
+                amount: originalAmount,
+                interval,
+                currency,
+                date,
+                discount: {
+                    offer_id: offer.id,
+                    start,
+                    end,
+                    duration: offer.duration,
+                    type: offer.type,
+                    amount: offer.amount
+                }
             };
         }
 
@@ -64,6 +88,7 @@ class NextPaymentCalculator {
             return {
                 original_amount: originalAmount,
                 amount: originalAmount,
+                date,
                 interval,
                 currency,
                 discount: null
@@ -75,12 +100,13 @@ class NextPaymentCalculator {
         return {
             original_amount: originalAmount,
             amount: discountedAmount,
+            date,
             interval,
             currency,
             discount: {
                 offer_id: offer.id,
-                start: activeDiscount.start ? new Date(activeDiscount.start).toISOString() : null,
-                end: activeDiscount.end ? new Date(activeDiscount.end).toISOString() : null,
+                start: this._toISOString(activeDiscount.start),
+                end: this._toISOString(activeDiscount.end),
                 duration: offer.duration,
                 type: offer.type,
                 amount: offer.amount
@@ -160,6 +186,19 @@ class NextPaymentCalculator {
         }
 
         return originalAmount;
+    }
+
+    /**
+     * Converts to date time string format
+     * @param {Date|string|number|null} value
+     * @returns {string|null}
+     */
+    _toISOString(value) {
+        if (!value) {
+            return null;
+        }
+
+        return new Date(value).toISOString();
     }
 }
 

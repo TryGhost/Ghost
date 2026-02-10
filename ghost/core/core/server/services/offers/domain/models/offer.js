@@ -322,10 +322,15 @@ class Offer {
             });
         }
 
-        //CASE: For offer type trial, the duration can only be `trial`
         if (type.value === 'trial' && duration.value.type !== 'trial') {
             throw new errors.InvalidOfferDuration({
                 message: 'Offer `duration` must be "trial" for offer type "trial".'
+            });
+        }
+
+        if (type.value === 'free_months' && duration.value.type !== 'free_months') {
+            throw new errors.InvalidOfferDuration({
+                message: 'Offer `duration` must be "free_months" for offer type "free_months".'
             });
         }
 
@@ -335,6 +340,8 @@ class Offer {
             amount = OfferAmount.OfferPercentageAmount.create(data.amount);
         } else if (type.equals(OfferType.Trial)) {
             amount = OfferAmount.OfferTrialAmount.create(data.amount);
+        } else if (type.equals(OfferType.FreeMonths)) {
+            amount = OfferAmount.OfferFreeMonthsAmount.create(data.amount);
         } else if (type.equals(OfferType.Fixed)) {
             amount = OfferAmount.OfferFixedAmount.create(data.amount);
             currency = OfferCurrency.create(data.currency);

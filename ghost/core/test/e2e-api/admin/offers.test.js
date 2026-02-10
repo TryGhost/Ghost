@@ -224,6 +224,41 @@ describe('Offers API', function () {
         trialOffer = body.offers[0];
     });
 
+    it('Can add a free months offer', async function () {
+        const newOffer = {
+            name: 'Retention Bonus',
+            code: 'retention-bonus',
+            display_title: '1 month free',
+            display_description: 'Enjoy a free month on us',
+            type: 'free_months',
+            cadence: 'month',
+            amount: 1,
+            duration: 'free_months',
+            duration_in_months: null,
+            currency_restriction: false,
+            currency: null,
+            status: 'active',
+            redemption_count: 0,
+            redemption_type: 'signup',
+            tier: {
+                id: defaultTier.id
+            }
+        };
+
+        await agent
+            .post(`offers/`)
+            .body({offers: [newOffer]})
+            .expectStatus(200)
+            .expect(({body}) => {
+                body.offers.should.have.length(1);
+                body.offers[0].type.should.eql('free_months');
+                body.offers[0].amount.should.eql(1);
+                body.offers[0].duration.should.eql('free_months');
+                body.offers[0].cadence.should.eql('month');
+                body.offers[0].tier.id.should.eql(defaultTier.id.toString());
+            });
+    });
+
     it('Cannot create offer with same code', async function () {
         sinon.stub(logging, 'error');
 
@@ -326,7 +361,7 @@ describe('Offers API', function () {
                 etag: anyEtag
             })
             .matchBodySnapshot({
-                offers: new Array(5).fill({
+                offers: new Array(6).fill({
                     id: anyObjectId,
                     tier: {
                         id: anyObjectId
@@ -535,7 +570,7 @@ describe('Offers API', function () {
                 etag: anyEtag
             })
             .matchBodySnapshot({
-                offers: new Array(4).fill({
+                offers: new Array(5).fill({
                     id: anyObjectId,
                     tier: {
                         id: anyObjectId

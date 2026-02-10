@@ -60,6 +60,11 @@ describe('NextPaymentCalculator', function () {
             defaults.duration_in_months = null;
         }
 
+        if (overrides.type === 'free_months') {
+            defaults.duration = 'free_months';
+            defaults.duration_in_months = null;
+        }
+
         if (overrides.duration === 'repeating' && overrides.duration_in_months === undefined) {
             defaults.duration_in_months = 6;
         }
@@ -107,6 +112,7 @@ describe('NextPaymentCalculator', function () {
             assert.deepEqual(result, {
                 original_amount: 500,
                 amount: 500,
+                date: '2025-06-15T00:00:00.000Z',
                 interval: 'month',
                 currency: 'USD',
                 discount: null
@@ -126,9 +132,43 @@ describe('NextPaymentCalculator', function () {
             assert.deepEqual(result, {
                 original_amount: 500,
                 amount: 500,
+                date: '2025-06-15T00:00:00.000Z',
                 interval: 'month',
                 currency: 'USD',
                 discount: null
+            });
+        });
+
+        it('handles active free months offers', function () {
+            const nextPaymentCalculator = new NextPaymentCalculator();
+            const offer = createOffer({type: 'free_months', duration: 'free_months', amount: 2});
+            const currentPeriodEnd = '2025-06-15T00:00:00.000Z';
+            const trialStartAt = '2025-05-01T00:00:00.000Z';
+            const trialEndAt = '2025-08-15T00:00:00.000Z';
+            const subscription = createSubscription({
+                discount_start: null,
+                discount_end: null,
+                trial_start_at: new Date(trialStartAt),
+                trial_end_at: new Date(trialEndAt),
+                current_period_end: new Date(currentPeriodEnd)
+            }, offer);
+
+            const result = nextPaymentCalculator.calculate(subscription);
+
+            assert.deepEqual(result, {
+                original_amount: 500,
+                amount: 500,
+                date: currentPeriodEnd,
+                interval: 'month',
+                currency: 'USD',
+                discount: {
+                    offer_id: 'offer_123',
+                    start: trialStartAt,
+                    end: trialEndAt,
+                    duration: 'free_months',
+                    type: 'free_months',
+                    amount: 2
+                }
             });
         });
 
