@@ -5,7 +5,6 @@ const testUtils = require('../../utils');
 const models = require('../../../core/server/models');
 const {OUTBOX_STATUSES} = require('../../../core/server/models/outbox');
 const db = require('../../../core/server/data/db');
-const configUtils = require('../../utils/config-utils');
 const mockManager = require('../../utils/e2e-framework-mock-manager');
 const mailService = require('../../../core/server/services/mail');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../core/server/services/member-welcome-emails/constants');
@@ -64,7 +63,6 @@ describe('Member Welcome Emails Integration', function () {
         await db.knex('members').del();
         await db.knex('automated_emails').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free).del();
         await db.knex('automated_emails').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.paid).del();
-        await configUtils.restore();
         mockManager.restore();
     });
 
@@ -331,10 +329,7 @@ describe('Member Welcome Emails Integration', function () {
             assert.equal(record.automated_email_id, automatedEmail.id);
         });
 
-        it('sends email to member email when test inbox is not configured', async function () {
-            // Explicitly clear the test inbox config (it's set in config.testing.json)
-            configUtils.set('memberWelcomeEmailTestInbox', '');
-
+        it('sends email to member email', async function () {
             const memberEmail = 'real-member@example.com';
 
             await models.Outbox.add({
@@ -353,29 +348,6 @@ describe('Member Welcome Emails Integration', function () {
             assert.equal(mailService.GhostMailer.prototype.send.callCount, 1);
             const sendCall = mailService.GhostMailer.prototype.send.firstCall;
             assert.equal(sendCall.args[0].to, memberEmail);
-        });
-
-        it('sends email to test inbox when memberWelcomeEmailTestInbox is configured', async function () {
-            configUtils.set('memberWelcomeEmailTestInbox', 'test-inbox@example.com');
-
-            const memberEmail = 'real-member-2@example.com';
-
-            await models.Outbox.add({
-                event_type: 'MemberCreatedEvent',
-                payload: JSON.stringify({
-                    memberId: ObjectId().toHexString(),
-                    email: memberEmail,
-                    name: 'Real Member 2',
-                    status: 'free'
-                }),
-                status: OUTBOX_STATUSES.PENDING
-            });
-
-            await scheduleInlineJob();
-
-            assert.equal(mailService.GhostMailer.prototype.send.callCount, 1);
-            const sendCall = mailService.GhostMailer.prototype.send.firstCall;
-            assert.equal(sendCall.args[0].to, 'test-inbox@example.com');
         });
     });
 });
