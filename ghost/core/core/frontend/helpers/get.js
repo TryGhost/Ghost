@@ -10,7 +10,6 @@ const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 
 const _ = require('lodash');
-const jsonpath = require('jsonpath');
 const nqlLang = require('@tryghost/nql-lang');
 
 const messages = {
@@ -48,6 +47,53 @@ const pathAliases = {
 };
 
 /**
+ * Resolve a simple path like "post.tags[*].slug" against an object.
+ * Supports dot-notation, [N] array indexing, and [*] array wildcards.
+ * Always returns an array of matched values.
+ */
+const VALID_SEGMENT = /^\w+(\[(\*|\d+)\])?$/;
+
+function querySimplePath(obj, pathString) {
+    const parts = pathString.split('.');
+    let current = [obj];
+
+    for (const part of parts) {
+        if (current.length === 0) {
+            break;
+        }
+
+        if (!VALID_SEGMENT.test(part)) {
+            throw new errors.IncorrectUsageError({
+                message: `{{#get}} helper — unsupported path segment "${part}" in "${pathString}"`
+            });
+        }
+
+        // Match e.g. "tags[*]" or "tags[0]"
+        const bracketMatch = part.match(/^(.+?)\[(\*|\d+)\]$/);
+        const key = bracketMatch ? bracketMatch[1] : part;
+        const bracket = bracketMatch ? bracketMatch[2] : null;
+
+        const next = [];
+        for (const item of current) {
+            if (item !== null && item !== undefined && item[key] !== undefined) {
+                next.push(item[key]);
+            }
+        }
+
+        if (bracket === '*') {
+            current = next.flatMap(item => (Array.isArray(item) ? item : []));
+        } else if (bracket !== null) {
+            const index = parseInt(bracket, 10);
+            current = next.flatMap(item => (item !== null && item !== undefined && item[index] !== undefined ? [item[index]] : []));
+        } else {
+            current = next;
+        }
+    }
+
+    return current;
+}
+
+/**
  * ## Is Browse
  * Is this a Browse request or a Read request?
  * @param {Object} options
@@ -83,10 +129,10 @@ function resolvePaths(globals, data, value) {
         path = path.replace(/\.\[/g, '[');
 
         if (path.charAt(0) === '@') {
-            result = jsonpath.query(globals, path.slice(1));
+            result = querySimplePath(globals, path.slice(1));
         } else {
             // Do the query, which always returns an array of matches
-            result = jsonpath.query(data, path);
+            result = querySimplePath(data, path);
         }
 
         // Handle the case where the single data property we return is a Date
@@ -352,3 +398,5 @@ module.exports = async function get(resource, options) {
 module.exports.async = true;
 
 module.exports.optimiseFilterCacheability = optimiseFilterCacheability;
+
+module.exports.querySimplePath = querySimplePath;
