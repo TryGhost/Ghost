@@ -281,6 +281,48 @@ describe('Comments Cursor Pagination API', function () {
     });
 
     describe('Reply cursor pagination', function () {
+        it('Browse response includes replies_cursor for inline replies', async function () {
+            const memberId = fixtureManager.get('members', 0).id;
+
+            // Create parent comment with 5 replies
+            const parent = await dbFns.addComment({
+                member_id: memberId,
+                html: '<p>Parent with replies</p>'
+            });
+
+            for (let i = 0; i < 5; i++) {
+                await dbFns.addComment({
+                    member_id: memberId,
+                    parent_id: parent.id,
+                    html: `<p>Reply ${i}</p>`,
+                    created_at: new Date(Date.now() - (4 - i) * 100000)
+                });
+            }
+
+            // Browse top-level comments — should include parent with 3 inline replies + replies_cursor
+            const browseResult = await membersAgent
+                .get(`/api/comments/post/${postId}/?limit=20`)
+                .expectStatus(200);
+
+            const parentComment = browseResult.body.comments.find(c => c.id === parent.id);
+            assert.ok(parentComment, 'Parent comment should be in browse results');
+            assert.equal(parentComment.replies.length, 3, 'Should have 3 inline replies');
+            assert.ok(parentComment.replies_cursor, 'Should have replies_cursor');
+
+            // Use replies_cursor to load more replies — should NOT include the 3 inline ones
+            const repliesResult = await membersAgent
+                .get(`/api/comments/${parent.id}/replies/?limit=10&after=${parentComment.replies_cursor}`)
+                .expectStatus(200);
+
+            assert.equal(repliesResult.body.comments.length, 2, 'Should have 2 remaining replies');
+
+            // Verify no overlap: inline reply IDs should not appear in cursor-paginated results
+            const inlineIds = new Set(parentComment.replies.map(r => r.id));
+            for (const reply of repliesResult.body.comments) {
+                assert.ok(!inlineIds.has(reply.id), `Reply ${reply.id} should not be duplicated`);
+            }
+        });
+
         it('Can paginate replies with cursors', async function () {
             const memberId = fixtureManager.get('members', 0).id;
             const memberId2 = fixtureManager.get('members', 1).id;

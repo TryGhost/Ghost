@@ -19,7 +19,10 @@ const controller = {
             'order',
             'debug',
             'id',
-            'impersonate_member_uuid'
+            'impersonate_member_uuid',
+            'after',
+            'before',
+            'anchor'
         ],
         validation: {
             options: {
