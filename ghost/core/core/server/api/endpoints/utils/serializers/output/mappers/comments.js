@@ -2,6 +2,7 @@ const _ = require('lodash');
 const utils = require('../../..');
 const url = require('../utils/url');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
+const cursorUtils = require('../../../../../../services/comments/cursor-utils');
 
 const commentFields = [
     'id',
@@ -88,6 +89,23 @@ const commentMapper = (model, frame) => {
 
     if (jsonModel.replies) {
         response.replies = jsonModel.replies.map(reply => commentMapper(reply, frame));
+
+        // Include a cursor for the last inline reply so the frontend can
+        // pass it as `after` when loading more replies without re-fetching
+        if (response.replies.length > 0) {
+            const lastReply = jsonModel.replies[jsonModel.replies.length - 1];
+            const replyCreatedAt = lastReply.created_at || (lastReply.get && lastReply.get('created_at'));
+            const replyId = lastReply.id || (lastReply.get && lastReply.get('id'));
+            if (replyCreatedAt && replyId) {
+                const createdAtStr = replyCreatedAt instanceof Date
+                    ? replyCreatedAt.toISOString()
+                    : replyCreatedAt;
+                response.replies_cursor = cursorUtils.encodeCursor({
+                    created_at: createdAtStr,
+                    id: replyId
+                });
+            }
+        }
     }
 
     if (jsonModel.parent) {
