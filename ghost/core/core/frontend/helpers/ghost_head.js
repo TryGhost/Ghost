@@ -139,6 +139,73 @@ function getAnnouncementBarHelper(data) {
     return helper;
 }
 
+/**
+ * Get the consolidated public-apps loader helper
+ * This is the new system that loads all public apps from a single loader
+ */
+function getPublicAppsHelper(data, frontendKey, excludeList) {
+    const siteUrl = urlUtils.getSiteUrl();
+    const adminUrl = urlUtils.getAdminUrl() || urlUtils.getSiteUrl();
+    const hash = config.get('publicApps:hash') || 'development';
+    const features = [];
+
+    // Check which features should be loaded
+    const preview = data?.site?._preview;
+
+    // Announcement bar
+    if (!excludeList.has('announcement')) {
+        const announcementFilled = settingsCache.get('announcement_content') && settingsCache.get('announcement_visibility').length;
+        if (announcementFilled || preview) {
+            features.push('announcement');
+        }
+    }
+
+    // Search - always enabled if not excluded (requires [data-ghost-search] trigger buttons in theme)
+    if (!excludeList.has('search')) {
+        features.push('search');
+    }
+
+    // Future features would be added here:
+    // if (!excludeList.has('portal') && portalEnabled) features.push('portal');
+    // if (!excludeList.has('comments') && commentsEnabled) features.push('comments');
+
+    if (features.length === 0) {
+        return '';
+    }
+
+    const attrs = {
+        ghost: siteUrl,
+        key: frontendKey,
+        features: features.join(','),
+        locale: settingsCache.get('locale') || 'en'
+    };
+
+    // Add search-specific attributes
+    if (features.includes('search')) {
+        attrs['sodo-search'] = adminUrl;
+        // CSS is inlined in the JS bundle, no separate styles URL needed
+    }
+
+    // Add preview-specific attributes for announcement bar
+    if (preview && features.includes('announcement')) {
+        const searchParam = new URLSearchParams(preview);
+        const announcement = searchParam.get('announcement');
+        const announcementBackground = searchParam.has('announcement_bg') ? searchParam.get('announcement_bg') : '';
+        const announcementVisibility = searchParam.has('announcement_vis');
+
+        if (announcement && announcementVisibility) {
+            attrs.preview = 'true';
+            attrs.announcement = escapeExpression(announcement);
+            attrs['announcement-background'] = escapeExpression(announcementBackground);
+        }
+    }
+
+    const loaderUrl = `${urlUtils.getSubdir()}/public-apps/loader.js?v=${hash}`;
+    const dataAttrs = getDataAttributes(attrs);
+
+    return `<script type="module" src="${loaderUrl}" ${dataAttrs} crossorigin="anonymous"></script>`;
+}
+
 function getWebmentionDiscoveryLink() {
     try {
         const siteUrl = urlUtils.getSiteUrl();
@@ -303,11 +370,21 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
             escapeExpression(meta.rssUrl) + '">');
 
         head.push(getMembersHelper(options.data, frontendKey, excludeList)); // controlling for excludes within the function
-        if (!excludeList.has('search')) {
-            head.push(getSearchHelper(frontendKey));
-        }
-        if (!excludeList.has('announcement')) {
-            head.push(getAnnouncementBarHelper(options.data));
+
+        // Check if consolidated public-apps is enabled
+        const usePublicApps = config.get('publicApps:enabled');
+
+        if (usePublicApps) {
+            // New consolidated public-apps loader (handles announcement, search, etc.)
+            head.push(getPublicAppsHelper(options.data, frontendKey, excludeList));
+        } else {
+            // Legacy: individual CDN-loaded scripts
+            if (!excludeList.has('search')) {
+                head.push(getSearchHelper(frontendKey));
+            }
+            if (!excludeList.has('announcement')) {
+                head.push(getAnnouncementBarHelper(options.data));
+            }
         }
         try {
             head.push(getWebmentionDiscoveryLink());

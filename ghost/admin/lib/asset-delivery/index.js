@@ -7,6 +7,7 @@ const path = require('path');
 const camelCase = require('lodash/camelCase');
 
 const adminXApps = ['admin-x-settings', 'activitypub', 'posts', 'stats'];
+const publicApps = ['public-apps'];
 
 function generateHash(filePath) {
     const fileContents = fs.readFileSync(filePath, 'utf8');
@@ -34,6 +35,14 @@ module.exports = {
             // TODO: ideally take this from the package, but that's broken thanks to .cjs file ext
             for (const app of adminXApps) {
                 const defaultFilename = `${app}.js`;
+                const configName = camelCase(app);
+                this.packageConfig[`${configName}Filename`] = defaultFilename;
+                this.packageConfig[`${configName}Hash`] = (this.env === 'production') ? generateHash(path.join(`../../apps/${app}/dist`, defaultFilename)) : 'development';
+            }
+
+            // Generate hashes for public apps
+            for (const app of publicApps) {
+                const defaultFilename = 'loader.js';
                 const configName = camelCase(app);
                 this.packageConfig[`${configName}Filename`] = defaultFilename;
                 this.packageConfig[`${configName}Hash`] = (this.env === 'production') ? generateHash(path.join(`../../apps/${app}/dist`, defaultFilename)) : 'development';
@@ -116,6 +125,21 @@ module.exports = {
                 fs.copySync(koenigLexicalPath, assetsKoenigLexicalPath, {overwrite: true, dereference: true});
             } else {
                 console.log('Koenig-Lexical folder not found');
+            }
+        }
+
+        // copy public-apps assets to built/public-apps (served at /public-apps/)
+        for (const app of publicApps) {
+            const publicAppsPath = `../../apps/${app}/dist`;
+            const publicAppsOut = path.join(path.dirname(require.resolve('ghost')), 'core/built/public-apps');
+            if (fs.existsSync(publicAppsPath)) {
+                if (this.env === 'production') {
+                    fs.copySync(publicAppsPath, publicAppsOut, {overwrite: true, dereference: true});
+                } else {
+                    fs.ensureSymlinkSync(publicAppsPath, publicAppsOut);
+                }
+            } else {
+                console.log(`${app} folder not found`);
             }
         }
     }

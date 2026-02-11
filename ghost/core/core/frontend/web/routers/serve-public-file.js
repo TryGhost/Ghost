@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const fs = require('fs-extra');
 const path = require('path');
+const express = require('../../../shared/express');
 const errors = require('@tryghost/errors');
 const config = require('../../../shared/config');
 const urlUtils = require('../../../shared/url-utils');
@@ -154,6 +155,14 @@ function servePublicFiles(siteApp) {
         }
         return defaultRobotsTxtMiddleware(req, res, next);
     });
+
+    // Serve consolidated public-apps assets (when publicApps:enabled is true)
+    const publicAppsPath = path.join(path.dirname(require.resolve('ghost')), 'core/built/public-apps');
+    siteApp.use('/public-apps', express.static(publicAppsPath, {
+        maxAge: config.get('caching:publicAssets:maxAge') * 1000,
+        immutable: true,
+        fallthrough: false
+    }));
 }
 
 module.exports = servePublicFiles;
