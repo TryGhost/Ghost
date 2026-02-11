@@ -111,11 +111,67 @@ A single `public-apps` package that:
 - `ghost/core/core/shared/config/defaults.json` - Added `publicApps` config section
 - `ghost/admin/lib/asset-delivery/index.js` - Added public-apps hash generation and copying
 
-## Future Work
+## Migration Status
 
-1. Port Portal and Comments UI
-2. Proper i18n integration (bundle locale data or solve CommonJS issue)
-3. RTL language support
-4. Comprehensive test coverage
-5. Performance benchmarking
-6. Remove legacy CDN scripts once migration complete
+| App | Status | Notes |
+|-----|--------|-------|
+| Announcement Bar | ✅ Done | Fully ported |
+| Search (sodo-search) | ✅ Done | Simplified i18n (English only) |
+| Comments UI | 🔲 Next | ~49 files, TipTap editor |
+| Portal | 🔲 Planned | ~78 files, Stripe integration |
+
+## Known Issues
+
+### i18n CommonJS Incompatibility
+
+**Problem**: The `@tryghost/i18n` package is CommonJS and uses dynamic `require()` calls to load locale JSON files at runtime. This doesn't work in browser ES modules.
+
+**Error seen**:
+```
+ReferenceError: Can't find variable: require
+ReferenceError: Cannot access 'default' before initialization
+```
+
+**Root cause**: `ghost/i18n/lib/i18n.js` does:
+```javascript
+const resources = require(`../locales/${locale}/${namespace}.json`);
+```
+
+This dynamic require pattern can't be statically analyzed by bundlers for ES module output.
+
+**Workarounds tried**:
+1. ❌ `commonjsOptions.dynamicRequireTargets` - Vite 6 requires glob function, complex setup
+2. ✅ Inline translations - Works but doesn't scale, no locale support
+
+**Potential solutions**:
+1. **Bundle translations at build time** - Generate a JS module that exports all locale data
+2. **Create browser-compatible i18n wrapper** - New entry point that doesn't use dynamic require
+3. **Fetch translations at runtime** - Load JSON via fetch() instead of require()
+4. **Pre-bundle with Vite optimizeDeps** - Force Vite to pre-process the package
+
+**Recommended approach**: Create a new entry point in `@tryghost/i18n` specifically for browser bundles that imports translations statically or fetches them.
+
+## TODOs
+
+### Immediate (Comments UI Migration)
+
+- [ ] Port Comments UI components (~49 files)
+- [ ] Bundle TipTap editor dependencies (~9 packages, ~100KB)
+- [ ] Handle @headlessui/react integration
+- [ ] Test comment posting, editing, replies, likes, reporting
+- [ ] Verify iframe isolation works for comment styling
+
+### Before Production
+
+- [ ] **Solve i18n properly** - See issue above
+- [ ] Add RTL language support
+- [ ] Port Portal (~78 files, ~15,700 lines)
+- [ ] Comprehensive E2E test coverage
+- [ ] Performance benchmarking vs CDN approach
+- [ ] Bundle size optimization audit
+
+### Cleanup (After Full Migration)
+
+- [ ] Remove legacy CDN script loading from ghost_head.js
+- [ ] Archive individual app packages (portal, comments-ui, sodo-search, announcement-bar)
+- [ ] Update documentation
