@@ -1,4 +1,4 @@
-const {parseOrder, ensureIdTiebreaker} = require('../../../../../../services/comments/cursor-utils');
+const {parseOrder, ensureIdTiebreaker} = require('../../../../../services/comments/cursor-utils');
 
 /**
  * Ensure the order string includes an id tiebreaker for deterministic keyset pagination.

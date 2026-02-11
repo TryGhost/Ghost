@@ -289,30 +289,41 @@ const Comment = ghostBookshelf.Model.extend({
         // Build base filtered collection (applies status filters, NQL filters, etc.)
         const itemCollection = this.getFilteredCollection(options);
 
-        // Parse order for bookshelf (needed for the SELECT to include count columns)
-        if (options.order) {
-            const {order, orderRaw, eagerLoad} = itemCollection.parseOrderOption(options.order, options.withRelated);
-            options.orderRaw = orderRaw;
-            options.order = order;
-            options.eagerLoad = eagerLoad;
-        }
-
         // Build the count__likes subquery SQL for use in keyset conditions
         const likesSubquery = '(SELECT COUNT(comment_likes.id) FROM comment_likes WHERE comment_likes.comment_id = comments.id)';
+
+        // Clone query for total count BEFORE applying keyset condition
+        // Total count should reflect all matching items, not just those after/before cursor
+        const countQuery = itemCollection.query().clone();
+        countQuery.clear('select');
+        countQuery.clear('order');
+        const countPromise = countQuery.select(
+            ghostBookshelf.knex.raw('count(distinct comments.id) as aggregate')
+        );
 
         // Apply keyset WHERE clause if we have a cursor
         if (afterCursor || beforeCursor) {
             const cursor = afterCursor || beforeCursor;
             const direction = afterCursor ? 'after' : 'before';
-            const cursorValues = cursorUtils.decodeCursor(cursor);
-            const {sql, bindings} = cursorUtils.buildKeysetCondition(cursorValues, parsedOrder, direction);
 
-            // Replace count__likes references with the actual subquery
-            const resolvedSql = sql.replace(/\bcount__likes\b/g, likesSubquery);
+            let cursorValues;
+            try {
+                cursorValues = cursorUtils.decodeCursor(cursor);
+            } catch (err) {
+                // Invalid cursor — treat as start from beginning (no keyset condition)
+                cursorValues = null;
+            }
 
-            itemCollection.query((qb) => {
-                qb.whereRaw(`(${resolvedSql})`, bindings);
-            });
+            if (cursorValues) {
+                const {sql, bindings} = cursorUtils.buildKeysetCondition(cursorValues, parsedOrder, direction);
+
+                // Replace count__likes references with the actual subquery
+                const resolvedSql = sql.replace(/\bcount__likes\b/g, likesSubquery);
+
+                itemCollection.query((qb) => {
+                    qb.whereRaw(`(${resolvedSql})`, bindings);
+                });
+            }
         }
 
         // Apply ordering
@@ -326,32 +337,10 @@ const Comment = ghostBookshelf.Model.extend({
             }
         }
 
-        // For 'before' direction, we fetch in reverse order and then reverse the results
-        // so the items are returned in the correct display order
         const isBefore = !!beforeCursor;
-        if (isBefore) {
-            // Reverse the ordering for the query to get the correct items
-            // (we want items that come "before" the cursor in display order,
-            // which means items that come "after" it in reverse order)
-            // The keyset condition already handles the comparison direction,
-            // but we need to reverse the ORDER BY to get the right N items
-            // closest to the cursor. Then we reverse the results.
-            // Actually, buildKeysetCondition already flips comparisons for 'before',
-            // so we just need to reverse the result order at the end.
-        }
 
         // Apply limit (fetch one extra to detect if there's a next page)
         itemCollection.query('limit', limit + 1);
-
-        // Count query (parallel to fetch)
-        const countQuery = itemCollection.query().clone();
-        countQuery.clear('select');
-        countQuery.clear('order');
-        countQuery.clear('limit');
-        countQuery.clear('offset');
-        const countPromise = countQuery.select(
-            ghostBookshelf.knex.raw('count(distinct comments.id) as aggregate')
-        );
 
         // Fetch results
         const fetchOptions = _.omit(options, ['page', 'limit', 'after', 'before', 'anchor', 'order']);

@@ -135,6 +135,7 @@ describe('cursor-utils', function () {
 
     describe('buildKeysetCondition', function () {
         it('builds condition for created_at DESC, id DESC with after', function () {
+            // ISO dates in cursor get normalized to database format in bindings
             const cursor = {created_at: '2025-01-15T10:30:00.000Z', id: '65a8f3abc123'};
             const order = [
                 {field: 'created_at', direction: 'desc'},
@@ -144,8 +145,8 @@ describe('cursor-utils', function () {
 
             assert.equal(result.sql, '(comments.created_at < ?) OR (comments.created_at = ? AND comments.id < ?)');
             assert.deepEqual(result.bindings, [
-                '2025-01-15T10:30:00.000Z',
-                '2025-01-15T10:30:00.000Z',
+                '2025-01-15 10:30:00',
+                '2025-01-15 10:30:00',
                 '65a8f3abc123'
             ]);
         });
@@ -160,8 +161,8 @@ describe('cursor-utils', function () {
 
             assert.equal(result.sql, '(comments.created_at > ?) OR (comments.created_at = ? AND comments.id > ?)');
             assert.deepEqual(result.bindings, [
-                '2025-01-15T10:30:00.000Z',
-                '2025-01-15T10:30:00.000Z',
+                '2025-01-15 10:30:00',
+                '2025-01-15 10:30:00',
                 '65a8f3abc123'
             ]);
         });
@@ -176,8 +177,8 @@ describe('cursor-utils', function () {
 
             assert.equal(result.sql, '(comments.created_at > ?) OR (comments.created_at = ? AND comments.id > ?)');
             assert.deepEqual(result.bindings, [
-                '2025-01-15T10:30:00.000Z',
-                '2025-01-15T10:30:00.000Z',
+                '2025-01-15 10:30:00',
+                '2025-01-15 10:30:00',
                 '65a8f3abc123'
             ]);
         });
@@ -195,7 +196,7 @@ describe('cursor-utils', function () {
                 result.sql,
                 '(count__likes < ?) OR (count__likes = ? AND comments.created_at < ?) OR (count__likes = ? AND comments.created_at = ? AND comments.id < ?)'
             );
-            assert.deepEqual(result.bindings, [42, 42, '2025-01-15T10:30:00.000Z', 42, '2025-01-15T10:30:00.000Z', '65a8f3abc123']);
+            assert.deepEqual(result.bindings, [42, 42, '2025-01-15 10:30:00', 42, '2025-01-15 10:30:00', '65a8f3abc123']);
         });
 
         it('handles single field order', function () {

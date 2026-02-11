@@ -114,14 +114,14 @@ function buildKeysetCondition(cursorValues, order, direction) {
         for (let j = 0; j < i; j++) {
             const col = columnExpression(order[j].field);
             parts.push(`${col} = ?`);
-            partBindings.push(cursorValues[order[j].field]);
+            partBindings.push(normalizeBindingValue(order[j].field, cursorValues[order[j].field]));
         }
 
         // The current column uses a comparison operator
         const col = columnExpression(order[i].field);
         const op = getComparisonOp(order[i].direction, direction);
         parts.push(`${col} ${op} ?`);
-        partBindings.push(cursorValues[order[i].field]);
+        partBindings.push(normalizeBindingValue(order[i].field, cursorValues[order[i].field]));
 
         conditions.push(`(${parts.join(' AND ')})`);
         bindings.push(...partBindings);
@@ -131,6 +131,25 @@ function buildKeysetCondition(cursorValues, order, direction) {
         sql: conditions.join(' OR '),
         bindings
     };
+}
+
+/**
+ * Normalize a cursor value for use as a SQL binding. Datetime fields stored
+ * in the database use 'YYYY-MM-DD HH:mm:ss' format, so ISO 8601 strings
+ * from cursors must be converted.
+ * @param {string} field
+ * @param {any} value
+ * @returns {any}
+ */
+function normalizeBindingValue(field, value) {
+    if (field === 'created_at' && typeof value === 'string') {
+        // Convert ISO 8601 to database format: 'YYYY-MM-DD HH:mm:ss'
+        const date = new Date(value);
+        if (!isNaN(date.getTime())) {
+            return date.toISOString().replace('T', ' ').replace(/\.\d{3}Z$/, '');
+        }
+    }
+    return value;
 }
 
 /**
