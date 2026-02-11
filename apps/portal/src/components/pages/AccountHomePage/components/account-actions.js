@@ -63,6 +63,7 @@ const AccountActions = () => {
                 <TransistorPodcastsAction
                     hasPodcasts={transistor.hasPodcasts}
                     memberUuid={transistor.memberUuid}
+                    settings={transistor.settings}
                 />
             </div>
 

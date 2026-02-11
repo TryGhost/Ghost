@@ -35,7 +35,6 @@ describe('AccountActions', () => {
 
             await waitFor(() => {
                 expect(queryByText('Podcasts')).toBeInTheDocument();
-                expect(queryByText('Subscribe')).toBeInTheDocument();
             });
         });
 

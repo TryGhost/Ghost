@@ -1,5 +1,6 @@
 import {useContext, useEffect, useState} from 'react';
 import AppContext from '../../../../app-context';
+import {isPreviewMode} from '../../../../utils/check-mode';
 
 /**
  * Hook to fetch integration data for account details.
@@ -8,12 +9,22 @@ import AppContext from '../../../../app-context';
 const useIntegrations = () => {
     const {member, site} = useContext(AppContext);
 
-    const isTransistorEnabled = Boolean(site.labs?.transistor);
+    const transistorSettings = site.transistor_portal_settings;
+    const isTransistorEnabled = Boolean(site.labs?.transistor) && transistorSettings?.enabled !== false;
     const memberUuid = member?.uuid;
 
-    const [transistorPodcasts, setTransistorPodcasts] = useState(false);
+    // In preview mode, always show transistor section if enabled (don't make API call)
+    const isPreview = isPreviewMode();
+
+    const [transistorPodcasts, setTransistorPodcasts] = useState(isPreview && isTransistorEnabled);
 
     useEffect(() => {
+        // In preview mode, show based on settings only
+        if (isPreview) {
+            setTransistorPodcasts(isTransistorEnabled);
+            return;
+        }
+
         if (!isTransistorEnabled || !memberUuid) {
             setTransistorPodcasts(false);
             return;
@@ -48,13 +59,14 @@ const useIntegrations = () => {
         checkTransistor();
 
         return () => controller.abort();
-    }, [isTransistorEnabled, memberUuid]);
+    }, [isTransistorEnabled, memberUuid, isPreview]);
 
     return {
         transistor: {
             enabled: isTransistorEnabled,
             hasPodcasts: transistorPodcasts,
-            memberUuid
+            memberUuid,
+            settings: transistorSettings
         }
     };
 };
