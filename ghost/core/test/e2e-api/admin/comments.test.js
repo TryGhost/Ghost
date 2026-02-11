@@ -1897,6 +1897,71 @@ describe(`Admin Comments API`, function () {
         });
     });
 
+    describe('Cursor pagination on admin replies', function () {
+        it('Admin browse includes replies_cursor and cursor pagination works on replies endpoint', async function () {
+            const memberId = fixtureManager.get('members', 0).id;
+
+            // Create parent comment with 5 replies
+            const {parent} = await dbFns.addCommentWithReplies({
+                member_id: memberId,
+                html: '<p>Parent with many replies</p>',
+                replies: Array.from({length: 5}, (_, i) => ({
+                    member_id: memberId,
+                    html: `<p>Reply ${i}</p>`,
+                    created_at: new Date(Date.now() - (4 - i) * 100000)
+                }))
+            });
+
+            // Admin browse should include parent with 3 inline replies + replies_cursor
+            const browseRes = await adminApi.get('/comments/post/' + postId + '/');
+            const parentComment = browseRes.body.comments.find(c => c.id === parent.id);
+            assert.ok(parentComment, 'Parent should be in browse results');
+            assert.equal(parentComment.replies.length, 3, 'Should have 3 inline replies');
+            assert.ok(parentComment.replies_cursor, 'Should have replies_cursor');
+
+            // Use replies_cursor to load remaining replies via admin endpoint
+            const repliesRes = await adminApi.get(
+                `/comments/${parent.id}/replies/?limit=10&after=${parentComment.replies_cursor}`
+            );
+            assert.equal(repliesRes.body.comments.length, 2, 'Should have 2 remaining replies');
+
+            // Verify no overlap between inline and cursor-paginated replies
+            const inlineIds = new Set(parentComment.replies.map(r => r.id));
+            for (const reply of repliesRes.body.comments) {
+                assert.ok(!inlineIds.has(reply.id), `Reply ${reply.id} should not be duplicated`);
+            }
+        });
+
+        it('Admin replies endpoint returns cursor pagination metadata', async function () {
+            const memberId = fixtureManager.get('members', 0).id;
+
+            const {parent} = await dbFns.addCommentWithReplies({
+                member_id: memberId,
+                html: '<p>Parent</p>',
+                replies: Array.from({length: 5}, (_, i) => ({
+                    member_id: memberId,
+                    html: `<p>Reply ${i}</p>`,
+                    created_at: new Date(Date.now() - (4 - i) * 100000)
+                }))
+            });
+
+            // Get first 2 replies with cursor pagination
+            const browseRes = await adminApi.get('/comments/post/' + postId + '/');
+            const parentComment = browseRes.body.comments.find(c => c.id === parent.id);
+
+            const repliesRes = await adminApi.get(
+                `/comments/${parent.id}/replies/?limit=1&after=${parentComment.replies_cursor}`
+            );
+
+            assert.equal(repliesRes.body.comments.length, 1);
+            // Should have cursor pagination metadata (page/pages are null in cursor mode)
+            assert.equal(repliesRes.body.meta.pagination.page, null);
+            assert.equal(repliesRes.body.meta.pagination.pages, null);
+            // Should have a next cursor since there's 1 more reply
+            assert.ok(repliesRes.body.meta.pagination.next, 'Should have next cursor');
+        });
+    });
+
     describe('API Key Permissions', function () {
         let restrictedApiKeyId;
         let restrictedApiKeySecret;
