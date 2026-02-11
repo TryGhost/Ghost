@@ -36,10 +36,6 @@ const features: Feature[] = [{
     description: 'Enables {uniqueid} variable in emails for unique image URLs to bypass ESP image caching',
     flag: 'emailUniqueid'
 }, {
-    title: 'Welcome Emails',
-    description: 'Enables features related to sending welcome emails to new members',
-    flag: 'welcomeEmails'
-}, {
     title: 'Updated theme translation (beta)',
     description: 'Enable theme translation using i18next instead of the old translation package.',
     flag: 'themeTranslation'
@@ -59,6 +55,10 @@ const features: Feature[] = [{
     title: 'Inbox Links',
     description: 'Enable mail app links on signup/signin',
     flag: 'inboxlinks'
+}, {
+    title: 'Retention Offers',
+    description: 'Enable retention offers for canceling members',
+    flag: 'retentionOffers'
 }];
 
 const AlphaFeatures: React.FC = () => {

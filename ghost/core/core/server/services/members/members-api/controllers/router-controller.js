@@ -980,6 +980,10 @@ module.exports = class RouterController {
             return res.end(JSON.stringify({offers}));
         }
 
+        function sendNoOffersAvailable() {
+            return sendOffersResponse([]);
+        }
+
         if (!identity) {
             res.writeHead(401);
             return res.end('Unauthorized');
@@ -1029,45 +1033,50 @@ module.exports = class RouterController {
 
         // No active subscription - return empty offers
         if (activeSubscriptions.length === 0) {
-            return sendOffersResponse();
+            return sendNoOffersAvailable();
         }
 
         // Multiple active subscriptions - edge case, return empty offers to avoid ambiguity
         if (activeSubscriptions.length > 1) {
-            return sendOffersResponse();
+            return sendNoOffersAvailable();
         }
 
         const activeSubscription = activeSubscriptions[0];
 
+        // If subscription is already set to cancel, don't show retention offers
+        if (activeSubscription.get('cancel_at_period_end')) {
+            return sendNoOffersAvailable();
+        }
+
         // If subscription already has an offer applied (e.g. signup offer), don't show retention offers
         if (activeSubscription.get('offer_id')) {
-            return sendOffersResponse();
+            return sendNoOffersAvailable();
         }
 
         // If subscription is in a trial period (either offer-based or tier-based), don't show retention offers
         const trialEndAt = activeSubscription.get('trial_end_at');
         if (trialEndAt && trialEndAt > new Date()) {
-            return sendOffersResponse();
+            return sendNoOffersAvailable();
         }
 
         // Get tier and cadence from the subscription
         const stripePrice = activeSubscription.related('stripePrice');
         if (!stripePrice || !stripePrice.id) {
-            return sendOffersResponse();
+            return sendNoOffersAvailable();
         }
 
         const stripeProduct = stripePrice.related('stripeProduct');
 
         // If the stripe product is not found, return empty offers
         if (!stripeProduct || !stripeProduct.id) {
-            return sendOffersResponse();
+            return sendNoOffersAvailable();
         }
 
         const product = stripeProduct.related('product');
 
         // If the product is not found, return empty offers
         if (!product || !product.id) {
-            return sendOffersResponse();
+            return sendNoOffersAvailable();
         }
 
         const tierId = product.id;
