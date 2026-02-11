@@ -26,9 +26,9 @@
  * @prop {number} redemption_count
  * @prop {'signup'|'retention'} redemption_type
  *
- * @prop {object} tier
- * @prop {string} tier.id
- * @prop {string} tier.name
+ * @prop {object|null} tier
+ * @prop {string} [tier.id]
+ * @prop {string} [tier.name]
  * @prop {string} created_at
  * @prop {string|null} last_redeemed
  */
@@ -55,10 +55,9 @@ class OfferMapper {
             status: offer.status.value,
             redemption_count: offer.redemptionCount,
             redemption_type: offer.redemptionType.value,
-            tier: {
-                id: offer.tier.id,
-                name: offer.tier.name
-            },
+            tier: offer.tier
+                ? {id: offer.tier.id, name: offer.tier.name}
+                : null,
             created_at: offer.createdAt,
             last_redeemed: offer.lastRedeemed
         };

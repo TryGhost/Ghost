@@ -6,6 +6,7 @@ const config = require('../../../../../core/shared/config');
 // is only exposed via themeEngine.getActive()
 const activeTheme = require('../../../../../core/frontend/services/theme-engine/active');
 const engine = require('../../../../../core/frontend/services/theme-engine/engine');
+const assetHash = require('../../../../../core/frontend/services/asset-hash');
 
 describe('Themes', function () {
     afterEach(function () {
@@ -56,12 +57,18 @@ describe('Themes', function () {
                 // Check the theme is not yet mounted
                 assert.equal(activeTheme.get().mounted, false);
 
+                // Spy on assetHash.clearCache
+                const clearCacheSpy = sinon.spy(assetHash, 'clearCache');
+
                 // Call mount!
                 theme.mount(fakeBlogApp);
 
                 // Check the asset hash gets reset
                 assert.equal(configStub.calledOnce, true);
                 assert.equal(configStub.calledWith('assetHash', null), true);
+
+                // Check the file-based asset hash cache is cleared
+                clearCacheSpy.calledOnce.should.be.true();
 
                 // Check te view cache was cleared
                 assert.deepEqual(fakeBlogApp.cache, {});
@@ -87,12 +94,18 @@ describe('Themes', function () {
                 // Check the theme is not yet mounted
                 assert.equal(activeTheme.get().mounted, false);
 
+                // Spy on assetHash.clearCache
+                const clearCacheSpy = sinon.spy(assetHash, 'clearCache');
+
                 // Call mount!
                 theme.mount(fakeBlogApp);
 
                 // Check the asset hash gets reset
                 assert.equal(configStub.calledOnce, true);
                 assert.equal(configStub.calledWith('assetHash', null), true);
+
+                // Check the file-based asset hash cache is cleared
+                clearCacheSpy.calledOnce.should.be.true();
 
                 // Check te view cache was cleared
                 assert.deepEqual(fakeBlogApp.cache, {});
