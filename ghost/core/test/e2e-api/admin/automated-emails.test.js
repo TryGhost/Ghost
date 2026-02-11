@@ -502,6 +502,36 @@ describe('Automated Emails API', function () {
                 });
         });
 
+        it('Uses configured sender and reply-to for test email [NY-1028]', async function () {
+            const senderEmail = 'scott@sagittura.com';
+            const senderReplyTo = 'support@sagittura.com';
+            const {body: newslettersBody} = await agent.get('newsletters/?limit=1').expectStatus(200);
+            const defaultNewsletterId = newslettersBody.newsletters[0].id;
+
+            await agent
+                .put(`newsletters/${defaultNewsletterId}`)
+                .body({newsletters: [{
+                    sender_email: senderEmail,
+                    sender_reply_to: senderReplyTo
+                }]})
+                .expectStatus(200);
+
+            await agent
+                .post(`automated_emails/${automatedEmailId}/test/`)
+                .body({
+                    email: 'test@ghost.org',
+                    subject: 'Test Subject',
+                    lexical: validLexical
+                })
+                .expectStatus(204);
+
+            sinon.assert.calledOnce(mailService.GhostMailer.prototype.send);
+            sinon.assert.calledWithMatch(mailService.GhostMailer.prototype.send, {
+                from: sinon.match(new RegExp(senderEmail)),
+                replyTo: senderReplyTo
+            });
+        });
+
         it('Cannot send test email for non-existent automated email', async function () {
             await agent
                 .post('automated_emails/abcd1234abcd1234abcd1234/test/')
