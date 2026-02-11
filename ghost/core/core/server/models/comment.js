@@ -327,6 +327,9 @@ const Comment = ghostBookshelf.Model.extend({
         options.push('isAdmin');
         options.push('browseAll');
         options.push('reportCount');
+        options.push('after');
+        options.push('before');
+        options.push('anchor');
 
         return options;
     }

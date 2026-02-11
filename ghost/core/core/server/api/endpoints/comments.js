@@ -83,7 +83,10 @@ const controller = {
             'filter',
             'order',
             'debug',
-            'impersonate_member_uuid'
+            'impersonate_member_uuid',
+            'after',
+            'before',
+            'anchor'
         ],
         validation: {
             options: {
@@ -107,7 +110,10 @@ const controller = {
             'limit',
             'filter',
             'order',
-            'include_nested'
+            'include_nested',
+            'after',
+            'before',
+            'anchor'
         ],
         validation: {},
         permissions: {
