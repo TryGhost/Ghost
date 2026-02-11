@@ -176,11 +176,11 @@ export const OffersIndexModal: React.FC<{defaultTab?: string}> = ({defaultTab}) 
     const {data: {tiers: allTiers} = {}} = useBrowseTiers();
     const signupOffers = allOffers.filter(offer => offer.redemption_type === 'signup');
     const activeOffers = signupOffers.filter((offer) => {
-        const offerTier = allTiers?.find(tier => tier.id === offer?.tier.id);
+        const offerTier = allTiers?.find(tier => tier.id === offer?.tier?.id);
         return (offer.status === 'active' && offerTier && offerTier.active === true);
     });
     const archivedOffers = signupOffers.filter((offer) => {
-        const offerTier = allTiers?.find(tier => tier.id === offer?.tier.id);
+        const offerTier = allTiers?.find(tier => tier.id === offer?.tier?.id);
         return (offer.status === 'archived' || (offerTier && offerTier.active === false));
     });
 
@@ -220,7 +220,7 @@ export const OffersIndexModal: React.FC<{defaultTab?: string}> = ({defaultTab}) 
     const paidActiveTiers = getPaidActiveTiers(allTiers || []);
 
     const filteredOffers = sortedOffers.filter((offer) => {
-        const offerTier = allTiers?.find(tier => tier.id === offer?.tier.id);
+        const offerTier = allTiers?.find(tier => tier.id === offer?.tier?.id);
         return (statusFilter === 'active' && (offer.status === 'active' && offerTier && offerTier.active === true)) ||
         (statusFilter === 'archived' && (offer.status === 'archived' || (offerTier && offerTier.active === false)));
     });
@@ -235,7 +235,7 @@ export const OffersIndexModal: React.FC<{defaultTab?: string}> = ({defaultTab}) 
                 <col className='w-[80px]' />
             </colgroup>
             {filteredOffers.map((offer) => {
-                const offerTier = allTiers?.find(tier => tier.id === offer?.tier.id);
+                const offerTier = allTiers?.find(tier => tier.id === offer?.tier?.id);
 
                 if (!offerTier) {
                     return null;
