@@ -1,5 +1,6 @@
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
+import useFeatureFlag from '../../../hooks/use-feature-flag';
 import {Button, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {CopyLinkButton, createRedemptionFilterUrl, getOfferDiscount} from './offers/offers-index';
 import {type Offer, useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
@@ -8,7 +9,6 @@ import {checkStripeEnabled} from '@tryghost/admin-x-framework/api/settings';
 import {numberWithCommas} from '../../../utils/helpers';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
-import useFeatureFlag from '../../../hooks/use-feature-flag';
 
 const OfferContainer: React.FC<{offerTitle: string, tier: Tier, cadence: string, redemptions: number, type: string, amount: number, currency: string, offerId: string, offerCode: string, goToOfferEdit: (offerId: string) => void}> = (
     {offerTitle, tier, cadence, redemptions, type, amount, currency, offerId, offerCode, goToOfferEdit}) => {
