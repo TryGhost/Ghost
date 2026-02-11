@@ -308,10 +308,12 @@ describe('Automated Emails API', function () {
                     .expectStatus(200);
 
                 sinon.assert.calledWithMatch(infoStub, {
-                    event: 'welcome_email.enabled',
-                    automated_email_id: automatedEmail.id,
-                    slug: 'member-welcome-email-free',
-                    enabled: true
+                    system: {
+                        event: 'welcome_email.enabled',
+                        automated_email_id: automatedEmail.id,
+                        slug: 'member-welcome-email-free',
+                        enabled: true
+                    }
                 }, sinon.match.string);
             });
 
@@ -327,10 +329,12 @@ describe('Automated Emails API', function () {
                     .expectStatus(200);
 
                 sinon.assert.calledWithMatch(infoStub, {
-                    event: 'welcome_email.disabled',
-                    automated_email_id: automatedEmail.id,
-                    slug: 'member-welcome-email-free',
-                    enabled: false
+                    system: {
+                        event: 'welcome_email.disabled',
+                        automated_email_id: automatedEmail.id,
+                        slug: 'member-welcome-email-free',
+                        enabled: false
+                    }
                 }, sinon.match.string);
             });
 
@@ -346,7 +350,9 @@ describe('Automated Emails API', function () {
                     .expectStatus(200);
 
                 sinon.assert.neverCalledWithMatch(infoStub, sinon.match.any, {
-                    event: sinon.match(/^welcome_email\.(enabled|disabled)$/)
+                    system: {
+                        event: sinon.match(/^welcome_email\.(enabled|disabled)$/)
+                    }
                 });
             });
         });

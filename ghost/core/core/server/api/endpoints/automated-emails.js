@@ -29,10 +29,12 @@ const logWelcomeEmailStatusTransition = ({automatedEmailId, slug, previousStatus
     }
 
     logging.info({
-        event: isEnableTransition ? 'welcome_email.enabled' : 'welcome_email.disabled',
-        automated_email_id: automatedEmailId,
-        slug,
-        enabled: currentStatus === 'active'
+        system: {
+            event: isEnableTransition ? 'welcome_email.enabled' : 'welcome_email.disabled',
+            automated_email_id: automatedEmailId,
+            slug,
+            enabled: currentStatus === 'active'
+        }
     }, 'Welcome email status changed');
 };
 
