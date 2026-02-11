@@ -206,7 +206,8 @@ class MemberWelcomeEmailService {
             siteSettings: this.#getSiteSettings()
         });
 
-        const senderOptions = await this.#getSenderOptions();
+        // Test sends should always reflect the latest newsletter sender settings.
+        const senderOptions = await this.#getDefaultNewsletterSenderOptions();
 
         await this.#mailer.send({
             to: email,
