@@ -26,6 +26,9 @@ export default defineConfig({
                     if (chunkInfo.facadeModuleId?.includes('features/comments')) {
                         return 'comments.[hash].js';
                     }
+                    if (chunkInfo.facadeModuleId?.includes('features/portal')) {
+                        return 'portal.[hash].js';
+                    }
                     return '[name].[hash].js';
                 },
                 assetFileNames: (assetInfo) => {

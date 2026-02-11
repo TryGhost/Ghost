@@ -170,8 +170,11 @@ function getPublicAppsHelper(data, frontendKey, excludeList) {
         features.push('comments');
     }
 
-    // Future features would be added here:
-    // if (!excludeList.has('portal') && portalEnabled) features.push('portal');
+    // Portal - enabled if memberships, donations, or recommendations are enabled
+    const portalEnabled = settingsCache.get('members_enabled') || settingsCache.get('donations_enabled') || settingsCache.get('recommendations_enabled');
+    if (!excludeList.has('portal') && portalEnabled) {
+        features.push('portal');
+    }
 
     if (features.length === 0) {
         return '';
@@ -196,6 +199,12 @@ function getPublicAppsHelper(data, frontendKey, excludeList) {
         attrs['admin-url'] = adminUrl;
         attrs['api-url'] = urlUtils.urlFor('api', {type: 'members'}, true);
         // post-id will be added by the theme template via data attribute
+    }
+
+    // Add portal-specific attributes
+    if (features.includes('portal')) {
+        attrs.i18n = 'true';
+        attrs.api = urlUtils.urlFor('api', {type: 'content'}, true);
     }
 
     // Add preview-specific attributes for announcement bar

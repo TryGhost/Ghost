@@ -12,7 +12,9 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@doist/react-interpolate": "2.2.1",
     "@headlessui/react": "1.7.19",
+    "@sentry/react": "7.120.4",
     "@tiptap/core": "2.26.3",
     "@tiptap/extension-blockquote": "2.26.3",
     "@tiptap/extension-document": "2.26.3",
@@ -23,6 +25,7 @@
     "@tiptap/extension-text": "2.26.3",
     "@tiptap/pm": "2.26.3",
     "@tiptap/react": "2.26.3",
+    "dompurify": "3.3.1",
     "flexsearch": "0.8.153",
     "react": "18.3.1",
     "react-dom": "18.3.1",
