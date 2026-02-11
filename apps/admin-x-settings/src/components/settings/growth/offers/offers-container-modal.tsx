@@ -17,10 +17,10 @@ const OffersRouteHandler: React.FC<OffersRouteHandlerProps> = ({route}) => {
 
     if (route === 'offers/new') {
         return <AddOfferModal />;
-    } else if (route.startsWith('offers/edit/retention/') && route.length > 'offers/edit/retention/'.length) {
+    } else if (retentionOffersEnabled && route.startsWith('offers/edit/retention/') && route.length > 'offers/edit/retention/'.length) {
         const retentionId = route.split('/').pop();
         return <EditRetentionOfferModal id={retentionId ? retentionId : ''} />;
-    } else if (route === 'offers/edit/retention') {
+    } else if (retentionOffersEnabled && route === 'offers/edit/retention') {
         return <OffersIndexRetentionModal defaultTab='retention' />;
     } else if (route.startsWith('offers/edit/') && route.length > 'offers/edit/'.length) {
         const offerId = route.split('/').pop();
