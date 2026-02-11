@@ -135,7 +135,7 @@ const TransistorModal = NiceModal.create(() => {
                                 }
                             ]} />
                             <div className='-mt-8 text-xs text-grey-700'>
-                                Paste the API key and URL in your <span className='text-green'>Transistor settings</span>.
+                                Paste these in any of your private podcast settings in <span className='text-green'>Transistor</span>.
                             </div>
                         </>
                     )}
