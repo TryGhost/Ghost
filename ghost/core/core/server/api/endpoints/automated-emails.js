@@ -40,7 +40,7 @@ const logWelcomeEmailStatusTransition = (model) => {
             slug,
             enabled: currentStatus === 'active'
         }
-    }, 'Welcome email status changed');
+    }, isEnableTransition ? 'Welcome email enabled' : 'Welcome email disabled');
 };
 
 /** @type {import('@tryghost/api-framework').Controller} */

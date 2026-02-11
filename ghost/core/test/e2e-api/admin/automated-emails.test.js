@@ -314,7 +314,7 @@ describe('Automated Emails API', function () {
                         slug: 'member-welcome-email-free',
                         enabled: true
                     }
-                }, sinon.match.string);
+                }, 'Welcome email enabled');
             });
 
             it('Logs when a welcome email is disabled', async function () {
@@ -335,7 +335,7 @@ describe('Automated Emails API', function () {
                         slug: 'member-welcome-email-free',
                         enabled: false
                     }
-                }, sinon.match.string);
+                }, 'Welcome email disabled');
             });
 
             it('Does not log when status does not change', async function () {
