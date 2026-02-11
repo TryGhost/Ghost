@@ -942,6 +942,11 @@ jobs:
 
   job_docker_build:
     name: Build & Push Docker Image
+    if: |
+      github.event_name != 'pull_request' ||
+      (github.event.action == 'labeled' && (contains(github.event.label.name, 'test') || contains(github.event.label.name, 'deploy'))) ||
+      (github.event.action == 'unlabeled' && (contains(github.event.label.name, 'test') || contains(github.event.label.name, 'deploy'))) ||
+      (github.event.action != 'labeled' && github.event.action != 'unlabeled')
     runs-on: ubuntu-latest
     permissions:
       contents: read
