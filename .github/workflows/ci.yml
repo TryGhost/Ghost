@@ -1201,7 +1201,7 @@ jobs:
 
   job_merge_e2e_reports:
     name: Merge Reports
-    if: always()
+    if: needs.job_setup.result == 'success' && needs.job_e2e_tests.result == 'failure'
     needs: [job_e2e_tests, job_setup]
     runs-on: ubuntu-latest
     strategy:
