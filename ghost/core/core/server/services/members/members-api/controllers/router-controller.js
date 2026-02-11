@@ -1039,6 +1039,11 @@ module.exports = class RouterController {
 
         const activeSubscription = activeSubscriptions[0];
 
+        // If subscription is already set to cancel, don't show retention offers
+        if (activeSubscription.get('cancel_at_period_end')) {
+            return sendOffersResponse();
+        }
+
         // If subscription already has an offer applied (e.g. signup offer), don't show retention offers
         if (activeSubscription.get('offer_id')) {
             return sendOffersResponse();
