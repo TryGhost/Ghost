@@ -52,7 +52,8 @@ const PRIVATE_FEATURES = [
     'emailUniqueid',
     'themeTranslation',
     'indexnow',
-    'transistor'
+    'transistor',
+    'retentionOffers'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

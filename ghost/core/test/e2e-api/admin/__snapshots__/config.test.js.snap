@@ -25,6 +25,7 @@ Object {
       "indexnow": true,
       "lexicalIndicators": true,
       "members": true,
+      "retentionOffers": true,
       "stripeAutomaticTax": true,
       "superEditors": true,
       "tagsX": true,
