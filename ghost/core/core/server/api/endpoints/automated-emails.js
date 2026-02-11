@@ -28,12 +28,7 @@ const logWelcomeEmailStatusTransition = ({automatedEmailId, slug, previousStatus
         return;
     }
 
-    logging.info({
-        event: isEnableTransition ? 'welcome_email.enabled' : 'welcome_email.disabled',
-        automated_email_id: automatedEmailId,
-        slug,
-        enabled: currentStatus === 'active'
-    }, 'Welcome email status changed');
+    logging.info(isEnableTransition ? 'Welcome email enabled' : 'Welcome email disabled');
 };
 
 /** @type {import('@tryghost/api-framework').Controller} */
