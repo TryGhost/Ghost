@@ -69,22 +69,27 @@ A single `public-apps` package that:
 
 ## Bundle Size Comparison
 
-### Previous (per feature)
-| Feature | Size |
-|---------|------|
-| sodo-search | ~200KB (includes React) |
-| announcement-bar | ~150KB (includes React) |
-| portal | ~250KB (includes React) |
-| **Total (3 features)** | **~600KB** |
+### Previous (4 separate apps, each with React)
+| Feature | Gzipped |
+|---------|---------|
+| Portal | 440KB |
+| Comments | 261KB |
+| Search | ~25KB |
+| Announcement | ~5KB |
+| **Total (all 4)** | **~731KB** |
 
-### New (consolidated)
-| Chunk | Size |
-|-------|------|
-| loader.js | 2.4KB |
-| react-vendor.[hash].js | 141KB |
-| announcement.[hash].js | 3.9KB |
-| search.[hash].js | 12KB + 65KB |
-| **Total (same 2 features)** | **~224KB** |
+### New (consolidated with shared React)
+| Chunk | Gzipped |
+|-------|---------|
+| loader.js | 1.3KB |
+| react-vendor (shared) | 44KB |
+| announcement | 1.7KB |
+| search | 25KB |
+| comments | 125KB |
+| portal | 112KB |
+| **Total (all 4)** | **~307KB** |
+
+**Savings: 58% smaller when all apps loaded**
 
 ## Benefits
 
@@ -116,9 +121,9 @@ A single `public-apps` package that:
 | App | Status | Notes |
 |-----|--------|-------|
 | Announcement Bar | ✅ Done | Fully ported |
-| Search (sodo-search) | ✅ Done | Simplified i18n (English only) |
-| Comments UI | 🔲 Next | ~49 files, TipTap editor |
-| Portal | 🔲 Planned | ~78 files, Stripe integration |
+| Search (sodo-search) | ✅ Done | Inline i18n (English only) |
+| Comments UI | ✅ Done | TipTap editor, inline i18n, placeholder system for post-specific data |
+| Portal | ✅ Done | React 17→18 upgrade, .js→.jsx rename, inline i18n |
 
 ## Known Issues
 
@@ -153,22 +158,43 @@ This dynamic require pattern can't be statically analyzed by bundlers for ES mod
 
 ## TODOs
 
-### Immediate (Comments UI Migration)
-
-- [ ] Port Comments UI components (~49 files)
-- [ ] Bundle TipTap editor dependencies (~9 packages, ~100KB)
-- [ ] Handle @headlessui/react integration
-- [ ] Test comment posting, editing, replies, likes, reporting
-- [ ] Verify iframe isolation works for comment styling
-
 ### Before Production
 
-- [ ] **Solve i18n properly** - See issue above
-- [ ] Add RTL language support
-- [ ] Port Portal (~78 files, ~15,700 lines)
-- [ ] Comprehensive E2E test coverage
+#### i18n Solution (Critical for CD)
+
+The current inline translations approach breaks the i18n workflow:
+
+**Current CD flow (broken)**:
+1. Developer adds `t('New string')`
+2. String must be manually added to inline translations in code
+3. Non-English locales don't work at all
+4. Every translation update requires a code release
+
+**Required: Choose and implement one of these solutions**:
+
+| Option | Approach | Pros | Cons |
+|--------|----------|------|------|
+| **A. Build-time bundling** | Import JSON from `ghost/i18n` at build | Works with existing workflow | Bloats bundle (~50KB+ per feature for all 60 locales) |
+| **B. Runtime fetch** | Load translations via HTTP | Small bundle, translations update independently | Extra request, Ghost must serve i18n files |
+| **C. Fix @tryghost/i18n** | Make package ESM-compatible | Clean, proper fix | Requires i18n package changes |
+| **D. Hybrid** | Bundle English, lazy-load others | Fast for majority, small bundle | More complexity |
+
+**Recommendation**: Option D (hybrid) for pragmatic balance, or Option C for proper fix.
+
+#### Other Production Requirements
+
+- [ ] Comprehensive E2E test coverage for all 4 features
 - [ ] Performance benchmarking vs CDN approach
 - [ ] Bundle size optimization audit
+- [ ] RTL language support testing
+- [ ] Stripe integration testing for Portal
+
+### CD Pipeline Changes
+
+- [ ] Add `@tryghost/public-apps` to `CONFIG_KEYS` in `release-apps.js`
+- [ ] Add `publicApps` section to `defaults.json` with CDN URL template
+- [ ] Update `ghost_head.js` to read version from config
+- [ ] Decide on versioning strategy (single semver recommended - chunk hashes handle cache invalidation)
 
 ### Cleanup (After Full Migration)
 
