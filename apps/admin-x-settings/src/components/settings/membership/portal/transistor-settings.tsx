@@ -10,7 +10,7 @@ interface TransistorPortalSettings {
     url_template: string;
 }
 
-const defaultTransistorSettings: TransistorPortalSettings = {
+const DEFAULT_SETTINGS: TransistorPortalSettings = {
     enabled: true,
     heading: 'Podcasts',
     description: 'Access your RSS feeds',
@@ -24,8 +24,8 @@ const TransistorSettings: React.FC<{
 }> = ({localSettings, updateSetting}) => {
     const [transistorPortalSettingsJson] = getSettingValues<string>(localSettings, ['transistor_portal_settings']);
     const transistorSettings: TransistorPortalSettings = transistorPortalSettingsJson
-        ? JSON.parse(transistorPortalSettingsJson) as TransistorPortalSettings
-        : defaultTransistorSettings;
+        ? {...DEFAULT_SETTINGS, ...JSON.parse(transistorPortalSettingsJson) as Partial<TransistorPortalSettings>}
+        : DEFAULT_SETTINGS;
 
     const updateTransistorSetting = <K extends keyof TransistorPortalSettings>(key: K, settingValue: TransistorPortalSettings[K]) => {
         const newSettings = {...transistorSettings, [key]: settingValue};

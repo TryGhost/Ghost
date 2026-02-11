@@ -19,10 +19,14 @@ export const TransistorPodcastsActionStyles = `
     }
 `;
 
-const DEFAULT_HEADING = 'Podcasts';
-const DEFAULT_DESCRIPTION = 'Access your RSS feeds';
-const DEFAULT_BUTTON_TEXT = 'Manage';
-const DEFAULT_URL_TEMPLATE = 'https://partner.transistor.fm/ghost/{memberUuid}';
+// Single source of truth for Transistor defaults - must match default-settings.json
+// Translatable strings use t() when displaying defaults, custom values display as-is
+export const TRANSISTOR_DEFAULTS = {
+    heading: 'Podcasts',
+    description: 'Access your RSS feeds',
+    button_text: 'Manage',
+    url_template: 'https://partner.transistor.fm/ghost/{memberUuid}'
+};
 
 const TransistorPodcastsAction = ({hasPodcasts, memberUuid, settings = {}}) => {
     const isValidUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(memberUuid);
@@ -31,14 +35,15 @@ const TransistorPodcastsAction = ({hasPodcasts, memberUuid, settings = {}}) => {
         return null;
     }
 
-    const hasCustomHeading = settings.heading && settings.heading !== DEFAULT_HEADING;
-    const hasCustomDescription = settings.description && settings.description !== DEFAULT_DESCRIPTION;
-    const hasCustomButtonText = settings.button_text && settings.button_text !== DEFAULT_BUTTON_TEXT;
+    // Translate if using a known default, otherwise display custom text as-is
+    const maybeTranslate = (value, key) => {
+        return value === TRANSISTOR_DEFAULTS[key] ? t(value) : value;
+    };
 
-    const heading = hasCustomHeading ? settings.heading : t(DEFAULT_HEADING);
-    const description = hasCustomDescription ? settings.description : t(DEFAULT_DESCRIPTION);
-    const buttonText = hasCustomButtonText ? settings.button_text : t(DEFAULT_BUTTON_TEXT);
-    const urlTemplate = settings.url_template || DEFAULT_URL_TEMPLATE;
+    const heading = maybeTranslate(settings.heading, 'heading') || t(TRANSISTOR_DEFAULTS.heading);
+    const description = maybeTranslate(settings.description, 'description') || t(TRANSISTOR_DEFAULTS.description);
+    const buttonText = maybeTranslate(settings.button_text, 'button_text') || t(TRANSISTOR_DEFAULTS.button_text);
+    const urlTemplate = settings.url_template || TRANSISTOR_DEFAULTS.url_template;
 
     const transistorUrl = urlTemplate.replace('{memberUuid}', memberUuid);
 
