@@ -79,11 +79,6 @@ async function loadFeature(name: string, config: LoaderConfig): Promise<void> {
     //     await initPortal(config);
     //     break;
     // }
-    // case 'comments': {
-    //     const { initComments } = await import('./features/comments');
-    //     await initComments(config);
-    //     break;
-    // }
     default:
         console.warn(`[public-apps] Unknown feature: ${name}`);
     }

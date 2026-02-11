@@ -1,5 +1,5 @@
 const {SafeString} = require('../services/handlebars');
-const {urlUtils, getFrontendKey, settingsCache} = require('../services/proxy');
+const {urlUtils, getFrontendKey, settingsCache, config} = require('../services/proxy');
 const {getFrontendAppConfig, getDataAttributes} = require('../utils/frontend-apps');
 
 module.exports = async function comments(options) {
@@ -69,6 +69,15 @@ module.exports = async function comments(options) {
     };
 
     const dataAttributes = getDataAttributes(data);
+
+    // When publicApps is enabled, output a placeholder div instead of a script tag
+    // The public-apps loader handles loading the comments feature
+    const publicAppsEnabled = config.get('publicApps:enabled');
+    if (publicAppsEnabled) {
+        return new SafeString(`
+            <div data-ghost-comments ${dataAttributes}></div>
+        `);
+    }
 
     return new SafeString(`
         <script defer src="${scriptUrl}" ${dataAttributes} crossorigin="anonymous"></script>

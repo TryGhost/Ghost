@@ -94,6 +94,8 @@ export type AppOptions = {
     commentsEnabled: string;
     publication: string;
     locale: string;
+    title: string | null;
+    showCount: boolean;
     inlineStyles?: string;
 };
 
