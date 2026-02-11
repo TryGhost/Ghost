@@ -140,28 +140,29 @@ const OffersFilterPopover: React.FC<{
                         {id: 'name', label: 'Name'},
                         {id: 'redemptions', label: 'Redemptions'}
                     ].map(item => (
-                        <button
+                        <div
                             key={item.id}
-                            className='group relative mx-1 flex cursor-pointer items-center rounded-[2.5px] px-8 py-1.5 pr-12 text-left text-sm hover:bg-grey-100 dark:hover:bg-grey-800'
-                            type='button'
-                            onClick={() => onSortChange(item.id)}
+                            className='group relative mx-1 flex items-center rounded-[2.5px] hover:bg-grey-100 dark:hover:bg-grey-800'
                         >
-                            {sortOption === item.id && <Icon className='absolute left-2' name='check' size='xs' />}
-                            {item.label}
+                            <button
+                                className='flex w-full cursor-pointer items-center px-8 py-1.5 pr-12 text-left text-sm'
+                                type='button'
+                                onClick={() => onSortChange(item.id)}
+                            >
+                                {sortOption === item.id && <Icon className='absolute left-2' name='check' size='xs' />}
+                                {item.label}
+                            </button>
                             {sortOption === item.id && (
                                 <button
                                     className='absolute right-1 flex size-6 cursor-pointer items-center justify-center rounded-full hover:bg-grey-300 dark:hover:bg-grey-700'
                                     title={sortDirection === 'asc' ? 'Ascending' : 'Descending'}
                                     type='button'
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        onDirectionChange();
-                                    }}
+                                    onClick={() => onDirectionChange()}
                                 >
                                     <Icon name={sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'} size='xs' />
                                 </button>
                             )}
-                        </button>
+                        </div>
                     ))}
                 </div>
             </div>
