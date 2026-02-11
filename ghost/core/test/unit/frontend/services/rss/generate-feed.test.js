@@ -7,6 +7,7 @@ const testUtils = require('../../../../utils');
 const configUtils = require('../../../../utils/config-utils');
 const routerManager = require('../../../../../core/frontend/services/routing').routerManager;
 const generateFeed = require('../../../../../core/frontend/services/rss/generate-feed');
+const {callRenderer} = require('../../../../../test/unit/server/services/koenig/test-utils');
 
 describe('RSS: Generate Feed', function () {
     const data = {};
@@ -238,6 +239,98 @@ describe('RSS: Generate Feed', function () {
 
                 // absolute URL - <a href="http://somewhere.com/link#nowhere" title="Absolute URL">
                 assert.match(xmlData, /<a href="http:\/\/somewhere.com\/link#nowhere" title="Absolute URL">/);
+
+                done();
+            }).catch(done);
+        });
+    });
+
+    describe('Card reformatting', function () {
+        before(function () {
+            let postWithBookmark = posts[0];
+            let postWithVideo = posts[1];
+            let postWithAudio = posts[2];
+
+            postWithBookmark.html = callRenderer('bookmark', {
+                url: 'https://www.ghost.org/',
+                icon: 'https://www.ghost.org/favicon.ico',
+                title: 'Ghost: The Creator Economy Platform',
+                description: 'doing kewl stuff',
+                author: 'ghost',
+                publisher: 'Ghost - The Professional Publishing Platform',
+                thumbnail: 'https://ghost.org/images/meta/ghost.png',
+                caption: 'caption here'
+            });
+
+            postWithVideo.html = callRenderer('video', {
+                src: '/content/images/2022/11/koenig-lexical.mp4',
+                caption: 'This is a <b>caption</b>',
+                fileName: 'koenig-lexical.mp4',
+                mimeType: 'video/mp4',
+                width: 200,
+                height: 100,
+                duration: 60,
+                thumbnailSrc: '/content/images/2022/11/koenig-lexical.jpg',
+                customThumbnailSrc: '/content/images/2022/11/koenig-lexical-custom.jpg',
+                thumbnailWidth: 100,
+                thumbnailHeight: 50
+            });
+
+            postWithAudio.html = callRenderer('audio', {
+                src: '/content/audio/2022/11/koenig-lexical.mp3',
+                title: 'Test Audio',
+                duration: 60,
+                mimeType: 'audio/mp3',
+                thumbnailSrc: '/content/images/2022/11/koenig-audio-lexical.jpg'
+            });
+
+            data.posts = [postWithBookmark, postWithVideo, postWithAudio];
+        });
+
+        it('should remove clutter from bookmark card', function (done) {
+            // Check if original card content is present
+            data.posts[0].html.html.should.match(/kg-bookmark-thumbnail/);
+            data.posts[0].html.html.should.match(/kg-bookmark-icon/);
+            data.posts[0].html.html.should.match(/kg-bookmark-description/);
+
+            generateFeed(baseUrl, data).then(function (xmlData) {
+                should.exist(xmlData);
+
+                xmlData.should.not.match(/kg-bookmark-thumbnail/);
+                xmlData.should.not.match(/kg-bookmark-icon/);
+                xmlData.should.not.match(/kg-bookmark-description/);
+
+                done();
+            }).catch(done);
+        });
+
+        it('should remove clutter from video card', function (done) {
+            // Check if original card content is present
+            data.posts[1].html.html.should.match(/kg-video-overlay/);
+            data.posts[1].html.html.should.match(/kg-video-player-container/);
+
+            generateFeed(baseUrl, data).then(function (xmlData) {
+                should.exist(xmlData);
+
+                xmlData.should.not.match(/kg-video-overlay/);
+                xmlData.should.not.match(/kg-video-player-container/);
+
+                done();
+            }).catch(done);
+        });
+
+        it('should remove clutter from audio card', function (done) {
+            // Check if original card content is present
+            data.posts[2].html.html.should.match(/kg-audio-thumbnail/);
+            data.posts[2].html.html.should.match(/kg-audio-player/);
+            data.posts[2].html.html.should.match(/kg-audio-title/);
+
+            generateFeed(baseUrl, data).then(function (xmlData) {
+                should.exist(xmlData);
+
+                xmlData.should.not.match(/kg-audio-thumbnail/);
+                xmlData.should.not.match(/kg-audio-player/);
+                xmlData.should.not.match(/kg-audio-title/);
 
                 done();
             }).catch(done);
