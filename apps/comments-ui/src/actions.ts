@@ -58,8 +58,10 @@ async function loadMoreReplies({state, api, data: {comment, limit}, isReply}: {s
         }
     };
 
-    let afterCursor: string | undefined;
+    // Use stored cursor from previous reply fetch if available
+    let afterCursor: string | undefined = comment.replies_cursor ?? undefined;
     let allComments: Comment[] = [];
+    let nextCursor: string | null = null;
 
     if (limit === 'all') {
         let hasMore = true;
@@ -74,18 +76,28 @@ async function loadMoreReplies({state, api, data: {comment, limit}, isReply}: {s
                 hasMore = false;
             }
         }
+
+        nextCursor = null; // All replies loaded
     } else {
         const data = await fetchReplies(afterCursor, limit as number || 100);
         allComments = data.comments;
+        nextCursor = data.meta.pagination.next ?? null;
     }
 
-    // Replace all replies since we fetch from the beginning (no cursor on first call)
+    // If we had a cursor, append new replies to existing ones.
+    // Otherwise we fetched from the beginning, so replace all replies.
+    const hasExistingCursor = !!comment.replies_cursor;
+    const finalReplies = hasExistingCursor
+        ? [...comment.replies, ...allComments]
+        : allComments;
+
     return {
         comments: state.comments.map((c) => {
             if (c.id === comment.id) {
                 return {
                     ...comment,
-                    replies: allComments
+                    replies: finalReplies,
+                    replies_cursor: nextCursor
                 };
             }
             return c;

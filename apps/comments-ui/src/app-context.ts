@@ -20,6 +20,7 @@ export type Comment = {
     in_reply_to_id: string,
     in_reply_to_snippet: string,
     replies: Comment[],
+    replies_cursor?: string | null,
     status: string,
     liked: boolean,
     count: {
