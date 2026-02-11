@@ -308,7 +308,8 @@ const Comment = ghostBookshelf.Model.extend({
 
             let cursorValues;
             try {
-                cursorValues = cursorUtils.decodeCursor(cursor);
+                const decoded = cursorUtils.decodeCursor(cursor);
+                cursorValues = cursorUtils.validateCursor(decoded, parsedOrder);
             } catch (err) {
                 // Invalid cursor — treat as start from beginning (no keyset condition)
                 cursorValues = null;

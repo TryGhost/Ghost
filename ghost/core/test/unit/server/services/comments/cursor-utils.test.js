@@ -4,6 +4,7 @@ const {
     ensureIdTiebreaker,
     encodeCursor,
     decodeCursor,
+    validateCursor,
     buildKeysetCondition,
     extractCursorValues
 } = require('../../../../../core/server/services/comments/cursor-utils');
@@ -206,6 +207,93 @@ describe('cursor-utils', function () {
 
             assert.equal(result.sql, '(comments.id < ?)');
             assert.deepEqual(result.bindings, ['65a8f3abc123']);
+        });
+    });
+
+    describe('validateCursor', function () {
+        it('accepts valid cursor matching order fields', function () {
+            const values = {created_at: '2025-01-15T10:30:00.000Z', id: '65a8f3abc123'};
+            const order = [
+                {field: 'created_at', direction: 'desc'},
+                {field: 'id', direction: 'desc'}
+            ];
+            const result = validateCursor(values, order);
+            assert.deepEqual(result, values);
+        });
+
+        it('accepts valid cursor with count__likes', function () {
+            const values = {count__likes: 42, created_at: '2025-01-15T10:30:00.000Z', id: '65a8f3abc123'};
+            const order = [
+                {field: 'count__likes', direction: 'desc'},
+                {field: 'created_at', direction: 'desc'},
+                {field: 'id', direction: 'desc'}
+            ];
+            const result = validateCursor(values, order);
+            assert.deepEqual(result, values);
+        });
+
+        it('rejects cursor with extra fields', function () {
+            const values = {created_at: '2025-01-15T10:30:00.000Z', id: '65a8f3abc123', evil: 'payload'};
+            const order = [
+                {field: 'created_at', direction: 'desc'},
+                {field: 'id', direction: 'desc'}
+            ];
+            assert.equal(validateCursor(values, order), null);
+        });
+
+        it('rejects cursor with missing fields', function () {
+            const values = {id: '65a8f3abc123'};
+            const order = [
+                {field: 'created_at', direction: 'desc'},
+                {field: 'id', direction: 'desc'}
+            ];
+            assert.equal(validateCursor(values, order), null);
+        });
+
+        it('rejects cursor with unknown field names', function () {
+            const values = {unknown_field: 'abc', id: '65a8f3abc123'};
+            const order = [
+                {field: 'unknown_field', direction: 'desc'},
+                {field: 'id', direction: 'desc'}
+            ];
+            assert.equal(validateCursor(values, order), null);
+        });
+
+        it('rejects cursor with wrong type for id (number instead of string)', function () {
+            const values = {created_at: '2025-01-15T10:30:00.000Z', id: 12345};
+            const order = [
+                {field: 'created_at', direction: 'desc'},
+                {field: 'id', direction: 'desc'}
+            ];
+            assert.equal(validateCursor(values, order), null);
+        });
+
+        it('rejects cursor with wrong type for count__likes (string instead of number)', function () {
+            const values = {count__likes: 'not-a-number', created_at: '2025-01-15T10:30:00.000Z', id: '65a8f3abc123'};
+            const order = [
+                {field: 'count__likes', direction: 'desc'},
+                {field: 'created_at', direction: 'desc'},
+                {field: 'id', direction: 'desc'}
+            ];
+            assert.equal(validateCursor(values, order), null);
+        });
+
+        it('rejects cursor with unparseable created_at', function () {
+            const values = {created_at: 'not-a-date', id: '65a8f3abc123'};
+            const order = [
+                {field: 'created_at', direction: 'desc'},
+                {field: 'id', direction: 'desc'}
+            ];
+            assert.equal(validateCursor(values, order), null);
+        });
+
+        it('rejects cursor with empty id', function () {
+            const values = {created_at: '2025-01-15T10:30:00.000Z', id: ''};
+            const order = [
+                {field: 'created_at', direction: 'desc'},
+                {field: 'id', direction: 'desc'}
+            ];
+            assert.equal(validateCursor(values, order), null);
         });
     });
 

@@ -86,6 +86,65 @@ function decodeCursor(cursor) {
 }
 
 /**
+ * Allowed cursor field names and their expected types.
+ */
+const CURSOR_FIELD_TYPES = {
+    id: 'string',
+    created_at: 'string',
+    count__likes: 'number'
+};
+
+/**
+ * Validate decoded cursor values against the expected sort order.
+ * Returns the cursor values if valid, or null if the cursor should be ignored.
+ *
+ * @param {Record<string, any>} values - Decoded cursor values
+ * @param {ParsedOrder[]} order - Expected sort order (with id tiebreaker)
+ * @returns {Record<string, any>|null} Validated values or null
+ */
+function validateCursor(values, order) {
+    const expectedFields = new Set(order.map(o => o.field));
+
+    // Reject cursors with extra or missing fields
+    const cursorFields = Object.keys(values);
+    if (cursorFields.length !== expectedFields.size) {
+        return null;
+    }
+    for (const field of cursorFields) {
+        if (!expectedFields.has(field)) {
+            return null;
+        }
+    }
+
+    // Validate value types
+    for (const field of cursorFields) {
+        const expectedType = CURSOR_FIELD_TYPES[field];
+        if (!expectedType) {
+            // Unknown field — reject
+            return null;
+        }
+        if (typeof values[field] !== expectedType) {
+            return null;
+        }
+    }
+
+    // Validate created_at is a parseable date
+    if (values.created_at !== undefined) {
+        const date = new Date(values.created_at);
+        if (isNaN(date.getTime())) {
+            return null;
+        }
+    }
+
+    // Validate id is non-empty
+    if (values.id !== undefined && values.id.length === 0) {
+        return null;
+    }
+
+    return values;
+}
+
+/**
  * Build a keyset WHERE clause for cursor pagination.
  *
  * For an order of [a DESC, b DESC, id DESC] with direction 'after':
@@ -221,6 +280,7 @@ module.exports = {
     ensureIdTiebreaker,
     encodeCursor,
     decodeCursor,
+    validateCursor,
     buildKeysetCondition,
     extractCursorValues
 };
