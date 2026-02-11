@@ -8,6 +8,7 @@ import {checkStripeEnabled} from '@tryghost/admin-x-framework/api/settings';
 import {numberWithCommas} from '../../../utils/helpers';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
+import useFeatureFlag from '../../../hooks/use-feature-flag';
 
 const OfferContainer: React.FC<{offerTitle: string, tier: Tier, cadence: string, redemptions: number, type: string, amount: number, currency: string, offerId: string, offerCode: string, goToOfferEdit: (offerId: string) => void}> = (
     {offerTitle, tier, cadence, redemptions, type, amount, currency, offerId, offerCode, goToOfferEdit}) => {
@@ -31,6 +32,7 @@ const OfferContainer: React.FC<{offerTitle: string, tier: Tier, cadence: string,
 const Offers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {updateRoute} = useRouting();
     const {settings, config} = useGlobalData();
+    const retentionOffersEnabled = useFeatureFlag('retentionOffers');
 
     const {data: {offers: allOffers = []} = {}} = useBrowseOffers();
 
@@ -86,13 +88,13 @@ const Offers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     return (
         <TopLevelGroup
             customButtons={<Button className='mt-[-5px]' color='clear' disabled={!checkStripeEnabled(settings, config)} label={offerButtonText} size='sm' onClick={offerButtonLink}/>}
-            description={<>Create discounts & coupons to boost new subscriptions. {signupOffers.length === 0 && <><a className='text-green' href="https://ghost.org/help/offers" rel="noopener noreferrer" target="_blank">{descriptionButtonText}</a></>}</>}
+            description={<>{retentionOffersEnabled ? 'Create discounts & coupons to boost new subscriptions and retain existing members.' : 'Create discounts & coupons to boost new subscriptions.'} {signupOffers.length === 0 && <><a className='text-green' href="https://ghost.org/help/offers" rel="noopener noreferrer" target="_blank">{descriptionButtonText}</a></>}</>}
             keywords={keywords}
             navid='offers'
             testId='offers'
             title='Offers'
         >
-            {latestThree.length > 0 ?
+            {!retentionOffersEnabled && latestThree.length > 0 ?
                 <div>
                     <div className='grid grid-cols-1 gap-4 min-[900px]:grid-cols-3'>
                         {latestThree.map(offer => (<OfferContainer
