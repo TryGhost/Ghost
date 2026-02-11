@@ -328,20 +328,12 @@ jobs:
     runs-on:
       labels: ubuntu-latest
     needs: [job_setup]
+    # Skip on forked PRs - Stripe secrets are not available
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     steps:
     - uses: actions/checkout@v4
       with:
         submodules: true
-    - name: Check secrets
-      if: github.event_name == 'pull_request'
-      env:
-        STRIPE_PUBLISHABLE_KEY: ${{ secrets.STRIPE_PUBLISHABLE_KEY }}
-      run: |
-        if [ -z "${{ env.STRIPE_PUBLISHABLE_KEY }}" ]; then
-          echo "Stripe Publishable Key is not available. Did you open this PR from a fork?"
-          echo "If so, please re-open the PR from a branch in the upstream TryGhost/Ghost repository."
-          exit 1
-        fi
     - uses: actions/setup-node@v4
       env:
         FORCE_COLOR: 0
