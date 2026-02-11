@@ -307,12 +307,12 @@ describe('Automated Emails API', function () {
                     }]})
                     .expectStatus(200);
 
-                sinon.assert.calledWithMatch(infoStub, sinon.match.string, {
+                sinon.assert.calledWithMatch(infoStub, {
                     event: 'welcome_email.enabled',
                     automated_email_id: automatedEmail.id,
                     slug: 'member-welcome-email-free',
                     enabled: true
-                });
+                }, sinon.match.string);
             });
 
             it('Logs when a welcome email is disabled', async function () {
@@ -326,12 +326,12 @@ describe('Automated Emails API', function () {
                     }]})
                     .expectStatus(200);
 
-                sinon.assert.calledWithMatch(infoStub, sinon.match.string, {
+                sinon.assert.calledWithMatch(infoStub, {
                     event: 'welcome_email.disabled',
                     automated_email_id: automatedEmail.id,
                     slug: 'member-welcome-email-free',
                     enabled: false
-                });
+                }, sinon.match.string);
             });
 
             it('Does not log when status does not change', async function () {
