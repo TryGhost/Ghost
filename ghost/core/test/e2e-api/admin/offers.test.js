@@ -633,7 +633,7 @@ describe('Offers API', function () {
             });
     });
 
-    it('Can browse active', async function () {
+    it('Can filter by status', async function () {
         const filter = encodeURIComponent(`status:active`);
         await agent
             .get(`offers/?filter=${filter}`)
@@ -646,6 +646,7 @@ describe('Offers API', function () {
                 offers: [
                     ...new Array(4).fill({
                         id: anyObjectId,
+                        status: 'active',
                         tier: {
                             id: anyObjectId
                         },
@@ -653,9 +654,35 @@ describe('Offers API', function () {
                     }),
                     {
                         id: anyObjectId,
+                        status: 'active',
                         tier: null,
                         created_at: anyISODateTime
                     }
+                ]
+            });
+    });
+
+    it('Can filter by status and redemption type', async function () {
+        const filter = encodeURIComponent(`status:active+redemption_type:signup`);
+
+        await agent
+            .get(`offers/?filter=${filter}`)
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                offers: [
+                    ...new Array(4).fill({
+                        id: anyObjectId,
+                        status: 'active',
+                        redemption_type: 'signup',
+                        tier: {
+                            id: anyObjectId
+                        },
+                        created_at: anyISODateTime
+                    })
                 ]
             });
     });
