@@ -1,7 +1,7 @@
 name: CI
 on:
   pull_request:
-    types: [opened, synchronize, reopened, labeled, unlabeled]
+    types: [opened, synchronize, reopened]
   push:
     # Ref: GHA Filter pattern syntax: https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#filter-pattern-cheat-sheet
     # Run on pushes to main, release branches, and previous/future major version branches
@@ -30,14 +30,6 @@ jobs:
   job_setup:
     name: Setup
     runs-on: ubuntu-latest
-    # Having certain parts of our huge CI workflow run on a specific label is an anti-pattern.
-    # Long term, we want to get away from this by having all of our tests run on every PR, and have the staging deploy either be automatic or a different workflow
-    # This logic skips the entire workflow if triggered by a label that doesn't contain "test" or "deploy" - there's nothing new to do in that case
-    if: |
-      github.event_name != 'pull_request' ||
-      (github.event.action == 'labeled' && (contains(github.event.label.name, 'test') || contains(github.event.label.name, 'deploy'))) ||
-      (github.event.action == 'unlabeled' && (contains(github.event.label.name, 'test') || contains(github.event.label.name, 'deploy'))) ||
-      (github.event.action != 'labeled' && github.event.action != 'unlabeled')
     timeout-minutes: 15
     env:
       IS_MAIN: ${{ github.ref == 'refs/heads/main' }}
