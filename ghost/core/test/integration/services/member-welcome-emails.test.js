@@ -349,6 +349,37 @@ describe('Member Welcome Emails Integration', function () {
             const sendCall = mailService.GhostMailer.prototype.send.firstCall;
             assert.equal(sendCall.args[0].to, memberEmail);
         });
+
+        it('uses configured sender and reply-to when sending member welcome email', async function () {
+            const senderEmail = 'editor@example.com';
+            const senderReplyTo = 'reply@example.com';
+            const defaultNewsletter = await models.Newsletter.getDefaultNewsletter();
+
+            await db.knex('newsletters')
+                .where('id', defaultNewsletter.id)
+                .update({
+                    sender_name: 'Scott',
+                    sender_email: senderEmail,
+                    sender_reply_to: senderReplyTo
+                });
+
+            await models.Outbox.add({
+                event_type: 'MemberCreatedEvent',
+                payload: JSON.stringify({
+                    memberId: ObjectId().toHexString(),
+                    email: 'sender-test@example.com',
+                    name: 'Sender Test',
+                    status: 'free'
+                }),
+                status: OUTBOX_STATUSES.PENDING
+            });
+
+            await scheduleInlineJob();
+
+            assert.equal(mailService.GhostMailer.prototype.send.callCount, 1);
+            const sendCall = mailService.GhostMailer.prototype.send.firstCall;
+            assert.equal(sendCall.args[0].replyTo, senderReplyTo);
+            assert.ok(sendCall.args[0].from.includes(senderEmail));
+        });
     });
 });
-
