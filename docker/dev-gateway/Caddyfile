@@ -2,7 +2,8 @@
     admin off
 }
 
-:80 {
+# Shared handlers snippet - used by both HTTP and HTTPS
+(shared_handlers) {
     # Compact log format for development
     log {
         output stdout
@@ -216,4 +217,15 @@
         # Default error response
         respond "{err.status_code} {err.status_text}"
     }
+}
+
+# HTTPS - for testing cookie behavior in Chrome (requires accepting self-signed cert)
+localhost {
+    tls internal
+    import shared_handlers
+}
+
+# HTTP - standard development
+:80 {
+    import shared_handlers
 }
