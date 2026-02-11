@@ -11,7 +11,7 @@ const messages = {
     automatedEmailNotFound: 'Automated email not found.'
 };
 
-const logWelcomeEmailStatusTransition = (model) => {
+const logWelcomeEmailStatusChange = (model) => {
     if (!model?.id) {
         return;
     }
@@ -22,47 +22,24 @@ const logWelcomeEmailStatusTransition = (model) => {
         return;
     }
 
-    const automatedEmailId = model.id;
     const previousStatus = model.previous('status');
     const currentStatus = model.get('status');
-    const hasChangedStatus = previousStatus !== currentStatus;
-    const isEnableTransition = previousStatus === 'inactive' && currentStatus === 'active';
+    const isNewModel = previousStatus === undefined;
+    const isEnableTransition = currentStatus === 'active' && (isNewModel || previousStatus === 'inactive');
     const isDisableTransition = previousStatus === 'active' && currentStatus === 'inactive';
 
-    if (!hasChangedStatus || (!isEnableTransition && !isDisableTransition)) {
+    if (!isEnableTransition && !isDisableTransition) {
         return;
     }
 
     logging.info({
         system: {
             event: isEnableTransition ? 'welcome_email.enabled' : 'welcome_email.disabled',
-            automated_email_id: automatedEmailId,
+            automated_email_id: model.id,
             slug,
             enabled: currentStatus === 'active'
         }
     }, isEnableTransition ? 'Welcome email enabled' : 'Welcome email disabled');
-};
-
-const logWelcomeEmailEnabledOnCreate = (model) => {
-    if (!model?.id) {
-        return;
-    }
-
-    const slug = model.get('slug');
-    const currentStatus = model.get('status');
-
-    if (!MEMBER_WELCOME_EMAIL_SLUG_SET.has(slug) || currentStatus !== 'active') {
-        return;
-    }
-
-    logging.info({
-        system: {
-            event: 'welcome_email.enabled',
-            automated_email_id: model.id,
-            slug,
-            enabled: true
-        }
-    }, 'Welcome email enabled');
 };
 
 /** @type {import('@tryghost/api-framework').Controller} */
@@ -119,7 +96,7 @@ const controller = {
         async query(frame) {
             const data = frame.data.automated_emails[0];
             const model = await models.AutomatedEmail.add(data, frame.options);
-            logWelcomeEmailEnabledOnCreate(model);
+            logWelcomeEmailStatusChange(model);
             return model;
         }
     },
@@ -148,7 +125,7 @@ const controller = {
                 });
             }
 
-            logWelcomeEmailStatusTransition(model);
+            logWelcomeEmailStatusChange(model);
 
             return model;
         }
