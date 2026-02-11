@@ -1,0 +1,271 @@
+
+- name: basic_route_to_v3
+  description: Test basic query without session-level filters routes to api_top_pages_v3
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC
+  expected_result: |
+    {"post_uuid":"6b8635fb-292f-4422-9fe4-d76cfab2ba31","pathname":"\/blog\/hello-world\/","visits":9}
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":8}
+    {"post_uuid":"","pathname":"\/","visits":7}
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1dd","pathname":"\/blog\/hello-world\/","visits":1}
+
+- name: basic_with_member_status
+  description: Test query with only member_status (non-session filter) routes to api_top_pages_v3
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&member_status=paid
+  expected_result: |
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":3}
+    {"post_uuid":"6b8635fb-292f-4422-9fe4-d76cfab2ba31","pathname":"\/blog\/hello-world\/","visits":3}
+    {"post_uuid":"","pathname":"\/","visits":2}
+
+- name: basic_with_pathname
+  description: Test query with only pathname filter routes to api_top_pages_v3
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&pathname=%2Fabout%2F
+  expected_result: |
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":8}
+
+- name: basic_with_post_uuid
+  description: Test query with only post_uuid filter routes to api_top_pages_v3
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&post_uuid=06b1b0c9-fb53-4a15-a060-3db3fde7b1fc
+  expected_result: |
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":8}
+
+- name: basic_with_post_type
+  description: Test query with only post_type filter routes to api_top_pages_v3
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&post_type=post
+  expected_result: |
+    {"post_uuid":"6b8635fb-292f-4422-9fe4-d76cfab2ba31","pathname":"\/blog\/hello-world\/","visits":9}
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1dd","pathname":"\/blog\/hello-world\/","visits":1}
+
+- name: basic_with_pagination
+  description: Test query with pagination parameters routes to api_top_pages_v3
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&skip=1&limit=5
+  expected_result: |
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":8}
+    {"post_uuid":"","pathname":"\/","visits":7}
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1dd","pathname":"\/blog\/hello-world\/","visits":1}
+
+- name: session_filter_device
+  description: Test query with device filter routes to api_top_pages
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&device=desktop
+  expected_result: |
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":8}
+    {"post_uuid":"6b8635fb-292f-4422-9fe4-d76cfab2ba31","pathname":"\/blog\/hello-world\/","visits":8}
+    {"post_uuid":"","pathname":"\/","visits":7}
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1dd","pathname":"\/blog\/hello-world\/","visits":1}
+
+- name: session_filter_location
+  description: Test query with location filter routes to api_top_pages
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&location=GB
+  expected_result: |
+    {"post_uuid":"6b8635fb-292f-4422-9fe4-d76cfab2ba31","pathname":"\/blog\/hello-world\/","visits":6}
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":4}
+    {"post_uuid":"","pathname":"\/","visits":4}
+
+- name: session_filter_source
+  description: Test query with source filter routes to api_top_pages
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&source=bing.com
+  expected_result: |
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":2}
+    {"post_uuid":"","pathname":"\/","visits":1}
+    {"post_uuid":"6b8635fb-292f-4422-9fe4-d76cfab2ba31","pathname":"\/blog\/hello-world\/","visits":1}
+
+- name: utm_source_filter
+  description: Test query with utm_source filter routes to api_top_pages
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&utm_source=google
+  expected_result: |
+    {"post_uuid":"6b8635fb-292f-4422-9fe4-d76cfab2ba31","pathname":"\/blog\/hello-world\/","visits":2}
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1dd","pathname":"\/blog\/hello-world\/","visits":1}
+
+- name: utm_medium_filter
+  description: Test query with utm_medium filter routes to api_top_pages
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&utm_medium=social
+  expected_result: |
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":3}
+    {"post_uuid":"","pathname":"\/","visits":3}
+    {"post_uuid":"6b8635fb-292f-4422-9fe4-d76cfab2ba31","pathname":"\/blog\/hello-world\/","visits":2}
+
+- name: utm_campaign_filter
+  description: Test query with utm_campaign filter routes to api_top_pages
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&utm_campaign=brand_awareness
+  expected_result: |
+    {"post_uuid":"","pathname":"\/","visits":2}
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":1}
+    {"post_uuid":"6b8635fb-292f-4422-9fe4-d76cfab2ba31","pathname":"\/blog\/hello-world\/","visits":1}
+
+- name: utm_term_filter
+  description: Test query with utm_term filter routes to api_top_pages
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&utm_term=discount
+  expected_result: |
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":1}
+    {"post_uuid":"6b8635fb-292f-4422-9fe4-d76cfab2ba31","pathname":"\/blog\/hello-world\/","visits":1}
+
+- name: utm_content_filter
+  description: Test query with utm_content filter routes to api_top_pages
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&utm_content=post_123
+  expected_result: |
+    {"post_uuid":"","pathname":"\/","visits":1}
+
+- name: multiple_utm_filters
+  description: Test query with multiple UTM filters routes to api_top_pages
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&utm_source=google&utm_medium=cpc
+  expected_result: |
+    {"post_uuid":"6b8635fb-292f-4422-9fe4-d76cfab2ba31","pathname":"\/blog\/hello-world\/","visits":1}
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1dd","pathname":"\/blog\/hello-world\/","visits":1}
+
+- name: combined_device_and_pathname
+  description: Test query combining device (session) and pathname (non-session) filters
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&device=desktop&pathname=%2Fabout%2F
+  expected_result: |
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":8}
+
+- name: combined_location_and_member_status
+  description: Test query combining location (session) and member_status (non-session)
+    filters
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&location=GB&member_status=paid
+  expected_result: |
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":1}
+    {"post_uuid":"","pathname":"\/","visits":1}
+    {"post_uuid":"6b8635fb-292f-4422-9fe4-d76cfab2ba31","pathname":"\/blog\/hello-world\/","visits":1}
+
+- name: combined_source_and_post_type
+  description: Test query combining source (session) and post_type (non-session) filters
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&source=bing.com&post_type=post
+  expected_result: |
+    {"post_uuid":"6b8635fb-292f-4422-9fe4-d76cfab2ba31","pathname":"\/blog\/hello-world\/","visits":1}
+
+- name: combined_utm_and_non_session
+  description: Test query combining UTM (session) and non-session filters
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&utm_source=google&member_status=undefined&pathname=%2Fabout%2F
+  expected_result: ''
+
+- name: multiple_session_filters
+  description: Test query with multiple session-level filters
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&device=desktop&location=GB&source=bing.com
+  expected_result: |
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":1}
+    {"post_uuid":"","pathname":"\/","visits":1}
+
+- name: device_with_utm_filters
+  description: Test query combining device and UTM filters
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&device=desktop&utm_source=google&utm_medium=social
+  expected_result: ''
+
+- name: only_site_uuid
+  description: Test minimal query with only site_uuid (routes to api_top_pages_v3)
+  parameters: site_uuid=mock_site_uuid
+  expected_result: 'Template Syntax Error: Required parameter is not defined. Check
+    the parameters date_from, date_to, member_status, pathname, post_uuid and post_type.
+    Please provide a value or set a default value in the pipe code.'
+  expected_http_status: 400
+
+- name: default_date_range
+  description: Test query without explicit date range (routes to api_top_pages_v3)
+  parameters: site_uuid=mock_site_uuid&timezone=Etc/UTC
+  expected_result: 'Template Syntax Error: Required parameter is not defined. Check
+    the parameters date_from, date_to, member_status, pathname, post_uuid and post_type.
+    Please provide a value or set a default value in the pipe code.'
+  expected_http_status: 400
+
+- name: single_day_query
+  description: Test single day query without session filters (routes to api_top_pages_v3)
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-04&date_to=2100-01-04&timezone=Etc/UTC
+  expected_result: |
+    {"post_uuid":"6b8635fb-292f-4422-9fe4-d76cfab2ba31","pathname":"\/blog\/hello-world\/","visits":3}
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":2}
+    {"post_uuid":"","pathname":"\/","visits":1}
+
+- name: single_day_with_device
+  description: Test single day query with device filter (routes to api_top_pages)
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-04&date_to=2100-01-04&timezone=Etc/UTC&device=desktop
+  expected_result: |
+    {"post_uuid":"6b8635fb-292f-4422-9fe4-d76cfab2ba31","pathname":"\/blog\/hello-world\/","visits":3}
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":2}
+    {"post_uuid":"","pathname":"\/","visits":1}
+
+- name: different_timezone_v3_route
+  description: Test query with different timezone but no session filters (routes to
+    api_top_pages_v3)
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=America/Los_Angeles
+  expected_result: |
+    {"post_uuid":"6b8635fb-292f-4422-9fe4-d76cfab2ba31","pathname":"\/blog\/hello-world\/","visits":9}
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":8}
+    {"post_uuid":"","pathname":"\/","visits":7}
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1dd","pathname":"\/blog\/hello-world\/","visits":1}
+
+- name: different_timezone_with_location
+  description: Test query with different timezone and location filter (routes to api_top_pages)
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=America/Los_Angeles&location=US
+  expected_result: |
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":1}
+    {"post_uuid":"","pathname":"\/","visits":1}
+    {"post_uuid":"6b8635fb-292f-4422-9fe4-d76cfab2ba31","pathname":"\/blog\/hello-world\/","visits":1}
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1dd","pathname":"\/blog\/hello-world\/","visits":1}
+
+- name: empty_utm_source
+  description: Test query with empty utm_source parameter (should still route to api_top_pages
+    if defined)
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&utm_source=
+  expected_result: |
+    {"post_uuid":"6b8635fb-292f-4422-9fe4-d76cfab2ba31","pathname":"\/blog\/hello-world\/","visits":3}
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":2}
+    {"post_uuid":"","pathname":"\/","visits":2}
+
+- name: all_non_session_filters
+  description: Test query with all non-session filters (routes to api_top_pages_v3)
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&member_status=paid&pathname=%2Fabout%2F&post_uuid=06b1b0c9-fb53-4a15-a060-3db3fde7b1fc&post_type=page&skip=0&limit=10
+  expected_result: |
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":3}
+
+- name: all_session_filters
+  description: Test query with all possible session filters (routes to api_top_pages)
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&device=desktop&location=GB&source=bing.com&utm_source=google&utm_medium=social&utm_campaign=brand_awareness&utm_term=discount&utm_content=post_123
+  expected_result: ''
+
+- name: large_date_range_v3
+  description: Test large date range without session filters (should use fast v3 route)
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-31&timezone=Etc/UTC
+  expected_result: |
+    {"post_uuid":"6b8635fb-292f-4422-9fe4-d76cfab2ba31","pathname":"\/blog\/hello-world\/","visits":9}
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":8}
+    {"post_uuid":"","pathname":"\/","visits":7}
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1dd","pathname":"\/blog\/hello-world\/","visits":1}
+
+- name: large_date_range_with_device
+  description: Test large date range with device filter (routes to api_top_pages)
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-31&timezone=Etc/UTC&device=desktop
+  expected_result: |
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":8}
+    {"post_uuid":"6b8635fb-292f-4422-9fe4-d76cfab2ba31","pathname":"\/blog\/hello-world\/","visits":8}
+    {"post_uuid":"","pathname":"\/","visits":7}
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1dd","pathname":"\/blog\/hello-world\/","visits":1}
+
+- name: custom_site_v3_route
+  description: Test custom site UUID without session filters (routes to api_top_pages_v3)
+  parameters: site_uuid=custom_site_abc&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC
+  expected_result: ''
+
+- name: custom_site_with_utm
+  description: Test custom site UUID with UTM filter (routes to api_top_pages)
+  parameters: site_uuid=custom_site_abc&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&utm_medium=email
+  expected_result: ''
+
+- name: high_skip_value_v3
+  description: Test high skip value without session filters (routes to api_top_pages_v3)
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&skip=100&limit=10
+  expected_result: ''
+
+- name: high_skip_value_with_source
+  description: Test high skip value with source filter (routes to api_top_pages)
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&source=google.com&skip=100&limit=10
+  expected_result: ''
+
+- name: location_with_pathname_post_uuid
+  description: Test location filter with non-session filters
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&location=GB&pathname=%2Fabout%2F&post_uuid=06b1b0c9-fb53-4a15-a060-3db3fde7b1fc
+  expected_result: |
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":4}
+
+- name: device_with_member_status_post_type
+  description: Test device filter with non-session filters
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&device=desktop&member_status=paid&post_type=post
+  expected_result: |
+    {"post_uuid":"6b8635fb-292f-4422-9fe4-d76cfab2ba31","pathname":"\/blog\/hello-world\/","visits":3}
