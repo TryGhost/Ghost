@@ -16489,12 +16489,10 @@ dotenv@~16.4.5:
   resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-16.4.7.tgz#0e20c5b82950140aa99be360a8a5f52335f53c26"
   integrity sha512-47qPchRCykZC03FhkYAhrvwU4xDBFIj1QPqaarj6mdM/hgUzfPHcpkHJOn3mJAufFeeAxAzeGsr5X0M4k6fLZQ==
 
-downsize@0.0.8:
-  version "0.0.8"
-  resolved "https://registry.yarnpkg.com/downsize/-/downsize-0.0.8.tgz#21435a610c8c68220f5cc31474979b4d025f038e"
-  integrity sha512-6vNP5DESwCTwefIFlMUp7MX6GfvjNYWjoLIdfdqPcYPNUcKKfjUctw2yMNbyM1wlkgfCO0oydSR/eysDHFo60w==
-  dependencies:
-    xregexp "2.0.0"
+downsize-cjs@1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/downsize-cjs/-/downsize-cjs-1.1.1.tgz#6d6b41bb681b107b9f1c6b26143005a40c28f947"
+  integrity sha512-ZgLuNbN1g91Lqw732D+xVisNx5ZWmDJEYPIZovvVce0m7JuRB+v8d0qPh7KNZBjIirlhAxksuoDTTYpkzRc3pQ==
 
 dtrace-provider@~0.8:
   version "0.8.8"
@@ -34514,11 +34512,6 @@ xmlchars@^2.2.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/xmlchars/-/xmlchars-2.2.0.tgz#060fe1bcb7f9c76fe2a17db86a9bc3ab894210cb"
   integrity sha512-JZnDKK8B0RCDw84FNdDAIpZK+JuJw+s7Lz8nksI7SIuU3UXJJslUthsi+uWBUYOwPFwW7W7PRLRfUKpxjtjFCw==
-
-xregexp@2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/xregexp/-/xregexp-2.0.0.tgz#52a63e56ca0b84a7f3a5f3d61872f126ad7a5943"
-  integrity sha512-xl/50/Cf32VsGq/1R8jJE5ajH1yMCQkpmoS10QbFZWl2Oor4H0Me64Pu2yxvsRWK3m6soJbmGfzSR7BYmDcWAA==
 
 xtend@^2.2.0:
   version "2.2.0"
