@@ -139,11 +139,11 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
 
                 if (admin) {
                     // this is a bit of a hack, but we need to fetch the comments fully populated if the user is an admin
-                    const adminComments = await adminApi.browse({page: 1, postId: options.postId, order: state.order, memberUuid: state.member?.uuid});
+                    const adminComments = await adminApi.browse({postId: options.postId, order: state.order, memberUuid: state.member?.uuid});
                     setState((currentState) => {
                         // Don't overwrite comments when initSetup loaded extra data
-                        // for permalink scrolling (multiple pages or expanded replies)
-                        if ((currentState.pagination && currentState.pagination.page > 1) || initialCommentId) {
+                        // for permalink scrolling (anchor-loaded or expanded replies)
+                        if ((currentState.pagination && currentState.pagination.prev !== null) || initialCommentId) {
                             return {
                                 adminApi,
                                 admin,
@@ -178,7 +178,7 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
 
     /** Fetch first few comments  */
     const fetchComments = async () => {
-        const dataPromise = api.comments.browse({page: 1, postId: options.postId, order: state.order});
+        const dataPromise = api.comments.browse({postId: options.postId, order: state.order});
         const countPromise = api.comments.count({postId: options.postId});
 
         const [data, count] = await Promise.all([dataPromise, countPromise]);
@@ -205,35 +205,6 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
     };
 
     /**
-     * Paginate through comments until the target (or its parent) is found.
-     */
-    const paginateToComment = async (
-        targetId: string,
-        parentId: string | undefined,
-        initialComments: Comment[],
-        initialPagination: {page: number; pages: number}
-    ): Promise<{comments: Comment[]; pagination: typeof initialPagination}> => {
-        let comments = initialComments;
-        let pagination = initialPagination;
-
-        while (!isCommentLoaded(comments, targetId) && pagination.page < pagination.pages) {
-            if (parentId && comments.some(c => c.id === parentId)) {
-                break;
-            }
-
-            const nextPage = await api.comments.browse({
-                page: pagination.page + 1,
-                postId: options.postId,
-                order: state.order
-            });
-            comments = [...comments, ...nextPage.comments];
-            pagination = nextPage.meta.pagination;
-        }
-
-        return {comments, pagination};
-    };
-
-    /**
      * Load all replies for a parent comment if the target reply isn't already loaded.
      */
     const loadRepliesForComment = async (
@@ -249,20 +220,19 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
 
         let allReplies: Comment[] = [];
         let hasMore = true;
-        let afterReplyId: string | undefined;
+        let afterCursor: string | undefined;
 
         while (hasMore) {
             const response = await api.comments.replies({
                 commentId: parentId,
-                afterReplyId,
+                after: afterCursor,
                 limit: 100
             });
             allReplies = [...allReplies, ...response.comments];
-            hasMore = !!response.meta?.pagination?.next;
+            afterCursor = response.meta?.pagination?.next ?? undefined;
+            hasMore = !!afterCursor;
 
-            if (response.comments.length > 0) {
-                afterReplyId = response.comments[response.comments.length - 1]?.id;
-            } else {
+            if (!response.comments || response.comments.length === 0) {
                 hasMore = false;
             }
         }
@@ -274,20 +244,29 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
     };
 
     /**
-     * Load additional comment pages and/or replies until the scroll target is found.
+     * Use anchor-based API to load the page containing the target comment.
+     * Falls back to first page if anchor not found.
      */
     const loadScrollTarget = async (
         targetId: string,
-        targetComment: Comment,
-        initialComments: Comment[],
-        initialPagination: {page: number; pages: number}
-    ): Promise<{comments: Comment[]; pagination: typeof initialPagination; found: boolean}> => {
+        targetComment: Comment
+    ): Promise<{comments: Comment[]; pagination: any; found: boolean}> => {
         const parentId = targetComment.parent_id;
+        // For replies, anchor on the parent comment so we get the right page
+        const anchorId = parentId || targetId;
 
-        const {comments: paginatedComments, pagination} = await paginateToComment(targetId, parentId, initialComments, initialPagination);
-        let comments = paginatedComments;
+        const data = await api.comments.browse({
+            postId: options.postId,
+            order: state.order,
+            anchor: anchorId
+        });
 
-        if (parentId && !isCommentLoaded(comments, targetId)) {
+        let comments = data.comments;
+        const pagination = data.meta.pagination;
+        const found = data.meta.anchor?.found !== false;
+
+        // If targeting a reply, load all replies for the parent
+        if (parentId && found && !isCommentLoaded(comments, targetId)) {
             comments = await loadRepliesForComment(parentId, comments);
         }
 
@@ -304,11 +283,11 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
             let pagination = initialPagination;
             let scrollTargetFound = false;
 
-            const shouldFindScrollTarget = labs?.commentPermalinks && initialCommentId && pagination;
+            const shouldFindScrollTarget = labs?.commentPermalinks && initialCommentId;
             if (shouldFindScrollTarget) {
                 const targetComment = await fetchScrollTarget(initialCommentId);
                 if (targetComment) {
-                    const result = await loadScrollTarget(initialCommentId, targetComment, comments, pagination);
+                    const result = await loadScrollTarget(initialCommentId, targetComment);
                     comments = result.comments;
                     pagination = result.pagination;
                     scrollTargetFound = result.found;

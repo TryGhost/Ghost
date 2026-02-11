@@ -4,8 +4,6 @@ export function setupAdminAPI({adminUrl}: {adminUrl: string}) {
     const handlers: Record<string, (error: Error|undefined, result: any) => void> = {};
     const adminOrigin = new URL(adminUrl).origin;
 
-    let firstCommentCreatedAt: null | string = null;
-
     window.addEventListener('message', function (event) {
         if (event.origin !== adminOrigin) {
             // Other message that is not intended for us
@@ -63,19 +61,16 @@ export function setupAdminAPI({adminUrl}: {adminUrl: string}) {
             return await callApi('showComment', {id});
         },
 
-        async browse({page, postId, order, memberUuid}: {page: number, postId: string, order?: string, memberUuid?: string}) {
-            let filter = null;
-            if (firstCommentCreatedAt && !order) {
-                filter = `created_at:<=${firstCommentCreatedAt}`;
-            }
-
+        async browse({postId, order, after, anchor, memberUuid}: {postId: string, order?: string, after?: string, anchor?: string, memberUuid?: string}) {
             const params = new URLSearchParams();
 
             params.set('limit', '20');
-            if (filter) {
-                params.set('filter', filter);
+            if (after) {
+                params.set('after', after);
             }
-            params.set('page', page.toString());
+            if (anchor) {
+                params.set('anchor', anchor);
+            }
             if (order) {
                 params.set('order', order);
             }
@@ -84,34 +79,24 @@ export function setupAdminAPI({adminUrl}: {adminUrl: string}) {
                 params.set('impersonate_member_uuid', memberUuid);
             }
 
-            const response = await callApi('browseComments', {postId, params: params.toString()});
-            if (!firstCommentCreatedAt) {
-                const firstComment = response.comments[0];
-                if (firstComment) {
-                    firstCommentCreatedAt = firstComment.created_at;
-                }
-            }
-
-            return response;
+            return await callApi('browseComments', {postId, params: params.toString()});
         },
-        async replies({commentId, afterReplyId, limit, memberUuid}: {commentId: string; afterReplyId?: string; limit?: number, memberUuid?: string}) {
+        async replies({commentId, after, limit, memberUuid}: {commentId: string; after?: string; limit?: number, memberUuid?: string}) {
             const params = new URLSearchParams();
 
             if (limit) {
                 params.set('limit', limit.toString());
             }
 
-            if (afterReplyId) {
-                params.set('filter', `id:>'${afterReplyId}'`);
+            if (after) {
+                params.set('after', after);
             }
 
             if (memberUuid) {
                 params.set('impersonate_member_uuid', memberUuid);
             }
 
-            const response = await callApi('getReplies', {commentId, params: params.toString()});
-
-            return response;
+            return await callApi('getReplies', {commentId, params: params.toString()});
         },
 
         async read({commentId, memberUuid}: {commentId: string, memberUuid?: string}) {

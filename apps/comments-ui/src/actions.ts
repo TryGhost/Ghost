@@ -4,23 +4,17 @@ import {GhostApi} from './utils/api';
 import {Page} from './pages';
 
 async function loadMoreComments({state, api, options, order}: {state: EditableAppContext, api: GhostApi, options: CommentsOptions, order?:string}): Promise<Partial<EditableAppContext>> {
-    let page = 1;
-    if (state.pagination && state.pagination.page) {
-        page = state.pagination.page + 1;
-    }
+    const after = state.pagination?.next ?? undefined;
+
     let data;
     if (state.admin && state.adminApi) {
-        data = await state.adminApi.browse({page, postId: options.postId, order: order || state.order, memberUuid: state.member?.uuid});
+        data = await state.adminApi.browse({postId: options.postId, order: order || state.order, after, memberUuid: state.member?.uuid});
     } else {
-        data = await api.comments.browse({page, postId: options.postId, order: order || state.order});
+        data = await api.comments.browse({postId: options.postId, order: order || state.order, after});
     }
 
-    const updatedComments = [...state.comments, ...data.comments];
-    const dedupedComments = updatedComments.filter((comment, index, self) => self.findIndex(c => c.id === comment.id) === index);
-
-    // Note: we store the comments from new to old, and show them in reverse order
     return {
-        comments: dedupedComments,
+        comments: [...state.comments, ...data.comments],
         pagination: data.meta.pagination
     };
 }
@@ -37,9 +31,9 @@ async function setOrder({state, data: {order}, options, api, dispatchAction}: {s
     try {
         let data;
         if (state.admin && state.adminApi) {
-            data = await state.adminApi.browse({page: 1, postId: options.postId, order, memberUuid: state.member?.uuid});
+            data = await state.adminApi.browse({postId: options.postId, order, memberUuid: state.member?.uuid});
         } else {
-            data = await api.comments.browse({page: 1, postId: options.postId, order});
+            data = await api.comments.browse({postId: options.postId, order});
         }
 
         return {
@@ -56,47 +50,42 @@ async function setOrder({state, data: {order}, options, api, dispatchAction}: {s
 }
 
 async function loadMoreReplies({state, api, data: {comment, limit}, isReply}: {state: EditableAppContext, api: GhostApi, data: {comment: Comment, limit?: number | 'all'}, isReply: boolean}): Promise<Partial<EditableAppContext>> {
-    const fetchReplies = async (afterReplyId: string | undefined, requestLimit: number) => {
+    const fetchReplies = async (after: string | undefined, requestLimit: number) => {
         if (state.admin && state.adminApi && !isReply) { // we don't want the admin api to load reply data for replying to a reply, so we pass isReply: true
-            return await state.adminApi.replies({commentId: comment.id, afterReplyId, limit: requestLimit, memberUuid: state.member?.uuid});
+            return await state.adminApi.replies({commentId: comment.id, after, limit: requestLimit, memberUuid: state.member?.uuid});
         } else {
-            return await api.comments.replies({commentId: comment.id, afterReplyId, limit: requestLimit});
+            return await api.comments.replies({commentId: comment.id, after, limit: requestLimit});
         }
     };
 
-    let afterReplyId: string | undefined = comment.replies && comment.replies.length > 0
-        ? comment.replies[comment.replies.length - 1]?.id
-        : undefined;
-
+    let afterCursor: string | undefined;
     let allComments: Comment[] = [];
 
     if (limit === 'all') {
         let hasMore = true;
 
         while (hasMore) {
-            const data = await fetchReplies(afterReplyId, 100);
+            const data = await fetchReplies(afterCursor, 100);
             allComments.push(...data.comments);
-            hasMore = !!data.meta.pagination.next;
+            afterCursor = data.meta.pagination.next ?? undefined;
+            hasMore = !!afterCursor;
 
-            if (data.comments && data.comments.length > 0) {
-                afterReplyId = data.comments[data.comments.length - 1]?.id;
-            } else {
-                // If no comments returned, stop pagination to prevent infinite loop
+            if (!data.comments || data.comments.length === 0) {
                 hasMore = false;
             }
         }
     } else {
-        const data = await fetchReplies(afterReplyId, limit as number || 100);
+        const data = await fetchReplies(afterCursor, limit as number || 100);
         allComments = data.comments;
     }
 
-    // Note: we store the comments from new to old, and show them in reverse order
+    // Replace all replies since we fetch from the beginning (no cursor on first call)
     return {
         comments: state.comments.map((c) => {
             if (c.id === comment.id) {
                 return {
                     ...comment,
-                    replies: [...comment.replies, ...allComments]
+                    replies: allComments
                 };
             }
             return c;

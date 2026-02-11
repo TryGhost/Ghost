@@ -73,10 +73,12 @@ export type EditableAppContext = {
     admin: null | any,
     comments: Comment[],
     pagination: {
-        page: number,
         limit: number,
-        pages: number,
-        total: number
+        total: number,
+        next: string | null,
+        prev: string | null,
+        page?: number,
+        pages?: number
     } | null,
     commentCount: number,
     openCommentForms: OpenCommentForm[],

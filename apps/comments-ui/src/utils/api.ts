@@ -31,10 +31,6 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
         return fetch(url, options);
     }
 
-    // To fix pagination when we create new comments (or people post comments
-    // after you loaded the page), we need to only load comments created AFTER the page load
-    let firstCommentCreatedAt: null | string = null;
-
     const api = {
         site: {
             settings() {
@@ -126,24 +122,21 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
 
                 return json;
             },
-            browse({page, postId, order}: {page: number, postId: string, order?: string}) {
-                let filter = null;
-                if (firstCommentCreatedAt && !order) {
-                    filter = `created_at:<=${firstCommentCreatedAt}`;
-                }
-
+            browse({postId, order, after, anchor}: {postId: string, order?: string, after?: string, anchor?: string}) {
                 const params = new URLSearchParams();
 
                 params.set('limit', '20');
-                if (filter) {
-                    params.set('filter', filter);
+                if (after) {
+                    params.set('after', after);
                 }
-                params.set('page', page.toString());
+                if (anchor) {
+                    params.set('anchor', anchor);
+                }
                 if (order) {
                     params.set('order', order);
                 }
                 const url = endpointFor({type: 'members', resource: `comments/post/${postId}`, params: `?${params.toString()}`});
-                const response = makeRequest({
+                return makeRequest({
                     url,
                     method: 'GET',
                     headers: {
@@ -157,24 +150,13 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
                         throw new Error('Failed to fetch comments');
                     }
                 });
-
-                if (!firstCommentCreatedAt) {
-                    response.then((body) => {
-                        const firstComment = body.comments[0];
-                        if (firstComment) {
-                            firstCommentCreatedAt = firstComment.created_at;
-                        }
-                    });
-                }
-
-                return response;
             },
-            async replies({commentId, afterReplyId, limit}: {commentId: string; afterReplyId?: string; limit?: number | 'all'}) {
+            async replies({commentId, after, limit}: {commentId: string; after?: string; limit?: number | 'all'}) {
                 const params = new URLSearchParams();
                 params.set('limit', (limit ?? 5).toString());
 
-                if (afterReplyId) {
-                    params.set('filter', `id:>'${afterReplyId}'`);
+                if (after) {
+                    params.set('after', after);
                 }
 
                 const url = endpointFor({type: 'members', resource: `comments/${commentId}/replies`, params: `?${params.toString()}`});
