@@ -608,6 +608,45 @@ describe('Members API - Member Offers', function () {
             }
         });
 
+        it('returns 400 when applying retention offer to subscription that is already cancelling', async function () {
+            const {subscription} = await getMemberSubscription('paid@test.com');
+            const stripePrice = subscription.related('stripePrice');
+
+            const stripeSubscriptionId = subscription.get('subscription_id');
+            const cadence = stripePrice.get('interval');
+
+            // Set subscription to cancel at period end
+            await subscription.save({cancel_at_period_end: true}, {patch: true});
+
+            // Create a retention offer
+            const retentionOffer = await models.Offer.add({
+                name: 'Test Retention Cancelling',
+                code: 'test-retention-cancelling',
+                portal_title: '20% off',
+                portal_description: 'Stay with us!',
+                discount_type: 'percent',
+                discount_amount: 20,
+                duration: 'once',
+                interval: cadence,
+                product_id: null,
+                currency: null,
+                active: true,
+                redemption_type: 'retention'
+            });
+
+            try {
+                const token = await getIdentityToken('paid@test.com');
+
+                await membersAgent
+                    .post(`/api/subscriptions/${stripeSubscriptionId}/apply-offer`)
+                    .body({identity: token, offer_id: retentionOffer.id})
+                    .expectStatus(400);
+            } finally {
+                await subscription.save({cancel_at_period_end: false}, {patch: true});
+                await models.Offer.destroy({id: retentionOffer.id});
+            }
+        });
+
         it('returns 400 when subscription is in a trial period', async function () {
             const {subscription} = await getMemberSubscription('paid@test.com');
             const stripePrice = subscription.related('stripePrice');
