@@ -19,8 +19,8 @@ const statusTransformer = mapKeyValues({
     }]
 });
 
-const rejectNonStatusTransformer = input => mapQuery(input, function (value, key) {
-    if (key !== 'status') {
+const rejectInvalidTransformer = input => mapQuery(input, function (value, key) {
+    if (key !== 'status' && key !== 'redemption_type') {
         return;
     }
 
@@ -29,7 +29,7 @@ const rejectNonStatusTransformer = input => mapQuery(input, function (value, key
     };
 });
 
-const mongoTransformer = flowRight(statusTransformer, rejectNonStatusTransformer);
+const mongoTransformer = flowRight(statusTransformer, rejectInvalidTransformer);
 
 /**
  * @typedef {object} BaseOptions
