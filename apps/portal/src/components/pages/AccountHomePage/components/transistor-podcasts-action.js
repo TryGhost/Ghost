@@ -19,8 +19,6 @@ export const TransistorPodcastsActionStyles = `
     }
 `;
 
-// Single source of truth for Transistor defaults - must match default-settings.json
-// Translatable strings use t() when displaying defaults, custom values display as-is
 export const TRANSISTOR_DEFAULTS = {
     heading: 'Podcasts',
     description: 'Access your RSS feeds',

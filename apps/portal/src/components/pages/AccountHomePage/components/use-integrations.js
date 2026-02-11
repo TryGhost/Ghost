@@ -12,10 +12,8 @@ const useIntegrations = () => {
     const transistorSettings = site.transistor_portal_settings;
     const isTransistorEnabled = Boolean(site.labs?.transistor) && transistorSettings?.enabled !== false;
     const memberUuid = member?.uuid;
-
-    // In preview mode, always show transistor section if enabled (don't make API call)
+    
     const isPreview = isPreviewMode();
-
     const [transistorPodcasts, setTransistorPodcasts] = useState(isPreview && isTransistorEnabled);
 
     useEffect(() => {
