@@ -252,10 +252,12 @@ export default class KoenigLexicalEditor extends Component {
         if (this.offers) {
             return this.offers;
         }
+
         // Only fetch active signup offers for use in link dropdowns
         // - Archived offers (status:archived) should not appear
         // - Retention offers (redemption_type:retention) are only triggered during cancellation flows, not via offer links
         this.offers = yield this.store.query('offer', {filter: 'status:active+redemption_type:signup'});
+
         return this.offers;
     }
 
