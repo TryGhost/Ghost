@@ -170,6 +170,62 @@ describe('Automated Emails API', function () {
                     etag: anyEtag
                 });
         });
+
+        describe('Structured logging', function () {
+            let infoStub;
+
+            beforeEach(function () {
+                infoStub = sinon.stub(logging, 'info');
+            });
+
+            afterEach(function () {
+                sinon.restore();
+            });
+
+            it('Logs when a welcome email is created as active', async function () {
+                const {body} = await agent
+                    .post('automated_emails')
+                    .body({automated_emails: [{
+                        name: 'Welcome Email (Free)',
+                        slug: 'member-welcome-email-free',
+                        status: 'active',
+                        subject: 'Welcome to the site!',
+                        lexical: JSON.stringify({root: {children: []}})
+                    }]})
+                    .expectStatus(201);
+
+                const automatedEmail = body.automated_emails[0];
+
+                sinon.assert.calledWithMatch(infoStub, {
+                    system: {
+                        event: 'welcome_email.enabled',
+                        automated_email_id: automatedEmail.id,
+                        slug: 'member-welcome-email-free',
+                        enabled: true
+                    }
+                }, 'Welcome email enabled');
+            });
+
+            it('Does not log when a welcome email is created as inactive', async function () {
+                await agent
+                    .post('automated_emails')
+                    .body({automated_emails: [{
+                        name: 'Welcome Email (Free)',
+                        slug: 'member-welcome-email-free',
+                        status: 'inactive',
+                        subject: 'Welcome to the site!',
+                        lexical: JSON.stringify({root: {children: []}})
+                    }]})
+                    .expectStatus(201);
+
+                sinon.assert.neverCalledWithMatch(infoStub, sinon.match.any, {
+                    system: {
+                        event: 'welcome_email.enabled',
+                        slug: 'member-welcome-email-free'
+                    }
+                });
+            });
+        });
     });
 
     describe('Edit', function () {

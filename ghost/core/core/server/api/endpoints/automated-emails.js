@@ -43,6 +43,28 @@ const logWelcomeEmailStatusTransition = (model) => {
     }, isEnableTransition ? 'Welcome email enabled' : 'Welcome email disabled');
 };
 
+const logWelcomeEmailEnabledOnCreate = (model) => {
+    if (!model?.id) {
+        return;
+    }
+
+    const slug = model.get('slug');
+    const currentStatus = model.get('status');
+
+    if (!MEMBER_WELCOME_EMAIL_SLUG_SET.has(slug) || currentStatus !== 'active') {
+        return;
+    }
+
+    logging.info({
+        system: {
+            event: 'welcome_email.enabled',
+            automated_email_id: model.id,
+            slug,
+            enabled: true
+        }
+    }, 'Welcome email enabled');
+};
+
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
     docName: 'automated_emails',
@@ -96,7 +118,9 @@ const controller = {
         permissions: true,
         async query(frame) {
             const data = frame.data.automated_emails[0];
-            return models.AutomatedEmail.add(data, frame.options);
+            const model = await models.AutomatedEmail.add(data, frame.options);
+            logWelcomeEmailEnabledOnCreate(model);
+            return model;
         }
     },
 
