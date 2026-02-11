@@ -188,7 +188,7 @@ test.describe('Offers Modal', () => {
         await manageButton.click();
         const modal = page.getByTestId('offers-modal');
         await expect(modal).toBeVisible();
-        await expect(modal.getByText('Signup')).toHaveAttribute('aria-selected', 'true');
+        await expect(modal.getByText('Active')).toHaveAttribute('aria-selected', 'true');
         await expect(modal).toContainText('First offer');
         await expect(modal).toContainText('Second offer');
     });
@@ -206,12 +206,8 @@ test.describe('Offers Modal', () => {
         const section = page.getByTestId('offers');
         await section.getByRole('button', {name: 'Manage offers'}).click();
         const modal = page.getByTestId('offers-modal');
-        await modal.getByText('Signup').waitFor();
-        // Open filter popover and select Archived status
-        const popoverTrigger = modal.locator('header button').last();
-        await popoverTrigger.click();
-        const popover = page.getByTestId('popover-content');
-        await popover.getByText('Archived').click();
+        await modal.getByText('Archived').click();
+        await expect(modal.getByText('Archived')).toHaveAttribute('aria-selected', 'true');
         await expect(modal).toContainText('Third offer');
     });
 
@@ -236,7 +232,7 @@ test.describe('Offers Modal', () => {
         const section = page.getByTestId('offers');
         await section.getByRole('button', {name: 'Manage offers'}).click();
         const modal = page.getByTestId('offers-modal');
-        await expect(modal.getByText('Signup')).toHaveAttribute('aria-selected', 'true');
+        await expect(modal.getByText('Active')).toHaveAttribute('aria-selected', 'true');
         await expect(modal).toContainText('First offer');
         await modal.getByText('First offer').click();
 
