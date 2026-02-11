@@ -28,6 +28,7 @@ describe('sendMagicLink', function () {
 
         // Reset settings
         settingsCache.set('members_signup_access', {value: 'all'});
+        settingsCache.set('portal_plans', {value: ['free', 'monthly', 'yearly']});
     });
 
     afterEach(function () {
@@ -77,7 +78,7 @@ describe('sendMagicLink', function () {
         assert.equal(member.email, email);
     });
 
-    it('Does not send email when logging in to email that does not exist on invite-only site', async function () {
+    it('Returns error when logging in to email that does not exist on invite-only site', async function () {
         settingsCache.set('members_signup_access', {value: 'invite'});
 
         const email = 'this-member-does-not-exist-invite@test.com';
@@ -86,13 +87,35 @@ describe('sendMagicLink', function () {
                 email,
                 emailType: 'signin'
             })
-            .expectEmptyBody()
-            .expectStatus(201);
+            .expectStatus(400)
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId,
+                    message: 'No member exists with this email address. Please sign up first.'
+                }]
+            });
+    });
 
-        // No email should be sent for non-existent members on invite-only sites
-        assert.throws(() => {
-            mockManager.assert.sentEmail({to: email});
-        }, /Expected at least 1 emails sent/);
+    it('Returns error when logging in to email that does not exist when free tier is hidden', async function () {
+        // members_signup_access is 'all' but portal_plans does not include 'free'
+        // This simulates a site that only wants paid members
+        // Since no signup email would be sent, we return an error for better UX
+        settingsCache.set('members_signup_access', {value: 'all'});
+        settingsCache.set('portal_plans', {value: ['monthly', 'yearly']});
+
+        const email = 'this-member-does-not-exist-paid-only@test.com';
+        await membersAgent.post('/api/send-magic-link')
+            .body({
+                email,
+                emailType: 'signin'
+            })
+            .expectStatus(400)
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId,
+                    message: 'No member exists with this email address. Please sign up first.'
+                }]
+            });
     });
 
     it('Throws an error when trying to sign up on an invite-only site', async function () {

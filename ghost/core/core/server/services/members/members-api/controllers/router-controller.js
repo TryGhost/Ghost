@@ -886,14 +886,19 @@ module.exports = class RouterController {
         const member = await this._memberRepository.get({email: normalizedEmail});
 
         if (!member) {
-            // Member doesn't exist - to prevent enumeration, we don't reveal this
-            // If self-signup is allowed, send a signup email so they can create an account
-            // If self-signup is disabled (invite-only), silently return to prevent enumeration
-            if (this._allowSelfSignup()) {
+            // Member doesn't exist
+            // Check if we can send a signup email (free signups enabled AND free tier visible)
+            const portalPlans = this._settingsCache.get('portal_plans') || [];
+            const canSendSignupEmail = this._allowSelfSignup() && portalPlans.includes('free');
+
+            if (canSendSignupEmail) {
+                // Free signups are available - to prevent enumeration (phishers testing if
+                // email owners click links), send a signup email instead of revealing
+                // that the member doesn't exist
                 const blockedEmailDomains = this._settingsCache.get('all_blocked_email_domains');
                 const emailDomain = normalizedEmail.split('@')[1]?.toLowerCase();
                 if (emailDomain && blockedEmailDomains.includes(emailDomain)) {
-                    // To prevent enumeration, we don't reveal this
+                    // Blocked domain - silently return to prevent enumeration
                     return {};
                 }
 
@@ -910,9 +915,12 @@ module.exports = class RouterController {
                 });
             }
 
-            // Self-signup disabled (invite-only): silently return empty response
-            // to prevent member enumeration
-            return {};
+            // Free signups not available (invite-only, paid-only, or free tier hidden)
+            // Since no signup email would be sent anyway, we can return an error
+            // to provide better UX without enabling the phishing attack vector
+            throw new errors.BadRequestError({
+                message: tpl(messages.memberNotFoundSignUp)
+            });
         }
 
         const tokenData = {};
