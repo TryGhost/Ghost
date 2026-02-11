@@ -217,12 +217,12 @@ describe('Automated Emails API', function () {
                     }]})
                     .expectStatus(201);
 
-                sinon.assert.neverCalledWithMatch(infoStub, sinon.match.any, {
+                sinon.assert.neverCalledWithMatch(infoStub, {
                     system: {
                         event: 'welcome_email.enabled',
                         slug: 'member-welcome-email-free'
                     }
-                });
+                }, sinon.match.any);
             });
         });
     });
@@ -402,11 +402,11 @@ describe('Automated Emails API', function () {
                     }]})
                     .expectStatus(200);
 
-                sinon.assert.neverCalledWithMatch(infoStub, sinon.match.any, {
+                sinon.assert.neverCalledWithMatch(infoStub, {
                     system: {
                         event: sinon.match(/^welcome_email\.(enabled|disabled)$/)
                     }
-                });
+                }, sinon.match.any);
             });
         });
     });
