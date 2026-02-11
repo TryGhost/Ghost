@@ -31,7 +31,8 @@ const messages = {
     offerAlreadyRedeemed: 'This offer has already been redeemed on this subscription',
     subscriptionNotActive: 'Cannot apply offer to an inactive subscription',
     subscriptionHasOffer: 'Subscription already has an offer applied',
-    subscriptionInTrial: 'Cannot apply offer to a subscription in a trial period'
+    subscriptionInTrial: 'Cannot apply offer to a subscription in a trial period',
+    subscriptionCancelling: 'Cannot apply retention offer to a subscription that is already cancelling'
 };
 
 const SUBSCRIPTION_STATUS_TRIALING = 'trialing';
@@ -1766,6 +1767,12 @@ module.exports = class MemberRepository {
         if (offer.redemption_type === 'signup') {
             throw new errors.BadRequestError({
                 message: tpl(messages.offerIsSignupOffer)
+            });
+        }
+
+        if (offer.redemption_type === 'retention' && subscriptionModel.get('cancel_at_period_end')) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.subscriptionCancelling)
             });
         }
 

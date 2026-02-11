@@ -309,6 +309,47 @@ describe('Members API - Member Offers', function () {
                 await models.Offer.destroy({id: signupOffer.id});
             }
         });
+
+        it('returns empty offers if subscription is already set to cancel', async function () {
+            const {subscription} = await getMemberSubscription('paid@test.com');
+            const stripePrice = subscription.related('stripePrice');
+            const cadence = stripePrice.get('interval');
+
+            // Create a retention offer
+            const offer = await models.Offer.add({
+                name: 'Test Retention Offer Cancel',
+                code: 'test-retention-cancel',
+                portal_title: '20% off',
+                portal_description: 'Stay with us!',
+                discount_type: 'percent',
+                discount_amount: 20,
+                duration: 'once',
+                interval: cadence,
+                product_id: null,
+                currency: null,
+                active: true,
+                redemption_type: 'retention'
+            });
+
+            // Set the subscription to cancel at period end
+            await subscription.save({cancel_at_period_end: true}, {patch: true});
+
+            try {
+                const token = await getIdentityToken('paid@test.com');
+
+                const {body} = await membersAgent
+                    .post('/api/member/offers')
+                    .body({identity: token})
+                    .expectStatus(200);
+
+                // Should not return retention offers if subscription is already cancelling
+                assert.deepEqual(body, {offers: []});
+            } finally {
+                // Clean up
+                await subscription.save({cancel_at_period_end: false}, {patch: true});
+                await models.Offer.destroy({id: offer.id});
+            }
+        });
     });
 
     describe('POST /members/api/subscriptions/:id/apply-offer', function () {
@@ -563,6 +604,45 @@ describe('Members API - Member Offers', function () {
                     .expectStatus(400);
             } finally {
                 await subscription.save({status: originalStatus}, {patch: true});
+                await models.Offer.destroy({id: retentionOffer.id});
+            }
+        });
+
+        it('returns 400 when applying retention offer to subscription that is already cancelling', async function () {
+            const {subscription} = await getMemberSubscription('paid@test.com');
+            const stripePrice = subscription.related('stripePrice');
+
+            const stripeSubscriptionId = subscription.get('subscription_id');
+            const cadence = stripePrice.get('interval');
+
+            // Set subscription to cancel at period end
+            await subscription.save({cancel_at_period_end: true}, {patch: true});
+
+            // Create a retention offer
+            const retentionOffer = await models.Offer.add({
+                name: 'Test Retention Cancelling',
+                code: 'test-retention-cancelling',
+                portal_title: '20% off',
+                portal_description: 'Stay with us!',
+                discount_type: 'percent',
+                discount_amount: 20,
+                duration: 'once',
+                interval: cadence,
+                product_id: null,
+                currency: null,
+                active: true,
+                redemption_type: 'retention'
+            });
+
+            try {
+                const token = await getIdentityToken('paid@test.com');
+
+                await membersAgent
+                    .post(`/api/subscriptions/${stripeSubscriptionId}/apply-offer`)
+                    .body({identity: token, offer_id: retentionOffer.id})
+                    .expectStatus(400);
+            } finally {
+                await subscription.save({cancel_at_period_end: false}, {patch: true});
                 await models.Offer.destroy({id: retentionOffer.id});
             }
         });
