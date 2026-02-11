@@ -165,9 +165,13 @@ function getPublicAppsHelper(data, frontendKey, excludeList) {
         features.push('search');
     }
 
+    // Comments - enabled if comments are not 'off'
+    if (!excludeList.has('comments') && settingsCache.get('comments_enabled') !== 'off') {
+        features.push('comments');
+    }
+
     // Future features would be added here:
     // if (!excludeList.has('portal') && portalEnabled) features.push('portal');
-    // if (!excludeList.has('comments') && commentsEnabled) features.push('comments');
 
     if (features.length === 0) {
         return '';
@@ -184,6 +188,14 @@ function getPublicAppsHelper(data, frontendKey, excludeList) {
     if (features.includes('search')) {
         attrs['sodo-search'] = adminUrl;
         // CSS is inlined in the JS bundle, no separate styles URL needed
+    }
+
+    // Add comments-specific attributes
+    if (features.includes('comments')) {
+        attrs['comments-enabled'] = settingsCache.get('comments_enabled');
+        attrs['admin-url'] = adminUrl;
+        attrs['api-url'] = urlUtils.urlFor('api', {type: 'members'}, true);
+        // post-id will be added by the theme template via data attribute
     }
 
     // Add preview-specific attributes for announcement bar

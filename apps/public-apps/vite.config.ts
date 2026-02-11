@@ -1,9 +1,10 @@
 import {defineConfig} from 'vite';
 import react from '@vitejs/plugin-react';
+import svgr from 'vite-plugin-svgr';
 import {resolve} from 'path';
 
 export default defineConfig({
-    plugins: [react()],
+    plugins: [react(), svgr()],
     base: '/public-apps/',
     build: {
         outDir: 'dist',
@@ -21,6 +22,9 @@ export default defineConfig({
                     }
                     if (chunkInfo.facadeModuleId?.includes('features/search')) {
                         return 'search.[hash].js';
+                    }
+                    if (chunkInfo.facadeModuleId?.includes('features/comments')) {
+                        return 'comments.[hash].js';
                     }
                     return '[name].[hash].js';
                 },

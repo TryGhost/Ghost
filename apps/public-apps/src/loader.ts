@@ -68,6 +68,11 @@ async function loadFeature(name: string, config: LoaderConfig): Promise<void> {
         await initSearch(config);
         break;
     }
+    case 'comments': {
+        const {initComments} = await import('./features/comments');
+        await initComments(config);
+        break;
+    }
     // Future features:
     // case 'portal': {
     //     const { initPortal } = await import('./features/portal');
