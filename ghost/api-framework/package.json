@@ -36,7 +36,6 @@
     "@tryghost/tpl": "^0.1.35",
     "@tryghost/validator": "^0.2.17",
     "json-stable-stringify": "1.3.0",
-    "jsonpath": "1.2.1",
     "lodash": "4.17.23"
   }
 }
