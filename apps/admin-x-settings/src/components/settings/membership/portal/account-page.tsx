@@ -34,8 +34,6 @@ const AccountPage: React.FC<{
     const calculatedSupportAddress = supportEmailAddress?.toString() || fullEmailAddress(membersSupportAddress?.toString() || '', siteData!, config);
     const emailDomain = getEmailDomain(siteData!, config);
     const [value, setValue] = useState(calculatedSupportAddress);
-
-    // Transistor Portal settings
     const [transistorPortalSettingsJson] = getSettingValues<string>(localSettings, ['transistor_portal_settings']);
     const transistorSettings: TransistorPortalSettings = transistorPortalSettingsJson
         ? JSON.parse(transistorPortalSettingsJson) as TransistorPortalSettings
