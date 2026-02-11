@@ -60,5 +60,10 @@ export const getPortalPreviewUrl = ({settings, config, tiers, siteData, selected
 
     settingsParam.append('disableBackground', 'false');
 
+    const transistorPortalSettings = getSettingValue<string>(settings, 'transistor_portal_settings');
+    if (transistorPortalSettings) {
+        settingsParam.append('transistorPortalSettings', transistorPortalSettings);
+    }
+
     return `${baseUrl}${portalBase}?${settingsParam.toString()}`;
 };
