@@ -377,7 +377,7 @@ describe('{{ghost_head}} helper', function () {
 
         // @TODO: this is a LOT of mocking :/
         routingRegistryGetRssUrlStub = sinon.stub(routing.registry, 'getRssUrl').returns('http://localhost:65530/rss/');
-        sinon.stub(imageLib.imageSize, 'getImageSizeFromUrl').resolves();
+        sinon.stub(imageLib.cachedImageSizeFromUrl, 'getCachedImageSizeFromUrl').resolves();
         getStub = sinon.stub(settingsCache, 'get');
 
         getStub.withArgs('title').returns('Ghost');
@@ -415,7 +415,7 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '0.3'
                 }
             }));
-            sinon.assert.calledOnce(loggingErrorStub);
+            sinon.assert.notCalled(loggingErrorStub);
         });
 
         it('returns structured data on first index page', async function () {
