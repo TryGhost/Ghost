@@ -8,12 +8,12 @@ import {RequestOptions, apiUrl, useFetchApi} from './fetch-api';
 
 export interface Meta {
     pagination: {
-        page: number;
+        page: number | null;
         limit: number | 'all';
-        pages: number;
+        pages: number | null;
         total: number;
-        next: number | null;
-        prev: number | null;
+        next: number | string | null;
+        prev: number | string | null;
     }
 }
 
@@ -86,7 +86,8 @@ export const createPaginatedQuery = <ResponseData extends {meta?: Meta}>(options
         setPage,
         limit,
         // Don't pass the meta data if we are fetching, because then it is probably out of date and this causes issues
-        meta: result.isFetching ? undefined : data?.meta?.pagination
+        // Paginated queries always use page-based pagination where page/pages are numbers
+        meta: result.isFetching ? undefined : data?.meta?.pagination as {limit: number | 'all'; pages: number; total: number; next: number | null; prev: number | null} | undefined
     });
 
     useEffect(() => {

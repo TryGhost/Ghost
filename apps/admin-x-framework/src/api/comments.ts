@@ -65,12 +65,18 @@ const dataType = 'CommentsResponseType';
 const useBrowseCommentsQuery = createInfiniteQuery<CommentsResponseType>({
     dataType,
     path: '/comments/',
-    defaultNextPageParams: (lastPage, otherParams) => (lastPage.meta?.pagination.next
-        ? {
-            ...otherParams,
-            page: (lastPage.meta?.pagination.next || 1).toString()
+    defaultNextPageParams: (lastPage, otherParams) => {
+        const next = lastPage.meta?.pagination.next;
+        if (!next) {
+            return undefined;
         }
-        : undefined),
+        if (typeof next === 'string') {
+            // Cursor mode: pass opaque cursor as 'after' param
+            return {...otherParams, after: next};
+        }
+        // Page mode (backward compat): pass page number
+        return {...otherParams, page: next.toString()};
+    },
     returnData: (originalData) => {
         const {pages} = originalData as InfiniteData<CommentsResponseType>;
         const comments = pages.flatMap(page => page.comments);
@@ -79,7 +85,7 @@ const useBrowseCommentsQuery = createInfiniteQuery<CommentsResponseType>({
         return {
             comments,
             meta,
-            isEnd: meta ? meta.pagination.pages === meta.pagination.page : true
+            isEnd: meta ? meta.pagination.next === null : true
         };
     }
 });
