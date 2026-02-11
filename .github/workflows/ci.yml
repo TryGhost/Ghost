@@ -1062,6 +1062,121 @@ jobs:
       image-digest: ${{ steps.build.outputs.digest }}
       is-fork: ${{ steps.strategy.outputs.is-fork-pr }}
 
+  job_docker_build_production:
+    name: Build & Push Production Docker Images
+    needs: [job_setup]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - uses: actions/setup-node@v4
+        env:
+          FORCE_COLOR: 0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Restore caches
+        uses: ./.github/actions/restore-cache
+        env:
+          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+
+      - name: Build server and admin assets
+        run: yarn build:production
+
+      - name: Pack standalone distribution
+        run: yarn workspace ghost pack:standalone
+
+      - name: Prepare Docker build context
+        run: mv ghost/core/package/ /tmp/ghost-production/
+
+      - name: Determine push strategy
+        id: strategy
+        run: |
+          IS_FORK_PR="false"
+          if [ "${{ github.event_name }}" = "pull_request" ] && \
+             [ "${{ github.event.pull_request.head.repo.full_name }}" != "${{ github.repository }}" ]; then
+            IS_FORK_PR="true"
+          fi
+          OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          echo "is-fork-pr=$IS_FORK_PR" >> $GITHUB_OUTPUT
+          echo "should-push=$( [ "$IS_FORK_PR" = "false" ] && echo "true" || echo "false" )" >> $GITHUB_OUTPUT
+          echo "owner=$OWNER" >> $GITHUB_OUTPUT
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        if: steps.strategy.outputs.should-push == 'true'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker meta (core)
+        id: meta-core
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ steps.strategy.outputs.owner }}/ghost-core
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha
+            type=raw,value=latest,enable={{is_default_branch}}
+          labels: |
+            org.opencontainers.image.title=Ghost Core
+            org.opencontainers.image.description=Ghost production build (server only, no admin)
+            org.opencontainers.image.vendor=TryGhost
+
+      - name: Docker meta (full)
+        id: meta-full
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ steps.strategy.outputs.owner }}/ghost
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha
+            type=raw,value=latest,enable={{is_default_branch}}
+          labels: |
+            org.opencontainers.image.title=Ghost
+            org.opencontainers.image.description=Ghost production build (server + admin)
+            org.opencontainers.image.vendor=TryGhost
+
+      - name: Build & push core image
+        uses: docker/build-push-action@v6
+        with:
+          context: /tmp/ghost-production
+          file: Dockerfile.production
+          target: core
+          build-args: NODE_VERSION=${{ env.NODE_VERSION }}
+          push: ${{ steps.strategy.outputs.should-push }}
+          load: ${{ steps.strategy.outputs.should-push == 'false' }}
+          tags: ${{ steps.meta-core.outputs.tags }}
+          labels: ${{ steps.meta-core.outputs.labels }}
+          cache-from: type=registry,ref=ghcr.io/${{ steps.strategy.outputs.owner }}/ghost-core:cache-main
+          cache-to: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref=ghcr.io/{0}/ghost-core:cache-{1},mode=max', steps.strategy.outputs.owner, github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main') || '' }}
+
+      - name: Build & push full image
+        uses: docker/build-push-action@v6
+        with:
+          context: /tmp/ghost-production
+          file: Dockerfile.production
+          target: full
+          build-args: NODE_VERSION=${{ env.NODE_VERSION }}
+          push: ${{ steps.strategy.outputs.should-push }}
+          load: ${{ steps.strategy.outputs.should-push == 'false' }}
+          tags: ${{ steps.meta-full.outputs.tags }}
+          labels: ${{ steps.meta-full.outputs.labels }}
+          cache-from: type=registry,ref=ghcr.io/${{ steps.strategy.outputs.owner }}/ghost:cache-main
+          cache-to: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref=ghcr.io/{0}/ghost:cache-{1},mode=max', steps.strategy.outputs.owner, github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main') || '' }}
+
   job_inspect_image:
     name: Inspect Docker Image
     needs: job_docker_build

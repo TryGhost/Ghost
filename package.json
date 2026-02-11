@@ -22,6 +22,7 @@
   ],
   "scripts": {
     "archive": "nx run ghost:archive",
+    "build:production": "nx run ghost:build:tsc && nx run ghost:build:assets && nx run @tryghost/admin:build",
     "build": "nx run-many -t build",
     "build:clean": "nx reset && rimraf -g 'ghost/*/build' && rimraf -g 'ghost/*/tsconfig.tsbuildinfo'",
     "clean:hard": "node ./.github/scripts/clean.js",

@@ -1,0 +1,57 @@
+# syntax=docker/dockerfile:1-labs
+
+# Production Dockerfile for Ghost
+# Two targets:
+#   core — server + production deps, no admin (Ghost-Pro base)
+#   full — core + built admin (self-hosting)
+#
+# Build context: extracted `npm pack` output from ghost/core
+
+ARG NODE_VERSION=22.18.0
+
+# ---- Core: server + production deps ----
+FROM node:$NODE_VERSION-bookworm-slim AS core
+
+ENV NODE_ENV=production
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends libjemalloc2 && \
+    rm -rf /var/lib/apt/lists/* && \
+    groupmod -g 1001 node && \
+    usermod -u 1001 node && \
+    adduser --disabled-password --gecos "" -u 1000 ghost
+
+WORKDIR /home/ghost
+
+COPY --exclude=core/built/admin . .
+
+RUN --mount=type=cache,target=/usr/local/share/.cache/yarn/v6 \
+    apt-get update && \
+    apt-get install -y --no-install-recommends build-essential python3 && \
+    yarn install --ignore-scripts --production --prefer-offline && \
+    (cd node_modules/sqlite3 && npm run install) && \
+    apt-get purge -y build-essential python3 && \
+    apt-get autoremove -y && \
+    rm -rf /var/lib/apt/lists/* && \
+    mkdir -p default log && \
+    cp -R content base_content && \
+    cp -R content/themes/casper default/casper && \
+    ([ -d content/themes/source ] && cp -R content/themes/source default/source || true) && \
+    chown ghost:ghost /home/ghost && \
+    chown -R nobody:nogroup /home/ghost/* && \
+    chown -R ghost:ghost /home/ghost/content /home/ghost/log
+
+USER ghost
+ENV LD_PRELOAD=libjemalloc.so.2
+
+EXPOSE 2368
+
+CMD ["node", "index.js"]
+
+# ---- Full: core + admin ----
+FROM core AS full
+
+USER root
+COPY core/built/admin core/built/admin
+RUN chown -R nobody:nogroup core/built/admin
+USER ghost
