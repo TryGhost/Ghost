@@ -89,9 +89,19 @@ module.exports = class CommentsController {
     }
 
     /**
+     * Check if the request uses cursor-based pagination params.
+     * @param {Object} options
+     * @returns {boolean}
+     */
+    #isCursorMode(options) {
+        return !!(options.after || options.before || options.anchor);
+    }
+
+    /**
+     * Apply post_id filter to frame options.
      * @param {Frame} frame
      */
-    async browse(frame) {
+    #applyPostFilter(frame) {
         if (frame.options.post_id) {
             if (frame.options.filter) {
                 frame.options.mongoTransformer = function (query) {
@@ -107,28 +117,27 @@ module.exports = class CommentsController {
             } else {
                 frame.options.filter = `post_id:${frame.options.post_id}`;
             }
+        }
+    }
+
+    /**
+     * @param {Frame} frame
+     */
+    async browse(frame) {
+        this.#applyPostFilter(frame);
+
+        if (this.#isCursorMode(frame.options)) {
+            if (frame.options.anchor) {
+                return await this.service.getCommentsAroundAnchor(frame.options.anchor, frame.options);
+            }
+            return await this.service.getCommentsByCursor(frame.options);
         }
 
         return await this.service.getComments(frame.options);
     }
 
     async adminBrowse(frame) {
-        if (frame.options.post_id) {
-            if (frame.options.filter) {
-                frame.options.mongoTransformer = function (query) {
-                    return {
-                        $and: [
-                            {
-                                post_id: frame.options.post_id
-                            },
-                            query
-                        ]
-                    };
-                };
-            } else {
-                frame.options.filter = `post_id:${frame.options.post_id}`;
-            }
-        }
+        this.#applyPostFilter(frame);
 
         frame.options.isAdmin = true;
         // Admin routes in Comments-UI lack member context due to cross-domain constraints (CORS), which prevents
@@ -138,6 +147,14 @@ module.exports = class CommentsController {
         // explicitly set it in the context options as the acting member's ID.
         // Note: This approach is applied to several admin routes where member context is required.
         await this.#setImpersonationContext(frame.options);
+
+        if (this.#isCursorMode(frame.options)) {
+            if (frame.options.anchor) {
+                return await this.service.getCommentsAroundAnchor(frame.options.anchor, frame.options);
+            }
+            return await this.service.getCommentsByCursor(frame.options);
+        }
+
         return await this.service.getAdminComments(frame.options);
     }
 
@@ -165,7 +182,10 @@ module.exports = class CommentsController {
             reportCount,
             order: frame.options.order || 'created_at desc',
             page: frame.options.page,
-            limit: frame.options.limit
+            limit: frame.options.limit,
+            after: frame.options.after,
+            before: frame.options.before,
+            anchor: frame.options.anchor
         });
     }
 
@@ -173,7 +193,17 @@ module.exports = class CommentsController {
      * @param {Frame} frame
      */
     async replies(frame) {
-        return this.service.getReplies(frame.options.id, _.omit(frame.options, 'id'));
+        const parentId = frame.options.id;
+        const options = _.omit(frame.options, 'id');
+
+        if (this.#isCursorMode(options)) {
+            if (options.anchor) {
+                return await this.service.getRepliesAroundAnchor(options.anchor, parentId, options);
+            }
+            return await this.service.getRepliesByCursor(parentId, options);
+        }
+
+        return this.service.getReplies(parentId, options);
     }
 
     /**
@@ -184,7 +214,17 @@ module.exports = class CommentsController {
         frame.options.order = 'created_at asc'; // we always want to load replies from oldest to newest
         await this.#setImpersonationContext(frame.options);
 
-        return this.service.getReplies(frame.options.id, _.omit(frame.options, 'id'));
+        const parentId = frame.options.id;
+        const options = _.omit(frame.options, 'id');
+
+        if (this.#isCursorMode(options)) {
+            if (options.anchor) {
+                return await this.service.getRepliesAroundAnchor(options.anchor, parentId, options);
+            }
+            return await this.service.getRepliesByCursor(parentId, options);
+        }
+
+        return this.service.getReplies(parentId, options);
     }
 
     /**
