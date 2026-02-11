@@ -15,6 +15,7 @@ class MemberWelcomeEmailService {
     #mailer;
     #renderer;
     #memberWelcomeEmails = {free: null, paid: null};
+    #defaultNewsletterSenderOptions = null;
 
     constructor() {
         emailAddressService.init();
@@ -83,7 +84,18 @@ class MemberWelcomeEmailService {
         };
     }
 
+    async #getSenderOptions() {
+        if (this.#defaultNewsletterSenderOptions) {
+            return this.#defaultNewsletterSenderOptions;
+        }
+
+        this.#defaultNewsletterSenderOptions = await this.#getDefaultNewsletterSenderOptions();
+        return this.#defaultNewsletterSenderOptions;
+    }
+
     async loadMemberWelcomeEmails() {
+        this.#defaultNewsletterSenderOptions = await this.#getDefaultNewsletterSenderOptions();
+
         for (const [memberStatus, slug] of Object.entries(MEMBER_WELCOME_EMAIL_SLUGS)) {
             const row = await AutomatedEmail.findOne({slug});
 
@@ -137,7 +149,7 @@ class MemberWelcomeEmailService {
             siteSettings: this.#getSiteSettings()
         });
 
-        const senderOptions = await this.#getDefaultNewsletterSenderOptions();
+        const senderOptions = await this.#getSenderOptions();
 
         await this.#mailer.send({
             to: member.email,
@@ -194,7 +206,7 @@ class MemberWelcomeEmailService {
             siteSettings: this.#getSiteSettings()
         });
 
-        const senderOptions = await this.#getDefaultNewsletterSenderOptions();
+        const senderOptions = await this.#getSenderOptions();
 
         await this.#mailer.send({
             to: email,
