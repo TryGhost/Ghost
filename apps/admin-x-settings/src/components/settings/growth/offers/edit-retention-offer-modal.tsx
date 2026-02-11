@@ -155,7 +155,7 @@ const RetentionOfferSidebar: React.FC<{
                                 )}
                                 {formState.type === 'trial' && (
                                     <TextField
-                                        rightPlaceholder='months'
+                                        rightPlaceholder={`${formState.freeMonths === 1 ? 'month' : 'months'}`}
                                         title='Free months'
                                         type='number'
                                         value={formState.freeMonths === 0 ? '' : String(formState.freeMonths)}
