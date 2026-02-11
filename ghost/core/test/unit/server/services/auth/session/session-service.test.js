@@ -15,6 +15,10 @@ describe('SessionService', function () {
         getSettingsCache.withArgs('admin_session_secret').returns('secret-key');
     });
 
+    afterEach(function () {
+        sinon.restore();
+    });
+
     it('Returns the user for the id stored on the session', async function () {
         const getSession = async (req) => {
             if (req.session) {
@@ -555,6 +559,139 @@ describe('SessionService', function () {
         await assert.rejects(sessionService.sendAuthCodeToUser(req, res), {
             message: 'Failed to send email. Please check your site configuration and try again.'
         });
+    });
+
+    it('should throw an error after 15 seconds when using direct mode if send has not resolved', async function () {
+        const clock = sinon.useFakeTimers({
+            now: Date.now(),
+            shouldAdvanceTime: true
+        });
+        
+        const getSession = async (req) => {
+            if (req.session) {
+                return req.session;
+            }
+            req.session = {
+                user_id: 'user-123',
+                ip: '0.0.0.0',
+                user_agent: 'Fake'
+            };
+            return req.session;
+        };
+
+        const findUserById = sinon.stub().resolves({
+            id: 'user-123',
+            get: sinon.stub().returns('test@example.com')
+        });
+
+        const mailer = {
+            send: sinon.stub().returns(new Promise((resolve) => { setTimeout(() => resolve(), 20000) })),
+            state: {
+                usingDirect: true
+            }
+        };
+
+        const getBlogLogo = sinon.stub().returns('logo.png');
+        const urlUtils = {
+            urlFor: sinon.stub().returns('https://example.com')
+        };
+
+        const t = sinon.stub().callsFake(text => text);
+
+        const sessionService = SessionService({
+            getSession,
+            findUserById,
+            getSettingsCache,
+            getBlogLogo,
+            urlUtils,
+            mailer,
+            t,
+            getOriginOfRequest: sinon.stub(),
+            isStaffDeviceVerificationDisabled: sinon.stub()
+        });
+
+        const req = Object.create(express.request);
+        const res = Object.create(express.response);
+
+        const resultPromise = sessionService.sendAuthCodeToUser(req, res);
+        
+        // Make sure fake timers have had a chance to run
+        await new Promise(setImmediate);
+        
+        // Advance the clock by the expected timeout of 15 seconds
+        clock.tick(15000);
+        
+        // Give our promises a chance to resolve
+        await new Promise(setImmediate);
+        
+        await should(resultPromise).rejectedWith({
+            message: 'Failed to send email. Please check your site configuration and try again.'
+        });
+    });
+
+    it('should wait more than 15 seconds for send to resolve when not using direct mode', async function () {
+        const clock = sinon.useFakeTimers({
+            now: Date.now(),
+            shouldAdvanceTime: true
+        });
+        const getSession = async (req) => {
+            if (req.session) {
+                return req.session;
+            }
+            req.session = {
+                user_id: 'user-123',
+                ip: '0.0.0.0',
+                user_agent: 'Fake'
+            };
+            return req.session;
+        };
+
+        const findUserById = sinon.stub().resolves({
+            id: 'user-123',
+            get: sinon.stub().returns('test@example.com')
+        });
+
+        const mailer = {
+            send: sinon.stub().returns(new Promise((resolve) => { setTimeout(() => resolve(), 20000) })),
+            state: {
+                usingDirect: false
+            }
+        };
+
+        const getBlogLogo = sinon.stub().returns('logo.png');
+        const urlUtils = {
+            urlFor: sinon.stub().returns('https://example.com')
+        };
+
+        const t = sinon.stub().callsFake(text => text);
+
+        const sessionService = SessionService({
+            getSession,
+            findUserById,
+            getSettingsCache,
+            getBlogLogo,
+            urlUtils,
+            mailer,
+            t,
+            getOriginOfRequest: sinon.stub(),
+            isStaffDeviceVerificationDisabled: sinon.stub()
+        });
+
+        const req = Object.create(express.request);
+        const res = Object.create(express.response);
+
+        const resultPromise = sessionService.sendAuthCodeToUser(req, res);
+        
+        // Make sure fake timers have had a chance to run
+        await new Promise(setImmediate);
+        
+        // Advance the clock by the expected timeout of 15 seconds
+        clock.tick(20000);
+        
+        // Give our promises a chance to resolve
+        await new Promise(setImmediate);
+        
+        await should(resultPromise).resolved();
     });
 
     it('Can create a verified session for SSO', async function () {
