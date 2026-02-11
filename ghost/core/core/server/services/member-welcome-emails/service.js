@@ -37,7 +37,7 @@ class MemberWelcomeEmailService {
             return {};
         }
 
-        let senderName = settingsCache.get('title') ? settingsCache.get('title').replace(/"/g, '\\"') : '';
+        let senderName = settingsCache.get('title') || '';
         if (newsletter.get('sender_name')) {
             senderName = newsletter.get('sender_name');
         }
