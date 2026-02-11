@@ -200,8 +200,7 @@ describe('Automated Emails API', function () {
                     system: {
                         event: 'welcome_email.enabled',
                         automated_email_id: automatedEmail.id,
-                        slug: 'member-welcome-email-free',
-                        enabled: true
+                        slug: 'member-welcome-email-free'
                     }
                 }, 'Welcome email enabled');
             });
@@ -367,8 +366,7 @@ describe('Automated Emails API', function () {
                     system: {
                         event: 'welcome_email.enabled',
                         automated_email_id: automatedEmail.id,
-                        slug: 'member-welcome-email-free',
-                        enabled: true
+                        slug: 'member-welcome-email-free'
                     }
                 }, 'Welcome email enabled');
             });
@@ -388,8 +386,7 @@ describe('Automated Emails API', function () {
                     system: {
                         event: 'welcome_email.disabled',
                         automated_email_id: automatedEmail.id,
-                        slug: 'member-welcome-email-free',
-                        enabled: false
+                        slug: 'member-welcome-email-free'
                     }
                 }, 'Welcome email disabled');
             });

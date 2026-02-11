@@ -64,8 +64,7 @@ const AutomatedEmail = ghostBookshelf.Model.extend({
             system: {
                 event: isEnableTransition ? 'welcome_email.enabled' : 'welcome_email.disabled',
                 automated_email_id: model.id,
-                slug,
-                enabled: currentStatus === 'active'
+                slug
             }
         }, isEnableTransition ? 'Welcome email enabled' : 'Welcome email disabled');
     }
