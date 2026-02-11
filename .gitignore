@@ -161,6 +161,9 @@ Caddyfile
 # Announcement-Bar
 /apps/announcement-bar/umd
 
+# Public-Apps (consolidated public apps loader)
+/apps/public-apps/dist
+
 # Build files
 /apps/*/build
 /ghost/*/build
