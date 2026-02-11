@@ -11,15 +11,20 @@ const messages = {
     automatedEmailNotFound: 'Automated email not found.'
 };
 
-const logWelcomeEmailStatusTransition = ({automatedEmailId, slug, previousStatus, currentStatus}) => {
-    if (!automatedEmailId || !slug) {
+const logWelcomeEmailStatusTransition = (model) => {
+    if (!model?.id) {
         return;
     }
+
+    const slug = model.get('slug');
 
     if (!MEMBER_WELCOME_EMAIL_SLUG_SET.has(slug)) {
         return;
     }
 
+    const automatedEmailId = model.id;
+    const previousStatus = model.previous('status');
+    const currentStatus = model.get('status');
     const hasChangedStatus = previousStatus !== currentStatus;
     const isEnableTransition = previousStatus === 'inactive' && currentStatus === 'active';
     const isDisableTransition = previousStatus === 'active' && currentStatus === 'inactive';
@@ -112,9 +117,6 @@ const controller = {
         permissions: true,
         async query(frame) {
             const data = frame.data.automated_emails[0];
-            const currentModel = await models.AutomatedEmail.findOne({id: frame.options.id}, frame.options);
-            const previousStatus = currentModel?.get('status');
-            const slug = currentModel?.get('slug') || data.slug;
             const model = await models.AutomatedEmail.edit(data, frame.options);
             if (!model) {
                 throw new errors.NotFoundError({
@@ -122,12 +124,7 @@ const controller = {
                 });
             }
 
-            logWelcomeEmailStatusTransition({
-                automatedEmailId: model.id,
-                slug,
-                previousStatus,
-                currentStatus: model.get('status')
-            });
+            logWelcomeEmailStatusTransition(model);
 
             return model;
         }
