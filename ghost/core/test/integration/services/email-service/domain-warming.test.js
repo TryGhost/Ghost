@@ -4,6 +4,9 @@ const sinon = require('sinon');
 const assert = require('assert/strict');
 const jobManager = require('../../../../core/server/services/jobs/job-service');
 const configUtils = require('../../../utils/config-utils');
+const ObjectId = require('bson-objectid').default;
+const {v4: uuidv4} = require('uuid');
+const db = require('../../../../core/server/data/db');
 
 describe('Domain Warming Integration Tests', function () {
     let agent;
@@ -17,17 +20,41 @@ describe('Domain Warming Integration Tests', function () {
         await agent.loginAsOwner();
     });
 
-    // Helper: Create members with newsletter subscription
+    // Helper: Create members with newsletter subscription using bulk insert for performance
     async function createMembers(count, prefix = 'warmup') {
+        const newsletterId = fixtureManager.get('newsletters', 0).id;
+        const now = new Date();
+
+        // Prepare member data for bulk insert
+        const memberRows = [];
+        const newsletterRows = [];
+
         for (let i = 0; i < count; i++) {
-            await models.Member.add({
-                name: `Member ${prefix} ${i}`,
+            const memberId = ObjectId().toHexString();
+            memberRows.push({
+                id: memberId,
+                uuid: uuidv4(),
+                transient_id: uuidv4(),
                 email: `member-${prefix}-${i}@example.com`,
+                name: `Member ${prefix} ${i}`,
                 status: 'free',
-                newsletters: [{id: fixtureManager.get('newsletters', 0).id}],
-                email_disabled: false
+                email_disabled: false,
+                enable_comment_notifications: true,
+                email_count: 0,
+                email_opened_count: 0,
+                created_at: now,
+                updated_at: now
+            });
+            newsletterRows.push({
+                id: ObjectId().toHexString(),
+                member_id: memberId,
+                newsletter_id: newsletterId
             });
         }
+
+        // Bulk insert members and newsletter subscriptions
+        await db.knex.batchInsert('members', memberRows, 500);
+        await db.knex.batchInsert('members_newsletters', newsletterRows, 500);
     }
 
     // Helper: Send a post as email and return the email model
@@ -104,49 +131,58 @@ describe('Domain Warming Integration Tests', function () {
 
         mockManager.restore();
         await configUtils.restore();
+
         await jobManager.allSettled();
 
-        // Clean up test data to ensure test isolation
-        // Find and delete members created during tests (with our specific naming pattern)
+        // Clean up test data using bulk deletes for performance
         const patterns = ['warmup', 'day2', 'sameday', 'multi', 'limit', 'nowarmup', 'maxlimit', 'gap'];
-        for (const pattern of patterns) {
-            const testMembers = await models.Member.findAll({
-                filter: `email:~'member-${pattern}-'`
-            });
 
-            for (const member of testMembers.models) {
-                await member.destroy();
-            }
+        // Get member IDs first (needed for cascade delete of newsletter subscriptions)
+        const memberIds = await db.knex('members')
+            .where(function () {
+                patterns.forEach((pattern, i) => {
+                    const emailPattern = `member-${pattern}-%`;
+                    if (i === 0) {
+                        this.where('email', 'like', emailPattern);
+                    } else {
+                        this.orWhere('email', 'like', emailPattern);
+                    }
+                });
+            })
+            .pluck('id');
+
+        if (memberIds.length > 0) {
+            // Delete newsletter subscriptions first (foreign key)
+            await db.knex('members_newsletters').whereIn('member_id', memberIds).del();
+            // Delete members
+            await db.knex('members').whereIn('id', memberIds).del();
         }
 
         // Delete emails and related data created during tests
-        // Find all posts created during tests and delete their associated emails
-        const posts = await models.Post.findAll({
-            filter: 'title:~\'Test Post\''
-        });
+        const postIds = await db.knex('posts')
+            .where('title', 'like', 'Test Post%')
+            .pluck('id');
 
-        for (const post of posts.models) {
-            const emails = await models.Email.findAll({
-                filter: `post_id:'${post.id}'`
-            });
+        if (postIds.length > 0) {
+            // Get email IDs for these posts
+            const emailIds = await db.knex('emails')
+                .whereIn('post_id', postIds)
+                .pluck('id');
 
-            for (const email of emails.models) {
-                // Delete recipients first, then batches, then email (foreign key constraints)
-                const recipients = await models.EmailRecipient.findAll({filter: `email_id:'${email.id}'`});
-                for (const recipient of recipients.models) {
-                    await recipient.destroy();
-                }
-
-                const batches = await models.EmailBatch.findAll({filter: `email_id:'${email.id}'`});
-                for (const batch of batches.models) {
-                    await batch.destroy();
-                }
-
-                await email.destroy();
+            if (emailIds.length > 0) {
+                // Delete in correct order for foreign key constraints
+                await db.knex('email_recipients').whereIn('email_id', emailIds).del();
+                await db.knex('email_batches').whereIn('email_id', emailIds).del();
+                await db.knex('emails').whereIn('id', emailIds).del();
             }
 
-            // Delete the test post
-            await post.destroy();
+            // Delete posts (need to handle related tables)
+            await db.knex('posts_authors').whereIn('post_id', postIds).del();
+            await db.knex('posts_tags').whereIn('post_id', postIds).del();
+            await db.knex('posts_meta').whereIn('post_id', postIds).del();
+            await db.knex('mobiledoc_revisions').whereIn('post_id', postIds).del();
+            await db.knex('post_revisions').whereIn('post_id', postIds).del();
+            await db.knex('posts').whereIn('id', postIds).del();
         }
     });
 
