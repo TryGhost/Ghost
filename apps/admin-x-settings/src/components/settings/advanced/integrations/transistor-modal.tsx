@@ -1,5 +1,5 @@
 import APIKeys from './api-keys';
-// import BookmarkThumb from '../../../../assets/images/stripe-thumb.jpg';
+import BookmarkThumb from '../../../../assets/images/integrations/ghost-transistor.png';
 import IntegrationHeader from './integration-header';
 import NiceModal from '@ebay/nice-modal-react';
 import {ConfirmationModal, Form, Icon, Modal, Toggle} from '@tryghost/admin-x-design-system';
@@ -24,8 +24,8 @@ const TransistorModal = NiceModal.create(() => {
 
     const [transistorEnabled] = getSettingValues<boolean>(settings, ['transistor']);
     const [enabled, setEnabled] = useState<boolean>(!!transistorEnabled);
-    const [useInPortal, setUseInPortal] = useState(true);
-    const [useInEditor, setUseInEditor] = useState(true);
+    // const [useInPortal, setUseInPortal] = useState(true);
+    // const [useInEditor, setUseInEditor] = useState(true);
     const [okLabel, setOkLabel] = useState('Save');
     const learnMoreUrl = 'https://ghost.org/integrations/transistor/';
 
@@ -89,18 +89,18 @@ const TransistorModal = NiceModal.create(() => {
             }}
             cancelLabel='Close'
             dirty={enabled !== transistorEnabled}
-            leftButtonProps={{
-                label: (
-                    <div className='flex items-center gap-2'>
-                        Learn more
-                        {/* <Icon name='arrow-top-right' size="xs" /> */}
-                    </div>
-                ),
-                color: 'outline',
-                onClick: () => {
-                    window.open(learnMoreUrl, '_blank', 'noopener,noreferrer');
-                }
-            }}
+            // leftButtonProps={{
+            //     label: (
+            //         <div className='flex items-center gap-2'>
+            //             Learn more
+            //             {/* <Icon name='arrow-top-right' size="xs" /> */}
+            //         </div>
+            //     ),
+            //     color: 'outline',
+            //     onClick: () => {
+            //         window.open(learnMoreUrl, '_blank', 'noopener,noreferrer');
+            //     }
+            // }}
             okColor={okLabel === 'Saved' ? 'green' : 'black'}
             okLabel={okLabel}
             testId='transistor-modal'
@@ -126,13 +126,13 @@ const TransistorModal = NiceModal.create(() => {
                     {enabled && (
                         <>
                             <APIKeys keys={[
+                                {label: 'Ghost API URL', text: window.location.origin + getGhostPaths().subdir},
                                 {
-                                    label: 'Admin API key',
+                                    label: 'Ghost Admin API key',
                                     text: adminApiKey?.secret,
                                     hint: regenerated ? <div className='text-green'>Admin API Key was successfully regenerated</div> : undefined,
                                     onRegenerate: handleRegenerate
-                                },
-                                {label: 'API URL', text: window.location.origin + getGhostPaths().subdir}
+                                }
                             ]} />
                             <div className='-mt-8 text-xs text-grey-700'>
                                 Paste the API key and URL in your <span className='text-green'>Transistor settings</span>.
@@ -141,6 +141,19 @@ const TransistorModal = NiceModal.create(() => {
                     )}
                 </Form>
                 {enabled &&
+                    <div className='mt-5 flex flex-col items-center'>
+                        <a className='w-100 flex flex-col items-stretch justify-between overflow-hidden rounded-md bg-grey-75 transition-all hover:border-grey-400 hover:bg-grey-100 md:flex-row' href={learnMoreUrl} rel="noopener noreferrer" target="_blank">
+                            <div className='order-2 px-7 py-5 md:order-1'>
+                                <div className='font-semibold'>How to use Transistor in Ghost</div>
+                                <div className='mt-1 text-sm text-grey-800 dark:text-grey-500'>Learn how to connect Transistor with Ghost to offer private podcasts in Portal and embed Transistor cards in your posts and pages.</div>
+                            </div>
+                            <div className='order-1 hidden w-[200px] shrink-0 items-center justify-center overflow-hidden md:!visible md:order-2 md:!flex'>
+                                <img alt="Bookmark Thumb" className='min-h-full min-w-full shrink-0' src={BookmarkThumb} />
+                            </div>
+                        </a>
+                    </div>
+                }
+                {/* {enabled &&
                 <>
                     <div className='mt-6 flex flex-col gap-8 rounded-sm border p-7'>
                         <Toggle
@@ -166,19 +179,8 @@ const TransistorModal = NiceModal.create(() => {
                             }}
                         />
                     </div>
-                    {/* <div className='flex flex-col items-center'>
-                        <a className='w-100 mt-5 flex flex-col items-stretch justify-between overflow-hidden rounded-md bg-grey-75 transition-all hover:border-grey-400 hover:bg-grey-100 md:flex-row' href="https://ghost.org/resources/managing-your-stripe-account/?ref=admin" rel="noopener noreferrer" target="_blank">
-                            <div className='order-2 px-7 py-5  md:order-1'>
-                                <div className='font-bold'>How to set up and manage your Transistor integration</div>
-                                <div className='mt-1 text-sm text-grey-800 dark:text-grey-500'>Learn how to connect Transistor with Ghost to offer private podcasts in Portal and embed Transistor cards in your posts and pages.</div>
-                            </div>
-                            <div className='order-1 hidden w-[200px] shrink-0 items-center justify-center overflow-hidden md:!visible md:order-2 md:!flex'>
-                                <img alt="Bookmark Thumb" className='min-h-full min-w-full shrink-0' src={BookmarkThumb} />
-                            </div>
-                        </a>
-                    </div> */}
                 </>
-                }
+                } */}
             </div>
         </Modal>
     );
