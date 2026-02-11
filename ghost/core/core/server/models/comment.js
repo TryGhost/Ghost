@@ -2,6 +2,7 @@ const ghostBookshelf = require('./base');
 const _ = require('lodash');
 const tpl = require('@tryghost/tpl');
 const {ValidationError} = require('@tryghost/errors');
+const cursorUtils = require('../services/comments/cursor-utils');
 
 const messages = {
     emptyComment: 'The body of a comment cannot be empty'
@@ -248,6 +249,355 @@ const Comment = ghostBookshelf.Model.extend({
             await model.load(relationsToLoadIndividually, _.omit(options, 'withRelated'));
         }
         return result;
+    },
+
+    /**
+     * Cursor-based pagination for comments. Uses keyset conditions instead of
+     * OFFSET/LIMIT for stable, efficient pagination.
+     *
+     * @param {Object} unfilteredOptions
+     * @param {string} [unfilteredOptions.after] - Cursor for forward pagination
+     * @param {string} [unfilteredOptions.before] - Cursor for backward pagination
+     * @param {string} [unfilteredOptions.order] - Order string (e.g. 'created_at DESC, id DESC')
+     * @param {number} [unfilteredOptions.limit] - Items per page
+     * @returns {Promise<{data: Array, meta: {pagination: Object}}>}
+     */
+    async findPageByCursor(unfilteredOptions) {
+        const options = this.filterOptions(unfilteredOptions, 'findPage');
+        this.defaultRelations('findPage', options);
+        const {withRelated} = options;
+
+        const relationsToLoadIndividually = [
+            'replies',
+            'replies.member',
+            'replies.in_reply_to',
+            'replies.count.direct_replies',
+            'replies.count.likes',
+            'replies.count.liked'
+        ].filter(relation => (withRelated && (withRelated.includes(relation) || withRelated.some(r => typeof r === 'object' && r[relation]))));
+
+        this.applyRepliesWithRelatedOption(relationsToLoadIndividually, options.isAdmin);
+
+        // Parse order and ensure id tiebreaker
+        const orderString = options.order || 'created_at DESC, id DESC';
+        const parsedOrder = cursorUtils.ensureIdTiebreaker(cursorUtils.parseOrder(orderString));
+
+        const limit = parseInt(options.limit, 10) || 15;
+        const afterCursor = options.after;
+        const beforeCursor = options.before;
+
+        // Build base filtered collection (applies status filters, NQL filters, etc.)
+        const itemCollection = this.getFilteredCollection(options);
+
+        // Parse order for bookshelf (needed for the SELECT to include count columns)
+        if (options.order) {
+            const {order, orderRaw, eagerLoad} = itemCollection.parseOrderOption(options.order, options.withRelated);
+            options.orderRaw = orderRaw;
+            options.order = order;
+            options.eagerLoad = eagerLoad;
+        }
+
+        // Build the count__likes subquery SQL for use in keyset conditions
+        const likesSubquery = '(SELECT COUNT(comment_likes.id) FROM comment_likes WHERE comment_likes.comment_id = comments.id)';
+
+        // Apply keyset WHERE clause if we have a cursor
+        if (afterCursor || beforeCursor) {
+            const cursor = afterCursor || beforeCursor;
+            const direction = afterCursor ? 'after' : 'before';
+            const cursorValues = cursorUtils.decodeCursor(cursor);
+            const {sql, bindings} = cursorUtils.buildKeysetCondition(cursorValues, parsedOrder, direction);
+
+            // Replace count__likes references with the actual subquery
+            const resolvedSql = sql.replace(/\bcount__likes\b/g, likesSubquery);
+
+            itemCollection.query((qb) => {
+                qb.whereRaw(`(${resolvedSql})`, bindings);
+            });
+        }
+
+        // Apply ordering
+        for (const {field, direction} of parsedOrder) {
+            if (field === 'count__likes') {
+                itemCollection.query((qb) => {
+                    qb.orderByRaw(`${likesSubquery} ${direction}`);
+                });
+            } else {
+                itemCollection.query('orderBy', field === 'id' ? 'comments.id' : field, direction);
+            }
+        }
+
+        // For 'before' direction, we fetch in reverse order and then reverse the results
+        // so the items are returned in the correct display order
+        const isBefore = !!beforeCursor;
+        if (isBefore) {
+            // Reverse the ordering for the query to get the correct items
+            // (we want items that come "before" the cursor in display order,
+            // which means items that come "after" it in reverse order)
+            // The keyset condition already handles the comparison direction,
+            // but we need to reverse the ORDER BY to get the right N items
+            // closest to the cursor. Then we reverse the results.
+            // Actually, buildKeysetCondition already flips comparisons for 'before',
+            // so we just need to reverse the result order at the end.
+        }
+
+        // Apply limit (fetch one extra to detect if there's a next page)
+        itemCollection.query('limit', limit + 1);
+
+        // Count query (parallel to fetch)
+        const countQuery = itemCollection.query().clone();
+        countQuery.clear('select');
+        countQuery.clear('order');
+        countQuery.clear('limit');
+        countQuery.clear('offset');
+        const countPromise = countQuery.select(
+            ghostBookshelf.knex.raw('count(distinct comments.id) as aggregate')
+        );
+
+        // Fetch results
+        const fetchOptions = _.omit(options, ['page', 'limit', 'after', 'before', 'anchor', 'order']);
+        const fetchResult = await itemCollection.fetchAll(fetchOptions);
+        const countResult = await countPromise;
+
+        let models = fetchResult.models || [];
+        const hasExtra = models.length > limit;
+
+        // Trim to requested limit
+        if (hasExtra) {
+            models = models.slice(0, limit);
+        }
+
+        // For 'before' queries, reverse the results back to display order
+        if (isBefore) {
+            models.reverse();
+        }
+
+        // Load reply relations individually (same pattern as findPage)
+        for (const model of models) {
+            await model.load(relationsToLoadIndividually, _.omit(options, 'withRelated'));
+        }
+
+        // Build cursor strings for next/prev
+        let nextCursor = null;
+        let prevCursor = null;
+
+        if (models.length > 0) {
+            // next: if we had extra results, there are more items after
+            if (afterCursor || (!afterCursor && !beforeCursor)) {
+                // Forward pagination or initial page
+                if (hasExtra) {
+                    const lastModel = models[models.length - 1];
+                    nextCursor = cursorUtils.encodeCursor(
+                        cursorUtils.extractCursorValues(lastModel, parsedOrder)
+                    );
+                }
+            }
+            if (beforeCursor) {
+                // Backward pagination: there may be more items before
+                if (hasExtra) {
+                    const firstModel = models[0];
+                    prevCursor = cursorUtils.encodeCursor(
+                        cursorUtils.extractCursorValues(firstModel, parsedOrder)
+                    );
+                }
+            }
+
+            // If we used an 'after' cursor, there are items before us (prev)
+            if (afterCursor) {
+                const firstModel = models[0];
+                prevCursor = cursorUtils.encodeCursor(
+                    cursorUtils.extractCursorValues(firstModel, parsedOrder)
+                );
+            }
+
+            // If we used a 'before' cursor, there are items after us (next)
+            if (beforeCursor) {
+                const lastModel = models[models.length - 1];
+                nextCursor = cursorUtils.encodeCursor(
+                    cursorUtils.extractCursorValues(lastModel, parsedOrder)
+                );
+            }
+        }
+
+        const total = countResult[0] ? countResult[0].aggregate : 0;
+
+        return {
+            data: models,
+            meta: {
+                pagination: {
+                    limit,
+                    total,
+                    next: nextCursor,
+                    prev: prevCursor,
+                    page: null,
+                    pages: null
+                }
+            }
+        };
+    },
+
+    /**
+     * Anchor-based pagination: fetches a window of items centered around a
+     * specific comment. Returns items before and after the anchor with cursors
+     * for paginating in both directions.
+     *
+     * @param {string} anchorId - Comment ID to center results around
+     * @param {Object} unfilteredOptions
+     * @returns {Promise<{data: Array, meta: {pagination: Object, anchor: Object}}>}
+     */
+    async findPageAroundAnchor(anchorId, unfilteredOptions) {
+        const options = this.filterOptions(unfilteredOptions, 'findPage');
+        this.defaultRelations('findPage', options);
+        const {withRelated} = options;
+
+        const relationsToLoadIndividually = [
+            'replies',
+            'replies.member',
+            'replies.in_reply_to',
+            'replies.count.direct_replies',
+            'replies.count.likes',
+            'replies.count.liked'
+        ].filter(relation => (withRelated && (withRelated.includes(relation) || withRelated.some(r => typeof r === 'object' && r[relation]))));
+
+        this.applyRepliesWithRelatedOption(relationsToLoadIndividually, options.isAdmin);
+
+        const orderString = options.order || 'created_at DESC, id DESC';
+        const parsedOrder = cursorUtils.ensureIdTiebreaker(cursorUtils.parseOrder(orderString));
+        const limit = parseInt(options.limit, 10) || 15;
+
+        // Fetch the anchor comment to get its sort key values
+        const anchorModel = await ghostBookshelf.Model.findOne.call(this, {id: anchorId}, {
+            ..._.omit(options, ['page', 'limit', 'after', 'before', 'anchor', 'order', 'filter', 'withRelated']),
+            require: false
+        });
+
+        if (!anchorModel) {
+            // Anchor not found — fall back to first page
+            const firstPage = await this.findPageByCursor(unfilteredOptions);
+            firstPage.meta.anchor = {
+                id: anchorId,
+                found: false,
+                index: null
+            };
+            return firstPage;
+        }
+
+        // Extract the anchor's sort key values
+        // For count__likes, we need to fetch it separately since findOne doesn't include computed columns
+        const anchorValues = {};
+        for (const {field} of parsedOrder) {
+            if (field === 'count__likes') {
+                // Query the like count for the anchor comment
+                const likeCount = await ghostBookshelf.knex('comment_likes')
+                    .where('comment_id', anchorId)
+                    .count('id as count')
+                    .first();
+                anchorValues[field] = likeCount ? likeCount.count : 0;
+            } else {
+                const value = anchorModel.get(field);
+                if (field === 'created_at' && value instanceof Date) {
+                    anchorValues[field] = value.toISOString();
+                } else {
+                    anchorValues[field] = value;
+                }
+            }
+        }
+
+        const anchorCursor = cursorUtils.encodeCursor(anchorValues);
+
+        // Fetch items before the anchor (half the limit)
+        const halfLimit = Math.ceil(limit / 2);
+        const beforeOptions = {
+            ...unfilteredOptions,
+            before: anchorCursor,
+            limit: halfLimit,
+            anchor: undefined
+        };
+        const beforeResult = await this.findPageByCursor(beforeOptions);
+
+        // Fetch items after the anchor (remaining limit)
+        const afterLimit = limit - beforeResult.data.length - 1; // -1 for the anchor itself
+        let afterModels = [];
+        if (afterLimit > 0) {
+            const afterOptions = {
+                ...unfilteredOptions,
+                after: anchorCursor,
+                limit: afterLimit,
+                anchor: undefined
+            };
+            const afterResult = await this.findPageByCursor(afterOptions);
+            afterModels = afterResult.data;
+        }
+
+        // Load the anchor model with full relations
+        const anchorWithRelations = await ghostBookshelf.Model.findOne.call(this, {id: anchorId}, {
+            ..._.omit(options, ['page', 'limit', 'after', 'before', 'anchor', 'order', 'filter']),
+            require: false
+        });
+
+        if (anchorWithRelations) {
+            await anchorWithRelations.load(relationsToLoadIndividually, _.omit(options, 'withRelated'));
+        }
+
+        // Combine: before + anchor + after
+        const models = [
+            ...beforeResult.data,
+            ...(anchorWithRelations ? [anchorWithRelations] : []),
+            ...afterModels
+        ];
+
+        // Build cursors for paginating from this window
+        let nextCursor = null;
+        let prevCursor = null;
+
+        if (models.length > 0) {
+            const lastModel = models[models.length - 1];
+            const firstModel = models[0];
+
+            // Always provide next/prev cursors from this window
+            nextCursor = cursorUtils.encodeCursor(
+                cursorUtils.extractCursorValues(lastModel, parsedOrder)
+            );
+            prevCursor = cursorUtils.encodeCursor(
+                cursorUtils.extractCursorValues(firstModel, parsedOrder)
+            );
+        }
+
+        // Count items before the anchor to report its index
+        const indexCollection = this.getFilteredCollection(options);
+        const likesSubquery = '(SELECT COUNT(comment_likes.id) FROM comment_likes WHERE comment_likes.comment_id = comments.id)';
+        const {sql: beforeSql, bindings: beforeBindings} = cursorUtils.buildKeysetCondition(anchorValues, parsedOrder, 'before');
+        const resolvedBeforeSql = beforeSql.replace(/\bcount__likes\b/g, likesSubquery);
+
+        indexCollection.query((qb) => {
+            qb.whereRaw(`(${resolvedBeforeSql})`, beforeBindings);
+        });
+
+        const indexCountQuery = indexCollection.query().clone();
+        indexCountQuery.clear('select');
+        indexCountQuery.clear('order');
+        const indexResult = await indexCountQuery.select(
+            ghostBookshelf.knex.raw('count(distinct comments.id) as aggregate')
+        );
+        const anchorIndex = indexResult[0] ? indexResult[0].aggregate : 0;
+
+        return {
+            data: models,
+            meta: {
+                pagination: {
+                    limit,
+                    total: beforeResult.meta.pagination.total,
+                    next: nextCursor,
+                    prev: prevCursor,
+                    page: null,
+                    pages: null
+                },
+                anchor: {
+                    id: anchorId,
+                    found: true,
+                    index: anchorIndex
+                }
+            }
+        };
     },
 
     countRelations() {
