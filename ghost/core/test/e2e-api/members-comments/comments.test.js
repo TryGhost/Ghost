@@ -131,7 +131,7 @@ function commentMatcherWithReplies(options) {
     const defaultOptions = {replies: 0, commentMatcher};
     options = {...defaultOptions, ...options};
 
-    return {
+    const matcher = {
         ...options.commentMatcher,
         replies: new Array(options.replies).fill(options.commentMatcher),
         count: {
@@ -140,6 +140,12 @@ function commentMatcherWithReplies(options) {
             direct_replies: anyNumber
         }
     };
+
+    if (options.replies > 0) {
+        matcher.replies_cursor = stringMatching(/[A-Za-z0-9_-]+/);
+    }
+
+    return matcher;
 }
 
 function escapeRegExp(string) {

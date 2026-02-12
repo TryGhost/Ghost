@@ -3,7 +3,7 @@ import CommentsFilters from './components/comments-filters';
 import CommentsHeader from './components/comments-header';
 import CommentsLayout from './components/comments-layout';
 import CommentsList from './components/comments-list';
-import React, {useCallback} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {Button, EmptyIndicator, LoadingIndicator, LucideIcon, createFilter} from '@tryghost/shade';
 import {useBrowseComments} from '@tryghost/admin-x-framework/api/comments';
 import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
@@ -15,6 +15,14 @@ const Comments: React.FC = () => {
     const {data: configData} = useBrowseConfig();
     const commentPermalinksEnabled = configData?.config?.labs?.commentPermalinks === true;
 
+    // Extract anchor comment ID when navigating to a specific comment
+    const anchorCommentId = useMemo(() => {
+        if (isSingleIdFilter && filters[0]?.values[0]) {
+            return String(filters[0].values[0]);
+        }
+        return undefined;
+    }, [isSingleIdFilter, filters]);
+
     const handleAddFilter = useCallback((field: string, value: string, operator: string = 'is') => {
         setFilters((prevFilters) => {
             // Remove any existing filter for the same field
@@ -23,6 +31,17 @@ const Comments: React.FC = () => {
             return [...filtered, createFilter(field, operator, [value])];
         }, {replace: false});
     }, [setFilters]);
+
+    // Build search params: use anchor for deep links, filter for normal browsing
+    const searchParams = useMemo((): Record<string, string> => {
+        if (anchorCommentId) {
+            return {anchor: anchorCommentId};
+        }
+        if (nql) {
+            return {filter: nql};
+        }
+        return {};
+    }, [anchorCommentId, nql]);
 
     const {
         data,
@@ -33,7 +52,7 @@ const Comments: React.FC = () => {
         fetchNextPage,
         hasNextPage
     } = useBrowseComments({
-        searchParams: nql ? {filter: nql} : {},
+        searchParams,
         keepPreviousData: true
     });
 

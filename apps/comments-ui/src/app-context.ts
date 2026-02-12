@@ -20,6 +20,7 @@ export type Comment = {
     in_reply_to_id: string,
     in_reply_to_snippet: string,
     replies: Comment[],
+    replies_cursor?: string | null,
     status: string,
     liked: boolean,
     count: {
@@ -73,10 +74,12 @@ export type EditableAppContext = {
     admin: null | any,
     comments: Comment[],
     pagination: {
-        page: number,
         limit: number,
-        pages: number,
-        total: number
+        total: number,
+        next: string | null,
+        prev: string | null,
+        page?: number,
+        pages?: number
     } | null,
     commentCount: number,
     openCommentForms: OpenCommentForm[],

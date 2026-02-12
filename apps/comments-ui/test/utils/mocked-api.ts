@@ -122,7 +122,19 @@ export class MockedApi {
         };
     }
 
-    browseComments({limit = 5, filter, page, order, admin}: {limit?: number, filter?: string, page: number, order?: string, admin?: boolean}) {
+    #encodeCursor(index: number): string {
+        return btoa(JSON.stringify({i: index}));
+    }
+
+    #decodeCursor(cursor: string): number {
+        try {
+            return JSON.parse(atob(cursor)).i;
+        } catch {
+            return 0;
+        }
+    }
+
+    browseComments({limit = 5, filter, page, after, anchor, order, admin}: {limit?: number, filter?: string, page?: number, after?: string, anchor?: string, order?: string, admin?: boolean}) {
         // Sort comments on created at + id
         const setOrder = order || 'default';
 
@@ -198,12 +210,55 @@ export class MockedApi {
             });
         }
 
-        // Splice based on page and limit
-        const startIndex = (page - 1) * limit;
+        // Handle anchor-based loading
+        let anchorMeta: any = undefined;
+        if (anchor) {
+            const anchorIndex = filteredComments.findIndex(c => c.id === anchor);
+            if (anchorIndex >= 0) {
+                // Center around the anchor: show items before and after
+                const halfLimit = Math.floor(limit / 2);
+                const startIndex = Math.max(0, anchorIndex - halfLimit);
+                const endIndex = Math.min(filteredComments.length, startIndex + limit);
+                const comments = filteredComments.slice(startIndex, endIndex);
+
+                anchorMeta = {id: anchor, found: true, index: anchorIndex};
+
+                return {
+                    comments: comments.map((comment) => ({
+                        ...comment,
+                        replies: comment.replies ? comment.replies?.slice(0, 3) : [],
+                        count: {
+                            ...comment.count,
+                            replies: comment.replies ? comment.replies?.length : 0
+                        }
+                    })),
+                    meta: {
+                        pagination: {
+                            total: filteredComments.length,
+                            limit,
+                            next: endIndex < filteredComments.length ? this.#encodeCursor(endIndex) : null,
+                            prev: startIndex > 0 ? this.#encodeCursor(startIndex) : null
+                        },
+                        anchor: anchorMeta
+                    }
+                };
+            }
+            // Anchor not found — fall through to first page
+            anchorMeta = {id: anchor, found: false};
+        }
+
+        // Determine start index from cursor or page
+        let startIndex = 0;
+        if (after) {
+            startIndex = this.#decodeCursor(after);
+        } else if (page) {
+            startIndex = (page - 1) * limit;
+        }
+
         const endIndex = startIndex + limit;
         const comments = filteredComments.slice(startIndex, endIndex);
 
-        return {
+        const result: any = {
             comments: comments.map((comment) => {
                 return {
                     ...comment,
@@ -216,16 +271,22 @@ export class MockedApi {
             }),
             meta: {
                 pagination: {
-                    pages: Math.ceil(filteredComments.length / limit),
                     total: filteredComments.length,
-                    page,
-                    limit
+                    limit,
+                    next: endIndex < filteredComments.length ? this.#encodeCursor(endIndex) : null,
+                    prev: startIndex > 0 ? this.#encodeCursor(startIndex) : null
                 }
             }
         };
+
+        if (anchorMeta) {
+            result.meta.anchor = anchorMeta;
+        }
+
+        return result;
     }
 
-    browseReplies({commentId, filter, limit = 5}: {commentId: string, filter?: string, limit?: number}) {
+    browseReplies({commentId, filter, after, limit = 5}: {commentId: string, filter?: string, after?: string, limit?: number}) {
         const comment = this.comments.find(c => c.id === commentId);
         if (!comment) {
             return {
@@ -256,19 +317,24 @@ export class MockedApi {
             });
         }
 
-        const limitedReplies = filteredReplies.slice(0, limit);
-        const hasMore = filteredReplies.length > limit;
+        // Determine start index from cursor
+        let startIndex = 0;
+        if (after) {
+            startIndex = this.#decodeCursor(after);
+        }
+
+        const endIndex = startIndex + limit;
+        const limitedReplies = filteredReplies.slice(startIndex, endIndex);
+        const hasMore = endIndex < filteredReplies.length;
 
         return {
             comments: limitedReplies,
             meta: {
                 pagination: {
-                    page: 1,
-                    pages: Math.ceil(filteredReplies.length / limit),
                     total: filteredReplies.length,
                     limit,
-                    next: hasMore ? 2 : null,
-                    prev: null
+                    next: hasMore ? this.#encodeCursor(endIndex) : null,
+                    prev: startIndex > 0 ? this.#encodeCursor(startIndex) : null
                 }
             }
         };
@@ -352,17 +418,19 @@ export class MockedApi {
             await this.#delayResponse();
             const url = new URL(route.request().url());
 
-            const p = parseInt(url.searchParams.get('page') ?? '1');
             const limit = parseInt(url.searchParams.get('limit') ?? '5');
             const filter = url.searchParams.get('filter') ?? '';
             const order = url.searchParams.get('order') ?? '';
+            const after = url.searchParams.get('after') ?? undefined;
+            const anchor = url.searchParams.get('anchor') ?? undefined;
             await route.fulfill({
                 status: 200,
                 body: JSON.stringify(this.browseComments({
-                    page: p,
                     limit,
                     filter,
-                    order
+                    order,
+                    after,
+                    anchor
                 }))
             });
         },
@@ -443,12 +511,14 @@ export class MockedApi {
             const limit = parseInt(url.searchParams.get('limit') ?? '5');
             const commentId = url.pathname.split('/').reverse()[2];
             const filter = url.searchParams.get('filter') ?? '';
+            const after = url.searchParams.get('after') ?? undefined;
 
             await route.fulfill({
                 status: 200,
                 body: JSON.stringify(this.browseReplies({
                     limit,
                     filter,
+                    after,
                     commentId
                 }))
             });
@@ -507,19 +577,21 @@ export class MockedApi {
             await this.#delayResponse();
             const url = new URL(route.request().url());
 
-            const p = parseInt(url.searchParams.get('page') ?? '1');
             const limit = parseInt(url.searchParams.get('limit') ?? '5');
             const filter = url.searchParams.get('filter') ?? '';
             const order = url.searchParams.get('order') ?? '';
+            const after = url.searchParams.get('after') ?? undefined;
+            const anchor = url.searchParams.get('anchor') ?? undefined;
             const memberUuid = url.searchParams.get('impersonate_member_uuid') ?? '';
 
             await route.fulfill({
                 status: 200,
                 body: JSON.stringify(this.browseComments({
-                    page: p,
                     limit,
                     filter,
                     order,
+                    after,
+                    anchor,
                     admin: true,
                     memberUuid
                 }))
@@ -537,6 +609,7 @@ export class MockedApi {
             const limit = parseInt(url.searchParams.get('limit') ?? '5');
             const commentId = url.pathname.split('/').reverse()[2];
             const filter = url.searchParams.get('filter') ?? '';
+            const after = url.searchParams.get('after') ?? undefined;
             const memberUuid = url.searchParams.get('impersonate_member_uuid') ?? '';
 
             await route.fulfill({
@@ -544,6 +617,7 @@ export class MockedApi {
                 body: JSON.stringify(this.browseReplies({
                     limit,
                     filter,
+                    after,
                     commentId,
                     memberUuid
                 }))

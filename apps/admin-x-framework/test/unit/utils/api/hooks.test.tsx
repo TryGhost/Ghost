@@ -344,6 +344,52 @@ describe('API hooks', () => {
                 await waitFor(() => expect(result.current.data).toEqual([1, 1]));
             });
         });
+
+        it('supports cursor-based pagination with string next values', async () => {
+            await withMockFetch({
+                json: {
+                    test: 1,
+                    meta: {pagination: {next: 'eyJjcmVhdGVkX2F0IjoiMjAyNS0wMS0xNSIsImlkIjoiYWJjMTIzIn0=', prev: null, page: null, pages: null, total: 50, limit: 20}}
+                }
+            }, async (mock) => {
+                const useTestQuery = createInfiniteQuery({
+                    dataType: 'test-cursor',
+                    path: '/test/',
+                    defaultNextPageParams: (lastPage, otherParams) => {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const next = (lastPage as any).meta?.pagination?.next;
+                        if (!next) {
+                            return undefined;
+                        }
+                        if (typeof next === 'string') {
+                            return {...otherParams, after: next};
+                        }
+                        return {...otherParams, page: next.toString()};
+                    },
+                    returnData: (originalData) => {
+                        const {pages} = originalData as InfiniteData<{test: number}>;
+                        return pages.map(page => page.test);
+                    }
+                });
+
+                const {result} = renderHook(() => useTestQuery(), {wrapper});
+
+                await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+                expect(result.current.data).toEqual([1]);
+                expect(mock.calls.length).toBe(1);
+
+                // Fetch next page — should use cursor as 'after' param
+                await act(() => result.current.fetchNextPage());
+
+                await waitFor(() => expect(mock.calls.length).toBe(2));
+                expect(mock.calls[1][0]).toEqual(
+                    'http://localhost:3000/ghost/api/admin/test/?after=eyJjcmVhdGVkX2F0IjoiMjAyNS0wMS0xNSIsImlkIjoiYWJjMTIzIn0%3D'
+                );
+
+                await waitFor(() => expect(result.current.data).toEqual([1, 1]));
+            });
+        });
     });
 
     describe('createQueryWithId', () => {

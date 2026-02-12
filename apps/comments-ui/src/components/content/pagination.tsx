@@ -2,17 +2,17 @@ import {formatNumber} from '../../utils/helpers';
 import {useAppContext} from '../../app-context';
 
 const Pagination = () => {
-    const {pagination, dispatchAction, t} = useAppContext();
+    const {pagination, comments, dispatchAction, t} = useAppContext();
 
     const loadMore = () => {
         dispatchAction('loadMoreComments', {});
     };
 
-    if (!pagination) {
+    if (!pagination || !pagination.next) {
         return null;
     }
 
-    const commentsLeft = pagination.total - pagination.page * pagination.limit;
+    const commentsLeft = pagination.total - comments.length;
 
     if (commentsLeft <= 0) {
         return null;

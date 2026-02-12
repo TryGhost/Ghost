@@ -127,7 +127,7 @@ describe('setupAdminAPI', () => {
         const adminUrl = 'https://example.com';
         const api = setupAdminAPI({adminUrl});
 
-        const apiPromise = api.browse({page: 1, postId: '123', order: 'asc'});
+        const apiPromise = api.browse({postId: '123', order: 'asc'});
 
         const eventHandler = addEventListenerSpy.mock.calls.find(
             ([eventType]) => eventType === 'message'
@@ -141,10 +141,10 @@ describe('setupAdminAPI', () => {
                     comments: [{id: 1, body: 'Test Comment'}],
                     meta: {
                         pagination: {
-                            page: 1,
                             limit: 15,
-                            pages: 1,
-                            total: 1
+                            total: 1,
+                            next: null,
+                            prev: null
                         }
                     }
                 }
@@ -159,16 +159,16 @@ describe('setupAdminAPI', () => {
             comments: [{id: 1, body: 'Test Comment'}],
             meta: {
                 pagination: {
-                    page: 1,
                     limit: 15,
-                    pages: 1,
-                    total: 1
+                    total: 1,
+                    next: null,
+                    prev: null
                 }
             }
         });
 
         expect(postMessageMock).toHaveBeenCalledWith(
-            JSON.stringify({uid: 2, action: 'browseComments', postId: '123', params: 'limit=20&page=1&order=asc'}),
+            JSON.stringify({uid: 2, action: 'browseComments', postId: '123', params: 'limit=20&order=asc'}),
             new URL(adminUrl).origin
         );
     });
@@ -177,7 +177,7 @@ describe('setupAdminAPI', () => {
         const adminUrl = 'https://example.com';
         const api = setupAdminAPI({adminUrl});
 
-        const apiPromise = api.replies({commentId: '123', afterReplyId: '456', limit: 10});
+        const apiPromise = api.replies({commentId: '123', after: 'cursor_abc', limit: 10});
 
         const eventHandler = addEventListenerSpy.mock.calls.find(
             ([eventType]) => eventType === 'message'
@@ -206,7 +206,7 @@ describe('setupAdminAPI', () => {
                 uid: 2,
                 action: 'getReplies',
                 commentId: '123',
-                params: 'limit=10&filter=id%3A%3E%27456%27'
+                params: 'limit=10&after=cursor_abc'
             }),
             new URL(adminUrl).origin
         );

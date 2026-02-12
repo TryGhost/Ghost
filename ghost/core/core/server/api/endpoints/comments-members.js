@@ -17,7 +17,10 @@ const controller = {
             'fields',
             'filter',
             'order',
-            'debug'
+            'debug',
+            'after',
+            'before',
+            'anchor'
         ],
         validation: {
             options: {
@@ -42,7 +45,10 @@ const controller = {
             'filter',
             'order',
             'debug',
-            'id'
+            'id',
+            'after',
+            'before',
+            'anchor'
         ],
         validation: {
             options: {

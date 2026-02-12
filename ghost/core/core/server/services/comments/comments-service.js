@@ -199,19 +199,28 @@ class CommentsService {
      *
      * @param {AdminBrowseAllOptions} options
      */
-    async getAdminAllComments({includeNested, filter, mongoTransformer, reportCount, order, page, limit}) {
-        return await this.models.Comment.findPage({
+    async getAdminAllComments({includeNested, filter, mongoTransformer, reportCount, order, page, limit, after, before, anchor}) {
+        const baseOptions = {
             withRelated: ['member', 'post', 'count.replies', 'count.direct_replies', 'count.likes', 'count.reports', 'in_reply_to', 'parent'],
             filter,
             mongoTransformer,
             reportCount,
             order,
-            page,
             limit,
             parentId: includeNested ? undefined : null,
             isAdmin: true,
             browseAll: true
-        });
+        };
+
+        if (anchor) {
+            return await this.models.Comment.findPageAroundAnchor(anchor, baseOptions);
+        }
+
+        if (after || before) {
+            return await this.models.Comment.findPageByCursor({...baseOptions, after, before});
+        }
+
+        return await this.models.Comment.findPage({...baseOptions, page});
     }
 
     async getAdminComments(options) {
@@ -219,6 +228,46 @@ class CommentsService {
         const page = await this.models.Comment.findPage({...options, parentId: null, isAdmin: true});
 
         return page;
+    }
+
+    /**
+     * Cursor-based comment fetching for top-level comments.
+     * @param {any} options - Must include after/before cursor
+     */
+    async getCommentsByCursor(options) {
+        this.checkEnabled();
+        return await this.models.Comment.findPageByCursor({...options, parentId: null});
+    }
+
+    /**
+     * Fetch comments centered around a specific comment (anchor).
+     * @param {string} anchorId - Comment ID to center around
+     * @param {any} options
+     */
+    async getCommentsAroundAnchor(anchorId, options) {
+        this.checkEnabled();
+        return await this.models.Comment.findPageAroundAnchor(anchorId, {...options, parentId: null});
+    }
+
+    /**
+     * Cursor-based reply fetching.
+     * @param {string} parentId - Parent comment ID
+     * @param {any} options - Must include after/before cursor
+     */
+    async getRepliesByCursor(parentId, options) {
+        this.checkEnabled();
+        return await this.models.Comment.findPageByCursor({...options, parentId});
+    }
+
+    /**
+     * Fetch replies centered around a specific reply (anchor).
+     * @param {string} anchorId - Reply ID to center around
+     * @param {string} parentId - Parent comment ID
+     * @param {any} options
+     */
+    async getRepliesAroundAnchor(anchorId, parentId, options) {
+        this.checkEnabled();
+        return await this.models.Comment.findPageAroundAnchor(anchorId, {...options, parentId});
     }
 
     /**
