@@ -81,41 +81,32 @@ export function TransistorCard({
     // );
 
     return (
-        <div className="w-full rounded-lg border border-grey-300 bg-grey-100 dark:border-grey-900 dark:bg-grey-950">
-            <TransistorPlaceholder
-                accentColor={accentColor}
-                backgroundColor={backgroundColor}
-            />
+        <div className="w-full rounded-lg border border-grey-300 bg-white dark:border-grey-900 dark:bg-grey-950">
+            <TransistorPlaceholder />
         </div>
     );
 }
 
-function TransistorPlaceholder({accentColor, backgroundColor}) {
-    const previewStyle = {
-        backgroundColor: backgroundColor || '#FFFFFF',
-        borderColor: accentColor || '#000000'
-    };
-
-    const iconStyle = {
-        color: accentColor || '#000000'
-    };
-
+function TransistorPlaceholder() {
     return (
         <div
-            className="flex min-h-[180px] items-center justify-center rounded-lg p-8 transition-colors"
+            className="relative flex items-center gap-5 p-2"
             data-testid="transistor-placeholder"
-            style={previewStyle}
         >
-            <div className="text-center">
-                <div className="mb-3 flex justify-center">
-                    <TransistorIcon className="size-12" style={iconStyle} />
+            <div className="flex size-20 shrink-0 items-center justify-center rounded-md bg-accent">
+                <TransistorIcon className="size-10 text-white" />
+            </div>
+            <div className="flex min-h-20 max-w-[480px] flex-col justify-center">
+                <div className="text-[1.6rem] font-semibold leading-tight text-black dark:text-white">
+                    Member podcasts
                 </div>
-                <div className="mb-2 text-lg font-semibold" style={{color: accentColor || '#000000'}}>
-                    Transistor Private Podcast
+                <div className="mt-1 text-[1.4rem] leading-snug text-grey-700 dark:text-grey-500">
+                    Private podcasts your members can access in their preferred podcast app or through a personal RSS feed.
                 </div>
-                <div className="text-sm text-grey-700 dark:text-grey-400">
-                    Your private RSS feeds
-                </div>
+            </div>
+            <div className="absolute bottom-4 right-5 flex items-center gap-1.5 text-grey-500 dark:text-grey-600">
+                <TransistorIcon className="size-4" />
+                <span className="text-[1.3rem] font-medium">Transistor</span>
             </div>
         </div>
     );
@@ -133,7 +124,4 @@ TransistorCard.propTypes = {
     // showVisibilitySettings: PropTypes.bool
 };
 
-TransistorPlaceholder.propTypes = {
-    accentColor: PropTypes.string,
-    backgroundColor: PropTypes.string
-};
+TransistorPlaceholder.propTypes = {};
