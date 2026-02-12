@@ -10,26 +10,20 @@ const useIntegrations = () => {
     const {member, site} = useContext(AppContext);
 
     // In preview mode, transistor_portal_settings comes as a JSON object from the preview URL
-    // In production mode, settings come as individual properties from the Content API
     const previewSettings = site.transistor_portal_settings;
 
     // Build settings from individual properties (production) or use preview settings
     const transistorSettings = previewSettings || {
-        enabled: site.transistor_portal_enabled === true || site.transistor_portal_enabled === 'true',
+        enabled: site.transistor_portal_enabled === true,
         heading: site.transistor_portal_heading,
         description: site.transistor_portal_description,
         button_text: site.transistor_portal_button_text,
         url_template: site.transistor_portal_url_template
     };
 
-    // Check if main Transistor integration is enabled
-    const isTransistorIntegrationEnabled = site.transistor === true || site.transistor === 'true';
-
-    // Check if portal-specific setting is enabled
-    const isPortalEnabled = transistorSettings?.enabled === true;
-
-    // Both must be enabled for Transistor to show in Portal
-    const isTransistorEnabled = isTransistorIntegrationEnabled && isPortalEnabled;
+    // transistor_portal_enabled is computed server-side to include main integration check
+    // In preview mode, previewSettings.enabled is set by admin with both checks
+    const isTransistorEnabled = transistorSettings?.enabled === true;
     const memberUuid = member?.uuid;
     
     const isPreview = isPreviewMode();
