@@ -60,9 +60,18 @@ export const getPortalPreviewUrl = ({settings, config, tiers, siteData, selected
 
     settingsParam.append('disableBackground', 'false');
 
-    const transistorPortalSettings = getSettingValue<string>(settings, 'transistor_portal_settings');
-    if (transistorPortalSettings) {
-        settingsParam.append('transistorPortalSettings', transistorPortalSettings);
+    // Build transistor portal settings object from individual settings
+    const transistorPortalEnabled = getSettingValue<boolean | string>(settings, 'transistor_portal_enabled');
+    const transistorEnabled = transistorPortalEnabled === true || transistorPortalEnabled === 'true';
+    if (transistorEnabled) {
+        const transistorSettings = {
+            enabled: transistorEnabled,
+            heading: getSettingValue<string>(settings, 'transistor_portal_heading') || 'Podcasts',
+            description: getSettingValue<string>(settings, 'transistor_portal_description') || 'Access your RSS feeds',
+            button_text: getSettingValue<string>(settings, 'transistor_portal_button_text') || 'Manage',
+            url_template: getSettingValue<string>(settings, 'transistor_portal_url_template') || 'https://partner.transistor.fm/ghost/{memberUuid}'
+        };
+        settingsParam.append('transistorPortalSettings', JSON.stringify(transistorSettings));
     }
 
     return `${baseUrl}${portalBase}?${settingsParam.toString()}`;

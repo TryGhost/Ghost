@@ -2,72 +2,66 @@ import React from 'react';
 import {Heading, Separator, TextField, Toggle} from '@tryghost/admin-x-design-system';
 import {type Setting, type SettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 
-interface TransistorPortalSettings {
-    enabled: boolean;
-    heading: string;
-    description: string;
-    button_text: string;
-    url_template: string;
-}
-
-const DEFAULT_SETTINGS: TransistorPortalSettings = {
-    enabled: true,
-    heading: 'Podcasts',
-    description: 'Access your RSS feeds',
-    button_text: 'Manage',
-    url_template: 'https://partner.transistor.fm/ghost/{memberUuid}'
-};
-
 const TransistorSettings: React.FC<{
     localSettings: Setting[]
     updateSetting: (key: string, setting: SettingValue) => void
 }> = ({localSettings, updateSetting}) => {
-    const [transistorPortalSettingsJson] = getSettingValues<string>(localSettings, ['transistor_portal_settings']);
-    const transistorSettings: TransistorPortalSettings = transistorPortalSettingsJson
-        ? {...DEFAULT_SETTINGS, ...JSON.parse(transistorPortalSettingsJson) as Partial<TransistorPortalSettings>}
-        : DEFAULT_SETTINGS;
+    const [
+        transistorPortalEnabled,
+        transistorPortalHeading,
+        transistorPortalDescription,
+        transistorPortalButtonText,
+        transistorPortalUrlTemplate
+    ] = getSettingValues<string | boolean>(localSettings, [
+        'transistor_portal_enabled',
+        'transistor_portal_heading',
+        'transistor_portal_description',
+        'transistor_portal_button_text',
+        'transistor_portal_url_template'
+    ]);
 
-    const updateTransistorSetting = <K extends keyof TransistorPortalSettings>(key: K, settingValue: TransistorPortalSettings[K]) => {
-        const newSettings = {...transistorSettings, [key]: settingValue};
-        updateSetting('transistor_portal_settings', JSON.stringify(newSettings));
-    };
+    const enabled = transistorPortalEnabled === true || transistorPortalEnabled === 'true';
+    const heading = (transistorPortalHeading as string) || 'Podcasts';
+    const description = (transistorPortalDescription as string) || 'Access your RSS feeds';
+    const buttonText = (transistorPortalButtonText as string) || 'Manage';
+    const urlTemplate = (transistorPortalUrlTemplate as string) || 'https://partner.transistor.fm/ghost/{memberUuid}';
 
     return (
         <>
             <Separator />
             <Heading level={5}>Transistor</Heading>
             <Toggle
-                checked={transistorSettings.enabled}
+                checked={enabled}
                 direction='rtl'
                 hint='Show a section on the account page for members to access private podcasts'
                 label='Enable Transistor integration'
-                onChange={e => updateTransistorSetting('enabled', e.target.checked)}
+                onChange={e => updateSetting('transistor_portal_enabled', e.target.checked)}
             />
-            {transistorSettings.enabled && (
+            {enabled && (
                 <>
                     <TextField
                         hint='The heading displayed above the Transistor section'
                         title='Heading'
-                        value={transistorSettings.heading}
-                        onChange={e => updateTransistorSetting('heading', e.target.value)}
+                        value={heading}
+                        onChange={e => updateSetting('transistor_portal_heading', e.target.value)}
                     />
                     <TextField
                         hint='A short description of what members can do'
                         title='Description'
-                        value={transistorSettings.description}
-                        onChange={e => updateTransistorSetting('description', e.target.value)}
+                        value={description}
+                        onChange={e => updateSetting('transistor_portal_description', e.target.value)}
                     />
                     <TextField
                         hint='The text displayed on the button'
                         title='Button text'
-                        value={transistorSettings.button_text}
-                        onChange={e => updateTransistorSetting('button_text', e.target.value)}
+                        value={buttonText}
+                        onChange={e => updateSetting('transistor_portal_button_text', e.target.value)}
                     />
                     <TextField
                         hint='Use {memberUuid} as a placeholder for the member ID'
                         title='URL template'
-                        value={transistorSettings.url_template}
-                        onChange={e => updateTransistorSetting('url_template', e.target.value)}
+                        value={urlTemplate}
+                        onChange={e => updateSetting('transistor_portal_url_template', e.target.value)}
                     />
                 </>
             )}
