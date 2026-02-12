@@ -170,16 +170,58 @@ The current inline translations approach breaks the i18n workflow:
 3. Non-English locales don't work at all
 4. Every translation update requires a code release
 
-**Required: Choose and implement one of these solutions**:
+**Why current UMD apps are so large**:
+The existing Portal UMD (2.1MB/440KB gzipped) bundles ALL 62 locales via Vite's `dynamicRequireTargets`. This adds ~250KB gzipped of translations that most users never need.
 
-| Option | Approach | Pros | Cons |
-|--------|----------|------|------|
-| **A. Build-time bundling** | Import JSON from `ghost/i18n` at build | Works with existing workflow | Bloats bundle (~50KB+ per feature for all 60 locales) |
-| **B. Runtime fetch** | Load translations via HTTP | Small bundle, translations update independently | Extra request, Ghost must serve i18n files |
-| **C. Fix @tryghost/i18n** | Make package ESM-compatible | Clean, proper fix | Requires i18n package changes |
-| **D. Hybrid** | Bundle English, lazy-load others | Fast for majority, small bundle | More complexity |
+**Recommended solution: Browser entry point + lazy loading**
 
-**Recommendation**: Option D (hybrid) for pragmatic balance, or Option C for proper fix.
+This can be implemented on main BEFORE the public-apps migration:
+
+1. **Add browser entry to `@tryghost/i18n`**:
+```javascript
+// ghost/i18n/browser.js (NEW)
+import i18next from 'i18next';
+import en from './locales/en/portal.json'; // Bundle English only
+
+const cache = { en };
+
+export async function createI18n(locale, namespace, fetchFn) {
+    if (!cache[locale]) {
+        cache[locale] = await fetchFn(locale, namespace); // Lazy load others
+    }
+    // ... init i18next
+}
+```
+
+2. **Add exports to package.json**:
+```json
+{
+  "exports": {
+    ".": "./index.js",
+    "./browser": "./browser.js"
+  }
+}
+```
+
+3. **Add i18n endpoint to Ghost core**:
+```
+GET /i18n/:locale/:namespace.json → serves ghost/i18n/locales/{locale}/{namespace}.json
+```
+
+4. **Use in public-apps**:
+```javascript
+import { createI18n } from '@tryghost/i18n/browser';
+const i18n = await createI18n(locale, 'portal', (loc, ns) =>
+    fetch(`${siteUrl}/i18n/${loc}/${ns}.json`).then(r => r.json())
+);
+```
+
+**Size impact**:
+| Scenario | Current UMD | New Lazy |
+|----------|-------------|----------|
+| English user | 440KB | 124KB (112KB + 12KB en) |
+| German user | 440KB | 136KB (112KB + 24KB de) |
+| Savings | - | ~300KB per user |
 
 #### Other Production Requirements
 
