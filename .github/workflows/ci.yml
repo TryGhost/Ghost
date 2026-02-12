@@ -215,6 +215,27 @@ jobs:
       node_version: ${{ env.NODE_VERSION }}
       node_test_matrix: ${{ steps.node_matrix.outputs.matrix }}
 
+  job_app_version_bump_check:
+    name: Check app version bump
+    runs-on: ubuntu-latest
+    needs: [job_setup]
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout PR head commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Fetch main branch
+        run: git fetch --no-tags --depth=1 origin main
+
+      - name: Check app version bump
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_COMPARE_SHA: ${{ github.event.pull_request.head.sha }}
+        run: node .github/scripts/check-app-version-bump.js
+
   job_lint:
     runs-on: ubuntu-latest
     needs: [job_setup]
@@ -1311,6 +1332,7 @@ jobs:
     needs:
       [
         job_setup,
+        job_app_version_bump_check,
         job_lint,
         job_i18n,
         job_ghost-cli,
