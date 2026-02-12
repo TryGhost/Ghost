@@ -185,8 +185,9 @@ test.describe('Portal Settings', async () => {
         const displayNameToggle = modal.getByLabel('Display name in signup form');
         await expect(displayNameToggle).toBeVisible();
 
-        // Click on "Account page" preview tab
-        const accountPreviewTab = modal.getByRole('tab', {name: 'Account page'});
+        // Click on "Account page" preview tab (use ID to disambiguate from sidebar tab)
+        const previewToolbar = modal.getByTestId('design-toolbar');
+        const accountPreviewTab = previewToolbar.getByRole('tab', {name: 'Account page'});
         await accountPreviewTab.click();
 
         // Verify sidebar switched to Account page - support email field should be visible
@@ -194,7 +195,7 @@ test.describe('Portal Settings', async () => {
         await expect(supportEmailField).toBeVisible();
 
         // Click on "Signup" preview tab
-        const signupPreviewTab = modal.getByRole('tab', {name: 'Signup'});
+        const signupPreviewTab = previewToolbar.getByRole('tab', {name: 'Signup'});
         await signupPreviewTab.click();
 
         // Verify sidebar switched back to Signup options
