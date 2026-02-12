@@ -49,7 +49,7 @@ test.describe('Announcement Bar Settings', () => {
 
 async function goToAnnouncementBarSettings(sharedPage) {
     await test.step('Navigate to the announcement bar settings', async () => {
-        await sharedPage.locator('[data-test-nav="settings"]').click();
+        await sharedPage.locator('[data-sidebar="sidebar"]').getByRole('link', {name: 'Settings'}).click();
         await sharedPage.getByTestId('announcement-bar').getByRole('button', {name: 'Customize'}).click();
         // Wait for the preview to load
         await getPreviewFrame(sharedPage).locator('body *:visible').first().waitFor();

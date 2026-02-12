@@ -5,7 +5,7 @@ test.describe('Portal Settings', () => {
     test.describe('Links', () => {
         const openPortalLinks = async (sharedPage) => {
             await sharedPage.goto('/ghost');
-            await sharedPage.locator('[data-test-nav="settings"]').click();
+            await sharedPage.locator('[data-sidebar="sidebar"]').getByRole('link', {name: 'Settings'}).click();
 
             await sharedPage.getByTestId('portal').getByRole('button', {name: 'Customize'}).click();
 

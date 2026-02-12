@@ -7,7 +7,7 @@ const {createMember, impersonateMember} = require('../utils');
  */
 const addNewsletter = async (page) => {
     await page.goto('/ghost');
-    await page.locator('[data-test-nav="settings"]').click();
+    await page.locator('[data-sidebar="sidebar"]').getByRole('link', {name: 'Settings'}).click();
 
     // create newsletter
     const section = page.getByTestId('newsletters');

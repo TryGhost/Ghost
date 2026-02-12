@@ -330,19 +330,19 @@
       "test:browser": {
         "dependsOn": [
           "build:assets",
-          "ghost-admin:build"
+          "@tryghost/admin:build"
         ]
       },
       "test:browser:admin": {
         "dependsOn": [
           "build:assets",
-          "ghost-admin:build"
+          "@tryghost/admin:build"
         ]
       },
       "test:browser:portal": {
         "dependsOn": [
           "build:assets",
-          "ghost-admin:build"
+          "@tryghost/admin:build"
         ]
       }
     }
