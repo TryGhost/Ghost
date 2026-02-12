@@ -18,13 +18,11 @@ services:
       start_period: 10s
 
   ghost-migrations:
-    # if not specified this will default to tag of Ghost project
-    image: ${GHOST_IMAGE_TAG:-ghost-monorepo:latest}
+    image: ${GHOST_E2E_IMAGE:-ghost-e2e:local}
     pull_policy: never
     working_dir: /home/ghost
-    command: ["yarn", "knex-migrator", "init"]
+    command: ["node", "node_modules/.bin/knex-migrator", "init"]
     environment:
-      NODE_OPTIONS: "--import=tsx"
       database__client: mysql2
       database__connection__host: mysql
       database__connection__user: root
@@ -113,20 +111,6 @@ services:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:8025"]
       interval: 1s
       retries: 30
-
-  portal:
-    image: ${GHOST_IMAGE_TAG:-ghost-monorepo:latest}
-    pull_policy: never
-    working_dir: /home/ghost/apps/portal
-    command: ["yarn", "preview", "--port", "4175", "--host", "0.0.0.0"]
-    ports:
-      - "4175"  # Dynamic host port assignment
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4175/portal.min.js"]
-      interval: 1s
-      timeout: 3s
-      retries: 30
-      start_period: 10s
 
 volumes:
   shared-config:

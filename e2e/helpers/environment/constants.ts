@@ -12,11 +12,23 @@ export const DOCKER_COMPOSE_CONFIG = {
 };
 
 export const GHOST_DEFAULTS = {
-    // if not specified this would be the tag of the Ghost project, built at root of the repository
-    IMAGE: process.env.GHOST_IMAGE_TAG || 'ghost-monorepo',
-    PORT: 2368,
-    WORKDIR: '/home/ghost/ghost/core'
+    PORT: 2368
 };
+
+export interface GhostImageProfile {
+    image: string;
+    workdir: string;
+    command: string[];
+}
+
+export function getImageProfile(): GhostImageProfile {
+    const image = process.env.GHOST_E2E_IMAGE || 'ghost-e2e:local';
+    return {
+        image,
+        workdir: '/home/ghost',
+        command: ['node', 'index.js']
+    };
+}
 
 export const MYSQL = {
     HOST: 'mysql',
@@ -32,8 +44,13 @@ export const TINYBIRD = {
     CONFIG_DIR: CONFIG_DIR
 };
 
-export const PORTAL = {
-    PORT: 4175
+export const PUBLIC_APPS = {
+    PORTAL_URL: '/ghost/assets/portal/portal.min.js',
+    COMMENTS_URL: '/ghost/assets/comments-ui/comments-ui.min.js',
+    SODO_SEARCH_URL: '/ghost/assets/sodo-search/sodo-search.min.js',
+    SODO_SEARCH_STYLES: '/ghost/assets/sodo-search/main.css',
+    SIGNUP_FORM_URL: '/ghost/assets/signup-form/signup-form.min.js',
+    ANNOUNCEMENT_BAR_URL: '/ghost/assets/announcement-bar/announcement-bar.min.js'
 };
 
 export const MAILPIT = {
@@ -81,12 +98,12 @@ export const TEST_ENVIRONMENT = {
             'mail__options__port=1025',
 
             // Public assets via gateway (same as compose.dev.yaml)
-            'portal__url=/ghost/assets/portal/portal.min.js',
-            'comments__url=/ghost/assets/comments-ui/comments-ui.min.js',
-            'sodoSearch__url=/ghost/assets/sodo-search/sodo-search.min.js',
-            'sodoSearch__styles=/ghost/assets/sodo-search/main.css',
-            'signupForm__url=/ghost/assets/signup-form/signup-form.min.js',
-            'announcementBar__url=/ghost/assets/announcement-bar/announcement-bar.min.js'
+            `portal__url=${PUBLIC_APPS.PORTAL_URL}`,
+            `comments__url=${PUBLIC_APPS.COMMENTS_URL}`,
+            `sodoSearch__url=${PUBLIC_APPS.SODO_SEARCH_URL}`,
+            `sodoSearch__styles=${PUBLIC_APPS.SODO_SEARCH_STYLES}`,
+            `signupForm__url=${PUBLIC_APPS.SIGNUP_FORM_URL}`,
+            `announcementBar__url=${PUBLIC_APPS.ANNOUNCEMENT_BAR_URL}`
         ]   
     }
 } as const;
