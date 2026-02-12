@@ -87,6 +87,7 @@ export type EditableAppContext = {
     commentsIsLoading?: boolean,
     commentIdToHighlight: string | null,
     commentIdToScrollTo: string | null,
+    showMissingCommentNotice: boolean,
     pageUrl: string,
     supportEmail: string | null,
     isMember: boolean,
@@ -129,4 +130,3 @@ export const useLabs = () => {
         return {};
     }
 };
-

@@ -190,7 +190,7 @@ test.describe('Comment Permalinks', async () => {
         await expect(commentsFrame.getByTestId('loading')).toHaveCount(1);
     });
 
-    test('does not scroll to hidden comment', async ({page}) => {
+    test('shows missing-comment notice for hidden permalink and scrolls to comments area', async ({page}) => {
         const mockedApi = new MockedApi({});
         mockedApi.setMember({});
 
@@ -207,22 +207,27 @@ test.describe('Comment Permalinks', async () => {
             status: 'hidden'
         });
 
-        const commentsFrame = await setupPermalinkTest(page, mockedApi, `#ghost-comments-${hiddenCommentId}`);
+        const tallBodyHtml = '<html><head><meta charset="UTF-8" /></head><body><div style="width: 100%; height: 1500px;"></div></body></html>';
+        const commentsFrame = await setupPermalinkTest(page, mockedApi, `#ghost-comments-${hiddenCommentId}`, tallBodyHtml);
 
         // The visible comment should be displayed
         await expect(commentsFrame.getByText('Visible comment')).toBeVisible();
 
-        // The hidden comment element should not be scrolled to or highlighted
+        // The hidden comment element should not be rendered
         // (hidden comments are not visible to regular members)
         const hiddenCommentElement = commentsFrame.locator(`[id="${hiddenCommentId}"]`);
         await expect(hiddenCommentElement).toHaveCount(0);
 
-        // Page should function normally with no errors
+        // A permalink to a non-available comment should show a notice and scroll to comments
+        await expect(commentsFrame.getByTestId('missing-comment-notice')).toContainText('The linked comment is no longer available.');
+        await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+
+        // Page should still function normally
         const comments = commentsFrame.getByTestId('comment-component');
         await expect(comments).toHaveCount(1);
     });
 
-    test('does not scroll to deleted comment', async ({page}) => {
+    test('shows missing-comment notice for deleted permalink and scrolls to comments area', async ({page}) => {
         const mockedApi = new MockedApi({});
         mockedApi.setMember({});
 
@@ -239,16 +244,21 @@ test.describe('Comment Permalinks', async () => {
             status: 'deleted'
         });
 
-        const commentsFrame = await setupPermalinkTest(page, mockedApi, `#ghost-comments-${deletedCommentId}`);
+        const tallBodyHtml = '<html><head><meta charset="UTF-8" /></head><body><div style="width: 100%; height: 1500px;"></div></body></html>';
+        const commentsFrame = await setupPermalinkTest(page, mockedApi, `#ghost-comments-${deletedCommentId}`, tallBodyHtml);
 
         // The visible comment should be displayed
         await expect(commentsFrame.getByText('Visible comment')).toBeVisible();
 
-        // The deleted comment element should not be scrolled to or highlighted
+        // The deleted comment element should not be rendered
         const deletedCommentElement = commentsFrame.locator(`[id="${deletedCommentId}"]`);
         await expect(deletedCommentElement).toHaveCount(0);
 
-        // Page should function normally with no errors
+        // A permalink to a non-available comment should show a notice and scroll to comments
+        await expect(commentsFrame.getByTestId('missing-comment-notice')).toContainText('The linked comment is no longer available.');
+        await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+
+        // Page should still function normally
         const comments = commentsFrame.getByTestId('comment-component');
         await expect(comments).toHaveCount(1);
     });
