@@ -1,8 +1,7 @@
 import App from '../src/app';
 import {site as FixtureSite, member as FixtureMember} from './utils/test-fixtures';
-import {appRender, within} from './utils/test-utils';
+import {appRender, fireEvent, waitFor, within} from './utils/test-utils';
 import setupGhostApi from '../src/utils/api';
-import {fireEvent} from '@testing-library/react';
 
 const setup = async ({site, member = null, showPopup = true}) => {
     const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
@@ -346,10 +345,15 @@ describe('Portal Data links:', () => {
     });
 
     describe('unauthenticated account page access', () => {
-        test('#/portal/account redirects to signin when not logged in', async () => {
-            window.location.hash = '#/portal/account';
+        test.each([
+            {path: 'account', label: 'account'},
+            {path: 'account/plans', label: 'account/plans'},
+            {path: 'account/profile', label: 'account/profile'},
+            {path: 'account/newsletters', label: 'account/newsletters'}
+        ])('#/portal/$label redirects to signin with redirect URL when not logged in', async ({path}) => {
+            window.location.hash = `#/portal/${path}`;
             let {
-                popupFrame, triggerButtonFrame, ...utils
+                ghostApi, popupFrame, triggerButtonFrame, ...utils
             } = await setup({
                 site: FixtureSite.singleTier.basic,
                 member: null,
@@ -358,43 +362,27 @@ describe('Portal Data links:', () => {
             expect(triggerButtonFrame).toBeInTheDocument();
             popupFrame = await utils.findByTitle(/portal-popup/i);
             expect(popupFrame).toBeInTheDocument();
+
             // Should show signin page instead of account page
-            const signinTitle = within(popupFrame.contentDocument).queryByText(/sign in/i);
+            const popupIframeDocument = popupFrame.contentDocument;
+            const signinTitle = within(popupIframeDocument).queryByText(/sign in/i);
             expect(signinTitle).toBeInTheDocument();
-        });
 
-        test('#/portal/account/plans redirects to signin when not logged in', async () => {
-            window.location.hash = '#/portal/account/plans';
-            let {
-                popupFrame, triggerButtonFrame, ...utils
-            } = await setup({
-                site: FixtureSite.singleTier.basic,
-                member: null,
-                showPopup: false
-            });
-            expect(triggerButtonFrame).toBeInTheDocument();
-            popupFrame = await utils.findByTitle(/portal-popup/i);
-            expect(popupFrame).toBeInTheDocument();
-            // Should show signin page instead of account plan page
-            const signinTitle = within(popupFrame.contentDocument).queryByText(/sign in/i);
-            expect(signinTitle).toBeInTheDocument();
-        });
+            // Fill in email and submit to verify the redirect URL is passed through
+            const emailInput = within(popupIframeDocument).getByLabelText(/email/i);
+            const submitButton = within(popupIframeDocument).getByRole('button', {name: 'Continue'});
+            fireEvent.change(emailInput, {target: {value: 'test@example.com'}});
+            fireEvent.click(submitButton);
 
-        test('#/portal/account/profile redirects to signin when not logged in', async () => {
-            window.location.hash = '#/portal/account/profile';
-            let {
-                popupFrame, triggerButtonFrame, ...utils
-            } = await setup({
-                site: FixtureSite.singleTier.basic,
-                member: null,
-                showPopup: false
+            await waitFor(() => {
+                expect(ghostApi.member.sendMagicLink).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        email: 'test@example.com',
+                        emailType: 'signin',
+                        redirect: `https://portal.localhost#/portal/${path}/`
+                    })
+                );
             });
-            expect(triggerButtonFrame).toBeInTheDocument();
-            popupFrame = await utils.findByTitle(/portal-popup/i);
-            expect(popupFrame).toBeInTheDocument();
-            // Should show signin page instead of account profile page
-            const signinTitle = within(popupFrame.contentDocument).queryByText(/sign in/i);
-            expect(signinTitle).toBeInTheDocument();
         });
     });
 });
