@@ -32,7 +32,12 @@ const LatestPost: React.FC<LatestPostProps> = ({
     const [isShareOpen, setIsShareOpen] = useState(false);
     const {site, settings} = useGlobalData();
     const {appSettings} = useAppContext();
-    const {emailTrackClicks: emailTrackClicksEnabled, emailTrackOpens: emailTrackOpensEnabled} = appSettings?.analytics || {};
+    const {
+        emailTrackClicks: emailTrackClicksEnabled,
+        emailTrackOpens: emailTrackOpensEnabled,
+        webAnalytics = false,
+        membersTrackSources = false
+    } = appSettings?.analytics || {};
 
     // Get site title from settings or site data
     const siteTitle = site.title || String(settings.find(setting => setting.key === 'title')?.value || 'Ghost Site');
@@ -42,15 +47,13 @@ const LatestPost: React.FC<LatestPostProps> = ({
 
     // Calculate metrics to show outside of JSX
     const metricsToShow = latestPostStats ? getPostMetricsToDisplay(latestPostStats as Post, {
-        membersTrackSources: appSettings?.analytics.membersTrackSources
+        membersTrackSources
     }) : null;
 
     const metricClassName = 'group mr-2 flex flex-col gap-1.5 hover:cursor-pointer';
 
     const hasEmailData = Boolean(latestPostStats?.email);
-    const postDestination = latestPostStats
-        ? getPostDestination(latestPostStats.id, hasEmailData, appSettings?.analytics)
-        : '';
+    const postDestination = getPostDestination({postId: latestPostStats?.id, hasEmailData, analytics: {webAnalytics, membersTrackSources}});
     const shouldGoToEditor = postDestination.startsWith('/editor/');
 
     return (
@@ -167,7 +170,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                         <div className='-ml-4 flex w-full flex-col items-stretch gap-2 pr-6 text-sm xl:h-full xl:max-w-none'>
                             <div className='grid grid-cols-2 gap-6 pl-10 lg:border-l xl:h-full'>
                                 {/* Web metrics - only for published posts */}
-                                {metricsToShow.showWebMetrics && appSettings?.analytics.webAnalytics &&
+                                {metricsToShow.showWebMetrics && webAnalytics &&
                                     <div className={metricClassName} data-testid='latest-post-visitors' onClick={() => {
                                         navigate(`/posts/analytics/${latestPostStats.id}/web`, {crossApp: true});
                                     }}>
@@ -190,7 +193,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                             metricClassName,
 
                                             // Member metric is moved to the 2nd row in the grid if the post is email only or if web analytics is turned off, otherwise leave as is
-                                            (metricsToShow.showEmailMetrics && (!metricsToShow.showWebMetrics || !appSettings?.analytics.webAnalytics)) && 'row-[2/3] col-[1/2]'
+                                            (metricsToShow.showEmailMetrics && (!metricsToShow.showWebMetrics || !webAnalytics)) && 'row-[2/3] col-[1/2]'
                                         )
                                     } data-testid='latest-post-members' onClick={() => {
                                         navigate(`/posts/analytics/${latestPostStats.id}/growth`, {crossApp: true});
