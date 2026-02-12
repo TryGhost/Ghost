@@ -39,6 +39,15 @@ export default class EditorPostPreviewModal extends Component {
         return this.previewAsOptions.find(option => option.value === this.previewAsSegment);
     }
 
+    get showMemberSegmentDropdown() {
+        // Always show dropdown on browser/web tab (has multiple options)
+        if (this.previewFormat === 'browser') {
+            return true;
+        }
+        // On email tab, only show if there's more than one option
+        return this.previewAsOptions.length > 1;
+    }
+
     get skipAnimation() {
         return this.args.data.skipAnimation || this.isChangingTab;
     }
