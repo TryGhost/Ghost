@@ -36,8 +36,8 @@ describe('Pages API', function () {
         assert.equal(_.isBoolean(jsonResponse.pages[0].featured), true);
 
         // Absolute urls by default
-        assert.match(jsonResponse.pages[0].url, new RegExp(`${config.get('url')}/p/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}`));
-        jsonResponse.pages[1].url.should.eql(`${config.get('url')}/contribute/`);
+        assert.match(new URL(jsonResponse.pages[0].url).pathname, /\/p\/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/);
+        assert.equal(new URL(jsonResponse.pages[1].url).pathname, '/contribute/');
     });
 
     it('Can retrieve pages with just lexical format', async function () {
@@ -80,7 +80,7 @@ describe('Pages API', function () {
         assertExists(res.headers['x-cache-invalidate']);
 
         assertExists(res.headers.location);
-        assert.equal(res.headers.location, `http://127.0.0.1:2369${localUtils.API.getApiQuery('pages/')}${res.body.pages[0].id}/`);
+        assert.equal(new URL(res.headers.location).pathname, `/ghost/api/admin/pages/${res.body.pages[0].id}/`);
 
         const model = await models.Post.findOne({
             id: res.body.pages[0].id

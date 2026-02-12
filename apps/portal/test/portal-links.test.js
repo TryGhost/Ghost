@@ -1,8 +1,7 @@
 import App from '../src/app';
 import {site as FixtureSite, member as FixtureMember} from './utils/test-fixtures';
-import {appRender, within} from './utils/test-utils';
+import {appRender, fireEvent, waitFor, within} from './utils/test-utils';
 import setupGhostApi from '../src/utils/api';
-import {fireEvent} from '@testing-library/react';
 
 const setup = async ({site, member = null, showPopup = true}) => {
     const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
@@ -342,6 +341,48 @@ describe('Portal Data links:', () => {
             expect(popupFrame).toBeInTheDocument();
             const helpPageTitle = within(popupFrame.contentDocument).queryByText(/why has my email been disabled/i);
             expect(helpPageTitle).toBeInTheDocument();
+        });
+    });
+
+    describe('unauthenticated account page access', () => {
+        test.each([
+            {path: 'account', label: 'account'},
+            {path: 'account/plans', label: 'account/plans'},
+            {path: 'account/profile', label: 'account/profile'},
+            {path: 'account/newsletters', label: 'account/newsletters'}
+        ])('#/portal/$label redirects to signin with redirect URL when not logged in', async ({path}) => {
+            window.location.hash = `#/portal/${path}`;
+            let {
+                ghostApi, popupFrame, triggerButtonFrame, ...utils
+            } = await setup({
+                site: FixtureSite.singleTier.basic,
+                member: null,
+                showPopup: false
+            });
+            expect(triggerButtonFrame).toBeInTheDocument();
+            popupFrame = await utils.findByTitle(/portal-popup/i);
+            expect(popupFrame).toBeInTheDocument();
+
+            // Should show signin page instead of account page
+            const popupIframeDocument = popupFrame.contentDocument;
+            const signinTitle = within(popupIframeDocument).queryByText(/sign in/i);
+            expect(signinTitle).toBeInTheDocument();
+
+            // Fill in email and submit to verify the redirect URL is passed through
+            const emailInput = within(popupIframeDocument).getByLabelText(/email/i);
+            const submitButton = within(popupIframeDocument).getByRole('button', {name: 'Continue'});
+            fireEvent.change(emailInput, {target: {value: 'test@example.com'}});
+            fireEvent.click(submitButton);
+
+            await waitFor(() => {
+                expect(ghostApi.member.sendMagicLink).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        email: 'test@example.com',
+                        emailType: 'signin',
+                        redirect: `https://portal.localhost#/portal/${path}/`
+                    })
+                );
+            });
         });
     });
 });

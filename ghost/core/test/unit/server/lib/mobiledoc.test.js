@@ -140,13 +140,14 @@ describe('lib/mobiledoc', function () {
         });
 
         it('renders srcsets for absolute images', function () {
+            const siteUrl = configUtils.config.get('url');
             let mobiledoc = {
                 version: '0.3.1',
                 atoms: [],
                 cards: [
                     ['image', {
                         cardWidth: 'wide',
-                        src: 'http://127.0.0.1:2369/content/images/2018/04/NatGeo06.jpg',
+                        src: `${siteUrl}/content/images/2018/04/NatGeo06.jpg`,
                         width: 4000,
                         height: 2000,
                         caption: 'Birdies'
@@ -155,7 +156,7 @@ describe('lib/mobiledoc', function () {
                         images: [{
                             row: 0,
                             fileName: 'test.png',
-                            src: 'http://127.0.0.1:2369/content/images/test.png',
+                            src: `${siteUrl}/content/images/test.png`,
                             width: 1000,
                             height: 500
                         }]
@@ -168,7 +169,7 @@ describe('lib/mobiledoc', function () {
                 ]
             };
 
-            assert.equal(mobiledocLib.mobiledocHtmlRenderer.render(mobiledoc), '<figure class="kg-card kg-image-card kg-width-wide kg-card-hascaption"><img src="http://127.0.0.1:2369/content/images/2018/04/NatGeo06.jpg" class="kg-image" alt loading="lazy" width="2000" height="1000" srcset="http://127.0.0.1:2369/content/images/size/w600/2018/04/NatGeo06.jpg 600w, http://127.0.0.1:2369/content/images/size/w1000/2018/04/NatGeo06.jpg 1000w, http://127.0.0.1:2369/content/images/size/w1600/2018/04/NatGeo06.jpg 1600w, http://127.0.0.1:2369/content/images/size/w2400/2018/04/NatGeo06.jpg 2400w" sizes="(min-width: 1200px) 1200px"><figcaption>Birdies</figcaption></figure><figure class="kg-card kg-gallery-card kg-width-wide"><div class="kg-gallery-container"><div class="kg-gallery-row"><div class="kg-gallery-image"><img src="http://127.0.0.1:2369/content/images/test.png" width="1000" height="500" loading="lazy" alt srcset="http://127.0.0.1:2369/content/images/size/w600/test.png 600w, http://127.0.0.1:2369/content/images/test.png 1000w" sizes="(min-width: 720px) 720px"></div></div></div></figure>');
+            assert.equal(mobiledocLib.mobiledocHtmlRenderer.render(mobiledoc), `<figure class="kg-card kg-image-card kg-width-wide kg-card-hascaption"><img src="${siteUrl}/content/images/2018/04/NatGeo06.jpg" class="kg-image" alt loading="lazy" width="2000" height="1000" srcset="${siteUrl}/content/images/size/w600/2018/04/NatGeo06.jpg 600w, ${siteUrl}/content/images/size/w1000/2018/04/NatGeo06.jpg 1000w, ${siteUrl}/content/images/size/w1600/2018/04/NatGeo06.jpg 1600w, ${siteUrl}/content/images/size/w2400/2018/04/NatGeo06.jpg 2400w" sizes="(min-width: 1200px) 1200px"><figcaption>Birdies</figcaption></figure><figure class="kg-card kg-gallery-card kg-width-wide"><div class="kg-gallery-container"><div class="kg-gallery-row"><div class="kg-gallery-image"><img src="${siteUrl}/content/images/test.png" width="1000" height="500" loading="lazy" alt srcset="${siteUrl}/content/images/size/w600/test.png 600w, ${siteUrl}/content/images/test.png 1000w" sizes="(min-width: 720px) 720px"></div></div></div></figure>`);
         });
 
         it('respects srcsets config', function () {

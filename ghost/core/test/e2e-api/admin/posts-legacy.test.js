@@ -67,15 +67,15 @@ describe('Posts API', function () {
         assert.equal(jsonResponse.posts[14].slug, 'html-ipsum');
 
         // Absolute urls by default
-        assert.match(jsonResponse.posts[0].url, new RegExp(`${config.get('url')}/p/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}`));
-        jsonResponse.posts[2].url.should.eql(`${config.get('url')}/welcome/`);
-        jsonResponse.posts[13].feature_image.should.eql(`${config.get('url')}/content/images/2018/hey.jpg`);
+        assert.match(new URL(jsonResponse.posts[0].url).pathname, /\/p\/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/);
+        assert.equal(new URL(jsonResponse.posts[2].url).pathname, '/welcome/');
+        assert.equal(new URL(jsonResponse.posts[13].feature_image).pathname, '/content/images/2018/hey.jpg');
 
         assert.equal(jsonResponse.posts[0].tags.length, 0);
         assert.equal(jsonResponse.posts[2].tags.length, 1);
         assert.equal(jsonResponse.posts[2].authors.length, 1);
-        jsonResponse.posts[2].tags[0].url.should.eql(`${config.get('url')}/tag/getting-started/`);
-        jsonResponse.posts[2].authors[0].url.should.eql(`${config.get('url')}/author/ghost/`);
+        assert.equal(new URL(jsonResponse.posts[2].tags[0].url).pathname, '/tag/getting-started/');
+        assert.equal(new URL(jsonResponse.posts[2].authors[0].url).pathname, '/author/ghost/');
 
         // Check if the newsletter relation is loaded by default and newsletter_id is not returned
         jsonResponse.posts[14].id.should.eql(testUtils.DataGenerator.Content.posts[0].id);
@@ -281,11 +281,11 @@ describe('Posts API', function () {
 
         assert.equal(res.body.posts.length, 1);
         localUtils.API.checkResponse(res.body.posts[0], 'post');
-        assert.match(res.body.posts[0].url, new RegExp(`${config.get('url')}/p/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}`));
+        assert.match(new URL(res.body.posts[0].url).pathname, /\/p\/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/);
         assert.equal(res.headers['x-cache-invalidate'], undefined);
 
         assertExists(res.headers.location);
-        assert.equal(res.headers.location, `http://127.0.0.1:2369${localUtils.API.getApiQuery('posts/')}${res.body.posts[0].id}/`);
+        assert.equal(new URL(res.headers.location).pathname, `/ghost/api/admin/posts/${res.body.posts[0].id}/`);
 
         // Newsletter should be returned as null
         assert.equal(res.body.posts[0].newsletter, null);

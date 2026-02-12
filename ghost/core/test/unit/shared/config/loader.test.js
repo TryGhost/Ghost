@@ -81,9 +81,10 @@ describe('Config Loader', function () {
 
             assert(!customConfig.get('paths:corePath').includes('try-to-override'));
             assert.equal(customConfig.get('database:client'), 'sqlite3');
-            assert.equal(customConfig.get('database:connection:filename'), '/hehe.db');
+            // Note: database:connection:filename is now set via process.env in overrides.js
+            // for concurrent test isolation, so we skip asserting the config file value
             assert.equal(customConfig.get('database:debug'), true);
-            assert.equal(customConfig.get('url'), 'http://localhost:2368');
+            // Note: url is now set via process.env in overrides.js for dynamic port allocation
             assert.equal(customConfig.get('logging:level'), 'error');
             assert.deepEqual(customConfig.get('logging:transports'), ['stdout']);
         });

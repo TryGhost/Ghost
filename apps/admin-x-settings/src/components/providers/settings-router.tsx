@@ -35,6 +35,7 @@ export const modalPaths: {[key: string]: ModalName} = {
     'embed-signup-form/show': 'EmbedSignupFormModal',
     'offers/edit': 'OffersContainerModal',
     'offers/edit/:id': 'OffersContainerModal',
+    'offers/edit/retention/:id': 'OffersContainerModal',
     'offers/new': 'OffersContainerModal',
     'explore/testimonial': 'TestimonialsModal',
     about: 'AboutModal'

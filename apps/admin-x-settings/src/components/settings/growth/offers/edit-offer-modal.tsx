@@ -258,7 +258,7 @@ const EditOfferModal: React.FC<{id: string}> = ({id}) => {
             updateRoute('offers');
         }}
         backDropClick={false}
-        cancelLabel='Close'
+        cancelLabel='Cancel'
         deviceSelector={false}
         dirty={saveState === 'unsaved'}
         height='full'
