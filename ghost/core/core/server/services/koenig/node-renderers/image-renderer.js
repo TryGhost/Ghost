@@ -1,5 +1,5 @@
 const {getAvailableImageWidths} = require('../render-utils/get-available-image-widths');
-const {isLocalContentImage} = require('../render-utils/is-local-content-image');
+const {isContentImage} = require('../render-utils/is-content-image');
 const {setSrcsetAttribute} = require('../render-utils/srcset-attribute');
 const {getResizedImageDimensions} = require('../render-utils/get-resized-image-dimensions');
 const {addCreateDocumentOption} = require('../render-utils/add-create-document-option');
@@ -49,7 +49,7 @@ function renderImageNode(node, options = {}) {
     if (
         defaultMaxWidth &&
             node.width > defaultMaxWidth &&
-            isLocalContentImage(node.src, options.siteUrl) &&
+            isContentImage(node.src, options.siteUrl, options.imageBaseUrl) &&
             canTransformImage &&
             canTransformImage(node.src)
     ) {
@@ -96,7 +96,7 @@ function renderImageNode(node, options = {}) {
         img.setAttribute('width', imageDimensions.width);
         img.setAttribute('height', imageDimensions.height);
 
-        if (isLocalContentImage(node.src, options.siteUrl) && options.canTransformImage?.(node.src)) {
+        if (isContentImage(node.src, options.siteUrl, options.imageBaseUrl) && options.canTransformImage?.(node.src)) {
             // find available image size next up from 2x600 so we can use it for the "retina" src
             const availableImageWidths = getAvailableImageWidths(node, options.imageOptimization.contentImageSizes);
             const srcWidth = availableImageWidths.find(width => width >= 1200);

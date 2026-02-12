@@ -31,6 +31,7 @@ module.exports = {
 
             cardFactory = new CardFactory({
                 siteUrl: config.get('url'),
+                imageBaseUrl: config.get('urls:image') || '',
                 imageOptimization: config.get('imageOptimization'),
                 canTransformImage(storagePath) {
                     const imageTransform = require('@tryghost/image-transform');
