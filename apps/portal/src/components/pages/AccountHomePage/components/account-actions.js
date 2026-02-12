@@ -64,22 +64,6 @@ const AccountActions = () => {
                     hasPodcasts={transistor.hasPodcasts}
                     memberUuid={transistor.memberUuid}
                 />
-                <section>
-                    <div className='gh-portal-list-detail'>
-                        <h3>{t('Podcasts')}</h3>
-                        <p>{t('Update your podcast subscriptions')}</p>
-                    </div>
-                    <a
-                        data-test-link="content-podcasts"
-                        className='gh-portal-btn gh-portal-btn-list'
-                        href="#"
-                        onClick={(event) => {
-                            event.preventDefault();
-                        }}
-                    >
-                        {t('Manage')}
-                    </a>
-                </section>
             </div>
 
         </div>

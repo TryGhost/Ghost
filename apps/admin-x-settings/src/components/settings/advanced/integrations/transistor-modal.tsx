@@ -24,10 +24,7 @@ const TransistorModal = NiceModal.create(() => {
 
     const [transistorEnabled] = getSettingValues<boolean>(settings, ['transistor']);
     const [enabled, setEnabled] = useState<boolean>(!!transistorEnabled);
-    // const [useInPortal, setUseInPortal] = useState(true);
-    // const [useInEditor, setUseInEditor] = useState(true);
     const [okLabel, setOkLabel] = useState('Save');
-    const learnMoreUrl = 'https://ghost.org/integrations/transistor/';
 
     useEffect(() => {
         setEnabled(transistorEnabled || false);
@@ -89,18 +86,6 @@ const TransistorModal = NiceModal.create(() => {
             }}
             cancelLabel='Close'
             dirty={enabled !== transistorEnabled}
-            // leftButtonProps={{
-            //     label: (
-            //         <div className='flex items-center gap-2'>
-            //             Learn more
-            //             {/* <Icon name='arrow-top-right' size="xs" /> */}
-            //         </div>
-            //     ),
-            //     color: 'outline',
-            //     onClick: () => {
-            //         window.open(learnMoreUrl, '_blank', 'noopener,noreferrer');
-            //     }
-            // }}
             okColor={okLabel === 'Saved' ? 'green' : 'black'}
             okLabel={okLabel}
             testId='transistor-modal'
@@ -124,25 +109,20 @@ const TransistorModal = NiceModal.create(() => {
                         }}
                     />
                     {enabled && (
-                        <>
-                            <APIKeys keys={[
-                                {label: 'Ghost API URL', text: window.location.origin + getGhostPaths().subdir},
-                                {
-                                    label: 'Ghost Admin API key',
-                                    text: adminApiKey?.secret,
-                                    hint: regenerated ? <div className='text-green'>Admin API Key was successfully regenerated</div> : undefined,
-                                    onRegenerate: handleRegenerate
-                                }
-                            ]} />
-                            <div className='-mt-8 text-xs text-grey-700'>
-                                Paste these in any of your private podcast settings in <span className='text-green'>Transistor</span>.
-                            </div>
-                        </>
+                        <APIKeys keys={[
+                            {
+                                label: 'Admin API key',
+                                text: adminApiKey?.secret,
+                                hint: regenerated ? <div className='text-green'>Admin API Key was successfully regenerated</div> : undefined,
+                                onRegenerate: handleRegenerate
+                            },
+                            {label: 'API URL', text: window.location.origin + getGhostPaths().subdir}
+                        ]} />
                     )}
                 </Form>
                 {enabled &&
                     <div className='mt-5 flex flex-col items-center'>
-                        <a className='w-100 flex flex-col items-stretch justify-between overflow-hidden rounded-md bg-grey-75 transition-all hover:border-grey-400 hover:bg-grey-100 md:flex-row' href={learnMoreUrl} rel="noopener noreferrer" target="_blank">
+                        <a className='w-100 flex flex-col items-stretch justify-between overflow-hidden rounded-md bg-grey-75 transition-all hover:border-grey-400 hover:bg-grey-100 md:flex-row' href="https://ghost.org/integrations/transistor/" rel="noopener noreferrer" target="_blank">
                             <div className='order-2 px-7 py-5 md:order-1'>
                                 <div className='font-semibold'>How to use Transistor in Ghost</div>
                                 <div className='mt-1 text-sm text-grey-800 dark:text-grey-500'>Learn how to connect Transistor with Ghost to offer private podcasts in Portal and embed Transistor cards in your posts and pages.</div>
@@ -153,34 +133,6 @@ const TransistorModal = NiceModal.create(() => {
                         </a>
                     </div>
                 }
-                {/* {enabled &&
-                <>
-                    <div className='mt-6 flex flex-col gap-8 rounded-sm border p-7'>
-                        <Toggle
-                            checked={useInPortal}
-                            direction='rtl'
-                            hint={
-                                <>
-                                    Enables a link to the available podcasts in <span className='green'>Member Account page</span> in Portal.
-                                </>
-                            }
-                            label='Use in Portal'
-                            onChange={(e) => {
-                                setUseInPortal(e.target.checked);
-                            }}
-                        />
-                        <Toggle
-                            checked={useInEditor}
-                            direction='rtl'
-                            hint='Enables a Transistor card that can be added to posts and pages.'
-                            label='Use in the Ghost editor'
-                            onChange={(e) => {
-                                setUseInEditor(e.target.checked);
-                            }}
-                        />
-                    </div>
-                </>
-                } */}
             </div>
         </Modal>
     );
