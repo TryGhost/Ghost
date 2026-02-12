@@ -101,10 +101,6 @@ const Content = () => {
     }, []);
 
     useEffect(() => {
-        if (!labs?.commentPermalinks) {
-            return;
-        }
-
         const handleHashChange = () => {
             const commentId = parseCommentIdFromHash(window.parent.location.hash);
             if (commentId && containerRef.current) {
@@ -118,7 +114,7 @@ const Content = () => {
 
         window.parent.addEventListener('hashchange', handleHashChange);
         return () => window.parent.removeEventListener('hashchange', handleHashChange);
-    }, [labs?.commentPermalinks, scrollToComment]);
+    }, [scrollToComment]);
 
     useEffect(() => {
         if (!commentIdToScrollTo || commentsIsLoading || !containerRef.current) {

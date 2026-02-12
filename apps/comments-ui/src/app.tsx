@@ -304,7 +304,7 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
             let pagination = initialPagination;
             let scrollTargetFound = false;
 
-            const shouldFindScrollTarget = labs?.commentPermalinks && initialCommentId && pagination;
+            const shouldFindScrollTarget = initialCommentId && pagination;
             if (shouldFindScrollTarget) {
                 const targetComment = await fetchScrollTarget(initialCommentId);
                 if (targetComment) {

@@ -7,7 +7,7 @@ import Replies, {RepliesProps} from './replies';
 import ReplyButton from './buttons/reply-button';
 import ReplyForm from './forms/reply-form';
 import {Avatar, BlankAvatar} from './avatar';
-import {Comment, OpenCommentForm, useAppContext, useLabs} from '../../app-context';
+import {Comment, OpenCommentForm, useAppContext} from '../../app-context';
 import {Transition} from '@headlessui/react';
 import {buildCommentPermalink, findCommentById, formatExplicitTime, getCommentInReplyToSnippet, getMemberNameFromComment} from '../../utils/helpers';
 import {useRelativeTime} from '../../utils/hooks';
@@ -269,23 +269,8 @@ const AuthorName: React.FC<{comment: Comment}> = ({comment}) => {
 };
 
 export const RepliedToSnippet: React.FC<{comment: Comment}> = ({comment}) => {
-    const {comments, dispatchAction, t, pageUrl} = useAppContext();
-    const labs = useLabs();
+    const {comments, t, pageUrl} = useAppContext();
     const inReplyToComment = findCommentById(comments, comment.in_reply_to_id);
-
-    const scrollRepliedToCommentIntoView = (e: React.MouseEvent<HTMLAnchorElement>) => {
-        e.preventDefault();
-
-        if (!e.target) {
-            return;
-        }
-
-        const element = (e.target as HTMLElement).ownerDocument.getElementById(comment.in_reply_to_id);
-        if (element) {
-            dispatchAction('highlightComment', {commentId: comment.in_reply_to_id});
-            element.scrollIntoView({behavior: 'smooth', block: 'center'});
-        }
-    };
 
     let inReplyToSnippet = comment.in_reply_to_snippet;
     // For public API requests hidden/deleted comments won't exist in the comments array
@@ -302,12 +287,8 @@ export const RepliedToSnippet: React.FC<{comment: Comment}> = ({comment}) => {
         return <span className={className} data-testid="comment-in-reply-to">{inReplyToSnippet}</span>;
     }
 
-    // With labs flag: use permalink URL, let hashchange listener handle scroll
-    // Without labs flag: use onClick handler for direct scroll behavior
-    return labs?.commentPermalinks ? (
+    return (
         <a className={linkClassName} data-testid="comment-in-reply-to" href={buildCommentPermalink(pageUrl, comment.in_reply_to_id)} target="_parent">{inReplyToSnippet}</a>
-    ) : (
-        <a className={linkClassName} data-testid="comment-in-reply-to" href={`#${comment.in_reply_to_id}`} onClick={scrollRepliedToCommentIntoView}>{inReplyToSnippet}</a>
     );
 };
 
@@ -318,12 +299,11 @@ type CommentHeaderProps = {
 
 const CommentHeader: React.FC<CommentHeaderProps> = ({comment, className = ''}) => {
     const {member, t, pageUrl} = useAppContext();
-    const labs = useLabs();
     const createdAtRelative = useRelativeTime(comment.created_at);
     const memberExpertise = member && comment.member && comment.member.uuid === member.uuid ? member.expertise : comment?.member?.expertise;
     const isReplyToReply = comment.in_reply_to_id && comment.in_reply_to_snippet;
 
-    const timestampElement = labs?.commentPermalinks ? (
+    const timestampElement = (
         <a
             className="hover:underline"
             href={buildCommentPermalink(pageUrl, comment.id)}
@@ -332,10 +312,6 @@ const CommentHeader: React.FC<CommentHeaderProps> = ({comment, className = ''}) 
         >
             <span className="mx-[0.3em]">·</span>{createdAtRelative}
         </a>
-    ) : (
-        <span title={formatExplicitTime(comment.created_at)}>
-            <span className="mx-[0.3em]">·</span>{createdAtRelative}
-        </span>
     );
 
     return (

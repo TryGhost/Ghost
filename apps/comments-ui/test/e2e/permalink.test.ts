@@ -15,14 +15,6 @@ async function setupPermalinkTest(
 ): Promise<FrameLocator> {
     const sitePath = MOCKED_SITE_URL;
 
-    mockedApi.setSettings({
-        settings: {
-            labs: {
-                commentPermalinks: true
-            }
-        }
-    });
-
     await page.route(sitePath, async (route) => {
         await route.fulfill({status: 200, body: bodyHtml});
     });
@@ -68,8 +60,7 @@ test.describe('Comment Permalinks', async () => {
         const {frame} = await initialize({
             mockedApi,
             page,
-            publication: 'Publisher Weekly',
-            labs: {commentPermalinks: true}
+            publication: 'Publisher Weekly'
         });
 
         // Check that the timestamp is an anchor with the correct href
@@ -89,8 +80,7 @@ test.describe('Comment Permalinks', async () => {
         const {frame} = await initialize({
             mockedApi,
             page,
-            publication: 'Publisher Weekly',
-            labs: {commentPermalinks: true}
+            publication: 'Publisher Weekly'
         });
 
         // Find timestamp link and verify it has the hover:underline class
@@ -410,14 +400,6 @@ test.describe('Comment Permalinks', async () => {
         // Set up permalink test with admin URL in the script tag options
         const sitePath = MOCKED_SITE_URL;
 
-        mockedApi.setSettings({
-            settings: {
-                labs: {
-                    commentPermalinks: true
-                }
-            }
-        });
-
         await page.route(sitePath, async (route) => {
             await route.fulfill({status: 200, body: '<html><head><meta charset="UTF-8" /></head><body></body></html>'});
         });
@@ -496,14 +478,6 @@ test.describe('Comment Permalinks', async () => {
         mockedApi.addComment(parentComment);
 
         const sitePath = MOCKED_SITE_URL;
-
-        mockedApi.setSettings({
-            settings: {
-                labs: {
-                    commentPermalinks: true
-                }
-            }
-        });
 
         await page.route(sitePath, async (route) => {
             await route.fulfill({status: 200, body: '<html><head><meta charset="UTF-8" /></head><body></body></html>'});
