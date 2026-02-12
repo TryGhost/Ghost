@@ -550,7 +550,7 @@ jobs:
         if: contains(matrix.env.DB, 'mysql')
         run: |
           echo "database__connection__host=127.0.0.1" >> $GITHUB_ENV
-          echo "database__connection__port=${{ job.services.mysql.ports[3306] }}" >> $GITHUB_ENV
+          echo "database__connection__port=${{ job.services.mysql.ports['3306'] }}" >> $GITHUB_ENV
           echo "database__connection__password=root" >> $GITHUB_ENV
 
       - name: E2E tests
@@ -638,7 +638,7 @@ jobs:
         if: contains(matrix.env.DB, 'mysql')
         run: |
           echo "database__connection__host=127.0.0.1" >> $GITHUB_ENV
-          echo "database__connection__port=${{ job.services.mysql.ports[3306] }}" >> $GITHUB_ENV
+          echo "database__connection__port=${{ job.services.mysql.ports['3306'] }}" >> $GITHUB_ENV
           echo "database__connection__password=root" >> $GITHUB_ENV
 
       - name: Legacy tests
