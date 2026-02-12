@@ -1177,6 +1177,27 @@ jobs:
           cache-from: type=registry,ref=ghcr.io/${{ steps.strategy.outputs.owner }}/ghost:cache-main
           cache-to: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref=ghcr.io/{0}/ghost:cache-{1},mode=max', steps.strategy.outputs.owner, github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main') || '' }}
 
+      - name: Save full image as artifact (fork PR)
+        if: steps.strategy.outputs.is-fork-pr == 'true'
+        run: |
+          IMAGE_TAG=$(echo "${{ steps.meta-full.outputs.tags }}" | head -n1)
+          echo "Saving image: $IMAGE_TAG"
+          docker save "$IMAGE_TAG" | gzip > docker-image-production.tar.gz
+          echo "Image saved as docker-image-production.tar.gz"
+          ls -lh docker-image-production.tar.gz
+
+      - name: Upload image artifact (fork PR)
+        if: steps.strategy.outputs.is-fork-pr == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image-production
+          path: docker-image-production.tar.gz
+          retention-days: 1
+
+    outputs:
+      image-tags: ${{ steps.meta-full.outputs.tags }}
+      is-fork: ${{ steps.strategy.outputs.is-fork-pr }}
+
   job_inspect_image:
     name: Inspect Docker Image
     needs: job_docker_build
@@ -1247,7 +1268,7 @@ jobs:
   job_e2e_tests:
     name: E2E Tests (${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
     runs-on: ubuntu-latest
-    needs: [job_docker_build, job_setup]
+    needs: [job_docker_build_production, job_setup]
     strategy:
       fail-fast: true
       matrix:
@@ -1275,16 +1296,12 @@ jobs:
         uses: ./.github/actions/load-docker-image
         id: load
         with:
-          is-fork: ${{ needs.job_docker_build.outputs.is-fork }}
-          image-tags: ${{ needs.job_docker_build.outputs.image-tags }}
+          is-fork: ${{ needs.job_docker_build_production.outputs.is-fork }}
+          image-tags: ${{ needs.job_docker_build_production.outputs.image-tags }}
+          artifact-name: docker-image-production
 
       - name: Setup Docker Registry Mirrors
         uses: ./.github/actions/setup-docker-registry-mirrors
-
-      - name: Pull images
-        env:
-          GHOST_IMAGE_TAG: ${{ steps.load.outputs.image-tag }}
-        run: docker compose -f e2e/compose.yml pull
 
       - uses: actions/setup-node@v4
         with:
@@ -1295,12 +1312,25 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
+      - name: Build public app UMD bundles
+        run: yarn workspace @tryghost/e2e build:apps
+
+      - name: Build E2E image layer
+        env:
+          GHOST_E2E_BASE_IMAGE: ${{ steps.load.outputs.image-tag }}
+        run: yarn workspace @tryghost/e2e build:docker
+
+      - name: Pull images
+        env:
+          GHOST_E2E_IMAGE: ghost-e2e:local
+        run: docker compose -f e2e/compose.yml pull
+
       - name: Setup Playwright
         uses: ./.github/actions/setup-playwright
 
       - name: Run e2e tests
         env:
-          GHOST_IMAGE_TAG: ${{ steps.load.outputs.image-tag }}
+          GHOST_E2E_IMAGE: ghost-e2e:local
           TEST_WORKERS_COUNT: 1
         run: yarn test:e2e:all --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }} --retries=2
 

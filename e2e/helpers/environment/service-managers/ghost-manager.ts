@@ -1,10 +1,11 @@
 import Docker from 'dockerode';
 import baseDebug from '@tryghost/debug';
 import logging from '@tryghost/logging';
-import {DOCKER_COMPOSE_CONFIG, GHOST_DEFAULTS, MAILPIT, MYSQL, PORTAL, TINYBIRD} from '@/helpers/environment/constants';
+import {DOCKER_COMPOSE_CONFIG, GHOST_DEFAULTS, MAILPIT, MYSQL, PUBLIC_APPS, TINYBIRD} from '@/helpers/environment/constants';
 import {DockerCompose} from '@/helpers/environment/docker-compose';
 import {TinybirdManager} from './tinybird-manager';
 import type {Container, ContainerCreateOptions} from 'dockerode';
+import type {GhostImageProfile} from '@/helpers/environment/constants';
 
 const debug = baseDebug('e2e:GhostManager');
 
@@ -20,9 +21,6 @@ export interface GhostInstance {
 export interface GhostStartConfig {
     instanceId: string;
     siteUuid: string;
-    workingDir?: string;
-    command?: string[];
-    portalUrl?: string;
     config?: unknown;
 }
 
@@ -30,11 +28,13 @@ export class GhostManager {
     private docker: Docker;
     private dockerCompose: DockerCompose;
     private tinybird: TinybirdManager;
+    private profile: GhostImageProfile;
 
-    constructor(docker: Docker, dockerCompose: DockerCompose, tinybird: TinybirdManager) {
+    constructor(docker: Docker, dockerCompose: DockerCompose, tinybird: TinybirdManager, profile: GhostImageProfile) {
         this.docker = docker;
         this.dockerCompose = dockerCompose;
         this.tinybird = tinybird;
+        this.profile = profile;
     }
 
     private async createAndStart(config: GhostStartConfig): Promise<Container> {
@@ -71,13 +71,18 @@ export class GhostManager {
                 mail__options__host: 'mailpit',
                 mail__options__port: `${MAILPIT.PORT}`,
                 mail__options__secure: 'false',
-                // other services configuration
-                portal__url: config.portalUrl || `http://localhost:${PORTAL.PORT}/portal.min.js`,
+                // Public apps — served from Ghost's admin assets path via E2E image layer
+                portal__url: PUBLIC_APPS.PORTAL_URL,
+                comments__url: PUBLIC_APPS.COMMENTS_URL,
+                sodoSearch__url: PUBLIC_APPS.SODO_SEARCH_URL,
+                sodoSearch__styles: PUBLIC_APPS.SODO_SEARCH_STYLES,
+                signupForm__url: PUBLIC_APPS.SIGNUP_FORM_URL,
+                announcementBar__url: PUBLIC_APPS.ANNOUNCEMENT_BAR_URL,
                 ...(config.config ? config.config : {})
             } as Record<string, string>;
 
             const containerConfig: ContainerCreateOptions = {
-                Image: GHOST_DEFAULTS.IMAGE,
+                Image: this.profile.image,
                 Env: Object.entries(environment).map(([key, value]) => `${key}=${value}`),
                 NetworkingConfig: {
                     EndpointsConfig: {
@@ -99,8 +104,8 @@ export class GhostManager {
                     'com.docker.compose.service': `ghost-${config.siteUuid}`,
                     'tryghost/e2e': 'ghost'
                 },
-                WorkingDir: config.workingDir || GHOST_DEFAULTS.WORKDIR,
-                Cmd: config.command || ['yarn', 'dev'],
+                WorkingDir: this.profile.workdir,
+                Cmd: this.profile.command,
                 AttachStdout: true,
                 AttachStderr: true
             };
@@ -120,8 +125,8 @@ export class GhostManager {
         }
     }
 
-    async createAndStartInstance(instanceId: string, siteUuid: string, portalUrl?: string, config?: unknown): Promise<GhostInstance> {
-        const container = await this.createAndStart({instanceId, siteUuid, portalUrl, config});
+    async createAndStartInstance(instanceId: string, siteUuid: string, config?: unknown): Promise<GhostInstance> {
+        const container = await this.createAndStart({instanceId, siteUuid, config});
         const containerInfo = await container.inspect();
         const hostPort = parseInt(containerInfo.NetworkSettings.Ports[`${GHOST_DEFAULTS.PORT}/tcp`][0].HostPort, 10);
         await this.waitReady(hostPort, 30000);
