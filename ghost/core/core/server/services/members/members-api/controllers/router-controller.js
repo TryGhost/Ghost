@@ -7,6 +7,8 @@ const errors = require('@tryghost/errors');
 const {isEmail} = require('@tryghost/validator');
 const normalizeEmail = require('../utils/normalize-email');
 const {getInboxLinks} = require('../../../../lib/get-inbox-links');
+const {SIGNUP_CONTEXTS} = require('../../../lib/member-signup-contexts');
+/** @typedef {import('../../../lib/member-signup-contexts').SignupContext} SignupContext */
 
 const messages = {
     emailRequired: 'Email is required.',
@@ -22,8 +24,8 @@ const messages = {
     unableToCheckout: 'Unable to initiate checkout session',
     inviteOnly: 'This site is invite-only, contact the owner for access.',
     paidOnly: 'This site only accepts paid members.',
-    memberNotFound: 'No member exists with this email address.',
-    memberNotFoundSignUp: 'No member exists with this email address. Please sign up first.',
+    memberNotFound: 'No member exists with this e-mail address.',
+    memberNotFoundSignUp: 'No member exists with this e-mail address. Please sign up first.',
     invalidType: 'Invalid checkout type.',
     notConfigured: 'This site is not accepting payments at the moment.',
     invalidNewsletters: 'Cannot subscribe to invalid newsletters {newsletters}',
@@ -475,6 +477,8 @@ module.exports = class RouterController {
         }
 
         const member = options.member;
+        /** @type {SignupContext} */
+        let ghostSignupContext = (options.isAuthenticated && member) ? SIGNUP_CONTEXTS.ALREADY_AUTHENTICATED : SIGNUP_CONTEXTS.NEEDS_MAGIC_LINK_EMAIL;
 
         if (!member && options.email) {
             // Create a signup link if there is no member with this email address
@@ -491,6 +495,7 @@ module.exports = class RouterController {
                 // Redirect to the original success url after sign up
                 referrer: options.successUrl
             });
+            ghostSignupContext = SIGNUP_CONTEXTS.HAS_PRECHECKOUT_MAGIC_LINK;
         }
 
         if (member) {
@@ -514,6 +519,9 @@ module.exports = class RouterController {
                 });
             }
         }
+
+        // Set by server to distinguish between checkout flows in Stripe webhooks.
+        options.metadata.ghostSignupContext = ghostSignupContext;
 
         try {
             const paymentLink = await this._paymentsService.getPaymentLink(options);
@@ -878,33 +886,9 @@ module.exports = class RouterController {
         const member = await this._memberRepository.get({email: normalizedEmail});
 
         if (!member) {
-            // Member doesn't exist - to prevent enumeration, we don't reveal this
-            // If self-signup is allowed, send a signup email so they can create an account
-            // If self-signup is disabled (invite-only), silently return to prevent enumeration
-            if (this._allowSelfSignup()) {
-                const blockedEmailDomains = this._settingsCache.get('all_blocked_email_domains');
-                const emailDomain = normalizedEmail.split('@')[1]?.toLowerCase();
-                if (emailDomain && blockedEmailDomains.includes(emailDomain)) {
-                    // To prevent enumeration, we don't reveal this
-                    return {};
-                }
-
-                const tokenData = {
-                    reqIp: req.ip ?? undefined,
-                    attribution: await this._memberAttributionService.getAttribution(req.body.urlHistory)
-                };
-                // Send a signup email - this allows them to create an account
-                return await this._sendEmailWithMagicLink({
-                    email: normalizedEmail,
-                    tokenData,
-                    requestedType: 'signup',
-                    referrer
-                });
-            }
-
-            // Self-signup disabled (invite-only): silently return empty response
-            // to prevent member enumeration
-            return {};
+            throw new errors.BadRequestError({
+                message: this._allowSelfSignup() ? tpl(messages.memberNotFoundSignUp) : tpl(messages.memberNotFound)
+            });
         }
 
         const tokenData = {};
@@ -972,6 +956,10 @@ module.exports = class RouterController {
             return res.end(JSON.stringify({offers}));
         }
 
+        function sendNoOffersAvailable() {
+            return sendOffersResponse([]);
+        }
+
         if (!identity) {
             res.writeHead(401);
             return res.end('Unauthorized');
@@ -1021,45 +1009,50 @@ module.exports = class RouterController {
 
         // No active subscription - return empty offers
         if (activeSubscriptions.length === 0) {
-            return sendOffersResponse();
+            return sendNoOffersAvailable();
         }
 
         // Multiple active subscriptions - edge case, return empty offers to avoid ambiguity
         if (activeSubscriptions.length > 1) {
-            return sendOffersResponse();
+            return sendNoOffersAvailable();
         }
 
         const activeSubscription = activeSubscriptions[0];
 
+        // If subscription is already set to cancel, don't show retention offers
+        if (activeSubscription.get('cancel_at_period_end')) {
+            return sendNoOffersAvailable();
+        }
+
         // If subscription already has an offer applied (e.g. signup offer), don't show retention offers
         if (activeSubscription.get('offer_id')) {
-            return sendOffersResponse();
+            return sendNoOffersAvailable();
         }
 
         // If subscription is in a trial period (either offer-based or tier-based), don't show retention offers
         const trialEndAt = activeSubscription.get('trial_end_at');
         if (trialEndAt && trialEndAt > new Date()) {
-            return sendOffersResponse();
+            return sendNoOffersAvailable();
         }
 
         // Get tier and cadence from the subscription
         const stripePrice = activeSubscription.related('stripePrice');
         if (!stripePrice || !stripePrice.id) {
-            return sendOffersResponse();
+            return sendNoOffersAvailable();
         }
 
         const stripeProduct = stripePrice.related('stripeProduct');
 
         // If the stripe product is not found, return empty offers
         if (!stripeProduct || !stripeProduct.id) {
-            return sendOffersResponse();
+            return sendNoOffersAvailable();
         }
 
         const product = stripeProduct.related('product');
 
         // If the product is not found, return empty offers
         if (!product || !product.id) {
-            return sendOffersResponse();
+            return sendNoOffersAvailable();
         }
 
         const tierId = product.id;

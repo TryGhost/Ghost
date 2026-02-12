@@ -76,37 +76,13 @@ export default Model.extend({
 
     hasPageBuilderFeature(feature) {
         const failures = this.codedErrorsAndWarnings;
-        
+
         if (!failures['GS110-NO-MISSING-PAGE-BUILDER-USAGE']) {
             return true;
         }
 
         return !failures['GS110-NO-MISSING-PAGE-BUILDER-USAGE'].some((failure) => {
             return failure.failures.some(({message}) => message.includes(`@page.${feature}`));
-        });
-    },
-
-    activate() {
-        let adapter = this.store.adapterFor(this.constructor.modelName);
-
-        return adapter.activate(this).then(() => {
-            // the server only gives us the newly active theme back so we need
-            // to manually mark other themes as inactive in the store
-            let activeThemes = this.store.peekAll('theme').filterBy('active', true);
-
-            activeThemes.forEach((theme) => {
-                if (theme !== this) {
-                    // store.push is necessary to avoid dirty records that cause
-                    // problems when we get new data back in subsequent requests
-                    this.store.push({data: {
-                        id: theme.id,
-                        type: 'theme',
-                        attributes: {active: false}
-                    }});
-                }
-            });
-
-            return this;
         });
     }
 });

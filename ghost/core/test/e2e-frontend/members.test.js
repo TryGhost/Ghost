@@ -6,6 +6,7 @@ const supertest = require('supertest');
 const moment = require('moment');
 const testUtils = require('../utils');
 const configUtils = require('../utils/config-utils');
+const config = require('../../core/shared/config');
 const settingsCache = require('../../core/shared/settings-cache');
 const settingsHelpers = require('../../core/server/services/settings-helpers');
 const DomainEvents = require('@tryghost/domain-events');
@@ -308,19 +309,19 @@ describe('Front-end members behavior', function () {
         it('should redirect with uuid and action param', async function () {
             await request.get('/unsubscribe/?uuid=XXX')
                 .expect(302)
-                .expect('Location', 'http://127.0.0.1:2369/?uuid=XXX&action=unsubscribe');
+                .expect('Location', `${config.get('url')}/?uuid=XXX&action=unsubscribe`);
         });
 
         it('should pass through an optional newsletter param', async function () {
             await request.get('/unsubscribe/?uuid=XXX&newsletter=YYY')
                 .expect(302)
-                .expect('Location', 'http://127.0.0.1:2369/?uuid=XXX&newsletter=YYY&action=unsubscribe');
+                .expect('Location', `${config.get('url')}/?uuid=XXX&newsletter=YYY&action=unsubscribe`);
         });
 
         it('should pass through an optional key param', async function () {
             await request.get('/unsubscribe/?uuid=XXX&key=YYY')
                 .expect(302)
-                .expect('Location', 'http://127.0.0.1:2369/?uuid=XXX&key=YYY&action=unsubscribe');
+                .expect('Location', `${config.get('url')}/?uuid=XXX&key=YYY&action=unsubscribe`);
         });
 
         it('should reject when missing a uuid', async function () {

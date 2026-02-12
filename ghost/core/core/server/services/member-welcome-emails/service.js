@@ -2,11 +2,12 @@ const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const urlUtils = require('../../../shared/url-utils');
 const settingsCache = require('../../../shared/settings-cache');
-const config = require('../../../shared/config');
 const emailAddressService = require('../email-address');
+const settingsHelpers = require('../settings-helpers');
+const EmailAddressParser = require('../email-address/email-address-parser');
 const mail = require('../mail');
 // @ts-expect-error type checker has trouble with the dynamic exporting in models
-const {AutomatedEmail} = require('../../models');
+const {AutomatedEmail, Newsletter} = require('../../models');
 const MemberWelcomeEmailRenderer = require('./member-welcome-email-renderer');
 const {MEMBER_WELCOME_EMAIL_LOG_KEY, MEMBER_WELCOME_EMAIL_SLUGS, MESSAGES} = require('./constants');
 
@@ -14,6 +15,7 @@ class MemberWelcomeEmailService {
     #mailer;
     #renderer;
     #memberWelcomeEmails = {free: null, paid: null};
+    #defaultNewsletterSenderOptions = null;
 
     constructor() {
         emailAddressService.init();
@@ -29,7 +31,71 @@ class MemberWelcomeEmailService {
         };
     }
 
+    async #getDefaultNewsletterSenderOptions() {
+        const newsletter = await Newsletter.getDefaultNewsletter();
+        if (!newsletter) {
+            return {};
+        }
+
+        let senderName = settingsCache.get('title') || '';
+        if (newsletter.get('sender_name')) {
+            senderName = newsletter.get('sender_name');
+        }
+
+        let fromAddress = settingsHelpers.getNoReplyAddress();
+        if (newsletter.get('sender_email')) {
+            fromAddress = newsletter.get('sender_email');
+        }
+
+        const fromAddresses = emailAddressService.service.getAddress({
+            from: {
+                address: fromAddress,
+                name: senderName || undefined
+            }
+        });
+
+        const from = EmailAddressParser.stringify(fromAddresses.from);
+        const replyToSetting = newsletter.get('sender_reply_to');
+        let replyTo = null;
+
+        if (replyToSetting === 'support') {
+            replyTo = settingsHelpers.getMembersSupportAddress();
+        } else if (replyToSetting === 'newsletter' && !emailAddressService.service.managedEmailEnabled) {
+            replyTo = from;
+        } else {
+            const addresses = emailAddressService.service.getAddress({
+                from: {
+                    address: fromAddress,
+                    name: senderName || undefined
+                },
+                replyTo: replyToSetting === 'newsletter' ? undefined : {address: replyToSetting}
+            });
+
+            if (addresses.replyTo) {
+                replyTo = EmailAddressParser.stringify(addresses.replyTo);
+            }
+        }
+
+        return {
+            from,
+            ...(replyTo ? {
+                replyTo
+            } : {})
+        };
+    }
+
+    async #getSenderOptions() {
+        if (this.#defaultNewsletterSenderOptions) {
+            return this.#defaultNewsletterSenderOptions;
+        }
+
+        this.#defaultNewsletterSenderOptions = await this.#getDefaultNewsletterSenderOptions();
+        return this.#defaultNewsletterSenderOptions;
+    }
+
     async loadMemberWelcomeEmails() {
+        this.#defaultNewsletterSenderOptions = await this.#getDefaultNewsletterSenderOptions();
+
         for (const [memberStatus, slug] of Object.entries(MEMBER_WELCOME_EMAIL_SLUGS)) {
             const row = await AutomatedEmail.findOne({slug});
 
@@ -50,8 +116,14 @@ class MemberWelcomeEmailService {
     }
 
     async send({member, memberStatus}) {
+        if (!member.email) {
+            throw new errors.IncorrectUsageError({
+                message: MESSAGES.MISSING_RECIPIENT_EMAIL
+            });
+        }
+
         const name = member?.name ? `${member.name} at ` : '';
-        logging.info(`${MEMBER_WELCOME_EMAIL_LOG_KEY} Sending welcome email to ${name}${member?.email}`);
+        logging.info(`${MEMBER_WELCOME_EMAIL_LOG_KEY} Sending welcome email to ${name}${member.email}`);
 
         const memberWelcomeEmail = this.#memberWelcomeEmails[memberStatus];
 
@@ -77,21 +149,15 @@ class MemberWelcomeEmailService {
             siteSettings: this.#getSiteSettings()
         });
 
-        const testInbox = config.get('memberWelcomeEmailTestInbox');
-        const toEmail = testInbox || member.email;
-
-        if (!toEmail) {
-            throw new errors.IncorrectUsageError({
-                message: MESSAGES.MISSING_RECIPIENT_EMAIL
-            });
-        }
+        const senderOptions = await this.#getSenderOptions();
 
         await this.#mailer.send({
-            to: toEmail,
+            to: member.email,
             subject,
             html,
             text,
-            forceTextContent: true
+            forceTextContent: true,
+            ...senderOptions
         });
     }
 
@@ -140,12 +206,16 @@ class MemberWelcomeEmailService {
             siteSettings: this.#getSiteSettings()
         });
 
+        // Test sends should always reflect the latest newsletter sender settings.
+        const senderOptions = await this.#getDefaultNewsletterSenderOptions();
+
         await this.#mailer.send({
             to: email,
             subject: `[Test] ${renderedSubject}`,
             html,
             text,
-            forceTextContent: true
+            forceTextContent: true,
+            ...senderOptions
         });
     }
 }
@@ -160,4 +230,3 @@ class MemberWelcomeEmailServiceWrapper {
 }
 
 module.exports = new MemberWelcomeEmailServiceWrapper();
-

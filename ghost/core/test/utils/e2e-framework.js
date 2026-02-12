@@ -533,7 +533,7 @@ module.exports = {
         // @NOTE: hack here! it's due to https://github.com/TryGhost/Toolbox/issues/341
         //        this matcher should be removed once the issue is solved - routing is redesigned
         //        An ideal solution would be removal of this matcher altogether.
-        anyLocalURL: stringMatching(/http:\/\/127.0.0.1:2369\/[A-Za-z0-9_-]+\//),
+        anyLocalURL: stringMatching(/http:\/\/127.0.0.1:\d+\/[A-Za-z0-9_-]+\//),
         stringMatching
     },
 

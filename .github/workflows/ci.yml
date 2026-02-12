@@ -1,7 +1,7 @@
 name: CI
 on:
   pull_request:
-    types: [opened, synchronize, reopened, labeled, unlabeled]
+    types: [opened, synchronize, reopened]
   push:
     # Ref: GHA Filter pattern syntax: https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#filter-pattern-cheat-sheet
     # Run on pushes to main, release branches, and previous/future major version branches
@@ -30,14 +30,6 @@ jobs:
   job_setup:
     name: Setup
     runs-on: ubuntu-latest
-    # Having certain parts of our huge CI workflow run on a specific label is an anti-pattern.
-    # Long term, we want to get away from this by having all of our tests run on every PR, and have the staging deploy either be automatic or a different workflow
-    # This logic skips the entire workflow if triggered by a label that doesn't contain "test" or "deploy" - there's nothing new to do in that case
-    if: |
-      github.event_name != 'pull_request' ||
-      (github.event.action == 'labeled' && (contains(github.event.label.name, 'test') || contains(github.event.label.name, 'deploy'))) ||
-      (github.event.action == 'unlabeled' && (contains(github.event.label.name, 'test') || contains(github.event.label.name, 'deploy'))) ||
-      (github.event.action != 'labeled' && github.event.action != 'unlabeled')
     timeout-minutes: 15
     env:
       IS_MAIN: ${{ github.ref == 'refs/heads/main' }}
@@ -145,8 +137,6 @@ jobs:
             tinybird:
               - 'ghost/core/core/server/data/tinybird/**'
               - '!ghost/core/core/server/data/tinybird/**/*.md'
-            browser-tests:
-              - 'ghost/core/test/e2e-browser/**'
             any-code:
               - '!**/*.md'
 
@@ -212,7 +202,6 @@ jobs:
       changed_sodo_search: ${{ steps.changed.outputs.sodo-search }}
       changed_tinybird: ${{ steps.changed.outputs.tinybird }}
       changed_any_code: ${{ steps.changed.outputs.any-code }}
-      changed_browser_tests: ${{ steps.changed.outputs.browser-tests }}
       changed_new_package: ${{ steps.added.outputs.new-package }}
       base_commit: ${{ env.BASE_COMMIT }}
       is_main: ${{ env.IS_MAIN }}
@@ -221,7 +210,6 @@ jobs:
       is_six_pr: ${{ env.IS_SIX_PR }}
       is_five: ${{ env.IS_FIVE }}
       member_is_in_org: ${{ steps.check_user_org_membership.outputs.is_member }}
-      has_browser_tests_label: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'browser-tests') }}
       has_perf_tests_label: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'perf-tests') }}
       dependency_cache_key: ${{ env.cachekey }}
       node_version: ${{ env.NODE_VERSION }}
@@ -332,21 +320,12 @@ jobs:
     runs-on:
       labels: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_any_code == 'true' && (needs.job_setup.outputs.is_six_pr == 'true' || needs.job_setup.outputs.is_development == 'true' || needs.job_setup.outputs.has_browser_tests_label == 'true' || needs.job_setup.outputs.changed_browser_tests == 'true')
+    # Skip on forked PRs - Stripe secrets are not available
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     steps:
     - uses: actions/checkout@v4
       with:
         submodules: true
-    - name: Check secrets
-      if: github.event_name == 'pull_request'
-      env:
-        STRIPE_PUBLISHABLE_KEY: ${{ secrets.STRIPE_PUBLISHABLE_KEY }}
-      run: |
-        if [ -z "${{ env.STRIPE_PUBLISHABLE_KEY }}" ]; then
-          echo "Stripe Publishable Key is not available. Did you open this PR from a fork?"
-          echo "If so, please re-open the PR from a branch in the upstream TryGhost/Ghost repository."
-          exit 1
-        fi
     - uses: actions/setup-node@v4
       env:
         FORCE_COLOR: 0
@@ -402,6 +381,11 @@ jobs:
         name: browser-tests-playwright-report
         path: ghost/core/playwright-report
         retention-days: 30
+
+    - name: View Test Report command
+      if: failure()
+      run: |
+        echo -e "::notice::To view the Playwright report locally, run:\n\nREPORT_DIR=\$(mktemp -d) && gh run download ${{ github.run_id }} -n browser-tests-playwright-report -D \"\$REPORT_DIR\" && npx playwright show-report \"\$REPORT_DIR\""
 
   job_perf-tests:
     runs-on:

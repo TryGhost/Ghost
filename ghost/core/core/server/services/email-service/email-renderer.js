@@ -148,7 +148,7 @@ class EmailRenderer {
      * @param {object} dependencies.renderers
      * @param {{render(object, options): string}} dependencies.renderers.lexical
      * @param {{render(object, options): string}} dependencies.renderers.mobiledoc
-     * @param {{getImageSizeFromUrl(url: string): Promise<{width: number, height: number}>}} dependencies.imageSize
+     * @param {{getCachedImageSizeFromUrl(url: string): Promise<{url: string, width: number, height: number} | null>}} dependencies.imageSize
      * @param {{urlFor(type: string, optionsOrAbsolute, absolute): string, isSiteUrl(url, context): boolean}} dependencies.urlUtils
      * @param {{isLocalImage(url: string): boolean}} dependencies.storageUtils
      * @param {(post: Post) => string} dependencies.getPostUrl
@@ -1402,7 +1402,11 @@ class EmailRenderer {
             };
         } else {
             try {
-                const size = await this.#imageSize.getImageSizeFromUrl(href);
+                const size = await this.#imageSize.getCachedImageSizeFromUrl(href);
+
+                if (!size || !size.width) {
+                    return {href, width: 0, height: null};
+                }
 
                 if (size.width >= visibleWidth) {
                     if (!visibleHeight) {

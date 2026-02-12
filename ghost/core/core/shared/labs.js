@@ -27,7 +27,9 @@ const GA_FEATURES = [
     'explore',
     'inboxlinks',
     'commentModeration',
-    'commentPermalinks'
+    'commentPermalinks',
+    'featurebaseFeedback',
+    'welcomeEmails'
 ];
 
 // These features are considered publicly available and can be enabled/disabled by users
@@ -48,11 +50,10 @@ const PRIVATE_FEATURES = [
     'emailCustomization',
     'tagsX',
     'emailUniqueid',
-    'welcomeEmails',
     'themeTranslation',
     'indexnow',
-    'featurebaseFeedback',
-    'transistor'
+    'transistor',
+    'retentionOffers'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

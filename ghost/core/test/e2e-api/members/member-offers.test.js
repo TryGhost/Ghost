@@ -309,6 +309,47 @@ describe('Members API - Member Offers', function () {
                 await models.Offer.destroy({id: signupOffer.id});
             }
         });
+
+        it('returns empty offers if subscription is already set to cancel', async function () {
+            const {subscription} = await getMemberSubscription('paid@test.com');
+            const stripePrice = subscription.related('stripePrice');
+            const cadence = stripePrice.get('interval');
+
+            // Create a retention offer
+            const offer = await models.Offer.add({
+                name: 'Test Retention Offer Cancel',
+                code: 'test-retention-cancel',
+                portal_title: '20% off',
+                portal_description: 'Stay with us!',
+                discount_type: 'percent',
+                discount_amount: 20,
+                duration: 'once',
+                interval: cadence,
+                product_id: null,
+                currency: null,
+                active: true,
+                redemption_type: 'retention'
+            });
+
+            // Set the subscription to cancel at period end
+            await subscription.save({cancel_at_period_end: true}, {patch: true});
+
+            try {
+                const token = await getIdentityToken('paid@test.com');
+
+                const {body} = await membersAgent
+                    .post('/api/member/offers')
+                    .body({identity: token})
+                    .expectStatus(200);
+
+                // Should not return retention offers if subscription is already cancelling
+                assert.deepEqual(body, {offers: []});
+            } finally {
+                // Clean up
+                await subscription.save({cancel_at_period_end: false}, {patch: true});
+                await models.Offer.destroy({id: offer.id});
+            }
+        });
     });
 
     describe('POST /members/api/subscriptions/:id/apply-offer', function () {
@@ -567,6 +608,45 @@ describe('Members API - Member Offers', function () {
             }
         });
 
+        it('returns 400 when applying retention offer to subscription that is already cancelling', async function () {
+            const {subscription} = await getMemberSubscription('paid@test.com');
+            const stripePrice = subscription.related('stripePrice');
+
+            const stripeSubscriptionId = subscription.get('subscription_id');
+            const cadence = stripePrice.get('interval');
+
+            // Set subscription to cancel at period end
+            await subscription.save({cancel_at_period_end: true}, {patch: true});
+
+            // Create a retention offer
+            const retentionOffer = await models.Offer.add({
+                name: 'Test Retention Cancelling',
+                code: 'test-retention-cancelling',
+                portal_title: '20% off',
+                portal_description: 'Stay with us!',
+                discount_type: 'percent',
+                discount_amount: 20,
+                duration: 'once',
+                interval: cadence,
+                product_id: null,
+                currency: null,
+                active: true,
+                redemption_type: 'retention'
+            });
+
+            try {
+                const token = await getIdentityToken('paid@test.com');
+
+                await membersAgent
+                    .post(`/api/subscriptions/${stripeSubscriptionId}/apply-offer`)
+                    .body({identity: token, offer_id: retentionOffer.id})
+                    .expectStatus(400);
+            } finally {
+                await subscription.save({cancel_at_period_end: false}, {patch: true});
+                await models.Offer.destroy({id: retentionOffer.id});
+            }
+        });
+
         it('returns 400 when subscription is in a trial period', async function () {
             const {subscription} = await getMemberSubscription('paid@test.com');
             const stripePrice = subscription.related('stripePrice');
@@ -722,6 +802,120 @@ describe('Members API - Member Offers', function () {
                     await models.OfferRedemption.destroy({id: redemption.id});
                 }
                 await subscription.save({offer_id: null}, {patch: true});
+                await models.Offer.destroy({id: retentionOffer.id});
+            }
+        });
+
+        it('successfully applies free months retention offer to subscription', async function () {
+            const {subscription} = await getMemberSubscription('paid@test.com');
+            const stripePrice = subscription.related('stripePrice');
+            const stripeProduct = stripePrice.related('stripeProduct');
+
+            const stripeSubscriptionId = subscription.get('subscription_id');
+            const cadence = stripePrice.get('interval');
+
+            const currentPeriodEnd = subscription.get('current_period_end');
+
+            const mockPrice = {
+                id: stripePrice.get('stripe_price_id'),
+                product: stripeProduct.get('stripe_product_id'),
+                active: true,
+                nickname: cadence,
+                unit_amount: stripePrice.get('amount'),
+                currency: stripePrice.get('currency'),
+                type: 'recurring',
+                recurring: {
+                    interval: cadence
+                }
+            };
+            mockManager.stripeMocker.prices.push(mockPrice);
+
+            // Add the customer to the stripe mocker so getCustomer works in linkSubscription
+            const customerId = subscription.get('customer_id');
+            mockManager.stripeMocker.customers.push({
+                id: customerId,
+                object: 'customer',
+                email: 'paid@test.com',
+                invoice_settings: {
+                    default_payment_method: null
+                },
+                subscriptions: {
+                    type: 'list',
+                    data: []
+                }
+            });
+
+            // Add the subscription to the stripe mocker so it can be updated
+            mockManager.stripeMocker.subscriptions.push({
+                id: stripeSubscriptionId,
+                object: 'subscription',
+                status: 'active',
+                customer: customerId,
+                cancel_at_period_end: false,
+                current_period_end: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60,
+                start_date: Math.floor(Date.now() / 1000) - 30 * 24 * 60 * 60,
+                items: {
+                    data: [{
+                        id: 'si_test',
+                        price: mockPrice
+                    }]
+                }
+            });
+
+            const retentionOffer = await models.Offer.add({
+                name: 'Free Months Retention Offer',
+                code: 'free-months-retention',
+                portal_title: '1 month free',
+                portal_description: 'Stay with us!',
+                discount_type: 'free_months',
+                discount_amount: 1,
+                duration: 'free_months',
+                duration_in_months: null,
+                interval: cadence,
+                product_id: null,
+                currency: null,
+                active: true,
+                redemption_type: 'retention',
+                stripe_coupon_id: null // Free months offer don't rely on Stripe coupons
+            });
+
+            try {
+                const token = await getIdentityToken('paid@test.com');
+
+                await membersAgent
+                    .post(`/api/subscriptions/${stripeSubscriptionId}/apply-offer`)
+                    .body({identity: token, offer_id: retentionOffer.id})
+                    .expectStatus(204);
+
+                await DomainEvents.allSettled();
+
+                await subscription.refresh();
+                assert.equal(subscription.get('offer_id'), retentionOffer.id);
+
+                // Trial period should be set to current period end + 1 month
+                const expectedTrialEnd = new Date(currentPeriodEnd);
+                expectedTrialEnd.setUTCMonth(expectedTrialEnd.getUTCMonth() + 1);
+
+                const trialEndAt = subscription.get('trial_end_at');
+
+                assert.ok(trialEndAt, 'trial_end_at should be set');
+                assert.equal(new Date(trialEndAt).getTime(), expectedTrialEnd.getTime());
+
+                // Verify offer redemption was recorded
+                const redemption = await models.OfferRedemption.findOne({
+                    offer_id: retentionOffer.id,
+                    subscription_id: subscription.id
+                });
+                assert.ok(redemption, 'Offer redemption should be recorded');
+            } finally {
+                const redemption = await models.OfferRedemption.findOne({
+                    offer_id: retentionOffer.id,
+                    subscription_id: subscription.id
+                });
+                if (redemption) {
+                    await models.OfferRedemption.destroy({id: redemption.id});
+                }
+                await subscription.save({offer_id: null, trial_end_at: null}, {patch: true});
                 await models.Offer.destroy({id: retentionOffer.id});
             }
         });

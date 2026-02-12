@@ -17,6 +17,7 @@ const logging = require('@tryghost/logging');
 
 const ghost_head = require('../../../../core/frontend/helpers/ghost_head');
 const proxy = require('../../../../core/frontend/services/proxy');
+const assetHash = require('../../../../core/frontend/services/asset-hash');
 const {settingsCache, settingsHelpers} = proxy;
 
 /**
@@ -377,7 +378,7 @@ describe('{{ghost_head}} helper', function () {
 
         // @TODO: this is a LOT of mocking :/
         routingRegistryGetRssUrlStub = sinon.stub(routing.registry, 'getRssUrl').returns('http://localhost:65530/rss/');
-        sinon.stub(imageLib.imageSize, 'getImageSizeFromUrl').resolves();
+        sinon.stub(imageLib.cachedImageSizeFromUrl, 'getCachedImageSizeFromUrl').resolves();
         getStub = sinon.stub(settingsCache, 'get');
 
         getStub.withArgs('title').returns('Ghost');
@@ -389,6 +390,8 @@ describe('{{ghost_head}} helper', function () {
 
         // Force the usage of a fixed asset hash so we have reliable snapshots
         configUtils.set('assetHash', 'asset-hash');
+        // Disable file-based hashing so all assets use the fixed global hash above
+        sinon.stub(assetHash, 'getHashForFile').returns(null);
 
         makeFixtures();
     });
@@ -415,7 +418,7 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '0.3'
                 }
             }));
-            sinon.assert.calledOnce(loggingErrorStub);
+            sinon.assert.notCalled(loggingErrorStub);
         });
 
         it('returns structured data on first index page', async function () {

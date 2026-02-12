@@ -4,6 +4,7 @@ const should = require('should');
 const sinon = require('sinon');
 const events = require('../../../../../core/server/lib/common/events');
 const Urls = require('../../../../../core/server/services/url/urls');
+const config = require('../../../../../core/shared/config');
 const logging = require('@tryghost/logging');
 
 describe('Unit: services/url/Urls', function () {
@@ -66,7 +67,7 @@ describe('Unit: services/url/Urls', function () {
         });
 
         assertExists(eventsToRemember['url.added']);
-        assert.equal(eventsToRemember['url.added'].url.absolute, 'http://127.0.0.1:2369/test/');
+        assert.equal(eventsToRemember['url.added'].url.absolute, `${config.get('url')}/test/`);
         assert.equal(eventsToRemember['url.added'].url.relative, '/test/');
         assertExists(eventsToRemember['url.added'].resource);
         assertExists(eventsToRemember['url.added'].resource.data);
