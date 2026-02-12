@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const fs = require('fs-extra');
+const config = require('../../../../../core/shared/config');
 const {servePublicFile} = require('../../../../../core/frontend/web/routers/serve-public-file');
 
 describe('servePublicFile', function () {
@@ -144,7 +145,7 @@ describe('servePublicFile', function () {
         assert.equal(next.called, false);
         assert.equal(res.writeHead.called, true);
 
-        assert.equal(res.end.calledWith('User-agent: http://127.0.0.1:2369'), true);
+        assert.equal(res.end.calledWith(`User-agent: ${config.get('url')}`), true);
     });
 
     it('should 404 for ENOENT on general files', function () {

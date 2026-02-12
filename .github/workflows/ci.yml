@@ -1,7 +1,7 @@
 name: CI
 on:
   pull_request:
-    types: [opened, synchronize, reopened, labeled, unlabeled]
+    types: [opened, synchronize, reopened]
   push:
     # Ref: GHA Filter pattern syntax: https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#filter-pattern-cheat-sheet
     # Run on pushes to main, release branches, and previous/future major version branches
@@ -30,14 +30,6 @@ jobs:
   job_setup:
     name: Setup
     runs-on: ubuntu-latest
-    # Having certain parts of our huge CI workflow run on a specific label is an anti-pattern.
-    # Long term, we want to get away from this by having all of our tests run on every PR, and have the staging deploy either be automatic or a different workflow
-    # This logic skips the entire workflow if triggered by a label that doesn't contain "test" or "deploy" - there's nothing new to do in that case
-    if: |
-      github.event_name != 'pull_request' ||
-      (github.event.action == 'labeled' && (contains(github.event.label.name, 'test') || contains(github.event.label.name, 'deploy'))) ||
-      (github.event.action == 'unlabeled' && (contains(github.event.label.name, 'test') || contains(github.event.label.name, 'deploy'))) ||
-      (github.event.action != 'labeled' && github.event.action != 'unlabeled')
     timeout-minutes: 15
     env:
       IS_MAIN: ${{ github.ref == 'refs/heads/main' }}
@@ -223,6 +215,27 @@ jobs:
       node_version: ${{ env.NODE_VERSION }}
       node_test_matrix: ${{ steps.node_matrix.outputs.matrix }}
 
+  job_app_version_bump_check:
+    name: Check app version bump
+    runs-on: ubuntu-latest
+    needs: [job_setup]
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout PR head commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Fetch main branch
+        run: git fetch --no-tags --depth=1 origin main
+
+      - name: Check app version bump
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_COMPARE_SHA: ${{ github.event.pull_request.head.sha }}
+        run: node .github/scripts/check-app-version-bump.js
+
   job_lint:
     runs-on: ubuntu-latest
     needs: [job_setup]
@@ -328,20 +341,12 @@ jobs:
     runs-on:
       labels: ubuntu-latest
     needs: [job_setup]
+    # Skip on forked PRs - Stripe secrets are not available
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     steps:
     - uses: actions/checkout@v4
       with:
         submodules: true
-    - name: Check secrets
-      if: github.event_name == 'pull_request'
-      env:
-        STRIPE_PUBLISHABLE_KEY: ${{ secrets.STRIPE_PUBLISHABLE_KEY }}
-      run: |
-        if [ -z "${{ env.STRIPE_PUBLISHABLE_KEY }}" ]; then
-          echo "Stripe Publishable Key is not available. Did you open this PR from a fork?"
-          echo "If so, please re-open the PR from a branch in the upstream TryGhost/Ghost repository."
-          exit 1
-        fi
     - uses: actions/setup-node@v4
       env:
         FORCE_COLOR: 0
@@ -1327,6 +1332,7 @@ jobs:
     needs:
       [
         job_setup,
+        job_app_version_bump_check,
         job_lint,
         job_i18n,
         job_ghost-cli,
