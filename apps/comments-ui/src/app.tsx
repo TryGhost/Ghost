@@ -28,6 +28,7 @@ function isCommentLoaded(comments: Comment[], targetId: string): boolean {
 }
 
 const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
+    // TODO: Remove this useless comment
     const options = useOptions(scriptTag);
     const [state, setFullState] = useState<EditableAppContext>({
         initStatus: 'running',
