@@ -408,6 +408,8 @@ export default class App extends React.Component {
                 data.site.members_signup_access = value;
             } else if (key === 'portalDefaultPlan' && value) {
                 data.site.portal_default_plan = value;
+            } else if (key === 'transistor' && value) {
+                data.site.transistor = value === 'true';
             } else if (key === 'transistorPortalSettings' && value) {
                 try {
                     data.site.transistor_portal_settings = JSON.parse(value);

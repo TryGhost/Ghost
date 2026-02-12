@@ -7,18 +7,26 @@ const TransistorSettings: React.FC<{
     updateSetting: (key: string, setting: SettingValue) => void
 }> = ({localSettings, updateSetting}) => {
     const [
+        transistorIntegrationEnabled,
         transistorPortalEnabled,
         transistorPortalHeading,
         transistorPortalDescription,
         transistorPortalButtonText,
         transistorPortalUrlTemplate
     ] = getSettingValues<string | boolean>(localSettings, [
+        'transistor',
         'transistor_portal_enabled',
         'transistor_portal_heading',
         'transistor_portal_description',
         'transistor_portal_button_text',
         'transistor_portal_url_template'
     ]);
+
+    // Don't show the section if the main Transistor integration is disabled
+    const integrationEnabled = transistorIntegrationEnabled === true || transistorIntegrationEnabled === 'true';
+    if (!integrationEnabled) {
+        return null;
+    }
 
     const enabled = transistorPortalEnabled === true || transistorPortalEnabled === 'true';
     const heading = (transistorPortalHeading as string) || 'Podcasts';

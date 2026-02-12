@@ -61,11 +61,18 @@ export const getPortalPreviewUrl = ({settings, config, tiers, siteData, selected
     settingsParam.append('disableBackground', 'false');
 
     // Build transistor portal settings object from individual settings
+    const transistorIntegrationEnabled = getSettingValue<boolean | string>(settings, 'transistor');
     const transistorPortalEnabled = getSettingValue<boolean | string>(settings, 'transistor_portal_enabled');
-    const transistorEnabled = transistorPortalEnabled === true || transistorPortalEnabled === 'true';
-    if (transistorEnabled) {
+    const integrationEnabled = transistorIntegrationEnabled === true || transistorIntegrationEnabled === 'true';
+    const portalEnabled = transistorPortalEnabled === true || transistorPortalEnabled === 'true';
+
+    // Pass the main transistor integration flag to the preview
+    settingsParam.append('transistor', integrationEnabled ? 'true' : 'false');
+
+    // Always pass transistor portal settings so Portal knows the current state
+    if (integrationEnabled) {
         const transistorSettings = {
-            enabled: transistorEnabled,
+            enabled: portalEnabled,
             heading: getSettingValue<string>(settings, 'transistor_portal_heading') || 'Podcasts',
             description: getSettingValue<string>(settings, 'transistor_portal_description') || 'Access your private podcast feed',
             button_text: getSettingValue<string>(settings, 'transistor_portal_button_text') || 'View',
