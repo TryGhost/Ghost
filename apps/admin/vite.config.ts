@@ -1,5 +1,5 @@
 import { resolve } from "path";
-import { defineConfig } from "vitest/config";
+import { createLogger, defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 import react from "@vitejs/plugin-react-swc";
 
@@ -8,6 +8,26 @@ import { ghostBackendProxyPlugin } from "./vite-backend-proxy";
 import { deepLinksPlugin } from "./vite-deep-links";
 
 export const GHOST_URL = process.env.GHOST_URL ?? "http://localhost:2368/";
+
+/**
+ * Plugin that overrides Vite's printUrls to show the real Ghost URL instead of
+ * confusing Network IPs. This is useful in the Nx TUI.
+ */
+function ghostUrlPlugin() {
+    return {
+        name: 'ghost-url',
+        configureServer(server: { printUrls: () => void }) {
+            return () => {
+                server.printUrls = () => {
+                    const logger = createLogger();
+                    logger.info(`  \x1b[32m➜\x1b[0m  \x1b[1mGhost Frontend\x1b[0m: \x1b[36m${GHOST_URL}\x1b[0m`);
+                    logger.info(`  \x1b[32m➜\x1b[0m  \x1b[1mGhost Admin\x1b[0m:    \x1b[36m${GHOST_URL}ghost/\x1b[0m`);
+                };
+            };
+        }
+    };
+}
+
 const GHOST_CARDS_PATH = resolve(__dirname, "../../ghost/core/core/frontend/src/cards");
 
 /**
@@ -41,7 +61,7 @@ function getBase(command: 'build' | 'serve'): string {
 // https://vite.dev/config/
 export default defineConfig(({ command }) => ({
     base: getBase(command),
-    plugins: [react(), emberAssetsPlugin(), ghostBackendProxyPlugin(), deepLinksPlugin(), tsconfigPaths()],
+    plugins: [react(), emberAssetsPlugin(), ghostBackendProxyPlugin(), deepLinksPlugin(), tsconfigPaths(), ghostUrlPlugin()],
     define: {
         "process.env.DEBUG": false, // Shim env var utilized by the @tryghost/nql package
     },
