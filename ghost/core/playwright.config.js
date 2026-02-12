@@ -21,6 +21,7 @@ const getWorkerCount = () => {
 };
 
 const config = {
+    globalSetup: require.resolve('./test/e2e-browser/global-setup.js'),
     timeout: 75 * 1000,
     expect: {
         timeout: 10000
