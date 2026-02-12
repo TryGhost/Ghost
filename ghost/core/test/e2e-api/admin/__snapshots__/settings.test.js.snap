@@ -342,11 +342,11 @@ Object {
     },
     Object {
       "key": "transistor_portal_description",
-      "value": "Access your RSS feeds",
+      "value": "Access your private podcast feed",
     },
     Object {
       "key": "transistor_portal_button_text",
-      "value": "Manage",
+      "value": "View",
     },
     Object {
       "key": "transistor_portal_url_template",
@@ -1177,7 +1177,7 @@ Object {
     },
     Object {
       "key": "transistor_portal_description",
-      "value": "Access your RSS feeds",
+      "value": "Access your private podcast feed",
     },
     Object {
       "key": "transistor_portal_button_text",
@@ -1595,7 +1595,7 @@ Object {
     },
     Object {
       "key": "transistor_portal_description",
-      "value": "Access your RSS feeds",
+      "value": "Access your private podcast feed",
     },
     Object {
       "key": "transistor_portal_button_text",
@@ -2058,7 +2058,7 @@ Object {
     },
     Object {
       "key": "transistor_portal_description",
-      "value": "Access your RSS feeds",
+      "value": "Access your private podcast feed",
     },
     Object {
       "key": "transistor_portal_button_text",
@@ -2475,7 +2475,7 @@ Object {
     },
     Object {
       "key": "transistor_portal_description",
-      "value": "Access your RSS feeds",
+      "value": "Access your private podcast feed",
     },
     Object {
       "key": "transistor_portal_button_text",
@@ -3347,7 +3347,7 @@ Object {
     },
     Object {
       "key": "transistor_portal_description",
-      "value": "Access your RSS feeds",
+      "value": "Access your private podcast feed",
     },
     Object {
       "key": "transistor_portal_button_text",
@@ -3765,7 +3765,7 @@ Object {
     },
     Object {
       "key": "transistor_portal_description",
-      "value": "Access your RSS feeds",
+      "value": "Access your private podcast feed",
     },
     Object {
       "key": "transistor_portal_button_text",
@@ -4183,7 +4183,7 @@ Object {
     },
     Object {
       "key": "transistor_portal_description",
-      "value": "Access your RSS feeds",
+      "value": "Access your private podcast feed",
     },
     Object {
       "key": "transistor_portal_button_text",
@@ -4605,7 +4605,7 @@ Object {
     },
     Object {
       "key": "transistor_portal_description",
-      "value": "Access your RSS feeds",
+      "value": "Access your private podcast feed",
     },
     Object {
       "key": "transistor_portal_button_text",
@@ -5022,7 +5022,7 @@ Object {
     },
     Object {
       "key": "transistor_portal_description",
-      "value": "Access your RSS feeds",
+      "value": "Access your private podcast feed",
     },
     Object {
       "key": "transistor_portal_button_text",
@@ -5444,7 +5444,7 @@ Object {
     },
     Object {
       "key": "transistor_portal_description",
-      "value": "Access your RSS feeds",
+      "value": "Access your private podcast feed",
     },
     Object {
       "key": "transistor_portal_button_text",
@@ -6222,7 +6222,7 @@ Object {
     },
     Object {
       "key": "transistor_portal_description",
-      "value": "Access your RSS feeds",
+      "value": "Access your private podcast feed",
     },
     Object {
       "key": "transistor_portal_button_text",
@@ -6640,7 +6640,7 @@ Object {
     },
     Object {
       "key": "transistor_portal_description",
-      "value": "Access your RSS feeds",
+      "value": "Access your private podcast feed",
     },
     Object {
       "key": "transistor_portal_button_text",
@@ -7059,7 +7059,7 @@ Object {
     },
     Object {
       "key": "transistor_portal_description",
-      "value": "Access your RSS feeds",
+      "value": "Access your private podcast feed",
     },
     Object {
       "key": "transistor_portal_button_text",
@@ -7478,7 +7478,7 @@ Object {
     },
     Object {
       "key": "transistor_portal_description",
-      "value": "Access your RSS feeds",
+      "value": "Access your private podcast feed",
     },
     Object {
       "key": "transistor_portal_button_text",
@@ -7959,7 +7959,7 @@ Object {
     },
     Object {
       "key": "transistor_portal_description",
-      "value": "Access your RSS feeds",
+      "value": "Access your private podcast feed",
     },
     Object {
       "key": "transistor_portal_button_text",
