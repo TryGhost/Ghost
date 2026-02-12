@@ -98,13 +98,13 @@ describe('services/koenig/node-renderers/transistor-renderer', function () {
         it('uses site accent color for icon background', function () {
             const result = renderForEmail(getTestData(), {design: {accentColor: '#ff5500'}});
 
-            assert.ok(result.html.includes('%23ff5500'));
+            assert.ok(result.html.includes('background-color: #ff5500'));
         });
 
         it('uses default accent color when not provided', function () {
             const result = renderForEmail(getTestData());
 
-            assert.ok(result.html.includes('%2315171A'));
+            assert.ok(result.html.includes('background-color: #15171A'));
         });
     });
 });
