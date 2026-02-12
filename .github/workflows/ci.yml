@@ -510,6 +510,23 @@ jobs:
     runs-on: ubuntu-latest
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_core == 'true'
+    services:
+      mysql:
+        image: ${{ matrix.env.DB == 'mysql8' && 'mysql:8.0' || '' }}
+        credentials:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+        env:
+          MYSQL_DATABASE: ghost_testing
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306
+        options: >-
+          --tmpfs /var/lib/mysql
+          --health-cmd "mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
     strategy:
       matrix:
         node: ${{ fromJSON(needs.job_setup.outputs.node_test_matrix) }}
@@ -533,26 +550,6 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
 
-      - name: Shutdown MySQL
-        run: sudo service mysql stop
-        if: matrix.env.DB == 'mysql8'
-
-      - name: Login to Docker Hub
-        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - uses: tryghost/mysql-action@main
-        if: matrix.env.DB == 'mysql8'
-        timeout-minutes: 5
-        with:
-          authentication plugin: 'caching_sha2_password'
-          mysql version: '8.0'
-          mysql database: 'ghost_testing'
-          mysql root password: 'root'
-
       - name: Restore caches
         uses: ./.github/actions/restore-cache
         env:
@@ -572,7 +569,10 @@ jobs:
 
       - name: Set env vars (MySQL)
         if: contains(matrix.env.DB, 'mysql')
-        run: echo "database__connection__password=root" >> $GITHUB_ENV
+        run: |
+          echo "database__connection__host=127.0.0.1" >> $GITHUB_ENV
+          echo "database__connection__port=${{ job.services.mysql.ports['3306'] }}" >> $GITHUB_ENV
+          echo "database__connection__password=root" >> $GITHUB_ENV
 
       - name: E2E tests
         working-directory: ghost/core
@@ -601,6 +601,23 @@ jobs:
     runs-on: ubuntu-latest
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_core == 'true'
+    services:
+      mysql:
+        image: ${{ matrix.env.DB == 'mysql8' && 'mysql:8.0' || '' }}
+        credentials:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+        env:
+          MYSQL_DATABASE: ghost_testing
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306
+        options: >-
+          --tmpfs /var/lib/mysql
+          --health-cmd "mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
     strategy:
       matrix:
         include:
@@ -626,19 +643,6 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
 
-      - name: Shutdown MySQL
-        run: sudo service mysql stop
-        if: matrix.env.DB == 'mysql8'
-
-      - uses: tryghost/mysql-action@main
-        if: matrix.env.DB == 'mysql8'
-        timeout-minutes: 5
-        with:
-          authentication plugin: 'caching_sha2_password'
-          mysql version: '8.0'
-          mysql database: 'ghost_testing'
-          mysql root password: 'root'
-
       - name: Restore caches
         uses: ./.github/actions/restore-cache
         env:
@@ -653,7 +657,10 @@ jobs:
 
       - name: Set env vars (MySQL)
         if: contains(matrix.env.DB, 'mysql')
-        run: echo "database__connection__password=root" >> $GITHUB_ENV
+        run: |
+          echo "database__connection__host=127.0.0.1" >> $GITHUB_ENV
+          echo "database__connection__port=${{ job.services.mysql.ports['3306'] }}" >> $GITHUB_ENV
+          echo "database__connection__password=root" >> $GITHUB_ENV
 
       - name: Legacy tests
         working-directory: ghost/core
