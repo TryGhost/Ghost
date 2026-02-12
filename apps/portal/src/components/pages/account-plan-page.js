@@ -452,11 +452,19 @@ export default class AccountPlanPage extends React.Component {
     }
 
     componentDidMount() {
-        const {member} = this.context;
+        const {member, pageData} = this.context;
         if (!member) {
             this.context.doAction('switchPage', {
                 page: 'signin'
             });
+            return;
+        }
+
+        // If opened from a custom cancel button with a subscription ID, trigger the cancellation flow
+        if (pageData?.action === 'cancel' && pageData?.subscriptionId) {
+            this.onCancelSubscription({subscriptionId: pageData.subscriptionId});
+            // Clear the action so it doesn't re-trigger if the user dismisses and reopens Portal
+            pageData.action = null;
         }
     }
 
@@ -563,6 +571,9 @@ export default class AccountPlanPage extends React.Component {
     onCancelSubscription({subscriptionId}) {
         const {member, offers} = this.context;
         const subscription = getSubscriptionFromId({subscriptionId, member});
+        if (!subscription) {
+            return;
+        }
         const subscriptionPlan = getPriceFromSubscription({subscription});
         const retentionOffers = (offers || []).filter(o => o.redemption_type === 'retention');
 
