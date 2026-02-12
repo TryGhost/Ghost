@@ -22,8 +22,8 @@ const TransistorSettings: React.FC<{
 
     const enabled = transistorPortalEnabled === true || transistorPortalEnabled === 'true';
     const heading = (transistorPortalHeading as string) || 'Podcasts';
-    const description = (transistorPortalDescription as string) || 'Access your RSS feeds';
-    const buttonText = (transistorPortalButtonText as string) || 'Manage';
+    const description = (transistorPortalDescription as string) || 'Access your private podcast feed';
+    const buttonText = (transistorPortalButtonText as string) || 'View';
     const urlTemplate = (transistorPortalUrlTemplate as string) || 'https://partner.transistor.fm/ghost/{memberUuid}';
 
     return (

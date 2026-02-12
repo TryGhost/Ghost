@@ -67,8 +67,8 @@ export const getPortalPreviewUrl = ({settings, config, tiers, siteData, selected
         const transistorSettings = {
             enabled: transistorEnabled,
             heading: getSettingValue<string>(settings, 'transistor_portal_heading') || 'Podcasts',
-            description: getSettingValue<string>(settings, 'transistor_portal_description') || 'Access your RSS feeds',
-            button_text: getSettingValue<string>(settings, 'transistor_portal_button_text') || 'Manage',
+            description: getSettingValue<string>(settings, 'transistor_portal_description') || 'Access your private podcast feed',
+            button_text: getSettingValue<string>(settings, 'transistor_portal_button_text') || 'View',
             url_template: getSettingValue<string>(settings, 'transistor_portal_url_template') || 'https://partner.transistor.fm/ghost/{memberUuid}'
         };
         settingsParam.append('transistorPortalSettings', JSON.stringify(transistorSettings));
