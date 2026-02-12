@@ -9,6 +9,8 @@ const sinon = require('sinon');
 const logging = require('@tryghost/logging');
 const {HtmlValidate} = require('html-validate');
 const crypto = require('crypto');
+const CachedImageSizeFromUrl = require('../../../../../core/server/lib/image/cached-image-size-from-url');
+const InMemoryCache = require('../../../../../core/server/adapters/cache/MemoryCache');
 
 async function validateHtml(html) {
     const htmlvalidate = new HtmlValidate({
@@ -87,10 +89,8 @@ const tFr = (key, options) => {
 };
 
 describe('Email renderer', function () {
-    let logStub;
-
     beforeEach(function () {
-        logStub = sinon.stub(logging, 'error');
+        sinon.stub(logging, 'error');
     });
 
     afterEach(function () {
@@ -2991,7 +2991,7 @@ describe('Email renderer', function () {
         it('Limits width of local images', async function () {
             const emailRenderer = new EmailRenderer({
                 imageSize: {
-                    getImageSizeFromUrl() {
+                    getCachedImageSizeFromUrl() {
                         return {
                             width: 2000,
                             height: 1000
@@ -3013,7 +3013,7 @@ describe('Email renderer', function () {
         it('Limits width and height of local images', async function () {
             const emailRenderer = new EmailRenderer({
                 imageSize: {
-                    getImageSizeFromUrl() {
+                    getCachedImageSizeFromUrl() {
                         return {
                             width: 2000,
                             height: 1000
@@ -3032,11 +3032,11 @@ describe('Email renderer', function () {
             assert.equal(response.href, 'http://your-blog.com/content/images/size/w1200h1200/2017/01/02/example.png');
         });
 
-        it('Ignores and logs errors', async function () {
+        it('Returns default dimensions when getCachedImageSizeFromUrl returns null', async function () {
             const emailRenderer = new EmailRenderer({
                 imageSize: {
-                    getImageSizeFromUrl() {
-                        throw new Error('Oops, this is a test.');
+                    getCachedImageSizeFromUrl() {
+                        return null;
                     }
                 },
                 storageUtils: {
@@ -3047,14 +3047,14 @@ describe('Email renderer', function () {
             });
             const response = await emailRenderer.limitImageWidth('http://your-blog.com/content/images/2017/01/02/example.png');
             assert.equal(response.width, 0);
+            assert.equal(response.height, null);
             assert.equal(response.href, 'http://your-blog.com/content/images/2017/01/02/example.png');
-            sinon.assert.calledOnce(logStub);
         });
 
         it('Limits width of unsplash images', async function () {
             const emailRenderer = new EmailRenderer({
                 imageSize: {
-                    getImageSizeFromUrl() {
+                    getCachedImageSizeFromUrl() {
                         return {
                             width: 2000
                         };
@@ -3075,7 +3075,7 @@ describe('Email renderer', function () {
         it('Limits width and height of unsplash images', async function () {
             const emailRenderer = new EmailRenderer({
                 imageSize: {
-                    getImageSizeFromUrl() {
+                    getCachedImageSizeFromUrl() {
                         return {
                             width: 2000,
                             height: 1000
@@ -3097,7 +3097,7 @@ describe('Email renderer', function () {
         it('Does not increase width of images', async function () {
             const emailRenderer = new EmailRenderer({
                 imageSize: {
-                    getImageSizeFromUrl() {
+                    getCachedImageSizeFromUrl() {
                         return {
                             width: 300
                         };
@@ -3112,6 +3112,119 @@ describe('Email renderer', function () {
             const response = await emailRenderer.limitImageWidth('https://example.com/image.png');
             assert.equal(response.width, 300);
             assert.equal(response.href, 'https://example.com/image.png');
+        });
+
+        it('Uses cached image dimensions on cache hit', async function () {
+            const underlyingFetch = sinon.stub().callsFake(() => Promise.resolve({width: 2000, height: 1000}));
+            const cacheStore = new InMemoryCache();
+            // Pre-populate cache
+            cacheStore.set('https://example.com/image.png', {url: 'https://example.com/image.png', width: 2000, height: 1000});
+
+            const cachedImageSize = new CachedImageSizeFromUrl({
+                getImageSizeFromUrl: underlyingFetch,
+                cache: cacheStore
+            });
+
+            const emailRenderer = new EmailRenderer({
+                imageSize: cachedImageSize,
+                storageUtils: {
+                    isLocalImage() {
+                        return false;
+                    }
+                }
+            });
+
+            const response = await emailRenderer.limitImageWidth('https://example.com/image.png');
+            assert.equal(response.width, 600);
+            assert.equal(response.height, 300);
+            // Underlying fetch should not be called when cache has the data
+            sinon.assert.notCalled(underlyingFetch);
+        });
+
+        it('Falls back to fetching image dimensions on cache miss and writes back to cache', async function () {
+            const underlyingFetch = sinon.stub().callsFake(() => Promise.resolve({width: 2000, height: 1000}));
+            const cacheStore = new InMemoryCache();
+
+            const cachedImageSize = new CachedImageSizeFromUrl({
+                getImageSizeFromUrl: underlyingFetch,
+                cache: cacheStore
+            });
+
+            const emailRenderer = new EmailRenderer({
+                imageSize: cachedImageSize,
+                storageUtils: {
+                    isLocalImage() {
+                        return false;
+                    }
+                }
+            });
+
+            const response = await emailRenderer.limitImageWidth('https://example.com/image.png');
+            assert.equal(response.width, 600);
+            assert.equal(response.height, 300);
+            // Underlying fetch SHOULD be called on cache miss
+            sinon.assert.calledOnce(underlyingFetch);
+            // Result should be written back to cache
+            const cached = cacheStore.get('https://example.com/image.png');
+            assert.ok(cached);
+            assert.equal(cached.width, 2000);
+            assert.equal(cached.height, 1000);
+        });
+
+        it('Falls back to fetching when cache has an error entry (no dimensions)', async function () {
+            const underlyingFetch = sinon.stub().callsFake(() => Promise.resolve({width: 2000, height: 1000}));
+            const cacheStore = new InMemoryCache();
+            // Pre-populate cache with an error entry (no width/height)
+            cacheStore.set('https://example.com/image.png', {url: 'https://example.com/image.png'});
+
+            const cachedImageSize = new CachedImageSizeFromUrl({
+                getImageSizeFromUrl: underlyingFetch,
+                cache: cacheStore
+            });
+
+            const emailRenderer = new EmailRenderer({
+                imageSize: cachedImageSize,
+                storageUtils: {
+                    isLocalImage() {
+                        return false;
+                    }
+                }
+            });
+
+            const response = await emailRenderer.limitImageWidth('https://example.com/image.png');
+            assert.equal(response.width, 600);
+            assert.equal(response.height, 300);
+            // Should retry the underlying fetch when cache has an error entry
+            sinon.assert.calledOnce(underlyingFetch);
+        });
+
+        it('Returns default dimensions when fetch fails', async function () {
+            const ghosterrors = require('@tryghost/errors');
+            const underlyingFetch = sinon.stub().rejects(new ghosterrors.InternalServerError({
+                message: 'Request timed out.',
+                code: 'IMAGE_SIZE_URL'
+            }));
+            const cacheStore = new InMemoryCache();
+
+            const cachedImageSize = new CachedImageSizeFromUrl({
+                getImageSizeFromUrl: underlyingFetch,
+                cache: cacheStore
+            });
+
+            const emailRenderer = new EmailRenderer({
+                imageSize: cachedImageSize,
+                storageUtils: {
+                    isLocalImage() {
+                        return false;
+                    }
+                }
+            });
+
+            const response = await emailRenderer.limitImageWidth('https://example.com/broken.png');
+            // getCachedImageSizeFromUrl returns null on error, limitImageWidth returns fallback
+            assert.equal(response.href, 'https://example.com/broken.png');
+            assert.equal(response.width, 0);
+            assert.equal(response.height, null);
         });
     });
     describe('additional i18n tests', function () {
