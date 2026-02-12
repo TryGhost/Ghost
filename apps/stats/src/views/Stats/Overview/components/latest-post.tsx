@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, LucideIcon, PostShareModal, Skeleton, cn, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
 
 import {Post, getPostMetricsToDisplay} from '@tryghost/admin-x-framework';
+import {getPostDestination} from '@src/utils/url-helpers';
 import {useAppContext, useNavigate} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/global-data-provider';
 
@@ -45,6 +46,12 @@ const LatestPost: React.FC<LatestPostProps> = ({
     }) : null;
 
     const metricClassName = 'group mr-2 flex flex-col gap-1.5 hover:cursor-pointer';
+
+    const hasEmailData = Boolean(latestPostStats?.email);
+    const postDestination = latestPostStats
+        ? getPostDestination(latestPostStats.id, hasEmailData, appSettings?.analytics)
+        : '';
+    const shouldGoToEditor = postDestination.startsWith('/editor/');
 
     return (
         <Card className='group/card bg-gradient-to-tr from-muted/40 to-muted/0 to-50%' data-testid='latest-post'>
@@ -136,13 +143,22 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                         className={latestPostStats.email_only ? 'w-full' : ''}
                                         variant='outline'
                                         onClick={() => {
-                                            navigate(`/posts/analytics/${latestPostStats.id}`, {crossApp: true});
+                                            navigate(postDestination, {crossApp: true});
                                         }}
                                     >
-                                        <LucideIcon.ChartNoAxesColumn />
-                                        <span className='hidden md:!visible md:!block'>
-                                            {!latestPostStats.email_only ? 'Analytics' : 'Post analytics' }
-                                        </span>
+                                        {shouldGoToEditor ? (
+                                            <>
+                                                <LucideIcon.Pen />
+                                                <span className='hidden md:!visible md:!block'>Edit post</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <LucideIcon.ChartNoAxesColumn />
+                                                <span className='hidden md:!visible md:!block'>
+                                                    {!latestPostStats.email_only ? 'Analytics' : 'Post analytics'}
+                                                </span>
+                                            </>
+                                        )}
                                     </Button>
                                 </div>
                             </div>

@@ -113,3 +113,18 @@ export function getClickHandler(
         }
     };
 }
+
+type AnalyticsSettings = {
+    webAnalytics?: boolean;
+    membersTrackSources?: boolean;
+}
+
+export const getPostDestination = (postId: string, hasEmailData: boolean, analyticsSettings?: AnalyticsSettings) => {
+    const analyticsDisabled = !analyticsSettings?.webAnalytics && !analyticsSettings?.membersTrackSources;
+
+    if (analyticsDisabled && !hasEmailData) {
+        return `/editor/post/${postId}`;
+    }
+
+    return `/posts/analytics/${postId}`;
+};
