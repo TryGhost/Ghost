@@ -2,6 +2,32 @@ const fs = require('fs');
 const path = require('path');
 const execFileSync = require('child_process').execFileSync;
 
+const MONITORED_APPS = {
+    portal: {
+        packageName: '@tryghost/portal',
+        path: 'apps/portal'
+    },
+    sodoSearch: {
+        packageName: '@tryghost/sodo-search',
+        path: 'apps/sodo-search'
+    },
+    comments: {
+        packageName: '@tryghost/comments-ui',
+        path: 'apps/comments-ui'
+    },
+    announcementBar: {
+        packageName: '@tryghost/announcement-bar',
+        path: 'apps/announcement-bar'
+    },
+    signupForm: {
+        packageName: '@tryghost/signup-form',
+        path: 'apps/signup-form'
+    }
+};
+
+const MONITORED_APP_ENTRIES = Object.entries(MONITORED_APPS);
+const MONITORED_APP_PATHS = MONITORED_APP_ENTRIES.map(([, app]) => app.path);
+
 function runGit(args) {
     try {
         return execFileSync('git', args, {encoding: 'utf8'}).trim();
@@ -124,13 +150,49 @@ function compareSemver(a, b) {
         }
 
         const identifierComparison = comparePrereleaseIdentifier(aIdentifier, bIdentifier);
-
         if (identifierComparison !== 0) {
             return identifierComparison;
         }
     }
 
     return 0;
+}
+
+function getChangedFiles(baseSha, compareSha) {
+    return runGit(['diff', '--name-only', baseSha, compareSha, '--', ...MONITORED_APP_PATHS])
+        .split('\n')
+        .map(file => file.trim())
+        .filter(Boolean);
+}
+
+function getChangedApps(changedFiles) {
+    return MONITORED_APP_ENTRIES
+        .filter(([, app]) => {
+            return changedFiles.some((file) => {
+                return file === app.path || file.startsWith(`${app.path}/`);
+            });
+        })
+        .map(([key, app]) => ({key, ...app}));
+}
+
+function getPrVersion(app) {
+    const packageJsonPath = path.resolve(__dirname, `../../${app.path}/package.json`);
+
+    if (!fs.existsSync(packageJsonPath)) {
+        throw new Error(`${app.path}/package.json does not exist in this PR`);
+    }
+
+    return readVersionFromPackageJson(
+        fs.readFileSync(packageJsonPath, 'utf8'),
+        `${app.path}/package.json from PR`
+    );
+}
+
+function getMainVersion(app) {
+    return readVersionFromPackageJson(
+        runGit(['show', `origin/main:${app.path}/package.json`]),
+        `${app.path}/package.json from main`
+    );
 }
 
 function main() {
@@ -145,38 +207,37 @@ function main() {
         throw new Error('Missing PR_COMPARE_SHA/GITHUB_SHA environment variable');
     }
 
-    const changedFiles = runGit(['diff', '--name-only', baseSha, compareSha, '--', 'apps/portal'])
-        .split('\n')
-        .map(file => file.trim())
-        .filter(Boolean);
+    const changedFiles = getChangedFiles(baseSha, compareSha);
+    const changedApps = getChangedApps(changedFiles);
 
-    if (changedFiles.length === 0) {
-        console.log('No changes detected in apps/portal. Skipping version bump check.');
+    if (changedApps.length === 0) {
+        console.log(`No app changes detected. Skipping version bump check.`);
         return;
     }
 
-    const portalPackageJsonPath = path.resolve(__dirname, '../../apps/portal/package.json');
+    console.log(`Checking version bump for apps: ${changedApps.map(app => app.key).join(', ')}`);
 
-    if (!fs.existsSync(portalPackageJsonPath)) {
-        throw new Error('apps/portal/package.json does not exist in this PR');
+    const failedApps = [];
+
+    for (const app of changedApps) {
+        const prVersion = getPrVersion(app);
+        const mainVersion = getMainVersion(app);
+
+        if (compareSemver(prVersion, mainVersion) <= 0) {
+            failedApps.push(
+                `${app.key} (${app.packageName}) was changed but version was not bumped above main (${prVersion} <= ${mainVersion}). Please run "yarn ship" in ${app.path} to bump the package version.`
+            );
+            continue;
+        }
+
+        console.log(`${app.key} version bump check passed (${prVersion} > ${mainVersion})`);
     }
 
-    const prVersion = readVersionFromPackageJson(
-        fs.readFileSync(portalPackageJsonPath, 'utf8'),
-        'apps/portal/package.json from PR'
-    );
-    const mainVersion = readVersionFromPackageJson(
-        runGit(['show', 'origin/main:apps/portal/package.json']),
-        'apps/portal/package.json from main'
-    );
-
-    if (compareSemver(prVersion, mainVersion) <= 0) {
-        throw new Error(
-            `apps/portal changed in this PR, but version was not bumped above main (${prVersion} <= ${mainVersion}). Please run "yarn ship" in apps/portal to bump the package version.`
-        );
+    if (failedApps.length) {
+        throw new Error(`Version bump checks failed:\n- ${failedApps.join('\n- ')}`);
     }
 
-    console.log(`apps/portal changed and version bump check passed (${prVersion} > ${mainVersion})`);
+    console.log('All monitored app version bump checks passed.');
 }
 
 try {

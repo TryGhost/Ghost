@@ -1,12 +1,12 @@
-name: Portal Version Check
+name: App Version Bump Check
 
 on:
   pull_request:
     types: [opened, synchronize, reopened]
 
 jobs:
-  check-portal-version-bump:
-    name: Check portal version bump
+  app-version-bump-check:
+    name: Check that changes in a public app are accompanied by a version bump
     runs-on: ubuntu-latest
     steps:
       - name: Checkout current commit
@@ -17,7 +17,8 @@ jobs:
       - name: Fetch main branch
         run: git fetch --no-tags --depth=1 origin main
 
-      - name: Validate portal version bump when portal files change
+      - name: Validate app version bumps when monitored app files change
         env:
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
-        run: node .github/scripts/check-portal-version-bump.js
+          PR_COMPARE_SHA: ${{ github.event.pull_request.head.sha }}
+        run: node .github/scripts/app-version-bump-check.js
