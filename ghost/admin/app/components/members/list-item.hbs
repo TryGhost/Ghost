@@ -17,7 +17,7 @@
             {{else}}
                 <span class="midlightgrey">-</span>
             {{/if}}
-            <div class="midgrey">{{this.tiers}}</div>
+            <div class="gh-members-list-status-tiers midgrey">{{this.tiers}}</div>
         </LinkTo>
     {{else}}
         <LinkTo @route="member" @model={{@member}} @query={{@query}} class="gh-list-data" data-test-table-data="status">
