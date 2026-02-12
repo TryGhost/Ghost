@@ -212,6 +212,24 @@ class OffersAPI {
     }
 
     /**
+     * @param {object} options
+     * @param {string[]} options.subscriptionIds
+     * @returns {Promise<Array<{subscription_id: string, offer_id: string}>>}
+     */
+    async getRedeemedOfferIdsForSubscriptions({subscriptionIds}) {
+        if (subscriptionIds.length === 0) {
+            return [];
+        }
+
+        return await this.repository.createTransaction(async (transaction) => {
+            return await this.repository.getRedeemedOfferIdsForSubscriptions({
+                subscriptionIds,
+                transacting: transaction
+            });
+        });
+    }
+
+    /**
      * @param {object} coupon
      * @param {string} coupon.id
      * @param {number} [coupon.percent_off]

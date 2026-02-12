@@ -15,6 +15,7 @@ function createMockRepository(overrides = {}) {
             return cb(mockTransaction);
         }),
         getByStripeCouponId: sinon.stub().resolves(null),
+        getRedeemedOfferIdsForSubscriptions: sinon.stub().resolves([]),
         existsByCode: sinon.stub().resolves(false),
         existsByName: sinon.stub().resolves(false),
         save: sinon.stub().resolves(),
@@ -293,6 +294,44 @@ describe('OffersAPI', function () {
                 }),
                 /subscriptionId, tierId, and cadence are required/
             );
+        });
+    });
+
+    describe('#getRedeemedOfferIdsForSubscriptions', function () {
+        it('returns redemptions for multiple subscriptions', async function () {
+            const redemptions = [
+                {subscription_id: 'sub_1', offer_id: 'offer-a'},
+                {subscription_id: 'sub_2', offer_id: 'offer-b'},
+                {subscription_id: 'sub_2', offer_id: 'offer-c'}
+            ];
+            const repository = createMockRepository({
+                getRedeemedOfferIdsForSubscriptions: sinon.stub().resolves(redemptions)
+            });
+
+            const api = new OffersAPI(/** @type {OfferBookshelfRepository} */ (/** @type {unknown} */ (repository)));
+
+            const result = await api.getRedeemedOfferIdsForSubscriptions({
+                subscriptionIds: ['sub_1', 'sub_2']
+            });
+
+            assert.deepEqual(result, redemptions);
+            assert.equal(repository.getRedeemedOfferIdsForSubscriptions.calledOnce, true);
+        });
+
+        it('returns empty array for empty input', async function () {
+            const repository = createMockRepository({
+                getRedeemedOfferIdsForSubscriptions: sinon.stub().resolves([])
+            });
+
+            const api = new OffersAPI(/** @type {OfferBookshelfRepository} */ (/** @type {unknown} */ (repository)));
+
+            const result = await api.getRedeemedOfferIdsForSubscriptions({
+                subscriptionIds: []
+            });
+
+            assert.deepEqual(result, []);
+            // Should short-circuit without hitting the repository
+            assert.equal(repository.getRedeemedOfferIdsForSubscriptions.called, false);
         });
     });
 
