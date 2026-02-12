@@ -13,7 +13,6 @@ Object {
       "announcementBar": true,
       "audienceFeedback": true,
       "commentModeration": true,
-      "commentPermalinks": true,
       "customFonts": true,
       "editorExcerpt": true,
       "emailCustomization": true,

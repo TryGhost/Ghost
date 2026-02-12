@@ -26,10 +26,7 @@ class CommentsServiceEmails {
      */
     getPostUrl(postId, commentId) {
         const baseUrl = this.urlService.getUrlByResourceId(postId, {absolute: true});
-        if (this.labs.isSet('commentPermalinks')) {
-            return `${baseUrl}#ghost-comments-${commentId}`;
-        }
-        return `${baseUrl}#ghost-comments-root`;
+        return `${baseUrl}#ghost-comments-${commentId}`;
     }
 
     async notifyPostAuthors(comment) {

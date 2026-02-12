@@ -27,7 +27,6 @@ const GA_FEATURES = [
     'explore',
     'inboxlinks',
     'commentModeration',
-    'commentPermalinks',
     'featurebaseFeedback',
     'welcomeEmails'
 ];
