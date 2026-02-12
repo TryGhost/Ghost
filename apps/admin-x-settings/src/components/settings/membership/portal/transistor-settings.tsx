@@ -29,10 +29,10 @@ const TransistorSettings: React.FC<{
     }
 
     const enabled = transistorPortalEnabled === true;
-    const heading = transistorPortalHeading as string ?? '';
-    const description = transistorPortalDescription as string ?? '';
-    const buttonText = transistorPortalButtonText as string ?? '';
-    const urlTemplate = transistorPortalUrlTemplate as string ?? '';
+    const heading = transistorPortalHeading as string;
+    const description = transistorPortalDescription as string;
+    const buttonText = transistorPortalButtonText as string;
+    const urlTemplate = transistorPortalUrlTemplate as string;
 
     return (
         <>
