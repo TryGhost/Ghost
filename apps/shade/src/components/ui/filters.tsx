@@ -2271,7 +2271,7 @@ export function Filters<T = unknown>({
                             align={popoverAlign}
                             className={cn(
                                 'p-0 data-[state=closed]:!animation-none data-[state=closed]:!duration-0',
-                                selectedFieldForOptions?.className || popoverContentClassName || 'w-[200px]'
+                                selectedFieldForOptions?.className || popoverContentClassName || 'w-[220px]'
                             )}
                         >
                             {selectedFieldForOptions ? (
@@ -2332,10 +2332,11 @@ export function Filters<T = unknown>({
                                                             return (
                                                                 <CommandItem
                                                                     key={field.key ?? `${item.group ?? `group-${index}`}-field-${fieldIndex}`}
+                                                                    className="min-w-0"
                                                                     onSelect={() => field.key && addFilter(field.key)}
                                                                 >
                                                                     {field.icon}
-                                                                    <span>{field.label}</span>
+                                                                    <span className="truncate">{field.label}</span>
                                                                 </CommandItem>
                                                             );
                                                         })}
@@ -2373,9 +2374,9 @@ export function Filters<T = unknown>({
 
                                                             // Regular field
                                                             return (
-                                                                <CommandItem key={field.key} onSelect={() => field.key && addFilter(field.key)}>
+                                                                <CommandItem key={field.key} className="min-w-0" onSelect={() => field.key && addFilter(field.key)}>
                                                                     {field.icon}
-                                                                    <span>{field.label}</span>
+                                                                    <span className="truncate">{field.label}</span>
                                                                 </CommandItem>
                                                             );
                                                         })}
@@ -2399,9 +2400,9 @@ export function Filters<T = unknown>({
 
                                             // Regular field
                                             return (
-                                                <CommandItem key={field.key} onSelect={() => field.key && addFilter(field.key)}>
+                                                <CommandItem key={field.key} className="min-w-0" onSelect={() => field.key && addFilter(field.key)}>
                                                     {field.icon}
-                                                    <span>{field.label}</span>
+                                                    <span className="truncate">{field.label}</span>
                                                 </CommandItem>
                                             );
                                         })}

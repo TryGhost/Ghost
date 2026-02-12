@@ -1,3 +1,7 @@
+{{#if (feature "membersForward")}}
+    {{! React members list - render via Posts app }}
+    <AdminX::Posts />
+{{else}}
 <section class="gh-canvas">
     <GhCanvasHeader class="gh-canvas-header break tablet members-header">
         <div class="flex flex-column">
@@ -211,8 +215,6 @@
     {{/if}}
 </section>
 
-{{outlet}}
-
 {{#if this.showUnsubscribeMembersModal}}
     <GhFullscreenModal
         @modal="unsubscribe-members"
@@ -230,4 +232,7 @@
         @close={{this.toggleLabelModal}}
         @modifier="action wide"
     />
+{{/if}}
+
+{{outlet}}
 {{/if}}
