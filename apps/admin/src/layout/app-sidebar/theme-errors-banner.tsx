@@ -8,7 +8,7 @@ function ThemeErrorsBanner() {
     const [dialogOpen, setDialogOpen] = useState(false);
 
     if (!hasErrors) {
-        return null;
+        // return null;
     }
 
     return (
@@ -20,11 +20,11 @@ function ThemeErrorsBanner() {
                 variant="destructive"
                 onClick={() => setDialogOpen(true)}
             >
-                <div className="flex items-start gap-3">
-                    <LucideIcon.AlertTriangle className="mt-0.5 size-4 shrink-0 text-red-600" />
+                <div className="flex items-start gap-2">
+                    <LucideIcon.AlertTriangle className="mt-0.5 size-4 shrink-0 text-red" />
                     <div>
-                        <div className="font-semibold text-red-900">Your theme has errors</div>
-                        <div className="text-xs text-red-700">Some functionality on your site may be limited &rarr;</div>
+                        <div className="font-semibold text-red">Your theme has errors</div>
+                        <div className="text-xs text-foreground">Some functionality on your site may be limited &rarr;</div>
                     </div>
                 </div>
             </Banner>
