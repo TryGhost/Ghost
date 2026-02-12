@@ -98,10 +98,10 @@ function TransistorPlaceholder() {
             </div>
             <div className="flex min-h-20 max-w-[480px] flex-col justify-center">
                 <div className="text-[1.6rem] font-semibold leading-tight text-black dark:text-white">
-                    Member podcasts
+                    Members-only podcasts
                 </div>
                 <div className="mt-1 text-[1.4rem] leading-snug text-grey-700 dark:text-grey-500">
-                    Private podcasts your members can access in their preferred podcast app or through a personal RSS feed.
+                    Your members will see their private podcast feed here, with links to listen in any podcast app.
                 </div>
             </div>
             <div className="absolute bottom-4 right-5 flex items-center gap-1.5 text-grey-500 dark:text-grey-600">
