@@ -1,7 +1,7 @@
 const assert = require('assert/strict');
 const {isLocalContentImage, isContentImage} = require('../../../../../../core/server/services/koenig/render-utils/is-content-image');
 
-describe('services/koenig/render-utils/is-local-content-image', function () {
+describe('services/koenig/render-utils/is-content-image', function () {
     describe('isLocalContentImage', function () {
         it('returns true for relative content image paths', function () {
             assert.ok(isLocalContentImage('/content/images/2024/01/photo.jpg'));
