@@ -23,12 +23,12 @@ const TransistorSettings: React.FC<{
     ]);
 
     // Don't show the section if the main Transistor integration is disabled
-    const integrationEnabled = transistorIntegrationEnabled === true || transistorIntegrationEnabled === 'true';
+    const integrationEnabled = transistorIntegrationEnabled === true;
     if (!integrationEnabled) {
         return null;
     }
 
-    const enabled = transistorPortalEnabled === true || transistorPortalEnabled === 'true';
+    const enabled = transistorPortalEnabled === true;
     const heading = transistorPortalHeading as string ?? '';
     const description = transistorPortalDescription as string ?? '';
     const buttonText = transistorPortalButtonText as string ?? '';
