@@ -36,7 +36,7 @@ const setupGhost = async (page) => {
     const action = await Promise.race([
         page.locator('.gh-signin').waitFor(options).then(() => actions.signin).catch(() => {}),
         page.locator('.gh-setup').waitFor(options).then(() => actions.setup).catch(() => {}),
-        page.locator('.gh-nav').waitFor(options).then(() => actions.noAction).catch(() => {})
+        page.locator('[data-sidebar="sidebar"]').waitFor(options).then(() => actions.noAction).catch(() => {})
     ]);
 
     // Add owner user data from usual fixture
@@ -56,7 +56,7 @@ const setupGhost = async (page) => {
 
         await page.getByPlaceholder('At least 10 characters').press('Enter');
 
-        await page.locator('.gh-nav').waitFor(options);
+        await page.locator('[data-sidebar="sidebar"]').waitFor(options);
     }
 };
 
@@ -70,18 +70,17 @@ const signInAsUserById = async (page, userId) => {
     await page.locator('#password').fill(user.password);
     await page.getByRole('button', {name: 'Sign in'}).click();
     // Confirm we have reached Ghost Admin
-    await page.locator('.gh-nav').waitFor({state: 'visible', timeout: 10000});
+    await page.locator('[data-sidebar="sidebar"]').waitFor({state: 'visible', timeout: 10000});
 };
 
 const signOutCurrentUser = async (page) => {
     await page.goto('/ghost/#/signout');
-    await page.waitForLoadState('networkidle');
     await page.locator('.gh-signin').waitFor({state: 'visible', timeout: 10000});
 };
 
 const disconnectStripe = async (page) => {
     await deleteAllMembers(page);
-    await page.locator('.gh-nav a[href="#/settings/"]').click();
+    await page.locator('[data-sidebar="sidebar"]').getByRole('link', {name: 'Settings'}).click();
     await page.getByTestId('tiers').waitFor();
     if (await page.isVisible('[data-testid="stripe-connected"]')) {
         await page.getByTestId('stripe-connected').first().click();
@@ -92,7 +91,7 @@ const disconnectStripe = async (page) => {
 
 const setupStripe = async (page, stripConnectIntegrationToken) => {
     await deleteAllMembers(page);
-    await page.locator('.gh-nav a[href="#/settings/"]').click();
+    await page.locator('[data-sidebar="sidebar"]').getByRole('link', {name: 'Settings'}).click();
     await page.getByTestId('tiers').waitFor();
     if (await page.isVisible('[data-testid="stripe-connected"]')) {
         // Disconnect if already connected
@@ -115,7 +114,7 @@ const setupStripe = async (page, stripConnectIntegrationToken) => {
 
 // Setup Mailgun with fake data for Ghost Admin to allow bulk sending
 const setupMailgun = async (page) => {
-    await page.locator('.gh-nav a[href="#/settings/"]').click();
+    await page.locator('[data-sidebar="sidebar"]').getByRole('link', {name: 'Settings'}).click();
     const section = page.getByTestId('mailgun');
 
     await section.getByRole('button', {name: 'Edit'}).click();
@@ -181,10 +180,10 @@ const impersonateMember = async (page) => {
 const createTier = async (page, {name, monthlyPrice, yearlyPrice, trialDays}, enableInPortal = true) => {
     await test.step('Create a tier', async () => {
         // Navigate to the member settings
-        await page.locator('[data-test-nav="settings"]').click();
+        await page.locator('[data-sidebar="sidebar"]').getByRole('link', {name: 'Settings'}).click();
 
-        // Tiers request can take time, so waiting until there is no connections before interacting with them
-        await page.waitForLoadState('networkidle');
+        // Tiers request can take time, so waiting until the Add tier button is visible before interacting
+        await page.getByTestId('tiers').getByRole('button', {name: 'Add tier'}).waitFor();
 
         // Archive if already exists
         while (await page.getByTestId('tier-card').filter({hasText: name}).first().isVisible()) {
@@ -253,13 +252,11 @@ const createOffer = async (page, {name, tierName, offerType, amount, discountTyp
     let offerLink;
     await test.step('Create an offer', async () => {
         await page.goto('/ghost');
-        await page.locator('[data-test-nav="settings"]').click();
+        await page.locator('[data-sidebar="sidebar"]').getByRole('link', {name: 'Settings'}).click();
 
         // Keep offer names unique & <= 40 characters
         offerName = `${name} (${new ObjectID().toHexString().slice(0, 40 - name.length - 3)})`;
-        // Tiers request can take time, so waiting until there is no connections before interacting with them
-        await page.waitForLoadState('networkidle');
-        // ... and even so, the component updates can take a bit to trickle down, so we should verify that the Tier is fully loaded before proceeding
+        // Verify that the Tier is fully loaded before proceeding
         await page.getByTestId('tiers').getByText('No active tiers found').waitFor({state: 'hidden'});
         await page.getByTestId('offers').getByRole('button', {name: 'Manage tiers'}).waitFor({state: 'hidden'});
 
@@ -314,7 +311,6 @@ const createOffer = async (page, {name, tierName, offerType, amount, discountTyp
 
         await chooseOptionInSelect(page.getByTestId('tier-cadence-select-offers'), `${tierName} - Monthly`);
         await page.getByRole('button', {name: 'Publish'}).click();
-        await page.waitForLoadState('networkidle');
 
         const offerLinkInput = await page.locator('input[name="offer-url"]');
         // sometimes offer link is not generated, and if so the rest of the test will fail
@@ -372,7 +368,7 @@ const completeStripeSubscription = async (page, {awaitNetworkIdle = true} = {}) 
  */
 const createMember = async (page, {email, name, note, label = '', compedPlan}) => {
     await page.goto('/ghost');
-    await page.locator('.gh-nav a[href="#/members/"]').click();
+    await page.locator('[data-sidebar="sidebar"]').getByRole('link', {name: 'Members'}).click();
     await page.waitForSelector('a[href="#/members/new/"] span');
     await page.locator('a[href="#/members/new/"] span:has-text("New member")').click();
     await page.waitForSelector('input[name="name"]');
@@ -412,7 +408,7 @@ const createMember = async (page, {email, name, note, label = '', compedPlan}) =
  * @param {String} [options.body]
  */
 const createPostDraft = async (page, {title = 'Hello world', body = 'This is my post body.'} = {}) => {
-    await page.locator('.gh-nav a[href="#/posts/"]').click();
+    await page.locator('[data-sidebar="sidebar"]').getByRole('link', {name: 'Posts'}).click();
 
     // Create a new post
     await page.locator('[data-test-new-post-button]').click();
@@ -439,9 +435,9 @@ const createPostDraft = async (page, {title = 'Hello world', body = 'This is my 
 const goToMembershipPage = async (page) => {
     return await test.step('Open Membership settings', async () => {
         await page.goto('/ghost');
-        await page.locator('[data-test-nav="settings"]').click();
-        // Tiers request can take time, so waiting until there is no connections before interacting with UI
-        await page.waitForLoadState('networkidle');
+        await page.locator('[data-sidebar="sidebar"]').getByRole('link', {name: 'Settings'}).click();
+        // Tiers request can take time, so waiting until the tiers section is loaded before interacting with UI
+        await page.getByTestId('tiers').waitFor();
     });
 };
 
