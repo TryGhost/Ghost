@@ -17,14 +17,14 @@ module.exports = combineTransactionalMigrations(
     }),
     addSetting({
         key: 'transistor_portal_description',
-        value: 'Access your RSS feeds',
+        value: 'Access your private podcast feed',
         type: 'string',
         group: 'transistor',
         flags: 'PUBLIC'
     }),
     addSetting({
         key: 'transistor_portal_button_text',
-        value: 'Manage',
+        value: 'View',
         type: 'string',
         group: 'transistor',
         flags: 'PUBLIC'

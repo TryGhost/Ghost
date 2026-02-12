@@ -640,12 +640,12 @@
             "flags": "PUBLIC"
         },
         "transistor_portal_description": {
-            "defaultValue": "Access your RSS feeds",
+            "defaultValue": "Access your private podcast feed",
             "type": "string",
             "flags": "PUBLIC"
         },
         "transistor_portal_button_text": {
-            "defaultValue": "Manage",
+            "defaultValue": "View",
             "type": "string",
             "flags": "PUBLIC"
         },
