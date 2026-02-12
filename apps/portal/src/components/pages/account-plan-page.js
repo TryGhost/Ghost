@@ -280,6 +280,7 @@ function getOfferMessage(offer, originalPrice, currency, amountOff) {
 }
 
 const RetentionOfferSection = ({offer, product, price, onAcceptOffer, onDeclineOffer}) => {
+    // TODO: Remove this useless comment
     const {brandColor, action} = useContext(AppContext);
     const isAcceptingOffer = action === 'applyOffer:running';
 
