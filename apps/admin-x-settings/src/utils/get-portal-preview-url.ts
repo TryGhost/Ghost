@@ -60,24 +60,16 @@ export const getPortalPreviewUrl = ({settings, config, tiers, siteData, selected
 
     settingsParam.append('disableBackground', 'false');
 
-    // Build transistor portal settings object from individual settings
-    // Compute enabled as: main integration enabled AND portal setting enabled
-    const transistorIntegrationEnabled = getSettingValue<boolean | string>(settings, 'transistor');
-    const transistorPortalEnabled = getSettingValue<boolean | string>(settings, 'transistor_portal_enabled');
-    const integrationEnabled = transistorIntegrationEnabled === true || transistorIntegrationEnabled === 'true';
-    const portalEnabled = transistorPortalEnabled === true || transistorPortalEnabled === 'true';
-    const computedEnabled = integrationEnabled && portalEnabled;
-
-    // Always pass transistor portal settings so Portal knows the current state
-    // Use defaults for empty values so preview matches production behavior
-    const transistorSettings = {
-        enabled: computedEnabled,
-        heading: getSettingValue<string>(settings, 'transistor_portal_heading') || 'Podcasts',
-        description: getSettingValue<string>(settings, 'transistor_portal_description') || 'Access your RSS feeds',
-        button_text: getSettingValue<string>(settings, 'transistor_portal_button_text') || 'Manage',
-        url_template: getSettingValue<string>(settings, 'transistor_portal_url_template') || 'https://partner.transistor.fm/ghost/{memberUuid}'
-    };
-    settingsParam.append('transistorPortalSettings', JSON.stringify(transistorSettings));
+    // Only pass transistor settings if the main integration is enabled
+    if (getSettingValue<boolean>(settings, 'transistor')) {
+        settingsParam.append('transistorPortalSettings', JSON.stringify({
+            enabled: getSettingValue<boolean>(settings, 'transistor_portal_enabled'),
+            heading: getSettingValue<string>(settings, 'transistor_portal_heading') || 'Podcasts',
+            description: getSettingValue<string>(settings, 'transistor_portal_description') || 'Access your RSS feeds',
+            button_text: getSettingValue<string>(settings, 'transistor_portal_button_text') || 'Manage',
+            url_template: getSettingValue<string>(settings, 'transistor_portal_url_template') || 'https://partner.transistor.fm/ghost/{memberUuid}'
+        }));
+    }
 
     return `${baseUrl}${portalBase}?${settingsParam.toString()}`;
 };
