@@ -291,13 +291,13 @@ export default class LexicalEditorController extends Controller {
         return textHasTk(this.post.titleScratch);
     }
 
-    @computed('post.customExcerpt')
+    @computed('post.customExcerptScratch')
     get excerptHasTk() {
         if (!this.feature.editorExcerpt) {
             return false;
         }
 
-        return textHasTk(this.post.customExcerpt || '');
+        return textHasTk(this.post.customExcerptScratch || '');
     }
 
     @computed('titleHasTk', 'excerptHasTk', 'postTkCount', 'featureImageTkCount')
@@ -340,6 +340,8 @@ export default class LexicalEditorController extends Controller {
 
     @action
     async updateExcerpt(excerpt) {
+        this.post.customExcerptScratch = excerpt;
+        // Temporarily set customExcerpt for validation, it will be properly set in beforeSaveTask
         this.post.customExcerpt = excerpt;
         try {
             await this.post.validate({property: 'customExcerpt'});
