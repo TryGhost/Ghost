@@ -105,8 +105,6 @@ test.describe('Portal', () => {
                 const encodedToken = security.url.encodeBase64(token);
                 const adminUrl = new URL(sharedPage.url()).origin + '/ghost';
                 const inviteUrl = `${adminUrl}/signup/${encodedToken}/`;
-                const context = await sharedPage.context();
-                await context.clearCookies();
 
                 await signOutCurrentUser(sharedPage);
 
@@ -122,11 +120,9 @@ test.describe('Portal', () => {
                 await sharedPage.getByPlaceholder('At least 10 characters').fill('test123456');
                 await sharedPage.getByRole('button', {name: 'Create Account →'}).click();
                 await expect(sharedPage).toHaveURL(/\/ghost\/#\/.*/, {timeout: 30000});
-                // Reload so the React admin picks up the newly authenticated session
-                await sharedPage.goto('/ghost');
 
                 // Invited users are Contributors, which get a floating user menu instead of the sidebar
-                await sharedPage.getByRole('button', {name: 'Open user menu'}).click({timeout: 30000});
+                await sharedPage.getByRole('button', {name: 'Open user menu'}).click();
                 await expect(sharedPage.locator(`text=${testEmail}`)).toBeVisible();
 
                 await signOutCurrentUser(sharedPage);
