@@ -1072,6 +1072,317 @@ describe('MemberRepository', function () {
             assert.equal(addedSubscriptionData.discount_start.getTime(), discountStart * 1000);
             assert.equal(addedSubscriptionData.discount_end, null);
         });
+
+        it('clears offer_id when existing subscription has no active trial and no Stripe discount', async function () {
+            // Subscription has an old offer_id but the Stripe discount has expired (no discount in webhook data)
+            // and there is no active trial — offer_id should be cleared (not preserved)
+            const repo = new MemberRepository({
+                stripeAPIService,
+                StripeCustomerSubscription,
+                MemberPaidSubscriptionEvent,
+                MemberProductEvent,
+                productRepository,
+                labsService,
+                Member,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            sinon.stub(repo, 'getSubscriptionByStripeID').resolves({
+                id: 'sub_db_id',
+                get: sinon.stub().callsFake((key) => {
+                    if (key === 'offer_id') {
+                        return 'old_offer_123';
+                    }
+                    if (key === 'trial_end_at') {
+                        return null;
+                    }
+                    return null;
+                })
+            });
+
+            DomainEvents.subscribe(OfferRedemptionEvent, offerRedemptionNotifySpy);
+
+            await repo.linkSubscription({
+                subscription: subscriptionData // no discount, so offer_id resolves to null
+            }, {
+                transacting: {
+                    executionPromise: Promise.resolve()
+                },
+                context: {}
+            });
+
+            assert.equal(StripeCustomerSubscription.edit.calledOnce, true);
+            const editedData = StripeCustomerSubscription.edit.firstCall.args[0];
+
+            // offer_id should NOT have been deleted — it should be null (clearing the stale value)
+            assert.ok('offer_id' in editedData, 'offer_id should be present in the update data');
+            assert.equal(editedData.offer_id, null);
+        });
+
+        it('preserves offer_id when existing subscription has an active trial', async function () {
+            // Trial offers don't create Stripe discounts, so offer_id can't be resolved from Stripe.
+            // When the trial is active, offer_id should be preserved (not cleared).
+            const futureTrialEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days from now
+
+            const repo = new MemberRepository({
+                stripeAPIService,
+                StripeCustomerSubscription,
+                MemberPaidSubscriptionEvent,
+                MemberProductEvent,
+                productRepository,
+                labsService,
+                Member,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            sinon.stub(repo, 'getSubscriptionByStripeID').resolves({
+                id: 'sub_db_id',
+                get: sinon.stub().callsFake((key) => {
+                    if (key === 'offer_id') {
+                        return 'trial_offer_123';
+                    }
+                    if (key === 'trial_end_at') {
+                        return futureTrialEnd;
+                    }
+                    return null;
+                })
+            });
+
+            await repo.linkSubscription({
+                subscription: subscriptionData // no discount, so offer_id resolves to null
+            }, {
+                transacting: {
+                    executionPromise: Promise.resolve()
+                },
+                context: {}
+            });
+
+            assert.equal(StripeCustomerSubscription.edit.calledOnce, true);
+            const editedData = StripeCustomerSubscription.edit.firstCall.args[0];
+
+            // offer_id should have been deleted from the update data (preserving the existing value)
+            assert.ok(!('offer_id' in editedData), 'offer_id should be deleted from update data to preserve existing value');
+        });
+
+        it('clears offer_id when existing subscription has an expired trial', async function () {
+            // Trial is over — offer_id should be allowed to clear
+            const pastTrialEnd = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000); // 30 days ago
+
+            const repo = new MemberRepository({
+                stripeAPIService,
+                StripeCustomerSubscription,
+                MemberPaidSubscriptionEvent,
+                MemberProductEvent,
+                productRepository,
+                labsService,
+                Member,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            sinon.stub(repo, 'getSubscriptionByStripeID').resolves({
+                id: 'sub_db_id',
+                get: sinon.stub().callsFake((key) => {
+                    if (key === 'offer_id') {
+                        return 'trial_offer_123';
+                    }
+                    if (key === 'trial_end_at') {
+                        return pastTrialEnd;
+                    }
+                    return null;
+                })
+            });
+
+            await repo.linkSubscription({
+                subscription: subscriptionData // no discount
+            }, {
+                transacting: {
+                    executionPromise: Promise.resolve()
+                },
+                context: {}
+            });
+
+            assert.equal(StripeCustomerSubscription.edit.calledOnce, true);
+            const editedData = StripeCustomerSubscription.edit.firstCall.args[0];
+
+            // offer_id should NOT have been deleted — it should be null (clearing the stale value)
+            assert.ok('offer_id' in editedData, 'offer_id should be present in the update data');
+            assert.equal(editedData.offer_id, null);
+        });
+
+        it('dispatches OfferRedemptionEvent when offer_id changes from one offer to another', async function () {
+            // A retention offer replaces an expired signup offer (old → new)
+            const repo = new MemberRepository({
+                stripeAPIService,
+                StripeCustomerSubscription,
+                MemberPaidSubscriptionEvent,
+                MemberProductEvent,
+                productRepository,
+                labsService,
+                Member,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            sinon.stub(repo, 'getSubscriptionByStripeID').resolves({
+                id: 'sub_db_id',
+                get: sinon.stub().callsFake((key) => {
+                    if (key === 'offer_id') {
+                        return 'old_offer_123';
+                    }
+                    if (key === 'trial_end_at') {
+                        return null;
+                    }
+                    return null;
+                })
+            });
+
+            DomainEvents.subscribe(OfferRedemptionEvent, offerRedemptionNotifySpy);
+
+            await repo.linkSubscription({
+                id: 'member_id_123',
+                subscription: subscriptionData,
+                offerId: 'new_retention_offer_456'
+            }, {
+                transacting: {
+                    executionPromise: Promise.resolve()
+                },
+                context: {}
+            });
+
+            assert.equal(offerRedemptionNotifySpy.called, true);
+            assert.equal(offerRedemptionNotifySpy.calledWith(sinon.match((event) => {
+                return event.data.offerId === 'new_retention_offer_456';
+            })), true);
+        });
+
+        it('overwrites offer_id when new offer arrives via Stripe even with an active trial', async function () {
+            // A subscription has an active trial AND a new discount arrives from Stripe
+            // The new offer should overwrite the existing one (the trial guard only applies when offer_id is null)
+            const futureTrialEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+            const subscriptionWithDiscount = {
+                ...subscriptionData,
+                trial_start: (Date.now() / 1000) - (7 * 24 * 60 * 60),
+                trial_end: futureTrialEnd.getTime() / 1000,
+                discount: {
+                    coupon: {
+                        id: 'coupon_new',
+                        percent_off: 15,
+                        duration: 'forever'
+                    },
+                    start: Date.now() / 1000,
+                    end: null
+                }
+            };
+
+            const repo = new MemberRepository({
+                stripeAPIService: {
+                    ...stripeAPIService,
+                    getSubscription: sinon.stub().resolves(subscriptionWithDiscount)
+                },
+                StripeCustomerSubscription,
+                MemberPaidSubscriptionEvent,
+                MemberProductEvent,
+                productRepository,
+                offersAPI,
+                labsService,
+                Member,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            sinon.stub(repo, 'getSubscriptionByStripeID').resolves({
+                id: 'sub_db_id',
+                get: sinon.stub().callsFake((key) => {
+                    if (key === 'offer_id') {
+                        return 'old_trial_offer';
+                    }
+                    if (key === 'trial_end_at') {
+                        return futureTrialEnd;
+                    }
+                    return null;
+                })
+            });
+
+            DomainEvents.subscribe(OfferRedemptionEvent, offerRedemptionNotifySpy);
+
+            await repo.linkSubscription({
+                subscription: subscriptionWithDiscount
+            }, {
+                transacting: {
+                    executionPromise: Promise.resolve()
+                },
+                context: {}
+            });
+
+            assert.equal(StripeCustomerSubscription.edit.calledOnce, true);
+            const editedData = StripeCustomerSubscription.edit.firstCall.args[0];
+
+            // New offer should overwrite — offer_id should be present and set to the new offer
+            assert.ok('offer_id' in editedData, 'offer_id should be present in the update data');
+            assert.equal(editedData.offer_id, 'offer_new'); // from offersAPI.ensureOfferForStripeCoupon stub
+
+            // Should dispatch redemption event for the new offer
+            assert.equal(offerRedemptionNotifySpy.called, true);
+            assert.equal(offerRedemptionNotifySpy.calledWith(sinon.match((event) => {
+                return event.data.offerId === 'offer_new';
+            })), true);
+        });
+
+        it('does not dispatch OfferRedemptionEvent when offer_id stays the same', async function () {
+            // Same offer synced again via webhook — no new event
+            const subscriptionWithDiscount = {
+                ...subscriptionData,
+                discount: {
+                    coupon: {
+                        id: 'coupon_abc',
+                        percent_off: 20,
+                        duration: 'forever'
+                    },
+                    start: Date.now() / 1000,
+                    end: null
+                }
+            };
+
+            const repo = new MemberRepository({
+                stripeAPIService: {
+                    ...stripeAPIService,
+                    getSubscription: sinon.stub().resolves(subscriptionWithDiscount)
+                },
+                StripeCustomerSubscription,
+                MemberPaidSubscriptionEvent,
+                MemberProductEvent,
+                productRepository,
+                offersAPI,
+                labsService,
+                Member,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            sinon.stub(repo, 'getSubscriptionByStripeID').resolves({
+                id: 'sub_db_id',
+                get: sinon.stub().callsFake((key) => {
+                    if (key === 'offer_id') {
+                        return 'offer_new'; // same as what ensureOfferForStripeCoupon returns
+                    }
+                    if (key === 'trial_end_at') {
+                        return null;
+                    }
+                    return null;
+                })
+            });
+
+            DomainEvents.subscribe(OfferRedemptionEvent, offerRedemptionNotifySpy);
+
+            await repo.linkSubscription({
+                subscription: subscriptionWithDiscount
+            }, {
+                transacting: {
+                    executionPromise: Promise.resolve()
+                },
+                context: {}
+            });
+
+            assert.equal(offerRedemptionNotifySpy.called, false);
+        });
     });
 
     describe('create - outbox integration', function () {
