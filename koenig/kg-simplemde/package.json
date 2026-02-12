@@ -9,7 +9,7 @@
     "javascript",
     "wysiwyg"
   ],
-  "homepage": "https://github.com/NextStepWebs/simplemde-markdown-editor",
+  "homepage": "https://github.com/TryGhost/Koenig/tree/main/packages/kg-simplemde",
   "main": "./src/js/simplemde.js",
   "license": "MIT",
   "company": "Next Step Webs, Inc.",
@@ -18,7 +18,7 @@
     "url": "http://www.WesCossick.com"
   },
   "bugs": {
-    "url": "https://github.com/NextStepWebs/simplemde-markdown-editor/issues"
+    "url": "https://github.com/TryGhost/Koenig/issues"
   },
   "publishConfig": {
     "access": "public"
@@ -41,7 +41,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/NextStepWebs/simplemde-markdown-editor"
+    "url": "https://github.com/TryGhost/Koenig.git"
   },
   "dependencies": {
     "codemirror": "5.65.21",
