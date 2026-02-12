@@ -7,6 +7,10 @@ inputs:
   image-tags:
     description: 'Docker image tags (multi-line string)'
     required: true
+  artifact-name:
+    description: 'Name of the artifact to download (fork PRs only)'
+    required: false
+    default: 'docker-image'
 
 runs:
   using: 'composite'
@@ -15,14 +19,14 @@ runs:
       if: inputs.is-fork == 'true'
       uses: actions/download-artifact@v4
       with:
-        name: docker-image
+        name: ${{ inputs.artifact-name }}
 
     - name: Load image from artifact (fork PR)
       if: inputs.is-fork == 'true'
       shell: bash
       run: |
         echo "Loading Docker image from artifact..."
-        gunzip -c docker-image.tar.gz | docker load
+        gunzip -c ${{ inputs.artifact-name }}.tar.gz | docker load
         echo "Available images after load:"
         docker images
 

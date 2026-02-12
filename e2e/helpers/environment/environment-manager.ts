@@ -1,10 +1,11 @@
 import Docker from 'dockerode';
 import baseDebug from '@tryghost/debug';
 import logging from '@tryghost/logging';
-import {DOCKER_COMPOSE_CONFIG, PORTAL, TINYBIRD} from './constants';
+import {DOCKER_COMPOSE_CONFIG, TINYBIRD} from './constants';
 import {DockerCompose} from './docker-compose';
-import {GhostInstance, GhostManager, MySQLManager, PortalManager, TinybirdManager} from './service-managers';
+import {GhostInstance, GhostManager, MySQLManager, TinybirdManager} from './service-managers';
 import {randomUUID} from 'crypto';
+import type {GhostImageProfile} from './constants';
 
 const debug = baseDebug('e2e:EnvironmentManager');
 
@@ -25,9 +26,9 @@ export class EnvironmentManager {
     private readonly mysql: MySQLManager;
     private readonly tinybird: TinybirdManager;
     private readonly ghost: GhostManager;
-    private readonly portal: PortalManager;
 
     constructor(
+        profile: GhostImageProfile,
         composeFilePath: string = DOCKER_COMPOSE_CONFIG.FILE_PATH,
         composeProjectName: string = DOCKER_COMPOSE_CONFIG.PROJECT
     ) {
@@ -40,12 +41,11 @@ export class EnvironmentManager {
 
         this.mysql = new MySQLManager(this.dockerCompose);
         this.tinybird = new TinybirdManager(this.dockerCompose, TINYBIRD.CONFIG_DIR, TINYBIRD.CLI_ENV_PATH);
-        this.ghost = new GhostManager(docker, this.dockerCompose, this.tinybird);
-        this.portal = new PortalManager(this.dockerCompose, PORTAL.PORT);
+        this.ghost = new GhostManager(docker, this.dockerCompose, this.tinybird, profile);
     }
 
     /**
-     * Setup shared global environment for tests (i.e. mysql, tinybird, portal)
+     * Setup shared global environment for tests (i.e. mysql, tinybird)
      * This should be called once before all tests run.
      *
      * 1. Clean up any leftover resources from previous test runs
@@ -75,9 +75,8 @@ export class EnvironmentManager {
         try {
             const {siteUuid, instanceId} = this.uniqueTestDetails();
             await this.mysql.setupTestDatabase(instanceId, siteUuid);
-            const portalUrl = await this.portal.getUrl();
 
-            return await this.ghost.createAndStartInstance(instanceId, siteUuid, portalUrl, options.config);
+            return await this.ghost.createAndStartInstance(instanceId, siteUuid, options.config);
         } catch (error) {
             logging.error('Failed to setup Ghost instance:', error);
             throw new Error(`Failed to setup Ghost instance: ${error}`);
