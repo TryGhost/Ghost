@@ -344,4 +344,57 @@ describe('Portal Data links:', () => {
             expect(helpPageTitle).toBeInTheDocument();
         });
     });
+
+    describe('unauthenticated account page access', () => {
+        test('#/portal/account redirects to signin when not logged in', async () => {
+            window.location.hash = '#/portal/account';
+            let {
+                popupFrame, triggerButtonFrame, ...utils
+            } = await setup({
+                site: FixtureSite.singleTier.basic,
+                member: null,
+                showPopup: false
+            });
+            expect(triggerButtonFrame).toBeInTheDocument();
+            popupFrame = await utils.findByTitle(/portal-popup/i);
+            expect(popupFrame).toBeInTheDocument();
+            // Should show signin page instead of account page
+            const signinTitle = within(popupFrame.contentDocument).queryByText(/sign in/i);
+            expect(signinTitle).toBeInTheDocument();
+        });
+
+        test('#/portal/account/plans redirects to signin when not logged in', async () => {
+            window.location.hash = '#/portal/account/plans';
+            let {
+                popupFrame, triggerButtonFrame, ...utils
+            } = await setup({
+                site: FixtureSite.singleTier.basic,
+                member: null,
+                showPopup: false
+            });
+            expect(triggerButtonFrame).toBeInTheDocument();
+            popupFrame = await utils.findByTitle(/portal-popup/i);
+            expect(popupFrame).toBeInTheDocument();
+            // Should show signin page instead of account plan page
+            const signinTitle = within(popupFrame.contentDocument).queryByText(/sign in/i);
+            expect(signinTitle).toBeInTheDocument();
+        });
+
+        test('#/portal/account/profile redirects to signin when not logged in', async () => {
+            window.location.hash = '#/portal/account/profile';
+            let {
+                popupFrame, triggerButtonFrame, ...utils
+            } = await setup({
+                site: FixtureSite.singleTier.basic,
+                member: null,
+                showPopup: false
+            });
+            expect(triggerButtonFrame).toBeInTheDocument();
+            popupFrame = await utils.findByTitle(/portal-popup/i);
+            expect(popupFrame).toBeInTheDocument();
+            // Should show signin page instead of account profile page
+            const signinTitle = within(popupFrame.contentDocument).queryByText(/sign in/i);
+            expect(signinTitle).toBeInTheDocument();
+        });
+    });
 });
