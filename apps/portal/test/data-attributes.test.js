@@ -1007,7 +1007,7 @@ describe('Portal Data attributes:', () => {
                 })
                 .mockResolvedValueOnce({
                     ok: false,
-                    json: async () => ({errors: [{message: 'No member exists with this email address. Please sign up first.'}]}),
+                    json: async () => ({errors: [{message: 'No member exists with this e-mail address. Please sign up first.'}]}),
                     status: 400
                 });
 
@@ -1015,7 +1015,7 @@ describe('Portal Data attributes:', () => {
 
             expect(window.fetch).toHaveBeenCalledTimes(2);
             expect(form.classList.add).toHaveBeenCalledWith('error');
-            expect(errorEl.innerText).toBe('No member exists with this email address. Please sign up first.');
+            expect(errorEl.innerText).toBe('No member exists with this e-mail address. Please sign up first.');
         });
     });
 });
