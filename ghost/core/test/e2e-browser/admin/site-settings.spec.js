@@ -3,7 +3,7 @@ const test = require('../fixtures/ghost-test');
 const {createPostDraft, createTier, disconnectStripe, generateStripeIntegrationToken, setupStripe, getStripeAccountId} = require('../utils');
 
 const changeSubscriptionAccess = async (page, access) => {
-    await page.locator('[data-test-nav="settings"]').click();
+    await page.locator('[data-sidebar="sidebar"]').getByRole('link', {name: 'Settings'}).click();
 
     const section = page.getByTestId('access');
     const select = section.getByTestId('subscription-access-select');
