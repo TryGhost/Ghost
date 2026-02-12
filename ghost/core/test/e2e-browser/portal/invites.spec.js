@@ -11,7 +11,6 @@ test.describe('Portal', () => {
             // Navigate to settings
             await sharedPage.goto('/ghost');
             await sharedPage.locator('[data-sidebar="sidebar"]').getByRole('link', {name: 'Settings'}).click();
-            await sharedPage.waitForLoadState('networkidle');
 
             const testEmail = `test-${Date.now()}@gmail.com`;
 
@@ -51,7 +50,6 @@ test.describe('Portal', () => {
             await sharedPage.goto(inviteUrl);
 
             // Verify we're on the signup page
-            await sharedPage.waitForLoadState('networkidle');
             await expect(sharedPage.locator('text=Create your account.')).toBeVisible();
 
             //Signup using the invite Link
@@ -75,7 +73,6 @@ test.describe('Portal', () => {
                 // Navigate to settings
                 await sharedPage.goto('/ghost');
                 await sharedPage.locator('[data-sidebar="sidebar"]').getByRole('link', {name: 'Settings'}).click();
-                await sharedPage.waitForLoadState('networkidle');
 
                 const testEmail = `test-${Date.now()}@gmail.com`;
 
@@ -117,7 +114,6 @@ test.describe('Portal', () => {
                 await sharedPage.goto(inviteUrl);
 
                 // Verify we're on the signup page
-                await sharedPage.waitForLoadState('networkidle');
                 await expect(sharedPage.locator('text=Create your account.')).toBeVisible();
 
                 //Signup using the invite Link

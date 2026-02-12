@@ -75,7 +75,6 @@ const signInAsUserById = async (page, userId) => {
 
 const signOutCurrentUser = async (page) => {
     await page.goto('/ghost/#/signout');
-    await page.waitForLoadState('networkidle');
     await page.locator('.gh-signin').waitFor({state: 'visible', timeout: 10000});
 };
 
@@ -183,8 +182,8 @@ const createTier = async (page, {name, monthlyPrice, yearlyPrice, trialDays}, en
         // Navigate to the member settings
         await page.locator('[data-sidebar="sidebar"]').getByRole('link', {name: 'Settings'}).click();
 
-        // Tiers request can take time, so waiting until there is no connections before interacting with them
-        await page.waitForLoadState('networkidle');
+        // Tiers request can take time, so waiting until the Add tier button is visible before interacting
+        await page.getByTestId('tiers').getByRole('button', {name: 'Add tier'}).waitFor();
 
         // Archive if already exists
         while (await page.getByTestId('tier-card').filter({hasText: name}).first().isVisible()) {
@@ -257,9 +256,7 @@ const createOffer = async (page, {name, tierName, offerType, amount, discountTyp
 
         // Keep offer names unique & <= 40 characters
         offerName = `${name} (${new ObjectID().toHexString().slice(0, 40 - name.length - 3)})`;
-        // Tiers request can take time, so waiting until there is no connections before interacting with them
-        await page.waitForLoadState('networkidle');
-        // ... and even so, the component updates can take a bit to trickle down, so we should verify that the Tier is fully loaded before proceeding
+        // Verify that the Tier is fully loaded before proceeding
         await page.getByTestId('tiers').getByText('No active tiers found').waitFor({state: 'hidden'});
         await page.getByTestId('offers').getByRole('button', {name: 'Manage tiers'}).waitFor({state: 'hidden'});
 
@@ -314,7 +311,6 @@ const createOffer = async (page, {name, tierName, offerType, amount, discountTyp
 
         await chooseOptionInSelect(page.getByTestId('tier-cadence-select-offers'), `${tierName} - Monthly`);
         await page.getByRole('button', {name: 'Publish'}).click();
-        await page.waitForLoadState('networkidle');
 
         const offerLinkInput = await page.locator('input[name="offer-url"]');
         // sometimes offer link is not generated, and if so the rest of the test will fail
@@ -440,8 +436,8 @@ const goToMembershipPage = async (page) => {
     return await test.step('Open Membership settings', async () => {
         await page.goto('/ghost');
         await page.locator('[data-sidebar="sidebar"]').getByRole('link', {name: 'Settings'}).click();
-        // Tiers request can take time, so waiting until there is no connections before interacting with UI
-        await page.waitForLoadState('networkidle');
+        // Tiers request can take time, so waiting until the tiers section is loaded before interacting with UI
+        await page.getByTestId('tiers').waitFor();
     });
 };
 
