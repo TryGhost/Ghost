@@ -81,7 +81,11 @@ const EDITABLE_SETTINGS = [
     'explore_ping_growth',
     'indexnow_api_key',
     'transistor',
-    'transistor_portal_settings'
+    'transistor_portal_enabled',
+    'transistor_portal_heading',
+    'transistor_portal_description',
+    'transistor_portal_button_text',
+    'transistor_portal_url_template'
 ];
 
 module.exports = {

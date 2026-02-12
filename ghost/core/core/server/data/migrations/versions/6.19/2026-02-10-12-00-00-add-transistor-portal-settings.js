@@ -1,15 +1,39 @@
-const {addSetting} = require('../../utils');
+const {combineTransactionalMigrations, addSetting} = require('../../utils');
 
-module.exports = addSetting({
-    key: 'transistor_portal_settings',
-    value: JSON.stringify({
-        enabled: true,
-        heading: 'Podcasts',
-        description: 'Access your RSS feeds',
-        button_text: 'Manage',
-        url_template: 'https://partner.transistor.fm/ghost/{memberUuid}'
+module.exports = combineTransactionalMigrations(
+    addSetting({
+        key: 'transistor_portal_enabled',
+        value: 'true',
+        type: 'boolean',
+        group: 'transistor',
+        flags: 'PUBLIC'
     }),
-    type: 'object',
-    group: 'transistor',
-    flags: 'PUBLIC'
-});
+    addSetting({
+        key: 'transistor_portal_heading',
+        value: 'Podcasts',
+        type: 'string',
+        group: 'transistor',
+        flags: 'PUBLIC'
+    }),
+    addSetting({
+        key: 'transistor_portal_description',
+        value: 'Access your RSS feeds',
+        type: 'string',
+        group: 'transistor',
+        flags: 'PUBLIC'
+    }),
+    addSetting({
+        key: 'transistor_portal_button_text',
+        value: 'Manage',
+        type: 'string',
+        group: 'transistor',
+        flags: 'PUBLIC'
+    }),
+    addSetting({
+        key: 'transistor_portal_url_template',
+        value: 'https://partner.transistor.fm/ghost/{memberUuid}',
+        type: 'string',
+        group: 'transistor',
+        flags: 'PUBLIC'
+    })
+);
