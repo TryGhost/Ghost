@@ -76,9 +76,7 @@ describe('lib/image: image size cache', function () {
         const loggingStub = sinon.stub(logging, 'error');
         const result = await cachedImageSizeFromUrl.getCachedImageSizeFromUrl(url);
 
-        assert.equal(result.url, url);
-        assert.equal(result.width, undefined);
-        assert.equal(result.height, undefined);
+        assert.equal(result, null);
 
         // Transient errors should NOT be cached
         assert.equal(cacheStore.get(url), undefined);
@@ -88,9 +86,7 @@ describe('lib/image: image size cache', function () {
         // Second call should retry the fetch since nothing was cached
         const result2 = await cachedImageSizeFromUrl.getCachedImageSizeFromUrl(url);
 
-        assert.equal(result2.url, url);
-        assert.equal(result2.width, undefined);
-        assert.equal(result2.height, undefined);
+        assert.equal(result2, null);
 
         // Cache should still be empty after the second transient error
         assert.equal(cacheStore.get(url), undefined);
@@ -109,10 +105,9 @@ describe('lib/image: image size cache', function () {
         });
 
         const result = await cachedImageSizeFromUrl.getCachedImageSizeFromUrl(url);
-        assert.equal(result.url, url);
-        assert.equal(result.width, undefined);
-        assert.equal(result.height, undefined);
+        assert.equal(result, null);
 
+        // Verify 404 was cached with notFound marker
         cacheStore.get(url).should.not.be.undefined;
         const image = cacheStore.get(url);
         assert.equal(image.url, url);
@@ -120,8 +115,7 @@ describe('lib/image: image size cache', function () {
 
         // Second call should NOT refetch — 404 is permanent
         const secondResult = await cachedImageSizeFromUrl.getCachedImageSizeFromUrl(url);
-        assert.equal(secondResult.url, url);
-        assert.equal(secondResult.width, undefined);
+        assert.equal(secondResult, null);
         assert.equal(sizeOfStub.calledOnce, true);
     });
 
@@ -187,6 +181,6 @@ describe('lib/image: image size cache', function () {
 
         result = await cachedImageSizeFromUrl.getCachedImageSizeFromUrl(url);
 
-        assert.equal(result, undefined);
+        assert.equal(result, null);
     });
 });

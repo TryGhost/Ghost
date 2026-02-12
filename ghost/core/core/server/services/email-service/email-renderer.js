@@ -148,7 +148,7 @@ class EmailRenderer {
      * @param {object} dependencies.renderers
      * @param {{render(object, options): string}} dependencies.renderers.lexical
      * @param {{render(object, options): string}} dependencies.renderers.mobiledoc
-     * @param {{getCachedImageSizeFromUrl(url: string): Promise<{url: string, width: number, height: number} | {url: string}>}} dependencies.imageSize
+     * @param {{getCachedImageSizeFromUrl(url: string): Promise<{url: string, width: number, height: number} | null>}} dependencies.imageSize
      * @param {{urlFor(type: string, optionsOrAbsolute, absolute): string, isSiteUrl(url, context): boolean}} dependencies.urlUtils
      * @param {{isLocalImage(url: string): boolean}} dependencies.storageUtils
      * @param {(post: Post) => string} dependencies.getPostUrl

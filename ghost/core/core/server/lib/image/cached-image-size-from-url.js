@@ -31,25 +31,28 @@ class CachedImageSizeFromUrl {
 
     /**
      * Get cached image size from URL
-     * Returns {url} without dimensions on error so consumers can gracefully
-     * skip images with missing dimensions.
+     * Returns null when dimensions are unavailable (invalid URL, 404, transient
+     * errors) so consumers can gracefully skip images with missing dimensions.
      *
      * Caching strategy:
      * - Successful fetches are cached
-     * - NotFoundError (404) is cached as {url} permanently with a marker
+     * - NotFoundError (404) is cached permanently with a marker
      * - Transient errors (timeouts, 500s) are NOT cached, allowing retry on next call
-     * - Stale error entries (cached {url} without dimensions) trigger a retry
+     * - Stale error entries (cached without dimensions) trigger a retry
      *
      * @param {string} url
-     * @returns {Promise<ImageSizeCache | {url: string}>}
+     * @returns {Promise<ImageSizeCache>}
      */
     async getCachedImageSizeFromUrl(url) {
         if (!url || url === undefined || url === null) {
-            return;
+            return null;
         }
 
         const cachedImageSize = await this.cache.get(url);
 
+        // Check for cachedImageSize.width to handle legacy cache entries
+        // that were stored as {url} without dimensions or a notFound marker.
+        // These stale entries fall through to trigger a re-fetch and self-heal.
         if (cachedImageSize && cachedImageSize.width) {
             debug('Read image from cache:', url);
             return {...cachedImageSize};
@@ -58,7 +61,7 @@ class CachedImageSizeFromUrl {
         // 404s are cached permanently — don't retry
         if (cachedImageSize && cachedImageSize.notFound) {
             debug('Read image from cache (not found):', url);
-            return {url};
+            return null;
         }
 
         try {
@@ -78,7 +81,7 @@ class CachedImageSizeFromUrl {
                 logging.error(err);
             }
 
-            return {url};
+            return null;
         }
     }
 }

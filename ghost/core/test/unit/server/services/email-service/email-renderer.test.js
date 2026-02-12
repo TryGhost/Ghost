@@ -3032,11 +3032,11 @@ describe('Email renderer', function () {
             assert.equal(response.href, 'http://your-blog.com/content/images/size/w1200h1200/2017/01/02/example.png');
         });
 
-        it('Returns default dimensions when getCachedImageSizeFromUrl returns no dimensions', async function () {
+        it('Returns default dimensions when getCachedImageSizeFromUrl returns null', async function () {
             const emailRenderer = new EmailRenderer({
                 imageSize: {
                     getCachedImageSizeFromUrl() {
-                        return {url: 'http://your-blog.com/content/images/2017/01/02/example.png'};
+                        return null;
                     }
                 },
                 storageUtils: {
@@ -3221,7 +3221,7 @@ describe('Email renderer', function () {
             });
 
             const response = await emailRenderer.limitImageWidth('https://example.com/broken.png');
-            // getCachedImageSizeFromUrl returns {url} without dimensions, limitImageWidth returns fallback
+            // getCachedImageSizeFromUrl returns null on error, limitImageWidth returns fallback
             assert.equal(response.href, 'https://example.com/broken.png');
             assert.equal(response.width, 0);
             assert.equal(response.height, null);
