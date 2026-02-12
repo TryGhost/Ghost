@@ -75,7 +75,8 @@ const useIntegrations = () => {
     return {
         transistor: {
             enabled: isTransistorEnabled,
-            hasPodcasts: transistorPodcasts,
+            hasPodcasts: true, // TODO: remove this once we have a way to check if the member has podcasts
+            // hasPodcasts: transistorPodcasts,
             memberUuid,
             settings: transistorSettings
         }
