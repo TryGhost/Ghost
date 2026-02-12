@@ -543,6 +543,19 @@ export default class App extends React.Component {
         if (path && linkRegex.test(path)) {
             const [,pagePath] = path.match(linkRegex);
             const {page, pageQuery, pageData} = this.getPageFromLinkPath(pagePath, site) || {};
+
+            // If user is not logged in and trying to access an account page,
+            // redirect to signin with a redirect URL back to the intended page
+            if (!member && page && isAccountPage({page})) {
+                return {
+                    showPopup: true,
+                    page: 'signin',
+                    pageData: {
+                        redirect: site.url + `#/portal/${pagePath}/`
+                    }
+                };
+            }
+
             const lastPage = ['accountPlan', 'accountProfile'].includes(page) ? 'accountHome' : null;
             const showPopup = (
                 ['monthly', 'yearly'].includes(pageQuery) ||
