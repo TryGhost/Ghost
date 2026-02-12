@@ -26,10 +26,9 @@ interface CommentRowProps {
     isReply?: boolean;
     isSelectedComment?: boolean;
     selectedCommentId?: string;
-    commentPermalinksEnabled?: boolean;
 }
 
-function CommentRow({comment, isReply = false, isSelectedComment = false, selectedCommentId, commentPermalinksEnabled}: CommentRowProps) {
+function CommentRow({comment, isReply = false, isSelectedComment = false, selectedCommentId}: CommentRowProps) {
     const [searchParams] = useSearchParams();
     const {mutate: hideComment} = useHideComment();
     const {mutate: showComment} = useShowComment();
@@ -100,7 +99,6 @@ function CommentRow({comment, isReply = false, isSelectedComment = false, select
                             />
                             <CommentMenu
                                 comment={comment}
-                                commentPermalinksEnabled={commentPermalinksEnabled}
                             />
                         </div>
                     </div>
@@ -112,7 +110,6 @@ function CommentRow({comment, isReply = false, isSelectedComment = false, select
                                 <CommentRow
                                     key={reply.id}
                                     comment={reply}
-                                    commentPermalinksEnabled={commentPermalinksEnabled}
                                     isReply={true}
                                     selectedCommentId={selectedCommentId}
                                 />
@@ -129,7 +126,6 @@ interface CommentThreadListProps {
     selectedComment: Comment;
     replies: Comment[];
     selectedCommentId: string;
-    commentPermalinksEnabled?: boolean;
     fetchNextPage: () => void;
     hasNextPage?: boolean;
     isFetchingNextPage: boolean;
@@ -139,7 +135,6 @@ const CommentThreadList: React.FC<CommentThreadListProps> = ({
     selectedComment,
     replies,
     selectedCommentId,
-    commentPermalinksEnabled,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage
@@ -151,7 +146,6 @@ const CommentThreadList: React.FC<CommentThreadListProps> = ({
         <div className="flex flex-col" data-testid="comment-thread-list">
             <CommentRow
                 comment={commentWithReplies}
-                commentPermalinksEnabled={commentPermalinksEnabled}
                 isSelectedComment={true}
                 selectedCommentId={selectedCommentId}
             />
