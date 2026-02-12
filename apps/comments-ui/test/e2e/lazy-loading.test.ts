@@ -63,8 +63,9 @@ test.describe('Lazy loading', async () => {
         const iframeHandle = await page.locator(commentsFrameSelector);
         iframeHandle.scrollIntoViewIfNeeded();
 
-        // loading state should be gone and admin-auth frame should be present
+        // loading state should be gone once comments are fetched
+        // (no admin-auth frame expected since no admin URL was provided)
         await expect(commentsFrame.getByTestId('loading')).toHaveCount(0);
-        await expect(page.locator(adminFrameSelector)).toHaveCount(1);
+        await expect(page.locator(adminFrameSelector)).toHaveCount(0);
     });
 });

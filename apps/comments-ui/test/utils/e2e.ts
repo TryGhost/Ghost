@@ -87,6 +87,8 @@ export async function mockAdminAuthFrame({admin, page}) {
 }
 
 export async function mockAdminAuthFrame204({admin, page}) {
+    // Return 204 to simulate no admin session cookie (matches production behavior).
+    // The provider handles this via timeout since there's no message handler.
     await page.route(admin + 'auth-frame/', async (route) => {
         await route.fulfill({
             status: 204
@@ -166,7 +168,7 @@ export async function initialize({mockedApi, page, bodyStyle, labs = {}, key = '
 
     const commentsFrameSelector = 'iframe[title="comments-frame"]';
 
-    await page.waitForSelector('iframe');
+    await page.waitForSelector(commentsFrameSelector);
 
     // wait for data to be loaded because our tests expect it
     const iframeElement = await page.locator(commentsFrameSelector).elementHandle();

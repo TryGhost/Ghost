@@ -1,7 +1,6 @@
 // Ref: https://reactjs.org/docs/context.html
 import React, {useContext} from 'react';
 import {ActionType, Actions, SyncActionType, SyncActions} from './actions';
-import {AdminApi} from './utils/admin-api';
 import {Page} from './pages';
 
 export type Member = {
@@ -70,7 +69,6 @@ export type CommentsOptions = {
 export type EditableAppContext = {
     initStatus: string,
     member: null | any,
-    admin: null | any,
     comments: Comment[],
     pagination: {
         page: number,
@@ -83,7 +81,6 @@ export type EditableAppContext = {
     popup: Page | null,
     labs: LabsContextType,
     order: string,
-    adminApi: AdminApi | null,
     commentsIsLoading?: boolean,
     commentIdToHighlight: string | null,
     commentIdToScrollTo: string | null,
