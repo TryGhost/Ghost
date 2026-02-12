@@ -42,7 +42,6 @@ const TransistorPodcastsAction = ({hasPodcasts, memberUuid, settings = {}}) => {
     const description = maybeTranslate(settings.description, 'description') || t(TRANSISTOR_DEFAULTS.description);
     const buttonText = maybeTranslate(settings.button_text, 'button_text') || t(TRANSISTOR_DEFAULTS.button_text);
     const urlTemplate = settings.url_template || TRANSISTOR_DEFAULTS.url_template;
-
     const transistorUrl = urlTemplate.replace('{memberUuid}', memberUuid);
 
     return (
