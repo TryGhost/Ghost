@@ -514,6 +514,10 @@ html[dir="rtl"] .gh-portal-powered a {
 }
 
 .gh-portal-closeicon-container {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
     position: fixed;
     top: 24px;
     right: 24px;
