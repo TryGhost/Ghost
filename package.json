@@ -103,7 +103,7 @@
     "jsonc-parser": "3.3.1",
     "lint-staged": "15.5.2",
     "nx": "22.0.4",
-    "rimraf": "5.0.10",
+    "rimraf": "6.1.2",
     "typescript": "5.8.3"
   },
   "dependencies": {},
