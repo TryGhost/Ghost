@@ -1704,7 +1704,7 @@ jobs:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
       - name: Build Admin
         env:
-          GHOST_CDN_URL: https://assets.ghost.io/admin-forward/
+          GHOST_CDN_URL: __GHOST_ASSET_URL__
         run: yarn nx run admin:build
       - name: Upload build artifact
         id: upload-artifacts
