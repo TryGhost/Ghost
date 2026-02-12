@@ -54,31 +54,32 @@ test.describe('Ghost Admin - Post Analytics - Overview', () => {
         await expect(postAnalyticsPage.growthButton).toBeVisible();
         await expect(postAnalyticsPage.growthSection.card).toBeVisible();
 
-        // Disable member source tracking
-        await settingsService.setMembersTrackSources(false);
+        try {
+            // Disable member source tracking
+            await settingsService.setMembersTrackSources(false);
 
-        // Reload the page to apply the setting
-        await page.reload();
+            // Reload the page to apply the setting
+            await page.reload();
 
-        // Growth tab should now be hidden
-        await expect(postAnalyticsPage.growthButton).toBeHidden();
+            // Growth tab should now be hidden
+            await expect(postAnalyticsPage.growthButton).toBeHidden();
 
-        // Growth section on overview page should also be hidden
-        await expect(postAnalyticsPage.growthSection.card).toBeHidden();
+            // Growth section on overview page should also be hidden
+            await expect(postAnalyticsPage.growthSection.card).toBeHidden();
 
-        // Overview and Web traffic tabs should still be visible
-        await expect(postAnalyticsPage.overviewButton).toBeVisible();
-        await expect(postAnalyticsPage.webTrafficButton).toBeVisible();
+            // Overview and Web traffic tabs should still be visible
+            await expect(postAnalyticsPage.overviewButton).toBeVisible();
+            await expect(postAnalyticsPage.webTrafficButton).toBeVisible();
+        } finally {
+            // Re-enable member source tracking
+            await settingsService.setMembersTrackSources(true);
 
-        // Re-enable member source tracking
-        await settingsService.setMembersTrackSources(true);
-
-        // Reload the page to apply the setting
-        await page.reload();
+            // Reload the page to apply the setting
+            await page.reload();
+        }
 
         // Growth tab should be visible again
         await expect(postAnalyticsPage.growthButton).toBeVisible();
         await expect(postAnalyticsPage.growthSection.card).toBeVisible();
     });
 });
-

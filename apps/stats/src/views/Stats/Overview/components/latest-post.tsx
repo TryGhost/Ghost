@@ -106,7 +106,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                             <div className='flex grow flex-col items-start justify-center self-stretch'>
                                 <div className='text-lg font-semibold leading-tighter tracking-tight hover:cursor-pointer hover:opacity-75' onClick={() => {
                                     if (!isLoading && latestPostStats) {
-                                        navigate(`/posts/analytics/${latestPostStats.id}`, {crossApp: true});
+                                        navigate(postDestination, {crossApp: true});
                                     }
                                 }}>
                                     {latestPostStats.title}
