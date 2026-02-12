@@ -5,7 +5,7 @@ const assert = require('assert/strict');
 const jobManager = require('../../../../core/server/services/jobs/job-service');
 const configUtils = require('../../../utils/config-utils');
 const ObjectId = require('bson-objectid').default;
-const {v4: uuidv4} = require('uuid');
+const crypto = require('crypto');
 const db = require('../../../../core/server/data/db');
 
 describe('Domain Warming Integration Tests', function () {
@@ -33,8 +33,8 @@ describe('Domain Warming Integration Tests', function () {
             const memberId = ObjectId().toHexString();
             memberRows.push({
                 id: memberId,
-                uuid: uuidv4(),
-                transient_id: uuidv4(),
+                uuid: crypto.randomUUID(),
+                transient_id: crypto.randomUUID(),
                 email: `member-${prefix}-${i}@example.com`,
                 name: `Member ${prefix} ${i}`,
                 status: 'free',
