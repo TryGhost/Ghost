@@ -511,11 +511,24 @@ jobs:
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_core == 'true'
     services:
-      mysql:
-        image: ${{ matrix.env.DB == 'mysql8' && 'mysql:8.0' || '' }}
+      mysql_auth:
+        image: ${{ matrix.env.DB == 'mysql8' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && 'mysql:8.0' || '' }}
         credentials:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          username: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && secrets.DOCKERHUB_USERNAME || 'unused' }}
+          password: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && secrets.DOCKERHUB_TOKEN || 'unused' }}
+        env:
+          MYSQL_DATABASE: ghost_testing
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306
+        options: >-
+          --tmpfs /var/lib/mysql
+          --health-cmd "mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+      mysql_anon:
+        image: ${{ matrix.env.DB == 'mysql8' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository && 'mysql:8.0' || '' }}
         env:
           MYSQL_DATABASE: ghost_testing
           MYSQL_ROOT_PASSWORD: root
@@ -568,10 +581,17 @@ jobs:
         run: echo "database__connection__filename=/dev/shm/ghost-test.db" >> $GITHUB_ENV
 
       - name: Set env vars (MySQL)
-        if: contains(matrix.env.DB, 'mysql')
+        if: contains(matrix.env.DB, 'mysql') && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
         run: |
           echo "database__connection__host=127.0.0.1" >> $GITHUB_ENV
-          echo "database__connection__port=${{ job.services.mysql.ports['3306'] }}" >> $GITHUB_ENV
+          echo "database__connection__port=${{ job.services.mysql_auth.ports['3306'] }}" >> $GITHUB_ENV
+          echo "database__connection__password=root" >> $GITHUB_ENV
+
+      - name: Set env vars (MySQL, fork PR)
+        if: contains(matrix.env.DB, 'mysql') && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository
+        run: |
+          echo "database__connection__host=127.0.0.1" >> $GITHUB_ENV
+          echo "database__connection__port=${{ job.services.mysql_anon.ports['3306'] }}" >> $GITHUB_ENV
           echo "database__connection__password=root" >> $GITHUB_ENV
 
       - name: E2E tests
@@ -602,11 +622,24 @@ jobs:
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_core == 'true'
     services:
-      mysql:
-        image: ${{ matrix.env.DB == 'mysql8' && 'mysql:8.0' || '' }}
+      mysql_auth:
+        image: ${{ matrix.env.DB == 'mysql8' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && 'mysql:8.0' || '' }}
         credentials:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          username: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && secrets.DOCKERHUB_USERNAME || 'unused' }}
+          password: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && secrets.DOCKERHUB_TOKEN || 'unused' }}
+        env:
+          MYSQL_DATABASE: ghost_testing
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306
+        options: >-
+          --tmpfs /var/lib/mysql
+          --health-cmd "mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+      mysql_anon:
+        image: ${{ matrix.env.DB == 'mysql8' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository && 'mysql:8.0' || '' }}
         env:
           MYSQL_DATABASE: ghost_testing
           MYSQL_ROOT_PASSWORD: root
@@ -656,10 +689,17 @@ jobs:
         run: echo "database__connection__filename=/dev/shm/ghost-test.db" >> $GITHUB_ENV
 
       - name: Set env vars (MySQL)
-        if: contains(matrix.env.DB, 'mysql')
+        if: contains(matrix.env.DB, 'mysql') && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
         run: |
           echo "database__connection__host=127.0.0.1" >> $GITHUB_ENV
-          echo "database__connection__port=${{ job.services.mysql.ports['3306'] }}" >> $GITHUB_ENV
+          echo "database__connection__port=${{ job.services.mysql_auth.ports['3306'] }}" >> $GITHUB_ENV
+          echo "database__connection__password=root" >> $GITHUB_ENV
+
+      - name: Set env vars (MySQL, fork PR)
+        if: contains(matrix.env.DB, 'mysql') && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository
+        run: |
+          echo "database__connection__host=127.0.0.1" >> $GITHUB_ENV
+          echo "database__connection__port=${{ job.services.mysql_anon.ports['3306'] }}" >> $GITHUB_ENV
           echo "database__connection__password=root" >> $GITHUB_ENV
 
       - name: Legacy tests
