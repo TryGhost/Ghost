@@ -161,4 +161,60 @@ test.describe('Portal Settings', async () => {
             ]
         });
     });
+
+    test('synchronizes sidebar and preview tabs', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            editSettings: {method: 'PUT', path: '/settings/', response: responseFixtures.settings}
+        }});
+
+        await mockSitePreview({
+            page,
+            url: 'http://localhost:2368/?v=modal-portal-settings#/portal/preview?button=true&name=true&isFree=true&isMonthly=true&isYearly=true&page=signup&buttonIcon=icon-1&signupButtonText=Subscribe&membersSignupAccess=all&allowSelfSignup=true&signupTermsHtml=&signupCheckboxRequired=false&portalProducts=6511005e14c14a231e49af15&portalPrices=free%252Cmonthly%252Cyearly&accentColor=%2523FF1A75&buttonStyle=icon-and-text&disableBackground=false',
+            response: '<html><head><style></style></head><body><div>PortalPreview</div></body></html>'
+        });
+
+        await page.goto('/');
+        const section = page.getByTestId('portal');
+        await section.getByRole('button', {name: 'Customize'}).click();
+
+        const modal = page.getByTestId('portal-modal');
+        await expect(modal).toBeVisible();
+
+        // Verify initial state - should be on Signup options tab
+        const displayNameToggle = modal.getByLabel('Display name in signup form');
+        await expect(displayNameToggle).toBeVisible();
+
+        // Click on "Account page" preview tab (use ID to disambiguate from sidebar tab)
+        const previewToolbar = modal.getByTestId('design-toolbar');
+        const accountPreviewTab = previewToolbar.getByRole('tab', {name: 'Account page'});
+        await accountPreviewTab.click();
+
+        // Verify sidebar switched to Account page - support email field should be visible
+        const supportEmailField = modal.getByRole('textbox', {name: 'Support email address'});
+        await expect(supportEmailField).toBeVisible();
+
+        // Click on "Signup" preview tab
+        const signupPreviewTab = previewToolbar.getByRole('tab', {name: 'Signup'});
+        await signupPreviewTab.click();
+
+        // Verify sidebar switched back to Signup options
+        await expect(displayNameToggle).toBeVisible();
+
+        // Now test the reverse - clicking sidebar tabs should update preview
+        const lookAndFeelSidebarTab = page.locator('#lookAndFeel').first();
+        await lookAndFeelSidebarTab.click();
+
+        // Verify Look & feel content is visible
+        const showPortalButton = modal.getByLabel('Show portal button');
+        await expect(showPortalButton).toBeVisible();
+
+        // Click Account page sidebar tab
+        const accountSidebarTab = page.locator('#accountPage').first();
+        await accountSidebarTab.click();
+
+        // Verify Account page content is visible and preview tab is selected
+        await expect(supportEmailField).toBeVisible();
+        await expect(accountPreviewTab).toHaveAttribute('aria-selected', 'true');
+    });
 });

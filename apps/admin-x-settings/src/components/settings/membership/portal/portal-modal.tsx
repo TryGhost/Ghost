@@ -21,8 +21,11 @@ const Sidebar: React.FC<{
     updateTier: (tier: Tier) => void
     errors: Record<string, string | undefined>
     setError: (key: string, error: string | undefined) => void
-}> = ({localSettings, updateSetting, localTiers, updateTier, errors, setError}) => {
-    const [selectedTab, setSelectedTab] = useState('signupOptions');
+    selectedTab?: string
+    onTabChange?: (id: string) => void
+}> = ({localSettings, updateSetting, localTiers, updateTier, errors, setError, selectedTab: externalSelectedTab, onTabChange: externalOnTabChange}) => {
+    const [internalSelectedTab, setInternalSelectedTab] = useState('signupOptions');
+    const selectedTab = externalSelectedTab || internalSelectedTab;
 
     const tabs: Tab[] = [
         {
@@ -50,7 +53,8 @@ const Sidebar: React.FC<{
     ];
 
     const handleTabChange = (id: string) => {
-        setSelectedTab(id);
+        setInternalSelectedTab(id);
+        externalOnTabChange?.(id);
     };
 
     return (
@@ -64,6 +68,7 @@ const PortalModal: React.FC = () => {
     const {updateRoute} = useRouting();
 
     const [selectedPreviewTab, setSelectedPreviewTab] = useState('signup');
+    const [selectedSidebarTab, setSelectedSidebarTab] = useState('signupOptions');
 
     const handleError = useHandleError();
     const {settings, siteData, config} = useGlobalData();
@@ -189,15 +194,35 @@ const PortalModal: React.FC = () => {
 
     const onSelectURL = (id: string) => {
         setSelectedPreviewTab(id);
+        // Sync sidebar tab when preview tab changes
+        if (id === 'signup') {
+            setSelectedSidebarTab('signupOptions');
+        } else if (id === 'account') {
+            setSelectedSidebarTab('accountPage');
+        }
+        // 'links' tab doesn't have a corresponding sidebar tab, so we don't change it
+    };
+
+    const onSidebarTabChange = (id: string) => {
+        setSelectedSidebarTab(id);
+        // Sync preview tab when sidebar tab changes
+        if (id === 'signupOptions') {
+            setSelectedPreviewTab('signup');
+        } else if (id === 'accountPage') {
+            setSelectedPreviewTab('account');
+        }
+        // 'lookAndFeel' doesn't have a direct corresponding preview tab, keep current preview
     };
 
     const sidebar = <Sidebar
         errors={errors}
         localSettings={formState.settings}
         localTiers={formState.tiers}
+        selectedTab={selectedSidebarTab}
         setError={setError}
         updateSetting={updateSetting}
         updateTier={updateTier}
+        onTabChange={onSidebarTabChange}
     />;
     const preview = <PortalPreview
         localSettings={formState.settings}
