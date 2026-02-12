@@ -209,6 +209,27 @@ class OfferBookshelfRepository {
     }
 
     /**
+     * @param {object} options
+     * @param {string[]} options.subscriptionIds
+     * @param {import('knex').Knex.Transaction} [options.transacting]
+     * @returns {Promise<Array<{subscription_id: string, offer_id: string}>>}
+     */
+    async getRedeemedOfferIdsForSubscriptions({subscriptionIds, transacting}) {
+        if (subscriptionIds.length === 0) {
+            return [];
+        }
+
+        const redemptions = await this.OfferRedemptionModel
+            .query(qb => qb.whereIn('subscription_id', subscriptionIds))
+            .fetchAll({transacting, columns: ['subscription_id', 'offer_id']});
+
+        return redemptions.map(r => ({
+            subscription_id: r.get('subscription_id'),
+            offer_id: r.get('offer_id')
+        }));
+    }
+
+    /**
      * @param {import('./domain/models/offer')} offer
      * @param {BaseOptions} [options]
      * @returns {Promise<void>}
