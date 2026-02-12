@@ -513,9 +513,6 @@ jobs:
     services:
       mysql:
         image: ${{ matrix.env.DB == 'mysql8' && 'mysql:8.0' || '' }}
-        credentials:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
         env:
           MYSQL_DATABASE: ghost_testing
           MYSQL_ROOT_PASSWORD: root
@@ -604,9 +601,6 @@ jobs:
     services:
       mysql:
         image: ${{ matrix.env.DB == 'mysql8' && 'mysql:8.0' || '' }}
-        credentials:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
         env:
           MYSQL_DATABASE: ghost_testing
           MYSQL_ROOT_PASSWORD: root
