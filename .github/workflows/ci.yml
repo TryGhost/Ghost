@@ -1,7 +1,7 @@
 name: CI
 on:
   pull_request:
-    types: [opened, synchronize, reopened, labeled, unlabeled]
+    types: [opened, synchronize, reopened]
   push:
     # Ref: GHA Filter pattern syntax: https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#filter-pattern-cheat-sheet
     # Run on pushes to main, release branches, and previous/future major version branches
@@ -30,14 +30,6 @@ jobs:
   job_setup:
     name: Setup
     runs-on: ubuntu-latest
-    # Having certain parts of our huge CI workflow run on a specific label is an anti-pattern.
-    # Long term, we want to get away from this by having all of our tests run on every PR, and have the staging deploy either be automatic or a different workflow
-    # This logic skips the entire workflow if triggered by a label that doesn't contain "test" or "deploy" - there's nothing new to do in that case
-    if: |
-      github.event_name != 'pull_request' ||
-      (github.event.action == 'labeled' && (contains(github.event.label.name, 'test') || contains(github.event.label.name, 'deploy'))) ||
-      (github.event.action == 'unlabeled' && (contains(github.event.label.name, 'test') || contains(github.event.label.name, 'deploy'))) ||
-      (github.event.action != 'labeled' && github.event.action != 'unlabeled')
     timeout-minutes: 15
     env:
       IS_MAIN: ${{ github.ref == 'refs/heads/main' }}
@@ -222,6 +214,27 @@ jobs:
       dependency_cache_key: ${{ env.cachekey }}
       node_version: ${{ env.NODE_VERSION }}
       node_test_matrix: ${{ steps.node_matrix.outputs.matrix }}
+
+  job_app_version_bump_check:
+    name: Check app version bump
+    runs-on: ubuntu-latest
+    needs: [job_setup]
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout PR head commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Fetch main branch
+        run: git fetch --no-tags --depth=1 origin main
+
+      - name: Check app version bump
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_COMPARE_SHA: ${{ github.event.pull_request.head.sha }}
+        run: node .github/scripts/check-app-version-bump.js
 
   job_lint:
     runs-on: ubuntu-latest
@@ -497,6 +510,23 @@ jobs:
     runs-on: ubuntu-latest
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_core == 'true'
+    services:
+      mysql:
+        image: ${{ matrix.env.DB == 'mysql8' && 'mysql:8.0' || '' }}
+        credentials:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+        env:
+          MYSQL_DATABASE: ghost_testing
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306
+        options: >-
+          --tmpfs /var/lib/mysql
+          --health-cmd "mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
     strategy:
       matrix:
         node: ${{ fromJSON(needs.job_setup.outputs.node_test_matrix) }}
@@ -520,26 +550,6 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
 
-      - name: Shutdown MySQL
-        run: sudo service mysql stop
-        if: matrix.env.DB == 'mysql8'
-
-      - name: Login to Docker Hub
-        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - uses: tryghost/mysql-action@main
-        if: matrix.env.DB == 'mysql8'
-        timeout-minutes: 5
-        with:
-          authentication plugin: 'caching_sha2_password'
-          mysql version: '8.0'
-          mysql database: 'ghost_testing'
-          mysql root password: 'root'
-
       - name: Restore caches
         uses: ./.github/actions/restore-cache
         env:
@@ -559,7 +569,10 @@ jobs:
 
       - name: Set env vars (MySQL)
         if: contains(matrix.env.DB, 'mysql')
-        run: echo "database__connection__password=root" >> $GITHUB_ENV
+        run: |
+          echo "database__connection__host=127.0.0.1" >> $GITHUB_ENV
+          echo "database__connection__port=${{ job.services.mysql.ports['3306'] }}" >> $GITHUB_ENV
+          echo "database__connection__password=root" >> $GITHUB_ENV
 
       - name: E2E tests
         working-directory: ghost/core
@@ -588,6 +601,23 @@ jobs:
     runs-on: ubuntu-latest
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_core == 'true'
+    services:
+      mysql:
+        image: ${{ matrix.env.DB == 'mysql8' && 'mysql:8.0' || '' }}
+        credentials:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+        env:
+          MYSQL_DATABASE: ghost_testing
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306
+        options: >-
+          --tmpfs /var/lib/mysql
+          --health-cmd "mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
     strategy:
       matrix:
         include:
@@ -613,19 +643,6 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
 
-      - name: Shutdown MySQL
-        run: sudo service mysql stop
-        if: matrix.env.DB == 'mysql8'
-
-      - uses: tryghost/mysql-action@main
-        if: matrix.env.DB == 'mysql8'
-        timeout-minutes: 5
-        with:
-          authentication plugin: 'caching_sha2_password'
-          mysql version: '8.0'
-          mysql database: 'ghost_testing'
-          mysql root password: 'root'
-
       - name: Restore caches
         uses: ./.github/actions/restore-cache
         env:
@@ -640,7 +657,10 @@ jobs:
 
       - name: Set env vars (MySQL)
         if: contains(matrix.env.DB, 'mysql')
-        run: echo "database__connection__password=root" >> $GITHUB_ENV
+        run: |
+          echo "database__connection__host=127.0.0.1" >> $GITHUB_ENV
+          echo "database__connection__port=${{ job.services.mysql.ports['3306'] }}" >> $GITHUB_ENV
+          echo "database__connection__password=root" >> $GITHUB_ENV
 
       - name: Legacy tests
         working-directory: ghost/core
@@ -1319,6 +1339,7 @@ jobs:
     needs:
       [
         job_setup,
+        job_app_version_bump_check,
         job_lint,
         job_i18n,
         job_ghost-cli,

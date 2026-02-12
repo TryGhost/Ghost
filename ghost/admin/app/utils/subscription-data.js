@@ -70,8 +70,11 @@ export function compExpiry(sub) {
 }
 
 export function trialUntil(sub) {
-    const inTrialMode = sub.trial_end_at && moment(sub.trial_end_at).isAfter(new Date(), 'day');
-    if (inTrialMode) {
+    const offer = sub.offer;
+    const isTrial = !offer || offer?.type === 'trial';
+    const isTrialActive = isTrial && sub.trial_end_at && moment(sub.trial_end_at).isAfter(new Date(), 'day');
+
+    if (isTrialActive) {
         return moment(sub.trial_end_at).format('D MMM YYYY');
     }
 

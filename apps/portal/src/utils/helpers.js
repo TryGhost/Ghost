@@ -534,10 +534,17 @@ export function getSubFreeTrialDaysLeft({sub} = {}) {
 }
 
 export function subscriptionHasFreeTrial({sub} = {}) {
-    if (sub?.trial_end_at && !isInThePast(new Date(sub?.trial_end_at))) {
-        return true;
-    }
-    return false;
+    const isTrial = !sub?.offer || sub?.offer?.type === 'trial';
+    const isTrialActive = isTrial && sub?.trial_end_at && !isInThePast(new Date(sub?.trial_end_at));
+
+    return isTrialActive;
+}
+
+export function subscriptionHasFreeMonthsOffer({sub} = {}) {
+    const isFreeMonths = sub?.offer?.type === 'free_months';
+    const isFreeMonthsActive = isFreeMonths && sub?.trial_end_at && !isInThePast(new Date(sub?.trial_end_at));
+
+    return isFreeMonthsActive;
 }
 
 export function isInThePast(date) {
@@ -788,11 +795,14 @@ export function getPriceIdFromPageQuery({site, pageQuery}) {
     return null;
 }
 
+// TODO: Add i18n once copy is finalized
 export const getOfferOffAmount = ({offer}) => {
     if (offer.type === 'fixed') {
         return `${getCurrencySymbol(offer.currency)}${offer.amount / 100}`;
     } else if (offer.type === 'percent') {
         return `${offer.amount}%`;
+    } else if (offer.type === 'free_months') {
+        return `${offer.amount === 1 ? '1 month' : `${offer.amount} months`}`;
     }
     return '';
 };
@@ -800,6 +810,7 @@ export const getOfferOffAmount = ({offer}) => {
 export const getUpdatedOfferPrice = ({offer, price, useFormatted = false}) => {
     const originalAmount = price.amount;
     let updatedAmount;
+
     if (offer.type === 'fixed' && isSameCurrency(offer.currency, price.currency)) {
         updatedAmount = ((originalAmount - offer.amount)) / 100;
         updatedAmount = updatedAmount > 0 ? updatedAmount : 0;
@@ -811,6 +822,7 @@ export const getUpdatedOfferPrice = ({offer, price, useFormatted = false}) => {
     if (useFormatted) {
         return Intl.NumberFormat('en', {currency: price?.currency, style: 'currency'}).format(updatedAmount);
     }
+
     return updatedAmount;
 };
 
