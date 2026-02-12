@@ -46,6 +46,7 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const inputs = (
         <SettingGroupContent className="analytics-settings !gap-y-0" columns={1}>
             <Toggle
+                align='center'
                 checked={isWebAnalyticsEnabled}
                 containerClasses='py-4'
                 direction='rtl'
@@ -88,6 +89,7 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 )
             )}
             <Toggle
+                align='center'
                 checked={trackEmailOpens}
                 containerClasses='py-4'
                 direction='rtl'
@@ -100,6 +102,7 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
             />
             <Separator className="border-grey-200 dark:border-grey-900" />
             <Toggle
+                align='center'
                 checked={trackEmailClicks}
                 containerClasses='py-4'
                 direction='rtl'
@@ -113,6 +116,7 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
             />
             <Separator className="border-grey-200 dark:border-grey-900" />
             <Toggle
+                align='center'
                 checked={trackMemberSources}
                 containerClasses='py-4'
                 direction='rtl'
@@ -125,6 +129,7 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
             />
             <Separator className="border-grey-200 dark:border-grey-900" />
             <Toggle
+                align='center'
                 checked={outboundLinkTagging}
                 containerClasses='py-4'
                 direction='rtl'
