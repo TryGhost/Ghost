@@ -76,7 +76,7 @@ async function loadMoreReplies({state, api, data: {comment, limit}, isReply}: {s
         while (hasMore) {
             const data = await fetchReplies(afterReplyId, 100);
             allComments.push(...data.comments);
-            hasMore = !!data.meta.pagination.next;
+            hasMore = !!data.meta?.pagination?.next;
 
             if (data.comments && data.comments.length > 0) {
                 afterReplyId = data.comments[data.comments.length - 1]?.id;
@@ -106,41 +106,39 @@ async function loadMoreReplies({state, api, data: {comment, limit}, isReply}: {s
 
 async function addComment({state, api, data: comment}: {state: EditableAppContext, api: GhostApi, data: AddComment}) {
     const data = await api.comments.add({comment});
-    comment = data.comments[0];
+    const newComment = data.comments[0];
 
     return {
-        comments: [comment, ...state.comments],
-        commentCount: state.commentCount + 1
+        comments: [newComment, ...state.comments],
+        commentCount: state.commentCount + 1,
+        commentIdToScrollTo: newComment.id
     };
 }
 
 async function addReply({state, api, data: {reply, parent}}: {state: EditableAppContext, api: GhostApi, data: {reply: any, parent: any}}) {
-    let comment = reply;
-    comment.parent_id = parent.id;
+    const data = await api.comments.add({
+        comment: {...reply, parent_id: parent.id}
+    });
+    const newComment = data.comments[0];
 
-    const data = await api.comments.add({comment});
-    comment = data.comments[0];
+    const allReplies = await api.comments.replies({commentId: parent.id, limit: 'all'});
 
-    // When we add a reply,
-    // it is possible that we didn't load all the replies for the given comment yet.
-    // To fix that, we'll save the reply to a different field that is created locally to differentiate between replies before and after pagination 😅
-
-    // Replace the comment in the state with the new one
     return {
         comments: state.comments.map((c) => {
             if (c.id === parent.id) {
                 return {
-                    ...parent,
-                    replies: [...parent.replies, comment],
+                    ...c,
+                    replies: allReplies.comments,
                     count: {
-                        ...parent.count,
-                        replies: parent.count.replies + 1
+                        ...c.count,
+                        replies: allReplies.comments.length
                     }
                 };
             }
             return c;
         }),
-        commentCount: state.commentCount + 1
+        commentCount: state.commentCount + 1,
+        commentIdToScrollTo: newComment.id
     };
 }
 
@@ -412,17 +410,21 @@ function closePopup() {
 async function openCommentForm({data: newForm, api, state}: {data: OpenCommentForm, api: GhostApi, state: EditableAppContext}) {
     let otherStateChanges = {};
 
-    // When opening a reply form, we load in all of the replies for the parent comment so that
-    // the reply shown after posting appears in the correct place based on ordering
+    // When opening a reply form, load all replies for the parent comment so the
+    // reply appears in the correct position after posting
     const topLevelCommentId = newForm.parent_id || newForm.id;
     if (newForm.type === 'reply' && !state.openCommentForms.some(f => f.id === topLevelCommentId || f.parent_id === topLevelCommentId)) {
         const comment = state.comments.find(c => c.id === topLevelCommentId);
 
         if (comment) {
-            // we don't want the admin api to load reply data for replying to a reply, so we pass isReply: true
-            // TODO: why don't we want the admin api to load reply data for replying to a reply?
-            const newCommentsState = await loadMoreReplies({state, api, data: {comment, limit: 'all'}, isReply: true});
-            otherStateChanges = {...otherStateChanges, ...newCommentsState};
+            try {
+                const newCommentsState = await loadMoreReplies({state, api, data: {comment, limit: 'all'}, isReply: true});
+                otherStateChanges = {...otherStateChanges, ...newCommentsState};
+            } catch (e) {
+                // If loading replies fails, continue anyway - the form should still open
+                // and replies will be loaded when the user submits
+                console.error('[Comments] Failed to load replies before opening form:', e); // eslint-disable-line no-console
+            }
         }
     }
 
@@ -435,11 +437,10 @@ async function openCommentForm({data: newForm, api, state}: {data: OpenCommentFo
     const openFormIndexForId = openFormsAfterAutoclose.findIndex(form => form.id === newForm.id);
     if (openFormIndexForId > -1) {
         openFormsAfterAutoclose[openFormIndexForId] = newForm;
-
         return {openCommentForms: openFormsAfterAutoclose, ...otherStateChanges};
     } else {
         return {openCommentForms: [...openFormsAfterAutoclose, newForm], ...otherStateChanges};
-    };
+    }
 }
 
 function setHighlightComment({data: commentId}: {data: string | null}) {
@@ -497,7 +498,6 @@ export const SyncActions = {
 export type SyncActionType = keyof typeof SyncActions;
 
 export const Actions = {
-    // Put your actions here
     addComment,
     editComment,
     hideComment,
@@ -509,9 +509,9 @@ export const Actions = {
     addReply,
     loadMoreComments,
     loadMoreReplies,
+    openCommentForm,
     updateMember,
     setOrder,
-    openCommentForm,
     highlightComment,
     setHighlightComment,
     setCommentsIsLoading,
