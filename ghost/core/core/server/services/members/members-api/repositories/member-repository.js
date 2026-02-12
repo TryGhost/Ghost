@@ -839,13 +839,7 @@ module.exports = class MemberRepository {
 
         const memberIds = memberRows.map(row => row.id);
 
-        const bulkDestroyResult = await this._Member.bulkDestroy(memberIds);
-
-        bulkDestroyResult.unsuccessfulIds = bulkDestroyResult.unsuccessfulData;
-
-        delete bulkDestroyResult.unsuccessfulData;
-
-        return bulkDestroyResult;
+        return await this._Member.bulkDestroy(memberIds);
     }
 
     async bulkEdit(data, options) {

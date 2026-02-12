@@ -140,39 +140,23 @@ module.exports = function (Bookshelf) {
          * @param {object} [options]
          * @param {object} [options.data] - Column values to set
          * @param {string} [options.column] - Column to match against (defaults to 'id')
-         * @returns {Promise<{successful: number, unsuccessful: number, errors: Array, unsuccessfulData: Array}>}
+         * @returns {Promise<{successful: number, unsuccessful: number}>}
          */
         bulkEdit: async function bulkEdit(ids, tableName, options = {}) {
             tableName = tableName || this.prototype.tableName;
 
-            try {
-                const affectedRows = await this.bulkEditWhere({
-                    data: options.data,
-                    where: byColumnValues(options.column ?? 'id', ids),
-                    transacting: options.transacting,
-                    tableName
-                });
+            const affectedRows = await this.bulkEditWhere({
+                data: options.data,
+                where: byColumnValues(options.column ?? 'id', ids),
+                transacting: options.transacting,
+                tableName
+            });
 
-                if (affectedRows > 0 && tableName === this.prototype.tableName) {
-                    await this.addActions('edited', ids, options);
-                }
-
-                return {successful: ids.length, unsuccessful: 0, errors: [], unsuccessfulData: []};
-            } catch (err) {
-                if (options.throwErrors) {
-                    throw err;
-                }
-                return {
-                    successful: 0,
-                    unsuccessful: ids.length,
-                    errors: ids.map((id) => {
-                        const e = Object.create(err);
-                        e.errorDetails = id;
-                        return e;
-                    }),
-                    unsuccessfulData: ids
-                };
+            if (affectedRows > 0 && tableName === this.prototype.tableName) {
+                await this.addActions('edited', ids, options);
             }
+
+            return {successful: ids.length, unsuccessful: 0};
         },
 
         /**
@@ -182,7 +166,7 @@ module.exports = function (Bookshelf) {
          * @param {string} tableName - Table to delete from (defaults to model's table)
          * @param {object} [options]
          * @param {string} [options.column] - Column to match against (defaults to 'id')
-         * @returns {Promise<{successful: number, unsuccessful: number, errors: Array, unsuccessfulData: Array}>}
+         * @returns {Promise<{successful: number, unsuccessful: number}>}
          */
         bulkDestroy: async function bulkDestroy(ids, tableName, options = {}) {
             tableName = tableName || this.prototype.tableName;
@@ -192,29 +176,13 @@ module.exports = function (Bookshelf) {
                 await this.addActions('deleted', ids, options);
             }
 
-            try {
-                await this.bulkDestroyWhere({
-                    where: byColumnValues(options.column ?? 'id', ids),
-                    transacting: options.transacting,
-                    tableName
-                });
+            await this.bulkDestroyWhere({
+                where: byColumnValues(options.column ?? 'id', ids),
+                transacting: options.transacting,
+                tableName
+            });
 
-                return {successful: ids.length, unsuccessful: 0, errors: [], unsuccessfulData: []};
-            } catch (err) {
-                if (options.throwErrors) {
-                    throw err;
-                }
-                return {
-                    successful: 0,
-                    unsuccessful: ids.length,
-                    errors: ids.map((id) => {
-                        const e = Object.create(err);
-                        e.errorDetails = id;
-                        return e;
-                    }),
-                    unsuccessfulData: ids
-                };
-            }
+            return {successful: ids.length, unsuccessful: 0};
         }
     });
 };

@@ -183,9 +183,7 @@ describe('LinkClickTrackingService', function () {
                 postLinkRepository: {
                     updateLinks: sinon.stub().resolves({
                         successful: 0,
-                        unsuccessful: 0,
-                        errors: [],
-                        unsuccessfulData: []
+                        unsuccessful: 0
                     })
                 },
                 linkRedirectService: {
@@ -204,9 +202,7 @@ describe('LinkClickTrackingService', function () {
             }, options);
             assert.deepEqual(result, {
                 successful: 0,
-                unsuccessful: 0,
-                errors: [],
-                unsuccessfulData: []
+                unsuccessful: 0
             });
         });
 
@@ -219,9 +215,7 @@ describe('LinkClickTrackingService', function () {
             const postLinkRepositoryStub = {
                 updateLinks: sinon.stub().resolves({
                     successful: 0,
-                    unsuccessful: 0,
-                    errors: [],
-                    unsuccessfulData: []
+                    unsuccessful: 0
                 })
             };
             const linkRedirectServiceStub = {
@@ -250,9 +244,7 @@ describe('LinkClickTrackingService', function () {
             assert.equal(postLinkRepositoryStub.updateLinks.calledOnce, true);
             assert.deepEqual(result, {
                 successful: 0,
-                unsuccessful: 0,
-                errors: [],
-                unsuccessfulData: []
+                unsuccessful: 0
             });
 
             const [filterOptions] = linkRedirectServiceStub.getFilteredIds.firstCall.args;
@@ -268,9 +260,7 @@ describe('LinkClickTrackingService', function () {
             const postLinkRepositoryStub = {
                 updateLinks: sinon.stub().resolves({
                     successful: 0,
-                    unsuccessful: 0,
-                    errors: [],
-                    unsuccessfulData: []
+                    unsuccessful: 0
                 })
             };
             const linkRedirectServiceStub = {
@@ -299,9 +289,7 @@ describe('LinkClickTrackingService', function () {
             assert.equal(postLinkRepositoryStub.updateLinks.calledOnce, true);
             assert.deepEqual(result, {
                 successful: 0,
-                unsuccessful: 0,
-                errors: [],
-                unsuccessfulData: []
+                unsuccessful: 0
             });
 
             const [filterOptions] = linkRedirectServiceStub.getFilteredIds.firstCall.args;
@@ -317,9 +305,7 @@ describe('LinkClickTrackingService', function () {
             const postLinkRepositoryStub = {
                 updateLinks: sinon.stub().resolves({
                     successful: 0,
-                    unsuccessful: 0,
-                    errors: [],
-                    unsuccessfulData: []
+                    unsuccessful: 0
                 })
             };
             const linkRedirectServiceStub = {
