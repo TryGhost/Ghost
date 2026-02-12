@@ -333,8 +333,24 @@ Object {
       "value": false,
     },
     Object {
-      "key": "transistor_portal_settings",
-      "value": "{\\"enabled\\":true,\\"heading\\":\\"Podcasts\\",\\"description\\":\\"Access your RSS feeds\\",\\"button_text\\":\\"Manage\\",\\"url_template\\":\\"https://partner.transistor.fm/ghost/{memberUuid}\\"}",
+      "key": "transistor_portal_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "transistor_portal_heading",
+      "value": "Podcasts",
+    },
+    Object {
+      "key": "transistor_portal_description",
+      "value": "Access your RSS feeds",
+    },
+    Object {
+      "key": "transistor_portal_button_text",
+      "value": "Manage",
+    },
+    Object {
+      "key": "transistor_portal_url_template",
+      "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
       "key": "members_enabled",
@@ -1152,8 +1168,24 @@ Object {
       "value": false,
     },
     Object {
-      "key": "transistor_portal_settings",
-      "value": "{\\"enabled\\":true,\\"heading\\":\\"Podcasts\\",\\"description\\":\\"Access your RSS feeds\\",\\"button_text\\":\\"Manage\\",\\"url_template\\":\\"https://partner.transistor.fm/ghost/{memberUuid}\\"}",
+      "key": "transistor_portal_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "transistor_portal_heading",
+      "value": "Podcasts",
+    },
+    Object {
+      "key": "transistor_portal_description",
+      "value": "Access your RSS feeds",
+    },
+    Object {
+      "key": "transistor_portal_button_text",
+      "value": "Manage",
+    },
+    Object {
+      "key": "transistor_portal_url_template",
+      "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
       "key": "members_enabled",
@@ -1554,8 +1586,24 @@ Object {
       "value": false,
     },
     Object {
-      "key": "transistor_portal_settings",
-      "value": "{\\"enabled\\":true,\\"heading\\":\\"Podcasts\\",\\"description\\":\\"Access your RSS feeds\\",\\"button_text\\":\\"Manage\\",\\"url_template\\":\\"https://partner.transistor.fm/ghost/{memberUuid}\\"}",
+      "key": "transistor_portal_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "transistor_portal_heading",
+      "value": "Podcasts",
+    },
+    Object {
+      "key": "transistor_portal_description",
+      "value": "Access your RSS feeds",
+    },
+    Object {
+      "key": "transistor_portal_button_text",
+      "value": "Manage",
+    },
+    Object {
+      "key": "transistor_portal_url_template",
+      "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
       "key": "members_enabled",
@@ -2001,8 +2049,24 @@ Object {
       "value": false,
     },
     Object {
-      "key": "transistor_portal_settings",
-      "value": "{\\"enabled\\":true,\\"heading\\":\\"Podcasts\\",\\"description\\":\\"Access your RSS feeds\\",\\"button_text\\":\\"Manage\\",\\"url_template\\":\\"https://partner.transistor.fm/ghost/{memberUuid}\\"}",
+      "key": "transistor_portal_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "transistor_portal_heading",
+      "value": "Podcasts",
+    },
+    Object {
+      "key": "transistor_portal_description",
+      "value": "Access your RSS feeds",
+    },
+    Object {
+      "key": "transistor_portal_button_text",
+      "value": "Manage",
+    },
+    Object {
+      "key": "transistor_portal_url_template",
+      "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
       "key": "members_enabled",
@@ -2402,8 +2466,24 @@ Object {
       "value": false,
     },
     Object {
-      "key": "transistor_portal_settings",
-      "value": "{\\"enabled\\":true,\\"heading\\":\\"Podcasts\\",\\"description\\":\\"Access your RSS feeds\\",\\"button_text\\":\\"Manage\\",\\"url_template\\":\\"https://partner.transistor.fm/ghost/{memberUuid}\\"}",
+      "key": "transistor_portal_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "transistor_portal_heading",
+      "value": "Podcasts",
+    },
+    Object {
+      "key": "transistor_portal_description",
+      "value": "Access your RSS feeds",
+    },
+    Object {
+      "key": "transistor_portal_button_text",
+      "value": "Manage",
+    },
+    Object {
+      "key": "transistor_portal_url_template",
+      "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
       "key": "members_enabled",
@@ -3258,8 +3338,24 @@ Object {
       "value": false,
     },
     Object {
-      "key": "transistor_portal_settings",
-      "value": "{\\"enabled\\":true,\\"heading\\":\\"Podcasts\\",\\"description\\":\\"Access your RSS feeds\\",\\"button_text\\":\\"Manage\\",\\"url_template\\":\\"https://partner.transistor.fm/ghost/{memberUuid}\\"}",
+      "key": "transistor_portal_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "transistor_portal_heading",
+      "value": "Podcasts",
+    },
+    Object {
+      "key": "transistor_portal_description",
+      "value": "Access your RSS feeds",
+    },
+    Object {
+      "key": "transistor_portal_button_text",
+      "value": "Manage",
+    },
+    Object {
+      "key": "transistor_portal_url_template",
+      "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
       "key": "members_enabled",
@@ -3660,8 +3756,24 @@ Object {
       "value": false,
     },
     Object {
-      "key": "transistor_portal_settings",
-      "value": "{\\"enabled\\":true,\\"heading\\":\\"Podcasts\\",\\"description\\":\\"Access your RSS feeds\\",\\"button_text\\":\\"Manage\\",\\"url_template\\":\\"https://partner.transistor.fm/ghost/{memberUuid}\\"}",
+      "key": "transistor_portal_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "transistor_portal_heading",
+      "value": "Podcasts",
+    },
+    Object {
+      "key": "transistor_portal_description",
+      "value": "Access your RSS feeds",
+    },
+    Object {
+      "key": "transistor_portal_button_text",
+      "value": "Manage",
+    },
+    Object {
+      "key": "transistor_portal_url_template",
+      "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
       "key": "members_enabled",
@@ -4062,8 +4174,24 @@ Object {
       "value": false,
     },
     Object {
-      "key": "transistor_portal_settings",
-      "value": "{\\"enabled\\":true,\\"heading\\":\\"Podcasts\\",\\"description\\":\\"Access your RSS feeds\\",\\"button_text\\":\\"Manage\\",\\"url_template\\":\\"https://partner.transistor.fm/ghost/{memberUuid}\\"}",
+      "key": "transistor_portal_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "transistor_portal_heading",
+      "value": "Podcasts",
+    },
+    Object {
+      "key": "transistor_portal_description",
+      "value": "Access your RSS feeds",
+    },
+    Object {
+      "key": "transistor_portal_button_text",
+      "value": "Manage",
+    },
+    Object {
+      "key": "transistor_portal_url_template",
+      "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
       "key": "members_enabled",
@@ -4468,8 +4596,24 @@ Object {
       "value": false,
     },
     Object {
-      "key": "transistor_portal_settings",
-      "value": "{\\"enabled\\":true,\\"heading\\":\\"Podcasts\\",\\"description\\":\\"Access your RSS feeds\\",\\"button_text\\":\\"Manage\\",\\"url_template\\":\\"https://partner.transistor.fm/ghost/{memberUuid}\\"}",
+      "key": "transistor_portal_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "transistor_portal_heading",
+      "value": "Podcasts",
+    },
+    Object {
+      "key": "transistor_portal_description",
+      "value": "Access your RSS feeds",
+    },
+    Object {
+      "key": "transistor_portal_button_text",
+      "value": "Manage",
+    },
+    Object {
+      "key": "transistor_portal_url_template",
+      "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
       "key": "members_enabled",
@@ -4869,8 +5013,24 @@ Object {
       "value": false,
     },
     Object {
-      "key": "transistor_portal_settings",
-      "value": "{\\"enabled\\":true,\\"heading\\":\\"Podcasts\\",\\"description\\":\\"Access your RSS feeds\\",\\"button_text\\":\\"Manage\\",\\"url_template\\":\\"https://partner.transistor.fm/ghost/{memberUuid}\\"}",
+      "key": "transistor_portal_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "transistor_portal_heading",
+      "value": "Podcasts",
+    },
+    Object {
+      "key": "transistor_portal_description",
+      "value": "Access your RSS feeds",
+    },
+    Object {
+      "key": "transistor_portal_button_text",
+      "value": "Manage",
+    },
+    Object {
+      "key": "transistor_portal_url_template",
+      "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
       "key": "members_enabled",
@@ -5275,8 +5435,24 @@ Object {
       "value": false,
     },
     Object {
-      "key": "transistor_portal_settings",
-      "value": "{\\"enabled\\":true,\\"heading\\":\\"Podcasts\\",\\"description\\":\\"Access your RSS feeds\\",\\"button_text\\":\\"Manage\\",\\"url_template\\":\\"https://partner.transistor.fm/ghost/{memberUuid}\\"}",
+      "key": "transistor_portal_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "transistor_portal_heading",
+      "value": "Podcasts",
+    },
+    Object {
+      "key": "transistor_portal_description",
+      "value": "Access your RSS feeds",
+    },
+    Object {
+      "key": "transistor_portal_button_text",
+      "value": "Manage",
+    },
+    Object {
+      "key": "transistor_portal_url_template",
+      "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
       "key": "members_enabled",
@@ -6037,8 +6213,24 @@ Object {
       "value": false,
     },
     Object {
-      "key": "transistor_portal_settings",
-      "value": "{\\"enabled\\":true,\\"heading\\":\\"Podcasts\\",\\"description\\":\\"Access your RSS feeds\\",\\"button_text\\":\\"Manage\\",\\"url_template\\":\\"https://partner.transistor.fm/ghost/{memberUuid}\\"}",
+      "key": "transistor_portal_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "transistor_portal_heading",
+      "value": "Podcasts",
+    },
+    Object {
+      "key": "transistor_portal_description",
+      "value": "Access your RSS feeds",
+    },
+    Object {
+      "key": "transistor_portal_button_text",
+      "value": "Manage",
+    },
+    Object {
+      "key": "transistor_portal_url_template",
+      "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
       "key": "members_enabled",
@@ -6439,8 +6631,24 @@ Object {
       "value": false,
     },
     Object {
-      "key": "transistor_portal_settings",
-      "value": "{\\"enabled\\":true,\\"heading\\":\\"Podcasts\\",\\"description\\":\\"Access your RSS feeds\\",\\"button_text\\":\\"Manage\\",\\"url_template\\":\\"https://partner.transistor.fm/ghost/{memberUuid}\\"}",
+      "key": "transistor_portal_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "transistor_portal_heading",
+      "value": "Podcasts",
+    },
+    Object {
+      "key": "transistor_portal_description",
+      "value": "Access your RSS feeds",
+    },
+    Object {
+      "key": "transistor_portal_button_text",
+      "value": "Manage",
+    },
+    Object {
+      "key": "transistor_portal_url_template",
+      "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
       "key": "members_enabled",
@@ -6842,8 +7050,24 @@ Object {
       "value": false,
     },
     Object {
-      "key": "transistor_portal_settings",
-      "value": "{\\"enabled\\":true,\\"heading\\":\\"Podcasts\\",\\"description\\":\\"Access your RSS feeds\\",\\"button_text\\":\\"Manage\\",\\"url_template\\":\\"https://partner.transistor.fm/ghost/{memberUuid}\\"}",
+      "key": "transistor_portal_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "transistor_portal_heading",
+      "value": "Podcasts",
+    },
+    Object {
+      "key": "transistor_portal_description",
+      "value": "Access your RSS feeds",
+    },
+    Object {
+      "key": "transistor_portal_button_text",
+      "value": "Manage",
+    },
+    Object {
+      "key": "transistor_portal_url_template",
+      "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
       "key": "members_enabled",
@@ -7245,8 +7469,24 @@ Object {
       "value": false,
     },
     Object {
-      "key": "transistor_portal_settings",
-      "value": "{\\"enabled\\":true,\\"heading\\":\\"Podcasts\\",\\"description\\":\\"Access your RSS feeds\\",\\"button_text\\":\\"Manage\\",\\"url_template\\":\\"https://partner.transistor.fm/ghost/{memberUuid}\\"}",
+      "key": "transistor_portal_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "transistor_portal_heading",
+      "value": "Podcasts",
+    },
+    Object {
+      "key": "transistor_portal_description",
+      "value": "Access your RSS feeds",
+    },
+    Object {
+      "key": "transistor_portal_button_text",
+      "value": "Manage",
+    },
+    Object {
+      "key": "transistor_portal_url_template",
+      "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
       "key": "members_enabled",
@@ -7710,8 +7950,24 @@ Object {
       "value": false,
     },
     Object {
-      "key": "transistor_portal_settings",
-      "value": "{\\"enabled\\":true,\\"heading\\":\\"Podcasts\\",\\"description\\":\\"Access your RSS feeds\\",\\"button_text\\":\\"Manage\\",\\"url_template\\":\\"https://partner.transistor.fm/ghost/{memberUuid}\\"}",
+      "key": "transistor_portal_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "transistor_portal_heading",
+      "value": "Podcasts",
+    },
+    Object {
+      "key": "transistor_portal_description",
+      "value": "Access your RSS feeds",
+    },
+    Object {
+      "key": "transistor_portal_button_text",
+      "value": "Manage",
+    },
+    Object {
+      "key": "transistor_portal_url_template",
+      "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
       "key": "members_enabled",
