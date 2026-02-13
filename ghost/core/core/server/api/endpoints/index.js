@@ -29,6 +29,10 @@ module.exports = {
         return require('./session');
     },
 
+    get sso() {
+        return require('./sso');
+    },
+
     get schedules() {
         return apiFramework.pipeline(require('./schedules'), localUtils);
     },
