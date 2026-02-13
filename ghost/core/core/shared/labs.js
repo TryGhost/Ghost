@@ -50,7 +50,8 @@ const PRIVATE_FEATURES = [
     'transistor',
     'retentionOffers',
     'membersForward',
-    'welcomeEmailsDesignCustomization'
+    'welcomeEmailsDesignCustomization',
+    'pictureImageFormats'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
