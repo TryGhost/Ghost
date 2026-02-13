@@ -72,6 +72,7 @@ export default class FeatureService extends Service {
     @feature('transistor') transistor;
     @feature('tagsX') tagsX;
     @feature('commentModeration') commentModeration;
+    @feature('membersForward') membersForward;
     _user = null;
 
     @computed('settings.labs')
