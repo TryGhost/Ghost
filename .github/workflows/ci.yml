@@ -492,6 +492,9 @@ jobs:
         run: yarn nx run-many -t build --exclude=ghost-admin
 
       - run: yarn nx affected -t test:unit --base=${{ needs.job_setup.outputs.BASE_COMMIT }}
+        env:
+          FORCE_COLOR: 0
+          NX_SKIP_LOG_GROUPING: true
 
       - uses: actions/upload-artifact@v4
         if: matrix.node == env.NODE_VERSION
