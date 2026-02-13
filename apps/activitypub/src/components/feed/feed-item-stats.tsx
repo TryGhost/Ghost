@@ -106,6 +106,7 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
                     {layout !== 'inbox' && (
                         <AnimatedNumber
                             className={likeCount === 0 ? '-ml-1.5 w-0 overflow-hidden' : ''}
+                            format={{useGrouping: true}}
                             spinTiming={{duration: 300}}
                             value={likeCount}
                         />
@@ -153,6 +154,7 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
                     {layout !== 'inbox' && (
                         <AnimatedNumber
                             className={repostCount === 0 ? '-ml-1.5 w-0 overflow-hidden' : ''}
+                            format={{useGrouping: true}}
                             spinTiming={{duration: 300}}
                             value={repostCount}
                         />
