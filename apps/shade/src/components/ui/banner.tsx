@@ -19,7 +19,7 @@ const bannerVariants = cva(
                 info: 'bg-blue-50 border-blue-200 dark:bg-blue-950/30 dark:border-blue-800 border',
                 success: 'bg-green-50 border-green-200 dark:bg-green-950/30 dark:border-green-800 border',
                 warning: 'bg-yellow-50 border-yellow-200 dark:bg-yellow-950/30 dark:border-yellow-800 border',
-                destructive: 'bg-red-50 border-red-200 dark:bg-red-950/30 dark:border-red-800 border'
+                destructive: 'bg-white shadow-sm dark:bg-black'
             },
             size: {
                 sm: 'p-2 text-sm',
