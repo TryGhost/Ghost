@@ -33,6 +33,6 @@
     "typescript": "5.9.3"
   },
   "dependencies": {
-    "parse-email-address": "^0.0.2"
+    "parse-email-address": "0.0.2"
   }
 }
