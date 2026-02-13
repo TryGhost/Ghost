@@ -197,6 +197,27 @@ describe('User API', function () {
         }
     });
 
+    it('cannot modify last_seen via the API', async function () {
+        const userId = fixtureManager.get('users', 0).id;
+
+        // Set a known last_seen value directly in the database
+        const before = await models.User.findOne({id: userId});
+        const originalLastSeen = before.get('last_seen');
+
+        // Attempt to reset last_seen via the API
+        await agent.put('users/me/')
+            .body({
+                users: [{
+                    last_seen: null
+                }]
+            })
+            .expectStatus(200);
+
+        // Verify last_seen was not changed
+        const after = await models.User.findOne({id: userId});
+        assert.deepEqual(after.get('last_seen'), originalLastSeen);
+    });
+
     it('can edit a user fetched from the API', async function () {
         const userToEditId = fixtureManager.get('users', 1).id;
         
