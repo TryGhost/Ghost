@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, LucideIcon, PostShareModal, Skeleton, cn, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
 
 import {Post, getPostMetricsToDisplay} from '@tryghost/admin-x-framework';
+import {getPostDestination} from '@src/utils/url-helpers';
 import {useAppContext, useNavigate} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/global-data-provider';
 
@@ -31,7 +32,12 @@ const LatestPost: React.FC<LatestPostProps> = ({
     const [isShareOpen, setIsShareOpen] = useState(false);
     const {site, settings} = useGlobalData();
     const {appSettings} = useAppContext();
-    const {emailTrackClicks: emailTrackClicksEnabled, emailTrackOpens: emailTrackOpensEnabled} = appSettings?.analytics || {};
+    const {
+        emailTrackClicks: emailTrackClicksEnabled,
+        emailTrackOpens: emailTrackOpensEnabled,
+        webAnalytics = false,
+        membersTrackSources = false
+    } = appSettings?.analytics || {};
 
     // Get site title from settings or site data
     const siteTitle = site.title || String(settings.find(setting => setting.key === 'title')?.value || 'Ghost Site');
@@ -41,10 +47,14 @@ const LatestPost: React.FC<LatestPostProps> = ({
 
     // Calculate metrics to show outside of JSX
     const metricsToShow = latestPostStats ? getPostMetricsToDisplay(latestPostStats as Post, {
-        membersTrackSources: appSettings?.analytics.membersTrackSources
+        membersTrackSources
     }) : null;
 
     const metricClassName = 'group mr-2 flex flex-col gap-1.5 hover:cursor-pointer';
+
+    const hasEmailData = Boolean(latestPostStats?.email);
+    const postDestination = getPostDestination({postId: latestPostStats?.id, hasEmailData, analytics: {webAnalytics, membersTrackSources}});
+    const shouldGoToEditor = postDestination.startsWith('/editor/');
 
     return (
         <Card className='group/card bg-gradient-to-tr from-muted/40 to-muted/0 to-50%' data-testid='latest-post'>
@@ -99,7 +109,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                             <div className='flex grow flex-col items-start justify-center self-stretch'>
                                 <div className='text-lg font-semibold leading-tighter tracking-tight hover:cursor-pointer hover:opacity-75' onClick={() => {
                                     if (!isLoading && latestPostStats) {
-                                        navigate(`/posts/analytics/${latestPostStats.id}`, {crossApp: true});
+                                        navigate(postDestination, {crossApp: true});
                                     }
                                 }}>
                                     {latestPostStats.title}
@@ -136,13 +146,22 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                         className={latestPostStats.email_only ? 'w-full' : ''}
                                         variant='outline'
                                         onClick={() => {
-                                            navigate(`/posts/analytics/${latestPostStats.id}`, {crossApp: true});
+                                            navigate(postDestination, {crossApp: true});
                                         }}
                                     >
-                                        <LucideIcon.ChartNoAxesColumn />
-                                        <span className='hidden md:!visible md:!block'>
-                                            {!latestPostStats.email_only ? 'Analytics' : 'Post analytics' }
-                                        </span>
+                                        {shouldGoToEditor ? (
+                                            <>
+                                                <LucideIcon.Pen />
+                                                <span className='hidden md:!visible md:!block'>Edit post</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <LucideIcon.ChartNoAxesColumn />
+                                                <span className='hidden md:!visible md:!block'>
+                                                    {!latestPostStats.email_only ? 'Analytics' : 'Post analytics'}
+                                                </span>
+                                            </>
+                                        )}
                                     </Button>
                                 </div>
                             </div>
@@ -151,7 +170,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                         <div className='-ml-4 flex w-full flex-col items-stretch gap-2 pr-6 text-sm xl:h-full xl:max-w-none'>
                             <div className='grid grid-cols-2 gap-6 pl-10 lg:border-l xl:h-full'>
                                 {/* Web metrics - only for published posts */}
-                                {metricsToShow.showWebMetrics && appSettings?.analytics.webAnalytics &&
+                                {metricsToShow.showWebMetrics && webAnalytics &&
                                     <div className={metricClassName} data-testid='latest-post-visitors' onClick={() => {
                                         navigate(`/posts/analytics/${latestPostStats.id}/web`, {crossApp: true});
                                     }}>
@@ -174,7 +193,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                             metricClassName,
 
                                             // Member metric is moved to the 2nd row in the grid if the post is email only or if web analytics is turned off, otherwise leave as is
-                                            (metricsToShow.showEmailMetrics && (!metricsToShow.showWebMetrics || !appSettings?.analytics.webAnalytics)) && 'row-[2/3] col-[1/2]'
+                                            (metricsToShow.showEmailMetrics && (!metricsToShow.showWebMetrics || !webAnalytics)) && 'row-[2/3] col-[1/2]'
                                         )
                                     } data-testid='latest-post-members' onClick={() => {
                                         navigate(`/posts/analytics/${latestPostStats.id}/growth`, {crossApp: true});
