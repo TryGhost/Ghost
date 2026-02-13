@@ -28,6 +28,10 @@ const BetaFeatures: React.FC = () => {
                 detail={<>Enable support for CashApp, iDEAL, Bancontact, and others. <a className='text-green' href="https://ghost.org/help/payment-methods" rel="noopener noreferrer" target="_blank">Learn more &rarr;</a></>}
                 title='Additional payment methods' />
             <LabItem
+                action={<FeatureToggle flag="pictureImageFormats" />}
+                detail={<>Serve AVIF and WebP variants for editor image cards using <code>&lt;picture&gt;</code> where supported.</>}
+                title='Modern image formats in editor cards' />
+            <LabItem
                 action={<div className='flex flex-col items-end gap-1'>
                     <FileUpload
                         id='upload-redirects'

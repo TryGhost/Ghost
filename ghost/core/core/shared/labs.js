@@ -35,7 +35,8 @@ const GA_FEATURES = [
 const PUBLIC_BETA_FEATURES = [
     'superEditors',
     'editorExcerpt',
-    'additionalPaymentMethods'
+    'additionalPaymentMethods',
+    'pictureImageFormats'
 ];
 
 // These features are considered private they live in the private tab of the labs settings page
