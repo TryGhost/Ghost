@@ -50,7 +50,7 @@
     "@types/react-dom": "18.3.7",
     "@vitejs/plugin-react": "4.7.0",
     "autoprefixer": "10.4.21",
-    "concurrently": "8.2.2",
+    "concurrently": "9.2.1",
     "eslint-plugin-react-hooks": "4.6.2",
     "eslint-plugin-react-refresh": "0.4.24",
     "eslint-plugin-tailwindcss": "3.18.2",
