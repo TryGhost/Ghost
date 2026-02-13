@@ -8225,10 +8225,10 @@
     "@types/express" "^4.7.0"
     file-system-cache "2.3.0"
 
-"@svg-maps/world@1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@svg-maps/world/-/world-1.0.1.tgz#12d9cc263a1e3c25778c768687368fb6165a42d9"
-  integrity sha512-Mawh/jEYBBHnug9S17PyePLYKJ+Xd0Bbh96mCePebpbvcbJu5YKpfKhpyMeLFmmdWPrSFxl0f0MTsJfXU0gSaQ==
+"@svg-maps/world@2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@svg-maps/world/-/world-2.0.0.tgz#e18edfb2136c6b527f515145465e639de52bd915"
+  integrity sha512-VmYYnyygJ5Zhr48xPqukFBoq4aCBgVNIjBzqBnWKXSdHhrRK3pntdvbCa8lMsxwVCFzEw9a+smIMEGI2sC1xcQ==
 
 "@svgr/babel-plugin-add-jsx-attribute@8.0.0":
   version "8.0.0"
