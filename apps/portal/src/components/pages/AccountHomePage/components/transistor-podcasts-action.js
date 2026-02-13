@@ -21,8 +21,8 @@ export const TransistorPodcastsActionStyles = `
 
 export const TRANSISTOR_DEFAULTS = {
     heading: 'Podcasts',
-    description: 'Access your RSS feeds',
-    button_text: 'Manage',
+    description: 'Access private podcast feed',
+    button_text: 'View',
     url_template: 'https://partner.transistor.fm/ghost/{memberUuid}'
 };
 
