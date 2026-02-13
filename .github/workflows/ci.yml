@@ -228,7 +228,7 @@ jobs:
           fetch-depth: 0
 
       - name: Fetch main branch
-        run: git fetch --no-tags --depth=1 origin main
+        run: git fetch --no-tags origin main
 
       - name: Check app version bump
         env:
