@@ -46,7 +46,9 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const inputs = (
         <SettingGroupContent className="analytics-settings !gap-y-0" columns={1}>
             <Toggle
+                align='center'
                 checked={isWebAnalyticsEnabled}
+                containerClasses='py-4'
                 direction='rtl'
                 disabled={!isWebAnalyticsConfigured || isWebAnalyticsLimited}
                 gap='gap-0'
@@ -61,7 +63,6 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         </>
                 }
                 label='Web analytics'
-                labelClasses='py-4 w-full'
                 onChange={(e) => {
                     handleToggleChange('web_analytics', e);
                 }}
@@ -88,49 +89,53 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 )
             )}
             <Toggle
+                align='center'
                 checked={trackEmailOpens}
+                containerClasses='py-4'
                 direction='rtl'
                 gap='gap-0'
                 hint='Record when a member opens an email'
                 label='Newsletter opens'
-                labelClasses='py-4 w-full'
                 onChange={(e) => {
                     handleToggleChange('email_track_opens', e);
                 }}
             />
             <Separator className="border-grey-200 dark:border-grey-900" />
             <Toggle
+                align='center'
                 checked={trackEmailClicks}
+                containerClasses='py-4'
                 direction='rtl'
                 disabled={isEmailTrackClicksReadOnly}
                 gap='gap-0'
                 hint='Record when a member clicks on any link in an email'
                 label='Newsletter clicks'
-                labelClasses='py-4 w-full'
                 onChange={(e) => {
                     handleToggleChange('email_track_clicks', e);
                 }}
             />
             <Separator className="border-grey-200 dark:border-grey-900" />
             <Toggle
+                align='center'
                 checked={trackMemberSources}
+                containerClasses='py-4'
                 direction='rtl'
                 gap='gap-0'
                 hint='Track the traffic sources and posts that drive the most member growth'
                 label='Member sources'
-                labelClasses='py-4 w-full'
                 onChange={(e) => {
                     handleToggleChange('members_track_sources', e);
                 }}
             />
             <Separator className="border-grey-200 dark:border-grey-900" />
             <Toggle
+                align='center'
                 checked={outboundLinkTagging}
+                containerClasses='py-4'
                 direction='rtl'
                 gap='gap-0'
                 hint='Make it easier for other sites to track the traffic you send them in their analytics'
                 label='Outbound link tagging'
-                labelClasses='py-4 w-full'
                 onChange={(e) => {
                     handleToggleChange('outbound_link_tagging', e);
                 }}
