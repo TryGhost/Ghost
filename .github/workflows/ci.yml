@@ -1196,6 +1196,14 @@ jobs:
           path: e2e/test-results
           retention-days: 7
 
+      - name: Upload CTRF report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ctrf-report-${{ matrix.shardIndex }}
+          path: e2e/ctrf-report.json
+          retention-days: 30
+
       - uses: tryghost/actions/actions/slack-build@main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
@@ -1239,6 +1247,58 @@ jobs:
           else
             echo "has_reports=false" >> $GITHUB_OUTPUT
           fi
+
+      - name: Download CTRF reports from GitHub Actions Artifacts
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          path: e2e/all-ctrf-reports
+          pattern: ctrf-report-*
+          merge-multiple: true
+
+      - name: Merge CTRF reports
+        id: ctrf
+        run: |
+          if [ -d "e2e/all-ctrf-reports" ] && [ -n "$(ls -A e2e/all-ctrf-reports 2>/dev/null)" ]; then
+            echo "has_ctrf=true" >> $GITHUB_OUTPUT
+            # Merge all CTRF JSON files into one
+            node -e "
+              const fs = require('fs');
+              const path = require('path');
+              const dir = 'e2e/all-ctrf-reports';
+              const files = fs.readdirSync(dir).filter(f => f.endsWith('.json'));
+              const merged = { results: { tool: { name: 'playwright' }, summary: { tests: 0, passed: 0, failed: 0, skipped: 0, pending: 0, other: 0 }, tests: [] }};
+              for (const file of files) {
+                const data = JSON.parse(fs.readFileSync(path.join(dir, file)));
+                if (data.results && data.results.tests) {
+                  merged.results.tests.push(...data.results.tests);
+                  merged.results.summary.tests += data.results.summary?.tests || 0;
+                  merged.results.summary.passed += data.results.summary?.passed || 0;
+                  merged.results.summary.failed += data.results.summary?.failed || 0;
+                  merged.results.summary.skipped += data.results.summary?.skipped || 0;
+                  merged.results.summary.pending += data.results.summary?.pending || 0;
+                  merged.results.summary.other += data.results.summary?.other || 0;
+                }
+              }
+              fs.writeFileSync('e2e/ctrf-report-merged.json', JSON.stringify(merged, null, 2));
+              console.log('Merged', files.length, 'CTRF reports:', merged.results.summary);
+            "
+          else
+            echo "has_ctrf=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Annotate failed tests
+        if: steps.ctrf.outputs.has_ctrf == 'true'
+        run: npx github-actions-ctrf e2e/ctrf-report-merged.json
+        continue-on-error: true
+
+      - name: Upload merged CTRF report
+        if: steps.ctrf.outputs.has_ctrf == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ctrf-report
+          path: e2e/ctrf-report-merged.json
+          retention-days: 30
 
       - name: Download test results from GitHub Actions Artifacts
         if: steps.check.outputs.has_reports == 'true'
