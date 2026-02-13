@@ -7,6 +7,7 @@ const loggingLib = require('@tryghost/logging');
 
 // Stuff we are testing
 const get = require('../../../../core/frontend/helpers/get');
+const {querySimplePath} = require('../../../../core/frontend/helpers/get');
 const models = require('../../../../core/server/models');
 const api = require('../../../../core/server/api').endpoints;
 const maxLimitCap = require('../../../../core/shared/max-limit-cap');
@@ -328,6 +329,89 @@ describe('{{#get}} helper', function () {
 
                 done();
             }).catch(done);
+        });
+    });
+
+    describe('querySimplePath', function () {
+        const data = {
+            post: {
+                id: 3,
+                title: 'Test',
+                author: {slug: 'cameron'},
+                tags: [{slug: 'test'}, {slug: 'magic'}],
+                published_at: new Date('2024-01-15')
+            }
+        };
+
+        it('resolves simple dot-notation path', function () {
+            querySimplePath(data, 'post.id').should.eql([3]);
+        });
+
+        it('resolves nested dot-notation path', function () {
+            querySimplePath(data, 'post.author.slug').should.eql(['cameron']);
+        });
+
+        it('resolves array wildcard', function () {
+            querySimplePath(data, 'post.tags[*].slug').should.eql(['test', 'magic']);
+        });
+
+        it('resolves numeric array index', function () {
+            querySimplePath(data, 'post.tags[0].slug').should.eql(['test']);
+            querySimplePath(data, 'post.tags[1].slug').should.eql(['magic']);
+        });
+
+        it('returns empty array for non-existent path', function () {
+            querySimplePath(data, 'post.nonexistent').should.eql([]);
+        });
+
+        it('returns empty array for non-existent nested path', function () {
+            querySimplePath(data, 'post.foo.bar.baz').should.eql([]);
+        });
+
+        it('returns empty array when wildcard applied to non-array', function () {
+            querySimplePath(data, 'post.title[*].slug').should.eql([]);
+        });
+
+        it('returns empty array for out-of-bounds index', function () {
+            querySimplePath(data, 'post.tags[5].slug').should.eql([]);
+        });
+
+        it('handles null in path gracefully', function () {
+            querySimplePath({a: null}, 'a.b').should.eql([]);
+        });
+
+        it('handles Date values', function () {
+            const result = querySimplePath(data, 'post.published_at');
+            result.should.have.length(1);
+            result[0].should.be.a.Date();
+        });
+
+        it('throws on recursive descent syntax', function () {
+            assert.throws(
+                () => querySimplePath(data, 'post..tags'),
+                {message: /unsupported path segment ""/}
+            );
+        });
+
+        it('throws on filter expression syntax', function () {
+            assert.throws(
+                () => querySimplePath(data, 'post.tags[?(@.slug)]'),
+                {message: /unsupported path segment "tags\[\?\(@"/}
+            );
+        });
+
+        it('throws on unclosed bracket', function () {
+            assert.throws(
+                () => querySimplePath(data, 'post.tags[0'),
+                {message: /unsupported path segment "tags\[0"/}
+            );
+        });
+
+        it('throws on non-numeric bracket content', function () {
+            assert.throws(
+                () => querySimplePath(data, 'post.tags[foo]'),
+                {message: /unsupported path segment "tags\[foo\]"/}
+            );
         });
     });
 
