@@ -17,7 +17,7 @@ describe('TransistorPodcastsAction', () => {
     test('renders nothing when hasPodcasts is false', () => {
         const {queryByText} = setup({hasPodcasts: false, memberUuid: 'test-uuid'});
         expect(queryByText('Podcasts')).not.toBeInTheDocument();
-        expect(queryByText('Manage')).not.toBeInTheDocument();
+        expect(queryByText('View')).not.toBeInTheDocument();
     });
 
     test('renders nothing when memberUuid is missing', () => {
@@ -25,21 +25,21 @@ describe('TransistorPodcastsAction', () => {
         expect(queryByText('Podcasts')).not.toBeInTheDocument();
     });
 
-    test('renders Podcasts section with Manage link when hasPodcasts is true', () => {
+    test('renders Podcasts section with View link when hasPodcasts is true', () => {
         const {queryByText} = setup({hasPodcasts: true, memberUuid: TEST_UUID});
         expect(queryByText('Podcasts')).toBeInTheDocument();
-        expect(queryByText('Manage')).toBeInTheDocument();
+        expect(queryByText('View')).toBeInTheDocument();
     });
 
-    test('Manage link points to correct Transistor URL', () => {
+    test('View link points to correct Transistor URL', () => {
         const {getByText} = setup({hasPodcasts: true, memberUuid: TEST_UUID});
-        const link = getByText('Manage');
+        const link = getByText('View');
         expect(link.getAttribute('href')).toBe(`https://partner.transistor.fm/ghost/${TEST_UUID}`);
     });
 
-    test('Manage link opens in new tab', () => {
+    test('View link opens in new tab', () => {
         const {getByText} = setup({hasPodcasts: true, memberUuid: TEST_UUID});
-        const link = getByText('Manage');
+        const link = getByText('View');
         expect(link.getAttribute('target')).toBe('_blank');
         expect(link.getAttribute('rel')).toBe('noopener noreferrer');
     });
