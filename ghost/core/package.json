@@ -244,7 +244,7 @@
     "find-root": "1.1.0",
     "form-data": "4.0.4",
     "html-minifier": "4.0.0",
-    "html-validate": "8.29.0",
+    "html-validate": "10.7.0",
     "inquirer": "8.2.7",
     "jwk-to-pem": "2.0.7",
     "jwks-rsa": "3.2.0",
