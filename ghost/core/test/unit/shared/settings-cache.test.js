@@ -164,6 +164,8 @@ describe('UNIT: settings cache', function () {
         values.title = 'hello world';
         values.timezone = 'PST';
         values.secondary_navigation = false;
+        // transistor_portal_enabled is computed server-side: transistor && transistor_portal_enabled
+        values.transistor_portal_enabled = false;
 
         assert.deepEqual(cache.getPublic(), values);
     });

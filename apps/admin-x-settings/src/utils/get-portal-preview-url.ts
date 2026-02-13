@@ -60,5 +60,16 @@ export const getPortalPreviewUrl = ({settings, config, tiers, siteData, selected
 
     settingsParam.append('disableBackground', 'false');
 
+    // Only pass transistor settings if the main integration is enabled
+    if (getSettingValue<boolean>(settings, 'transistor')) {
+        settingsParam.append('transistorPortalSettings', JSON.stringify({
+            enabled: getSettingValue<boolean>(settings, 'transistor_portal_enabled'),
+            heading: getSettingValue<string>(settings, 'transistor_portal_heading') || 'Podcasts',
+            description: getSettingValue<string>(settings, 'transistor_portal_description') || 'Access your RSS feeds',
+            button_text: getSettingValue<string>(settings, 'transistor_portal_button_text') || 'Manage',
+            url_template: getSettingValue<string>(settings, 'transistor_portal_url_template') || 'https://partner.transistor.fm/ghost/{memberUuid}'
+        }));
+    }
+
     return `${baseUrl}${portalBase}?${settingsParam.toString()}`;
 };
