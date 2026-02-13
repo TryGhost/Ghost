@@ -11,7 +11,7 @@ async function waitForFetchAndFlush() {
 
 describe('AccountActions', () => {
     describe('Transistor integration', () => {
-        const site = {...getSiteData(), labs: {transistor: true}};
+        const site = {...getSiteData(), transistor_portal_enabled: true};
         const member = getMemberData({
             name: 'Test User',
             email: 'test@example.com',
