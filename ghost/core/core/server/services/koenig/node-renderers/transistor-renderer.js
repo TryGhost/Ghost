@@ -69,7 +69,7 @@ function emailTemplate(node, document, options) {
                                     Listen to your podcasts
                                 </a>
                                 <a href="${transistorUrl}"  class="kg-transistor-description">
-                                    Subscribe in your favorite podcast app or connect using your private RSS feed.
+                                    Get your personal podcast feed to subscribe and listen in your favorite podcast app.
                                 </a>
                             </td>
                         </tr>
