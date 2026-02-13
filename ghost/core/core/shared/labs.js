@@ -51,7 +51,8 @@ const PRIVATE_FEATURES = [
     'retentionOffers',
     'welcomeEmailEditor',
     'membersForward',
-    'welcomeEmailsDesignCustomization'
+    'welcomeEmailsDesignCustomization',
+    'pictureImageFormats'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
