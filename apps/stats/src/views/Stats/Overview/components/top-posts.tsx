@@ -3,6 +3,7 @@ import React from 'react';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, LucideIcon, SkeletonTable, abbreviateNumber, cn, formatDisplayDate, formatNumber} from '@tryghost/shade';
 import {TopPostViewsStats} from '@tryghost/admin-x-framework/api/stats';
 import {getPeriodText} from '@src/utils/chart-helpers';
+import {getPostDestination} from '@src/utils/url-helpers';
 import {getPostStatusText} from '@tryghost/admin-x-framework/utils/post-utils';
 import {useAppContext, useNavigate} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/global-data-provider';
@@ -65,9 +66,12 @@ const TopPosts: React.FC<TopPostsProps> = ({
     const siteTimezone = String(settings.find(setting => setting.key === 'timezone')?.value || 'Etc/UTC');
 
     // Show open rate if newsletters are enabled and email tracking is enabled
-    const showWebAnalytics = appSettings?.analytics.webAnalytics;
-    const showClickTracking = appSettings?.analytics.emailTrackClicks;
-    const showOpenTracking = appSettings?.analytics.emailTrackOpens;
+    const {
+        webAnalytics: showWebAnalytics = false,
+        membersTrackSources = false,
+        emailTrackClicks: showClickTracking = false,
+        emailTrackOpens: showOpenTracking = false
+    } = appSettings?.analytics || {};
 
     const metricClass = 'flex items-center justify-end gap-1 rounded-md px-2 py-1 font-mono text-gray-800 hover:bg-muted-foreground/10 group-hover:text-foreground';
 
@@ -89,7 +93,14 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                 return (
                                     <div key={post.post_id} className='group relative flex w-full items-start justify-between gap-5 border-t border-border/50 py-4 before:absolute before:-inset-x-4 before:inset-y-0 before:z-0 before:hidden before:rounded-md before:bg-accent before:opacity-80 before:content-[""] first:!border-border hover:cursor-pointer hover:border-transparent hover:before:block md:items-center dark:before:bg-accent/50 [&+div]:hover:border-transparent'>
                                         <div className='z-10 flex min-w-[160px] grow items-start gap-4 md:items-center lg:min-w-[320px]' onClick={() => {
-                                            navigate(`/posts/analytics/${post.post_id}`, {crossApp: true});
+                                            navigate(getPostDestination({
+                                                postId: post.post_id,
+                                                hasEmailData: post.sent_count !== null,
+                                                analytics: {
+                                                    webAnalytics: showWebAnalytics,
+                                                    membersTrackSources
+                                                }
+                                            }), {crossApp: true});
                                         }}>
                                             {post.feature_image ?
                                                 <div className='hidden aspect-[16/10] w-[80px] shrink-0 rounded-sm bg-cover bg-center sm:!visible sm:!block lg:w-[100px]' style={{
@@ -136,7 +147,7 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                                     navigate(`/posts/analytics/${post.post_id}/newsletter`, {crossApp: true});
                                                 }}>
                                                     <PostListTooltip
-                                                        className={`${!appSettings?.analytics.membersTrackSources ? 'left-auto right-0 translate-x-0' : ''}`}
+                                                        className={`${!membersTrackSources ? 'left-auto right-0 translate-x-0' : ''}`}
                                                         metrics={[
                                                             // Always show sent
                                                             {
@@ -191,7 +202,7 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                                     </div>
                                                 </div>
                                             }
-                                            {appSettings?.analytics.membersTrackSources &&
+                                            {membersTrackSources &&
                                                 <div className='group/tooltip relative flex w-[66px] lg:w-[92px]' data-testid='statistics-members' onClick={(e) => {
                                                     e.stopPropagation();
                                                     navigate(`/posts/analytics/${post.post_id}/growth`, {crossApp: true});
