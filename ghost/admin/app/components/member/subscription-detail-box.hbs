@@ -20,7 +20,7 @@
             </p>
             {{/if}}
         </div>
-        {{#if (or @sub.cancellationReason @sub.offer)}}
+        {{#if (or @sub.cancellationReason @sub.offer_redemptions.length)}}
         <div class="gh-membertier-offer-cancellation">
             {{#if @sub.cancellationReason}}
             <div>
@@ -28,32 +28,32 @@
                 <div class="gh-membertier-cancelreason">{{@sub.cancellationReason}}</div>
             </div>
             {{/if}}
-            {{#if @sub.offer}}
-                {{#if (eq @sub.offer.type "trial")}}
+            {{#each @sub.offer_redemptions as |offer|}}
+                {{#if (eq offer.type "trial")}}
                 <div>
                     <h4>Offer</h4>
-                    <span class="gh-cp-membertier-pricelabel"> {{@sub.offer.name}} </span>
-                    &ndash; {{@sub.offer.amount}} days free
+                    <span class="gh-cp-membertier-pricelabel"> {{offer.name}} </span>
+                    &ndash; {{offer.amount}} days free
                 </div>
-                {{else if (eq @sub.offer.type "free_months")}}
+                {{else if (eq offer.type "free_months")}}
                 <div>
                     <h4>Offer</h4>
-                    <span class="gh-cp-membertier-pricelabel"> {{@sub.offer.name}} </span>
-                    &ndash; {{@sub.offer.amount}} {{if (eq @sub.offer.amount 1) "month" "months"}} free
+                    <span class="gh-cp-membertier-pricelabel"> {{offer.name}} </span>
+                    &ndash; {{offer.amount}} {{if (eq offer.amount 1) "month" "months"}} free
                 </div>
                 {{else}}
                 <div>
                     <h4>Offer</h4>
-                    <span class="gh-cp-membertier-pricelabel"> {{@sub.offer.name}}
-                    {{#if (eq @sub.offer.type 'fixed')}}
-                    &ndash; {{currency-symbol @sub.offer.currency}}{{gh-price-amount @sub.offer.amount}} off
+                    <span class="gh-cp-membertier-pricelabel"> {{offer.name}}
+                    {{#if (eq offer.type 'fixed')}}
+                    &ndash; {{currency-symbol offer.currency}}{{gh-price-amount offer.amount}} off
                     {{else}}
-                    &ndash; {{@sub.offer.amount}}% off
+                    &ndash; {{offer.amount}}% off
                     {{/if}}
                     </span>
                 </div>
                 {{/if}}
-            {{/if}}
+            {{/each}}
         </div>
         {{/if}}
     </div>

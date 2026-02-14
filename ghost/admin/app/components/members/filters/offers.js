@@ -10,7 +10,9 @@ export const OFFERS_FILTER = {
     getColumnValue: (member) => {
         return {
             class: 'gh-members-list-labels',
-            text: (member.subscriptions ?? []).map(label => label.offer?.name).join(', ')
+            text: (member.subscriptions ?? [])
+                .flatMap(sub => (sub.offer_redemptions ?? []).map(o => o.name))
+                .join(', ')
         };
     }
 };
