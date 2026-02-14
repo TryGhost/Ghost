@@ -32,6 +32,11 @@
             "settings": {},
             "imageSizes": {},
             "gscan": {}
+        },
+        "email": {
+            "active": "mailgun",
+            "mailgun": {},
+            "ses": {}
         }
     },
     "storage": {

@@ -16,11 +16,12 @@ adapterManager.registerAdapter('storage', require('ghost-storage-base'));
 adapterManager.registerAdapter('scheduling', require('../../adapters/scheduling/scheduling-base'));
 adapterManager.registerAdapter('sso', require('../../adapters/sso/SSOBase'));
 adapterManager.registerAdapter('cache', require('@tryghost/adapter-base-cache'));
+adapterManager.registerAdapter('email', require('../../adapters/email/EmailProviderBase'));
 
 module.exports = {
     /**
      *
-     * @param {String} name - one of 'storage', 'scheduling', 'sso', 'cache' etc. Or can contain a "resource" extension like "storage:image"
+     * @param {String} name - one of 'storage', 'scheduling', 'sso', 'cache', 'email' etc. Or can contain a "resource" extension like "storage:image"
      * @returns {Object} instance of an adapter
      */
     getAdapter(name) {
