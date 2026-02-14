@@ -114,6 +114,7 @@ function renderImageNode(node, options = {}) {
 
         if (shouldRenderPicture) {
             picture = document.createElement('picture');
+            let sourcesAdded = false;
 
             MODERN_IMAGE_FORMATS.forEach((format) => {
                 if (!imageTransform.canTransformToFormat(format)) {
@@ -140,9 +141,14 @@ function renderImageNode(node, options = {}) {
                 }
 
                 picture.appendChild(source);
+                sourcesAdded = true;
             });
 
-            picture.appendChild(img);
+            if (sourcesAdded) {
+                picture.appendChild(img);
+            } else {
+                picture = null;
+            }
         }
     }
 
