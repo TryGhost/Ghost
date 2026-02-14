@@ -1,6 +1,8 @@
 const ValueObject = require('./shared/value-object');
 const InvalidOfferDescription = require('../errors').InvalidOfferDescription;
 
+const MAX_OFFER_DESCRIPTION_LENGTH = 2000;
+
 /** @extends ValueObject<string> */
 class OfferDescription extends ValueObject {
     /** @param {unknown} description */
@@ -15,9 +17,9 @@ class OfferDescription extends ValueObject {
             });
         }
 
-        if (description.length > 191) {
+        if (description.length > MAX_OFFER_DESCRIPTION_LENGTH) {
             throw new InvalidOfferDescription({
-                message: 'Offer `display_description` can be a maximum of 191 characters.'
+                message: `Offer \`display_description\` can be a maximum of ${MAX_OFFER_DESCRIPTION_LENGTH} characters.`
             });
         }
 

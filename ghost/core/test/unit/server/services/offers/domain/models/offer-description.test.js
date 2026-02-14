@@ -33,16 +33,16 @@ describe('OfferDescription', function () {
             }
         });
 
-        it('Requires the string to be a maximum of 191 characters', function () {
-            const maxLengthInput = Array.from({length: 191}).map(() => 'a').join('');
+        it('Requires the string to be a maximum of 2000 characters', function () {
+            const maxLengthInput = Array.from({length: 2000}).map(() => 'a').join('');
 
-            assert.equal(maxLengthInput.length, 191);
+            assert.equal(maxLengthInput.length, 2000);
 
             OfferDescription.create(maxLengthInput);
 
             const tooLong = maxLengthInput + 'a';
 
-            assert.equal(tooLong.length, 192);
+            assert.equal(tooLong.length, 2001);
 
             try {
                 OfferDescription.create(tooLong);
@@ -62,4 +62,3 @@ describe('OfferDescription', function () {
         });
     });
 });
-

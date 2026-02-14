@@ -9,8 +9,11 @@ import {createRedemptionFilterUrl} from './offers-index';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {getOfferPortalPreviewUrl, type offerPortalPreviewUrlTypes} from '../../../../utils/get-offers-portal-preview-url';
 import {useEffect, useState} from 'react';
+
 import {useGlobalData} from '../../../providers/global-data-provider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
+
+const OFFER_DESCRIPTION_LIMIT = 2000;
 
 function formatTimestamp(timestamp: string): string {
     const date = new Date(timestamp);
@@ -152,6 +155,8 @@ const Sidebar: React.FC<{
                                     onKeyDown={() => clearError('displayTitle')}
                                 />
                                 <TextArea
+                                    hint={<div className='flex justify-between'><span>Visible to members in Portal</span><strong>{offer?.display_description?.length || 0} / {OFFER_DESCRIPTION_LIMIT}</strong></div>}
+                                    maxLength={OFFER_DESCRIPTION_LIMIT}
                                     placeholder='Take advantage of this limited-time offer.'
                                     title='Display description'
                                     value={offer?.display_description}
@@ -293,13 +298,11 @@ const EditOfferModal: React.FC<{id: string}> = ({id}) => {
                 }
 
                 toast.remove();
-                if (message) {
-                    showToast({
-                        title: 'Can\'t save offer',
-                        type: 'error',
-                        message: 'Please try again later'
-                    });
-                }
+                showToast({
+                    title: 'Can\'t save offer',
+                    type: 'error',
+                    message: message || 'Please try again later'
+                });
             }
         }} /> : null;
 };

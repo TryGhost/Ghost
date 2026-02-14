@@ -11,8 +11,11 @@ import {getTiersCadences} from '../../../../utils/get-tiers-cadences';
 import {useAddOffer} from '@tryghost/admin-x-framework/api/offers';
 import {useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
 import {useEffect, useMemo, useState} from 'react';
+
 import {useGlobalData} from '../../../providers/global-data-provider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
+
+const OFFER_DESCRIPTION_LIMIT = 2000;
 
 // we should replace this with a library
 function slugify(text: string): string {
@@ -188,6 +191,8 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                             onKeyDown={() => clearError('displayTitle')}
                         />
                         <TextArea
+                            hint={<div className='flex justify-between'><span>Visible to members in Portal</span><strong>{overrides.displayDescription.length} / {OFFER_DESCRIPTION_LIMIT}</strong></div>}
+                            maxLength={OFFER_DESCRIPTION_LIMIT}
                             placeholder='Take advantage of this limited-time offer.'
                             title='Display description'
                             value={overrides.displayDescription}
