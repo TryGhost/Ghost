@@ -173,7 +173,7 @@
     "jsonc-parser": "3.3.1",
     "jsonpath": "1.2.1",
     "jsonwebtoken": "8.5.1",
-    "juice": "9.1.0",
+    "juice": "11.1.0",
     "keypair": "1.0.4",
     "knex": "2.4.2",
     "knex-migrator": "5.3.2",
