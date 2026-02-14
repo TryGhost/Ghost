@@ -112,4 +112,28 @@ describe('Acceptance: Post email preview', function () {
         // segment dropdown should be hidden when there's only one option
         expect(find('[data-test-select="preview-segment"]'), 'segment select').not.to.exist;
     });
+
+    it('allows sending preview email when SES is configured', async function () {
+        // Mock SES configuration via config API
+        this.server.get('/config/', function () {
+            return {
+                config: {
+                    emailProvider: {
+                        active: 'ses',
+                        isConfigured: true
+                    }
+                }
+            };
+        });
+
+        await openEmailPreviewModal.call(this);
+
+        // Should be able to send test email
+        await click(find('[data-test-button="post-preview-test-email"]'));
+        await click(find('[data-test-button="send-test-email"]'));
+
+        // Verify request was sent
+        const [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+        expect(lastRequest.url).to.include('/email_previews/posts/');
+    });
 });
