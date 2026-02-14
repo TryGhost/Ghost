@@ -10,7 +10,7 @@ runs:
   steps:
     - name: Check dependency cache
       id: dep-cache
-      uses: actions/cache/restore@v4
+      uses: actions/cache/restore@v5
       with:
         path: ${{ env.CACHED_DEPENDENCY_PATHS }}
         key: ${{ env.DEPENDENCY_CACHE_KEY }}
@@ -26,7 +26,7 @@ runs:
     - name: Check dependency cache (retry)
       id: dep-cache-retry-attempt
       if: steps.dep-cache.outputs.cache-hit != 'true'
-      uses: actions/cache/restore@v4
+      uses: actions/cache/restore@v5
       with:
         path: ${{ env.CACHED_DEPENDENCY_PATHS }}
         key: ${{ env.DEPENDENCY_CACHE_KEY }}
