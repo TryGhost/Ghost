@@ -35,8 +35,7 @@ const GA_FEATURES = [
 const PUBLIC_BETA_FEATURES = [
     'superEditors',
     'editorExcerpt',
-    'additionalPaymentMethods',
-    'pictureImageFormats'
+    'additionalPaymentMethods'
 ];
 
 // These features are considered private they live in the private tab of the labs settings page
@@ -53,7 +52,8 @@ const PRIVATE_FEATURES = [
     'themeTranslation',
     'indexnow',
     'transistor',
-    'retentionOffers'
+    'retentionOffers',
+    'pictureImageFormats'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
