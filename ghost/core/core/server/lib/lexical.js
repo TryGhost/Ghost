@@ -95,7 +95,8 @@ module.exports = {
             feature: {
                 contentVisibility: true, // force on until Koenig has been bumped
                 emailCustomization: true, // force on until Koenig has been bumped
-                emailUniqueid: labs.isSet('emailUniqueid')
+                emailUniqueid: labs.isSet('emailUniqueid'),
+                pictureImageFormats: labs.isSet('pictureImageFormats')
             },
             nodeRenderers: this.customNodeRenderers
         }, userOptions);
