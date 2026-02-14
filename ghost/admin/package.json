@@ -61,7 +61,7 @@
     "babel-plugin-transform-class-properties": "6.24.1",
     "babel-plugin-transform-react-jsx": "6.24.1",
     "broccoli-asset-rev": "3.0.0",
-    "broccoli-concat": "4.2.5",
+    "broccoli-concat": "4.2.7",
     "broccoli-funnel": "3.0.8",
     "broccoli-merge-trees": "4.2.0",
     "broccoli-terser-sourcemap": "4.1.1",
