@@ -11,11 +11,8 @@ import {getTiersCadences} from '../../../../utils/get-tiers-cadences';
 import {useAddOffer} from '@tryghost/admin-x-framework/api/offers';
 import {useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
 import {useEffect, useMemo, useState} from 'react';
-
 import {useGlobalData} from '../../../providers/global-data-provider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
-
-const OFFER_DESCRIPTION_LIMIT = 2000;
 
 // we should replace this with a library
 function slugify(text: string): string {
@@ -191,8 +188,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                             onKeyDown={() => clearError('displayTitle')}
                         />
                         <TextArea
-                            hint={<div className='flex justify-between'><span>Visible to members in Portal</span><strong>{overrides.displayDescription.length} / {OFFER_DESCRIPTION_LIMIT}</strong></div>}
-                            maxLength={OFFER_DESCRIPTION_LIMIT}
+                            maxLength={2000}
                             placeholder='Take advantage of this limited-time offer.'
                             title='Display description'
                             value={overrides.displayDescription}
@@ -646,7 +642,7 @@ const AddOfferModal = () => {
             if (!isErrorsEmpty) {
                 toast.remove();
                 showToast({
-                    title: 'Can\'t save offer',
+                    title: 'Failed to save offer',
                     type: 'info',
                     message: 'Make sure you filled all required fields'
                 });
@@ -665,13 +661,11 @@ const AddOfferModal = () => {
                 }
 
                 toast.remove();
-                if (message) {
-                    showToast({
-                        title: 'Can\'t save offer',
-                        type: 'error',
-                        message: message || 'Please try again later'
-                    });
-                }
+                showToast({
+                    title: 'Failed to save offer',
+                    type: 'error',
+                    message: message || 'Something went wrong, please try again later'
+                });
             }
         }}
     />;
