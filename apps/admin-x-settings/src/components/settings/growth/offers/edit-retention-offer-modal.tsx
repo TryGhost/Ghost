@@ -1,13 +1,18 @@
+import PortalFrame from '../../membership/portal/portal-frame';
 import {ButtonSelect, type OfferType} from './add-offer-modal';
 import {Form, PreviewModalContent, Select, type SelectOption, TextArea, TextField, Toggle} from '@tryghost/admin-x-design-system';
+import {getOfferPortalPreviewUrl, type offerPortalPreviewUrlTypes} from '../../../../utils/get-offers-portal-preview-url';
+import {getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
+import {useEffect, useMemo, useState} from 'react';
 import {useForm} from '@tryghost/admin-x-framework/hooks';
+import {useGlobalData} from '../../../providers/global-data-provider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 type RetentionOfferFormState = {
     enabled: boolean;
     displayTitle: string;
     displayDescription: string;
-    type: 'percent' | 'trial';
+    type: 'percent' | 'free_months';
     percentAmount: number;
     duration: string;
     durationInMonths: number;
@@ -25,13 +30,16 @@ const durationOptions: SelectOption[] = [
     {value: 'forever', label: 'Forever'}
 ];
 
+const MAX_PERCENT_AMOUNT = 100;
+const MAX_FREE_MONTHS = 12;
+
 const getDefaultState = (id: string): RetentionOfferFormState => {
     if (id === 'monthly') {
         return {
             enabled: true,
             displayTitle: '',
             displayDescription: '',
-            type: 'percent',
+            type: 'free_months',
             percentAmount: 20,
             duration: 'once',
             durationInMonths: 1,
@@ -42,8 +50,8 @@ const getDefaultState = (id: string): RetentionOfferFormState => {
         enabled: false,
         displayTitle: '',
         displayDescription: '',
-        type: 'percent',
-        percentAmount: 0,
+        type: 'free_months',
+        percentAmount: 20,
         duration: 'once',
         durationInMonths: 1,
         freeMonths: 1
@@ -108,14 +116,18 @@ const RetentionOfferSidebar: React.FC<{
                                         checked={formState.type === 'percent'}
                                         type={typeOptions[0]}
                                         onClick={() => {
-                                            updateForm(state => ({...state, type: 'percent'}));
+                                            updateForm((state) => {
+                                                const nextPercentAmount = state.percentAmount > 0 ? state.percentAmount : 20;
+
+                                                return {...state, type: 'percent', percentAmount: nextPercentAmount};
+                                            });
                                         }}
                                     />
                                     <ButtonSelect
-                                        checked={formState.type === 'trial'}
+                                        checked={formState.type === 'free_months'}
                                         type={typeOptions[1]}
                                         onClick={() => {
-                                            updateForm(state => ({...state, type: 'trial'}));
+                                            updateForm(state => ({...state, type: 'free_months'}));
                                         }}
                                     />
                                 </div>
@@ -127,7 +139,13 @@ const RetentionOfferSidebar: React.FC<{
                                             type='number'
                                             value={formState.percentAmount === 0 ? '' : String(formState.percentAmount)}
                                             onChange={(e) => {
-                                                updateForm(state => ({...state, percentAmount: Number(e.target.value)}));
+                                                const nextValue = Number(e.target.value);
+
+                                                if (nextValue < 0) {
+                                                    return;
+                                                }
+
+                                                updateForm(state => ({...state, percentAmount: Math.min(nextValue, MAX_PERCENT_AMOUNT)}));
                                             }}
                                         />
                                         <Select
@@ -147,20 +165,30 @@ const RetentionOfferSidebar: React.FC<{
                                                 type='number'
                                                 value={formState.durationInMonths === 0 ? '' : String(formState.durationInMonths)}
                                                 onChange={(e) => {
+                                                    if (Number(e.target.value) < 0) {
+                                                        return;
+                                                    }
+
                                                     updateForm(state => ({...state, durationInMonths: Number(e.target.value)}));
                                                 }}
                                             />
                                         )}
                                     </>
                                 )}
-                                {formState.type === 'trial' && (
+                                {formState.type === 'free_months' && (
                                     <TextField
                                         rightPlaceholder={`${formState.freeMonths === 1 ? 'month' : 'months'}`}
                                         title='Free months'
                                         type='number'
                                         value={formState.freeMonths === 0 ? '' : String(formState.freeMonths)}
                                         onChange={(e) => {
-                                            updateForm(state => ({...state, freeMonths: Number(e.target.value)}));
+                                            const nextValue = Number(e.target.value);
+
+                                            if (nextValue < 0) {
+                                                return;
+                                            }
+
+                                            updateForm(state => ({...state, freeMonths: Math.min(nextValue, MAX_FREE_MONTHS)}));
                                         }}
                                     />
                                 )}
@@ -175,8 +203,13 @@ const RetentionOfferSidebar: React.FC<{
 
 const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
     const {updateRoute} = useRouting();
+    const {siteData} = useGlobalData();
+    const {data: {tiers = []} = {}} = useBrowseTiers();
+    const [href, setHref] = useState<string>('');
     const cadence = id === 'monthly' ? 'monthly' : 'yearly' as const;
     const breadcrumbTitle = cadence === 'monthly' ? 'Monthly retention' : 'Yearly retention';
+    const offerCadence = cadence === 'monthly' ? 'month' : 'year';
+    const activePaidTiers = getPaidActiveTiers(tiers || []);
 
     const {formState, updateForm, saveState, okProps} = useForm({
         initialState: getDefaultState(id),
@@ -190,6 +223,21 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
         }
     });
 
+    const [lastPreviewPercentAmount, setLastPreviewPercentAmount] = useState(formState.percentAmount || 1);
+    const [lastPreviewFreeMonths, setLastPreviewFreeMonths] = useState(formState.freeMonths || 1);
+
+    useEffect(() => {
+        if (formState.percentAmount > 0) {
+            setLastPreviewPercentAmount(formState.percentAmount);
+        }
+    }, [formState.percentAmount]);
+
+    useEffect(() => {
+        if (formState.freeMonths > 0) {
+            setLastPreviewFreeMonths(formState.freeMonths);
+        }
+    }, [formState.freeMonths]);
+
     const goBack = () => {
         updateRoute('offers/edit/retention');
     };
@@ -202,10 +250,50 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
         />
     );
 
-    const preview = (
-        <div className='flex h-full items-center justify-center text-sm text-grey-400'>
-        </div>
-    );
+    const previewData: offerPortalPreviewUrlTypes = useMemo(() => {
+        const isFreeMonthsOffer = formState.type === 'free_months';
+        const previewPercentAmount = formState.percentAmount > 0 ? formState.percentAmount : lastPreviewPercentAmount;
+        const previewFreeMonths = formState.freeMonths > 0 ? formState.freeMonths : lastPreviewFreeMonths;
+        const previewTier = activePaidTiers.find((tier) => {
+            if (offerCadence === 'month') {
+                return tier.monthly_price;
+            }
+
+            return tier.yearly_price;
+        });
+
+        return {
+            enabled: formState.enabled,
+            name: `${cadence} retention`,
+            code: `${cadence}-retention`,
+            displayTitle: formState.displayTitle || '',
+            displayDescription: formState.displayDescription || '',
+            type: isFreeMonthsOffer ? 'free_months' : 'percent',
+            cadence: offerCadence,
+            amount: isFreeMonthsOffer ? previewFreeMonths : previewPercentAmount,
+            duration: isFreeMonthsOffer ? 'free_months' : formState.duration,
+            durationInMonths: formState.durationInMonths,
+            currency: '',
+            status: 'active',
+            tierId: previewTier?.id || '',
+            redemptionType: 'retention'
+        };
+    }, [activePaidTiers, cadence, formState, lastPreviewFreeMonths, lastPreviewPercentAmount, offerCadence]);
+
+    useEffect(() => {
+        if (!siteData.url) {
+            setHref('');
+            return;
+        }
+
+        const newHref = getOfferPortalPreviewUrl(previewData, siteData.url);
+        setHref(newHref);
+    }, [previewData, siteData.url]);
+
+    const preview = <PortalFrame
+        href={href || ''}
+        portalParent='offers'
+    />;
 
     return (
         <PreviewModalContent

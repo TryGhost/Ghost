@@ -256,4 +256,81 @@ test.describe('Offers Modal', () => {
             }]
         });
     });
+
+    test('Renders preview for retention offers', async ({page}) => {
+        await mockApi({page, requests: {
+            browseOffers: {method: 'GET', path: '/offers/', response: responseFixtures.offers},
+            ...globalDataRequests,
+            browseConfig: {
+                method: 'GET',
+                path: '/config/',
+                response: {
+                    config: {
+                        ...responseFixtures.config.config,
+                        labs: {
+                            ...responseFixtures.config.config?.labs,
+                            retentionOffers: true
+                        }
+                    }
+                }
+            },
+            browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
+            browseTiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers}
+        }});
+
+        await page.goto('/');
+        const section = page.getByTestId('offers');
+        await section.getByRole('button', {name: 'Manage offers'}).click();
+
+        const modal = page.getByTestId('offers-modal');
+        await modal.getByRole('tab', {name: 'Retention'}).click();
+        await modal.getByText('Monthly retention').click();
+
+        const retentionModal = page.getByTestId('retention-offer-modal');
+        await expect(retentionModal).toBeVisible();
+        await retentionModal.getByLabel('Display title').fill('Before you go');
+        await retentionModal.getByLabel('Display description').fill('Please stay <script>alert(1)</script>');
+        await retentionModal.getByRole('button', {name: /Free month\(s\)/}).click();
+        await retentionModal.getByLabel('Free months').fill('2');
+
+        const iframe = retentionModal.getByTestId('portal-preview');
+        const getPreviewParams = async () => {
+            const src = await iframe.getAttribute('src');
+            expect(src).toBeTruthy();
+
+            const srcUrl = new URL(src!);
+            const [,hashQuery = ''] = srcUrl.hash.split('?');
+            return new URLSearchParams(hashQuery);
+        };
+
+        let params = await getPreviewParams();
+
+        expect(decodeURIComponent(params.get('display_title') || '')).toBe('Before you go');
+        expect(decodeURIComponent(params.get('display_description') || '')).toBe('Please stay <script>alert(1)</script>');
+        expect(params.get('redemption_type')).toBe('retention');
+        expect(params.get('type')).toBe('free_months');
+        expect(params.get('amount')).toBe('2');
+        expect(params.get('cadence')).toBe('month');
+        expect(params.get('tier_id')).toBeTruthy();
+
+        await retentionModal.getByLabel('Free months').fill('');
+
+        params = await getPreviewParams();
+        expect(params.get('type')).toBe('free_months');
+        expect(params.get('amount')).toBe('2');
+
+        await retentionModal.getByRole('button', {name: /Percentage discount/}).click();
+        await retentionModal.getByLabel('Amount off').fill('35');
+
+        params = await getPreviewParams();
+        expect(params.get('type')).toBe('percent');
+        expect(params.get('amount')).toBe('35');
+
+        // Percent discount caps at 100%
+        await retentionModal.getByLabel('Amount off').fill('150');
+
+        params = await getPreviewParams();
+        expect(params.get('type')).toBe('percent');
+        expect(params.get('amount')).toBe('100');
+    });
 });

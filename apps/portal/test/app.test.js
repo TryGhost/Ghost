@@ -79,4 +79,24 @@ describe('App', function () {
             expect(call[0]).toBe('en');
         });
     });
+
+    test('parses retention offer preview query data into account cancellation flow', () => {
+        const app = new App({siteUrl: 'http://example.com'});
+        const previewData = app.fetchOfferQueryStrData('redemption_type=retention&display_title=Before%2520you%2520go&display_description=Please%2520stay&type=free_months&amount=2&cadence=month&tier_id=product_123&enabled=false');
+
+        expect(previewData.page).toBe('accountPlan');
+        expect(previewData.pageData).toMatchObject({
+            action: 'cancel'
+        });
+        expect(previewData.offers).toHaveLength(1);
+        expect(previewData.offers[0]).toMatchObject({
+            display_title: 'Before you go',
+            display_description: 'Please stay',
+            redemption_type: 'retention',
+            type: 'free_months',
+            amount: 2,
+            cadence: 'month'
+        });
+        expect(previewData.offers[0].tier).toMatchObject({id: 'product_123'});
+    });
 });
