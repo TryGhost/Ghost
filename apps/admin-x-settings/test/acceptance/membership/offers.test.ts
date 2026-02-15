@@ -257,7 +257,7 @@ test.describe('Offers Modal', () => {
         });
     });
 
-    test('Shows monthly and yearly retention state from active offers', async ({page}) => {
+    test('Lists monthly and yearly retention offers', async ({page}) => {
         await mockApi({page, requests: {
             browseOffers: {
                 method: 'GET',
@@ -346,6 +346,99 @@ test.describe('Offers Modal', () => {
         await expect(yearlyRow).not.toContainText('2 MONTHS FREE');
     });
 
+    test('Renders existing retention offers in edit mode', async ({page}) => {
+        await mockApi({page, requests: {
+            browseOffers: {
+                method: 'GET',
+                path: '/offers/',
+                response: {
+                    offers: [
+                        ...(responseFixtures.offers.offers || []).filter(offer => offer.redemption_type === 'signup'),
+                        {
+                            id: 'retention-month-active',
+                            name: 'Monthly retention active',
+                            code: 'monthly-retention-active',
+                            display_title: 'Stay monthly',
+                            display_description: 'Monthly description',
+                            type: 'percent',
+                            cadence: 'month',
+                            amount: 40,
+                            duration: 'repeating',
+                            duration_in_months: 3,
+                            currency_restriction: false,
+                            currency: null,
+                            status: 'active',
+                            redemption_count: 7,
+                            redemption_type: 'retention',
+                            tier: null
+                        },
+                        {
+                            id: 'retention-year-active',
+                            name: 'Yearly retention active',
+                            code: 'yearly-retention-active',
+                            display_title: 'Stay yearly',
+                            display_description: 'Yearly description',
+                            type: 'free_months',
+                            cadence: 'year',
+                            amount: 2,
+                            duration: 'free_months',
+                            duration_in_months: null,
+                            currency_restriction: false,
+                            currency: null,
+                            status: 'active',
+                            redemption_count: 4,
+                            redemption_type: 'retention',
+                            tier: null
+                        }
+                    ]
+                }
+            },
+            ...globalDataRequests,
+            browseConfig: {
+                method: 'GET',
+                path: '/config/',
+                response: {
+                    config: {
+                        ...responseFixtures.config.config,
+                        labs: {
+                            ...responseFixtures.config.config?.labs,
+                            retentionOffers: true
+                        }
+                    }
+                }
+            },
+            browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
+            browseTiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers}
+        }});
+
+        await page.goto('/');
+        const section = page.getByTestId('offers');
+        await section.getByRole('button', {name: 'Manage offers'}).click();
+
+        const modal = page.getByTestId('offers-modal');
+        await modal.getByRole('tab', {name: 'Retention'}).click();
+        await modal.getByText('Monthly retention').click();
+
+        const monthlyModal = page.getByTestId('retention-offer-modal');
+        await expect(monthlyModal).toBeVisible();
+        await expect(monthlyModal.getByLabel('Enable monthly retention')).toBeChecked();
+        await expect(monthlyModal.getByLabel('Display title')).toHaveValue('Stay monthly');
+        await expect(monthlyModal.getByLabel('Display description')).toHaveValue('Monthly description');
+        await expect(monthlyModal.getByLabel('Amount off')).toHaveValue('40');
+        await expect(monthlyModal.getByLabel('Duration in months')).toHaveValue('3');
+
+        await monthlyModal.getByRole('button', {name: 'Cancel'}).click();
+
+        await modal.getByText('Yearly retention').click();
+
+        const yearlyModal = page.getByTestId('retention-offer-modal');
+        await expect(yearlyModal).toBeVisible();
+        await expect(yearlyModal.getByLabel('Enable yearly retention')).toBeChecked();
+        await expect(yearlyModal.getByLabel('Display title')).toHaveValue('Stay yearly');
+        await expect(yearlyModal.getByLabel('Display description')).toHaveValue('Yearly description');
+        await expect(yearlyModal.getByLabel('Free months')).toHaveValue('2');
+    });
+
     test('Renders preview for retention offers', async ({page}) => {
         await mockApi({page, requests: {
             browseOffers: {method: 'GET', path: '/offers/', response: responseFixtures.offers},
@@ -423,7 +516,7 @@ test.describe('Offers Modal', () => {
         expect(params.get('amount')).toBe('100');
     });
 
-    test('Saves retention offer via create offer endpoint', async ({page}) => {
+    test('Saves retention offers', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: {
             browseOffers: {method: 'GET', path: '/offers/', response: responseFixtures.offers},
             ...globalDataRequests,
@@ -477,7 +570,7 @@ test.describe('Offers Modal', () => {
                 display_description: 'Stay for a little longer',
                 cadence: 'month',
                 amount: 35,
-                duration: 'once',
+                duration: 'forever',
                 duration_in_months: 0,
                 currency: null,
                 status: 'active',
