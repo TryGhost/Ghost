@@ -41,7 +41,7 @@ jobs:
       pull-requests: read
     steps:
       - name: Checkout current commit
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ env.HEAD_COMMIT }}
           fetch-depth: 2
@@ -215,13 +215,34 @@ jobs:
       node_version: ${{ env.NODE_VERSION }}
       node_test_matrix: ${{ steps.node_matrix.outputs.matrix }}
 
+  job_app_version_bump_check:
+    name: Check app version bump
+    runs-on: ubuntu-latest
+    needs: [job_setup]
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout PR head commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Fetch main branch
+        run: git fetch --no-tags origin main
+
+      - name: Check app version bump
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_COMPARE_SHA: ${{ github.event.pull_request.head.sha }}
+        run: node .github/scripts/check-app-version-bump.js
+
   job_lint:
     runs-on: ubuntu-latest
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_any_code == 'true'
     name: Lint
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 1000
       - uses: actions/setup-node@v4
@@ -260,7 +281,7 @@ jobs:
         || needs.job_setup.outputs.changed_portal == 'true'
         || needs.job_setup.outputs.changed_core == 'true'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -284,7 +305,7 @@ jobs:
       CI: true
       COVERAGE: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -323,7 +344,7 @@ jobs:
     # Skip on forked PRs - Stripe secrets are not available
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       with:
         submodules: true
     - uses: actions/setup-node@v4
@@ -394,7 +415,7 @@ jobs:
     if: (needs.job_setup.outputs.changed_core == 'true' && needs.job_setup.outputs.is_development == 'true') || needs.job_setup.outputs.has_perf_tests_label == 'true'
     name: Performance tests
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: true
       - uses: actions/setup-node@v4
@@ -447,7 +468,7 @@ jobs:
         node: ${{ fromJSON(needs.job_setup.outputs.node_test_matrix) }}
     name: Unit tests (Node ${{ matrix.node }})
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 1000
       - uses: actions/setup-node@v4
@@ -471,6 +492,9 @@ jobs:
         run: yarn nx run-many -t build --exclude=ghost-admin
 
       - run: yarn nx affected -t test:unit --base=${{ needs.job_setup.outputs.BASE_COMMIT }}
+        env:
+          FORCE_COLOR: 0
+          NX_SKIP_LOG_GROUPING: true
 
       - uses: actions/upload-artifact@v4
         if: matrix.node == env.NODE_VERSION
@@ -489,6 +513,20 @@ jobs:
     runs-on: ubuntu-latest
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_core == 'true'
+    services:
+      mysql:
+        image: ${{ matrix.env.DB == 'mysql8' && 'mysql:8.0' || '' }}
+        env:
+          MYSQL_DATABASE: ghost_testing
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306
+        options: >-
+          --tmpfs /var/lib/mysql
+          --health-cmd "mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
     strategy:
       matrix:
         node: ${{ fromJSON(needs.job_setup.outputs.node_test_matrix) }}
@@ -505,32 +543,12 @@ jobs:
       NODE_ENV: ${{ matrix.env.NODE_ENV }}
     name: Acceptance tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v4
         env:
           FORCE_COLOR: 0
         with:
           node-version: ${{ matrix.node }}
-
-      - name: Shutdown MySQL
-        run: sudo service mysql stop
-        if: matrix.env.DB == 'mysql8'
-
-      - name: Login to Docker Hub
-        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - uses: tryghost/mysql-action@main
-        if: matrix.env.DB == 'mysql8'
-        timeout-minutes: 5
-        with:
-          authentication plugin: 'caching_sha2_password'
-          mysql version: '8.0'
-          mysql database: 'ghost_testing'
-          mysql root password: 'root'
 
       - name: Restore caches
         uses: ./.github/actions/restore-cache
@@ -551,7 +569,10 @@ jobs:
 
       - name: Set env vars (MySQL)
         if: contains(matrix.env.DB, 'mysql')
-        run: echo "database__connection__password=root" >> $GITHUB_ENV
+        run: |
+          echo "database__connection__host=127.0.0.1" >> $GITHUB_ENV
+          echo "database__connection__port=${{ job.services.mysql.ports['3306'] }}" >> $GITHUB_ENV
+          echo "database__connection__password=root" >> $GITHUB_ENV
 
       - name: E2E tests
         working-directory: ghost/core
@@ -580,6 +601,20 @@ jobs:
     runs-on: ubuntu-latest
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_core == 'true'
+    services:
+      mysql:
+        image: ${{ matrix.env.DB == 'mysql8' && 'mysql:8.0' || '' }}
+        env:
+          MYSQL_DATABASE: ghost_testing
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306
+        options: >-
+          --tmpfs /var/lib/mysql
+          --health-cmd "mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
     strategy:
       matrix:
         include:
@@ -596,7 +631,7 @@ jobs:
       NODE_ENV: ${{ matrix.env.NODE_ENV }}
     name: Legacy tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: true
       - uses: actions/setup-node@v4
@@ -604,19 +639,6 @@ jobs:
           FORCE_COLOR: 0
         with:
           node-version: ${{ matrix.node }}
-
-      - name: Shutdown MySQL
-        run: sudo service mysql stop
-        if: matrix.env.DB == 'mysql8'
-
-      - uses: tryghost/mysql-action@main
-        if: matrix.env.DB == 'mysql8'
-        timeout-minutes: 5
-        with:
-          authentication plugin: 'caching_sha2_password'
-          mysql version: '8.0'
-          mysql database: 'ghost_testing'
-          mysql root password: 'root'
 
       - name: Restore caches
         uses: ./.github/actions/restore-cache
@@ -632,7 +654,10 @@ jobs:
 
       - name: Set env vars (MySQL)
         if: contains(matrix.env.DB, 'mysql')
-        run: echo "database__connection__password=root" >> $GITHUB_ENV
+        run: |
+          echo "database__connection__host=127.0.0.1" >> $GITHUB_ENV
+          echo "database__connection__port=${{ job.services.mysql.ports['3306'] }}" >> $GITHUB_ENV
+          echo "database__connection__password=root" >> $GITHUB_ENV
 
       - name: Legacy tests
         working-directory: ghost/core
@@ -653,7 +678,7 @@ jobs:
     env:
       CI: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v4
         env:
           FORCE_COLOR: 0
@@ -693,7 +718,7 @@ jobs:
     env:
       CI: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v4
         env:
           FORCE_COLOR: 0
@@ -733,7 +758,7 @@ jobs:
     env:
       CI: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v4
         env:
           FORCE_COLOR: 0
@@ -773,7 +798,7 @@ jobs:
     env:
       CI: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v4
         env:
           FORCE_COLOR: 0
@@ -824,7 +849,7 @@ jobs:
       TINYBIRD_HOST_STAGING: ${{ secrets.TINYBIRD_HOST_STAGING }}
       TINYBIRD_TOKEN_STAGING: ${{ secrets.TINYBIRD_TOKEN_STAGING }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install Tinybird CLI
         run: curl -fsSL https://tinybird.co/install.sh | sh
       - name: Build project
@@ -842,7 +867,7 @@ jobs:
     if: needs.job_setup.outputs.changed_core == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           submodules: true
@@ -932,7 +957,7 @@ jobs:
       packages: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           submodules: true
 
@@ -1035,7 +1060,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           sparse-checkout: |
             .github/actions/load-docker-image
@@ -1106,7 +1131,7 @@ jobs:
         shardTotal: [4]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
         # TODO: Build tb-cli in a separate workflow and pull from GHCR instead of building here
       - name: Set up Docker Buildx
@@ -1187,7 +1212,7 @@ jobs:
       fail-fast: false
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - uses: actions/setup-node@v4
         with:
@@ -1271,7 +1296,7 @@ jobs:
     ]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Restore Admin coverage
         if: contains(needs.job_admin-tests.result, 'success')
@@ -1311,6 +1336,7 @@ jobs:
     needs:
       [
         job_setup,
+        job_app_version_bump_check,
         job_lint,
         job_i18n,
         job_ghost-cli,
@@ -1428,7 +1454,7 @@ jobs:
             cdn_paths: 'https://cdn.jsdelivr.net/ghost/announcement-bar@~CURRENT_MINOR/umd/announcement-bar.min.js'
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -1535,7 +1561,7 @@ jobs:
     if: always() && github.event_name == 'push' && needs.job_setup.outputs.changed_tinybird == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird-tests.result == 'success' && needs.job_setup.outputs.is_main == 'true'
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Deploy to Staging
         uses: ./.github/actions/deploy-tinybird
         with:
@@ -1555,7 +1581,7 @@ jobs:
     if: always() && github.event_name == 'push' && needs.job_setup.outputs.changed_tinybird == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird-tests.result == 'success' && needs.deploy_tinybird_staging.result == 'success' && needs.job_setup.outputs.is_main == 'true'
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Deploy to Production
         uses: ./.github/actions/deploy-tinybird
         with:
@@ -1577,7 +1603,7 @@ jobs:
       && needs.job_setup.outputs.is_main == 'true'
       && needs.job_required_tests.result == 'success'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v4
         env:
           FORCE_COLOR: 0

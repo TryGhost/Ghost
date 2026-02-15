@@ -329,6 +329,30 @@ Object {
       "value": false,
     },
     Object {
+      "key": "transistor",
+      "value": false,
+    },
+    Object {
+      "key": "transistor_portal_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "transistor_portal_heading",
+      "value": "Podcasts",
+    },
+    Object {
+      "key": "transistor_portal_description",
+      "value": "Access your private podcast feed",
+    },
+    Object {
+      "key": "transistor_portal_button_text",
+      "value": "View",
+    },
+    Object {
+      "key": "transistor_portal_url_template",
+      "value": "https://partner.transistor.fm/ghost/{memberUuid}",
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -1140,6 +1164,30 @@ Object {
       "value": false,
     },
     Object {
+      "key": "transistor",
+      "value": false,
+    },
+    Object {
+      "key": "transistor_portal_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "transistor_portal_heading",
+      "value": "Podcasts",
+    },
+    Object {
+      "key": "transistor_portal_description",
+      "value": "Access your private podcast feed",
+    },
+    Object {
+      "key": "transistor_portal_button_text",
+      "value": "View",
+    },
+    Object {
+      "key": "transistor_portal_url_template",
+      "value": "https://partner.transistor.fm/ghost/{memberUuid}",
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -1534,6 +1582,30 @@ Object {
       "value": false,
     },
     Object {
+      "key": "transistor",
+      "value": false,
+    },
+    Object {
+      "key": "transistor_portal_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "transistor_portal_heading",
+      "value": "Podcasts",
+    },
+    Object {
+      "key": "transistor_portal_description",
+      "value": "Access your private podcast feed",
+    },
+    Object {
+      "key": "transistor_portal_button_text",
+      "value": "View",
+    },
+    Object {
+      "key": "transistor_portal_url_template",
+      "value": "https://partner.transistor.fm/ghost/{memberUuid}",
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -1603,7 +1675,7 @@ exports[`Settings API Edit can edit Stripe settings when Stripe Connect limit is
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "4867",
+  "content-length": "5217",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1971,6 +2043,30 @@ Object {
     Object {
       "key": "explore_ping_growth",
       "value": false,
+    },
+    Object {
+      "key": "transistor",
+      "value": false,
+    },
+    Object {
+      "key": "transistor_portal_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "transistor_portal_heading",
+      "value": "Podcasts",
+    },
+    Object {
+      "key": "transistor_portal_description",
+      "value": "Access your private podcast feed",
+    },
+    Object {
+      "key": "transistor_portal_button_text",
+      "value": "View",
+    },
+    Object {
+      "key": "transistor_portal_url_template",
+      "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
       "key": "members_enabled",
@@ -2364,6 +2460,30 @@ Object {
     Object {
       "key": "explore_ping_growth",
       "value": false,
+    },
+    Object {
+      "key": "transistor",
+      "value": false,
+    },
+    Object {
+      "key": "transistor_portal_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "transistor_portal_heading",
+      "value": "Podcasts",
+    },
+    Object {
+      "key": "transistor_portal_description",
+      "value": "Access your private podcast feed",
+    },
+    Object {
+      "key": "transistor_portal_button_text",
+      "value": "View",
+    },
+    Object {
+      "key": "transistor_portal_url_template",
+      "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
       "key": "members_enabled",
@@ -3214,6 +3334,30 @@ Object {
       "value": false,
     },
     Object {
+      "key": "transistor",
+      "value": false,
+    },
+    Object {
+      "key": "transistor_portal_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "transistor_portal_heading",
+      "value": "Podcasts",
+    },
+    Object {
+      "key": "transistor_portal_description",
+      "value": "Access your private podcast feed",
+    },
+    Object {
+      "key": "transistor_portal_button_text",
+      "value": "View",
+    },
+    Object {
+      "key": "transistor_portal_url_template",
+      "value": "https://partner.transistor.fm/ghost/{memberUuid}",
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -3608,6 +3752,30 @@ Object {
       "value": false,
     },
     Object {
+      "key": "transistor",
+      "value": false,
+    },
+    Object {
+      "key": "transistor_portal_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "transistor_portal_heading",
+      "value": "Podcasts",
+    },
+    Object {
+      "key": "transistor_portal_description",
+      "value": "Access your private podcast feed",
+    },
+    Object {
+      "key": "transistor_portal_button_text",
+      "value": "View",
+    },
+    Object {
+      "key": "transistor_portal_url_template",
+      "value": "https://partner.transistor.fm/ghost/{memberUuid}",
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -4000,6 +4168,30 @@ Object {
     Object {
       "key": "explore_ping_growth",
       "value": false,
+    },
+    Object {
+      "key": "transistor",
+      "value": false,
+    },
+    Object {
+      "key": "transistor_portal_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "transistor_portal_heading",
+      "value": "Podcasts",
+    },
+    Object {
+      "key": "transistor_portal_description",
+      "value": "Access your private podcast feed",
+    },
+    Object {
+      "key": "transistor_portal_button_text",
+      "value": "View",
+    },
+    Object {
+      "key": "transistor_portal_url_template",
+      "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
       "key": "members_enabled",
@@ -4400,6 +4592,30 @@ Object {
       "value": false,
     },
     Object {
+      "key": "transistor",
+      "value": false,
+    },
+    Object {
+      "key": "transistor_portal_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "transistor_portal_heading",
+      "value": "Podcasts",
+    },
+    Object {
+      "key": "transistor_portal_description",
+      "value": "Access your private podcast feed",
+    },
+    Object {
+      "key": "transistor_portal_button_text",
+      "value": "View",
+    },
+    Object {
+      "key": "transistor_portal_url_template",
+      "value": "https://partner.transistor.fm/ghost/{memberUuid}",
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -4791,6 +5007,30 @@ Object {
     Object {
       "key": "explore_ping_growth",
       "value": false,
+    },
+    Object {
+      "key": "transistor",
+      "value": false,
+    },
+    Object {
+      "key": "transistor_portal_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "transistor_portal_heading",
+      "value": "Podcasts",
+    },
+    Object {
+      "key": "transistor_portal_description",
+      "value": "Access your private podcast feed",
+    },
+    Object {
+      "key": "transistor_portal_button_text",
+      "value": "View",
+    },
+    Object {
+      "key": "transistor_portal_url_template",
+      "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
       "key": "members_enabled",
@@ -5189,6 +5429,30 @@ Object {
     Object {
       "key": "explore_ping_growth",
       "value": false,
+    },
+    Object {
+      "key": "transistor",
+      "value": false,
+    },
+    Object {
+      "key": "transistor_portal_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "transistor_portal_heading",
+      "value": "Podcasts",
+    },
+    Object {
+      "key": "transistor_portal_description",
+      "value": "Access your private podcast feed",
+    },
+    Object {
+      "key": "transistor_portal_button_text",
+      "value": "View",
+    },
+    Object {
+      "key": "transistor_portal_url_template",
+      "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
       "key": "members_enabled",
@@ -5945,6 +6209,30 @@ Object {
       "value": false,
     },
     Object {
+      "key": "transistor",
+      "value": false,
+    },
+    Object {
+      "key": "transistor_portal_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "transistor_portal_heading",
+      "value": "Podcasts",
+    },
+    Object {
+      "key": "transistor_portal_description",
+      "value": "Access your private podcast feed",
+    },
+    Object {
+      "key": "transistor_portal_button_text",
+      "value": "View",
+    },
+    Object {
+      "key": "transistor_portal_url_template",
+      "value": "https://partner.transistor.fm/ghost/{memberUuid}",
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -6337,6 +6625,30 @@ Object {
     Object {
       "key": "explore_ping_growth",
       "value": false,
+    },
+    Object {
+      "key": "transistor",
+      "value": false,
+    },
+    Object {
+      "key": "transistor_portal_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "transistor_portal_heading",
+      "value": "Podcasts",
+    },
+    Object {
+      "key": "transistor_portal_description",
+      "value": "Access your private podcast feed",
+    },
+    Object {
+      "key": "transistor_portal_button_text",
+      "value": "View",
+    },
+    Object {
+      "key": "transistor_portal_url_template",
+      "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
       "key": "members_enabled",
@@ -6734,6 +7046,30 @@ Object {
       "value": false,
     },
     Object {
+      "key": "transistor",
+      "value": false,
+    },
+    Object {
+      "key": "transistor_portal_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "transistor_portal_heading",
+      "value": "Podcasts",
+    },
+    Object {
+      "key": "transistor_portal_description",
+      "value": "Access your private podcast feed",
+    },
+    Object {
+      "key": "transistor_portal_button_text",
+      "value": "View",
+    },
+    Object {
+      "key": "transistor_portal_url_template",
+      "value": "https://partner.transistor.fm/ghost/{memberUuid}",
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -7127,6 +7463,30 @@ Object {
     Object {
       "key": "explore_ping_growth",
       "value": false,
+    },
+    Object {
+      "key": "transistor",
+      "value": false,
+    },
+    Object {
+      "key": "transistor_portal_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "transistor_portal_heading",
+      "value": "Podcasts",
+    },
+    Object {
+      "key": "transistor_portal_description",
+      "value": "Access your private podcast feed",
+    },
+    Object {
+      "key": "transistor_portal_button_text",
+      "value": "View",
+    },
+    Object {
+      "key": "transistor_portal_url_template",
+      "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
       "key": "members_enabled",
@@ -7584,6 +7944,30 @@ Object {
     Object {
       "key": "explore_ping_growth",
       "value": false,
+    },
+    Object {
+      "key": "transistor",
+      "value": false,
+    },
+    Object {
+      "key": "transistor_portal_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "transistor_portal_heading",
+      "value": "Podcasts",
+    },
+    Object {
+      "key": "transistor_portal_description",
+      "value": "Access your private podcast feed",
+    },
+    Object {
+      "key": "transistor_portal_button_text",
+      "value": "View",
+    },
+    Object {
+      "key": "transistor_portal_url_template",
+      "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
       "key": "members_enabled",

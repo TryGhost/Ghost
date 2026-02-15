@@ -60,10 +60,13 @@ const AccountActions = () => {
                 <PaidAccountActions />
                 {showEmailPreferences && <EmailPreferencesAction />}
                 {showEmailNewsletterAction && <EmailNewsletterAction />}
-                <TransistorPodcastsAction
-                    hasPodcasts={transistor.hasPodcasts}
-                    memberUuid={transistor.memberUuid}
-                />
+                {transistor.enabled && (
+                    <TransistorPodcastsAction
+                        hasPodcasts={transistor.hasPodcasts}
+                        memberUuid={transistor.memberUuid}
+                        settings={transistor.settings}
+                    />
+                )}
             </div>
 
         </div>

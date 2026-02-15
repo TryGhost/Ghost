@@ -8,6 +8,7 @@ const ObjectId = require('bson-objectid').default;
 const {NotFoundError} = require('@tryghost/errors');
 const validator = require('@tryghost/validator');
 const crypto = require('crypto');
+const addCalendarMonths = require('../utils/add-calendar-months');
 const StartOutboxProcessingEvent = require('../../../outbox/events/start-outbox-processing-event');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../member-welcome-emails/constants');
 const messages = {
@@ -1800,23 +1801,46 @@ module.exports = class MemberRepository {
             });
         }
 
-        // Validate coupon was provided (getCouponForOffer returns null for trial offers or if offer has no stripe_coupon_id)
+        const stripeSubscriptionId = subscriptionModel.get('subscription_id');
+        const isFreeMonthsOffer = offer.type === 'free_months';
+
+        if (isFreeMonthsOffer) {
+            const currentPeriodEnd = subscriptionModel.get('current_period_end');
+            if (!currentPeriodEnd) {
+                throw new errors.BadRequestError({
+                    message: tpl(messages.subscriptionNotActive)
+                });
+            }
+
+            const trialEndDate = addCalendarMonths(currentPeriodEnd, offer.amount);
+            const trialEnd = Math.floor(trialEndDate.getTime() / 1000);
+
+            const updatedSubscription = await this._stripeAPIService.updateSubscriptionTrialEnd(
+                stripeSubscriptionId,
+                trialEnd,
+                {prorationBehavior: 'none'}
+            );
+
+            return this.linkSubscription({
+                id: member.id,
+                subscription: updatedSubscription,
+                offerId: data.offerId
+            }, options);
+        }
+
+        // Besides free_months and trial offers, all other offers rely on a Stripe Coupon
         if (!data.couponId) {
             throw new errors.BadRequestError({
                 message: tpl(messages.offerNoCoupon)
             });
         }
 
-        const stripeSubscriptionId = subscriptionModel.get('subscription_id');
-
-        // Apply coupon to Stripe subscription
         const updatedSubscription = await this._stripeAPIService.addCouponToSubscription(
             stripeSubscriptionId,
             data.couponId
         );
 
-        // Sync local state with Stripe
-        await this.linkSubscription({
+        return this.linkSubscription({
             id: member.id,
             subscription: updatedSubscription,
             offerId: data.offerId

@@ -92,19 +92,19 @@ describe('services/koenig/node-renderers/transistor-renderer', function () {
             const result = renderForEmail(getTestData());
 
             assert.ok(result.html.includes('href="https://partner.transistor.fm/ghost/%%{uuid}%%"'));
-            assert.ok(result.html.includes('Listen on Transistor'));
+            assert.ok(result.html.includes('Listen to your podcasts'));
         });
 
-        it('uses accent color for styling', function () {
-            const result = renderForEmail(getTestData({accentColor: '#ff5500'}));
+        it('uses site accent color for icon background', function () {
+            const result = renderForEmail(getTestData(), {design: {accentColor: '#ff5500'}});
 
-            assert.ok(result.html.includes('color: #ff5500') || result.html.includes('color:#ff5500'));
+            assert.ok(result.html.includes('background-color: #ff5500'));
         });
 
         it('uses default accent color when not provided', function () {
-            const result = renderForEmail(getTestData({accentColor: null}));
+            const result = renderForEmail(getTestData());
 
-            assert.ok(result.html.includes('#15171A'));
+            assert.ok(result.html.includes('background-color: #15171A'));
         });
     });
 });

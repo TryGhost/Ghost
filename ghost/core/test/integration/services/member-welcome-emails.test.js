@@ -12,6 +12,7 @@ const processOutbox = require('../../../core/server/services/outbox/jobs/lib/pro
 
 describe('Member Welcome Emails Integration', function () {
     let membersService;
+    let defaultNewsletterSenderState = null;
 
     before(async function () {
         await testUtils.setup('default')();
@@ -19,6 +20,18 @@ describe('Member Welcome Emails Integration', function () {
     });
 
     beforeEach(async function () {
+        const defaultNewsletter = await models.Newsletter.getDefaultNewsletter();
+        if (defaultNewsletter) {
+            defaultNewsletterSenderState = {
+                id: defaultNewsletter.id,
+                sender_name: defaultNewsletter.get('sender_name'),
+                sender_email: defaultNewsletter.get('sender_email'),
+                sender_reply_to: defaultNewsletter.get('sender_reply_to')
+            };
+        } else {
+            defaultNewsletterSenderState = null;
+        }
+
         await db.knex('outbox').del();
         await db.knex('members').del();
 
@@ -58,6 +71,16 @@ describe('Member Welcome Emails Integration', function () {
     });
 
     afterEach(async function () {
+        if (defaultNewsletterSenderState) {
+            await db.knex('newsletters')
+                .where('id', defaultNewsletterSenderState.id)
+                .update({
+                    sender_name: defaultNewsletterSenderState.sender_name,
+                    sender_email: defaultNewsletterSenderState.sender_email,
+                    sender_reply_to: defaultNewsletterSenderState.sender_reply_to
+                });
+        }
+
         await db.knex('automated_email_recipients').del();
         await db.knex('outbox').del();
         await db.knex('members').del();
@@ -349,6 +372,37 @@ describe('Member Welcome Emails Integration', function () {
             const sendCall = mailService.GhostMailer.prototype.send.firstCall;
             assert.equal(sendCall.args[0].to, memberEmail);
         });
+
+        it('uses configured sender and reply-to when sending member welcome email', async function () {
+            const senderEmail = 'editor@example.com';
+            const senderReplyTo = 'reply@example.com';
+            const defaultNewsletter = await models.Newsletter.getDefaultNewsletter();
+
+            await db.knex('newsletters')
+                .where('id', defaultNewsletter.id)
+                .update({
+                    sender_name: 'Scott',
+                    sender_email: senderEmail,
+                    sender_reply_to: senderReplyTo
+                });
+
+            await models.Outbox.add({
+                event_type: 'MemberCreatedEvent',
+                payload: JSON.stringify({
+                    memberId: ObjectId().toHexString(),
+                    email: 'sender-test@example.com',
+                    name: 'Sender Test',
+                    status: 'free'
+                }),
+                status: OUTBOX_STATUSES.PENDING
+            });
+
+            await scheduleInlineJob();
+
+            assert.equal(mailService.GhostMailer.prototype.send.callCount, 1);
+            const sendCall = mailService.GhostMailer.prototype.send.firstCall;
+            assert.equal(sendCall.args[0].replyTo, senderReplyTo);
+            assert.ok(sendCall.args[0].from.includes(senderEmail));
+        });
     });
 });
-
