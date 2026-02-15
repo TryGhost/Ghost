@@ -17,9 +17,9 @@
     "Best": "Най-добрите",
     "Cancel": "Отказ",
     "Comment": "Коментар",
-    "Commenting disabled": "",
+    "Commenting disabled": "Коментирането е деактивирано",
     "Complete your profile": "Попълнете профила си",
-    "Contact support": "",
+    "Contact support": "Свържете се с екип поддръжка",
     "Delete": "Изтриване",
     "Deleted": "Изтрито",
     "Deleted member": "Изтрит абонат",
@@ -74,6 +74,6 @@
     "Upgrade now": "Надградете сега",
     "View in admin": "",
     "Yesterday": "Вчера",
-    "You can't post comments in this publication.": "",
+    "You can't post comments in this publication.": "Не можете да коментирате под тази публикация.",
     "Your request will be sent to the owner of this site.": "Искането ще бъде изпратено до собственика на сайта."
 }
