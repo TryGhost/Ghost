@@ -333,4 +333,70 @@ test.describe('Offers Modal', () => {
         expect(params.get('type')).toBe('percent');
         expect(params.get('amount')).toBe('100');
     });
+
+    test('Saves retention offer via create offer endpoint', async ({page}) => {
+        const {lastApiRequests} = await mockApi({page, requests: {
+            browseOffers: {method: 'GET', path: '/offers/', response: responseFixtures.offers},
+            ...globalDataRequests,
+            browseConfig: {
+                method: 'GET',
+                path: '/config/',
+                response: {
+                    config: {
+                        ...responseFixtures.config.config,
+                        labs: {
+                            ...responseFixtures.config.config?.labs,
+                            retentionOffers: true
+                        }
+                    }
+                }
+            },
+            browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
+            browseTiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers},
+            addOffer: {method: 'POST', path: '/offers/', response: {
+                offers: [{
+                    id: 'retention-offer-monthly',
+                    name: 'Monthly retention',
+                    code: 'monthly-retention'
+                }]
+            }}
+        }});
+
+        await page.goto('/');
+        const section = page.getByTestId('offers');
+        await section.getByRole('button', {name: 'Manage offers'}).click();
+
+        const modal = page.getByTestId('offers-modal');
+        await modal.getByRole('tab', {name: 'Retention'}).click();
+        await modal.getByText('Monthly retention').click();
+
+        const retentionModal = page.getByTestId('retention-offer-modal');
+        await expect(retentionModal).toBeVisible();
+        await retentionModal.getByLabel('Display title').fill('Before you go');
+        await retentionModal.getByLabel('Display description').fill('Stay for a little longer');
+        await retentionModal.getByRole('button', {name: /Percentage discount/}).click();
+        await retentionModal.getByLabel('Amount off').fill('35');
+
+        await retentionModal.getByRole('button', {name: 'Save'}).click();
+
+        await expect.poll(() => lastApiRequests.addOffer?.body).toBeTruthy();
+        expect(lastApiRequests.addOffer?.body).toMatchObject({
+            offers: [{
+                name: 'Monthly retention',
+                code: 'monthly-retention',
+                display_title: 'Before you go',
+                display_description: 'Stay for a little longer',
+                cadence: 'month',
+                amount: 35,
+                duration: 'once',
+                duration_in_months: 0,
+                currency: null,
+                status: 'active',
+                redemption_type: 'retention',
+                tier: null,
+                type: 'percent',
+                currency_restriction: false
+            }]
+        });
+    });
 });

@@ -3,6 +3,7 @@ import {ButtonSelect, type OfferType} from './add-offer-modal';
 import {Form, PreviewModalContent, Select, type SelectOption, TextArea, TextField, Toggle} from '@tryghost/admin-x-design-system';
 import {getOfferPortalPreviewUrl, type offerPortalPreviewUrlTypes} from '../../../../utils/get-offers-portal-preview-url';
 import {getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
+import {useAddOffer} from '@tryghost/admin-x-framework/api/offers';
 import {useEffect, useMemo, useState} from 'react';
 import {useForm} from '@tryghost/admin-x-framework/hooks';
 import {useGlobalData} from '../../../providers/global-data-provider';
@@ -32,6 +33,26 @@ const durationOptions: SelectOption[] = [
 
 const MAX_PERCENT_AMOUNT = 100;
 const MAX_FREE_MONTHS = 12;
+
+const getResolvedAmount = ({
+    type,
+    percentAmount,
+    freeMonths,
+    lastPercentAmount,
+    lastFreeMonths
+}: {
+    type: RetentionOfferFormState['type'];
+    percentAmount: number;
+    freeMonths: number;
+    lastPercentAmount: number;
+    lastFreeMonths: number;
+}) => {
+    if (type === 'free_months') {
+        return freeMonths > 0 ? freeMonths : lastFreeMonths;
+    }
+
+    return percentAmount > 0 ? percentAmount : lastPercentAmount;
+};
 
 const getDefaultState = (id: string): RetentionOfferFormState => {
     if (id === 'monthly') {
@@ -205,26 +226,52 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
     const {updateRoute} = useRouting();
     const {siteData} = useGlobalData();
     const {data: {tiers = []} = {}} = useBrowseTiers();
+    const {mutateAsync: addOffer} = useAddOffer();
     const [href, setHref] = useState<string>('');
     const cadence = id === 'monthly' ? 'monthly' : 'yearly' as const;
     const breadcrumbTitle = cadence === 'monthly' ? 'Monthly retention' : 'Yearly retention';
     const offerCadence = cadence === 'monthly' ? 'month' : 'year';
     const activePaidTiers = getPaidActiveTiers(tiers || []);
+    const [lastPreviewPercentAmount, setLastPreviewPercentAmount] = useState(20);
+    const [lastPreviewFreeMonths, setLastPreviewFreeMonths] = useState(1);
 
-    const {formState, updateForm, saveState, okProps} = useForm({
+    const {formState, updateForm, handleSave, saveState, okProps} = useForm({
         initialState: getDefaultState(id),
         savingDelay: 500,
         onSave: async () => {
-            // No-op for now — API wiring will be added later
+            const amount = getResolvedAmount({
+                type: formState.type,
+                percentAmount: formState.percentAmount,
+                freeMonths: formState.freeMonths,
+                lastPercentAmount: lastPreviewPercentAmount,
+                lastFreeMonths: lastPreviewFreeMonths
+            });
+
+            const offerName = cadence === 'monthly' ? 'Monthly retention' : 'Yearly retention';
+            const offerCode = cadence === 'monthly' ? 'monthly-retention' : 'yearly-retention';
+
+            await addOffer({
+                name: offerName,
+                code: offerCode,
+                display_title: formState.displayTitle || '',
+                display_description: formState.displayDescription || '',
+                cadence: offerCadence,
+                amount,
+                duration: formState.type === 'free_months' ? 'free_months' : formState.duration,
+                duration_in_months: formState.type === 'percent' && formState.duration === 'repeating' ? formState.durationInMonths : 0,
+                currency: null,
+                status: formState.enabled ? 'active' : 'archived',
+                redemption_type: 'retention',
+                tier: null,
+                type: formState.type,
+                currency_restriction: false
+            });
         },
         onSaveError: () => {},
         onValidate: () => {
             return {};
         }
     });
-
-    const [lastPreviewPercentAmount, setLastPreviewPercentAmount] = useState(formState.percentAmount || 1);
-    const [lastPreviewFreeMonths, setLastPreviewFreeMonths] = useState(formState.freeMonths || 1);
 
     useEffect(() => {
         if (formState.percentAmount > 0) {
@@ -252,8 +299,13 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
 
     const previewData: offerPortalPreviewUrlTypes = useMemo(() => {
         const isFreeMonthsOffer = formState.type === 'free_months';
-        const previewPercentAmount = formState.percentAmount > 0 ? formState.percentAmount : lastPreviewPercentAmount;
-        const previewFreeMonths = formState.freeMonths > 0 ? formState.freeMonths : lastPreviewFreeMonths;
+        const previewAmount = getResolvedAmount({
+            type: formState.type,
+            percentAmount: formState.percentAmount,
+            freeMonths: formState.freeMonths,
+            lastPercentAmount: lastPreviewPercentAmount,
+            lastFreeMonths: lastPreviewFreeMonths
+        });
         const previewTier = activePaidTiers.find((tier) => {
             if (offerCadence === 'month') {
                 return tier.monthly_price;
@@ -270,7 +322,7 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
             displayDescription: formState.displayDescription || '',
             type: isFreeMonthsOffer ? 'free_months' : 'percent',
             cadence: offerCadence,
-            amount: isFreeMonthsOffer ? previewFreeMonths : previewPercentAmount,
+            amount: previewAmount,
             duration: isFreeMonthsOffer ? 'free_months' : formState.duration,
             durationInMonths: formState.durationInMonths,
             currency: '',
@@ -318,7 +370,9 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
             onBreadcrumbsBack={goBack}
             onCancel={goBack}
             onOk={async () => {
-                // No-op for now — API wiring will be added later
+                if (await handleSave({force: true})) {
+                    goBack();
+                }
             }}
         />
     );
