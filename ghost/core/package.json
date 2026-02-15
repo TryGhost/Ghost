@@ -125,7 +125,7 @@
     "bookshelf-relations": "2.8.0",
     "brute-knex": "4.0.1",
     "bson-objectid": "2.0.4",
-    "cache-manager": "4.1.0",
+    "cache-manager": "7.2.8",
     "cache-manager-ioredis": "2.1.0",
     "chalk": "4.1.2",
     "charset": "1.0.1",
