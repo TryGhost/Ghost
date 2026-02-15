@@ -257,6 +257,95 @@ test.describe('Offers Modal', () => {
         });
     });
 
+    test('Shows monthly and yearly retention state from active offers', async ({page}) => {
+        await mockApi({page, requests: {
+            browseOffers: {
+                method: 'GET',
+                path: '/offers/',
+                response: {
+                    offers: [
+                        ...(responseFixtures.offers.offers || []).filter(offer => offer.redemption_type === 'signup'),
+                        {
+                            id: 'retention-month-active',
+                            name: 'Monthly retention active',
+                            code: 'monthly-retention-active',
+                            display_title: 'Before you go',
+                            display_description: '',
+                            type: 'percent',
+                            cadence: 'month',
+                            amount: 25,
+                            duration: 'once',
+                            duration_in_months: null,
+                            currency_restriction: false,
+                            currency: null,
+                            status: 'active',
+                            redemption_count: 7,
+                            redemption_type: 'retention',
+                            tier: null
+                        },
+                        {
+                            id: 'retention-year-archived',
+                            name: 'Yearly retention archived',
+                            code: 'yearly-retention-archived',
+                            display_title: 'Stay with us',
+                            display_description: '',
+                            type: 'free_months',
+                            cadence: 'year',
+                            amount: 2,
+                            duration: 'free_months',
+                            duration_in_months: null,
+                            currency_restriction: false,
+                            currency: null,
+                            status: 'archived',
+                            redemption_count: 9,
+                            redemption_type: 'retention',
+                            tier: null
+                        }
+                    ]
+                }
+            },
+            ...globalDataRequests,
+            browseConfig: {
+                method: 'GET',
+                path: '/config/',
+                response: {
+                    config: {
+                        ...responseFixtures.config.config,
+                        labs: {
+                            ...responseFixtures.config.config?.labs,
+                            retentionOffers: true
+                        }
+                    }
+                }
+            },
+            browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
+            browseTiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers}
+        }});
+
+        await page.goto('/');
+        const section = page.getByTestId('offers');
+        await section.getByRole('button', {name: 'Manage offers'}).click();
+
+        const modal = page.getByTestId('offers-modal');
+        await modal.getByRole('tab', {name: 'Retention'}).click();
+
+        const rows = modal.getByTestId('retention-offer-item');
+        await expect(rows).toHaveCount(2);
+
+        const monthlyRow = rows.nth(0);
+        await expect(monthlyRow).toContainText('Monthly retention');
+        await expect(monthlyRow).toContainText('25% OFF');
+        await expect(monthlyRow).toContainText('First payment');
+        await expect(monthlyRow).toContainText('7');
+        await expect(monthlyRow).toContainText('Active');
+
+        const yearlyRow = rows.nth(1);
+        await expect(yearlyRow).toContainText('Yearly retention');
+        await expect(yearlyRow).toContainText('Inactive');
+        await expect(yearlyRow).toContainText('0');
+        await expect(yearlyRow).not.toContainText('2 MONTHS FREE');
+    });
+
     test('Renders preview for retention offers', async ({page}) => {
         await mockApi({page, requests: {
             browseOffers: {method: 'GET', path: '/offers/', response: responseFixtures.offers},
