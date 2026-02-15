@@ -2,17 +2,16 @@ const sentry = require('./shared/sentry');
 const express = require('./shared/express');
 const config = require('./shared/config');
 const logging = require('@tryghost/logging');
-const urlService = require('./server/services/url');
 
 const fs = require('fs');
 const path = require('path');
 
 const isMaintenanceModeEnabled = (req) => {
-    if (req.app.get('maintenance') || config.get('maintenance').enabled || !urlService.hasFinished()) {
+    if (req.app.get('maintenance') || config.get('maintenance').enabled) {
         return true;
     }
-
-    return false;
+    const urlService = require('./server/services/url');
+    return !urlService.hasFinished();
 };
 
 // We never want middleware functions to be anonymous
