@@ -499,7 +499,7 @@ jobs:
         run: yarn nx run-many -t build --projects="${{ steps.affected_unit_projects.outputs.projects }}"
 
       - name: Run unit tests
-        run: ./node_modules/.bin/nx affected -t test:unit --outputStyle=stream --base=${{ needs.job_setup.outputs.BASE_COMMIT }}
+        run: yarn nx affected -t test:unit --base=${{ needs.job_setup.outputs.BASE_COMMIT }}
         env:
           FORCE_COLOR: 0
           GHOST_UNIT_TEST_VARIANT: ci
