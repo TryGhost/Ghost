@@ -4,7 +4,7 @@ const {cacheInvalidateHeaderNotSet} = assertions;
 const {exportedBodyLatest} = require('../../utils/fixtures/export/body-generator');
 const fs = require('fs-extra');
 const sinon = require('sinon');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 
 describe('Backup Integration', function () {
     let agent, fsStub;

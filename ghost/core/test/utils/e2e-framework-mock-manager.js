@@ -1,6 +1,6 @@
 const errors = require('@tryghost/errors');
 const sinon = require('sinon');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const nock = require('nock');
 
 // Helper services

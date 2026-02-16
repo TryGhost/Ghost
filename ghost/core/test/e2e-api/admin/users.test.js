@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const config = require('../../../core/shared/config');
 const models = require('../../../core/server/models');
 const db = require('../../../core/server/data/db');
@@ -94,7 +94,7 @@ describe('User API', function () {
                 }
             })
             .expect(cacheInvalidateHeaderNotSet())
-            .expect(({body}) => { 
+            .expect(({body}) => {
                 assert.equal(body.users[0].slug, 'smith-wellingsworth');
             });
     });
@@ -120,7 +120,7 @@ describe('User API', function () {
                 assert.equal(body.meta, undefined);
                 localUtils.API.checkResponse(body.users[0], 'user', ['roles', 'count']);
             });
-    });  
+    });
 
     it('Can retrieve a user by slug', async function () {
         const userSlug = fixtureManager.get('users', 1).slug;
@@ -199,7 +199,7 @@ describe('User API', function () {
 
     it('can edit a user fetched from the API', async function () {
         const userToEditId = fixtureManager.get('users', 1).id;
-        
+
         // First, fetch the user with roles
         const res = await agent.get(`users/${userToEditId}/?include=roles`)
             .expectStatus(200)
@@ -372,19 +372,19 @@ describe('User API', function () {
 
     it('Can destroy an active user and transfer posts to the owner', async function () {
         // Use slimer-mcectoplasm user (index 3) who has a post in the fixtures
-        const {id: userId, slug: userSlug} = fixtureManager.get('users', 3); 
+        const {id: userId, slug: userSlug} = fixtureManager.get('users', 3);
         const ownerId = fixtureManager.get('users', 0).id;
 
         // First check the user actually has posts
         const initialPostsRes = await agent.get(`posts/?filter=authors:${userSlug}`)
-            .expectStatus(200); 
-        
+            .expectStatus(200);
+
         // Verify the user has posts to transfer
         assert.ok(initialPostsRes.body.posts.length > 0, `User ${userSlug} should have posts to make this test meaningful`);
 
         // Ensure the user's posts are only authored by that user (remove any co-authors)
         const userPostIds = initialPostsRes.body.posts.map(post => post.id);
-        
+
         // Remove all co-authors from the user's posts
         await db.knex('posts_authors')
             .whereIn('post_id', userPostIds)
@@ -468,7 +468,7 @@ describe('User API', function () {
                     {
                         ...userMatcher,
                         id: originalOwnerId,
-                        roles: [{name: 'Administrator', 
+                        roles: [{name: 'Administrator',
                             id: anyObjectId,
                             created_at: anyISODateTime,
                             updated_at: anyISODateTime}]
@@ -542,7 +542,7 @@ describe('User API', function () {
     it('Can\'t read another user\'s Personal Token', async function () {
         // Try to access a different user's token (should be forbidden)
         const otherUser = fixtureManager.get('users', 1);
-        
+
         await agent.get(`users/${otherUser.id}/token/`)
             .expectStatus(403)
             .matchHeaderSnapshot({
@@ -567,7 +567,7 @@ describe('User API', function () {
     it('Can re-generate the user\'s Personal Token', async function () {
         const originalTokenRes = await agent.get('users/me/token/')
             .expectStatus(200);
-        
+
         const {id: originalId, secret: originalSecret} = originalTokenRes.body.apiKey;
 
         const newTokenRes = await agent.put('users/me/token/')
@@ -591,7 +591,7 @@ describe('User API', function () {
                 }
             })
             .expect(cacheInvalidateHeaderNotSet());
-        
+
         const {id: newId, secret: newSecret} = newTokenRes.body.apiKey;
 
         assert.equal(originalId, newId, 'Token id should remain the same');

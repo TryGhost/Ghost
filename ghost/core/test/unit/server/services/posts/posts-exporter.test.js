@@ -1,5 +1,5 @@
 const PostsExporter = require('../../../../../core/server/services/posts/posts-exporter');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const {createModelClass, createModel} = require('./utils');
 
 class SettingsCache {

@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 
 const EmailBodyCache = require('../../../../../core/server/services/email-service/email-body-cache');
 const SendingService = require('../../../../../core/server/services/email-service/sending-service');

@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 
 const MemoryCache = require('../../../../../core/server/adapters/cache/MemoryCache');
 

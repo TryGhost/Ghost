@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const mail = require('../../../../../core/server/services/mail');
 const SettingsBreadService = require('../../../../../core/server/services/settings/settings-bread-service');
 const urlUtils = require('../../../../../core/shared/url-utils.js');

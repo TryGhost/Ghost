@@ -6,7 +6,7 @@ const {
     configUtils
 } = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const urlUtils = require('../../../core/shared/url-utils');
 const nock = require('nock');
 const jobsService = require('../../../core/server/services/mentions-jobs');

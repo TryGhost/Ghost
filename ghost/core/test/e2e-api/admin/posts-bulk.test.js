@@ -3,7 +3,7 @@ const DomainEvents = require('@tryghost/domain-events');
 const {mobiledocToLexical} = require('@tryghost/kg-converters');
 const {agentProvider, fixtureManager, mockManager} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 
 describe('Posts Bulk API', function () {
     let agent;

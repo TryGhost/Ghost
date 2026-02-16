@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const crypto = require('crypto');
 const sinon = require('sinon');
 const LimitService = require('@tryghost/limit-service');

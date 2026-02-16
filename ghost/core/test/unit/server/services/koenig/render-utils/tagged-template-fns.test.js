@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const {oneline} = require('../../../../../../core/server/services/koenig/render-utils/tagged-template-fns');
 
 describe('services/koenig/render-utils/tagged-template-fns', function () {

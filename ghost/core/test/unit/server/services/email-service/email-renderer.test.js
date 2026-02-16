@@ -1,6 +1,6 @@
 require('should');
 const EmailRenderer = require('../../../../../core/server/services/email-service/email-renderer');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
 const cheerio = require('cheerio');
 const {createModel, createModelClass} = require('./utils');

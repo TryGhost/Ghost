@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const {isLocalContentImage, isContentImage} = require('../../../../../../core/server/services/koenig/render-utils/is-content-image');
 
 describe('services/koenig/render-utils/is-content-image', function () {

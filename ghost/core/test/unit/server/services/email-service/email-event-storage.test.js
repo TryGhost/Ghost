@@ -1,7 +1,7 @@
 const EmailEventStorage = require('../../../../../core/server/services/email-service/email-event-storage');
 
 const sinon = require('sinon');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const logging = require('@tryghost/logging');
 const {createDb, createPrometheusClient} = require('./utils');
 

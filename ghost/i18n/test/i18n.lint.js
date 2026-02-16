@@ -1,5 +1,5 @@
 // @ts-check
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const fs = require('fs/promises');
 const path = require('path');
 const {ESLint} = require('eslint');

@@ -2,7 +2,7 @@ const should = require('should');
 
 const Tier = require('../../../../../../core/server/services/tiers/tier');
 const ObjectID = require('bson-objectid').default;
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../../utils/assertions');
 const fs = require('fs-extra');
 const path = require('path');

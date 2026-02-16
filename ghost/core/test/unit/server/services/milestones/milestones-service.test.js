@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const MilestonesService = require('../../../../../core/server/services/milestones/milestones-service');
 const InMemoryMilestoneRepository = require('../../../../../core/server/services/milestones/in-memory-milestone-repository');
 const Milestone = require('../../../../../core/server/services/milestones/milestone');

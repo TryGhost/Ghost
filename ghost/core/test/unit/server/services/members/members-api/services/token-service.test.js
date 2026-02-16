@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const jwt = require('jsonwebtoken');
 const jwkToPem = require('jwk-to-pem');
 const TokenService = require('../../../../../../../core/server/services/members/members-api/services/token-service');

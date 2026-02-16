@@ -1,7 +1,7 @@
 const {agentProvider, fixtureManager, matchers, mockManager} = require('../../utils/e2e-framework');
 const {mockStripe, stripeMocker} = require('../../utils/e2e-framework-mock-manager');
 const {anyContentVersion, anyEtag, anyISODate, anyObjectId, anyContentLength} = matchers;
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 
 let agent;
 
@@ -256,7 +256,7 @@ describe('Stats API', function () {
         it('Can fetch visitor counts for multiple posts', async function () {
             const post1 = fixtureManager.get('posts', 0);
             const post2 = fixtureManager.get('posts', 1);
-            
+
             await agent
                 .post('/stats/posts-visitor-counts')
                 .body({
@@ -323,7 +323,7 @@ describe('Stats API', function () {
         it('Can fetch member counts for multiple posts', async function () {
             const post1 = fixtureManager.get('posts', 0);
             const post2 = fixtureManager.get('posts', 1);
-            
+
             await agent
                 .post('/stats/posts-member-counts')
                 .body({

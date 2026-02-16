@@ -22,7 +22,7 @@ const path = require('path');
 const os = require('os');
 const crypto = require('crypto');
 
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 
 const fixtureUtils = require('./fixture-utils');
 const cacheRules = require('./fixtures/cache-rules');

@@ -1,6 +1,6 @@
 const sinon = require('sinon');
 const {agentProvider, fixtureManager, configUtils} = require('../../../utils/e2e-framework');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const MailgunClient = require('../../../../core/server/services/lib/mailgun-client');
 const DomainEvents = require('@tryghost/domain-events');
 const emailAnalytics = require('../../../../core/server/services/email-analytics');

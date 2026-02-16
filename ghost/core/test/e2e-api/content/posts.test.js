@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const cheerio = require('cheerio');
 const sinon = require('sinon');
 const config = require('../../../core/shared/config');

@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const MagicLink = require('../../../../../../core/server/services/lib/magic-link/magic-link');
 

@@ -3,7 +3,7 @@ const validation = require('../../../../../../core/server/web/api/middleware/upl
 const imageFixturePath = ('../../../../../utils/fixtures/images/');
 const fs = require('fs');
 const path = require('path');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 
 describe('web utils', function () {
     describe('checkFileExists', function () {

@@ -4,7 +4,7 @@ const models = require('../../core/server/models');
 const sinon = require('sinon');
 const jobManager = require('../../core/server/services/jobs/job-service');
 const escapeRegExp = require('lodash/escapeRegExp');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const {assertMatchSnapshot} = require('./assertions');
 
 const getDefaultNewsletter = async function () {

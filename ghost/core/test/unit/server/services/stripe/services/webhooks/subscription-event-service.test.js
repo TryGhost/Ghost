@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 
 const SubscriptionEventService = require('../../../../../../../core/server/services/stripe/services/webhook/subscription-event-service');
 

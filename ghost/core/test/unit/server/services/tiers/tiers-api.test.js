@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 
 const TiersAPI = require('../../../../../core/server/services/tiers/tiers-api');
 const InMemoryTierRepository = require('../../../../../core/server/services/tiers/in-memory-tier-repository');

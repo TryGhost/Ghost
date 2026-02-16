@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const configUtils = require('../../../../utils/config-utils');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const getConfigProperties = require('../../../../../core/server/services/public-config/config');

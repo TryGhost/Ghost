@@ -1,5 +1,5 @@
 const {configUtils} = require('../../../../utils/e2e-framework');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const nock = require('nock');
 const DomainEvents = require('@tryghost/domain-events');
 const MilestoneCreatedEvent = require('../../../../../core/server/services/milestones/milestone-created-event');

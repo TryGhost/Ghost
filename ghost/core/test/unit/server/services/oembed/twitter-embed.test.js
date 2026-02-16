@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const logging = require('@tryghost/logging');
 const sinon = require('sinon');
 const TwitterOEmbedProvider = require('../../../../../core/server/services/oembed/twitter-oembed-provider');

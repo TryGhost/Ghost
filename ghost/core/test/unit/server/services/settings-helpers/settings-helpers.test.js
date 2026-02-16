@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const configUtils = require('../../../../utils/config-utils');
 const SettingsHelpers = require('../../../../../core/server/services/settings-helpers/settings-helpers');
 const crypto = require('crypto');
-const assert = require('assert').strict;
+const assert = require('node:assert/strict');
 
 const mockValidationKey = 'validation_key';
 

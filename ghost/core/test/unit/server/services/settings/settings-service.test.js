@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const configUtils = require('../../../../utils/config-utils');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const logging = require('@tryghost/logging');

@@ -1,6 +1,6 @@
 const MembersStatsService = require('../../../../../core/server/services/stats/members-stats-service');
 const knex = require('knex').default;
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const moment = require('moment');
 const sinon = require('sinon');
 

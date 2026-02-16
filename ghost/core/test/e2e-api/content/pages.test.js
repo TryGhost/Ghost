@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const moment = require('moment');
 
 const testUtils = require('../../utils');
