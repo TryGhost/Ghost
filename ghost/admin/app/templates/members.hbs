@@ -1,7 +1,3 @@
-{{#if (feature "membersForward")}}
-    {{! React members list - render via Posts app }}
-    <AdminX::Posts />
-{{else}}
 <section class="gh-canvas">
     <GhCanvasHeader class="gh-canvas-header break tablet members-header">
         <div class="flex flex-column">
@@ -235,4 +231,3 @@
 {{/if}}
 
 {{outlet}}
-{{/if}}

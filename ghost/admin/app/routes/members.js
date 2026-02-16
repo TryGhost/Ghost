@@ -15,6 +15,10 @@ export default class MembersRoute extends MembersManagementRoute {
         postAnalytics: {refreshModel: false}
     };
 
+    get templateName() {
+        return this.feature.membersForward ? 'members-x' : 'members';
+    }
+
     model(params) {
         // When membersForward is enabled, delegate to React - don't load Ember data
         if (this.feature.membersForward) {
