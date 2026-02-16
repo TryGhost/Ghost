@@ -572,7 +572,7 @@ describe('{{#get}} helper', function () {
             // The get helper gets called with an empty array of results
             assert.equal(fn.calledOnce, true);
             fn.firstCall.args[0].should.be.an.Object().with.property('posts');
-            fn.firstCall.args[0].posts.should.be.an.Array().with.lengthOf(0);
+            assert.deepEqual(fn.firstCall.args[0].posts, []);
         });
     });
 });

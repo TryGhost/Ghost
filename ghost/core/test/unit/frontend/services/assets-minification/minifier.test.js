@@ -148,7 +148,7 @@ describe('Minifier', function () {
                 'card.min.js': 'js/empty.js'
             });
 
-            result.should.be.an.Array().with.lengthOf(0);
+            assert.deepEqual(result, []);
         });
 
         it('can minify empty css correctly to no result', async function () {
@@ -156,7 +156,7 @@ describe('Minifier', function () {
                 'card.min.css': 'css/empty.css'
             });
 
-            result.should.be.an.Array().with.lengthOf(0);
+            assert.deepEqual(result, []);
         });
     });
 });

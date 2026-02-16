@@ -124,6 +124,6 @@ describe('package-json filter', function () {
         const result = packageJSON.filter({
             '.git': {}, '.anything': {}, 'README.md': {}, _messages: {}
         });
-        result.should.be.an.Array().with.lengthOf(0);
+        assert.deepEqual(result, []);
     });
 });

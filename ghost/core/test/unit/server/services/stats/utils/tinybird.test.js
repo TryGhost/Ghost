@@ -184,7 +184,7 @@ describe('Tinybird Client', function () {
 
             const result = tinybirdClient.parseResponse(mockResponse);
             assertExists(result);
-            result.should.be.an.Array().with.lengthOf(0);
+            assert.deepEqual(result, []);
         });
 
         it('returns null for invalid JSON', function () {

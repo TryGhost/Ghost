@@ -37,14 +37,14 @@ describe('Contexts', function () {
             renderer.context(req, res, data);
 
             assertExists(res.locals.context);
-            res.locals.context.should.be.an.Array().with.lengthOf(0);
+            assert.deepEqual(res.locals.context, []);
         });
 
         it('should return empty array with no error with basic parameters', function () {
             renderer.context(req, res, data);
 
             assertExists(res.locals.context);
-            res.locals.context.should.be.an.Array().with.lengthOf(0);
+            assert.deepEqual(res.locals.context, []);
         });
     });
 
@@ -131,7 +131,7 @@ describe('Contexts', function () {
             renderer.context(req, res, data);
 
             assertExists(res.locals.context);
-            res.locals.context.should.be.an.Array().with.lengthOf(0);
+            assert.deepEqual(res.locals.context, []);
         });
 
         it('will not identify /page/2/ as paged without page param', function () {
@@ -178,7 +178,7 @@ describe('Contexts', function () {
             renderer.context(req, res, data);
 
             assertExists(res.locals.context);
-            res.locals.context.should.be.an.Array().with.lengthOf(0);
+            assert.deepEqual(res.locals.context, []);
         });
 
         it('will not identify /page/2/ as paged without page param', function () {

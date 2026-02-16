@@ -131,7 +131,7 @@ describe('ContentStatsService', function () {
 
             const result = service.extractPostUuids(data);
             assertExists(result);
-            result.should.be.an.Array().with.lengthOf(0);
+            assert.deepEqual(result, []);
         });
     });
 
@@ -227,7 +227,7 @@ describe('ContentStatsService', function () {
         it('returns empty array for empty input', async function () {
             const result = await service.enrichTopContentData([]);
             assertExists(result);
-            result.should.be.an.Array().with.lengthOf(0);
+            assert.deepEqual(result, []);
 
             assert.equal(service.extractPostUuids.called, false);
             assert.equal(service.lookupPostTitles.called, false);
@@ -413,7 +413,7 @@ describe('ContentStatsService', function () {
 
             assertExists(result);
             assertExists(result.data);
-            result.data.should.be.an.Array().with.lengthOf(0);
+            assert.deepEqual(result.data, []);
 
             assert.equal(service.fetchRawTopContentData.calledOnce, true);
         });
@@ -428,7 +428,7 @@ describe('ContentStatsService', function () {
 
             assertExists(result);
             assertExists(result.data);
-            result.data.should.be.an.Array().with.lengthOf(0);
+            assert.deepEqual(result.data, []);
         });
 
         it('returns empty data array when tinybirdClient is not available', async function () {
@@ -445,7 +445,7 @@ describe('ContentStatsService', function () {
 
             assertExists(result);
             assertExists(result.data);
-            result.data.should.be.an.Array().with.lengthOf(0);
+            assert.deepEqual(result.data, []);
         });
     });
 
