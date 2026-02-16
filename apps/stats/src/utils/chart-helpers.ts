@@ -22,6 +22,7 @@ export const getPeriodText = (range: number): string => {
  * Truncates leading empty data points from the beginning of a dataset,
  * keeping one zero entry before the first real data for a smooth chart transition.
  * Ultimately, we should fix the API to return only what we want to see.
+ * https://linear.app/ghost/issue/NY-1035/
  */
 export function truncateLeadingEmptyData<T extends {value?: number}>(data: T[]): T[] {
     const firstNonEmptyIndex = data.findIndex(item => Number(item.value) > 0);
