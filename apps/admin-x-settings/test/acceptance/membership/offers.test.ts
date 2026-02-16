@@ -640,9 +640,9 @@ test.describe('Offers Modal', () => {
             await page.keyboard.press('Escape');
         });
 
-    test('Renders preview for retention offers', async ({page}) => {
-        await mockApi({page, requests: {
-            browseOffers: {
+        test('Renders preview for retention offers', async ({page}) => {
+            await mockApi({page, requests: {
+                browseOffers: {
                     method: 'GET',
                     path: '/offers/',
                     response: {
