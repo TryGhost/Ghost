@@ -23,7 +23,7 @@ describe('servePublicFile', function () {
     it('should return a middleware', function () {
         const result = servePublicFile('static', 'robots.txt', 'text/plain', 3600);
 
-        result.should.be.a.Function();
+        assert.equal(typeof result, 'function');
     });
 
     it('should skip if the request does NOT match the file', function () {

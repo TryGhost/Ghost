@@ -67,7 +67,7 @@ describe('Mail: Ghostmailer', function () {
 
         assert('transport' in mailer);
         assert.equal(mailer.transport.transporter.name, 'SMTP');
-        mailer.transport.sendMail.should.be.a.Function();
+        assert.equal(typeof mailer.transport.sendMail, 'function');
     });
 
     it('should fallback to direct if config is empty', function () {
