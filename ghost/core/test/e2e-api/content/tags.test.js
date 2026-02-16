@@ -126,6 +126,20 @@ describe('Tags Content API', function () {
         assert(getTag('chorizo').url.endsWith('/tag/chorizo/'));
     });
 
+    it('Can request tags with slug filter ordering', async function () {
+        const res = await request.get(localUtils.API.getApiQuery(`tags/?key=${validKey}&filter=slug:[bacon,chorizo]`))
+            .set('Origin', testUtils.API.getURL())
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.public)
+            .expect(200);
+
+        const jsonResponse = res.body;
+        assertExists(jsonResponse.tags);
+        // Should return tags matching the slug filter, ordered by slug position
+        assert.equal(jsonResponse.tags[0].slug, 'bacon');
+        assert.equal(jsonResponse.tags[1].slug, 'chorizo');
+    });
+
     it('Can use single url field and have valid url fields', async function () {
         const res = await request.get(localUtils.API.getApiQuery(`tags/?key=${validKey}&fields=url`))
             .set('Origin', testUtils.API.getURL())
