@@ -435,7 +435,7 @@ describe('Comments API', function () {
 
                 // go through all comments and check if the deleted comment is not there
                 data2.body.comments.forEach((comment) => {
-                    should(comment.html).not.eql('This is a deleted comment');
+                    assert.notEqual(comment.html, 'This is a deleted comment');
                 });
 
                 assert.equal(data2.body.comments.length, 0);
@@ -845,7 +845,7 @@ describe('Comments API', function () {
                 // get the LAST comment from data2
                 let lastComment = data2.body.comments[data2.body.comments.length - 1];
 
-                should(lastComment.id).eql(oldestComment.id);
+                assert.equal(lastComment.id, oldestComment.id);
             });
 
             it('Can reply to your own comment', async function () {
@@ -1107,7 +1107,7 @@ describe('Comments API', function () {
                         assert.equal(body.meta.pagination.next, null);
 
                         // Check liked + likes working for replies too
-                        should(body.comments[2].id).eql(replies[2].get('id'));
+                        assert.equal(body.comments[2].id, replies[2].get('id'));
                         assert.equal(body.comments[2].count.likes, 1);
                         assert.equal(body.comments[2].liked, true);
                     });
@@ -1170,7 +1170,7 @@ describe('Comments API', function () {
                 assert.equal(reports.models.length, 1);
 
                 const report = reports.models[0];
-                report.get('member_id').should.eql(loggedInMember.id);
+                assert.equal(report.get('member_id'), loggedInMember.id);
 
                 mockManager.assert.sentEmail({
                     subject: '🚩 A comment has been reported on your post',
@@ -1196,7 +1196,7 @@ describe('Comments API', function () {
                 assert.equal(reports.models.length, 1);
 
                 const report = reports.models[0];
-                report.get('member_id').should.eql(loggedInMember.id);
+                assert.equal(report.get('member_id'), loggedInMember.id);
 
                 emailMockReceiver.assertSentEmailCount(0);
             });
@@ -1481,7 +1481,7 @@ describe('Comments API', function () {
                     });
 
                     // in_reply_to is set
-                    newComment.in_reply_to_id.should.eql(reply.get('id'));
+                    assert.equal(newComment.in_reply_to_id, reply.get('id'));
                     assert.equal(newComment.in_reply_to_snippet, 'This is a reply');
 
                     // replied-to comment author is notified
