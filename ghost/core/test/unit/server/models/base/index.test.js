@@ -160,7 +160,7 @@ describe('Models: base', function () {
         it('expect date transformation', function () {
             const data = testUtils.DataGenerator.forKnex.createPost({updated_at: '2018-04-01 07:53:07'});
 
-            data.updated_at.should.be.a.String();
+            assert.equal(typeof data.updated_at, 'string');
 
             models.Base.Model.sanitizeData
                 .bind({prototype: {tableName: 'posts'}})(data);
@@ -187,7 +187,7 @@ describe('Models: base', function () {
                 }]
             });
 
-            data.authors[0].updated_at.should.be.a.String();
+            assert.equal(typeof data.authors[0].updated_at, 'string');
 
             models.Base.Model.sanitizeData
                 .bind({
