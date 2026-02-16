@@ -109,7 +109,7 @@ describe('Members Importer API', function () {
     //         .expect('Content-Type', /json/)
     //         .expect('Cache-Control', testUtils.cacheRules.private)
     //         .then((res) => {
-    //             should.not.exist(res.headers['x-cache-invalidate']);
+    //             assert(!res.headers['x-cache-invalidate']);
 
     //             const jsonResponse = res.body;
 
@@ -130,7 +130,7 @@ describe('Members Importer API', function () {
     //                 .expect('Cache-Control', testUtils.cacheRules.private)
     //                 .expect(200)
     //                 .then((res) => {
-    //                     should.not.exist(res.headers['x-cache-invalidate']);
+    //                     assert(!res.headers['x-cache-invalidate']);
     //                     const jsonResponse = res.body;
     //                     assertExists(jsonResponse);
     //                     assertExists(jsonResponse.members);
@@ -147,7 +147,7 @@ describe('Members Importer API', function () {
     //                 .expect('Cache-Control', testUtils.cacheRules.private)
     //                 .expect(200)
     //                 .then((res) => {
-    //                     should.not.exist(res.headers['x-cache-invalidate']);
+    //                     assert(!res.headers['x-cache-invalidate']);
     //                     const jsonResponse = res.body;
     //                     assertExists(jsonResponse);
     //                     assertExists(jsonResponse.meta);

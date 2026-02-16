@@ -43,7 +43,7 @@ describe('UNIT > Settings Service DefaultSettingsManager:', function () {
 
             try {
                 await defaultSettingsManager.setFromFilePath(incomingSettingsPath);
-                assert.fail('should.fail');
+                assert.fail();
             } catch (error) {
                 assert.match(error.message, /YAMLException: bad indentation of a mapping entry/);
             }

@@ -12,20 +12,14 @@ describe('OfferCode', function () {
                 OfferCode.create();
                 assert.fail();
             } catch (err) {
-                should.ok(
-                    err instanceof OfferCode.InvalidOfferCode,
-                    'expected an InvalidOfferCode error'
-                );
+                assert(err instanceof OfferCode.InvalidOfferCode, 'expected an InvalidOfferCode error');
             }
 
             try {
                 OfferCode.create(1234);
                 assert.fail();
             } catch (err) {
-                should.ok(
-                    err instanceof OfferCode.InvalidOfferCode,
-                    'expected an InvalidOfferCode error'
-                );
+                assert(err instanceof OfferCode.InvalidOfferCode, 'expected an InvalidOfferCode error');
             }
 
             const code = OfferCode.create('Hello, world');
@@ -48,10 +42,7 @@ describe('OfferCode', function () {
                 OfferCode.create(tooLong);
                 assert.fail();
             } catch (err) {
-                should.ok(
-                    err instanceof OfferCode.InvalidOfferCode,
-                    'expected an InvalidOfferCode error'
-                );
+                assert(err instanceof OfferCode.InvalidOfferCode, 'expected an InvalidOfferCode error');
             }
         });
     });

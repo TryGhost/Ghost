@@ -132,21 +132,18 @@ describe('Themes', function () {
                 });
         });
 
-        it('[failure] can handle a corrupt zip file', function () {
+        it('[failure] can handle a corrupt zip file', async function () {
             checkZipStub.rejects(new Error('invalid zip file'));
             formatStub.returns({results: {error: []}});
 
-            return validate.check(testTheme.name, testTheme, {isZip: true})
-                .then((checkedTheme) => {
-                    checkedTheme.should.not.exist();
-                }).catch((error) => {
-                    assert(error instanceof Error);
-                    assert.equal(error.message, 'invalid zip file');
-                    assert.equal(checkZipStub.calledOnce, true);
-                    assert.equal(checkZipStub.calledWith(testTheme), true);
-                    sinon.assert.notCalled(checkStub);
-                    assert.equal(formatStub.calledOnce, false);
-                });
+            await assert.rejects(() => (
+                validate.check(testTheme.name, testTheme, {isZip: true})
+            ), {message: 'invalid zip file'});
+
+            sinon.assert.calledOnce(checkZipStub);
+            sinon.assert.calledWith(checkZipStub, testTheme);
+            sinon.assert.notCalled(checkStub);
+            sinon.assert.notCalled(formatStub);
         });
     });
 
