@@ -23,6 +23,9 @@ type CalendarOrderFilter = 'published_at asc' | 'updated_at desc' | null;
 type CalendarQueryParam = typeof FILTER_QUERY_PARAMS[number];
 type FilterOption = {label: string; value: string};
 
+// TODO: Replace LegacyFilterSelect with a Shade Select once the legacy admin UI is retired.
+// The ember-* classes (for example 'ember-view' and 'ember-basic-dropdown-trigger') are
+// intentionally preserved for visual parity with current admin filter controls.
 const LegacyFilterSelect = ({
     value,
     options,
