@@ -71,7 +71,7 @@
     "@slack/webhook": "7.0.6",
     "@tryghost/adapter-base-cache": "0.1.17",
     "@tryghost/admin-api-schema": "4.5.10",
-    "@tryghost/api-framework": "1.0.2",
+    "@tryghost/api-framework": "1.0.3",
     "@tryghost/bookshelf-plugins": "0.6.27",
     "@tryghost/color-utils": "0.2.10",
     "@tryghost/config-url-helpers": "1.0.17",
