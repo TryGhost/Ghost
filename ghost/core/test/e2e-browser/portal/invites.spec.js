@@ -10,7 +10,7 @@ test.describe('Portal', () => {
         test('New staff member can signup using an invite link', async ({sharedPage}) => {
             // Navigate to settings
             await sharedPage.goto('/ghost');
-            await sharedPage.locator('[data-sidebar="sidebar"]').getByRole('link', {name: 'Settings'}).click();
+            await sharedPage.getByRole('navigation').getByRole('link', {name: 'Settings'}).click();
 
             const testEmail = `test-${Date.now()}@gmail.com`;
 
@@ -72,7 +72,7 @@ test.describe('Portal', () => {
             test('New staff member can signup using an invite link with 2FA enabled', async ({sharedPage}) => {
                 // Navigate to settings
                 await sharedPage.goto('/ghost');
-                await sharedPage.locator('[data-sidebar="sidebar"]').getByRole('link', {name: 'Settings'}).click();
+                await sharedPage.getByRole('navigation').getByRole('link', {name: 'Settings'}).click();
 
                 const testEmail = `test-${Date.now()}@gmail.com`;
 

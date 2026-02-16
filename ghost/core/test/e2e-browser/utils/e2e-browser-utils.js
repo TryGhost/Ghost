@@ -36,7 +36,7 @@ const setupGhost = async (page) => {
     const action = await Promise.race([
         page.locator('.gh-signin').waitFor(options).then(() => actions.signin).catch(() => {}),
         page.locator('.gh-setup').waitFor(options).then(() => actions.setup).catch(() => {}),
-        page.locator('[data-sidebar="sidebar"]').waitFor(options).then(() => actions.noAction).catch(() => {})
+        page.getByRole('navigation').waitFor(options).then(() => actions.noAction).catch(() => {})
     ]);
 
     // Add owner user data from usual fixture
@@ -56,7 +56,7 @@ const setupGhost = async (page) => {
 
         await page.getByPlaceholder('At least 10 characters').press('Enter');
 
-        await page.locator('[data-sidebar="sidebar"]').waitFor(options);
+        await page.getByRole('navigation').waitFor(options);
     }
 };
 
@@ -70,7 +70,7 @@ const signInAsUserById = async (page, userId) => {
     await page.locator('#password').fill(user.password);
     await page.getByRole('button', {name: 'Sign in'}).click();
     // Confirm we have reached Ghost Admin
-    await page.locator('[data-sidebar="sidebar"]').waitFor({state: 'visible', timeout: 10000});
+    await page.getByRole('navigation').waitFor({state: 'visible', timeout: 10000});
 };
 
 const signOutCurrentUser = async (page) => {
@@ -80,7 +80,7 @@ const signOutCurrentUser = async (page) => {
 
 const disconnectStripe = async (page) => {
     await deleteAllMembers(page);
-    await page.locator('[data-sidebar="sidebar"]').getByRole('link', {name: 'Settings'}).click();
+    await page.getByRole('navigation').getByRole('link', {name: 'Settings'}).click();
     await page.getByTestId('tiers').waitFor();
     if (await page.isVisible('[data-testid="stripe-connected"]')) {
         await page.getByTestId('stripe-connected').first().click();
@@ -91,7 +91,7 @@ const disconnectStripe = async (page) => {
 
 const setupStripe = async (page, stripConnectIntegrationToken) => {
     await deleteAllMembers(page);
-    await page.locator('[data-sidebar="sidebar"]').getByRole('link', {name: 'Settings'}).click();
+    await page.getByRole('navigation').getByRole('link', {name: 'Settings'}).click();
     await page.getByTestId('tiers').waitFor();
     if (await page.isVisible('[data-testid="stripe-connected"]')) {
         // Disconnect if already connected
@@ -114,7 +114,7 @@ const setupStripe = async (page, stripConnectIntegrationToken) => {
 
 // Setup Mailgun with fake data for Ghost Admin to allow bulk sending
 const setupMailgun = async (page) => {
-    await page.locator('[data-sidebar="sidebar"]').getByRole('link', {name: 'Settings'}).click();
+    await page.getByRole('navigation').getByRole('link', {name: 'Settings'}).click();
     const section = page.getByTestId('mailgun');
 
     await section.getByRole('button', {name: 'Edit'}).click();
@@ -131,7 +131,7 @@ const setupMailgun = async (page) => {
  * @param {import('@playwright/test').Page} page
  */
 const deleteAllMembers = async (page) => {
-    await page.locator('a[href="#/members/"]').first().click();
+    await page.getByRole('navigation').getByRole('link', {name: 'Members'}).click();
 
     const firstMember = page.locator('.gh-list tbody tr').first();
     while (await Promise.race([
@@ -180,7 +180,7 @@ const impersonateMember = async (page) => {
 const createTier = async (page, {name, monthlyPrice, yearlyPrice, trialDays}, enableInPortal = true) => {
     await test.step('Create a tier', async () => {
         // Navigate to the member settings
-        await page.locator('[data-sidebar="sidebar"]').getByRole('link', {name: 'Settings'}).click();
+        await page.getByRole('navigation').getByRole('link', {name: 'Settings'}).click();
 
         // Tiers request can take time, so waiting until the Add tier button is visible before interacting
         await page.getByTestId('tiers').getByRole('button', {name: 'Add tier'}).waitFor();
@@ -252,7 +252,7 @@ const createOffer = async (page, {name, tierName, offerType, amount, discountTyp
     let offerLink;
     await test.step('Create an offer', async () => {
         await page.goto('/ghost');
-        await page.locator('[data-sidebar="sidebar"]').getByRole('link', {name: 'Settings'}).click();
+        await page.getByRole('navigation').getByRole('link', {name: 'Settings'}).click();
 
         // Keep offer names unique & <= 40 characters
         offerName = `${name} (${new ObjectID().toHexString().slice(0, 40 - name.length - 3)})`;
@@ -368,7 +368,7 @@ const completeStripeSubscription = async (page, {awaitNetworkIdle = true} = {}) 
  */
 const createMember = async (page, {email, name, note, label = '', compedPlan}) => {
     await page.goto('/ghost');
-    await page.locator('[data-sidebar="sidebar"]').getByRole('link', {name: 'Members'}).click();
+    await page.getByRole('navigation').getByRole('link', {name: 'Members'}).click();
     await page.waitForSelector('a[href="#/members/new/"] span');
     await page.locator('a[href="#/members/new/"] span:has-text("New member")').click();
     await page.waitForSelector('input[name="name"]');
@@ -408,7 +408,7 @@ const createMember = async (page, {email, name, note, label = '', compedPlan}) =
  * @param {String} [options.body]
  */
 const createPostDraft = async (page, {title = 'Hello world', body = 'This is my post body.'} = {}) => {
-    await page.locator('[data-sidebar="sidebar"]').getByRole('link', {name: 'Posts'}).click();
+    await page.getByRole('navigation').getByRole('link', {name: 'Posts'}).click();
 
     // Create a new post
     await page.locator('[data-test-new-post-button]').click();
@@ -435,7 +435,7 @@ const createPostDraft = async (page, {title = 'Hello world', body = 'This is my 
 const goToMembershipPage = async (page) => {
     return await test.step('Open Membership settings', async () => {
         await page.goto('/ghost');
-        await page.locator('[data-sidebar="sidebar"]').getByRole('link', {name: 'Settings'}).click();
+        await page.getByRole('navigation').getByRole('link', {name: 'Settings'}).click();
         // Tiers request can take time, so waiting until the tiers section is loaded before interacting with UI
         await page.getByTestId('tiers').waitFor();
     });

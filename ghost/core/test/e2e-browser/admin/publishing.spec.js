@@ -68,7 +68,7 @@ const checkPostPublished = async (page, {slug, title, body}) => {
  * @param {String} [options.body]
  */
 const createPage = async (page, {title = 'Hello world', body = 'This is my post body.'} = {}) => {
-    await page.locator('[data-sidebar="sidebar"]').getByRole('link', {name: 'Pages'}).click();
+    await page.getByRole('navigation').getByRole('link', {name: 'Pages'}).click();
 
     // Create a new post
     await page.locator('[data-test-new-page-button]').click();
@@ -620,7 +620,7 @@ test.describe('Updating post access', () => {
         await closePublishFlow(page);
 
         // go to settings and change the timezone
-        await page.locator('[data-sidebar="sidebar"]').getByRole('link', {name: 'Settings'}).click();
+        await page.getByRole('navigation').getByRole('link', {name: 'Settings'}).click();
         await expect(page.getByTestId('timezone')).toContainText('UTC');
 
         await page.getByTestId('timezone-select').click();
@@ -630,7 +630,7 @@ test.describe('Updating post access', () => {
         await expect(page.getByTestId('timezone')).toContainText('(GMT +9:00) Osaka, Sapporo, Tokyo');
 
         await page.getByTestId('exit-settings').click();
-        await page.locator('[data-sidebar="sidebar"]').getByRole('link', {name: 'Posts'}).click();
+        await page.getByRole('navigation').getByRole('link', {name: 'Posts'}).click();
         await page.locator('[data-test-post-id]', {hasText: /Published in timezones/}).click();
 
         await openPostSettingsMenu(page);
