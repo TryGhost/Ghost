@@ -38,7 +38,7 @@ describe('Unit: models/member', function () {
             config.set('privacy:useGravatar', true);
             const json = toJSON(member);
 
-            json.avatar_image.should.eql(`https://www.gravatar.com/avatar/55502f40dc8b7c769880b10874abc9d0?s=250&r=g&d=blank`);
+            assert.equal(json.avatar_image, `https://www.gravatar.com/avatar/55502f40dc8b7c769880b10874abc9d0?s=250&r=g&d=blank`);
         });
 
         it('avatar_image: skips gravatar when privacy.useGravatar=false', function () {

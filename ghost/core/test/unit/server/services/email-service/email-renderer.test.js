@@ -1765,11 +1765,11 @@ describe('Email renderer', function () {
             // Check uuid in replacements
             assert.equal(response.replacements.length, 4);
             assert.equal(response.replacements[0].id, 'uuid');
-            response.replacements[0].token.should.eql(/%%\{uuid\}%%/g);
+            assert.deepEqual(response.replacements[0].token, /%%\{uuid\}%%/g);
             assert.equal(response.replacements[1].id, 'key');
-            response.replacements[1].token.should.eql(/%%\{key\}%%/g);
+            assert.deepEqual(response.replacements[1].token, /%%\{key\}%%/g);
             assert.equal(response.replacements[2].id, 'unsubscribe_url');
-            response.replacements[2].token.should.eql(/%%\{unsubscribe_url\}%%/g);
+            assert.deepEqual(response.replacements[2].token, /%%\{unsubscribe_url\}%%/g);
             assert.equal(response.replacements[3].id, 'list_unsubscribe');
         });
 
@@ -1875,11 +1875,11 @@ describe('Email renderer', function () {
             // Check uuid in replacements
             assert.equal(response.replacements.length, 4);
             assert.equal(response.replacements[0].id, 'uuid');
-            response.replacements[0].token.should.eql(/%%\{uuid\}%%/g);
+            assert.deepEqual(response.replacements[0].token, /%%\{uuid\}%%/g);
             assert.equal(response.replacements[1].id, 'key');
-            response.replacements[1].token.should.eql(/%%\{key\}%%/g);
+            assert.deepEqual(response.replacements[1].token, /%%\{key\}%%/g);
             assert.equal(response.replacements[2].id, 'unsubscribe_url');
-            response.replacements[2].token.should.eql(/%%\{unsubscribe_url\}%%/g);
+            assert.deepEqual(response.replacements[2].token, /%%\{unsubscribe_url\}%%/g);
             assert.equal(response.replacements[3].id, 'list_unsubscribe');
         });
 

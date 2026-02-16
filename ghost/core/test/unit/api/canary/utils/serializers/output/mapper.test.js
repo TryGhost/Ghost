@@ -226,7 +226,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
             }));
 
             const mapped = mappers.newsletters(newsletter, frame);
-            mapped.should.eql(newsletter.toJSON());
+            assert.deepEqual(mapped, newsletter.toJSON());
         });
     });
 

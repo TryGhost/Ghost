@@ -111,7 +111,7 @@ describe('Unit: services/url/UrlService', function () {
 
             urlService.finished = true;
             urlService.urls.getByUrl.withArgs('/blog-post/').returns([{resource: resource}]);
-            urlService.getResource('/blog-post/').should.eql(resource);
+            assert.equal(urlService.getResource('/blog-post/'), resource);
         });
 
         it('two resources for url found', function () {
@@ -129,7 +129,7 @@ describe('Unit: services/url/UrlService', function () {
 
             urlService.finished = true;
             urlService.urls.getByUrl.withArgs('/blog-post/').returns([object1, object2]);
-            urlService.getResource('/blog-post/').should.eql(object2.resource);
+            assert.equal(urlService.getResource('/blog-post/'), object2.resource);
         });
 
         it('two resources for url found (reverse registration order)', function () {
@@ -147,7 +147,7 @@ describe('Unit: services/url/UrlService', function () {
 
             urlService.finished = true;
             urlService.urls.getByUrl.withArgs('/blog-post/').returns([object1, object2]);
-            urlService.getResource('/blog-post/').should.eql(object1.resource);
+            assert.equal(urlService.getResource('/blog-post/'), object1.resource);
         });
     });
 

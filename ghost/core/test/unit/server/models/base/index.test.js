@@ -96,13 +96,13 @@ describe('Models: base', function () {
 
         it('too long', function () {
             Model.findOne.resolves(false);
-            const slug = new Array(500).join('a');
+            const slug = 'a'.repeat(500);
 
             securityStringSafeStub.withArgs(slug).returns(slug);
 
             return models.Base.Model.generateSlug(Model, slug, options)
                 .then((generatedSlug) => {
-                    generatedSlug.should.eql(new Array(186).join('a'));
+                    assert.equal(generatedSlug, 'a'.repeat(185));
                 });
         });
 

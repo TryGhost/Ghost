@@ -302,7 +302,7 @@ describe('{{#get}} helper', function () {
                 assert(Array.isArray(browseStub.firstCall.args));
                 assert.equal(browseStub.firstCall.args.length, 1);
                 browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');
-                browseStub.firstCall.args[0].filter.should.eql(`published_at:<='${pubDate.toISOString()}'`);
+                assert.equal(browseStub.firstCall.args[0].filter, `published_at:<='${pubDate.toISOString()}'`);
 
                 done();
             }).catch(done);
@@ -351,40 +351,40 @@ describe('{{#get}} helper', function () {
         };
 
         it('resolves simple dot-notation path', function () {
-            querySimplePath(data, 'post.id').should.eql([3]);
+            assert.deepEqual(querySimplePath(data, 'post.id'), [3]);
         });
 
         it('resolves nested dot-notation path', function () {
-            querySimplePath(data, 'post.author.slug').should.eql(['cameron']);
+            assert.deepEqual(querySimplePath(data, 'post.author.slug'), ['cameron']);
         });
 
         it('resolves array wildcard', function () {
-            querySimplePath(data, 'post.tags[*].slug').should.eql(['test', 'magic']);
+            assert.deepEqual(querySimplePath(data, 'post.tags[*].slug'), ['test', 'magic']);
         });
 
         it('resolves numeric array index', function () {
-            querySimplePath(data, 'post.tags[0].slug').should.eql(['test']);
-            querySimplePath(data, 'post.tags[1].slug').should.eql(['magic']);
+            assert.deepEqual(querySimplePath(data, 'post.tags[0].slug'), ['test']);
+            assert.deepEqual(querySimplePath(data, 'post.tags[1].slug'), ['magic']);
         });
 
         it('returns empty array for non-existent path', function () {
-            querySimplePath(data, 'post.nonexistent').should.eql([]);
+            assert.deepEqual(querySimplePath(data, 'post.nonexistent'), []);
         });
 
         it('returns empty array for non-existent nested path', function () {
-            querySimplePath(data, 'post.foo.bar.baz').should.eql([]);
+            assert.deepEqual(querySimplePath(data, 'post.foo.bar.baz'), []);
         });
 
         it('returns empty array when wildcard applied to non-array', function () {
-            querySimplePath(data, 'post.title[*].slug').should.eql([]);
+            assert.deepEqual(querySimplePath(data, 'post.title[*].slug'), []);
         });
 
         it('returns empty array for out-of-bounds index', function () {
-            querySimplePath(data, 'post.tags[5].slug').should.eql([]);
+            assert.deepEqual(querySimplePath(data, 'post.tags[5].slug'), []);
         });
 
         it('handles null in path gracefully', function () {
-            querySimplePath({a: null}, 'a.b').should.eql([]);
+            assert.deepEqual(querySimplePath({a: null}, 'a.b'), []);
         });
 
         it('handles Date values', function () {
@@ -525,7 +525,7 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {}, data: locals, fn: fn, inverse: inverse}
             );
-            browseStub.firstCall.args[0].context.member.should.eql(member);
+            assert.equal(browseStub.firstCall.args[0].context.member, member);
         });
     });
 

@@ -121,7 +121,7 @@ describe('Unit - services/routing/controllers/entry', function () {
 
             urlUtilsRedirectToAdminStub.callsFake(function (statusCode, _res, editorUrl) {
                 assert.equal(statusCode, 302);
-                editorUrl.should.eql(EDITOR_URL + post.id);
+                assert.equal(editorUrl, EDITOR_URL + post.id);
                 done();
             });
 
@@ -194,7 +194,7 @@ describe('Unit - services/routing/controllers/entry', function () {
                 });
 
             urlUtilsRedirect301Stub.callsFake(function (_res, postUrl) {
-                postUrl.should.eql(post.url);
+                assert.equal(postUrl, post.url);
                 done();
             });
 
@@ -223,7 +223,7 @@ describe('Unit - services/routing/controllers/entry', function () {
                 });
 
             urlUtilsRedirect301Stub.callsFake(function (_res, postUrl) {
-                postUrl.should.eql(post.url + '?query=true');
+                assert.equal(postUrl, post.url + '?query=true');
                 done();
             });
 

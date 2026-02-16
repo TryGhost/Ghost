@@ -140,7 +140,7 @@ describe('Config Loader', function () {
 
             configUtils.set('paths:contentPath', contentPath);
             assert.equal(configUtils.config.get('paths').contentPath, contentPath);
-            configUtils.config.getContentPath('images').should.eql(contentPath + 'images/');
+            assert.equal(configUtils.config.getContentPath('images'), contentPath + 'images/');
         });
     });
 });

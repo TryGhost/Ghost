@@ -65,7 +65,7 @@ describe('Import threshold', function () {
         });
 
         const result = await trigger.getImportThreshold();
-        result.should.eql(Infinity);
+        assert.equal(result, Infinity);
         assert.equal(membersStub.callCount, 0);
     });
 });

@@ -51,7 +51,7 @@ describe('Exporter', function () {
                 assert.equal(tablesStub.calledOnce, true);
                 assert.equal(db.knex.called, true);
 
-                knexMock.callCount.should.eql(expectedCallCount);
+                assert.equal(knexMock.callCount, expectedCallCount);
                 queryMock.select.callCount.should.have.eql(expectedCallCount);
 
                 const expectedTables = new Set([
@@ -98,7 +98,7 @@ describe('Exporter', function () {
                 assert.equal(db.knex.called, true);
                 assert.equal(queryMock.select.called, true);
 
-                knexMock.callCount.should.eql(expectedCallCount);
+                assert.equal(knexMock.callCount, expectedCallCount);
                 queryMock.select.callCount.should.have.eql(expectedCallCount);
 
                 const expectedTables = new Set([
@@ -230,7 +230,7 @@ describe('Exporter', function () {
             // NOTE: if default settings changed either modify the settings keys blocklist or increase allowedKeysLength
             //       This is a reminder to think about the importer/exporter scenarios ;)
             const allowedKeysLength = 100;
-            totalKeysLength.should.eql(SETTING_KEYS_BLOCKLIST.length + allowedKeysLength);
+            assert.equal(totalKeysLength, SETTING_KEYS_BLOCKLIST.length + allowedKeysLength);
         });
     });
 });

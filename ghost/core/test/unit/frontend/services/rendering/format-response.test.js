@@ -31,7 +31,7 @@ describe('Unit - services/routing/helpers/format-response', function () {
             const formatted = helpers.formatResponse.entry(postObject);
 
             formatted.should.be.an.Object().with.property('post');
-            formatted.post.should.eql(postObject);
+            assert.equal(formatted.post, postObject);
         });
 
         it('should return the post object with html strings converted to SafeString', function () {
@@ -90,8 +90,8 @@ describe('Unit - services/routing/helpers/format-response', function () {
             const formatted = helpers.formatResponse.entries(data);
 
             formatted.should.be.an.Object().with.properties('posts', 'pagination');
-            formatted.posts.should.eql(data.posts);
-            formatted.pagination.should.eql(data.meta.pagination);
+            assert.equal(formatted.posts, data.posts);
+            assert.equal(formatted.pagination, data.meta.pagination);
         });
 
         it('should flatten api read responses which have no pagination data', function () {
@@ -104,7 +104,7 @@ describe('Unit - services/routing/helpers/format-response', function () {
             const formatted = helpers.formatResponse.entries(data);
 
             formatted.should.be.an.Object().with.properties('posts', 'pagination', 'tag');
-            formatted.tag.should.eql(data.data.tag[0]);
+            assert.equal(formatted.tag, data.data.tag[0]);
         });
 
         it('should remove the meta key from api browse responses', function () {

@@ -56,19 +56,19 @@ describe('UNIT - services/routing/CollectionRouter', function () {
 
             // parent route
             assert.equal(mountRouteSpy.args[0][0], '/');
-            mountRouteSpy.args[0][1].should.eql(controllers.collection);
+            assert.equal(mountRouteSpy.args[0][1], controllers.collection);
 
             // pagination feature
             assert.equal(mountRouteSpy.args[1][0], '/page/:page(\\d+)');
-            mountRouteSpy.args[1][1].should.eql(controllers.collection);
+            assert.equal(mountRouteSpy.args[1][1], controllers.collection);
 
             // permalinks
             assert.equal(mountRouteSpy.args[2][0], '/:slug/:options(edit)?/');
-            mountRouteSpy.args[2][1].should.eql(controllers.entry);
+            assert.equal(mountRouteSpy.args[2][1], controllers.entry);
 
             assert.equal(mountRouterSpy.callCount, 1);
             assert.equal(mountRouterSpy.args[0][0], '/');
-            mountRouterSpy.args[0][1].should.eql(collectionRouter.rssRouter.router());
+            assert.equal(mountRouterSpy.args[0][1], collectionRouter.rssRouter.router());
         });
 
         it('router name', function () {
@@ -102,19 +102,19 @@ describe('UNIT - services/routing/CollectionRouter', function () {
 
             // parent route
             assert.equal(mountRouteSpy.args[0][0], '/blog/');
-            mountRouteSpy.args[0][1].should.eql(controllers.collection);
+            assert.equal(mountRouteSpy.args[0][1], controllers.collection);
 
             // pagination feature
             assert.equal(mountRouteSpy.args[1][0], '/blog/page/:page(\\d+)');
-            mountRouteSpy.args[1][1].should.eql(controllers.collection);
+            assert.equal(mountRouteSpy.args[1][1], controllers.collection);
 
             // permalinks
             assert.equal(mountRouteSpy.args[2][0], '/blog/:year/:slug/:options(edit)?/');
-            mountRouteSpy.args[2][1].should.eql(controllers.entry);
+            assert.equal(mountRouteSpy.args[2][1], controllers.entry);
 
             assert.equal(mountRouterSpy.callCount, 1);
             assert.equal(mountRouterSpy.args[0][0], '/blog/');
-            mountRouterSpy.args[0][1].should.eql(collectionRouter.rssRouter.router());
+            assert.equal(mountRouterSpy.args[0][1], collectionRouter.rssRouter.router());
         });
 
         it('with custom filter', function () {

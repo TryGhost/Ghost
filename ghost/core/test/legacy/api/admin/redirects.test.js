@@ -68,7 +68,7 @@ describe('Redirects API', function () {
                         assert.equal(dataFiles.join(',').match(/(redirects)/g).length, 2);
 
                         const fileContent = fs.readFileSync(path.join(contentFolder, 'data', 'redirects.json'), 'utf-8');
-                        fileContent.should.eql(JSON.stringify([{
+                        assert.equal(fileContent, JSON.stringify([{
                             from: 'k',
                             to: 'l'
                         }]));

@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const _ = require('lodash');
 const yaml = require('js-yaml');
 const crypto = require('crypto');
@@ -63,10 +63,10 @@ describe('DB version integrity', function () {
         settingsHash = crypto.createHash('md5').update(JSON.stringify(defaultSettings), 'binary').digest('hex');
         routesHash = crypto.createHash('md5').update(JSON.stringify(defaultRoutes), 'binary').digest('hex');
 
-        schemaHash.should.eql(currentSchemaHash, 'Database schema has changed, please ensure a proper migration has been created if necessary and update the hash in this test.');
-        fixturesHash.should.eql(currentFixturesHash, 'Fixtures have changed, please ensure a proper migration has been created if necessary and update the hash in this test.');
-        settingsHash.should.eql(currentSettingsHash, 'Default settings have changed, please ensure a proper migration has been created if necessary and update the hash in this test.');
-        routesHash.should.eql(currentRoutesHash, 'Default routes have changed, please ensure a proper migration has been created if necessary and update the hash in this test.');
-        routesHash.should.eql(routeSettings.getDefaultHash());
+        assert.equal(schemaHash, currentSchemaHash, 'Database schema has changed, please ensure a proper migration has been created if necessary and update the hash in this test.');
+        assert.equal(fixturesHash, currentFixturesHash, 'Fixtures have changed, please ensure a proper migration has been created if necessary and update the hash in this test.');
+        assert.equal(settingsHash, currentSettingsHash, 'Default settings have changed, please ensure a proper migration has been created if necessary and update the hash in this test.');
+        assert.equal(routesHash, currentRoutesHash, 'Default routes have changed, please ensure a proper migration has been created if necessary and update the hash in this test.');
+        assert.equal(routesHash, routeSettings.getDefaultHash());
     });
 });

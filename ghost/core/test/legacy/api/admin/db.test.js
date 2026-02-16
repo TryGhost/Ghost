@@ -53,7 +53,7 @@ describe('DB API', function () {
                 assert.equal(jsonResponse.db.length, 1);
 
                 // NOTE: default tables + 1 from include parameters
-                Object.keys(jsonResponse.db[0].data).length.should.eql(TABLE_ALLOWLIST_LENGTH + 1);
+                assert.equal(Object.keys(jsonResponse.db[0].data).length, TABLE_ALLOWLIST_LENGTH + 1);
             });
     });
 

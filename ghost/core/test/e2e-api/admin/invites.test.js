@@ -44,11 +44,11 @@ describe('Invites API', function () {
 
             assert.equal(jsonResponse.invites[0].status, 'sent');
             assert.equal(jsonResponse.invites[0].email, 'test1@ghost.org');
-            jsonResponse.invites[0].role_id.should.eql(testUtils.roles.ids.admin);
+            assert.equal(jsonResponse.invites[0].role_id, testUtils.roles.ids.admin);
 
             assert.equal(jsonResponse.invites[1].status, 'sent');
             assert.equal(jsonResponse.invites[1].email, 'test2@ghost.org');
-            jsonResponse.invites[1].role_id.should.eql(testUtils.roles.ids.author);
+            assert.equal(jsonResponse.invites[1].role_id, testUtils.roles.ids.author);
 
             assert.equal(mailService.GhostMailer.prototype.send.called, false);
         });
@@ -89,7 +89,7 @@ describe('Invites API', function () {
             assert.equal(jsonResponse.invites.length, 1);
 
             localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
-            jsonResponse.invites[0].role_id.should.eql(testUtils.getExistingData().roles[1].id);
+            assert.equal(jsonResponse.invites[0].role_id, testUtils.getExistingData().roles[1].id);
 
             assert.equal(mailService.GhostMailer.prototype.send.called, true);
 
@@ -153,7 +153,7 @@ describe('Invites API', function () {
             assert.equal(jsonResponse.invites.length, 1);
 
             localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
-            jsonResponse.invites[0].role_id.should.eql(roleId);
+            assert.equal(jsonResponse.invites[0].role_id, roleId);
 
             assert.equal(mailService.GhostMailer.prototype.send.called, true);
 
@@ -180,7 +180,7 @@ describe('Invites API', function () {
             assert.equal(jsonResponse.invites.length, 1);
 
             localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
-            jsonResponse.invites[0].role_id.should.eql(roleId);
+            assert.equal(jsonResponse.invites[0].role_id, roleId);
 
             assert.equal(mailService.GhostMailer.prototype.send.called, true);
 
@@ -207,7 +207,7 @@ describe('Invites API', function () {
             assert.equal(jsonResponse.invites.length, 1);
 
             localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
-            jsonResponse.invites[0].role_id.should.eql(roleId);
+            assert.equal(jsonResponse.invites[0].role_id, roleId);
 
             assert.equal(mailService.GhostMailer.prototype.send.called, true);
 
@@ -234,7 +234,7 @@ describe('Invites API', function () {
             assert.equal(jsonResponse.invites.length, 1);
 
             localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
-            jsonResponse.invites[0].role_id.should.eql(roleId);
+            assert.equal(jsonResponse.invites[0].role_id, roleId);
 
             assert.equal(mailService.GhostMailer.prototype.send.called, true);
 

@@ -445,7 +445,7 @@ describe('{{prev_post}} helper', function () {
             assert.equal(browsePostsStub.firstCall.args[0].include, 'author,authors,tags,tiers');
 
             // Check context passed
-            browsePostsStub.firstCall.args[0].context.member.should.eql(member);
+            assert.equal(browsePostsStub.firstCall.args[0].context.member, member);
         });
     });
 });

@@ -47,21 +47,23 @@ describe('UNIT - services/routing/TaxonomyRouter', function () {
 
         assert.equal(taxonomyRouter.mountRouter.callCount, 1);
         assert.equal(taxonomyRouter.mountRouter.args[0][0], '/tag/:slug/');
-        taxonomyRouter.mountRouter.args[0][1].should.eql(taxonomyRouter.rssRouter.router());
+        assert.equal(taxonomyRouter.mountRouter.args[0][1], taxonomyRouter.rssRouter.router());
 
         assert.equal(taxonomyRouter.mountRoute.callCount, 3);
 
         // permalink route
         assert.equal(taxonomyRouter.mountRoute.args[0][0], '/tag/:slug/');
-        taxonomyRouter.mountRoute.args[0][1].should.eql(controllers.channel);
+        assert.equal(taxonomyRouter.mountRoute.args[0][1], controllers.channel);
 
         // pagination feature
         assert.equal(taxonomyRouter.mountRoute.args[1][0], '/tag/:slug/page/:page(\\d+)');
-        taxonomyRouter.mountRoute.args[1][1].should.eql(controllers.channel);
+        assert.equal(taxonomyRouter.mountRoute.args[1][1], controllers.channel);
 
         // edit feature
         assert.equal(taxonomyRouter.mountRoute.args[2][0], '/tag/:slug/edit');
-        taxonomyRouter.mountRoute.args[2][1].should.eql(taxonomyRouter._redirectEditOption.bind(taxonomyRouter));
+        // We'd can't compare to `taxonomyRouter._redirectEditOption.bind(taxonomyRouter)`, so this is the next best thing.
+        assert(typeof taxonomyRouter.mountRoute.args[2][1] === 'function');
+        assert(taxonomyRouter.mountRoute.args[2][1].name.includes('_redirectEditOption'));
     });
 
     it('_prepareContext behaves as expected', function () {

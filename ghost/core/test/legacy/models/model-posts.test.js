@@ -901,9 +901,9 @@ describe('Post Model', function () {
                     }]
                 }, _.merge({withRelated: ['authors']}, context)).then(function (newPost) {
                     assertExists(newPost);
-                    newPost.toJSON().primary_author.id.should.eql(testUtils.DataGenerator.forKnex.users[0].id);
+                    assert.equal(newPost.toJSON().primary_author.id, testUtils.DataGenerator.forKnex.users[0].id);
                     assert.equal(newPost.toJSON().authors.length, 1);
-                    newPost.toJSON().authors[0].id.should.eql(testUtils.DataGenerator.forKnex.users[0].id);
+                    assert.equal(newPost.toJSON().authors[0].id, testUtils.DataGenerator.forKnex.users[0].id);
                     done();
                 }).catch(done);
             });
@@ -2042,9 +2042,9 @@ describe('Post Model', function () {
                 updatedPost = updatedPost.toJSON({withRelated: ['tags']});
 
                 assert.equal(updatedPost.tags.length, 1);
-                updatedPost.tags[0].name.should.eql(postJSON.tags[0].name);
+                assert.equal(updatedPost.tags[0].name, postJSON.tags[0].name);
                 assert.equal(updatedPost.tags[0].slug, 'eins');
-                updatedPost.tags[0].id.should.eql(postJSON.tags[0].id);
+                assert.equal(updatedPost.tags[0].id, postJSON.tags[0].id);
             });
         });
 
@@ -2080,11 +2080,11 @@ describe('Post Model', function () {
                     });
 
                     updatedAtFormat = moment(updatedPost.tags[0].updated_at).format('YYYY-MM-DD HH:mm:ss');
-                    updatedAtFormat.should.eql(moment(postJSON.tags[0].updated_at).format('YYYY-MM-DD HH:mm:ss'));
+                    assert.equal(updatedAtFormat, moment(postJSON.tags[0].updated_at).format('YYYY-MM-DD HH:mm:ss'));
                     updatedAtFormat.should.not.eql(moment(newJSON.tags[0].updated_at).format('YYYY-MM-DD HH:mm:ss'));
 
                     createdAtFormat = moment(updatedPost.tags[0].created_at).format('YYYY-MM-DD HH:mm:ss');
-                    createdAtFormat.should.eql(moment(postJSON.tags[0].created_at).format('YYYY-MM-DD HH:mm:ss'));
+                    assert.equal(createdAtFormat, moment(postJSON.tags[0].created_at).format('YYYY-MM-DD HH:mm:ss'));
                     createdAtFormat.should.not.eql(moment(newJSON.tags[0].created_at).format('YYYY-MM-DD HH:mm:ss'));
                 });
         });
@@ -2162,7 +2162,7 @@ describe('Post Model', function () {
     //    new models.Post().fetch().then(function (model) {
     //        return model.set({'title': "</title></head><body><script>alert('blogtitle');</script>"}).save();
     //    }).then(function (saved) {
-    //        saved.get('title').should.eql("&lt;/title&gt;&lt;/head>&lt;body&gt;[removed]alert&#40;'blogtitle'&#41;;[removed]");
+    //        assert.equal(saved.get('title'), "&lt;/title&gt;&lt;/head>&lt;body&gt;[removed]alert&#40;'blogtitle'&#41;;[removed]");
     //        done();
     //    }).catch(done);
     // });

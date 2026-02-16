@@ -263,7 +263,7 @@ describe('api/endpoints/content/posts', function () {
                 }
 
                 assert.equal(res.headers.vary, 'Accept-Version, Accept, Accept-Encoding');
-                res.headers.location.should.eql(`http://localhost:9999/ghost/api/content/posts/?key=${validKey}`);
+                assert.equal(res.headers.location, `http://localhost:9999/ghost/api/content/posts/?key=${validKey}`);
                 assertExists(res.headers['access-control-allow-origin']);
                 assert.equal(res.headers['x-cache-invalidate'], undefined);
                 done();
@@ -475,7 +475,7 @@ describe('api/endpoints/content/posts', function () {
                         }
                     });
 
-                    seen.should.eql(membersOnlySlugs.length + freeToSeeSlugs.length);
+                    assert.equal(seen, membersOnlySlugs.length + freeToSeeSlugs.length);
 
                     // check meta response for this test
                     assert.equal(jsonResponse.meta.pagination.page, 1);

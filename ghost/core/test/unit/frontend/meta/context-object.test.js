@@ -20,7 +20,7 @@ describe('getContextObject', function () {
         contextObject = getContextObject(data, context);
 
         assertExists(contextObject);
-        contextObject.should.eql(data.post);
+        assert.equal(contextObject, data.post);
     });
 
     it('should return post context object for a static page', function () {
@@ -29,7 +29,7 @@ describe('getContextObject', function () {
         contextObject = getContextObject(data, context);
 
         assertExists(contextObject);
-        contextObject.should.eql(data.post);
+        assert.equal(contextObject, data.post);
     });
 
     it('should return page', function () {
@@ -38,7 +38,7 @@ describe('getContextObject', function () {
         contextObject = getContextObject(data, context);
 
         assertExists(contextObject);
-        contextObject.should.eql(data.page);
+        assert.equal(contextObject, data.page);
     });
 
     describe('override blog', function () {

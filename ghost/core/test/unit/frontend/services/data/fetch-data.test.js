@@ -79,7 +79,7 @@ describe('Unit - frontend/data/fetch-data', function () {
             result.should.be.an.Object().with.properties('posts', 'meta');
             assert(!('data' in result));
 
-            result.posts.length.should.eql(posts.length);
+            assert.equal(result.posts.length, posts.length);
 
             assert.equal(browsePostsStub.calledOnce, true);
             assert(_.isPlainObject(browsePostsStub.firstCall.args[0]));
@@ -112,8 +112,8 @@ describe('Unit - frontend/data/fetch-data', function () {
             result.should.be.an.Object().with.properties('posts', 'meta', 'data');
             result.data.should.be.an.Object().with.properties('featured');
 
-            result.posts.length.should.eql(posts.length);
-            result.data.featured.length.should.eql(posts.length);
+            assert.equal(result.posts.length, posts.length);
+            assert.equal(result.data.featured.length, posts.length);
 
             assert.equal(browsePostsStub.calledTwice, true);
             assert.equal(browsePostsStub.firstCall.args[0].include, 'authors,tags,tiers');
@@ -144,8 +144,8 @@ describe('Unit - frontend/data/fetch-data', function () {
             result.should.be.an.Object().with.properties('posts', 'meta', 'data');
             result.data.should.be.an.Object().with.properties('featured');
 
-            result.posts.length.should.eql(posts.length);
-            result.data.featured.length.should.eql(posts.length);
+            assert.equal(result.posts.length, posts.length);
+            assert.equal(result.data.featured.length, posts.length);
 
             assert.equal(browsePostsStub.calledTwice, true);
             assert.equal(browsePostsStub.firstCall.args[0].include, 'authors,tags,tiers');
@@ -178,8 +178,8 @@ describe('Unit - frontend/data/fetch-data', function () {
             result.should.be.an.Object().with.properties('posts', 'meta', 'data');
             result.data.should.be.an.Object().with.properties('tag');
 
-            result.posts.length.should.eql(posts.length);
-            result.data.tag.length.should.eql(tags.length);
+            assert.equal(result.posts.length, posts.length);
+            assert.equal(result.data.tag.length, tags.length);
 
             assert.equal(browsePostsStub.calledOnce, true);
             assert('include' in browsePostsStub.firstCall.args[0]);

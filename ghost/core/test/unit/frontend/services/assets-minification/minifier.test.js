@@ -30,9 +30,9 @@ describe('Minifier', function () {
 
             assert(Array.isArray(result));
             assert.equal(result.length, 3);
-            result[0].should.eql(path.join('test','unit','frontend','services','assets-minification','fixtures','basic-cards','css','bookmark.css'));
-            result[1].should.eql(path.join('test','unit','frontend','services','assets-minification','fixtures','basic-cards','css','empty.css'));
-            result[2].should.eql(path.join('test','unit','frontend','services','assets-minification','fixtures','basic-cards','css','gallery.css'));
+            assert.equal(result[0], path.join('test','unit','frontend','services','assets-minification','fixtures','basic-cards','css','bookmark.css'));
+            assert.equal(result[1], path.join('test','unit','frontend','services','assets-minification','fixtures','basic-cards','css','empty.css'));
+            assert.equal(result[2], path.join('test','unit','frontend','services','assets-minification','fixtures','basic-cards','css','gallery.css'));
         });
 
         it('match glob range e.g. css/bookmark.css and css/empty.css (css/@(bookmark|empty).css)', async function () {
@@ -40,8 +40,8 @@ describe('Minifier', function () {
 
             assert(Array.isArray(result));
             assert.equal(result.length, 2);
-            result[0].should.eql(path.join('test','unit','frontend','services','assets-minification','fixtures','basic-cards','css','bookmark.css'));
-            result[1].should.eql(path.join('test','unit','frontend','services','assets-minification','fixtures','basic-cards','css','empty.css'));
+            assert.equal(result[0], path.join('test','unit','frontend','services','assets-minification','fixtures','basic-cards','css','bookmark.css'));
+            assert.equal(result[1], path.join('test','unit','frontend','services','assets-minification','fixtures','basic-cards','css','empty.css'));
         });
 
         it('reverse match glob e.g. css/!(bookmark).css', async function () {
@@ -49,15 +49,15 @@ describe('Minifier', function () {
 
             assert(Array.isArray(result));
             assert.equal(result.length, 2);
-            result[0].should.eql(path.join('test','unit','frontend','services','assets-minification','fixtures','basic-cards','css','empty.css'));
-            result[1].should.eql(path.join('test','unit','frontend','services','assets-minification','fixtures','basic-cards','css','gallery.css'));
+            assert.equal(result[0], path.join('test','unit','frontend','services','assets-minification','fixtures','basic-cards','css','empty.css'));
+            assert.equal(result[1], path.join('test','unit','frontend','services','assets-minification','fixtures','basic-cards','css','gallery.css'));
         });
         it('reverse match glob e.g. css/!(bookmark|gallery).css', async function () {
             let result = await minifier.getMatchingFiles('css/!(bookmark|gallery).css');
 
             assert(Array.isArray(result));
             assert.equal(result.length, 1);
-            result[0].should.eql(path.join('test','unit','frontend','services','assets-minification','fixtures','basic-cards','css','empty.css'));
+            assert.equal(result[0], path.join('test','unit','frontend','services','assets-minification','fixtures','basic-cards','css','empty.css'));
         });
     });
 

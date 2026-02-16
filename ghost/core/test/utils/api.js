@@ -40,7 +40,7 @@ function checkResponseValue(jsonResponse, expectedProperties) {
         assert(!(prop in jsonResponse));
     });
 
-    providedProperties.length.should.eql(expectedProperties.length, 'provided properties length does not match expected properties length');
+    assert.equal(providedProperties.length, expectedProperties.length, 'provided properties length does not match expected properties length');
 }
 
 // @TODO: support options pattern only, it's annoying to call checkResponse(null, null, null, something)
