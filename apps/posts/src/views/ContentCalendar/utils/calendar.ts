@@ -74,7 +74,9 @@ const getTimestamp = (value?: string) => {
         return 0;
     }
 
-    return new Date(value).getTime();
+    const timestamp = new Date(value).getTime();
+
+    return Number.isNaN(timestamp) ? 0 : timestamp;
 };
 
 const sortCalendarPosts = (posts: CalendarPost[], order: CalendarPostOrder): CalendarPost[] => {
