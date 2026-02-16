@@ -49,7 +49,8 @@ const getRetentionTerms = (offer: Offer | null): string | null => {
     }
 
     if (offer.type === 'free_months') {
-        return `5 MONTHS FREE`;
+        const monthLabel = offer.amount === 1 ? 'month' : 'months';
+        return `${offer.amount} ${monthLabel} free`;
     }
 
     if (offer.type === 'percent') {
