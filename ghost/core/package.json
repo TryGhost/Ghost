@@ -319,7 +319,13 @@
       },
       "test:unit": {
         "dependsOn": [
-          "build:assets"
+          "build:assets",
+          {
+            "projects": [
+              "@tryghost/parse-email-address"
+            ],
+            "target": "build"
+          }
         ]
       },
       "test:browser": {
