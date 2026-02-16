@@ -487,9 +487,16 @@ jobs:
         with:
           timezoneLinux: "America/New_York"
 
-      # Ensure all built packages are built before running tests (admin is built in job_setup)
-      - name: Build remaining assets
-        run: yarn nx run-many -t build --exclude=ghost-admin
+      - name: Determine affected unit-test projects
+        id: affected_unit_projects
+        run: |
+          PROJECTS=$(yarn -s nx show projects --affected --withTarget=test:unit --base=${{ needs.job_setup.outputs.BASE_COMMIT }} --sep=, | tr -d '\n')
+          echo "projects=$PROJECTS" >> "$GITHUB_OUTPUT"
+
+      # Build only projects that will run unit tests
+      - name: Build assets for affected unit tests
+        if: steps.affected_unit_projects.outputs.projects != ''
+        run: yarn nx run-many -t build --projects="${{ steps.affected_unit_projects.outputs.projects }}"
 
       - name: Run unit tests
         run: ./node_modules/.bin/nx affected -t test:unit --outputStyle=stream --base=${{ needs.job_setup.outputs.BASE_COMMIT }}
