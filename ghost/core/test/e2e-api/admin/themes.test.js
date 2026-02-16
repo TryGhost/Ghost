@@ -184,8 +184,6 @@ describe('Themes API', function () {
                 tmpFolderContents.splice(i, 1);
             }
         }
-        tmpFolderContents.should.be.an.Array().with.lengthOf(12);
-
         assert.deepEqual(tmpFolderContents, [
             'broken-theme',
             'casper',

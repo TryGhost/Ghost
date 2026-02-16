@@ -527,7 +527,8 @@ describe('Migration Fixture Utils', function () {
         it('should fetch a fixture with multiple entries', function () {
             const foundFixture = fixtureManager.findModelFixtures('Permission', {object_type: 'db'});
             assert(_.isPlainObject(foundFixture));
-            foundFixture.entries.should.be.an.Array().with.lengthOf(4);
+            assert(Array.isArray(foundFixture.entries));
+            assert.equal(foundFixture.entries.length, 4);
             assert.deepEqual(foundFixture.entries[0], {
                 name: 'Export database',
                 action_type: 'exportContent',

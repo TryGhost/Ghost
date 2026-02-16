@@ -2011,7 +2011,8 @@ describe('Post Model', function () {
         it('should create the test data correctly', function (done) {
             // creates a test tag
             assertExists(tagJSON);
-            tagJSON.should.be.an.Array().with.lengthOf(3);
+            assert(Array.isArray(tagJSON));
+            assert.equal(tagJSON.length, 3);
 
             assert.equal(tagJSON[0].name, 'existing tag a');
             assert.equal(tagJSON[1].name, 'existing-tag-b');
@@ -2020,8 +2021,8 @@ describe('Post Model', function () {
             // creates a test post with an array of tags in the correct order
             assertExists(postJSON);
             assert.equal(postJSON.title, 'HTML Ipsum');
-            assertExists(postJSON.tags);
-            postJSON.tags.should.be.an.Array().and.have.lengthOf(3);
+            assert(Array.isArray(postJSON.tags));
+            assert.equal(postJSON.tags.length, 3);
 
             assert.equal(postJSON.tags[0].name, 'tag1');
             assert.equal(postJSON.tags[1].name, 'tag2');
