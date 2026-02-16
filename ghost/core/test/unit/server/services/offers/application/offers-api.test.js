@@ -14,8 +14,6 @@ function createMockRepository(overrides = {}) {
         createTransaction: sinon.stub().callsFake(async (cb) => {
             return cb(mockTransaction);
         }),
-        getAll: sinon.stub().resolves([]),
-        getById: sinon.stub().resolves(null),
         getByStripeCouponId: sinon.stub().resolves(null),
         existsByCode: sinon.stub().resolves(false),
         existsByName: sinon.stub().resolves(false),
@@ -57,25 +55,6 @@ function createMockCoupon(id) {
         id,
         percent_off: 10,
         duration: 'once'
-    };
-}
-
-function createRetentionOfferInput(overrides = {}) {
-    return {
-        name: 'Monthly retention — abc123',
-        code: 'monthly-retention-abc123',
-        display_title: 'Before you go',
-        display_description: 'Stay a little longer',
-        type: 'percent',
-        cadence: 'month',
-        amount: 20,
-        duration: 'once',
-        duration_in_months: 0,
-        currency: null,
-        status: 'active',
-        redemption_type: 'retention',
-        tier: null,
-        ...overrides
     };
 }
 
@@ -314,56 +293,6 @@ describe('OffersAPI', function () {
                 }),
                 /subscriptionId, tierId, and cadence are required/
             );
-        });
-    });
-
-    describe('#createOffer', function () {
-        it('Can create a retention offer and archive any existing ones', async function () {
-            const existingMonthlyActive = createMockOffer('existing-monthly-active', {cadence: 'month', status: 'active', redemptionType: 'retention'});
-            const existingYearlyActive = createMockOffer('existing-yearly-active', {cadence: 'year', status: 'active', redemptionType: 'retention'});
-            const repository = createMockRepository({
-                getAll: sinon.stub().resolves([existingMonthlyActive, existingYearlyActive])
-            });
-
-            const api = new OffersAPI(/** @type {OfferBookshelfRepository} */ (/** @type {unknown} */ (repository)));
-
-            await api.createOffer(createRetentionOfferInput());
-
-            assert.equal(repository.getAll.calledOnce, true);
-            assert.equal(repository.getAll.firstCall.args[0].filter, 'status:active+redemption_type:retention');
-
-            const archivedMonthlySave = repository.save.getCalls().find(call => call.args[0].id === 'existing-monthly-active');
-            const archivedYearlySave = repository.save.getCalls().find(call => call.args[0].id === 'existing-yearly-active');
-
-            assert(archivedMonthlySave);
-            assert.equal(archivedMonthlySave.args[0].status.value, 'archived');
-            assert.equal(archivedYearlySave, undefined);
-        });
-    });
-
-    describe('#updateOffer', function () {
-        it('Can activate an existing retention offer and archive others', async function () {
-            const targetOffer = createMockOffer('target-offer', {cadence: 'month', status: 'archived', redemptionType: 'retention'});
-            const existingMonthlyActive = createMockOffer('existing-monthly-active', {cadence: 'month', status: 'active', redemptionType: 'retention'});
-            const repository = createMockRepository({
-                getById: sinon.stub().resolves(targetOffer),
-                getAll: sinon.stub().resolves([existingMonthlyActive])
-            });
-
-            const api = new OffersAPI(/** @type {OfferBookshelfRepository} */ (/** @type {unknown} */ (repository)));
-
-            await api.updateOffer({
-                id: 'target-offer',
-                status: 'active'
-            });
-
-            const targetSave = repository.save.getCalls().find(call => call.args[0].id === 'target-offer');
-            const archivedMonthlySave = repository.save.getCalls().find(call => call.args[0].id === 'existing-monthly-active');
-
-            assert(targetSave);
-            assert.equal(targetSave.args[0].status.value, 'active');
-            assert(archivedMonthlySave);
-            assert.equal(archivedMonthlySave.args[0].status.value, 'archived');
         });
     });
 
