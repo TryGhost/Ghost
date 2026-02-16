@@ -99,9 +99,7 @@ module.exports = class EventRepository {
 
         pageActions.push({type: 'email_complained_event', action: 'getEmailSpamComplaintEvents'});
 
-        if (this._labsService.isSet('audienceFeedback')) {
-            pageActions.push({type: 'feedback_event', action: 'getFeedbackEvents'});
-        }
+        pageActions.push({type: 'feedback_event', action: 'getFeedbackEvents'});
 
         //Filter events to query
         let filteredPages = pageActions;

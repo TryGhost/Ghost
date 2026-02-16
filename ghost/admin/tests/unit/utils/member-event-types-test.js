@@ -8,9 +8,7 @@ describe('Unit | Utility | event-type-utils', function () {
             commentsEnabled: 'on',
             emailTrackClicks: true
         };
-        const feature = {
-            audienceFeedback: true
-        };
+        const feature = {};
         const hiddenEvents = [];
 
         const eventTypes = getAvailableEventTypes(settings, feature, hiddenEvents);
@@ -54,13 +52,16 @@ describe('Unit | Utility | event-type-utils', function () {
             commentsEnabled: 'off',
             emailTrackClicks: false
         };
-        const feature = {
-            audienceFeedback: false
-        };
+        const feature = {};
         const hiddenEvents = [];
 
         const eventTypes = getAvailableEventTypes(settings, feature, hiddenEvents);
 
-        expect(eventTypes).to.deep.equal(ALL_EVENT_TYPES);
+        // Feedback is always included now (audienceFeedback is GA)
+        const expectedTypes = [
+            ...ALL_EVENT_TYPES,
+            {event: 'feedback_event', icon: 'filter-dropdown-feedback', name: 'Feedback', group: 'others'}
+        ];
+        expect(eventTypes).to.deep.equal(expectedTypes);
     });
 });
