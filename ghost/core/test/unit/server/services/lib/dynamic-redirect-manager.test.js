@@ -138,7 +138,7 @@ describe('DynamicRedirectManager', function () {
             req.url = '/redirect-me';
 
             manager.removeAllRedirects();
-            manager.redirects.should.be.empty();
+            assert.deepEqual(manager.redirects, {});
 
             manager.handleRequest(req, res, function next() {
                 assert(true, 'next should have been called');
