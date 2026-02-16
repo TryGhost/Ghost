@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const {EmailSuppressionData, EmailSuppressedEvent} = require('../../../../../core/server/services/email-suppression-list/email-suppression-list');
 
 describe('EmailSuppressionData', function () {

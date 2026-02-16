@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const path = require('path');
 const http = require('http');
 const express = require('express');

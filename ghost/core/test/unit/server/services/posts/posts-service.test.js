@@ -1,5 +1,5 @@
 const PostsService = require('../../../../../core/server/services/posts/posts-service');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 
 describe('Posts Service', function () {

@@ -1,7 +1,7 @@
 require('should');
 const {agentProvider, fixtureManager, mockManager} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 let agent;
 
@@ -15,29 +15,29 @@ describe('Last Seen At Updater', function () {
     describe('updateLastSeenAtWithoutKnownLastSeen', function () {
         it('works', async function () {
             const membersEvents = require('../../../core/server/services/members-events');
-    
+
             // Fire lots of EmailOpenedEvent for the same
             const memberId = fixtureManager.get('members', 0).id;
-    
+
             const firstDate = new Date(Date.UTC(2099, 11, 31, 21, 0, 0, 0));
             // In UTC this is 2099-12-31 21:00:00
             // In CET this is 2099-12-31 22:00:00
-    
+
             const secondDate = new Date(Date.UTC(2099, 11, 31, 22, 0, 0, 0));
             // In UTC this is 2099-12-31 22:00:00
             // In CET this is 2099-12-31 23:00:00
-    
+
             const newDay = new Date(Date.UTC(2099, 11, 31, 23, 0, 0, 0));
             // In UTC this is 2099-12-31 23:00:00
             // In CET this is 2100-01-01 00:00:00
-    
+
             async function assertLastSeen(date) {
                 const member = await models.Member.findOne({id: memberId}, {require: true});
                 assert.equal(member.get('last_seen_at').getTime(), date.getTime());
             }
-    
+
             mockManager.mockSetting('timezone', 'CET');
-    
+
             await membersEvents.lastSeenAtUpdater.updateLastSeenAtWithoutKnownLastSeen(memberId, firstDate);
             await assertLastSeen(firstDate);
             await membersEvents.lastSeenAtUpdater.updateLastSeenAtWithoutKnownLastSeen(memberId, secondDate);
@@ -50,13 +50,13 @@ describe('Last Seen At Updater', function () {
     describe('cachedUpdateLastSeenAt', function () {
         it('works', async function () {
             const membersEvents = require('../../../core/server/services/members-events');
-    
+
             // Fire lots of MemberClickEvents for the same member
             const memberId = fixtureManager.get('members', 0).id;
             await models.Member.edit({last_seen_at: null}, {id: memberId});
 
             const previousLastSeen = new Date(Date.UTC(2099, 11, 29, 20, 0, 0, 0));
-    
+
             const firstDate = new Date(Date.UTC(2099, 11, 31, 21, 0, 0, 0));
             // In UTC this is 2099-12-31 21:00:00
             // In CET this is 2099-12-31 22:00:00
@@ -64,20 +64,20 @@ describe('Last Seen At Updater', function () {
             const secondDate = new Date(Date.UTC(2099, 11, 31, 22, 0, 0, 0));
             // In UTC this is 2099-12-31 22:00:00
             // In CET this is 2099-12-31 23:00:00
-    
+
             const newDay = new Date(Date.UTC(2099, 11, 31, 23, 0, 0, 0));
             // In UTC this is 2099-12-31 23:00:00
             // In CET this is 2100-01-01 00:00:00
-    
+
             async function assertLastSeen(date) {
                 const member = await models.Member.findOne({id: memberId}, {require: true});
                 assert.equal(member.get('last_seen_at').getTime(), date.getTime());
             }
 
             mockManager.mockSetting('timezone', 'CET');
-    
+
             const clock = sinon.useFakeTimers(firstDate);
-    
+
             await membersEvents.lastSeenAtUpdater.cachedUpdateLastSeenAt(memberId, previousLastSeen, firstDate);
 
             await assertLastSeen(firstDate);
@@ -94,7 +94,7 @@ describe('Last Seen At Updater', function () {
 
         it('does not call updateLastSeenAt multiple times for the same member on the same day', async function () {
             const membersEvents = require('../../../core/server/services/members-events');
-    
+
             // Clear the cache to ensure it's empty
             membersEvents.lastSeenAtUpdater._lastSeenAtCache.clear();
 
@@ -103,11 +103,11 @@ describe('Last Seen At Updater', function () {
             await models.Member.edit({last_seen_at: null}, {id: memberId});
 
             const previousLastSeen = new Date(Date.UTC(2099, 11, 29, 20, 0, 0, 0));
-    
+
             const firstDate = new Date(Date.UTC(2099, 11, 31, 21, 0, 0, 0));
 
             mockManager.mockSetting('timezone', 'CET');
-    
+
             const clock = sinon.useFakeTimers(firstDate);
 
             const spy = sinon.spy(membersEvents.lastSeenAtUpdater, 'updateLastSeenAt');

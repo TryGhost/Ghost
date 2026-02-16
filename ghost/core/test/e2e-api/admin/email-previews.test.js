@@ -1,6 +1,6 @@
 const {agentProvider, fixtureManager, matchers, mockManager} = require('../../utils/e2e-framework');
 const {anyEtag, anyErrorId, anyContentVersion, anyString} = matchers;
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const {assertMatchSnapshot} = require('../../utils/assertions');
 const config = require('../../../core/shared/config');
 const sinon = require('sinon');

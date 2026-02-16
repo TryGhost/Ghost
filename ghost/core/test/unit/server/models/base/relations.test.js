@@ -1,7 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 const models = require('../../../../../core/server/models');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 
 describe('Models: getLazyRelation', function () {
     before(function () {

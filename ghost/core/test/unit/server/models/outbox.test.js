@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const models = require('../../../../core/server/models');
 const {OUTBOX_STATUSES} = require('../../../../core/server/models/outbox');
 
@@ -20,21 +20,21 @@ describe('Unit: models/outbox', function () {
         it('sets default status to pending', function () {
             const model = new models.Outbox();
             const defaults = model.defaults();
-            
+
             assert.equal(defaults.status, OUTBOX_STATUSES.PENDING);
         });
 
         it('sets default retry_count to 0', function () {
             const model = new models.Outbox();
             const defaults = model.defaults();
-            
+
             assert.equal(defaults.retry_count, 0);
         });
 
         it('returns both default values', function () {
             const model = new models.Outbox();
             const defaults = model.defaults();
-            
+
             assert.ok(defaults);
             assert.equal(Object.keys(defaults).length, 2);
             assert.equal(defaults.status, OUTBOX_STATUSES.PENDING);

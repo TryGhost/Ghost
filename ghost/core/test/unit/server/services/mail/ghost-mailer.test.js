@@ -6,7 +6,7 @@ const settingsCache = require('../../../../../core/shared/settings-cache');
 const configUtils = require('../../../../utils/config-utils');
 const urlUtils = require('../../../../../core/shared/url-utils');
 let mailer;
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
 const emailAddress = require('../../../../../core/server/services/email-address');
 

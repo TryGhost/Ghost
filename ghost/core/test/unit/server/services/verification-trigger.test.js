@@ -1,7 +1,7 @@
 // Switch these lines once there are useful utils
 // const testUtils = require('./utils');
 const sinon = require('sinon');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 require('should');
 const VerificationTrigger = require('../../../../core/server/services/verification-trigger');
 const DomainEvents = require('@tryghost/domain-events');

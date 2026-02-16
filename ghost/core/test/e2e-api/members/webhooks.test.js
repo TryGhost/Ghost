@@ -1,5 +1,5 @@
 const crypto = require('crypto');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const {assertObjectMatches} = require('../../utils/assertions');
 const nock = require('nock');
 const should = require('should');

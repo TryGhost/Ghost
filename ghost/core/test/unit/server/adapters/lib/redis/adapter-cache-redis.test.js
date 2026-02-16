@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
 const RedisCache = require('../../../../../../core/server/adapters/lib/redis/AdapterCacheRedis');
