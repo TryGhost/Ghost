@@ -111,8 +111,6 @@ describe('chart-helpers', () => {
             ];
 
             const result = truncateLeadingEmptyData(data);
-
-            // No non-empty data found, returns original
             expect(result).toEqual(data);
         });
 
