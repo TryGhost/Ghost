@@ -266,8 +266,27 @@ test.describe('Offers Modal', () => {
             responseHeaders?: {[key: string]: string};
         };
 
+        type RetentionOffer = {
+            id: string;
+            name: string;
+            code: string;
+            display_title: string;
+            display_description: string;
+            type: 'percent' | 'free_months';
+            cadence: 'month' | 'year';
+            amount: number;
+            duration: 'forever' | 'once' | 'repeating' | 'free_months';
+            duration_in_months: number | null;
+            currency_restriction: boolean;
+            currency: string | null;
+            status: 'active' | 'archived';
+            redemption_count: number;
+            redemption_type: 'retention';
+            tier: null;
+        };
+
         const signupOffers = (responseFixtures.offers.offers || []).filter(offer => offer.redemption_type === 'signup');
-        const defaultRetentionOffer = {
+        const defaultRetentionOffer: RetentionOffer = {
             id: 'retention-offer',
             name: 'Monthly retention',
             code: 'monthly-retention',
@@ -286,19 +305,19 @@ test.describe('Offers Modal', () => {
             tier: null
         };
 
-        const createRetentionOffer = (overrides: Partial<typeof defaultRetentionOffer> = {}) => {
+        const createRetentionOffer = (overrides: Partial<RetentionOffer> = {}) => {
             return {
                 ...defaultRetentionOffer,
                 ...overrides
             };
         };
 
-        const getRetentionRequests = ({
+        const getRetentionRequests = <ExtraRequests extends Record<string, MockRequest> = Record<string, never>>({
             retentionOffers,
-            extraRequests = {}
+            extraRequests = {} as ExtraRequests
         }: {
             retentionOffers: Array<ReturnType<typeof createRetentionOffer>>;
-            extraRequests?: Record<string, MockRequest>;
+            extraRequests?: ExtraRequests;
         }) => {
             return {
                 browseOffers: {
