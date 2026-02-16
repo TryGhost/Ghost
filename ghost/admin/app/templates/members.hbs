@@ -211,6 +211,8 @@
     {{/if}}
 </section>
 
+{{outlet}}
+
 {{#if this.showUnsubscribeMembersModal}}
     <GhFullscreenModal
         @modal="unsubscribe-members"
@@ -229,5 +231,3 @@
         @modifier="action wide"
     />
 {{/if}}
-
-{{outlet}}
