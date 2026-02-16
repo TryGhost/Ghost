@@ -13,29 +13,17 @@ type RetentionOffer = {
     status: 'active' | 'inactive';
 };
 
-const normalizeRetentionCadence = (cadence: string): RetentionCadence | null => {
-    if (cadence === 'month' || cadence === 'monthly') {
-        return 'month';
-    }
-
-    if (cadence === 'year' || cadence === 'yearly') {
-        return 'year';
-    }
-
-    return null;
-};
-
 const getActiveRetentionOfferByCadence = (offers: Offer[], cadence: RetentionCadence): Offer | null => {
     return offers.find((offer) => {
         return offer.redemption_type === 'retention' &&
-            normalizeRetentionCadence(offer.cadence) === cadence &&
+            offer.cadence === cadence &&
             offer.status === 'active';
     }) || null;
 };
 
 const getRetentionRedemptionsByCadence = (offers: Offer[], cadence: RetentionCadence): number => {
     return offers.reduce((total, offer) => {
-        if (offer.redemption_type !== 'retention' || normalizeRetentionCadence(offer.cadence) !== cadence) {
+        if (offer.redemption_type !== 'retention' || offer.cadence !== cadence) {
             return total;
         }
 

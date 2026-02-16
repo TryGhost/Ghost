@@ -13,7 +13,7 @@ type RetentionOfferFormState = {
     enabled: boolean;
     displayTitle: string;
     displayDescription: string;
-    type: string;
+    type: 'percent' | 'free_months';
     percentAmount: number;
     duration: string;
     durationInMonths: number;
@@ -47,7 +47,7 @@ const getResolvedAmount = ({
     lastPercentAmount,
     lastFreeMonths
 }: {
-    type: RetentionOfferFormState['type'];
+    type: 'percent' | 'free_months';
     percentAmount: number;
     freeMonths: number;
     lastPercentAmount: number;
@@ -60,19 +60,7 @@ const getResolvedAmount = ({
     return percentAmount > 0 ? percentAmount : lastPercentAmount;
 };
 
-const getDefaultState = (id: string): RetentionOfferFormState => {
-    if (id === 'monthly') {
-        return {
-            enabled: false,
-            displayTitle: '',
-            displayDescription: '',
-            type: 'free_months',
-            percentAmount: 20,
-            duration: 'once',
-            durationInMonths: 1,
-            freeMonths: 1
-        };
-    }
+const getDefaultState = (): RetentionOfferFormState => {
     return {
         enabled: false,
         displayTitle: '',
@@ -85,8 +73,8 @@ const getDefaultState = (id: string): RetentionOfferFormState => {
     };
 };
 
-const getRetentionOfferFormState = (id: string, offer: Offer | null): RetentionOfferFormState => {
-    const defaultState = getDefaultState(id);
+const getRetentionOfferFormState = (offer: Offer | null): RetentionOfferFormState => {
+    const defaultState = getDefaultState();
 
     if (!offer) {
         return defaultState;
@@ -100,24 +88,12 @@ const getRetentionOfferFormState = (id: string, offer: Offer | null): RetentionO
         enabled: offer.status === 'active',
         displayTitle: offer.display_title || '',
         displayDescription: offer.display_description || '',
-        type: offer.type,
+        type: isFreeMonthsOffer ? 'free_months' : 'percent',
         percentAmount: isPercentOffer ? offer.amount : defaultState.percentAmount,
         duration: isPercentOffer ? offer.duration : defaultState.duration,
         durationInMonths: repeatingDurationInMonths,
         freeMonths: isFreeMonthsOffer ? offer.amount : defaultState.freeMonths
     };
-};
-
-const normalizeRetentionCadence = (cadence: string): 'month' | 'year' | null => {
-    if (cadence === 'month' || cadence === 'monthly') {
-        return 'month';
-    }
-
-    if (cadence === 'year' || cadence === 'yearly') {
-        return 'year';
-    }
-
-    return null;
 };
 
 const getFormOfferTerms = ({
@@ -174,15 +150,12 @@ const getOfferTerms = (offer: Offer | null): RetentionOfferTerms | null => {
     };
 };
 
-const areTermsEqual = (left: RetentionOfferTerms | null, right: RetentionOfferTerms): boolean => {
-    if (!left) {
-        return false;
+const getTermsSignature = (terms: RetentionOfferTerms | null): string => {
+    if (!terms) {
+        return '';
     }
 
-    return left.type === right.type &&
-        left.amount === right.amount &&
-        left.duration === right.duration &&
-        left.durationInMonths === right.durationInMonths;
+    return `${terms.type}:${terms.amount}:${terms.duration}:${terms.durationInMonths}`;
 };
 
 const hasFormChangesFromDefault = (formState: RetentionOfferFormState, defaultState: RetentionOfferFormState): boolean => {
@@ -376,7 +349,7 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
     const retentionOffersByCadence = useMemo(() => {
         return allOffers
             .filter((offer) => {
-                return offer.redemption_type === 'retention' && normalizeRetentionCadence(offer.cadence) === offerCadence;
+                return offer.redemption_type === 'retention' && offer.cadence === offerCadence;
             })
             .sort((left, right) => {
                 const leftTimestamp = left.created_at ? new Date(left.created_at).getTime() : 0;
@@ -399,7 +372,7 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
     const [initializedOfferKey, setInitializedOfferKey] = useState<string | null>(null);
 
     const {formState, setFormState, updateForm, handleSave, saveState, okProps, errors, clearError} = useForm({
-        initialState: getDefaultState(id),
+        initialState: getDefaultState(),
         savingDelay: 500,
         onSave: async () => {
             let didMutate = false;
@@ -409,7 +382,7 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
                 lastFreeMonths: lastPreviewFreeMonths
             });
             const existingTerms = getOfferTerms(editableRetentionOffer);
-            const termsChanged = !areTermsEqual(existingTerms, formTerms);
+            const termsChanged = getTermsSignature(existingTerms) !== getTermsSignature(formTerms);
             const nextStatus = formState.enabled ? 'active' : 'archived';
             const displayTitle = formState.displayTitle || '';
             const displayDescription = formState.displayDescription || '';
@@ -417,7 +390,7 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
                 ? displayTitle !== (editableRetentionOffer.display_title || '') ||
                     displayDescription !== (editableRetentionOffer.display_description || '')
                 : displayTitle !== '' || displayDescription !== '';
-            const defaultState = getDefaultState(id);
+            const defaultState = getDefaultState();
             const shouldCreateInactiveDraft = !formState.enabled && !editableRetentionOffer && hasFormChangesFromDefault(formState, defaultState);
 
             const createRetentionOffer = async (status: 'active' | 'archived') => {
@@ -519,9 +492,9 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
             return;
         }
 
-        setFormState(() => getRetentionOfferFormState(id, editableRetentionOffer));
+        setFormState(() => getRetentionOfferFormState(editableRetentionOffer));
         setInitializedOfferKey(currentOfferKey);
-    }, [currentOfferKey, editableRetentionOffer, hasFetchedOffers, id, initializedOfferKey, isFetchingOffers, saveState, setFormState]);
+    }, [currentOfferKey, editableRetentionOffer, hasFetchedOffers, initializedOfferKey, isFetchingOffers, saveState, setFormState]);
 
     useEffect(() => {
         if (formState.percentAmount > 0) {
