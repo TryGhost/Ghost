@@ -389,7 +389,7 @@ describe('{{#get}} helper', function () {
 
         it('handles Date values', function () {
             const result = querySimplePath(data, 'post.published_at');
-            result.should.have.length(1);
+            assert.equal(result.length, 1);
             assert(result[0] instanceof Date);
         });
 
