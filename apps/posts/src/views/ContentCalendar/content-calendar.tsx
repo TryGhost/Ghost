@@ -1,7 +1,7 @@
 import MainLayout from '@components/layout/main-layout';
 import React, {useMemo, useState} from 'react';
 import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, EmptyIndicator, LoadingIndicator, LucideIcon, cn} from '@tryghost/shade';
-import {CalendarPostOrder, CalendarPostStatus, buildCalendarGrid, formatPostTime, getNowMonthInTimezone, shiftCalendarMonth} from './utils/calendar';
+import {CalendarMonth, CalendarPostOrder, CalendarPostStatus, buildCalendarGrid, formatMonthLabel, getNowMonthInTimezone, shiftCalendarMonth} from './utils/calendar';
 import {getSiteTimezone} from '@src/utils/get-site-timezone';
 import {isAuthorOrContributor, isContributorUser, useBrowseUsers} from '@tryghost/admin-x-framework/api/users';
 import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
@@ -138,6 +138,17 @@ const getLegendStatusesForType = (type: CalendarTypeFilter): CalendarPostStatus[
     }
 };
 
+const getCalendarDateRangeFilter = (month: CalendarMonth): string => {
+    const rangeStart = new Date(Date.UTC(month.year, month.month - 2, 1, 0, 0, 0, 0)).toISOString();
+    const rangeEnd = new Date(Date.UTC(month.year, month.month + 1, 0, 23, 59, 59, 999)).toISOString();
+
+    const rangeForField = (field: string) => {
+        return `${field}:>='${rangeStart}'+${field}:<='${rangeEnd}'`;
+    };
+
+    return `(${rangeForField('published_at')},${rangeForField('updated_at')},${rangeForField('created_at')})`;
+};
+
 const buildCalendarFilter = ({
     type,
     visibility,
@@ -211,6 +222,7 @@ const ContentCalendar: React.FC = () => {
     const siteTimezone = useMemo(() => getSiteTimezone(settings.data?.settings ?? []), [settings.data?.settings]);
     const [monthOffset, setMonthOffset] = useState(0);
     const month = useMemo(() => shiftCalendarMonth(getNowMonthInTimezone(siteTimezone), monthOffset), [siteTimezone, monthOffset]);
+    const monthLabel = useMemo(() => formatMonthLabel(month), [month]);
     const selectedTypeParam = searchParams.get('type');
     const selectedVisibilityParam = searchParams.get('visibility');
     const selectedOrderParam = searchParams.get('order');
@@ -223,6 +235,7 @@ const ContentCalendar: React.FC = () => {
     const isCurrentUserAuthorOrContributor = currentUser ? isAuthorOrContributor(currentUser) : false;
     const defaultOrder: CalendarPostOrder = selectedType === 'draft' ? 'updated_at desc' : 'published_at desc';
     const calendarOrder: CalendarPostOrder = selectedOrder ?? defaultOrder;
+    const dateRangeFilter = useMemo(() => getCalendarDateRangeFilter(month), [month]);
     const calendarFilter = useMemo(() => buildCalendarFilter({
         type: selectedType,
         visibility: selectedVisibility,
@@ -231,6 +244,9 @@ const ContentCalendar: React.FC = () => {
         currentUserSlug: currentUser?.slug ?? null,
         shouldForceCurrentUser: isCurrentUserAuthorOrContributor
     }), [selectedType, selectedVisibility, selectedTag, selectedAuthor, currentUser?.slug, isCurrentUserAuthorOrContributor]);
+    const postQueryFilter = useMemo(() => {
+        return `${calendarFilter}+${dateRangeFilter}`;
+    }, [calendarFilter, dateRangeFilter]);
     const authorsQuery = useBrowseUsers({
         enabled: !isCurrentUserAuthorOrContributor,
         searchParams: {
@@ -320,7 +336,7 @@ const ContentCalendar: React.FC = () => {
 
     const {data, isError, isLoading} = useBrowsePosts({
         searchParams: {
-            filter: calendarFilter,
+            filter: postQueryFilter,
             limit: 'all',
             order: calendarOrder
         }
@@ -476,6 +492,9 @@ const ContentCalendar: React.FC = () => {
                                         >
                                             Today
                                         </Button>
+                                        <span className="min-w-[120px] text-center text-sm font-medium text-muted-foreground">
+                                            {monthLabel}
+                                        </span>
                                         <Button
                                             aria-label="Show next month"
                                             variant="outline"
