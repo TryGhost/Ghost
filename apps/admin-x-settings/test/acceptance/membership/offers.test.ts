@@ -257,7 +257,7 @@ test.describe('Offers Modal', () => {
         });
     });
 
-    describe('Retention offers', () => {
+    test.describe('Retention offers', () => {
         test('Lists monthly and yearly retention offers', async ({page}) => {
             await mockApi({page, requests: {
                 browseOffers: {
@@ -568,9 +568,81 @@ test.describe('Offers Modal', () => {
             await expect(saveButton).toBeEnabled();
         });
 
-        test('Renders preview for retention offers', async ({page}) => {
+        test('Hides repeating duration option for yearly retention offers', async ({page}) => {
             await mockApi({page, requests: {
                 browseOffers: {
+                    method: 'GET',
+                    path: '/offers/',
+                    response: {
+                        offers: [
+                            ...(responseFixtures.offers.offers || []).filter(offer => offer.redemption_type === 'signup'),
+                            {
+                                id: 'retention-year-active',
+                                name: 'Yearly retention',
+                                code: 'yearly-retention',
+                                display_title: 'Stay yearly',
+                                display_description: '',
+                                type: 'percent',
+                                cadence: 'year',
+                                amount: 20,
+                                duration: 'once',
+                                duration_in_months: null,
+                                currency_restriction: false,
+                                currency: null,
+                                status: 'active',
+                                redemption_count: 0,
+                                redemption_type: 'retention',
+                                tier: null
+                            }
+                        ]
+                    }
+                },
+                ...globalDataRequests,
+                browseConfig: {
+                    method: 'GET',
+                    path: '/config/',
+                    response: {
+                        config: {
+                            ...responseFixtures.config.config,
+                            labs: {
+                                ...responseFixtures.config.config?.labs,
+                                retentionOffers: true
+                            }
+                        }
+                    }
+                },
+                browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
+                browseTiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers}
+            }});
+
+            await page.goto('/');
+            const section = page.getByTestId('offers');
+            await section.getByRole('button', {name: 'Manage offers'}).click();
+
+            const modal = page.getByTestId('offers-modal');
+            await modal.getByRole('tab', {name: 'Retention'}).click();
+            await modal.getByText('Yearly retention').click();
+
+            const retentionModal = page.getByTestId('retention-offer-modal');
+            await expect(retentionModal).toBeVisible();
+
+            const sidebarScrollContainer = retentionModal.locator('div.overflow-y-auto').first();
+            await sidebarScrollContainer.evaluate((element) => {
+                element.scrollTop = element.scrollHeight;
+            });
+
+            const durationSelectTrigger = retentionModal.getByText('First-payment', {exact: true}).first();
+            await durationSelectTrigger.click();
+            const durationOptions = await page.locator('[data-testid="select-option"]').allTextContents();
+            expect(durationOptions).toContain('First-payment');
+            expect(durationOptions).toContain('Forever');
+            expect(durationOptions).not.toContain('Multiple-months');
+            await page.keyboard.press('Escape');
+        });
+
+    test('Renders preview for retention offers', async ({page}) => {
+        await mockApi({page, requests: {
+            browseOffers: {
                     method: 'GET',
                     path: '/offers/',
                     response: {

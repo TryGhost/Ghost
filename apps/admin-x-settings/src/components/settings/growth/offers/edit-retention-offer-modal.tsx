@@ -215,6 +215,10 @@ const RetentionOfferSidebar: React.FC<{
     cadence: 'monthly' | 'yearly';
     redemptions: number;
 }> = ({formState, updateForm, clearError, errors, cadence, redemptions}) => {
+    const availableDurationOptions = cadence === 'yearly'
+        ? durationOptions.filter(option => option.value !== 'repeating')
+        : durationOptions;
+
     return (
         <div className='flex grow flex-col pt-2'>
             <Form className='grow'>
@@ -304,8 +308,8 @@ const RetentionOfferSidebar: React.FC<{
                                             onKeyDown={() => clearError('amount')}
                                         />
                                         <Select
-                                            options={durationOptions}
-                                            selectedOption={durationOptions.find(option => option.value === formState.duration)}
+                                            options={availableDurationOptions}
+                                            selectedOption={availableDurationOptions.find(option => option.value === formState.duration)}
                                             title='Duration'
                                             onSelect={(e) => {
                                                 if (e) {
@@ -484,7 +488,6 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
             if (!formState.enabled) {
                 return newErrors;
             }
-
 
             if (formState.type === 'percent') {
                 if (formState.percentAmount < 1 || formState.percentAmount > MAX_PERCENT_AMOUNT) {
