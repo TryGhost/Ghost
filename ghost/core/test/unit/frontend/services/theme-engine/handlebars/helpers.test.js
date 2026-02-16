@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const _ = require('lodash');
 const hbs = require('../../../../../../core/frontend/services/theme-engine/engine');
 
