@@ -57,7 +57,7 @@ describe('Members Service Middleware', function () {
 
             // Check behavior
             assert.equal(next.calledOnce, true);
-            next.firstCall.args.should.be.an.Array().with.lengthOf(0);
+            assert.deepEqual(next.firstCall.args, []);
         });
 
         it('redirects correctly on success', async function () {

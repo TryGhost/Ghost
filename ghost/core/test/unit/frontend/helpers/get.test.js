@@ -239,7 +239,8 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {filter: 'tags:[{{post.tags}}]'}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
-                browseStub.firstCall.args.should.be.an.Array().with.lengthOf(1);
+                assert(Array.isArray(browseStub.firstCall.args));
+                assert.equal(browseStub.firstCall.args.length, 1);
                 browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');
                 assert.equal(browseStub.firstCall.args[0].filter, 'tags:[test,magic]');
 
@@ -253,7 +254,8 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {filter: 'author:{{post.author}}'}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
-                browseStub.firstCall.args.should.be.an.Array().with.lengthOf(1);
+                assert(Array.isArray(browseStub.firstCall.args));
+                assert.equal(browseStub.firstCall.args.length, 1);
                 browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');
                 assert.equal(browseStub.firstCall.args[0].filter, 'author:cameron');
 
@@ -267,7 +269,8 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {filter: 'id:-{{post.id}}'}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
-                browseStub.firstCall.args.should.be.an.Array().with.lengthOf(1);
+                assert(Array.isArray(browseStub.firstCall.args));
+                assert.equal(browseStub.firstCall.args.length, 1);
                 browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');
                 assert.equal(browseStub.firstCall.args[0].filter, 'id:-3');
 
@@ -281,7 +284,8 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {filter: 'tags:{{post.tags.[0].slug}}'}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
-                browseStub.firstCall.args.should.be.an.Array().with.lengthOf(1);
+                assert(Array.isArray(browseStub.firstCall.args));
+                assert.equal(browseStub.firstCall.args.length, 1);
                 browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');
                 assert.equal(browseStub.firstCall.args[0].filter, 'tags:test');
 
@@ -295,7 +299,8 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {filter: 'published_at:<=\'{{post.published_at}}\''}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
-                browseStub.firstCall.args.should.be.an.Array().with.lengthOf(1);
+                assert(Array.isArray(browseStub.firstCall.args));
+                assert.equal(browseStub.firstCall.args.length, 1);
                 browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');
                 browseStub.firstCall.args[0].filter.should.eql(`published_at:<='${pubDate.toISOString()}'`);
 
@@ -309,7 +314,8 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {filter: 'id:{{post.thing}}'}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
-                browseStub.firstCall.args.should.be.an.Array().with.lengthOf(1);
+                assert(Array.isArray(browseStub.firstCall.args));
+                assert.equal(browseStub.firstCall.args.length, 1);
                 browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');
                 assert.equal(browseStub.firstCall.args[0].filter, 'id:');
 
@@ -323,7 +329,8 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {filter: 'slug:{{@globalProp.foo}}'}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
-                browseStub.firstCall.args.should.be.an.Array().with.lengthOf(1);
+                assert(Array.isArray(browseStub.firstCall.args));
+                assert.equal(browseStub.firstCall.args.length, 1);
                 browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');
                 assert.equal(browseStub.firstCall.args[0].filter, 'slug:bar');
 
@@ -554,7 +561,8 @@ describe('{{#get}} helper', function () {
             // The get helper will return as per usual
             assert.equal(fn.calledOnce, true);
             fn.firstCall.args[0].should.be.an.Object().with.property('posts');
-            fn.firstCall.args[0].posts.should.be.an.Array().with.lengthOf(1);
+            assert(Array.isArray(fn.firstCall.args[0].posts));
+            assert.equal(fn.firstCall.args[0].posts.length, 1);
         });
 
         it('should log an error and return safely if it hits the timeout threshold', async function () {
@@ -572,7 +580,7 @@ describe('{{#get}} helper', function () {
             // The get helper gets called with an empty array of results
             assert.equal(fn.calledOnce, true);
             fn.firstCall.args[0].should.be.an.Object().with.property('posts');
-            fn.firstCall.args[0].posts.should.be.an.Array().with.lengthOf(0);
+            assert.deepEqual(fn.firstCall.args[0].posts, []);
         });
     });
 });

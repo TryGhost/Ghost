@@ -69,7 +69,7 @@ describe('Unit: models/user', function () {
                         throw new Error('expected ValidationError');
                     })
                     .catch(function (err) {
-                        err.should.be.an.Array();
+                        assert(Array.isArray(err));
                         assert.equal((err[0] instanceof errors.ValidationError), true);
                         assert.match(err[0].message, /users\.email/);
                     });

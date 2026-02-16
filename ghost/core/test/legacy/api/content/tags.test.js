@@ -75,7 +75,8 @@ describe('api/endpoints/content/tags', function () {
             .then((res) => {
                 const jsonResponse = res.body;
 
-                jsonResponse.tags.should.be.an.Array().with.lengthOf(3);
+                assert(Array.isArray(jsonResponse.tags));
+                assert.equal(jsonResponse.tags.length, 3);
                 assert.equal(jsonResponse.tags[0].slug, 'kitchen-sink');
                 assert.equal(jsonResponse.tags[1].slug, 'bacon');
                 assert.equal(jsonResponse.tags[2].slug, 'chorizo');

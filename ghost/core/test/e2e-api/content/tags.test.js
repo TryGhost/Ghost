@@ -97,8 +97,8 @@ describe('Tags Content API', function () {
 
         const jsonResponse = res.body;
 
-        assertExists(jsonResponse.tags);
-        jsonResponse.tags.should.be.an.Array().with.lengthOf(5);
+        assert(Array.isArray(jsonResponse.tags));
+        assert.equal(jsonResponse.tags.length, 5);
 
         // Each tag should have the correct count
         assert.equal(_.find(jsonResponse.tags, {name: 'Getting Started'}).count.posts, 7);

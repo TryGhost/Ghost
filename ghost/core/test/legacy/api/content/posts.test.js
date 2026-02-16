@@ -208,7 +208,8 @@ describe('api/endpoints/content/posts', function () {
                 }
                 const jsonResponse = res.body;
 
-                jsonResponse.posts.should.be.an.Array().with.lengthOf(13);
+                assert(Array.isArray(jsonResponse.posts));
+                assert.equal(jsonResponse.posts.length, 13);
 
                 done();
             });
@@ -222,7 +223,8 @@ describe('api/endpoints/content/posts', function () {
             .then((res) => {
                 const jsonResponse = res.body;
 
-                jsonResponse.posts.should.be.an.Array().with.lengthOf(3);
+                assert(Array.isArray(jsonResponse.posts));
+                assert.equal(jsonResponse.posts.length, 3);
                 assert.equal(jsonResponse.posts[0].slug, 'write');
                 assert.equal(jsonResponse.posts[1].slug, 'ghostly-kitchen-sink');
                 assert.equal(jsonResponse.posts[2].slug, 'grow');
@@ -237,7 +239,8 @@ describe('api/endpoints/content/posts', function () {
             .then((res) => {
                 const jsonResponse = res.body;
 
-                jsonResponse.posts.should.be.an.Array().with.lengthOf(3);
+                assert(Array.isArray(jsonResponse.posts));
+                assert.equal(jsonResponse.posts.length, 3);
                 assert.equal(jsonResponse.posts[0].slug, 'write');
                 assert.equal(jsonResponse.posts[1].slug, 'grow');
                 assert.equal(jsonResponse.posts[2].slug, 'ghostly-kitchen-sink');

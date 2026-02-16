@@ -63,8 +63,10 @@ describe('Permission Providers', function () {
 
                     res.should.be.an.Object().with.properties('permissions', 'roles');
 
-                    res.permissions.should.be.an.Array().with.lengthOf(10);
-                    res.roles.should.be.an.Array().with.lengthOf(1);
+                    assert(Array.isArray(res.permissions));
+                    assert.equal(res.permissions.length, 10);
+                    assert(Array.isArray(res.roles));
+                    assert.equal(res.roles.length, 1);
 
                     // @TODO fix this!
                     // Permissions is an array of models
@@ -113,8 +115,10 @@ describe('Permission Providers', function () {
 
                     res.should.be.an.Object().with.properties('permissions', 'roles');
 
-                    res.permissions.should.be.an.Array().with.lengthOf(10);
-                    res.roles.should.be.an.Array().with.lengthOf(1);
+                    assert(Array.isArray(res.permissions));
+                    assert.equal(res.permissions.length, 10);
+                    assert(Array.isArray(res.roles));
+                    assert.equal(res.roles.length, 1);
 
                     // @TODO fix this!
                     // Permissions is an array of models
@@ -164,8 +168,10 @@ describe('Permission Providers', function () {
 
                     res.should.be.an.Object().with.properties('permissions', 'roles');
 
-                    res.permissions.should.be.an.Array().with.lengthOf(10);
-                    res.roles.should.be.an.Array().with.lengthOf(1);
+                    assert(Array.isArray(res.permissions));
+                    assert.equal(res.permissions.length, 10);
+                    assert(Array.isArray(res.roles));
+                    assert.equal(res.roles.length, 1);
 
                     // @TODO fix this!
                     // Permissions is an array of models
@@ -234,7 +240,8 @@ describe('Permission Providers', function () {
             providers.apiKey(1).then((res) => {
                 assert.equal(findApiKeySpy.callCount, 1);
                 res.should.be.an.Object().with.properties('permissions', 'roles');
-                res.roles.should.be.an.Array().with.lengthOf(1);
+                assert(Array.isArray(res.roles));
+                assert.equal(res.roles.length, 1);
                 res.permissions[0].should.be.an.Object().with.properties('attributes', 'id');
                 res.roles[0].should.be.an.Object().with.properties('id', 'name', 'description');
                 assert(res.permissions[0] instanceof models.Base.Model);

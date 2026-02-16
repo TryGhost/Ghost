@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const _ = require('lodash');
 const hbs = require('../../../../../../core/frontend/services/theme-engine/engine');
 
@@ -29,8 +29,8 @@ describe('Helpers', function () {
             const missingHelpers = _.difference(expectedHelpers, foundHelpers);
             const unexpectedHelpers = _.difference(foundHelpers, expectedHelpers);
 
-            missingHelpers.should.be.an.Array().with.lengthOf(0);
-            unexpectedHelpers.should.be.an.Array().with.lengthOf(0);
+            assert.deepEqual(missingHelpers, []);
+            assert.deepEqual(unexpectedHelpers, []);
         });
     });
 });

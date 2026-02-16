@@ -184,8 +184,6 @@ describe('Themes API', function () {
                 tmpFolderContents.splice(i, 1);
             }
         }
-        tmpFolderContents.should.be.an.Array().with.lengthOf(12);
-
         assert.deepEqual(tmpFolderContents, [
             'broken-theme',
             'casper',
@@ -234,7 +232,7 @@ describe('Themes API', function () {
         localUtils.API.checkResponse(jsonResponse.themes[0], 'theme', ['warnings']);
         assert.equal(jsonResponse.themes[0].name, 'warnings');
         assert.equal(jsonResponse.themes[0].active, false);
-        jsonResponse.themes[0].warnings.should.be.an.Array();
+        assert(Array.isArray(jsonResponse.themes[0].warnings));
 
         // Delete the theme to clean up after the test
         await ownerRequest
@@ -285,7 +283,7 @@ describe('Themes API', function () {
         assertExists(testTheme2);
         localUtils.API.checkResponse(testTheme2, 'theme', ['warnings', 'templates']);
         assert.equal(testTheme2.active, true);
-        testTheme2.warnings.should.be.an.Array();
+        assert(Array.isArray(testTheme2.warnings));
 
         // Result should be the same
         const activeThemeResult = await ownerRequest
@@ -323,7 +321,7 @@ describe('Themes API', function () {
         localUtils.API.checkResponse(jsonResponse.themes[0], 'theme', ['warnings']);
         assert.equal(jsonResponse.themes[0].name, 'test');
         assert.equal(jsonResponse.themes[0].active, false);
-        jsonResponse.themes[0].warnings.should.be.an.Array();
+        assert(Array.isArray(jsonResponse.themes[0].warnings));
 
         // Delete the theme to clean up after the test
         await ownerRequest
@@ -366,7 +364,7 @@ describe('Themes API', function () {
         localUtils.API.checkResponse(jsonResponse.themes[0], 'theme', ['warnings']);
         assert.equal(jsonResponse.themes[0].name, 'starter');
         assert.equal(jsonResponse.themes[0].active, false);
-        jsonResponse.themes[0].warnings.should.be.an.Array();
+        assert(Array.isArray(jsonResponse.themes[0].warnings));
 
         // Delete the theme to clean up after the test
         await ownerRequest
