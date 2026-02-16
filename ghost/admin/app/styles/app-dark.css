@@ -162,17 +162,6 @@ input:focus,
     background: var(--dark-main-bg-color);
 }
 
-@media (max-width: 800px) {
-    .gh-mobile-nav-bar {
-        background: var(--nav-bg-color);
-    }
-
-    .gh-mobile-nav-bar a.active {
-        background: var(--whitegrey-l2);
-        color: #fff;
-    }
-}
-
 .gh-nav-search .ember-power-select-trigger {
     border-color: color-mod(var(--lightgrey));
     background: color-mod(var(--lightgrey));
@@ -566,10 +555,6 @@ input:focus,
     background: var(--lightgrey);
 }
 
-.mobile-menu-expanded .content-cover {
-    background: transparent;
-}
-
 .gh-box {
     background: var(--lightgrey);
     color: var(--darkgrey);
@@ -639,8 +624,7 @@ input:focus,
     background: var(--main-bg-color);
 }
 
-.gh-nav-hidden:hover,
-.mobile-menu-expanded .gh-nav {
+.gh-nav-hidden:hover {
     box-shadow:
         100px 0px 80px 0px rgba(0, 0, 0, 0.06),
         41.78px 0px 33.422px 0px rgba(0, 0, 0, 0.05),
