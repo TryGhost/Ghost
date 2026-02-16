@@ -1,8 +1,8 @@
 import PortalFrame from '../../membership/portal/portal-frame';
-import {Form, PreviewModalContent, Select, type SelectOption, TextArea, TextField, Toggle} from '@tryghost/admin-x-design-system';
 import {ButtonSelect, type OfferType} from './add-offer-modal';
 import {type ErrorMessages, useForm} from '@tryghost/admin-x-framework/hooks';
-import {type Offer, useAddOffer, useBrowseOffers, useEditOffer} from '@tryghost/admin-x-framework/api/offers';
+import {Form, PreviewModalContent, Select, type SelectOption, TextArea, TextField, Toggle} from '@tryghost/admin-x-design-system';
+import {type Offer, useAddOffer, useBrowseOffers, useEditOffer, useInvalidateOffers} from '@tryghost/admin-x-framework/api/offers';
 import {getOfferPortalPreviewUrl, type offerPortalPreviewUrlTypes} from '../../../../utils/get-offers-portal-preview-url';
 import {getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {useEffect, useMemo, useState} from 'react';
@@ -363,9 +363,10 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
     const {updateRoute} = useRouting();
     const {siteData} = useGlobalData();
     const {data: {tiers = []} = {}} = useBrowseTiers();
-    const {data: {offers: allOffers = []} = {}, isFetched: hasFetchedOffers, isFetching: isFetchingOffers, refetch: refetchOffers} = useBrowseOffers();
+    const {data: {offers: allOffers = []} = {}, isFetched: hasFetchedOffers, isFetching: isFetchingOffers} = useBrowseOffers();
     const {mutateAsync: addOffer} = useAddOffer();
     const {mutateAsync: editOffer} = useEditOffer();
+    const invalidateOffers = useInvalidateOffers();
     const [href, setHref] = useState<string>('');
     const cadence = id === 'monthly' ? 'monthly' : 'yearly' as const;
     const breadcrumbTitle = cadence === 'monthly' ? 'Monthly retention' : 'Yearly retention';
@@ -439,9 +440,9 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
                 didMutate = true;
             };
 
-            const refetchOffersIfNeeded = async () => {
+            const invalidateOffersIfNeeded = async () => {
                 if (didMutate) {
-                    await refetchOffers();
+                    await invalidateOffers();
                 }
             };
 
@@ -456,7 +457,7 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
                 }
 
                 await createRetentionOffer(nextStatus);
-                await refetchOffersIfNeeded();
+                await invalidateOffersIfNeeded();
                 return;
             }
 
@@ -471,7 +472,7 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
                     });
                     didMutate = true;
                 }
-                await refetchOffersIfNeeded();
+                await invalidateOffersIfNeeded();
                 return;
             }
 
@@ -479,7 +480,7 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
                 await createRetentionOffer(nextStatus);
             }
 
-            await refetchOffersIfNeeded();
+            await invalidateOffersIfNeeded();
         },
         onSaveError: () => {},
         onValidate: () => {
