@@ -101,7 +101,12 @@ module.exports = function (Bookshelf) {
                 options.order = order;
                 options.eagerLoad = eagerLoad;
             } else if (options.autoOrder) {
-                options.orderRaw = options.autoOrder;
+                if (typeof options.autoOrder === 'object') {
+                    options.orderRaw = options.autoOrder.sql;
+                    options.orderRawBindings = options.autoOrder.bindings;
+                } else {
+                    options.orderRaw = options.autoOrder;
+                }
             } else if (this.orderDefaultRaw) {
                 options.orderRaw = this.orderDefaultRaw(options);
             } else if (this.orderDefaultOptions) {
