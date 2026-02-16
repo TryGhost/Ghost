@@ -1,83 +1,436 @@
 import MainLayout from '@components/layout/main-layout';
 import React, {useMemo, useState} from 'react';
-import {buildCalendarGrid, formatMonthLabel, formatPostTime, getNowMonthInTimezone, shiftCalendarMonth} from './utils/calendar';
+import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, EmptyIndicator, LoadingIndicator, LucideIcon, cn} from '@tryghost/shade';
+import {CalendarPostOrder, CalendarPostStatus, buildCalendarGrid, formatPostTime, getNowMonthInTimezone, shiftCalendarMonth} from './utils/calendar';
 import {getSiteTimezone} from '@src/utils/get-site-timezone';
-import {Button, EmptyIndicator, Header, LoadingIndicator, LucideIcon, cn} from '@tryghost/shade';
+import {isAuthorOrContributor, isContributorUser, useBrowseUsers} from '@tryghost/admin-x-framework/api/users';
 import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
+import {useBrowseTags} from '@tryghost/admin-x-framework/api/tags';
+import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
+import {useSearchParams} from '@tryghost/admin-x-framework';
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MAX_POSTS_PER_DAY = 3;
+const DEFAULT_TYPE_VALUE: CalendarTypeFilter = 'scheduled';
+const ALL_FILTER_VALUE = '__all__';
+const DEFAULT_ORDER_VALUE = '__default_order__';
+const FILTER_QUERY_PARAMS = ['type', 'visibility', 'author', 'tag', 'order'] as const;
+
+type CalendarTypeFilter = 'all' | 'draft' | 'published' | 'scheduled' | 'featured';
+type CalendarVisibilityFilter = 'public' | 'members' | '[paid,tiers]' | null;
+type CalendarOrderFilter = 'published_at asc' | 'updated_at desc' | null;
+type CalendarQueryParam = typeof FILTER_QUERY_PARAMS[number];
+type FilterOption = {label: string; value: string};
+
+const LegacyFilterSelect = ({
+    value,
+    options,
+    onValueChange,
+    ariaLabel,
+    disabled
+}: {
+    value: string;
+    options: FilterOption[];
+    onValueChange: (nextValue: string) => void;
+    ariaLabel: string;
+    disabled?: boolean;
+}) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const selectedOption = options.find(option => option.value === value);
+
+    return (
+        <DropdownMenu onOpenChange={setIsOpen}>
+            <DropdownMenuTrigger disabled={disabled} asChild>
+                <div
+                    aria-label={ariaLabel}
+                    className={cn(
+                        'ember-view ember-basic-dropdown-trigger ember-power-select-trigger gh-contentfilter-menu-trigger',
+                        isOpen && 'gh-contentfilter-menu-trigger--active',
+                        disabled && 'pointer-events-none opacity-60'
+                    )}
+                    role="button"
+                    tabIndex={0}
+                >
+                    <span className="ember-power-select-selected-item">
+                        {selectedOption?.label ?? ''}
+                    </span>
+                    <svg viewBox="0 0 26 17">
+                        <title>arrow-down-small</title>
+                        <path d="M1.469 2.18l11.5 13.143 11.5-13.143" fill="none" stroke="#0B0B0A" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" />
+                    </svg>
+                </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="gh-contentfilter-menu-dropdown p-0" sideOffset={6}>
+                {options.map((option) => {
+                    return (
+                        <DropdownMenuItem
+                            key={option.value}
+                            className={cn(
+                                'ember-power-select-option rounded-[3px] px-[10px] py-[7px] text-[1.3rem]',
+                                option.value === value && 'ember-power-select-option--selected'
+                            )}
+                            onSelect={() => onValueChange(option.value)}
+                        >
+                            {option.label}
+                        </DropdownMenuItem>
+                    );
+                })}
+            </DropdownMenuContent>
+        </DropdownMenu>
+    );
+};
+
+const TYPE_OPTIONS: Array<{label: string; value: CalendarTypeFilter}> = [
+    {label: 'All posts', value: 'all'},
+    {label: 'Draft posts', value: 'draft'},
+    {label: 'Published posts', value: 'published'},
+    {label: 'Scheduled posts', value: 'scheduled'},
+    {label: 'Featured posts', value: 'featured'}
+];
+
+const VISIBILITY_OPTIONS: Array<{label: string; value: Exclude<CalendarVisibilityFilter, null>}> = [
+    {label: 'Public', value: 'public'},
+    {label: 'Members-only', value: 'members'},
+    {label: 'Paid members-only', value: '[paid,tiers]'}
+];
+
+const ORDER_OPTIONS: Array<{label: string; value: Exclude<CalendarOrderFilter, null>}> = [
+    {label: 'Oldest first', value: 'published_at asc'},
+    {label: 'Recently updated', value: 'updated_at desc'}
+];
+
+const isCalendarTypeFilter = (value: string | null): value is CalendarTypeFilter => {
+    return Boolean(value && TYPE_OPTIONS.some(option => option.value === value));
+};
+
+const isCalendarVisibilityFilter = (value: string | null): value is Exclude<CalendarVisibilityFilter, null> => {
+    return Boolean(value && VISIBILITY_OPTIONS.some(option => option.value === value));
+};
+
+const isCalendarOrderFilter = (value: string | null): value is Exclude<CalendarOrderFilter, null> => {
+    return Boolean(value && ORDER_OPTIONS.some(option => option.value === value));
+};
+
+const getStatusFilterForType = (type: CalendarTypeFilter): string => {
+    switch (type) {
+    case 'draft':
+        return 'draft';
+    case 'published':
+        return 'published';
+    case 'scheduled':
+        return 'scheduled';
+    default:
+        return '[draft,scheduled,published]';
+    }
+};
+
+const getLegendStatusesForType = (type: CalendarTypeFilter): CalendarPostStatus[] => {
+    switch (type) {
+    case 'draft':
+        return ['draft'];
+    case 'published':
+        return ['published'];
+    case 'scheduled':
+        return ['scheduled'];
+    default:
+        return ['published', 'scheduled', 'draft'];
+    }
+};
+
+const buildCalendarFilter = ({
+    type,
+    visibility,
+    tag,
+    author,
+    currentUserSlug,
+    shouldForceCurrentUser
+}: {
+    type: CalendarTypeFilter;
+    visibility: CalendarVisibilityFilter;
+    tag: string | null;
+    author: string | null;
+    currentUserSlug: string | null;
+    shouldForceCurrentUser: boolean;
+}) => {
+    const parts = [`status:${getStatusFilterForType(type)}`];
+
+    if (type === 'featured') {
+        parts.push('featured:true');
+    }
+
+    if (visibility) {
+        parts.push(`visibility:${visibility}`);
+    }
+
+    if (tag) {
+        parts.push(`tag:${tag}`);
+    }
+
+    if (shouldForceCurrentUser && currentUserSlug) {
+        parts.push(`authors:${currentUserSlug}`);
+    } else if (author) {
+        parts.push(`authors:${author}`);
+    }
+
+    return parts.join('+');
+};
+
+const POST_STATUS_STYLES: Record<CalendarPostStatus, {
+    label: string;
+    itemClass: string;
+    badgeClass: string;
+}> = {
+    published: {
+        label: 'Published',
+        itemClass: 'border-zinc-300 text-zinc-800 bg-gray/30 text-gray hover:border-black/30',
+        badgeClass: 'border-zinc-300 text-zinc-700 bg-gray/30 text-gray'
+    },
+    scheduled: {
+        label: 'Scheduled',
+        itemClass: 'border-green/30 bg-green/10 text-green hover:border-green/60',
+        badgeClass: 'border-green/30 bg-green/10 text-green'
+    },
+    draft: {
+        label: 'Draft',
+        itemClass: 'border-amber-200 bg-amber-50/80 text-amber-900 hover:border-black/30',
+        badgeClass: 'border-amber-300 bg-amber-100 text-amber-800'
+    },
+    unknown: {
+        label: 'Other',
+        itemClass: 'border-border bg-background text-foreground hover:border-foreground/30',
+        badgeClass: 'border-border bg-muted text-muted-foreground'
+    }
+};
 
 const ContentCalendar: React.FC = () => {
+    const [searchParams, setSearchParams] = useSearchParams();
     const settings = useBrowseSettings();
+    const currentUserQuery = useCurrentUser();
+    const currentUser = currentUserQuery.data;
     const siteTimezone = useMemo(() => getSiteTimezone(settings.data?.settings ?? []), [settings.data?.settings]);
     const [monthOffset, setMonthOffset] = useState(0);
     const month = useMemo(() => shiftCalendarMonth(getNowMonthInTimezone(siteTimezone), monthOffset), [siteTimezone, monthOffset]);
-    const monthLabel = useMemo(() => formatMonthLabel(month), [month]);
+    const selectedTypeParam = searchParams.get('type');
+    const selectedVisibilityParam = searchParams.get('visibility');
+    const selectedOrderParam = searchParams.get('order');
+    const selectedType: CalendarTypeFilter = isCalendarTypeFilter(selectedTypeParam) ? selectedTypeParam : DEFAULT_TYPE_VALUE;
+    const selectedVisibility: CalendarVisibilityFilter = isCalendarVisibilityFilter(selectedVisibilityParam) ? selectedVisibilityParam : null;
+    const selectedAuthor = searchParams.get('author');
+    const selectedTag = searchParams.get('tag');
+    const selectedOrder: CalendarOrderFilter = isCalendarOrderFilter(selectedOrderParam) ? selectedOrderParam : null;
+    const isCurrentUserContributor = currentUser ? isContributorUser(currentUser) : false;
+    const isCurrentUserAuthorOrContributor = currentUser ? isAuthorOrContributor(currentUser) : false;
+    const defaultOrder: CalendarPostOrder = selectedType === 'draft' ? 'updated_at desc' : 'published_at desc';
+    const calendarOrder: CalendarPostOrder = selectedOrder ?? defaultOrder;
+    const calendarFilter = useMemo(() => buildCalendarFilter({
+        type: selectedType,
+        visibility: selectedVisibility,
+        tag: selectedTag,
+        author: selectedAuthor,
+        currentUserSlug: currentUser?.slug ?? null,
+        shouldForceCurrentUser: isCurrentUserAuthorOrContributor
+    }), [selectedType, selectedVisibility, selectedTag, selectedAuthor, currentUser?.slug, isCurrentUserAuthorOrContributor]);
+    const authorsQuery = useBrowseUsers({
+        enabled: !isCurrentUserAuthorOrContributor,
+        searchParams: {
+            limit: 'all',
+            include: 'roles'
+        }
+    });
+    const tagsQuery = useBrowseTags({
+        enabled: !isCurrentUserContributor,
+        filter: {
+            visibility: '[public,internal]'
+        },
+        searchParams: {
+            limit: 'all',
+            order: 'name asc'
+        }
+    });
+    const authorOptions = useMemo(() => {
+        const options = [{
+            label: 'All authors',
+            value: ALL_FILTER_VALUE
+        }];
+        const authors = [...(authorsQuery.data?.users ?? [])]
+            .sort((a, b) => a.name.localeCompare(b.name))
+            .map(author => ({
+                label: author.name,
+                value: author.slug
+            }));
+        options.push(...authors);
+
+        if (selectedAuthor && !options.some(option => option.value === selectedAuthor)) {
+            options.push({
+                label: selectedAuthor,
+                value: selectedAuthor
+            });
+        }
+
+        return options;
+    }, [authorsQuery.data?.users, selectedAuthor]);
+    const tagOptions = useMemo(() => {
+        const options = [{
+            label: 'All tags',
+            value: ALL_FILTER_VALUE
+        }];
+        const tags = [...(tagsQuery.data?.tags ?? [])]
+            .sort((a, b) => a.name.localeCompare(b.name))
+            .map(tag => ({
+                label: tag.name,
+                value: tag.slug
+            }));
+        options.push(...tags);
+
+        if (selectedTag && !options.some(option => option.value === selectedTag)) {
+            options.push({
+                label: selectedTag,
+                value: selectedTag
+            });
+        }
+
+        return options;
+    }, [tagsQuery.data?.tags, selectedTag]);
+    const legendStatuses = useMemo(() => getLegendStatusesForType(selectedType), [selectedType]);
+    const hasActiveFilters = selectedType !== 'all' || Boolean(selectedVisibility) || Boolean(selectedAuthor) || Boolean(selectedTag) || Boolean(selectedOrder);
+
+    const setFilterParam = (key: CalendarQueryParam, value: string | null) => {
+        const nextSearchParams = new URLSearchParams(searchParams);
+
+        if (value) {
+            nextSearchParams.set(key, value);
+        } else {
+            nextSearchParams.delete(key);
+        }
+
+        setSearchParams(nextSearchParams, {replace: true});
+    };
+
+    const clearFilters = () => {
+        const nextSearchParams = new URLSearchParams(searchParams);
+
+        FILTER_QUERY_PARAMS.forEach((key) => {
+            nextSearchParams.delete(key);
+        });
+        nextSearchParams.set('type', 'all');
+
+        setSearchParams(nextSearchParams, {replace: true});
+    };
 
     const {data, isError, isLoading} = useBrowsePosts({
         searchParams: {
-            filter: 'status:scheduled',
-            limit: 'all'
+            filter: calendarFilter,
+            limit: 'all',
+            order: calendarOrder
         }
     });
 
-    const posts = data?.posts ?? [];
+    const posts = useMemo(() => data?.posts ?? [], [data?.posts]);
     const calendarDays = useMemo(() => buildCalendarGrid({
         month,
         posts,
-        timeZone: siteTimezone
-    }), [month, posts, siteTimezone]);
+        timeZone: siteTimezone,
+        order: calendarOrder
+    }), [month, posts, siteTimezone, calendarOrder]);
 
-    const monthPostCount = useMemo(() => calendarDays.reduce((count, day) => {
-        if (!day.inCurrentMonth) {
-            return count;
-        }
-
-        return count + day.posts.length;
-    }, 0), [calendarDays]);
+    const calendarFilters = (
+        <div className="gh-contentfilter view-actions-bottom-row">
+            <div className={cn('gh-contentfilter-menu gh-contentfilter-type', selectedType !== 'all' && 'gh-contentfilter-selected')}>
+                <LegacyFilterSelect
+                    ariaLabel="Type filter"
+                    options={TYPE_OPTIONS}
+                    value={selectedType}
+                    onValueChange={(value) => {
+                        setFilterParam('type', value === DEFAULT_TYPE_VALUE ? null : value);
+                    }}
+                />
+            </div>
+            {!isCurrentUserContributor && (
+                <div className={cn('gh-contentfilter-menu gh-contentfilter-visibility', selectedVisibility && 'gh-contentfilter-selected')}>
+                    <LegacyFilterSelect
+                        ariaLabel="Visibility filter"
+                        options={[
+                            {label: 'All access', value: ALL_FILTER_VALUE},
+                            ...VISIBILITY_OPTIONS
+                        ]}
+                        value={selectedVisibility ?? ALL_FILTER_VALUE}
+                        onValueChange={(value) => {
+                            setFilterParam('visibility', value === ALL_FILTER_VALUE ? null : value);
+                        }}
+                    />
+                </div>
+            )}
+            {!isCurrentUserAuthorOrContributor && (
+                <div className={cn('gh-contentfilter-menu gh-contentfilter-author', selectedAuthor && 'gh-contentfilter-selected')}>
+                    <LegacyFilterSelect
+                        ariaLabel="Author filter"
+                        disabled={authorsQuery.isLoading}
+                        options={authorOptions}
+                        value={selectedAuthor ?? ALL_FILTER_VALUE}
+                        onValueChange={(value) => {
+                            setFilterParam('author', value === ALL_FILTER_VALUE ? null : value);
+                        }}
+                    />
+                </div>
+            )}
+            {!isCurrentUserContributor && (
+                <div className={cn('gh-contentfilter-menu gh-contentfilter-tag', selectedTag && 'gh-contentfilter-selected')}>
+                    <LegacyFilterSelect
+                        ariaLabel="Tag filter"
+                        disabled={tagsQuery.isLoading}
+                        options={tagOptions}
+                        value={selectedTag ?? ALL_FILTER_VALUE}
+                        onValueChange={(value) => {
+                            setFilterParam('tag', value === ALL_FILTER_VALUE ? null : value);
+                        }}
+                    />
+                </div>
+            )}
+            <div className={cn('gh-contentfilter-menu gh-contentfilter-sort', selectedOrder && 'gh-contentfilter-selected')}>
+                <LegacyFilterSelect
+                    ariaLabel="Sort filter"
+                    options={[
+                        {label: 'Newest first', value: DEFAULT_ORDER_VALUE},
+                        ...ORDER_OPTIONS
+                    ]}
+                    value={selectedOrder ?? DEFAULT_ORDER_VALUE}
+                    onValueChange={(value) => {
+                        setFilterParam('order', value === DEFAULT_ORDER_VALUE ? null : value);
+                    }}
+                />
+            </div>
+        </div>
+    );
 
     return (
         <MainLayout>
             <div className="grid w-full grow">
-                <div className="flex h-full flex-col" data-testid="content-calendar-page">
-                    <Header className="relative !pb-6 md:sticky" variant="inline-nav">
-                        <Header.Title>Content calendar</Header.Title>
-                        <Header.Meta>
-                            {monthPostCount} scheduled {monthPostCount === 1 ? 'post' : 'posts'} in {monthLabel} ({siteTimezone})
-                        </Header.Meta>
-                        <Header.Actions>
-                            <Header.ActionGroup>
-                                <Button
-                                    aria-label="Show previous month"
-                                    variant="outline"
-                                    onClick={() => setMonthOffset(offset => offset - 1)}
-                                >
-                                    <LucideIcon.ChevronLeft className="size-4" />
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    onClick={() => setMonthOffset(0)}
-                                >
-                                    Today
-                                </Button>
-                                <Button
-                                    aria-label="Show next month"
-                                    variant="outline"
-                                    onClick={() => setMonthOffset(offset => offset + 1)}
-                                >
-                                    <LucideIcon.ChevronRight className="size-4" />
-                                </Button>
-                            </Header.ActionGroup>
-                            <Header.ActionGroup>
-                                <Button asChild>
-                                    <a href="#/editor/post">New post</a>
-                                </Button>
-                            </Header.ActionGroup>
-                        </Header.Actions>
-                    </Header>
-                    <div className="px-4 pb-8 lg:px-8">
+                <section className="gh-canvas gh-canvas-sticky flex h-full flex-col" data-testid="content-calendar-page">
+                    <header className="gh-canvas-header break tablet post-header sticky">
+                        <div className="gh-canvas-header-content">
+                            <div className="gh-canvas-title-container">
+                                <div className="gh-canvas-breadcrumb">
+                                    <a href="#/posts/">Posts</a>
+                                    <LucideIcon.ChevronRight className="size-3 text-muted-foreground" />
+                                    Calendar
+                                </div>
+                                <h2 className="gh-canvas-title gh-post-title" data-test-screen-title>
+                                    Calendar
+                                </h2>
+                            </div>
+
+                            <section className="view-actions" data-testid="calendar-filters">
+                                {calendarFilters}
+                                <div className="view-actions-top-row">
+                                    <Button asChild>
+                                        <a href="#/editor/post">New post</a>
+                                    </Button>
+                                </div>
+                            </section>
+                        </div>
+                    </header>
+                    <section className="view-container content-list px-4 pb-8 lg:px-8">
                         {isLoading ? (
                             <div className="flex min-h-[400px] items-center justify-center">
                                 <LoadingIndicator size="lg" />
@@ -90,74 +443,125 @@ const ContentCalendar: React.FC = () => {
                                     Reload page
                                 </Button>
                             </div>
-                        ) : posts.length === 0 ? (
-                            <div className="flex min-h-[400px] items-center justify-center">
-                                <EmptyIndicator
-                                    actions={(
-                                        <Button asChild>
-                                            <a href="#/editor/post">Create a post</a>
-                                        </Button>
-                                    )}
-                                    title="No scheduled posts yet"
-                                >
-                                    <LucideIcon.CalendarDays />
-                                </EmptyIndicator>
-                            </div>
                         ) : (
-                            <div className="overflow-x-auto pb-2">
-                                <div className="min-w-[960px]">
-                                    <div className="mb-2 grid grid-cols-7 gap-2">
-                                        {WEEKDAYS.map(day => (
-                                            <div key={day} className="rounded-md px-2 py-1 text-xs font-medium uppercase text-muted-foreground">
-                                                {day}
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <div className="grid grid-cols-7 gap-2">
-                                        {calendarDays.map(day => {
-                                            const visiblePosts = day.posts.slice(0, MAX_POSTS_PER_DAY);
-                                            const hiddenPostCount = day.posts.length - visiblePosts.length;
+                            <>
+                                <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                                    {posts.length > 0 && (
+                                        <div className="flex flex-wrap gap-2">
+                                            {legendStatuses.map((status) => {
+                                                const style = POST_STATUS_STYLES[status];
 
-                                            return (
-                                                <div
-                                                    key={day.dateKey}
-                                                    className={cn(
-                                                        'min-h-[180px] rounded-xl border border-border bg-card p-2',
-                                                        !day.inCurrentMonth && 'bg-muted/35 text-muted-foreground'
-                                                    )}
-                                                >
-                                                    <div className="text-sm font-medium">{day.dayNumber}</div>
-                                                    {visiblePosts.length > 0 && (
-                                                        <ul className="mt-2 space-y-1.5">
-                                                            {visiblePosts.map(post => (
-                                                                <li key={post.id}>
-                                                                    <a
-                                                                        className="block rounded-md border border-border bg-background px-2 py-1.5 text-xs hover:border-foreground/30"
-                                                                        href={`#/editor/post/${post.id}`}
-                                                                    >
-                                                                        <div className="flex items-start justify-between gap-2">
-                                                                            <span className="line-clamp-2 font-medium">{post.title || 'Untitled post'}</span>
-                                                                            <span className="shrink-0 text-muted-foreground">{formatPostTime(post.publishedAt, siteTimezone)}</span>
-                                                                        </div>
-                                                                    </a>
-                                                                </li>
-                                                            ))}
-                                                        </ul>
-                                                    )}
-                                                    {hiddenPostCount > 0 && (
-                                                        <div className="mt-2 text-xs text-muted-foreground">
-                                                            +{hiddenPostCount} more
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            );
-                                        })}
+                                                return (
+                                                    <span
+                                                        key={status}
+                                                        className={cn('inline-flex items-center gap-1 rounded border px-2 py-1 text-xs font-medium', style.badgeClass)}
+                                                    >
+                                                        {style.label}
+                                                    </span>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                    <div className="flex items-center gap-2">
+                                        <Button
+                                            aria-label="Show previous month"
+                                            variant="outline"
+                                            onClick={() => setMonthOffset(offset => offset - 1)}
+                                        >
+                                            <LucideIcon.ChevronLeft className="size-4" />
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            onClick={() => setMonthOffset(0)}
+                                        >
+                                            Today
+                                        </Button>
+                                        <Button
+                                            aria-label="Show next month"
+                                            variant="outline"
+                                            onClick={() => setMonthOffset(offset => offset + 1)}
+                                        >
+                                            <LucideIcon.ChevronRight className="size-4" />
+                                        </Button>
                                     </div>
                                 </div>
-                            </div>
+                                {posts.length === 0 ? (
+                                    <div className="flex min-h-[400px] items-center justify-center">
+                                        <EmptyIndicator
+                                            actions={hasActiveFilters ? (
+                                                <Button variant="outline" onClick={clearFilters}>
+                                                    Show all posts
+                                                </Button>
+                                            ) : (
+                                                <Button asChild>
+                                                    <a href="#/editor/post">Create a post</a>
+                                                </Button>
+                                            )}
+                                            title={hasActiveFilters ? 'No posts match the current filter' : 'No posts to display yet'}
+                                        >
+                                            <LucideIcon.CalendarDays />
+                                        </EmptyIndicator>
+                                    </div>
+                                ) : (
+                                    <div className="overflow-x-auto pb-2">
+                                        <div className="min-w-[960px]">
+                                            <div className="mb-2 grid grid-cols-7 gap-2">
+                                                {WEEKDAYS.map(day => (
+                                                    <div key={day} className="rounded-md px-2 py-1 text-xs font-medium uppercase text-muted-foreground">
+                                                        {day}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            <div className="grid grid-cols-7 gap-2">
+                                                {calendarDays.map((day) => {
+                                                    const visiblePosts = day.posts.slice(0, MAX_POSTS_PER_DAY);
+                                                    const hiddenPostCount = day.posts.length - visiblePosts.length;
+
+                                                    return (
+                                                        <div
+                                                            key={day.dateKey}
+                                                            className={cn(
+                                                                'min-h-[180px] rounded-xl border border-border bg-card p-2',
+                                                                !day.inCurrentMonth && 'bg-muted/35 text-muted-foreground'
+                                                            )}
+                                                        >
+                                                            <div className="text-sm font-medium">{day.dayNumber}</div>
+                                                            {visiblePosts.length > 0 && (
+                                                                <ul className="mt-2 space-y-1.5">
+                                                                    {visiblePosts.map((post) => {
+                                                                        const style = POST_STATUS_STYLES[post.status] ?? POST_STATUS_STYLES.unknown;
+
+                                                                        return (
+                                                                            <li key={post.id}>
+                                                                                <a
+                                                                                    className={cn('block rounded-md border px-2 py-1.5 text-xs', style.itemClass)}
+                                                                                    href={`#/editor/post/${post.id}`}
+                                                                                >
+                                                                                    <div className="flex items-start justify-between gap-2">
+                                                                                        <span className="line-clamp-2 font-medium">{post.title || 'Untitled post'}</span>
+                                                                                    </div>
+                                                                                </a>
+                                                                            </li>
+                                                                        );
+                                                                    })}
+                                                                </ul>
+                                                            )}
+                                                            {hiddenPostCount > 0 && (
+                                                                <div className="mt-2 text-xs text-muted-foreground">
+                                                                    +{hiddenPostCount} more
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </>
                         )}
-                    </div>
-                </div>
+                    </section>
+                </section>
             </div>
         </MainLayout>
     );

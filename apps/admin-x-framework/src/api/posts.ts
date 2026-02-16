@@ -12,6 +12,8 @@ export type Post = {
     slug: string;
     title: string;
     uuid: string;
+    created_at?: string;
+    updated_at?: string;
     feature_image?: string;
     count?: {
         clicks?: number;

@@ -5,10 +5,15 @@ export interface CalendarMonth {
     month: number;
 }
 
+export type CalendarPostStatus = 'draft' | 'scheduled' | 'published' | 'unknown';
+export type CalendarPostOrder = 'published_at asc' | 'published_at desc' | 'updated_at desc';
+
 export interface CalendarPost {
     id: string;
     title: string;
-    publishedAt: string;
+    occursAt: string;
+    status: CalendarPostStatus;
+    updatedAt?: string;
 }
 
 export interface CalendarDay {
@@ -64,20 +69,61 @@ export const shiftCalendarMonth = (month: CalendarMonth, offset: number): Calend
     return normalizeMonth(month.year, month.month + offset);
 };
 
-const mapPostsByDay = (posts: Post[], timeZone: string): Map<string, CalendarPost[]> => {
+const getTimestamp = (value?: string) => {
+    if (!value) {
+        return 0;
+    }
+
+    return new Date(value).getTime();
+};
+
+const sortCalendarPosts = (posts: CalendarPost[], order: CalendarPostOrder): CalendarPost[] => {
+    return posts.sort((a, b) => {
+        if (order === 'updated_at desc') {
+            const aUpdatedAt = getTimestamp(a.updatedAt || a.occursAt);
+            const bUpdatedAt = getTimestamp(b.updatedAt || b.occursAt);
+
+            return bUpdatedAt - aUpdatedAt;
+        }
+
+        if (order === 'published_at asc') {
+            return getTimestamp(a.occursAt) - getTimestamp(b.occursAt);
+        }
+
+        return getTimestamp(b.occursAt) - getTimestamp(a.occursAt);
+    });
+};
+
+const mapPostsByDay = (posts: Post[], timeZone: string, order: CalendarPostOrder): Map<string, CalendarPost[]> => {
     const postsByDay = new Map<string, CalendarPost[]>();
 
-    const items: CalendarPost[] = posts
-        .filter((post): post is Post & {published_at: string} => Boolean(post.published_at))
-        .map(post => ({
+    const mappedPosts: Array<CalendarPost | null> = posts.map((post) => {
+        const status = getPostStatus(post.status);
+        const occursAt = getPostOccurrenceDate(post, status);
+
+        if (!occursAt) {
+            return null;
+        }
+
+        const calendarPost: CalendarPost = {
             id: post.id,
             title: post.title,
-            publishedAt: post.published_at
-        }))
-        .sort((a, b) => new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime());
+            occursAt,
+            status
+        };
+
+        if (post.updated_at) {
+            calendarPost.updatedAt = post.updated_at;
+        }
+
+        return calendarPost;
+    });
+
+    const items = sortCalendarPosts(mappedPosts
+        .filter((post): post is CalendarPost => Boolean(post)), order);
 
     for (const post of items) {
-        const key = getDateKeyInTimezone(post.publishedAt, timeZone);
+        const key = getDateKeyInTimezone(post.occursAt, timeZone);
         const existingItems = postsByDay.get(key) ?? [];
         existingItems.push(post);
         postsByDay.set(key, existingItems);
@@ -86,18 +132,35 @@ const mapPostsByDay = (posts: Post[], timeZone: string): Map<string, CalendarPos
     return postsByDay;
 };
 
+const getPostStatus = (status?: string): CalendarPostStatus => {
+    if (status === 'draft' || status === 'scheduled' || status === 'published') {
+        return status;
+    }
+
+    return 'unknown';
+};
+
+const getPostOccurrenceDate = (post: Post, status: CalendarPostStatus): string | undefined => {
+    if (status === 'draft') {
+        return post.updated_at || post.created_at || post.published_at;
+    }
+
+    return post.published_at || post.updated_at || post.created_at;
+};
+
 interface BuildCalendarGridArgs {
     month: CalendarMonth;
     posts: Post[];
     timeZone: string;
+    order?: CalendarPostOrder;
 }
 
-export const buildCalendarGrid = ({month, posts, timeZone}: BuildCalendarGridArgs): CalendarDay[] => {
+export const buildCalendarGrid = ({month, posts, timeZone, order = 'published_at desc'}: BuildCalendarGridArgs): CalendarDay[] => {
     const firstDayOfMonth = new Date(Date.UTC(month.year, month.month - 1, 1));
     const firstDayOffset = firstDayOfMonth.getUTCDay();
     const daysInCurrentMonth = new Date(Date.UTC(month.year, month.month, 0)).getUTCDate();
     const daysInPreviousMonth = new Date(Date.UTC(month.year, month.month - 1, 0)).getUTCDate();
-    const postsByDay = mapPostsByDay(posts, timeZone);
+    const postsByDay = mapPostsByDay(posts, timeZone, order);
     const days: CalendarDay[] = [];
 
     for (let i = 0; i < CALENDAR_DAY_COUNT; i += 1) {
