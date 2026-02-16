@@ -285,11 +285,11 @@ describe('Update Check', function () {
             assert.equal(notificationsAPIAddStub.args[0][0].notifications.length, 1);
 
             const targetNotification = notificationsAPIAddStub.args[0][0].notifications[0];
-            targetNotification.dismissible.should.eql(notification.messages[0].dismissible);
-            targetNotification.id.should.eql(notification.messages[0].id);
-            targetNotification.top.should.eql(notification.messages[0].top);
+            assert.equal(targetNotification.dismissible, notification.messages[0].dismissible);
+            assert.equal(targetNotification.id, notification.messages[0].id);
+            assert.equal(targetNotification.top, notification.messages[0].top);
             assert.equal(targetNotification.type, 'info');
-            targetNotification.message.should.eql(notification.messages[0].content);
+            assert.equal(targetNotification.message, notification.messages[0].content);
 
             assert.equal(usersBrowseStub.calledTwice, true);
 

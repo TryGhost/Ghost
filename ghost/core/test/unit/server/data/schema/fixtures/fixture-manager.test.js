@@ -317,8 +317,8 @@ describe('Migration Fixture Utils', function () {
 
             await fixtureManager.addAllFixtures();
 
-            addFixturesForModelStub.callCount.should.eql(fixtures.models.length);
-            addFixturesForRelationStub.callCount.should.eql(fixtures.relations.length);
+            assert.equal(addFixturesForModelStub.callCount, fixtures.models.length);
+            assert.equal(addFixturesForRelationStub.callCount, fixtures.relations.length);
 
             // NOTE: users and roles have to be initialized first for the post fixtures to work
             assert.equal(addFixturesForModelStub.firstCall.args[0].name, 'Role');
@@ -421,12 +421,12 @@ describe('Migration Fixture Utils', function () {
                 // Permissions & Roles
                 assert.equal(permsAllStub.calledOnce, true);
                 assert.equal(rolesAllStub.calledOnce, true);
-                dataMethodStub.filter.callCount.should.eql(FIXTURE_COUNT);
+                assert.equal(dataMethodStub.filter.callCount, FIXTURE_COUNT);
                 assert.equal(dataMethodStub.find.callCount, 10);
-                baseUtilAttachStub.callCount.should.eql(FIXTURE_COUNT);
+                assert.equal(baseUtilAttachStub.callCount, FIXTURE_COUNT);
 
-                fromItem.related.callCount.should.eql(FIXTURE_COUNT);
-                fromItem.find.callCount.should.eql(FIXTURE_COUNT);
+                assert.equal(fromItem.related.callCount, FIXTURE_COUNT);
+                assert.equal(fromItem.find.callCount, FIXTURE_COUNT);
 
                 done();
             }).catch(done);

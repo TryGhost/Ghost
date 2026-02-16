@@ -225,7 +225,7 @@ describe('Themes middleware', function () {
                     data.should.be.an.Object().with.properties('site');
 
                     data.site.should.be.an.Object().with.properties('accent_color', '_preview');
-                    data.site._preview.should.eql(previewString);
+                    assert.equal(data.site._preview, previewString);
                     assert.equal(data.site.accent_color, '#000fff');
 
                     done();
@@ -252,7 +252,7 @@ describe('Themes middleware', function () {
                     data.should.be.an.Object().with.properties('site');
 
                     data.site.should.be.an.Object().with.properties('accent_color', 'icon', '_preview');
-                    data.site._preview.should.eql(previewString);
+                    assert.equal(data.site._preview, previewString);
                     assert.equal(data.site.accent_color, '#000fff');
                     assert.equal(data.site.icon, '/content/images/myimg.png');
 

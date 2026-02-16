@@ -71,7 +71,7 @@ describe('lib/image: gravatar', function () {
                 } : null;
             }
         }, request: (url, options) => {
-            options.timeout.request.should.eql(delay);
+            assert.equal(options.timeout.request, delay);
         }});
 
         gravatar.lookup({email: 'exists@example.com'}, delay);

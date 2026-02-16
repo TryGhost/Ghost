@@ -532,7 +532,7 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '0.3'
                 }
             }));
-            renderObject.post.should.eql(postBk);
+            assert.deepEqual(renderObject.post, postBk);
         });
 
         it('returns structured data on post page with custom excerpt for description and meta description', async function () {
@@ -550,7 +550,7 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '0.3'
                 }
             }));
-            renderObject.post.should.eql(postBk);
+            assert.deepEqual(renderObject.post, postBk);
         });
 
         it('returns structured data on post page with fall back excerpt if no meta description provided', async function () {
@@ -568,7 +568,7 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '0.3'
                 }
             }));
-            renderObject.post.should.eql(postBk);
+            assert.deepEqual(renderObject.post, postBk);
         });
 
         it('returns structured data if metaTitle and metaDescription have double quotes', async function () {

@@ -291,7 +291,7 @@ describe('Themes API', function () {
             .set('Origin', config.get('url'))
             .expect(200);
 
-        res2.body.should.eql(activeThemeResult.body);
+        assert.deepEqual(res2.body, activeThemeResult.body);
     });
 
     it('Can download and install a theme from GitHub', async function () {

@@ -80,7 +80,7 @@ describe('MrrStatsService', function () {
                 mrr: item.mrr,
                 currency: item.currency || 'usd'
             }));
-            totals.should.eql(expectedTotals);
+            assert.deepEqual(totals, expectedTotals);
         }
 
         /**

@@ -120,7 +120,7 @@ describe('PostsImporter', function () {
             assert.equal(post.email_recipient_filter, 'all');
             assert.equal(post.send_email_when_published, undefined);
             // @TODO: need to check this mapping
-            //post.newsletter_id.should.eql();
+            // assert.equal(post.newsletter_id, TODO);
         });
 
         it('Doesn\'t populate the mobiledoc column if it is a lexical post', function () {

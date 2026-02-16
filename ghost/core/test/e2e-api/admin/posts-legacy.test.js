@@ -78,8 +78,8 @@ describe('Posts API', function () {
         assert.equal(new URL(jsonResponse.posts[2].authors[0].url).pathname, '/author/ghost/');
 
         // Check if the newsletter relation is loaded by default and newsletter_id is not returned
-        jsonResponse.posts[14].id.should.eql(testUtils.DataGenerator.Content.posts[0].id);
-        jsonResponse.posts[14].newsletter.id.should.eql(testUtils.DataGenerator.Content.newsletters[0].id);
+        assert.equal(jsonResponse.posts[14].id, testUtils.DataGenerator.Content.posts[0].id);
+        assert.equal(jsonResponse.posts[14].newsletter.id, testUtils.DataGenerator.Content.newsletters[0].id);
         assert.equal(jsonResponse.posts[14].newsletter_id, undefined);
 
         assert.equal(jsonResponse.posts[0].newsletter, null);
@@ -184,7 +184,7 @@ describe('Posts API', function () {
         assert.equal(testUtils.API.isISO8601(jsonResponse.posts[0].created_at), true);
 
         // Check if the newsletter relation is loaded by default and newsletter_id is not returned
-        jsonResponse.posts[0].newsletter.id.should.eql(testUtils.DataGenerator.Content.newsletters[0].id);
+        assert.equal(jsonResponse.posts[0].newsletter.id, testUtils.DataGenerator.Content.newsletters[0].id);
         assert.equal(jsonResponse.posts[0].newsletter_id, undefined);
     });
 
@@ -256,7 +256,7 @@ describe('Posts API', function () {
         assert(_.isPlainObject(jsonResponse.posts[0].email));
         localUtils.API.checkResponse(jsonResponse.posts[0].email, 'email');
 
-        jsonResponse.posts[0].newsletter.id.should.eql(testUtils.DataGenerator.Content.newsletters[0].id);
+        assert.equal(jsonResponse.posts[0].newsletter.id, testUtils.DataGenerator.Content.newsletters[0].id);
         assert.equal(jsonResponse.posts[0].newsletter_id, undefined);
     });
 
@@ -298,14 +298,14 @@ describe('Posts API', function () {
 
         const modelJson = model.toJSON();
 
-        modelJson.title.should.eql(post.title);
-        modelJson.status.should.eql(post.status);
+        assert.equal(modelJson.title, post.title);
+        assert.equal(modelJson.status, post.status);
         assert.equal(modelJson.published_at.toISOString(), '2016-05-30T07:00:00.000Z');
         modelJson.created_at.toISOString().should.not.eql(post.created_at.toISOString());
         modelJson.updated_at.toISOString().should.not.eql(post.updated_at.toISOString());
 
-        modelJson.posts_meta.feature_image_alt.should.eql(post.feature_image_alt);
-        modelJson.posts_meta.feature_image_caption.should.eql(post.feature_image_caption);
+        assert.equal(modelJson.posts_meta.feature_image_alt, post.feature_image_alt);
+        assert.equal(modelJson.posts_meta.feature_image_caption, post.feature_image_caption);
     });
 
     it('Can include free and paid tiers for public post', async function () {
@@ -407,7 +407,7 @@ describe('Posts API', function () {
 
         const uuid = res2.body.posts[0].uuid;
         const expectedPattern = `/p/${uuid}/, /p/${uuid}/?member_status=anonymous, /p/${uuid}/?member_status=free, /p/${uuid}/?member_status=paid`;
-        res2.headers['x-cache-invalidate'].should.eql(expectedPattern);
+        assert.equal(res2.headers['x-cache-invalidate'], expectedPattern);
 
         // Newsletter should be returned as null
         assert.equal(res2.body.posts[0].newsletter, null);
@@ -446,7 +446,7 @@ describe('Posts API', function () {
 
         const uuid = res2.body.posts[0].uuid;
         const expectedPattern = `/p/${uuid}/, /p/${uuid}/?member_status=anonymous, /p/${uuid}/?member_status=free, /p/${uuid}/?member_status=paid`;
-        res2.headers['x-cache-invalidate'].should.eql(expectedPattern);
+        assert.equal(res2.headers['x-cache-invalidate'], expectedPattern);
 
         assert.equal(unsplashMock.isDone(), true);
 

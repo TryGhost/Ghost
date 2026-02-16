@@ -14,8 +14,8 @@ describe('vhost utils', function () {
     // url = 'https://ghost.blog'
     describe('without separate admin url', function () {
         it('uses the default arg for both backend and frontend', function () {
-            configUtils.config.getBackendMountPath().should.eql(/.*/);
-            configUtils.config.getFrontendMountPath().should.eql(/.*/);
+            assert.deepEqual(configUtils.config.getBackendMountPath(), /.*/);
+            assert.deepEqual(configUtils.config.getFrontendMountPath(), /.*/);
         });
     });
 
@@ -28,7 +28,7 @@ describe('vhost utils', function () {
 
         it('should use admin url and inverse as args', function () {
             assert.equal(configUtils.config.getBackendMountPath(), 'admin.ghost.blog');
-            configUtils.config.getFrontendMountPath().should.eql(/^(?!admin\.ghost\.blog).*/);
+            assert.deepEqual(configUtils.config.getFrontendMountPath(), /^(?!admin\.ghost\.blog).*/);
         });
 
         it('should have regex that excludes admin traffic on front-end', function () {
@@ -48,8 +48,8 @@ describe('vhost utils', function () {
         });
 
         it('should mount and assign correct routes', function () {
-            configUtils.config.getBackendMountPath().should.eql(/.*/);
-            configUtils.config.getFrontendMountPath().should.eql(/.*/);
+            assert.deepEqual(configUtils.config.getBackendMountPath(), /.*/);
+            assert.deepEqual(configUtils.config.getFrontendMountPath(), /.*/);
         });
     });
 });
