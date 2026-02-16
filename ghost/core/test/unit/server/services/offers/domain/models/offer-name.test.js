@@ -12,40 +12,28 @@ describe('OfferName', function () {
                 OfferName.create();
                 assert.fail();
             } catch (err) {
-                should.ok(
-                    err instanceof OfferName.InvalidOfferName,
-                    'expected an InvalidOfferName error'
-                );
+                assert(err instanceof OfferName.InvalidOfferName, 'expected an InvalidOfferName error');
             }
 
             try {
                 OfferName.create(null);
                 assert.fail();
             } catch (err) {
-                should.ok(
-                    err instanceof OfferName.InvalidOfferName,
-                    'expected an InvalidOfferName error'
-                );
+                assert(err instanceof OfferName.InvalidOfferName, 'expected an InvalidOfferName error');
             }
 
             try {
                 OfferName.create(12);
                 assert.fail();
             } catch (err) {
-                should.ok(
-                    err instanceof OfferName.InvalidOfferName,
-                    'expected an InvalidOfferName error'
-                );
+                assert(err instanceof OfferName.InvalidOfferName, 'expected an InvalidOfferName error');
             }
 
             try {
                 OfferName.create({});
                 assert.fail();
             } catch (err) {
-                should.ok(
-                    err instanceof OfferName.InvalidOfferName,
-                    'expected an InvalidOfferName error'
-                );
+                assert(err instanceof OfferName.InvalidOfferName, 'expected an InvalidOfferName error');
             }
         });
 
@@ -64,10 +52,7 @@ describe('OfferName', function () {
                 OfferName.create(tooLong);
                 assert.fail();
             } catch (err) {
-                should.ok(
-                    err instanceof OfferName.InvalidOfferName,
-                    'expected an InvalidOfferName error'
-                );
+                assert(err instanceof OfferName.InvalidOfferName, 'expected an InvalidOfferName error');
             }
         });
 

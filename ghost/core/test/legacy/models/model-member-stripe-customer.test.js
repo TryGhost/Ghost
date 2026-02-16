@@ -179,12 +179,12 @@ describe('MemberStripeCustomer Model', function run() {
             const customerAfterDestroy = await MemberStripeCustomer.findOne({
                 customer_id: 'fake_customer_id'
             });
-            should.not.exist(customerAfterDestroy, 'MemberStripeCustomer should have been destroyed');
+            assert.equal(customerAfterDestroy, null, 'MemberStripeCustomer should have been destroyed');
 
             const subscriptionAfterDestroy = await StripeCustomerSubscription.findOne({
                 customer_id: 'fake_customer_id'
             });
-            should.not.exist(subscriptionAfterDestroy, 'StripeCustomerSubscription should have been destroyed');
+            assert.equal(subscriptionAfterDestroy, null, 'StripeCustomerSubscription should have been destroyed');
         });
     });
 });

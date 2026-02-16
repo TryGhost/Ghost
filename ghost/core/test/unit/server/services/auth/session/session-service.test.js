@@ -457,7 +457,7 @@ describe('SessionService', function () {
         });
 
         const authCodeSecond = await sessionServiceSecond.generateAuthCodeForUser(req, res);
-        should.notEqual(authCodeFirst, authCodeSecond);
+        assert.notEqual(authCodeFirst, authCodeSecond);
     });
 
     it('sends an email with the auth code', async function () {

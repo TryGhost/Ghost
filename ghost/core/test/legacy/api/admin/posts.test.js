@@ -112,7 +112,7 @@ describe('Posts API', function () {
                     localUtils.API.checkResponse(jsonResponse, 'posts');
                     assert.equal(jsonResponse.posts.length, 2);
                     jsonResponse.posts.forEach((post) => {
-                        should.notEqual(post.meta_description, null);
+                        assert.notEqual(post.meta_description, null);
                     });
 
                     localUtils.API.checkResponse(

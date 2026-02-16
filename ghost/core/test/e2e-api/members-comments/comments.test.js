@@ -260,10 +260,10 @@ async function testCanCommentOnPost(member) {
 
     // Check last_updated_at changed?
     member = await models.Member.findOne({id: member.id});
-    should.notEqual(member.get('last_seen_at'), null, 'The member should have a `last_seen_at` property after posting a comment.');
+    assert.notEqual(member.get('last_seen_at'), null, 'The member should have a `last_seen_at` property after posting a comment.');
 
     // Check last_commented_at changed?
-    should.notEqual(member.get('last_commented_at'), null, 'The member should have a `last_commented_at` property after posting a comment.');
+    assert.notEqual(member.get('last_commented_at'), null, 'The member should have a `last_commented_at` property after posting a comment.');
 }
 
 async function testCanReply(member, emailMatchers = {}) {
@@ -294,10 +294,10 @@ async function testCanReply(member, emailMatchers = {}) {
 
     // Check last_updated_at changed?
     member = await models.Member.findOne({id: member.id});
-    should.notEqual(member.get('last_seen_at').getTime(), date.getTime(), 'Should update `last_seen_at` property after posting a comment.');
+    assert.notEqual(member.get('last_seen_at').getTime(), date.getTime(), 'Should update `last_seen_at` property after posting a comment.');
 
     // Check last_commented_at changed?
-    should.notEqual(member.get('last_commented_at').getTime(), date.getTime(), 'Should update `last_commented_at` property after posting a comment.');
+    assert.notEqual(member.get('last_commented_at').getTime(), date.getTime(), 'Should update `last_commented_at` property after posting a comment.');
 }
 
 async function testCannotCommentOnPost(status = 403) {
@@ -477,8 +477,8 @@ describe('Comments API', function () {
 
                 // check if hidden and deleted comments have their html removed
                 data2.body.comments.forEach((comment) => {
-                    should.notEqual(comment.html, 'This is a hidden comment');
-                    should.notEqual(comment.html, 'This is a deleted comment');
+                    assert.notEqual(comment.html, 'This is a hidden comment');
+                    assert.notEqual(comment.html, 'This is a deleted comment');
                 });
 
                 // check if hiddenComment.id and deletedComment.id are in the response

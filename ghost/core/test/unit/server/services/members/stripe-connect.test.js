@@ -11,7 +11,7 @@ describe('Members - Stripe Connect', function () {
         /** @type URL */
         const url = await stripeConnect.getStripeConnectOAuthUrl(setSessionProp);
 
-        should.ok(url instanceof URL, 'getStripeConnectOAuthUrl should return an instance of URL');
+        assert(url instanceof URL, 'getStripeConnectOAuthUrl should return an instance of URL');
 
         assertExists(session.get(stripeConnect.STATE_PROP), 'The session should have a state set');
 

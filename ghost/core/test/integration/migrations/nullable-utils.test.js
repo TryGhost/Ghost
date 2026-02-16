@@ -159,7 +159,7 @@ describe('Migrations - schema utils', function () {
             await migration.up({transacting});
             await transacting.commit();
 
-            should.ok(logSpy.calledWith(sinon.match('skipping as column is already nullable')), 'Should log skip message');
+            assert(logSpy.calledWith(sinon.match('skipping as column is already nullable')), 'Should log skip message');
 
             // Column should still be nullable
             const isNullableAfter = await isColumnNullable(tableName, 'nullable_col');
@@ -235,7 +235,7 @@ describe('Migrations - schema utils', function () {
             await migration.up({transacting});
             await transacting.commit();
 
-            should.ok(logSpy.calledWith(sinon.match('skipping as column is already not nullable')), 'Should log skip message');
+            assert(logSpy.calledWith(sinon.match('skipping as column is already not nullable')), 'Should log skip message');
 
             // Column should still be not nullable
             const isNotNullableAfter = await isColumnNotNullable(tableName, 'not_nullable_col');
@@ -321,12 +321,11 @@ describe('Migrations - schema utils', function () {
             
             if (dbUtils.isMySQL()) {
                 // MySQL should log a warning when checking nullable status fails
-                should.ok(logWarnSpy.calledWith(sinon.match('Could not check nullable status')), 
-                    'MySQL should log warning about checking nullable status');
+                assert(logWarnSpy.calledWith(sinon.match('Could not check nullable status')), 'MySQL should log warning about checking nullable status');
             }
             
             // Both databases should eventually fail when trying to ALTER the non-existent table
-            should.ok(errorThrown, 'Should throw an error when trying to alter non-existent table');
+            assert(errorThrown, 'Should throw an error when trying to alter non-existent table');
             
             // The error message varies between databases and Knex versions
             // SQLite might give a Knex internal error or a 'no such table' error
@@ -335,7 +334,7 @@ describe('Migrations - schema utils', function () {
                                   errorMessage.includes('Cannot read properties of undefined') ||
                                   errorMessage.includes('SQLITE_ERROR');
             
-            should.ok(isExpectedError, `Error should be related to missing table, but was: ${errorMessage}`);
+            assert(isExpectedError, `Error should be related to missing table, but was: ${errorMessage}`);
         });
     });
 });

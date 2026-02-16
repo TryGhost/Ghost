@@ -129,7 +129,7 @@ describe('Minifier', function () {
                 await minifier.minify({
                     'card.min.ts': 'js/*.ts'
                 });
-                should.fail(minifier, 'Should have errored');
+                assert.fail('Should have errored');
             } catch (err) {
                 assertExists(err);
                 assert.equal(err.errorType, 'IncorrectUsageError');
@@ -143,7 +143,7 @@ describe('Minifier', function () {
                     'card.min.ts': 'ts/*.ts',
                     'card.min.js': 'js/fake.js'
                 });
-                should.fail(minifier, 'Should have errored');
+                assert.fail('Should have errored');
             } catch (err) {
                 assertExists(err);
                 assert.equal(err.errorType, 'IncorrectUsageError');

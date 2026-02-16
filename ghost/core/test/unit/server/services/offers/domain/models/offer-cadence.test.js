@@ -13,30 +13,21 @@ describe('OfferCadence', function () {
                 OfferCadence.create();
                 assert.fail();
             } catch (err) {
-                should.ok(
-                    err instanceof OfferCadence.InvalidOfferCadence,
-                    'expected an InvalidOfferCadence error'
-                );
+                assert(err instanceof OfferCadence.InvalidOfferCadence, 'expected an InvalidOfferCadence error');
             }
 
             try {
                 OfferCadence.create(12);
                 assert.fail();
             } catch (err) {
-                should.ok(
-                    err instanceof OfferCadence.InvalidOfferCadence,
-                    'expected an InvalidOfferCadence error'
-                );
+                assert(err instanceof OfferCadence.InvalidOfferCadence, 'expected an InvalidOfferCadence error');
             }
 
             try {
                 OfferCadence.create('daily');
                 assert.fail();
             } catch (err) {
-                should.ok(
-                    err instanceof OfferCadence.InvalidOfferCadence,
-                    'expected an InvalidOfferCadence error'
-                );
+                assert(err instanceof OfferCadence.InvalidOfferCadence, 'expected an InvalidOfferCadence error');
             }
         });
     });

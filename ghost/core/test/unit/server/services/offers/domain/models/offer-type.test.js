@@ -15,20 +15,14 @@ describe('OfferType', function () {
                 OfferType.create('other');
                 assert.fail();
             } catch (err) {
-                should.ok(
-                    err instanceof OfferType.InvalidOfferType,
-                    'expected an InvalidOfferType error'
-                );
+                assert(err instanceof OfferType.InvalidOfferType, 'expected an InvalidOfferType error');
             }
 
             try {
                 OfferType.create();
                 assert.fail();
             } catch (err) {
-                should.ok(
-                    err instanceof OfferType.InvalidOfferType,
-                    'expected an InvalidOfferType error'
-                );
+                assert(err instanceof OfferType.InvalidOfferType, 'expected an InvalidOfferType error');
             }
         });
     });
@@ -57,7 +51,7 @@ describe('OfferType', function () {
     describe('OfferType.FreeMonths', function () {
         it('Is an OfferType with a value of "free_months"', function () {
             assert.equal(OfferType.FreeMonths.value, 'free_months');
-            should.ok(OfferType.FreeMonths.equals(OfferType.create('free_months')));
+            assert(OfferType.FreeMonths.equals(OfferType.create('free_months')));
         });
     });
 });

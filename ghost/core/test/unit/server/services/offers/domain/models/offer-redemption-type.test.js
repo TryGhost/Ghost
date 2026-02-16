@@ -13,20 +13,14 @@ describe('OfferRedemptionType', function () {
                 OfferRedemptionType.create('other');
                 assert.fail();
             } catch (err) {
-                should.ok(
-                    err instanceof OfferRedemptionType.InvalidOfferRedemptionType,
-                    'expected an InvalidOfferRedemptionType error'
-                );
+                assert(err instanceof OfferRedemptionType.InvalidOfferRedemptionType, 'expected an InvalidOfferRedemptionType error');
             }
 
             try {
                 OfferRedemptionType.create();
                 assert.fail();
             } catch (err) {
-                should.ok(
-                    err instanceof OfferRedemptionType.InvalidOfferRedemptionType,
-                    'expected an InvalidOfferRedemptionType error'
-                );
+                assert(err instanceof OfferRedemptionType.InvalidOfferRedemptionType, 'expected an InvalidOfferRedemptionType error');
             }
         });
     });

@@ -13,20 +13,14 @@ describe('OfferStatus', function () {
                 OfferStatus.create('other');
                 assert.fail();
             } catch (err) {
-                should.ok(
-                    err instanceof OfferStatus.InvalidOfferStatus,
-                    'expected an InvalidOfferStatus error'
-                );
+                assert(err instanceof OfferStatus.InvalidOfferStatus, 'expected an InvalidOfferStatus error');
             }
 
             try {
                 OfferStatus.create();
                 assert.fail();
             } catch (err) {
-                should.ok(
-                    err instanceof OfferStatus.InvalidOfferStatus,
-                    'expected an InvalidOfferStatus error'
-                );
+                assert(err instanceof OfferStatus.InvalidOfferStatus, 'expected an InvalidOfferStatus error');
             }
         });
     });

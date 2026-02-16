@@ -34,13 +34,13 @@ describe('migrations/utils', function () {
             const upResult = migration.up(config);
             const downResult = migration.down(config);
 
-            should.ok(migration.config.transaction, 'Migration config should set transaction to true');
+            assert(migration.config.transaction, 'Migration config should set transaction to true');
 
-            should.ok(upResult instanceof Promise, 'Migration up method should return a Promise');
-            should.ok(downResult instanceof Promise, 'Migration down method should return a Promise');
+            assert(upResult instanceof Promise, 'Migration up method should return a Promise');
+            assert(downResult instanceof Promise, 'Migration down method should return a Promise');
 
-            should.ok(up.calledOnceWith(config.transacting), 'up function should be called with transacting');
-            should.ok(down.calledOnceWith(config.transacting), 'down function should be called with transacting');
+            assert(up.calledOnceWith(config.transacting), 'up function should be called with transacting');
+            assert(down.calledOnceWith(config.transacting), 'down function should be called with transacting');
         });
     });
 
@@ -58,23 +58,23 @@ describe('migrations/utils', function () {
             const migrationB = utils.createTransactionalMigration(upB, downB);
             const combinedMigration = utils.combineTransactionalMigrations(migrationA, migrationB);
 
-            should.ok(combinedMigration.config.transaction, 'Migration config should set transaction to true');
+            assert(combinedMigration.config.transaction, 'Migration config should set transaction to true');
 
             const upResult = combinedMigration.up(config);
-            should.ok(upResult instanceof Promise, 'Migration up method should return a Promise');
+            assert(upResult instanceof Promise, 'Migration up method should return a Promise');
 
             await upResult;
-            should.ok(upA.calledOnceWith(config.transacting), 'first up fn should be called with transacting');
-            should.ok(upB.calledOnceWith(config.transacting), 'second up fn should be called with transacting');
-            should.ok(upA.calledBefore(upB), 'Migration up method should call child up methods in order');
+            assert(upA.calledOnceWith(config.transacting), 'first up fn should be called with transacting');
+            assert(upB.calledOnceWith(config.transacting), 'second up fn should be called with transacting');
+            assert(upA.calledBefore(upB), 'Migration up method should call child up methods in order');
 
             const downResult = combinedMigration.down(config);
-            should.ok(downResult instanceof Promise, 'Migration down method should return a Promise');
+            assert(downResult instanceof Promise, 'Migration down method should return a Promise');
 
             await downResult;
-            should.ok(downA.calledOnceWith(config.transacting), 'first down fn should be called with transacting');
-            should.ok(downB.calledOnceWith(config.transacting), 'second down fn should be called with transacting');
-            should.ok(downB.calledBefore(downA), 'Migration down method should call child down methods in reverse order');
+            assert(downA.calledOnceWith(config.transacting), 'first down fn should be called with transacting');
+            assert(downB.calledOnceWith(config.transacting), 'second down fn should be called with transacting');
+            assert(downB.calledBefore(downA), 'Migration down method should call child down methods in reverse order');
         });
 
         it('Waits for each migration to finish before executing the next', async function () {
@@ -97,15 +97,15 @@ describe('migrations/utils', function () {
 
             combinedMigration.up(config);
 
-            should.ok(!upB.called, 'second up fn should not be called until first up fn has resolved');
+            assert(!upB.called, 'second up fn should not be called until first up fn has resolved');
             await upDeferredA.resolve();
-            should.ok(upB.calledOnce, 'second up fn should be called once first up fn has resolved');
+            assert(upB.calledOnce, 'second up fn should be called once first up fn has resolved');
 
             combinedMigration.down(config);
 
-            should.ok(!downA.called, 'penultimate down fn should not be called until last down fn has resolved');
+            assert(!downA.called, 'penultimate down fn should not be called until last down fn has resolved');
             await downDeferredB.resolve();
-            should.ok(downA.calledOnce, 'penultimate down fn should be called once last down fn has resolved');
+            assert(downA.calledOnce, 'penultimate down fn should be called once last down fn has resolved');
         });
 
         it('Stops execution if a migration errors, and propagates error', async function () {
@@ -128,13 +128,13 @@ describe('migrations/utils', function () {
 
             const upResult = combinedMigration.up(config);
 
-            should.ok(!upB.called, 'second up fn should not be called until first up fn has resolved');
+            assert(!upB.called, 'second up fn should not be called until first up fn has resolved');
             try {
                 await upDeferredA.reject(new Error('some reason'));
             } catch (err) {
                 //
             } finally {
-                should.ok(!upB.called, 'second up fn should not be called if first up fn has rejected');
+                assert(!upB.called, 'second up fn should not be called if first up fn has rejected');
             }
 
             let upError = null;
@@ -143,18 +143,18 @@ describe('migrations/utils', function () {
             } catch (err) {
                 upError = true;
             } finally {
-                should.ok(upError, 'Migration up should error if child errors');
+                assert(upError, 'Migration up should error if child errors');
             }
 
             const downResult = combinedMigration.down(config);
 
-            should.ok(!downA.called, 'penultimate down fn should not be called until last down fn has resolved');
+            assert(!downA.called, 'penultimate down fn should not be called until last down fn has resolved');
             try {
                 await downDeferredB.reject(new Error('some reason'));
             } catch (err) {
                 //
             } finally {
-                should.ok(!downA.called, 'penultimate down fn should not be called if last down fn has rejected');
+                assert(!downA.called, 'penultimate down fn should not be called if last down fn has rejected');
             }
 
             let downErr = null;
@@ -163,7 +163,7 @@ describe('migrations/utils', function () {
             } catch (err) {
                 downErr = err;
             } finally {
-                should.ok(downErr, 'Migration down should error if child errors');
+                assert(downErr, 'Migration down should error if child errors');
             }
         });
     });
@@ -299,7 +299,7 @@ describe('migrations/utils/permissions', function () {
                 action: 'say hello'
             });
 
-            should.ok(migration.config.transaction, 'addPermission creates a transactional migration');
+            assert(migration.config.transaction, 'addPermission creates a transactional migration');
 
             const runDownMigration = await runUpMigration(knex, migration);
 
@@ -308,7 +308,7 @@ describe('migrations/utils/permissions', function () {
                 return row.name === 'scarface';
             });
 
-            should.ok(insertedPermissionsAfterUp.length === 1, 'The permission was inserted into the database');
+            assert(insertedPermissionsAfterUp.length === 1, 'The permission was inserted into the database');
 
             await runDownMigration();
 
@@ -317,7 +317,7 @@ describe('migrations/utils/permissions', function () {
                 return row.name === 'scarface';
             });
 
-            should.ok(insertedPermissionsAfterDown.length === 0, 'The permission was removed');
+            assert(insertedPermissionsAfterDown.length === 0, 'The permission was removed');
         });
     });
 
@@ -353,7 +353,7 @@ describe('migrations/utils/permissions', function () {
                 return row.name === 'Permission Name';
             });
 
-            should.ok(attachedPermissionAfterUp, 'The permission was attached to the role.');
+            assert(attachedPermissionAfterUp, 'The permission was attached to the role.');
 
             await runDownMigration();
 
@@ -378,7 +378,7 @@ describe('migrations/utils/permissions', function () {
                 return row.name === 'Permission Name';
             });
 
-            should.ok(!attachedPermissionAfterDown, 'The permission was removed from the role.');
+            assert(!attachedPermissionAfterDown, 'The permission was removed from the role.');
         });
 
         describe('Throws errors', function () {
@@ -470,7 +470,7 @@ describe('migrations/utils/permissions', function () {
                 return row.name === 'scarface';
             });
 
-            should.ok(insertedPermissionsAfterUp.length === 1, 'The permission was inserted into the database');
+            assert(insertedPermissionsAfterUp.length === 1, 'The permission was inserted into the database');
 
             const allPermissionsForRoleAfterUp = await knex.raw(`
                 SELECT
@@ -493,7 +493,7 @@ describe('migrations/utils/permissions', function () {
                 return row.name === 'scarface';
             });
 
-            should.ok(permissionAttachedToRoleAfterUp, 'The permission was attached to the role.');
+            assert(permissionAttachedToRoleAfterUp, 'The permission was attached to the role.');
 
             await knex.raw(`
                 SELECT
@@ -516,7 +516,7 @@ describe('migrations/utils/permissions', function () {
                 return row.name === 'scarface';
             });
 
-            should.ok(permissionAttachedToOtherRoleAfterUp, 'The permission was attached to the other role.');
+            assert(permissionAttachedToOtherRoleAfterUp, 'The permission was attached to the other role.');
 
             await runDownMigration();
 
@@ -525,7 +525,7 @@ describe('migrations/utils/permissions', function () {
                 return row.name === 'scarface';
             });
 
-            should.ok(insertedPermissionsAfterDown.length === 0, 'The permission was removed from the database');
+            assert(insertedPermissionsAfterDown.length === 0, 'The permission was removed from the database');
 
             const allPermissionsForRoleAfterDown = await knex.raw(`
                 SELECT
@@ -548,7 +548,7 @@ describe('migrations/utils/permissions', function () {
                 return row.name === 'scarface';
             });
 
-            should.ok(!permissionAttachedToRoleAfterDown, 'The permission was removed from the role.');
+            assert(!permissionAttachedToRoleAfterDown, 'The permission was removed from the role.');
 
             const allPermissionsForOtherRoleAfterDown = await knex.raw(`
                 SELECT
@@ -571,7 +571,7 @@ describe('migrations/utils/permissions', function () {
                 return row.name === 'scarface';
             });
 
-            should.ok(!permissionAttachedToOtherRoleAfterDown, 'The permission was removed from the other role.');
+            assert(!permissionAttachedToOtherRoleAfterDown, 'The permission was removed from the other role.');
         });
     });
 });
@@ -749,7 +749,7 @@ describe('migrations/utils/schema nullable functions', function () {
 
             const migration = utils.createSetNullableMigration('test_nullable_migration', 'not_nullable_col');
 
-            should.ok(migration.config.transaction, 'createSetNullableMigration creates a transactional migration');
+            assert(migration.config.transaction, 'createSetNullableMigration creates a transactional migration');
 
             // Verify initial state - column should be not nullable
             const isNullableInitial = await checkColumnNullable('test_nullable_migration', 'not_nullable_col', knex);
@@ -784,7 +784,7 @@ describe('migrations/utils/schema nullable functions', function () {
             try {
                 const runDownMigration = await runUpMigration(knex, migration);
 
-                should.ok(logSpy.calledWith(sinon.match('skipping as column is already nullable')), 'Should log skip message');
+                assert(logSpy.calledWith(sinon.match('skipping as column is already nullable')), 'Should log skip message');
 
                 // Column should still be nullable
                 const isNullableAfter = await checkColumnNullable('test_nullable_migration', 'nullable_col', knex);
@@ -805,7 +805,7 @@ describe('migrations/utils/schema nullable functions', function () {
 
             const migration = utils.createDropNullableMigration('test_nullable_migration', 'nullable_col');
 
-            should.ok(migration.config.transaction, 'createDropNullableMigration creates a transactional migration');
+            assert(migration.config.transaction, 'createDropNullableMigration creates a transactional migration');
 
             // Verify initial state - column should be nullable
             const isNullableInitial = await checkColumnNullable('test_nullable_migration', 'nullable_col', knex);
@@ -840,7 +840,7 @@ describe('migrations/utils/schema nullable functions', function () {
             try {
                 const runDownMigration = await runUpMigration(knex, migration);
 
-                should.ok(logSpy.calledWith(sinon.match('skipping as column is already not nullable')), 'Should log skip message');
+                assert(logSpy.calledWith(sinon.match('skipping as column is already not nullable')), 'Should log skip message');
 
                 // Column should still be not nullable
                 const isNotNullableAfter = await checkColumnNullable('test_nullable_migration', 'not_nullable_col', knex);

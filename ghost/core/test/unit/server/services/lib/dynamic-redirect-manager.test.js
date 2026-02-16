@@ -54,7 +54,7 @@ describe('DynamicRedirectManager', function () {
             req.url = '/test-params/?q=123&lang=js';
 
             manager.handleRequest(req, res, function next() {
-                should.fail(true, false, 'next should NOT have been called');
+                assert.fail('next should NOT have been called');
             });
 
             assert.equal(headers['Cache-Control'], 'public, max-age=100');
@@ -69,7 +69,7 @@ describe('DynamicRedirectManager', function () {
             req.url = '/test-params/?q=123&lang=js';
 
             manager.handleRequest(req, res, function next() {
-                should.ok(true, 'next should have been called');
+                assert(true, 'next should have been called');
             });
 
             assert.equal(headers, null);
@@ -85,7 +85,7 @@ describe('DynamicRedirectManager', function () {
             req.url = '/test-params/?q=123&lang=js';
 
             manager.handleRequest(req, res, function next() {
-                should.ok(true, 'next should have been called');
+                assert(true, 'next should have been called');
             });
 
             assert.equal(headers, null);
@@ -104,7 +104,7 @@ describe('DynamicRedirectManager', function () {
             req.url = '/test-params/';
 
             manager.handleRequest(req, res, function next() {
-                should.ok(true, 'next should have been called');
+                assert(true, 'next should have been called');
             });
 
             assert.equal(headers, null);
@@ -123,7 +123,7 @@ describe('DynamicRedirectManager', function () {
 
             try {
                 manager.addRedirect(from , to);
-                should.fail(false, 'Should have thrown an error');
+                assert.fail('Should have thrown an error');
             } catch (e) {
                 assert.equal(e.message, 'Unknown error');
             }
@@ -141,7 +141,7 @@ describe('DynamicRedirectManager', function () {
             manager.redirects.should.be.empty();
 
             manager.handleRequest(req, res, function next() {
-                should.ok(true, 'next should have been called');
+                assert(true, 'next should have been called');
             });
         });
 
@@ -155,7 +155,7 @@ describe('DynamicRedirectManager', function () {
                 req.url = '/post/10/a-nice-blog-post';
 
                 manager.handleRequest(req, res, function next() {
-                    should.fail(true, 'next should NOT have been called');
+                    assert.fail('next should NOT have been called');
                 });
 
                 // NOTE: max-age is "0" because it's not a permanent redirect
@@ -173,7 +173,7 @@ describe('DynamicRedirectManager', function () {
                 req.url = '/post/10/a-nice-blog-post/';
 
                 manager.handleRequest(req, res, function next() {
-                    should.fail(true, 'next should NOT have been called');
+                    assert.fail('next should NOT have been called');
                 });
 
                 // NOTE: max-age is "0" because it's not a permanent redirect
@@ -191,7 +191,7 @@ describe('DynamicRedirectManager', function () {
                 req.url = '/post/10/a-nice-blog-post?a=b';
 
                 manager.handleRequest(req, res, function next() {
-                    should.fail(true, 'next should NOT have been called');
+                    assert.fail('next should NOT have been called');
                 });
 
                 // NOTE: max-age is "0" because it's not a permanent redirect
@@ -209,7 +209,7 @@ describe('DynamicRedirectManager', function () {
                 req.url = '/topic?something=good';
 
                 manager.handleRequest(req, res, function next() {
-                    should.fail(true, 'next should NOT have been called');
+                    assert.fail('next should NOT have been called');
                 });
 
                 // NOTE: max-age is "0" because it's not a permanent redirect
@@ -229,7 +229,7 @@ describe('DynamicRedirectManager', function () {
                 req.url = '/CaSe-InSeNsItIvE';
 
                 manager.handleRequest(req, res, function next() {
-                    should.fail(true, 'next should NOT have been called');
+                    assert.fail('next should NOT have been called');
                 });
 
                 // NOTE: max-age is "0" because it's not a permanent redirect
@@ -247,7 +247,7 @@ describe('DynamicRedirectManager', function () {
                 req.url = '/Case-Sensitive';
 
                 manager.handleRequest(req, res, function next() {
-                    should.fail(true, 'next should NOT have been called');
+                    assert.fail('next should NOT have been called');
                 });
 
                 // NOTE: max-age is "0" because it's not a permanent redirect
@@ -265,7 +265,7 @@ describe('DynamicRedirectManager', function () {
                 req.url = '/Default-Sensitive';
 
                 manager.handleRequest(req, res, function next() {
-                    should.fail(true, 'next should NOT have been called');
+                    assert.fail('next should NOT have been called');
                 });
 
                 assert.equal(headers['Cache-Control'], 'public, max-age=0');
@@ -282,7 +282,7 @@ describe('DynamicRedirectManager', function () {
                 req.url = '/casE-sensitivE';
 
                 manager.handleRequest(req, res, function next() {
-                    should.ok(true, 'next should have been called');
+                    assert(true, 'next should have been called');
                 });
 
                 assert.equal(headers, null);
@@ -299,7 +299,7 @@ describe('DynamicRedirectManager', function () {
                 req.url = '/defaulT-sensitivE';
 
                 manager.handleRequest(req, res, function next() {
-                    should.ok(true, 'next should have been called');
+                    assert(true, 'next should have been called');
                 });
 
                 assert.equal(headers, null);
@@ -318,7 +318,7 @@ describe('DynamicRedirectManager', function () {
                 req.url = '/external-url/';
 
                 manager.handleRequest(req, res, function next() {
-                    should.fail(true, 'next should NOT have been called');
+                    assert.fail('next should NOT have been called');
                 });
 
                 // NOTE: max-age is "0" because it's not a permanent redirect
@@ -336,7 +336,7 @@ describe('DynamicRedirectManager', function () {
                 req.url = '/external-url';
 
                 manager.handleRequest(req, res, function next() {
-                    should.fail(true, 'next should NOT have been called');
+                    assert.fail('next should NOT have been called');
                 });
 
                 // NOTE: max-age is "0" because it's not a permanent redirect
@@ -354,7 +354,7 @@ describe('DynamicRedirectManager', function () {
                 req.url = '/external-url/docs';
 
                 manager.handleRequest(req, res, function next() {
-                    should.fail(true, 'next should NOT have been called');
+                    assert.fail('next should NOT have been called');
                 });
 
                 // NOTE: max-age is "0" because it's not a permanent redirect
@@ -374,7 +374,7 @@ describe('DynamicRedirectManager', function () {
                 req.url = from;
 
                 manager.handleRequest(req, res, function next() {
-                    should.fail(true, false, 'next should NOT have been called');
+                    assert.fail('next should NOT have been called');
                 });
 
                 // NOTE: max-age is "0" because it's not a permanent redirect
@@ -406,7 +406,7 @@ describe('DynamicRedirectManager', function () {
             req.url = '/blog/my-old-blog-post/';
 
             manager.handleRequest(req, res, function next() {
-                should.fail(true, 'next should NOT have been called');
+                assert.fail('next should NOT have been called');
             });
 
             assert.equal(headers['Cache-Control'], 'public, max-age=100');
