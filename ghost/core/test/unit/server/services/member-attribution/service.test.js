@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 
 const MemberAttributionService = require('../../../../../core/server/services/member-attribution/member-attribution-service');
 
@@ -216,7 +215,7 @@ describe('MemberAttributionService', function () {
             const service = new MemberAttributionService({
                 attributionBuilder: {
                     getAttribution: async function (history) {
-                        should(history).have.property('length');
+                        assert('length' in history);
                         return {success: true};
                     }
                 },

@@ -2,7 +2,6 @@ const assert = require('node:assert/strict');
 const {assertObjectMatches} = require('../../utils/assertions');
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyContentVersion, anyEtag, anyObjectId, anyLocationFor, anyErrorId, anyISODateTime} = matchers;
-const should = require('should');
 const models = require('../../../core/server/models');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
@@ -297,8 +296,8 @@ describe('Offers API', function () {
                 }]
             })
             .expect(({body}) => {
-                body.offers[0].redemption_type.should.eql('retention');
-                should(body.offers[0].tier).be.null();
+                assert.equal(body.offers[0].redemption_type, 'retention');
+                assert.equal(body.offers[0].tier, null);
             });
     });
 
@@ -646,7 +645,7 @@ describe('Offers API', function () {
                 })
             })
             .expect(({body}) => {
-                body.offers[0].should.match(updatedOffer);
+                assertObjectMatches(body.offers[0], updatedOffer);
             });
     });
 
@@ -809,7 +808,7 @@ describe('Offers API', function () {
                 })
             })
             .expect(({body}) => {
-                body.offers[0].tier.id.should.eql(defaultTier.id);
+                assert.equal(body.offers[0].tier.id, defaultTier.id);
             });
     });
 });

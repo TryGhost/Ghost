@@ -1,8 +1,7 @@
 const crypto = require('crypto');
 const assert = require('node:assert/strict');
-const {assertObjectMatches} = require('../../utils/assertions');
+const {assertArrayContainsDeep, assertObjectMatches} = require('../../utils/assertions');
 const nock = require('nock');
-const should = require('should');
 const stripe = require('stripe');
 const {Product} = require('../../../core/server/models/product');
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
@@ -40,7 +39,9 @@ async function getOfferByStripeCoupon(stripeCouponId) {
 
 async function assertMemberEvents({eventType, memberId, asserts}) {
     const events = (await models[eventType].where('member_id', memberId).fetchAll()).toJSON();
-    events.should.match(asserts);
+    for (let i = 0; i < asserts.length; i++) {
+        assertObjectMatches(events[i], asserts[i]);
+    }
     assert.equal(events.length, asserts.length, `Only ${asserts.length} ${eventType} should have been added.`);
 }
 
@@ -48,7 +49,8 @@ async function assertSubscription(subscriptionId, asserts) {
     const subscription = await getSubscription(subscriptionId);
 
     // We use the native toJSON to prevent calling the overriden serialize method
-    models.Base.Model.prototype.serialize.call(subscription).should.match(asserts);
+    const serialized = models.Base.Model.prototype.serialize.call(subscription);
+    assertObjectMatches(serialized, asserts);
 }
 
 // Helper methods to update the customer and subscription
@@ -327,11 +329,9 @@ describe('Members API', function () {
             assert.equal(initialMember.status, 'paid', 'The member initial status should be paid');
             assert.equal(initialMember.attribution.referrer_medium, 'Ghost Admin', 'The member should have been created via Ghost Admin');
             assert.equal(initialMember.tiers.length, 1, 'The member should have one tier');
-            should(initialMember.subscriptions).match([
-                {
-                    status: 'active'
-                }
-            ]);
+            assertObjectMatches(initialMember.subscriptions[0], {
+                status: 'active'
+            });
 
             // Check whether MRR and status has been set
             await assertSubscription(initialMember.subscriptions[0].id, {
@@ -376,13 +376,11 @@ describe('Members API', function () {
             const {body: body2} = await adminAgent.get('/members/' + initialMember.id + '/');
             assert.equal(body2.members.length, 1, 'The member does not exist');
             const updatedMember = body2.members[0];
-            should(updatedMember.subscriptions).match([
-                {
-                    status: 'active',
-                    cancel_at_period_end: true,
-                    cancellation_reason: 'I want to break free'
-                }
-            ]);
+            assertObjectMatches(updatedMember.subscriptions[0], {
+                status: 'active',
+                cancel_at_period_end: true,
+                cancellation_reason: 'I want to break free'
+            });
 
             // Check whether MRR and cancel_at_period_end has been set
             await assertSubscription(initialMember.subscriptions[0].id, {
@@ -469,11 +467,9 @@ describe('Members API', function () {
             assert.equal(initialMember.status, 'paid', 'The member initial status should be paid');
             assert.equal(initialMember.attribution.referrer_medium, 'Ghost Admin', 'The member should have been created via Ghost Admin');
             assert.equal(initialMember.tiers.length, 1, 'The member should have one tier');
-            should(initialMember.subscriptions).match([
-                {
-                    status: 'active'
-                }
-            ]);
+            assertObjectMatches(initialMember.subscriptions[0], {
+                status: 'active'
+            });
 
             // Check whether MRR and status has been set
             await assertSubscription(initialMember.subscriptions[0].id, {
@@ -520,12 +516,10 @@ describe('Members API', function () {
             const updatedMember = body2.members[0];
             assert.equal(updatedMember.status, 'free');
             assert.equal(updatedMember.tiers.length, 0, 'The member should have no products');
-            should(updatedMember.subscriptions).match([
-                {
-                    status: 'canceled',
-                    cancellation_reason: 'Payment failed'
-                }
-            ]);
+            assertObjectMatches(updatedMember.subscriptions[0], {
+                status: 'canceled',
+                cancellation_reason: 'Payment failed'
+            });
 
             // Check whether MRR and status has been set
             await assertSubscription(initialMember.subscriptions[0].id, {
@@ -697,11 +691,9 @@ describe('Members API', function () {
             const initialMember = await createMemberFromStripe();
             assert.equal(initialMember.status, 'comped', 'The member initial status should be comped');
             assert.equal(initialMember.tiers.length, 1, 'The member should have one tier');
-            should(initialMember.subscriptions).match([
-                {
-                    status: 'active'
-                }
-            ]);
+            assertObjectMatches(initialMember.subscriptions[0], {
+                status: 'active'
+            });
 
             // Cancel the previously created subscription in Stripe
             set(subscription, {
@@ -733,11 +725,9 @@ describe('Members API', function () {
             const updatedMember = body2.members[0];
             assert.equal(updatedMember.status, 'free');
             assert.equal(updatedMember.tiers.length, 0, 'The member should have no products');
-            should(updatedMember.subscriptions).match([
-                {
-                    status: 'canceled'
-                }
-            ]);
+            assertObjectMatches(updatedMember.subscriptions[0], {
+                status: 'canceled'
+            });
 
             // Check the status events for this newly created member (should be NULL -> paid only)
             await assertMemberEvents({
@@ -1938,11 +1928,7 @@ describe('Members API', function () {
             });
 
             // Check whether the offer attribute is passed correctly in the response when fetching a single member
-            member.subscriptions[0].should.match({
-                offer: {
-                    id: offer_id
-                }
-            });
+            assert.equal(member.subscriptions[0].offer?.id, offer_id);
 
             await assertMemberEvents({
                 eventType: 'MemberPaidSubscriptionEvent',
@@ -1985,14 +1971,12 @@ describe('Members API', function () {
             const updatedMember = body2.members[0];
             assert.equal(updatedMember.status, 'free');
             assert.equal(updatedMember.tiers.length, 0, 'The member should have no products');
-            should(updatedMember.subscriptions).match([
-                {
-                    status: 'canceled',
-                    offer: {
-                        id: offer_id
-                    }
+            assertObjectMatches(updatedMember.subscriptions[0], {
+                status: 'canceled',
+                offer: {
+                    id: offer_id
                 }
-            ]);
+            });
 
             // Check whether MRR and status has been set
             await assertSubscription(member.subscriptions[0].id, {
@@ -2392,11 +2376,7 @@ describe('Members API', function () {
             });
 
             // Check whether the offer attribute is passed correctly in the response when fetching a single member
-            updatedMember.subscriptions[0].should.match({
-                offer: {
-                    id: offer.id
-                }
-            });
+            assert.equal(updatedMember.subscriptions[0].offer?.id, offer.id);
 
             await assertMemberEvents({
                 eventType: 'MemberPaidSubscriptionEvent',
@@ -2546,11 +2526,7 @@ describe('Members API', function () {
             });
 
             // Check whether the offer attribute is passed correctly in the response when fetching a single member
-            member.subscriptions[0].should.match({
-                offer: {
-                    id: createdOffer.id
-                }
-            });
+            assert.equal(member.subscriptions[0].offer?.id, createdOffer.id);
 
             await assertMemberEvents({
                 eventType: 'MemberPaidSubscriptionEvent',
@@ -2768,8 +2744,8 @@ describe('Members API', function () {
                     etag: anyEtag
                 })
                 .expect(({body: body3}) => {
-                    should(body3.members[0].attribution).eql(attributionResource);
-                    should(body3.members[0].subscriptions[0].attribution).eql(attributionResource);
+                    assert.deepEqual(body3.members[0].attribution, attributionResource);
+                    assert.deepEqual(body3.members[0].subscriptions[0].attribution, attributionResource);
                     subscriptionAttributions.push(body3.members[0].subscriptions[0].attribution);
                 });
 
@@ -3218,7 +3194,7 @@ describe('Members API', function () {
                 })
                 .expect(({body}) => {
                     assert.equal(body.events.find(e => e.type !== 'subscription_event'), undefined);
-                    should(body.events.map(e => e.data.attribution)).containDeep(subscriptionAttributions);
+                    assertArrayContainsDeep(body.events.map(e => e.data.attribution), subscriptionAttributions);
                 });
         });
     });

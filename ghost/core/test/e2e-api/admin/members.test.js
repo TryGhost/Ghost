@@ -4,7 +4,7 @@ const {queryStringToken} = regexes;
 const ObjectId = require('bson-objectid').default;
 
 const assert = require('node:assert/strict');
-const {assertExists, assertObjectMatches} = require('../../utils/assertions');
+const {assertExists, assertArrayContainsDeep, assertObjectMatches} = require('../../utils/assertions');
 const nock = require('nock');
 const sinon = require('sinon');
 const should = require('should');
@@ -480,7 +480,7 @@ describe('Members API - member attribution', function () {
             })
             .expect(({body}) => {
                 assert.equal(body.events.find(e => e.type !== 'signup_event'), undefined);
-                should(body.events.map(e => e.data.attribution)).containDeep(signupAttributions);
+                assertArrayContainsDeep(body.events.map(e => e.data.attribution), signupAttributions);
             });
     });
 });
@@ -1860,7 +1860,7 @@ describe('Members API', function () {
         // Check that the product that we are going to add is not the same as the existing one
         const product = await getOtherPaidProduct();
         assert.equal(memberWithPaidSubscription.tiers.length, 1);
-        should(memberWithPaidSubscription.tiers[0].id).not.eql(product.id);
+        assert.notEqual(memberWithPaidSubscription.tiers[0].id, product.id);
 
         // Add it manually
         await models.Member.edit({

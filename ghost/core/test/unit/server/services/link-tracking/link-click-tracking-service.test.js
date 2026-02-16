@@ -1,6 +1,5 @@
 const LinkClickTrackingService = require('../../../../../core/server/services/link-tracking/link-click-tracking-service');
 const sinon = require('sinon');
-const should = require('should');
 const assert = require('node:assert/strict');
 const ObjectID = require('bson-objectid').default;
 const PostLink = require('../../../../../core/server/services/link-tracking/post-link');
@@ -343,7 +342,10 @@ describe('LinkClickTrackingService', function () {
                 }
             };
 
-            await should(service.bulkEdit(data, options)).be.rejectedWith(errors.BadRequestError);
+            await assert.rejects(
+                service.bulkEdit(data, options),
+                errors.BadRequestError
+            );
         });
     });
 });
