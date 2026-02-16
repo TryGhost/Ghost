@@ -1,11 +1,11 @@
 import PortalFrame from '../../membership/portal/portal-frame';
-import {ButtonSelect, type OfferType} from './add-offer-modal';
 import {Form, PreviewModalContent, Select, type SelectOption, TextArea, TextField, Toggle} from '@tryghost/admin-x-design-system';
+import {ButtonSelect, type OfferType} from './add-offer-modal';
+import {type ErrorMessages, useForm} from '@tryghost/admin-x-framework/hooks';
 import {type Offer, useAddOffer, useBrowseOffers, useEditOffer} from '@tryghost/admin-x-framework/api/offers';
 import {getOfferPortalPreviewUrl, type offerPortalPreviewUrlTypes} from '../../../../utils/get-offers-portal-preview-url';
 import {getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {useEffect, useMemo, useState} from 'react';
-import {useForm} from '@tryghost/admin-x-framework/hooks';
 import {useGlobalData} from '../../../providers/global-data-provider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
@@ -32,7 +32,6 @@ const durationOptions: SelectOption[] = [
 ];
 
 const MAX_PERCENT_AMOUNT = 100;
-const MAX_FREE_MONTHS = 12;
 
 type RetentionOfferTerms = {
     type: 'percent' | 'free_months';
@@ -211,9 +210,11 @@ const getRetentionOfferCode = (cadence: 'monthly' | 'yearly', hash: string): str
 const RetentionOfferSidebar: React.FC<{
     formState: RetentionOfferFormState;
     updateForm: (updater: (state: RetentionOfferFormState) => RetentionOfferFormState) => void;
+    clearError: (field: string) => void;
+    errors: ErrorMessages;
     cadence: 'monthly' | 'yearly';
     redemptions: number;
-}> = ({formState, updateForm, cadence, redemptions}) => {
+}> = ({formState, updateForm, clearError, errors, cadence, redemptions}) => {
     return (
         <div className='flex grow flex-col pt-2'>
             <Form className='grow'>
@@ -242,12 +243,15 @@ const RetentionOfferSidebar: React.FC<{
                             <h2 className='mb-4 text-lg'>General</h2>
                             <div className='flex flex-col gap-6'>
                                 <TextField
+                                    error={Boolean(errors.displayTitle)}
+                                    hint={errors.displayTitle}
                                     placeholder='Before you go...'
                                     title='Display title'
                                     value={formState.displayTitle}
                                     onChange={(e) => {
                                         updateForm(state => ({...state, displayTitle: e.target.value}));
                                     }}
+                                    onKeyDown={() => clearError('displayTitle')}
                                 />
                                 <TextArea
                                     placeholder='We&#39;d hate to see you go! How about a special offer to stay?'
@@ -267,10 +271,10 @@ const RetentionOfferSidebar: React.FC<{
                                         checked={formState.type === 'percent'}
                                         type={typeOptions[0]}
                                         onClick={() => {
+                                            clearError('amount');
+                                            clearError('durationInMonths');
                                             updateForm((state) => {
-                                                const nextPercentAmount = state.percentAmount > 0 ? state.percentAmount : 20;
-
-                                                return {...state, type: 'percent', percentAmount: nextPercentAmount};
+                                                return {...state, type: 'percent', percentAmount: state.percentAmount};
                                             });
                                         }}
                                     />
@@ -278,6 +282,8 @@ const RetentionOfferSidebar: React.FC<{
                                         checked={formState.type === 'free_months'}
                                         type={typeOptions[1]}
                                         onClick={() => {
+                                            clearError('amount');
+                                            clearError('durationInMonths');
                                             updateForm(state => ({...state, type: 'free_months'}));
                                         }}
                                     />
@@ -285,19 +291,17 @@ const RetentionOfferSidebar: React.FC<{
                                 {formState.type === 'percent' && (
                                     <>
                                         <TextField
+                                            error={Boolean(errors.amount)}
+                                            hint={errors.amount}
                                             rightPlaceholder='%'
                                             title='Amount off'
                                             type='number'
                                             value={formState.percentAmount === 0 ? '' : String(formState.percentAmount)}
                                             onChange={(e) => {
                                                 const nextValue = Number(e.target.value);
-
-                                                if (nextValue < 0) {
-                                                    return;
-                                                }
-
-                                                updateForm(state => ({...state, percentAmount: Math.min(nextValue, MAX_PERCENT_AMOUNT)}));
+                                                updateForm(state => ({...state, percentAmount: nextValue}));
                                             }}
+                                            onKeyDown={() => clearError('amount')}
                                         />
                                         <Select
                                             options={durationOptions}
@@ -305,42 +309,41 @@ const RetentionOfferSidebar: React.FC<{
                                             title='Duration'
                                             onSelect={(e) => {
                                                 if (e) {
+                                                    clearError('durationInMonths');
                                                     updateForm(state => ({...state, duration: e.value}));
                                                 }
                                             }}
                                         />
                                         {formState.duration === 'repeating' && (
                                             <TextField
+                                                error={Boolean(errors.durationInMonths)}
+                                                hint={errors.durationInMonths}
                                                 rightPlaceholder={`${formState.durationInMonths === 1 ? 'month' : 'months'}`}
                                                 title='Duration in months'
                                                 type='number'
                                                 value={formState.durationInMonths === 0 ? '' : String(formState.durationInMonths)}
                                                 onChange={(e) => {
-                                                    if (Number(e.target.value) < 0) {
-                                                        return;
-                                                    }
-
-                                                    updateForm(state => ({...state, durationInMonths: Number(e.target.value)}));
+                                                    const nextValue = Number(e.target.value);
+                                                    updateForm(state => ({...state, durationInMonths: Number.isNaN(nextValue) ? 0 : nextValue}));
                                                 }}
+                                                onKeyDown={() => clearError('durationInMonths')}
                                             />
                                         )}
                                     </>
                                 )}
                                 {formState.type === 'free_months' && (
                                     <TextField
+                                        error={Boolean(errors.amount)}
+                                        hint={errors.amount}
                                         rightPlaceholder={`${formState.freeMonths === 1 ? 'month' : 'months'}`}
                                         title='Free months'
                                         type='number'
                                         value={formState.freeMonths === 0 ? '' : String(formState.freeMonths)}
                                         onChange={(e) => {
                                             const nextValue = Number(e.target.value);
-
-                                            if (nextValue < 0) {
-                                                return;
-                                            }
-
-                                            updateForm(state => ({...state, freeMonths: Math.min(nextValue, MAX_FREE_MONTHS)}));
+                                            updateForm(state => ({...state, freeMonths: Number.isNaN(nextValue) ? 0 : nextValue}));
                                         }}
+                                        onKeyDown={() => clearError('amount')}
                                     />
                                 )}
                             </div>
@@ -389,7 +392,7 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
     const [lastPreviewFreeMonths, setLastPreviewFreeMonths] = useState(1);
     const [initializedOfferKey, setInitializedOfferKey] = useState<string | null>(null);
 
-    const {formState, setFormState, updateForm, handleSave, saveState, okProps} = useForm({
+    const {formState, setFormState, updateForm, handleSave, saveState, okProps, errors, clearError} = useForm({
         initialState: getDefaultState(id),
         savingDelay: 500,
         onSave: async () => {
@@ -476,7 +479,30 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
         },
         onSaveError: () => {},
         onValidate: () => {
-            return {};
+            const newErrors: Record<string, string> = {};
+
+            if (!formState.enabled) {
+                return newErrors;
+            }
+
+
+            if (formState.type === 'percent') {
+                if (formState.percentAmount < 1 || formState.percentAmount > MAX_PERCENT_AMOUNT) {
+                    newErrors.amount = `Enter an amount between 1 and ${MAX_PERCENT_AMOUNT}%.`;
+                }
+
+                if (formState.duration === 'repeating' && formState.durationInMonths < 1) {
+                    newErrors.durationInMonths = 'Enter a duration greater than 0.';
+                }
+            }
+
+            if (formState.type === 'free_months') {
+                if (formState.freeMonths < 1) {
+                    newErrors.amount = 'Enter a number of free months greater than 0.';
+                }
+            }
+
+            return newErrors;
         }
     });
 
@@ -511,11 +537,19 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
     const sidebar = (
         <RetentionOfferSidebar
             cadence={cadence}
+            clearError={clearError}
+            errors={errors}
             formState={formState}
             redemptions={retentionRedemptions}
             updateForm={updateForm}
         />
     );
+
+    const handleSaveClick = async () => {
+        if (await handleSave({force: true})) {
+            goBack();
+        }
+    };
 
     const previewData: offerPortalPreviewUrlTypes = useMemo(() => {
         const isFreeMonthsOffer = formState.type === 'free_months';
@@ -589,11 +623,7 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
             width={1140}
             onBreadcrumbsBack={goBack}
             onCancel={goBack}
-            onOk={async () => {
-                if (await handleSave({force: true})) {
-                    goBack();
-                }
-            }}
+            onOk={handleSaveClick}
         />
     );
 };
