@@ -62,7 +62,7 @@ describe('Redirects API', function () {
             .expect('Content-Type', /application\/json/)
             .expect(200)
             .expect((res) => {
-                res.body.should.be.empty();
+                assert.deepEqual(res.body, {});
             });
     });
 });

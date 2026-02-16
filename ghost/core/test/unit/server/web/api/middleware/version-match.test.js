@@ -1,5 +1,3 @@
-const assert = require('node:assert/strict');
-require('should');
 const sinon = require('sinon');
 
 const versionMatch = require('../../../../../../core/server/web/api/middleware/version-match');
@@ -43,8 +41,7 @@ describe('Version Mismatch', function () {
 
         testVersionMatch(server);
 
-        assert.equal(nextStub.calledOnce, true);
-        nextStub.firstCall.args.should.be.empty();
+        sinon.assert.calledOnceWithExactly(nextStub);
     });
 
     it('should call next if versions are an exact match', function () {
@@ -53,8 +50,7 @@ describe('Version Mismatch', function () {
 
         testVersionMatch(server, client);
 
-        assert.equal(nextStub.calledOnce, true);
-        nextStub.firstCall.args.should.be.empty();
+        sinon.assert.calledOnceWithExactly(nextStub);
     });
 
     it('should call next if client version is earlier than server', function () {
@@ -63,8 +59,7 @@ describe('Version Mismatch', function () {
 
         testVersionMatch(server, client);
 
-        assert.equal(nextStub.calledOnce, true);
-        nextStub.firstCall.args.should.be.empty();
+        sinon.assert.calledOnceWithExactly(nextStub);
     });
 
     it('should throw BadRequestError if client version is invalid', function () {
@@ -73,10 +68,10 @@ describe('Version Mismatch', function () {
 
         testVersionMatch(server, client);
 
-        assert.equal(nextStub.calledOnce, true);
-        assert.equal(nextStub.firstCall.args.length, 1);
-        assert.equal(nextStub.firstCall.args[0].errorType, 'BadRequestError');
-        assert.equal(nextStub.firstCall.args[0].statusCode, 400);
+        sinon.assert.calledOnceWithExactly(nextStub, sinon.match({
+            errorType: 'BadRequestError',
+            statusCode: 400
+        }));
     });
 
     it('should throw VersionMismatchError if client version is earlier by a major version', function () {
@@ -85,10 +80,10 @@ describe('Version Mismatch', function () {
 
         testVersionMatch(server, client);
 
-        assert.equal(nextStub.calledOnce, true);
-        assert.equal(nextStub.firstCall.args.length, 1);
-        assert.equal(nextStub.firstCall.args[0].errorType, 'VersionMismatchError');
-        assert.equal(nextStub.firstCall.args[0].statusCode, 400);
+        sinon.assert.calledOnceWithExactly(nextStub, sinon.match({
+            errorType: 'VersionMismatchError',
+            statusCode: 400
+        }));
     });
 
     it('should throw VersionMismatchError if client version is later than server', function () {
@@ -97,10 +92,10 @@ describe('Version Mismatch', function () {
 
         testVersionMatch(server, client);
 
-        assert.equal(nextStub.calledOnce, true);
-        assert.equal(nextStub.firstCall.args.length, 1);
-        assert.equal(nextStub.firstCall.args[0].errorType, 'VersionMismatchError');
-        assert.equal(nextStub.firstCall.args[0].statusCode, 400);
+        sinon.assert.calledOnceWithExactly(nextStub, sinon.match({
+            errorType: 'VersionMismatchError',
+            statusCode: 400
+        }));
     });
 
     it('should throw VersionMismatchError if client version is later by a major version', function () {
@@ -109,10 +104,10 @@ describe('Version Mismatch', function () {
 
         testVersionMatch(server, client);
 
-        assert.equal(nextStub.calledOnce, true);
-        assert.equal(nextStub.firstCall.args.length, 1);
-        assert.equal(nextStub.firstCall.args[0].errorType, 'VersionMismatchError');
-        assert.equal(nextStub.firstCall.args[0].statusCode, 400);
+        sinon.assert.calledOnceWithExactly(nextStub, sinon.match({
+            errorType: 'VersionMismatchError',
+            statusCode: 400
+        }));
     });
 
     it('should call next if pre-release is allowed', function () {
@@ -121,8 +116,7 @@ describe('Version Mismatch', function () {
 
         testVersionMatch(server, client);
 
-        assert.equal(nextStub.calledOnce, true);
-        nextStub.firstCall.args.should.be.empty();
+        sinon.assert.calledOnceWithExactly(nextStub);
     });
 
     it('throws error if server is a pre-release, but later by major version', function () {
@@ -131,9 +125,9 @@ describe('Version Mismatch', function () {
 
         testVersionMatch(server, client);
 
-        assert.equal(nextStub.calledOnce, true);
-        assert.equal(nextStub.firstCall.args.length, 1);
-        assert.equal(nextStub.firstCall.args[0].errorType, 'VersionMismatchError');
-        assert.equal(nextStub.firstCall.args[0].statusCode, 400);
+        sinon.assert.calledOnceWithExactly(nextStub, sinon.match({
+            errorType: 'VersionMismatchError',
+            statusCode: 400
+        }));
     });
 });

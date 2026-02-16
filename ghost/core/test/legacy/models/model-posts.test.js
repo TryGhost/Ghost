@@ -1505,7 +1505,7 @@ describe('Post Model', function () {
                     // Double check we can't find any related tags
                     return ghostBookshelf.knex.select().table('posts_tags').where('post_id', firstItemData.id);
                 }).then(function (postsTags) {
-                    postsTags.should.be.empty();
+                    assert.deepEqual(postsTags, []);
 
                     done();
                 }).catch(done);
@@ -1545,7 +1545,7 @@ describe('Post Model', function () {
                     // Double check we can't find any related tags
                     return ghostBookshelf.knex.select().table('posts_tags').where('post_id', firstItemData.id);
                 }).then(function (postsTags) {
-                    postsTags.should.be.empty();
+                    assert.deepEqual(postsTags, []);
 
                     done();
                 }).catch(done);
@@ -1584,7 +1584,7 @@ describe('Post Model', function () {
                     // Double check we can't find any related tags
                     return ghostBookshelf.knex.select().table('posts_tags').where('post_id', firstItemData.id);
                 }).then(function (postsTags) {
-                    postsTags.should.be.empty();
+                    assert.deepEqual(postsTags, []);
 
                     done();
                 }).catch(done);
@@ -1620,7 +1620,7 @@ describe('Post Model', function () {
                     // Double check we can't find any related tags
                     return ghostBookshelf.knex.select().table('posts_tags').where('post_id', firstItemData.id);
                 }).then(function (postsTags) {
-                    postsTags.should.be.empty();
+                    assert.deepEqual(postsTags, []);
 
                     done();
                 }).catch(done);

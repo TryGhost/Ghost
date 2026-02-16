@@ -429,7 +429,7 @@ describe('Pages API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(204);
 
-        res.body.should.be.empty();
+        assert.deepEqual(res.body, {});
         assert.equal(res.headers['x-cache-invalidate'], '/*');
     });
 });

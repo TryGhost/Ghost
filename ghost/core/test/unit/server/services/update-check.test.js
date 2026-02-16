@@ -212,8 +212,8 @@ describe('Update Check', function () {
             assert.equal(capturedData.node_version, process.versions.node);
             assert.equal(capturedData.env, process.env.NODE_ENV);
             assert.match(capturedData.database_type, /sqlite3|mysql/);
-            capturedData.blog_id.should.be.a.String();
-            capturedData.blog_id.should.not.be.empty();
+            assert.equal(typeof capturedData.blog_id, 'string');
+            assert(capturedData.blog_id);
             assert.equal(capturedData.theme, 'casperito');
             assert.equal(capturedData.blog_created_at, 819846900);
             assert.equal(capturedData.user_count, 2);

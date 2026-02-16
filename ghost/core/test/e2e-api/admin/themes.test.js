@@ -173,8 +173,8 @@ describe('Themes API', function () {
             .del(localUtils.API.getApiQuery('themes/valid'))
             .set('Origin', config.get('url'))
             .expect(204)
-            .expect((_res) => {
-                _res.body.should.be.empty();
+            .expect((res) => {
+                assert.deepEqual(res.body, {});
             });
 
         // ensure tmp theme folder contains one theme again now

@@ -348,8 +348,8 @@ describe('Integrations API', function () {
         await request.del(localUtils.API.getApiQuery(`integrations/${createdIntegration.id}/`))
             .set('Origin', config.get('url'))
             .expect(204)
-            .expect((_res) => {
-                _res.body.should.be.empty();
+            .expect(({body}) => {
+                assert.deepEqual(body, {});
             });
 
         await request.get(localUtils.API.getApiQuery(`integrations/${createdIntegration.id}/`))
