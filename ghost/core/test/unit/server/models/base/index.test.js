@@ -165,18 +165,18 @@ describe('Models: base', function () {
             models.Base.Model.sanitizeData
                 .bind({prototype: {tableName: 'posts'}})(data);
 
-            data.updated_at.should.be.a.Date();
+            assert(data.updated_at instanceof Date);
         });
 
         it('date is JS date, ignore', function () {
             const data = testUtils.DataGenerator.forKnex.createPost({updated_at: new Date()});
 
-            data.updated_at.should.be.a.Date();
+            assert(data.updated_at instanceof Date);
 
             models.Base.Model.sanitizeData
                 .bind({prototype: {tableName: 'posts'}})(data);
 
-            data.updated_at.should.be.a.Date();
+            assert(data.updated_at instanceof Date);
         });
 
         it('expect date transformation for nested relations', function () {
@@ -199,7 +199,7 @@ describe('Models: base', function () {
                 })(data);
 
             assert.equal(data.authors[0].name, 'Thomas');
-            data.authors[0].updated_at.should.be.a.Date();
+            assert(data.authors[0].updated_at instanceof Date);
         });
     });
 
