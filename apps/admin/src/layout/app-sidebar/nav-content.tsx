@@ -93,6 +93,15 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                         <NavMenuItem>
                             <NavMenuItem.Link
                                 className="pl-9"
+                                to="posts/calendar"
+                            >
+                                <NavMenuItem.Label>Calendar</NavMenuItem.Label>
+                            </NavMenuItem.Link>
+                        </NavMenuItem>
+
+                        <NavMenuItem>
+                            <NavMenuItem.Link
+                                className="pl-9"
                                 to="posts?type=published"
                                 isActive={routing.isRouteActive('posts', {type: 'published'})}
                             >
