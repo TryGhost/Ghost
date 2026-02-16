@@ -87,18 +87,6 @@ export default class ApplicationController extends Controller {
                 && !router.currentRouteName.match(/(signin|signup|setup|reset)/);
     }
 
-    get showMobileNavMenu() {
-        if (this.feature.inAdminForward) {
-            return false;
-        }
-
-        if (!this.session.isAuthenticated || !this.session.user || this.session.user.isContributor) {
-            return false;
-        }
-
-        return true;
-    }
-
     @action
     async openUpdateTab() {
         if (!this.showUpdateBanner) {
