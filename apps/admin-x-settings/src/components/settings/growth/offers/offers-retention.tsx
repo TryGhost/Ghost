@@ -13,12 +13,34 @@ type RetentionOffer = {
     status: 'active' | 'inactive';
 };
 
+const normalizeRetentionCadence = (cadence: string): RetentionCadence | null => {
+    if (cadence === 'month' || cadence === 'monthly') {
+        return 'month';
+    }
+
+    if (cadence === 'year' || cadence === 'yearly') {
+        return 'year';
+    }
+
+    return null;
+};
+
 const getActiveRetentionOfferByCadence = (offers: Offer[], cadence: RetentionCadence): Offer | null => {
     return offers.find((offer) => {
         return offer.redemption_type === 'retention' &&
-            offer.cadence === cadence &&
+            normalizeRetentionCadence(offer.cadence) === cadence &&
             offer.status === 'active';
     }) || null;
+};
+
+const getRetentionRedemptionsByCadence = (offers: Offer[], cadence: RetentionCadence): number => {
+    return offers.reduce((total, offer) => {
+        if (offer.redemption_type !== 'retention' || normalizeRetentionCadence(offer.cadence) !== cadence) {
+            return total;
+        }
+
+        return total + (offer.redemption_count || 0);
+    }, 0);
 };
 
 const getRetentionTerms = (offer: Offer | null): string | null => {
@@ -65,6 +87,8 @@ const getRetentionTermsDetail = (offer: Offer | null): string | null => {
 const getRetentionOffers = (offers: Offer[]): RetentionOffer[] => {
     const monthlyOffer = getActiveRetentionOfferByCadence(offers, 'month');
     const yearlyOffer = getActiveRetentionOfferByCadence(offers, 'year');
+    const monthlyRedemptions = getRetentionRedemptionsByCadence(offers, 'month');
+    const yearlyRedemptions = getRetentionRedemptionsByCadence(offers, 'year');
 
     return [
         {
@@ -73,7 +97,7 @@ const getRetentionOffers = (offers: Offer[]): RetentionOffer[] => {
             description: 'Applied to monthly plans',
             terms: getRetentionTerms(monthlyOffer),
             termsDetail: getRetentionTermsDetail(monthlyOffer),
-            redemptions: monthlyOffer?.redemption_count || 0,
+            redemptions: monthlyRedemptions,
             status: monthlyOffer ? 'active' : 'inactive'
         },
         {
@@ -82,7 +106,7 @@ const getRetentionOffers = (offers: Offer[]): RetentionOffer[] => {
             description: 'Applied to annual plans',
             terms: getRetentionTerms(yearlyOffer),
             termsDetail: getRetentionTermsDetail(yearlyOffer),
-            redemptions: yearlyOffer?.redemption_count || 0,
+            redemptions: yearlyRedemptions,
             status: yearlyOffer ? 'active' : 'inactive'
         }
     ];

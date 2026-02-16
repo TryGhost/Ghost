@@ -300,6 +300,24 @@ test.describe('Offers Modal', () => {
                             redemption_count: 9,
                             redemption_type: 'retention',
                             tier: null
+                        },
+                        {
+                            id: 'retention-month-archived',
+                            name: 'Monthly retention archived',
+                            code: 'monthly-retention-archived',
+                            display_title: '',
+                            display_description: '',
+                            type: 'percent',
+                            cadence: 'month',
+                            amount: 30,
+                            duration: 'forever',
+                            duration_in_months: null,
+                            currency_restriction: false,
+                            currency: null,
+                            status: 'archived',
+                            redemption_count: 3,
+                            redemption_type: 'retention',
+                            tier: null
                         }
                     ]
                 }
@@ -336,13 +354,13 @@ test.describe('Offers Modal', () => {
         await expect(monthlyRow).toContainText('Monthly retention');
         await expect(monthlyRow).toContainText('25% OFF');
         await expect(monthlyRow).toContainText('First payment');
-        await expect(monthlyRow).toContainText('7');
+        await expect(monthlyRow).toContainText('10');
         await expect(monthlyRow).toContainText('Active');
 
         const yearlyRow = rows.nth(1);
         await expect(yearlyRow).toContainText('Yearly retention');
         await expect(yearlyRow).toContainText('Inactive');
-        await expect(yearlyRow).toContainText('0');
+        await expect(yearlyRow).toContainText('9');
         await expect(yearlyRow).not.toContainText('2 MONTHS FREE');
     });
 
@@ -389,6 +407,42 @@ test.describe('Offers Modal', () => {
                             redemption_count: 4,
                             redemption_type: 'retention',
                             tier: null
+                        },
+                        {
+                            id: 'retention-month-archived',
+                            name: 'Monthly retention archived',
+                            code: 'monthly-retention-archived',
+                            display_title: 'Older monthly retention',
+                            display_description: '',
+                            type: 'percent',
+                            cadence: 'month',
+                            amount: 30,
+                            duration: 'once',
+                            duration_in_months: null,
+                            currency_restriction: false,
+                            currency: null,
+                            status: 'archived',
+                            redemption_count: 4,
+                            redemption_type: 'retention',
+                            tier: null
+                        },
+                        {
+                            id: 'retention-year-archived',
+                            name: 'Yearly retention archived',
+                            code: 'yearly-retention-archived',
+                            display_title: 'Older yearly retention',
+                            display_description: '',
+                            type: 'free_months',
+                            cadence: 'year',
+                            amount: 1,
+                            duration: 'free_months',
+                            duration_in_months: null,
+                            currency_restriction: false,
+                            currency: null,
+                            status: 'archived',
+                            redemption_count: 5,
+                            redemption_type: 'retention',
+                            tier: null
                         }
                     ]
                 }
@@ -421,6 +475,7 @@ test.describe('Offers Modal', () => {
 
         const monthlyModal = page.getByTestId('retention-offer-modal');
         await expect(monthlyModal).toBeVisible();
+        await expect(monthlyModal).toContainText('11 redemptions');
         await expect(monthlyModal.getByLabel('Enable monthly retention')).toBeChecked();
         await expect(monthlyModal.getByLabel('Display title')).toHaveValue('Stay monthly');
         await expect(monthlyModal.getByLabel('Display description')).toHaveValue('Monthly description');
@@ -433,15 +488,83 @@ test.describe('Offers Modal', () => {
 
         const yearlyModal = page.getByTestId('retention-offer-modal');
         await expect(yearlyModal).toBeVisible();
+        await expect(yearlyModal).toContainText('9 redemptions');
         await expect(yearlyModal.getByLabel('Enable yearly retention')).toBeChecked();
         await expect(yearlyModal.getByLabel('Display title')).toHaveValue('Stay yearly');
         await expect(yearlyModal.getByLabel('Display description')).toHaveValue('Yearly description');
         await expect(yearlyModal.getByLabel('Free months')).toHaveValue('2');
     });
 
+    test('Defaults retention modal to disabled when no active retention offer exists', async ({page}) => {
+        await mockApi({page, requests: {
+            browseOffers: {
+                method: 'GET',
+                path: '/offers/',
+                response: {
+                    offers: (responseFixtures.offers.offers || []).filter(offer => offer.redemption_type === 'signup')
+                }
+            },
+            ...globalDataRequests,
+            browseConfig: {
+                method: 'GET',
+                path: '/config/',
+                response: {
+                    config: {
+                        ...responseFixtures.config.config,
+                        labs: {
+                            ...responseFixtures.config.config?.labs,
+                            retentionOffers: true
+                        }
+                    }
+                }
+            },
+            browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
+            browseTiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers}
+        }});
+
+        await page.goto('/');
+        const section = page.getByTestId('offers');
+        await section.getByRole('button', {name: 'Manage offers'}).click();
+
+        const modal = page.getByTestId('offers-modal');
+        await modal.getByRole('tab', {name: 'Retention'}).click();
+        await modal.getByText('Monthly retention').click();
+
+        const retentionModal = page.getByTestId('retention-offer-modal');
+        await expect(retentionModal).toBeVisible();
+        await expect(retentionModal.getByLabel('Enable monthly retention')).not.toBeChecked();
+        await expect(retentionModal.getByLabel('Display title')).toHaveCount(0);
+    });
+
     test('Renders preview for retention offers', async ({page}) => {
         await mockApi({page, requests: {
-            browseOffers: {method: 'GET', path: '/offers/', response: responseFixtures.offers},
+            browseOffers: {
+                method: 'GET',
+                path: '/offers/',
+                response: {
+                    offers: [
+                        ...(responseFixtures.offers.offers || []),
+                        {
+                            id: 'retention-month-active',
+                            name: 'Monthly retention',
+                            code: 'monthly-retention',
+                            display_title: '',
+                            display_description: '',
+                            type: 'percent',
+                            cadence: 'month',
+                            amount: 20,
+                            duration: 'forever',
+                            duration_in_months: null,
+                            currency_restriction: false,
+                            currency: null,
+                            status: 'active',
+                            redemption_count: 0,
+                            redemption_type: 'retention',
+                            tier: null
+                        }
+                    ]
+                }
+            },
             ...globalDataRequests,
             browseConfig: {
                 method: 'GET',
@@ -518,7 +641,33 @@ test.describe('Offers Modal', () => {
 
     test('Saves retention offers', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: {
-            browseOffers: {method: 'GET', path: '/offers/', response: responseFixtures.offers},
+            browseOffers: {
+                method: 'GET',
+                path: '/offers/',
+                response: {
+                    offers: [
+                        ...(responseFixtures.offers.offers || []),
+                        {
+                            id: 'retention-month-active',
+                            name: 'Monthly retention',
+                            code: 'monthly-retention',
+                            display_title: '',
+                            display_description: '',
+                            type: 'percent',
+                            cadence: 'month',
+                            amount: 20,
+                            duration: 'forever',
+                            duration_in_months: null,
+                            currency_restriction: false,
+                            currency: null,
+                            status: 'active',
+                            redemption_count: 0,
+                            redemption_type: 'retention',
+                            tier: null
+                        }
+                    ]
+                }
+            },
             ...globalDataRequests,
             browseConfig: {
                 method: 'GET',

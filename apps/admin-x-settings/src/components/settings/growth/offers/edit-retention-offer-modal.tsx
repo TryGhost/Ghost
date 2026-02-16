@@ -102,11 +102,24 @@ const getRetentionOfferFormState = (id: string, offer: Offer | null): RetentionO
     };
 };
 
+const normalizeRetentionCadence = (cadence: string): 'month' | 'year' | null => {
+    if (cadence === 'month' || cadence === 'monthly') {
+        return 'month';
+    }
+
+    if (cadence === 'year' || cadence === 'yearly') {
+        return 'year';
+    }
+
+    return null;
+};
+
 const RetentionOfferSidebar: React.FC<{
     formState: RetentionOfferFormState;
     updateForm: (updater: (state: RetentionOfferFormState) => RetentionOfferFormState) => void;
     cadence: 'monthly' | 'yearly';
-}> = ({formState, updateForm, cadence}) => {
+    redemptions: number;
+}> = ({formState, updateForm, cadence, redemptions}) => {
     return (
         <div className='flex grow flex-col pt-2'>
             <Form className='grow'>
@@ -114,7 +127,7 @@ const RetentionOfferSidebar: React.FC<{
                     <div className='flex flex-col gap-5 rounded-md border border-grey-300 p-4 pb-3.5 dark:border-grey-800'>
                         <div className='flex flex-col gap-1.5'>
                             <span className='text-xs font-semibold leading-none text-grey-700'>Performance</span>
-                            <span>0 redemptions</span>
+                            <span>{redemptions} redemptions</span>
                         </div>
                     </div>
                 </section>
@@ -259,9 +272,18 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
     const activeRetentionOffer = useMemo(() => {
         return allOffers.find((offer) => {
             return offer.redemption_type === 'retention' &&
-                offer.cadence === offerCadence &&
+                normalizeRetentionCadence(offer.cadence) === offerCadence &&
                 offer.status === 'active';
         }) || null;
+    }, [allOffers, offerCadence]);
+    const retentionRedemptions = useMemo(() => {
+        return allOffers.reduce((total, offer) => {
+            if (offer.redemption_type !== 'retention' || normalizeRetentionCadence(offer.cadence) !== offerCadence) {
+                return total;
+            }
+
+            return total + (offer.redemption_count || 0);
+        }, 0);
     }, [allOffers, offerCadence]);
     const [lastPreviewPercentAmount, setLastPreviewPercentAmount] = useState(20);
     const [lastPreviewFreeMonths, setLastPreviewFreeMonths] = useState(1);
@@ -337,6 +359,7 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
         <RetentionOfferSidebar
             cadence={cadence}
             formState={formState}
+            redemptions={retentionRedemptions}
             updateForm={updateForm}
         />
     );
