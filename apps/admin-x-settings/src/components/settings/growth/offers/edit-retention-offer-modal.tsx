@@ -1,7 +1,7 @@
 import PortalFrame from '../../membership/portal/portal-frame';
 import {ButtonSelect, type OfferType} from './add-offer-modal';
 import {Form, PreviewModalContent, Select, type SelectOption, TextArea, TextField, Toggle} from '@tryghost/admin-x-design-system';
-import {type Offer, useAddOffer, useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
+import {type Offer, useAddOffer, useBrowseOffers, useEditOffer} from '@tryghost/admin-x-framework/api/offers';
 import {getOfferPortalPreviewUrl, type offerPortalPreviewUrlTypes} from '../../../../utils/get-offers-portal-preview-url';
 import {getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {useEffect, useMemo, useState} from 'react';
@@ -33,6 +33,13 @@ const durationOptions: SelectOption[] = [
 
 const MAX_PERCENT_AMOUNT = 100;
 const MAX_FREE_MONTHS = 12;
+
+type RetentionOfferTerms = {
+    type: 'percent' | 'free_months';
+    amount: number;
+    duration: string;
+    durationInMonths: number;
+};
 
 const getResolvedAmount = ({
     type,
@@ -112,6 +119,93 @@ const normalizeRetentionCadence = (cadence: string): 'month' | 'year' | null => 
     }
 
     return null;
+};
+
+const getFormOfferTerms = ({
+    formState,
+    lastPercentAmount,
+    lastFreeMonths
+}: {
+    formState: RetentionOfferFormState;
+    lastPercentAmount: number;
+    lastFreeMonths: number;
+}): RetentionOfferTerms => {
+    const amount = getResolvedAmount({
+        type: formState.type,
+        percentAmount: formState.percentAmount,
+        freeMonths: formState.freeMonths,
+        lastPercentAmount,
+        lastFreeMonths
+    });
+
+    if (formState.type === 'free_months') {
+        return {
+            type: 'free_months',
+            amount,
+            duration: 'free_months',
+            durationInMonths: 0
+        };
+    }
+
+    const duration = formState.duration;
+    const durationInMonths = duration === 'repeating' ? Math.max(1, formState.durationInMonths) : 0;
+
+    return {
+        type: 'percent',
+        amount,
+        duration,
+        durationInMonths
+    };
+};
+
+const getOfferTerms = (offer: Offer | null): RetentionOfferTerms | null => {
+    if (!offer) {
+        return null;
+    }
+
+    const type = offer.type === 'free_months' ? 'free_months' : 'percent';
+    const duration = type === 'free_months' ? 'free_months' : offer.duration;
+    const durationInMonths = duration === 'repeating' ? offer.duration_in_months || 0 : 0;
+
+    return {
+        type,
+        amount: offer.amount,
+        duration,
+        durationInMonths
+    };
+};
+
+const areTermsEqual = (left: RetentionOfferTerms | null, right: RetentionOfferTerms): boolean => {
+    if (!left) {
+        return false;
+    }
+
+    return left.type === right.type &&
+        left.amount === right.amount &&
+        left.duration === right.duration &&
+        left.durationInMonths === right.durationInMonths;
+};
+
+const hasFormChangesFromDefault = (formState: RetentionOfferFormState, defaultState: RetentionOfferFormState): boolean => {
+    return formState.displayTitle !== defaultState.displayTitle ||
+        formState.displayDescription !== defaultState.displayDescription ||
+        formState.type !== defaultState.type ||
+        formState.percentAmount !== defaultState.percentAmount ||
+        formState.duration !== defaultState.duration ||
+        formState.durationInMonths !== defaultState.durationInMonths ||
+        formState.freeMonths !== defaultState.freeMonths;
+};
+
+const generateRetentionHash = (): string => {
+    return Math.random().toString(16).slice(2, 8).padEnd(6, '0');
+};
+
+const getRetentionOfferName = (cadence: 'monthly' | 'yearly', hash: string): string => {
+    return `${cadence === 'monthly' ? 'Monthly retention' : 'Yearly retention'} — ${hash}`;
+};
+
+const getRetentionOfferCode = (cadence: 'monthly' | 'yearly', hash: string): string => {
+    return `${cadence === 'monthly' ? 'monthly' : 'yearly'}-retention-${hash}`;
 };
 
 const RetentionOfferSidebar: React.FC<{
@@ -262,29 +356,35 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
     const {updateRoute} = useRouting();
     const {siteData} = useGlobalData();
     const {data: {tiers = []} = {}} = useBrowseTiers();
-    const {data: {offers: allOffers = []} = {}, isFetched: hasFetchedOffers, isFetching: isFetchingOffers} = useBrowseOffers();
+    const {data: {offers: allOffers = []} = {}, isFetched: hasFetchedOffers, isFetching: isFetchingOffers, refetch: refetchOffers} = useBrowseOffers();
     const {mutateAsync: addOffer} = useAddOffer();
+    const {mutateAsync: editOffer} = useEditOffer();
     const [href, setHref] = useState<string>('');
     const cadence = id === 'monthly' ? 'monthly' : 'yearly' as const;
     const breadcrumbTitle = cadence === 'monthly' ? 'Monthly retention' : 'Yearly retention';
     const offerCadence = cadence === 'monthly' ? 'month' : 'year';
     const activePaidTiers = getPaidActiveTiers(tiers || []);
-    const activeRetentionOffer = useMemo(() => {
-        return allOffers.find((offer) => {
-            return offer.redemption_type === 'retention' &&
-                normalizeRetentionCadence(offer.cadence) === offerCadence &&
-                offer.status === 'active';
-        }) || null;
+    const retentionOffersByCadence = useMemo(() => {
+        return allOffers
+            .filter((offer) => {
+                return offer.redemption_type === 'retention' && normalizeRetentionCadence(offer.cadence) === offerCadence;
+            })
+            .sort((left, right) => {
+                const leftTimestamp = left.created_at ? new Date(left.created_at).getTime() : 0;
+                const rightTimestamp = right.created_at ? new Date(right.created_at).getTime() : 0;
+                return rightTimestamp - leftTimestamp;
+            });
     }, [allOffers, offerCadence]);
+    const activeRetentionOffer = useMemo(() => {
+        return retentionOffersByCadence.find(offer => offer.status === 'active') || null;
+    }, [retentionOffersByCadence]);
+    const latestRetentionOffer = retentionOffersByCadence[0] || null;
+    const editableRetentionOffer = activeRetentionOffer || latestRetentionOffer;
     const retentionRedemptions = useMemo(() => {
-        return allOffers.reduce((total, offer) => {
-            if (offer.redemption_type !== 'retention' || normalizeRetentionCadence(offer.cadence) !== offerCadence) {
-                return total;
-            }
-
+        return retentionOffersByCadence.reduce((total, offer) => {
             return total + (offer.redemption_count || 0);
         }, 0);
-    }, [allOffers, offerCadence]);
+    }, [retentionOffersByCadence]);
     const [lastPreviewPercentAmount, setLastPreviewPercentAmount] = useState(20);
     const [lastPreviewFreeMonths, setLastPreviewFreeMonths] = useState(1);
     const [initializedOfferKey, setInitializedOfferKey] = useState<string | null>(null);
@@ -293,33 +393,86 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
         initialState: getDefaultState(id),
         savingDelay: 500,
         onSave: async () => {
-            const amount = getResolvedAmount({
-                type: formState.type,
-                percentAmount: formState.percentAmount,
-                freeMonths: formState.freeMonths,
+            let didMutate = false;
+            const formTerms = getFormOfferTerms({
+                formState,
                 lastPercentAmount: lastPreviewPercentAmount,
                 lastFreeMonths: lastPreviewFreeMonths
             });
+            const existingTerms = getOfferTerms(editableRetentionOffer);
+            const termsChanged = !areTermsEqual(existingTerms, formTerms);
+            const nextStatus = formState.enabled ? 'active' : 'archived';
+            const displayTitle = formState.displayTitle || '';
+            const displayDescription = formState.displayDescription || '';
+            const hasDisplayChanges = editableRetentionOffer
+                ? displayTitle !== (editableRetentionOffer.display_title || '') ||
+                    displayDescription !== (editableRetentionOffer.display_description || '')
+                : displayTitle !== '' || displayDescription !== '';
+            const defaultState = getDefaultState(id);
+            const shouldCreateInactiveDraft = !formState.enabled && !editableRetentionOffer && hasFormChangesFromDefault(formState, defaultState);
 
-            const offerName = cadence === 'monthly' ? 'Monthly retention' : 'Yearly retention';
-            const offerCode = cadence === 'monthly' ? 'monthly-retention' : 'yearly-retention';
+            const createRetentionOffer = async (status: 'active' | 'archived') => {
+                const hash = generateRetentionHash();
+                await addOffer({
+                    name: getRetentionOfferName(cadence, hash),
+                    code: getRetentionOfferCode(cadence, hash),
+                    display_title: displayTitle,
+                    display_description: displayDescription,
+                    cadence: offerCadence,
+                    amount: formTerms.amount,
+                    duration: formTerms.duration,
+                    duration_in_months: formTerms.durationInMonths,
+                    currency: null,
+                    status,
+                    redemption_type: 'retention',
+                    tier: null,
+                    type: formTerms.type,
+                    currency_restriction: false
+                });
+                didMutate = true;
+            };
 
-            await addOffer({
-                name: offerName,
-                code: offerCode,
-                display_title: formState.displayTitle || '',
-                display_description: formState.displayDescription || '',
-                cadence: offerCadence,
-                amount,
-                duration: formState.type === 'free_months' ? 'free_months' : formState.duration,
-                duration_in_months: formState.type === 'percent' && formState.duration === 'repeating' ? formState.durationInMonths : 0,
-                currency: null,
-                status: formState.enabled ? 'active' : 'archived',
-                redemption_type: 'retention',
-                tier: null,
-                type: formState.type,
-                currency_restriction: false
-            });
+            const refetchOffersIfNeeded = async () => {
+                if (didMutate) {
+                    await refetchOffers();
+                }
+            };
+
+            if (!editableRetentionOffer && !formState.enabled && !shouldCreateInactiveDraft) {
+                return;
+            }
+
+            if (termsChanged) {
+                if (!formState.enabled && activeRetentionOffer) {
+                    await editOffer({...activeRetentionOffer, status: 'archived'});
+                    didMutate = true;
+                }
+
+                await createRetentionOffer(nextStatus);
+                await refetchOffersIfNeeded();
+                return;
+            }
+
+            if (editableRetentionOffer) {
+                const hasStatusChange = editableRetentionOffer.status !== nextStatus;
+                if (hasDisplayChanges || hasStatusChange) {
+                    await editOffer({
+                        ...editableRetentionOffer,
+                        display_title: displayTitle,
+                        display_description: displayDescription,
+                        status: nextStatus
+                    });
+                    didMutate = true;
+                }
+                await refetchOffersIfNeeded();
+                return;
+            }
+
+            if (formState.enabled || shouldCreateInactiveDraft) {
+                await createRetentionOffer(nextStatus);
+            }
+
+            await refetchOffersIfNeeded();
         },
         onSaveError: () => {},
         onValidate: () => {
@@ -327,7 +480,7 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
         }
     });
 
-    const activeRetentionOfferId = activeRetentionOffer?.id || 'none';
+    const activeRetentionOfferId = editableRetentionOffer?.id || 'none';
     const currentOfferKey = `${id}:${activeRetentionOfferId}`;
 
     useEffect(() => {
@@ -335,9 +488,9 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
             return;
         }
 
-        setFormState(() => getRetentionOfferFormState(id, activeRetentionOffer));
+        setFormState(() => getRetentionOfferFormState(id, editableRetentionOffer));
         setInitializedOfferKey(currentOfferKey);
-    }, [activeRetentionOffer, currentOfferKey, hasFetchedOffers, id, initializedOfferKey, isFetchingOffers, saveState, setFormState]);
+    }, [currentOfferKey, editableRetentionOffer, hasFetchedOffers, id, initializedOfferKey, isFetchingOffers, saveState, setFormState]);
 
     useEffect(() => {
         if (formState.percentAmount > 0) {
