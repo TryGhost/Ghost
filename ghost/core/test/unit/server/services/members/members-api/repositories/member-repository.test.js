@@ -886,7 +886,7 @@ describe('MemberRepository', function () {
                 context: {}
             });
 
-            StripeCustomerSubscription.add.calledOnce.should.be.true();
+            sinon.assert.calledOnce(StripeCustomerSubscription.add);
             const addedData = StripeCustomerSubscription.add.firstCall.args[0];
             assert.equal(addedData.default_payment_card_last4, '8888');
         });
@@ -927,7 +927,7 @@ describe('MemberRepository', function () {
                 context: {}
             });
 
-            StripeCustomerSubscription.add.calledOnce.should.be.true();
+            sinon.assert.calledOnce(StripeCustomerSubscription.add);
             const addedData = StripeCustomerSubscription.add.firstCall.args[0];
             assert.equal(addedData.default_payment_card_last4, null);
         });
@@ -968,7 +968,7 @@ describe('MemberRepository', function () {
                 context: {}
             });
 
-            StripeCustomerSubscription.add.calledOnce.should.be.true();
+            sinon.assert.calledOnce(StripeCustomerSubscription.add);
             const addedData = StripeCustomerSubscription.add.firstCall.args[0];
             assert.equal(addedData.default_payment_card_last4, '4242');
         });
@@ -1017,7 +1017,7 @@ describe('MemberRepository', function () {
                 context: {}
             });
 
-            StripeCustomerSubscription.add.calledOnce.should.be.true();
+            sinon.assert.calledOnce(StripeCustomerSubscription.add);
             const addedData = StripeCustomerSubscription.add.firstCall.args[0];
             assert.equal(addedData.default_payment_card_last4, '1234');
         });
