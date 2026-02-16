@@ -75,6 +75,25 @@ describe('content calendar utils', () => {
         expect(feb10?.posts.map(post => post.id)).toEqual(['draft-with-created']);
     });
 
+    it('prefers updated_at over created_at for draft posts', () => {
+        const grid = buildCalendarGrid({
+            month: {year: 2026, month: 2},
+            timeZone: 'UTC',
+            posts: [
+                createPost({
+                    id: 'draft-with-both-dates',
+                    status: 'draft',
+                    updated_at: '2026-02-12T12:00:00.000Z',
+                    created_at: '2026-02-10T12:00:00.000Z'
+                })
+            ]
+        });
+
+        const feb12 = grid.find(day => day.dateKey === '2026-02-12');
+
+        expect(feb12?.posts.map(post => post.id)).toEqual(['draft-with-both-dates']);
+    });
+
     it('ignores posts that do not have any usable date fields', () => {
         const grid = buildCalendarGrid({
             month: {year: 2026, month: 2},
