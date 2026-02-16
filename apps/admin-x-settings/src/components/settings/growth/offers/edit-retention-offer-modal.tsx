@@ -232,6 +232,7 @@ const RetentionOfferSidebar: React.FC<{
                 </section>
                 <section className='mt-4'>
                     <Toggle
+                        key={`retention-toggle-${cadence}-${formState.enabled ? 'enabled' : 'disabled'}`}
                         checked={formState.enabled}
                         direction='rtl'
                         hint={cadence === 'monthly' ? 'Applied to monthly plans' : 'Applied to annual plans'}
