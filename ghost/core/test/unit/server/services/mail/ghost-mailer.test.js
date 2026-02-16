@@ -351,7 +351,7 @@ describe('Mail: Ghostmailer', function () {
             });
 
             const sentMessage = sendMailSpy.firstCall.args[0];
-            sentMessage['o:tag'].should.be.an.Array();
+            assert(Array.isArray(sentMessage['o:tag']));
             assert(sentMessage['o:tag'].includes('transactional-email'));
             assert(sentMessage['o:tag'].includes('blog-123123'));
             assert.equal(sentMessage['o:tracking-opens'], true);
@@ -374,7 +374,7 @@ describe('Mail: Ghostmailer', function () {
             });
 
             const sentMessage = sendMailSpy.firstCall.args[0];
-            sentMessage['o:tag'].should.be.an.Array();
+            assert(Array.isArray(sentMessage['o:tag']));
             assert(sentMessage['o:tag'].includes('transactional-email'));
             assert(sentMessage['o:tag'].includes('blog-123123'));
             assert.equal(sentMessage['o:tracking-opens'], undefined);

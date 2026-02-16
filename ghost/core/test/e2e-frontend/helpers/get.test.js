@@ -30,7 +30,7 @@ function buildMember(status, products = []) {
 }
 
 function testPosts(posts, map) {
-    posts.should.be.an.Array();
+    assert(Array.isArray(posts));
     posts.length.should.eql(DEFAULT_POST_FIXTURE_COUNT + Object.keys(map).length);
 
     // Free post
