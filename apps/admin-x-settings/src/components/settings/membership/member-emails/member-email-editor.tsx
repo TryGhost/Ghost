@@ -1,4 +1,5 @@
 import React, {useCallback} from 'react';
+import useFeatureFlag from '../../../../hooks/use-feature-flag';
 import {KoenigEditorBase, type KoenigInstance, LoadingIndicator, type NodeType} from '@tryghost/admin-x-design-system';
 import {cn} from '@tryghost/shade';
 
@@ -8,17 +9,21 @@ export interface MemberEmailsEditorProps {
     nodes?: NodeType;
     singleParagraph?: boolean;
     className?: string;
+    isSnippetsEnabled?: boolean;
     onChange?: (value: string) => void;
 }
 
 const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
     value,
     placeholder,
-    nodes = 'EMAIL_NODES',
+    nodes,
     singleParagraph = false,
     className,
+    isSnippetsEnabled = false,
     onChange
 }) => {
+    const welcomeEmailEditorEnabled = useFeatureFlag('welcomeEmailEditor');
+    const effectiveNodes: NodeType = nodes ?? (welcomeEmailEditorEnabled ? 'EMAIL_EDITOR_NODES' : 'EMAIL_NODES');
     const baseEditorStyles = cn(
         // Base typography
         'text-[1.6rem] leading-[1.6] tracking-[-0.01em]',
@@ -60,20 +65,41 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
         <div onKeyDown={handleKeyDown}>
             <KoenigEditorBase
                 className={cn(baseEditorStyles, className)}
-                emojiPicker={false}
+                emojiPicker={true}
                 inheritFontStyles={false}
                 initialEditorState={value}
+                isSnippetsEnabled={isSnippetsEnabled}
                 loadingFallback={<LoadingIndicator delay={200} size="lg" />}
-                nodes={nodes}
+                nodes={effectiveNodes}
                 placeholder={placeholder}
                 singleParagraph={singleParagraph}
                 onChange={handleChange}
             >
                 {(koenig: KoenigInstance) => (
                     <>
-                        <koenig.ReplacementStringsPlugin />
+                        <koenig.EmEnDashPlugin />
+                        <koenig.EmojiPickerPlugin />
                         <koenig.ListPlugin />
-                        <koenig.HorizontalRulePlugin />
+
+                        {welcomeEmailEditorEnabled && (
+                            <>
+                                <koenig.BookmarkPlugin />
+                                <koenig.ButtonPlugin />
+                                <koenig.CalloutPlugin />
+                                <koenig.CardMenuPlugin />
+                                <koenig.EmailCtaPlugin />
+                                <koenig.HorizontalRulePlugin />
+                                <koenig.HtmlPlugin />
+                                <koenig.KoenigSelectorPlugin />
+                                <koenig.ReplacementStringsPlugin />
+                                {/* TODO: we need to wire up card config to enable snippets */}
+                                {/* <koenig.KoenigSnippetPlugin /> */}
+                                {/* TODO: we need to wire up a fileUploader prop + fileUploadHook to enable files+images */}
+                                {/* <koenig.FilePlugin /> */}
+                                {/* <koenig.ImagePlugin /> */}
+                            </>
+                        )}
+
                     </>
                 )}
             </KoenigEditorBase>
