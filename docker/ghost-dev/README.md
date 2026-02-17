@@ -7,7 +7,7 @@ Minimal Docker image for running Ghost Core in development with hot-reload suppo
 This lightweight image:
 - Installs only Ghost Core dependencies
 - Mounts source code from the host at runtime
-- Enables `node --watch` for automatic restarts on file changes
+- Enables `nodemon` for automatic restarts on file changes
 - Works with the Caddy gateway to proxy frontend assets from host dev servers
 
 ## Key Differences from Main Dockerfile
