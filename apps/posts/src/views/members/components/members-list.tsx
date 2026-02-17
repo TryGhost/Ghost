@@ -33,18 +33,22 @@ function formatLocation(geolocation: Member['geolocation']): string {
         return 'Unknown';
     }
 
-    const {country, region, country_code: countryCode} = geolocation;
+    try {
+        const parsed = JSON.parse(geolocation) as {country?: string; region?: string; country_code?: string};
 
-    if (!country) {
+        if (!parsed.country) {
+            return 'Unknown';
+        }
+
+        // For US, show "State, US"
+        if (parsed.country_code === 'US' && parsed.region) {
+            return `${parsed.region}, US`;
+        }
+
+        return parsed.country;
+    } catch {
         return 'Unknown';
     }
-
-    // For US, show "State, US"
-    if (countryCode === 'US' && region) {
-        return `${region}, US`;
-    }
-
-    return country;
 }
 
 function getStatusBadgeVariant(status: Member['status']): 'default' | 'secondary' | 'outline' {

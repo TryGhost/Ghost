@@ -75,13 +75,9 @@ export type Member = {
     email_count?: number;
     email_opened_count?: number;
     email_open_rate?: number | null;
-    geolocation?: {
-        country?: string;
-        country_code?: string;
-        region?: string;
-        city?: string;
-        timezone?: string;
-    } | null;
+    // TODO: The server returns geolocation as a JSON-encoded string (not a parsed object).
+    // Long term we should parse this on the server side and return a proper object.
+    geolocation?: string | null;
     email_suppression?: {
         suppressed: boolean;
         info?: {
