@@ -59,6 +59,10 @@ const features: Feature[] = [{
     title: 'Retention Offers',
     description: 'Enable retention offers for canceling members',
     flag: 'retentionOffers'
+}, {
+    title: 'Welcome Email Editor',
+    description: 'Enable the new welcome email editor experience',
+    flag: 'welcomeEmailEditor'
 }];
 
 const AlphaFeatures: React.FC = () => {
