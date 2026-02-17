@@ -24,7 +24,7 @@ function ThemeErrorsBanner() {
                     <LucideIcon.AlertTriangle className="mt-0.5 size-4 shrink-0 text-red" />
                     <div>
                         <div className="font-semibold text-red">Your theme has errors</div>
-                        <div className="text-sm text-muted-foreground">Some functionality on your site may be limited &rarr;</div>
+                        <div className="text-sm text-foreground">Some functionality on your site may be limited &rarr;</div>
                     </div>
                 </div>
             </Banner>
