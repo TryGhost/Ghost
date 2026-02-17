@@ -67,15 +67,15 @@ describe('Labs Service', function () {
 
     it('respects the value in config over GA keys', function () {
         configUtils.set('labs', {
-            audienceFeedback: false
+            announcementBar: false
         });
 
         assert.deepEqual(labs.getAll(), expectedLabsObject({
-            audienceFeedback: false,
+            announcementBar: false,
             members: true
         }));
 
-        assert.equal(labs.isSet('audienceFeedback'), false);
+        assert.equal(labs.isSet('announcementBar'), false);
     });
 
     it('members flag is true when members_signup_access setting is "all"', function () {

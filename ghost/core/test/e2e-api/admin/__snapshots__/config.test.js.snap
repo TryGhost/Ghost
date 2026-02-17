@@ -11,7 +11,6 @@ Object {
     "labs": Object {
       "additionalPaymentMethods": true,
       "announcementBar": true,
-      "audienceFeedback": true,
       "commentModeration": true,
       "customFonts": true,
       "editorExcerpt": true,

@@ -81,7 +81,6 @@ export const responseFixtures = {
 };
 
 const defaultLabFlags = {
-    audienceFeedback: false,
     collections: false,
     outboundLinkTagging: false,
     announcementBar: false,
