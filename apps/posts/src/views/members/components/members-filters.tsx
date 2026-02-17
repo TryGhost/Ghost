@@ -18,9 +18,9 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     onFiltersChange
 }) => {
     // Fetch required data for filters
-    const {data: labelsData} = useBrowseLabels({});
-    const {data: tiersData} = useBrowseTiers({});
-    const {data: newslettersData} = useBrowseNewsletters({});
+    const {data: labelsData} = useBrowseLabels({searchParams: {limit: '100'}});
+    const {data: tiersData} = useBrowseTiers({searchParams: {limit: '100'}});
+    const {data: newslettersData} = useBrowseNewsletters({searchParams: {limit: '100'}});
     const {data: settingsData} = useBrowseSettings({});
     const {data: configData} = useBrowseConfig({});
 

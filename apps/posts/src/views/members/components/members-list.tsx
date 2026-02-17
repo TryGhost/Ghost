@@ -1,5 +1,4 @@
-import {Badge, formatDisplayDate, formatTimestamp} from '@tryghost/shade';
-import {MemberAvatar} from '@components/member-avatar';
+import MembersListItem from './members-list-item';
 import {Member} from '@tryghost/admin-x-framework/api/members';
 import {forwardRef, useRef} from 'react';
 import {useInfiniteVirtualScroll} from '@components/virtual-table/use-infinite-virtual-scroll';
@@ -28,51 +27,6 @@ const PlaceholderRow = forwardRef<HTMLDivElement>(function PlaceholderRow(
         </div>
     );
 });
-
-function formatLocation(geolocation: Member['geolocation']): string {
-    if (!geolocation) {
-        return 'Unknown';
-    }
-
-    try {
-        const parsed = JSON.parse(geolocation) as {country?: string; region?: string; country_code?: string};
-
-        if (!parsed.country) {
-            return 'Unknown';
-        }
-
-        // For US, show "State, US"
-        if (parsed.country_code === 'US' && parsed.region) {
-            return `${parsed.region}, US`;
-        }
-
-        return parsed.country;
-    } catch {
-        return 'Unknown';
-    }
-}
-
-function getStatusBadgeVariant(status: Member['status']): 'default' | 'secondary' | 'outline' {
-    switch (status) {
-    case 'paid':
-        return 'default';
-    case 'comped':
-        return 'secondary';
-    default:
-        return 'outline';
-    }
-}
-
-function getStatusLabel(status: Member['status']): string {
-    switch (status) {
-    case 'paid':
-        return 'Paid';
-    case 'comped':
-        return 'Complimentary';
-    default:
-        return 'Free';
-    }
-}
 
 interface MembersListProps {
     items: Member[];
@@ -147,61 +101,14 @@ function MembersList({
                         }
 
                         return (
-                            <div
+                            <MembersListItem
                                 key={key}
                                 {...props}
-                                className={`grid w-full cursor-pointer grid-cols-[minmax(0,1fr)_7rem] items-center gap-2 border-b px-4 py-3 hover:bg-muted/50 lg:gap-4 ${gridCols}`}
-                                data-testid="members-list-item"
-                                onClick={() => handleRowClick(item.id)}
-                            >
-                                {/* Member Name/Email */}
-                                <div className="flex items-center gap-3">
-                                    <MemberAvatar
-                                        avatarImage={item.avatar_image}
-                                        className="size-10 min-w-10 md:size-10 md:min-w-10"
-                                        memberId={item.id}
-                                    />
-                                    <div className="min-w-0">
-                                        <div className="truncate font-medium">
-                                            {item.name || item.email || 'Anonymous'}
-                                        </div>
-                                        {item.name && item.email && (
-                                            <div className="truncate text-sm text-muted-foreground" data-testid="member-email">
-                                                {item.email}
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* Status Badge */}
-                                <div className="flex justify-end lg:justify-start">
-                                    <Badge variant={getStatusBadgeVariant(item.status)}>
-                                        {getStatusLabel(item.status)}
-                                    </Badge>
-                                </div>
-
-                                {/* Open Rate - Hidden on mobile */}
-                                {showEmailOpenRate && (
-                                    <div className="hidden text-sm text-muted-foreground lg:block">
-                                        {item.email_open_rate !== null && item.email_open_rate !== undefined
-                                            ? `${Math.round(item.email_open_rate)}%`
-                                            : 'N/A'}
-                                    </div>
-                                )}
-
-                                {/* Location - Hidden on mobile */}
-                                <div className="hidden truncate text-sm text-muted-foreground lg:block">
-                                    {formatLocation(item.geolocation)}
-                                </div>
-
-                                {/* Created Date - Hidden on mobile */}
-                                <div className="hidden lg:block">
-                                    <div className="text-sm">{formatDisplayDate(item.created_at)}</div>
-                                    <div className="text-xs text-muted-foreground">
-                                        {formatTimestamp(item.created_at)}
-                                    </div>
-                                </div>
-                            </div>
+                                gridCols={gridCols}
+                                item={item}
+                                showEmailOpenRate={showEmailOpenRate}
+                                onClick={handleRowClick}
+                            />
                         );
                     })}
                     <SpacerRow height={spaceAfter} />
