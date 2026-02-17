@@ -19,6 +19,21 @@ export interface UseMembersFilterConfigOptions {
     onTiersSearchChange?: (search: string) => void;
     tiersSearchValue?: string;
     tiersLoading?: boolean;
+    // Resource search for post-type filters (signup, conversion)
+    postResourceOptions?: FilterOption[];
+    onPostResourceSearchChange?: (search: string) => void;
+    postResourceSearchValue?: string;
+    postResourceLoading?: boolean;
+    // Resource search for email-type filters (sent/opened/clicked email, feedback)
+    emailResourceOptions?: FilterOption[];
+    onEmailResourceSearchChange?: (search: string) => void;
+    emailResourceSearchValue?: string;
+    emailResourceLoading?: boolean;
+    // Feature/setting flags for resource filters
+    membersTrackSources?: boolean;
+    emailTrackOpens?: boolean;
+    emailTrackClicks?: boolean;
+    audienceFeedbackEnabled?: boolean;
 }
 
 const STATUS_OPTIONS: FilterOption<string>[] = [
@@ -78,6 +93,11 @@ const NUMBER_OPERATORS = [
     {value: 'is-less', label: 'is less than'}
 ];
 
+const AUDIENCE_FEEDBACK_OPERATORS = [
+    {value: '1', label: 'More like this'},
+    {value: '0', label: 'Less like this'}
+];
+
 export function useMembersFilterConfig({
     labels = [],
     tiers = [],
@@ -92,7 +112,19 @@ export function useMembersFilterConfig({
     labelsLoading = false,
     onTiersSearchChange,
     tiersSearchValue,
-    tiersLoading = false
+    tiersLoading = false,
+    postResourceOptions = [],
+    onPostResourceSearchChange,
+    postResourceSearchValue,
+    postResourceLoading = false,
+    emailResourceOptions = [],
+    onEmailResourceSearchChange,
+    emailResourceSearchValue,
+    emailResourceLoading = false,
+    membersTrackSources = false,
+    emailTrackOpens = false,
+    emailTrackClicks = false,
+    audienceFeedbackEnabled = false
 }: UseMembersFilterConfigOptions): FilterFieldGroup[] {
     return useMemo(() => {
         const groups: FilterFieldGroup[] = [];
@@ -151,6 +183,23 @@ export function useMembersFilterConfig({
                 options: SUBSCRIBED_OPTIONS_SINGLE,
                 operators: IS_IS_NOT_OPERATORS,
                 searchable: false
+            });
+        }
+
+        if (membersTrackSources) {
+            basicFields.push({
+                key: 'signup',
+                label: 'Signed up on post/page',
+                type: 'select',
+                icon: <LucideIcon.UserPlus className="size-4" />,
+                options: postResourceOptions,
+                operators: IS_IS_NOT_OPERATORS,
+                searchable: true,
+                onSearchChange: onPostResourceSearchChange,
+                searchValue: postResourceSearchValue,
+                isLoading: postResourceLoading,
+                placeholder: 'Select a post or page...',
+                className: 'w-64'
             });
         }
 
@@ -289,6 +338,23 @@ export function useMembersFilterConfig({
                 className: 'w-40'
             });
 
+            if (membersTrackSources) {
+                subscriptionFields.push({
+                    key: 'conversion',
+                    label: 'Subscription started on post/page',
+                    type: 'select',
+                    icon: <LucideIcon.ArrowRightLeft className="size-4" />,
+                    options: postResourceOptions,
+                    operators: IS_IS_NOT_OPERATORS,
+                    searchable: true,
+                    onSearchChange: onPostResourceSearchChange,
+                    searchValue: postResourceSearchValue,
+                    isLoading: postResourceLoading,
+                    placeholder: 'Select a post or page...',
+                    className: 'w-64'
+                });
+            }
+
             groups.push({
                 group: 'Subscription',
                 fields: subscriptionFields
@@ -334,6 +400,72 @@ export function useMembersFilterConfig({
                 className: 'w-24'
             });
 
+            emailFields.push({
+                key: 'emails.post_id',
+                label: 'Sent email',
+                type: 'select',
+                icon: <LucideIcon.Send className="size-4" />,
+                options: emailResourceOptions,
+                operators: IS_IS_NOT_OPERATORS,
+                searchable: true,
+                onSearchChange: onEmailResourceSearchChange,
+                searchValue: emailResourceSearchValue,
+                isLoading: emailResourceLoading,
+                placeholder: 'Select an email...',
+                className: 'w-64'
+            });
+
+            if (emailTrackOpens) {
+                emailFields.push({
+                    key: 'opened_emails.post_id',
+                    label: 'Opened email',
+                    type: 'select',
+                    icon: <LucideIcon.MailOpen className="size-4" />,
+                    options: emailResourceOptions,
+                    operators: IS_IS_NOT_OPERATORS,
+                    searchable: true,
+                    onSearchChange: onEmailResourceSearchChange,
+                    searchValue: emailResourceSearchValue,
+                    isLoading: emailResourceLoading,
+                    placeholder: 'Select an email...',
+                    className: 'w-64'
+                });
+            }
+
+            if (emailTrackClicks) {
+                emailFields.push({
+                    key: 'clicked_links.post_id',
+                    label: 'Clicked email',
+                    type: 'select',
+                    icon: <LucideIcon.MousePointerClick className="size-4" />,
+                    options: emailResourceOptions,
+                    operators: IS_IS_NOT_OPERATORS,
+                    searchable: true,
+                    onSearchChange: onEmailResourceSearchChange,
+                    searchValue: emailResourceSearchValue,
+                    isLoading: emailResourceLoading,
+                    placeholder: 'Select an email...',
+                    className: 'w-64'
+                });
+            }
+
+            if (audienceFeedbackEnabled) {
+                emailFields.push({
+                    key: 'newsletter_feedback',
+                    label: 'Responded with feedback',
+                    type: 'select',
+                    icon: <LucideIcon.MessageSquare className="size-4" />,
+                    options: emailResourceOptions,
+                    operators: AUDIENCE_FEEDBACK_OPERATORS,
+                    searchable: true,
+                    onSearchChange: onEmailResourceSearchChange,
+                    searchValue: emailResourceSearchValue,
+                    isLoading: emailResourceLoading,
+                    placeholder: 'Select an email...',
+                    className: 'w-64'
+                });
+            }
+
             groups.push({
                 group: 'Email',
                 fields: emailFields
@@ -355,6 +487,18 @@ export function useMembersFilterConfig({
         labelsLoading,
         onTiersSearchChange,
         tiersSearchValue,
-        tiersLoading
+        tiersLoading,
+        postResourceOptions,
+        onPostResourceSearchChange,
+        postResourceSearchValue,
+        postResourceLoading,
+        emailResourceOptions,
+        onEmailResourceSearchChange,
+        emailResourceSearchValue,
+        emailResourceLoading,
+        membersTrackSources,
+        emailTrackOpens,
+        emailTrackClicks,
+        audienceFeedbackEnabled
     ]);
 }

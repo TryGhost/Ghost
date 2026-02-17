@@ -13,7 +13,7 @@ export const MEMBER_FILTER_FIELDS = [
     'subscribed',
     'last_seen_at',
     'created_at',
-    'signup_attribution',
+    'signup',
     // Newsletter filters (dynamic, prefixed with newsletters.slug:)
     'newsletters',
     // Subscription filters
@@ -28,10 +28,10 @@ export const MEMBER_FILTER_FIELDS = [
     'email_count',
     'email_opened_count',
     'email_open_rate',
-    'email_sent',
-    'email_opened',
-    'email_clicked',
-    'audience_feedback',
+    'emails.post_id',
+    'opened_emails.post_id',
+    'clicked_links.post_id',
+    'newsletter_feedback',
     // Optional
     'offer_redemptions'
 ] as const;
@@ -172,13 +172,8 @@ export function buildMemberNqlFilter(filters: Filter[]): string | undefined {
         case 'last_seen_at':
         case 'created_at':
         case 'subscriptions.start_date':
-        case 'subscriptions.current_period_end':
-        case 'email_sent':
-        case 'email_opened':
-        case 'email_clicked': {
-            // Format date for NQL
+        case 'subscriptions.current_period_end': {
             const dateValue = String(value);
-            // Just pass through the date value - the API will handle timezone
             parts.push(`${field}:${relationStr}'${dateValue}'`);
             break;
         }
@@ -203,22 +198,21 @@ export function buildMemberNqlFilter(filters: Filter[]): string | undefined {
             break;
         }
 
-        // Audience feedback
-        case 'audience_feedback': {
-            // audience_feedback uses custom NQL format
-            if (operator === 'is' || operator === 'is_any_of') {
-                parts.push(`audience_feedback.score:${value}`);
-            } else {
-                parts.push(`audience_feedback.score:-${value}`);
-            }
+        // Resource filters — value is a post/page ID
+        case 'signup':
+        case 'conversion':
+        case 'emails.post_id':
+        case 'opened_emails.post_id':
+        case 'clicked_links.post_id': {
+            parts.push(`${field}:${relationStr}'${value}'`);
             break;
         }
 
-        // Resource filters (signup_attribution, conversion)
-        case 'signup_attribution':
-        case 'conversion': {
-            // Value is a post ID
-            parts.push(`${field}:${relationStr}${value}`);
+        // Audience feedback — operator is the score, value is the post ID
+        case 'newsletter_feedback': {
+            // NQL: (feedback.post_id:'<postId>'+feedback.score:<0or1>)
+            const score = operator; // '1' = More like this, '0' = Less like this
+            parts.push(`(feedback.post_id:'${value}'+feedback.score:${score})`);
             break;
         }
 

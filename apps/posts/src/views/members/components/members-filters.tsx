@@ -6,6 +6,7 @@ import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters'
 import {getSettingValue, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {useMembersFilterConfig} from '../hooks/use-members-filter-config';
+import {useResourceSearch} from '../hooks/use-resource-search';
 
 interface MembersFiltersProps {
     filters: Filter[];
@@ -27,6 +28,10 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     const settings = settingsData?.settings || [];
     const paidMembersEnabled = getSettingValue<boolean>(settings, 'paid_members_enabled') === true;
     const emailAnalyticsEnabled = configData?.config?.emailAnalytics === true;
+    const membersTrackSources = getSettingValue<boolean>(settings, 'members_track_sources') === true;
+    const emailTrackOpens = getSettingValue<boolean>(settings, 'email_track_opens') === true;
+    const emailTrackClicks = getSettingValue<boolean>(settings, 'email_track_clicks') === true;
+    const audienceFeedbackEnabled = configData?.config?.labs?.audienceFeedback === true;
 
     // Get data
     const labels = labelsData?.labels || [];
@@ -34,6 +39,10 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     const newsletters = newslettersData?.newsletters || [];
     const activePaidTiers = tiers.filter(t => t.type === 'paid' && t.active);
     const hasMultipleTiers = activePaidTiers.length > 1;
+
+    // Resource search hooks for post/page and email pickers
+    const postSearch = useResourceSearch('post');
+    const emailSearch = useResourceSearch('email');
 
     // Get filter configuration
     const filterFields = useMembersFilterConfig({
@@ -44,7 +53,19 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
         paidMembersEnabled,
         emailAnalyticsEnabled,
         labelsOptions: labels.map(l => ({value: l.slug, label: l.name})),
-        tiersOptions: activePaidTiers.map(t => ({value: t.id, label: t.name}))
+        tiersOptions: activePaidTiers.map(t => ({value: t.id, label: t.name})),
+        postResourceOptions: postSearch.options,
+        onPostResourceSearchChange: postSearch.onSearchChange,
+        postResourceSearchValue: postSearch.searchValue,
+        postResourceLoading: postSearch.isLoading,
+        emailResourceOptions: emailSearch.options,
+        onEmailResourceSearchChange: emailSearch.onSearchChange,
+        emailResourceSearchValue: emailSearch.searchValue,
+        emailResourceLoading: emailSearch.isLoading,
+        membersTrackSources,
+        emailTrackOpens,
+        emailTrackClicks,
+        audienceFeedbackEnabled
     });
 
     const hasFilters = filters.length > 0;
