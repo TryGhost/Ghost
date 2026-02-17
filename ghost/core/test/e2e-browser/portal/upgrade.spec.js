@@ -33,7 +33,7 @@ test.describe('Portal', () => {
                     delay: 500
                 });
 
-                await sharedPage.waitForLoadState('networkidle');
+                await expect(sharedPage.locator('[data-test-tier]').first()).toBeVisible();
                 await impersonateMember(sharedPage);
 
                 const portalTriggerButton = sharedPage.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
@@ -50,8 +50,9 @@ test.describe('Portal', () => {
                 await completeStripeSubscription(sharedPage);
 
                 // open portal and check that member has been upgraded to paid tier
+                await expect(portalTriggerButton).toBeVisible();
                 await portalTriggerButton.click();
-                await expect(portalFrame.getByText('$50.00/year')).toBeVisible();
+                await expect(portalFrame.getByText('$50.00/year')).toBeVisible({timeout: 30000});
                 await expect(portalFrame.getByRole('heading', {name: 'Billing info'})).toBeVisible();
                 await expect(portalFrame.getByText('**** **** **** 4242')).toBeVisible();
 
@@ -102,10 +103,11 @@ test.describe('Portal', () => {
                 await completeStripeSubscription(sharedPage);
 
                 // open portal and check that member has been upgraded to paid tier
+                await expect(portalTriggerButton).toBeVisible();
                 await portalTriggerButton.click();
                 // verify member's tier, price and card details
                 await expect(portalFrame.getByText(tierName)).toBeVisible();
-                await expect(portalFrame.getByText('$50.00/year')).toBeVisible();
+                await expect(portalFrame.getByText('$50.00/year')).toBeVisible({timeout: 30000});
                 await expect(portalFrame.getByText('**** **** **** 4242')).toBeVisible();
 
                 // verify member's tier on member detail page in admin

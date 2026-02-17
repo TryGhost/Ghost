@@ -277,15 +277,14 @@ const createOffer = async (page, {name, tierName, offerType, amount, discountTyp
 
             const confirmModal = await page.getByTestId('confirmation-modal');
             await confirmModal.getByRole('button', {name: 'Archive'}).click();
-        }
+            await confirmModal.waitFor({state: 'hidden'});
 
-        if (isCTA) {
+            // Still in the offers modal after archiving — click "New offer" directly
+            await page.getByText('New offer').click();
+        } else if (await page.getByTestId('offers').getByRole('button', {name: 'Add offer'}).isVisible()) {
             await page.getByTestId('offers').getByRole('button', {name: 'Add offer'}).click();
         } else {
-            // ensure the modal is open
-            if (!page.getByTestId('offers-modal').isVisible()) {
-                await page.getByTestId('offers').getByRole('button', {name: 'Manage offers'}).click();
-            }
+            await page.getByTestId('offers').getByRole('button', {name: 'Manage offers'}).click();
             await page.getByText('New offer').click();
         }
 
