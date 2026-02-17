@@ -34,6 +34,7 @@ export interface UseMembersFilterConfigOptions {
     emailTrackOpens?: boolean;
     emailTrackClicks?: boolean;
     audienceFeedbackEnabled?: boolean;
+    siteTimezone?: string;
 }
 
 const STATUS_OPTIONS: FilterOption<string>[] = [
@@ -61,10 +62,12 @@ const PLAN_INTERVAL_OPTIONS: FilterOption<string>[] = [
 
 const SUBSCRIPTION_STATUS_OPTIONS: FilterOption<string>[] = [
     {value: 'active', label: 'Active'},
+    {value: 'trialing', label: 'Trialing'},
     {value: 'canceled', label: 'Canceled'},
     {value: 'unpaid', label: 'Unpaid'},
-    {value: 'past_due', label: 'Past due'},
-    {value: 'trialing', label: 'Trialing'}
+    {value: 'past_due', label: 'Past Due'},
+    {value: 'incomplete', label: 'Incomplete'},
+    {value: 'incomplete_expired', label: 'Incomplete - Expired'}
 ];
 
 const IS_IS_NOT_OPERATORS = [
@@ -124,10 +127,12 @@ export function useMembersFilterConfig({
     membersTrackSources = false,
     emailTrackOpens = false,
     emailTrackClicks = false,
-    audienceFeedbackEnabled = false
+    audienceFeedbackEnabled = false,
+    siteTimezone = 'Etc/UTC'
 }: UseMembersFilterConfigOptions): FilterFieldGroup[] {
     return useMemo(() => {
         const groups: FilterFieldGroup[] = [];
+        const today = new Date(new Date().toLocaleString('en-US', {timeZone: siteTimezone})).toISOString().split('T')[0];
 
         // ===== BASIC FILTERS =====
         const basicFields: FilterFieldConfig[] = [];
@@ -139,7 +144,7 @@ export function useMembersFilterConfig({
             icon: <LucideIcon.User className="size-4" />,
             placeholder: 'Enter name...',
             operators: TEXT_OPERATORS,
-            defaultOperator: 'contains',
+            defaultOperator: 'is',
             className: 'w-48'
         });
 
@@ -150,7 +155,7 @@ export function useMembersFilterConfig({
             icon: <LucideIcon.Mail className="size-4" />,
             placeholder: 'Enter email...',
             operators: TEXT_OPERATORS,
-            defaultOperator: 'contains',
+            defaultOperator: 'is',
             className: 'w-64'
         });
 
@@ -186,6 +191,28 @@ export function useMembersFilterConfig({
             });
         }
 
+        basicFields.push({
+            key: 'last_seen_at',
+            label: 'Last seen',
+            type: 'date',
+            icon: <LucideIcon.Eye className="size-4" />,
+            operators: DATE_OPERATORS,
+            defaultOperator: 'is-or-less',
+            defaultValue: today,
+            className: 'w-40'
+        });
+
+        basicFields.push({
+            key: 'created_at',
+            label: 'Created',
+            type: 'date',
+            icon: <LucideIcon.Calendar className="size-4" />,
+            operators: DATE_OPERATORS,
+            defaultOperator: 'is-or-less',
+            defaultValue: today,
+            className: 'w-40'
+        });
+
         if (membersTrackSources) {
             basicFields.push({
                 key: 'signup',
@@ -202,26 +229,6 @@ export function useMembersFilterConfig({
                 className: 'w-64'
             });
         }
-
-        basicFields.push({
-            key: 'last_seen_at',
-            label: 'Last seen',
-            type: 'date',
-            icon: <LucideIcon.Eye className="size-4" />,
-            operators: DATE_OPERATORS,
-            defaultOperator: 'is-or-less',
-            className: 'w-40'
-        });
-
-        basicFields.push({
-            key: 'created_at',
-            label: 'Created',
-            type: 'date',
-            icon: <LucideIcon.Calendar className="size-4" />,
-            operators: DATE_OPERATORS,
-            defaultOperator: 'is-or-less',
-            className: 'w-40'
-        });
 
         groups.push({
             group: 'Basic',
@@ -310,7 +317,7 @@ export function useMembersFilterConfig({
 
             subscriptionFields.push({
                 key: 'subscriptions.status',
-                label: 'Subscription status',
+                label: 'Stripe subscription status',
                 type: 'select',
                 icon: <LucideIcon.CreditCard className="size-4" />,
                 options: SUBSCRIPTION_STATUS_OPTIONS,
@@ -320,11 +327,12 @@ export function useMembersFilterConfig({
 
             subscriptionFields.push({
                 key: 'subscriptions.start_date',
-                label: 'Subscription start date',
+                label: 'Paid start date',
                 type: 'date',
                 icon: <LucideIcon.CalendarPlus className="size-4" />,
                 operators: DATE_OPERATORS,
-                defaultOperator: 'is-or-greater',
+                defaultOperator: 'is-or-less',
+                defaultValue: today,
                 className: 'w-40'
             });
 
@@ -335,6 +343,7 @@ export function useMembersFilterConfig({
                 icon: <LucideIcon.CalendarArrowDown className="size-4" />,
                 operators: DATE_OPERATORS,
                 defaultOperator: 'is-or-less',
+                defaultValue: today,
                 className: 'w-40'
             });
 
@@ -371,7 +380,8 @@ export function useMembersFilterConfig({
                 type: 'number',
                 icon: <LucideIcon.Send className="size-4" />,
                 operators: NUMBER_OPERATORS,
-                defaultOperator: 'is-greater',
+                defaultOperator: 'is',
+                defaultValue: 0,
                 min: 0,
                 className: 'w-24'
             });
@@ -382,23 +392,27 @@ export function useMembersFilterConfig({
                 type: 'number',
                 icon: <LucideIcon.MailOpen className="size-4" />,
                 operators: NUMBER_OPERATORS,
-                defaultOperator: 'is-greater',
+                defaultOperator: 'is',
+                defaultValue: 0,
                 min: 0,
                 className: 'w-24'
             });
 
-            emailFields.push({
-                key: 'email_open_rate',
-                label: 'Open rate (all time)',
-                type: 'number',
-                icon: <LucideIcon.Percent className="size-4" />,
-                operators: NUMBER_OPERATORS,
-                defaultOperator: 'is-greater',
-                min: 0,
-                max: 100,
-                suffix: '%',
-                className: 'w-24'
-            });
+            if (emailTrackOpens) {
+                emailFields.push({
+                    key: 'email_open_rate',
+                    label: 'Open rate (all time)',
+                    type: 'number',
+                    icon: <LucideIcon.Percent className="size-4" />,
+                    operators: NUMBER_OPERATORS,
+                    defaultOperator: 'is',
+                    defaultValue: 0,
+                    min: 0,
+                    max: 100,
+                    suffix: '%',
+                    className: 'w-24'
+                });
+            }
 
             emailFields.push({
                 key: 'emails.post_id',
@@ -457,6 +471,7 @@ export function useMembersFilterConfig({
                     icon: <LucideIcon.MessageSquare className="size-4" />,
                     options: emailResourceOptions,
                     operators: AUDIENCE_FEEDBACK_OPERATORS,
+                    defaultOperator: '1',
                     searchable: true,
                     onSearchChange: onEmailResourceSearchChange,
                     searchValue: emailResourceSearchValue,
@@ -499,6 +514,7 @@ export function useMembersFilterConfig({
         membersTrackSources,
         emailTrackOpens,
         emailTrackClicks,
-        audienceFeedbackEnabled
+        audienceFeedbackEnabled,
+        siteTimezone
     ]);
 }

@@ -1,4 +1,5 @@
-import {Badge, formatDisplayDate, formatTimestamp} from '@tryghost/shade';
+import moment from 'moment-timezone';
+
 import {Member} from '@tryghost/admin-x-framework/api/members';
 import {MemberAvatar} from '@components/member-avatar';
 
@@ -24,17 +25,6 @@ function formatLocation(geolocation: Member['geolocation']): string {
         return parsed.country;
     } catch {
         return 'Unknown';
-    }
-}
-
-function getStatusBadgeVariant(status: Member['status']): 'default' | 'secondary' | 'outline' {
-    switch (status) {
-    case 'paid':
-        return 'default';
-    case 'comped':
-        return 'secondary';
-    default:
-        return 'outline';
     }
 }
 
@@ -73,12 +63,18 @@ function MembersListItemName({item}: {item: Member}) {
     );
 }
 
-function MembersListItemStatus({status}: {status: Member['status']}) {
+function MembersListItemStatus({status, tiers}: {status: Member['status']; tiers?: Member['tiers']}) {
+    const tierNames = tiers?.map(t => t.name).join(', ');
     return (
         <div className="flex justify-end lg:justify-start">
-            <Badge variant={getStatusBadgeVariant(status)}>
-                {getStatusLabel(status)}
-            </Badge>
+            <div className="min-w-0">
+                <div className="text-sm">{getStatusLabel(status)}</div>
+                {tierNames && (
+                    <div className="truncate text-xs text-muted-foreground">
+                        {tierNames}
+                    </div>
+                )}
+            </div>
         </div>
     );
 }
@@ -104,9 +100,9 @@ function MembersListItemLocation({geolocation}: {geolocation: Member['geolocatio
 function MembersListItemCreated({createdAt}: {createdAt: string}) {
     return (
         <div className="hidden lg:block">
-            <div className="text-sm">{formatDisplayDate(createdAt)}</div>
+            <div className="text-sm">{moment.utc(createdAt).format('D MMM YYYY')}</div>
             <div className="text-xs text-muted-foreground">
-                {formatTimestamp(createdAt)}
+                {moment.utc(createdAt).fromNow()}
             </div>
         </div>
     );
@@ -130,7 +126,7 @@ function MembersListItem({item, gridCols, showEmailOpenRate, onClick, ...props}:
             onClick={() => onClick(item.id)}
         >
             <MembersListItemName item={item} />
-            <MembersListItemStatus status={item.status} />
+            <MembersListItemStatus status={item.status} tiers={item.tiers} />
             {showEmailOpenRate && (
                 <MembersListItemOpenRate emailOpenRate={item.email_open_rate} />
             )}

@@ -81,13 +81,13 @@ function MembersList({
             <div className="flex flex-col" data-testid="members-list">
                 {/* Table Header */}
                 <div className={`sticky top-0 z-10 hidden border-b bg-background lg:grid lg:gap-4 lg:px-4 lg:py-3 ${gridCols}`}>
-                    <div className="text-sm font-medium text-muted-foreground">Member</div>
-                    <div className="text-sm font-medium text-muted-foreground">Status</div>
+                    <div className="text-xs font-medium uppercase tracking-wide text-gray-700">Member</div>
+                    <div className="text-xs font-medium uppercase tracking-wide text-gray-700">Status</div>
                     {showEmailOpenRate && (
-                        <div className="text-sm font-medium text-muted-foreground">Open rate</div>
+                        <div className="text-xs font-medium uppercase tracking-wide text-gray-700">Open rate</div>
                     )}
-                    <div className="text-sm font-medium text-muted-foreground">Location</div>
-                    <div className="text-sm font-medium text-muted-foreground">Created</div>
+                    <div className="text-xs font-medium uppercase tracking-wide text-gray-700">Location</div>
+                    <div className="text-xs font-medium uppercase tracking-wide text-gray-700">Created</div>
                 </div>
 
                 {/* Table Body */}

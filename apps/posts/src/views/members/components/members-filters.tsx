@@ -1,5 +1,6 @@
 import React from 'react';
 import {Filter, Filters, LucideIcon} from '@tryghost/shade';
+import {getSiteTimezone} from '@src/utils/get-site-timezone';
 import {getSettingValue, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {useBrowseLabels} from '@tryghost/admin-x-framework/api/labels';
@@ -32,6 +33,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     const emailTrackOpens = getSettingValue<boolean>(settings, 'email_track_opens') === true;
     const emailTrackClicks = getSettingValue<boolean>(settings, 'email_track_clicks') === true;
     const audienceFeedbackEnabled = configData?.config?.labs?.audienceFeedback === true;
+    const siteTimezone = getSiteTimezone(settings);
 
     // Get data
     const labels = labelsData?.labels || [];
@@ -65,7 +67,8 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
         membersTrackSources,
         emailTrackOpens,
         emailTrackClicks,
-        audienceFeedbackEnabled
+        audienceFeedbackEnabled,
+        siteTimezone
     });
 
     const hasFilters = filters.length > 0;
