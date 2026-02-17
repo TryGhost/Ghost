@@ -1,7 +1,7 @@
 import React from 'react';
 import {Filter, Filters, LucideIcon} from '@tryghost/shade';
-import {getSiteTimezone} from '@src/utils/get-site-timezone';
 import {getSettingValue, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
+import {getSiteTimezone} from '@src/utils/get-site-timezone';
 import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {useBrowseLabels} from '@tryghost/admin-x-framework/api/labels';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
