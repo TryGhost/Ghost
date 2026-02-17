@@ -51,7 +51,10 @@ const MembersActions: React.FC<MembersActionsProps> = ({
         try {
             await exportMembers(nql);
         } catch (e) {
-            toast.error('Failed to export members');
+            toast.error('Export failed', {
+                description: 'There was a problem downloading your member data. Please check your connection and try again.',
+                duration: 8000,
+            });
             throw e;
         }
     }, [nql]);
@@ -70,7 +73,10 @@ const MembersActions: React.FC<MembersActionsProps> = ({
                 toast.success('Label added successfully');
             },
             onError: () => {
-                toast.error('Failed to add label');
+                toast.error('Failed to add label', {
+                    description: 'There was a problem applying this label. Please try again.',
+                    duration: 8000,
+                    });
             }
         });
     }, [bulkEdit, nql]);
@@ -89,7 +95,10 @@ const MembersActions: React.FC<MembersActionsProps> = ({
                 toast.success('Label removed successfully');
             },
             onError: () => {
-                toast.error('Failed to remove label');
+                toast.error('Failed to remove label', {
+                    description: 'There was a problem removing this label. Please try again.',
+                    duration: 8000,
+                    });
             }
         });
     }, [bulkEdit, nql]);
@@ -107,7 +116,10 @@ const MembersActions: React.FC<MembersActionsProps> = ({
                 toast.success('Members unsubscribed successfully');
             },
             onError: () => {
-                toast.error('Failed to unsubscribe members');
+                toast.error('Failed to unsubscribe members', {
+                    description: 'There was a problem unsubscribing these members. Please try again.',
+                    duration: 8000,
+                    });
             }
         });
     }, [bulkEdit, nql]);
@@ -122,7 +134,10 @@ const MembersActions: React.FC<MembersActionsProps> = ({
                 toast.success('Members deleted successfully');
             },
             onError: () => {
-                toast.error('Failed to delete members');
+                toast.error('Failed to delete members', {
+                    description: 'There was a problem deleting these members. Please try again.',
+                    duration: 8000,
+                    });
             }
         });
     }, [bulkDelete, nql]);
@@ -131,7 +146,10 @@ const MembersActions: React.FC<MembersActionsProps> = ({
         try {
             await exportMembers(nql);
         } catch (e) {
-            toast.error('Failed to export backup');
+            toast.error('Export failed', {
+                description: 'There was a problem downloading your backup. Please check your connection and try again.',
+                duration: 8000,
+            });
             throw e;
         }
     }, [nql]);
