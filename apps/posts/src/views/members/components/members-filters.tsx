@@ -3,7 +3,7 @@ import {Filter, Filters, LucideIcon} from '@tryghost/shade';
 import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {useBrowseLabels} from '@tryghost/admin-x-framework/api/labels';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
-import {useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
+import {getSettingValue, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {useMembersFilterConfig} from '../hooks/use-members-filter-config';
 
@@ -25,7 +25,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
 
     // Get settings
     const settings = settingsData?.settings || [];
-    const paidMembersEnabled = settings.find(s => s.key === 'paid_members_enabled')?.value === true;
+    const paidMembersEnabled = getSettingValue<boolean>(settings, 'paid_members_enabled') === true;
     const emailAnalyticsEnabled = configData?.config?.emailAnalytics === true;
 
     // Get data
