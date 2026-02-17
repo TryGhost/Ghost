@@ -15,9 +15,8 @@ interface DeleteModalProps {
     memberCount: number;
     onOpenChange: (open: boolean) => void;
     onConfirm: () => void;
-    onExportBackup: () => Promise<void>;
+    onExportBackup: () => void;
     isLoading?: boolean;
-    isExporting?: boolean;
 }
 
 export function DeleteModal({
@@ -26,28 +25,20 @@ export function DeleteModal({
     onOpenChange,
     onConfirm,
     onExportBackup,
-    isLoading = false,
-    isExporting = false
+    isLoading = false
 }: DeleteModalProps) {
     const [backupExported, setBackupExported] = useState(false);
-    const [exportError, setExportError] = useState(false);
 
     const handleOpenChange = (isOpen: boolean) => {
         if (!isOpen) {
             setBackupExported(false);
-            setExportError(false);
         }
         onOpenChange(isOpen);
     };
 
-    const handleExportBackup = async () => {
-        setExportError(false);
-        try {
-            await onExportBackup();
-            setBackupExported(true);
-        } catch {
-            setExportError(true);
-        }
+    const handleExportBackup = () => {
+        onExportBackup();
+        setBackupExported(true);
     };
 
     const handleConfirm = () => {
@@ -78,25 +69,15 @@ export function DeleteModal({
                             </p>
                             <Button
                                 className="mt-2"
-                                disabled={isExporting || backupExported}
+                                disabled={backupExported}
                                 size="sm"
                                 variant="outline"
                                 onClick={handleExportBackup}
                             >
-                                {isExporting ? (
-                                    <>
-                                        <LucideIcon.Loader2 className="mr-2 size-4 animate-spin" />
-                                        Exporting...
-                                    </>
-                                ) : backupExported ? (
+                                {backupExported ? (
                                     <>
                                         <LucideIcon.Check className="mr-2 size-4" />
                                         Backup exported
-                                    </>
-                                ) : exportError ? (
-                                    <>
-                                        <LucideIcon.AlertCircle className="mr-2 size-4" />
-                                        Export failed - retry
                                     </>
                                 ) : (
                                     <>

@@ -9,6 +9,8 @@ import {
     DropdownMenuTrigger,
     LucideIcon
 } from '@tryghost/shade';
+import {blobDownloadFromEndpoint} from '@tryghost/admin-x-framework/helpers';
+import {toast} from 'sonner';
 import {useBrowseLabels} from '@tryghost/admin-x-framework/api/labels';
 import {useBulkDeleteMembers, useBulkEditMembers} from '@tryghost/admin-x-framework/api/members';
 
@@ -20,30 +22,12 @@ interface MembersActionsProps {
 }
 
 async function exportMembers(filter?: string): Promise<void> {
-    const params = new URLSearchParams();
+    const params = new URLSearchParams({limit: 'all'});
     if (filter) {
         params.set('filter', filter);
     }
-    params.set('limit', 'all');
-
-    // Using raw fetch instead of useFetchApi because we need response.blob() for file download.
-    // useFetchApi's handleResponse returns text/json which doesn't support blob download URLs.
-    const response = await fetch(`/ghost/api/admin/members/upload/?${params}`, {
-        method: 'GET',
-        credentials: 'include'
-    });
-
-    if (!response.ok) {
-        throw new Error('Failed to export members');
-    }
-
-    const blob = await response.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `members.${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const datetime = new Date().toJSON().substring(0, 10);
+    await blobDownloadFromEndpoint(`/members/upload/?${params}`, `members.${datetime}.csv`);
 }
 
 const MembersActions: React.FC<MembersActionsProps> = ({
@@ -62,19 +46,13 @@ const MembersActions: React.FC<MembersActionsProps> = ({
     const [showRemoveLabelModal, setShowRemoveLabelModal] = useState(false);
     const [showUnsubscribeModal, setShowUnsubscribeModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [isExporting, setIsExporting] = useState(false);
 
     const handleExport = useCallback(async () => {
-        setIsExporting(true);
         try {
             await exportMembers(nql);
-        } catch (error) {
-            // TODO: Show toast notification on export failure once Toast is ported to React.
-            // The Ember version shows a toast here. For now, we log to console.
-            // eslint-disable-next-line no-console
-            console.error('Export failed:', error);
-        } finally {
-            setIsExporting(false);
+        } catch (e) {
+            toast.error('Failed to export members');
+            throw e;
         }
     }, [nql]);
 
@@ -89,6 +67,10 @@ const MembersActions: React.FC<MembersActionsProps> = ({
         }, {
             onSuccess: () => {
                 setShowAddLabelModal(false);
+                toast.success('Label added successfully');
+            },
+            onError: () => {
+                toast.error('Failed to add label');
             }
         });
     }, [bulkEdit, nql]);
@@ -104,6 +86,10 @@ const MembersActions: React.FC<MembersActionsProps> = ({
         }, {
             onSuccess: () => {
                 setShowRemoveLabelModal(false);
+                toast.success('Label removed successfully');
+            },
+            onError: () => {
+                toast.error('Failed to remove label');
             }
         });
     }, [bulkEdit, nql]);
@@ -118,6 +104,10 @@ const MembersActions: React.FC<MembersActionsProps> = ({
         }, {
             onSuccess: () => {
                 setShowUnsubscribeModal(false);
+                toast.success('Members unsubscribed successfully');
+            },
+            onError: () => {
+                toast.error('Failed to unsubscribe members');
             }
         });
     }, [bulkEdit, nql]);
@@ -129,6 +119,10 @@ const MembersActions: React.FC<MembersActionsProps> = ({
         }, {
             onSuccess: () => {
                 setShowDeleteModal(false);
+                toast.success('Members deleted successfully');
+            },
+            onError: () => {
+                toast.error('Failed to delete members');
             }
         });
     }, [bulkDelete, nql]);
@@ -136,10 +130,9 @@ const MembersActions: React.FC<MembersActionsProps> = ({
     const handleExportBackup = useCallback(async () => {
         try {
             await exportMembers(nql);
-        } catch (error) {
-            // eslint-disable-next-line no-console
-            console.error('Export backup failed:', error);
-            throw error;
+        } catch (e) {
+            toast.error('Failed to export backup');
+            throw e;
         }
     }, [nql]);
 
@@ -154,7 +147,7 @@ const MembersActions: React.FC<MembersActionsProps> = ({
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                     {/* Export */}
-                    <DropdownMenuItem disabled={isExporting} onClick={handleExport}>
+                    <DropdownMenuItem onClick={handleExport}>
                         <LucideIcon.Download className="mr-2 size-4" />
                         {isFiltered
                             ? `Export ${memberCount.toLocaleString()} members`
@@ -223,7 +216,6 @@ const MembersActions: React.FC<MembersActionsProps> = ({
                 onOpenChange={setShowUnsubscribeModal}
             />
             <DeleteModal
-                isExporting={isExporting}
                 isLoading={isBulkDeleting}
                 memberCount={memberCount}
                 open={showDeleteModal}
