@@ -385,4 +385,79 @@ describe('Portal Data links:', () => {
             });
         });
     });
+
+    describe('hashchange account page access', () => {
+        test.each([
+            {path: 'account', expectedText: /your account/i},
+            {path: 'account/plans', expectedText: /choose a plan/i},
+            {path: 'account/profile', expectedText: /account settings/i}
+        ])('#/portal/$path opens account page via hashchange when logged in', async ({path, expectedText}) => {
+            // Start with no hash — simulates an already-loaded page
+            window.location.hash = '';
+            let {
+                popupFrame, triggerButtonFrame, ...utils
+            } = await setup({
+                site: FixtureSite.singleTier.basic,
+                member: FixtureMember.free,
+                showPopup: false
+            });
+            expect(triggerButtonFrame).toBeInTheDocument();
+
+            // Navigate via hash change (e.g. clicking <a href="#/portal/account/profile">)
+            window.location.hash = `#/portal/${path}`;
+            window.dispatchEvent(new HashChangeEvent('hashchange'));
+
+            popupFrame = await utils.findByTitle(/portal-popup/i);
+            expect(popupFrame).toBeInTheDocument();
+
+            const pageTitle = within(popupFrame.contentDocument).queryByText(expectedText);
+            expect(pageTitle).toBeInTheDocument();
+        });
+
+        test.each([
+            {path: 'account', label: 'account'},
+            {path: 'account/plans', label: 'account/plans'},
+            {path: 'account/profile', label: 'account/profile'},
+            {path: 'account/newsletters', label: 'account/newsletters'}
+        ])('#/portal/$label redirects to signin via hashchange when not logged in', async ({path}) => {
+            // Start with no hash — simulates an already-loaded page
+            window.location.hash = '';
+            let {
+                ghostApi, popupFrame, triggerButtonFrame, ...utils
+            } = await setup({
+                site: FixtureSite.singleTier.basic,
+                member: null,
+                showPopup: false
+            });
+            expect(triggerButtonFrame).toBeInTheDocument();
+
+            // Now navigate via hash change (e.g. clicking <a href="#/portal/account/profile">)
+            window.location.hash = `#/portal/${path}`;
+            window.dispatchEvent(new HashChangeEvent('hashchange'));
+
+            popupFrame = await utils.findByTitle(/portal-popup/i);
+            expect(popupFrame).toBeInTheDocument();
+
+            // Should show signin page instead of account page
+            const popupIframeDocument = popupFrame.contentDocument;
+            const signinTitle = within(popupIframeDocument).queryByText(/sign in/i);
+            expect(signinTitle).toBeInTheDocument();
+
+            // Fill in email and submit to verify the redirect URL is passed through
+            const emailInput = within(popupIframeDocument).getByLabelText(/email/i);
+            const submitButton = within(popupIframeDocument).getByRole('button', {name: 'Continue'});
+            fireEvent.change(emailInput, {target: {value: 'test@example.com'}});
+            fireEvent.click(submitButton);
+
+            await waitFor(() => {
+                expect(ghostApi.member.sendMagicLink).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        email: 'test@example.com',
+                        emailType: 'signin',
+                        redirect: `https://portal.localhost#/portal/${path}/`
+                    })
+                );
+            });
+        });
+    });
 });
