@@ -1141,11 +1141,14 @@ describe('MemberRepository', function () {
                     if (key === 'offer_id') {
                         return 'trial_offer_123';
                     }
-                    if (key === 'trial_end_at') {
-                        return futureTrialEnd;
-                    }
                     return null;
                 })
+            });
+
+            stripeAPIService.getSubscription.resolves({
+                ...subscriptionData,
+                trial_start: (Date.now() / 1000) - (7 * 24 * 60 * 60),
+                trial_end: futureTrialEnd.getTime() / 1000
             });
 
             await repo.linkSubscription({
@@ -1185,11 +1188,14 @@ describe('MemberRepository', function () {
                     if (key === 'offer_id') {
                         return 'trial_offer_123';
                     }
-                    if (key === 'trial_end_at') {
-                        return pastTrialEnd;
-                    }
                     return null;
                 })
+            });
+
+            stripeAPIService.getSubscription.resolves({
+                ...subscriptionData,
+                trial_start: (pastTrialEnd.getTime() / 1000) - (7 * 24 * 60 * 60),
+                trial_end: pastTrialEnd.getTime() / 1000
             });
 
             await repo.linkSubscription({

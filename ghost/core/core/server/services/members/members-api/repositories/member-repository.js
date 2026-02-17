@@ -1164,7 +1164,7 @@ module.exports = class MemberRepository {
             // CASE: Only preserve offer_id for active trials (trial offers don't have Stripe discounts)
             // Otherwise, allow offer_id to be cleared when the Stripe discount expires
             if (!subscriptionData.offer_id) {
-                const trialEndAt = stripeCustomerSubscriptionModel.get('trial_end_at');
+                const trialEndAt = subscriptionData.trial_end_at;
                 const hasActiveTrial = trialEndAt && new Date(trialEndAt) > new Date();
 
                 if (hasActiveTrial) {
