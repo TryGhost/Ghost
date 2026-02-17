@@ -45,7 +45,7 @@
     "lint": "nx run-many -t lint",
     "test": "nx run-many -t test",
     "test:unit": "nx run-many -t test:unit",
-    "test:browser": "nx run ghost:test:browser --",
+    "test:browser": "node ghost/core/test/scripts/browser-test-runner.js --",
     "test:e2e": "yarn workspace @tryghost/e2e test",
     "test:e2e:analytics": "yarn workspace @tryghost/e2e test:analytics",
     "test:e2e:all": "yarn workspace @tryghost/e2e test:all",  
