@@ -16,7 +16,7 @@ function buildFilter(baseFilter: string, search: string): string {
     if (!search) {
         return baseFilter;
     }
-    return `${baseFilter}+title:~'${search.replace(/'/g, "\\'")}'`;
+    return `${baseFilter}+title:~'${search.replace(/'/g, '\\\'')}'`;
 }
 
 /**

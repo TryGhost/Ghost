@@ -1,9 +1,9 @@
 import React from 'react';
 import {Filter, Filters, LucideIcon} from '@tryghost/shade';
+import {getSettingValue, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {useBrowseLabels} from '@tryghost/admin-x-framework/api/labels';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
-import {getSettingValue, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {useMembersFilterConfig} from '../hooks/use-members-filter-config';
 import {useResourceSearch} from '../hooks/use-resource-search';

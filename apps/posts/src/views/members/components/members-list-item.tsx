@@ -1,6 +1,6 @@
 import {Badge, formatDisplayDate, formatTimestamp} from '@tryghost/shade';
-import {MemberAvatar} from '@components/member-avatar';
 import {Member} from '@tryghost/admin-x-framework/api/members';
+import {MemberAvatar} from '@components/member-avatar';
 
 // --- Helpers ---
 
