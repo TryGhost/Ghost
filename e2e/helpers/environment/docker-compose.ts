@@ -59,18 +59,18 @@ export class DockerCompose {
     }
 
     execShellInService(service: string, shellCommand: string): string {
-        const command = `docker compose -f ${this.composeFilePath} -p ${this.projectName} run --rm -T --entrypoint sh ${service} -c "${shellCommand}"`;
+        const command = this.composeCommand(`run --rm -T --entrypoint sh ${service} -c "${shellCommand}"`);
         debug('readFileFromService running:', command);
 
-        return execSync(command, {encoding: 'utf-8'}).toString();
+        return execSync(command, {encoding: 'utf-8'});
     }
 
     execInService(service: string, command: string[]): string {
         const cmdArgs = command.map(arg => `"${arg}"`).join(' ');
-        const cmd = `docker compose -f ${this.composeFilePath} -p ${this.projectName} run --rm -T ${service} ${cmdArgs}`;
+        const cmd = this.composeCommand(`run --rm -T ${service} ${cmdArgs}`);
 
         debug('execInService running:', cmd);
-        return execSync(cmd, {encoding: 'utf-8'}).toString();
+        return execSync(cmd, {encoding: 'utf-8'});
     }
 
     async getContainerForService(serviceLabel: string): Promise<Container> {
