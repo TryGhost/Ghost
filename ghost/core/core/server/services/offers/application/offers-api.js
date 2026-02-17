@@ -233,10 +233,10 @@ class OffersAPI {
             }
 
             // Filter out offers already redeemed on this subscription
-            const redeemedOfferIds = await this.repository.getRedeemedOfferIdsForSubscription({
+            const redeemedOfferIds = await this.repository.getRedeemedOfferIdsForSubscription(
                 subscriptionId,
-                transacting: transaction
-            });
+                {transacting: transaction}
+            );
 
             const beforeRedeemedFilter = available.length;
             available = available.filter(offer => !redeemedOfferIds.includes(offer.id));
@@ -261,10 +261,10 @@ class OffersAPI {
         }
 
         return await this.repository.createTransaction(async (transaction) => {
-            return await this.repository.getRedeemedOfferIdsForSubscriptions({
+            return await this.repository.getRedeemedOfferIdsForSubscriptions(
                 subscriptionIds,
-                transacting: transaction
-            });
+                {transacting: transaction}
+            );
         });
     }
 
