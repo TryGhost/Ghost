@@ -525,7 +525,7 @@ html[dir="rtl"] .gh-portal-closeicon-container {
 }
 
 .gh-portal-closeicon {
-    color: var(--grey10);
+    color: var(--grey6);
     cursor: pointer;
     width: 20px;
     height: 20px;
