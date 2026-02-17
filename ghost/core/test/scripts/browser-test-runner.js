@@ -48,6 +48,7 @@ const commands = [
 ];
 
 (async () => {
+    // eslint-disable-next-line no-console
     console.log(`Starting browser tests with frontend dev servers...`);
 
     const {result} = concurrently(commands, {
