@@ -1,5 +1,4 @@
 import {
-    cn,
     SidebarContent,
 } from "@tryghost/shade"
 import type { ReactNode } from "react";
@@ -43,12 +42,7 @@ function AppSidebarContent() {
                 <NavContent />
                 <NavGhostPro />
             </div>
-            <div className={
-                    cn(
-                        'flex flex-col gap-2 sidebar:gap-4',
-                        bannerContainerClassName
-                    )
-                }>
+            <div className={`flex flex-col gap-2 sidebar:gap-4 ${bannerContainerClassName}`}>
                 {banner &&
                     <div className="fixed left-3 bottom-[92px] max-w-[276px] z-50">
                         {banner}
