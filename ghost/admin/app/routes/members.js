@@ -15,16 +15,7 @@ export default class MembersRoute extends MembersManagementRoute {
         postAnalytics: {refreshModel: false}
     };
 
-    get templateName() {
-        return this.feature.membersForward ? 'members-x' : 'members';
-    }
-
     model(params) {
-        // When membersForward is enabled, delegate to React - don't load Ember data
-        if (this.feature.membersForward) {
-            return null;
-        }
-
         this.controllerFor('members').resetFilters(params);
         return this.controllerFor('members').fetchMembersTask.perform(params);
     }
@@ -32,11 +23,6 @@ export default class MembersRoute extends MembersManagementRoute {
     // trigger a background load of members plus labels for filter dropdown
     setupController(controller) {
         super.setupController(...arguments);
-
-        // When membersForward is enabled, skip Ember data loading
-        if (this.feature.membersForward) {
-            return;
-        }
 
         try {
             controller.fetchLabelsTask.perform();
@@ -53,11 +39,6 @@ export default class MembersRoute extends MembersManagementRoute {
     resetController(controller, _isExiting, transition) {
         super.resetController(...arguments);
 
-        // When membersForward is enabled, skip Ember controller reset logic
-        if (this.feature.membersForward) {
-            return;
-        }
-
         if (controller.postAnalytics) {
             controller.set('postAnalytics', null);
             // Only reset filters if we are not going to member route
@@ -71,7 +52,7 @@ export default class MembersRoute extends MembersManagementRoute {
     buildRouteInfoMetadata() {
         return {
             titleToken: 'Members',
-            mainClasses: this.feature.membersForward ? [] : ['gh-main-fullwidth']
+            mainClasses: ['gh-main-fullwidth']
         };
     }
 }

@@ -15,8 +15,6 @@ import { routes as statsRoutes } from "@tryghost/stats/src/routes";
 import { EmberFallback, ForceUpgradeGuard } from "./ember-bridge";
 import type { RouteHandle } from "./ember-bridge";
 
-// Conditional routes
-import { MembersRoute } from "./routes/members-route";
 
 export const routes: RouteObject[] = [
     {
@@ -35,18 +33,13 @@ export const routes: RouteObject[] = [
                 handle: { allowInForceUpgrade: true } satisfies RouteHandle,
             },
             {
-                // Members route with feature flag conditional
-                path: "/members",
-                Component: MembersRoute,
-            },
-            {
                 element: (
                     <PostsAppContextProvider value={{ fromAnalytics: true }}>
                         <Outlet />
                     </PostsAppContextProvider>
                 ),
-                // Filter out members (handled above) and catch-all routes
-                children: postRoutes[0].children!.filter((route) => route.path !== "*" && route.path !== "members"),
+                // Filter out catch-all routes
+                children: postRoutes[0].children!.filter((route) => route.path !== "*"),
             },
             {
                 element: (

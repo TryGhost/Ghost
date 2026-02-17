@@ -43,7 +43,6 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
         hasMultipleTiers,
         paidMembersEnabled,
         emailAnalyticsEnabled,
-        // For now, use static options - can be enhanced with search later
         labelsOptions: labels.map(l => ({value: l.id, label: l.name})),
         tiersOptions: activePaidTiers.map(t => ({value: t.id, label: t.name}))
     });
