@@ -27,7 +27,7 @@ test.describe('Member emails settings', async () => {
         test('Escape key closes test email dropdown without closing modal', async ({page}) => {
             const configResponse = {
                 config: {
-                    ...responseFixtures.config.config,
+                    ...responseFixtures.config.config
                 }
             };
 
@@ -73,7 +73,7 @@ test.describe('Member emails settings', async () => {
         test('Escape key closes modal when test email dropdown is not open', async ({page}) => {
             const configResponse = {
                 config: {
-                    ...responseFixtures.config.config,
+                    ...responseFixtures.config.config
                 }
             };
 
@@ -109,7 +109,7 @@ test.describe('Member emails settings', async () => {
         test('Welcome email modal does not start dirty but becomes dirty after edit', async ({page}) => {
             const configResponse = {
                 config: {
-                    ...responseFixtures.config.config,
+                    ...responseFixtures.config.config
                 }
             };
 
@@ -163,7 +163,7 @@ test.describe('Member emails settings', async () => {
         test('Escape key does not close modal or navigate away when pressed from Koenig link input', async ({page}) => {
             const configResponse = {
                 config: {
-                    ...responseFixtures.config.config,
+                    ...responseFixtures.config.config
                 }
             };
 
@@ -223,7 +223,7 @@ test.describe('Member emails settings', async () => {
         test('uses automated email sender fields when populated, even if newsletter differs', async ({page}) => {
             const configResponse = {
                 config: {
-                    ...responseFixtures.config.config,
+                    ...responseFixtures.config.config
                 }
             };
 
@@ -271,7 +271,7 @@ test.describe('Member emails settings', async () => {
         test('falls back to default newsletter sender values when automated fields are empty', async ({page}) => {
             const configResponse = {
                 config: {
-                    ...responseFixtures.config.config,
+                    ...responseFixtures.config.config
                 }
             };
 
@@ -319,7 +319,7 @@ test.describe('Member emails settings', async () => {
         test('preview card uses newsletter sender name when automated sender name is empty', async ({page}) => {
             const configResponse = {
                 config: {
-                    ...responseFixtures.config.config,
+                    ...responseFixtures.config.config
                 }
             };
 
@@ -361,7 +361,7 @@ test.describe('Member emails settings', async () => {
         test('Email preview card is visible with default subject when no DB row exists', async ({page}) => {
             const configResponse = {
                 config: {
-                    ...responseFixtures.config.config,
+                    ...responseFixtures.config.config
                 }
             };
 
@@ -399,7 +399,7 @@ test.describe('Member emails settings', async () => {
         test('Clicking Edit when no row exists creates inactive row then opens modal', async ({page}) => {
             const configResponse = {
                 config: {
-                    ...responseFixtures.config.config,
+                    ...responseFixtures.config.config
                 }
             };
 
@@ -458,7 +458,7 @@ test.describe('Member emails settings', async () => {
         test('Clicking Edit when row exists does NOT create new row, just opens modal', async ({page}) => {
             const configResponse = {
                 config: {
-                    ...responseFixtures.config.config,
+                    ...responseFixtures.config.config
                 }
             };
 
@@ -507,7 +507,7 @@ test.describe('Member emails settings', async () => {
         test('Toggle ON when no row exists creates active row', async ({page}) => {
             const configResponse = {
                 config: {
-                    ...responseFixtures.config.config,
+                    ...responseFixtures.config.config
                 }
             };
 
@@ -561,7 +561,7 @@ test.describe('Member emails settings', async () => {
         test('Toggle ON when inactive row exists updates to active', async ({page}) => {
             const configResponse = {
                 config: {
-                    ...responseFixtures.config.config,
+                    ...responseFixtures.config.config
                 }
             };
 
@@ -618,7 +618,7 @@ test.describe('Member emails settings', async () => {
         test('Toggle OFF when active row exists updates to inactive', async ({page}) => {
             const configResponse = {
                 config: {
-                    ...responseFixtures.config.config,
+                    ...responseFixtures.config.config
                 }
             };
 
