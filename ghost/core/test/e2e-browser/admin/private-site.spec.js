@@ -7,7 +7,7 @@ test.describe('Site Settings', () => {
             // set private mode in admin "on"
             await sharedPage.goto('/ghost');
 
-            await sharedPage.locator('[data-sidebar="sidebar"]').getByRole('link', {name: 'Settings'}).click();
+            await sharedPage.getByRole('navigation').getByRole('link', {name: 'Settings'}).click();
 
             const section = sharedPage.getByTestId('locksite');
 

@@ -11,7 +11,7 @@ test.describe('Membership Settings', () => {
 
             // Open Portal settings
             await sharedPage.goto('/ghost');
-            await sharedPage.locator('[data-sidebar="sidebar"]').getByRole('link', {name: 'Settings'}).click();
+            await sharedPage.getByRole('navigation').getByRole('link', {name: 'Settings'}).click();
             await sharedPage.getByTestId('portal').getByRole('button', {name: 'Customize'}).click();
 
             const modal = sharedPage.getByTestId('portal-modal');
