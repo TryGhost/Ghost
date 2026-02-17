@@ -1,4 +1,5 @@
 import {Badge, formatDisplayDate, formatTimestamp} from '@tryghost/shade';
+import {MemberAvatar} from '@components/member-avatar';
 import {Member} from '@tryghost/admin-x-framework/api/members';
 import {forwardRef, useRef} from 'react';
 import {useInfiniteVirtualScroll} from '@components/virtual-table/use-infinite-virtual-scroll';
@@ -155,19 +156,11 @@ function MembersList({
                             >
                                 {/* Member Name/Email */}
                                 <div className="flex items-center gap-3">
-                                    <div className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted">
-                                        {item.avatar_image ? (
-                                            <img
-                                                alt={item.name || item.email || 'Member avatar'}
-                                                className="size-full object-cover"
-                                                src={item.avatar_image}
-                                            />
-                                        ) : (
-                                            <span className="text-sm font-medium text-muted-foreground">
-                                                {(item.name || item.email || '?')[0].toUpperCase()}
-                                            </span>
-                                        )}
-                                    </div>
+                                    <MemberAvatar
+                                        avatarImage={item.avatar_image}
+                                        className="size-10 min-w-10 md:size-10 md:min-w-10"
+                                        memberId={item.id}
+                                    />
                                     <div className="min-w-0">
                                         <div className="truncate font-medium">
                                             {item.name || item.email || 'Anonymous'}
