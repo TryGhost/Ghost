@@ -243,7 +243,8 @@ const EditOfferModal: React.FC<{id: string}> = ({id}) => {
             durationInMonths: formState?.duration_in_months || 0,
             currency: formState?.currency || '',
             status: formState?.status || '',
-            tierId: formState?.tier?.id || ''
+            tierId: formState?.tier?.id || '',
+            redemptionType: 'signup'
         };
 
         const newHref = getOfferPortalPreviewUrl(dataset, siteData.url);

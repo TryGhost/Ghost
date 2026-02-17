@@ -579,7 +579,8 @@ const AddOfferModal = () => {
             durationInMonths: formState.durationInMonths || 0,
             currency: formState.currency || 'USD',
             status: formState.status || 'active',
-            tierId: formState.tierId || activeTiers[0]?.id
+            tierId: formState.tierId || activeTiers[0]?.id,
+            redemptionType: 'signup'
         };
     }, [formState, activeTiers]);
 

@@ -1,5 +1,6 @@
 import {Meta, createMutation, createQuery, createQueryWithId} from '../utils/api/hooks';
 import {updateQueryCache, insertToQueryCache} from '../utils/api/update-queries';
+import {useQueryClient} from '@tanstack/react-query';
 
 export type Offer = {
     id: string;
@@ -43,6 +44,14 @@ export interface OfferAddResponseType {
 }
 
 const dataType = 'OffersResponseType';
+
+export const useInvalidateOffers = () => {
+    const queryClient = useQueryClient();
+
+    return () => {
+        return queryClient.invalidateQueries([dataType]);
+    };
+};
 
 export const useBrowseOffers = createQuery<OffersResponseType>({
     dataType,
