@@ -8,7 +8,7 @@ function ThemeErrorsBanner() {
     const [dialogOpen, setDialogOpen] = useState(false);
 
     if (!hasErrors) {
-        // return null;
+        return null;
     }
 
     return (
