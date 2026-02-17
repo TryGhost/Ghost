@@ -25,13 +25,9 @@ const newslettersRequest = {
 test.describe('Member emails settings', async () => {
     test.describe('Welcome email modal', async () => {
         test('Escape key closes test email dropdown without closing modal', async ({page}) => {
-            // Config with welcomeEmails feature flag enabled
             const configResponse = {
                 config: {
                     ...responseFixtures.config.config,
-                    labs: {
-                        welcomeEmails: true
-                    }
                 }
             };
 
@@ -75,13 +71,9 @@ test.describe('Member emails settings', async () => {
         });
 
         test('Escape key closes modal when test email dropdown is not open', async ({page}) => {
-            // Config with welcomeEmails feature flag enabled
             const configResponse = {
                 config: {
                     ...responseFixtures.config.config,
-                    labs: {
-                        welcomeEmails: true
-                    }
                 }
             };
 
@@ -115,13 +107,9 @@ test.describe('Member emails settings', async () => {
         });
 
         test('Welcome email modal does not start dirty but becomes dirty after edit', async ({page}) => {
-            // Config with welcomeEmails feature flag enabled
             const configResponse = {
                 config: {
                     ...responseFixtures.config.config,
-                    labs: {
-                        welcomeEmails: true
-                    }
                 }
             };
 
@@ -173,13 +161,9 @@ test.describe('Member emails settings', async () => {
         });
 
         test('Escape key does not close modal or navigate away when pressed from Koenig link input', async ({page}) => {
-            // Config with welcomeEmails feature flag enabled
             const configResponse = {
                 config: {
                     ...responseFixtures.config.config,
-                    labs: {
-                        welcomeEmails: true
-                    }
                 }
             };
 
@@ -240,9 +224,6 @@ test.describe('Member emails settings', async () => {
             const configResponse = {
                 config: {
                     ...responseFixtures.config.config,
-                    labs: {
-                        welcomeEmails: true
-                    }
                 }
             };
 
@@ -291,9 +272,6 @@ test.describe('Member emails settings', async () => {
             const configResponse = {
                 config: {
                     ...responseFixtures.config.config,
-                    labs: {
-                        welcomeEmails: true
-                    }
                 }
             };
 
@@ -342,9 +320,6 @@ test.describe('Member emails settings', async () => {
             const configResponse = {
                 config: {
                     ...responseFixtures.config.config,
-                    labs: {
-                        welcomeEmails: true
-                    }
                 }
             };
 
@@ -384,13 +359,9 @@ test.describe('Member emails settings', async () => {
     // NY-842: Tests for editing/viewing welcome emails before activation
     test.describe('Email preview visibility and edit-before-activation', async () => {
         test('Email preview card is visible with default subject when no DB row exists', async ({page}) => {
-            // Config with welcomeEmails feature flag enabled
             const configResponse = {
                 config: {
                     ...responseFixtures.config.config,
-                    labs: {
-                        welcomeEmails: true
-                    }
                 }
             };
 
@@ -429,9 +400,6 @@ test.describe('Member emails settings', async () => {
             const configResponse = {
                 config: {
                     ...responseFixtures.config.config,
-                    labs: {
-                        welcomeEmails: true
-                    }
                 }
             };
 
@@ -491,9 +459,6 @@ test.describe('Member emails settings', async () => {
             const configResponse = {
                 config: {
                     ...responseFixtures.config.config,
-                    labs: {
-                        welcomeEmails: true
-                    }
                 }
             };
 
@@ -543,9 +508,6 @@ test.describe('Member emails settings', async () => {
             const configResponse = {
                 config: {
                     ...responseFixtures.config.config,
-                    labs: {
-                        welcomeEmails: true
-                    }
                 }
             };
 
@@ -600,9 +562,6 @@ test.describe('Member emails settings', async () => {
             const configResponse = {
                 config: {
                     ...responseFixtures.config.config,
-                    labs: {
-                        welcomeEmails: true
-                    }
                 }
             };
 
@@ -660,9 +619,6 @@ test.describe('Member emails settings', async () => {
             const configResponse = {
                 config: {
                     ...responseFixtures.config.config,
-                    labs: {
-                        welcomeEmails: true
-                    }
                 }
             };
 
