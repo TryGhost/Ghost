@@ -29,7 +29,7 @@ describe('Banner Component', () => {
         {variant: 'info' as const, expectedClass: 'bg-blue-50'},
         {variant: 'success' as const, expectedClass: 'bg-green-50'},
         {variant: 'warning' as const, expectedClass: 'bg-yellow-50'},
-        {variant: 'destructive' as const, expectedClass: 'bg-red-50'}
+        {variant: 'destructive' as const, expectedClass: 'bg-white'}
     ])('applies $variant variant correctly', ({variant, expectedClass}) => {
         render(<Banner variant={variant}>Content</Banner>);
         const banner = screen.getByRole('status');

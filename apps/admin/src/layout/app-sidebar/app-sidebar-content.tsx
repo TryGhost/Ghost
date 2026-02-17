@@ -8,6 +8,7 @@ import NavMain from "./nav-main";
 import NavContent from "./nav-content";
 import NavGhostPro from "./nav-ghost-pro";
 import NavSettings from "./nav-settings";
+import ThemeErrorsBanner from "./theme-errors-banner";
 import UpgradeBanner from "./upgrade-banner";
 import { useUpgradeStatus } from "./hooks/use-upgrade-status";
 
@@ -23,6 +24,7 @@ function AppSidebarContent() {
             </div>
             <div className="flex flex-col gap-2 sidebar:gap-4">
                 {showUpgradeBanner ? <UpgradeBanner trialDaysRemaining={trialDaysRemaining} /> : <WhatsNewBanner />}
+                <ThemeErrorsBanner />
                 <NavSettings className="pb-0" />
             </div>
         </SidebarContent>

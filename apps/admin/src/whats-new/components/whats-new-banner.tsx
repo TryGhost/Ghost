@@ -32,6 +32,7 @@ function WhatsNewBanner() {
     return (
         <Banner
             data-test-toast="whats-new"
+            className="mx-2"
             role="status"
             aria-label="What’s new notification"
             aria-live="polite"
