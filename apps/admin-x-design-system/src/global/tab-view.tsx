@@ -39,7 +39,7 @@ export const TabButton: React.FC<TabButtonProps> = ({
     return (
         <TabsPrimitive.Trigger
             className={clsx(
-                '-m-b-px cursor-pointer appearance-none whitespace-nowrap py-1 text-md font-semibold text-grey-700 transition-all after:invisible after:block after:h-px after:overflow-hidden after:font-bold after:text-transparent after:content-[attr(title)] data-[state=active]:text-black dark:text-white [&>span]:data-[state=active]:text-black [&>span]:data-[state=active]:dark:text-white',
+                'relative z-[1] cursor-pointer appearance-none whitespace-nowrap pb-1.5 pt-1 text-md font-semibold text-grey-700 transition-all after:invisible after:block after:h-px after:overflow-hidden after:font-bold after:text-transparent after:content-[attr(title)] data-[state=active]:text-black dark:text-white [&>span]:data-[state=active]:text-black [&>span]:data-[state=active]:dark:text-white',
                 border && 'border-b-2 border-transparent hover:border-grey-500 data-[state=active]:border-black data-[state=active]:dark:border-white data-[state=active]:dark:text-white'
             )}
             id={id}
@@ -80,26 +80,24 @@ export const TabList: React.FC<TabListProps> = ({
     stickyHeader
 }) => {
     const containerClasses = clsx(
-        'no-scrollbar mb-px flex w-full overflow-x-auto',
+        'no-scrollbar relative flex w-full overflow-x-auto',
         width === 'narrow' && 'gap-3',
         width === 'normal' && 'gap-5',
         width === 'wide' && 'gap-7',
-        border && 'border-b border-grey-300 dark:border-grey-900'
+        border && 'after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-grey-300 dark:after:bg-grey-900'
     );
     return (
         <TabsPrimitive.List className={`${stickyHeader ? 'sticky top-0 z-50 bg-white dark:bg-black' : ''}`}>
             <div className={containerClasses} role='tablist'>
                 {tabs.map(tab => (
-                    <div>
-                        <TabButton
-                            border={buttonBorder}
-                            counter={tab.counter}
-                            icon={tab.icon}
-                            id={tab.id}
-                            title={tab.title}
-                            onClick={handleTabChange}
-                        />
-                    </div>
+                    <TabButton
+                        border={buttonBorder}
+                        counter={tab.counter}
+                        icon={tab.icon}
+                        id={tab.id}
+                        title={tab.title}
+                        onClick={handleTabChange}
+                    />
                 ))}
                 {topRightContent !== null ?
                     <div className='ml-auto'>{topRightContent}</div> :
