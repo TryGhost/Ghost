@@ -4,7 +4,7 @@ const nock = require('nock');
 const should = require('should');
 const GeolocationService = require('../../../../../../../core/server/services/members/members-api/services/geolocation-service');
 
-const RESPONSE = {
+const GEOJS_RESPONSE = {
     longitude: '-2.2417',
     city: 'Kidderminster',
     timezone: 'Europe/London',
@@ -22,6 +22,12 @@ const RESPONSE = {
     country_code3: 'GBR'
 };
 
+const EXPECTED_RESULT = {
+    country: 'United Kingdom',
+    country_code: 'GB',
+    region: 'England'
+};
+
 const service = new GeolocationService();
 
 describe('lib/geolocation', function () {
@@ -34,25 +40,25 @@ describe('lib/geolocation', function () {
         it('fetches from geojs.io with IPv4 address', async function () {
             const scope = nock('https://get.geojs.io')
                 .get('/v1/ip/geo/188.39.113.90.json')
-                .reply(200, RESPONSE);
+                .reply(200, GEOJS_RESPONSE);
 
             const result = await service.getGeolocationFromIP('188.39.113.90');
 
             assert.equal(scope.isDone(), true, 'request was not made');
             assertExists(result, 'nothing was returned');
-            result.should.deepEqual(RESPONSE, 'result didn\'t match expected response');
+            result.should.deepEqual(EXPECTED_RESULT, 'result didn\'t match expected response');
         });
 
         it('fetches from geojs.io with IPv6 address', async function () {
             const scope = nock('https://get.geojs.io')
                 .get('/v1/ip/geo/2a01%3A4c8%3A43a%3A13c9%3A8d6%3A128e%3A1fd5%3A6aad.json')
-                .reply(200, RESPONSE);
+                .reply(200, GEOJS_RESPONSE);
 
             const result = await service.getGeolocationFromIP('2a01:4c8:43a:13c9:8d6:128e:1fd5:6aad');
 
             assert.equal(scope.isDone(), true, 'request was not made');
             assertExists(result, 'nothing was returned');
-            result.should.deepEqual(RESPONSE, 'result didn\'t match expected response');
+            result.should.deepEqual(EXPECTED_RESULT, 'result didn\'t match expected response');
         });
 
         it('handles non-IP addresses', async function () {

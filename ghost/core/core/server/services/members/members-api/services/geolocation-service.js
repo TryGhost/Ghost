@@ -18,6 +18,10 @@ module.exports = class GeolocationService {
 
         const geojsUrl = `https://get.geojs.io/v1/ip/geo/${encodeURIComponent(ipAddress)}.json`;
         const response = await got(geojsUrl, gotOpts).json();
-        return response;
+        return {
+            country: response.country,
+            country_code: response.country_code,
+            region: response.region
+        };
     }
 };
