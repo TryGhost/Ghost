@@ -16,6 +16,7 @@ import NavSubMenu from "./nav-sub-menu";
 import { useMemberCount } from "./hooks/use-member-count";
 import { useNavigationExpanded } from "./hooks/use-navigation-preferences";
 import { NavCustomViews } from "./nav-custom-views";
+import { useIsActiveLink } from "./use-is-active-link";
 import { useEmberRouting } from "@/ember-bridge";
 import { useFeatureFlag } from "@/hooks/use-feature-flag";
 
@@ -25,6 +26,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const memberCount = useMemberCount();
     const routing = useEmberRouting();
     const commentModerationEnabled = useFeatureFlag('commentModeration');
+    const isCalendarRouteActive = useIsActiveLink({path: '/posts/calendar'});
 
     const showTags = currentUser && canManageTags(currentUser);
     const showMembers = currentUser && canManageMembers(currentUser);
@@ -94,6 +96,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                             <NavMenuItem.Link
                                 className="pl-9"
                                 to="posts/calendar"
+                                isActive={isCalendarRouteActive}
                             >
                                 <NavMenuItem.Label>Calendar</NavMenuItem.Label>
                             </NavMenuItem.Link>
