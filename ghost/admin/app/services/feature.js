@@ -60,7 +60,6 @@ export default class FeatureService extends Service {
     @feature('referralInviteDismissed', {user: true}) referralInviteDismissed;
 
     // labs flags
-    @feature('welcomeEmails') welcomeEmails;
     @feature('stripeAutomaticTax') stripeAutomaticTax;
     @feature('emailCustomization') emailCustomization;
     @feature('announcementBar') announcementBar;
