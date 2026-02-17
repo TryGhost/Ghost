@@ -901,9 +901,9 @@ describe('Post Model', function () {
                     }]
                 }, _.merge({withRelated: ['authors']}, context)).then(function (newPost) {
                     assertExists(newPost);
-                    newPost.toJSON().primary_author.id.should.eql(testUtils.DataGenerator.forKnex.users[0].id);
+                    assert.equal(newPost.toJSON().primary_author.id, testUtils.DataGenerator.forKnex.users[0].id);
                     assert.equal(newPost.toJSON().authors.length, 1);
-                    newPost.toJSON().authors[0].id.should.eql(testUtils.DataGenerator.forKnex.users[0].id);
+                    assert.equal(newPost.toJSON().authors[0].id, testUtils.DataGenerator.forKnex.users[0].id);
                     done();
                 }).catch(done);
             });
@@ -1505,7 +1505,7 @@ describe('Post Model', function () {
                     // Double check we can't find any related tags
                     return ghostBookshelf.knex.select().table('posts_tags').where('post_id', firstItemData.id);
                 }).then(function (postsTags) {
-                    postsTags.should.be.empty();
+                    assert.deepEqual(postsTags, []);
 
                     done();
                 }).catch(done);
@@ -1545,7 +1545,7 @@ describe('Post Model', function () {
                     // Double check we can't find any related tags
                     return ghostBookshelf.knex.select().table('posts_tags').where('post_id', firstItemData.id);
                 }).then(function (postsTags) {
-                    postsTags.should.be.empty();
+                    assert.deepEqual(postsTags, []);
 
                     done();
                 }).catch(done);
@@ -1584,7 +1584,7 @@ describe('Post Model', function () {
                     // Double check we can't find any related tags
                     return ghostBookshelf.knex.select().table('posts_tags').where('post_id', firstItemData.id);
                 }).then(function (postsTags) {
-                    postsTags.should.be.empty();
+                    assert.deepEqual(postsTags, []);
 
                     done();
                 }).catch(done);
@@ -1620,7 +1620,7 @@ describe('Post Model', function () {
                     // Double check we can't find any related tags
                     return ghostBookshelf.knex.select().table('posts_tags').where('post_id', firstItemData.id);
                 }).then(function (postsTags) {
-                    postsTags.should.be.empty();
+                    assert.deepEqual(postsTags, []);
 
                     done();
                 }).catch(done);
@@ -2011,7 +2011,8 @@ describe('Post Model', function () {
         it('should create the test data correctly', function (done) {
             // creates a test tag
             assertExists(tagJSON);
-            tagJSON.should.be.an.Array().with.lengthOf(3);
+            assert(Array.isArray(tagJSON));
+            assert.equal(tagJSON.length, 3);
 
             assert.equal(tagJSON[0].name, 'existing tag a');
             assert.equal(tagJSON[1].name, 'existing-tag-b');
@@ -2020,8 +2021,8 @@ describe('Post Model', function () {
             // creates a test post with an array of tags in the correct order
             assertExists(postJSON);
             assert.equal(postJSON.title, 'HTML Ipsum');
-            assertExists(postJSON.tags);
-            postJSON.tags.should.be.an.Array().and.have.lengthOf(3);
+            assert(Array.isArray(postJSON.tags));
+            assert.equal(postJSON.tags.length, 3);
 
             assert.equal(postJSON.tags[0].name, 'tag1');
             assert.equal(postJSON.tags[1].name, 'tag2');
@@ -2041,9 +2042,9 @@ describe('Post Model', function () {
                 updatedPost = updatedPost.toJSON({withRelated: ['tags']});
 
                 assert.equal(updatedPost.tags.length, 1);
-                updatedPost.tags[0].name.should.eql(postJSON.tags[0].name);
+                assert.equal(updatedPost.tags[0].name, postJSON.tags[0].name);
                 assert.equal(updatedPost.tags[0].slug, 'eins');
-                updatedPost.tags[0].id.should.eql(postJSON.tags[0].id);
+                assert.equal(updatedPost.tags[0].id, postJSON.tags[0].id);
             });
         });
 
@@ -2079,11 +2080,11 @@ describe('Post Model', function () {
                     });
 
                     updatedAtFormat = moment(updatedPost.tags[0].updated_at).format('YYYY-MM-DD HH:mm:ss');
-                    updatedAtFormat.should.eql(moment(postJSON.tags[0].updated_at).format('YYYY-MM-DD HH:mm:ss'));
+                    assert.equal(updatedAtFormat, moment(postJSON.tags[0].updated_at).format('YYYY-MM-DD HH:mm:ss'));
                     updatedAtFormat.should.not.eql(moment(newJSON.tags[0].updated_at).format('YYYY-MM-DD HH:mm:ss'));
 
                     createdAtFormat = moment(updatedPost.tags[0].created_at).format('YYYY-MM-DD HH:mm:ss');
-                    createdAtFormat.should.eql(moment(postJSON.tags[0].created_at).format('YYYY-MM-DD HH:mm:ss'));
+                    assert.equal(createdAtFormat, moment(postJSON.tags[0].created_at).format('YYYY-MM-DD HH:mm:ss'));
                     createdAtFormat.should.not.eql(moment(newJSON.tags[0].created_at).format('YYYY-MM-DD HH:mm:ss'));
                 });
         });
@@ -2161,7 +2162,7 @@ describe('Post Model', function () {
     //    new models.Post().fetch().then(function (model) {
     //        return model.set({'title': "</title></head><body><script>alert('blogtitle');</script>"}).save();
     //    }).then(function (saved) {
-    //        saved.get('title').should.eql("&lt;/title&gt;&lt;/head>&lt;body&gt;[removed]alert&#40;'blogtitle'&#41;;[removed]");
+    //        assert.equal(saved.get('title'), "&lt;/title&gt;&lt;/head>&lt;body&gt;[removed]alert&#40;'blogtitle'&#41;;[removed]");
     //        done();
     //    }).catch(done);
     // });

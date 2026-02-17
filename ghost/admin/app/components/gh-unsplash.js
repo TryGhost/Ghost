@@ -15,7 +15,7 @@ export default class GhUnsplash extends Component {
     @tracked searchTerm = null;
 
     get sideNavHidden() {
-        return this.ui.isFullScreen || this.ui.showMobileMenu;
+        return this.ui.isFullScreen;
     }
 
     constructor() {

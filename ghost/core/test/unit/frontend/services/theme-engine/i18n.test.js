@@ -45,7 +45,7 @@ describe('I18n Class behavior', function () {
         });
 
         it('correctly loads strings', function () {
-            i18n._strings.should.eql(fakeStrings);
+            assert.equal(i18n._strings, fakeStrings);
         });
 
         it('correctly uses dot notation', function () {
@@ -81,7 +81,7 @@ describe('I18n Class behavior', function () {
         });
 
         it('correctly loads strings', function () {
-            i18n._strings.should.eql(fakeStrings);
+            assert.equal(i18n._strings, fakeStrings);
         });
 
         it('correctly uses fulltext with bracket notation', function () {

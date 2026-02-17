@@ -39,7 +39,7 @@ describe('Content API Key Auth', function () {
 
         authenticateContentApiKey(req, res, (arg) => {
             assert.equal(arg, undefined);
-            req.api_key.should.eql(this.fakeApiKey);
+            assert.equal(req.api_key, this.fakeApiKey);
             done();
         });
     });

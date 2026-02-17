@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const ObjectID = require('bson-objectid').default;
 const OffersAPI = require('../../../../../../core/server/services/offers/application/offers-api');
 

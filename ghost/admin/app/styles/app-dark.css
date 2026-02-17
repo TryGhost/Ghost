@@ -162,17 +162,6 @@ input:focus,
     background: var(--dark-main-bg-color);
 }
 
-@media (max-width: 800px) {
-    .gh-mobile-nav-bar {
-        background: var(--nav-bg-color);
-    }
-
-    .gh-mobile-nav-bar a.active {
-        background: var(--whitegrey-l2);
-        color: #fff;
-    }
-}
-
 .gh-nav-search .ember-power-select-trigger {
     border-color: color-mod(var(--lightgrey));
     background: color-mod(var(--lightgrey));
@@ -566,10 +555,6 @@ input:focus,
     background: var(--lightgrey);
 }
 
-.mobile-menu-expanded .content-cover {
-    background: transparent;
-}
-
 .gh-box {
     background: var(--lightgrey);
     color: var(--darkgrey);
@@ -639,8 +624,7 @@ input:focus,
     background: var(--main-bg-color);
 }
 
-.gh-nav-hidden:hover,
-.mobile-menu-expanded .gh-nav {
+.gh-nav-hidden:hover {
     box-shadow:
         100px 0px 80px 0px rgba(0, 0, 0, 0.06),
         41.78px 0px 33.422px 0px rgba(0, 0, 0, 0.05),
@@ -1216,7 +1200,7 @@ kbd {
     background: #1c1e21;
 }
 
-.gh-dashboard-recents .gh-dashboard-list-item:hover, .gh-dashboard-attribution .gh-dashboard-list-item:hover, .gh-links-list-item:hover {
+.gh-dashboard-recents .gh-dashboard-list-item:hover, .gh-dashboard-attribution .gh-dashboard-list-item:hover {
     background: linear-gradient(90deg, rgba(21,23,25,0) 0%, rgba(21,23,25,1) 100%);
 }
 
@@ -1296,14 +1280,6 @@ kbd {
 
 /* Post Analytics */
 
-.feature-audienceFeedback .gh-post-analytics-box.gh-post-analytics-newsletter-clicks,
-.feature-audienceFeedback .gh-post-analytics-box.gh-post-analytics-source-attribution,
-.gh-post-analytics-box.gh-post-analytics-mentions
- {
-    background: var(--white);
-    border-color: #26282b;
-}
-
 .gh-tabs-analytics {
     background: var(--white);
     border-color: #26282b;
@@ -1325,33 +1301,8 @@ kbd {
     box-shadow: none;
 }
 
-.gh-post-activity-feed-dummy {
-    opacity: 0.2;
-}
-
-.gh-post-activity-feed .gh-dashboard-list-item + .gh-dashboard-list-item,
-.feature-audienceFeedback .gh-links-list-item,
-.gh-post-activity-feed-footer,
 .gh-tabs-analytics.no-tabs .tab-selected {
     border-color: #17191c;
-}
-
-.gh-post-activity-feed .gh-dashboard-list-item:hover {
-    background: transparent;
-}
-
-.gh-post-analytics-meta .gh-post-list-cta {
-    border: none!important;
-    box-shadow: none!important;
-}
-
-.gh-post-analytics-meta .gh-post-list-cta:hover, .gh-post-analytics-meta .refresh:hover {
-    background: var(--lightgrey-d1);
-    color: var(--black);
-}
-
-.gh-post-analytics-meta .gh-btn.refresh {
-    border: none;
 }
 
 

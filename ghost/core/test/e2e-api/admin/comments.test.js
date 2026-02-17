@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 require('should');
 const ObjectId = require('bson-objectid').default;
 const {

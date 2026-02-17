@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const addCalendarMonths = require('../../../../../../../core/server/services/members/members-api/utils/add-calendar-months');
 
 describe('addCalendarMonths', function () {

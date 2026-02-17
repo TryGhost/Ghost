@@ -13,50 +13,35 @@ describe('OfferCurrency', function () {
                 OfferCurrency.create();
                 assert.fail();
             } catch (err) {
-                should.ok(
-                    err instanceof OfferCurrency.InvalidOfferCurrency,
-                    'expected an InvalidOfferCurrency error'
-                );
+                assert(err instanceof OfferCurrency.InvalidOfferCurrency, 'expected an InvalidOfferCurrency error');
             }
 
             try {
                 OfferCurrency.create('US Dollars');
                 assert.fail();
             } catch (err) {
-                should.ok(
-                    err instanceof OfferCurrency.InvalidOfferCurrency,
-                    'expected an InvalidOfferCurrency error'
-                );
+                assert(err instanceof OfferCurrency.InvalidOfferCurrency, 'expected an InvalidOfferCurrency error');
             }
 
             try {
                 OfferCurrency.create('$');
                 assert.fail();
             } catch (err) {
-                should.ok(
-                    err instanceof OfferCurrency.InvalidOfferCurrency,
-                    'expected an InvalidOfferCurrency error'
-                );
+                assert(err instanceof OfferCurrency.InvalidOfferCurrency, 'expected an InvalidOfferCurrency error');
             }
 
             try {
                 OfferCurrency.create('USDC');
                 assert.fail();
             } catch (err) {
-                should.ok(
-                    err instanceof OfferCurrency.InvalidOfferCurrency,
-                    'expected an InvalidOfferCurrency error'
-                );
+                assert(err instanceof OfferCurrency.InvalidOfferCurrency, 'expected an InvalidOfferCurrency error');
             }
 
             try {
                 OfferCurrency.create(2);
                 assert.fail();
             } catch (err) {
-                should.ok(
-                    err instanceof OfferCurrency.InvalidOfferCurrency,
-                    'expected an InvalidOfferCurrency error'
-                );
+                assert(err instanceof OfferCurrency.InvalidOfferCurrency, 'expected an InvalidOfferCurrency error');
             }
         });
     });

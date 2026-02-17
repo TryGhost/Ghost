@@ -133,7 +133,8 @@ describe('Tinybird Client', function () {
 
             const result = tinybirdClient.parseResponse(mockResponse);
             assertExists(result);
-            result.should.be.an.Array().with.lengthOf(2);
+            assert(Array.isArray(result));
+            assert.equal(result.length, 2);
             assert.equal(result[0].pathname, '/test-1/');
             assert.equal(result[0].visits, 100);
         });
@@ -150,7 +151,8 @@ describe('Tinybird Client', function () {
 
             const result = tinybirdClient.parseResponse(mockResponse);
             assertExists(result);
-            result.should.be.an.Array().with.lengthOf(2);
+            assert(Array.isArray(result));
+            assert.equal(result.length, 2);
         });
 
         it('handles direct JSON string response', function () {
@@ -162,7 +164,8 @@ describe('Tinybird Client', function () {
 
             const result = tinybirdClient.parseResponse(mockResponse);
             assertExists(result);
-            result.should.be.an.Array().with.lengthOf(1);
+            assert(Array.isArray(result));
+            assert.equal(result.length, 1);
         });
 
         it('handles direct object response', function () {
@@ -174,7 +177,8 @@ describe('Tinybird Client', function () {
 
             const result = tinybirdClient.parseResponse(mockResponse);
             assertExists(result);
-            result.should.be.an.Array().with.lengthOf(1);
+            assert(Array.isArray(result));
+            assert.equal(result.length, 1);
         });
 
         it('returns empty array for empty data', function () {
@@ -184,7 +188,7 @@ describe('Tinybird Client', function () {
 
             const result = tinybirdClient.parseResponse(mockResponse);
             assertExists(result);
-            result.should.be.an.Array().with.lengthOf(0);
+            assert.deepEqual(result, []);
         });
 
         it('returns null for invalid JSON', function () {
@@ -215,7 +219,8 @@ describe('Tinybird Client', function () {
             });
 
             assertExists(result);
-            result.should.be.an.Array().with.lengthOf(2);
+            assert(Array.isArray(result));
+            assert.equal(result.length, 2);
             assert.equal(result[0].pathname, '/test-1/');
             assert.equal(result[0].visits, 100);
 

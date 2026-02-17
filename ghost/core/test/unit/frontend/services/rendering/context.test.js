@@ -37,14 +37,14 @@ describe('Contexts', function () {
             renderer.context(req, res, data);
 
             assertExists(res.locals.context);
-            res.locals.context.should.be.an.Array().with.lengthOf(0);
+            assert.deepEqual(res.locals.context, []);
         });
 
         it('should return empty array with no error with basic parameters', function () {
             renderer.context(req, res, data);
 
             assertExists(res.locals.context);
-            res.locals.context.should.be.an.Array().with.lengthOf(0);
+            assert.deepEqual(res.locals.context, []);
         });
     });
 
@@ -56,7 +56,8 @@ describe('Contexts', function () {
             renderer.context(req, res, data);
 
             assertExists(res.locals.context);
-            res.locals.context.should.be.an.Array().with.lengthOf(1);
+            assert(Array.isArray(res.locals.context));
+            assert.equal(res.locals.context.length, 1);
             assert.equal(res.locals.context[0], 'index');
         });
 
@@ -69,7 +70,8 @@ describe('Contexts', function () {
 
             // Check context
             assertExists(res.locals.context);
-            res.locals.context.should.be.an.Array().with.lengthOf(2);
+            assert(Array.isArray(res.locals.context));
+            assert.equal(res.locals.context.length, 2);
             assert.equal(res.locals.context[0], 'home');
             assert.equal(res.locals.context[1], 'index');
         });
@@ -83,7 +85,8 @@ describe('Contexts', function () {
 
             // Check context
             assertExists(res.locals.context);
-            res.locals.context.should.be.an.Array().with.lengthOf(1);
+            assert(Array.isArray(res.locals.context));
+            assert.equal(res.locals.context.length, 1);
             assert.equal(res.locals.context[0], 'home');
         });
 
@@ -94,7 +97,8 @@ describe('Contexts', function () {
             renderer.context(req, res, data);
 
             assertExists(res.locals.context);
-            res.locals.context.should.be.an.Array().with.lengthOf(1);
+            assert(Array.isArray(res.locals.context));
+            assert.equal(res.locals.context.length, 1);
             assert.equal(res.locals.context[0], 'index');
         });
 
@@ -106,7 +110,8 @@ describe('Contexts', function () {
             renderer.context(req, res, data);
 
             assertExists(res.locals.context);
-            res.locals.context.should.be.an.Array().with.lengthOf(2);
+            assert(Array.isArray(res.locals.context));
+            assert.equal(res.locals.context.length, 2);
             assert.equal(res.locals.context[0], 'paged');
             assert.equal(res.locals.context[1], 'index');
         });
@@ -120,7 +125,8 @@ describe('Contexts', function () {
             renderer.context(req, res, data);
 
             assertExists(res.locals.context);
-            res.locals.context.should.be.an.Array().with.lengthOf(1);
+            assert(Array.isArray(res.locals.context));
+            assert.equal(res.locals.context.length, 1);
             assert.equal(res.locals.context[0], 'tag');
         });
 
@@ -131,7 +137,7 @@ describe('Contexts', function () {
             renderer.context(req, res, data);
 
             assertExists(res.locals.context);
-            res.locals.context.should.be.an.Array().with.lengthOf(0);
+            assert.deepEqual(res.locals.context, []);
         });
 
         it('will not identify /page/2/ as paged without page param', function () {
@@ -141,7 +147,8 @@ describe('Contexts', function () {
             renderer.context(req, res, data);
 
             assertExists(res.locals.context);
-            res.locals.context.should.be.an.Array().with.lengthOf(1);
+            assert(Array.isArray(res.locals.context));
+            assert.equal(res.locals.context.length, 1);
             assert.equal(res.locals.context[0], 'tag');
         });
 
@@ -153,7 +160,8 @@ describe('Contexts', function () {
             renderer.context(req, res, data);
 
             assertExists(res.locals.context);
-            res.locals.context.should.be.an.Array().with.lengthOf(2);
+            assert(Array.isArray(res.locals.context));
+            assert.equal(res.locals.context.length, 2);
             assert.equal(res.locals.context[0], 'paged');
             assert.equal(res.locals.context[1], 'tag');
         });
@@ -167,7 +175,8 @@ describe('Contexts', function () {
             renderer.context(req, res, data);
 
             assertExists(res.locals.context);
-            res.locals.context.should.be.an.Array().with.lengthOf(1);
+            assert(Array.isArray(res.locals.context));
+            assert.equal(res.locals.context.length, 1);
             assert.equal(res.locals.context[0], 'author');
         });
 
@@ -178,7 +187,7 @@ describe('Contexts', function () {
             renderer.context(req, res, data);
 
             assertExists(res.locals.context);
-            res.locals.context.should.be.an.Array().with.lengthOf(0);
+            assert.deepEqual(res.locals.context, []);
         });
 
         it('will not identify /page/2/ as paged without page param', function () {
@@ -188,7 +197,8 @@ describe('Contexts', function () {
             renderer.context(req, res, data);
 
             assertExists(res.locals.context);
-            res.locals.context.should.be.an.Array().with.lengthOf(1);
+            assert(Array.isArray(res.locals.context));
+            assert.equal(res.locals.context.length, 1);
             assert.equal(res.locals.context[0], 'author');
         });
 
@@ -200,7 +210,8 @@ describe('Contexts', function () {
             renderer.context(req, res, data);
 
             assertExists(res.locals.context);
-            res.locals.context.should.be.an.Array().with.lengthOf(2);
+            assert(Array.isArray(res.locals.context));
+            assert.equal(res.locals.context.length, 2);
             assert.equal(res.locals.context[0], 'paged');
             assert.equal(res.locals.context[1], 'author');
         });
@@ -214,7 +225,8 @@ describe('Contexts', function () {
             renderer.context(req, res, data);
 
             assertExists(res.locals.context);
-            res.locals.context.should.be.an.Array().with.lengthOf(2);
+            assert(Array.isArray(res.locals.context));
+            assert.equal(res.locals.context.length, 2);
             assert.equal(res.locals.context[0], 'custom-context');
             assert.equal(res.locals.context[1], 'test');
         });
@@ -228,7 +240,8 @@ describe('Contexts', function () {
             renderer.context(req, res, data);
 
             assertExists(res.locals.context);
-            res.locals.context.should.be.an.Array().with.lengthOf(1);
+            assert(Array.isArray(res.locals.context));
+            assert.equal(res.locals.context.length, 1);
             assert.equal(res.locals.context[0], 'post');
         });
     });
@@ -241,7 +254,8 @@ describe('Contexts', function () {
             renderer.context(req, res, data);
 
             assertExists(res.locals.context);
-            res.locals.context.should.be.an.Array().with.lengthOf(1);
+            assert(Array.isArray(res.locals.context));
+            assert.equal(res.locals.context.length, 1);
             assert.equal(res.locals.context[0], 'private');
         });
     });
@@ -256,7 +270,8 @@ describe('Contexts', function () {
             renderer.context(req, res, data);
 
             assertExists(res.locals.context);
-            res.locals.context.should.be.an.Array().with.lengthOf(1);
+            assert(Array.isArray(res.locals.context));
+            assert.equal(res.locals.context.length, 1);
             assert.equal(res.locals.context[0], 'post');
         });
     });

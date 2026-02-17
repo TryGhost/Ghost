@@ -123,7 +123,6 @@ module.exports = function setupMembersApp() {
     // Feedback
     membersApp.post(
         '/api/feedback',
-        labs.enabledMiddleware('audienceFeedback'),
         bodyParser.json({limit: '50mb'}),
         middleware.loadMemberSession,
         middleware.authMemberByUuid,

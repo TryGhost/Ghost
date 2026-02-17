@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const configUtils = require('../../../../../utils/config-utils');
 const maxLimitCap = require('../../../../../../core/server/web/shared/middleware/max-limit-cap');

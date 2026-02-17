@@ -27,25 +27,25 @@ describe('PostsImporter', function () {
 
             const pageFalse = find(importer.dataToImport, {slug: 'page-false'});
             assertExists(pageFalse);
-            should.not.exist(pageFalse.page, 'pageFalse.page should not exist');
+            assert.equal(pageFalse.page, undefined, 'pageFalse.page should not exist');
             assertExists(pageFalse.type, 'pageFalse.type should exist');
             assert.equal(pageFalse.type, 'post');
 
             const pageTrue = find(importer.dataToImport, {slug: 'page-true'});
             assertExists(pageTrue);
-            should.not.exist(pageTrue.page, 'pageTrue.page should not exist');
+            assert.equal(pageTrue.page, undefined, 'pageTrue.page should not exist');
             assertExists(pageTrue.type, 'pageTrue.type should exist');
             assert.equal(pageTrue.type, 'page');
 
             const typePost = find(importer.dataToImport, {slug: 'type-post'});
             assertExists(typePost);
-            should.not.exist(typePost.page, 'typePost.page should not exist');
+            assert.equal(typePost.page, undefined, 'typePost.page should not exist');
             assertExists(typePost.type, 'typePost.type should exist');
             assert.equal(typePost.type, 'post');
 
             const typePage = find(importer.dataToImport, {slug: 'type-page'});
             assertExists(typePage);
-            should.not.exist(typePage.page, 'typePage.page should not exist');
+            assert.equal(typePage.page, undefined, 'typePage.page should not exist');
             assertExists(typePage.type, 'typePage.type should exist');
             assert.equal(typePage.type, 'page');
         });
@@ -120,7 +120,7 @@ describe('PostsImporter', function () {
             assert.equal(post.email_recipient_filter, 'all');
             assert.equal(post.send_email_when_published, undefined);
             // @TODO: need to check this mapping
-            //post.newsletter_id.should.eql();
+            // assert.equal(post.newsletter_id, TODO);
         });
 
         it('Doesn\'t populate the mobiledoc column if it is a lexical post', function () {

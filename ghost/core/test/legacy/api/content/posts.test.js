@@ -208,7 +208,8 @@ describe('api/endpoints/content/posts', function () {
                 }
                 const jsonResponse = res.body;
 
-                jsonResponse.posts.should.be.an.Array().with.lengthOf(13);
+                assert(Array.isArray(jsonResponse.posts));
+                assert.equal(jsonResponse.posts.length, 13);
 
                 done();
             });
@@ -222,7 +223,8 @@ describe('api/endpoints/content/posts', function () {
             .then((res) => {
                 const jsonResponse = res.body;
 
-                jsonResponse.posts.should.be.an.Array().with.lengthOf(3);
+                assert(Array.isArray(jsonResponse.posts));
+                assert.equal(jsonResponse.posts.length, 3);
                 assert.equal(jsonResponse.posts[0].slug, 'write');
                 assert.equal(jsonResponse.posts[1].slug, 'ghostly-kitchen-sink');
                 assert.equal(jsonResponse.posts[2].slug, 'grow');
@@ -237,7 +239,8 @@ describe('api/endpoints/content/posts', function () {
             .then((res) => {
                 const jsonResponse = res.body;
 
-                jsonResponse.posts.should.be.an.Array().with.lengthOf(3);
+                assert(Array.isArray(jsonResponse.posts));
+                assert.equal(jsonResponse.posts.length, 3);
                 assert.equal(jsonResponse.posts[0].slug, 'write');
                 assert.equal(jsonResponse.posts[1].slug, 'grow');
                 assert.equal(jsonResponse.posts[2].slug, 'ghostly-kitchen-sink');
@@ -260,7 +263,7 @@ describe('api/endpoints/content/posts', function () {
                 }
 
                 assert.equal(res.headers.vary, 'Accept-Version, Accept, Accept-Encoding');
-                res.headers.location.should.eql(`http://localhost:9999/ghost/api/content/posts/?key=${validKey}`);
+                assert.equal(res.headers.location, `http://localhost:9999/ghost/api/content/posts/?key=${validKey}`);
                 assertExists(res.headers['access-control-allow-origin']);
                 assert.equal(res.headers['x-cache-invalidate'], undefined);
                 done();
@@ -472,7 +475,7 @@ describe('api/endpoints/content/posts', function () {
                         }
                     });
 
-                    seen.should.eql(membersOnlySlugs.length + freeToSeeSlugs.length);
+                    assert.equal(seen, membersOnlySlugs.length + freeToSeeSlugs.length);
 
                     // check meta response for this test
                     assert.equal(jsonResponse.meta.pagination.page, 1);

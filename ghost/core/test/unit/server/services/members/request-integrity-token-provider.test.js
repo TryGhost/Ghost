@@ -23,7 +23,8 @@ describe('RequestIntegrityTokenProvider', function () {
             const token = tokenProvider.create();
 
             token.should.be.a.String();
-            token.split(':').should.be.an.Array().with.lengthOf(3);
+            assert(Array.isArray(token.split(':')));
+            assert.equal(token.split(':').length, 3);
             const [timestamp, nonce, digest] = token.split(':');
 
             assert.equal(timestamp, (new Date('2021-01-01').valueOf() + 100).toString());

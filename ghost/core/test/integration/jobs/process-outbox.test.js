@@ -1,5 +1,5 @@
 // @ts-nocheck - Models are dynamically loaded
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const ObjectId = require('bson-objectid').default;
 const testUtils = require('../../utils');

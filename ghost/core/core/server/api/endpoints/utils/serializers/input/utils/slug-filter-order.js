@@ -3,15 +3,18 @@ const slugFilterOrder = (table, filter) => {
 
     if (orderMatch) {
         let orderSlugs = orderMatch[1].split(',');
-        let order = 'CASE ';
+        let caseParts = [];
+        let bindings = [];
 
         orderSlugs.forEach((slug, index) => {
-            order += `WHEN \`${table}\`.\`slug\` = '${slug}' THEN ${index} `;
+            caseParts.push(`WHEN \`${table}\`.\`slug\` = ? THEN ?`);
+            bindings.push(slug.trim(), index);
         });
 
-        order += 'END ASC';
-
-        return order;
+        return {
+            sql: `CASE ${caseParts.join(' ')} END ASC`,
+            bindings
+        };
     }
 };
 

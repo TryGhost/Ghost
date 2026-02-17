@@ -1,5 +1,5 @@
 require('should');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
 const DomainEvents = require('@tryghost/domain-events');

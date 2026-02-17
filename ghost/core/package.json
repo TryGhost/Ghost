@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "6.19.0",
+  "version": "6.19.1",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -72,7 +72,7 @@
     "@tryghost/adapter-base-cache": "0.1.17",
     "@tryghost/admin-api-schema": "4.5.10",
     "@tryghost/api-framework": "1.0.3",
-    "@tryghost/bookshelf-plugins": "0.6.27",
+    "@tryghost/bookshelf-plugins": "0.6.29",
     "@tryghost/color-utils": "0.2.10",
     "@tryghost/config-url-helpers": "1.0.17",
     "@tryghost/custom-fonts": "1.0.2",
@@ -330,19 +330,19 @@
       "test:browser": {
         "dependsOn": [
           "build:assets",
-          "ghost-admin:build"
+          "@tryghost/admin:build"
         ]
       },
       "test:browser:admin": {
         "dependsOn": [
           "build:assets",
-          "ghost-admin:build"
+          "@tryghost/admin:build"
         ]
       },
       "test:browser:portal": {
         "dependsOn": [
           "build:assets",
-          "ghost-admin:build"
+          "@tryghost/admin:build"
         ]
       }
     }

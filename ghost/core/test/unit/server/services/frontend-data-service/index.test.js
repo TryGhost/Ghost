@@ -1,5 +1,5 @@
 const models = require('../../../../../core/server/models');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 
 describe('Frontend Data Service', function () {
     let frontendDataService;

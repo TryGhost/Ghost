@@ -45,7 +45,7 @@ describe('Webhooks API', function () {
 
                 assert.equal(jsonResponse.webhooks[0].event, 'test.create');
                 assert.equal(jsonResponse.webhooks[0].target_url, 'http://example.com/webhooks/test/extra/canary');
-                jsonResponse.webhooks[0].integration_id.should.eql(testUtils.DataGenerator.Content.api_keys[0].integration_id);
+                assert.equal(jsonResponse.webhooks[0].integration_id, testUtils.DataGenerator.Content.api_keys[0].integration_id);
                 assert.equal(jsonResponse.webhooks[0].name, 'test');
                 assert.equal(jsonResponse.webhooks[0].secret, 'thisissecret');
                 assert.equal(jsonResponse.webhooks[0].api_version, 'canary');

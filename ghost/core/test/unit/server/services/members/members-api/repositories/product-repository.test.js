@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const ProductRepository = require('../../../../../../../core/server/services/members/members-api/repositories/product-repository');
 

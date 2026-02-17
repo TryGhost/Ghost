@@ -1,6 +1,6 @@
 require('should');
 const sinon = require('sinon');
-const assert = require('assert').strict;
+const assert = require('node:assert/strict');
 const errors = require('@tryghost/errors');
 
 // @ts-ignore - Intentionally ignoring TypeScript errors for tests

@@ -273,6 +273,7 @@
     "Thanks for the feedback!": "A confirmation message after submitting member feedback",
     "That didn't go to plan": "An error message indicating something went wrong",
     "The email address we have for you is {memberEmail} — if that's not correct, you can update it in your <button>account settings area</button>.": "Email receiving FAQ",
+    "The linked comment is no longer available.": "A notice shown when a permalink targets a comment that has been hidden or deleted",
     "There was a problem submitting your feedback. Please try again a little later.": "An error message for when submitting feedback has failed",
     "There was an error cancelling your subscription, please try again.": "error message",
     "There was an error continuing your subscription, please try again.": "error message",

@@ -2,7 +2,6 @@ const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
-const _ = require('lodash');
 const hbs = require('../../../../../core/frontend/services/theme-engine/engine');
 const middleware = require('../../../../../core/frontend/services/theme-engine').middleware;
 // is only exposed via themeEngine.getActive()
@@ -226,7 +225,7 @@ describe('Themes middleware', function () {
                     data.should.be.an.Object().with.properties('site');
 
                     data.site.should.be.an.Object().with.properties('accent_color', '_preview');
-                    data.site._preview.should.eql(previewString);
+                    assert.equal(data.site._preview, previewString);
                     assert.equal(data.site.accent_color, '#000fff');
 
                     done();
@@ -253,7 +252,7 @@ describe('Themes middleware', function () {
                     data.should.be.an.Object().with.properties('site');
 
                     data.site.should.be.an.Object().with.properties('accent_color', 'icon', '_preview');
-                    data.site._preview.should.eql(previewString);
+                    assert.equal(data.site._preview, previewString);
                     assert.equal(data.site.accent_color, '#000fff');
                     assert.equal(data.site.icon, '/content/images/myimg.png');
 
@@ -336,8 +335,7 @@ describe('Themes middleware', function () {
 
                     data.should.be.an.Object().with.properties('site', 'custom');
 
-                    assert(_.isPlainObject(data.custom));
-                    data.custom.should.be.empty();
+                    assert.deepEqual(data.custom, {});
 
                     done();
                 } catch (error) {
@@ -362,8 +360,7 @@ describe('Themes middleware', function () {
 
                     data.should.be.an.Object().with.properties('site', 'custom');
 
-                    assert(_.isPlainObject(data.custom));
-                    data.custom.should.be.empty();
+                    assert.deepEqual(data.custom, {});
 
                     done();
                 } catch (error) {

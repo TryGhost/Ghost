@@ -56,10 +56,10 @@ describe('Actions API', function () {
         assert.equal(res2.body.actions[0].actor_type, 'user');
         assert.equal(res2.body.actions[0].event, 'added');
         assert.equal(Object.keys(res2.body.actions[0].actor).length, 4);
-        res2.body.actions[0].actor.id.should.eql(testUtils.DataGenerator.Content.users[0].id);
-        res2.body.actions[0].actor.image.should.eql(testUtils.DataGenerator.Content.users[0].profile_image);
-        res2.body.actions[0].actor.name.should.eql(testUtils.DataGenerator.Content.users[0].name);
-        res2.body.actions[0].actor.slug.should.eql(testUtils.DataGenerator.Content.users[0].slug);
+        assert.equal(res2.body.actions[0].actor.id, testUtils.DataGenerator.Content.users[0].id);
+        assert.equal(res2.body.actions[0].actor.image, testUtils.DataGenerator.Content.users[0].profile_image);
+        assert.equal(res2.body.actions[0].actor.name, testUtils.DataGenerator.Content.users[0].name);
+        assert.equal(res2.body.actions[0].actor.slug, testUtils.DataGenerator.Content.users[0].slug);
 
         clock.tick(1000);
 
@@ -94,10 +94,10 @@ describe('Actions API', function () {
         assert.equal(res4.body.actions[0].actor_type, 'user');
         assert.equal(res4.body.actions[0].event, 'edited');
         assert.equal(Object.keys(res4.body.actions[0].actor).length, 4);
-        res4.body.actions[0].actor.id.should.eql(testUtils.DataGenerator.Content.users[0].id);
-        res4.body.actions[0].actor.image.should.eql(testUtils.DataGenerator.Content.users[0].profile_image);
-        res4.body.actions[0].actor.name.should.eql(testUtils.DataGenerator.Content.users[0].name);
-        res4.body.actions[0].actor.slug.should.eql(testUtils.DataGenerator.Content.users[0].slug);
+        assert.equal(res4.body.actions[0].actor.id, testUtils.DataGenerator.Content.users[0].id);
+        assert.equal(res4.body.actions[0].actor.image, testUtils.DataGenerator.Content.users[0].profile_image);
+        assert.equal(res4.body.actions[0].actor.name, testUtils.DataGenerator.Content.users[0].name);
+        assert.equal(res4.body.actions[0].actor.slug, testUtils.DataGenerator.Content.users[0].slug);
 
         clock.tick(1000);
 
@@ -132,9 +132,9 @@ describe('Actions API', function () {
         assert.equal(res5.body.actions[0].actor_type, 'integration');
         assert.equal(res5.body.actions[0].event, 'edited');
         assert.equal(Object.keys(res5.body.actions[0].actor).length, 4);
-        res5.body.actions[0].actor.id.should.eql(testUtils.DataGenerator.Content.integrations[0].id);
+        assert.equal(res5.body.actions[0].actor.id, testUtils.DataGenerator.Content.integrations[0].id);
         assert.equal(res5.body.actions[0].actor.image, null);
-        res5.body.actions[0].actor.name.should.eql(testUtils.DataGenerator.Content.integrations[0].name);
-        res5.body.actions[0].actor.slug.should.eql(testUtils.DataGenerator.Content.integrations[0].slug);
+        assert.equal(res5.body.actions[0].actor.name, testUtils.DataGenerator.Content.integrations[0].name);
+        assert.equal(res5.body.actions[0].actor.slug, testUtils.DataGenerator.Content.integrations[0].slug);
     });
 });

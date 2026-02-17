@@ -481,34 +481,6 @@ li.nav-list-item .for-switch.xs label {
     background: transparent;
 }
 
-/* Background
-/* ---------------------------------------------------------- */
-@keyframes coverFadeIn {
-    0% {
-        opacity: 0;
-    }
-    100% {
-        opacity: 1;
-    }
-}
-
-.mobile-menu-expanded .content-cover {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    z-index: 900;
-    opacity: 0;
-    transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);
-    /* Not off the screen, to give a parallax effect */
-    animation: coverFadeIn 0.3s ease 0.1s 1 forwards;
-}
-
-.mobile-menu-expanded .content-cover {
-    transform: translate3d(205px, 0px, 0px);
-}
-
 /* Email
 /* ---------------------------------------------------------- */
 .settings-menu-email-button span {

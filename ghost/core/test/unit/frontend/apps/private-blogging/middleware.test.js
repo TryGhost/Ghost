@@ -4,6 +4,7 @@ const should = require('should');
 const sinon = require('sinon');
 const crypto = require('crypto');
 const fs = require('fs-extra');
+const {assertExists} = require('../../../../utils/assertions');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const config = require('../../../../../core/shared/config');
 const privateBlogging = require('../../../../../core/frontend/apps/private-blogging/lib/middleware');
@@ -243,7 +244,7 @@ describe('Private Blogging', function () {
                 req.body = {password: 'wrongpassword'};
 
                 privateBlogging.doLoginToPrivateSite(req, res, next);
-                res.error.should.not.be.empty();
+                assertExists(res.error);
                 assert.equal(next.called, true);
             });
 

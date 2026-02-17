@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const dnsPromises = require('dns').promises;
 const fs = require('fs');
 const sinon = require('sinon');

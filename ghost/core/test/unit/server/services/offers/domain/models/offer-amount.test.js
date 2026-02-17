@@ -11,50 +11,35 @@ describe('OfferAmount', function () {
                     OfferPercentageAmount.create();
                     assert.fail();
                 } catch (err) {
-                    should.ok(
-                        err instanceof OfferPercentageAmount.InvalidOfferAmount,
-                        'expected an InvalidOfferAmount error'
-                    );
+                    assert(err instanceof OfferPercentageAmount.InvalidOfferAmount, 'expected an InvalidOfferAmount error');
                 }
 
                 try {
                     OfferPercentageAmount.create('1');
                     assert.fail();
                 } catch (err) {
-                    should.ok(
-                        err instanceof OfferPercentageAmount.InvalidOfferAmount,
-                        'expected an InvalidOfferAmount error'
-                    );
+                    assert(err instanceof OfferPercentageAmount.InvalidOfferAmount, 'expected an InvalidOfferAmount error');
                 }
 
                 try {
                     OfferPercentageAmount.create(-1);
                     assert.fail();
                 } catch (err) {
-                    should.ok(
-                        err instanceof OfferPercentageAmount.InvalidOfferAmount,
-                        'expected an InvalidOfferAmount error'
-                    );
+                    assert(err instanceof OfferPercentageAmount.InvalidOfferAmount, 'expected an InvalidOfferAmount error');
                 }
 
                 try {
                     OfferPercentageAmount.create(200);
                     assert.fail();
                 } catch (err) {
-                    should.ok(
-                        err instanceof OfferPercentageAmount.InvalidOfferAmount,
-                        'expected an InvalidOfferAmount error'
-                    );
+                    assert(err instanceof OfferPercentageAmount.InvalidOfferAmount, 'expected an InvalidOfferAmount error');
                 }
 
                 try {
                     OfferPercentageAmount.create(3.14);
                     assert.fail();
                 } catch (err) {
-                    should.ok(
-                        err instanceof OfferPercentageAmount.InvalidOfferAmount,
-                        'expected an InvalidOfferAmount error'
-                    );
+                    assert(err instanceof OfferPercentageAmount.InvalidOfferAmount, 'expected an InvalidOfferAmount error');
                 }
 
                 OfferPercentageAmount.create(69); // nice
@@ -75,40 +60,28 @@ describe('OfferAmount', function () {
                     OfferFixedAmount.create();
                     assert.fail();
                 } catch (err) {
-                    should.ok(
-                        err instanceof OfferFixedAmount.InvalidOfferAmount,
-                        'expected an InvalidOfferAmount error'
-                    );
+                    assert(err instanceof OfferFixedAmount.InvalidOfferAmount, 'expected an InvalidOfferAmount error');
                 }
 
                 try {
                     OfferFixedAmount.create('1');
                     assert.fail();
                 } catch (err) {
-                    should.ok(
-                        err instanceof OfferFixedAmount.InvalidOfferAmount,
-                        'expected an InvalidOfferAmount error'
-                    );
+                    assert(err instanceof OfferFixedAmount.InvalidOfferAmount, 'expected an InvalidOfferAmount error');
                 }
 
                 try {
                     OfferFixedAmount.create(-1);
                     assert.fail();
                 } catch (err) {
-                    should.ok(
-                        err instanceof OfferFixedAmount.InvalidOfferAmount,
-                        'expected an InvalidOfferAmount error'
-                    );
+                    assert(err instanceof OfferFixedAmount.InvalidOfferAmount, 'expected an InvalidOfferAmount error');
                 }
 
                 try {
                     OfferFixedAmount.create(3.14);
                     assert.fail();
                 } catch (err) {
-                    should.ok(
-                        err instanceof OfferFixedAmount.InvalidOfferAmount,
-                        'expected an InvalidOfferAmount error'
-                    );
+                    assert(err instanceof OfferFixedAmount.InvalidOfferAmount, 'expected an InvalidOfferAmount error');
                 }
 
                 OfferFixedAmount.create(200);
@@ -129,40 +102,28 @@ describe('OfferAmount', function () {
                     OfferTrialAmount.create();
                     assert.fail();
                 } catch (err) {
-                    should.ok(
-                        err instanceof OfferTrialAmount.InvalidOfferAmount,
-                        'expected an InvalidOfferAmount error'
-                    );
+                    assert(err instanceof OfferTrialAmount.InvalidOfferAmount, 'expected an InvalidOfferAmount error');
                 }
 
                 try {
                     OfferTrialAmount.create('1');
                     assert.fail();
                 } catch (err) {
-                    should.ok(
-                        err instanceof OfferTrialAmount.InvalidOfferAmount,
-                        'expected an InvalidOfferAmount error'
-                    );
+                    assert(err instanceof OfferTrialAmount.InvalidOfferAmount, 'expected an InvalidOfferAmount error');
                 }
 
                 try {
                     OfferTrialAmount.create(-1);
                     assert.fail();
                 } catch (err) {
-                    should.ok(
-                        err instanceof OfferTrialAmount.InvalidOfferAmount,
-                        'expected an InvalidOfferAmount error'
-                    );
+                    assert(err instanceof OfferTrialAmount.InvalidOfferAmount, 'expected an InvalidOfferAmount error');
                 }
 
                 try {
                     OfferTrialAmount.create(3.14);
                     assert.fail();
                 } catch (err) {
-                    should.ok(
-                        err instanceof OfferTrialAmount.InvalidOfferAmount,
-                        'expected an InvalidOfferAmount error'
-                    );
+                    assert(err instanceof OfferTrialAmount.InvalidOfferAmount, 'expected an InvalidOfferAmount error');
                 }
 
                 OfferTrialAmount.create(200);
@@ -181,52 +142,37 @@ describe('OfferAmount', function () {
             it('Will only create an OfferFreeMonthsAmount containing an integer greater than 0', function () {
                 try {
                     OfferFreeMonthsAmount.create();
-                    should.fail();
+                    assert.fail();
                 } catch (err) {
-                    should.ok(
-                        err instanceof OfferFreeMonthsAmount.InvalidOfferAmount,
-                        'expected an InvalidOfferAmount error'
-                    );
+                    assert(err instanceof OfferFreeMonthsAmount.InvalidOfferAmount, 'expected an InvalidOfferAmount error');
                 }
 
                 try {
                     OfferFreeMonthsAmount.create('1');
-                    should.fail();
+                    assert.fail();
                 } catch (err) {
-                    should.ok(
-                        err instanceof OfferFreeMonthsAmount.InvalidOfferAmount,
-                        'expected an InvalidOfferAmount error'
-                    );
+                    assert(err instanceof OfferFreeMonthsAmount.InvalidOfferAmount, 'expected an InvalidOfferAmount error');
                 }
 
                 try {
                     OfferFreeMonthsAmount.create(0);
-                    should.fail();
+                    assert.fail();
                 } catch (err) {
-                    should.ok(
-                        err instanceof OfferFreeMonthsAmount.InvalidOfferAmount,
-                        'expected an InvalidOfferAmount error'
-                    );
+                    assert(err instanceof OfferFreeMonthsAmount.InvalidOfferAmount, 'expected an InvalidOfferAmount error');
                 }
 
                 try {
                     OfferFreeMonthsAmount.create(-1);
-                    should.fail();
+                    assert.fail();
                 } catch (err) {
-                    should.ok(
-                        err instanceof OfferFreeMonthsAmount.InvalidOfferAmount,
-                        'expected an InvalidOfferAmount error'
-                    );
+                    assert(err instanceof OfferFreeMonthsAmount.InvalidOfferAmount, 'expected an InvalidOfferAmount error');
                 }
 
                 try {
                     OfferFreeMonthsAmount.create(3.14);
-                    should.fail();
+                    assert.fail();
                 } catch (err) {
-                    should.ok(
-                        err instanceof OfferFreeMonthsAmount.InvalidOfferAmount,
-                        'expected an InvalidOfferAmount error'
-                    );
+                    assert(err instanceof OfferFreeMonthsAmount.InvalidOfferAmount, 'expected an InvalidOfferAmount error');
                 }
 
                 OfferFreeMonthsAmount.create(1);
@@ -236,7 +182,7 @@ describe('OfferAmount', function () {
         it('Exposes a number on the value property', function () {
             const cadence = OfferFreeMonthsAmount.create(2);
 
-            should.ok(typeof cadence.value === 'number');
+            assert.equal(typeof cadence.value, 'number');
         });
     });
 });

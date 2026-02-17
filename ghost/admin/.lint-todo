@@ -197,3 +197,6 @@ remove|ember-template-lint|no-invalid-interactive|42|30|42|30|ffabb36d3b9e207aba
 remove|ember-template-lint|no-unknown-arguments-for-builtin-components|49|28|49|28|571c3d774ed33480f528b54b323b23bfd7148eee|1746489600000|||app/components/gh-nav-menu/main.hbs
 remove|ember-template-lint|no-invalid-interactive|48|30|48|30|a7f41579b917cf51e3a82ca4726d7f03fcfb0bc3|1764028800000|||app/components/gh-nav-menu/main.hbs
 add|ember-template-lint|no-invalid-interactive|48|30|48|30|c67992c562a02caa8f4e94ad244fcab0dd998888|1764115200000|||app/components/gh-nav-menu/main.hbs
+remove|ember-template-lint|no-action|1|71|1|71|2e6351f546807d88cc8eb9dbe8baa149468b5cb9|1746489600000|||app/components/gh-view-title.hbs
+remove|ember-template-lint|no-invalid-role|1|0|1|0|3e651d38e0110e1be20e5082075db1b879b59a36|1746489600000|||app/components/gh-view-title.hbs
+add|ember-template-lint|no-yield-only|1|0|1|0|a5fa6e8c1e0f03fb31b5cd17770e4368d44932e4|1771200000000|||app/components/gh-view-title.hbs

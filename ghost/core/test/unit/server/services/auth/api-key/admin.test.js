@@ -54,7 +54,7 @@ describe('Admin API Key Auth', function () {
 
         apiKeyAuth.admin.authenticate(req, res, (err) => {
             assert.equal(err, undefined);
-            req.api_key.should.eql(this.fakeApiKey);
+            assert.equal(req.api_key, this.fakeApiKey);
             done();
         });
     });
@@ -79,7 +79,7 @@ describe('Admin API Key Auth', function () {
 
         apiKeyAuth.admin.authenticate(req, res, (err) => {
             assert.equal(err, undefined);
-            req.api_key.should.eql(this.fakeApiKey);
+            assert.equal(req.api_key, this.fakeApiKey);
             done();
         });
     });
@@ -104,7 +104,7 @@ describe('Admin API Key Auth', function () {
 
         apiKeyAuth.admin.authenticate(req, res, (err) => {
             assert.equal(err, undefined);
-            req.api_key.should.eql(this.fakeApiKey);
+            assert.equal(req.api_key, this.fakeApiKey);
             done();
         });
     });

@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const nock = require('nock');
 const moment = require('moment');
 const crypto = require('crypto');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const util = require('util');
 const logging = require('@tryghost/logging');
 const request = require('@tryghost/request');
@@ -212,8 +212,8 @@ describe('Update Check', function () {
             assert.equal(capturedData.node_version, process.versions.node);
             assert.equal(capturedData.env, process.env.NODE_ENV);
             assert.match(capturedData.database_type, /sqlite3|mysql/);
-            capturedData.blog_id.should.be.a.String();
-            capturedData.blog_id.should.not.be.empty();
+            assert.equal(typeof capturedData.blog_id, 'string');
+            assert(capturedData.blog_id);
             assert.equal(capturedData.theme, 'casperito');
             assert.equal(capturedData.blog_created_at, 819846900);
             assert.equal(capturedData.user_count, 2);
@@ -285,11 +285,11 @@ describe('Update Check', function () {
             assert.equal(notificationsAPIAddStub.args[0][0].notifications.length, 1);
 
             const targetNotification = notificationsAPIAddStub.args[0][0].notifications[0];
-            targetNotification.dismissible.should.eql(notification.messages[0].dismissible);
-            targetNotification.id.should.eql(notification.messages[0].id);
-            targetNotification.top.should.eql(notification.messages[0].top);
+            assert.equal(targetNotification.dismissible, notification.messages[0].dismissible);
+            assert.equal(targetNotification.id, notification.messages[0].id);
+            assert.equal(targetNotification.top, notification.messages[0].top);
             assert.equal(targetNotification.type, 'info');
-            targetNotification.message.should.eql(notification.messages[0].content);
+            assert.equal(targetNotification.message, notification.messages[0].content);
 
             assert.equal(usersBrowseStub.calledTwice, true);
 

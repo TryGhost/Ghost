@@ -64,7 +64,7 @@ describe('EmailAnalyticsService', function () {
             });
 
             const result = await service.getLastNonOpenedEventTimestamp();
-            result.should.eql(new Date(1));
+            assert.deepEqual(result, new Date(1));
         });
 
         it('returns the fallback if nothing is found', async function () {
@@ -76,7 +76,7 @@ describe('EmailAnalyticsService', function () {
             });
 
             const result = await service.getLastNonOpenedEventTimestamp();
-            result.should.eql(new Date(Date.now() - 30 * 60 * 1000)); // should be 30 mins prior
+            assert.deepEqual(result, new Date(Date.now() - 30 * 60 * 1000)); // should be 30 mins prior
         });
     });
 
@@ -90,7 +90,7 @@ describe('EmailAnalyticsService', function () {
             });
 
             const result = await service.getLastOpenedEventTimestamp();
-            result.should.eql(new Date(1));
+            assert.deepEqual(result, new Date(1));
         });
 
         it('returns the fallback if nothing is found', async function () {
@@ -102,7 +102,7 @@ describe('EmailAnalyticsService', function () {
             });
 
             const result = await service.getLastOpenedEventTimestamp();
-            result.should.eql(new Date(Date.now() - 30 * 60 * 1000)); // should be 30 mins prior
+            assert.deepEqual(result, new Date(Date.now() - 30 * 60 * 1000)); // should be 30 mins prior
         });
     });
 

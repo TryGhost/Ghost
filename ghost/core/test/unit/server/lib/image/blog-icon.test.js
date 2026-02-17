@@ -134,7 +134,7 @@ describe('lib/image: blog icon', function () {
             }, storageUtils: {}, urlUtils: {}, settingsCache: {
                 get: () => {}
             }});
-            blogIcon.getIconPath().should.eql(path.join(root, 'favicon.ico'));
+            assert.equal(blogIcon.getIconPath(), path.join(root, 'favicon.ico'));
         });
     });
 

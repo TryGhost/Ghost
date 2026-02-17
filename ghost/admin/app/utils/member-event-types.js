@@ -20,9 +20,7 @@ export function getAvailableEventTypes(settings, feature, hiddenEvents = []) {
     if (settings.commentsEnabled !== 'off') {
         extended.push({event: 'comment_event', icon: 'filter-dropdown-comments', name: 'Comments', group: 'others'});
     }
-    if (feature.audienceFeedback) {
-        extended.push({event: 'feedback_event', icon: 'filter-dropdown-feedback', name: 'Feedback', group: 'others'});
-    }
+    extended.push({event: 'feedback_event', icon: 'filter-dropdown-feedback', name: 'Feedback', group: 'others'});
     if (settings.emailTrackClicks) {
         extended.push({event: 'click_event', icon: 'filter-dropdown-clicked-in-email', name: 'Clicked link in email', group: 'others'});
     }

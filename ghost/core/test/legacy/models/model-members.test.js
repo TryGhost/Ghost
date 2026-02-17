@@ -246,23 +246,23 @@ describe('Member Model', function run() {
             const memberAfterDestroy = await Member.findOne({
                 email: 'test@test.member'
             });
-            should.not.exist(memberAfterDestroy, 'Member should have been destroyed');
+            assert.equal(memberAfterDestroy, null, 'Member should have been destroyed');
 
-            const memberLabelAfterDestroy = await BaseModel.knex('members_labels').where({
+            const memberLabelsAfterDestroy = await BaseModel.knex('members_labels').where({
                 label_id: label.get('id'),
                 member_id: member.get('id')
-            }).select().first();
-            should.not.exist(memberLabelAfterDestroy, 'Label should have been removed from member');
+            }).select();
+            assert.deepEqual(memberLabelsAfterDestroy, [], 'Label should have been removed from member');
 
             const customerAfterDestroy = await MemberStripeCustomer.findOne({
                 member_id: member.get('id')
             });
-            should.not.exist(customerAfterDestroy, 'MemberStripeCustomer should have been destroyed');
+            assert.equal(customerAfterDestroy, null, 'MemberStripeCustomer should have been destroyed');
 
             const subscriptionAfterDestroy = await StripeCustomerSubscription.findOne({
                 customer_id: customer.get('customer_id')
             });
-            should.not.exist(subscriptionAfterDestroy, 'StripeCustomerSubscription should have been destroyed');
+            assert.equal(subscriptionAfterDestroy, null, 'StripeCustomerSubscription should have been destroyed');
         });
     });
 
@@ -354,7 +354,7 @@ describe('Member Model', function run() {
             const podcastProductMembers = await Member.findPage({filter: 'products:podcast'});
             const foundMemberInPodcast = podcastProductMembers.data.find(model => model.id === member.id);
 
-            should.not.exist(foundMemberInPodcast, 'Member should not have been included in products filter');
+            assert.equal(foundMemberInPodcast, undefined, 'Member should not have been included in products filter');
         });
     });
 

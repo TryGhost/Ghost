@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const {assertExists} = require('../../utils/assertions');
 const should = require('should');
 const sinon = require('sinon');
@@ -30,8 +30,8 @@ function buildMember(status, products = []) {
 }
 
 function testPosts(posts, map) {
-    posts.should.be.an.Array();
-    posts.length.should.eql(DEFAULT_POST_FIXTURE_COUNT + Object.keys(map).length);
+    assert(Array.isArray(posts));
+    assert.equal(posts.length, DEFAULT_POST_FIXTURE_COUNT + Object.keys(map).length);
 
     // Free post
     for (const postID in map) {
