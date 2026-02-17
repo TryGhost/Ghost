@@ -32,7 +32,7 @@ export class DockerCompose {
 
         try {
             logging.info('Starting docker compose services...');
-            execSync(command, {stdio: 'inherit'});
+            execSync(command, {encoding: 'utf-8', maxBuffer: 1024 * 1024 * 10});
             logging.info('Docker compose services are up');
         } catch (error) {
             this.logCommandFailure(command, error);
@@ -50,7 +50,7 @@ export class DockerCompose {
         const command = this.composeCommand('down -v');
 
         try {
-            execSync(command, {stdio: 'inherit'});
+            execSync(command, {encoding: 'utf-8', maxBuffer: 1024 * 1024 * 10});
         } catch (error) {
             this.logCommandFailure(command, error);
             logging.error('Failed to stop docker compose services:', error);
@@ -158,7 +158,7 @@ export class DockerCompose {
             logging.error('\n=== Docker compose logs ===');
 
             const logs = execSync(
-                `docker compose -f ${this.composeFilePath} -p ${this.projectName} logs`,
+                this.composeCommand('logs'),
                 {encoding: 'utf-8', maxBuffer: 1024 * 1024 * 10} // 10MB buffer for logs
             );
 
@@ -218,7 +218,7 @@ export class DockerCompose {
     }
 
     private async getContainers(): Promise<ContainerStatusItem[] | null> {
-        const command = `docker compose -f ${this.composeFilePath} -p ${this.projectName} ps -a --format json`;
+        const command = this.composeCommand('ps -a --format json');
         const output = execSync(command, {encoding: 'utf-8'}).trim();
 
         if (!output) {
