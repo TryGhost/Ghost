@@ -8,6 +8,7 @@ import {checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/
 import {useAddAutomatedEmail, useBrowseAutomatedEmails, useEditAutomatedEmail} from '@tryghost/admin-x-framework/api/automated-emails';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useWelcomeEmailSenderDetails} from '../../../hooks/use-welcome-email-sender-details';
 import type {AutomatedEmail} from '@tryghost/admin-x-framework/api/automated-emails';
 
 // Default welcome email content in Lexical JSON format
@@ -32,10 +33,9 @@ const EmailPreview: React.FC<{
     onToggle
 }) => {
     const {settings} = useGlobalData();
-    const [accentColor, icon, siteTitle] = getSettingValues<string>(settings, ['accent_color', 'icon', 'title']);
+    const [accentColor, icon] = getSettingValues<string>(settings, ['accent_color', 'icon']);
     const color = accentColor || '#F6414E';
-
-    const senderName = automatedEmail.sender_name || siteTitle || 'Your Site';
+    const {resolvedSenderName} = useWelcomeEmailSenderDetails(automatedEmail);
 
     return (
         <div
@@ -60,7 +60,7 @@ const EmailPreview: React.FC<{
                         </div>
                     }
                     <div className='text-left'>
-                        <div className='font-semibold'>{senderName}</div>
+                        <div className='font-semibold'>{resolvedSenderName}</div>
                         <div className='text-sm'>{automatedEmail.subject}</div>
                     </div>
                 </div>
