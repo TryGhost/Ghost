@@ -32,9 +32,17 @@ const Members: React.FC = () => {
         return !filters.some(f => BULK_DELETE_RESTRICTED_FILTERS.includes(f.field));
     }, [filters]);
 
-    // Build search params for the API query (defaults are in useBrowseMembersInfinite)
+    // Build search params for the API query, merging with defaults so we don't lose include/limit/order
     const searchParams = useMemo((): Record<string, string> | undefined => {
-        return nql ? {filter: nql} : undefined;
+        if (!nql) {
+            return undefined;
+        }
+        return {
+            include: 'labels,tiers',
+            limit: '50',
+            order: 'created_at desc',
+            filter: nql
+        };
     }, [nql]);
 
     const {
