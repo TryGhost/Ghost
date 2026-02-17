@@ -110,7 +110,11 @@ describe('Exporter', function () {
             // NOTE: using `Object.keys` here instead of `should.have.only.keys` assertion
             //       because when `have.only.keys` fails there's no useful diff
             assert.deepEqual(Object.keys(exportData.data).sort(), tables.sort());
-            Object.keys(exportData.data).sort().should.containDeep(Object.keys(exportedBodyLatest().db[0].data));
+            assert(
+                Object.keys(exportedBodyLatest().db[0].data).every(key => (
+                    Object.hasOwnProperty.call(exportData.data, key)
+                ))
+            );
             assert.equal(exportData.meta.version, ghostVersion.full);
 
             // excludes table should contain no data
