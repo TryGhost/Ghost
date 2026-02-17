@@ -143,6 +143,17 @@ const Sidebar: React.FC<{
                                     onKeyDown={() => clearError('name')}
                                 />
                                 <TextField
+                                    containerClassName='group'
+                                    error={Boolean(errors.code)}
+                                    hint={errors.code || (offer?.code !== '' ? <span className='truncate text-grey-700'>{homepageUrl}<span className='font-bold text-black dark:text-white'>{offer?.code}</span></span> : null)}
+                                    placeholder='black-friday'
+                                    rightPlaceholder={offer?.code !== '' ? <Button className='mr-0.5 mt-1' color='green' label={isCopied ? 'Copied!' : 'Copy link'} size='sm' onClick={handleCopyClick} /> : null}
+                                    title='Offer code'
+                                    value={offer?.code}
+                                    onChange={e => updateOffer({code: e.target.value})}
+                                    onKeyDown={() => clearError('code')}
+                                />
+                                <TextField
                                     error={Boolean(errors.displayTitle)}
                                     hint={errors.displayTitle}
                                     placeholder='Black Friday Special'
@@ -156,15 +167,6 @@ const Sidebar: React.FC<{
                                     title='Display description'
                                     value={offer?.display_description}
                                     onChange={e => updateOffer({display_description: e.target.value})}
-                                />
-                                <TextField
-                                    error={Boolean(errors.code)}
-                                    hint={errors.code || (offer?.code !== '' ? <div className='flex items-center justify-between'><div>{homepageUrl}<span className='font-bold'>{offer?.code}</span></div><span></span><Button className='text-xs' color='green' label={`${isCopied ? 'Copied' : 'Copy'}`} size='sm' link onClick={handleCopyClick} /></div> : null)}
-                                    placeholder='black-friday'
-                                    title='Offer code'
-                                    value={offer?.code}
-                                    onChange={e => updateOffer({code: e.target.value})}
-                                    onKeyDown={() => clearError('code')}
                                 />
                             </div>
                         </section>
