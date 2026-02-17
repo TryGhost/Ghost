@@ -61,7 +61,6 @@ module.exports = class MemberRepository {
      * @param {any} deps.OfferRedemption
      * @param {any} deps.Outbox
      * @param {import('../../services/stripe-api')} deps.stripeAPIService
-     * @param {any} deps.labsService
      * @param {any} deps.productRepository
      * @param {any} deps.offersAPI
      * @param {ITokenService} deps.tokenService
@@ -82,7 +81,6 @@ module.exports = class MemberRepository {
         OfferRedemption,
         Outbox,
         stripeAPIService,
-        labsService,
         productRepository,
         offersAPI,
         tokenService,
@@ -106,7 +104,6 @@ module.exports = class MemberRepository {
         this._offersAPI = offersAPI;
         this.tokenService = tokenService;
         this._newslettersService = newslettersService;
-        this._labsService = labsService;
         this._AutomatedEmail = AutomatedEmail;
 
         DomainEvents.subscribe(OfferRedemptionEvent, async function (event) {

@@ -238,7 +238,6 @@ describe('MemberRepository', function () {
         let stripeAPIService;
         let productRepository;
         let offersAPI;
-        let labsService;
         let subscriptionData;
         let subscriptionCreatedNotifySpy;
         let offerRedemptionNotifySpy;
@@ -334,10 +333,6 @@ describe('MemberRepository', function () {
                 update: sinon.stub().resolves({})
             };
 
-            labsService = {
-                isSet: sinon.stub().returns(true)
-            };
-
             offersAPI = {
                 ensureOfferForStripeCoupon: sinon.stub().resolves({
                     id: 'offer_new'
@@ -352,7 +347,6 @@ describe('MemberRepository', function () {
                 MemberPaidSubscriptionEvent,
                 MemberProductEvent,
                 productRepository,
-                labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
             });
@@ -384,7 +378,6 @@ describe('MemberRepository', function () {
                 MemberProductEvent,
                 productRepository,
                 offersAPI,
-                labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
             });
@@ -432,7 +425,6 @@ describe('MemberRepository', function () {
                 MemberPaidSubscriptionEvent,
                 MemberProductEvent,
                 productRepository,
-                labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
             });
@@ -508,7 +500,6 @@ describe('MemberRepository', function () {
                 MemberProductEvent,
                 productRepository: productRepositoryWithTier,
                 offersAPI,
-                labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
             });
@@ -584,7 +575,6 @@ describe('MemberRepository', function () {
                 MemberProductEvent,
                 productRepository: productRepositoryWithTier,
                 offersAPI,
-                labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
             });
@@ -658,7 +648,6 @@ describe('MemberRepository', function () {
                 MemberProductEvent,
                 productRepository: productRepositoryWithTier,
                 offersAPI,
-                labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
             });
@@ -720,7 +709,6 @@ describe('MemberRepository', function () {
                 MemberProductEvent,
                 productRepository,
                 offersAPI,
-                labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
             });
@@ -776,7 +764,6 @@ describe('MemberRepository', function () {
                 MemberProductEvent,
                 productRepository,
                 offersAPI,
-                labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
             });
@@ -814,7 +801,6 @@ describe('MemberRepository', function () {
                 MemberPaidSubscriptionEvent,
                 MemberProductEvent,
                 productRepository,
-                labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
             });
@@ -869,7 +855,6 @@ describe('MemberRepository', function () {
                 MemberPaidSubscriptionEvent,
                 MemberProductEvent,
                 productRepository,
-                labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
             });
@@ -910,7 +895,6 @@ describe('MemberRepository', function () {
                 MemberPaidSubscriptionEvent,
                 MemberProductEvent,
                 productRepository,
-                labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
             });
@@ -951,7 +935,6 @@ describe('MemberRepository', function () {
                 MemberPaidSubscriptionEvent,
                 MemberProductEvent,
                 productRepository,
-                labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
             });
@@ -1000,7 +983,6 @@ describe('MemberRepository', function () {
                 MemberPaidSubscriptionEvent,
                 MemberProductEvent,
                 productRepository,
-                labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
             });
@@ -1048,7 +1030,6 @@ describe('MemberRepository', function () {
                 MemberProductEvent,
                 productRepository,
                 offersAPI,
-                labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
             });
@@ -1481,7 +1462,6 @@ describe('MemberRepository', function () {
         let MemberSubscribeEvent;
         let newslettersService;
         let AutomatedEmail;
-        let labsService;
         const oldNodeEnv = process.env.NODE_ENV;
 
         beforeEach(function () {
@@ -1543,10 +1523,6 @@ describe('MemberRepository', function () {
                     })
                 })
             };
-
-            labsService = {
-                isSet: sinon.stub()
-            };
         });
 
         afterEach(function () {
@@ -1561,7 +1537,6 @@ describe('MemberRepository', function () {
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
                 AutomatedEmail,
-                labsService,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -1586,7 +1561,6 @@ describe('MemberRepository', function () {
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
                 AutomatedEmail,
-                labsService,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -1611,7 +1585,6 @@ describe('MemberRepository', function () {
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
                 AutomatedEmail,
-                labsService,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -1630,7 +1603,6 @@ describe('MemberRepository', function () {
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
                 AutomatedEmail,
-                labsService,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -1655,7 +1627,6 @@ describe('MemberRepository', function () {
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
                 AutomatedEmail,
-                labsService,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -1676,7 +1647,6 @@ describe('MemberRepository', function () {
                 newslettersService,
                 AutomatedEmail,
                 StripeCustomer,
-                labsService,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -1717,7 +1687,6 @@ describe('MemberRepository', function () {
         let stripeAPIService;
         let productRepository;
         let AutomatedEmail;
-        let labsService;
         let subscriptionData;
 
         beforeEach(function () {
@@ -1847,10 +1816,6 @@ describe('MemberRepository', function () {
                     })
                 })
             };
-
-            labsService = {
-                isSet: sinon.stub()
-            };
         });
 
         afterEach(function () {
@@ -1877,7 +1842,6 @@ describe('MemberRepository', function () {
                 stripeAPIService,
                 productRepository,
                 AutomatedEmail,
-                labsService,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -1923,7 +1887,6 @@ describe('MemberRepository', function () {
                 stripeAPIService,
                 productRepository,
                 AutomatedEmail,
-                labsService,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -1977,7 +1940,6 @@ describe('MemberRepository', function () {
                 stripeAPIService,
                 productRepository,
                 AutomatedEmail,
-                labsService,
                 OfferRedemption: mockOfferRedemption
             });
 
