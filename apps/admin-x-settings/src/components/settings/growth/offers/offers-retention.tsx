@@ -1,6 +1,7 @@
+import {type Offer, useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
-// TODO: Replace placeholder data with real retention offer data from API
+type RetentionCadence = 'month' | 'year';
 
 type RetentionOffer = {
     id: string;
@@ -12,29 +13,98 @@ type RetentionOffer = {
     status: 'active' | 'inactive';
 };
 
-const placeholderRetentionOffers: RetentionOffer[] = [
-    {
-        id: 'monthly',
-        name: 'Monthly retention',
-        description: 'Applied to monthly plans',
-        terms: '50% OFF',
-        termsDetail: 'Next payment',
-        redemptions: 3,
-        status: 'active'
-    },
-    {
-        id: 'yearly',
-        name: 'Yearly retention',
-        description: 'Applied to annual plans',
-        terms: null,
-        termsDetail: null,
-        redemptions: 0,
-        status: 'inactive'
+const getActiveRetentionOfferByCadence = (offers: Offer[], cadence: RetentionCadence): Offer | null => {
+    return offers.find((offer) => {
+        return offer.redemption_type === 'retention' &&
+            offer.cadence === cadence &&
+            offer.status === 'active';
+    }) || null;
+};
+
+const getRetentionRedemptionsByCadence = (offers: Offer[], cadence: RetentionCadence): number => {
+    return offers.reduce((total, offer) => {
+        if (offer.redemption_type !== 'retention' || offer.cadence !== cadence) {
+            return total;
+        }
+
+        return total + (offer.redemption_count || 0);
+    }, 0);
+};
+
+const getRetentionTerms = (offer: Offer | null): string | null => {
+    if (!offer) {
+        return null;
     }
-];
+
+    if (offer.type === 'free_months') {
+        const monthLabel = offer.amount === 1 ? 'month' : 'months';
+        return `${offer.amount} ${monthLabel} free`;
+    }
+
+    if (offer.type === 'percent') {
+        return `${offer.amount}% OFF`;
+    }
+
+    return null;
+};
+
+const getRetentionTermsDetail = (offer: Offer | null): string | null => {
+    if (!offer) {
+        return null;
+    }
+
+    if (offer.type === 'free_months') {
+        return '';
+    }
+
+    if (offer.duration === 'once') {
+        return 'First payment';
+    }
+
+    if (offer.duration === 'repeating' && offer.duration_in_months) {
+        const monthLabel = offer.duration_in_months === 1 ? 'month' : 'months';
+        return `For ${offer.duration_in_months} ${monthLabel}`;
+    }
+
+    if (offer.duration === 'forever') {
+        return 'Forever';
+    }
+
+    return null;
+};
+
+const getRetentionOffers = (offers: Offer[]): RetentionOffer[] => {
+    const monthlyOffer = getActiveRetentionOfferByCadence(offers, 'month');
+    const yearlyOffer = getActiveRetentionOfferByCadence(offers, 'year');
+    const monthlyRedemptions = getRetentionRedemptionsByCadence(offers, 'month');
+    const yearlyRedemptions = getRetentionRedemptionsByCadence(offers, 'year');
+
+    return [
+        {
+            id: 'monthly',
+            name: 'Monthly retention',
+            description: 'Applied to monthly plans',
+            terms: getRetentionTerms(monthlyOffer),
+            termsDetail: getRetentionTermsDetail(monthlyOffer),
+            redemptions: monthlyRedemptions,
+            status: monthlyOffer ? 'active' : 'inactive'
+        },
+        {
+            id: 'yearly',
+            name: 'Yearly retention',
+            description: 'Applied to annual plans',
+            terms: getRetentionTerms(yearlyOffer),
+            termsDetail: getRetentionTermsDetail(yearlyOffer),
+            redemptions: yearlyRedemptions,
+            status: yearlyOffer ? 'active' : 'inactive'
+        }
+    ];
+};
 
 const OffersRetention: React.FC = () => {
     const {updateRoute} = useRouting();
+    const {data: {offers: allOffers = []} = {}} = useBrowseOffers();
+    const retentionOffers = getRetentionOffers(allOffers);
 
     const handleRetentionOfferClick = (id: string) => {
         updateRoute(`offers/edit/retention/${id}`);
@@ -50,7 +120,7 @@ const OffersRetention: React.FC = () => {
                     <col className='w-[220px]' />
                     <col className='w-[80px]' />
                 </colgroup>
-                {placeholderRetentionOffers.map(offer => (
+                {retentionOffers.map(offer => (
                     <tr key={offer.id} className='group relative scale-100 border-b border-b-grey-200 dark:border-grey-800' data-testid='retention-offer-item'>
                         <td className='p-0'>
                             <a className='block cursor-pointer p-5 pl-0' onClick={() => handleRetentionOfferClick(offer.id)}>
