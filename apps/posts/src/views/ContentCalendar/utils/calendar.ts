@@ -5,6 +5,7 @@ export interface CalendarMonth {
     month: number;
 }
 
+export type CalendarTypeFilter = 'all' | 'draft' | 'published' | 'scheduled' | 'featured';
 export type CalendarPostStatus = 'draft' | 'scheduled' | 'published' | 'unknown';
 export type CalendarPostOrder = 'published_at asc' | 'published_at desc' | 'updated_at desc';
 
@@ -66,6 +67,10 @@ const getDatePartsInTimezone = (date: Date, timeZone: string) => {
  */
 export const getDateKeyInTimezone = (dateInput: string, timeZone: string) => {
     const date = new Date(dateInput);
+    if (Number.isNaN(date.getTime())) {
+        throw new RangeError('Invalid dateInput passed to getDateKeyInTimezone');
+    }
+
     const {year, month, day} = getDatePartsInTimezone(date, timeZone);
 
     return `${year}-${pad(month)}-${pad(day)}`;
@@ -85,6 +90,37 @@ export const getNowMonthInTimezone = (timeZone: string, now = new Date()): Calen
  */
 export const shiftCalendarMonth = (month: CalendarMonth, offset: number): CalendarMonth => {
     return normalizeMonth(month.year, month.month + offset);
+};
+
+/**
+ * Returns the set of post-status badges to show in the calendar legend.
+ */
+export const getLegendStatusesForType = (type: CalendarTypeFilter): CalendarPostStatus[] => {
+    switch (type) {
+    case 'draft':
+        return ['draft'];
+    case 'published':
+        return ['published'];
+    case 'scheduled':
+        return ['scheduled'];
+    default:
+        return ['published', 'scheduled', 'draft'];
+    }
+};
+
+/**
+ * Builds a month-scoped date filter with a one-month buffer on each side.
+ * The resulting NQL clause matches posts by published, updated, or created timestamps.
+ */
+export const getCalendarDateRangeFilter = (month: CalendarMonth): string => {
+    const rangeStart = new Date(Date.UTC(month.year, month.month - 2, 1, 0, 0, 0, 0)).toISOString();
+    const rangeEnd = new Date(Date.UTC(month.year, month.month + 1, 0, 23, 59, 59, 999)).toISOString();
+
+    const rangeForField = (field: string) => {
+        return `${field}:>='${rangeStart}'+${field}:<='${rangeEnd}'`;
+    };
+
+    return `(${rangeForField('published_at')},${rangeForField('updated_at')},${rangeForField('created_at')})`;
 };
 
 /**
@@ -246,9 +282,14 @@ export const formatMonthLabel = (month: CalendarMonth) => {
  * Formats a timestamp as a localized time string for calendar item metadata.
  */
 export const formatPostTime = (dateInput: string, timeZone: string) => {
+    const date = new Date(dateInput);
+    if (Number.isNaN(date.getTime())) {
+        throw new RangeError('Invalid dateInput passed to formatPostTime');
+    }
+
     return new Intl.DateTimeFormat('en-US', {
         timeZone,
         hour: 'numeric',
         minute: '2-digit'
-    }).format(new Date(dateInput));
+    }).format(date);
 };

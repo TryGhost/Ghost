@@ -1,10 +1,10 @@
 import MainLayout from '@components/layout/main-layout';
 import React, {useMemo, useState} from 'react';
 import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, EmptyIndicator, LoadingIndicator, LucideIcon, cn} from '@tryghost/shade';
-import {CalendarMonth, CalendarPostOrder, CalendarPostStatus, buildCalendarGrid, formatMonthLabel, getNowMonthInTimezone, shiftCalendarMonth} from './utils/calendar';
+import {CalendarDay, CalendarMonth, CalendarPostOrder, CalendarPostStatus, CalendarTypeFilter, buildCalendarGrid, formatMonthLabel, getCalendarDateRangeFilter, getLegendStatusesForType, getNowMonthInTimezone, shiftCalendarMonth} from './utils/calendar';
+import {Post, useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {getSiteTimezone} from '@src/utils/get-site-timezone';
 import {isAuthorOrContributor, isContributorUser, useBrowseUsers} from '@tryghost/admin-x-framework/api/users';
-import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useBrowseTags} from '@tryghost/admin-x-framework/api/tags';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
@@ -17,7 +17,6 @@ const ALL_FILTER_VALUE = '__all__';
 const DEFAULT_ORDER_VALUE = '__default_order__';
 const FILTER_QUERY_PARAMS = ['type', 'visibility', 'author', 'tag', 'order'] as const;
 
-type CalendarTypeFilter = 'all' | 'draft' | 'published' | 'scheduled' | 'featured';
 type CalendarVisibilityFilter = 'public' | 'members' | '[paid,tiers]' | null;
 type CalendarOrderFilter = 'published_at asc' | 'updated_at desc' | null;
 type CalendarQueryParam = typeof FILTER_QUERY_PARAMS[number];
@@ -141,37 +140,6 @@ const getStatusFilterForType = (type: CalendarTypeFilter): string => {
 };
 
 /**
- * Returns the set of post-status badges to show in the calendar legend.
- */
-const getLegendStatusesForType = (type: CalendarTypeFilter): CalendarPostStatus[] => {
-    switch (type) {
-    case 'draft':
-        return ['draft'];
-    case 'published':
-        return ['published'];
-    case 'scheduled':
-        return ['scheduled'];
-    default:
-        return ['published', 'scheduled', 'draft'];
-    }
-};
-
-/**
- * Builds a month-scoped date filter with a one-month buffer on each side.
- * The resulting NQL clause matches posts by published, updated, or created timestamps.
- */
-const getCalendarDateRangeFilter = (month: CalendarMonth): string => {
-    const rangeStart = new Date(Date.UTC(month.year, month.month - 2, 1, 0, 0, 0, 0)).toISOString();
-    const rangeEnd = new Date(Date.UTC(month.year, month.month + 1, 0, 23, 59, 59, 999)).toISOString();
-
-    const rangeForField = (field: string) => {
-        return `${field}:>='${rangeStart}'+${field}:<='${rangeEnd}'`;
-    };
-
-    return `(${rangeForField('published_at')},${rangeForField('updated_at')},${rangeForField('created_at')})`;
-};
-
-/**
  * Builds the base NQL filter for the calendar from the current UI selections.
  */
 const buildCalendarFilter = ({
@@ -237,6 +205,228 @@ const POST_STATUS_STYLES: Record<CalendarPostStatus, {
         itemClass: 'border-border bg-background text-foreground hover:border-foreground/30',
         badgeClass: 'border-border bg-muted text-muted-foreground'
     }
+};
+
+interface MonthNavigationProps {
+    monthLabel: string;
+    monthOffset: number;
+    setMonthOffset: React.Dispatch<React.SetStateAction<number>>;
+}
+
+const MonthNavigation: React.FC<MonthNavigationProps> = ({monthLabel, monthOffset, setMonthOffset}) => {
+    return (
+        <div className="flex items-center gap-2">
+            <Button
+                aria-label="Show previous month"
+                variant="outline"
+                onClick={() => setMonthOffset(offset => offset - 1)}
+            >
+                <LucideIcon.ChevronLeft className="size-4" />
+            </Button>
+            <Button
+                disabled={monthOffset === 0}
+                variant="outline"
+                onClick={() => setMonthOffset(0)}
+            >
+                Today
+            </Button>
+            <span className="min-w-[120px] text-center text-sm font-medium text-muted-foreground">
+                {monthLabel}
+            </span>
+            <Button
+                aria-label="Show next month"
+                variant="outline"
+                onClick={() => setMonthOffset(offset => offset + 1)}
+            >
+                <LucideIcon.ChevronRight className="size-4" />
+            </Button>
+        </div>
+    );
+};
+
+interface FilterBarProps {
+    authorOptions: FilterOption[];
+    tagOptions: FilterOption[];
+    legendStatuses: CalendarPostStatus[];
+    hasActiveFilters: boolean;
+    selectedType: CalendarTypeFilter;
+    selectedVisibility: CalendarVisibilityFilter;
+    selectedAuthor: string | null;
+    selectedTag: string | null;
+    selectedOrder: CalendarOrderFilter;
+    setFilterParam: (key: CalendarQueryParam, value: string | null) => void;
+    clearFilters: () => void;
+    isCurrentUserContributor: boolean;
+    isCurrentUserAuthorOrContributor: boolean;
+    isAuthorsLoading: boolean;
+    isTagsLoading: boolean;
+}
+
+const FilterBar: React.FC<FilterBarProps> = ({
+    authorOptions,
+    tagOptions,
+    legendStatuses,
+    hasActiveFilters,
+    selectedType,
+    selectedVisibility,
+    selectedAuthor,
+    selectedTag,
+    selectedOrder,
+    setFilterParam,
+    clearFilters,
+    isCurrentUserContributor,
+    isCurrentUserAuthorOrContributor,
+    isAuthorsLoading,
+    isTagsLoading
+}) => {
+    const hasActiveTypeFilter = selectedType !== DEFAULT_TYPE_VALUE && selectedType !== 'all';
+
+    return (
+        <div
+            className="gh-contentfilter view-actions-bottom-row"
+            data-can-clear={Boolean(clearFilters)}
+            data-has-active-filters={hasActiveFilters}
+            data-legend-count={legendStatuses.length}
+        >
+            <div className={cn('gh-contentfilter-menu gh-contentfilter-type', hasActiveTypeFilter && 'gh-contentfilter-selected')}>
+                <LegacyFilterSelect
+                    ariaLabel="Type filter"
+                    options={TYPE_OPTIONS}
+                    value={selectedType}
+                    onValueChange={(value) => {
+                        setFilterParam('type', value === DEFAULT_TYPE_VALUE ? null : value);
+                    }}
+                />
+            </div>
+            {!isCurrentUserContributor && (
+                <div className={cn('gh-contentfilter-menu gh-contentfilter-visibility', selectedVisibility && 'gh-contentfilter-selected')}>
+                    <LegacyFilterSelect
+                        ariaLabel="Visibility filter"
+                        options={[
+                            {label: 'All access', value: ALL_FILTER_VALUE},
+                            ...VISIBILITY_OPTIONS
+                        ]}
+                        value={selectedVisibility ?? ALL_FILTER_VALUE}
+                        onValueChange={(value) => {
+                            setFilterParam('visibility', value === ALL_FILTER_VALUE ? null : value);
+                        }}
+                    />
+                </div>
+            )}
+            {!isCurrentUserAuthorOrContributor && (
+                <div className={cn('gh-contentfilter-menu gh-contentfilter-author', selectedAuthor && 'gh-contentfilter-selected')}>
+                    <LegacyFilterSelect
+                        ariaLabel="Author filter"
+                        disabled={isAuthorsLoading}
+                        options={authorOptions}
+                        value={selectedAuthor ?? ALL_FILTER_VALUE}
+                        onValueChange={(value) => {
+                            setFilterParam('author', value === ALL_FILTER_VALUE ? null : value);
+                        }}
+                    />
+                </div>
+            )}
+            {!isCurrentUserContributor && (
+                <div className={cn('gh-contentfilter-menu gh-contentfilter-tag', selectedTag && 'gh-contentfilter-selected')}>
+                    <LegacyFilterSelect
+                        ariaLabel="Tag filter"
+                        disabled={isTagsLoading}
+                        options={tagOptions}
+                        value={selectedTag ?? ALL_FILTER_VALUE}
+                        onValueChange={(value) => {
+                            setFilterParam('tag', value === ALL_FILTER_VALUE ? null : value);
+                        }}
+                    />
+                </div>
+            )}
+            <div className={cn('gh-contentfilter-menu gh-contentfilter-sort', selectedOrder && 'gh-contentfilter-selected')}>
+                <LegacyFilterSelect
+                    ariaLabel="Sort filter"
+                    options={[
+                        {label: 'Newest first', value: DEFAULT_ORDER_VALUE},
+                        ...ORDER_OPTIONS
+                    ]}
+                    value={selectedOrder ?? DEFAULT_ORDER_VALUE}
+                    onValueChange={(value) => {
+                        setFilterParam('order', value === DEFAULT_ORDER_VALUE ? null : value);
+                    }}
+                />
+            </div>
+        </div>
+    );
+};
+
+interface CalendarGridProps {
+    calendarDays: CalendarDay[];
+    siteTimezone: string;
+    month: CalendarMonth;
+    calendarOrder: CalendarPostOrder;
+    posts: Post[];
+}
+
+const CalendarGrid: React.FC<CalendarGridProps> = ({calendarDays, siteTimezone, month, calendarOrder, posts}) => {
+    return (
+        <div
+            className="overflow-x-auto pb-2"
+            data-calendar-month={`${month.year}-${month.month}`}
+            data-calendar-order={calendarOrder}
+            data-post-count={posts.length}
+            data-site-timezone={siteTimezone}
+        >
+            <div className="min-w-[960px]">
+                <div className="mb-2 grid grid-cols-7 gap-2">
+                    {WEEKDAYS.map(day => (
+                        <div key={day} className="rounded-md px-2 py-1 text-xs font-medium uppercase text-muted-foreground">
+                            {day}
+                        </div>
+                    ))}
+                </div>
+                <div className="grid grid-cols-7 gap-2">
+                    {calendarDays.map((day) => {
+                        const visiblePosts = day.posts.slice(0, MAX_POSTS_PER_DAY);
+                        const hiddenPostCount = day.posts.length - visiblePosts.length;
+
+                        return (
+                            <div
+                                key={day.dateKey}
+                                className={cn(
+                                    'min-h-[180px] rounded-xl border border-border bg-card p-2',
+                                    !day.inCurrentMonth && 'bg-muted/35 text-muted-foreground'
+                                )}
+                            >
+                                <div className="text-sm font-medium">{day.dayNumber}</div>
+                                {visiblePosts.length > 0 && (
+                                    <ul className="mt-2 space-y-1.5">
+                                        {visiblePosts.map((post) => {
+                                            const style = POST_STATUS_STYLES[post.status] ?? POST_STATUS_STYLES.unknown;
+
+                                            return (
+                                                <li key={post.id}>
+                                                    <a
+                                                        className={cn('block rounded-md border px-2 py-1.5 text-xs', style.itemClass)}
+                                                        href={`#/editor/post/${post.id}`}
+                                                    >
+                                                        <div className="flex items-start justify-between gap-2">
+                                                            <span className="line-clamp-2 font-medium">{post.title || 'Untitled post'}</span>
+                                                        </div>
+                                                    </a>
+                                                </li>
+                                            );
+                                        })}
+                                    </ul>
+                                )}
+                                {hiddenPostCount > 0 && (
+                                    <div className="mt-2 text-xs text-muted-foreground">
+                                        +{hiddenPostCount} more
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+        </div>
+    );
 };
 
 /**
@@ -385,75 +575,6 @@ const ContentCalendar: React.FC = () => {
         order: calendarOrder
     }), [month, posts, siteTimezone, calendarOrder]);
 
-    const calendarFilters = (
-        <div className="gh-contentfilter view-actions-bottom-row">
-            <div className={cn('gh-contentfilter-menu gh-contentfilter-type', hasActiveTypeFilter && 'gh-contentfilter-selected')}>
-                <LegacyFilterSelect
-                    ariaLabel="Type filter"
-                    options={TYPE_OPTIONS}
-                    value={selectedType}
-                    onValueChange={(value) => {
-                        setFilterParam('type', value === DEFAULT_TYPE_VALUE ? null : value);
-                    }}
-                />
-            </div>
-            {!isCurrentUserContributor && (
-                <div className={cn('gh-contentfilter-menu gh-contentfilter-visibility', selectedVisibility && 'gh-contentfilter-selected')}>
-                    <LegacyFilterSelect
-                        ariaLabel="Visibility filter"
-                        options={[
-                            {label: 'All access', value: ALL_FILTER_VALUE},
-                            ...VISIBILITY_OPTIONS
-                        ]}
-                        value={selectedVisibility ?? ALL_FILTER_VALUE}
-                        onValueChange={(value) => {
-                            setFilterParam('visibility', value === ALL_FILTER_VALUE ? null : value);
-                        }}
-                    />
-                </div>
-            )}
-            {!isCurrentUserAuthorOrContributor && (
-                <div className={cn('gh-contentfilter-menu gh-contentfilter-author', selectedAuthor && 'gh-contentfilter-selected')}>
-                    <LegacyFilterSelect
-                        ariaLabel="Author filter"
-                        disabled={authorsQuery.isLoading}
-                        options={authorOptions}
-                        value={selectedAuthor ?? ALL_FILTER_VALUE}
-                        onValueChange={(value) => {
-                            setFilterParam('author', value === ALL_FILTER_VALUE ? null : value);
-                        }}
-                    />
-                </div>
-            )}
-            {!isCurrentUserContributor && (
-                <div className={cn('gh-contentfilter-menu gh-contentfilter-tag', selectedTag && 'gh-contentfilter-selected')}>
-                    <LegacyFilterSelect
-                        ariaLabel="Tag filter"
-                        disabled={tagsQuery.isLoading}
-                        options={tagOptions}
-                        value={selectedTag ?? ALL_FILTER_VALUE}
-                        onValueChange={(value) => {
-                            setFilterParam('tag', value === ALL_FILTER_VALUE ? null : value);
-                        }}
-                    />
-                </div>
-            )}
-            <div className={cn('gh-contentfilter-menu gh-contentfilter-sort', selectedOrder && 'gh-contentfilter-selected')}>
-                <LegacyFilterSelect
-                    ariaLabel="Sort filter"
-                    options={[
-                        {label: 'Newest first', value: DEFAULT_ORDER_VALUE},
-                        ...ORDER_OPTIONS
-                    ]}
-                    value={selectedOrder ?? DEFAULT_ORDER_VALUE}
-                    onValueChange={(value) => {
-                        setFilterParam('order', value === DEFAULT_ORDER_VALUE ? null : value);
-                    }}
-                />
-            </div>
-        </div>
-    );
-
     return (
         <MainLayout>
             <div className="grid w-full grow">
@@ -472,7 +593,23 @@ const ContentCalendar: React.FC = () => {
                             </div>
 
                             <section className="view-actions" data-testid="calendar-filters">
-                                {calendarFilters}
+                                <FilterBar
+                                    authorOptions={authorOptions}
+                                    clearFilters={clearFilters}
+                                    hasActiveFilters={hasActiveFilters}
+                                    isAuthorsLoading={authorsQuery.isLoading}
+                                    isCurrentUserAuthorOrContributor={isCurrentUserAuthorOrContributor}
+                                    isCurrentUserContributor={isCurrentUserContributor}
+                                    isTagsLoading={tagsQuery.isLoading}
+                                    legendStatuses={legendStatuses}
+                                    selectedAuthor={selectedAuthor}
+                                    selectedOrder={selectedOrder}
+                                    selectedTag={selectedTag}
+                                    selectedType={selectedType}
+                                    selectedVisibility={selectedVisibility}
+                                    setFilterParam={setFilterParam}
+                                    tagOptions={tagOptions}
+                                />
                                 <div className="view-actions-top-row">
                                     <Button asChild>
                                         <a href="#/editor/post">New post</a>
@@ -513,31 +650,7 @@ const ContentCalendar: React.FC = () => {
                                             })}
                                         </div>
                                     )}
-                                    <div className="flex items-center gap-2">
-                                        <Button
-                                            aria-label="Show previous month"
-                                            variant="outline"
-                                            onClick={() => setMonthOffset(offset => offset - 1)}
-                                        >
-                                            <LucideIcon.ChevronLeft className="size-4" />
-                                        </Button>
-                                        <Button
-                                            variant="outline"
-                                            onClick={() => setMonthOffset(0)}
-                                        >
-                                            Today
-                                        </Button>
-                                        <span className="min-w-[120px] text-center text-sm font-medium text-muted-foreground">
-                                            {monthLabel}
-                                        </span>
-                                        <Button
-                                            aria-label="Show next month"
-                                            variant="outline"
-                                            onClick={() => setMonthOffset(offset => offset + 1)}
-                                        >
-                                            <LucideIcon.ChevronRight className="size-4" />
-                                        </Button>
-                                    </div>
+                                    <MonthNavigation monthLabel={monthLabel} monthOffset={monthOffset} setMonthOffset={setMonthOffset} />
                                 </div>
                                 {posts.length === 0 ? (
                                     <div className="flex min-h-[400px] items-center justify-center">
@@ -557,60 +670,13 @@ const ContentCalendar: React.FC = () => {
                                         </EmptyIndicator>
                                     </div>
                                 ) : (
-                                    <div className="overflow-x-auto pb-2">
-                                        <div className="min-w-[960px]">
-                                            <div className="mb-2 grid grid-cols-7 gap-2">
-                                                {WEEKDAYS.map(day => (
-                                                    <div key={day} className="rounded-md px-2 py-1 text-xs font-medium uppercase text-muted-foreground">
-                                                        {day}
-                                                    </div>
-                                                ))}
-                                            </div>
-                                            <div className="grid grid-cols-7 gap-2">
-                                                {calendarDays.map((day) => {
-                                                    const visiblePosts = day.posts.slice(0, MAX_POSTS_PER_DAY);
-                                                    const hiddenPostCount = day.posts.length - visiblePosts.length;
-
-                                                    return (
-                                                        <div
-                                                            key={day.dateKey}
-                                                            className={cn(
-                                                                'min-h-[180px] rounded-xl border border-border bg-card p-2',
-                                                                !day.inCurrentMonth && 'bg-muted/35 text-muted-foreground'
-                                                            )}
-                                                        >
-                                                            <div className="text-sm font-medium">{day.dayNumber}</div>
-                                                            {visiblePosts.length > 0 && (
-                                                                <ul className="mt-2 space-y-1.5">
-                                                                    {visiblePosts.map((post) => {
-                                                                        const style = POST_STATUS_STYLES[post.status] ?? POST_STATUS_STYLES.unknown;
-
-                                                                        return (
-                                                                            <li key={post.id}>
-                                                                                <a
-                                                                                    className={cn('block rounded-md border px-2 py-1.5 text-xs', style.itemClass)}
-                                                                                    href={`#/editor/post/${post.id}`}
-                                                                                >
-                                                                                    <div className="flex items-start justify-between gap-2">
-                                                                                        <span className="line-clamp-2 font-medium">{post.title || 'Untitled post'}</span>
-                                                                                    </div>
-                                                                                </a>
-                                                                            </li>
-                                                                        );
-                                                                    })}
-                                                                </ul>
-                                                            )}
-                                                            {hiddenPostCount > 0 && (
-                                                                <div className="mt-2 text-xs text-muted-foreground">
-                                                                    +{hiddenPostCount} more
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <CalendarGrid
+                                        calendarDays={calendarDays}
+                                        calendarOrder={calendarOrder}
+                                        month={month}
+                                        posts={posts}
+                                        siteTimezone={siteTimezone}
+                                    />
                                 )}
                             </>
                         )}

@@ -1,5 +1,5 @@
 import {Post} from '@tryghost/admin-x-framework/api/posts';
-import {buildCalendarGrid, getDateKeyInTimezone, shiftCalendarMonth} from '@src/views/ContentCalendar/utils/calendar';
+import {buildCalendarGrid, formatPostTime, getDateKeyInTimezone, shiftCalendarMonth} from '@src/views/ContentCalendar/utils/calendar';
 
 const createPost = (overrides: Partial<Post> = {}): Post => {
     return {
@@ -17,6 +17,14 @@ describe('content calendar utils', () => {
         const result = getDateKeyInTimezone('2026-02-01T01:30:00.000Z', 'America/Los_Angeles');
 
         expect(result).toBe('2026-01-31');
+    });
+
+    it('throws a RangeError for invalid date key inputs', () => {
+        expect(() => getDateKeyInTimezone('invalid-date', 'UTC')).toThrow(new RangeError('Invalid dateInput passed to getDateKeyInTimezone'));
+    });
+
+    it('throws a RangeError for invalid post time inputs', () => {
+        expect(() => formatPostTime('invalid-date', 'UTC')).toThrow(new RangeError('Invalid dateInput passed to formatPostTime'));
     });
 
     it('shifts months across year boundaries', () => {
