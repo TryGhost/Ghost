@@ -20,7 +20,8 @@
             </p>
             {{/if}}
         </div>
-        {{#if (or @sub.cancellationReason @sub.offer_redemptions.length)}}
+        {{!-- TODO: replace this.offerRedemptions with @sub.offer_redemptions once available on all environments --}}
+        {{#if (or @sub.cancellationReason this.offerRedemptions.length)}}
         <div class="gh-membertier-offer-cancellation">
             {{#if @sub.cancellationReason}}
             <div>
@@ -28,7 +29,7 @@
                 <div class="gh-membertier-cancelreason">{{@sub.cancellationReason}}</div>
             </div>
             {{/if}}
-            {{#each @sub.offer_redemptions as |offer|}}
+            {{#each this.offerRedemptions as |offer|}}
                 {{#if (eq offer.type "trial")}}
                 <div>
                     <h4>Offer</h4>
