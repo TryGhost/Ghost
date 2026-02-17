@@ -60,6 +60,7 @@ describe('Unit | Utility | event-type-utils', function () {
         // Feedback is always included now (audienceFeedback is GA)
         const expectedTypes = [
             ...ALL_EVENT_TYPES,
+            {event: 'automated_email_sent_event', icon: 'filter-dropdown-email-received', name: 'Welcome email received', group: 'emails'},
             {event: 'feedback_event', icon: 'filter-dropdown-feedback', name: 'Feedback', group: 'others'}
         ];
         expect(eventTypes).to.deep.equal(expectedTypes);
