@@ -28,12 +28,16 @@ export class DockerCompose {
     }
 
     async up(): Promise<void> {
+        const command = this.composeCommand('up -d');
+
         try {
             logging.info('Starting docker compose services...');
-            execSync(`docker compose -f ${this.composeFilePath} -p ${this.projectName} up -d`, {stdio: 'inherit'});
+            execSync(command, {stdio: 'inherit'});
             logging.info('Docker compose services are up');
         } catch (error) {
+            this.logCommandFailure(command, error);
             logging.error('Failed to start docker compose services:', error);
+            this.ps();
             this.logs();
             throw error;
         }
@@ -43,12 +47,12 @@ export class DockerCompose {
 
     // Stop and remove all services for the project including volumes
     down(): void {
+        const command = this.composeCommand('down -v');
+
         try {
-            execSync(
-                `docker compose -f ${this.composeFilePath} -p ${this.projectName} down -v`,
-                {stdio: 'inherit'}
-            );
+            execSync(command, {stdio: 'inherit'});
         } catch (error) {
+            this.logCommandFailure(command, error);
             logging.error('Failed to stop docker compose services:', error);
             throw error;
         }
@@ -162,6 +166,54 @@ export class DockerCompose {
             logging.error('=== End docker compose logs ===\n');
         } catch (logError) {
             debug('Could not get docker compose logs:', logError);
+        }
+    }
+
+    private ps(): void {
+        try {
+            logging.error('\n=== Docker compose ps -a ===');
+
+            const ps = execSync(this.composeCommand('ps -a'), {
+                encoding: 'utf-8',
+                maxBuffer: 1024 * 1024 * 10
+            });
+
+            logging.error(ps);
+            logging.error('=== End docker compose ps -a ===\n');
+        } catch (psError) {
+            debug('Could not get docker compose ps -a:', psError);
+        }
+    }
+
+    private composeCommand(args: string): string {
+        return `docker compose -f ${this.composeFilePath} -p ${this.projectName} ${args}`;
+    }
+
+    private logCommandFailure(command: string, error: unknown): void {
+        if (!(error instanceof Error)) {
+            return;
+        }
+
+        const commandError = error as Error & {
+            stdout?: Buffer | string;
+            stderr?: Buffer | string;
+        };
+
+        const stdout = commandError.stdout?.toString().trim();
+        const stderr = commandError.stderr?.toString().trim();
+
+        logging.error(`Command failed: ${command}`);
+
+        if (stdout) {
+            logging.error('\n=== docker compose command stdout ===');
+            logging.error(stdout);
+            logging.error('=== End docker compose command stdout ===\n');
+        }
+
+        if (stderr) {
+            logging.error('\n=== docker compose command stderr ===');
+            logging.error(stderr);
+            logging.error('=== End docker compose command stderr ===\n');
         }
     }
 
