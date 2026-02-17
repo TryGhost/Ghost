@@ -147,7 +147,7 @@ const Sidebar: React.FC<{
                                     error={Boolean(errors.code)}
                                     hint={errors.code || (offer?.code !== '' ? <span className='truncate text-grey-700'>{homepageUrl}<span className='font-bold text-black dark:text-white'>{offer?.code}</span></span> : null)}
                                     placeholder='black-friday'
-                                    rightPlaceholder={offer?.code !== '' ? <Button className='mt-1 mr-0.5' color='green' label={isCopied ? 'Copied!' : 'Copy link'} size='sm' onClick={handleCopyClick} /> : null}
+                                    rightPlaceholder={offer?.code !== '' ? <Button className='mr-0.5 mt-1' color='green' label={isCopied ? 'Copied!' : 'Copy link'} size='sm' onClick={handleCopyClick} /> : null}
                                     title='Offer code'
                                     value={offer?.code}
                                     onChange={e => updateOffer({code: e.target.value})}
