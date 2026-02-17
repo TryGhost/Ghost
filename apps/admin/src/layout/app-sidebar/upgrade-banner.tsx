@@ -8,7 +8,7 @@ import ghostProLogoDark from "@/assets/images/ghost-pro-logo-dark.png";
 
 function UpgradeBanner({ trialDaysRemaining }: { trialDaysRemaining: number }) {
     return (
-        <Banner variant='gradient' size='lg' className="flex flex-col items-stretch">
+        <Banner variant='gradient' size='lg' className="mx-2 flex flex-col items-stretch">
             <div>
                 <img src={ghostProLogo} alt="Ghost Pro" className="max-h-[33px] dark:hidden" />
                 <img src={ghostProLogoDark} alt="Ghost Pro" className="max-h-[33px] hidden dark:block" />
