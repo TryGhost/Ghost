@@ -101,10 +101,30 @@ describe('Account Plan Page', () => {
         expect(confirmCancelButton).toBeInTheDocument();
     });
 
-    test('shows retention offer when opened with cancel pageData and retention offers exist', () => {
-        const overrides = generateAccountPlanFixture();
-        const subscriptionId = overrides.member.subscriptions[0].id;
-        const paidProduct = overrides.site.products.find(p => p.type === 'paid');
+    test('shows retention offer when opened with cancel pageData and retention offers exist', async () => {
+        const paidProduct = getProductData({
+            name: 'Basic',
+            monthlyPrice: getPriceData({interval: 'month', amount: 1000, currency: 'usd'}),
+            yearlyPrice: getPriceData({interval: 'year', amount: 10000, currency: 'usd'})
+        });
+        const products = [paidProduct, getProductData({type: 'free'})];
+        const site = getSiteData({
+            products,
+            portalProducts: [paidProduct.id]
+        });
+        const member = getMemberData({
+            paid: true,
+            subscriptions: [
+                getSubscriptionData({
+                    status: 'active',
+                    interval: 'month',
+                    amount: paidProduct.monthlyPrice.amount,
+                    currency: 'USD',
+                    priceId: paidProduct.monthlyPrice.id
+                })
+            ]
+        });
+        const subscriptionId = member.subscriptions[0].id;
         const retentionOffer = getOfferData({
             redemptionType: 'retention',
             name: 'Stay with us',
@@ -114,15 +134,76 @@ describe('Account Plan Page', () => {
             tierId: paidProduct.id,
             tierName: paidProduct.name
         });
-        const {queryByText} = customSetup({
-            ...overrides,
+        const {findByRole} = customSetup({
+            site,
+            member,
             offers: [retentionOffer],
             pageData: {action: 'cancel', subscriptionId}
         });
 
-        // Should show retention offer message instead of cancellation confirmation
-        const offerMessage = queryByText(/We'd hate to see you go/i);
-        expect(offerMessage).toBeInTheDocument();
+        // Should show retention offer section instead of cancellation confirmation
+        const acceptOfferButton = await findByRole('button', {name: 'Continue subscription'});
+        expect(acceptOfferButton).toBeInTheDocument();
+    });
+
+    test('refreshes retention preview details when offer context changes', () => {
+        const paidProduct = getProductData({
+            name: 'Basic',
+            monthlyPrice: getPriceData({interval: 'month', amount: 1000, currency: 'usd'}),
+            yearlyPrice: getPriceData({interval: 'year', amount: 10000, currency: 'usd'})
+        });
+        const products = [paidProduct, getProductData({type: 'free'})];
+        const site = getSiteData({
+            products,
+            portalProducts: [paidProduct.id]
+        });
+        const member = getMemberData({
+            paid: true,
+            subscriptions: [
+                getSubscriptionData({
+                    status: 'active',
+                    interval: 'month',
+                    amount: paidProduct.monthlyPrice.amount,
+                    currency: 'USD',
+                    priceId: paidProduct.monthlyPrice.id
+                })
+            ]
+        });
+        const subscriptionId = member.subscriptions[0].id;
+
+        const firstOffer = getOfferData({
+            redemptionType: 'retention',
+            displayTitle: 'First retention title',
+            displayDescription: 'First retention description',
+            type: 'percent',
+            amount: 10,
+            cadence: 'month',
+            tierId: paidProduct.id,
+            tierName: paidProduct.name
+        });
+        const secondOffer = {
+            ...firstOffer,
+            amount: 25,
+            display_title: 'Second retention title',
+            display_description: 'Second retention description'
+        };
+
+        const {queryByText, context, rerender} = customSetup({
+            site,
+            member,
+            offers: [firstOffer],
+            pageData: {action: 'cancel', subscriptionId}
+        });
+
+        expect(queryByText('First retention title')).toBeInTheDocument();
+        expect(queryByText('10% off')).toBeInTheDocument();
+
+        context.offers = [secondOffer];
+        context.pageData = {action: 'cancel', subscriptionId};
+        rerender(<AccountPlanPage />);
+
+        expect(queryByText('Second retention title')).toBeInTheDocument();
+        expect(queryByText('25% off')).toBeInTheDocument();
     });
 
     test('clears pageData after triggering cancellation so it does not re-trigger on remount', () => {
