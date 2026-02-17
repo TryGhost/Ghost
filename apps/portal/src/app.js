@@ -744,7 +744,7 @@ export default class App extends React.Component {
     /**Handle state update for preview url and Portal Link changes */
     updateStateForPreviewLinks() {
         const {site: previewSite, ...restPreviewData} = this.fetchPreviewData();
-        const {site: linkSite, ...restLinkData} = this.fetchLinkData();
+        const {site: linkSite, ...restLinkData} = this.fetchLinkData(this.state.site, this.state.member);
 
         const updatedState = {
             site: {
