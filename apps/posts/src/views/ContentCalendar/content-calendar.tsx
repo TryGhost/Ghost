@@ -337,7 +337,8 @@ const ContentCalendar: React.FC = () => {
         return options;
     }, [tagsQuery.data?.tags, selectedTag]);
     const legendStatuses = useMemo(() => getLegendStatusesForType(selectedType), [selectedType]);
-    const hasActiveFilters = selectedType !== 'all' || Boolean(selectedVisibility) || Boolean(selectedAuthor) || Boolean(selectedTag) || Boolean(selectedOrder);
+    const hasActiveTypeFilter = selectedType !== DEFAULT_TYPE_VALUE && selectedType !== 'all';
+    const hasActiveFilters = hasActiveTypeFilter || Boolean(selectedVisibility) || Boolean(selectedAuthor) || Boolean(selectedTag) || Boolean(selectedOrder);
 
     /**
      * Writes a single calendar filter value to URL search params.
@@ -386,7 +387,7 @@ const ContentCalendar: React.FC = () => {
 
     const calendarFilters = (
         <div className="gh-contentfilter view-actions-bottom-row">
-            <div className={cn('gh-contentfilter-menu gh-contentfilter-type', selectedType !== 'all' && 'gh-contentfilter-selected')}>
+            <div className={cn('gh-contentfilter-menu gh-contentfilter-type', hasActiveTypeFilter && 'gh-contentfilter-selected')}>
                 <LegacyFilterSelect
                     ariaLabel="Type filter"
                     options={TYPE_OPTIONS}
