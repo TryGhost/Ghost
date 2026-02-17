@@ -103,18 +103,30 @@ const ORDER_OPTIONS: Array<{label: string; value: Exclude<CalendarOrderFilter, n
     {label: 'Recently updated', value: 'updated_at desc'}
 ];
 
+/**
+ * Checks whether a URL value maps to a supported calendar type filter.
+ */
 const isCalendarTypeFilter = (value: string | null): value is CalendarTypeFilter => {
     return Boolean(value && TYPE_OPTIONS.some(option => option.value === value));
 };
 
+/**
+ * Checks whether a URL value maps to a supported visibility filter.
+ */
 const isCalendarVisibilityFilter = (value: string | null): value is Exclude<CalendarVisibilityFilter, null> => {
     return Boolean(value && VISIBILITY_OPTIONS.some(option => option.value === value));
 };
 
+/**
+ * Checks whether a URL value maps to a supported explicit sort order.
+ */
 const isCalendarOrderFilter = (value: string | null): value is Exclude<CalendarOrderFilter, null> => {
     return Boolean(value && ORDER_OPTIONS.some(option => option.value === value));
 };
 
+/**
+ * Converts the selected type UI value into the status NQL clause.
+ */
 const getStatusFilterForType = (type: CalendarTypeFilter): string => {
     switch (type) {
     case 'draft':
@@ -128,6 +140,9 @@ const getStatusFilterForType = (type: CalendarTypeFilter): string => {
     }
 };
 
+/**
+ * Returns the set of post-status badges to show in the calendar legend.
+ */
 const getLegendStatusesForType = (type: CalendarTypeFilter): CalendarPostStatus[] => {
     switch (type) {
     case 'draft':
@@ -141,6 +156,10 @@ const getLegendStatusesForType = (type: CalendarTypeFilter): CalendarPostStatus[
     }
 };
 
+/**
+ * Builds a month-scoped date filter with a one-month buffer on each side.
+ * The resulting NQL clause matches posts by published, updated, or created timestamps.
+ */
 const getCalendarDateRangeFilter = (month: CalendarMonth): string => {
     const rangeStart = new Date(Date.UTC(month.year, month.month - 2, 1, 0, 0, 0, 0)).toISOString();
     const rangeEnd = new Date(Date.UTC(month.year, month.month + 1, 0, 23, 59, 59, 999)).toISOString();
@@ -152,6 +171,9 @@ const getCalendarDateRangeFilter = (month: CalendarMonth): string => {
     return `(${rangeForField('published_at')},${rangeForField('updated_at')},${rangeForField('created_at')})`;
 };
 
+/**
+ * Builds the base NQL filter for the calendar from the current UI selections.
+ */
 const buildCalendarFilter = ({
     type,
     visibility,
@@ -217,6 +239,9 @@ const POST_STATUS_STYLES: Record<CalendarPostStatus, {
     }
 };
 
+/**
+ * Posts app calendar view with URL-synced filters and role-aware defaults.
+ */
 const ContentCalendar: React.FC = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const settings = useBrowseSettings();
@@ -314,6 +339,9 @@ const ContentCalendar: React.FC = () => {
     const legendStatuses = useMemo(() => getLegendStatusesForType(selectedType), [selectedType]);
     const hasActiveFilters = selectedType !== 'all' || Boolean(selectedVisibility) || Boolean(selectedAuthor) || Boolean(selectedTag) || Boolean(selectedOrder);
 
+    /**
+     * Writes a single calendar filter value to URL search params.
+     */
     const setFilterParam = (key: CalendarQueryParam, value: string | null) => {
         const nextSearchParams = new URLSearchParams(searchParams);
 
@@ -326,6 +354,9 @@ const ContentCalendar: React.FC = () => {
         setSearchParams(nextSearchParams, {replace: true});
     };
 
+    /**
+     * Clears all calendar filter query params and resets type to "all".
+     */
     const clearFilters = () => {
         const nextSearchParams = new URLSearchParams(searchParams);
 

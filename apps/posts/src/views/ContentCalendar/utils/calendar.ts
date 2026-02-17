@@ -25,8 +25,14 @@ export interface CalendarDay {
 
 const CALENDAR_DAY_COUNT = 42;
 
+/**
+ * Pads numeric month/day values to two digits for YYYY-MM-DD formatting.
+ */
 const pad = (value: number) => value.toString().padStart(2, '0');
 
+/**
+ * Normalizes a potentially out-of-range month into a valid year/month pair.
+ */
 const normalizeMonth = (year: number, month: number): CalendarMonth => {
     const normalizedYear = year + Math.floor((month - 1) / 12);
     const normalizedMonth = ((month - 1) % 12 + 12) % 12 + 1;
@@ -37,6 +43,9 @@ const normalizeMonth = (year: number, month: number): CalendarMonth => {
     };
 };
 
+/**
+ * Extracts calendar date parts in a specific timezone.
+ */
 const getDatePartsInTimezone = (date: Date, timeZone: string) => {
     const parts = new Intl.DateTimeFormat('en-CA', {
         timeZone,
@@ -52,6 +61,9 @@ const getDatePartsInTimezone = (date: Date, timeZone: string) => {
     return {year, month, day};
 };
 
+/**
+ * Builds a stable YYYY-MM-DD key for a timestamp in the provided timezone.
+ */
 export const getDateKeyInTimezone = (dateInput: string, timeZone: string) => {
     const date = new Date(dateInput);
     const {year, month, day} = getDatePartsInTimezone(date, timeZone);
@@ -59,16 +71,25 @@ export const getDateKeyInTimezone = (dateInput: string, timeZone: string) => {
     return `${year}-${pad(month)}-${pad(day)}`;
 };
 
+/**
+ * Returns the current month as seen in a specific timezone.
+ */
 export const getNowMonthInTimezone = (timeZone: string, now = new Date()): CalendarMonth => {
     const {year, month} = getDatePartsInTimezone(now, timeZone);
 
     return {year, month};
 };
 
+/**
+ * Moves a month forwards/backwards while preserving a normalized result.
+ */
 export const shiftCalendarMonth = (month: CalendarMonth, offset: number): CalendarMonth => {
     return normalizeMonth(month.year, month.month + offset);
 };
 
+/**
+ * Parses a date string into epoch milliseconds and safely falls back to zero.
+ */
 const getTimestamp = (value?: string) => {
     if (!value) {
         return 0;
@@ -79,6 +100,9 @@ const getTimestamp = (value?: string) => {
     return Number.isNaN(timestamp) ? 0 : timestamp;
 };
 
+/**
+ * Sorts calendar posts by the selected calendar order option.
+ */
 const sortCalendarPosts = (posts: CalendarPost[], order: CalendarPostOrder): CalendarPost[] => {
     return posts.sort((a, b) => {
         if (order === 'updated_at desc') {
@@ -96,6 +120,9 @@ const sortCalendarPosts = (posts: CalendarPost[], order: CalendarPostOrder): Cal
     });
 };
 
+/**
+ * Groups posts by local day key after mapping each post to a calendar occurrence date.
+ */
 const mapPostsByDay = (posts: Post[], timeZone: string, order: CalendarPostOrder): Map<string, CalendarPost[]> => {
     const postsByDay = new Map<string, CalendarPost[]>();
 
@@ -134,6 +161,9 @@ const mapPostsByDay = (posts: Post[], timeZone: string, order: CalendarPostOrder
     return postsByDay;
 };
 
+/**
+ * Normalizes API post status into known calendar statuses.
+ */
 const getPostStatus = (status?: string): CalendarPostStatus => {
     if (status === 'draft' || status === 'scheduled' || status === 'published') {
         return status;
@@ -142,6 +172,9 @@ const getPostStatus = (status?: string): CalendarPostStatus => {
     return 'unknown';
 };
 
+/**
+ * Selects the date field used to place a post on the calendar grid.
+ */
 const getPostOccurrenceDate = (post: Post, status: CalendarPostStatus): string | undefined => {
     if (status === 'draft') {
         return post.updated_at || post.created_at || post.published_at;
@@ -157,6 +190,9 @@ interface BuildCalendarGridArgs {
     order?: CalendarPostOrder;
 }
 
+/**
+ * Builds a fixed 6-week calendar grid for the selected month.
+ */
 export const buildCalendarGrid = ({month, posts, timeZone, order = 'published_at desc'}: BuildCalendarGridArgs): CalendarDay[] => {
     const firstDayOfMonth = new Date(Date.UTC(month.year, month.month - 1, 1));
     const firstDayOffset = firstDayOfMonth.getUTCDay();
@@ -195,6 +231,9 @@ export const buildCalendarGrid = ({month, posts, timeZone, order = 'published_at
     return days;
 };
 
+/**
+ * Formats a month object as a readable month/year label.
+ */
 export const formatMonthLabel = (month: CalendarMonth) => {
     return new Intl.DateTimeFormat('en-US', {
         month: 'long',
@@ -203,6 +242,9 @@ export const formatMonthLabel = (month: CalendarMonth) => {
     }).format(new Date(Date.UTC(month.year, month.month - 1, 1)));
 };
 
+/**
+ * Formats a timestamp as a localized time string for calendar item metadata.
+ */
 export const formatPostTime = (dateInput: string, timeZone: string) => {
     return new Intl.DateTimeFormat('en-US', {
         timeZone,
