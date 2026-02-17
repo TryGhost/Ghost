@@ -24,6 +24,29 @@ class OffersAPI {
     }
 
     /**
+     * Archives all previous retention offers on a given cadence.
+     * As retention offers exist per cadence ("Monthly retention", "Yearly retention"), we allow for at most 1 active retention offer per cadence.
+     * @param {string} offerId
+     * @param {'month'|'year'} cadence
+     * @param {Object} [options]
+     */
+    async archiveActiveRetentionOffers(offerId, cadence, options = {}) {
+        const activeRetentionOffers = await this.repository.getAll({
+            transacting: options.transacting,
+            filter: 'status:active+redemption_type:retention'
+        });
+
+        for (const activeRetentionOffer of activeRetentionOffers) {
+            if (activeRetentionOffer.id === offerId || activeRetentionOffer.cadence.value !== cadence) {
+                continue;
+            }
+
+            activeRetentionOffer.status = OfferStatus.create('archived');
+            await this.repository.save(activeRetentionOffer, options);
+        }
+    }
+
+    /**
      * @param {object} data
      * @param {string} data.id
      * @param {Object} [options]
@@ -61,6 +84,14 @@ class OffersAPI {
             const offer = await Offer.create(data, uniqueChecker);
 
             await this.repository.save(offer, saveOptions);
+
+            if (offer.redemptionType.value === 'retention' && offer.status.value === 'active') {
+                await this.archiveActiveRetentionOffers(
+                    offer.id,
+                    offer.cadence.value,
+                    saveOptions
+                );
+            }
 
             return OfferMapper.toDTO(offer);
         });
@@ -115,6 +146,14 @@ class OffersAPI {
             }
 
             await this.repository.save(offer, updateOptions);
+
+            if (offer.redemptionType.value === 'retention' && offer.status.value === 'active') {
+                await this.archiveActiveRetentionOffers(
+                    offer.id,
+                    offer.cadence.value,
+                    updateOptions
+                );
+            }
 
             return OfferMapper.toDTO(offer);
         });
