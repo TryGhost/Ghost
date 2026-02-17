@@ -1,4 +1,4 @@
-import {FilterFieldConfig, FilterOption, LucideIcon} from '@tryghost/shade';
+import {FilterFieldConfig, FilterFieldGroup, FilterOption, LucideIcon} from '@tryghost/shade';
 import {Label} from '@tryghost/admin-x-framework/api/labels';
 import {Newsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {Tier} from '@tryghost/admin-x-framework/api/tiers';
@@ -27,9 +27,15 @@ const STATUS_OPTIONS: FilterOption<string>[] = [
     {value: 'comped', label: 'Complimentary'}
 ];
 
-const SUBSCRIBED_OPTIONS: FilterOption<string>[] = [
+const SUBSCRIBED_OPTIONS_SINGLE: FilterOption<string>[] = [
     {value: 'subscribed', label: 'Subscribed'},
     {value: 'unsubscribed', label: 'Unsubscribed'},
+    {value: 'email-disabled', label: 'Email disabled'}
+];
+
+const SUBSCRIBED_OPTIONS_MULTIPLE: FilterOption<string>[] = [
+    {value: 'subscribed', label: 'Subscribed to at least one'},
+    {value: 'unsubscribed', label: 'Unsubscribed from all'},
     {value: 'email-disabled', label: 'Email disabled'}
 ];
 
@@ -44,11 +50,6 @@ const SUBSCRIPTION_STATUS_OPTIONS: FilterOption<string>[] = [
     {value: 'unpaid', label: 'Unpaid'},
     {value: 'past_due', label: 'Past due'},
     {value: 'trialing', label: 'Trialing'}
-];
-
-const AUDIENCE_FEEDBACK_OPTIONS: FilterOption<string>[] = [
-    {value: '1', label: 'More like this'},
-    {value: '0', label: 'Less like this'}
 ];
 
 const IS_IS_NOT_OPERATORS = [
@@ -92,14 +93,14 @@ export function useMembersFilterConfig({
     onTiersSearchChange,
     tiersSearchValue,
     tiersLoading = false
-}: UseMembersFilterConfigOptions): FilterFieldConfig[] {
+}: UseMembersFilterConfigOptions): FilterFieldGroup[] {
     return useMemo(() => {
-        const fields: FilterFieldConfig[] = [];
+        const groups: FilterFieldGroup[] = [];
 
         // ===== BASIC FILTERS =====
+        const basicFields: FilterFieldConfig[] = [];
 
-        // Name filter
-        fields.push({
+        basicFields.push({
             key: 'name',
             label: 'Name',
             type: 'text',
@@ -110,8 +111,7 @@ export function useMembersFilterConfig({
             className: 'w-48'
         });
 
-        // Email filter
-        fields.push({
+        basicFields.push({
             key: 'email',
             label: 'Email',
             type: 'text',
@@ -122,15 +122,14 @@ export function useMembersFilterConfig({
             className: 'w-64'
         });
 
-        // Label filter
         if (labels.length > 0 || labelsOptions.length > 0) {
-            fields.push({
+            basicFields.push({
                 key: 'label',
                 label: 'Label',
                 type: 'select',
                 icon: <LucideIcon.Tag className="size-4" />,
                 options: labelsOptions.length > 0 ? labelsOptions : labels.map(l => ({
-                    value: l.id,
+                    value: l.slug,
                     label: l.name
                 })),
                 operators: IS_IS_NOT_OPERATORS,
@@ -142,19 +141,20 @@ export function useMembersFilterConfig({
             });
         }
 
-        // Subscribed filter
-        fields.push({
-            key: 'subscribed',
-            label: newsletters.length > 1 ? 'All newsletters' : 'Newsletter subscription',
-            type: 'select',
-            icon: <LucideIcon.Mail className="size-4" />,
-            options: SUBSCRIBED_OPTIONS,
-            operators: IS_IS_NOT_OPERATORS,
-            searchable: false
-        });
+        // Subscribed filter goes in Basic when single newsletter, Newsletters group when multiple
+        if (newsletters.length <= 1) {
+            basicFields.push({
+                key: 'subscribed',
+                label: 'Newsletter subscription',
+                type: 'select',
+                icon: <LucideIcon.Mail className="size-4" />,
+                options: SUBSCRIBED_OPTIONS_SINGLE,
+                operators: IS_IS_NOT_OPERATORS,
+                searchable: false
+            });
+        }
 
-        // Last seen filter
-        fields.push({
+        basicFields.push({
             key: 'last_seen_at',
             label: 'Last seen',
             type: 'date',
@@ -164,8 +164,7 @@ export function useMembersFilterConfig({
             className: 'w-40'
         });
 
-        // Created at filter
-        fields.push({
+        basicFields.push({
             key: 'created_at',
             label: 'Created',
             type: 'date',
@@ -175,10 +174,28 @@ export function useMembersFilterConfig({
             className: 'w-40'
         });
 
+        groups.push({
+            group: 'Basic',
+            fields: basicFields
+        });
+
         // ===== NEWSLETTER FILTERS (if multiple newsletters) =====
         if (newsletters.length > 1) {
+            const newsletterFields: FilterFieldConfig[] = [];
+
+            // When multiple newsletters, the subscribed filter moves to this group
+            newsletterFields.push({
+                key: 'subscribed',
+                label: 'All newsletters',
+                type: 'select',
+                icon: <LucideIcon.Mail className="size-4" />,
+                options: SUBSCRIBED_OPTIONS_MULTIPLE,
+                operators: IS_IS_NOT_OPERATORS,
+                searchable: false
+            });
+
             newsletters.forEach((newsletter) => {
-                fields.push({
+                newsletterFields.push({
                     key: `newsletters.${newsletter.slug}`,
                     label: newsletter.name,
                     type: 'select',
@@ -189,17 +206,22 @@ export function useMembersFilterConfig({
                     ],
                     operators: [{value: 'is', label: 'is'}],
                     searchable: false,
-                    hideOperatorSelect: true,
-                    groupLabel: 'Newsletters'
+                    hideOperatorSelect: true
                 });
+            });
+
+            groups.push({
+                group: 'Newsletters',
+                fields: newsletterFields
             });
         }
 
         // ===== SUBSCRIPTION FILTERS (if paid members enabled) =====
         if (paidMembersEnabled) {
-            // Tier filter (only if multiple tiers)
+            const subscriptionFields: FilterFieldConfig[] = [];
+
             if (hasMultipleTiers) {
-                fields.push({
+                subscriptionFields.push({
                     key: 'tier_id',
                     label: 'Membership tier',
                     type: 'select',
@@ -213,76 +235,71 @@ export function useMembersFilterConfig({
                     onSearchChange: onTiersSearchChange,
                     searchValue: tiersSearchValue,
                     isLoading: tiersLoading,
-                    className: 'w-64',
-                    groupLabel: 'Subscription'
+                    className: 'w-64'
                 });
             }
 
-            // Member status filter
-            fields.push({
+            subscriptionFields.push({
                 key: 'status',
                 label: 'Member status',
                 type: 'select',
                 icon: <LucideIcon.UserCircle className="size-4" />,
                 options: STATUS_OPTIONS,
                 operators: IS_IS_NOT_OPERATORS,
-                searchable: false,
-                groupLabel: 'Subscription'
+                searchable: false
             });
 
-            // Billing period filter
-            fields.push({
+            subscriptionFields.push({
                 key: 'subscriptions.plan_interval',
                 label: 'Billing period',
                 type: 'select',
                 icon: <LucideIcon.CalendarClock className="size-4" />,
                 options: PLAN_INTERVAL_OPTIONS,
                 operators: IS_IS_NOT_OPERATORS,
-                searchable: false,
-                groupLabel: 'Subscription'
+                searchable: false
             });
 
-            // Subscription status filter
-            fields.push({
+            subscriptionFields.push({
                 key: 'subscriptions.status',
                 label: 'Subscription status',
                 type: 'select',
                 icon: <LucideIcon.CreditCard className="size-4" />,
                 options: SUBSCRIPTION_STATUS_OPTIONS,
                 operators: IS_IS_NOT_OPERATORS,
-                searchable: false,
-                groupLabel: 'Subscription'
+                searchable: false
             });
 
-            // Subscription start date filter
-            fields.push({
+            subscriptionFields.push({
                 key: 'subscriptions.start_date',
                 label: 'Subscription start date',
                 type: 'date',
                 icon: <LucideIcon.CalendarPlus className="size-4" />,
                 operators: DATE_OPERATORS,
                 defaultOperator: 'is-or-greater',
-                className: 'w-40',
-                groupLabel: 'Subscription'
+                className: 'w-40'
             });
 
-            // Next billing date filter
-            fields.push({
+            subscriptionFields.push({
                 key: 'subscriptions.current_period_end',
                 label: 'Next billing date',
                 type: 'date',
                 icon: <LucideIcon.CalendarArrowDown className="size-4" />,
                 operators: DATE_OPERATORS,
                 defaultOperator: 'is-or-less',
-                className: 'w-40',
-                groupLabel: 'Subscription'
+                className: 'w-40'
+            });
+
+            groups.push({
+                group: 'Subscription',
+                fields: subscriptionFields
             });
         }
 
         // ===== EMAIL FILTERS (if email analytics enabled) =====
         if (emailAnalyticsEnabled) {
-            // Emails sent filter
-            fields.push({
+            const emailFields: FilterFieldConfig[] = [];
+
+            emailFields.push({
                 key: 'email_count',
                 label: 'Emails sent (all time)',
                 type: 'number',
@@ -290,12 +307,10 @@ export function useMembersFilterConfig({
                 operators: NUMBER_OPERATORS,
                 defaultOperator: 'is-greater',
                 min: 0,
-                className: 'w-24',
-                groupLabel: 'Email'
+                className: 'w-24'
             });
 
-            // Emails opened filter
-            fields.push({
+            emailFields.push({
                 key: 'email_opened_count',
                 label: 'Emails opened (all time)',
                 type: 'number',
@@ -303,12 +318,10 @@ export function useMembersFilterConfig({
                 operators: NUMBER_OPERATORS,
                 defaultOperator: 'is-greater',
                 min: 0,
-                className: 'w-24',
-                groupLabel: 'Email'
+                className: 'w-24'
             });
 
-            // Open rate filter
-            fields.push({
+            emailFields.push({
                 key: 'email_open_rate',
                 label: 'Open rate (all time)',
                 type: 'number',
@@ -318,25 +331,16 @@ export function useMembersFilterConfig({
                 min: 0,
                 max: 100,
                 suffix: '%',
-                className: 'w-24',
-                groupLabel: 'Email'
+                className: 'w-24'
             });
 
-            // Audience feedback filter
-            fields.push({
-                key: 'audience_feedback',
-                label: 'Audience feedback',
-                type: 'select',
-                icon: <LucideIcon.ThumbsUp className="size-4" />,
-                options: AUDIENCE_FEEDBACK_OPTIONS,
-                operators: [{value: 'is', label: 'is'}],
-                searchable: false,
-                hideOperatorSelect: true,
-                groupLabel: 'Email'
+            groups.push({
+                group: 'Email',
+                fields: emailFields
             });
         }
 
-        return fields;
+        return groups;
     }, [
         labels,
         tiers,
