@@ -496,8 +496,7 @@ describe('Unit: models/user', function () {
                 .then(Promise.reject)
                 .catch((err) => {
                     assert(err instanceof errors.ValidationError);
-                    err.message.indexOf('Only administrators can')
-                        .should.be.aboveOrEqual(0, 'contains correct error message');
+                    assert(err.message.includes('Only administrators can'), 'contains correct error message');
                 });
         });
 
@@ -527,8 +526,7 @@ describe('Unit: models/user', function () {
                 .then(Promise.reject)
                 .catch((err) => {
                     assert(err instanceof errors.ValidationError);
-                    err.message.indexOf('Only active administrators can')
-                        .should.be.aboveOrEqual(0, 'contains correct error message');
+                    assert(err.message.includes('Only active administrators can'), 'contains correct error message');
                 });
         });
 

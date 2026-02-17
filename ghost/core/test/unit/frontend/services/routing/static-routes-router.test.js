@@ -85,7 +85,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
             res.routerOptions.should.have.properties('type', 'templates', 'defaultTemplate', 'context', 'data', 'contentType');
             assert.equal(res.routerOptions.type, 'custom');
             assert.deepEqual(res.routerOptions.templates, []);
-            res.routerOptions.defaultTemplate.should.be.a.Function();
+            assert.equal(typeof res.routerOptions.defaultTemplate, 'function');
             assert.deepEqual(res.routerOptions.context, ['about']);
             assert.deepEqual(res.routerOptions.data, {});
 
@@ -102,7 +102,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
             res.routerOptions.should.have.properties('type', 'templates', 'defaultTemplate', 'context', 'data', 'contentType');
             assert.equal(res.routerOptions.type, 'custom');
             assert.deepEqual(res.routerOptions.templates, []);
-            res.routerOptions.defaultTemplate.should.be.a.Function();
+            assert.equal(typeof res.routerOptions.defaultTemplate, 'function');
             assert.deepEqual(res.routerOptions.context, ['index']);
             assert.deepEqual(res.routerOptions.data, {});
 

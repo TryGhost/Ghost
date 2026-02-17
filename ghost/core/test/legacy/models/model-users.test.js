@@ -37,7 +37,7 @@ describe('User Model', function run() {
 
             UserModel.add(userData, context).then(function (createdUser) {
                 assertExists(createdUser);
-                createdUser.attributes.password.should.not.equal(userData.password, 'password was hashed');
+                assert.notEqual(createdUser.attributes.password, userData.password, 'password was hashed');
                 assert.equal(createdUser.attributes.email, userData.email, 'email address correct');
 
                 done();
@@ -244,7 +244,7 @@ describe('User Model', function run() {
                 return UserModel.add(userData, _.extend({}, context, {withRelated: ['roles']}));
             }).then(function (createdUser) {
                 assertExists(createdUser);
-                createdUser.get('password').should.not.equal(userData.password, 'password was hashed');
+                assert.notEqual(createdUser.get('password'), userData.password, 'password was hashed');
                 assert.equal(createdUser.get('email'), userData.email, 'email address correct');
                 assert.equal(createdUser.related('roles').toJSON()[0].name, 'Administrator', 'role set correctly');
 

@@ -308,8 +308,8 @@ describe('DB API', function () {
         assert.equal(res2.body.posts.length, 1);
 
         // Ensure the author is not imported with the legacy hardcoded user id
-        res2.body.posts[0].authors[0].id.should.not.equal(LEGACY_HARDCODED_USER_ID);
-        res2.body.posts[0].primary_author.id.should.not.equal(LEGACY_HARDCODED_USER_ID);
+        assert.notEqual(res2.body.posts[0].authors[0].id, LEGACY_HARDCODED_USER_ID);
+        assert.notEqual(res2.body.posts[0].primary_author.id, LEGACY_HARDCODED_USER_ID);
 
         const usersResponse = await request.get(localUtils.API.getApiQuery('users/'))
             .set('Origin', config.get('url'))
@@ -320,9 +320,9 @@ describe('DB API', function () {
         assert.equal(usersResponse.body.users.length, 3);
 
         // Ensure user is not imported with the legacy hardcoded user id
-        usersResponse.body.users[0].id.should.not.equal(LEGACY_HARDCODED_USER_ID);
-        usersResponse.body.users[1].id.should.not.equal(LEGACY_HARDCODED_USER_ID);
-        usersResponse.body.users[2].id.should.not.equal(LEGACY_HARDCODED_USER_ID);
+        assert.notEqual(usersResponse.body.users[0].id, LEGACY_HARDCODED_USER_ID);
+        assert.notEqual(usersResponse.body.users[1].id, LEGACY_HARDCODED_USER_ID);
+        assert.notEqual(usersResponse.body.users[2].id, LEGACY_HARDCODED_USER_ID);
     });
 
     it('Can import a JSON database with products', async function () {

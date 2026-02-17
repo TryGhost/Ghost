@@ -773,7 +773,7 @@ describe('Post Model', function () {
                     assert(publishedPost.get('published_at') instanceof Date);
                     assert.equal(publishedPost.get('published_by'), testUtils.DataGenerator.Content.users[0].id);
                     assert(publishedPost.get('updated_at') instanceof Date);
-                    publishedPost.get('updated_at').should.not.equal(createdPostUpdatedDate);
+                    assert.notEqual(publishedPost.get('updated_at'), createdPostUpdatedDate);
 
                     assert.equal(Object.keys(eventsTriggered).length, 4);
                     assertExists(eventsTriggered['post.published']);
@@ -842,7 +842,7 @@ describe('Post Model', function () {
                     assert(publishedPost.get('published_at') instanceof Date);
                     assert.equal(publishedPost.get('published_by'), testUtils.DataGenerator.Content.users[0].id);
                     assert(publishedPost.get('updated_at') instanceof Date);
-                    publishedPost.get('updated_at').should.not.equal(createdPostUpdatedDate);
+                    assert.notEqual(publishedPost.get('updated_at'), createdPostUpdatedDate);
 
                     assert.equal(Object.keys(eventsTriggered).length, 4);
                     assertExists(eventsTriggered['post.published']);
@@ -1105,9 +1105,9 @@ describe('Post Model', function () {
                         }, context);
                     }).then(function (updatedSecondPost) {
                     // Should have updated from original
-                        updatedSecondPost.get('slug').should.not.equal(secondPost.slug);
+                        assert.notEqual(updatedSecondPost.get('slug'), secondPost.slug);
                         // Should not have a conflicted slug from the first
-                        updatedSecondPost.get('slug').should.not.equal(firstPost.slug);
+                        assert.notEqual(updatedSecondPost.get('slug'), firstPost.slug);
 
                         assert.equal(Object.keys(eventsTriggered).length, 3);
                         assertExists(eventsTriggered['post.edited']);
@@ -1118,9 +1118,9 @@ describe('Post Model', function () {
                         });
                     }).then(function (foundPost) {
                     // Should have updated from original
-                        foundPost.get('slug').should.not.equal(secondPost.slug);
+                        assert.notEqual(foundPost.get('slug'), secondPost.slug);
                         // Should not have a conflicted slug from the first
-                        foundPost.get('slug').should.not.equal(firstPost.slug);
+                        assert.notEqual(foundPost.get('slug'), firstPost.slug);
 
                         done();
                     }).catch(done);

@@ -14,7 +14,7 @@ describe('Models: bulk-filters', function () {
             const results = [...strategy];
 
             assert.equal(results.length, 1);
-            results[0].should.be.a.Function();
+            assert.equal(typeof results[0], 'function');
         });
     });
 

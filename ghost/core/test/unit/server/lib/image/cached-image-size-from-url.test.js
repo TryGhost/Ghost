@@ -41,7 +41,7 @@ describe('lib/image: image size cache', function () {
         // first call to get result from `getImageSizeFromUrl`
 
         assertExists(cacheStore);
-        cacheStore.get(url).should.not.be.undefined;
+        assertExists(cacheStore.get(url));
         const image = cacheStore.get(url);
         assertExists(image.width);
         assert.equal(image.width, 50);
@@ -54,7 +54,7 @@ describe('lib/image: image size cache', function () {
         assert.equal(imageSizeSpy.calledOnce, true);
         assert.equal(imageSizeSpy.calledTwice, false);
 
-        cacheStore.get(url).should.not.be.undefined;
+        assertExists(cacheStore.get(url));
         const image2 = cacheStore.get(url);
         assertExists(image2.width);
         assert.equal(image2.width, 50);
@@ -108,7 +108,7 @@ describe('lib/image: image size cache', function () {
         assert.equal(result, null);
 
         // Verify 404 was cached with notFound marker
-        cacheStore.get(url).should.not.be.undefined;
+        assertExists(cacheStore.get(url));
         const image = cacheStore.get(url);
         assert.equal(image.url, url);
         assert.equal(image.notFound, true);

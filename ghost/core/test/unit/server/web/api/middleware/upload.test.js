@@ -8,7 +8,7 @@ const assert = require('node:assert/strict');
 describe('web utils', function () {
     describe('checkFileExists', function () {
         it('should return true if file exists in input', function () {
-            validation.checkFileExists({mimetype: 'file', path: 'path'}).should.be.true;
+            assert.equal(validation.checkFileExists({mimetype: 'file', path: 'path'}), true);
         });
 
         it('should return false if file does not exist in input', function () {
@@ -22,17 +22,17 @@ describe('web utils', function () {
 
     describe('checkFileIsValid', function () {
         it('returns true if file has valid extension and type', function () {
-            validation.checkFileIsValid({
+            assert.equal(validation.checkFileIsValid({
                 name: 'test.txt',
                 mimetype: 'text',
                 ext: '.txt'
-            }, ['text'], ['.txt']).should.be.true;
+            }, ['text'], ['.txt']), true);
 
-            validation.checkFileIsValid({
+            assert.equal(validation.checkFileIsValid({
                 name: 'test.jpg',
                 mimetype: 'jpeg',
                 ext: '.jpg'
-            }, ['text', 'jpeg'], ['.txt', '.jpg']).should.be.true;
+            }, ['text', 'jpeg'], ['.txt', '.jpg']), true);
         });
 
         it('returns false if file has invalid extension', function () {

@@ -68,7 +68,7 @@ describe('Themes', function () {
                 assert.equal(configStub.calledWith('assetHash', null), true);
 
                 // Check the file-based asset hash cache is cleared
-                clearCacheSpy.calledOnce.should.be.true();
+                sinon.assert.calledOnce(clearCacheSpy);
 
                 // Check te view cache was cleared
                 assert.deepEqual(fakeBlogApp.cache, {});
@@ -105,7 +105,7 @@ describe('Themes', function () {
                 assert.equal(configStub.calledWith('assetHash', null), true);
 
                 // Check the file-based asset hash cache is cleared
-                clearCacheSpy.calledOnce.should.be.true();
+                sinon.assert.calledOnce(clearCacheSpy);
 
                 // Check te view cache was cleared
                 assert.deepEqual(fakeBlogApp.cache, {});
