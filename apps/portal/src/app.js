@@ -165,12 +165,18 @@ export default class App extends React.Component {
             event.preventDefault();
             const target = event.currentTarget;
             const pagePath = (target && target.dataset.portal);
+            const shareUrl = target && target.dataset.portalShareUrl;
+            const shareTitle = target && target.dataset.portalShareTitle;
             const {page, pageQuery, pageData} = this.getPageFromLinkPath(pagePath) || {};
+            const sharePageData = page === 'share' ? {
+                ...(shareUrl ? {url: shareUrl} : {}),
+                ...(shareTitle ? {title: shareTitle} : {})
+            } : pageData;
             if (this.state.initStatus === 'success') {
                 if (pageQuery && pageQuery !== 'free') {
                     this.handleSignupQuery({site: this.state.site, pageQuery});
                 } else {
-                    this.dispatchAction('openPopup', {page, pageQuery, pageData});
+                    this.dispatchAction('openPopup', {page, pageQuery, pageData: sharePageData});
                 }
             }
         };
@@ -563,7 +569,7 @@ export default class App extends React.Component {
         }
         if (path && linkRegex.test(path)) {
             const [,pagePath] = path.match(linkRegex);
-            const {page, pageQuery, pageData} = this.getPageFromLinkPath(pagePath, site) || {};
+            const {page, pageQuery, pageData} = this.getPageFromLinkPath(pagePath) || {};
 
             // If user is not logged in and trying to access an account page,
             // redirect to signin with a redirect URL back to the intended page
@@ -949,6 +955,10 @@ export default class App extends React.Component {
                 pageData: {
                     signup: false
                 }
+            };
+        } else if (path === 'share') {
+            return {
+                page: 'share'
             };
         } else if (path === 'account/newsletters/help') {
             return {

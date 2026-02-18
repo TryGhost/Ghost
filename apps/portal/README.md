@@ -22,6 +22,13 @@ By default, the script adds a default floating trigger button on the bottom righ
 
 Its possible to add custom trigger button of your own by adding data attribute `data-portal` to any HTML tag on page, and also specify a specific [page](https://github.com/TryGhost/Ghost/blob/main/ghost/portal/src/pages.js#L13-L22) to open from it by using it as `data-portal=signup`.
 
+Share modal can be opened with `data-portal="share"` (or `#/portal/share`). Optional metadata attributes are supported on the trigger element:
+
+- `data-portal-share-url`
+- `data-portal-share-title`
+
+When share metadata is omitted, Portal falls back to the page canonical URL / current URL and Open Graph title / document title.
+
 The script also adds custom class names to this element for open and close state of popup - `gh-portal-open` and `gh-portal-close`, allowing devs to update its UI based on popup state.
 
 Refer the [docs](https://ghost.org/help/setup-members/#customize-portal-settings) to read about ways in which Portal can be customized for your site.
