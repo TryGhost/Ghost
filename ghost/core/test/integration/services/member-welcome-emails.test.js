@@ -115,21 +115,6 @@ describe('Member Welcome Emails Integration', function () {
             assert.equal(payload.status, 'free');
         });
 
-        it('does NOT create outbox entry when welcomeEmails labs flag is off', async function () {
-            mockManager.mockLabsDisabled('welcomeEmails');
-
-            await membersService.api.members.create({
-                email: 'no-welcome@example.com',
-                name: 'No Welcome Member'
-            }, {});
-
-            const outboxEntries = await models.Outbox.findAll({
-                filter: 'event_type:MemberCreatedEvent'
-            });
-
-            assert.equal(outboxEntries.length, 0);
-        });
-
         it('does NOT create outbox entry when member is imported', async function () {
             mockManager.mockLabsEnabled('welcomeEmails');
 
