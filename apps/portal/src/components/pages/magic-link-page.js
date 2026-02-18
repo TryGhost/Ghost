@@ -4,6 +4,7 @@ import CloseButton from '../common/close-button';
 import InboxLinkButton from '../common/inbox-link-button';
 import AppContext from '../../app-context';
 import {ReactComponent as EnvelopeIcon} from '../../images/icons/envelope.svg';
+import {isIos} from '../../utils/is-ios';
 import {t} from '../../utils/i18n';
 
 export const MagicLinkStyles = `
@@ -164,7 +165,7 @@ export default class MagicLinkPage extends React.Component {
     renderCloseButton() {
         const {site, inboxLinks} = this.context;
         const isInboxLinksEnabled = site.labs?.inboxlinks !== false;
-        if (isInboxLinksEnabled && inboxLinks) {
+        if (isInboxLinksEnabled && inboxLinks && !isIos(navigator)) {
             return <InboxLinkButton inboxLinks={inboxLinks} />;
         } else {
             return (
@@ -278,7 +279,7 @@ export default class MagicLinkPage extends React.Component {
                 </section>
 
                 <footer className='gh-portal-signin-footer gh-button-row'>
-                    {isInboxLinksEnabled && inboxLinks && !this.state.otc ? (
+                    {isInboxLinksEnabled && inboxLinks && !isIos(navigator) && !this.state.otc ? (
                         <InboxLinkButton inboxLinks={inboxLinks} />
                     ) : (
                         <ActionButton
