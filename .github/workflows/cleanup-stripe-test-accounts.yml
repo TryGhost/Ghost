@@ -42,9 +42,16 @@ jobs:
               RESPONSE=$(curl -s -u "$STRIPE_SECRET_KEY:" "https://api.stripe.com/v1/accounts?limit=100&starting_after=$STARTING_AFTER")
             fi
 
-            # Extract account data
-            ACCOUNTS=$(echo "$RESPONSE" | jq -c '.data[]')
-            HAS_MORE=$(echo "$RESPONSE" | jq -r '.has_more')
+            # Check for API errors
+            ERROR=$(echo "$RESPONSE" | jq -r '.error.message // empty')
+            if [ -n "$ERROR" ]; then
+              echo "Stripe API error: $ERROR"
+              exit 1
+            fi
+
+            # Extract account data - handle null/missing data array gracefully
+            ACCOUNTS=$(echo "$RESPONSE" | jq -c '.data // [] | .[]')
+            HAS_MORE=$(echo "$RESPONSE" | jq -r '.has_more // false')
 
             while IFS= read -r account; do
               [ -z "$account" ] && continue
