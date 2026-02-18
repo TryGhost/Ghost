@@ -1,5 +1,5 @@
 import moment from 'moment-timezone';
-import {compExpiry, getSubscriptionData, isActive, isCanceled, isComplimentary, isSetToCancel, priceLabel, trialUntil, validUntil, validityDetails} from 'ghost-admin/utils/subscription-data';
+import {compExpiry, getOfferDisplayData, getSubscriptionData, isActive, isCanceled, isComplimentary, isSetToCancel, priceLabel, trialUntil, validUntil, validityDetails} from 'ghost-admin/utils/subscription-data';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 
@@ -440,6 +440,86 @@ describe('Unit: Util: subscription-data', function () {
                 trialUntil: undefined,
                 priceLabel: 'Complimentary',
                 validityDetails: ' – Expires 31 May 2021'
+            });
+        });
+    });
+
+    describe('getOfferDisplayData', function () {
+        const cases = [
+            {
+                name: 'signup + percent',
+                offer: {redemption_type: 'signup', type: 'percent', name: 'Black Friday', amount: 30},
+                expected: {label: 'Signup offer', detail: 'Black Friday (30% off)'}
+            },
+            {
+                name: 'signup + fixed (USD)',
+                offer: {redemption_type: 'signup', type: 'fixed', name: 'Welcome Deal', amount: 500, currency: 'USD'},
+                expected: {label: 'Signup offer', detail: 'Welcome Deal ($5 off)'}
+            },
+            {
+                name: 'signup + fixed (EUR)',
+                offer: {redemption_type: 'signup', type: 'fixed', name: 'Euro Deal', amount: 1000, currency: 'EUR'},
+                expected: {label: 'Signup offer', detail: 'Euro Deal (€10 off)'}
+            },
+            {
+                name: 'signup + trial',
+                offer: {redemption_type: 'signup', type: 'trial', name: 'Try It', amount: 7},
+                expected: {label: 'Signup offer', detail: 'Try It (7 days free)'}
+            },
+            {
+                name: 'retention + percent + once',
+                offer: {redemption_type: 'retention', type: 'percent', amount: 50, duration: 'once'},
+                expected: {label: 'Retention offer', detail: '50% off'}
+            },
+            {
+                name: 'retention + percent + repeating (no discount end)',
+                offer: {redemption_type: 'retention', type: 'percent', amount: 50, duration: 'repeating', duration_in_months: 3},
+                expected: {label: 'Retention offer', detail: '50% off for 3 months'}
+            },
+            {
+                name: 'retention + percent + repeating (1 month, no discount end)',
+                offer: {redemption_type: 'retention', type: 'percent', amount: 50, duration: 'repeating', duration_in_months: 1},
+                expected: {label: 'Retention offer', detail: '50% off for 1 month'}
+            },
+            {
+                name: 'retention + percent + repeating (with discount end)',
+                offer: {id: 'offer_1', redemption_type: 'retention', type: 'percent', amount: 50, duration: 'repeating', duration_in_months: 3},
+                sub: {next_payment: {discount: {offer_id: 'offer_1', end: '2026-02-17T00:00:00.000Z'}}},
+                expected: {label: 'Retention offer', detail: '50% off until 17 Feb 2026'}
+            },
+            {
+                name: 'retention + percent + forever',
+                offer: {redemption_type: 'retention', type: 'percent', amount: 25, duration: 'forever'},
+                expected: {label: 'Retention offer', detail: '25% off forever'}
+            },
+            {
+                name: 'retention + free_months (no discount end)',
+                offer: {redemption_type: 'retention', type: 'free_months', amount: 1, duration: 'free_months'},
+                expected: {label: 'Retention offer', detail: '1 month free'}
+            },
+            {
+                name: 'retention + free_months (with discount end)',
+                offer: {id: 'offer_2', redemption_type: 'retention', type: 'free_months', amount: 1, duration: 'free_months'},
+                sub: {next_payment: {discount: {offer_id: 'offer_2', end: '2026-02-17T00:00:00.000Z'}}},
+                expected: {label: 'Retention offer', detail: '1 month free until 17 Feb 2026'}
+            },
+            {
+                name: 'retention + discount end does not match offer id',
+                offer: {id: 'offer_1', redemption_type: 'retention', type: 'percent', amount: 50, duration: 'repeating', duration_in_months: 3},
+                sub: {next_payment: {discount: {offer_id: 'offer_other', end: '2026-02-17T00:00:00.000Z'}}},
+                expected: {label: 'Retention offer', detail: '50% off for 3 months'}
+            },
+            {
+                name: 'missing redemption_type defaults to signup label',
+                offer: {type: 'percent', name: 'Legacy Offer', amount: 15},
+                expected: {label: 'Signup offer', detail: 'Legacy Offer (15% off)'}
+            }
+        ];
+
+        cases.forEach(({name, offer, sub, expected}) => {
+            it(name, function () {
+                const result = getOfferDisplayData(offer, sub);
+                expect(result).to.deep.equal(expected);
             });
         });
     });

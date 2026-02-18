@@ -1,5 +1,6 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
+import {getOfferDisplayData} from 'ghost-admin/utils/subscription-data';
 import {tracked} from '@glimmer/tracking';
 
 export default class SubscriptionDetailBox extends Component {
@@ -15,6 +16,10 @@ export default class SubscriptionDetailBox extends Component {
             return [sub.offer];
         }
         return [];
+    }
+
+    get formattedOffers() {
+        return this.offerRedemptions.map(offer => getOfferDisplayData(offer, this.args.sub));
     }
 
     @action

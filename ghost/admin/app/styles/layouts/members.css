@@ -3042,7 +3042,8 @@ a.gh-members-emailpreview-subscription-link {
     font-weight: 500;
 }
 
-.gh-membertier-offer-cancellation {
+.gh-membertier-offer-cancellation,
+.gh-membertier-offers {
     margin-top: 16px;
     padding-top: 16px;
     border-top:1px solid #ECEEF0;

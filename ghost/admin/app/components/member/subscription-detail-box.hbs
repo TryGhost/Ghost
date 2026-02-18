@@ -20,41 +20,23 @@
             </p>
             {{/if}}
         </div>
-        {{!-- TODO: replace this.offerRedemptions with @sub.offer_redemptions once available on all environments --}}
-        {{#if (or @sub.cancellationReason this.offerRedemptions.length)}}
+        {{#if this.formattedOffers.length}}
+        <div class="gh-membertier-offers">
+            <div class="gh-membertier-details">
+                {{#each this.formattedOffers as |offer|}}
+                <p>
+                    {{offer.label}}&nbsp;&mdash;&nbsp;<span>{{offer.detail}}</span>
+                </p>
+                {{/each}}
+            </div>
+        </div>
+        {{/if}}
+        {{#if @sub.cancellationReason}}
         <div class="gh-membertier-offer-cancellation">
-            {{#if @sub.cancellationReason}}
             <div>
                 <h4>Cancellation reason</h4>
                 <div class="gh-membertier-cancelreason">{{@sub.cancellationReason}}</div>
             </div>
-            {{/if}}
-            {{#each this.offerRedemptions as |offer|}}
-                {{#if (eq offer.type "trial")}}
-                <div>
-                    <h4>Offer</h4>
-                    <span class="gh-cp-membertier-pricelabel"> {{offer.name}} </span>
-                    &ndash; {{offer.amount}} days free
-                </div>
-                {{else if (eq offer.type "free_months")}}
-                <div>
-                    <h4>Offer</h4>
-                    <span class="gh-cp-membertier-pricelabel"> {{offer.name}} </span>
-                    &ndash; {{offer.amount}} {{if (eq offer.amount 1) "month" "months"}} free
-                </div>
-                {{else}}
-                <div>
-                    <h4>Offer</h4>
-                    <span class="gh-cp-membertier-pricelabel"> {{offer.name}}
-                    {{#if (eq offer.type 'fixed')}}
-                    &ndash; {{currency-symbol offer.currency}}{{gh-price-amount offer.amount}} off
-                    {{else}}
-                    &ndash; {{offer.amount}}% off
-                    {{/if}}
-                    </span>
-                </div>
-                {{/if}}
-            {{/each}}
         </div>
         {{/if}}
     </div>
