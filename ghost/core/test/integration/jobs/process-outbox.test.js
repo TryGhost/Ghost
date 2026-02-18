@@ -7,7 +7,6 @@ const models = require('../../../core/server/models');
 const {OUTBOX_STATUSES} = require('../../../core/server/models/outbox');
 const db = require('../../../core/server/data/db');
 const mailService = require('../../../core/server/services/mail');
-const mockManager = require('../../utils/e2e-framework-mock-manager');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../core/server/services/member-welcome-emails/constants');
 
 const JOB_NAME = 'process-outbox-test';
@@ -23,7 +22,6 @@ describe('Process Outbox Job', function () {
 
     afterEach(async function () {
         sinon.restore();
-        mockManager.restore();
         await db.knex('outbox').del();
         await db.knex('automated_emails').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free).del();
         try {
@@ -43,10 +41,9 @@ describe('Process Outbox Job', function () {
         await jobService.awaitCompletion(JOB_NAME);
     }
 
-    describe('with welcomeEmails enabled', function () {
+    describe('processes outbox entries', function () {
         beforeEach(async function () {
             sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail sent');
-            mockManager.mockLabsEnabled('welcomeEmails');
 
             const lexical = JSON.stringify({
                 root: {
@@ -233,37 +230,6 @@ describe('Process Outbox Job', function () {
             const entry = entriesAfterJob.models[0];
             assert.equal(entry.get('status'), OUTBOX_STATUSES.FAILED);
             assert.equal(entry.get('retry_count'), 2);
-        });
-    });
-
-    describe('with welcomeEmails disabled', function () {
-        beforeEach(async function () {
-            sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail sent');
-            mockManager.mockLabsDisabled('welcomeEmails');
-        });
-
-        it('skips processing and leaves entries pending', async function () {
-            await models.Outbox.add({
-                event_type: 'MemberCreatedEvent',
-                payload: JSON.stringify({
-                    memberId: 'member123',
-                    email: 'test@example.com',
-                    name: 'Test Member',
-                    source: 'member',
-                    status: 'free'
-                }),
-                status: OUTBOX_STATUSES.PENDING
-            });
-
-            const entriesBeforeJob = await models.Outbox.findAll();
-            assert.equal(entriesBeforeJob.length, 1);
-
-            await scheduleInlineJob();
-
-            const entriesAfterJob = await models.Outbox.findAll();
-            assert.equal(entriesAfterJob.length, 1);
-            assert.equal(entriesAfterJob.models[0].get('status'), OUTBOX_STATUSES.PENDING);
-            assert.equal(mailService.GhostMailer.prototype.send.callCount, 0);
         });
     });
 });

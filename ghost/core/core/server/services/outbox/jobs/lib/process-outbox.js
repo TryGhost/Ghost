@@ -1,6 +1,5 @@
 const logging = require('@tryghost/logging');
 const db = require('../../../../data/db');
-const labs = require('../../../../../shared/labs');
 const MemberCreatedEvent = require('../../../../../shared/events/member-created-event');
 const {OUTBOX_STATUSES} = require('../../../../models/outbox');
 const {MESSAGES, MAX_ENTRIES_PER_JOB, BATCH_SIZE, OUTBOX_LOG_KEY} = require('./constants');
@@ -41,10 +40,6 @@ async function fetchPendingEntries({batchSize, jobStartISO}) {
 async function processOutbox() {
     const jobStartMs = Date.now();
     const jobStartISO = new Date(jobStartMs).toISOString().slice(0, 19).replace('T', ' ');
-
-    if (!labs.isSet('welcomeEmails')) {
-        return `${OUTBOX_LOG_KEY} Welcome emails feature is disabled`;
-    }
 
     memberWelcomeEmailService.init();
     try {
