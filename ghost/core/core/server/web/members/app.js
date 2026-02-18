@@ -1,5 +1,4 @@
 const debug = require('@tryghost/debug')('members');
-const cors = require('cors');
 const bodyParser = require('body-parser');
 const express = require('../../../shared/express');
 const sentry = require('../../../shared/sentry');
@@ -15,6 +14,7 @@ const api = require('../../api').endpoints;
 
 const commentRouter = require('../comments');
 const announcementRouter = require('../announcement');
+const corsMiddleware = require('./middleware/cors');
 
 /**
  * @returns {import('express').Application}
@@ -27,7 +27,7 @@ module.exports = function setupMembersApp() {
     membersApp.use(shared.middleware.cacheControl('private'));
 
     // Support CORS for requests from the frontend
-    membersApp.use(cors({maxAge: config.get('caching:cors:maxAge')}));
+    membersApp.use(corsMiddleware);
 
     // Currently global handling for signing in with ?token= magiclinks
     membersApp.use(middleware.createSessionFromMagicLink);
