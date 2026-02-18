@@ -333,7 +333,7 @@ const fillInputIfExists = async (page, selector, value) => {
  */
 const submitStripePayment = async (page) => {
     await page.locator('#cardNumber').fill('4242 4242 4242 4242');
-    await page.locator('#cardExpiry').fill('04 / 26');
+    await page.locator('#cardExpiry').fill('12 / 30');
     await page.locator('#cardCvc').fill('424');
     await page.locator('#billingName').fill('Testy McTesterson');
     await page.getByRole('combobox', {name: 'Country or region'}).selectOption('US');
