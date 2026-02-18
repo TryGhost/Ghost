@@ -4,7 +4,6 @@ const path = require('path');
 const os = require('os');
 const fs = require('fs-extra');
 const crypto = require('crypto');
-const should = require('should');
 const supertest = require('supertest');
 const sinon = require('sinon');
 const config = require('../../../../core/shared/config');
@@ -373,7 +372,7 @@ describe('DB API', function () {
         assert.equal(post.get('email_recipient_filter'), 'status:-free');
 
         // Check this post is connected to the imported product
-        post.relations.tiers.models.map(m => m.id).should.match([product.id]);
+        assert.deepEqual(post.relations.tiers.models.map(m => m.id), [product.id]);
 
         // Check stripe prices
         const monthlyPrice = await models.StripePrice.findOne({id: product.get('monthly_price_id')});
@@ -475,7 +474,7 @@ describe('DB API (cleaned)', function () {
         assert.equal(post.get('email_recipient_filter'), 'status:-free');
 
         // Check this post is connected to the imported product
-        post.relations.tiers.models.map(m => m.id).should.match([product.id]);
+        assert.deepEqual(post.relations.tiers.models.map(m => m.id), [product.id]);
 
         // Check stripe prices
         const monthlyPrice = await models.StripePrice.findOne({stripe_price_id: 'price_a425520db0'});
