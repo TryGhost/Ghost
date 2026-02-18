@@ -5,6 +5,15 @@ on:
     # Run twice daily at 3 AM and 3 PM UTC
     - cron: '0 3,15 * * *'
   workflow_dispatch: # Allow manual trigger
+    inputs:
+      dry_run:
+        description: "Preview deletions without deleting accounts"
+        required: false
+        default: "true"
+        type: choice
+        options:
+          - "true"
+          - "false"
 
 jobs:
   cleanup:
@@ -15,12 +24,19 @@ jobs:
       - name: Cleanup old Stripe Connect test accounts
         env:
           STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
         run: |
           set -euo pipefail
           if [ -z "${STRIPE_SECRET_KEY:-}" ]; then
             echo "STRIPE_SECRET_KEY is not set"
             exit 1
           fi
+
+          DRY_RUN_NORMALIZED=$(echo "${DRY_RUN:-false}" | tr '[:upper:]' '[:lower:]')
+          if [ "$DRY_RUN_NORMALIZED" = "true" ]; then
+            echo "Running in dry-run mode (no accounts will be deleted)"
+          fi
+
           # Delete test accounts older than 24 hours
           # Accounts are named like: test-{runId}-{parallelIndex}@example.com
 
@@ -28,6 +44,9 @@ jobs:
           MAX_AGE_SECONDS=$((MAX_AGE_HOURS * 60 * 60))
           NOW=$(date +%s)
           DELETED=0
+          WOULD_DELETE=0
+          FAILED_DELETES=0
+          DELETE_QUEUE=""
 
           echo "Fetching Stripe Connect test accounts..."
 
@@ -37,9 +56,15 @@ jobs:
 
           while [ "$HAS_MORE" = "true" ]; do
             if [ -z "$STARTING_AFTER" ]; then
-              RESPONSE=$(curl -s -u "$STRIPE_SECRET_KEY:" "https://api.stripe.com/v1/accounts?limit=100")
+              if ! RESPONSE=$(curl -sS -u "$STRIPE_SECRET_KEY:" "https://api.stripe.com/v1/accounts?limit=100"); then
+                echo "Failed to fetch Stripe accounts"
+                exit 1
+              fi
             else
-              RESPONSE=$(curl -s -u "$STRIPE_SECRET_KEY:" "https://api.stripe.com/v1/accounts?limit=100&starting_after=$STARTING_AFTER")
+              if ! RESPONSE=$(curl -sS -u "$STRIPE_SECRET_KEY:" "https://api.stripe.com/v1/accounts?limit=100&starting_after=$STARTING_AFTER"); then
+                echo "Failed to fetch Stripe accounts (starting_after=$STARTING_AFTER)"
+                exit 1
+              fi
             fi
 
             # Check for API errors
@@ -52,6 +77,7 @@ jobs:
             # Extract account data - handle null/missing data array gracefully
             ACCOUNTS=$(echo "$RESPONSE" | jq -c '.data // [] | .[]')
             HAS_MORE=$(echo "$RESPONSE" | jq -r '.has_more // false')
+            PAGE_LAST_ID=$(echo "$RESPONSE" | jq -r '.data[-1].id // empty')
 
             while IFS= read -r account; do
               [ -z "$account" ] && continue
@@ -60,18 +86,63 @@ jobs:
               EMAIL=$(echo "$account" | jq -r '.email // ""')
               CREATED=$(echo "$account" | jq -r '.created')
 
-              # Check if this is a test account (matches our naming pattern: test-{runId}-{attempt}-{index}@example.com)
+              # Check if this is a test account (matches our naming pattern)
               if [[ "$EMAIL" =~ ^test-.*@example\.com$ ]]; then
+                if ! [[ "$CREATED" =~ ^[0-9]+$ ]]; then
+                  echo "Skipping $ID ($EMAIL): invalid created timestamp '$CREATED'"
+                  continue
+                fi
+
                 AGE=$((NOW - CREATED))
                 if [ "$AGE" -gt "$MAX_AGE_SECONDS" ]; then
-                  echo "Deleting $ID ($EMAIL) - age: $((AGE / 3600)) hours"
-                  curl -s -X DELETE -u "$STRIPE_SECRET_KEY:" "https://api.stripe.com/v1/accounts/$ID" > /dev/null
-                  DELETED=$((DELETED + 1))
+                  DELETE_QUEUE="${DELETE_QUEUE}${ID}|${EMAIL}|$((AGE / 3600))"$'\n'
                 fi
               fi
-
-              STARTING_AFTER="$ID"
             done <<< "$ACCOUNTS"
+
+            if [ "$HAS_MORE" = "true" ]; then
+              if [ -z "$PAGE_LAST_ID" ]; then
+                echo "Pagination indicated more results, but no last account id was returned"
+                exit 1
+              fi
+              STARTING_AFTER="$PAGE_LAST_ID"
+            fi
           done
 
+          while IFS='|' read -r ID EMAIL AGE_HOURS; do
+            [ -z "${ID:-}" ] && continue
+
+            if [ "$DRY_RUN_NORMALIZED" = "true" ]; then
+              echo "Would delete $ID ($EMAIL) - age: ${AGE_HOURS} hours"
+              WOULD_DELETE=$((WOULD_DELETE + 1))
+              continue
+            fi
+
+            echo "Deleting $ID ($EMAIL) - age: ${AGE_HOURS} hours"
+            if ! DELETE_RESPONSE=$(curl -sS -X DELETE -u "$STRIPE_SECRET_KEY:" "https://api.stripe.com/v1/accounts/$ID"); then
+              echo "Failed to delete $ID ($EMAIL): request failed"
+              FAILED_DELETES=$((FAILED_DELETES + 1))
+              continue
+            fi
+
+            DELETE_ERROR=$(echo "$DELETE_RESPONSE" | jq -r '.error.message // empty')
+            DELETED_FLAG=$(echo "$DELETE_RESPONSE" | jq -r '.deleted // false')
+            if [ -n "$DELETE_ERROR" ] || [ "$DELETED_FLAG" != "true" ]; then
+              echo "Failed to delete $ID ($EMAIL): ${DELETE_ERROR:-unexpected response}"
+              FAILED_DELETES=$((FAILED_DELETES + 1))
+              continue
+            fi
+
+            DELETED=$((DELETED + 1))
+          done <<< "$DELETE_QUEUE"
+
+          if [ "$DRY_RUN_NORMALIZED" = "true" ]; then
+            echo "Dry run complete. Would delete $WOULD_DELETE old test accounts"
+            exit 0
+          fi
+
           echo "Deleted $DELETED old test accounts"
+          if [ "$FAILED_DELETES" -gt 0 ]; then
+            echo "Failed to delete $FAILED_DELETES accounts"
+            exit 1
+          fi
