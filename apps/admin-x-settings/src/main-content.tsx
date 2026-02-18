@@ -14,7 +14,7 @@ const Page: React.FC<{children: ReactNode}> = ({children}) => {
         <div className='fixed right-0 top-2 z-50 flex justify-end bg-transparent p-8 tablet:fixed tablet:top-0 tablet:px-8' id="done-button-container">
             <ExitSettingsButton />
         </div>
-        <div className="w-full tablet:fixed tablet:left-0 tablet:top-0 tablet:flex tablet:h-full dark:bg-grey-975" id="admin-x-settings-content">
+        <div className="fixed left-0 top-0 flex h-full w-full dark:bg-grey-975" id="admin-x-settings-content">
             {children}
         </div>
     </>;
