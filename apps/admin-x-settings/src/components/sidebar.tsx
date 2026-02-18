@@ -1,7 +1,6 @@
 import GhostLogo from '../assets/images/orb-pink.png';
 import React, {useEffect, useRef} from 'react';
 import clsx from 'clsx';
-import useFeatureFlag from '../hooks/use-feature-flag';
 import {Button, Icon, SettingNavItem, type SettingNavItemProps, SettingNavSection, TextField, useFocusContext} from '@tryghost/admin-x-design-system';
 
 import {checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
@@ -109,7 +108,6 @@ const Sidebar: React.FC = () => {
     const {settings, config} = useGlobalData();
     const [hasTipsAndDonations] = getSettingValues(settings, ['donations_enabled']) as [string];
     const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
-    const hasWelcomeEmails = useFeatureFlag('welcomeEmails');
 
     const handleSectionClick = (e?: React.MouseEvent<HTMLAnchorElement>) => {
         if (e) {
@@ -191,7 +189,7 @@ const Sidebar: React.FC = () => {
                     <NavItem icon='key' keywords={membershipSearchKeywords.access} navid={['members', 'spam-filters']} title="Access" onClick={handleSectionClick} />
                     <NavItem icon='bills' keywords={membershipSearchKeywords.tiers} navid='tiers' title="Tiers" onClick={handleSectionClick} />
                     <NavItem icon='portal' keywords={membershipSearchKeywords.portal} navid='portal' title="Signup portal" onClick={handleSectionClick} />
-                    {hasWelcomeEmails && <NavItem icon='mailplus' keywords={membershipSearchKeywords.memberEmails} navid='memberemails' title="Welcome emails" onClick={handleSectionClick} />}
+                    <NavItem icon='mailplus' keywords={membershipSearchKeywords.memberEmails} navid='memberemails' title="Welcome emails" onClick={handleSectionClick} />
                     {hasTipsAndDonations && hasStripeEnabled && <NavItem icon='piggybank' keywords={membershipSearchKeywords.tips} navid='tips-and-donations' title="Tips & donations" onClick={handleSectionClick} />}
                     <NavItem icon='email' keywords={emailSearchKeywords.newslettersNavMenu} navid={['enable-newsletters', 'default-recipients', 'newsletters', 'mailgun']} title="Newsletters" onClick={handleSectionClick} />
                 </SettingNavSection>
