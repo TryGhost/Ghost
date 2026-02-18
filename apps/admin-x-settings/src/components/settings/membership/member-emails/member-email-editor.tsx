@@ -72,9 +72,9 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
                 {(koenig: KoenigInstance) => (
                     <>
                         <koenig.EmEnDashPlugin />
-                        <koenig.EmojiPickerPlugin />
                         <koenig.HorizontalRulePlugin />
                         <koenig.ListPlugin />
+                        <koenig.ReplacementStringsPlugin />
 
                         {welcomeEmailEditorEnabled && (
                             <>
@@ -85,7 +85,6 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
                                 <koenig.EmailCtaPlugin />
                                 <koenig.HtmlPlugin />
                                 <koenig.KoenigSelectorPlugin />
-                                <koenig.ReplacementStringsPlugin />
                                 {/* TODO: we need to wire up card config to enable snippets */}
                                 {/* <koenig.KoenigSnippetPlugin /> */}
                                 {/* TODO: we need to wire up a fileUploader prop + fileUploadHook to enable files+images */}
