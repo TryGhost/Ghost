@@ -105,7 +105,7 @@
     "@tryghost/mw-error-handler": "1.0.7",
     "@tryghost/mw-vhost": "1.0.1",
     "@tryghost/nodemailer": "0.3.48",
-    "@tryghost/nql": "0.12.8",
+    "@tryghost/nql": "0.12.10",
     "@tryghost/parse-email-address": "0.0.0",
     "@tryghost/pretty-cli": "1.2.47",
     "@tryghost/prometheus-metrics": "1.0.2",

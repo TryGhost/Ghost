@@ -8839,7 +8839,7 @@
   resolved "https://registry.yarnpkg.com/@tryghost/database-info/-/database-info-0.3.30.tgz#550902da9bfa6e7f9adc145e2cc2a51a5c7e1ad5"
   integrity sha512-WX8PlkHRxiLV6PwXRoRgJi7sGx4taWhHfm285oZPWzsNhvyDvJpeacikaXgbvOPBMdxEfB+ZpIF6XYlLPGdN0Q==
 
-"@tryghost/debug@0.1.35", "@tryghost/debug@^0.1.13", "@tryghost/debug@^0.1.26", "@tryghost/debug@^0.1.35":
+"@tryghost/debug@0.1.35":
   version "0.1.35"
   resolved "https://registry.yarnpkg.com/@tryghost/debug/-/debug-0.1.35.tgz#6bff0a16b946b25cb14a75942c2f17bd8c993aa2"
   integrity sha512-NNKMKV6xuaOaXjTJ/NBMWEzfSkFLahtxARlyYbFuxb9y95jhyJb2+mu9Zsd+gKWZZIkP7ACkWqyooTm4rr9eCQ==
@@ -8847,7 +8847,7 @@
     "@tryghost/root-utils" "^0.3.33"
     debug "^4.3.1"
 
-"@tryghost/debug@^0.1.36":
+"@tryghost/debug@^0.1.13", "@tryghost/debug@^0.1.26", "@tryghost/debug@^0.1.35", "@tryghost/debug@^0.1.36":
   version "0.1.36"
   resolved "https://registry.yarnpkg.com/@tryghost/debug/-/debug-0.1.36.tgz#54561ffad4d24632406824aa8b78148a59a826e2"
   integrity sha512-6B3zrO7Y3SWlxTB9M+dwhj63whE2R4ktmDYI7r1L1Ao9S//Y0XYOPVVlqUDxHfig7T29JliZfbhZw9VdSEUYjg==
@@ -9200,10 +9200,10 @@
     mobiledoc-dom-renderer "0.7.0"
     mobiledoc-text-renderer "0.4.0"
 
-"@tryghost/mongo-knex@^0.9.1", "@tryghost/mongo-knex@^0.9.2":
-  version "0.9.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/mongo-knex/-/mongo-knex-0.9.2.tgz#3bd9c96ec1ced10253fac778b811613e3942e583"
-  integrity sha512-9YA1wpPwAgAT75YAMX46dGp9HpNS7uwoz8d8o88DS3pE1N6uTJUJPzcqcj6gXcXB0tAnJu+cmr1BdTA2YeAYvw==
+"@tryghost/mongo-knex@^0.9.1", "@tryghost/mongo-knex@^0.9.4":
+  version "0.9.4"
+  resolved "https://registry.yarnpkg.com/@tryghost/mongo-knex/-/mongo-knex-0.9.4.tgz#bd92d191c28d95367d4898aefc57cf82a1d95304"
+  integrity sha512-R5mqpuQ1nN4qWAii9Tvg5POZ0nLO7Voy7QaQF+95sseUpfe4XEUsr3+mm4HYPC8MNKginlUm/unLf5QFzFQl5w==
   dependencies:
     debug "^4.3.3"
     lodash "^4.17.21"
@@ -9251,6 +9251,16 @@
   dependencies:
     date-fns "^2.28.0"
 
+"@tryghost/nql@0.12.10", "@tryghost/nql@^0.12.5":
+  version "0.12.10"
+  resolved "https://registry.yarnpkg.com/@tryghost/nql/-/nql-0.12.10.tgz#3050f24203e8c3946568f6cb03e7371ac10cf4e5"
+  integrity sha512-kpj2ICTBmkz5Uet7Z/J61C/EEBTfa55np6LnbqW6N8g33uvCh9NkAsM2WgV1NK2lffpQT3Cs/qA2ymzHAguvoA==
+  dependencies:
+    "@tryghost/mongo-knex" "^0.9.4"
+    "@tryghost/mongo-utils" "^0.6.3"
+    "@tryghost/nql-lang" "^0.6.4"
+    mingo "^2.2.2"
+
 "@tryghost/nql@0.12.6":
   version "0.12.6"
   resolved "https://registry.yarnpkg.com/@tryghost/nql/-/nql-0.12.6.tgz#18c8b57f73d37269e2c0ab23b6c3f4f4030804b4"
@@ -9259,16 +9269,6 @@
     "@tryghost/mongo-knex" "^0.9.1"
     "@tryghost/mongo-utils" "^0.6.2"
     "@tryghost/nql-lang" "^0.6.2"
-    mingo "^2.2.2"
-
-"@tryghost/nql@0.12.8", "@tryghost/nql@^0.12.5":
-  version "0.12.8"
-  resolved "https://registry.yarnpkg.com/@tryghost/nql/-/nql-0.12.8.tgz#b753603126e4f7e9f211e77485d8be19bec4fad0"
-  integrity sha512-88P6IijqjeFyIeDU2WdJPE9SVAZF8MpL53JIsNf1aViqVRAnfVqC/e6UmBsIoHJfFgSJsNdW7Jtznu7BYYvPSA==
-  dependencies:
-    "@tryghost/mongo-knex" "^0.9.2"
-    "@tryghost/mongo-utils" "^0.6.3"
-    "@tryghost/nql-lang" "^0.6.4"
     mingo "^2.2.2"
 
 "@tryghost/pretty-cli@1.2.47", "@tryghost/pretty-cli@^1.2.38":
@@ -9330,7 +9330,7 @@
     got "13.0.0"
     lodash "^4.17.21"
 
-"@tryghost/root-utils@0.3.33", "@tryghost/root-utils@^0.3.24", "@tryghost/root-utils@^0.3.33":
+"@tryghost/root-utils@0.3.33":
   version "0.3.33"
   resolved "https://registry.yarnpkg.com/@tryghost/root-utils/-/root-utils-0.3.33.tgz#208e3d15520131c2d4157c7e62fe74771a7a110f"
   integrity sha512-Gmc/TrKtiRT7PV9JOPoSZ7jAOl/jJDWJFKNaLZbDQaiJIBP5C6PucqEfRqGb2Ko/S9j73HzEEBu6B7+qZMvbBg==
@@ -9338,7 +9338,7 @@
     caller "^1.0.1"
     find-root "^1.1.0"
 
-"@tryghost/root-utils@^0.3.34":
+"@tryghost/root-utils@^0.3.24", "@tryghost/root-utils@^0.3.33", "@tryghost/root-utils@^0.3.34":
   version "0.3.34"
   resolved "https://registry.yarnpkg.com/@tryghost/root-utils/-/root-utils-0.3.34.tgz#db131568cf04069929a27fb8ed519b16a2226a5d"
   integrity sha512-RH3nPr5/1tK/nQTZMSO9rDeEelFZbY0gB0HInbhXl7995cgR/yuOnTPWa3CCQT3m/cYPZOPFhlInO8evke9rDg==
@@ -9386,14 +9386,14 @@
   resolved "https://registry.yarnpkg.com/@tryghost/timezone-data/-/timezone-data-0.4.12.tgz#c8a63979a073fe7ca9a85af4fcf255ff73a13859"
   integrity sha512-oUDQyYP3sxpC1/ndT15tfGHx50YqIC1ovktyEkS/1f04+H5+bPiCgCLu/Dvi63u4Jc1GTEcTvHoRqTngpA+mZw==
 
-"@tryghost/tpl@0.1.35", "@tryghost/tpl@^0.1.35":
+"@tryghost/tpl@0.1.35":
   version "0.1.35"
   resolved "https://registry.yarnpkg.com/@tryghost/tpl/-/tpl-0.1.35.tgz#7ad6b84f94529b2e709046255706dcda083267c9"
   integrity sha512-U6zWUnxDgw2nHZc5DTI0JuqYsytK76BVfIB3hz2rYrCKL4O6JL76F25Jr6I+A8cEIfL5GKLSG8/tWmEAHLy0Mg==
   dependencies:
     lodash.template "^4.5.0"
 
-"@tryghost/tpl@^0.1.36":
+"@tryghost/tpl@^0.1.35", "@tryghost/tpl@^0.1.36":
   version "0.1.36"
   resolved "https://registry.yarnpkg.com/@tryghost/tpl/-/tpl-0.1.36.tgz#1c8c5b23b8948d58f207fccb7c707658e8a166fa"
   integrity sha512-1bgvGE06ABEuXQqVeuYK3i58YiEFf6fHiXSCq4CzA+MIBUoUs4ID9oQLkdPJwPQ9TsuuJt3z4DPiG8KnLt06fg==
@@ -9413,7 +9413,7 @@
     remark-footnotes "1.0.0"
     unist-util-visit "^2.0.0"
 
-"@tryghost/validator@0.2.17", "@tryghost/validator@^0.2.17":
+"@tryghost/validator@0.2.17":
   version "0.2.17"
   resolved "https://registry.yarnpkg.com/@tryghost/validator/-/validator-0.2.17.tgz#51732e93677f3ee10e9c641c5d2cc93f8e038934"
   integrity sha512-MsiF8tkZmsUmWmtDCr8oMua/Lyk0b16zJrT/tDHaERi2eKKgOqf0RwLRdIS/droqX1uOZCX+cLX3xSYbKhh4cA==
@@ -9424,7 +9424,7 @@
     moment-timezone "^0.5.23"
     validator "7.2.0"
 
-"@tryghost/validator@^0.2.18":
+"@tryghost/validator@^0.2.17", "@tryghost/validator@^0.2.18":
   version "0.2.18"
   resolved "https://registry.yarnpkg.com/@tryghost/validator/-/validator-0.2.18.tgz#de9a2fbec5c81024a745fc4b4cbfdaaff9a68587"
   integrity sha512-ua345mKqmOQvykwSEH25dYSyTe1bndS8/mwr/n/mRREW+p1a0dhuTuS21Z0s2TkYMoyMTcXL50XC3v8jBapk/Q==
@@ -24467,12 +24467,12 @@ lodash.upperfirst@4.3.1:
   resolved "https://registry.yarnpkg.com/lodash.upperfirst/-/lodash.upperfirst-4.3.1.tgz#1365edf431480481ef0d1c68957a5ed99d49f7ce"
   integrity sha512-sReKOYJIJf74dhJONhU4e0/shzi1trVbSWDOhKYE5XV2O+H7Sb2Dihwuc7xWxVl+DgFPyTqIN3zMfT9cq5iWDg==
 
-lodash@4.17.21, lodash@^4.0.0, lodash@^4.14.2, lodash@^4.17.10, lodash@^4.17.11, lodash@^4.17.12, lodash@^4.17.14, lodash@^4.17.15, lodash@^4.17.19, lodash@^4.17.20, lodash@^4.17.21, lodash@^4.17.4, lodash@^4.5.1, lodash@^4.7.0, lodash@~4.17.21:
+lodash@4.17.21:
   version "4.17.21"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.21.tgz#679591c564c3bffaae8454cf0b3df370c3d6911c"
   integrity sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==
 
-lodash@4.17.23:
+lodash@4.17.23, lodash@^4.0.0, lodash@^4.14.2, lodash@^4.17.10, lodash@^4.17.11, lodash@^4.17.12, lodash@^4.17.14, lodash@^4.17.15, lodash@^4.17.19, lodash@^4.17.20, lodash@^4.17.21, lodash@^4.17.4, lodash@^4.5.1, lodash@^4.7.0, lodash@~4.17.21:
   version "4.17.23"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.23.tgz#f113b0378386103be4f6893388c73d0bde7f2c5a"
   integrity sha512-LgVTMpQtIopCi79SJeDiP0TfWi5CNEc/L/aRdTh3yIvmZXTnheWpKjSZhnvMl8iXbC1tFg9gdHHDMLoV7CnG+w==
