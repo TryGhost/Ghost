@@ -71,7 +71,7 @@ describe('ContentStatsService', function () {
             const result = mockTinybirdClient.buildRequest('api_top_pages', options);
 
             assertExists(result.url);
-            result.url.should.startWith('https://api.tinybird.co/v0/pipes/api_top_pages.json?');
+            assert(result.url.startsWith('https://api.tinybird.co/v0/pipes/api_top_pages.json?'));
             assert(result.url.includes('site_uuid=site-id'));
             assert(result.url.includes('date_from=2023-01-01'));
             assert(result.url.includes('date_to=2023-01-31'));

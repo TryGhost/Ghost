@@ -1,7 +1,6 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../../utils/assertions');
 const sinon = require('sinon');
-const should = require('should');
 const tinybird = require('../../../../../../core/server/services/stats/utils/tinybird');
 
 describe('Tinybird Client', function () {
@@ -60,7 +59,7 @@ describe('Tinybird Client', function () {
             });
 
             assertExists(url);
-            url.should.startWith('https://api.tinybird.co/v0/pipes/test_pipe.json?');
+            assert(url.startsWith('https://api.tinybird.co/v0/pipes/test_pipe.json?'));
             assert(url.includes('site_uuid=931ade9e-a4f1-4217-8625-34bd34250c16'));
             assert(url.includes('date_from=2023-01-01'));
             assert(url.includes('date_to=2023-01-31'));
@@ -85,7 +84,7 @@ describe('Tinybird Client', function () {
                 dateTo: '2023-01-31'
             });
 
-            url.should.startWith('https://api.tinybird.co/v0/pipes/test_pipe_v2.json?');
+            assert(url.startsWith('https://api.tinybird.co/v0/pipes/test_pipe_v2.json?'));
         });
 
         it('overrides defaults with provided options', function () {
@@ -115,7 +114,7 @@ describe('Tinybird Client', function () {
 
             const {url, options} = tinybirdClient.buildRequest('test_pipe', {});
 
-            url.should.startWith('http://localhost:8000/v0/pipes/test_pipe.json?');
+            assert(url.startsWith('http://localhost:8000/v0/pipes/test_pipe.json?'));
             assert.equal(options.headers.Authorization, 'Bearer mock-jwt-token');
         });
     });
@@ -227,7 +226,7 @@ describe('Tinybird Client', function () {
             // Verify request was called with correct parameters
             assert.equal(mockRequest.get.calledOnce, true);
             const [url, options] = mockRequest.get.firstCall.args;
-            url.should.startWith('https://api.tinybird.co/v0/pipes/test_pipe.json?');
+            assert(url.startsWith('https://api.tinybird.co/v0/pipes/test_pipe.json?'));
             assert.equal(options.headers.Authorization, 'Bearer mock-jwt-token');
         });
 
