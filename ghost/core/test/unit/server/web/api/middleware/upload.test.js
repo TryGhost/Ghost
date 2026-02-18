@@ -1,4 +1,3 @@
-const should = require('should');
 const validation = require('../../../../../../core/server/web/api/middleware/upload')._test;
 const imageFixturePath = ('../../../../../utils/fixtures/images/');
 const fs = require('fs');
@@ -12,11 +11,11 @@ describe('web utils', function () {
         });
 
         it('should return false if file does not exist in input', function () {
-            validation.checkFileExists({}).should.be.false;
+            assert.equal(validation.checkFileExists({}), false);
         });
 
         it('should return false if file is incorrectly structured', function () {
-            validation.checkFileExists({type: 'file'}).should.be.false;
+            assert.equal(validation.checkFileExists({type: 'file'}), false);
         });
     });
 
@@ -36,12 +35,12 @@ describe('web utils', function () {
         });
 
         it('returns false if file has invalid extension', function () {
-            validation.checkFileIsValid({name: 'test.txt', mimetype: 'text'}, ['text'], ['.tar']).should.be.false;
-            validation.checkFileIsValid({name: 'test', mimetype: 'text'}, ['text'], ['.txt']).should.be.false;
+            assert.equal(validation.checkFileIsValid({name: 'test.txt', mimetype: 'text'}, ['text'], ['.tar']), false);
+            assert.equal(validation.checkFileIsValid({name: 'test', mimetype: 'text'}, ['text'], ['.txt']), false);
         });
 
         it('returns false if file has invalid type', function () {
-            validation.checkFileIsValid({name: 'test.txt', mimetype: 'text'}, ['archive'], ['.txt']).should.be.false;
+            assert.equal(validation.checkFileIsValid({name: 'test.txt', mimetype: 'text'}, ['archive'], ['.txt']), false);
         });
     });
 
