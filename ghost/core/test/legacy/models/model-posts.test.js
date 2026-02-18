@@ -2081,11 +2081,11 @@ describe('Post Model', function () {
 
                     updatedAtFormat = moment(updatedPost.tags[0].updated_at).format('YYYY-MM-DD HH:mm:ss');
                     assert.equal(updatedAtFormat, moment(postJSON.tags[0].updated_at).format('YYYY-MM-DD HH:mm:ss'));
-                    updatedAtFormat.should.not.eql(moment(newJSON.tags[0].updated_at).format('YYYY-MM-DD HH:mm:ss'));
+                    assert.notEqual(updatedAtFormat, moment(newJSON.tags[0].updated_at).format('YYYY-MM-DD HH:mm:ss'));
 
                     createdAtFormat = moment(updatedPost.tags[0].created_at).format('YYYY-MM-DD HH:mm:ss');
                     assert.equal(createdAtFormat, moment(postJSON.tags[0].created_at).format('YYYY-MM-DD HH:mm:ss'));
-                    createdAtFormat.should.not.eql(moment(newJSON.tags[0].created_at).format('YYYY-MM-DD HH:mm:ss'));
+                    assert.notEqual(createdAtFormat, moment(newJSON.tags[0].created_at).format('YYYY-MM-DD HH:mm:ss'));
                 });
         });
 

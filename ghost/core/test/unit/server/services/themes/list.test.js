@@ -35,7 +35,7 @@ describe('Themes', function () {
             const origCasper = _.cloneDeep(themeList.get('casper'));
             themeList.set('casper', {magic: 'update'});
 
-            themeList.get('casper').should.not.eql(origCasper);
+            assert.notDeepEqual(themeList.get('casper'), origCasper);
             assert.deepEqual(themeList.get('casper'), {magic: 'update'});
         });
 
