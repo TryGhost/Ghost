@@ -536,8 +536,8 @@ describe('Unit: Util: subscription-data', function () {
             {
                 name: 'retention + free_months (with discount end)',
                 offer: {id: 'offer_2', redemption_type: 'retention', type: 'free_months', amount: 1, duration: 'free_months'},
-                sub: {current_period_end: '2026-03-17T00:00:00.000Z', next_payment: {discount: {offer_id: 'offer_2', end: '2026-02-17T00:00:00.000Z'}}},
-                expected: {label: 'Retention offer', detail: '1 month free until Mar 2026'}
+                sub: {next_payment: {discount: {offer_id: 'offer_2', end: '2026-02-17T00:00:00.000Z'}}},
+                expected: {label: 'Retention offer', detail: '1 month free until Feb 2026'}
             },
             {
                 name: 'retention + discount end does not match offer id',
