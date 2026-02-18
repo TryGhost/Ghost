@@ -15,7 +15,7 @@
     "@tryghost/activitypub": "*",
     "@tryghost/admin-x-framework": "*",
     "@tryghost/admin-x-settings": "*",
-    "@tryghost/koenig-lexical": "1.7.12",
+    "@tryghost/koenig-lexical": "1.7.13",
     "@tryghost/posts": "*",
     "@tryghost/shade": "*",
     "@tryghost/stats": "*",
