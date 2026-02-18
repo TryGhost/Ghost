@@ -15,10 +15,12 @@ import emailContent from './content/email-content.json';
 import minimalContent from './content/minimal-content.json';
 import {$getRoot, $isDecoratorNode} from 'lexical';
 import {
-    BASIC_NODES, BASIC_TRANSFORMERS, EMAIL_NODES,
-    KoenigComposableEditor, KoenigComposer, KoenigEditor, KoenigEmailEditor,
-    MINIMAL_NODES, MINIMAL_TRANSFORMERS, RestrictContentPlugin,
-    TKCountPlugin, WordCountPlugin
+    BASIC_NODES, BASIC_TRANSFORMERS, BookmarkPlugin,
+    ButtonPlugin, CalloutPlugin, CardMenuPlugin, EMAIL_EDITOR_NODES,
+    EMAIL_TRANSFORMERS, EmEnDashPlugin, EmailCtaPlugin, EmojiPickerPlugin, 
+    FilePlugin, HorizontalRulePlugin, HtmlPlugin, ImagePlugin,
+    KoenigComposableEditor, KoenigComposer, KoenigEditor, KoenigSelectorPlugin, KoenigSnippetPlugin, ListPlugin, MINIMAL_NODES,
+    MINIMAL_TRANSFORMERS, ReplacementStringsPlugin, RestrictContentPlugin, TKCountPlugin, WordCountPlugin
 } from '../src';
 import {defaultHeaders as defaultUnsplashHeaders} from './utils/unsplashConfig';
 import {fetchEmbed} from './utils/fetchEmbed';
@@ -128,7 +130,7 @@ function getAllowedNodes({editorType}) {
     } else if (editorType === 'minimal') {
         return MINIMAL_NODES;
     } else if (editorType === 'email') {
-        return EMAIL_NODES;
+        return EMAIL_EDITOR_NODES;
     }
     return undefined;
 }
@@ -158,13 +160,29 @@ function DemoEditor({editorType, registerAPI, cursorDidExitAtTop, darkMode, setW
         );
     } else if (editorType === 'email') {
         return (
-            <KoenigEmailEditor
+            <KoenigComposableEditor
                 cursorDidExitAtTop={cursorDidExitAtTop}
+                markdownTransformers={EMAIL_TRANSFORMERS}
                 placeholderText="Begin writing your email..."
                 registerAPI={registerAPI}
             >
+                <BookmarkPlugin />
+                <ButtonPlugin />
+                <CalloutPlugin />
+                <CardMenuPlugin />
+                <EmailCtaPlugin />
+                <EmEnDashPlugin />
+                <EmojiPickerPlugin />
+                <FilePlugin />
+                <HorizontalRulePlugin />
+                <HtmlPlugin />
+                <ImagePlugin /> 
+                <KoenigSelectorPlugin />
+                <KoenigSnippetPlugin />
+                <ListPlugin />
+                <ReplacementStringsPlugin />
                 <WordCountPlugin onChange={setWordCount} />
-            </KoenigEmailEditor>
+            </KoenigComposableEditor>
         );
     }
 

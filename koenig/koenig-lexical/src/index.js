@@ -4,16 +4,20 @@ import KoenigCardWrapper from './components/KoenigCardWrapper';
 import KoenigComposableEditor from './components/KoenigComposableEditor';
 import KoenigComposer from './components/KoenigComposer';
 import KoenigEditor from './components/KoenigEditor';
-import KoenigEmailEditor from './components/KoenigEmailEditor';
 import KoenigNestedComposer from './components/KoenigNestedComposer';
 
 /* Plugins */
+import AllDefaultPlugins from './plugins/AllDefaultPlugins';
 import AudioPlugin from './plugins/AudioPlugin';
+import BookmarkPlugin from './plugins/BookmarkPlugin';
+import ButtonPlugin from './plugins/ButtonPlugin';
 import CallToActionPlugin from './plugins/CallToActionPlugin';
 import CalloutPlugin from './plugins/CalloutPlugin';
 import CardMenuPlugin from './plugins/CardMenuPlugin';
 import DragDropPastePlugin from './plugins/DragDropPastePlugin';
 import DragDropReorderPlugin from './plugins/DragDropReorderPlugin';
+import EmEnDashPlugin from './plugins/EmEnDashPlugin';
+import EmailCtaPlugin from './plugins/EmailCtaPlugin';
 import EmojiPickerPlugin from './plugins/EmojiPickerPlugin';
 import ExternalControlPlugin from './plugins/ExternalControlPlugin';
 import FilePlugin from './plugins/FilePlugin';
@@ -22,8 +26,11 @@ import GalleryPlugin from './plugins/GalleryPlugin';
 import HeaderPlugin from './plugins/HeaderPlugin';
 import HorizontalRulePlugin from './plugins/HorizontalRulePlugin';
 import HtmlOutputPlugin from './plugins/HtmlOutputPlugin';
+import HtmlPlugin from './plugins/HtmlPlugin';
 import ImagePlugin from './plugins/ImagePlugin';
 import KoenigBehaviourPlugin from './plugins/KoenigBehaviourPlugin';
+import KoenigSelectorPlugin from './plugins/KoenigSelectorPlugin';
+import KoenigSnippetPlugin from './plugins/KoenigSnippetPlugin';
 import MarkdownPlugin from './plugins/MarkdownPlugin';
 import MarkdownShortcutPlugin from './plugins/MarkdownShortcutPlugin';
 import PlusCardMenuPlugin from './plugins/PlusCardMenuPlugin';
@@ -38,11 +45,10 @@ import VideoPlugin from './plugins/VideoPlugin';
 import WordCountPlugin from './plugins/WordCountPlugin';
 import {ListPlugin} from '@lexical/react/LexicalListPlugin';
 
-import AllDefaultPlugins from './plugins/AllDefaultPlugins';
-
 /* Nodes */
 import BASIC_NODES from './nodes/BasicNodes';
 import DEFAULT_NODES from './nodes/DefaultNodes';
+import EMAIL_EDITOR_NODES from './nodes/EmailEditorNodes';
 import EMAIL_NODES from './nodes/EmailNodes';
 import MINIMAL_NODES from './nodes/MinimalNodes';
 
@@ -66,16 +72,21 @@ export {
     KoenigComposableEditor,
     KoenigComposer,
     KoenigEditor,
-    KoenigEmailEditor,
     KoenigNestedComposer,
     KoenigCardWrapper,
 
+    AllDefaultPlugins,
+
     AudioPlugin,
+    BookmarkPlugin,
+    ButtonPlugin,
     CalloutPlugin,
     CallToActionPlugin,
     CardMenuPlugin,
     DragDropPastePlugin,
     DragDropReorderPlugin,
+    EmailCtaPlugin, 
+    EmEnDashPlugin,
     EmojiPickerPlugin,
     ExternalControlPlugin,
     FilePlugin,
@@ -84,8 +95,12 @@ export {
     HeaderPlugin,
     HorizontalRulePlugin,
     HtmlOutputPlugin,
+    HtmlPlugin,
     ImagePlugin,
     KoenigBehaviourPlugin,
+    KoenigSelectorPlugin,
+    KoenigSnippetPlugin,
+    ListPlugin,
     MarkdownPlugin,
     MarkdownShortcutPlugin,
     PlusCardMenuPlugin,
@@ -98,12 +113,10 @@ export {
     TransistorPlugin,
     VideoPlugin,
     WordCountPlugin,
-    ListPlugin,
-
-    AllDefaultPlugins,
 
     DEFAULT_NODES,
     BASIC_NODES,
+    EMAIL_EDITOR_NODES,
     EMAIL_NODES,
     MINIMAL_NODES,
 

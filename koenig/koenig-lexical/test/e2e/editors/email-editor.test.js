@@ -137,17 +137,19 @@ test.describe('Koenig Editor with email template nodes', async function () {
                 <p dir="ltr"><span data-lexical-text="true">\`\`\`javascript </span></p>
             `);
         });
+    });
 
-        test('slash menu is not available', async function () {
+    test.describe('Card menu', function () {
+        test('slash menu is available', async function () {
             await focusEditor(page);
             await expect(page.locator('[data-kg-slash-menu]')).toHaveCount(0);
             await page.keyboard.type('/');
-            await expect(page.locator('[data-kg-slash-menu]')).toHaveCount(0);
+            await expect(page.locator('[data-kg-slash-menu]')).toBeVisible();
         });
 
-        test('plus button is not shown', async function () {
+        test('plus button is shown', async function () {
             await focusEditor(page);
-            await expect(page.locator('[data-kg-plus-button]')).toHaveCount(0);
+            await expect(page.locator('[data-kg-plus-button]')).toBeVisible();
         });
     });
 
@@ -220,7 +222,7 @@ test.describe('Koenig Editor with email template nodes', async function () {
             await expect(page.locator(linkButtonSelector)).toBeVisible();
         });
 
-        test('does NOT have snippet button', async function () {
+        test('has snippet button', async function () {
             await focusEditor(page);
             await page.keyboard.type('text for selection');
 
@@ -234,7 +236,7 @@ test.describe('Koenig Editor with email template nodes', async function () {
             await expect(page.locator('[data-kg-floating-toolbar]')).toBeVisible();
 
             const snippetButtonSelector = '[data-kg-floating-toolbar] [data-kg-toolbar-button="snippet"] button';
-            await expect(page.locator(snippetButtonSelector)).toHaveCount(0);
+            await expect(page.locator(snippetButtonSelector)).toBeVisible();
         });
     });
 });
