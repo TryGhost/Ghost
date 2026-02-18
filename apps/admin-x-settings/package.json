@@ -44,7 +44,7 @@
     "@tryghost/i18n": "0.0.0",
     "@tryghost/kg-unsplash-selector": "0.3.12",
     "@tryghost/limit-service": "1.4.1",
-    "@tryghost/nql": "0.12.8",
+    "@tryghost/nql": "0.12.10",
     "@tryghost/timezone-data": "0.4.12",
     "react": "18.3.1",
     "react-dom": "18.3.1",

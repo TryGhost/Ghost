@@ -52,7 +52,7 @@
     "@tryghost/koenig-lexical": "1.7.13",
     "@tryghost/limit-service": "1.4.1",
     "@tryghost/members-csv": "2.0.3",
-    "@tryghost/nql": "0.12.8",
+    "@tryghost/nql": "0.12.10",
     "@tryghost/nql-lang": "0.6.4",
     "@tryghost/string": "0.2.17",
     "@tryghost/timezone-data": "0.4.12",
