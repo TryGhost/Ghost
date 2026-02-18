@@ -1,6 +1,7 @@
 const {agentProvider, mockManager, fixtureManager, matchers, configUtils, resetRateLimits, dbUtils} = require('../../utils/e2e-framework');
 const sinon = require('sinon');
 const assert = require('node:assert/strict');
+const cheerio = require('cheerio');
 const {assertMatchSnapshot} = require('../../utils/assertions');
 const settingsCache = require('../../../core/shared/settings-cache');
 const settingsService = require('../../../core/server/services/settings');
@@ -788,11 +789,13 @@ describe('sendMagicLink', function () {
             const subjectMatch = mail.subject.match(otcRegex);
             assert(!subjectMatch, `Email subject should not contain OTC. Found: "${subjectMatch?.[0]}" in subject: "${mail.subject}"`);
 
-            const htmlMatch = mail.html.match(otcRegex);
-            assert(!htmlMatch, `Email HTML should not contain OTC. Found: "${htmlMatch?.[0]}" near: "${mail.html.substring(mail.html.search(otcRegex) - 50, mail.html.search(otcRegex) + 100)}"`);
-
             const textMatch = mail.text.match(otcRegex);
             assert(!textMatch, `Email text should not contain OTC. Found: "${textMatch?.[0]}" near: "${mail.text.substring(mail.text.search(otcRegex) - 50, mail.text.search(otcRegex) + 100)}"`);
+
+            // It's possible that there's an OTC-like in an href, so only check the rendered text.
+            const htmlText = cheerio.load(mail.html).text();
+            const htmlMatch = htmlText.match(otcRegex);
+            assert(!htmlMatch, `Email HTML should not contain OTC. Found: "${htmlMatch?.[0]}" near: "${htmlText.substring(htmlText.search(otcRegex) - 50, htmlText.search(otcRegex) + 100)}"`);
         }
 
         beforeEach(async function () {
