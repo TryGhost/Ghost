@@ -60,7 +60,6 @@
         "tailwindcss-animate": "1.0.7",
         "typescript": "5.8.3",
         "vite": "5.4.20",
-        "vite-plugin-svgr": "3.3.0",
         "vitest": "1.6.1"
     },
     "dependencies": {

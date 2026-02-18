@@ -2,7 +2,6 @@ import path from 'path';
 import react from '@vitejs/plugin-react';
 import {glob} from 'glob';
 import {resolve} from 'path';
-import svgr from 'vite-plugin-svgr';
 import {defineConfig} from 'vitest/config';
 
 // https://vitejs.dev/config/
@@ -10,7 +9,6 @@ export default (function viteConfig() {
     return defineConfig({
         logLevel: process.env.CI ? 'info' : 'warn',
         plugins: [
-            svgr(),
             react()
         ],
         resolve: {

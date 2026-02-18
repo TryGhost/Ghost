@@ -66,14 +66,6 @@ export * as LucideIcon from 'lucide-react';
 
 export {IconComponents as Icon} from './components/ui/icon';
 
-// Assets
-export {ReactComponent as FacebookLogo} from './assets/images/facebook-logo.svg';
-export {ReactComponent as GhostLogo} from './assets/images/ghost-logo.svg';
-export {ReactComponent as GhostOrb} from './assets/images/ghost-orb.svg';
-export {ReactComponent as GoogleLogo} from './assets/images/google-logo.svg';
-export {ReactComponent as TwitterLogo} from './assets/images/twitter-logo.svg';
-export {ReactComponent as XLogo} from './assets/images/x-logo.svg';
-
 // Hooks
 export {default as useGlobalDirtyState} from './hooks/use-global-dirty-state';
 export {useSimplePagination} from './hooks/use-simple-pagination';
