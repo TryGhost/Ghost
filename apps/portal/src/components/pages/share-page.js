@@ -1,26 +1,77 @@
 import AppContext from '../../app-context';
 import CloseButton from '../common/close-button';
 import copyTextToClipboard from '../../utils/copy-to-clipboard';
+import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg';
+import {ReactComponent as FacebookIcon} from '../../images/icons/share-facebook.svg';
+import {ReactComponent as LinkIcon} from '../../images/icons/share-link.svg';
+import {ReactComponent as LinkedinIcon} from '../../images/icons/share-linkedin.svg';
+import {ReactComponent as XIcon} from '../../images/icons/share-x.svg';
 import {useContext, useEffect, useMemo, useRef, useState} from 'react';
 import {t} from '../../utils/i18n';
 
 export const SharePageStyles = `
     .gh-portal-share-header {
-        margin-bottom: 20px;
+        margin-bottom: 16px;
     }
 
-    .gh-portal-share-subtitle {
-        margin: 8px 0 0;
-        color: var(--grey6);
+    .gh-portal-share-header .gh-portal-main-title {
+        text-align: left;
+        font-size: 2.4rem;
+        font-weight: 600;
+    }
+    html[dir="rtl"] .gh-portal-share-header .gh-portal-main-title {
+        text-align: right;
     }
 
-    .gh-portal-share-item .gh-portal-list-detail p {
-        margin-top: 4px;
+    .gh-portal-share-actions {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 8px;
     }
 
-    .gh-portal-share-item .gh-portal-btn-list {
-        height: 32px;
-        margin-inline-start: 12px;
+    .gh-portal-share-action {
+        height: 54px;
+        min-width: 0;
+        padding: 0;
+        border-radius: 8px;
+        border: 1px solid var(--grey12);
+        background: var(--white);
+        color: var(--grey2);
+    }
+
+    .gh-portal-share-action:hover {
+        border-color: var(--grey10);
+    }
+
+    .gh-portal-share-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 20px;
+        height: 20px;
+        border-radius: 999px;
+        line-height: 0;
+        color: var(--grey2);
+    }
+
+    .gh-portal-share-icon svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .gh-portal-share-icon.copied {
+        background: color-mix(in srgb, var(--brandcolor) 14%, var(--white));
+        color: var(--brandcolor);
+    }
+
+    .gh-portal-share-icon.copied svg {
+        width: 12px;
+        height: 12px;
+    }
+
+    .gh-portal-share-icon.copied svg path {
+        stroke: currentColor;
     }
 `;
 
@@ -83,48 +134,67 @@ const SharePage = () => {
     return (
         <div className='gh-portal-content gh-portal-share'>
             <CloseButton />
-            <div className='gh-portal-signup-header gh-portal-share-header'>
+            <div className='gh-portal-share-header'>
                 <h1 className='gh-portal-main-title'>{t('Share')}</h1>
-                <p className='gh-portal-text-center gh-portal-share-subtitle'>{t('Share this post')}</p>
             </div>
 
-            <div className='gh-portal-list'>
-                <section className='gh-portal-share-item'>
-                    <div className='gh-portal-list-detail'>
-                        <h3>{t('X (Twitter)')}</h3>
-                    </div>
-                    <a className='gh-portal-btn gh-portal-btn-list' href={socialLinks.twitter} target='_blank' rel='noopener noreferrer'>
-                        {t('X (Twitter)')}
-                    </a>
-                </section>
+            <div className='gh-portal-share-actions'>
+                <a
+                    className='gh-portal-btn gh-portal-share-action'
+                    href={socialLinks.twitter}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    aria-label={t('X (Twitter)')}
+                    title={t('X (Twitter)')}
+                >
+                    <span className='gh-portal-share-icon' aria-hidden='true'>
+                        <XIcon />
+                    </span>
+                </a>
 
-                <section className='gh-portal-share-item'>
-                    <div className='gh-portal-list-detail'>
-                        <h3>{t('Facebook')}</h3>
-                    </div>
-                    <a className='gh-portal-btn gh-portal-btn-list' href={socialLinks.facebook} target='_blank' rel='noopener noreferrer'>
-                        {t('Facebook')}
-                    </a>
-                </section>
+                <a
+                    className='gh-portal-btn gh-portal-share-action'
+                    href={socialLinks.facebook}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    aria-label={t('Facebook')}
+                    title={t('Facebook')}
+                >
+                    <span className='gh-portal-share-icon' aria-hidden='true'>
+                        <FacebookIcon />
+                    </span>
+                </a>
 
-                <section className='gh-portal-share-item'>
-                    <div className='gh-portal-list-detail'>
-                        <h3>{t('LinkedIn')}</h3>
-                    </div>
-                    <a className='gh-portal-btn gh-portal-btn-list' href={socialLinks.linkedin} target='_blank' rel='noopener noreferrer'>
-                        {t('LinkedIn')}
-                    </a>
-                </section>
+                <a
+                    className='gh-portal-btn gh-portal-share-action'
+                    href={socialLinks.linkedin}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    aria-label={t('LinkedIn')}
+                    title={t('LinkedIn')}
+                >
+                    <span className='gh-portal-share-icon' aria-hidden='true'>
+                        <LinkedinIcon />
+                    </span>
+                </a>
 
-                <section className='gh-portal-share-item'>
-                    <div className='gh-portal-list-detail'>
-                        <h3>{t('Copy link')}</h3>
-                        <p>{shareUrl}</p>
-                    </div>
-                    <button className='gh-portal-btn gh-portal-btn-list' type='button' onClick={onCopy}>
-                        {copied ? t('Copied') : t('Copy link')}
-                    </button>
-                </section>
+                <button
+                    className='gh-portal-btn gh-portal-share-action'
+                    type='button'
+                    onClick={onCopy}
+                    aria-label={copied ? t('Copied') : t('Copy link')}
+                    title={copied ? t('Copied') : t('Copy link')}
+                >
+                    {copied ? (
+                        <span className='gh-portal-share-icon copied' aria-hidden='true'>
+                            <CheckmarkIcon />
+                        </span>
+                    ) : (
+                        <span className='gh-portal-share-icon' aria-hidden='true'>
+                            <LinkIcon />
+                        </span>
+                    )}
+                </button>
             </div>
         </div>
     );
