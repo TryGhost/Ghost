@@ -14,7 +14,7 @@ Route.reopen({
                 this.upgradeStatus.requireUpgrade();
                 return false;
             } else if (this.config.hostSettings?.forceUpgrade) {
-                // Do not prevent transitions to the BMA, to signout, or to any settings-x routes
+                // Do not prevent transitions to the BMA, to signout, or to any settings routes
                 if (transition.to?.name === 'pro.index' || transition.to?.name === 'signout' || transition.to?.params?.path?.startsWith?.('settings')) {
                     return true;
                 }

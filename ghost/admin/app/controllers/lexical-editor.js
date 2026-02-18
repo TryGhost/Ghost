@@ -160,6 +160,7 @@ export default class LexicalEditorController extends Controller {
     @service settings;
     @service ui;
     @service localRevisions;
+    @service('unsaved-changes') unsavedChanges;
 
     @inject config;
 
@@ -1102,11 +1103,18 @@ export default class LexicalEditorController extends Controller {
                 event.returnValue = true;
             }
         };
+
+        this._unregisterUnsavedChanges?.();
+        this._unregisterUnsavedChanges = this.unsavedChanges.register({
+            isDirty: () => this.hasDirtyAttributes,
+            confirmLeave: () => this._confirmLeave()
+        });
     }
 
     // called by editor route's willTransition hook, fires for editor.new->edit,
     // editor.edit->edit, or editor->any. Delegates the leave-confirmation
-    // logic to _confirmLeave so it can be reused by other callers.
+    // logic to _confirmLeave via the unsaved-changes service so that
+    // intercepted hash link clicks follow exactly the same code path.
     async willTransition(transition) {
         let post = this.post;
 
@@ -1135,7 +1143,7 @@ export default class LexicalEditorController extends Controller {
 
             this._confirmLeaveContext = {fromNewToEdit};
             try {
-                if (!(await this._confirmLeave())) {
+                if (!(await this.unsavedChanges.confirmLeave())) {
                     return;
                 }
             } finally {
@@ -1316,6 +1324,9 @@ export default class LexicalEditorController extends Controller {
         // make sure the save tasks aren't still running in the background
         // after leaving the edit route
         this.cancelAutosave();
+
+        this._unregisterUnsavedChanges?.();
+        this._unregisterUnsavedChanges = null;
 
         if (post) {
             // clear post of any unsaved, client-generated tags
