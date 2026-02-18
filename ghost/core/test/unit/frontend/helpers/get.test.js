@@ -7,7 +7,7 @@ const loggingLib = require('@tryghost/logging');
 
 // Stuff we are testing
 const get = require('../../../../core/frontend/helpers/get');
-const {querySimplePath} = require('../../../../core/frontend/helpers/get');
+const {querySimplePath, generateCacheKey} = require('../../../../core/frontend/helpers/get');
 const models = require('../../../../core/server/models');
 const api = require('../../../../core/server/api').endpoints;
 const maxLimitCap = require('../../../../core/shared/max-limit-cap');
@@ -613,6 +613,278 @@ describe('{{#get}} helper', function () {
             assert(args && typeof args === 'object');
             assert('posts' in args);
             assert.deepEqual(args.posts, []);
+        });
+    });
+
+    describe('generateCacheKey', function () {
+        it('should produce deterministic keys for identical queries', function () {
+            const apiOptions1 = {filter: 'featured:true', limit: 5};
+            const apiOptions2 = {filter: 'featured:true', limit: 5};
+
+            assert.equal(generateCacheKey('posts', apiOptions1), generateCacheKey('posts', apiOptions2));
+        });
+
+        it('should produce different keys for different resources', function () {
+            const apiOptions = {filter: 'featured:true'};
+
+            assert.notEqual(generateCacheKey('posts', apiOptions), generateCacheKey('tags', apiOptions));
+        });
+
+        it('should produce different keys for different filters', function () {
+            const apiOptions1 = {filter: 'featured:true'};
+            const apiOptions2 = {filter: 'featured:false'};
+
+            assert.notEqual(generateCacheKey('posts', apiOptions1), generateCacheKey('posts', apiOptions2));
+        });
+
+        it('should include member uuid in key', function () {
+            const apiOptions1 = {filter: 'featured:true', context: {member: {uuid: 'member-1'}}};
+            const apiOptions2 = {filter: 'featured:true', context: {member: {uuid: 'member-2'}}};
+
+            assert.notEqual(generateCacheKey('posts', apiOptions1), generateCacheKey('posts', apiOptions2));
+        });
+
+        it('should handle missing optional fields', function () {
+            const apiOptions = {filter: 'featured:true'};
+
+            // Should not throw
+            const key = generateCacheKey('posts', apiOptions);
+            assert.equal(typeof key, 'string');
+            assert(key.length > 0);
+        });
+
+        it('should include all relevant query parameters', function () {
+            const apiOptions = {
+                filter: 'featured:true',
+                limit: 5,
+                include: 'tags,authors',
+                fields: 'title,slug',
+                formats: 'html',
+                page: 2,
+                order: 'published_at desc',
+                id: '123',
+                slug: 'my-post'
+            };
+
+            const key = generateCacheKey('posts', apiOptions);
+
+            // Verify all parts are in the key
+            assert(key.includes('posts'));
+            assert(key.includes('featured:true'));
+            assert(key.includes('5'));
+            assert(key.includes('tags,authors'));
+            assert(key.includes('title,slug'));
+            assert(key.includes('html'));
+            assert(key.includes('2'));
+            assert(key.includes('published_at desc'));
+            assert(key.includes('123'));
+            assert(key.includes('my-post'));
+        });
+    });
+
+    describe('per-request deduplication', function () {
+        let browseStub;
+        const meta = {pagination: {}};
+
+        beforeEach(function () {
+            browseStub = sinon.stub().resolves({posts: [{id: 'post1', title: 'Test Post'}], meta: meta});
+            sinon.stub(api, 'postsPublic').get(() => {
+                return {
+                    browse: browseStub
+                };
+            });
+        });
+
+        afterEach(async function () {
+            await configUtils.restore();
+        });
+
+        it('should make duplicate API calls when deduplication is disabled', async function () {
+            // Deduplication disabled by default
+            locals = {root: {_locals: {}}, _queryCache: {}};
+
+            // First call
+            await get.call(
+                {},
+                'posts',
+                {hash: {filter: 'featured:true'}, data: locals, fn: fn, inverse: inverse}
+            );
+
+            // Second call with same query
+            await get.call(
+                {},
+                'posts',
+                {hash: {filter: 'featured:true'}, data: locals, fn: fn, inverse: inverse}
+            );
+
+            // Should make two API calls since deduplication is disabled
+            assert.equal(browseStub.callCount, 2);
+        });
+
+        it('should deduplicate identical queries when enabled', async function () {
+            configUtils.set('optimization:getHelper:deduplication', true);
+            locals = {root: {_locals: {}}, _queryCache: {}};
+
+            // First call
+            await get.call(
+                {},
+                'posts',
+                {hash: {filter: 'featured:true'}, data: locals, fn: fn, inverse: inverse}
+            );
+
+            // Second call with same query
+            await get.call(
+                {},
+                'posts',
+                {hash: {filter: 'featured:true'}, data: locals, fn: fn, inverse: inverse}
+            );
+
+            // Should only make one API call
+            assert.equal(browseStub.callCount, 1);
+            // But both calls should have rendered
+            assert.equal(fn.callCount, 2);
+        });
+
+        it('should make separate API calls for different queries when enabled', async function () {
+            configUtils.set('optimization:getHelper:deduplication', true);
+            locals = {root: {_locals: {}}, _queryCache: {}};
+
+            // First call
+            await get.call(
+                {},
+                'posts',
+                {hash: {filter: 'featured:true'}, data: locals, fn: fn, inverse: inverse}
+            );
+
+            // Second call with different filter
+            await get.call(
+                {},
+                'posts',
+                {hash: {filter: 'featured:false'}, data: locals, fn: fn, inverse: inverse}
+            );
+
+            // Should make two API calls for different queries
+            assert.equal(browseStub.callCount, 2);
+        });
+
+        it('should include member uuid in cache key', async function () {
+            configUtils.set('optimization:getHelper:deduplication', true);
+
+            // Call with member A
+            const localsA = {root: {_locals: {}}, _queryCache: {}, member: {uuid: 'member-a'}};
+            await get.call(
+                {},
+                'posts',
+                {hash: {filter: 'featured:true'}, data: localsA, fn: fn, inverse: inverse}
+            );
+
+            // Call with member B (same query but different member)
+            const localsB = {root: {_locals: {}}, _queryCache: localsA._queryCache, member: {uuid: 'member-b'}};
+            await get.call(
+                {},
+                'posts',
+                {hash: {filter: 'featured:true'}, data: localsB, fn: fn, inverse: inverse}
+            );
+
+            // Should make two API calls because member context is different
+            assert.equal(browseStub.callCount, 2);
+        });
+
+        it('should not cache failed API requests', async function () {
+            configUtils.set('optimization:getHelper:deduplication', true);
+            locals = {root: {_locals: {}}, _queryCache: {}};
+
+            // Set up stub to fail first, then succeed
+            browseStub.onFirstCall().rejects(new Error('API Error'));
+            browseStub.onSecondCall().resolves({posts: [{id: 'post1'}], meta: meta});
+
+            // First call - should fail
+            await get.call(
+                {},
+                'posts',
+                {hash: {filter: 'featured:true'}, data: locals, fn: fn, inverse: inverse}
+            );
+
+            // Second call with same query - should retry since first failed
+            await get.call(
+                {},
+                'posts',
+                {hash: {filter: 'featured:true'}, data: locals, fn: fn, inverse: inverse}
+            );
+
+            // Should make two API calls because first one failed
+            assert.equal(browseStub.callCount, 2);
+        });
+
+        it('should work without _queryCache in data', async function () {
+            configUtils.set('optimization:getHelper:deduplication', true);
+            // No _queryCache in locals
+            locals = {root: {_locals: {}}};
+
+            // Should not throw and should make API call
+            await get.call(
+                {},
+                'posts',
+                {hash: {filter: 'featured:true'}, data: locals, fn: fn, inverse: inverse}
+            );
+
+            assert.equal(browseStub.callCount, 1);
+            assert.equal(fn.callCount, 1);
+        });
+
+        it('should deduplicate queries with same parameters in different order', async function () {
+            configUtils.set('optimization:getHelper:deduplication', true);
+            locals = {root: {_locals: {}}, _queryCache: {}};
+
+            // First call
+            await get.call(
+                {},
+                'posts',
+                {hash: {filter: 'featured:true', limit: 5}, data: locals, fn: fn, inverse: inverse}
+            );
+
+            // Second call with same params (hash object properties are in same order in JS)
+            await get.call(
+                {},
+                'posts',
+                {hash: {filter: 'featured:true', limit: 5}, data: locals, fn: fn, inverse: inverse}
+            );
+
+            // Should only make one API call
+            assert.equal(browseStub.callCount, 1);
+        });
+
+        it('should handle concurrent identical requests', async function () {
+            configUtils.set('optimization:getHelper:deduplication', true);
+            locals = {root: {_locals: {}}, _queryCache: {}};
+
+            // Make a slow browse stub
+            browseStub.callsFake(() => {
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        resolve({posts: [{id: 'post1'}], meta: meta});
+                    }, 10);
+                });
+            });
+
+            // Make concurrent calls
+            await Promise.all([
+                get.call(
+                    {},
+                    'posts',
+                    {hash: {filter: 'featured:true'}, data: locals, fn: fn, inverse: inverse}
+                ),
+                get.call(
+                    {},
+                    'posts',
+                    {hash: {filter: 'featured:true'}, data: locals, fn: fn, inverse: inverse}
+                )
+            ]);
+
+            // Should only make one API call even for concurrent requests
+            assert.equal(browseStub.callCount, 1);
+            // Both should have rendered
+            assert.equal(fn.callCount, 2);
         });
     });
 });

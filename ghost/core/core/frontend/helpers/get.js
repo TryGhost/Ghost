@@ -47,6 +47,32 @@ const pathAliases = {
 };
 
 /**
+ * Generate a deterministic cache key for a {{#get}} query.
+ * Uses fixed property order to ensure identical queries produce identical keys.
+ *
+ * @param {String} resource - The resource type (posts, tags, etc.)
+ * @param {Object} apiOptions - The API options (filter, limit, include, etc.)
+ * @returns {String} - Deterministic cache key
+ */
+function generateCacheKey(resource, apiOptions) {
+    // Build key from properties in fixed order for determinism
+    const parts = [
+        resource,
+        apiOptions.filter || '',
+        apiOptions.limit || '',
+        apiOptions.include || '',
+        apiOptions.fields || '',
+        apiOptions.formats || '',
+        apiOptions.page || '',
+        apiOptions.order || '',
+        apiOptions.id || '',
+        apiOptions.slug || '',
+        apiOptions.context?.member?.uuid || ''
+    ];
+    return parts.join('|');
+}
+
+/**
  * Resolve a simple path like "post.tags[*].slug" against an object.
  * Supports dot-notation, [N] array indexing, and [*] array wildcards.
  * Always returns an array of matched values.
@@ -304,6 +330,41 @@ async function makeAPICall(resource, controllerName, action, apiOptions) {
 }
 
 /**
+ * Prepare and render the response from a {{#get}} query
+ *
+ * @param {Object} response - API response
+ * @param {String} resource - Resource type (posts, tags, etc.)
+ * @param {Object} options - Handlebars options
+ * @param {Object} data - Handlebars data frame
+ * @returns {String|SafeString} - Rendered template output
+ */
+function renderResponse(response, resource, options, data) {
+    // prepare data properties for use with handlebars
+    if (response[resource] && response[resource].length) {
+        response[resource].forEach(prepareContextResource);
+    }
+
+    // block params allows the theme developer to name the data using something like
+    // `{{#get "posts" as |result pageInfo|}}`
+    const blockParams = [response[resource]];
+    if (response.meta && response.meta.pagination) {
+        response.pagination = response.meta.pagination;
+        blockParams.push(response.meta.pagination);
+    }
+
+    // Call the main template function
+    const rendered = options.fn(response, {
+        data: data,
+        blockParams: blockParams
+    });
+
+    if (response['@@ABORTED_GET_HELPER@@']) {
+        return new SafeString(`<span data-aborted-get-helper>Could not load content</span>` + rendered);
+    }
+    return rendered;
+}
+
+/**
  * ## Get
  * @param {String} resource
  * @param {Object} options
@@ -340,37 +401,47 @@ module.exports = async function get(resource, options) {
     // Parse the options we're going to pass to the API
     apiOptions = parseOptions(ghostGlobals, this, apiOptions);
     apiOptions.context = {member: data.member};
-    try {
-        const response = await makeAPICall(resource, controllerName, action, apiOptions);
 
-        // prepare data properties for use with handlebars
-        if (response[resource] && response[resource].length) {
-            response[resource].forEach(prepareContextResource);
+    // Per-request deduplication: check if we have a cached result for this query
+    const enableDeduplication = config.get('optimization:getHelper:deduplication');
+    const queryCache = enableDeduplication ? options.data?._queryCache : null;
+    let cacheKey;
+
+    if (queryCache) {
+        cacheKey = generateCacheKey(resource, apiOptions);
+
+        if (cacheKey in queryCache) {
+            try {
+                // Await cached promise (handles both resolved and in-flight)
+                const cachedResponse = await queryCache[cacheKey];
+                returnedRowsCount = cachedResponse[resource] && cachedResponse[resource].length;
+                return renderResponse(cachedResponse, resource, options, data);
+            } catch (error) {
+                // Cached promise rejected - fall through to make new request
+                delete queryCache[cacheKey];
+            }
         }
+    }
+
+    try {
+        // Store promise before awaiting to dedupe concurrent in-flight requests
+        const responsePromise = makeAPICall(resource, controllerName, action, apiOptions);
+
+        if (queryCache && cacheKey) {
+            queryCache[cacheKey] = responsePromise;
+        }
+
+        const response = await responsePromise;
 
         // used for logging details of slow requests
         returnedRowsCount = response[resource] && response[resource].length;
 
-        // block params allows the theme developer to name the data using something like
-        // `{{#get "posts" as |result pageInfo|}}`
-        const blockParams = [response[resource]];
-        if (response.meta && response.meta.pagination) {
-            response.pagination = response.meta.pagination;
-            blockParams.push(response.meta.pagination);
-        }
-
-        // Call the main template function
-        const rendered = options.fn(response, {
-            data: data,
-            blockParams: blockParams
-        });
-
-        if (response['@@ABORTED_GET_HELPER@@']) {
-            return new SafeString(`<span data-aborted-get-helper>Could not load content</span>` + rendered);
-        } else {
-            return rendered;
-        }
+        return renderResponse(response, resource, options, data);
     } catch (error) {
+        // Remove failed request from cache so retries can try again
+        if (queryCache && cacheKey) {
+            delete queryCache[cacheKey];
+        }
         logging.error(error);
         data.error = error.message;
         return options.inverse(self, {data: data});
@@ -400,3 +471,5 @@ module.exports.async = true;
 module.exports.optimiseFilterCacheability = optimiseFilterCacheability;
 
 module.exports.querySimplePath = querySimplePath;
+
+module.exports.generateCacheKey = generateCacheKey;
