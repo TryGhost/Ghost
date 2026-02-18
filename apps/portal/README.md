@@ -26,8 +26,9 @@ Share modal can be opened with `data-portal="share"` (or `#/portal/share`). Opti
 
 - `data-portal-share-url`
 - `data-portal-share-title`
+- `data-portal-share-image`
 
-When share metadata is omitted, Portal falls back to the page canonical URL / current URL and Open Graph title / document title.
+When share metadata is omitted, Portal falls back to the page canonical URL / current URL, Open Graph title / document title, and Open Graph image / Twitter image.
 
 The script also adds custom class names to this element for open and close state of popup - `gh-portal-open` and `gh-portal-close`, allowing devs to update its UI based on popup state.
 
