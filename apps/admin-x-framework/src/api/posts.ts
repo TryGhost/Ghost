@@ -39,28 +39,41 @@ export interface PostsResponseType {
 
 const dataType = 'PostsResponseType';
 
+/**
+ * Lists posts from the Admin API with the provided search params.
+ */
 export const useBrowsePosts = createQuery<PostsResponseType>({
     dataType,
     path: '/posts/'
 });
 
+/**
+ * Fetches a single post by id from the Admin API.
+ */
 export const getPost = createQueryWithId<PostsResponseType>({
     dataType,
     path: id => `/posts/${id}/`
 });
 
-// This endpoints returns a csv file
+/**
+ * Requests a CSV export of posts.
+ */
 export const usePostsExports = createQuery<string>({
     dataType,
     path: '/posts/export/'
 });
 
+/**
+ * Deletes a post by id.
+ */
 export const useDeletePost = createMutation<unknown, string>({
     method: 'DELETE',
     path: id => `/posts/${id}/`
 });
 
-// Search index endpoints for efficient search
+/**
+ * Queries posts through the search index endpoint for faster text search.
+ */
 export const useSearchIndexPosts = createQuery<PostsResponseType>({
     dataType,
     path: '/search-index/posts/'

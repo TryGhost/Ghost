@@ -25,6 +25,9 @@ type FilterOption = {label: string; value: string};
 // TODO: Replace LegacyFilterSelect with a Shade Select once the legacy admin UI is retired.
 // The ember-* classes (for example 'ember-view' and 'ember-basic-dropdown-trigger') are
 // intentionally preserved for visual parity with current admin filter controls.
+/**
+ * Dropdown wrapper that mimics legacy Ghost filter select styling and behavior.
+ */
 const LegacyFilterSelect = ({
     value,
     options,
@@ -213,6 +216,9 @@ interface MonthNavigationProps {
     setMonthOffset: React.Dispatch<React.SetStateAction<number>>;
 }
 
+/**
+ * Month navigation controls for previous/current/next calendar views.
+ */
 const MonthNavigation: React.FC<MonthNavigationProps> = ({monthLabel, monthOffset, setMonthOffset}) => {
     return (
         <div className="flex items-center gap-2">
@@ -262,6 +268,9 @@ interface FilterBarProps {
     isTagsLoading: boolean;
 }
 
+/**
+ * Calendar filter row with type, visibility, author, tag, and ordering controls.
+ */
 const FilterBar: React.FC<FilterBarProps> = ({
     authorOptions,
     tagOptions,
@@ -364,6 +373,9 @@ interface CalendarGridProps {
     posts: Post[];
 }
 
+/**
+ * 7-column calendar grid that renders per-day post cards and overflow counts.
+ */
 const CalendarGrid: React.FC<CalendarGridProps> = ({calendarDays, siteTimezone, month, calendarOrder, posts}) => {
     return (
         <div

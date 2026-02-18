@@ -20,6 +20,9 @@ import { useIsActiveLink } from "./use-is-active-link";
 import { useEmberRouting } from "@/ember-bridge";
 import { useFeatureFlag } from "@/hooks/use-feature-flag";
 
+/**
+ * Main admin sidebar navigation content including posts, calendar, and resource links.
+ */
 function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const { data: currentUser } = useCurrentUser();
     const [postsExpanded, setPostsExpanded] = useNavigationExpanded('posts');

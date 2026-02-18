@@ -1,6 +1,9 @@
 import {Post} from '@tryghost/admin-x-framework/api/posts';
 import {buildCalendarGrid, formatPostTime, getDateKeyInTimezone, shiftCalendarMonth} from '@src/views/ContentCalendar/utils/calendar';
 
+/**
+ * Creates a minimal post fixture for calendar utility tests.
+ */
 const createPost = (overrides: Partial<Post> = {}): Post => {
     return {
         id: 'post-id',
