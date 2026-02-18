@@ -1676,21 +1676,16 @@ describe(`Admin Comments API`, function () {
             });
 
             // Add reports from different members with explicit timestamps to ensure deterministic ordering
-            const olderReport = await models.CommentReport.add({
+            await models.CommentReport.add({
                 comment_id: comment.id,
-                member_id: fixtureManager.get('members', 2).id
+                member_id: fixtureManager.get('members', 1).id,
+                created_at: new Date('2023-06-01')
             });
-            await db.knex('comment_reports')
-                .where('id', olderReport.id)
-                .update({created_at: new Date('2023-01-01')});
-
-            const newerReport = await models.CommentReport.add({
+            await models.CommentReport.add({
                 comment_id: comment.id,
-                member_id: fixtureManager.get('members', 1).id
+                member_id: fixtureManager.get('members', 2).id,
+                created_at: new Date('2023-01-01')
             });
-            await db.knex('comment_reports')
-                .where('id', newerReport.id)
-                .update({created_at: new Date('2023-06-01')});
 
             await adminApi.get(`/comments/${comment.id}/reports/`)
                 .expectStatus(200)
@@ -1806,21 +1801,16 @@ describe(`Admin Comments API`, function () {
             });
 
             // Add likes from different members with explicit timestamps to ensure deterministic ordering
-            const olderLike = await models.CommentLike.add({
+            await models.CommentLike.add({
                 comment_id: comment.id,
-                member_id: fixtureManager.get('members', 2).id
+                member_id: fixtureManager.get('members', 1).id,
+                created_at: new Date('2023-06-01')
             });
-            await db.knex('comment_likes')
-                .where('id', olderLike.id)
-                .update({created_at: new Date('2023-01-01')});
-
-            const newerLike = await models.CommentLike.add({
+            await models.CommentLike.add({
                 comment_id: comment.id,
-                member_id: fixtureManager.get('members', 1).id
+                member_id: fixtureManager.get('members', 2).id,
+                created_at: new Date('2023-01-01')
             });
-            await db.knex('comment_likes')
-                .where('id', newerLike.id)
-                .update({created_at: new Date('2023-06-01')});
 
             await adminApi.get(`/comments/${comment.id}/likes/`)
                 .expectStatus(200)
