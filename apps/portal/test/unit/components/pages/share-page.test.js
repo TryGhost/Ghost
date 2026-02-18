@@ -40,10 +40,10 @@ describe('SharePage', () => {
             title: 'Example post title'
         };
 
-        const {getByRole, getByText} = setup({pageData});
+        const {getByRole, getByText, queryByText} = setup({pageData});
 
         expect(getByText('Share')).toBeInTheDocument();
-        expect(getByText('Share this post')).toBeInTheDocument();
+        expect(queryByText('Share this post')).not.toBeInTheDocument();
 
         const twitterLink = getByRole('link', {name: 'X (Twitter)'});
         const facebookLink = getByRole('link', {name: 'Facebook'});
