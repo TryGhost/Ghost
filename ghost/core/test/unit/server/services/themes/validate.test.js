@@ -1,4 +1,3 @@
-const should = require('should');
 const sinon = require('sinon');
 const validate = require('../../../../../core/server/services/themes/validate');
 const list = require('../../../../../core/server/services/themes/list');

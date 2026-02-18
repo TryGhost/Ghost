@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const should = require('should');
 
 describe('Unit: services/settings/settings-utils', function () {
     describe('getOrGenerateSiteUuid', function () {

@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../utils/assertions');
-const should = require('should');
 const themeList = require('../../../../core/server/services/themes/list');
 const sinon = require('sinon');
 

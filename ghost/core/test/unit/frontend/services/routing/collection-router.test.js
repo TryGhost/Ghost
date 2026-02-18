@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
-const should = require('should');
 const sinon = require('sinon');
 const express = require('../../../../../core/shared/express')._express;
 const events = require('../../../../../core/server/lib/common/events');

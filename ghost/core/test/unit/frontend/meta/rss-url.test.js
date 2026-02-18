@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const sinon = require('sinon');
 const routing = require('../../../../core/frontend/services/routing');
 const getRssUrl = require('../../../../core/frontend/meta/rss-url');

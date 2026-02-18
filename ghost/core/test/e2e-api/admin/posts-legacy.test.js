@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../utils/assertions');
-const should = require('should');
 const nock = require('nock');
 const path = require('path');
 const supertest = require('supertest');

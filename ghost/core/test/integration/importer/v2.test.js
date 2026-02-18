@@ -1,4 +1,3 @@
-const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../utils');
 const moment = require('moment-timezone');

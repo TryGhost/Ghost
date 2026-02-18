@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../utils/assertions');
-const should = require('should');
 const sinon = require('sinon');
 const {agentProvider, fixtureManager} = require('../../utils/e2e-framework');
 const config = require('../../../core/shared/config');

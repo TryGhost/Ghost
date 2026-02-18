@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const models = require('../../../../core/server/models');
-const should = require('should');
 const sinon = require('sinon');
 
 describe('Unit: models/api_key', function () {

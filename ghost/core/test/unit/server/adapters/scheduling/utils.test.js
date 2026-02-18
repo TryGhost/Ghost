@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
-const should = require('should');
 const fs = require('fs-extra');
 const configUtils = require('../../../../utils/config-utils');
 const schedulingUtils = require('../../../../../core/server/adapters/scheduling/utils');

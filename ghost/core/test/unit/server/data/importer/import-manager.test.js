@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const fs = require('fs-extra');
 const path = require('path');
 const glob = require('glob');

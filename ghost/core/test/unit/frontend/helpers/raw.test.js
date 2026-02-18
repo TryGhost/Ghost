@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const raw = require('../../../../core/frontend/helpers/raw');
 const handlebars = require('../../../../core/frontend/services/theme-engine/engine').handlebars;
 

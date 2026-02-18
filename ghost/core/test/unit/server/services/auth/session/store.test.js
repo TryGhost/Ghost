@@ -4,7 +4,6 @@ const models = require('../../../../../../core/server/models');
 const EventEmitter = require('events');
 const {Store} = require('express-session');
 const sinon = require('sinon');
-const should = require('should');
 
 describe('Auth Service SessionStore', function () {
     before(function () {

@@ -1,6 +1,5 @@
 const {assertExists} = require('../../../utils/assertions');
 const sinon = require('sinon');
-const should = require('should');
 const models = require('../../../../core/server/models');
 
 describe('Unit: models/stripe-customer-subscription', function () {

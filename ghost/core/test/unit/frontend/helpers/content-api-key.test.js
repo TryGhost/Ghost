@@ -2,7 +2,6 @@ const assert = require('node:assert/strict');
 const {assertExists} = require('../../../utils/assertions');
 const proxy = require('../../../../core/frontend/services/proxy');
 const {getFrontendKey} = proxy;
-const should = require('should');
 
 // Stuff we are testing
 const content_api_key = require('../../../../core/frontend/helpers/content_api_key');

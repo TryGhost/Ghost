@@ -3,7 +3,6 @@ const sessionMiddleware = require('../../../../../../core/server/services/auth')
 const SessionMiddlware = require('../../../../../../core/server/services/auth/session/middleware');
 const models = require('../../../../../../core/server/models');
 const sinon = require('sinon');
-const should = require('should');
 const labs = require('../../../../../../core/shared/labs');
 
 describe('Session Service', function () {

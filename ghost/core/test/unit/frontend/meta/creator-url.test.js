@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const getCreatorTwitterUrl = require('../../../../core/frontend/meta/creator-url');
 
 describe('getCreatorTwitterUrl', function () {

@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const errors = require('@tryghost/errors');
-const should = require('should');
 const sinon = require('sinon');
 const models = require('../../../../../core/server/models');
 

@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const testUtils = require('../../../../utils');
 const helpers = require('../../../../../core/frontend/services/rendering');
 const {SafeString} = require('../../../../../core/frontend/services/handlebars');

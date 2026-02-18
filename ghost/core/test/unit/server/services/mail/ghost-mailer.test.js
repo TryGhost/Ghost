@@ -1,5 +1,4 @@
 const dns = require('dns');
-const should = require('should');
 const sinon = require('sinon');
 const mail = require('../../../../../core/server/services/mail');
 const settingsCache = require('../../../../../core/shared/settings-cache');

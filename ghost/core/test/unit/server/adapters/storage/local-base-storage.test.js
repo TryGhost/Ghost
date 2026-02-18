@@ -2,7 +2,6 @@ const assert = require('node:assert/strict');
 const path = require('path');
 const http = require('http');
 const express = require('express');
-const should = require('should');
 const sinon = require('sinon');
 const fs = require('fs-extra');
 const LocalStorageBase = require('../../../../../core/server/adapters/storage/LocalStorageBase');

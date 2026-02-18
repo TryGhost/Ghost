@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const sinon = require('sinon');
 const storage = require('../../../../../core/server/adapters/storage');
 const activeTheme = require('../../../../../core/frontend/services/theme-engine/active');

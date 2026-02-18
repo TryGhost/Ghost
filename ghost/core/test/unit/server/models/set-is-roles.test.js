@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../utils/assertions');
-const should = require('should');
 const {setIsRoles} = require('../../../../core/server/models/role-utils');
 const _ = require('lodash');
 

@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const path = require('path');
 const rewire = require('rewire');
 const _ = require('lodash');

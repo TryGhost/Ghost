@@ -1,7 +1,6 @@
 const assert = require('node:assert/strict');
 const express = require('express');
 const sinon = require('sinon');
-const should = require('should');
 const SessionFromToken = require('../../../../../core/server/services/auth/session/session-from-token');
 
 describe('SessionFromToken', function () {

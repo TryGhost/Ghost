@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const should = require('should');
 const {formattedMemberResponse} = require('../../../../../core/server/services/members/utils');
 const labs = require('../../../../../core/shared/labs');
 

@@ -1,7 +1,6 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../../../utils/assertions');
 const nock = require('nock');
-const should = require('should');
 const GeolocationService = require('../../../../../../../core/server/services/members/members-api/services/geolocation-service');
 
 const RESPONSE = {

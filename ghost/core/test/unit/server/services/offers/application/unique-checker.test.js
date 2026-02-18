@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const should = require('should');
 const UniqueChecker = require('../../../../../../core/server/services/offers/application/unique-checker');
 
 describe('UniqueChecker', function () {

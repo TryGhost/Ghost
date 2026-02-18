@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../utils/assertions');
-const should = require('should');
 const sinon = require('sinon');
 const getContextObject = require('../../../../core/frontend/meta/context-object.js');
 const settingsCache = require('../../../../core/shared/settings-cache');

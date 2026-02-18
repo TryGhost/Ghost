@@ -1,7 +1,6 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
 // We use the name input_password to match the helper for consistency:
-const should = require('should');
 
 // Stuff we are testing
 const input_password = require('../../../../../core/frontend/apps/private-blogging/lib/helpers/input_password');

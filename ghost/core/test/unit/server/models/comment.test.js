@@ -1,4 +1,3 @@
-require('should');
 const sinon = require('sinon');
 const models = require('../../../../core/server/models');
 

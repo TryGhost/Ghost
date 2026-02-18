@@ -2,7 +2,6 @@ const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
 const errors = require('@tryghost/errors');
 const rewire = require('rewire');
-const should = require('should');
 const sinon = require('sinon');
 const Queue = require('../../../../../core/server/services/url/queue');
 const Resources = require('../../../../../core/server/services/url/resources');

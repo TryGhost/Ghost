@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../../utils/assertions');
-const should = require('should');
 const sinon = require('sinon');
 const express = require('express');
 const SessionService = require('../../../../../../core/server/services/auth/session/session-service');

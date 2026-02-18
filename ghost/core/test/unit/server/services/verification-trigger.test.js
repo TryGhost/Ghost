@@ -2,7 +2,6 @@
 // const testUtils = require('./utils');
 const sinon = require('sinon');
 const assert = require('node:assert/strict');
-require('should');
 const VerificationTrigger = require('../../../../core/server/services/verification-trigger');
 const DomainEvents = require('@tryghost/domain-events');
 const {MemberCreatedEvent} = require('../../../../core/shared/events');

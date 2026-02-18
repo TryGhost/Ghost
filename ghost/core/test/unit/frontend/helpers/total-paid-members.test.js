@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 
 const total_paid_members = require('../../../../core/frontend/helpers/total_paid_members');
 

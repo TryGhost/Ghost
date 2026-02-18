@@ -1,7 +1,6 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
 const sinon = require('sinon');
-const should = require('should');
 const rewire = require('rewire');
 const StripeAPI = rewire('../../../../../core/server/services/stripe/stripe-api');
 

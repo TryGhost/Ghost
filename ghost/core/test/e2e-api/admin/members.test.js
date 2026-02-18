@@ -7,7 +7,6 @@ const assert = require('node:assert/strict');
 const {assertExists, assertArrayContainsDeep, assertObjectMatches, assertArrayMatchesWithoutOrder} = require('../../utils/assertions');
 const nock = require('nock');
 const sinon = require('sinon');
-const should = require('should');
 
 const testUtils = require('../../utils');
 const configUtils = require('../../utils/config-utils');

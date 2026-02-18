@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const sinon = require('sinon');
 const jsdom = require('jsdom');
 const lexicalLib = require('../../../../core/server/lib/lexical');

@@ -4,7 +4,6 @@
 // But then again testing real code, rather than mock code, might be more useful...
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../utils/assertions');
-const should = require('should');
 
 const sinon = require('sinon');
 const supertest = require('supertest');

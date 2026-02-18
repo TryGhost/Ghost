@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 
 const OutboundLinkTagger = require('../../../../../core/server/services/member-attribution/outbound-link-tagger');
 

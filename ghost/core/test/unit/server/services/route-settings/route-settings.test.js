@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const should = require('should');
 const fs = require('fs-extra');
 const path = require('path');
 const bridge = require('../../../../../core/bridge');

@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const getCoverImage = require('../../../../core/frontend/meta/cover-image');
 
 describe('getCoverImage', function () {

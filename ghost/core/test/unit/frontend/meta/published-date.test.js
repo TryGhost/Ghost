@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const getPublishedDate = require('../../../../core/frontend/meta/published-date');
 
 describe('getPublishedDate', function () {
