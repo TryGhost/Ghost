@@ -84,8 +84,8 @@ cd ghost/admin && yarn lint    # Lint Ember admin
 ### Database
 ```bash
 yarn knex-migrator migrate     # Run database migrations
-yarn reset:data                # Reset database with test data (1000 members, 100 posts)
-yarn reset:data:empty          # Reset database with no data
+yarn reset:data                # Reset database with test data (1000 members, 100 posts) (requires yarn dev running)
+yarn reset:data:empty          # Reset database with no data (requires yarn dev running)
 ```
 
 ### Docker
