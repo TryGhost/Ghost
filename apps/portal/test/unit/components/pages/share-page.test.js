@@ -105,6 +105,46 @@ describe('SharePage', () => {
         expect(getByTestId('share-preview-image')).toHaveAttribute('src', 'https://canonical.example/og-image.jpg');
     });
 
+    test('prefers pageData values over DOM metadata when both are present', () => {
+        addHeadTag({
+            tagName: 'link',
+            attrs: {
+                rel: 'canonical',
+                href: 'https://canonical.example/post'
+            }
+        });
+        addHeadTag({
+            tagName: 'meta',
+            attrs: {
+                property: 'og:title',
+                content: 'OG title'
+            }
+        });
+        addHeadTag({
+            tagName: 'meta',
+            attrs: {
+                property: 'og:image',
+                content: 'https://canonical.example/og-image.jpg'
+            }
+        });
+
+        const pageData = {
+            url: 'https://override.example/post',
+            title: 'Override title',
+            image: 'https://override.example/image.jpg'
+        };
+
+        const {getByRole, getByText, getByTestId} = setup({pageData});
+
+        const twitterLink = getByRole('link', {name: 'X (Twitter)'});
+        const twitterUrl = new URL(twitterLink.getAttribute('href'));
+
+        expect(twitterUrl.searchParams.get('url')).toBe('https://override.example/post');
+        expect(twitterUrl.searchParams.get('text')).toBe('Override title');
+        expect(getByText('Override title')).toBeInTheDocument();
+        expect(getByTestId('share-preview-image')).toHaveAttribute('src', 'https://override.example/image.jpg');
+    });
+
     test('falls back to twitter image when og image is missing', () => {
         addHeadTag({
             tagName: 'meta',
