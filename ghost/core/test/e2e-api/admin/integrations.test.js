@@ -262,7 +262,7 @@ describe('Integrations API', function () {
         const [updatedIntegration] = res2.body.integrations;
         const updatedAdminApiKey = updatedIntegration.api_keys.find(key => key.type === 'admin');
         assert.equal(updatedIntegration.id, createdIntegration.id);
-        updatedAdminApiKey.secret.should.not.eql(adminApiKey.secret);
+        assert.notEqual(updatedAdminApiKey.secret, adminApiKey.secret);
 
         const res3 = await request.get(localUtils.API.getApiQuery(`actions/?filter=resource_id:'${adminApiKey.id}'&include=actor`))
             .set('Origin', config.get('url'))

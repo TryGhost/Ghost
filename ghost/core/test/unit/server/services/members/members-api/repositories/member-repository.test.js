@@ -1217,12 +1217,31 @@ describe('MemberRepository', function () {
 
         it('dispatches OfferRedemptionEvent when offer_id changes from one offer to another', async function () {
             // A retention offer replaces an expired signup offer (old → new)
+            // The event timestamp should use the Stripe discount start time, not the subscription created_at
+            const discountStartUnix = Math.floor(Date.now() / 1000) - 60; // 1 minute ago
+            const subscriptionWithDiscount = {
+                ...subscriptionData,
+                discount: {
+                    coupon: {
+                        id: 'coupon_retention',
+                        percent_off: 20,
+                        duration: 'once'
+                    },
+                    start: discountStartUnix,
+                    end: null
+                }
+            };
+
             const repo = new MemberRepository({
-                stripeAPIService,
+                stripeAPIService: {
+                    ...stripeAPIService,
+                    getSubscription: sinon.stub().resolves(subscriptionWithDiscount)
+                },
                 StripeCustomerSubscription,
                 MemberPaidSubscriptionEvent,
                 MemberProductEvent,
                 productRepository,
+                offersAPI,
                 labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
@@ -1245,7 +1264,7 @@ describe('MemberRepository', function () {
 
             await repo.linkSubscription({
                 id: 'member_id_123',
-                subscription: subscriptionData,
+                subscription: subscriptionWithDiscount,
                 offerId: 'new_retention_offer_456'
             }, {
                 transacting: {
@@ -1258,6 +1277,71 @@ describe('MemberRepository', function () {
             assert.equal(offerRedemptionNotifySpy.calledWith(sinon.match((event) => {
                 return event.data.offerId === 'new_retention_offer_456';
             })), true);
+
+            // Timestamp should be the discount start, not the subscription created_at
+            const event = offerRedemptionNotifySpy.firstCall.args[0];
+
+            assert.equal(event.timestamp.getTime(), discountStartUnix * 1000);
+        });
+
+        it('dispatches OfferRedemptionEvent with created_at timestamp when no Stripe discount is present', async function () {
+            // Trial/free_months offers don't have Stripe discounts — timestamp falls back to created_at
+            const subCreatedAt = new Date('2025-06-15T00:00:00Z');
+
+            const repo = new MemberRepository({
+                stripeAPIService,
+                StripeCustomerSubscription: {
+                    ...StripeCustomerSubscription,
+                    edit: sinon.stub().resolves({
+                        id: 'sub_db_id',
+                        get: sinon.stub().callsFake((key) => {
+                            if (key === 'created_at') {
+                                return subCreatedAt;
+                            }
+                            return null;
+                        })
+                    })
+                },
+                MemberPaidSubscriptionEvent,
+                MemberProductEvent,
+                productRepository,
+                labsService,
+                Member,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            sinon.stub(repo, 'getSubscriptionByStripeID').resolves({
+                id: 'sub_db_id',
+                get: sinon.stub().callsFake((key) => {
+                    if (key === 'offer_id') {
+                        return null;
+                    }
+                    if (key === 'trial_end_at') {
+                        return null;
+                    }
+                    return null;
+                })
+            });
+
+            DomainEvents.subscribe(OfferRedemptionEvent, offerRedemptionNotifySpy);
+
+            await repo.linkSubscription({
+                id: 'member_id_123',
+                subscription: subscriptionData,
+                offerId: 'trial_offer_789'
+            }, {
+                transacting: {
+                    executionPromise: Promise.resolve()
+                },
+                context: {}
+            });
+
+            assert.equal(offerRedemptionNotifySpy.called, true);
+
+            const event = offerRedemptionNotifySpy.firstCall.args[0];
+
+            assert.equal(event.data.offerId, 'trial_offer_789');
+            assert.equal(event.timestamp.getTime(), subCreatedAt.getTime());
         });
 
         it('overwrites offer_id when new offer arrives via Stripe even with an active trial', async function () {

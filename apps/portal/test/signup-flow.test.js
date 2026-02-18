@@ -278,6 +278,41 @@ describe('Signup', () => {
             expect(inboxLinkButton).toHaveAttribute('target', '_blank');
         });
 
+        test('hides inbox links on iOS', async () => {
+            const userAgentSpy = vi.spyOn(window.navigator, 'userAgent', 'get').mockReturnValue(
+                'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1'
+            );
+
+            try {
+                const {
+                    emailInput,
+                    nameInput,
+                    popupIframeDocument,
+                    chooseBtns
+                } = await setup({
+                    site: {
+                        ...FixtureSite.singleTier.basic,
+                        labs: {inboxlinks: true}
+                    }
+                });
+
+                fireEvent.change(nameInput, {target: {value: 'Jamie Larsen'}});
+                fireEvent.change(emailInput, {target: {value: 'test@test-inbox-link.example'}});
+
+                expect(emailInput).toHaveValue('test@test-inbox-link.example');
+                expect(nameInput).toHaveValue('Jamie Larsen');
+                fireEvent.click(chooseBtns[0]);
+
+                const magicLink = await within(popupIframeDocument).findByText(/now check your email/i);
+                expect(magicLink).toBeInTheDocument();
+
+                const inboxLinkButton = within(popupIframeDocument).queryByRole('link', {name: /open proton mail/i});
+                expect(inboxLinkButton).not.toBeInTheDocument();
+            } finally {
+                userAgentSpy.mockRestore();
+            }
+        });
+
         test('without name field', async () => {
             const {
                 ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton,

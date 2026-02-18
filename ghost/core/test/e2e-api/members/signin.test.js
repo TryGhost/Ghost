@@ -1,7 +1,7 @@
+const {assertArrayMatchesWithoutOrder} = require('../../utils/assertions');
 const {agentProvider, mockManager, fixtureManager} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 const assert = require('node:assert/strict');
-require('should');
 const sinon = require('sinon');
 const members = require('../../../core/server/services/members');
 
@@ -10,12 +10,7 @@ let membersAgent, membersService;
 async function assertMemberEvents({eventType, memberId, asserts}) {
     const events = await models[eventType].where('member_id', memberId).fetchAll();
     const eventsJSON = events.map(e => e.toJSON());
-
-    // Order shouldn't matter here
-    for (const a of asserts) {
-        eventsJSON.should.matchAny(a);
-    }
-    assert.equal(events.length, asserts.length, `Only ${asserts.length} ${eventType} should have been added.`);
+    assertArrayMatchesWithoutOrder(eventsJSON, asserts);
 }
 
 async function getMemberByEmail(email, require = true) {
