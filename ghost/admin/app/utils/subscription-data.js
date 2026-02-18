@@ -142,8 +142,9 @@ export function getOfferDisplayData(offer, sub = {}) {
 
     let detail;
     if (isRetention) {
-        const discountEnd = offer.id && sub.next_payment?.discount?.offer_id === offer.id
-            ? sub.next_payment.discount.end
+        const isActiveDiscount = offer.id && sub.next_payment?.discount?.offer_id === offer.id;
+        const discountEnd = isActiveDiscount
+            ? (offer.type === 'free_months' ? sub.current_period_end : sub.next_payment.discount.end)
             : null;
 
         if (discountEnd) {
