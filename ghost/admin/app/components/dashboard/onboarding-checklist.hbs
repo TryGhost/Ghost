@@ -34,14 +34,14 @@
                 />
             </div>
             {{!-- Step 2 --}}
-            <LinkTo @route="settings-x.settings-x" @model="design/edit?ref=setup" class="gh-onboarding-item {{onboarding-step-class "customize-design"}}" id="ob-customize-design" {{on "click" (fn this.onboarding.markStepCompleted "customize-design")}}>
+            <a href="#/settings/design/edit?ref=setup" class="gh-onboarding-item {{onboarding-step-class "customize-design"}}" id="ob-customize-design" {{on "click" (fn this.onboarding.markStepCompleted "customize-design")}}>
                 <Dashboard::Onboarding::Step
                     @icon="brush"
                     @title="Customize your design"
                     @description="Craft a look that reflects your brand and style."
                     @complete={{is-onboarding-step-completed "customize-design"}}
                 />
-            </LinkTo>
+            </a>
             {{!-- Step 3 --}}
             <LinkTo @route="lexical-editor.new" @model="post" class="gh-onboarding-item {{onboarding-step-class "first-post"}}" id="ob-first-post" {{on "click" (fn this.onboarding.markStepCompleted "first-post")}}>
                 <Dashboard::Onboarding::Step

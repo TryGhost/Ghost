@@ -18,7 +18,7 @@ export default class DeleteTagModal extends Component {
             yield tag.destroyRecord();
 
             this.notifications.closeAlerts('tag.delete');
-            this.router.transitionTo('tags');
+            this.router.transitionTo('/tags');
             return true;
         } catch (error) {
             this.notifications.showAPIError(error, {key: 'tag.delete.failed'});
