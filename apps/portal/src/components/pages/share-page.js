@@ -11,7 +11,7 @@ import {t} from '../../utils/i18n';
 
 export const SharePageStyles = `
     .gh-portal-share-header {
-        margin-bottom: 16px;
+        margin-bottom: 14px;
     }
 
     .gh-portal-share-header .gh-portal-main-title {
@@ -27,7 +27,30 @@ export const SharePageStyles = `
         display: grid;
         grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 10px;
-        margin-top: 8px;
+        margin-top: 14px;
+    }
+
+    .gh-portal-share-preview {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .gh-portal-share-preview-image {
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        border-radius: 8px;
+        object-fit: cover;
+        background: var(--grey14);
+    }
+
+    .gh-portal-share-preview-title {
+        margin: 0;
+        color: var(--grey0);
+        font-size: 1.65rem;
+        font-weight: 600;
+        line-height: 1.35;
+        text-wrap: pretty;
     }
 
     .gh-portal-share-action {
@@ -83,12 +106,24 @@ const getOgTitle = () => {
     return document.querySelector('meta[property="og:title"]')?.content || '';
 };
 
+const getOgImage = () => {
+    return document.querySelector('meta[property="og:image"]')?.content || '';
+};
+
+const getTwitterImage = () => {
+    return document.querySelector('meta[name="twitter:image"]')?.content || '';
+};
+
 const getShareUrl = (pageData) => {
     return (pageData?.url || '').trim() || getCanonicalUrl() || window.location.href;
 };
 
 const getShareTitle = (pageData) => {
     return (pageData?.title || '').trim() || getOgTitle() || document.title || '';
+};
+
+const getShareImage = (pageData) => {
+    return (pageData?.image || '').trim() || getOgImage() || getTwitterImage() || '';
 };
 
 const createShareLink = (baseUrl, params) => {
@@ -103,6 +138,7 @@ const SharePage = () => {
 
     const shareUrl = useMemo(() => getShareUrl(pageData), [pageData]);
     const shareTitle = useMemo(() => getShareTitle(pageData), [pageData]);
+    const shareImage = useMemo(() => getShareImage(pageData), [pageData]);
 
     const socialLinks = useMemo(() => {
         return {
@@ -136,6 +172,11 @@ const SharePage = () => {
             <CloseButton />
             <div className='gh-portal-share-header'>
                 <h1 className='gh-portal-main-title'>{t('Share')}</h1>
+            </div>
+
+            <div className='gh-portal-share-preview'>
+                {shareImage && <img className='gh-portal-share-preview-image' src={shareImage} alt='' data-testid='share-preview-image' />}
+                {shareTitle && <h2 className='gh-portal-share-preview-title'>{shareTitle}</h2>}
             </div>
 
             <div className='gh-portal-share-actions'>

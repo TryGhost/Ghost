@@ -185,6 +185,7 @@ export default class App extends React.Component {
             const pagePath = (target && target.dataset.portal);
             const shareUrl = target && target.dataset.portalShareUrl;
             const shareTitle = target && target.dataset.portalShareTitle;
+            const shareImage = target && target.dataset.portalShareImage;
             const linkData = this.getPageFromLinkPath(pagePath);
             if (!linkData) {
                 return;
@@ -192,7 +193,8 @@ export default class App extends React.Component {
             const {page, pageQuery, pageData} = linkData;
             const sharePageData = page === 'share' ? {
                 ...(shareUrl ? {url: shareUrl} : {}),
-                ...(shareTitle ? {title: shareTitle} : {})
+                ...(shareTitle ? {title: shareTitle} : {}),
+                ...(shareImage ? {image: shareImage} : {})
             } : pageData;
             if (this.state.initStatus === 'success') {
                 if (page === 'gift' && !hasGiftSubscriptions({site: this.state.site})) {

@@ -921,9 +921,9 @@ describe('Portal Data attributes:', () => {
             expect(shareTitle).toBeInTheDocument();
         });
 
-        test('passes data-portal-share-url and data-portal-share-title as pageData', async () => {
+        test('passes data-portal-share-url, data-portal-share-title, and data-portal-share-image as pageData', async () => {
             document.body.innerHTML = `
-                <div data-portal="share" data-portal-share-url="https://example.com/post" data-portal-share-title="Example post"> </div>
+                <div data-portal="share" data-portal-share-url="https://example.com/post" data-portal-share-title="Example post" data-portal-share-image="https://example.com/post.jpg"> </div>
             `;
 
             const dispatchActionSpy = vi.spyOn(App.prototype, 'dispatchAction');
@@ -949,7 +949,8 @@ describe('Portal Data attributes:', () => {
                     page: 'share',
                     pageData: {
                         url: 'https://example.com/post',
-                        title: 'Example post'
+                        title: 'Example post',
+                        image: 'https://example.com/post.jpg'
                     }
                 }));
             });
@@ -1042,6 +1043,35 @@ describe('Portal Data attributes:', () => {
                     page: 'share',
                     pageData: {
                         title: 'Only title'
+                    }
+                }));
+            });
+        });
+
+        test('passes only image when url and title attributes are missing', async () => {
+            document.body.innerHTML = `
+                <div data-portal="share" data-portal-share-image="https://example.com/only-image.jpg"> </div>
+            `;
+
+            const dispatchActionSpy = vi.spyOn(App.prototype, 'dispatchAction');
+
+            await setup({
+                site: FixturesSite.singleTier.basic,
+                showPopup: false
+            });
+
+            const portalElement = document.querySelector('[data-portal]');
+            fireEvent.click(portalElement);
+
+            await waitFor(() => {
+                const shareOpenPopupCall = dispatchActionSpy.mock.calls.find(([action, data]) => {
+                    return action === 'openPopup' && data?.page === 'share';
+                });
+
+                expect(shareOpenPopupCall?.[1]).toEqual(expect.objectContaining({
+                    page: 'share',
+                    pageData: {
+                        image: 'https://example.com/only-image.jpg'
                     }
                 }));
             });

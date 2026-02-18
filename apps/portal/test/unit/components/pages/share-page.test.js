@@ -37,13 +37,16 @@ describe('SharePage', () => {
     test('renders share actions and uses pageData for social links', () => {
         const pageData = {
             url: 'https://example.com/post?ref=test',
-            title: 'Example post title'
+            title: 'Example post title',
+            image: 'https://example.com/post.jpg'
         };
 
-        const {getByRole, getByText, queryByText} = setup({pageData});
+        const {getByRole, getByText, queryByText, getByTestId} = setup({pageData});
 
         expect(getByText('Share')).toBeInTheDocument();
         expect(queryByText('Share this post')).not.toBeInTheDocument();
+        expect(getByText('Example post title')).toBeInTheDocument();
+        expect(getByTestId('share-preview-image')).toHaveAttribute('src', 'https://example.com/post.jpg');
 
         const twitterLink = getByRole('link', {name: 'X (Twitter)'});
         const facebookLink = getByRole('link', {name: 'Facebook'});
@@ -82,21 +85,45 @@ describe('SharePage', () => {
                 content: 'OG title'
             }
         });
+        addHeadTag({
+            tagName: 'meta',
+            attrs: {
+                property: 'og:image',
+                content: 'https://canonical.example/og-image.jpg'
+            }
+        });
         document.title = 'Document title';
 
-        const {getByRole} = setup({pageData: {}});
+        const {getByRole, getByText, getByTestId} = setup({pageData: {}});
 
         const twitterLink = getByRole('link', {name: 'X (Twitter)'});
         const twitterUrl = new URL(twitterLink.getAttribute('href'));
 
         expect(twitterUrl.searchParams.get('url')).toBe('https://canonical.example/post');
         expect(twitterUrl.searchParams.get('text')).toBe('OG title');
+        expect(getByText('OG title')).toBeInTheDocument();
+        expect(getByTestId('share-preview-image')).toHaveAttribute('src', 'https://canonical.example/og-image.jpg');
+    });
+
+    test('falls back to twitter image when og image is missing', () => {
+        addHeadTag({
+            tagName: 'meta',
+            attrs: {
+                name: 'twitter:image',
+                content: 'https://canonical.example/twitter-image.jpg'
+            }
+        });
+        document.title = 'Document fallback title';
+
+        const {getByTestId} = setup({pageData: {}});
+
+        expect(getByTestId('share-preview-image')).toHaveAttribute('src', 'https://canonical.example/twitter-image.jpg');
     });
 
     test('falls back to window location and document title when canonical and og title are missing', () => {
         document.title = 'Document fallback title';
 
-        const {getByRole} = setup({pageData: {}});
+        const {getByRole, getByText, queryByTestId} = setup({pageData: {}});
 
         const linkedInLink = getByRole('link', {name: 'LinkedIn'});
         const linkedInUrl = new URL(linkedInLink.getAttribute('href'));
@@ -107,6 +134,8 @@ describe('SharePage', () => {
         const twitterUrl = new URL(twitterLink.getAttribute('href'));
 
         expect(twitterUrl.searchParams.get('text')).toBe('Document fallback title');
+        expect(getByText('Document fallback title')).toBeInTheDocument();
+        expect(queryByTestId('share-preview-image')).not.toBeInTheDocument();
     });
 
     test('shows copied state temporarily after successful copy', async () => {
