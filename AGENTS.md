@@ -213,7 +213,7 @@ Users requested ability to switch themes for better accessibility
 - **Legacy:** `admin-x-design-system` (being phased out, avoid for new work)
 
 ### Analytics (Tinybird)
-- **Local development:** `yarn docker:dev:analytics` (starts Tinybird + MySQL)
+- **Local development:** `yarn dev:analytics` (starts Tinybird + MySQL)
 - **Config:** Add Tinybird config to `ghost/core/config.development.json`
 - **Scripts:** `ghost/core/core/server/data/tinybird/scripts/`
 - **Datafiles:** `ghost/core/core/server/data/tinybird/`
