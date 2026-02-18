@@ -148,7 +148,6 @@ describe('ContentStatsService', function () {
             const result = await service.lookupPostTitles(['post-1', 'post-2']);
 
             assertExists(result);
-            result.should.have.properties(['post-1', 'post-2']);
             assert.equal(result['post-1'].title, 'Test Post 1');
             assert.equal(result['post-1'].id, 'post-id-1');
             assert.equal(result['post-2'].title, 'Test Post 2');
@@ -183,7 +182,6 @@ describe('ContentStatsService', function () {
 
             const result = service.getResourceTitle('/about/');
             assertExists(result);
-            result.should.have.properties(['title', 'resourceType']);
             assert.equal(result.title, 'About Us');
             assert.equal(result.resourceType, 'page');
         });
@@ -198,7 +196,6 @@ describe('ContentStatsService', function () {
 
             const result = service.getResourceTitle('/tag/news/');
             assertExists(result);
-            result.should.have.properties(['title', 'resourceType']);
             assert.equal(result.title, 'News');
             assert.equal(result.resourceType, 'tag');
         });

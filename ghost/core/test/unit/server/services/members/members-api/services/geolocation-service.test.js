@@ -40,7 +40,7 @@ describe('lib/geolocation', function () {
 
             assert.equal(scope.isDone(), true, 'request was not made');
             assertExists(result, 'nothing was returned');
-            result.should.deepEqual(RESPONSE, 'result didn\'t match expected response');
+            assert.deepEqual(result, RESPONSE, 'result didn\'t match expected response');
         });
 
         it('fetches from geojs.io with IPv6 address', async function () {
@@ -52,7 +52,7 @@ describe('lib/geolocation', function () {
 
             assert.equal(scope.isDone(), true, 'request was not made');
             assertExists(result, 'nothing was returned');
-            result.should.deepEqual(RESPONSE, 'result didn\'t match expected response');
+            assert.deepEqual(result, RESPONSE, 'result didn\'t match expected response');
         });
 
         it('handles non-IP addresses', async function () {

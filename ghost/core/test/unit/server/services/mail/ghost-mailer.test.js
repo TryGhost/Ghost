@@ -58,7 +58,7 @@ describe('Mail: Ghostmailer', function () {
         mailer = new mail.GhostMailer();
 
         assertExists(mailer);
-        mailer.should.have.property('send').and.be.a.Function();
+        assert.equal(typeof mailer.send, 'function');
     });
 
     it('should setup SMTP transport on initialization', function () {

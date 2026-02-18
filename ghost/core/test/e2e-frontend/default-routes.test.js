@@ -128,7 +128,7 @@ describe('Default Frontend routing', function () {
                     assert(res.text.includes('<title>Start here for a quick overview of everything you need to know</title>'));
                     assert.match(res.text, /<h1[^>]*?>Start here for a quick overview of everything you need to know<\/h1>/);
                     // We should write a single test for this, or encapsulate it as an assertion
-                    // E.g. res.text.should.not.containInvalidUrls()
+                    // E.g. assertDoesNotContainInvalidUrls(res.text)
                     assert(!res.text.includes('__GHOST_URL__'));
                 });
         });

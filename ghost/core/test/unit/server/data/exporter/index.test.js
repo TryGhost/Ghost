@@ -52,7 +52,7 @@ describe('Exporter', function () {
                 assert.equal(db.knex.called, true);
 
                 assert.equal(knexMock.callCount, expectedCallCount);
-                queryMock.select.callCount.should.have.eql(expectedCallCount);
+                sinon.assert.callCount(queryMock.select, expectedCallCount);
 
                 const expectedTables = new Set([
                     'posts',
@@ -99,7 +99,7 @@ describe('Exporter', function () {
                 assert.equal(queryMock.select.called, true);
 
                 assert.equal(knexMock.callCount, expectedCallCount);
-                queryMock.select.callCount.should.have.eql(expectedCallCount);
+                sinon.assert.callCount(queryMock.select, expectedCallCount);
 
                 const expectedTables = new Set([
                     'posts',
