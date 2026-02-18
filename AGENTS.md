@@ -90,10 +90,9 @@ yarn reset:data:empty          # Reset database with no data
 
 ### Docker
 ```bash
-yarn docker:build              # Build Docker images and delete ephemeral volumes
-yarn docker:reset              # Reset all Docker volumes (including database) and restart
-yarn docker:restart            # Restart Docker containers
-yarn docker:down               # Stop all Docker containers
+yarn docker:build              # Build Docker images
+yarn docker:clean              # Stop containers, remove volumes and local images
+yarn docker:down               # Stop containers
 ```
 
 ### How yarn dev works
