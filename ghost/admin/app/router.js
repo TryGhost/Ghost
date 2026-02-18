@@ -21,12 +21,8 @@ Router.map(function () {
     this.route('reset', {path: '/reset/:token'});
 
     this.route('site');
-    this.route('dashboard'); // redirects to stats-x
+    this.route('dashboard');
     this.route('launch');
-
-    this.route('stats-x', {path: '/analytics'}, function () {
-        this.route('stats-x', {path: '/*sub'});
-    });
 
     this.route('pro', function () {
         this.route('pro-sub', {path: '/*sub'});
@@ -34,10 +30,6 @@ Router.map(function () {
 
     this.route('posts');
     this.route('posts.debug', {path: '/posts/analytics/:post_id/debug'});
-    this.route('posts-x', {path: '/posts/analytics/:post_id'}, function () {
-        this.route('posts-x', {path: '/*sub'});
-    });
-
     this.route('restore-posts', {path: '/restore'});
 
     this.route('pages');
@@ -47,21 +39,8 @@ Router.map(function () {
         this.route('edit', {path: ':type/:post_id'});
     });
 
-    this.route('tags');
     this.route('tag.new', {path: '/tags/new'});
     this.route('tag', {path: '/tags/:tag_slug'});
-
-    this.route('demo-x', function () {
-        this.route('demo-x', {path: '/*sub'});
-    });
-
-    this.route('settings-x', {path: '/settings'}, function () {
-        this.route('settings-x', {path: '/*sub'});
-    });
-
-    this.route('activitypub-x',{path: '/activitypub'}, function () {
-        this.route('activitypub-x', {path: '/*sub'});
-    });
 
     this.route('explore', function () {
         // actual Ember route, not rendered in iframe
@@ -86,7 +65,7 @@ Router.map(function () {
     this.route('member', {path: '/members/:member_id'});
     this.route('members-activity');
 
-    this.route('error404', {path: '/*path'});
+    this.route('react-fallback', {path: '/*path'});
 
     this.route('designsandbox');
 });

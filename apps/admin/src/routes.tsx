@@ -16,6 +16,43 @@ import MyProfileRedirect from "./my-profile-redirect";
 import { EmberFallback, ForceUpgradeGuard } from "./ember-bridge";
 import type { RouteHandle } from "./ember-bridge";
 
+import { NotFound } from "./not-found";
+
+// Routes handled by the Ember admin app. React delegates these to Ember via
+// EmberFallback. When migrating a route to React, remove its entry from here.
+const EMBER_ROUTES: string[] = [
+    "/",
+    "/dashboard",
+    "/site",
+    "/launch",
+    "/setup/*",
+    "/signin/*",
+    "/signout",
+    "/signup/*",
+    "/reset/*",
+    "/pro/*",
+    "/posts",
+    "/posts/analytics/:postId/mentions",
+    "/posts/analytics/:postId/debug",
+    "/restore",
+    "/pages",
+    "/editor/*",
+    "/tags/new",
+    "/explore/*",
+    "/migrate/*",
+    "/members/*",
+    "/members-activity",
+    "/designsandbox",
+    "/mentions",
+];
+
+const emberFallbackHandle = { allowInForceUpgrade: true } satisfies RouteHandle;
+
+const emberFallbackRoutes: RouteObject[] = EMBER_ROUTES.map(path => ({
+    path,
+    Component: EmberFallback,
+    handle: emberFallbackHandle,
+}));
 export const routes: RouteObject[] = [
     {
         // ForceUpgradeGuard wraps all routes to redirect to /pro when in force upgrade mode.
@@ -30,7 +67,7 @@ export const routes: RouteObject[] = [
                 // list to a tag detail page.
                 path: "/tags/:tagSlug",
                 Component: EmberFallback,
-                handle: { allowInForceUpgrade: true } satisfies RouteHandle,
+                handle: emberFallbackHandle,
             },
             {
                 element: (
@@ -72,12 +109,12 @@ export const routes: RouteObject[] = [
                 lazy: lazyComponent(() => import("./settings/settings")),
                 handle: { allowInForceUpgrade: true } satisfies RouteHandle,
             },
+            // Ember-handled routes
+            ...emberFallbackRoutes,
             {
-                // Catch-all route for Ember-handled routes (including /pro, /signout, etc.)
-                // These must be allowed in force upgrade mode since Ember handles the actual protection
+                // 404 catch-all for routes not handled by React or Ember
                 path: "*",
-                Component: EmberFallback,
-                handle: { allowInForceUpgrade: true } satisfies RouteHandle,
+                Component: NotFound,
             },
         ],
     },

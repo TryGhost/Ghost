@@ -92,13 +92,6 @@ export default class FeatureService extends Service {
         }
     }
 
-    get inAdminForward() {
-        // Detect if Ember is running inside the React admin shell
-        // In React shell: Ember renders to #ember-app
-        // Standalone: Ember renders to body (no #ember-app element)
-        return document.querySelector('#ember-app') !== null;
-    }
-
     fetch() {
         return this.settings.fetch().then(() => {
             this.set('_user', this.session.user);

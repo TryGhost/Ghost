@@ -172,7 +172,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                         <NavMenuItem>
                             <NavMenuItem.Link
                                 to="tags"
-                                isActive={routing.isRouteActive(['tags', 'tag', 'tag.new'])}
+                                activeOnSubpath
                             >
                                 <LucideIcon.Tag />
                                 <NavMenuItem.Label>Tags</NavMenuItem.Label>
