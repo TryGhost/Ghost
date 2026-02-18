@@ -1,29 +1,24 @@
 import React, {useCallback} from 'react';
 import useFeatureFlag from '../../../../hooks/use-feature-flag';
-import {KoenigEditorBase, type KoenigInstance, LoadingIndicator, type NodeType} from '@tryghost/admin-x-design-system';
+import {KoenigEditorBase, type KoenigInstance, LoadingIndicator} from '@tryghost/admin-x-design-system';
 import {cn} from '@tryghost/shade';
 
 export interface MemberEmailsEditorProps {
     value?: string;
     placeholder?: string;
-    nodes?: NodeType;
     singleParagraph?: boolean;
     className?: string;
-    isSnippetsEnabled?: boolean;
     onChange?: (value: string) => void;
 }
 
 const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
     value,
     placeholder,
-    nodes,
     singleParagraph = false,
     className,
-    isSnippetsEnabled = false,
     onChange
 }) => {
     const welcomeEmailEditorEnabled = useFeatureFlag('welcomeEmailEditor');
-    const effectiveNodes: NodeType = nodes ?? (welcomeEmailEditorEnabled ? 'EMAIL_EDITOR_NODES' : 'EMAIL_NODES');
     const baseEditorStyles = cn(
         // Base typography
         'text-[1.6rem] leading-[1.6] tracking-[-0.01em]',
@@ -68,10 +63,9 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
                 emojiPicker={true}
                 inheritFontStyles={false}
                 initialEditorState={value}
-                isSnippetsEnabled={isSnippetsEnabled}
                 loadingFallback={<LoadingIndicator delay={200} size="lg" />}
-                nodes={effectiveNodes}
-                placeholder={placeholder}
+                nodes={welcomeEmailEditorEnabled ? 'EMAIL_EDITOR_NODES' : 'EMAIL_NODES'}
+                placeholder={placeholder}   
                 singleParagraph={singleParagraph}
                 onChange={handleChange}
             >

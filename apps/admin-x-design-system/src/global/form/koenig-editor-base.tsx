@@ -18,7 +18,6 @@ export interface KoenigEditorBaseProps {
     className?: string
     inheritFontStyles?: boolean
     loadingFallback?: React.ReactNode
-    isSnippetsEnabled?: boolean
 }
 
 declare global {
@@ -82,7 +81,6 @@ export const KoenigWrapper: React.FC<KoenigWrapperProps> = ({
     emojiPicker = true,
     darkMode = false,
     singleParagraph = false,
-    isSnippetsEnabled = false,
     children,
     initialEditorState,
     onChange
@@ -143,7 +141,7 @@ export const KoenigWrapper: React.FC<KoenigWrapperProps> = ({
         >
             <koenig.KoenigComposableEditor
                 className='koenig-lexical koenig-lexical-editor-input'
-                isSnippetsEnabled={isSnippetsEnabled}
+                isSnippetsEnabled={false}
                 markdownTransformers={transformers[defaultNodes]}
                 placeholderClassName='koenig-lexical-editor-input-placeholder line-clamp-1'
                 placeholderText={placeholder}
