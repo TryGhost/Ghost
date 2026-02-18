@@ -25,7 +25,7 @@ export default class ExploreController extends Controller {
             this.explore.sendRouteUpdate({path: '/explore'});
             this.router.transitionTo('/explore');
         } else {
-            this.router.transitionTo('/stats-x');
+            this.router.transitionTo('/analytics');
         }
     }
 

@@ -375,19 +375,13 @@ export default class ParseMemberEventHelper extends Helper {
     getRoute(event) {
         if (['click_event', 'feedback_event'].includes(event.type)) {
             if (event.data.post) {
-                return {
-                    name: 'posts-x',
-                    model: event.data.post.id
-                };
+                return `#/posts/analytics/${event.data.post.id}`;
             }
         }
 
         if (['signup_event', 'subscription_event'].includes(event.type)) {
             if (event.data.attribution_type === 'post') {
-                return {
-                    name: 'posts-x',
-                    model: event.data.attribution_id
-                };
+                return `#/posts/analytics/${event.data.attribution_id}`;
             }
         }
         return;
