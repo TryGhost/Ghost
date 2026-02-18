@@ -1159,25 +1159,34 @@ module.exports = class MemberRepository {
                 await stripeCustomerSubscriptionModel.destroy(options);
             }
         } else if (stripeCustomerSubscriptionModel) {
-            // CASE: Offer is already mapped against sub, don't overwrite it with NULL
-            // Needed for trial offers, which don't have a stripe coupon/discount attached to sub
+            const previousOfferId = stripeCustomerSubscriptionModel.get('offer_id');
+
+            // CASE: Only preserve offer_id for active trials (trial offers don't have Stripe discounts)
+            // Otherwise, allow offer_id to be cleared when the Stripe discount expires
             if (!subscriptionData.offer_id) {
-                delete subscriptionData.offer_id;
+                const trialEndAt = subscriptionData.trial_end_at;
+                const hasActiveTrial = trialEndAt && new Date(trialEndAt) > new Date();
+
+                if (hasActiveTrial) {
+                    delete subscriptionData.offer_id;
+                }
             }
+
             const updatedStripeCustomerSubscriptionModel = await this._StripeCustomerSubscription.edit(subscriptionData, {
                 ...options,
                 id: stripeCustomerSubscriptionModel.id
             });
 
-            // CASE: Existing free member subscribes to a paid tier with an offer
-            // Stripe doesn't send the discount/offer info in the subscription.created event
-            // So we need to record the offer redemption event upon updating the subscription here
-            if (stripeCustomerSubscriptionModel.get('offer_id') === null && subscriptionData.offer_id) {
+            // CASE: Record offer redemption when offer_id changes to a new non-null value
+            // This covers: null→new (free member upgrade), old→new (retention offer replacing expired signup offer)
+            // The OfferRedemptionEvent handler has a dedup check for repeated webhook deliveries
+            if (previousOfferId !== subscriptionData.offer_id && subscriptionData.offer_id) {
+                const redemptionTimestamp = subscriptionData.discount_start || updatedStripeCustomerSubscriptionModel.get('created_at');
                 const offerRedemptionEvent = OfferRedemptionEvent.create({
                     memberId: memberModel.id,
                     offerId: subscriptionData.offer_id,
                     subscriptionId: updatedStripeCustomerSubscriptionModel.id
-                }, updatedStripeCustomerSubscriptionModel.get('created_at'));
+                }, redemptionTimestamp);
                 this.dispatchEvent(offerRedemptionEvent, options);
             }
 
