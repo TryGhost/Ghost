@@ -45,6 +45,8 @@
     "Choose your newsletters": "",
     "Click here to retry": "",
     "Close": "",
+    "Copied": "",
+    "Copy link": "",
     "Code": "",
     "Comment preferences updated.": "",
     "Comments": "",
@@ -97,6 +99,7 @@
     "Failed to update newsletter settings": "",
     "Failed to update subscription, please try again": "",
     "Failed to verify code, please try again": "",
+    "Facebook": "",
     "Forever": "",
     "Free Trial – Ends {trialEnd}": "",
     "Get help": "",
@@ -121,6 +124,7 @@
     "Jamie Larson": "",
     "jamie@example.com": "",
     "Less like this": "",
+    "LinkedIn": "",
     "Make sure emails aren't accidentally ending up in the Spam or Promotions folders of your inbox. If they are, click on \"Mark as not spam\" and/or \"Move to inbox\".": "",
     "Manage": "",
     "Maybe later": "",
@@ -165,6 +169,8 @@
     "Save": "",
     "Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.": "",
     "Save {amountOff} on your next billing cycle. Then {currency}{originalPrice}/{cadence}.": "",
+    "Share": "",
+    "Share this post": "",
     "Send an email and say hi!": "",
     "Send an email to {senderEmail} and say hello. This can also help signal to your mail provider that emails to and from this address should be trusted.": "",
     "Sending login link...": "",
@@ -251,5 +257,6 @@
     "Your subscription has been canceled and will expire on {expiryDate}.": "",
     "Your subscription will expire on {expiryDate}": "",
     "Your subscription will renew on {renewalDate}": "",
-    "Your subscription will start on {subscriptionStart}": ""
+    "Your subscription will start on {subscriptionStart}": "",
+    "X (Twitter)": ""
 }

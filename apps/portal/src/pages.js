@@ -17,6 +17,7 @@ import SupportPage from './components/pages/support-page';
 import SupportSuccess from './components/pages/support-success';
 import SupportError from './components/pages/support-error';
 import RecommendationsPage from './components/pages/recommendations-page';
+import SharePage from './components/pages/share-page';
 
 /** List of all available pages in Portal, mapped to their UI component
  * Any new page added to portal needs to be mapped here
@@ -40,7 +41,8 @@ const Pages = {
     support: SupportPage,
     supportSuccess: SupportSuccess,
     supportError: SupportError,
-    recommendations: RecommendationsPage
+    recommendations: RecommendationsPage,
+    share: SharePage
 };
 
 /** Return page if valid, fallback to signup */
