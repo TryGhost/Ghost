@@ -1181,11 +1181,12 @@ module.exports = class MemberRepository {
             // This covers: null→new (free member upgrade), old→new (retention offer replacing expired signup offer)
             // The OfferRedemptionEvent handler has a dedup check for repeated webhook deliveries
             if (previousOfferId !== subscriptionData.offer_id && subscriptionData.offer_id) {
+                const redemptionTimestamp = subscriptionData.discount_start || updatedStripeCustomerSubscriptionModel.get('created_at');
                 const offerRedemptionEvent = OfferRedemptionEvent.create({
                     memberId: memberModel.id,
                     offerId: subscriptionData.offer_id,
                     subscriptionId: updatedStripeCustomerSubscriptionModel.id
-                }, updatedStripeCustomerSubscriptionModel.get('created_at'));
+                }, redemptionTimestamp);
                 this.dispatchEvent(offerRedemptionEvent, options);
             }
 
