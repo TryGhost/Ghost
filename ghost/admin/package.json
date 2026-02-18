@@ -49,7 +49,7 @@
     "@tryghost/helpers": "1.1.97",
     "@tryghost/kg-clean-basic-html": "4.2.13",
     "@tryghost/kg-converters": "1.1.13",
-    "@tryghost/koenig-lexical": "1.7.12",
+    "@tryghost/koenig-lexical": "1.7.13",
     "@tryghost/limit-service": "1.4.1",
     "@tryghost/members-csv": "2.0.3",
     "@tryghost/nql": "0.12.8",
