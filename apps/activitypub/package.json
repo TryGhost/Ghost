@@ -48,21 +48,13 @@
         ]
       },
       "dev": {
-        "dependsOn": [
-          "^build"
-        ]
+        "dependsOn": []
       },
       "test:unit": {
-        "dependsOn": [
-          "^build",
-          "test:unit"
-        ]
+        "dependsOn": []
       },
       "test:acceptance": {
-        "dependsOn": [
-          "^build",
-          "test:acceptance"
-        ]
+        "dependsOn": []
       }
     }
   },

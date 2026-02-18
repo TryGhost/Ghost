@@ -61,20 +61,17 @@
     },
     "nx": {
         "targets": {
+            "build": {
+                "dependsOn": []
+            },
             "dev": {
-                "dependsOn": [
-                    "^build"
-                ]
+                "dependsOn": []
             },
             "test:unit": {
-                "dependsOn": [
-                    "^build"
-                ]
+                "dependsOn": []
             },
             "test:acceptance": {
-                "dependsOn": [
-                    "^build"
-                ]
+                "dependsOn": []
             }
         }
     }

@@ -41,7 +41,13 @@ function getBase(command: 'build' | 'serve'): string {
 // https://vite.dev/config/
 export default defineConfig(({ command }) => ({
     base: getBase(command),
-    plugins: [react(), emberAssetsPlugin(), ghostBackendProxyPlugin(), deepLinksPlugin(), tsconfigPaths()],
+    plugins: [
+        react(),
+        emberAssetsPlugin(),
+        ghostBackendProxyPlugin(),
+        deepLinksPlugin(),
+        tsconfigPaths({root: resolve(__dirname, '..')})
+    ],
     define: {
         "process.env.DEBUG": false, // Shim env var utilized by the @tryghost/nql package
     },

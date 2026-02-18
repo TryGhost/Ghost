@@ -47,15 +47,11 @@
     "targets": {
       "dev": {
         "dependsOn": [
-          "ghost-admin:dev",
-          "@tryghost/admin-x-framework:dev",
-          "@tryghost/admin-x-design-system:dev",
-          "@tryghost/shade:dev"
+          "ghost-admin:dev"
         ]
       },
       "build:dev": {
         "dependsOn": [
-          "build",
           {
             "projects": [
               "ghost-admin"
@@ -70,22 +66,9 @@
           "{workspaceRoot}/ghost/core/core/built/admin"
         ],
         "dependsOn": [
-          "build",
           {
             "projects": [
               "ghost-admin"
-            ],
-            "target": "build"
-          }
-        ]
-      },
-      "lint": {
-        "dependsOn": [
-          {
-            "projects": [
-              "@tryghost/admin-x-framework",
-              "@tryghost/admin-x-design-system",
-              "@tryghost/shade"
             ],
             "target": "build"
           }
