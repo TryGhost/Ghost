@@ -335,8 +335,24 @@ export default class App extends React.Component {
                 data.tier = {
                     id: value || Fixtures.offer.tier.id
                 };
+            } else if (key === 'redemption_type') {
+                data.redemption_type = value || 'signup';
             }
         }
+
+        if (data.redemption_type === 'retention') {
+            const previewSubscriptionId = Fixtures.member.preview?.subscriptions?.[0]?.id;
+
+            return {
+                page: 'accountPlan',
+                offers: [data],
+                pageData: {
+                    action: 'cancel',
+                    subscriptionId: previewSubscriptionId
+                }
+            };
+        }
+
         return {
             page: 'offer',
             pageData: data

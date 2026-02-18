@@ -9,6 +9,7 @@ const {NotFoundError} = require('@tryghost/errors');
 const validator = require('@tryghost/validator');
 const crypto = require('crypto');
 const addCalendarMonths = require('../utils/add-calendar-months');
+const hasActiveOffer = require('../utils/has-active-offer');
 const StartOutboxProcessingEvent = require('../../../outbox/events/start-outbox-processing-event');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../member-welcome-emails/constants');
 const messages = {
@@ -32,7 +33,6 @@ const messages = {
     offerAlreadyRedeemed: 'This offer has already been redeemed on this subscription',
     subscriptionNotActive: 'Cannot apply offer to an inactive subscription',
     subscriptionHasOffer: 'Subscription already has an offer applied',
-    subscriptionInTrial: 'Cannot apply offer to a subscription in a trial period',
     subscriptionCancelling: 'Cannot apply retention offer to a subscription that is already cancelling'
 };
 
@@ -1159,25 +1159,34 @@ module.exports = class MemberRepository {
                 await stripeCustomerSubscriptionModel.destroy(options);
             }
         } else if (stripeCustomerSubscriptionModel) {
-            // CASE: Offer is already mapped against sub, don't overwrite it with NULL
-            // Needed for trial offers, which don't have a stripe coupon/discount attached to sub
+            const previousOfferId = stripeCustomerSubscriptionModel.get('offer_id');
+
+            // CASE: Only preserve offer_id for active trials (trial offers don't have Stripe discounts)
+            // Otherwise, allow offer_id to be cleared when the Stripe discount expires
             if (!subscriptionData.offer_id) {
-                delete subscriptionData.offer_id;
+                const trialEndAt = subscriptionData.trial_end_at;
+                const hasActiveTrial = trialEndAt && new Date(trialEndAt) > new Date();
+
+                if (hasActiveTrial) {
+                    delete subscriptionData.offer_id;
+                }
             }
+
             const updatedStripeCustomerSubscriptionModel = await this._StripeCustomerSubscription.edit(subscriptionData, {
                 ...options,
                 id: stripeCustomerSubscriptionModel.id
             });
 
-            // CASE: Existing free member subscribes to a paid tier with an offer
-            // Stripe doesn't send the discount/offer info in the subscription.created event
-            // So we need to record the offer redemption event upon updating the subscription here
-            if (stripeCustomerSubscriptionModel.get('offer_id') === null && subscriptionData.offer_id) {
+            // CASE: Record offer redemption when offer_id changes to a new non-null value
+            // This covers: null→new (free member upgrade), old→new (retention offer replacing expired signup offer)
+            // The OfferRedemptionEvent handler has a dedup check for repeated webhook deliveries
+            if (previousOfferId !== subscriptionData.offer_id && subscriptionData.offer_id) {
+                const redemptionTimestamp = subscriptionData.discount_start || updatedStripeCustomerSubscriptionModel.get('created_at');
                 const offerRedemptionEvent = OfferRedemptionEvent.create({
                     memberId: memberModel.id,
                     offerId: subscriptionData.offer_id,
                     subscriptionId: updatedStripeCustomerSubscriptionModel.id
-                }, updatedStripeCustomerSubscriptionModel.get('created_at'));
+                }, redemptionTimestamp);
                 this.dispatchEvent(offerRedemptionEvent, options);
             }
 
@@ -1721,18 +1730,10 @@ module.exports = class MemberRepository {
             });
         }
 
-        // Check subscription doesn't already have an offer
-        if (subscriptionModel.get('offer_id')) {
+        // Check subscription doesn't already have an active offer
+        if (await hasActiveOffer(subscriptionModel, this._offersAPI)) {
             throw new errors.BadRequestError({
                 message: tpl(messages.subscriptionHasOffer)
-            });
-        }
-
-        // Check subscription is not in a trial period
-        const trialEndAt = subscriptionModel.get('trial_end_at');
-        if (trialEndAt && trialEndAt > new Date()) {
-            throw new errors.BadRequestError({
-                message: tpl(messages.subscriptionInTrial)
             });
         }
 

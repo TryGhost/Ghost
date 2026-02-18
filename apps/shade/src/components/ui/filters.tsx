@@ -753,6 +753,8 @@ export interface FilterFieldConfig<T = unknown> {
     isLoading?: boolean;
     // Default operator to use when creating a filter for this field
     defaultOperator?: string;
+    // Default value to use when creating a filter for this field
+    defaultValue?: T;
     // Hide the operator dropdown and only show the operator as text
     hideOperatorSelect?: boolean;
     // Controlled values support for this field
@@ -2076,7 +2078,9 @@ export function Filters<T = unknown>({
                             : 'is');
                 let defaultValues: unknown[] = [];
 
-                if (['text', 'number', 'date', 'email', 'url', 'tel', 'time', 'datetime'].includes(field.type || '')) {
+                if (field.defaultValue !== undefined) {
+                    defaultValues = [field.defaultValue] as unknown[];
+                } else if (['text', 'number', 'date', 'email', 'url', 'tel', 'time', 'datetime'].includes(field.type || '')) {
                     defaultValues = [''] as unknown[];
                 } else if (field.type === 'daterange') {
                     defaultValues = ['', ''] as unknown[];
@@ -2084,10 +2088,6 @@ export function Filters<T = unknown>({
                     defaultValues = [field.min || 0, field.max || 100] as unknown[];
                 } else if (field.type === 'boolean') {
                     defaultValues = [false] as unknown[];
-                } else if (field.type === 'time') {
-                    defaultValues = [''] as unknown[];
-                } else if (field.type === 'datetime') {
-                    defaultValues = [''] as unknown[];
                 }
 
                 const newFilter = createFilter<T>(fieldKey, defaultOperator, defaultValues as T[]);
@@ -2271,7 +2271,7 @@ export function Filters<T = unknown>({
                             align={popoverAlign}
                             className={cn(
                                 'p-0 data-[state=closed]:!animation-none data-[state=closed]:!duration-0',
-                                selectedFieldForOptions?.className || popoverContentClassName || 'w-[200px]'
+                                selectedFieldForOptions?.className || popoverContentClassName || 'w-[220px]'
                             )}
                         >
                             {selectedFieldForOptions ? (
@@ -2332,10 +2332,11 @@ export function Filters<T = unknown>({
                                                             return (
                                                                 <CommandItem
                                                                     key={field.key ?? `${item.group ?? `group-${index}`}-field-${fieldIndex}`}
+                                                                    className="min-w-0"
                                                                     onSelect={() => field.key && addFilter(field.key)}
                                                                 >
                                                                     {field.icon}
-                                                                    <span>{field.label}</span>
+                                                                    <span className="truncate">{field.label}</span>
                                                                 </CommandItem>
                                                             );
                                                         })}
@@ -2373,9 +2374,9 @@ export function Filters<T = unknown>({
 
                                                             // Regular field
                                                             return (
-                                                                <CommandItem key={field.key} onSelect={() => field.key && addFilter(field.key)}>
+                                                                <CommandItem key={field.key} className="min-w-0" onSelect={() => field.key && addFilter(field.key)}>
                                                                     {field.icon}
-                                                                    <span>{field.label}</span>
+                                                                    <span className="truncate">{field.label}</span>
                                                                 </CommandItem>
                                                             );
                                                         })}
@@ -2399,9 +2400,9 @@ export function Filters<T = unknown>({
 
                                             // Regular field
                                             return (
-                                                <CommandItem key={field.key} onSelect={() => field.key && addFilter(field.key)}>
+                                                <CommandItem key={field.key} className="min-w-0" onSelect={() => field.key && addFilter(field.key)}>
                                                     {field.icon}
-                                                    <span>{field.label}</span>
+                                                    <span className="truncate">{field.label}</span>
                                                 </CommandItem>
                                             );
                                         })}

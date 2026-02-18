@@ -41,6 +41,51 @@ function assertArrayContainsDeep(arr, expectedElements, message) {
  * @template T
  * @param {T} obj
  * @param {Partial<T>} properties
+ * @returns {boolean}
+ */
+function objectMatches(obj, properties) {
+    for (const [key, value] of Object.entries(properties)) {
+        const matches = isPlainObject(obj[key])
+            ? objectMatches(obj[key], value)
+            : isDeepStrictEqual(obj[key], value);
+        if (!matches) {
+            return false;
+        }
+    }
+    return true;
+}
+
+/**
+ * @internal
+ * @template T
+ * @typedef {(
+ *     T extends Object
+ *         ? {[P in keyof T]?: DeepPartial<T[P]>}
+ *         : T
+ * )} DeepPartial
+ */
+
+/**
+ * @template {object} T
+ * @param {ReadonlyArray<T>} haystack
+ * @param {ReadonlyArray<DeepPartial<T>>} needles
+ * @returns {void}
+ */
+function assertArrayMatchesWithoutOrder(haystack, needles) {
+    assert.equal(
+        haystack.length,
+        needles.length,
+        `Expected ${needles.length} items, but got ${haystack.length}`
+    );
+    for (const a of needles) {
+        assert(haystack.some(el => objectMatches(el, a)));
+    }
+}
+
+/**
+ * @template {object} T
+ * @param {T} obj
+ * @param {DeepPartial<T>} properties
  * @param {string} [message]
  * @returns {void}
  */
@@ -62,5 +107,6 @@ module.exports = {
     assertExists,
     assertMatchSnapshot,
     assertArrayContainsDeep,
+    assertArrayMatchesWithoutOrder,
     assertObjectMatches
 };
