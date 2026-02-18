@@ -6,6 +6,7 @@ const {BadRequestError, NoPermissionError, UnauthorizedError, DisabledFeatureErr
 const errors = require('@tryghost/errors');
 const {isEmail} = require('@tryghost/validator');
 const normalizeEmail = require('../utils/normalize-email');
+const hasActiveOffer = require('../utils/has-active-offer');
 const {getInboxLinks} = require('../../../../lib/get-inbox-links');
 const {SIGNUP_CONTEXTS} = require('../../../lib/member-signup-contexts');
 /** @typedef {import('../../../lib/member-signup-contexts').SignupContext} SignupContext */
@@ -1024,14 +1025,8 @@ module.exports = class RouterController {
             return sendNoOffersAvailable();
         }
 
-        // If subscription already has an offer applied (e.g. signup offer), don't show retention offers
-        if (activeSubscription.get('offer_id')) {
-            return sendNoOffersAvailable();
-        }
-
-        // If subscription is in a trial period (either offer-based or tier-based), don't show retention offers
-        const trialEndAt = activeSubscription.get('trial_end_at');
-        if (trialEndAt && trialEndAt > new Date()) {
+        // If subscription has an active offer, don't show retention offers
+        if (await hasActiveOffer(activeSubscription, this._offersAPI)) {
             return sendNoOffersAvailable();
         }
 

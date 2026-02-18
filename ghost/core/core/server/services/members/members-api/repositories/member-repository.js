@@ -9,6 +9,7 @@ const {NotFoundError} = require('@tryghost/errors');
 const validator = require('@tryghost/validator');
 const crypto = require('crypto');
 const addCalendarMonths = require('../utils/add-calendar-months');
+const hasActiveOffer = require('../utils/has-active-offer');
 const StartOutboxProcessingEvent = require('../../../outbox/events/start-outbox-processing-event');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../member-welcome-emails/constants');
 const messages = {
@@ -32,7 +33,6 @@ const messages = {
     offerAlreadyRedeemed: 'This offer has already been redeemed on this subscription',
     subscriptionNotActive: 'Cannot apply offer to an inactive subscription',
     subscriptionHasOffer: 'Subscription already has an offer applied',
-    subscriptionInTrial: 'Cannot apply offer to a subscription in a trial period',
     subscriptionCancelling: 'Cannot apply retention offer to a subscription that is already cancelling'
 };
 
@@ -1730,18 +1730,10 @@ module.exports = class MemberRepository {
             });
         }
 
-        // Check subscription doesn't already have an offer
-        if (subscriptionModel.get('offer_id')) {
+        // Check subscription doesn't already have an active offer
+        if (await hasActiveOffer(subscriptionModel, this._offersAPI)) {
             throw new errors.BadRequestError({
                 message: tpl(messages.subscriptionHasOffer)
-            });
-        }
-
-        // Check subscription is not in a trial period
-        const trialEndAt = subscriptionModel.get('trial_end_at');
-        if (trialEndAt && trialEndAt > new Date()) {
-            throw new errors.BadRequestError({
-                message: tpl(messages.subscriptionInTrial)
             });
         }
 

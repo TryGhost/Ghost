@@ -1513,20 +1513,19 @@ describe('RouterController', function () {
         let res;
         let responseData;
 
-        function createMockSubscription({id = 'sub_123', status = 'active', offerId = null, trialEndAt = null} = {}) {
+        function createMockSubscription({id = 'sub_123', status = 'active', offerId = null, trialEndAt = null, discountStart = null, discountEnd = null, cancelAtPeriodEnd = false} = {}) {
             return {
                 id,
                 get: sinon.stub().callsFake((key) => {
-                    if (key === 'status') {
-                        return status;
-                    }
-                    if (key === 'offer_id') {
-                        return offerId;
-                    }
-                    if (key === 'trial_end_at') {
-                        return trialEndAt;
-                    }
-                    return null;
+                    const values = {
+                        status,
+                        offer_id: offerId,
+                        trial_end_at: trialEndAt,
+                        discount_start: discountStart,
+                        discount_end: discountEnd,
+                        cancel_at_period_end: cancelAtPeriodEnd
+                    };
+                    return values[key] ?? null;
                 }),
                 related: sinon.stub().withArgs('stripePrice').returns(mockStripePrice)
             };
@@ -1555,7 +1554,8 @@ describe('RouterController', function () {
 
         beforeEach(function () {
             mockOffersAPI = {
-                listOffersAvailableToSubscription: sinon.stub().resolves([])
+                listOffersAvailableToSubscription: sinon.stub().resolves([]),
+                getOffer: sinon.stub().resolves(null)
             };
 
             tokenService = {
@@ -1603,9 +1603,13 @@ describe('RouterController', function () {
             assert(offersAPIWithError.listOffersAvailableToSubscription.calledOnce);
         });
 
-        it('returns empty offers when subscription already has an offer applied', async function () {
+        it('returns empty offers when subscription has an active discount', async function () {
             const routerController = createRouterController({
-                subscriptions: createMockSubscription({offerId: 'existing_offer_123'})
+                subscriptions: createMockSubscription({
+                    offerId: 'existing_offer_123',
+                    discountStart: new Date('2026-01-01')
+                    // discountEnd: null means forever
+                })
             });
 
             await routerController.getMemberOffers({
@@ -1614,6 +1618,47 @@ describe('RouterController', function () {
 
             assert.deepEqual(responseData, {offers: []});
             assert(mockOffersAPI.listOffersAvailableToSubscription.notCalled);
+        });
+
+        it('returns offers when subscription has an expired discount', async function () {
+            const mockOffer = {id: 'retention_offer', name: 'Stay with us'};
+            mockOffersAPI.listOffersAvailableToSubscription.resolves([mockOffer]);
+
+            const pastDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+            const routerController = createRouterController({
+                subscriptions: createMockSubscription({
+                    offerId: 'expired_offer_123',
+                    discountStart: new Date('2025-01-01'),
+                    discountEnd: pastDate
+                })
+            });
+
+            await routerController.getMemberOffers({
+                body: {identity: 'valid-token'}
+            }, res);
+
+            assert.deepEqual(responseData, {offers: [mockOffer]});
+            assert(mockOffersAPI.listOffersAvailableToSubscription.calledOnce);
+        });
+
+        it('returns offers when subscription has expired once offer (legacy data, no discount_start)', async function () {
+            const mockOffer = {id: 'retention_offer', name: 'Stay with us'};
+            mockOffersAPI.listOffersAvailableToSubscription.resolves([mockOffer]);
+            mockOffersAPI.getOffer.resolves({duration: 'once'});
+
+            const routerController = createRouterController({
+                subscriptions: createMockSubscription({
+                    offerId: 'expired_once_offer'
+                    // No discountStart — legacy data
+                })
+            });
+
+            await routerController.getMemberOffers({
+                body: {identity: 'valid-token'}
+            }, res);
+
+            assert.deepEqual(responseData, {offers: [mockOffer]});
+            assert(mockOffersAPI.listOffersAvailableToSubscription.calledOnce);
         });
 
         it('returns empty offers when member has multiple active subscriptions', async function () {
