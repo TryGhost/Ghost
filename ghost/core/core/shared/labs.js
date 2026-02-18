@@ -52,7 +52,8 @@ const PRIVATE_FEATURES = [
     'indexnow',
     'transistor',
     'retentionOffers',
-    'welcomeEmailEditor'
+    'welcomeEmailEditor',
+    'membersForward'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

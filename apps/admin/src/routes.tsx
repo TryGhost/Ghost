@@ -15,6 +15,7 @@ import { routes as statsRoutes } from "@tryghost/stats/src/routes";
 import { EmberFallback, ForceUpgradeGuard } from "./ember-bridge";
 import type { RouteHandle } from "./ember-bridge";
 
+
 export const routes: RouteObject[] = [
     {
         // ForceUpgradeGuard wraps all routes to redirect to /pro when in force upgrade mode.
@@ -37,6 +38,7 @@ export const routes: RouteObject[] = [
                         <Outlet />
                     </PostsAppContextProvider>
                 ),
+                // Filter out catch-all routes
                 children: postRoutes[0].children!.filter((route) => route.path !== "*"),
             },
             {

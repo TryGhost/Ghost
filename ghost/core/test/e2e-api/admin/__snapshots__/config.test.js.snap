@@ -23,6 +23,7 @@ Object {
       "indexnow": true,
       "lexicalIndicators": true,
       "members": true,
+      "membersForward": true,
       "retentionOffers": true,
       "stripeAutomaticTax": true,
       "superEditors": true,

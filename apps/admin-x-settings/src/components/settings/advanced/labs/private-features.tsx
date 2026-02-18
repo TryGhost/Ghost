@@ -63,6 +63,10 @@ const features: Feature[] = [{
     title: 'Welcome Email Editor',
     description: 'Enable the new welcome email editor experience',
     flag: 'welcomeEmailEditor'
+}, {
+    title: 'Members Forward',
+    description: 'Use the new React-based members list instead of the Ember implementation',
+    flag: 'membersForward'
 }];
 
 const AlphaFeatures: React.FC = () => {
