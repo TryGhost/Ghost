@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
-const should = require('should');
 const sinon = require('sinon');
 const _ = require('lodash');
 const themeList = require('../../../../../core/server/services/themes/list');
@@ -27,15 +26,17 @@ describe('Themes', function () {
         });
 
         it('getAll() returns all themes', function () {
-            themeList.getAll().should.be.an.Object().with.properties('casper', 'not-casper');
-            assert.equal(Object.keys(themeList.getAll()).length, 2);
+            assert.deepEqual(
+                new Set(Object.keys(themeList.getAll())),
+                new Set(['casper', 'not-casper'])
+            );
         });
 
         it('set() updates an existing theme', function () {
             const origCasper = _.cloneDeep(themeList.get('casper'));
             themeList.set('casper', {magic: 'update'});
 
-            themeList.get('casper').should.not.eql(origCasper);
+            assert.notDeepEqual(themeList.get('casper'), origCasper);
             assert.deepEqual(themeList.get('casper'), {magic: 'update'});
         });
 

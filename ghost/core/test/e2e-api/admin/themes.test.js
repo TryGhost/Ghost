@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../utils/assertions');
-const should = require('should');
 const sinon = require('sinon');
 const path = require('path');
 const fs = require('fs');
@@ -56,32 +55,44 @@ describe('Themes API', function () {
 
         localUtils.API.checkResponse(jsonResponse.themes[0], 'theme');
         assert.equal(jsonResponse.themes[0].name, 'broken-theme');
-        jsonResponse.themes[0].package.should.be.an.Object().with.properties('name', 'version');
+        assert(jsonResponse.themes[0].package && typeof jsonResponse.themes[0].package === 'object');
+        assert('name' in jsonResponse.themes[0].package);
+        assert('version' in jsonResponse.themes[0].package);
         assert.equal(jsonResponse.themes[0].active, false);
 
         localUtils.API.checkResponse(jsonResponse.themes[1], 'theme');
         assert.equal(jsonResponse.themes[1].name, 'casper');
-        jsonResponse.themes[1].package.should.be.an.Object().with.properties('name', 'version');
+        assert(jsonResponse.themes[1].package && typeof jsonResponse.themes[1].package === 'object');
+        assert('name' in jsonResponse.themes[1].package);
+        assert('version' in jsonResponse.themes[1].package);
         assert.equal(jsonResponse.themes[1].active, false);
 
         localUtils.API.checkResponse(jsonResponse.themes[2], 'theme');
         assert.equal(jsonResponse.themes[2].name, 'locale-theme');
-        jsonResponse.themes[2].package.should.be.an.Object().with.properties('name', 'version');
+        assert(jsonResponse.themes[2].package && typeof jsonResponse.themes[2].package === 'object');
+        assert('name' in jsonResponse.themes[2].package);
+        assert('version' in jsonResponse.themes[2].package);
         assert.equal(jsonResponse.themes[2].active, false);
 
         localUtils.API.checkResponse(jsonResponse.themes[3], 'theme');
         assert.equal(jsonResponse.themes[3].name, 'members-test-theme');
-        jsonResponse.themes[3].package.should.be.an.Object().with.properties('name', 'version');
+        assert(jsonResponse.themes[3].package && typeof jsonResponse.themes[3].package === 'object');
+        assert('name' in jsonResponse.themes[3].package);
+        assert('version' in jsonResponse.themes[3].package);
         assert.equal(jsonResponse.themes[3].active, false);
 
         localUtils.API.checkResponse(jsonResponse.themes[4], 'theme', 'templates');
         assert.equal(jsonResponse.themes[4].name, 'source');
-        jsonResponse.themes[4].package.should.be.an.Object().with.properties('name', 'version');
+        assert(jsonResponse.themes[4].package && typeof jsonResponse.themes[4].package === 'object');
+        assert('name' in jsonResponse.themes[4].package);
+        assert('version' in jsonResponse.themes[4].package);
         assert.equal(jsonResponse.themes[4].active, true);
 
         localUtils.API.checkResponse(jsonResponse.themes[5], 'theme');
         assert.equal(jsonResponse.themes[5].name, 'test-theme');
-        jsonResponse.themes[5].package.should.be.an.Object().with.properties('name', 'version');
+        assert(jsonResponse.themes[5].package && typeof jsonResponse.themes[5].package === 'object');
+        assert('name' in jsonResponse.themes[5].package);
+        assert('version' in jsonResponse.themes[5].package);
         assert.equal(jsonResponse.themes[5].active, false);
 
         localUtils.API.checkResponse(jsonResponse.themes[6], 'theme');

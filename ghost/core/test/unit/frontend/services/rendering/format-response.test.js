@@ -30,7 +30,7 @@ describe('Unit - services/routing/helpers/format-response', function () {
 
             const formatted = helpers.formatResponse.entry(postObject);
 
-            formatted.should.be.an.Object().with.property('post');
+            assert(formatted && typeof formatted === 'object');
             assert.equal(formatted.post, postObject);
         });
 
@@ -48,8 +48,6 @@ describe('Unit - services/routing/helpers/format-response', function () {
 
             helpers.formatResponse.entry(postObject, ['post'], locals);
 
-            locals.should.be.an.Object().with.properties('_templateOptions');
-            locals._templateOptions.data.should.be.an.Object().with.properties('page');
             assert.equal(locals._templateOptions.data.page.show_title_and_feature_image, true);
         });
 
@@ -61,8 +59,6 @@ describe('Unit - services/routing/helpers/format-response', function () {
 
             assert(!('show_title_and_feature_image' in formatted.page));
 
-            locals.should.be.an.Object().with.properties('_templateOptions');
-            locals._templateOptions.data.should.be.an.Object().with.properties('page');
             assert.equal(locals._templateOptions.data.page.show_title_and_feature_image, true);
         });
 
@@ -74,8 +70,6 @@ describe('Unit - services/routing/helpers/format-response', function () {
 
             assert(!('show_title_and_feature_image' in formatted.page));
 
-            locals.should.be.an.Object().with.properties('_templateOptions');
-            locals._templateOptions.data.should.be.an.Object().with.properties('page');
             assert.equal(locals._templateOptions.data.page.show_title_and_feature_image, false);
         });
     });
@@ -89,7 +83,6 @@ describe('Unit - services/routing/helpers/format-response', function () {
 
             const formatted = helpers.formatResponse.entries(data);
 
-            formatted.should.be.an.Object().with.properties('posts', 'pagination');
             assert.equal(formatted.posts, data.posts);
             assert.equal(formatted.pagination, data.meta.pagination);
         });
@@ -103,7 +96,8 @@ describe('Unit - services/routing/helpers/format-response', function () {
 
             const formatted = helpers.formatResponse.entries(data);
 
-            formatted.should.be.an.Object().with.properties('posts', 'pagination', 'tag');
+            assert(formatted && typeof formatted === 'object');
+            assert('posts' in formatted && 'pagination' in formatted && 'tag' in formatted);
             assert.equal(formatted.tag, data.data.tag[0]);
         });
 
@@ -121,8 +115,9 @@ describe('Unit - services/routing/helpers/format-response', function () {
 
             const formatted = helpers.formatResponse.entries(data);
 
-            formatted.should.be.an.Object().with.properties('posts', 'pagination', 'featured');
-            formatted.featured.should.be.an.Object().with.properties('posts', 'pagination');
+            assert(formatted && typeof formatted === 'object');
+            assert('posts' in formatted && 'pagination' in formatted && 'featured' in formatted);
+            assert('posts' in formatted.featured && 'pagination' in formatted.featured);
         });
 
         it('should return post objects with html strings converted to SafeString', function () {
@@ -165,8 +160,6 @@ describe('Unit - services/routing/helpers/format-response', function () {
             const formatted = helpers.formatResponse.entries(data, true, locals);
             assert(!('show_title_and_feature_image' in formatted.page));
 
-            locals.should.be.an.Object().with.properties('_templateOptions');
-            locals._templateOptions.data.should.be.an.Object().with.properties('page');
             assert.equal(locals._templateOptions.data.page.show_title_and_feature_image, false);
         });
     });

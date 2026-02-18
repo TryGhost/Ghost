@@ -459,7 +459,7 @@ describe('User Model', function run() {
                     assert.equal(user.get('slug'), 'max');
 
                     // naive check that password was hashed
-                    user.get('password').should.not.eql(userData.password);
+                    assert.notEqual(user.get('password'), userData.password);
                     done();
                 })
                 .catch(done);

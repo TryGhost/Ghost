@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
-const should = require('should');
 const sinon = require('sinon');
 const _ = require('lodash');
 
@@ -110,7 +109,9 @@ describe('staticTheme', function () {
             // Check that express static gets called with the theme path + maxAge
             assertExists(expressStaticStub.firstCall.args);
             assert.equal(expressStaticStub.firstCall.args[0], 'my/fake/path');
-            expressStaticStub.firstCall.args[1].should.be.an.Object().with.property('maxAge');
+            const options = expressStaticStub.firstCall.args[1];
+            assert(options && typeof options === 'object');
+            assert('maxAge' in options);
 
             done();
         });
@@ -127,7 +128,9 @@ describe('staticTheme', function () {
             // Check that express static gets called with the theme path + maxAge
             assertExists(expressStaticStub.firstCall.args);
             assert.equal(expressStaticStub.firstCall.args[0], 'my/fake/path');
-            expressStaticStub.firstCall.args[1].should.be.an.Object().with.property('maxAge');
+            const options = expressStaticStub.firstCall.args[1];
+            assert(options && typeof options === 'object');
+            assert('maxAge' in options);
 
             done();
         });
@@ -158,7 +161,9 @@ describe('staticTheme', function () {
             // Check that express static gets called with the theme path + maxAge
             assertExists(expressStaticStub.firstCall.args);
             assert.equal(expressStaticStub.firstCall.args[0], 'my/fake/path');
-            expressStaticStub.firstCall.args[1].should.be.an.Object().with.property('maxAge');
+            const options = expressStaticStub.firstCall.args[1];
+            assert(options && typeof options === 'object');
+            assert('maxAge' in options);
 
             done();
         });
@@ -175,7 +180,9 @@ describe('staticTheme', function () {
             // Check that express static gets called with the theme path + maxAge
             assertExists(expressStaticStub.firstCall.args);
             assert.equal(expressStaticStub.firstCall.args[0], 'my/fake/path');
-            expressStaticStub.firstCall.args[1].should.be.an.Object().with.property('maxAge');
+            const options = expressStaticStub.firstCall.args[1];
+            assert(options && typeof options === 'object');
+            assert('maxAge' in options);
 
             done();
         });
@@ -192,7 +199,9 @@ describe('staticTheme', function () {
             // Check that express static gets called with the theme path + maxAge
             assertExists(expressStaticStub.firstCall.args);
             assert.equal(expressStaticStub.firstCall.args[0], 'my/fake/path');
-            expressStaticStub.firstCall.args[1].should.be.an.Object().with.property('maxAge');
+            const options = expressStaticStub.firstCall.args[1];
+            assert(options && typeof options === 'object');
+            assert('maxAge' in options);
 
             done();
         });
@@ -289,7 +298,9 @@ describe('staticTheme', function () {
                 // Check that express static gets called with the theme path + maxAge
                 assertExists(expressStaticStub.firstCall.args);
                 assert.equal(expressStaticStub.firstCall.args[0], 'my/fake/path');
-                expressStaticStub.firstCall.args[1].should.be.an.Object().with.property('maxAge');
+                const options = expressStaticStub.firstCall.args[1];
+                assert(options && typeof options === 'object');
+                assert('maxAge' in options);
 
                 done();
             });
@@ -306,7 +317,9 @@ describe('staticTheme', function () {
                 // Check that express static gets called with the theme path + maxAge
                 assertExists(expressStaticStub.firstCall.args);
                 assert.equal(expressStaticStub.firstCall.args[0], 'my/fake/path');
-                expressStaticStub.firstCall.args[1].should.be.an.Object().with.property('maxAge');
+                const options = expressStaticStub.firstCall.args[1];
+                assert(options && typeof options === 'object');
+                assert('maxAge' in options);
 
                 done();
             });
@@ -323,7 +336,9 @@ describe('staticTheme', function () {
                 // Check that express static gets called with the theme path + maxAge
                 assertExists(expressStaticStub.firstCall.args);
                 assert.equal(expressStaticStub.firstCall.args[0], 'my/fake/path');
-                expressStaticStub.firstCall.args[1].should.be.an.Object().with.property('maxAge');
+                const options = expressStaticStub.firstCall.args[1];
+                assert(options && typeof options === 'object');
+                assert('maxAge' in options);
 
                 done();
             });

@@ -4,7 +4,7 @@ const {queryStringToken} = regexes;
 const ObjectId = require('bson-objectid').default;
 
 const assert = require('node:assert/strict');
-const {assertExists, assertArrayContainsDeep, assertObjectMatches} = require('../../utils/assertions');
+const {assertExists, assertArrayContainsDeep, assertObjectMatches, assertArrayMatchesWithoutOrder} = require('../../utils/assertions');
 const nock = require('nock');
 const sinon = require('sinon');
 const should = require('should');
@@ -25,27 +25,10 @@ const logging = require('@tryghost/logging');
 const {stripeMocker} = require('../../utils/e2e-framework-mock-manager');
 const settingsHelpers = require('../../../core/server/services/settings-helpers');
 
-/**
- * Assert that haystack and needles match, ignoring the order.
- */
-function matchArrayWithoutOrder(haystack, needles) {
-    // Order shouldn't matter here
-    for (const a of needles) {
-        haystack.should.matchAny(a);
-    }
-
-    assert.equal(haystack.length, needles.length, `Expected ${needles.length} items, but got ${haystack.length}`);
-}
-
 async function assertMemberEvents({eventType, memberId, asserts}) {
     const events = await models[eventType].where('member_id', memberId).fetchAll();
     const eventsJSON = events.map(e => e.toJSON());
-
-    // Order shouldn't matter here
-    for (const a of asserts) {
-        eventsJSON.should.matchAny(a);
-    }
-    assert.equal(events.length, asserts.length, `Only ${asserts.length} ${eventType} should have been added.`);
+    assertArrayMatchesWithoutOrder(eventsJSON, asserts);
 }
 
 async function assertSubscription(subscriptionId, asserts) {
@@ -2147,7 +2130,7 @@ describe('Members API', function () {
         const events = eventsBody.events;
 
         // The order will be different in each test because two newsletter_events have the same created_at timestamp. And events are ordered by created_at desc, id desc (id will be different each time).
-        matchArrayWithoutOrder(events, [
+        assertArrayMatchesWithoutOrder(events, [
             {
                 type: 'newsletter_event',
                 data: {
@@ -2342,7 +2325,7 @@ describe('Members API', function () {
 
         const events = eventsBody.events;
 
-        matchArrayWithoutOrder(events, [
+        assertArrayMatchesWithoutOrder(events, [
             {
                 type: 'email_change_event',
                 data: {
