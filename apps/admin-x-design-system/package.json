@@ -5,7 +5,7 @@
     "repository": "https://github.com/TryGhost/Ghost/tree/main/packages/admin-x-design-system",
     "author": "Ghost Foundation",
     "private": true,
-    "main": "./src/index.ts",
+    "main": "es/index.js",
     "types": "types/generated/index.d.ts",
     "sideEffects": false,
     "scripts": {

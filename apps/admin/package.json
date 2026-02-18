@@ -47,11 +47,23 @@
     "targets": {
       "dev": {
         "dependsOn": [
+          {
+            "projects": [
+              "@tryghost/admin-x-design-system"
+            ],
+            "target": "dev"
+          },
           "ghost-admin:dev"
         ]
       },
       "build:dev": {
         "dependsOn": [
+          {
+            "projects": [
+              "@tryghost/admin-x-design-system"
+            ],
+            "target": "build"
+          },
           {
             "projects": [
               "ghost-admin"
@@ -66,6 +78,12 @@
           "{workspaceRoot}/ghost/core/core/built/admin"
         ],
         "dependsOn": [
+          {
+            "projects": [
+              "@tryghost/admin-x-design-system"
+            ],
+            "target": "build"
+          },
           {
             "projects": [
               "ghost-admin"
