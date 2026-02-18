@@ -48,28 +48,18 @@ const pathAliases = {
 
 /**
  * Generate a deterministic cache key for a {{#get}} query.
- * Uses fixed property order to ensure identical queries produce identical keys.
+ * Sorts top-level option keys for deterministic serialization.
  *
  * @param {String} resource - The resource type (posts, tags, etc.)
  * @param {Object} apiOptions - The API options (filter, limit, include, etc.)
  * @returns {String} - Deterministic cache key
  */
 function generateCacheKey(resource, apiOptions) {
-    // Build key from properties in fixed order for determinism
-    const parts = [
-        resource,
-        apiOptions.filter || '',
-        apiOptions.limit || '',
-        apiOptions.include || '',
-        apiOptions.fields || '',
-        apiOptions.formats || '',
-        apiOptions.page || '',
-        apiOptions.order || '',
-        apiOptions.id || '',
-        apiOptions.slug || '',
-        apiOptions.context?.member?.uuid || ''
-    ];
-    return parts.join('|');
+    const sortedOptions = Object.fromEntries(
+        Object.entries(apiOptions).sort(([a], [b]) => a.localeCompare(b))
+    );
+
+    return `${resource}|${JSON.stringify(sortedOptions)}`;
 }
 
 /**
@@ -339,26 +329,31 @@ async function makeAPICall(resource, controllerName, action, apiOptions) {
  * @returns {String|SafeString} - Rendered template output
  */
 function renderResponse(response, resource, options, data) {
+    const templateResponse = {
+        ...response,
+        [resource]: _.cloneDeep(response[resource])
+    };
+
     // prepare data properties for use with handlebars
-    if (response[resource] && response[resource].length) {
-        response[resource].forEach(prepareContextResource);
+    if (templateResponse[resource] && templateResponse[resource].length) {
+        templateResponse[resource].forEach(prepareContextResource);
     }
 
     // block params allows the theme developer to name the data using something like
     // `{{#get "posts" as |result pageInfo|}}`
-    const blockParams = [response[resource]];
-    if (response.meta && response.meta.pagination) {
-        response.pagination = response.meta.pagination;
-        blockParams.push(response.meta.pagination);
+    const blockParams = [templateResponse[resource]];
+    if (templateResponse.meta && templateResponse.meta.pagination) {
+        templateResponse.pagination = templateResponse.meta.pagination;
+        blockParams.push(templateResponse.meta.pagination);
     }
 
     // Call the main template function
-    const rendered = options.fn(response, {
+    const rendered = options.fn(templateResponse, {
         data: data,
         blockParams: blockParams
     });
 
-    if (response['@@ABORTED_GET_HELPER@@']) {
+    if (templateResponse['@@ABORTED_GET_HELPER@@']) {
         return new SafeString(`<span data-aborted-get-helper>Could not load content</span>` + rendered);
     }
     return rendered;
@@ -404,21 +399,21 @@ module.exports = async function get(resource, options) {
 
     // Per-request deduplication: check if we have a cached result for this query
     const enableDeduplication = config.get('optimization:getHelper:deduplication');
-    const queryCache = enableDeduplication ? options.data?._queryCache : null;
+    const queryCache = (enableDeduplication && options.data?._queryCache instanceof Map) ? options.data._queryCache : null;
     let cacheKey;
 
     if (queryCache) {
         cacheKey = generateCacheKey(resource, apiOptions);
 
-        if (cacheKey in queryCache) {
+        if (queryCache.has(cacheKey)) {
             try {
                 // Await cached promise (handles both resolved and in-flight)
-                const cachedResponse = await queryCache[cacheKey];
+                const cachedResponse = await queryCache.get(cacheKey);
                 returnedRowsCount = cachedResponse[resource] && cachedResponse[resource].length;
                 return renderResponse(cachedResponse, resource, options, data);
             } catch (error) {
                 // Cached promise rejected - fall through to make new request
-                delete queryCache[cacheKey];
+                queryCache.delete(cacheKey);
             }
         }
     }
@@ -428,7 +423,7 @@ module.exports = async function get(resource, options) {
         const responsePromise = makeAPICall(resource, controllerName, action, apiOptions);
 
         if (queryCache && cacheKey) {
-            queryCache[cacheKey] = responsePromise;
+            queryCache.set(cacheKey, responsePromise);
         }
 
         const response = await responsePromise;
@@ -440,7 +435,7 @@ module.exports = async function get(resource, options) {
     } catch (error) {
         // Remove failed request from cache so retries can try again
         if (queryCache && cacheKey) {
-            delete queryCache[cacheKey];
+            queryCache.delete(cacheKey);
         }
         logging.error(error);
         data.error = error.message;

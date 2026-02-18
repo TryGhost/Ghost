@@ -644,6 +644,20 @@ describe('{{#get}} helper', function () {
             assert.notEqual(generateCacheKey('posts', apiOptions1), generateCacheKey('posts', apiOptions2));
         });
 
+        it('should produce identical keys for equivalent options in different key order', function () {
+            const apiOptions1 = {filter: 'featured:true', limit: 5, include: 'authors'};
+            const apiOptions2 = {include: 'authors', limit: 5, filter: 'featured:true'};
+
+            assert.equal(generateCacheKey('posts', apiOptions1), generateCacheKey('posts', apiOptions2));
+        });
+
+        it('should include additional query options to avoid collisions', function () {
+            const apiOptions1 = {filter: 'featured:true', collection: 'home'};
+            const apiOptions2 = {filter: 'featured:true', collection: 'archive'};
+
+            assert.notEqual(generateCacheKey('posts', apiOptions1), generateCacheKey('posts', apiOptions2));
+        });
+
         it('should handle missing optional fields', function () {
             const apiOptions = {filter: 'featured:true'};
 
@@ -723,7 +737,7 @@ describe('{{#get}} helper', function () {
 
         it('should deduplicate identical queries when enabled', async function () {
             configUtils.set('optimization:getHelper:deduplication', true);
-            locals = {root: {_locals: {}}, _queryCache: {}};
+            locals = {root: {_locals: {}}, _queryCache: new Map()};
 
             // First call
             await get.call(
@@ -747,7 +761,7 @@ describe('{{#get}} helper', function () {
 
         it('should make separate API calls for different queries when enabled', async function () {
             configUtils.set('optimization:getHelper:deduplication', true);
-            locals = {root: {_locals: {}}, _queryCache: {}};
+            locals = {root: {_locals: {}}, _queryCache: new Map()};
 
             // First call
             await get.call(
@@ -771,7 +785,7 @@ describe('{{#get}} helper', function () {
             configUtils.set('optimization:getHelper:deduplication', true);
 
             // Call with member A
-            const localsA = {root: {_locals: {}}, _queryCache: {}, member: {uuid: 'member-a'}};
+            const localsA = {root: {_locals: {}}, _queryCache: new Map(), member: {uuid: 'member-a'}};
             await get.call(
                 {},
                 'posts',
@@ -792,7 +806,7 @@ describe('{{#get}} helper', function () {
 
         it('should not cache failed API requests', async function () {
             configUtils.set('optimization:getHelper:deduplication', true);
-            locals = {root: {_locals: {}}, _queryCache: {}};
+            locals = {root: {_locals: {}}, _queryCache: new Map()};
 
             // Set up stub to fail first, then succeed
             browseStub.onFirstCall().rejects(new Error('API Error'));
@@ -834,7 +848,7 @@ describe('{{#get}} helper', function () {
 
         it('should deduplicate queries with same parameters in different order', async function () {
             configUtils.set('optimization:getHelper:deduplication', true);
-            locals = {root: {_locals: {}}, _queryCache: {}};
+            locals = {root: {_locals: {}}, _queryCache: new Map()};
 
             // First call
             await get.call(
@@ -843,11 +857,11 @@ describe('{{#get}} helper', function () {
                 {hash: {filter: 'featured:true', limit: 5}, data: locals, fn: fn, inverse: inverse}
             );
 
-            // Second call with same params (hash object properties are in same order in JS)
+            // Second call with equivalent params in different insertion order
             await get.call(
                 {},
                 'posts',
-                {hash: {filter: 'featured:true', limit: 5}, data: locals, fn: fn, inverse: inverse}
+                {hash: {limit: 5, filter: 'featured:true'}, data: locals, fn: fn, inverse: inverse}
             );
 
             // Should only make one API call
@@ -856,7 +870,7 @@ describe('{{#get}} helper', function () {
 
         it('should handle concurrent identical requests', async function () {
             configUtils.set('optimization:getHelper:deduplication', true);
-            locals = {root: {_locals: {}}, _queryCache: {}};
+            locals = {root: {_locals: {}}, _queryCache: new Map()};
 
             // Make a slow browse stub
             browseStub.callsFake(() => {
@@ -885,6 +899,26 @@ describe('{{#get}} helper', function () {
             assert.equal(browseStub.callCount, 1);
             // Both should have rendered
             assert.equal(fn.callCount, 2);
+        });
+
+        it('should not reuse the same response object instance across renders', async function () {
+            configUtils.set('optimization:getHelper:deduplication', true);
+            locals = {root: {_locals: {}}, _queryCache: new Map()};
+
+            await get.call(
+                {},
+                'posts',
+                {hash: {filter: 'featured:true'}, data: locals, fn: fn, inverse: inverse}
+            );
+
+            await get.call(
+                {},
+                'posts',
+                {hash: {filter: 'featured:true'}, data: locals, fn: fn, inverse: inverse}
+            );
+
+            assert.equal(browseStub.callCount, 1);
+            assert.notEqual(fn.firstCall.args[0], fn.secondCall.args[0]);
         });
     });
 });

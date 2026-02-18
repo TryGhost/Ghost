@@ -46,7 +46,7 @@ function updateLocalTemplateOptions(req, res, next) {
             member: member,
             site: siteData,
             custom: customData,
-            ...(enableDeduplication && {_queryCache: {}})
+            ...(enableDeduplication && {_queryCache: new Map()})
         }
     }));
 
