@@ -184,8 +184,8 @@ module.exports = class MemberRepository {
         return source;
     }
 
-    getMRR({interval, amount, status = null, canceled = false, discount = null}) {
-        if (status === 'trialing') {
+    getMRR({interval, amount, status = null, canceled = false, discount = null, offer = null}) {
+        if (status === 'trialing' && (!offer || offer.type === 'trial')) {
             return 0;
         }
         if (status === 'incomplete') {
@@ -1064,6 +1064,7 @@ module.exports = class MemberRepository {
 
         // For trial offers, offer id is passed from metadata as there is no stripe coupon
         let offerId = data.offerId || null;
+        let offer = null;
 
         if (stripeCouponId && !offerId && ghostProduct) {
             const coupon = stripeSubscriptionData.discount.coupon;
@@ -1071,7 +1072,7 @@ module.exports = class MemberRepository {
             const tier = {id: ghostProduct.get('id'), name: ghostProduct.get('name')};
 
             try {
-                const offer = await this._offersAPI.ensureOfferForStripeCoupon(
+                offer = await this._offersAPI.ensureOfferForStripeCoupon(
                     coupon,
                     cadence,
                     tier,
@@ -1090,6 +1091,10 @@ module.exports = class MemberRepository {
                     throw e;
                 }
             }
+        }
+
+        if (offerId && !offer) {
+            offer = await this._offersAPI.getOffer({id: offerId}, options);
         }
 
         const subscriptionData = {
@@ -1119,7 +1124,8 @@ module.exports = class MemberRepository {
                 amount: subscriptionPriceData.unit_amount,
                 status: stripeSubscriptionData.status,
                 canceled: stripeSubscriptionData.cancel_at_period_end,
-                discount: stripeSubscriptionData.discount
+                discount: stripeSubscriptionData.discount,
+                offer: offer
             }),
             offer_id: offerId,
             discount_start: stripeSubscriptionData.discount?.start ? new Date(stripeSubscriptionData.discount.start * 1000) : null,
