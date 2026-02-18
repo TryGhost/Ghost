@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-require('should');
 
 const tmp = require('tmp');
 const fs = require('fs-extra');

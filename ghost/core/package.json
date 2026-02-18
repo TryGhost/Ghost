@@ -257,7 +257,6 @@
     "postcss": "8.5.6",
     "postcss-cli": "11.0.1",
     "rewire": "8.0.0",
-    "should": "13.2.3",
     "sinon": "18.0.1",
     "supertest": "6.3.4",
     "tmp": "0.2.5",

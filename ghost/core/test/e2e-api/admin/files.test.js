@@ -1,7 +1,6 @@
 const assert = require('node:assert/strict');
 const path = require('path');
 const fs = require('fs-extra');
-const should = require('should');
 const supertest = require('supertest');
 const localUtils = require('./utils');
 const config = require('../../../core/shared/config');

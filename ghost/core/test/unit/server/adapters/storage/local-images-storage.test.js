@@ -1,7 +1,6 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
 const errors = require('@tryghost/errors');
-const should = require('should');
 const sinon = require('sinon');
 const fs = require('fs-extra');
 const moment = require('moment');

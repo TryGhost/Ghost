@@ -1,7 +1,6 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
 const sinon = require('sinon');
-const should = require('should');
 const ContentStatsService = require('../../../../../core/server/services/stats/content-stats-service');
 const tinybird = require('../../../../../core/server/services/stats/utils/tinybird');
 

@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-require('should');
 const sinon = require('sinon');
 const MembersCSVImporterStripeUtils = require('../../../../../../core/server/services/members/importer/members-csv-importer-stripe-utils');
 

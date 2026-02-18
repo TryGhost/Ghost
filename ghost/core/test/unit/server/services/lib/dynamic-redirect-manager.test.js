@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const DynamicRedirectManager = require('../../../../../core/server/services/lib/dynamic-redirect-manager');
 
 const urlJoin = (...parts) => {

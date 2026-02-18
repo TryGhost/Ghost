@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../utils/assertions');
-const should = require('should');
 const sinon = require('sinon');
 const ObjectId = require('bson-objectid').default;
 const urlService = require('../../../../core/server/services/url');

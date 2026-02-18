@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../../../utils/assertions');
-const should = require('should');
 const ObjectID = require('bson-objectid').default;
 const errors = require('../../../../../../../core/server/services/offers/domain/errors');
 const Offer = require('../../../../../../../core/server/services/offers/domain/models/offer');

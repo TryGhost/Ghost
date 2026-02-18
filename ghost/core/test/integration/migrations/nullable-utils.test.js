@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../utils');
 const dbUtils = require('../../utils/db-utils');

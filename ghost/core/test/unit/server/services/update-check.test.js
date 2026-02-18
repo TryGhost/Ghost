@@ -1,4 +1,3 @@
-require('should');
 const sinon = require('sinon');
 const nock = require('nock');
 const moment = require('moment');

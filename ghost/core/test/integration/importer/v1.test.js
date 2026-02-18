@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const testUtils = require('../../utils');
 const {exportedBodyV1} = require('../../utils/fixtures/export/body-generator');
 
