@@ -3032,6 +3032,63 @@ describe('Email renderer', function () {
             assert.equal(response.href, 'http://your-blog.com/content/images/size/w1200h1200/2017/01/02/example.png');
         });
 
+        it('Limits width of CDN content images', async function () {
+            const emailRenderer = new EmailRenderer({
+                imageSize: {
+                    getCachedImageSizeFromUrl() {
+                        return {
+                            width: 2000,
+                            height: 1000
+                        };
+                    }
+                },
+                storageUtils: {
+                    isLocalImage() {
+                        return false;
+                    }
+                },
+                imageBaseUrl: 'https://storage.ghost.is/c/6f/a3/test/content/images',
+                urlUtils: {
+                    isSiteUrl() {
+                        return false;
+                    }
+                }
+            });
+            const response = await emailRenderer.limitImageWidth('https://storage.ghost.is/c/6f/a3/test/content/images/2026/02/example.png');
+            assert.equal(response.width, 600);
+            assert.equal(response.height, 300);
+            assert.equal(response.href, 'https://storage.ghost.is/c/6f/a3/test/content/images/size/w1200/2026/02/example.png');
+        });
+
+        it('Does not rewrite external content/images URLs', async function () {
+            const emailRenderer = new EmailRenderer({
+                imageSize: {
+                    getCachedImageSizeFromUrl() {
+                        return {
+                            width: 2000,
+                            height: 1000
+                        };
+                    }
+                },
+                storageUtils: {
+                    isLocalImage() {
+                        return false;
+                    }
+                },
+                imageBaseUrl: 'https://storage.ghost.is/c/6f/a3/test/content/images',
+                urlUtils: {
+                    isSiteUrl() {
+                        return false;
+                    }
+                }
+            });
+
+            const response = await emailRenderer.limitImageWidth('https://example.com/content/images/example.png');
+            assert.equal(response.width, 600);
+            assert.equal(response.height, 300);
+            assert.equal(response.href, 'https://example.com/content/images/example.png');
+        });
+
         it('Returns default dimensions when getCachedImageSizeFromUrl returns null', async function () {
             const emailRenderer = new EmailRenderer({
                 imageSize: {

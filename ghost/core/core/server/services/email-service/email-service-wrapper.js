@@ -82,6 +82,7 @@ class EmailServiceWrapper {
             imageSize: cachedImageSizeFromUrl,
             urlUtils,
             storageUtils,
+            imageBaseUrl: configService.get('urls:image') || '',
             getPostUrl: this.getPostUrl,
             linkReplacer,
             linkTracking,
