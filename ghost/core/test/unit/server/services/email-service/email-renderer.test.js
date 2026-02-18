@@ -1,4 +1,3 @@
-require('should');
 const EmailRenderer = require('../../../../../core/server/services/email-service/email-renderer');
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
@@ -1399,20 +1398,11 @@ describe('Email renderer', function () {
             // Unsubscribe button included
             assert(response.plaintext.includes('Unsubscribe [%%{unsubscribe_url}%%]'));
             assert(response.html.includes('Unsubscribe'));
-            assert.equal(response.replacements.length, 4);
-            response.replacements.should.match([
-                {
-                    id: 'uuid'
-                },
-                {
-                    id: 'key'
-                },
-                {
-                    id: 'unsubscribe_url'
-                },
-                {
-                    id: 'list_unsubscribe'
-                }
+            assert.deepEqual(response.replacements.map(r => r.id), [
+                'uuid',
+                'key',
+                'unsubscribe_url',
+                'list_unsubscribe'
             ]);
 
             assert(response.plaintext.includes('http://example.com'));
@@ -2007,20 +1997,11 @@ describe('Email renderer', function () {
 
             assert(response.html.includes('Unsubscribe'));
             assert(response.html.includes('http://example.com'));
-            assert.equal(response.replacements.length, 4);
-            response.replacements.should.match([
-                {
-                    id: 'uuid'
-                },
-                {
-                    id: 'key'
-                },
-                {
-                    id: 'unsubscribe_url'
-                },
-                {
-                    id: 'list_unsubscribe'
-                }
+            assert.deepEqual(response.replacements.map(r => r.id), [
+                'uuid',
+                'key',
+                'unsubscribe_url',
+                'list_unsubscribe'
             ]);
             assert(!response.html.includes('members only section'));
             assert(response.html.includes('some text for both'));
