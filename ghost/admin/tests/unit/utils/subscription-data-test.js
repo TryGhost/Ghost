@@ -1,5 +1,5 @@
 import moment from 'moment-timezone';
-import {compExpiry, getOfferDisplayData, getSubscriptionData, isActive, isCanceled, isComplimentary, isSetToCancel, priceLabel, trialUntil, validUntil, validityDetails} from 'ghost-admin/utils/subscription-data';
+import {compExpiry, getDiscountPrice, getOfferDisplayData, getSubscriptionData, isActive, isCanceled, isComplimentary, isSetToCancel, priceLabel, trialUntil, validUntil, validityDetails} from 'ghost-admin/utils/subscription-data';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 
@@ -442,6 +442,42 @@ describe('Unit: Util: subscription-data', function () {
                 validityDetails: ' – Expires 31 May 2021'
             });
         });
+
+        it('sets hasActiveDiscount with discounted and original prices', function () {
+            const sub = {
+                id: 'sub_1',
+                status: 'active',
+                cancel_at_period_end: false,
+                current_period_end: '2026-05-31',
+                price: {currency: 'usd', amount: 5000},
+                next_payment: {
+                    amount: 2500,
+                    original_amount: 5000,
+                    currency: 'usd',
+                    discount: {offer_id: 'offer_1', end: '2026-09-01'}
+                }
+            };
+
+            const data = getSubscriptionData(sub);
+
+            expect(data.hasActiveDiscount).to.be.true;
+            expect(data.discountedPrice).to.deep.equal({currencySymbol: '$', nonDecimalAmount: 25});
+            expect(data.originalPrice).to.deep.equal({currencySymbol: '$', nonDecimalAmount: 50});
+        });
+
+        it('does not set hasActiveDiscount when no discount', function () {
+            const sub = {
+                id: 'sub_1',
+                status: 'active',
+                cancel_at_period_end: false,
+                current_period_end: '2026-05-31',
+                price: {currency: 'usd', amount: 5000}
+            };
+
+            const data = getSubscriptionData(sub);
+
+            expect(data.hasActiveDiscount).to.be.undefined;
+        });
     });
 
     describe('getOfferDisplayData', function () {
@@ -485,7 +521,7 @@ describe('Unit: Util: subscription-data', function () {
                 name: 'retention + percent + repeating (with discount end)',
                 offer: {id: 'offer_1', redemption_type: 'retention', type: 'percent', amount: 50, duration: 'repeating', duration_in_months: 3},
                 sub: {next_payment: {discount: {offer_id: 'offer_1', end: '2026-02-17T00:00:00.000Z'}}},
-                expected: {label: 'Retention offer', detail: '50% off until 17 Feb 2026'}
+                expected: {label: 'Retention offer', detail: '50% off until Feb 2026'}
             },
             {
                 name: 'retention + percent + forever',
@@ -501,7 +537,7 @@ describe('Unit: Util: subscription-data', function () {
                 name: 'retention + free_months (with discount end)',
                 offer: {id: 'offer_2', redemption_type: 'retention', type: 'free_months', amount: 1, duration: 'free_months'},
                 sub: {next_payment: {discount: {offer_id: 'offer_2', end: '2026-02-17T00:00:00.000Z'}}},
-                expected: {label: 'Retention offer', detail: '1 month free until 17 Feb 2026'}
+                expected: {label: 'Retention offer', detail: '1 month free until Feb 2026'}
             },
             {
                 name: 'retention + discount end does not match offer id',
@@ -520,6 +556,63 @@ describe('Unit: Util: subscription-data', function () {
             it(name, function () {
                 const result = getOfferDisplayData(offer, sub);
                 expect(result).to.deep.equal(expected);
+            });
+        });
+    });
+
+    describe('getDiscountPrice', function () {
+        it('returns null when there is no next_payment', function () {
+            expect(getDiscountPrice({price: {currency: 'usd', amount: 5000}})).to.be.null;
+        });
+
+        it('returns null when there is no discount on next_payment', function () {
+            expect(getDiscountPrice({
+                price: {currency: 'usd', amount: 5000},
+                next_payment: {amount: 5000, original_amount: 5000, currency: 'usd'}
+            })).to.be.null;
+        });
+
+        it('returns null when discounted amount equals original amount', function () {
+            expect(getDiscountPrice({
+                price: {currency: 'usd', amount: 5000},
+                next_payment: {
+                    amount: 5000,
+                    original_amount: 5000,
+                    currency: 'usd',
+                    discount: {offer_id: 'offer_1', end: '2026-09-01'}
+                }
+            })).to.be.null;
+        });
+
+        it('returns discounted and original prices for USD', function () {
+            const result = getDiscountPrice({
+                price: {currency: 'usd', amount: 5000},
+                next_payment: {
+                    amount: 2500,
+                    original_amount: 5000,
+                    currency: 'usd',
+                    discount: {offer_id: 'offer_1', end: '2026-09-01'}
+                }
+            });
+            expect(result).to.deep.equal({
+                discountedPrice: {currencySymbol: '$', nonDecimalAmount: 25},
+                originalPrice: {currencySymbol: '$', nonDecimalAmount: 50}
+            });
+        });
+
+        it('returns discounted and original prices for EUR', function () {
+            const result = getDiscountPrice({
+                price: {currency: 'eur', amount: 10000},
+                next_payment: {
+                    amount: 7000,
+                    original_amount: 10000,
+                    currency: 'eur',
+                    discount: {offer_id: 'offer_1', end: '2026-09-01'}
+                }
+            });
+            expect(result).to.deep.equal({
+                discountedPrice: {currencySymbol: '€', nonDecimalAmount: 70},
+                originalPrice: {currencySymbol: '€', nonDecimalAmount: 100}
             });
         });
     });

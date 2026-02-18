@@ -27,6 +27,13 @@ export function getSubscriptionData(sub) {
     data.priceLabel = priceLabel(data);
     data.validityDetails = validityDetails(data, !!data.priceLabel);
 
+    const discount = getDiscountPrice(sub);
+    if (discount) {
+        data.hasActiveDiscount = true;
+        data.discountedPrice = discount.discountedPrice;
+        data.originalPrice = discount.originalPrice;
+    }
+
     return data;
 }
 
@@ -140,7 +147,7 @@ export function getOfferDisplayData(offer, sub = {}) {
             : null;
 
         if (discountEnd) {
-            detail = `${discount} until ${moment(discountEnd).format('D MMM YYYY')}`;
+            detail = `${discount} until ${moment(discountEnd).format('MMM YYYY')}`;
         } else if (offer.duration === 'repeating' && offer.duration_in_months) {
             detail = `${discount} for ${offer.duration_in_months} ${offer.duration_in_months === 1 ? 'month' : 'months'}`;
         } else if (offer.duration === 'forever') {
@@ -153,4 +160,25 @@ export function getOfferDisplayData(offer, sub = {}) {
     }
 
     return {label, detail};
+}
+
+export function getDiscountPrice(sub) {
+    if (!sub.next_payment || !sub.next_payment.discount) {
+        return null;
+    }
+
+    if (sub.next_payment.amount === sub.next_payment.original_amount) {
+        return null;
+    }
+
+    return {
+        discountedPrice: {
+            currencySymbol: getSymbol(sub.next_payment.currency),
+            nonDecimalAmount: getNonDecimal(sub.next_payment.amount)
+        },
+        originalPrice: {
+            currencySymbol: getSymbol(sub.next_payment.currency),
+            nonDecimalAmount: getNonDecimal(sub.next_payment.original_amount)
+        }
+    };
 }
