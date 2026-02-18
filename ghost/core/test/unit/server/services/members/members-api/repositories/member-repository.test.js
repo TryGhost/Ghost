@@ -64,6 +64,50 @@ describe('MemberRepository', function () {
         });
     });
 
+    describe('#getMRR', function () {
+        it('trial subscriptions have a MRR of 0', function () {
+            const repo = new MemberRepository({OfferRedemption: mockOfferRedemption});
+
+            const mrr = repo.getMRR({
+                interval: 'month',
+                amount: 500,
+                status: 'trialing'
+            });
+
+            assert.equal(mrr, 0);
+        });
+
+        it('offers of type trial have a MRR of 0', function () {
+            const repo = new MemberRepository({OfferRedemption: mockOfferRedemption});
+
+            const mrr = repo.getMRR({
+                interval: 'month',
+                amount: 500,
+                status: 'trialing',
+                offer: {
+                    type: 'trial'
+                }
+            });
+
+            assert.equal(mrr, 0);
+        });
+
+        it('offers of type free_months have no impact on MRR', function () {
+            const repo = new MemberRepository({OfferRedemption: mockOfferRedemption});
+
+            const mrr = repo.getMRR({
+                interval: 'month',
+                amount: 500,
+                status: 'trialing',
+                offer: {
+                    type: 'free_months'
+                }
+            });
+
+            assert.equal(mrr, 500);
+        });
+    });
+
     describe('setComplimentarySubscription', function () {
         let Member;
         let productRepository;

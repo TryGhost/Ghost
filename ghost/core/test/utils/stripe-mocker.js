@@ -241,6 +241,44 @@ class StripeMocker {
     }
 
     /**
+     * Stripe sets subscription status to `trialing` when trial_end is in the future.
+     * The mock emulates this behavior for updates where status is not explicitly provided.
+     *
+     * @param {object} subscription
+     * @param {object} payload
+     */
+    #syncSubscriptionStatusWithTrialEnd(subscription, payload) {
+        if (!Object.prototype.hasOwnProperty.call(payload, 'trial_end')) {
+            return;
+        }
+
+        if (Object.prototype.hasOwnProperty.call(payload, 'status')) {
+            return;
+        }
+
+        const trialEnd = subscription.trial_end;
+        const now = Math.floor(Date.now() / 1000);
+
+        if (trialEnd === 'now' || trialEnd === null) {
+            if (subscription.status === 'trialing') {
+                subscription.status = 'active';
+            }
+            return;
+        }
+
+        const numericTrialEnd = typeof trialEnd === 'string' ? Number.parseFloat(trialEnd) : trialEnd;
+        if (!Number.isFinite(numericTrialEnd)) {
+            return;
+        }
+
+        if (numericTrialEnd > now) {
+            subscription.status = 'trialing';
+        } else if (subscription.status === 'trialing') {
+            subscription.status = 'active';
+        }
+    }
+
+    /**
      * Handles creation and updating of in memory resources.
      *
      * @param {Array} arr - The array to store the processed data.
@@ -349,6 +387,9 @@ class StripeMocker {
         if (!id) {
             // create
             decoded.id = `${resource.substr(0, 4)}_${this.#generateRandomId()}`;
+            if (resource === 'subscriptions') {
+                this.#syncSubscriptionStatusWithTrialEnd(decoded, decoded);
+            }
             arr.push(decoded);
             return [200, decoded];
         }
@@ -359,6 +400,9 @@ class StripeMocker {
             return [404];
         }
         Object.assign(subscription, decoded);
+        if (resource === 'subscriptions') {
+            this.#syncSubscriptionStatusWithTrialEnd(subscription, decoded);
+        }
         return [200, subscription];
     }
 

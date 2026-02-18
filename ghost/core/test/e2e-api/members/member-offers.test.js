@@ -2,6 +2,7 @@ const {agentProvider, mockManager, fixtureManager} = require('../../utils/e2e-fr
 const models = require('../../../core/server/models');
 const assert = require('node:assert/strict');
 const DomainEvents = require('@tryghost/domain-events');
+const addCalendarMonths = require('../../../core/server/services/members/members-api/utils/add-calendar-months');
 
 let membersAgent;
 let membersService;
@@ -810,11 +811,18 @@ describe('Members API - Member Offers', function () {
             const {subscription} = await getMemberSubscription('paid@test.com');
             const stripePrice = subscription.related('stripePrice');
             const stripeProduct = stripePrice.related('stripeProduct');
-
             const stripeSubscriptionId = subscription.get('subscription_id');
             const cadence = stripePrice.get('interval');
+            const originalCurrentPeriodEnd = subscription.get('current_period_end');
 
-            const currentPeriodEnd = subscription.get('current_period_end');
+            // Make sure the test subscription fixture has an active billing period
+            const currentPeriodEnd = new Date();
+            currentPeriodEnd.setUTCDate(currentPeriodEnd.getUTCDate() + 30);
+            currentPeriodEnd.setUTCMilliseconds(0);
+            await subscription.save({current_period_end: currentPeriodEnd}, {patch: true});
+            await subscription.refresh();
+
+            const expectedMrr = stripePrice.get('amount');
 
             const mockPrice = {
                 id: stripePrice.get('stripe_price_id'),
@@ -891,17 +899,23 @@ describe('Members API - Member Offers', function () {
 
                 await subscription.refresh();
                 assert.equal(subscription.get('offer_id'), retentionOffer.id);
+                assert.equal(subscription.get('mrr'), expectedMrr, 'MRR should not change');
+
+                // Subscription now should have a trialing status
+                assert.equal(subscription.get('status'), 'trialing');
 
                 // Trial period should be set to current period end + 1 month
-                const expectedTrialEnd = new Date(currentPeriodEnd);
-                expectedTrialEnd.setUTCMonth(expectedTrialEnd.getUTCMonth() + 1);
-
+                const expectedTrialEnd = addCalendarMonths(currentPeriodEnd, 1);
                 const trialEndAt = subscription.get('trial_end_at');
 
                 assert.ok(trialEndAt, 'trial_end_at should be set');
-                assert.equal(new Date(trialEndAt).getTime(), expectedTrialEnd.getTime());
+                assert.equal(
+                    trialEndAt.toISOString(),
+                    expectedTrialEnd.toISOString(),
+                    'Trial end date should be set to current period end + 1 month'
+                );
 
-                // Verify offer redemption was recorded
+                // Offer redemption should be recorded
                 const redemption = await models.OfferRedemption.findOne({
                     offer_id: retentionOffer.id,
                     subscription_id: subscription.id
@@ -915,7 +929,11 @@ describe('Members API - Member Offers', function () {
                 if (redemption) {
                     await models.OfferRedemption.destroy({id: redemption.id});
                 }
-                await subscription.save({offer_id: null, trial_end_at: null}, {patch: true});
+                await subscription.save({
+                    offer_id: null,
+                    trial_end_at: null,
+                    current_period_end: originalCurrentPeriodEnd
+                }, {patch: true});
                 await models.Offer.destroy({id: retentionOffer.id});
             }
         });
