@@ -22,13 +22,41 @@ By default, the script adds a default floating trigger button on the bottom righ
 
 Its possible to add custom trigger button of your own by adding data attribute `data-portal` to any HTML tag on page, and also specify a specific [page](https://github.com/TryGhost/Ghost/blob/main/ghost/portal/src/pages.js#L13-L22) to open from it by using it as `data-portal=signup`.
 
-Share modal can be opened with `data-portal="share"` (or `#/portal/share`). Optional metadata attributes are supported on the trigger element:
+Share modal can be opened with `data-portal="share"` (or `#/portal/share`).
+
+Default (zero-config) usage:
+```html
+<button type="button" data-portal="share">Share</button>
+```
+
+On pages where `{{ghost_head}}` is rendered, Portal will auto-resolve metadata from DOM tags:
+- URL: canonical URL (or current URL fallback)
+- Title: Open Graph title (or document title fallback)
+- Image: Open Graph image (or Twitter image fallback)
+
+Optional metadata attributes are supported as explicit overrides on the trigger element:
 
 - `data-portal-share-url`
 - `data-portal-share-title`
 - `data-portal-share-image`
 
-When share metadata is omitted, Portal falls back to the page canonical URL / current URL, Open Graph title / document title, and Open Graph image / Twitter image.
+Override example:
+```html
+<button
+    type="button"
+    data-portal="share"
+    data-portal-share-url="{{url absolute="true"}}"
+    data-portal-share-title="{{title}}"
+    data-portal-share-image="{{feature_image}}"
+>
+    Share
+</button>
+```
+
+Troubleshooting missing preview metadata:
+1. Verify the template includes `{{ghost_head}}`.
+2. Verify rendered HTML contains canonical + OG/Twitter tags.
+3. Use override attrs for custom/edge-case behavior.
 
 The script also adds custom class names to this element for open and close state of popup - `gh-portal-open` and `gh-portal-close`, allowing devs to update its UI based on popup state.
 
