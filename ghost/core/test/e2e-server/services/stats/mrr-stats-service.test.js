@@ -1,7 +1,6 @@
 const assert = require('node:assert/strict');
 const statsService = require('../../../../core/server/services/stats');
 const {agentProvider, fixtureManager, mockManager} = require('../../../utils/e2e-framework');
-require('should');
 const {stripeMocker} = require('../../../utils/e2e-framework-mock-manager');
 const moment = require('moment');
 
@@ -175,8 +174,7 @@ describe('MRR Stats Service', function () {
             await createMemberWithSubscription('month', 2, 'usd', moment(today).toISOString());
 
             const results = await statsService.api.mrr.fetchAllDeltas();
-            assert.equal(results.length, 3);
-            results.should.match([
+            assert.deepEqual(results, [
                 {
                     date: ninetyDaysAgo,
                     delta: 500,
