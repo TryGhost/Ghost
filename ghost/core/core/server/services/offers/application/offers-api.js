@@ -233,10 +233,10 @@ class OffersAPI {
             }
 
             // Filter out offers already redeemed on this subscription
-            const redeemedOfferIds = await this.repository.getRedeemedOfferIdsForSubscription({
+            const redeemedOfferIds = await this.repository.getRedeemedOfferIdsForSubscription(
                 subscriptionId,
-                transacting: transaction
-            });
+                {transacting: transaction}
+            );
 
             const beforeRedeemedFilter = available.length;
             available = available.filter(offer => !redeemedOfferIds.includes(offer.id));
@@ -247,6 +247,24 @@ class OffersAPI {
 
             debug(`listOffersAvailableToSubscription: returning ${available.length} available offers`);
             return available.map(OfferMapper.toDTO);
+        });
+    }
+
+    /**
+     * @param {object} options
+     * @param {string[]} options.subscriptionIds
+     * @returns {Promise<Array<{subscription_id: string, offer_id: string}>>}
+     */
+    async getRedeemedOfferIdsForSubscriptions({subscriptionIds}) {
+        if (subscriptionIds.length === 0) {
+            return [];
+        }
+
+        return await this.repository.createTransaction(async (transaction) => {
+            return await this.repository.getRedeemedOfferIdsForSubscriptions(
+                subscriptionIds,
+                {transacting: transaction}
+            );
         });
     }
 

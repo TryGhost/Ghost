@@ -115,11 +115,17 @@
                         <div class="gh-main-content-card gh-cp-membertier gh-cp-membertier-attribution gh-membertier-subscription">
                             {{#each this.tiers as |tier|}}
                                 {{#each tier.subscriptions as |sub index|}}
-                                    <div class="gh-tier-card-header flex items-center" data-test-tier={{tier.id}}>
+                                    <div class="gh-tier-card-header flex items-start" data-test-tier={{tier.id}}>
                                         <div class="gh-tier-card-price">
                                             <div class="flex items-start">
-                                                <span class="currency-symbol">{{sub.price.currencySymbol}}</span>
-                                                <span class="amount">{{format-number sub.price.nonDecimalAmount}}</span>
+                                                {{#if sub.hasActiveDiscount}}
+                                                    <span class="currency-symbol">{{sub.discountedPrice.currencySymbol}}</span>
+                                                    <span class="amount">{{format-number sub.discountedPrice.nonDecimalAmount}}</span>
+                                                    <span class="gh-membertier-original-price">{{sub.originalPrice.currencySymbol}}{{format-number sub.originalPrice.nonDecimalAmount}}</span>
+                                                {{else}}
+                                                    <span class="currency-symbol">{{sub.price.currencySymbol}}</span>
+                                                    <span class="amount">{{format-number sub.price.nonDecimalAmount}}</span>
+                                                {{/if}}
                                             </div>
                                             <div class="period">{{if (eq sub.price.interval "year") "yearly" "monthly"}}</div>
                                         </div>
