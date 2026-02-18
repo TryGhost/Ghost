@@ -900,6 +900,154 @@ describe('Portal Data attributes:', () => {
         });
     });
 
+    describe('data-portal=share', () => {
+        test('opens Portal share page', async () => {
+            document.body.innerHTML = `
+                <div data-portal="share"> </div>
+            `;
+            let {
+                popupFrame, triggerButtonFrame, ...utils
+            } = await setup({
+                site: FixturesSite.singleTier.basic,
+                showPopup: false
+            });
+            expect(popupFrame).not.toBeInTheDocument();
+            expect(triggerButtonFrame).toBeInTheDocument();
+            const portalElement = document.querySelector('[data-portal]');
+            fireEvent.click(portalElement);
+            popupFrame = await utils.findByTitle(/portal-popup/i);
+            expect(popupFrame).toBeInTheDocument();
+            const shareTitle = within(popupFrame.contentDocument).queryByText(/^Share$/i);
+            expect(shareTitle).toBeInTheDocument();
+        });
+
+        test('passes data-portal-share-url and data-portal-share-title as pageData', async () => {
+            document.body.innerHTML = `
+                <div data-portal="share" data-portal-share-url="https://example.com/post" data-portal-share-title="Example post"> </div>
+            `;
+
+            const dispatchActionSpy = vi.spyOn(App.prototype, 'dispatchAction');
+
+            let {
+                popupFrame, triggerButtonFrame, ...utils
+            } = await setup({
+                site: FixturesSite.singleTier.basic,
+                showPopup: false
+            });
+            expect(popupFrame).not.toBeInTheDocument();
+            expect(triggerButtonFrame).toBeInTheDocument();
+
+            const portalElement = document.querySelector('[data-portal]');
+            fireEvent.click(portalElement);
+
+            await waitFor(() => {
+                const shareOpenPopupCall = dispatchActionSpy.mock.calls.find(([action, data]) => {
+                    return action === 'openPopup' && data?.page === 'share';
+                });
+
+                expect(shareOpenPopupCall?.[1]).toEqual(expect.objectContaining({
+                    page: 'share',
+                    pageData: {
+                        url: 'https://example.com/post',
+                        title: 'Example post'
+                    }
+                }));
+            });
+
+            popupFrame = await utils.findByTitle(/portal-popup/i);
+            expect(popupFrame).toBeInTheDocument();
+        });
+
+        test('passes empty share pageData when no share attributes are provided', async () => {
+            document.body.innerHTML = `
+                <div data-portal="share"> </div>
+            `;
+
+            const dispatchActionSpy = vi.spyOn(App.prototype, 'dispatchAction');
+
+            let {
+                popupFrame, triggerButtonFrame
+            } = await setup({
+                site: FixturesSite.singleTier.basic,
+                showPopup: false
+            });
+            expect(popupFrame).not.toBeInTheDocument();
+            expect(triggerButtonFrame).toBeInTheDocument();
+
+            const portalElement = document.querySelector('[data-portal]');
+            fireEvent.click(portalElement);
+
+            await waitFor(() => {
+                const shareOpenPopupCall = dispatchActionSpy.mock.calls.find(([action, data]) => {
+                    return action === 'openPopup' && data?.page === 'share';
+                });
+
+                expect(shareOpenPopupCall?.[1]).toEqual(expect.objectContaining({
+                    page: 'share',
+                    pageData: {}
+                }));
+            });
+        });
+
+        test('passes only url when title attribute is missing', async () => {
+            document.body.innerHTML = `
+                <div data-portal="share" data-portal-share-url="https://example.com/only-url"> </div>
+            `;
+
+            const dispatchActionSpy = vi.spyOn(App.prototype, 'dispatchAction');
+
+            await setup({
+                site: FixturesSite.singleTier.basic,
+                showPopup: false
+            });
+
+            const portalElement = document.querySelector('[data-portal]');
+            fireEvent.click(portalElement);
+
+            await waitFor(() => {
+                const shareOpenPopupCall = dispatchActionSpy.mock.calls.find(([action, data]) => {
+                    return action === 'openPopup' && data?.page === 'share';
+                });
+
+                expect(shareOpenPopupCall?.[1]).toEqual(expect.objectContaining({
+                    page: 'share',
+                    pageData: {
+                        url: 'https://example.com/only-url'
+                    }
+                }));
+            });
+        });
+
+        test('passes only title when url attribute is missing', async () => {
+            document.body.innerHTML = `
+                <div data-portal="share" data-portal-share-title="Only title"> </div>
+            `;
+
+            const dispatchActionSpy = vi.spyOn(App.prototype, 'dispatchAction');
+
+            await setup({
+                site: FixturesSite.singleTier.basic,
+                showPopup: false
+            });
+
+            const portalElement = document.querySelector('[data-portal]');
+            fireEvent.click(portalElement);
+
+            await waitFor(() => {
+                const shareOpenPopupCall = dispatchActionSpy.mock.calls.find(([action, data]) => {
+                    return action === 'openPopup' && data?.page === 'share';
+                });
+
+                expect(shareOpenPopupCall?.[1]).toEqual(expect.objectContaining({
+                    page: 'share',
+                    pageData: {
+                        title: 'Only title'
+                    }
+                }));
+            });
+        });
+    });
+
     describe('data-portal=account', () => {
         test('opens Portal account home page', async () => {
             document.body.innerHTML = `

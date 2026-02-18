@@ -25,6 +25,7 @@ import {GiftRedemptionStyles} from './pages/gift-redemption-page';
 import {GiftSuccessStyle} from './pages/gift-success-page';
 import {TipsAndDonationsErrorStyle} from './pages/support-error';
 import {RecommendationsPageStyles} from './pages/recommendations-page';
+import {SharePageStyles} from './pages/share-page';
 import {TransistorPodcastsActionStyles} from './pages/AccountHomePage/components/transistor-podcasts-action';
 import NotificationStyle from './notification.styles';
 
@@ -1318,6 +1319,7 @@ export function getFrameStyles({site}) {
         TipsAndDonationsErrorStyle +
         GiftSuccessStyle +
         RecommendationsPageStyles +
+        SharePageStyles +
         TransistorPodcastsActionStyles;
     return FrameStyle;
 }
