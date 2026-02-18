@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const {assertExists} = require('../../utils/assertions');
+const {assertExists, assertObjectMatches} = require('../../utils/assertions');
 const errors = require('@tryghost/errors');
 const should = require('should');
 const sinon = require('sinon');
@@ -2073,7 +2073,7 @@ describe('Post Model', function () {
                     updatedPost = updatedPost.toJSON({withRelated: ['tags']});
 
                     assert.equal(updatedPost.tags.length, 1);
-                    updatedPost.tags[0].should.have.properties({
+                    assertObjectMatches(updatedPost.tags[0], {
                         name: postJSON.tags[0].name,
                         slug: postJSON.tags[0].slug,
                         id: postJSON.tags[0].id
@@ -2103,16 +2103,16 @@ describe('Post Model', function () {
                 updatedPost = updatedPost.toJSON({withRelated: ['tags']});
 
                 assert.equal(updatedPost.tags.length, 3);
-                updatedPost.tags[0].should.have.properties({
+                assertObjectMatches(updatedPost.tags[0], {
                     name: 'tag4'
                 });
 
-                updatedPost.tags[1].should.have.properties({
+                assertObjectMatches(updatedPost.tags[1], {
                     name: 'tag3',
                     id: postJSON.tags[2].id
                 });
 
-                updatedPost.tags[2].should.have.properties({
+                assertObjectMatches(updatedPost.tags[2], {
                     name: 'tag1',
                     id: postJSON.tags[0].id
                 });
@@ -2134,9 +2134,9 @@ describe('Post Model', function () {
 
                 assert.equal(updatedPost.tags.length, 3);
 
-                updatedPost.tags[0].should.have.properties({name: 'C', slug: 'c'});
-                updatedPost.tags[1].should.have.properties({name: 'C++', slug: 'c-2'});
-                updatedPost.tags[2].should.have.properties({name: 'C#', slug: 'c-3'});
+                assertObjectMatches(updatedPost.tags[0], {name: 'C', slug: 'c'});
+                assertObjectMatches(updatedPost.tags[1], {name: 'C++', slug: 'c-2'});
+                assertObjectMatches(updatedPost.tags[2], {name: 'C#', slug: 'c-3'});
             });
         });
 
