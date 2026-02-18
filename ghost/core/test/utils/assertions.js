@@ -45,12 +45,14 @@ function assertArrayContainsDeep(arr, expectedElements, message) {
  */
 function objectMatches(obj, properties) {
     for (const [key, value] of Object.entries(properties)) {
-        if (isPlainObject(obj[key])) {
-            return objectMatches(obj[key], value);
-        } else {
-            return isDeepStrictEqual(obj[key], value);
+        const matches = isPlainObject(obj[key])
+            ? objectMatches(obj[key], value)
+            : isDeepStrictEqual(obj[key], value);
+        if (!matches) {
+            return false;
         }
     }
+    return true;
 }
 
 /**

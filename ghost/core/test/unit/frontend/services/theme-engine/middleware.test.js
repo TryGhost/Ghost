@@ -156,12 +156,17 @@ describe('Themes middleware', function () {
                     const templateOptions = hbsUpdateTemplateOptionsStub.firstCall.args[0];
                     const data = templateOptions.data;
 
-                    data.should.be.an.Object().with.properties('site', 'labs', 'config', 'custom');
+                    assert(data && typeof data === 'object');
+                    assert('site' in data);
+                    assert('labs' in data);
+                    assert('config' in data);
+                    assert('custom' in data);
 
                     // Check Theme Config
-                    data.config.should.be.an.Object()
-                        .with.properties(themeDataExpectedProps)
-                        .and.size(themeDataExpectedProps.length);
+                    assert(data.config && typeof data.config === 'object');
+                    assert('posts_per_page' in data.config);
+                    assert('image_sizes' in data.config);
+                    assert.equal(Object.keys(data.config).length, themeDataExpectedProps.length);
                     // posts per page should be set according to the stub
                     assert.equal(data.config.posts_per_page, 2);
 
@@ -222,9 +227,6 @@ describe('Themes middleware', function () {
                     const templateOptions = hbsUpdateLocalTemplateOptionsStub.firstCall.args[1];
                     const data = templateOptions.data;
 
-                    data.should.be.an.Object().with.properties('site');
-
-                    data.site.should.be.an.Object().with.properties('accent_color', '_preview');
                     assert.equal(data.site._preview, previewString);
                     assert.equal(data.site.accent_color, '#000fff');
 
@@ -249,9 +251,6 @@ describe('Themes middleware', function () {
                     const templateOptions = hbsUpdateLocalTemplateOptionsStub.firstCall.args[1];
                     const data = templateOptions.data;
 
-                    data.should.be.an.Object().with.properties('site');
-
-                    data.site.should.be.an.Object().with.properties('accent_color', 'icon', '_preview');
                     assert.equal(data.site._preview, previewString);
                     assert.equal(data.site.accent_color, '#000fff');
                     assert.equal(data.site.icon, '/content/images/myimg.png');
@@ -278,9 +277,8 @@ describe('Themes middleware', function () {
                     const templateOptions = hbsUpdateLocalTemplateOptionsStub.firstCall.args[1];
                     const data = templateOptions.data;
 
-                    data.should.be.an.Object().with.properties('site', 'custom');
-
-                    data.custom.should.be.an.Object().with.properties('header_typography');
+                    assert(data && typeof data === 'object');
+                    assert('site' in data);
                     assert.equal(data.custom.header_typography, 'Serif');
 
                     done();
@@ -305,9 +303,10 @@ describe('Themes middleware', function () {
                     const templateOptions = hbsUpdateLocalTemplateOptionsStub.firstCall.args[1];
                     const data = templateOptions.data;
 
-                    data.should.be.an.Object().with.properties('site', 'custom');
+                    assert(data && typeof data === 'object');
+                    assert('site' in data);
+                    assert('custom' in data);
 
-                    data.custom.should.be.an.Object().with.properties('header_typography');
                     assert.equal(data.custom.header_typography, 'Serif');
 
                     assert(!('unknown_setting' in data.custom));
@@ -333,8 +332,8 @@ describe('Themes middleware', function () {
                     const templateOptions = hbsUpdateLocalTemplateOptionsStub.firstCall.args[1];
                     const data = templateOptions.data;
 
-                    data.should.be.an.Object().with.properties('site', 'custom');
-
+                    assert(data && typeof data === 'object');
+                    assert('site' in data);
                     assert.deepEqual(data.custom, {});
 
                     done();
@@ -358,8 +357,8 @@ describe('Themes middleware', function () {
                     const templateOptions = hbsUpdateLocalTemplateOptionsStub.firstCall.args[1];
                     const data = templateOptions.data;
 
-                    data.should.be.an.Object().with.properties('site', 'custom');
-
+                    assert(data && typeof data === 'object');
+                    assert('site' in data);
                     assert.deepEqual(data.custom, {});
 
                     done();
