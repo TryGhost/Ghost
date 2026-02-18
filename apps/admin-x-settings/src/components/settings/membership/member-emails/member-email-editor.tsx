@@ -73,6 +73,7 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
                     <>
                         <koenig.EmEnDashPlugin />
                         <koenig.EmojiPickerPlugin />
+                        <koenig.HorizontalRulePlugin />
                         <koenig.ListPlugin />
 
                         {welcomeEmailEditorEnabled && (
@@ -82,7 +83,6 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
                                 <koenig.CalloutPlugin />
                                 <koenig.CardMenuPlugin />
                                 <koenig.EmailCtaPlugin />
-                                <koenig.HorizontalRulePlugin />
                                 <koenig.HtmlPlugin />
                                 <koenig.KoenigSelectorPlugin />
                                 <koenig.ReplacementStringsPlugin />
