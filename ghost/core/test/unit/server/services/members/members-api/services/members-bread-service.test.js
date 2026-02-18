@@ -173,6 +173,11 @@ describe('MemberBreadService', function () {
             emailSuppressionListStub,
             nextPaymentCalculator;
 
+        const defaultOffersAPI = {
+            getOffer: sinon.stub().resolves(null),
+            getRedeemedOfferIdsForSubscriptions: sinon.stub().resolves([])
+        };
+
         const getService = (options = {}) => {
             return new MemberBreadService({
                 settingsHelpers: {
@@ -182,7 +187,7 @@ describe('MemberBreadService', function () {
                 memberAttributionService: memberAttributionServiceStub,
                 emailSuppressionList: emailSuppressionListStub,
                 nextPaymentCalculator: options.nextPaymentCalculator || nextPaymentCalculator,
-                offersAPI: options.offersAPI
+                offersAPI: options.offersAPI || defaultOffersAPI
             });
         };
 
@@ -207,7 +212,8 @@ describe('MemberBreadService', function () {
                 related: sinon.stub().returns([])
             };
             memberAttributionServiceStub = {
-                getMemberCreatedAttribution: sinon.stub().resolves(null)
+                getMemberCreatedAttribution: sinon.stub().resolves(null),
+                getSubscriptionCreatedAttribution: sinon.stub().resolves(null)
             };
             emailSuppressionListStub = {
                 getSuppressionData: sinon.stub().resolves({})
@@ -239,6 +245,7 @@ describe('MemberBreadService', function () {
             ];
             const subscriptionModels = [
                 {
+                    id: '1',
                     get: sinon.stub()
                 }
             ];
@@ -272,8 +279,9 @@ describe('MemberBreadService', function () {
                     subscription_id: 'sub_456'
                 }
             ];
-            const subscriptionModels = subscriptionsJSON.map((subscription) => {
+            const subscriptionModels = subscriptionsJSON.map((subscription, index) => {
                 const model = {
+                    id: `${index + 1}`,
                     get: sinon.stub()
                 };
 
@@ -341,8 +349,9 @@ describe('MemberBreadService', function () {
                     product_id: productsJSON[1].id
                 }
             ];
-            const subscriptionModels = subscriptionsJSON.map((subscription) => {
+            const subscriptionModels = subscriptionsJSON.map((subscription, index) => {
                 const model = {
+                    id: `${index + 1}`,
                     get: sinon.stub()
                 };
 
@@ -468,8 +477,9 @@ describe('MemberBreadService', function () {
                     }
                 }
             ];
-            const subscriptionModels = subscriptionsJSON.map((subscription) => {
+            const subscriptionModels = subscriptionsJSON.map((subscription, index) => {
                 const model = {
+                    id: `${index + 1}`,
                     get: sinon.stub()
                 };
 
@@ -525,8 +535,9 @@ describe('MemberBreadService', function () {
                     current_period_end: new Date('2099-06-15T00:00:00.000Z')
                 }
             ];
-            const subscriptionModels = subscriptionsJSON.map((subscription) => {
+            const subscriptionModels = subscriptionsJSON.map((subscription, index) => {
                 const model = {
+                    id: `${index + 1}`,
                     get: sinon.stub()
                 };
 
@@ -555,7 +566,8 @@ describe('MemberBreadService', function () {
             };
 
             const offersAPIStub = {
-                getOffer: sinon.stub().withArgs({id: offerId}).resolves(offerDTO)
+                getOffer: sinon.stub().withArgs({id: offerId}).resolves(offerDTO),
+                getRedeemedOfferIdsForSubscriptions: sinon.stub().resolves([{subscription_id: '1', offer_id: offerId}])
             };
 
             const memberBreadService = getService({
@@ -578,6 +590,141 @@ describe('MemberBreadService', function () {
             assert.equal(nextPayment.discount.type, 'percent');
             assert.equal(nextPayment.discount.amount, 20);
             assert.equal(nextPayment.discount.duration, 'repeating');
+        });
+
+        it('attaches offer_redemptions to subscriptions', async function () {
+            const offerId1 = 'offer_signup_1';
+            const offerId2 = 'offer_retention_1';
+
+            const subscriptionsJSON = [
+                {
+                    id: 'sub_123',
+                    subscription_id: 'sub_123',
+                    status: 'active',
+                    plan: {
+                        amount: 500,
+                        interval: 'month',
+                        currency: 'USD'
+                    },
+                    price: {
+                        product: {
+                            product_id: 'prod_123'
+                        }
+                    }
+                }
+            ];
+            const subscriptionModels = subscriptionsJSON.map((subscription, index) => {
+                const model = {
+                    id: `${index + 1}`,
+                    get: sinon.stub()
+                };
+
+                model.get.withArgs('subscription_id').returns(subscription.subscription_id);
+                model.get.withArgs('offer_id').returns(offerId2);
+
+                return model;
+            });
+
+            memberModelStub.related
+                .withArgs('stripeSubscriptions')
+                .returns(subscriptionModels);
+
+            memberModelStub.toJSON.returns({
+                ...memberModelJSON,
+                subscriptions: subscriptionsJSON
+            });
+
+            const offerDTO1 = {
+                id: offerId1,
+                name: 'Signup Offer',
+                type: 'percent',
+                amount: 10,
+                duration: 'once'
+            };
+            const offerDTO2 = {
+                id: offerId2,
+                name: 'Retention Offer',
+                type: 'percent',
+                amount: 20,
+                duration: 'repeating',
+                duration_in_months: 3
+            };
+
+            const offersAPIStub = {
+                getOffer: sinon.stub().callsFake(async ({id}) => {
+                    if (id === offerId1) {
+                        return offerDTO1;
+                    }
+                    if (id === offerId2) {
+                        return offerDTO2;
+                    }
+                    return null;
+                }),
+                getRedeemedOfferIdsForSubscriptions: sinon.stub().resolves([
+                    {subscription_id: '1', offer_id: offerId1},
+                    {subscription_id: '1', offer_id: offerId2}
+                ])
+            };
+
+            const memberBreadService = getService({
+                offersAPI: offersAPIStub
+            });
+
+            const member = await memberBreadService.read({id: MEMBER_ID});
+
+            assert.equal(member.subscriptions.length, 1);
+
+            // subscription.offer should be the current active offer (from offer_id)
+            assert.equal(member.subscriptions[0].offer.id, offerId2);
+            assert.equal(member.subscriptions[0].offer.name, 'Retention Offer');
+
+            // subscription.offer_redemptions should be all redeemed offers (from offer_redemptions)
+            assert.equal(member.subscriptions[0].offer_redemptions.length, 2);
+            assert.equal(member.subscriptions[0].offer_redemptions[0].id, offerId1);
+            assert.equal(member.subscriptions[0].offer_redemptions[0].name, 'Signup Offer');
+            assert.equal(member.subscriptions[0].offer_redemptions[1].id, offerId2);
+            assert.equal(member.subscriptions[0].offer_redemptions[1].name, 'Retention Offer');
+        });
+
+        it('returns empty offer_redemptions when no redemptions exist', async function () {
+            const subscriptionsJSON = [
+                {
+                    id: 'sub_123',
+                    subscription_id: 'sub_123',
+                    price: {
+                        product: {
+                            product_id: 'prod_123'
+                        }
+                    }
+                }
+            ];
+            const subscriptionModels = subscriptionsJSON.map((subscription, index) => {
+                const model = {
+                    id: `${index + 1}`,
+                    get: sinon.stub()
+                };
+
+                model.get.withArgs('subscription_id').returns(subscription.subscription_id);
+                model.get.withArgs('offer_id').returns(undefined);
+
+                return model;
+            });
+
+            memberModelStub.related
+                .withArgs('stripeSubscriptions')
+                .returns(subscriptionModels);
+
+            memberModelStub.toJSON.returns({
+                ...memberModelJSON,
+                subscriptions: subscriptionsJSON
+            });
+
+            const memberBreadService = getService();
+            const member = await memberBreadService.read({id: MEMBER_ID});
+
+            assert.equal(member.subscriptions.length, 1);
+            assert.equal(member.subscriptions[0].offer, null);
+            assert.deepEqual(member.subscriptions[0].offer_redemptions, []);
         });
     });
 });

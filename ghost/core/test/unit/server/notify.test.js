@@ -44,7 +44,8 @@ describe('Notify', function () {
             assert.equal(process.send.calledOnce, true);
 
             let message = process.send.firstCall.args[0];
-            message.should.be.an.Object().with.properties('started', 'debug');
+            assert(message && typeof message === 'object');
+            assert('debug' in message);
             assert(!('error' in message));
             assert.equal(message.started, true);
         });
@@ -55,9 +56,9 @@ describe('Notify', function () {
             assert.equal(process.send.calledOnce, true);
 
             let message = process.send.firstCall.args[0];
-            message.should.be.an.Object().with.properties('started', 'debug', 'error');
+            assert(message && typeof message === 'object');
+            assert('debug' in message);
             assert.equal(message.started, false);
-            message.error.should.be.an.Object().with.properties('message');
             assert.equal(message.error.message, 'something went wrong');
         });
 
@@ -70,7 +71,8 @@ describe('Notify', function () {
             assert.equal(socketStub.firstCall.args[0], 'testing');
 
             let message = socketStub.firstCall.args[1];
-            message.should.be.an.Object().with.properties('started', 'debug');
+            assert(message && typeof message === 'object');
+            assert('debug' in message);
             assert(!('error' in message));
             assert.equal(message.started, true);
         });
@@ -84,9 +86,9 @@ describe('Notify', function () {
             assert.equal(socketStub.firstCall.args[0], 'testing');
 
             let message = socketStub.firstCall.args[1];
-            message.should.be.an.Object().with.properties('started', 'debug', 'error');
+            assert(message && typeof message === 'object');
+            assert('debug' in message);
             assert.equal(message.started, false);
-            message.error.should.be.an.Object().with.properties('message');
             assert.equal(message.error.message, 'something went wrong');
         });
 

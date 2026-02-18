@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
+const {assertObjectMatches} = require('../../utils/assertions');
 const {agentProvider, fixtureManager, configUtils} = require('../../utils/e2e-framework');
-const should = require('should');
 const models = require('../../../core/server/models');
 const urlService = require('../../../core/server/services/url');
 const memberAttributionService = require('../../../core/server/services/member-attribution');
@@ -28,18 +28,18 @@ describe('Member Attribution Service', function () {
                         time: Date.now()
                     }
                 ]);
-                attribution.should.match(({
+                assertObjectMatches(attribution, {
                     id: null,
                     url: subdomainRelative,
                     type: 'url'
-                }));
+                });
 
-                (await attribution.fetchResource()).should.match(({
+                assertObjectMatches(await attribution.fetchResource(), {
                     id: null,
                     url: absoluteUrl,
                     type: 'url',
                     title: subdomainRelative
-                }));
+                });
             });
 
             it('resolves posts', async function () {
@@ -53,20 +53,20 @@ describe('Member Attribution Service', function () {
                         time: Date.now()
                     }
                 ]);
-                attribution.should.match(({
+                assertObjectMatches(attribution, {
                     id: post.id,
                     url,
                     type: 'post'
-                }));
+                });
 
                 const absoluteUrl = urlService.getUrlByResourceId(post.id, {absolute: true, withSubdirectory: true});
 
-                (await attribution.fetchResource()).should.match(({
+                assertObjectMatches(await attribution.fetchResource(), {
                     id: post.id,
                     url: absoluteUrl,
                     type: 'post',
                     title: post.get('title')
-                }));
+                });
             });
 
             it('resolves removed resources', async function () {
@@ -84,21 +84,21 @@ describe('Member Attribution Service', function () {
                 ]);
 
                 // Without subdirectory
-                attribution.should.match(({
+                assertObjectMatches(attribution, {
                     id: post.id,
                     url: urlWithoutSubdirectory,
                     type: 'post'
-                }));
+                });
 
                 // Unpublish this post
                 await models.Post.edit({status: 'draft'}, {id});
 
-                (await attribution.fetchResource()).should.match(({
+                assertObjectMatches(await attribution.fetchResource(), {
                     id: null,
                     url: absoluteUrl,
                     type: 'url',
                     title: urlWithoutSubdirectory
-                }));
+                });
 
                 await models.Post.edit({status: 'published'}, {id});
             });
@@ -116,20 +116,20 @@ describe('Member Attribution Service', function () {
                         time: Date.now()
                     }
                 ]);
-                attribution.should.match(({
+                assertObjectMatches(attribution, {
                     id: post.id,
                     url,
                     type: 'page'
-                }));
+                });
 
                 const absoluteUrl = urlService.getUrlByResourceId(post.id, {absolute: true, withSubdirectory: true});
 
-                (await attribution.fetchResource()).should.match(({
+                assertObjectMatches(await attribution.fetchResource(), {
                     id: post.id,
                     url: absoluteUrl,
                     type: 'page',
                     title: post.get('title')
-                }));
+                });
             });
 
             it('resolves tags', async function () {
@@ -143,20 +143,20 @@ describe('Member Attribution Service', function () {
                         time: Date.now()
                     }
                 ]);
-                attribution.should.match(({
+                assertObjectMatches(attribution, {
                     id: tag.id,
                     url,
                     type: 'tag'
-                }));
+                });
 
                 const absoluteUrl = urlService.getUrlByResourceId(tag.id, {absolute: true, withSubdirectory: true});
 
-                (await attribution.fetchResource()).should.match(({
+                assertObjectMatches(await attribution.fetchResource(), {
                     id: tag.id,
                     url: absoluteUrl,
                     type: 'tag',
                     title: tag.get('name')
-                }));
+                });
             });
 
             it('resolves authors', async function () {
@@ -170,20 +170,20 @@ describe('Member Attribution Service', function () {
                         time: Date.now()
                     }
                 ]);
-                attribution.should.match(({
+                assertObjectMatches(attribution, {
                     id: author.id,
                     url,
                     type: 'author'
-                }));
+                });
 
                 const absoluteUrl = urlService.getUrlByResourceId(author.id, {absolute: true, withSubdirectory: true});
 
-                (await attribution.fetchResource()).should.match(({
+                assertObjectMatches(await attribution.fetchResource(), {
                     id: author.id,
                     url: absoluteUrl,
                     type: 'author',
                     title: author.get('name')
-                }));
+                });
             });
         });
 
@@ -207,18 +207,18 @@ describe('Member Attribution Service', function () {
                         time: Date.now()
                     }
                 ]);
-                attribution.should.match(({
+                assertObjectMatches(attribution, {
                     id: null,
                     url: subdomainRelative,
                     type: 'url'
-                }));
+                });
 
-                (await attribution.fetchResource()).should.match(({
+                assertObjectMatches(await attribution.fetchResource(), {
                     id: null,
                     url: absoluteUrl,
                     type: 'url',
                     title: subdomainRelative
-                }));
+                });
             });
 
             it('resolves posts', async function () {
@@ -238,20 +238,20 @@ describe('Member Attribution Service', function () {
                 ]);
 
                 // Without subdirectory
-                attribution.should.match(({
+                assertObjectMatches(attribution, {
                     id: post.id,
                     url: urlWithoutSubdirectory,
                     type: 'post'
-                }));
+                });
 
                 const absoluteUrl = urlService.getUrlByResourceId(post.id, {absolute: true, withSubdirectory: true});
 
-                (await attribution.fetchResource()).should.match(({
+                assertObjectMatches(await attribution.fetchResource(), {
                     id: post.id,
                     url: absoluteUrl,
                     type: 'post',
                     title: post.get('title')
-                }));
+                });
             });
 
             it('resolves removed resources', async function () {
@@ -272,21 +272,21 @@ describe('Member Attribution Service', function () {
                 ]);
 
                 // Without subdirectory
-                attribution.should.match(({
+                assertObjectMatches(attribution, {
                     id: post.id,
                     url: urlWithoutSubdirectory,
                     type: 'post'
-                }));
+                });
 
                 // Unpublish this post
                 await models.Post.edit({status: 'draft'}, {id});
 
-                (await attribution.fetchResource()).should.match(({
+                assertObjectMatches(await attribution.fetchResource(), {
                     id: null,
                     url: absoluteUrl,
                     type: 'url',
                     title: urlWithoutSubdirectory
-                }));
+                });
             });
 
             it('resolves pages', async function () {
@@ -303,20 +303,20 @@ describe('Member Attribution Service', function () {
                         time: Date.now()
                     }
                 ]);
-                attribution.should.match(({
+                assertObjectMatches(attribution, {
                     id: post.id,
                     url: urlWithoutSubdirectory,
                     type: 'page'
-                }));
+                });
 
                 const absoluteUrl = urlService.getUrlByResourceId(post.id, {absolute: true, withSubdirectory: true});
 
-                (await attribution.fetchResource()).should.match(({
+                assertObjectMatches(await attribution.fetchResource(), {
                     id: post.id,
                     url: absoluteUrl,
                     type: 'page',
                     title: post.get('title')
-                }));
+                });
             });
 
             it('resolves tags', async function () {
@@ -331,20 +331,20 @@ describe('Member Attribution Service', function () {
                         time: Date.now()
                     }
                 ]);
-                attribution.should.match(({
+                assertObjectMatches(attribution, {
                     id: tag.id,
                     url: urlWithoutSubdirectory,
                     type: 'tag'
-                }));
+                });
 
                 const absoluteUrl = urlService.getUrlByResourceId(tag.id, {absolute: true, withSubdirectory: true});
 
-                (await attribution.fetchResource()).should.match(({
+                assertObjectMatches(await attribution.fetchResource(), {
                     id: tag.id,
                     url: absoluteUrl,
                     type: 'tag',
                     title: tag.get('name')
-                }));
+                });
             });
 
             it('resolves authors', async function () {
@@ -359,20 +359,20 @@ describe('Member Attribution Service', function () {
                         time: Date.now()
                     }
                 ]);
-                attribution.should.match(({
+                assertObjectMatches(attribution, {
                     id: author.id,
                     url: urlWithoutSubdirectory,
                     type: 'author'
-                }));
+                });
 
                 const absoluteUrl = urlService.getUrlByResourceId(author.id, {absolute: true, withSubdirectory: true});
 
-                (await attribution.fetchResource()).should.match(({
+                assertObjectMatches(await attribution.fetchResource(), {
                     id: author.id,
                     url: absoluteUrl,
                     type: 'author',
                     title: author.get('name')
-                }));
+                });
             });
         });
     });
@@ -392,14 +392,14 @@ describe('Member Attribution Service', function () {
                     referrerUrl: null
                 }
             ]);
-            attribution.should.match(({
+            assertObjectMatches(attribution, {
                 id: null,
                 url: '/',
                 type: 'url',
                 referrerSource: 'Ghost Explore',
                 referrerMedium: 'Ghost Network',
                 referrerUrl: null
-            }));
+            });
         });
 
         it('resolves Portal signup URLs', async function () {
@@ -412,14 +412,14 @@ describe('Member Attribution Service', function () {
                     referrerSource: 'casper'
                 }
             ]);
-            attribution.should.match(({
+            assertObjectMatches(attribution, {
                 id: null,
                 url: '/',
                 type: 'url',
                 referrerSource: 'casper',
                 referrerMedium: null,
                 referrerUrl: null
-            }));
+            });
         });
     });
 });

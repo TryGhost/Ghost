@@ -1675,14 +1675,16 @@ describe(`Admin Comments API`, function () {
                 html: '<p>Reported comment</p>'
             });
 
-            // Add reports from different members
+            // Add reports from different members with explicit timestamps to ensure deterministic ordering
             await models.CommentReport.add({
                 comment_id: comment.id,
-                member_id: fixtureManager.get('members', 1).id
+                member_id: fixtureManager.get('members', 1).id,
+                created_at: new Date('2023-06-01')
             });
             await models.CommentReport.add({
                 comment_id: comment.id,
-                member_id: fixtureManager.get('members', 2).id
+                member_id: fixtureManager.get('members', 2).id,
+                created_at: new Date('2023-01-01')
             });
 
             await adminApi.get(`/comments/${comment.id}/reports/`)
@@ -1798,14 +1800,16 @@ describe(`Admin Comments API`, function () {
                 html: '<p>Liked comment</p>'
             });
 
-            // Add likes from different members
+            // Add likes from different members with explicit timestamps to ensure deterministic ordering
             await models.CommentLike.add({
                 comment_id: comment.id,
-                member_id: fixtureManager.get('members', 1).id
+                member_id: fixtureManager.get('members', 1).id,
+                created_at: new Date('2023-06-01')
             });
             await models.CommentLike.add({
                 comment_id: comment.id,
-                member_id: fixtureManager.get('members', 2).id
+                member_id: fixtureManager.get('members', 2).id,
+                created_at: new Date('2023-01-01')
             });
 
             await adminApi.get(`/comments/${comment.id}/likes/`)

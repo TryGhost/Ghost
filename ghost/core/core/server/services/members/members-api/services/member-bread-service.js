@@ -166,18 +166,71 @@ module.exports = class MemberBREADService {
     }
 
     /**
+     * @private Builds a map between Stripe subscription IDs and their redeemed offers (from offer_redemptions)
+     * @param {import('bookshelf').Model[]} subscriptions - Bookshelf subscription models
+     * @returns {Promise<Map<string, OfferDTO[]>>}
+     */
+    async fetchSubscriptionOfferRedemptions(subscriptions) {
+        const subscriptionOfferRedemptions = new Map();
+
+        if (subscriptions.length === 0) {
+            return subscriptionOfferRedemptions;
+        }
+
+        try {
+            const subscriptionIdMap = new Map();
+            const subscriptionIds = [];
+
+            for (const subscription of subscriptions) {
+                subscriptionIdMap.set(subscription.id, subscription.get('subscription_id'));
+
+                subscriptionIds.push(subscription.id);
+            }
+
+            const redemptions = await this.offersAPI.getRedeemedOfferIdsForSubscriptions({
+                subscriptionIds
+            });
+
+            const fetchedOffers = new Map();
+
+            for (const redemption of redemptions) {
+                const stripeSubId = subscriptionIdMap.get(redemption.subscription_id);
+
+                let offer = fetchedOffers.get(redemption.offer_id);
+
+                if (!offer) {
+                    offer = await this.offersAPI.getOffer({id: redemption.offer_id});
+
+                    fetchedOffers.set(redemption.offer_id, offer);
+                }
+
+                if (offer && stripeSubId) {
+                    if (!subscriptionOfferRedemptions.has(stripeSubId)) {
+                        subscriptionOfferRedemptions.set(stripeSubId, []);
+                    }
+
+                    subscriptionOfferRedemptions.get(stripeSubId).push(offer);
+                }
+            }
+        } catch (e) {
+            logging.error(`Failed to load offer redemptions for subscriptions - ${subscriptions.map(s => s.id).join(', ')}.`);
+            logging.error(e);
+        }
+
+        return subscriptionOfferRedemptions;
+    }
+
+    /**
      * @private
      * @param {Object} member JSON serialized member
      * @param {Map<string, OfferDTO>} subscriptionOffers result from fetchSubscriptionOffers
+     * @param {Map<string, OfferDTO[]>} subscriptionOfferRedemptions result from fetchSubscriptionOfferRedemptions
      */
-    attachOffersToSubscriptions(member, subscriptionOffers) {
+    attachOffersToSubscriptions(member, subscriptionOffers, subscriptionOfferRedemptions) {
         member.subscriptions = member.subscriptions.map((subscription) => {
             const offer = subscriptionOffers.get(subscription.id);
-            if (offer) {
-                subscription.offer = offer;
-            } else {
-                subscription.offer = null;
-            }
+            subscription.offer = offer || null;
+            subscription.offer_redemptions = subscriptionOfferRedemptions.get(subscription.id) || [];
             return subscription;
         });
     }
@@ -256,10 +309,16 @@ module.exports = class MemberBREADService {
         }
 
         const member = model.toJSON(options);
+        const stripeSubscriptions = model.related('stripeSubscriptions');
 
         member.subscriptions = member.subscriptions.filter(sub => !!sub.price);
         this.attachSubscriptionsToMember(member);
-        this.attachOffersToSubscriptions(member, await this.fetchSubscriptionOffers(model.related('stripeSubscriptions')));
+
+        const [offerMap, offerRedemptionsMap] = await Promise.all([
+            this.fetchSubscriptionOffers(stripeSubscriptions),
+            this.fetchSubscriptionOfferRedemptions(stripeSubscriptions)
+        ]);
+        this.attachOffersToSubscriptions(member, offerMap, offerRedemptionsMap);
         this.attachNextPaymentToSubscriptions(member);
         await this.attachAttributionsToMember(member, subscriptionIdMap);
 
@@ -502,7 +561,10 @@ module.exports = class MemberBREADService {
         }
 
         const subscriptions = page.data.flatMap(model => model.related('stripeSubscriptions').slice());
-        const offerMap = await this.fetchSubscriptionOffers(subscriptions);
+        const [offerMap, offerRedemptionsMap] = await Promise.all([
+            this.fetchSubscriptionOffers(subscriptions),
+            this.fetchSubscriptionOfferRedemptions(subscriptions)
+        ]);
 
         const bulkSuppressionData = await this.emailSuppressionList.getBulkSuppressionData(page.data.map(member => member.get('email')));
 
@@ -510,7 +572,7 @@ module.exports = class MemberBREADService {
             const member = model.toJSON(options);
             member.subscriptions = member.subscriptions.filter(sub => !!sub.price);
             this.attachSubscriptionsToMember(member);
-            this.attachOffersToSubscriptions(member, offerMap);
+            this.attachOffersToSubscriptions(member, offerMap, offerRedemptionsMap);
             this.attachNextPaymentToSubscriptions(member);
             if (!originalWithRelated.includes('products')) {
                 delete member.products;

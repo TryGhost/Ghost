@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const sinon = require('sinon');
 const models = require('../../../../core/server/models');
 const api = require('../../../../core/server/api').endpoints;
@@ -66,8 +65,6 @@ describe('{{#recommendations}} helper', function () {
             'recommendations'
         );
 
-        response.should.be.an.Object().with.property('string');
-
         const expected = html`
         <ul class="recommendations">
             <li class="recommendation">
@@ -92,6 +89,8 @@ describe('{{#recommendations}} helper', function () {
             </li>
         </ul>
         `;
+
+        assert(response !== null && typeof response === 'object');
         const actual = response.string;
 
         // Uncomment to debug
@@ -124,7 +123,7 @@ describe('{{#recommendations}} helper', function () {
             );
 
             // No HTML is rendered
-            response.should.be.an.Object().with.property('string');
+            assert(response !== null && typeof response === 'object');
             assert.equal(response.string, '');
         });
     });
@@ -141,7 +140,7 @@ describe('{{#recommendations}} helper', function () {
             );
 
             // No HTML is rendered
-            response.should.be.an.Object().with.property('string');
+            assert(response !== null && typeof response === 'object');
             assert.equal(response.string, '');
         });
     });
@@ -175,7 +174,7 @@ describe('{{#recommendations}} helper', function () {
             assert.equal(logging.error.calledOnce, true);
 
             // No HTML is rendered
-            response.should.be.an.Object().with.property('string');
+            assert(response !== null && typeof response === 'object');
             assert.equal(response.string, '');
         });
     });

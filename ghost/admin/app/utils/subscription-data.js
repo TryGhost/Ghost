@@ -27,6 +27,13 @@ export function getSubscriptionData(sub) {
     data.priceLabel = priceLabel(data);
     data.validityDetails = validityDetails(data, !!data.priceLabel);
 
+    const discount = getDiscountPrice(sub);
+    if (discount) {
+        data.hasActiveDiscount = true;
+        data.discountedPrice = discount.discountedPrice;
+        data.originalPrice = discount.originalPrice;
+    }
+
     return data;
 }
 
@@ -116,4 +123,62 @@ export function priceLabel(data) {
     if (data.price.nickname && data.price.nickname.length > 0 && data.price.nickname !== 'Monthly' && data.price.nickname !== 'Yearly') {
         return data.price.nickname;
     }
+}
+
+export function getOfferDisplayData(offer, sub = {}) {
+    const isRetention = offer.redemption_type === 'retention';
+    const label = isRetention ? 'Retention offer' : 'Signup offer';
+
+    let discount;
+    if (offer.type === 'trial') {
+        discount = `${offer.amount} days free`;
+    } else if (offer.type === 'free_months') {
+        discount = `${offer.amount} ${offer.amount === 1 ? 'month' : 'months'} free`;
+    } else if (offer.type === 'fixed') {
+        discount = `${getSymbol(offer.currency)}${getNonDecimal(offer.amount)} off`;
+    } else {
+        discount = `${offer.amount}% off`;
+    }
+
+    let detail;
+    if (isRetention) {
+        const discountEnd = offer.id && sub.next_payment?.discount?.offer_id === offer.id
+            ? sub.next_payment.discount.end
+            : null;
+
+        if (discountEnd) {
+            detail = `${discount} until ${moment(discountEnd).format('MMM YYYY')}`;
+        } else if (offer.duration === 'repeating' && offer.duration_in_months) {
+            detail = `${discount} for ${offer.duration_in_months} ${offer.duration_in_months === 1 ? 'month' : 'months'}`;
+        } else if (offer.duration === 'forever') {
+            detail = `${discount} forever`;
+        } else {
+            detail = discount;
+        }
+    } else {
+        detail = `${offer.name} (${discount})`;
+    }
+
+    return {label, detail};
+}
+
+export function getDiscountPrice(sub) {
+    if (!sub.next_payment || !sub.next_payment.discount) {
+        return null;
+    }
+
+    if (sub.next_payment.amount === sub.next_payment.original_amount) {
+        return null;
+    }
+
+    return {
+        discountedPrice: {
+            currencySymbol: getSymbol(sub.next_payment.currency),
+            nonDecimalAmount: getNonDecimal(sub.next_payment.amount)
+        },
+        originalPrice: {
+            currencySymbol: getSymbol(sub.next_payment.currency),
+            nonDecimalAmount: getNonDecimal(sub.next_payment.original_amount)
+        }
+    };
 }

@@ -870,8 +870,8 @@ describe('EmailAnalyticsService', function () {
 
             await service.aggregateEmailStats('memberId');
 
-            assert.equal(service.queries.aggregateEmailStats.calledOnce, true);
-            service.queries.aggregateEmailStats.calledWith('memberId').should.be.true;
+            sinon.assert.calledOnce(service.queries.aggregateEmailStats);
+            sinon.assert.calledWith(service.queries.aggregateEmailStats, 'memberId');
         });
     });
 
@@ -886,8 +886,8 @@ describe('EmailAnalyticsService', function () {
 
             await service.aggregateMemberStats('memberId');
 
-            assert.equal(service.queries.aggregateMemberStats.calledOnce, true);
-            service.queries.aggregateMemberStats.calledWith('memberId').should.be.true;
+            sinon.assert.calledOnce(service.queries.aggregateMemberStats);
+            sinon.assert.calledWith(service.queries.aggregateMemberStats, 'memberId');
         });
     });
 });

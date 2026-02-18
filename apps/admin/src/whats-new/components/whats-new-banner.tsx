@@ -49,10 +49,10 @@ function WhatsNewBanner() {
                 data-test-toast-link
             >
                 <div className="flex items-center gap-2 mb-2">
-                    <LucideIcon.Sparkles className="size-4 text-purple-600" />
-                    <span className="text-xs font-semibold text-gray-700 uppercase tracking-wide">What’s new?</span>
+                    <LucideIcon.Sparkles className="size-4 text-purple-600 dark:text-purple" />
+                    <span className="text-xs font-semibold text-gray-700 dark:text-gray-400 uppercase tracking-wide">What’s new?</span>
                 </div>
-                <div className="text-base font-semibold text-gray-900 mb-1" data-test-toast-title>
+                <div className="text-base font-semibold text-gray-900 dark:text-foreground mb-1" data-test-toast-title>
                     {latestEntry.title}
                 </div>
                 <div className="text-sm text-gray-700" data-test-toast-excerpt>

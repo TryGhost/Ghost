@@ -2965,6 +2965,15 @@ a.gh-members-emailpreview-subscription-link {
     border-radius: 6px;
 }
 
+.gh-membertier-original-price {
+    margin-left: 4px;
+    font-size: 1.4rem;
+    font-weight: 500;
+    color: var(--midgrey);
+    text-decoration: line-through;
+    align-self: center;
+}
+
 .gh-cp-membertier-attribution .amount {
     font-weight: bold !important;
     font-size: 2.4rem !important;
@@ -3038,11 +3047,8 @@ a.gh-members-emailpreview-subscription-link {
     color: var(--darkgrey);
 }
 
-.gh-membertier-offer-cancellation .gh-cp-membertier-pricelabel {
-    font-weight: 500;
-}
-
-.gh-membertier-offer-cancellation {
+.gh-membertier-offer-cancellation,
+.gh-membertier-offers {
     margin-top: 16px;
     padding-top: 16px;
     border-top:1px solid #ECEEF0;

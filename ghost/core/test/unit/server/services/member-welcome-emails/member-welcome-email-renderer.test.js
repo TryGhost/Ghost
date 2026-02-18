@@ -240,7 +240,7 @@ describe('MemberWelcomeEmailRenderer', function () {
                 siteSettings: defaultSiteSettings
             });
 
-            result.text.should.be.a.String();
+            assert.equal(typeof result.text, 'string');
             assert(result.text.includes('Hello World'));
         });
 

@@ -23,7 +23,7 @@ describe('servePublicFile', function () {
     it('should return a middleware', function () {
         const result = servePublicFile('static', 'robots.txt', 'text/plain', 3600);
 
-        result.should.be.a.Function();
+        assert.equal(typeof result, 'function');
     });
 
     it('should skip if the request does NOT match the file', function () {
@@ -50,7 +50,7 @@ describe('servePublicFile', function () {
         middleware(req, res, next);
 
         assert.equal(next.called, false);
-        fileStub.firstCall.args[0].should.endWith('core/frontend/public/robots.txt');
+        assert(fileStub.firstCall.args[0].endsWith('core/frontend/public/robots.txt'));
         assert.equal(res.writeHead.called, true);
         assert.equal(res.writeHead.args[0][0], 200);
         assert.equal(res.writeHead.calledWith(200, sinon.match.has('Content-Type')), true);
@@ -80,7 +80,7 @@ describe('servePublicFile', function () {
 
         // File only gets read onece
         assert.equal(fileStub.calledOnce, true);
-        fileStub.firstCall.args[0].should.endWith('core/frontend/public/robots.txt');
+        assert(fileStub.firstCall.args[0].endsWith('core/frontend/public/robots.txt'));
 
         // File gets served twice
         assert.equal(res.writeHead.calledTwice, true);
@@ -116,8 +116,8 @@ describe('servePublicFile', function () {
         assert.equal(fileStub.calledTwice, true);
 
         assert.equal(next.called, false);
-        fileStub.firstCall.args[0].should.endWith('core/frontend/public/robots.txt');
-        fileStub.secondCall.args[0].should.endWith('core/frontend/public/robots.txt');
+        assert(fileStub.firstCall.args[0].endsWith('core/frontend/public/robots.txt'));
+        assert(fileStub.secondCall.args[0].endsWith('core/frontend/public/robots.txt'));
 
         assert.equal(res.writeHead.calledThrice, true);
         assert.equal(res.writeHead.args[0][0], 200);
@@ -189,6 +189,6 @@ describe('servePublicFile', function () {
         assert.equal(res.writeHead.called, true);
         assert.equal(res.writeHead.args[0][0], 200);
 
-        fileStub.firstCall.args[0].should.endWith('/public/something.css');
+        assert(fileStub.firstCall.args[0].endsWith('/public/something.css'));
     });
 });

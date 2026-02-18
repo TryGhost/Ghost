@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const {assertExists} = require('../../utils/assertions');
+const {assertExists, assertObjectMatches} = require('../../utils/assertions');
 const errors = require('@tryghost/errors');
 const should = require('should');
 const sinon = require('sinon');
@@ -773,7 +773,7 @@ describe('Post Model', function () {
                     assert(publishedPost.get('published_at') instanceof Date);
                     assert.equal(publishedPost.get('published_by'), testUtils.DataGenerator.Content.users[0].id);
                     assert(publishedPost.get('updated_at') instanceof Date);
-                    publishedPost.get('updated_at').should.not.equal(createdPostUpdatedDate);
+                    assert.notEqual(publishedPost.get('updated_at'), createdPostUpdatedDate);
 
                     assert.equal(Object.keys(eventsTriggered).length, 4);
                     assertExists(eventsTriggered['post.published']);
@@ -842,7 +842,7 @@ describe('Post Model', function () {
                     assert(publishedPost.get('published_at') instanceof Date);
                     assert.equal(publishedPost.get('published_by'), testUtils.DataGenerator.Content.users[0].id);
                     assert(publishedPost.get('updated_at') instanceof Date);
-                    publishedPost.get('updated_at').should.not.equal(createdPostUpdatedDate);
+                    assert.notEqual(publishedPost.get('updated_at'), createdPostUpdatedDate);
 
                     assert.equal(Object.keys(eventsTriggered).length, 4);
                     assertExists(eventsTriggered['post.published']);
@@ -1105,9 +1105,9 @@ describe('Post Model', function () {
                         }, context);
                     }).then(function (updatedSecondPost) {
                     // Should have updated from original
-                        updatedSecondPost.get('slug').should.not.equal(secondPost.slug);
+                        assert.notEqual(updatedSecondPost.get('slug'), secondPost.slug);
                         // Should not have a conflicted slug from the first
-                        updatedSecondPost.get('slug').should.not.equal(firstPost.slug);
+                        assert.notEqual(updatedSecondPost.get('slug'), firstPost.slug);
 
                         assert.equal(Object.keys(eventsTriggered).length, 3);
                         assertExists(eventsTriggered['post.edited']);
@@ -1118,9 +1118,9 @@ describe('Post Model', function () {
                         });
                     }).then(function (foundPost) {
                     // Should have updated from original
-                        foundPost.get('slug').should.not.equal(secondPost.slug);
+                        assert.notEqual(foundPost.get('slug'), secondPost.slug);
                         // Should not have a conflicted slug from the first
-                        foundPost.get('slug').should.not.equal(firstPost.slug);
+                        assert.notEqual(foundPost.get('slug'), firstPost.slug);
 
                         done();
                     }).catch(done);
@@ -2073,7 +2073,7 @@ describe('Post Model', function () {
                     updatedPost = updatedPost.toJSON({withRelated: ['tags']});
 
                     assert.equal(updatedPost.tags.length, 1);
-                    updatedPost.tags[0].should.have.properties({
+                    assertObjectMatches(updatedPost.tags[0], {
                         name: postJSON.tags[0].name,
                         slug: postJSON.tags[0].slug,
                         id: postJSON.tags[0].id
@@ -2081,11 +2081,11 @@ describe('Post Model', function () {
 
                     updatedAtFormat = moment(updatedPost.tags[0].updated_at).format('YYYY-MM-DD HH:mm:ss');
                     assert.equal(updatedAtFormat, moment(postJSON.tags[0].updated_at).format('YYYY-MM-DD HH:mm:ss'));
-                    updatedAtFormat.should.not.eql(moment(newJSON.tags[0].updated_at).format('YYYY-MM-DD HH:mm:ss'));
+                    assert.notEqual(updatedAtFormat, moment(newJSON.tags[0].updated_at).format('YYYY-MM-DD HH:mm:ss'));
 
                     createdAtFormat = moment(updatedPost.tags[0].created_at).format('YYYY-MM-DD HH:mm:ss');
                     assert.equal(createdAtFormat, moment(postJSON.tags[0].created_at).format('YYYY-MM-DD HH:mm:ss'));
-                    createdAtFormat.should.not.eql(moment(newJSON.tags[0].created_at).format('YYYY-MM-DD HH:mm:ss'));
+                    assert.notEqual(createdAtFormat, moment(newJSON.tags[0].created_at).format('YYYY-MM-DD HH:mm:ss'));
                 });
         });
 
@@ -2103,16 +2103,16 @@ describe('Post Model', function () {
                 updatedPost = updatedPost.toJSON({withRelated: ['tags']});
 
                 assert.equal(updatedPost.tags.length, 3);
-                updatedPost.tags[0].should.have.properties({
+                assertObjectMatches(updatedPost.tags[0], {
                     name: 'tag4'
                 });
 
-                updatedPost.tags[1].should.have.properties({
+                assertObjectMatches(updatedPost.tags[1], {
                     name: 'tag3',
                     id: postJSON.tags[2].id
                 });
 
-                updatedPost.tags[2].should.have.properties({
+                assertObjectMatches(updatedPost.tags[2], {
                     name: 'tag1',
                     id: postJSON.tags[0].id
                 });
@@ -2134,9 +2134,9 @@ describe('Post Model', function () {
 
                 assert.equal(updatedPost.tags.length, 3);
 
-                updatedPost.tags[0].should.have.properties({name: 'C', slug: 'c'});
-                updatedPost.tags[1].should.have.properties({name: 'C++', slug: 'c-2'});
-                updatedPost.tags[2].should.have.properties({name: 'C#', slug: 'c-3'});
+                assertObjectMatches(updatedPost.tags[0], {name: 'C', slug: 'c'});
+                assertObjectMatches(updatedPost.tags[1], {name: 'C++', slug: 'c-2'});
+                assertObjectMatches(updatedPost.tags[2], {name: 'C#', slug: 'c-3'});
             });
         });
 
