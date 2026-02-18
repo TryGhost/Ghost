@@ -652,7 +652,7 @@ export const getMemberInitials = (member: {name?: string}) => {
     return name.substring(0, 2).toUpperCase();
 };
 
-export const stringToHslColor = (str: string, saturation:string, lightness:string) => {
+export const stringToHslColor = (str: string, saturation: number | string, lightness: number | string) => {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
         hash = str.charCodeAt(i) + ((hash << 5) - hash);
