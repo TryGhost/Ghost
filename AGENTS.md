@@ -45,8 +45,6 @@ Two categories of apps:
 yarn                           # Install dependencies
 yarn setup                     # First-time setup (installs deps + submodules)
 yarn dev                       # Start development (Docker backend + host frontend dev servers)
-yarn dev:legacy                # Local dev with legacy admin and without Docker (deprecated)
-yarn dev:legacy:debug          # yarn dev:legacy with DEBUG=@tryghost*,ghost:* enabled
 ```
 
 ### Building
@@ -86,18 +84,15 @@ cd ghost/admin && yarn lint    # Lint Ember admin
 ### Database
 ```bash
 yarn knex-migrator migrate     # Run database migrations
-yarn reset:data                # Reset database with test data (1000 members, 100 posts)
-yarn reset:data:empty          # Reset database with no data
+yarn reset:data                # Reset database with test data (1000 members, 100 posts) (requires yarn dev running)
+yarn reset:data:empty          # Reset database with no data (requires yarn dev running)
 ```
 
 ### Docker
 ```bash
-yarn docker:build              # Build Docker images and delete ephemeral volumes
-yarn docker:dev                # Start Ghost in Docker with hot reload
-yarn docker:shell              # Open shell in Ghost container
-yarn docker:mysql              # Open MySQL CLI
-yarn docker:test:unit          # Run unit tests in Docker
-yarn docker:reset              # Reset all Docker volumes (including database) and restart
+yarn docker:build              # Build Docker images
+yarn docker:clean              # Stop containers, remove volumes and local images
+yarn docker:down               # Stop containers
 ```
 
 ### How yarn dev works
@@ -217,7 +212,7 @@ Users requested ability to switch themes for better accessibility
 - **Legacy:** `admin-x-design-system` (being phased out, avoid for new work)
 
 ### Analytics (Tinybird)
-- **Local development:** `yarn docker:dev:analytics` (starts Tinybird + MySQL)
+- **Local development:** `yarn dev:analytics` (starts Tinybird + MySQL)
 - **Config:** Add Tinybird config to `ghost/core/config.development.json`
 - **Scripts:** `ghost/core/core/server/data/tinybird/scripts/`
 - **Datafiles:** `ghost/core/core/server/data/tinybird/`

@@ -12,7 +12,7 @@
     "docker:build:ghost": "cd .. && docker build -t ghost-monorepo:latest -f Dockerfile .",
     "docker:update": "docker compose pull && docker compose up -d --force-recreate",
     "prepare": "tsc --noEmit",
-    "pretest": "(test -n \"$GHOST_E2E_SKIP_BUILD\" || test -n \"$CI\") && echo 'Skipping Docker build (GHOST_E2E_SKIP_BUILD or CI is set)' || docker compose -f ../compose.yml build ghost tb-cli",
+    "pretest": "(test -n \"$GHOST_E2E_SKIP_BUILD\" || test -n \"$CI\") && echo 'Skipping Docker build (GHOST_E2E_SKIP_BUILD or CI is set)' || yarn docker:build:ghost",
     "test": "playwright test --project=main",
     "test:analytics": "playwright test --project=analytics",
     "test:all": "playwright test --project=main --project=analytics",
