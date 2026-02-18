@@ -1,4 +1,4 @@
 dist
-types
+types/generated
 playwright-report
 test-results

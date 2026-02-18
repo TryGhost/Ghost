@@ -32,9 +32,10 @@
   },
   "include": ["src", "test-utils"],
   "references": [
-    { "path": "../admin-x-framework/tsconfig.declaration.json" },
-    { "path": "../posts/tsconfig.declaration.json" },
-    { "path": "../stats/tsconfig.declaration.json" },
-    { "path": "../activitypub/tsconfig.declaration.json" }
+    { "path": "../admin-x-framework/tsconfig.json" },
+    { "path": "../admin-x-settings/tsconfig.json" },
+    { "path": "../posts/tsconfig.json" },
+    { "path": "../stats/tsconfig.json" },
+    { "path": "../activitypub/tsconfig.json" }
   ]
 }

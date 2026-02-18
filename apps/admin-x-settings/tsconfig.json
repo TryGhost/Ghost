@@ -11,7 +11,14 @@
     "verbatimModuleSyntax": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": true,
+    "noEmit": false,
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "declarationDir": "./types/generated",
+    "emitDeclarationOnly": true,
+    "tsBuildInfoFile": "./types/generated/tsconfig.tsbuildinfo",
+    "rootDir": "./src",
     "jsx": "react-jsx",
 
     /* Path mapping */
@@ -28,5 +35,11 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src", "test"]
+  "include": ["src"],
+  "exclude": ["src/**/*.stories.tsx", "src/**/*.test.ts", "src/**/*.test.tsx"],
+  "references": [
+    { "path": "../admin-x-design-system/tsconfig.json" },
+    { "path": "../admin-x-framework/tsconfig.json" },
+    { "path": "../shade/tsconfig.json" }
+  ]
 }

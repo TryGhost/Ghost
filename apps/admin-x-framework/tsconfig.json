@@ -10,6 +10,14 @@
       "moduleResolution": "bundler",
       "resolveJsonModule": true,
       "isolatedModules": true,
+      "noEmit": false,
+      "composite": true,
+      "declaration": true,
+      "declarationMap": true,
+      "declarationDir": "./types/generated",
+      "emitDeclarationOnly": true,
+      "tsBuildInfoFile": "./types/generated/tsconfig.tsbuildinfo",
+      "rootDir": "./src",
       "jsx": "react-jsx",
 
       /* Linting */
@@ -18,6 +26,11 @@
       "noUnusedParameters": true,
       "noFallthroughCasesInSwitch": true
     },
-    "include": ["src", "test"],
-    "references": [{ "path": "./tsconfig.node.json" }]
+    "include": ["src"],
+    "exclude": ["src/**/*.stories.tsx", "src/**/*.test.ts", "src/**/*.test.tsx"],
+    "references": [
+      { "path": "../admin-x-design-system/tsconfig.json" },
+      { "path": "../shade/tsconfig.json" },
+      { "path": "./tsconfig.node.json" }
+    ]
   }
