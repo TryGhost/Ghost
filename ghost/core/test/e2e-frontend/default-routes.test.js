@@ -7,7 +7,6 @@
 // But then again testing real code, rather than mock code, might be more useful...
 const assert = require('node:assert/strict');
 const {assertExists} = require('../utils/assertions');
-const should = require('should');
 const sinon = require('sinon');
 const supertest = require('supertest');
 const moment = require('moment');
@@ -529,7 +528,7 @@ describe('Default Frontend routing', function () {
                 .expect(200)
                 .expect(assertCorrectFrontendHeaders)
                 .expect((res) => {
-                    res.text.should.match('User-agent: *\nDisallow: /');
+                    assert(res.text.includes('User-agent: *\nDisallow: /'));
                 });
         });
     });
