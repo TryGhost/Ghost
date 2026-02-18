@@ -46,13 +46,13 @@ test.describe('Portal', () => {
                 // select the tier for checkout (yearly)
                 await choseTierByName(portalFrame, tierName);
 
-                // complete stripe checkout
+                // complete stripe checkout and wait for webhook to process
                 await completeStripeSubscription(sharedPage);
 
                 // open portal and check that member has been upgraded to paid tier
                 await expect(portalTriggerButton).toBeVisible();
                 await portalTriggerButton.click();
-                await expect(portalFrame.getByText('$50.00/year')).toBeVisible({timeout: 30000});
+                await expect(portalFrame.getByText('$50.00/year')).toBeVisible();
                 await expect(portalFrame.getByRole('heading', {name: 'Billing info'})).toBeVisible();
                 await expect(portalFrame.getByText('**** **** **** 4242')).toBeVisible();
 
@@ -99,7 +99,7 @@ test.describe('Portal', () => {
                 // select the tier for checkout (yearly)
                 await choseTierByName(portalFrame, tierName);
 
-                // complete stripe checkout
+                // complete stripe checkout and wait for webhook to process
                 await completeStripeSubscription(sharedPage);
 
                 // open portal and check that member has been upgraded to paid tier
@@ -107,7 +107,7 @@ test.describe('Portal', () => {
                 await portalTriggerButton.click();
                 // verify member's tier, price and card details
                 await expect(portalFrame.getByText(tierName)).toBeVisible();
-                await expect(portalFrame.getByText('$50.00/year')).toBeVisible({timeout: 30000});
+                await expect(portalFrame.getByText('$50.00/year')).toBeVisible();
                 await expect(portalFrame.getByText('**** **** **** 4242')).toBeVisible();
 
                 // verify member's tier on member detail page in admin

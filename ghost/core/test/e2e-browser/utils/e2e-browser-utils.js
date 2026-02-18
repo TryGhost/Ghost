@@ -326,7 +326,12 @@ const fillInputIfExists = async (page, selector, value) => {
     }
 };
 
-const completeStripeSubscription = async (page, {awaitNetworkIdle = true} = {}) => {
+/**
+ * Fills the Stripe checkout form and submits payment.
+ * Use this for non-subscription checkouts (e.g. donations) where the member
+ * won't become paid. For subscription checkouts, use completeStripeSubscription.
+ */
+const submitStripePayment = async (page) => {
     await page.locator('#cardNumber').fill('4242 4242 4242 4242');
     await page.locator('#cardExpiry').fill('04 / 26');
     await page.locator('#cardCvc').fill('424');
@@ -350,10 +355,27 @@ const completeStripeSubscription = async (page, {awaitNetworkIdle = true} = {}) 
     await page.waitForSelector('[data-testid="hosted-payment-submit-button"].SubmitButton--complete', {state: 'attached'});
 
     await page.getByTestId('hosted-payment-submit-button').click();
+};
 
-    if (awaitNetworkIdle) {
-        await page.waitForLoadState('networkidle');
-    }
+/**
+ * Fills and submits the Stripe checkout form, then waits for the Stripe
+ * webhook to be processed by polling the Members API until the member
+ * has paid status.
+ */
+const completeStripeSubscription = async (page) => {
+    await submitStripePayment(page);
+
+    // Wait for Stripe to redirect back and the webhook to update paid status
+    await expect(async () => {
+        const data = await page.evaluate(async () => {
+            const res = await fetch('/members/api/member/', {credentials: 'same-origin'});
+            if (!res.ok || res.status === 204) {
+                return null;
+            }
+            return res.json();
+        });
+        expect(data?.paid).toBeTruthy();
+    }).toPass({timeout: 60_000, intervals: [1_000, 2_000, 5_000]});
 };
 
 /**
@@ -527,6 +549,7 @@ module.exports = {
     createOffer,
     createMember,
     createPostDraft,
+    submitStripePayment,
     completeStripeSubscription,
     impersonateMember,
     goToMembershipPage,
