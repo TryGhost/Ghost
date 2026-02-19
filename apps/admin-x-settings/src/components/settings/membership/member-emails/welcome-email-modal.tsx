@@ -106,7 +106,7 @@ interface EmailPreviewBodyProps {
 const EmailPreviewBody: React.FC<EmailPreviewBodyProps> = ({children, className, isMobile}) => (
     <div className={cn(
         'mx-auto w-full grow rounded-b-lg border border-gray-200 bg-white shadow-sm dark:border-gray-900 dark:bg-gray-950 dark:shadow-none',
-        isMobile ? 'max-w-[360px]' : 'max-w-[740px]',
+        isMobile ? 'max-w-[460px]' : 'max-w-[740px]',
         className
     )}>
         {children}
@@ -368,7 +368,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                 onDeviceSizeChange={setDeviceSize}
             >
                 <div className='flex grow flex-col items-center p-8'>
-                    <EmailPreviewEmailHeader className={deviceSize === 'mobile' ? 'max-w-[360px]' : ''}>
+                    <EmailPreviewEmailHeader className={deviceSize === 'mobile' ? 'max-w-[460px]' : ''}>
                         <div className='flex flex-col gap-2'>
                             <div className='flex items-center'>
                                 <div className='w-20 text-sm font-semibold'>From:</div>
@@ -413,9 +413,22 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                             </div>
                         </div>
                     </EmailPreviewEmailHeader>
-                    <EmailPreviewBody className={errors.lexical ? 'border-red-500' : ''} isMobile={deviceSize === 'mobile'}>
+                    <EmailPreviewBody
+                        className={cn(
+                            errors.lexical ? 'border-red-500' : '',
+                            deviceSize === 'desktop' ? 'px-8' : '',
+                            deviceSize === 'mobile' ? 'px-6' : ''
+                        )}
+                        isMobile={deviceSize === 'mobile'}
+                    >
                         <div
-                            className='p-8'
+                            className={cn(
+                                deviceSize === 'desktop'
+                                    ? 'mx-auto w-full max-w-[540px] py-8'
+                                    : deviceSize === 'mobile'
+                                        ? 'mx-auto w-full max-w-[332px] px-10 py-8'
+                                        : 'p-8'
+                            )}
                             onFocus={() => {
                                 hasEditorBeenFocused.current = true;
                             }}
