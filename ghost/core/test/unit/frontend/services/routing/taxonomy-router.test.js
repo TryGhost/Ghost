@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
-const should = require('should');
 const sinon = require('sinon');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const controllers = require('../../../../../core/frontend/services/routing/controllers');

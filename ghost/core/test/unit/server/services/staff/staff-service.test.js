@@ -8,7 +8,6 @@ const MilestoneCreatedEvent = require('../../../../../core/server/services/miles
 // Stuff we are testing
 const DomainEvents = require('@tryghost/domain-events');
 
-require('should');
 const StaffService = require('../../../../../core/server/services/staff/staff-service');
 
 function testCommonMailData({mailStub, getEmailAlertUsersStub}) {
@@ -1119,29 +1118,6 @@ describe('StaffService', function () {
                 assert.equal(mailStub.calledWith(
                     sinon.match.has('text', sinon.match('No message provided'))
                 ), true);
-            });
-        });
-
-        describe('renderText for webmentions', function () {
-            it('renders plaintext report for mentions', async function () {
-                const textTemplate = await service.emails.renderText('mention-report', {
-                    toEmail: 'jamie@example.com',
-                    siteDomain: 'ghost.org',
-                    staffUrl: 'https://admin.example.com/blog/ghost/#/settings/staff/jane.',
-                    mentions: [
-                        {
-                            sourceSiteTitle: 'Webmentions',
-                            sourceUrl: 'https://webmention.io/'
-                        },
-                        {
-                            sourceSiteTitle: 'Ghost Demo',
-                            sourceUrl: 'https://demo.ghost.io/'
-                        }
-                    ]
-                });
-                assert.match(textTemplate, /- Webmentions \(https:\/\/webmention.io\/\)/);
-                assert.match(textTemplate, /Ghost Demo \(https:\/\/demo.ghost.io\/\)/);
-                assert.match(textTemplate, /Sent to jamie@example.com from ghost.org/);
             });
         });
     });

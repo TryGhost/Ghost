@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const errors = require('@tryghost/errors');
-const should = require('should');
 const sinon = require('sinon');
 const moment = require('moment');
 const testUtils = require('../../../../../utils');
@@ -79,7 +78,7 @@ describe('Scheduling: Post Scheduler', function () {
                 assert.equal(adapter.schedule.calledOnce, true);
 
                 assert.equal(adapter.schedule.args[0][0].time, moment(post.get('published_at')).valueOf());
-                adapter.schedule.args[0][0].url.should.startWith(urlUtils.urlJoin('http://scheduler.local:1111/', 'schedules', 'posts', post.get('id'), '?token='));
+                assert(adapter.schedule.args[0][0].url.startsWith(urlUtils.urlJoin('http://scheduler.local:1111/', 'schedules', 'posts', post.get('id'), '?token=')));
                 assert.equal(adapter.schedule.args[0][0].extra.httpMethod, 'PUT');
                 assert.equal(null, adapter.schedule.args[0][0].extra.oldTime);
             });

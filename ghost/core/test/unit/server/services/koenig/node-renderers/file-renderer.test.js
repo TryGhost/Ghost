@@ -132,6 +132,21 @@ describe('services/koenig/node-renderers/file-renderer', function () {
             `);
         });
 
+        it('does not double-escape pre-encoded entities', function () {
+            const result = renderForEmail(getTestData({
+                fileTitle: 'Q&amp;A download',
+                fileCaption: 'Research &amp; Development notes',
+                fileName: 'Q&amp;A.pdf'
+            }));
+
+            assert.ok(result.html.includes('Q&amp;A download'));
+            assert.ok(!result.html.includes('Q&amp;amp;A download'));
+            assert.ok(result.html.includes('Research &amp; Development notes'));
+            assert.ok(!result.html.includes('Research &amp;amp; Development notes'));
+            assert.ok(result.html.includes('Q&amp;A.pdf'));
+            assert.ok(!result.html.includes('Q&amp;amp;A.pdf'));
+        });
+
         it('renders nothing with a missing src', function () {
             const result = renderForEmail(getTestData({src: ''}));
             assert.equal(result.html, '');

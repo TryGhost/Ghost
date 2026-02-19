@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const jwt = require('jsonwebtoken');
-const should = require('should');
 const {UnauthorizedError} = require('@tryghost/errors');
 const members = require('../../../../../../core/server/services/auth/members');
 

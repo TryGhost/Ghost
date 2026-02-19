@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const sinon = require('sinon');
 const _ = require('lodash');
 const foreach = require('../../../../core/frontend/helpers/foreach');

@@ -2,7 +2,6 @@ const assert = require('node:assert/strict');
 const querystring = require('querystring');
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const nock = require('nock');
-const should = require('should');
 const models = require('../../../core/server/models');
 const urlService = require('../../../core/server/services/url');
 

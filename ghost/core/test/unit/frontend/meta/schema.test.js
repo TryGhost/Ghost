@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../utils/assertions');
-const should = require('should');
 const {getSchema, SOCIAL_PLATFORMS} = require('../../../../core/frontend/meta/schema');
 const socialUrls = require('@tryghost/social-urls');
 

@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
-const {assertExists} = require('../../utils/assertions');
-const should = require('should');
+const {assertExists, assertObjectMatches} = require('../../utils/assertions');
 const sinon = require('sinon');
 const testUtils = require('../../utils');
 const models = require('../../../core/server/models/index');
@@ -39,8 +38,7 @@ function testPosts(posts, map) {
 
         const post = posts.find(p => p.id === postID);
         assertExists(post);
-
-        post.should.match(expectData);
+        assertObjectMatches(post, expectData);
     }
 }
 

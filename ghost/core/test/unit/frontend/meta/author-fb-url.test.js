@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const getAuthorFacebookUrl = require('../../../../core/frontend/meta/author-fb-url');
 
 describe('getAuthorFacebookUrl', function () {

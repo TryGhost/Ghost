@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const sinon = require('sinon');
 const CommentsServiceEmails = require('../../../../../core/server/services/comments/comments-service-emails');
 

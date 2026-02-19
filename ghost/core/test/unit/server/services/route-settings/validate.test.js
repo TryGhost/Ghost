@@ -1,9 +1,6 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const errors = require('@tryghost/errors');
 const validate = require('../../../../../core/server/services/route-settings/validate');
-
-should.equal(true, true);
 
 describe('UNIT: services/settings/validate', function () {
     it('no type definitions / empty yaml file', function () {

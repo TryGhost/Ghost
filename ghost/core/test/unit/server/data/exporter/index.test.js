@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
-const should = require('should');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
 const db = require('../../../../../core/server/data/db');
@@ -52,7 +51,7 @@ describe('Exporter', function () {
                 assert.equal(db.knex.called, true);
 
                 assert.equal(knexMock.callCount, expectedCallCount);
-                queryMock.select.callCount.should.have.eql(expectedCallCount);
+                sinon.assert.callCount(queryMock.select, expectedCallCount);
 
                 const expectedTables = new Set([
                     'posts',
@@ -99,7 +98,7 @@ describe('Exporter', function () {
                 assert.equal(queryMock.select.called, true);
 
                 assert.equal(knexMock.callCount, expectedCallCount);
-                queryMock.select.callCount.should.have.eql(expectedCallCount);
+                sinon.assert.callCount(queryMock.select, expectedCallCount);
 
                 const expectedTables = new Set([
                     'posts',

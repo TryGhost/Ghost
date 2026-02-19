@@ -1,4 +1,3 @@
-const should = require('should');
 const {assertObjectMatches} = require('../../../../utils/assertions');
 
 const UrlHistory = require('../../../../../core/server/services/member-attribution/url-history');

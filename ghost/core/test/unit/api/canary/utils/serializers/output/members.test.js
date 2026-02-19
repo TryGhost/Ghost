@@ -1,5 +1,4 @@
 const {assertExists} = require('../../../../../../utils/assertions');
-const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../../../../../utils');
 const labs = require('../../../../../../../core/shared/labs');

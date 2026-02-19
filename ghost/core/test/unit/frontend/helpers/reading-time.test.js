@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 
 // Stuff we are testing
 const reading_time = require('../../../../core/frontend/helpers/reading_time');

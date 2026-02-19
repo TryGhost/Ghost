@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const concat = require('../../../../core/frontend/helpers/concat');
 const link = require('../../../../core/frontend/helpers/link');
 const url = require('../../../../core/frontend/helpers/url');

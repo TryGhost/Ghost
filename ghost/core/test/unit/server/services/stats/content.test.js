@@ -1,7 +1,6 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
 const sinon = require('sinon');
-const should = require('should');
 const ContentStatsService = require('../../../../../core/server/services/stats/content-stats-service');
 const tinybird = require('../../../../../core/server/services/stats/utils/tinybird');
 
@@ -71,7 +70,7 @@ describe('ContentStatsService', function () {
             const result = mockTinybirdClient.buildRequest('api_top_pages', options);
 
             assertExists(result.url);
-            result.url.should.startWith('https://api.tinybird.co/v0/pipes/api_top_pages.json?');
+            assert(result.url.startsWith('https://api.tinybird.co/v0/pipes/api_top_pages.json?'));
             assert(result.url.includes('site_uuid=site-id'));
             assert(result.url.includes('date_from=2023-01-01'));
             assert(result.url.includes('date_to=2023-01-31'));
@@ -148,7 +147,6 @@ describe('ContentStatsService', function () {
             const result = await service.lookupPostTitles(['post-1', 'post-2']);
 
             assertExists(result);
-            result.should.have.properties(['post-1', 'post-2']);
             assert.equal(result['post-1'].title, 'Test Post 1');
             assert.equal(result['post-1'].id, 'post-id-1');
             assert.equal(result['post-2'].title, 'Test Post 2');
@@ -183,7 +181,6 @@ describe('ContentStatsService', function () {
 
             const result = service.getResourceTitle('/about/');
             assertExists(result);
-            result.should.have.properties(['title', 'resourceType']);
             assert.equal(result.title, 'About Us');
             assert.equal(result.resourceType, 'page');
         });
@@ -198,7 +195,6 @@ describe('ContentStatsService', function () {
 
             const result = service.getResourceTitle('/tag/news/');
             assertExists(result);
-            result.should.have.properties(['title', 'resourceType']);
             assert.equal(result.title, 'News');
             assert.equal(result.resourceType, 'tag');
         });

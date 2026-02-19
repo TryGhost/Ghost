@@ -2,7 +2,6 @@ const assert = require('node:assert/strict');
 const {assertExists} = require('../../utils/assertions');
 const nock = require('nock');
 const sinon = require('sinon');
-const should = require('should');
 const supertest = require('supertest');
 const testUtils = require('../../utils/index');
 const config = require('../../../core/shared/config/index');
