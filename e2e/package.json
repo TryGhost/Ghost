@@ -13,7 +13,7 @@
     "build:docker": "docker build -f Dockerfile.e2e --build-arg GHOST_IMAGE=${GHOST_E2E_BASE_IMAGE:?Set GHOST_E2E_BASE_IMAGE} -t ${GHOST_E2E_IMAGE:-ghost-e2e:local} ..",
     "docker:update": "docker compose pull && docker compose up -d --force-recreate",
     "prepare": "tsc --noEmit",
-    "pretest": "(test -n \"$GHOST_E2E_SKIP_BUILD\" || test -n \"$CI\") && echo 'Skipping Docker build (GHOST_E2E_SKIP_BUILD or CI is set)' || yarn docker:build:ghost",
+    "pretest": "(test -n \"$GHOST_E2E_SKIP_BUILD\" || test -n \"$CI\") && echo 'Skipping Docker build' || echo 'Tip: run yarn dev first, or set GHOST_E2E_IMAGE for container mode'",
     "test": "playwright test --project=main",
     "test:analytics": "playwright test --project=analytics",
     "test:all": "playwright test --project=main --project=analytics",
