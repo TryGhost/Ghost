@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const getOgType = require('../../../../core/frontend/meta/og-type');
 
 describe('getOgType', function () {

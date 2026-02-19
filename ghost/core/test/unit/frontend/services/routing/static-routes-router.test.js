@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
-const should = require('should');
 const sinon = require('sinon');
 const controllers = require('../../../../../core/frontend/services/routing/controllers');
 const StaticRoutesRouter = require('../../../../../core/frontend/services/routing/static-routes-router');
@@ -82,13 +81,12 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
             staticRoutesRouter._prepareStaticRouteContext(req, res, next);
             assert.equal(next.called, true);
 
-            res.routerOptions.should.have.properties('type', 'templates', 'defaultTemplate', 'context', 'data', 'contentType');
             assert.equal(res.routerOptions.type, 'custom');
             assert.deepEqual(res.routerOptions.templates, []);
             assert.equal(typeof res.routerOptions.defaultTemplate, 'function');
             assert.deepEqual(res.routerOptions.context, ['about']);
             assert.deepEqual(res.routerOptions.data, {});
-
+            assert('contentType' in res.routerOptions);
             assert.equal(res.routerOptions.contentType, undefined);
             assert.equal(res.locals.slug, undefined);
         });
@@ -99,13 +97,12 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
             staticRoutesRouter._prepareStaticRouteContext(req, res, next);
             assert.equal(next.called, true);
 
-            res.routerOptions.should.have.properties('type', 'templates', 'defaultTemplate', 'context', 'data', 'contentType');
             assert.equal(res.routerOptions.type, 'custom');
             assert.deepEqual(res.routerOptions.templates, []);
             assert.equal(typeof res.routerOptions.defaultTemplate, 'function');
             assert.deepEqual(res.routerOptions.context, ['index']);
             assert.deepEqual(res.routerOptions.data, {});
-
+            assert('contentType' in res.routerOptions);
             assert.equal(res.locals.slug, undefined);
         });
     });

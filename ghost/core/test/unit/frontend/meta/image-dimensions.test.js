@@ -1,7 +1,6 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../utils/assertions');
 const _ = require('lodash');
-const should = require('should');
 const sinon = require('sinon');
 const rewire = require('rewire');
 const getImageDimensions = rewire('../../../../core/frontend/meta/image-dimensions');

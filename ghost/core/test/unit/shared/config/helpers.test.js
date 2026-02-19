@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-require('should');
 const configUtils = require('../../../utils/config-utils');
 
 describe('vhost utils', function () {

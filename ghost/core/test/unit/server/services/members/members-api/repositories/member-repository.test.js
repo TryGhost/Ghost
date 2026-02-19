@@ -1,4 +1,3 @@
-require('should');
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');

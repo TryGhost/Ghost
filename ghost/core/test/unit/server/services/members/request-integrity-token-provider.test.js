@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const should = require('should');
 
 const RequestIntegrityTokenProvider = require('../../../../../core/server/services/members/request-integrity-token-provider');
 

@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../utils/assertions');
-const should = require('should');
 const BaseModel = require('../../../core/server/models/base');
 const {Label} = require('../../../core/server/models/label');
 const {Product} = require('../../../core/server/models/product');

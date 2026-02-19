@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const sinon = require('sinon');
 const rssCache = require('../../../../../core/frontend/services/rss/cache');
 const renderer = require('../../../../../core/frontend/services/rss/renderer');

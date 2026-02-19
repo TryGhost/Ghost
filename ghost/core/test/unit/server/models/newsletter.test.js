@@ -2,7 +2,6 @@
 const assert = require('node:assert/strict');
 const errors = require('@tryghost/errors');
 const sinon = require('sinon');
-const should = require('should');
 const models = require('../../../../core/server/models');
 
 describe('Unit: models/newsletter', function () {

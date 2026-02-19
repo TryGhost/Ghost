@@ -1,4 +1,3 @@
-const should = require('should');
 const sinon = require('sinon');
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
