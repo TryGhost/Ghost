@@ -160,7 +160,7 @@ class NextPaymentCalculator {
     _calculateDiscountedAmount(originalAmount, offer) {
         if (offer.type === 'percent') {
             const discount = Math.round(originalAmount * (offer.amount / 100));
-            return Math.max(0, originalAmount - discount);
+            return originalAmount - discount;
         }
 
         if (offer.type === 'fixed') {

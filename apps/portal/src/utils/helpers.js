@@ -808,17 +808,18 @@ export const getOfferOffAmount = ({offer}) => {
 };
 
 export const getUpdatedOfferPrice = ({offer, price, useFormatted = false}) => {
-    const originalAmount = price.amount;
-    let updatedAmount;
+    const originalAmountInCents = price.amount;
+    let updatedAmountInCents = originalAmountInCents;
 
     if (offer.type === 'fixed' && isSameCurrency(offer.currency, price.currency)) {
-        updatedAmount = ((originalAmount - offer.amount)) / 100;
-        updatedAmount = updatedAmount > 0 ? updatedAmount : 0;
+        updatedAmountInCents = Math.max(0, (originalAmountInCents - offer.amount));
     } else if (offer.type === 'percent') {
-        updatedAmount = (originalAmount - ((originalAmount * offer.amount) / 100)) / 100;
-    } else {
-        updatedAmount = originalAmount / 100;
+        const discountInCents = Math.round(originalAmountInCents * (offer.amount / 100));
+        updatedAmountInCents = Math.max(0, (originalAmountInCents - discountInCents));
     }
+
+    const updatedAmount = updatedAmountInCents / 100;
+
     if (useFormatted) {
         return Intl.NumberFormat('en', {currency: price?.currency, style: 'currency'}).format(updatedAmount);
     }
