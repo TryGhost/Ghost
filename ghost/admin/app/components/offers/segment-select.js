@@ -57,10 +57,6 @@ export default class OffersSegmentSelect extends Component {
         });
     }
 
-    getOfferRedemptionType(offer) {
-        return offer.redemptionType || offer.redemption_type || 'signup';
-    }
-
     get selectedOptions() {
         const selectedIds = new Set((this.args.offers || []).map(offer => offer.id).filter(id => !!id));
         const selected = [];
@@ -133,7 +129,7 @@ export default class OffersSegmentSelect extends Component {
         };
 
         offers.forEach((offer) => {
-            const redemptionType = this.getOfferRedemptionType(offer);
+            const redemptionType = offer.redemptionType;
             if (redemptionType !== 'retention') {
                 return;
             }
@@ -170,7 +166,7 @@ export default class OffersSegmentSelect extends Component {
             };
 
             offers.forEach((offer) => {
-                if (retentionOffersEnabled && this.getOfferRedemptionType(offer) === 'retention') {
+                if (retentionOffersEnabled && offer.redemptionType === 'retention') {
                     return;
                 }
 
