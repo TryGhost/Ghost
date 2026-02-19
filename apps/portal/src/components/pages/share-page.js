@@ -53,6 +53,15 @@ export const SharePageStyles = `
         text-wrap: pretty;
     }
 
+    .gh-portal-share-preview-excerpt {
+        margin: -2px 0 0;
+        color: var(--grey6);
+        font-size: 1.4rem;
+        line-height: 1.45;
+        text-wrap: pretty;
+        margin-top: -8px;
+    }
+
     .gh-portal-share-action {
         height: 54px;
         min-width: 0;
@@ -106,6 +115,14 @@ const getOgTitle = () => {
     return document.querySelector('meta[property="og:title"]')?.content || '';
 };
 
+const getOgDescription = () => {
+    return document.querySelector('meta[property="og:description"]')?.content || '';
+};
+
+const getMetaDescription = () => {
+    return document.querySelector('meta[name="description"]')?.content || '';
+};
+
 const getOgImage = () => {
     return document.querySelector('meta[property="og:image"]')?.content || '';
 };
@@ -120,6 +137,10 @@ const getShareUrl = (pageData) => {
 
 const getShareTitle = (pageData) => {
     return (pageData?.title || '').trim() || getOgTitle() || document.title || '';
+};
+
+const getShareExcerpt = (pageData) => {
+    return (pageData?.excerpt || '').trim() || getOgDescription() || getMetaDescription() || '';
 };
 
 const getShareImage = (pageData) => {
@@ -138,6 +159,7 @@ const SharePage = () => {
 
     const shareUrl = useMemo(() => getShareUrl(pageData), [pageData]);
     const shareTitle = useMemo(() => getShareTitle(pageData), [pageData]);
+    const shareExcerpt = useMemo(() => getShareExcerpt(pageData), [pageData]);
     const shareImage = useMemo(() => getShareImage(pageData), [pageData]);
 
     const socialLinks = useMemo(() => {
@@ -177,6 +199,7 @@ const SharePage = () => {
             <div className='gh-portal-share-preview'>
                 {shareImage && <img className='gh-portal-share-preview-image' src={shareImage} alt='' data-testid='share-preview-image' />}
                 {shareTitle && <h2 className='gh-portal-share-preview-title'>{shareTitle}</h2>}
+                {shareExcerpt && <p className='gh-portal-share-preview-excerpt'>{shareExcerpt}</p>}
             </div>
 
             <div className='gh-portal-share-actions'>
