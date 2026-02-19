@@ -153,6 +153,7 @@
     "Make sure emails aren't accidentally ending up in the Spam or Promotions folders of your inbox. If they are, click on \"Mark as not spam\" and/or \"Move to inbox\".": "Paragraph in the email receiving FAQ",
     "Manage": "A button for managing settings",
     "Manage subscription": "Header in Portal for the subscription management screen",
+    "Manage your preferences": "Link text in the member welcome email footer for managing communication preferences",
     "Maybe later": "An informal phrase to dismiss or close a popup",
     "Member discussion": "Default title for the comments section on a post",
     "Member since": "Shown in the 'subscription status' section of the newsletter, will be followed by a date",
