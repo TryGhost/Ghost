@@ -4,6 +4,19 @@ import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
+const RETENTION_OFFER_OPTIONS = [
+    {
+        cadence: 'month',
+        id: 'retention:month',
+        name: 'Monthly Retention'
+    },
+    {
+        cadence: 'year',
+        id: 'retention:year',
+        name: 'Yearly Retention'
+    }
+];
+
 export default class OffersSegmentSelect extends Component {
     @service store;
     @service feature;
@@ -38,29 +51,106 @@ export default class OffersSegmentSelect extends Component {
         return options;
     }
 
+    getOfferById(id) {
+        return this.offers.find((offer) => {
+            return offer.id === id;
+        });
+    }
+
+    getOfferRedemptionType(offer) {
+        return offer.redemptionType || offer.redemption_type || 'signup';
+    }
+
     get selectedOptions() {
-        const offerList = (this.args.offers || []).map((offer) => {
-            return this.offers.find((p) => {
-                return p.id === offer.id || p.name === offer.name;
+        const selectedIds = new Set((this.args.offers || []).map(offer => offer.id).filter(id => !!id));
+        const selected = [];
+        const consumedIds = new Set();
+        const retentionCadenceOptions = this.flatOptions.filter(option => Array.isArray(option.offerIds));
+
+        retentionCadenceOptions.forEach((option) => {
+            if (option.offerIds.length > 0 && option.offerIds.every(id => selectedIds.has(id))) {
+                selected.push(option);
+                option.offerIds.forEach(id => consumedIds.add(id));
+            }
+        });
+
+        selectedIds.forEach((id) => {
+            if (consumedIds.has(id)) {
+                return;
+            }
+
+            const option = this.flatOptions.find((flatOption) => {
+                return !Array.isArray(flatOption.offerIds) && flatOption.id === id;
             });
-        }).filter(d => !!d);
-        const offerIdList = offerList.map(d => d.id);
-        const selectedList = this.flatOptions.filter(option => offerIdList.includes(option.id));
-        return selectedList;
+
+            if (option) {
+                selected.push(option);
+                return;
+            }
+
+            const offer = this.getOfferById(id);
+            if (offer) {
+                selected.push({
+                    id: offer.id,
+                    name: offer.name,
+                    class: 'segment-offer-redemptions-hidden'
+                });
+            }
+        });
+
+        return selected;
     }
 
     @action
     setSegment(options) {
-        let ids = options.mapBy('id').map((id) => {
-            let offer = this.offers.find((p) => {
-                return p.id === id;
-            });
+        const offerIds = new Set();
+
+        options.forEach((option) => {
+            if (Array.isArray(option.offerIds)) {
+                option.offerIds.forEach(id => offerIds.add(id));
+                return;
+            }
+
+            if (option.id) {
+                offerIds.add(option.id);
+            }
+        });
+
+        let ids = Array.from(offerIds).map((id) => {
+            const offer = this.getOfferById(id);
             return {
-                id: offer.id,
-                name: offer.name
+                id,
+                name: offer?.name || id
             };
         }) || [];
         this.args.onChange?.(ids);
+    }
+
+    getRetentionOptions(offers) {
+        const retentionOffersByCadence = {
+            month: [],
+            year: []
+        };
+
+        offers.forEach((offer) => {
+            const redemptionType = this.getOfferRedemptionType(offer);
+            if (redemptionType !== 'retention') {
+                return;
+            }
+
+            if (offer.cadence === 'month' || offer.cadence === 'year') {
+                retentionOffersByCadence[offer.cadence].push(offer.id);
+            }
+        });
+
+        return RETENTION_OFFER_OPTIONS
+            .filter(definition => retentionOffersByCadence[definition.cadence].length > 0)
+            .map(definition => ({
+                name: definition.name,
+                id: definition.id,
+                offerIds: retentionOffersByCadence[definition.cadence],
+                class: 'segment-offer-redemptions'
+            }));
     }
 
     @task
@@ -71,6 +161,7 @@ export default class OffersSegmentSelect extends Component {
         // TODO: add `include: 'count.members` to query once API supports
         const offers = yield this.store.findAll('offer');
         this.offers = offers;
+
         if (offers.length > 0) {
             const offersGroup = {
                 groupName: 'Offers',
@@ -78,6 +169,10 @@ export default class OffersSegmentSelect extends Component {
             };
 
             offers.forEach((offer) => {
+                if (this.getOfferRedemptionType(offer) === 'retention') {
+                    return;
+                }
+
                 offersGroup.options.push({
                     name: offer.name,
                     id: offer.id,
@@ -85,7 +180,12 @@ export default class OffersSegmentSelect extends Component {
                     class: 'segment-offer-redemptions'
                 });
             });
-            options.push(offersGroup);
+
+            offersGroup.options.push(...this.getRetentionOptions(offers));
+
+            if (offersGroup.options.length > 0) {
+                options.push(offersGroup);
+            }
         }
 
         this._options = options;
