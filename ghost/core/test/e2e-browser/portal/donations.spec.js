@@ -47,10 +47,11 @@ test.describe('Portal', () => {
             }
             await submitStripePayment(sharedPage);
 
-            // Check success notification
+            // Use URL success params as a stable sync point, then assert the notification UI.
+            await expect.poll(() => sharedPage.url(), {timeout: 60000}).toContain('action=support&success=true');
             const notificationFrame = sharedPage.frameLocator('[data-testid="portal-notification-frame"]');
-            // todo: replace class locator on data-attr locator
-            await expect(notificationFrame.locator('.gh-portal-notification.success')).toHaveCount(1);
+            await expect(sharedPage.getByTestId('portal-notification-frame')).toBeVisible();
+            await expect(notificationFrame.getByText('Thank you for your support!')).toBeVisible();
         });
 
         test('Can donate with a fixed amount set and different currency', async ({sharedPage}) => {
