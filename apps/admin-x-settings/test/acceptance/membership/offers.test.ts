@@ -283,6 +283,8 @@ test.describe('Offers Modal', () => {
             redemption_count: number;
             redemption_type: 'retention';
             tier: null;
+            created_at?: string;
+            last_redeemed?: string;
         };
 
         const signupOffers = (responseFixtures.offers.offers || []).filter(offer => offer.redemption_type === 'signup');
@@ -365,6 +367,16 @@ test.describe('Offers Modal', () => {
             return {modal, retentionModal};
         };
 
+        const formatOfferDateForBrowser = async (page: Page, timestamp: string) => {
+            return await page.evaluate((value) => {
+                return new Date(value).toLocaleDateString('default', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: '2-digit'
+                });
+            }, timestamp);
+        };
+
         test('Lists monthly and yearly retention offers', async ({page}) => {
             await mockApi({page, requests: getRetentionRequests({
                 retentionOffers: [
@@ -410,11 +422,13 @@ test.describe('Offers Modal', () => {
             await expect(monthlyRow).toContainText('First payment');
             await expect(monthlyRow).toContainText('10');
             await expect(monthlyRow).toContainText('Active');
+            await expect(monthlyRow.getByTestId('retention-redemptions-link-monthly')).toHaveAttribute('href', '/ghost/#/members?filter=offer_redemptions%3A%5Bretention-month-active%2Cretention-month-archived%5D');
 
             const yearlyRow = rows.nth(1);
             await expect(yearlyRow).toContainText('Yearly retention');
             await expect(yearlyRow).toContainText('Inactive');
             await expect(yearlyRow).toContainText('9');
+            await expect(yearlyRow.getByTestId('retention-redemptions-link-yearly')).toHaveAttribute('href', '/ghost/#/members?filter=offer_redemptions%3A%5Bretention-year-archived%5D');
             await expect(yearlyRow).not.toContainText('2 MONTHS FREE');
         });
 
@@ -430,7 +444,9 @@ test.describe('Offers Modal', () => {
                         amount: 40,
                         duration: 'repeating',
                         duration_in_months: 3,
-                        redemption_count: 7
+                        redemption_count: 7,
+                        created_at: '2026-02-17T12:00:00.000Z',
+                        last_redeemed: '2026-02-18T12:00:00.000Z'
                     }),
                     createRetentionOffer({
                         id: 'retention-year-active',
@@ -442,7 +458,9 @@ test.describe('Offers Modal', () => {
                         cadence: 'year',
                         amount: 2,
                         duration: 'free_months',
-                        redemption_count: 4
+                        redemption_count: 4,
+                        created_at: '2026-02-16T12:00:00.000Z',
+                        last_redeemed: '2026-02-17T12:00:00.000Z'
                     }),
                     createRetentionOffer({
                         id: 'retention-month-archived',
@@ -452,7 +470,9 @@ test.describe('Offers Modal', () => {
                         amount: 30,
                         duration: 'once',
                         status: 'archived',
-                        redemption_count: 4
+                        redemption_count: 4,
+                        created_at: '2026-01-19T12:00:00.000Z',
+                        last_redeemed: '2026-02-19T12:00:00.000Z'
                     }),
                     createRetentionOffer({
                         id: 'retention-year-archived',
@@ -464,13 +484,19 @@ test.describe('Offers Modal', () => {
                         amount: 1,
                         duration: 'free_months',
                         status: 'archived',
-                        redemption_count: 5
+                        redemption_count: 5,
+                        created_at: '2026-01-25T12:00:00.000Z',
+                        last_redeemed: '2026-02-18T12:00:00.000Z'
                     })
                 ]
             })});
 
             const {modal, retentionModal: monthlyModal} = await openRetentionModal(page, 'Monthly retention');
+            const expectedMonthlyLastRedemption = await formatOfferDateForBrowser(page, '2026-02-19T12:00:00.000Z');
             await expect(monthlyModal).toContainText('11 redemptions');
+            await expect(monthlyModal).toContainText('Last redemption');
+            await expect(monthlyModal).toContainText(expectedMonthlyLastRedemption);
+            await expect(monthlyModal.getByRole('link', {name: 'See members →'})).toHaveAttribute('href', /offer_redemptions%3A%5Bretention-month-active%2Cretention-month-archived%5D/);
             await expect(monthlyModal.getByLabel('Enable monthly retention')).toBeChecked();
             await expect(monthlyModal.getByLabel('Display title')).toHaveValue('Stay monthly');
             await expect(monthlyModal.getByLabel('Display description')).toHaveValue('Monthly description');
@@ -481,8 +507,12 @@ test.describe('Offers Modal', () => {
             await modal.getByText('Yearly retention').click();
 
             const yearlyModal = page.getByTestId('retention-offer-modal');
+            const expectedYearlyLastRedemption = await formatOfferDateForBrowser(page, '2026-02-18T12:00:00.000Z');
             await expect(yearlyModal).toBeVisible();
             await expect(yearlyModal).toContainText('9 redemptions');
+            await expect(yearlyModal).toContainText('Last redemption');
+            await expect(yearlyModal).toContainText(expectedYearlyLastRedemption);
+            await expect(yearlyModal.getByRole('link', {name: 'See members →'})).toHaveAttribute('href', /offer_redemptions%3A%5Bretention-year-active%2Cretention-year-archived%5D/);
             await expect(yearlyModal.getByLabel('Enable yearly retention')).toBeChecked();
             await expect(yearlyModal.getByLabel('Display title')).toHaveValue('Stay yearly');
             await expect(yearlyModal.getByLabel('Display description')).toHaveValue('Yearly description');
