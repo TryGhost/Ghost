@@ -29,7 +29,7 @@ concurrency:
 jobs:
   job_setup:
     name: Setup
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     timeout-minutes: 15
     env:
       IS_MAIN: ${{ github.ref == 'refs/heads/main' }}
@@ -217,7 +217,7 @@ jobs:
 
   job_app_version_bump_check:
     name: Check app version bump
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     needs: [job_setup]
     if: github.event_name == 'pull_request'
     steps:
@@ -237,7 +237,7 @@ jobs:
         run: node .github/scripts/check-app-version-bump.js
 
   job_lint:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_any_code == 'true'
     name: Lint
@@ -271,7 +271,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   job_i18n:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     needs: [job_setup]
     name: i18n
     if: |
@@ -295,7 +295,7 @@ jobs:
         run: yarn nx run @tryghost/i18n:test
 
   job_admin-tests:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_admin == 'true'
     name: Admin tests - Chrome
@@ -339,7 +339,7 @@ jobs:
     name: Browser tests
     timeout-minutes: 60
     runs-on:
-      labels: ubuntu-latest
+      labels: blacksmith-8vcpu-ubuntu-2404
     needs: [job_setup]
     # Skip on forked PRs - Stripe secrets are not available
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
@@ -410,7 +410,7 @@ jobs:
 
   job_perf-tests:
     runs-on:
-      labels: ubuntu-latest-4-cores
+      labels: blacksmith-4vcpu-ubuntu-2404
     needs: [job_setup]
     if: (needs.job_setup.outputs.changed_core == 'true' && needs.job_setup.outputs.is_development == 'true') || needs.job_setup.outputs.has_perf_tests_label == 'true'
     name: Performance tests
@@ -460,7 +460,7 @@ jobs:
           auto-push: true
 
   job_unit-tests:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_any_code == 'true'
     strategy:
@@ -519,7 +519,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   job_acceptance-tests:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-8vcpu-ubuntu-2404
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_core == 'true'
     services:
@@ -607,7 +607,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   job_legacy-tests:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_core == 'true'
     services:
@@ -680,7 +680,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   job_admin_x_settings:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_admin_x_settings == 'true'
     name: Admin-X Settings tests
@@ -720,7 +720,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   job_activitypub:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_activitypub == 'true'
     name: ActivityPub tests
@@ -760,7 +760,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   job_comments_ui:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_comments_ui == 'true'
     name: Comments-UI tests
@@ -800,7 +800,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   job_signup_form:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_signup_form == 'true'
     name: Signup-form tests
@@ -841,7 +841,7 @@ jobs:
 
   job_tinybird-tests:
     name: Tinybird Tests
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_tinybird == 'true'
     defaults:
@@ -874,7 +874,7 @@ jobs:
     name: Ghost-CLI tests
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_core == 'true'
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     steps:
       - uses: actions/checkout@v6
         with:
@@ -960,7 +960,7 @@ jobs:
 
   job_docker_build:
     name: Build & Push Docker Image
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-8vcpu-ubuntu-2404
     permissions:
       contents: read
       packages: write
@@ -970,8 +970,8 @@ jobs:
         with:
           submodules: true
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - name: Setup Blacksmith Builder
+        uses: useblacksmith/setup-docker-builder@v1
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
@@ -1022,7 +1022,7 @@ jobs:
             maintainer=TryGhost
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v6
+        uses: useblacksmith/build-push-action@v2
         id: build
         with:
           context: .
@@ -1033,11 +1033,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           # On PRs: use both main cache and PR-specific cache
           # On main: only use main cache
-          cache-from: |
-            type=registry,ref=${{ steps.strategy.outputs.cache-key }}:cache-main
-            ${{ github.event_name == 'pull_request' && format('type=registry,ref={0}:cache-pr-{1}', steps.strategy.outputs.cache-key, github.event.pull_request.number) || '' }}
           # Only export cache if we can push (not on fork PRs)
-          cache-to: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref={0}:cache-{1},mode=max', steps.strategy.outputs.cache-key, github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main') || '' }}
 
       - name: Save image as artifact (fork PR)
         if: steps.strategy.outputs.is-fork-pr == 'true'
@@ -1065,7 +1061,7 @@ jobs:
   job_inspect_image:
     name: Inspect Docker Image
     needs: job_docker_build
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
 
     steps:
       - name: Checkout repository
@@ -1130,24 +1126,19 @@ jobs:
           } >> $GITHUB_STEP_SUMMARY
 
   job_e2e_tests:
-    name: E2E Tests (${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
-    runs-on: ubuntu-latest
+    name: E2E Tests
+    runs-on: blacksmith-16vcpu-ubuntu-2404
     needs: [job_docker_build, job_setup]
-    strategy:
-      fail-fast: true
-      matrix:
-        shardIndex: [1, 2, 3, 4]
-        shardTotal: [4]
     steps:
       - name: Checkout
         uses: actions/checkout@v6
 
         # TODO: Build tb-cli in a separate workflow and pull from GHCR instead of building here
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - name: Setup Blacksmith Builder
+        uses: useblacksmith/setup-docker-builder@v1
 
       - name: Build Tinybird CLI Image
-        uses: docker/build-push-action@v6
+        uses: useblacksmith/build-push-action@v2
         id: build
         with:
           context: .
@@ -1186,105 +1177,32 @@ jobs:
       - name: Run e2e tests
         env:
           GHOST_IMAGE_TAG: ${{ steps.load.outputs.image-tag }}
-          TEST_WORKERS_COUNT: 1
-        run: yarn test:e2e:all --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }} --retries=2
+          TEST_WORKERS_COUNT: 5
+        run: yarn test:e2e:all --retries=2
 
-      - name: Upload blob report to GitHub Actions Artifacts
+      - name: Upload Playwright report
         if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: blob-report-${{ matrix.shardIndex }}
-          path: e2e/blob-report
-          retention-days: 1
-
-      - name: Upload test results artifacts
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results-${{ matrix.shardIndex }}
-          path: e2e/test-results
-          retention-days: 7
-
-      - uses: tryghost/actions/actions/slack-build@main
-        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
-        with:
-          status: ${{ job.status }}
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-
-  job_merge_e2e_reports:
-    name: Merge Reports
-    if: always()
-    needs: [job_e2e_tests, job_setup]
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Restore caches
-        uses: ./.github/actions/restore-cache
-        env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
-
-      - name: Download blob reports from GitHub Actions Artifacts
-        uses: actions/download-artifact@v4
-        continue-on-error: true
-        with:
-          path: e2e/all-blob-reports
-          pattern: blob-report-*
-          merge-multiple: true
-
-      - name: Check for blob reports
-        id: check
-        run: |
-          if [ -d "e2e/all-blob-reports" ] && [ -n "$(ls -A e2e/all-blob-reports 2>/dev/null)" ]; then
-            echo "has_reports=true" >> $GITHUB_OUTPUT
-          else
-            echo "has_reports=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Download test results from GitHub Actions Artifacts
-        if: steps.check.outputs.has_reports == 'true'
-        uses: actions/download-artifact@v4
-        with:
-          path: e2e/all-test-results
-          pattern: test-results-*
-          merge-multiple: true
-
-      - name: Merge into HTML Report
-        if: steps.check.outputs.has_reports == 'true'
-        run: npx playwright merge-reports --reporter html ./all-blob-reports
-        working-directory: e2e
-
-      - name: Upload HTML report
-        if: steps.check.outputs.has_reports == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
           path: e2e/playwright-report
           retention-days: 14
 
-      - name: Upload merged test results
-        if: steps.check.outputs.has_reports == 'true'
+      - name: Upload test results
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: e2e/all-test-results
+          path: e2e/test-results
           retention-days: 7
 
       - name: View Test Report command
-        if: steps.check.outputs.has_reports == 'true'
+        if: failure()
         run: |
           echo -e "::notice::To view the Playwright report locally, run:\n\nREPORT_DIR=\$(mktemp -d) && gh run download ${{ github.run_id }} -n playwright-report -D \"\$REPORT_DIR\" && npx playwright show-report \"\$REPORT_DIR\""
 
       - name: Comment on PR with test report command
-        if: github.event_name == 'pull_request' && steps.check.outputs.has_reports == 'true'
+        if: failure() && github.event_name == 'pull_request'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -1296,6 +1214,13 @@ jobs:
           REPORT_DIR=\$(mktemp -d) && gh run download ${{ github.run_id }} -n playwright-report -D \"\$REPORT_DIR\" && npx playwright show-report \"\$REPORT_DIR\"
           \`\`\`"
 
+      - uses: tryghost/actions/actions/slack-build@main
+        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        with:
+          status: ${{ job.status }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
   job_coverage:
     name: Coverage
     needs: [
@@ -1303,7 +1228,7 @@ jobs:
       job_acceptance-tests,
       job_unit-tests
     ]
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     steps:
       - uses: actions/checkout@v6
 
@@ -1362,7 +1287,7 @@ jobs:
         job_e2e_tests
       ]
     if: always()
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     steps:
       - name: Output needs
         run: echo "${{ toJson(needs) }}"
@@ -1378,7 +1303,7 @@ jobs:
       job_required_tests
     ]
     name: Canary
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     if: |
       always()
       && needs.job_setup.result == 'success'
@@ -1434,7 +1359,7 @@ jobs:
       job_unit-tests
     ]
     name: Publish ${{ matrix.package_name }}
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     if: always() && needs.job_setup.result == 'success' && needs.job_lint.result == 'success' && needs.job_unit-tests.result == 'success' && (needs.job_setup.outputs.is_main == 'true' || needs.job_setup.outputs.is_five == 'true')
     permissions:
       id-token: write
@@ -1562,7 +1487,7 @@ jobs:
 
   deploy_tinybird_staging:
     name: Deploy Tinybird - Staging
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     needs: [
       job_setup,
       job_tinybird-tests
@@ -1581,7 +1506,7 @@ jobs:
 
   deploy_tinybird_production:
     name: Deploy Tinybird - Production
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     needs: [
       job_setup,
       job_tinybird-tests,
@@ -1605,7 +1530,7 @@ jobs:
       job_required_tests
     ]
     name: Deploy Admin
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     if: |
       always()
       && needs.job_setup.result == 'success'

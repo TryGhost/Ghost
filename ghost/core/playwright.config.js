@@ -3,7 +3,9 @@ const os = require('os');
 
 const getWorkerCount = () => {
     if (process.env.CI) {
-        return '100%';
+        // Stripe limits to 5 new accounts per second
+        // If we go higher than 5, we'll get rate limited and tests will fail
+        return 5;
     }
     if (process.env.PLAYWRIGHT_SLOWMO) {
         return 1;
