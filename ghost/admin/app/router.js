@@ -33,7 +33,6 @@ Router.map(function () {
     });
 
     this.route('posts');
-    this.route('posts.mentions', {path: '/posts/analytics/:post_id/mentions'});
     this.route('posts.debug', {path: '/posts/analytics/:post_id/debug'});
     this.route('posts-x', {path: '/posts/analytics/:post_id'}, function () {
         this.route('posts-x', {path: '/*sub'});
@@ -90,8 +89,6 @@ Router.map(function () {
     this.route('error404', {path: '/*path'});
 
     this.route('designsandbox');
-
-    this.route('mentions');
 });
 
 export default Router;
