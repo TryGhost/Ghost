@@ -33,7 +33,8 @@ const PROVIDER_ICONS = {
     icloud: icloudIcon,
     hey: defaultEmailIcon,
     aol: defaultEmailIcon,
-    mailru: defaultEmailIcon
+    mailru: defaultEmailIcon,
+    'dev-mailpit': defaultEmailIcon
 };
 
 const PROVIDER_LABELS = {
@@ -44,7 +45,8 @@ const PROVIDER_LABELS = {
     icloud: t('Open iCloud Mail'),
     hey: t('Open Hey'),
     aol: t('Open AOL Mail'),
-    mailru: t('Open Mail.ru')
+    mailru: t('Open Mail.ru'),
+    'dev-mailpit': 'Open Mailpit (development only)'
 };
 
 /**
@@ -52,7 +54,7 @@ const PROVIDER_LABELS = {
  * @param {object} props.inboxLinks
  * @param {string} props.inboxLinks.android
  * @param {string} props.inboxLinks.desktop
- * @param {'gmail' | 'yahoo' | 'outlook' | 'proton' | 'icloud' | 'hey' | 'aol' | 'mailru'} props.inboxLinks.provider
+ * @param {'gmail' | 'yahoo' | 'outlook' | 'proton' | 'icloud' | 'hey' | 'aol' | 'mailru' | 'dev-mailpit'} props.inboxLinks.provider
  */
 function InboxLinkButton({
     inboxLinks: {android, desktop, provider}

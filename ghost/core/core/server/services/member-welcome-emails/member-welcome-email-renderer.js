@@ -13,8 +13,12 @@ const UNMATCHED_TOKEN_REGEX = /%%\{.*?\}%%/g;
 class MemberWelcomeEmailRenderer {
     #wrapperTemplate;
 
-    constructor() {
+    constructor({t}) {
         this.Handlebars = require('handlebars').create();
+        this.Handlebars.registerHelper('t', function (key, options) {
+            let hash = options?.hash;
+            return t(key, hash || options || {});
+        });
         const wrapperSource = fs.readFileSync(
             path.join(__dirname, './email-templates/wrapper.hbs'),
             'utf8'
