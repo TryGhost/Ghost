@@ -8,13 +8,8 @@
 /* ---------------------------------------------------------- */
 
 /* Main viewport, contains main content, and alerts */
-/* Use `position: fixed`, covering full window area so scrolling on mobile doesn't trigger elastic scroll */
 .gh-app {
-    position: fixed;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
+    position: static;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -35,10 +30,7 @@
     display: flex;
     flex-direction: column;
     background: var(--main-bg-color);
-    overflow-y: auto;
-    /* prevent horizontal scroll in IE11 */
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
+    overflow: hidden;
 }
 
 body:not(.gh-body-fullscreen) .gh-viewport {
