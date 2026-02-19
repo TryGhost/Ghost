@@ -1062,7 +1062,6 @@ describe('MemberRepository', function () {
                 MemberPaidSubscriptionEvent,
                 MemberProductEvent,
                 productRepository,
-                labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
             });
@@ -1110,7 +1109,6 @@ describe('MemberRepository', function () {
                 MemberPaidSubscriptionEvent,
                 MemberProductEvent,
                 productRepository,
-                labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
             });
@@ -1157,7 +1155,6 @@ describe('MemberRepository', function () {
                 MemberPaidSubscriptionEvent,
                 MemberProductEvent,
                 productRepository,
-                labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
             });
@@ -1222,7 +1219,6 @@ describe('MemberRepository', function () {
                 MemberProductEvent,
                 productRepository,
                 offersAPI,
-                labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
             });
@@ -1285,7 +1281,6 @@ describe('MemberRepository', function () {
                 MemberPaidSubscriptionEvent,
                 MemberProductEvent,
                 productRepository,
-                labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
             });
@@ -1354,7 +1349,6 @@ describe('MemberRepository', function () {
                 MemberProductEvent,
                 productRepository,
                 offersAPI,
-                labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
             });
@@ -1422,7 +1416,6 @@ describe('MemberRepository', function () {
                 MemberProductEvent,
                 productRepository,
                 offersAPI,
-                labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
             });
