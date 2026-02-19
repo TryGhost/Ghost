@@ -19,7 +19,6 @@ Object {
       "explore": true,
       "featurebaseFeedback": true,
       "importMemberTier": true,
-      "inboxlinks": true,
       "indexnow": true,
       "lexicalIndicators": true,
       "members": true,
