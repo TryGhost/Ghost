@@ -1,5 +1,4 @@
-const assert = require('assert').strict;
-const should = require('should');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const {SafeString} = require('../../../../core/frontend/services/handlebars');
 const configUtils = require('../../../utils/config-utils');
@@ -7,6 +6,7 @@ const loggingLib = require('@tryghost/logging');
 
 // Stuff we are testing
 const get = require('../../../../core/frontend/helpers/get');
+const {querySimplePath} = require('../../../../core/frontend/helpers/get');
 const models = require('../../../../core/server/models');
 const api = require('../../../../core/server/api').endpoints;
 const maxLimitCap = require('../../../../core/shared/max-limit-cap');
@@ -98,7 +98,9 @@ describe('{{#get}} helper', function () {
                 {hash: {}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
                 assert.equal(fn.called, true);
-                fn.firstCall.args[0].should.be.an.Object().with.property('posts');
+                const args = fn.firstCall.args[0];
+                assert(args && typeof args === 'object');
+                assert('posts' in args);
 
                 assert(fn.firstCall.args[0].posts[0].feature_image_caption instanceof SafeString);
 
@@ -127,7 +129,9 @@ describe('{{#get}} helper', function () {
                 {hash: {}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
                 assert.equal(fn.called, true);
-                fn.firstCall.args[0].should.be.an.Object().with.property('authors');
+                const args = fn.firstCall.args[0];
+                assert(args && typeof args === 'object');
+                assert('authors' in args);
                 assert.deepEqual(fn.firstCall.args[0].authors, []);
                 assert.equal(inverse.called, false);
 
@@ -156,7 +160,9 @@ describe('{{#get}} helper', function () {
                 {hash: {}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
                 assert.equal(fn.called, true);
-                fn.firstCall.args[0].should.be.an.Object().with.property('newsletters');
+                const args = fn.firstCall.args[0];
+                assert(args && typeof args === 'object');
+                assert('newsletters' in args);
                 assert.deepEqual(fn.firstCall.args[0].newsletters, []);
                 assert.equal(inverse.called, false);
 
@@ -174,9 +180,13 @@ describe('{{#get}} helper', function () {
             ).then(function () {
                 assert.equal(fn.called, false);
                 assert.equal(inverse.calledOnce, true);
-                inverse.firstCall.args[1].should.be.an.Object().and.have.property('data');
-                inverse.firstCall.args[1].data.should.be.an.Object().and.have.property('error');
-                assert.equal(inverse.firstCall.args[1].data.error, 'Invalid "magic" resource given to get helper');
+                const args = inverse.firstCall.args[1];
+                assert(args && typeof args === 'object');
+                assert('data' in args);
+                const data = args.data;
+                assert(data && typeof data === 'object');
+                assert('error' in data);
+                assert.equal(data.error, 'Invalid "magic" resource given to get helper');
 
                 done();
             }).catch(done);
@@ -190,9 +200,13 @@ describe('{{#get}} helper', function () {
             ).then(function () {
                 assert.equal(fn.called, false);
                 assert.equal(inverse.calledOnce, true);
-                inverse.firstCall.args[1].should.be.an.Object().and.have.property('data');
-                inverse.firstCall.args[1].data.should.be.an.Object().and.have.property('error');
-                assert.match(inverse.firstCall.args[1].data.error, /^Validation/);
+                const args = inverse.firstCall.args[1];
+                assert(args && typeof args === 'object');
+                assert('data' in args);
+                const data = args.data;
+                assert(data && typeof data === 'object');
+                assert('error' in data);
+                assert.match(data.error, /^Validation/);
 
                 done();
             }).catch(done);
@@ -238,9 +252,12 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {filter: 'tags:[{{post.tags}}]'}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
-                browseStub.firstCall.args.should.be.an.Array().with.lengthOf(1);
-                browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');
-                assert.equal(browseStub.firstCall.args[0].filter, 'tags:[test,magic]');
+                assert(Array.isArray(browseStub.firstCall.args));
+                assert.equal(browseStub.firstCall.args.length, 1);
+                const options = browseStub.firstCall.args[0];
+                assert(options && typeof options === 'object');
+                assert('filter' in options);
+                assert.equal(options.filter, 'tags:[test,magic]');
 
                 done();
             }).catch(done);
@@ -252,9 +269,12 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {filter: 'author:{{post.author}}'}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
-                browseStub.firstCall.args.should.be.an.Array().with.lengthOf(1);
-                browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');
-                assert.equal(browseStub.firstCall.args[0].filter, 'author:cameron');
+                assert(Array.isArray(browseStub.firstCall.args));
+                assert.equal(browseStub.firstCall.args.length, 1);
+                const options = browseStub.firstCall.args[0];
+                assert(options && typeof options === 'object');
+                assert('filter' in options);
+                assert.equal(options.filter, 'author:cameron');
 
                 done();
             }).catch(done);
@@ -266,9 +286,12 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {filter: 'id:-{{post.id}}'}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
-                browseStub.firstCall.args.should.be.an.Array().with.lengthOf(1);
-                browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');
-                assert.equal(browseStub.firstCall.args[0].filter, 'id:-3');
+                assert(Array.isArray(browseStub.firstCall.args));
+                assert.equal(browseStub.firstCall.args.length, 1);
+                const options = browseStub.firstCall.args[0];
+                assert(options && typeof options === 'object');
+                assert('filter' in options);
+                assert.equal(options.filter, 'id:-3');
 
                 done();
             }).catch(done);
@@ -280,9 +303,12 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {filter: 'tags:{{post.tags.[0].slug}}'}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
-                browseStub.firstCall.args.should.be.an.Array().with.lengthOf(1);
-                browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');
-                assert.equal(browseStub.firstCall.args[0].filter, 'tags:test');
+                assert(Array.isArray(browseStub.firstCall.args));
+                assert.equal(browseStub.firstCall.args.length, 1);
+                const options = browseStub.firstCall.args[0];
+                assert(options && typeof options === 'object');
+                assert('filter' in options);
+                assert.equal(options.filter, 'tags:test');
 
                 done();
             }).catch(done);
@@ -294,9 +320,12 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {filter: 'published_at:<=\'{{post.published_at}}\''}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
-                browseStub.firstCall.args.should.be.an.Array().with.lengthOf(1);
-                browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');
-                browseStub.firstCall.args[0].filter.should.eql(`published_at:<='${pubDate.toISOString()}'`);
+                assert(Array.isArray(browseStub.firstCall.args));
+                assert.equal(browseStub.firstCall.args.length, 1);
+                const options = browseStub.firstCall.args[0];
+                assert(options && typeof options === 'object');
+                assert('filter' in options);
+                assert.equal(options.filter, `published_at:<='${pubDate.toISOString()}'`);
 
                 done();
             }).catch(done);
@@ -308,9 +337,12 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {filter: 'id:{{post.thing}}'}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
-                browseStub.firstCall.args.should.be.an.Array().with.lengthOf(1);
-                browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');
-                assert.equal(browseStub.firstCall.args[0].filter, 'id:');
+                assert(Array.isArray(browseStub.firstCall.args));
+                assert.equal(browseStub.firstCall.args.length, 1);
+                const options = browseStub.firstCall.args[0];
+                assert(options && typeof options === 'object');
+                assert('filter' in options);
+                assert.equal(options.filter, 'id:');
 
                 done();
             }).catch(done);
@@ -322,12 +354,98 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {filter: 'slug:{{@globalProp.foo}}'}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
-                browseStub.firstCall.args.should.be.an.Array().with.lengthOf(1);
-                browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');
-                assert.equal(browseStub.firstCall.args[0].filter, 'slug:bar');
+                assert(Array.isArray(browseStub.firstCall.args));
+                assert.equal(browseStub.firstCall.args.length, 1);
+                const options = browseStub.firstCall.args[0];
+                assert(options && typeof options === 'object');
+                assert('filter' in options);
+                assert.equal(options.filter, 'slug:bar');
 
                 done();
             }).catch(done);
+        });
+    });
+
+    describe('querySimplePath', function () {
+        const data = {
+            post: {
+                id: 3,
+                title: 'Test',
+                author: {slug: 'cameron'},
+                tags: [{slug: 'test'}, {slug: 'magic'}],
+                published_at: new Date('2024-01-15')
+            }
+        };
+
+        it('resolves simple dot-notation path', function () {
+            assert.deepEqual(querySimplePath(data, 'post.id'), [3]);
+        });
+
+        it('resolves nested dot-notation path', function () {
+            assert.deepEqual(querySimplePath(data, 'post.author.slug'), ['cameron']);
+        });
+
+        it('resolves array wildcard', function () {
+            assert.deepEqual(querySimplePath(data, 'post.tags[*].slug'), ['test', 'magic']);
+        });
+
+        it('resolves numeric array index', function () {
+            assert.deepEqual(querySimplePath(data, 'post.tags[0].slug'), ['test']);
+            assert.deepEqual(querySimplePath(data, 'post.tags[1].slug'), ['magic']);
+        });
+
+        it('returns empty array for non-existent path', function () {
+            assert.deepEqual(querySimplePath(data, 'post.nonexistent'), []);
+        });
+
+        it('returns empty array for non-existent nested path', function () {
+            assert.deepEqual(querySimplePath(data, 'post.foo.bar.baz'), []);
+        });
+
+        it('returns empty array when wildcard applied to non-array', function () {
+            assert.deepEqual(querySimplePath(data, 'post.title[*].slug'), []);
+        });
+
+        it('returns empty array for out-of-bounds index', function () {
+            assert.deepEqual(querySimplePath(data, 'post.tags[5].slug'), []);
+        });
+
+        it('handles null in path gracefully', function () {
+            assert.deepEqual(querySimplePath({a: null}, 'a.b'), []);
+        });
+
+        it('handles Date values', function () {
+            const result = querySimplePath(data, 'post.published_at');
+            assert.equal(result.length, 1);
+            assert(result[0] instanceof Date);
+        });
+
+        it('throws on recursive descent syntax', function () {
+            assert.throws(
+                () => querySimplePath(data, 'post..tags'),
+                {message: /unsupported path segment ""/}
+            );
+        });
+
+        it('throws on filter expression syntax', function () {
+            assert.throws(
+                () => querySimplePath(data, 'post.tags[?(@.slug)]'),
+                {message: /unsupported path segment "tags\[\?\(@"/}
+            );
+        });
+
+        it('throws on unclosed bracket', function () {
+            assert.throws(
+                () => querySimplePath(data, 'post.tags[0'),
+                {message: /unsupported path segment "tags\[0"/}
+            );
+        });
+
+        it('throws on non-numeric bracket content', function () {
+            assert.throws(
+                () => querySimplePath(data, 'post.tags[foo]'),
+                {message: /unsupported path segment "tags\[foo\]"/}
+            );
         });
     });
 
@@ -434,7 +552,7 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {}, data: locals, fn: fn, inverse: inverse}
             );
-            browseStub.firstCall.args[0].context.member.should.eql(member);
+            assert.equal(browseStub.firstCall.args[0].context.member, member);
         });
     });
 
@@ -469,8 +587,11 @@ describe('{{#get}} helper', function () {
             assert.equal(logging.warn.calledOnce, true);
             // The get helper will return as per usual
             assert.equal(fn.calledOnce, true);
-            fn.firstCall.args[0].should.be.an.Object().with.property('posts');
-            fn.firstCall.args[0].posts.should.be.an.Array().with.lengthOf(1);
+            const args = fn.firstCall.args[0];
+            assert(args && typeof args === 'object');
+            assert('posts' in args);
+            assert(Array.isArray(args.posts));
+            assert.equal(args.posts.length, 1);
         });
 
         it('should log an error and return safely if it hits the timeout threshold', async function () {
@@ -487,8 +608,10 @@ describe('{{#get}} helper', function () {
             assert.equal(logging.error.calledOnce, true);
             // The get helper gets called with an empty array of results
             assert.equal(fn.calledOnce, true);
-            fn.firstCall.args[0].should.be.an.Object().with.property('posts');
-            fn.firstCall.args[0].posts.should.be.an.Array().with.lengthOf(0);
+            const args = fn.firstCall.args[0];
+            assert(args && typeof args === 'object');
+            assert('posts' in args);
+            assert.deepEqual(args.posts, []);
         });
     });
 });

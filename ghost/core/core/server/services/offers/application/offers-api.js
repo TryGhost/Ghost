@@ -24,6 +24,29 @@ class OffersAPI {
     }
 
     /**
+     * Archives all previous retention offers on a given cadence.
+     * As retention offers exist per cadence ("Monthly retention", "Yearly retention"), we allow for at most 1 active retention offer per cadence.
+     * @param {string} offerId
+     * @param {'month'|'year'} cadence
+     * @param {Object} [options]
+     */
+    async archiveActiveRetentionOffers(offerId, cadence, options = {}) {
+        const activeRetentionOffers = await this.repository.getAll({
+            transacting: options.transacting,
+            filter: 'status:active+redemption_type:retention'
+        });
+
+        for (const activeRetentionOffer of activeRetentionOffers) {
+            if (activeRetentionOffer.id === offerId || activeRetentionOffer.cadence.value !== cadence) {
+                continue;
+            }
+
+            activeRetentionOffer.status = OfferStatus.create('archived');
+            await this.repository.save(activeRetentionOffer, options);
+        }
+    }
+
+    /**
      * @param {object} data
      * @param {string} data.id
      * @param {Object} [options]
@@ -61,6 +84,14 @@ class OffersAPI {
             const offer = await Offer.create(data, uniqueChecker);
 
             await this.repository.save(offer, saveOptions);
+
+            if (offer.redemptionType.value === 'retention' && offer.status.value === 'active') {
+                await this.archiveActiveRetentionOffers(
+                    offer.id,
+                    offer.cadence.value,
+                    saveOptions
+                );
+            }
 
             return OfferMapper.toDTO(offer);
         });
@@ -116,6 +147,14 @@ class OffersAPI {
 
             await this.repository.save(offer, updateOptions);
 
+            if (offer.redemptionType.value === 'retention' && offer.status.value === 'active') {
+                await this.archiveActiveRetentionOffers(
+                    offer.id,
+                    offer.cadence.value,
+                    updateOptions
+                );
+            }
+
             return OfferMapper.toDTO(offer);
         });
     }
@@ -165,12 +204,12 @@ class OffersAPI {
                 return [];
             }
 
-            // Filter by tier and cadence
-            let available = allOffers.filter(offer => offer.tier.id === tierId && offer.cadence.value === cadence);
+            // Filter by tier and cadence - Null-tier offers (retention) match any tier with the correct cadence
+            let available = allOffers.filter(offer => (offer.tier === null || offer.tier.id === tierId) && offer.cadence.value === cadence);
             debug(`listOffersAvailableToSubscription: ${available.length} offers match tier and cadence`);
 
             if (available.length === 0) {
-                const tierIds = [...new Set(allOffers.map(o => o.tier.id))];
+                const tierIds = [...new Set(allOffers.filter(o => o.tier !== null).map(o => o.tier.id))];
                 const cadences = [...new Set(allOffers.map(o => o.cadence.value))];
                 debug(`listOffersAvailableToSubscription: no offers match - available tiers: [${tierIds.join(', ')}], available cadences: [${cadences.join(', ')}]`);
 
@@ -194,10 +233,10 @@ class OffersAPI {
             }
 
             // Filter out offers already redeemed on this subscription
-            const redeemedOfferIds = await this.repository.getRedeemedOfferIdsForSubscription({
+            const redeemedOfferIds = await this.repository.getRedeemedOfferIdsForSubscription(
                 subscriptionId,
-                transacting: transaction
-            });
+                {transacting: transaction}
+            );
 
             const beforeRedeemedFilter = available.length;
             available = available.filter(offer => !redeemedOfferIds.includes(offer.id));
@@ -208,6 +247,24 @@ class OffersAPI {
 
             debug(`listOffersAvailableToSubscription: returning ${available.length} available offers`);
             return available.map(OfferMapper.toDTO);
+        });
+    }
+
+    /**
+     * @param {object} options
+     * @param {string[]} options.subscriptionIds
+     * @returns {Promise<Array<{subscription_id: string, offer_id: string}>>}
+     */
+    async getRedeemedOfferIdsForSubscriptions({subscriptionIds}) {
+        if (subscriptionIds.length === 0) {
+            return [];
+        }
+
+        return await this.repository.createTransaction(async (transaction) => {
+            return await this.repository.getRedeemedOfferIdsForSubscriptions(
+                subscriptionIds,
+                {transacting: transaction}
+            );
         });
     }
 

@@ -1,7 +1,6 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
 const sinon = require('sinon');
-const should = require('should');
 const fs = require('fs-extra');
 const yaml = require('js-yaml');
 const path = require('path');
@@ -24,7 +23,10 @@ describe('UNIT > Settings Service yaml parser:', function () {
 
             const result = yamlParser(file);
             assertExists(result);
-            result.should.be.an.Object().with.properties('routes', 'collections', 'taxonomies');
+            assert(result && typeof result === 'object');
+            assert('routes' in result);
+            assert('collections' in result);
+            assert('taxonomies' in result);
             assert.equal(yamlSpy.calledOnce, true);
         });
 

@@ -31,7 +31,7 @@ const StripeCoupon = require('./stripe-coupon');
  * @prop {OfferCurrency} [currency]
  * @prop {OfferStatus} status
  * @prop {string|null} [stripeCouponId]
- * @prop {OfferTier} tier
+ * @prop {OfferTier|null} tier
  * @prop {number} redemptionCount
  * @prop {OfferRedemptionType} redemptionType
  * @prop {string} createdAt
@@ -55,7 +55,7 @@ const StripeCoupon = require('./stripe-coupon');
  * @prop {string} [stripe_coupon_id]
  * @prop {number} [redemptionCount]
  * @prop {string} [redemption_type]
- * @prop {TierProps|OfferTier} tier
+ * @prop {TierProps|OfferTier|null} tier
  * @prop {Date} [created_at]
  * @prop {Date} [last_redeemed]
  */
@@ -322,10 +322,15 @@ class Offer {
             });
         }
 
-        //CASE: For offer type trial, the duration can only be `trial`
         if (type.value === 'trial' && duration.value.type !== 'trial') {
             throw new errors.InvalidOfferDuration({
                 message: 'Offer `duration` must be "trial" for offer type "trial".'
+            });
+        }
+
+        if (type.value === 'free_months' && duration.value.type !== 'free_months') {
+            throw new errors.InvalidOfferDuration({
+                message: 'Offer `duration` must be "free_months" for offer type "free_months".'
             });
         }
 
@@ -335,6 +340,8 @@ class Offer {
             amount = OfferAmount.OfferPercentageAmount.create(data.amount);
         } else if (type.equals(OfferType.Trial)) {
             amount = OfferAmount.OfferTrialAmount.create(data.amount);
+        } else if (type.equals(OfferType.FreeMonths)) {
+            amount = OfferAmount.OfferFreeMonthsAmount.create(data.amount);
         } else if (type.equals(OfferType.Fixed)) {
             amount = OfferAmount.OfferFixedAmount.create(data.amount);
             currency = OfferCurrency.create(data.currency);
@@ -356,8 +363,20 @@ class Offer {
             }
         }
 
-        const tier = OfferTier.create(data.tier);
         const redemptionType = OfferRedemptionType.create(data.redemption_type || 'signup');
+        const tier = data.tier ? OfferTier.create(data.tier) : null;
+
+        if (redemptionType.value === 'signup' && !tier) {
+            throw new errors.InvalidOfferTier({
+                message: 'Signup offers must be associated with a tier'
+            });
+        }
+
+        if (redemptionType.value === 'retention' && tier) {
+            throw new errors.InvalidOfferTier({
+                message: 'Retention offers cannot be associated with a specific tier'
+            });
+        }
 
         return new Offer({
             id,

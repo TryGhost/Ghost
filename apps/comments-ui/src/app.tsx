@@ -44,6 +44,7 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
         commentsIsLoading: false,
         commentIdToHighlight: null,
         commentIdToScrollTo: initialCommentId,
+        showMissingCommentNotice: false,
         pageUrl,
         supportEmail: null,
         isMember: false,
@@ -304,7 +305,7 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
             let pagination = initialPagination;
             let scrollTargetFound = false;
 
-            const shouldFindScrollTarget = labs?.commentPermalinks && initialCommentId && pagination;
+            const shouldFindScrollTarget = initialCommentId && pagination;
             if (shouldFindScrollTarget) {
                 const targetComment = await fetchScrollTarget(initialCommentId);
                 if (targetComment) {
@@ -332,6 +333,7 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
                 commentsIsLoading: false,
                 commentIdToHighlight: null,
                 commentIdToScrollTo: scrollTargetFound ? initialCommentId : null,
+                showMissingCommentNotice: !!initialCommentId && !scrollTargetFound,
                 supportEmail,
                 isMember,
                 isPaidOnly,

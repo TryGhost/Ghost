@@ -1,5 +1,5 @@
 const knex = require('knex').default;
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const SubscriptionStatsService = require('../../../../../core/server/services/stats/subscription-stats-service');
 
 describe('SubscriptionStatsService', function () {

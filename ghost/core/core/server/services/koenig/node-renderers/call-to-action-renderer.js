@@ -2,7 +2,7 @@ const {renderEmailButton} = require('../render-partials/email-button');
 const {addCreateDocumentOption} = require('../render-utils/add-create-document-option');
 const {renderWithVisibility} = require('../render-utils/visibility');
 const {getResizedImageDimensions} = require('../render-utils/get-resized-image-dimensions');
-const {isLocalContentImage} = require('../render-utils/is-local-content-image');
+const {isContentImage} = require('../render-utils/is-content-image');
 const {buildCleanBasicHtmlForElement} = require('../render-utils/build-clean-basic-html-for-element');
 
 const showButton = dataset => dataset.showButton && dataset.buttonUrl && dataset.buttonText;
@@ -74,7 +74,7 @@ function emailCTATemplate(dataset, options = {}) {
     }
 
     if (dataset.layout === 'minimal' && dataset.imageUrl) {
-        if (isLocalContentImage(dataset.imageUrl, options.siteUrl) && options.canTransformImage?.(dataset.imageUrl)) {
+        if (isContentImage(dataset.imageUrl, options.siteUrl, options.imageBaseUrl) && options.canTransformImage?.(dataset.imageUrl)) {
             const [, imagesPath, filename] = dataset.imageUrl.match(/(.*\/content\/images)\/(.*)/);
             const iconSize = options?.imageOptimization?.internalImageSizes?.['email-cta-minimal-image'] || {width: 256, height: 256}; // default to 256 since we know the image is a square
             dataset.imageUrl = `${imagesPath}/size/w${iconSize.width}h${iconSize.height}/${filename}`;

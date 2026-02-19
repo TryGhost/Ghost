@@ -3,11 +3,13 @@ import RoleSelector from './role-selector';
 import StaffToken from './staff-token';
 import {SettingGroup, SettingGroupContent, TextArea, TextField} from '@tryghost/admin-x-design-system';
 import {type UserDetailProps} from '../user-detail-modal';
+import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {hasAdminAccess} from '@tryghost/admin-x-framework/api/users';
 import {useGlobalData} from '../../../providers/global-data-provider';
 
 const BasicInputs: React.FC<UserDetailProps> = ({errors, clearError, user, setUserData}) => {
-    const {currentUser} = useGlobalData();
+    const {currentUser, siteData} = useGlobalData();
+    const homepageUrl = getHomepageUrl(siteData!);
 
     return (
         <SettingGroupContent>
@@ -36,7 +38,7 @@ const BasicInputs: React.FC<UserDetailProps> = ({errors, clearError, user, setUs
                 onKeyDown={() => clearError('name')}
             />
             <TextField
-                hint={`https://example.com/author/${user.slug}`}
+                hint={`${homepageUrl}author/${user.slug}`}
                 maxLength={191}
                 title="Slug"
                 value={user.slug}

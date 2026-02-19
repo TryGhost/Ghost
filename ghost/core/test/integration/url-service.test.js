@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../utils');
 const configUtils = require('../utils/config-utils');
@@ -107,7 +106,7 @@ describe('Integration: services/url/UrlService', function () {
 
         it('getResource', function () {
             let resource = urlService.getResource('/html-ipsum/');
-            resource.data.id.should.eql(testUtils.DataGenerator.forKnex.posts[0].id);
+            assert.equal(resource.data.id, testUtils.DataGenerator.forKnex.posts[0].id);
 
             resource = urlService.getResource('/does-not-exist/');
             assert.equal(resource, null);

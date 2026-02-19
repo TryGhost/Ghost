@@ -8,7 +8,8 @@ const urlUtils = new UrlUtils({
     getAdminUrl: config.getAdminUrl,
     assetBaseUrls: {
         media: config.get('urls:media'),
-        files: config.get('urls:files')
+        files: config.get('urls:files'),
+        image: config.get('urls:image')
     },
     slugs: config.get('slugs').protected,
     redirectCacheMaxAge: config.get('caching:301:maxAge'),

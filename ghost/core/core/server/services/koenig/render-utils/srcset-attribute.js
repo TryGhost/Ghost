@@ -1,4 +1,4 @@
-const {isLocalContentImage} = require('./is-local-content-image');
+const {isContentImage} = require('./is-content-image');
 const {getAvailableImageWidths} = require('./get-available-image-widths');
 const {isUnsplashImage} = require('./is-unsplash-image');
 
@@ -9,14 +9,14 @@ const getSrcsetAttribute = function ({src, width, options}) {
         return;
     }
 
-    if (isLocalContentImage(src, options.siteUrl) && options.canTransformImage && !options.canTransformImage(src)) {
+    if (isContentImage(src, options.siteUrl, options.imageBaseUrl) && options.canTransformImage && !options.canTransformImage(src)) {
         return;
     }
 
     const srcsetWidths = getAvailableImageWidths({width}, options.imageOptimization.contentImageSizes);
 
-    // apply srcset if this is a relative image that matches Ghost's image url structure
-    if (isLocalContentImage(src, options.siteUrl)) {
+    // apply srcset if this is a local or CDN image that matches Ghost's image url structure
+    if (isContentImage(src, options.siteUrl, options.imageBaseUrl)) {
         const [, imagesPath, filename] = src.match(/(.*\/content\/images)\/(.*)/);
         const srcs = [];
 

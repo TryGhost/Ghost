@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../utils/assertions');
-const should = require('should');
 const sinon = require('sinon');
 const configUtils = require('../../../utils/config-utils');
 const {mockManager} = require('../../../utils/e2e-framework');
@@ -59,9 +58,9 @@ describe('{{comments}} helper', function () {
         });
         assertExists(rendered);
         assert(rendered.string.includes('<script defer src="https://cdn.jsdelivr.net/ghost/comments-ui'));
-        assert(rendered.string.includes('data-ghost-comments="http://127.0.0.1:2369/"'));
-        assert(rendered.string.includes('data-api="http://127.0.0.1:2369/ghost/api/content/"'));
-        assert(rendered.string.includes('data-admin="http://127.0.0.1:2369/ghost/"'));
+        assert(rendered.string.includes(`data-ghost-comments="${configUtils.config.get('url')}/"`));
+        assert(rendered.string.includes(`data-api="${configUtils.config.get('url')}/ghost/api/content/"`));
+        assert(rendered.string.includes(`data-admin="${configUtils.config.get('url')}/ghost/"`));
         assert(rendered.string.includes('data-key="xyz"'));
         assert(rendered.string.includes('data-title="null"'));
         assert(rendered.string.includes('data-count="true"'));
@@ -88,9 +87,9 @@ describe('{{comments}} helper', function () {
         });
         assertExists(rendered);
         assert(rendered.string.includes('<script defer src="https://cdn.jsdelivr.net/ghost/comments-ui'));
-        assert(rendered.string.includes('data-ghost-comments="http://127.0.0.1:2369/"'));
-        assert(rendered.string.includes('data-api="http://127.0.0.1:2369/ghost/api/content/"'));
-        assert(rendered.string.includes('data-admin="http://127.0.0.1:2369/ghost/"'));
+        assert(rendered.string.includes(`data-ghost-comments="${configUtils.config.get('url')}/"`));
+        assert(rendered.string.includes(`data-api="${configUtils.config.get('url')}/ghost/api/content/"`));
+        assert(rendered.string.includes(`data-admin="${configUtils.config.get('url')}/ghost/"`));
         assert(rendered.string.includes('data-key="xyz"'));
         assert(rendered.string.includes('data-title="null"'));
         assert(rendered.string.includes('data-count="true"'));

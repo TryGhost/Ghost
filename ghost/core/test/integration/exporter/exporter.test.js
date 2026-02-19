@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../utils/assertions');
-const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../utils');
 const _ = require('lodash');
@@ -109,8 +108,12 @@ describe('Exporter', function () {
 
             // NOTE: using `Object.keys` here instead of `should.have.only.keys` assertion
             //       because when `have.only.keys` fails there's no useful diff
-            Object.keys(exportData.data).sort().should.eql(tables.sort());
-            Object.keys(exportData.data).sort().should.containDeep(Object.keys(exportedBodyLatest().db[0].data));
+            assert.deepEqual(Object.keys(exportData.data).sort(), tables.sort());
+            assert(
+                Object.keys(exportedBodyLatest().db[0].data).every(key => (
+                    Object.hasOwnProperty.call(exportData.data, key)
+                ))
+            );
             assert.equal(exportData.meta.version, ghostVersion.full);
 
             // excludes table should contain no data

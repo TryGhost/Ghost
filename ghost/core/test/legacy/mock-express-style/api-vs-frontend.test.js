@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../utils/assertions');
-const should = require('should');
 const sinon = require('sinon');
 const cheerio = require('cheerio');
 const testUtils = require('../../utils');
@@ -1544,7 +1543,7 @@ describe('Frontend behavior tests', function () {
                 .then(function (response) {
                     const $ = cheerio.load(response.body);
                     assert.equal(response.statusCode, 200);
-                    assert.equal($('head link')[1].attribs.href, 'http://127.0.0.1:2369/rss/');
+                    assert.equal($('head link')[1].attribs.href, `${configUtils.config.get('url')}/rss/`);
                 });
         });
     });

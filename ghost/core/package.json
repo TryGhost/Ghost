@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "6.17.1",
+  "version": "6.19.1",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -21,6 +21,7 @@
   "license": "MIT",
   "scripts": {
     "archive": "npm pack",
+    "pack:standalone": "rm -rf package ghost-*.tgz && npm pack && tar -xzf ghost-*.tgz && cp ../../yarn.lock package/ && rm ghost-*.tgz",
     "dev": "node --watch --import=tsx index.js",
     "build:assets": "yarn build:assets:css && yarn build:assets:js",
     "build:assets:js": "node bin/minify-assets.js",
@@ -32,8 +33,9 @@
     "test:single": "yarn test:base --timeout=60000",
     "test:all": "yarn test:unit && yarn test:integration && yarn test:e2e && yarn lint",
     "test:debug": "DEBUG=ghost:test* yarn test",
-    "test:unit": "c8 yarn test:unit:base",
+    "test:unit": "c8 yarn test:unit:${GHOST_UNIT_TEST_VARIANT:-base}",
     "test:unit:base": "yarn test:base './test/unit' --timeout=2000",
+    "test:unit:ci": "yarn test:unit:base --reporter=min",
     "test:integration": "yarn test:base './test/integration' --timeout=10000",
     "test:e2e": "yarn test:base ./test/e2e-* --timeout=15000",
     "test:legacy": "yarn test:base './test/legacy' --timeout=60000",
@@ -70,8 +72,8 @@
     "@slack/webhook": "7.0.6",
     "@tryghost/adapter-base-cache": "0.1.17",
     "@tryghost/admin-api-schema": "4.5.10",
-    "@tryghost/api-framework": "1.0.2",
-    "@tryghost/bookshelf-plugins": "0.6.27",
+    "@tryghost/api-framework": "1.0.3",
+    "@tryghost/bookshelf-plugins": "0.6.29",
     "@tryghost/color-utils": "0.2.10",
     "@tryghost/config-url-helpers": "1.0.17",
     "@tryghost/custom-fonts": "1.0.2",
@@ -104,7 +106,7 @@
     "@tryghost/mw-error-handler": "1.0.7",
     "@tryghost/mw-vhost": "1.0.1",
     "@tryghost/nodemailer": "0.3.48",
-    "@tryghost/nql": "0.12.8",
+    "@tryghost/nql": "0.12.10",
     "@tryghost/parse-email-address": "0.0.0",
     "@tryghost/pretty-cli": "1.2.47",
     "@tryghost/prometheus-metrics": "1.0.2",
@@ -171,7 +173,6 @@
     "intl-messageformat": "5.4.3",
     "js-yaml": "4.1.0",
     "jsonc-parser": "3.3.1",
-    "jsonpath": "1.1.1",
     "jsonwebtoken": "8.5.1",
     "juice": "9.1.0",
     "keypair": "1.0.4",
@@ -257,7 +258,6 @@
     "postcss": "8.5.6",
     "postcss-cli": "11.0.1",
     "rewire": "8.0.0",
-    "should": "13.2.3",
     "sinon": "18.0.1",
     "supertest": "6.3.4",
     "tmp": "0.2.5",
@@ -318,25 +318,31 @@
       },
       "test:unit": {
         "dependsOn": [
-          "build:assets"
+          "build:assets",
+          {
+            "projects": [
+              "@tryghost/parse-email-address"
+            ],
+            "target": "build"
+          }
         ]
       },
       "test:browser": {
         "dependsOn": [
           "build:assets",
-          "ghost-admin:build"
+          "@tryghost/admin:build"
         ]
       },
       "test:browser:admin": {
         "dependsOn": [
           "build:assets",
-          "ghost-admin:build"
+          "@tryghost/admin:build"
         ]
       },
       "test:browser:portal": {
         "dependsOn": [
           "build:assets",
-          "ghost-admin:build"
+          "@tryghost/admin:build"
         ]
       }
     }

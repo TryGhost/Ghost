@@ -152,7 +152,7 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
                             onSourceClick={onSourceClick} />
                     ) : (
                         <EmptyIndicator
-                            className='mt-8 w-full py-20'
+                            className='w-full py-20'
                             title={`No visitors ${getPeriodText(range)}`}
                         >
                             <LucideIcon.Globe strokeWidth={1.5} />

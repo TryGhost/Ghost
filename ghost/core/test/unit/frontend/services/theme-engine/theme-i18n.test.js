@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 
 const ThemeI18n = require('../../../../../core/frontend/services/theme-engine/i18n').ThemeI18n;
 

@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../utils/assertions');
-const should = require('should');
 const sinon = require('sinon');
 const ghost_foot = require('../../../../core/frontend/helpers/ghost_foot');
 const {settingsCache} = require('../../../../core/frontend/services/proxy');

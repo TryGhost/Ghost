@@ -1,11 +1,10 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const ObjectId = require('bson-objectid').default;
 const testUtils = require('../../utils');
 const models = require('../../../core/server/models');
 const {OUTBOX_STATUSES} = require('../../../core/server/models/outbox');
 const db = require('../../../core/server/data/db');
-const configUtils = require('../../utils/config-utils');
 const mockManager = require('../../utils/e2e-framework-mock-manager');
 const mailService = require('../../../core/server/services/mail');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../core/server/services/member-welcome-emails/constants');
@@ -13,6 +12,7 @@ const processOutbox = require('../../../core/server/services/outbox/jobs/lib/pro
 
 describe('Member Welcome Emails Integration', function () {
     let membersService;
+    let defaultNewsletterSenderState = null;
 
     before(async function () {
         await testUtils.setup('default')();
@@ -20,6 +20,18 @@ describe('Member Welcome Emails Integration', function () {
     });
 
     beforeEach(async function () {
+        const defaultNewsletter = await models.Newsletter.getDefaultNewsletter();
+        if (defaultNewsletter) {
+            defaultNewsletterSenderState = {
+                id: defaultNewsletter.id,
+                sender_name: defaultNewsletter.get('sender_name'),
+                sender_email: defaultNewsletter.get('sender_email'),
+                sender_reply_to: defaultNewsletter.get('sender_reply_to')
+            };
+        } else {
+            defaultNewsletterSenderState = null;
+        }
+
         await db.knex('outbox').del();
         await db.knex('members').del();
 
@@ -59,12 +71,21 @@ describe('Member Welcome Emails Integration', function () {
     });
 
     afterEach(async function () {
+        if (defaultNewsletterSenderState) {
+            await db.knex('newsletters')
+                .where('id', defaultNewsletterSenderState.id)
+                .update({
+                    sender_name: defaultNewsletterSenderState.sender_name,
+                    sender_email: defaultNewsletterSenderState.sender_email,
+                    sender_reply_to: defaultNewsletterSenderState.sender_reply_to
+                });
+        }
+
         await db.knex('automated_email_recipients').del();
         await db.knex('outbox').del();
         await db.knex('members').del();
         await db.knex('automated_emails').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free).del();
         await db.knex('automated_emails').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.paid).del();
-        await configUtils.restore();
         mockManager.restore();
     });
 
@@ -331,10 +352,7 @@ describe('Member Welcome Emails Integration', function () {
             assert.equal(record.automated_email_id, automatedEmail.id);
         });
 
-        it('sends email to member email when test inbox is not configured', async function () {
-            // Explicitly clear the test inbox config (it's set in config.testing.json)
-            configUtils.set('memberWelcomeEmailTestInbox', '');
-
+        it('sends email to member email', async function () {
             const memberEmail = 'real-member@example.com';
 
             await models.Outbox.add({
@@ -355,17 +373,25 @@ describe('Member Welcome Emails Integration', function () {
             assert.equal(sendCall.args[0].to, memberEmail);
         });
 
-        it('sends email to test inbox when memberWelcomeEmailTestInbox is configured', async function () {
-            configUtils.set('memberWelcomeEmailTestInbox', 'test-inbox@example.com');
+        it('uses configured sender and reply-to when sending member welcome email', async function () {
+            const senderEmail = 'editor@example.com';
+            const senderReplyTo = 'reply@example.com';
+            const defaultNewsletter = await models.Newsletter.getDefaultNewsletter();
 
-            const memberEmail = 'real-member-2@example.com';
+            await db.knex('newsletters')
+                .where('id', defaultNewsletter.id)
+                .update({
+                    sender_name: 'Scott',
+                    sender_email: senderEmail,
+                    sender_reply_to: senderReplyTo
+                });
 
             await models.Outbox.add({
                 event_type: 'MemberCreatedEvent',
                 payload: JSON.stringify({
                     memberId: ObjectId().toHexString(),
-                    email: memberEmail,
-                    name: 'Real Member 2',
+                    email: 'sender-test@example.com',
+                    name: 'Sender Test',
                     status: 'free'
                 }),
                 status: OUTBOX_STATUSES.PENDING
@@ -375,8 +401,8 @@ describe('Member Welcome Emails Integration', function () {
 
             assert.equal(mailService.GhostMailer.prototype.send.callCount, 1);
             const sendCall = mailService.GhostMailer.prototype.send.firstCall;
-            assert.equal(sendCall.args[0].to, 'test-inbox@example.com');
+            assert.equal(sendCall.args[0].replyTo, senderReplyTo);
+            assert.ok(sendCall.args[0].from.includes(senderEmail));
         });
     });
 });
-

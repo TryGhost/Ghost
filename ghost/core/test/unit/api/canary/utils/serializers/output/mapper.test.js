@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../../../utils/assertions');
-const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../../../../../utils');
 const dateUtil = require('../../../../../../../core/server/api/endpoints/utils/serializers/output/utils/date');
@@ -226,7 +225,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
             }));
 
             const mapped = mappers.newsletters(newsletter, frame);
-            mapped.should.eql(newsletter.toJSON());
+            assert.deepEqual(mapped, newsletter.toJSON());
         });
     });
 

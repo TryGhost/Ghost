@@ -1,8 +1,9 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
 const SingleUseTokenProvider = require('../../../core/server/services/members/single-use-token-provider');
 const settingsCache = require('../../../core/shared/settings-cache');
+const config = require('../../../core/shared/config');
 const {agentProvider, fixtureManager, mockManager, matchers, configUtils} = require('../../utils/e2e-framework');
 const {stringMatching, anyEtag, anyUuid, anyContentLength, anyContentVersion} = matchers;
 const models = require('../../../core/server/models');
@@ -10,7 +11,7 @@ const membersService = require('../../../core/server/services/members');
 const {anyErrorId} = matchers;
 
 // Updated to reflect current total based on test output
-const CURRENT_SETTINGS_COUNT = 93;
+const CURRENT_SETTINGS_COUNT = 99;
 
 const settingsMatcher = {};
 
@@ -227,11 +228,11 @@ describe('Settings API', function () {
             // Check returned WITH prefix
             const val = body.settings.find(setting => setting.key === 'icon');
             assert.ok(val);
-            assert.equal(val.value, 'http://127.0.0.1:2369/content/images/size/w256h256/2019/07/icon.png');
+            assert.equal(val.value, `${config.get('url')}/content/images/size/w256h256/2019/07/icon.png`);
 
             // Check if not changed (also check internal ones)
             const afterValue = settingsCache.get('icon');
-            assert.equal(afterValue, 'http://127.0.0.1:2369/content/images/2019/07/icon.png');
+            assert.equal(afterValue, `${config.get('url')}/content/images/2019/07/icon.png`);
 
             emailMockReceiver.assertSentEmailCount(0);
         });

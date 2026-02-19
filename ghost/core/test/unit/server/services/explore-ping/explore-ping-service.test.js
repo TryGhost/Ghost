@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const ExplorePingService = require('../../../../../core/server/services/explore-ping/explore-ping-service');
 
 describe('ExplorePingService', function () {

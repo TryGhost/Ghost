@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
-const should = require('should');
 const sinon = require('sinon');
 const controllers = require('../../../../../core/frontend/services/routing/controllers');
 const StaticRoutesRouter = require('../../../../../core/frontend/services/routing/static-routes-router');
@@ -51,7 +50,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
 
             // parent route
             assert.equal(mountRouteSpy.args[0][0], '/about/');
-            mountRouteSpy.args[0][1].should.eql(controllers.static);
+            assert.equal(mountRouteSpy.args[0][1], controllers.static);
         });
 
         it('initialize with data+filter', function () {
@@ -73,7 +72,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
 
             // parent route
             assert.equal(mountRouteSpy.args[0][0], '/about/');
-            mountRouteSpy.args[0][1].should.eql(controllers.static);
+            assert.equal(mountRouteSpy.args[0][1], controllers.static);
         });
 
         it('fn: _prepareStaticRouteContext', function () {
@@ -82,13 +81,12 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
             staticRoutesRouter._prepareStaticRouteContext(req, res, next);
             assert.equal(next.called, true);
 
-            res.routerOptions.should.have.properties('type', 'templates', 'defaultTemplate', 'context', 'data', 'contentType');
             assert.equal(res.routerOptions.type, 'custom');
             assert.deepEqual(res.routerOptions.templates, []);
-            res.routerOptions.defaultTemplate.should.be.a.Function();
+            assert.equal(typeof res.routerOptions.defaultTemplate, 'function');
             assert.deepEqual(res.routerOptions.context, ['about']);
             assert.deepEqual(res.routerOptions.data, {});
-
+            assert('contentType' in res.routerOptions);
             assert.equal(res.routerOptions.contentType, undefined);
             assert.equal(res.locals.slug, undefined);
         });
@@ -99,13 +97,12 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
             staticRoutesRouter._prepareStaticRouteContext(req, res, next);
             assert.equal(next.called, true);
 
-            res.routerOptions.should.have.properties('type', 'templates', 'defaultTemplate', 'context', 'data', 'contentType');
             assert.equal(res.routerOptions.type, 'custom');
             assert.deepEqual(res.routerOptions.templates, []);
-            res.routerOptions.defaultTemplate.should.be.a.Function();
+            assert.equal(typeof res.routerOptions.defaultTemplate, 'function');
             assert.deepEqual(res.routerOptions.context, ['index']);
             assert.deepEqual(res.routerOptions.data, {});
-
+            assert('contentType' in res.routerOptions);
             assert.equal(res.locals.slug, undefined);
         });
     });
@@ -133,11 +130,11 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
 
                 // parent route
                 assert.equal(mountRouteSpy.args[0][0], '/channel/');
-                mountRouteSpy.args[0][1].should.eql(controllers.channel);
+                assert.equal(mountRouteSpy.args[0][1], controllers.channel);
 
                 // pagination feature
                 assert.equal(mountRouteSpy.args[1][0], '/channel/page/:page(\\d+)');
-                mountRouteSpy.args[1][1].should.eql(controllers.channel);
+                assert.equal(mountRouteSpy.args[1][1], controllers.channel);
             });
 
             it('initialize with controller+filter', function () {
@@ -160,11 +157,11 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
 
                 // parent route
                 assert.equal(mountRouteSpy.args[0][0], '/channel/');
-                mountRouteSpy.args[0][1].should.eql(controllers.channel);
+                assert.equal(mountRouteSpy.args[0][1], controllers.channel);
 
                 // pagination feature
                 assert.equal(mountRouteSpy.args[1][0], '/channel/page/:page(\\d+)');
-                mountRouteSpy.args[1][1].should.eql(controllers.channel);
+                assert.equal(mountRouteSpy.args[1][1], controllers.channel);
             });
 
             it('initialize with controller+data', function () {
@@ -189,11 +186,11 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
 
                 // parent route
                 assert.equal(mountRouteSpy.args[0][0], '/channel/');
-                mountRouteSpy.args[0][1].should.eql(controllers.channel);
+                assert.equal(mountRouteSpy.args[0][1], controllers.channel);
 
                 // pagination feature
                 assert.equal(mountRouteSpy.args[1][0], '/channel/page/:page(\\d+)');
-                mountRouteSpy.args[1][1].should.eql(controllers.channel);
+                assert.equal(mountRouteSpy.args[1][1], controllers.channel);
             });
         });
 

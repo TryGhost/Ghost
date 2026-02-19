@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const NextPaymentCalculator = require('../../../../../../../core/server/services/members/members-api/services/next-payment-calculator');
 
 /**
@@ -57,6 +57,11 @@ describe('NextPaymentCalculator', function () {
 
         if (overrides.type === 'trial') {
             defaults.duration = 'trial';
+            defaults.duration_in_months = null;
+        }
+
+        if (overrides.type === 'free_months') {
+            defaults.duration = 'free_months';
             defaults.duration_in_months = null;
         }
 
@@ -119,6 +124,66 @@ describe('NextPaymentCalculator', function () {
             const subscription = createSubscription({
                 discount_start: new Date('2025-05-01T00:00:00.000Z'),
                 discount_end: null
+            }, offer);
+
+            const result = nextPaymentCalculator.calculate(subscription);
+
+            assert.deepEqual(result, {
+                original_amount: 500,
+                amount: 500,
+                interval: 'month',
+                currency: 'USD',
+                discount: null
+            });
+        });
+
+        it('handles active free months offers', function () {
+            const nextPaymentCalculator = new NextPaymentCalculator();
+            const offer = createOffer({type: 'free_months', duration: 'free_months', amount: 2});
+            const now = new Date();
+            const trialStartAtDate = new Date(now.getTime() - (7 * 24 * 60 * 60 * 1000));
+            const trialEndAtDate = new Date(now.getTime() + (30 * 24 * 60 * 60 * 1000));
+            const currentPeriodEndDate = new Date(now.getTime() + (14 * 24 * 60 * 60 * 1000));
+            const trialStartAt = trialStartAtDate.toISOString();
+            const trialEndAt = trialEndAtDate.toISOString();
+
+            const subscription = createSubscription({
+                discount_start: null,
+                discount_end: null,
+                trial_start_at: trialStartAtDate,
+                trial_end_at: trialEndAtDate,
+                current_period_end: currentPeriodEndDate
+            }, offer);
+
+            const result = nextPaymentCalculator.calculate(subscription);
+
+            assert.deepEqual(result, {
+                original_amount: 500,
+                amount: 500,
+                interval: 'month',
+                currency: 'USD',
+                discount: {
+                    offer_id: 'offer_123',
+                    start: trialStartAt,
+                    end: trialEndAt,
+                    duration: 'free_months',
+                    type: 'free_months',
+                    amount: 2
+                }
+            });
+        });
+
+        it('does not return free months discount when it has expired', function () {
+            const nextPaymentCalculator = new NextPaymentCalculator();
+            const offer = createOffer({type: 'free_months', duration: 'free_months', amount: 2});
+            const now = new Date();
+            const trialStartAtDate = new Date(now.getTime() - (60 * 24 * 60 * 60 * 1000));
+            const trialEndAtDate = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000)); // In the past
+            const currentPeriodEndDate = new Date(now.getTime() + (14 * 24 * 60 * 60 * 1000));
+            const subscription = createSubscription({
+                trial_start_at: trialStartAtDate,
+                trial_end_at: trialEndAtDate,
+                current_period_end: currentPeriodEndDate
             }, offer);
 
             const result = nextPaymentCalculator.calculate(subscription);

@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const {memberCountRounding, getMemberStats} = require('../../../../core/frontend/utils/member-count');
 
 const getMemberStatsMock = [

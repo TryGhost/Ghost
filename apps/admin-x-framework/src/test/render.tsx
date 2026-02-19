@@ -40,7 +40,7 @@ export default function renderStandaloneApp<Props extends object>(
                 framework={{
                     externalNavigate: (link) => {
                         // Use the expectExternalNavigate helper to test this dummy external linking
-                        window.location.href = `/external/${encodeURIComponent(JSON.stringify(link))}`;
+                        document.body.dataset.externalNavigate = JSON.stringify(link);
                     },
                     ghostVersion: '5.x',
                     sentryDSN: null,

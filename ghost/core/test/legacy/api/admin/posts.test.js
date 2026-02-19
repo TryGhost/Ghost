@@ -1,7 +1,6 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../utils/assertions');
 const _ = require('lodash');
-const should = require('should');
 const supertest = require('supertest');
 const ObjectId = require('bson-objectid').default;
 const moment = require('moment-timezone');
@@ -112,7 +111,7 @@ describe('Posts API', function () {
                     localUtils.API.checkResponse(jsonResponse, 'posts');
                     assert.equal(jsonResponse.posts.length, 2);
                     jsonResponse.posts.forEach((post) => {
-                        should.notEqual(post.meta_description, null);
+                        assert.notEqual(post.meta_description, null);
                     });
 
                     localUtils.API.checkResponse(
@@ -317,7 +316,7 @@ describe('Posts API', function () {
                     assert.equal(res.body.posts[0].title, '(Untitled)');
 
                     assertExists(res.headers.location);
-                    assert.equal(res.headers.location, `http://127.0.0.1:2369${localUtils.API.getApiQuery('posts/')}${res.body.posts[0].id}/`);
+                    assert.equal(new URL(res.headers.location).pathname, `/ghost/api/admin/posts/${res.body.posts[0].id}/`);
                 });
         });
 
@@ -600,7 +599,7 @@ describe('Posts API', function () {
             assert.equal(res.body.posts[0].status, 'draft');
 
             assertExists(res.headers.location);
-            assert.equal(res.headers.location, `http://127.0.0.1:2369${localUtils.API.getApiQuery('posts/')}${res.body.posts[0].id}/`);
+            assert.equal(new URL(res.headers.location).pathname, `/ghost/api/admin/posts/${res.body.posts[0].id}/`);
 
             const publishedRes = await request
                 .put(localUtils.API.getApiQuery(`posts/${res.body.posts[0].id}/?newsletter=${defaultNewsletterSlug}`))
@@ -643,7 +642,7 @@ describe('Posts API', function () {
             assert.equal(res.body.posts[0].status, 'draft');
 
             assertExists(res.headers.location);
-            assert.equal(res.headers.location, `http://127.0.0.1:2369${localUtils.API.getApiQuery('posts/')}${res.body.posts[0].id}/`);
+            assert.equal(new URL(res.headers.location).pathname, `/ghost/api/admin/posts/${res.body.posts[0].id}/`);
 
             const publishedRes = await request
                 .put(localUtils.API.getApiQuery(`posts/${res.body.posts[0].id}/?email_segment=status:-free&newsletter=${defaultNewsletterSlug}`))
@@ -686,7 +685,7 @@ describe('Posts API', function () {
             assert.equal(res.body.posts[0].status, 'draft');
 
             assertExists(res.headers.location);
-            assert.equal(res.headers.location, `http://127.0.0.1:2369${localUtils.API.getApiQuery('posts/')}${res.body.posts[0].id}/`);
+            assert.equal(new URL(res.headers.location).pathname, `/ghost/api/admin/posts/${res.body.posts[0].id}/`);
 
             const publishedRes = await request
                 .put(localUtils.API.getApiQuery(`posts/${res.body.posts[0].id}/?email_segment=status:-free&newsletter=${secondNewsletterSlug}`))
@@ -818,10 +817,10 @@ describe('Posts API', function () {
                 })
                 .then((model) => {
                     // We expect that the changed properties aren't changed, they are still the same than before.
-                    model.get('created_at').toISOString().should.not.eql(post.created_at);
+                    assert.notEqual(model.get('created_at').toISOString(), post.created_at);
 
                     // `updated_at` is automatically set, but it's not the date we send to override.
-                    model.get('updated_at').toISOString().should.not.eql(post.updated_at);
+                    assert.notEqual(model.get('updated_at').toISOString(), post.updated_at);
                 });
         });
 
@@ -986,7 +985,7 @@ describe('Posts API', function () {
 
                     assertExists(res.body.posts);
                     assert.equal(res.body.posts[0].email_only, true);
-                    assert.equal(res.body.posts[0].url, 'http://127.0.0.1:2369/email/d52c42ae-2755-455c-80ec-70b2ec55c903/');
+                    assert.equal(new URL(res.body.posts[0].url).pathname, '/email/d52c42ae-2755-455c-80ec-70b2ec55c903/');
                 });
         });
 

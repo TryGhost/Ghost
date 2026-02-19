@@ -1,7 +1,6 @@
 const {expect} = require('@playwright/test');
 const test = require('../fixtures/ghost-test');
 const {deleteAllMembers, createTier, createOffer, completeStripeSubscription} = require('../utils');
-const models = require('../../../core/server/models');
 const offersService = require('../../../core/server/services/offers');
 const ObjectID = require('bson-objectid').default;
 
@@ -31,7 +30,7 @@ test.describe('Portal', () => {
 
             // check that offer was added in the offer list screen
             await sharedPage.goto('/ghost');
-            await sharedPage.locator('[data-test-nav="settings"]').click();
+            await sharedPage.getByRole('navigation').getByRole('link', {name: 'Settings'}).click();
             await expect(await sharedPage.getByTestId('offers')).toContainText(offerName);
 
             await sharedPage.goto(offerLink);
@@ -72,7 +71,7 @@ test.describe('Portal', () => {
 
             // go to member list on admin
             await sharedPage.goto('/ghost');
-            await sharedPage.locator('.gh-nav a[href="#/members/"]').click();
+            await sharedPage.getByRole('navigation').getByRole('link', {name: 'Members'}).click();
 
             // // 1 member, should be Testy, on Portal Tier
             await expect(await sharedPage.getByRole('link', {name: 'Testy McTesterson testy+trial@example.com'}), 'Should have 1 paid member').toBeVisible();
@@ -108,7 +107,7 @@ test.describe('Portal', () => {
 
             // check that offer was added in the offer list screen
             await sharedPage.goto('/ghost');
-            await sharedPage.locator('[data-test-nav="settings"]').click();
+            await sharedPage.getByRole('navigation').getByRole('link', {name: 'Settings'}).click();
             await expect(sharedPage.getByTestId('offers')).toContainText(offerName);
             // open offer details page
             // await sharedPage.locator(`[data-test-offer="${offerName}"] a`).first().click();
@@ -154,7 +153,7 @@ test.describe('Portal', () => {
 
             // go to members list on admin
             await sharedPage.goto('/ghost');
-            await sharedPage.locator('.gh-nav a[href="#/members/"]').click();
+            await sharedPage.getByRole('navigation').getByRole('link', {name: 'Members'}).click();
 
             // 1 member, should be Testy, on Portal Tier
             await expect(await sharedPage.getByRole('link', {name: 'Testy McTesterson testy+oneoff@example.com'}), 'Should have 1 paid member').toBeVisible();
@@ -185,7 +184,7 @@ test.describe('Portal', () => {
             });
 
             await sharedPage.goto('/ghost');
-            await sharedPage.locator('[data-test-nav="settings"]').click();
+            await sharedPage.getByRole('navigation').getByRole('link', {name: 'Settings'}).click();
             await expect(await sharedPage.getByTestId('offers')).toContainText(offerName);
 
             await sharedPage.goto(offerLink);
@@ -229,7 +228,7 @@ test.describe('Portal', () => {
             // Discounted price should not be visible for member for one-time offers
             await expect(portalFrameLocator.locator('text=$5.40/month'), 'Portal should show discounted price').toBeVisible();
             await sharedPage.goto('/ghost');
-            await sharedPage.locator('.gh-nav a[href="#/members/"]').click();
+            await sharedPage.getByRole('navigation').getByRole('link', {name: 'Members'}).click();
 
             // 1 member, should be Testy, on Portal Tier
             await expect(await sharedPage.getByRole('link', {name: 'Testy McTesterson testy+multi@example.com'}), 'Should have 1 paid member').toBeVisible();
@@ -260,7 +259,7 @@ test.describe('Portal', () => {
 
             // check that offer was added in the offer list screen
             await sharedPage.goto('/ghost');
-            await sharedPage.locator('[data-test-nav="settings"]').click();
+            await sharedPage.getByRole('navigation').getByRole('link', {name: 'Settings'}).click();
             await expect(sharedPage.getByTestId('offers')).toContainText(offerName);
 
             await sharedPage.goto(offerLink);
@@ -302,7 +301,7 @@ test.describe('Portal', () => {
             // Discounted price should be visible for member for forever offers
             await expect(portalFrameLocator.locator('text=$5.40/month'), 'Portal should show discounted price').toBeVisible();
             await sharedPage.goto('/ghost');
-            await sharedPage.locator('.gh-nav a[href="#/members/"]').click();
+            await sharedPage.getByRole('navigation').getByRole('link', {name: 'Members'}).click();
 
             // 1 member, should be Testy, on Portal Tier
             await expect(await sharedPage.getByRole('link', {name: 'Testy McTesterson testy+forever@example.com'}), 'Should have 1 paid member').toBeVisible();
@@ -345,14 +344,6 @@ test.describe('Portal', () => {
             await sharedPage.goto('/ghost');
             await deleteAllMembers(sharedPage);
 
-            const tierName = `Retention Tier ${new ObjectID().toHexString().slice(0, 8)}`;
-            await createTier(sharedPage, {
-                name: tierName,
-                monthlyPrice: 6,
-                yearlyPrice: 60
-            });
-
-            const product = await models.Product.findOne({name: tierName}, {require: true});
             const suffix = new ObjectID().toHexString().slice(0, 8);
             const offerCode = `retention-${suffix}`;
 
@@ -367,10 +358,7 @@ test.describe('Portal', () => {
                 duration: 'once',
                 duration_in_months: null,
                 status: 'active',
-                tier: {
-                    id: product.id,
-                    name: product.get('name')
-                },
+                tier: null,
                 redemption_type: 'retention'
             });
 

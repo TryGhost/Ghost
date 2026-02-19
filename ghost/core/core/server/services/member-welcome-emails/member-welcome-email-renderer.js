@@ -13,8 +13,12 @@ const UNMATCHED_TOKEN_REGEX = /%%\{.*?\}%%/g;
 class MemberWelcomeEmailRenderer {
     #wrapperTemplate;
 
-    constructor() {
+    constructor({t}) {
         this.Handlebars = require('handlebars').create();
+        this.Handlebars.registerHelper('t', function (key, options) {
+            let hash = options?.hash;
+            return t(key, hash || options || {});
+        });
         const wrapperSource = fs.readFileSync(
             path.join(__dirname, './email-templates/wrapper.hbs'),
             'utf8'
@@ -53,14 +57,12 @@ class MemberWelcomeEmailRenderer {
      * Applies replacement tokens to a string
      * Supports fallback values: {first_name, "friend"} renders "friend" if name is empty
      * @param {Object} options
+     * @param {{id: string, getValue: () => string|undefined}[]} options.definitions - Replacement token definitions
      * @param {string} options.text - The text to process (content body or subject line)
-     * @param {Object} options.member - Member data
-     * @param {Object} options.siteSettings - Site settings
      * @param {boolean} [options.escapeHtml=false] - Whether to HTML-escape replaced values
      * @returns {string}
      */
-    #applyReplacements({text, member, siteSettings, escapeHtml = false}) {
-        const definitions = this.#buildReplacementDefinitions({member, siteSettings});
+    #applyReplacements({definitions, text, escapeHtml = false}) {
         let processed = wrapReplacementStrings(text);
 
         processed = processed.replace(REPLACEMENT_REGEX, (match, property, fallback) => {
@@ -96,8 +98,17 @@ class MemberWelcomeEmailRenderer {
             });
         }
 
-        const contentWithReplacements = this.#applyReplacements({text: content, member, siteSettings, escapeHtml: true});
-        const subjectWithReplacements = this.#applyReplacements({text: subject, member, siteSettings, escapeHtml: false});
+        const definitions = this.#buildReplacementDefinitions({member, siteSettings});
+
+        // Remove <code> wrappers around replacement strings (Lexical treats curly braces as inline code)
+        const tokenIds = definitions.map(d => d.id).join('|');
+        content = content.replace(
+            new RegExp(`<code>(\\{(?:${tokenIds})(?:\\s*,?\\s*"[^"]*")?\\})<\\/code>`, 'g'),
+            '$1'
+        );
+
+        const contentWithReplacements = this.#applyReplacements({definitions, text: content, escapeHtml: true});
+        const subjectWithReplacements = this.#applyReplacements({definitions, text: subject, escapeHtml: false});
 
         const managePreferencesUrl = new URL('#/portal/account/newsletters', siteSettings.url).href;
         const year = new Date().getFullYear();
@@ -124,4 +135,3 @@ class MemberWelcomeEmailRenderer {
 }
 
 module.exports = MemberWelcomeEmailRenderer;
-

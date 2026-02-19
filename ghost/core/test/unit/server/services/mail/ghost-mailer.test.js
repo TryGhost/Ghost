@@ -1,12 +1,11 @@
 const dns = require('dns');
-const should = require('should');
 const sinon = require('sinon');
 const mail = require('../../../../../core/server/services/mail');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const configUtils = require('../../../../utils/config-utils');
 const urlUtils = require('../../../../../core/shared/url-utils');
 let mailer;
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
 const emailAddress = require('../../../../../core/server/services/email-address');
 
@@ -58,7 +57,7 @@ describe('Mail: Ghostmailer', function () {
         mailer = new mail.GhostMailer();
 
         assertExists(mailer);
-        mailer.should.have.property('send').and.be.a.Function();
+        assert.equal(typeof mailer.send, 'function');
     });
 
     it('should setup SMTP transport on initialization', function () {
@@ -67,7 +66,7 @@ describe('Mail: Ghostmailer', function () {
 
         assert('transport' in mailer);
         assert.equal(mailer.transport.transporter.name, 'SMTP');
-        mailer.transport.sendMail.should.be.a.Function();
+        assert.equal(typeof mailer.transport.sendMail, 'function');
     });
 
     it('should fallback to direct if config is empty', function () {
@@ -351,7 +350,7 @@ describe('Mail: Ghostmailer', function () {
             });
 
             const sentMessage = sendMailSpy.firstCall.args[0];
-            sentMessage['o:tag'].should.be.an.Array();
+            assert(Array.isArray(sentMessage['o:tag']));
             assert(sentMessage['o:tag'].includes('transactional-email'));
             assert(sentMessage['o:tag'].includes('blog-123123'));
             assert.equal(sentMessage['o:tracking-opens'], true);
@@ -374,7 +373,7 @@ describe('Mail: Ghostmailer', function () {
             });
 
             const sentMessage = sendMailSpy.firstCall.args[0];
-            sentMessage['o:tag'].should.be.an.Array();
+            assert(Array.isArray(sentMessage['o:tag']));
             assert(sentMessage['o:tag'].includes('transactional-email'));
             assert(sentMessage['o:tag'].includes('blog-123123'));
             assert.equal(sentMessage['o:tracking-opens'], undefined);

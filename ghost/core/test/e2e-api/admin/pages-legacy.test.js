@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../utils/assertions');
-const should = require('should');
 const supertest = require('supertest');
 const moment = require('moment');
 const _ = require('lodash');
@@ -36,8 +35,8 @@ describe('Pages API', function () {
         assert.equal(_.isBoolean(jsonResponse.pages[0].featured), true);
 
         // Absolute urls by default
-        assert.match(jsonResponse.pages[0].url, new RegExp(`${config.get('url')}/p/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}`));
-        jsonResponse.pages[1].url.should.eql(`${config.get('url')}/contribute/`);
+        assert.match(new URL(jsonResponse.pages[0].url).pathname, /\/p\/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/);
+        assert.equal(new URL(jsonResponse.pages[1].url).pathname, '/contribute/');
     });
 
     it('Can retrieve pages with just lexical format', async function () {
@@ -80,7 +79,7 @@ describe('Pages API', function () {
         assertExists(res.headers['x-cache-invalidate']);
 
         assertExists(res.headers.location);
-        assert.equal(res.headers.location, `http://127.0.0.1:2369${localUtils.API.getApiQuery('pages/')}${res.body.pages[0].id}/`);
+        assert.equal(new URL(res.headers.location).pathname, `/ghost/api/admin/pages/${res.body.pages[0].id}/`);
 
         const model = await models.Post.findOne({
             id: res.body.pages[0].id
@@ -88,12 +87,12 @@ describe('Pages API', function () {
 
         const modelJson = model.toJSON();
 
-        modelJson.title.should.eql(page.title);
-        modelJson.status.should.eql(page.status);
+        assert.equal(modelJson.title, page.title);
+        assert.equal(modelJson.status, page.status);
         assert.equal(modelJson.type, 'page');
 
-        modelJson.posts_meta.feature_image_alt.should.eql(page.feature_image_alt);
-        modelJson.posts_meta.feature_image_caption.should.eql(page.feature_image_caption);
+        assert.equal(modelJson.posts_meta.feature_image_alt, page.feature_image_alt);
+        assert.equal(modelJson.posts_meta.feature_image_caption, page.feature_image_caption);
     });
 
     it('Can add a page with mobiledoc', async function () {
@@ -392,7 +391,7 @@ describe('Pages API', function () {
 
         assertExists(res2.headers['x-cache-invalidate']);
         localUtils.API.checkResponse(res2.body.pages[0], 'page', ['reading_time']);
-        res2.body.pages[0].tiers.length.should.eql(paidTiers.length);
+        assert.equal(res2.body.pages[0].tiers.length, paidTiers.length);
 
         const model = await models.Post.findOne({
             id: res2.body.pages[0].id
@@ -429,7 +428,7 @@ describe('Pages API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(204);
 
-        res.body.should.be.empty();
+        assert.deepEqual(res.body, {});
         assert.equal(res.headers['x-cache-invalidate'], '/*');
     });
 });

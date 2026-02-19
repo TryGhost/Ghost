@@ -1,4 +1,11 @@
-const {createSetNullableMigration} = require('../../utils');
+const logging = require('@tryghost/logging');
 
-// We need to disable foreign key checks because if MySQL is missing the STRICT_TRANS_TABLES mode, we cannot revert the migration
-module.exports = createSetNullableMigration('offers', 'product_id', {disableForeignKeyChecks: true});
+// noop: this migration was moved to 6.18
+module.exports = {
+    async up() {
+        logging.warn('Skipping migration - noop');
+    },
+    async down() {
+        logging.warn('Skipping migration - noop');
+    }
+};

@@ -1,7 +1,6 @@
 const path = require('path');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const {assertExists} = require('../../utils/assertions');
-const should = require('should');
 const supertest = require('supertest');
 const testUtils = require('../../utils');
 const localUtils = require('./utils');
@@ -109,7 +108,7 @@ describe('Members Importer API', function () {
     //         .expect('Content-Type', /json/)
     //         .expect('Cache-Control', testUtils.cacheRules.private)
     //         .then((res) => {
-    //             should.not.exist(res.headers['x-cache-invalidate']);
+    //             assert(!res.headers['x-cache-invalidate']);
 
     //             const jsonResponse = res.body;
 
@@ -118,7 +117,7 @@ describe('Members Importer API', function () {
     //             assertExists(jsonResponse.meta.stats);
     //             assertExists(jsonResponse.meta.import_label);
 
-    //             jsonResponse.meta.stats.imported.should.equal(8);
+    //             assert.equal(jsonResponse.meta.stats.imported, 8);
 
     //             return jsonResponse.meta.import_label;
     //         })
@@ -130,11 +129,11 @@ describe('Members Importer API', function () {
     //                 .expect('Cache-Control', testUtils.cacheRules.private)
     //                 .expect(200)
     //                 .then((res) => {
-    //                     should.not.exist(res.headers['x-cache-invalidate']);
+    //                     assert(!res.headers['x-cache-invalidate']);
     //                     const jsonResponse = res.body;
     //                     assertExists(jsonResponse);
     //                     assertExists(jsonResponse.members);
-    //                     jsonResponse.members.should.have.length(8);
+    //                     assert.equal(jsonResponse.members.length, 8);
     //                 })
     //                 .then(() => importLabel);
     //         })
@@ -147,7 +146,7 @@ describe('Members Importer API', function () {
     //                 .expect('Cache-Control', testUtils.cacheRules.private)
     //                 .expect(200)
     //                 .then((res) => {
-    //                     should.not.exist(res.headers['x-cache-invalidate']);
+    //                     assert(!res.headers['x-cache-invalidate']);
     //                     const jsonResponse = res.body;
     //                     assertExists(jsonResponse);
     //                     assertExists(jsonResponse.meta);
@@ -168,7 +167,7 @@ describe('Members Importer API', function () {
     //                     const jsonResponse = res.body;
     //                     assertExists(jsonResponse);
     //                     assertExists(jsonResponse.members);
-    //                     jsonResponse.members.should.have.length(0);
+    //                     assert.equal(jsonResponse.members.length, 0);
     //                 });
     //         });
     // });

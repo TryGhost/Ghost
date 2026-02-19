@@ -11,7 +11,7 @@
  * @prop {string} display_title
  * @prop {string} display_description
  *
- * @prop {'percent'|'fixed'|'trial'} type
+ * @prop {'percent'|'fixed'|'trial'|'free_months'} type
  *
  * @prop {'month'|'year'} cadence
  * @prop {number} amount
@@ -19,16 +19,16 @@
  * @prop {boolean} currency_restriction
  * @prop {string} currency
  *
- * @prop {'once'|'repeating'|'forever'|'trial'} duration
+ * @prop {'once'|'repeating'|'forever'|'trial'|'free_months'} duration
  * @prop {null|number} duration_in_months
  *
  * @prop {'active'|'archived'} status
  * @prop {number} redemption_count
  * @prop {'signup'|'retention'} redemption_type
  *
- * @prop {object} tier
- * @prop {string} tier.id
- * @prop {string} tier.name
+ * @prop {object|null} tier
+ * @prop {string} [tier.id]
+ * @prop {string} [tier.name]
  * @prop {string} created_at
  * @prop {string|null} last_redeemed
  */
@@ -55,10 +55,9 @@ class OfferMapper {
             status: offer.status.value,
             redemption_count: offer.redemptionCount,
             redemption_type: offer.redemptionType.value,
-            tier: {
-                id: offer.tier.id,
-                name: offer.tier.name
-            },
+            tier: offer.tier
+                ? {id: offer.tier.id, name: offer.tier.name}
+                : null,
             created_at: offer.createdAt,
             last_redeemed: offer.lastRedeemed
         };

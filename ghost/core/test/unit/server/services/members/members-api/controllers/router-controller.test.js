@@ -1,6 +1,5 @@
-require('should');
 const sinon = require('sinon');
-const assert = require('assert').strict;
+const assert = require('node:assert/strict');
 const errors = require('@tryghost/errors');
 
 // @ts-ignore - Intentionally ignoring TypeScript errors for tests
@@ -16,8 +15,14 @@ describe('RouterController', function () {
     let getDonationLinkSpy;
     let settingsCache;
     let settingsHelpers;
+    let emailAddressService;
 
     beforeEach(async function () {
+        // Mock emailAddressService for inbox links sender address transformation
+        emailAddressService = {
+            getMembersSupportAddress: sinon.stub().returns('noreply@example.com')
+        };
+
         getPaymentLinkSpy = sinon.spy();
         getDonationLinkSpy = sinon.spy();
         tiersService = {
@@ -90,7 +95,8 @@ describe('RouterController', function () {
                 stripeAPIService,
                 labsService,
                 settingsCache,
-                settingsHelpers
+                settingsHelpers,
+                emailAddressService
             });
 
             await routerController.createCheckoutSession({
@@ -126,7 +132,8 @@ describe('RouterController', function () {
                 labsService,
                 settingsCache,
                 settingsHelpers,
-                newslettersService: newslettersServiceStub
+                newslettersService: newslettersServiceStub,
+                emailAddressService
             });
             const newsletters = [
                 {id: 'abc123', name: 'Newsletter 1'},
@@ -155,6 +162,122 @@ describe('RouterController', function () {
             assert.equal(getPaymentLinkSpy.calledWith(sinon.match({
                 metadata: {
                     newsletters: expectedNewsletters
+                }
+            })), true);
+        });
+
+        it('sets ghostSignupContext to has_precheckout_magic_link when checkout creates a signup magic link', async function () {
+            const magicLinkService = {
+                getMagicLink: sinon.stub().resolves('https://example.com/members/?token=abc123&action=signup')
+            };
+            const memberRepository = {
+                get: sinon.stub().resolves(null)
+            };
+            const routerController = new RouterController({
+                tiersService,
+                paymentsService,
+                offersAPI,
+                stripeAPIService,
+                labsService,
+                settingsCache,
+                settingsHelpers,
+                magicLinkService,
+                memberRepository
+            });
+
+            await routerController.createCheckoutSession({
+                body: {
+                    tierId: 'tier_123',
+                    cadence: 'month',
+                    customerEmail: 'new-member@example.com',
+                    successUrl: 'https://example.com/paid-success',
+                    cancelUrl: 'https://example.com/cancel',
+                    metadata: {}
+                }
+            }, {
+                writeHead: () => {},
+                end: () => {}
+            });
+
+            assert.equal(magicLinkService.getMagicLink.calledOnce, true);
+            assert.equal(getPaymentLinkSpy.calledWith(sinon.match({
+                successUrl: 'https://example.com/members/?token=abc123&action=signup',
+                metadata: {
+                    ghostSignupContext: 'has_precheckout_magic_link'
+                }
+            })), true);
+        });
+
+        it('sets ghostSignupContext to already_authenticated for authenticated members', async function () {
+            const member = {
+                get: sinon.stub().withArgs('status').returns('free')
+            };
+            const tokenService = {
+                decodeToken: sinon.stub().resolves({sub: 'member@example.com'})
+            };
+            const memberRepository = {
+                get: sinon.stub().resolves(member)
+            };
+            const routerController = new RouterController({
+                tiersService,
+                paymentsService,
+                offersAPI,
+                stripeAPIService,
+                labsService,
+                settingsCache,
+                settingsHelpers,
+                tokenService,
+                memberRepository
+            });
+
+            await routerController.createCheckoutSession({
+                body: {
+                    tierId: 'tier_123',
+                    cadence: 'month',
+                    identity: 'identity-token',
+                    successUrl: 'https://example.com/paid-success',
+                    cancelUrl: 'https://example.com/cancel',
+                    metadata: {}
+                }
+            }, {
+                writeHead: () => {},
+                end: () => {}
+            });
+
+            assert.equal(getPaymentLinkSpy.calledWith(sinon.match({
+                metadata: {
+                    ghostSignupContext: 'already_authenticated'
+                }
+            })), true);
+        });
+
+        it('sets ghostSignupContext to needs_magic_link_email when there is no member context or customer email', async function () {
+            const routerController = new RouterController({
+                tiersService,
+                paymentsService,
+                offersAPI,
+                stripeAPIService,
+                labsService,
+                settingsCache,
+                settingsHelpers
+            });
+
+            await routerController.createCheckoutSession({
+                body: {
+                    tierId: 'tier_123',
+                    cadence: 'month',
+                    successUrl: 'https://example.com/paid-success',
+                    cancelUrl: 'https://example.com/cancel',
+                    metadata: {}
+                }
+            }, {
+                writeHead: () => {},
+                end: () => {}
+            });
+
+            assert.equal(getPaymentLinkSpy.calledWith(sinon.match({
+                metadata: {
+                    ghostSignupContext: 'needs_magic_link_email'
                 }
             })), true);
         });
@@ -693,6 +816,7 @@ describe('RouterController', function () {
                     sendEmailWithMagicLink: sendEmailWithMagicLinkStub,
                     settingsCache,
                     settingsHelpers,
+                    emailAddressService,
                     ...deps
                 });
             };
@@ -848,6 +972,7 @@ describe('RouterController', function () {
                     sendEmailWithMagicLink: sendEmailWithMagicLinkStub,
                     settingsCache,
                     settingsHelpers,
+                    emailAddressService,
                     ...deps
                 });
             };
@@ -923,7 +1048,8 @@ describe('RouterController', function () {
                     settingsHelpers,
                     newslettersService: {},
                     sentry: {},
-                    urlUtils: {}
+                    urlUtils: {},
+                    emailAddressService
                 });
 
                 routerController._handleSignin = handleSigninStub;
@@ -1035,7 +1161,8 @@ describe('RouterController', function () {
                 stripeAPIService,
                 labsService,
                 settingsCache,
-                newslettersService: newslettersServiceStub
+                newslettersService: newslettersServiceStub,
+                emailAddressService
             });
         });
 
@@ -1385,20 +1512,19 @@ describe('RouterController', function () {
         let res;
         let responseData;
 
-        function createMockSubscription({id = 'sub_123', status = 'active', offerId = null, trialEndAt = null} = {}) {
+        function createMockSubscription({id = 'sub_123', status = 'active', offerId = null, trialEndAt = null, discountStart = null, discountEnd = null, cancelAtPeriodEnd = false} = {}) {
             return {
                 id,
                 get: sinon.stub().callsFake((key) => {
-                    if (key === 'status') {
-                        return status;
-                    }
-                    if (key === 'offer_id') {
-                        return offerId;
-                    }
-                    if (key === 'trial_end_at') {
-                        return trialEndAt;
-                    }
-                    return null;
+                    const values = {
+                        status,
+                        offer_id: offerId,
+                        trial_end_at: trialEndAt,
+                        discount_start: discountStart,
+                        discount_end: discountEnd,
+                        cancel_at_period_end: cancelAtPeriodEnd
+                    };
+                    return values[key] ?? null;
                 }),
                 related: sinon.stub().withArgs('stripePrice').returns(mockStripePrice)
             };
@@ -1427,7 +1553,8 @@ describe('RouterController', function () {
 
         beforeEach(function () {
             mockOffersAPI = {
-                listOffersAvailableToSubscription: sinon.stub().resolves([])
+                listOffersAvailableToSubscription: sinon.stub().resolves([]),
+                getOffer: sinon.stub().resolves(null)
             };
 
             tokenService = {
@@ -1475,9 +1602,13 @@ describe('RouterController', function () {
             assert(offersAPIWithError.listOffersAvailableToSubscription.calledOnce);
         });
 
-        it('returns empty offers when subscription already has an offer applied', async function () {
+        it('returns empty offers when subscription has an active discount', async function () {
             const routerController = createRouterController({
-                subscriptions: createMockSubscription({offerId: 'existing_offer_123'})
+                subscriptions: createMockSubscription({
+                    offerId: 'existing_offer_123',
+                    discountStart: new Date('2026-01-01')
+                    // discountEnd: null means forever
+                })
             });
 
             await routerController.getMemberOffers({
@@ -1486,6 +1617,47 @@ describe('RouterController', function () {
 
             assert.deepEqual(responseData, {offers: []});
             assert(mockOffersAPI.listOffersAvailableToSubscription.notCalled);
+        });
+
+        it('returns offers when subscription has an expired discount', async function () {
+            const mockOffer = {id: 'retention_offer', name: 'Stay with us'};
+            mockOffersAPI.listOffersAvailableToSubscription.resolves([mockOffer]);
+
+            const pastDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+            const routerController = createRouterController({
+                subscriptions: createMockSubscription({
+                    offerId: 'expired_offer_123',
+                    discountStart: new Date('2025-01-01'),
+                    discountEnd: pastDate
+                })
+            });
+
+            await routerController.getMemberOffers({
+                body: {identity: 'valid-token'}
+            }, res);
+
+            assert.deepEqual(responseData, {offers: [mockOffer]});
+            assert(mockOffersAPI.listOffersAvailableToSubscription.calledOnce);
+        });
+
+        it('returns offers when subscription has expired once offer (legacy data, no discount_start)', async function () {
+            const mockOffer = {id: 'retention_offer', name: 'Stay with us'};
+            mockOffersAPI.listOffersAvailableToSubscription.resolves([mockOffer]);
+            mockOffersAPI.getOffer.resolves({duration: 'once'});
+
+            const routerController = createRouterController({
+                subscriptions: createMockSubscription({
+                    offerId: 'expired_once_offer'
+                    // No discountStart — legacy data
+                })
+            });
+
+            await routerController.getMemberOffers({
+                body: {identity: 'valid-token'}
+            }, res);
+
+            assert.deepEqual(responseData, {offers: [mockOffer]});
+            assert(mockOffersAPI.listOffersAvailableToSubscription.calledOnce);
         });
 
         it('returns empty offers when member has multiple active subscriptions', async function () {

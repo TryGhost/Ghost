@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
-const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../../../utils');
 const _ = require('lodash');
@@ -80,7 +79,7 @@ describe('Permissions', function () {
             permissions.init().then(function (actions) {
                 assertExists(actions);
 
-                permissions.canThis.should.not.throwError();
+                assert.doesNotThrow(permissions.canThis);
 
                 assert.deepEqual(_.keys(actions), ['browse', 'edit', 'add', 'destroy']);
 
@@ -99,7 +98,7 @@ describe('Permissions', function () {
             permissions.init().then(function (actions) {
                 assertExists(actions);
 
-                permissions.canThis.should.not.throwError();
+                assert.doesNotThrow(permissions.canThis);
 
                 assert.deepEqual(_.keys(actions), ['browse', 'edit', 'add', 'destroy']);
 

@@ -1,6 +1,6 @@
 const {agentProvider, fixtureManager, matchers, mockManager} = require('../../utils/e2e-framework');
 const {anyEtag, anyErrorId, anyContentVersion, anyString} = matchers;
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const {assertMatchSnapshot} = require('../../utils/assertions');
 const config = require('../../../core/shared/config');
 const sinon = require('sinon');
@@ -161,7 +161,11 @@ describe('Email Preview API', function () {
         it('uses the posts newsletter by default', async function () {
             const defaultNewsletter = await models.Newsletter.getDefaultNewsletter();
             const selectedNewsletter = fixtureManager.get('newsletters', 0);
-            defaultNewsletter.id.should.not.eql(selectedNewsletter.id, 'Should use a non-default newsletter for this test');
+            assert.notEqual(
+                defaultNewsletter.id,
+                selectedNewsletter.id,
+                'Should use a non-default newsletter for this test'
+            );
 
             const post = testUtils.DataGenerator.forKnex.createPost({
                 id: ObjectId().toHexString(),
@@ -203,7 +207,11 @@ describe('Email Preview API', function () {
             const defaultNewsletter = await models.Newsletter.getDefaultNewsletter();
             const selectedNewsletter = fixtureManager.get('newsletters', 0);
 
-            selectedNewsletter.id.should.not.eql(defaultNewsletter.id, 'Should use a non-default newsletter for this test');
+            assert.notEqual(
+                selectedNewsletter.id,
+                defaultNewsletter.id,
+                'Should use a non-default newsletter for this test'
+            );
 
             const post = testUtils.DataGenerator.forKnex.createPost({
                 id: ObjectId().toHexString(),
@@ -282,11 +290,10 @@ describe('Email Preview API', function () {
                 });
         });
 
-        it('Mobiledoc post email preview renders with CDN URLs for thumbnails when configured', async function () {
-            const siteUrl = config.get('url');
+        it('Mobiledoc post email preview renders with CDN URLs when configured', async function () {
             const cdnUrl = 'https://cdn.example.com/c/site-uuid';
             urlUtilsHelper.stubUrlUtilsWithCdn({
-                assetBaseUrls: {media: cdnUrl, files: cdnUrl}
+                assetBaseUrls: {media: cdnUrl, files: cdnUrl, image: cdnUrl}
             }, sinon);
 
             const post = await models.Post.findOne({slug: 'post-with-all-media-types-mobiledoc'});
@@ -296,23 +303,22 @@ describe('Email Preview API', function () {
                 .expectStatus(200)
                 .expect(({body}) => {
                     const html = body.email_previews[0].html;
-                    assert(html.includes(`${siteUrl}/content/images/feature.jpg`));
-                    assert(html.includes(`${siteUrl}/content/images/inline.jpg`));
-                    assert(html.includes(`${siteUrl}/content/images/gallery-1.jpg`));
-                    assert(html.includes(`${siteUrl}/content/images/video-thumb.jpg`));
-                    assert(html.includes(`${siteUrl}/content/images/audio-thumb.jpg`));
-                    assert(html.includes(`${siteUrl}/content/images/snippet-inline.jpg`));
-                    assert(html.includes(`${siteUrl}/content/images/snippet-video-thumb.jpg`));
-                    assert(html.includes(`${siteUrl}/content/images/snippet-audio-thumb.jpg`));
+                    assert(html.includes(`${cdnUrl}/content/images/feature.jpg`));
+                    assert(html.includes(`${cdnUrl}/content/images/inline.jpg`));
+                    assert(html.includes(`${cdnUrl}/content/images/gallery-1.jpg`));
+                    assert(html.includes(`${cdnUrl}/content/images/video-thumb.jpg`));
+                    assert(html.includes(`${cdnUrl}/content/images/audio-thumb.jpg`));
+                    assert(html.includes(`${cdnUrl}/content/images/snippet-inline.jpg`));
+                    assert(html.includes(`${cdnUrl}/content/images/snippet-video-thumb.jpg`));
+                    assert(html.includes(`${cdnUrl}/content/images/snippet-audio-thumb.jpg`));
                     assert(!html.includes('__GHOST_URL__'));
                 });
         });
 
-        it('Lexical post email preview renders with CDN URLs for thumbnails when configured', async function () {
-            const siteUrl = config.get('url');
+        it('Lexical post email preview renders with CDN URLs when configured', async function () {
             const cdnUrl = 'https://cdn.example.com/c/site-uuid';
             urlUtilsHelper.stubUrlUtilsWithCdn({
-                assetBaseUrls: {media: cdnUrl, files: cdnUrl}
+                assetBaseUrls: {media: cdnUrl, files: cdnUrl, image: cdnUrl}
             }, sinon);
 
             const post = await models.Post.findOne({slug: 'post-with-all-media-types-lexical'});
@@ -322,14 +328,14 @@ describe('Email Preview API', function () {
                 .expectStatus(200)
                 .expect(({body}) => {
                     const html = body.email_previews[0].html;
-                    assert(html.includes(`${siteUrl}/content/images/feature.jpg`));
-                    assert(html.includes(`${siteUrl}/content/images/inline.jpg`));
-                    assert(html.includes(`${siteUrl}/content/images/gallery-1.jpg`));
-                    assert(html.includes(`${siteUrl}/content/images/video-thumb.jpg`));
-                    assert(html.includes(`${siteUrl}/content/images/audio-thumb.jpg`));
-                    assert(html.includes(`${siteUrl}/content/images/snippet-inline.jpg`));
-                    assert(html.includes(`${siteUrl}/content/images/snippet-video-thumb.jpg`));
-                    assert(html.includes(`${siteUrl}/content/images/snippet-audio-thumb.jpg`));
+                    assert(html.includes(`${cdnUrl}/content/images/feature.jpg`));
+                    assert(html.includes(`${cdnUrl}/content/images/inline.jpg`));
+                    assert(html.includes(`${cdnUrl}/content/images/gallery-1.jpg`));
+                    assert(html.includes(`${cdnUrl}/content/images/video-thumb.jpg`));
+                    assert(html.includes(`${cdnUrl}/content/images/audio-thumb.jpg`));
+                    assert(html.includes(`${cdnUrl}/content/images/snippet-inline.jpg`));
+                    assert(html.includes(`${cdnUrl}/content/images/snippet-video-thumb.jpg`));
+                    assert(html.includes(`${cdnUrl}/content/images/snippet-audio-thumb.jpg`));
                     assert(!html.includes('__GHOST_URL__'));
                 });
         });

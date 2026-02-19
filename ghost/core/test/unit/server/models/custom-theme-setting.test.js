@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const models = require('../../../../core/server/models');
+const config = require('../../../../core/shared/config');
 
 describe('Unit: models/custom-theme-setting', function () {
     before(function () {
@@ -33,7 +33,7 @@ describe('Unit: models/custom-theme-setting', function () {
             assert.equal(returns.value, 'null');
 
             returns = setting.parse({theme: 'test', key: 'something', value: '__GHOST_URL__/assets/image.jpg', type: 'image'});
-            assert.equal(returns.value, 'http://127.0.0.1:2369/assets/image.jpg');
+            assert.equal(returns.value, `${config.get('url')}/assets/image.jpg`);
         });
     });
 

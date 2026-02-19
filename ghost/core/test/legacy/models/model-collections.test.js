@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const testUtils = require('../../utils');
 const models = require('../../../core/server/models');
 const db = require('../../../core/server/data/db');

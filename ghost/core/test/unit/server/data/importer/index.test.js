@@ -1,7 +1,6 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
 const errors = require('@tryghost/errors');
-const should = require('should');
 const sinon = require('sinon');
 const rewire = require('rewire');
 const _ = require('lodash');
@@ -235,7 +234,7 @@ describe('Importer', function () {
                         // They should both have data keys, and they should be equivalent
                         assert('data' in zipResult);
                         assert('data' in fileResult);
-                        zipResult.should.eql(fileResult);
+                        assert.deepEqual(zipResult, fileResult);
                         done();
                     });
                 }).catch(done);
@@ -398,7 +397,7 @@ describe('Importer', function () {
                 it('throws invalidZipFileBaseDirectory', function () {
                     const testDir = path.resolve('test/utils/fixtures/import/zips/zip-empty');
 
-                    should(() => ImportManager.getBaseDirectory(testDir)).throwError(/invalid zip file/i);
+                    assert.throws(() => ImportManager.getBaseDirectory(testDir), /invalid zip file/i);
                 });
             });
 
@@ -445,7 +444,7 @@ describe('Importer', function () {
                     assert.equal(imageSpy.calledWith(inputCopy), true);
                     // eql checks for equality
                     // equal checks the references are for the same object
-                    output.should.not.equal(input);
+                    assert.notEqual(output, input);
                     assert.equal(output.preProcessedByData, true);
                     assert.equal(output.preProcessedByImage, true);
                     assert.equal(output.preProcessedByMedia, true);
@@ -483,8 +482,8 @@ describe('Importer', function () {
                     // equal checks the references are for the same object
                     assert.equal(dataSpy.calledOnce, true);
                     assert.equal(imageSpy.calledOnce, true);
-                    dataSpy.getCall(0).args[0].should.eql(expectedData);
-                    imageSpy.getCall(0).args[0].should.eql(expectedImages);
+                    assert.deepEqual(dataSpy.getCall(0).args[0], expectedData);
+                    assert.deepEqual(imageSpy.getCall(0).args[0], expectedImages);
 
                     // we stubbed this as a noop but ImportManager calls with sequence, so we should get an array
                     assert.deepEqual(output, {images: expectedImages, data: expectedData});
@@ -671,7 +670,7 @@ describe('Importer', function () {
             }];
 
             MarkdownHandler.loadFile(file).then(function (result) {
-                result.data.posts.should.be.empty();
+                assert.equal(result.data.posts.length, 0);
 
                 done();
             }).catch(done);
@@ -732,9 +731,9 @@ describe('Importer', function () {
             const outputData = DataImporter.preProcess(_.cloneDeep(inputData));
 
             // Data preprocess is a noop
-            inputData.data.data.posts[0].should.eql(outputData.data.data.posts[0]);
-            inputData.data.data.tags[0].should.eql(outputData.data.data.tags[0]);
-            inputData.data.data.users[0].should.eql(outputData.data.data.users[0]);
+            assert.deepEqual(inputData.data.data.posts[0], outputData.data.data.posts[0]);
+            assert.deepEqual(inputData.data.data.tags[0], outputData.data.data.tags[0]);
+            assert.deepEqual(inputData.data.data.users[0], outputData.data.data.users[0]);
         });
     });
 });

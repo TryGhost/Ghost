@@ -210,7 +210,7 @@ function ContributorUserMenu() {
                 align="start"
                 side="top"
                 sideOffset={10}
-                className="w-[var(--radix-dropdown-menu-trigger-width)] mb-2"
+                className="min-w-56 mb-2"
             >
                 <UserMenuHeader
                     name={currentUser.data?.name}

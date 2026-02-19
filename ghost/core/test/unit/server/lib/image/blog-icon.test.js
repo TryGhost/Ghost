@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
-const should = require('should');
 const sinon = require('sinon');
 const path = require('path');
 const BlogIcon = require('../../../../../core/server/lib/image/blog-icon');
@@ -134,7 +133,7 @@ describe('lib/image: blog icon', function () {
             }, storageUtils: {}, urlUtils: {}, settingsCache: {
                 get: () => {}
             }});
-            blogIcon.getIconPath().should.eql(path.join(root, 'favicon.ico'));
+            assert.equal(blogIcon.getIconPath(), path.join(root, 'favicon.ico'));
         });
     });
 

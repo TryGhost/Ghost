@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const sinon = require('sinon');
 
 const I18n = require('../../../../../core/frontend/services/theme-engine/i18n/i18n');
@@ -45,7 +44,7 @@ describe('I18n Class behavior', function () {
         });
 
         it('correctly loads strings', function () {
-            i18n._strings.should.eql(fakeStrings);
+            assert.equal(i18n._strings, fakeStrings);
         });
 
         it('correctly uses dot notation', function () {
@@ -81,7 +80,7 @@ describe('I18n Class behavior', function () {
         });
 
         it('correctly loads strings', function () {
-            i18n._strings.should.eql(fakeStrings);
+            assert.equal(i18n._strings, fakeStrings);
         });
 
         it('correctly uses fulltext with bracket notation', function () {

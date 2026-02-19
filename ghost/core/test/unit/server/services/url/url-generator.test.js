@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const sinon = require('sinon');
 const urlUtils = require('../../../../../core/shared/url-utils');
 const UrlGenerator = require('../../../../../core/server/services/url/url-generator');

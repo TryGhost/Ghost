@@ -1,7 +1,6 @@
 const assert = require('node:assert/strict');
 const path = require('path');
 const fs = require('fs-extra');
-const should = require('should');
 const supertest = require('supertest');
 const localUtils = require('./utils');
 const config = require('../../../core/shared/config');
@@ -30,9 +29,9 @@ describe('Files API', function () {
             .attach('file', path.join(__dirname, '/../../utils/fixtures/images/loadingcat_square.gif'))
             .expect(201);
 
-        assert.match(res.body.files[0].url, new RegExp(`${config.get('url')}/content/files/\\d+/\\d+/loadingcat_square.gif`));
+        assert.match(new URL(res.body.files[0].url).pathname, /\/content\/files\/\d+\/\d+\/loadingcat_square\.gif/);
         assert.equal(res.body.files[0].ref, '934203942');
 
-        files.push(res.body.files[0].url.replace(config.get('url'), ''));
+        files.push(new URL(res.body.files[0].url).pathname);
     });
 });

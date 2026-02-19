@@ -1,7 +1,6 @@
-const should = require('should');
 const sinon = require('sinon');
 const models = require('../../../../../core/server/models');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 
 describe('Models: getLazyRelation', function () {
     before(function () {
@@ -34,11 +33,11 @@ describe('Models: getLazyRelation', function () {
 
         const options = {test: true};
         const modelA = TestModel.forge({id: '1'});
-        (await modelA.getLazyRelation('tiers', options)).should.eql(rel);
+        assert.equal((await modelA.getLazyRelation('tiers', options)), rel);
         assert.equal(fetchStub.calledOnceWithExactly(options), true);
 
         // Check if it can reuse it again
-        (await modelA.getLazyRelation('tiers', options)).should.eql(rel);
+        assert.equal((await modelA.getLazyRelation('tiers', options)), rel);
         assert.equal(fetchStub.calledOnceWithExactly(options), true);
 
         // Check if we can force reload
@@ -69,11 +68,11 @@ describe('Models: getLazyRelation', function () {
 
         const options = {test: true};
         const modelA = TestModel.forge({id: '1'});
-        (await modelA.getLazyRelation('other', options)).should.eql(rel);
+        assert.equal((await modelA.getLazyRelation('other', options)), rel);
         assert.equal(fetchStub.calledOnceWithExactly(options), true);
 
         // Check if it can reuse it again
-        (await modelA.getLazyRelation('other', options)).should.eql(rel);
+        assert.equal((await modelA.getLazyRelation('other', options)), rel);
         assert.equal(fetchStub.calledOnceWithExactly(options), true);
 
         // Check if we can force reload

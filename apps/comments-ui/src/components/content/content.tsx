@@ -6,7 +6,7 @@ import MainForm from './forms/main-form';
 import Pagination from './pagination';
 import {ROOT_DIV_ID} from '../../utils/constants';
 import {SortingForm} from './forms/sorting-form';
-import {parseCommentIdFromHash} from '../../utils/helpers';
+import {parseCommentIdFromHash, scrollToElement} from '../../utils/helpers';
 import {useAppContext, useLabs} from '../../app-context';
 import {useCallback, useEffect, useRef} from 'react';
 
@@ -73,7 +73,7 @@ function onIframeResize(
 
 const Content = () => {
     const labs = useLabs();
-    const {pagination, comments, commentCount, title, showCount, commentsIsLoading, t, dispatchAction, commentIdToScrollTo, isMember, isPaidOnly, hasRequiredTier, isCommentingDisabled} = useAppContext();
+    const {pagination, comments, commentCount, title, showCount, commentsIsLoading, t, dispatchAction, commentIdToScrollTo, showMissingCommentNotice, isMember, isPaidOnly, hasRequiredTier, isCommentingDisabled} = useAppContext();
     const containerRef = useRef<HTMLDivElement>(null);
 
     const scrollToComment = useCallback((element: HTMLElement, commentId: string) => {
@@ -101,12 +101,17 @@ const Content = () => {
     }, []);
 
     useEffect(() => {
-        if (!labs?.commentPermalinks) {
+        // Capture the parent window reference once so the handler and cleanup
+        // always use the same object. window.parent becomes null when the
+        // iframe is detached from the DOM, but the captured reference remains
+        // valid for removing the listener.
+        const parentWindow = window.parent;
+        if (!parentWindow) {
             return;
         }
 
         const handleHashChange = () => {
-            const commentId = parseCommentIdFromHash(window.parent.location.hash);
+            const commentId = parseCommentIdFromHash(parentWindow.location.hash);
             if (commentId && containerRef.current) {
                 const doc = containerRef.current.ownerDocument;
                 const element = doc.getElementById(commentId);
@@ -116,9 +121,9 @@ const Content = () => {
             }
         };
 
-        window.parent.addEventListener('hashchange', handleHashChange);
-        return () => window.parent.removeEventListener('hashchange', handleHashChange);
-    }, [labs?.commentPermalinks, scrollToComment]);
+        parentWindow.addEventListener('hashchange', handleHashChange);
+        return () => parentWindow.removeEventListener('hashchange', handleHashChange);
+    }, [scrollToComment]);
 
     useEffect(() => {
         if (!commentIdToScrollTo || commentsIsLoading || !containerRef.current) {
@@ -141,6 +146,26 @@ const Content = () => {
         scrollToComment(element, commentIdToScrollTo);
     }, [commentIdToScrollTo, commentsIsLoading, comments, scrollToComment]);
 
+    useEffect(() => {
+        if (!showMissingCommentNotice || commentsIsLoading) {
+            return;
+        }
+
+        const root = document.getElementById(ROOT_DIV_ID);
+        if (!root) {
+            return;
+        }
+
+        const iframe = findContainingIframe(root.ownerDocument);
+        if (iframe) {
+            return onIframeResize(iframe, () => {
+                scrollToElement(root);
+            });
+        }
+
+        scrollToElement(root);
+    }, [showMissingCommentNotice, commentsIsLoading]);
+
     const isFirst = pagination?.total === 0;
     const canComment = isMember && hasRequiredTier && !isCommentingDisabled;
 
@@ -154,6 +179,11 @@ const Content = () => {
     return (
         <>
             <ContentTitle count={commentCount} showCount={showCount} title={title}/>
+            {showMissingCommentNotice && (
+                <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 font-sans text-sm text-amber-900 dark:border-amber-500/40 dark:bg-amber-500/15 dark:text-amber-100" data-testid="missing-comment-notice">
+                    {t('The linked comment is no longer available.')}
+                </div>
+            )}
             <div>
                 {showMainForm && <MainForm commentsCount={comments.length} />}
                 {showDisabledBox && (

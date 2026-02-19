@@ -4,6 +4,7 @@ import {useCallback, useEffect, useRef, useState} from 'react';
 import MemberEmailEditor from './member-email-editor';
 import {Button, Hint, Modal, TextField} from '@tryghost/admin-x-design-system';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useWelcomeEmailSenderDetails} from '../../../../hooks/use-welcome-email-sender-details';
 
 import TestEmailDropdown from './test-email-dropdown';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
@@ -51,7 +52,8 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
     const hasEditorBeenFocused = useRef(false);
     const handleError = useHandleError();
     const {settings} = useGlobalData();
-    const [siteTitle, defaultEmailAddress] = getSettingValues<string>(settings, ['title', 'default_email_address']);
+    const [siteTitle] = getSettingValues<string>(settings, ['title']);
+    const {resolvedSenderName, resolvedSenderEmail, resolvedReplyToEmail, hasDistinctReplyTo} = useWelcomeEmailSenderDetails(automatedEmail);
 
     const {formState, saveState, updateForm, setFormState, handleSave, okProps, errors, validate} = useForm({
         initialState: {
@@ -135,9 +137,6 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
         }
     }, [setFormState, updateForm]);
 
-    const senderEmail = automatedEmail?.sender_email || defaultEmailAddress;
-    const replyToEmail = automatedEmail?.sender_reply_to || defaultEmailAddress;
-
     return (
         <Modal
             afterClose={() => {
@@ -177,15 +176,15 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                     <div className='flex items-center'>
                         <div className='w-20 font-semibold'>From:</div>
                         <div className='flex grow items-center gap-1'>
-                            <span>{automatedEmail?.sender_name || siteTitle}</span>
-                            <span className='text-grey-700 dark:text-grey-400'>{`<${senderEmail}>`}</span>
+                            <span>{resolvedSenderName}</span>
+                            <span className='text-grey-700 dark:text-grey-400'>{`<${resolvedSenderEmail}>`}</span>
                         </div>
                     </div>
-                    {replyToEmail !== senderEmail && (
+                    {hasDistinctReplyTo && (
                         <div className='flex items-center py-0.5'>
                             <div className='w-20 font-semibold'>Reply-to:</div>
                             <div className='grow text-grey-700 dark:text-grey-400'>
-                                {replyToEmail}
+                                {resolvedReplyToEmail}
                             </div>
                         </div>
                     )}

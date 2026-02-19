@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../utils/assertions');
-const should = require('should');
 const hbs = require('../../../../core/frontend/services/theme-engine/engine');
 const configUtils = require('../../../utils/config-utils');
 const path = require('path');
@@ -46,11 +45,11 @@ describe('{{pagination}} helper', function () {
         });
         assertExists(rendered);
         // strip out carriage returns and compare.
-        rendered.string.should.match(paginationRegex);
-        rendered.string.should.match(pageRegex);
+        assert.match(rendered.string, paginationRegex);
+        assert.match(rendered.string, pageRegex);
         assert.match(rendered.string, /Page 1 of 1/);
-        rendered.string.should.not.match(newerRegex);
-        rendered.string.should.not.match(olderRegex);
+        assert.doesNotMatch(rendered.string, newerRegex);
+        assert.doesNotMatch(rendered.string, olderRegex);
     });
 
     it('can render first page of many with older posts link', function () {
@@ -59,11 +58,11 @@ describe('{{pagination}} helper', function () {
         });
         assertExists(rendered);
 
-        rendered.string.should.match(paginationRegex);
-        rendered.string.should.match(pageRegex);
-        rendered.string.should.match(olderRegex);
+        assert.match(rendered.string, paginationRegex);
+        assert.match(rendered.string, pageRegex);
+        assert.match(rendered.string, olderRegex);
         assert.match(rendered.string, /Page 1 of 3/);
-        rendered.string.should.not.match(newerRegex);
+        assert.doesNotMatch(rendered.string, newerRegex);
     });
 
     it('can render middle pages of many with older and newer posts link', function () {
@@ -72,10 +71,10 @@ describe('{{pagination}} helper', function () {
         });
         assertExists(rendered);
 
-        rendered.string.should.match(paginationRegex);
-        rendered.string.should.match(pageRegex);
-        rendered.string.should.match(olderRegex);
-        rendered.string.should.match(newerRegex);
+        assert.match(rendered.string, paginationRegex);
+        assert.match(rendered.string, pageRegex);
+        assert.match(rendered.string, olderRegex);
+        assert.match(rendered.string, newerRegex);
         assert.match(rendered.string, /Page 2 of 3/);
     });
 
@@ -85,11 +84,11 @@ describe('{{pagination}} helper', function () {
         });
         assertExists(rendered);
 
-        rendered.string.should.match(paginationRegex);
-        rendered.string.should.match(pageRegex);
-        rendered.string.should.match(newerRegex);
+        assert.match(rendered.string, paginationRegex);
+        assert.match(rendered.string, pageRegex);
+        assert.match(rendered.string, newerRegex);
         assert.match(rendered.string, /Page 3 of 3/);
-        rendered.string.should.not.match(olderRegex);
+        assert.doesNotMatch(rendered.string, olderRegex);
     });
 
     it('validates values', function () {

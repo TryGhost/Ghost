@@ -1,7 +1,5 @@
 const assert = require('node:assert/strict');
-require('should');
 const sinon = require('sinon');
-const {DataImportError} = require('@tryghost/errors');
 const MembersCSVImporterStripeUtils = require('../../../../../../core/server/services/members/importer/members-csv-importer-stripe-utils');
 
 describe('MembersCSVImporterStripeUtils', function () {
@@ -130,9 +128,12 @@ describe('MembersCSVImporterStripeUtils', function () {
                 stripeAPIService: stripeAPIServiceStub
             });
 
-            await membersCSVImporterStripeUtils.forceStripeSubscriptionToProduct({}, OPTIONS).should.be.rejectedWith(
-                DataImportError,
-                {message: 'Cannot force subscription to product without a Stripe Connection'}
+            await assert.rejects(
+                membersCSVImporterStripeUtils.forceStripeSubscriptionToProduct({}, OPTIONS),
+                {
+                    name: 'DataImportError',
+                    message: 'Cannot force subscription to product without a Stripe Connection'
+                }
             );
         });
 
@@ -142,11 +143,12 @@ describe('MembersCSVImporterStripeUtils', function () {
                 stripeAPIService: stripeAPIServiceStub
             });
 
-            await membersCSVImporterStripeUtils.forceStripeSubscriptionToProduct({
-                customer_id: CUSTOMER_ID
-            }, OPTIONS).should.be.rejectedWith(
-                DataImportError,
-                {message: 'Cannot find Stripe customer to update subscription'}
+            await assert.rejects(
+                membersCSVImporterStripeUtils.forceStripeSubscriptionToProduct({customer_id: CUSTOMER_ID}, OPTIONS),
+                {
+                    name: 'DataImportError',
+                    message: 'Cannot find Stripe customer to update subscription'
+                }
             );
         });
 
@@ -159,11 +161,12 @@ describe('MembersCSVImporterStripeUtils', function () {
                 stripeAPIService: stripeAPIServiceStub
             });
 
-            await membersCSVImporterStripeUtils.forceStripeSubscriptionToProduct({
-                customer_id: CUSTOMER_ID
-            }, OPTIONS).should.be.rejectedWith(
-                DataImportError,
-                {message: 'Cannot update subscription when customer does not have an existing subscription'}
+            await assert.rejects(
+                membersCSVImporterStripeUtils.forceStripeSubscriptionToProduct({customer_id: CUSTOMER_ID}, OPTIONS),
+                {
+                    name: 'DataImportError',
+                    message: 'Cannot update subscription when customer does not have an existing subscription'
+                }
             );
         });
 
@@ -191,11 +194,12 @@ describe('MembersCSVImporterStripeUtils', function () {
                 stripeAPIService: stripeAPIServiceStub
             });
 
-            await membersCSVImporterStripeUtils.forceStripeSubscriptionToProduct({
-                customer_id: CUSTOMER_ID
-            }, OPTIONS).should.be.rejectedWith(
-                DataImportError,
-                {message: 'Cannot update subscription when customer has multiple subscriptions'}
+            await assert.rejects(
+                membersCSVImporterStripeUtils.forceStripeSubscriptionToProduct({customer_id: CUSTOMER_ID}, OPTIONS),
+                {
+                    name: 'DataImportError',
+                    message: 'Cannot update subscription when customer has multiple subscriptions'
+                }
             );
         });
 
@@ -216,11 +220,12 @@ describe('MembersCSVImporterStripeUtils', function () {
                 stripeAPIService: stripeAPIServiceStub
             });
 
-            await membersCSVImporterStripeUtils.forceStripeSubscriptionToProduct({
-                customer_id: CUSTOMER_ID
-            }, OPTIONS).should.be.rejectedWith(
-                DataImportError,
-                {message: 'Cannot update subscription when existing subscription has multiple items'}
+            await assert.rejects(
+                membersCSVImporterStripeUtils.forceStripeSubscriptionToProduct({customer_id: CUSTOMER_ID}, OPTIONS),
+                {
+                    name: 'DataImportError',
+                    message: 'Cannot update subscription when existing subscription has multiple items'
+                }
             );
         });
 
@@ -233,11 +238,12 @@ describe('MembersCSVImporterStripeUtils', function () {
                 stripeAPIService: stripeAPIServiceStub
             });
 
-            await membersCSVImporterStripeUtils.forceStripeSubscriptionToProduct({
-                customer_id: CUSTOMER_ID
-            }, OPTIONS).should.be.rejectedWith(
-                DataImportError,
-                {message: 'Cannot update subscription when existing subscription is not recurring'}
+            await assert.rejects(
+                membersCSVImporterStripeUtils.forceStripeSubscriptionToProduct({customer_id: CUSTOMER_ID}, OPTIONS),
+                {
+                    name: 'DataImportError',
+                    message: 'Cannot update subscription when existing subscription is not recurring'
+                }
             );
         });
 
@@ -257,12 +263,15 @@ describe('MembersCSVImporterStripeUtils', function () {
                 productRepository: productRepositoryStub
             });
 
-            await membersCSVImporterStripeUtils.forceStripeSubscriptionToProduct({
-                customer_id: CUSTOMER_ID,
-                product_id: PRODUCT_ID
-            }, OPTIONS).should.be.rejectedWith(
-                DataImportError,
-                {message: `Cannot find Product ${PRODUCT_ID}`}
+            await assert.rejects(
+                membersCSVImporterStripeUtils.forceStripeSubscriptionToProduct({
+                    customer_id: CUSTOMER_ID,
+                    product_id: PRODUCT_ID
+                }, OPTIONS),
+                {
+                    name: 'DataImportError',
+                    message: `Cannot find Product ${PRODUCT_ID}`
+                }
             );
         });
 

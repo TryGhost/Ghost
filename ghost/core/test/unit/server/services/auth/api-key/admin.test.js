@@ -2,7 +2,6 @@ const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../../utils/assertions');
 const errors = require('@tryghost/errors');
 const jwt = require('jsonwebtoken');
-const should = require('should');
 const sinon = require('sinon');
 const apiKeyAuth = require('../../../../../../core/server/services/auth/api-key');
 const models = require('../../../../../../core/server/models');
@@ -54,7 +53,7 @@ describe('Admin API Key Auth', function () {
 
         apiKeyAuth.admin.authenticate(req, res, (err) => {
             assert.equal(err, undefined);
-            req.api_key.should.eql(this.fakeApiKey);
+            assert.equal(req.api_key, this.fakeApiKey);
             done();
         });
     });
@@ -79,7 +78,7 @@ describe('Admin API Key Auth', function () {
 
         apiKeyAuth.admin.authenticate(req, res, (err) => {
             assert.equal(err, undefined);
-            req.api_key.should.eql(this.fakeApiKey);
+            assert.equal(req.api_key, this.fakeApiKey);
             done();
         });
     });
@@ -104,7 +103,7 @@ describe('Admin API Key Auth', function () {
 
         apiKeyAuth.admin.authenticate(req, res, (err) => {
             assert.equal(err, undefined);
-            req.api_key.should.eql(this.fakeApiKey);
+            assert.equal(req.api_key, this.fakeApiKey);
             done();
         });
     });

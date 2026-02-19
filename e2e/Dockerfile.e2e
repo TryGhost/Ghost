@@ -1,0 +1,20 @@
+# E2E test layer: copies locally-built public apps into any Ghost image
+# so Ghost serves them at /ghost/assets/{app}/{app}.min.js (same origin, no CORS).
+#
+# Usage:
+#   docker build -f e2e/Dockerfile.e2e \
+#     --build-arg GHOST_IMAGE=ghost-monorepo:latest \
+#     -t ghost-e2e:local .
+#
+# Works with any base image (monorepo or production).
+
+ARG GHOST_IMAGE=ghost-monorepo:latest
+FROM $GHOST_IMAGE
+
+# Public app UMD bundles — Ghost serves these from /ghost/assets/
+COPY apps/portal/umd/portal.min.js core/built/admin/assets/portal/portal.min.js
+COPY apps/comments-ui/umd/comments-ui.min.js core/built/admin/assets/comments-ui/comments-ui.min.js
+COPY apps/sodo-search/umd/sodo-search.min.js core/built/admin/assets/sodo-search/sodo-search.min.js
+COPY apps/sodo-search/umd/main.css core/built/admin/assets/sodo-search/main.css
+COPY apps/signup-form/umd/signup-form.min.js core/built/admin/assets/signup-form/signup-form.min.js
+COPY apps/announcement-bar/umd/announcement-bar.min.js core/built/admin/assets/announcement-bar/announcement-bar.min.js
