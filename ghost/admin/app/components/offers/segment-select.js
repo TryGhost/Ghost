@@ -116,7 +116,7 @@ export default class OffersSegmentSelect extends Component {
             const offer = this.getOfferById(id);
             return {
                 id,
-                name: offer?.name || id
+                name: offer.name
             };
         }) || [];
         this.args.onChange?.(ids);
