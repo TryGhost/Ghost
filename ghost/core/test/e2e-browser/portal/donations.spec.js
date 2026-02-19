@@ -50,7 +50,6 @@ test.describe('Portal', () => {
             // Use URL success params as a stable sync point, then assert the notification UI.
             await expect.poll(() => sharedPage.url(), {timeout: 60000}).toContain('action=support&success=true');
             const notificationFrame = sharedPage.frameLocator('[data-testid="portal-notification-frame"]');
-            await expect(sharedPage.getByTestId('portal-notification-frame')).toBeVisible();
             await expect(notificationFrame.getByText('Thank you for your support!')).toBeVisible();
         });
 
