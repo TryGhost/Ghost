@@ -351,10 +351,34 @@ const submitStripePayment = async (page) => {
         }
     }
 
-    // Wait for submit button complete
-    await page.waitForSelector('[data-testid="hosted-payment-submit-button"].SubmitButton--complete', {state: 'attached'});
+    /**
+     * Retry submit in case Stripe leaves checkout in a transient state.
+     */
+    for (let attempt = 1; attempt <= 3; attempt++) {
+        if (!page.url().includes('checkout.stripe.com')) {
+            return;
+        }
 
-    await page.getByTestId('hosted-payment-submit-button').click();
+        try {
+            // Wait for submit button complete
+            await page.waitForSelector('[data-testid="hosted-payment-submit-button"].SubmitButton--complete', {
+                state: 'attached',
+                timeout: 5_000
+            });
+            await page.getByTestId('hosted-payment-submit-button').click();
+
+            // Stripe can redirect without reaching "load"; "commit" catches early URL change.
+            await page.waitForURL(url => !url.hostname.includes('checkout.stripe.com'), {
+                timeout: 25_000,
+                waitUntil: 'commit'
+            });
+            return;
+        } catch (err) {
+            if (attempt === 3) {
+                throw err;
+            }
+        }
+    }
 };
 
 /**
