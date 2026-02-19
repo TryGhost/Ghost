@@ -120,7 +120,7 @@ const OffersRetention: React.FC = () => {
     const {data: {offers: allOffers = []} = {}} = useBrowseOffers();
     const retentionOffers = getRetentionOffers(allOffers);
 
-    const handleRetentionOfferClick = (id: string) => {
+    const handleOfferEdit = (id: string) => {
         updateRoute(`offers/edit/retention/${id}`);
     };
 
@@ -142,13 +142,13 @@ const OffersRetention: React.FC = () => {
                     return (
                         <tr key={offer.id} className='group relative scale-100 border-b border-b-grey-200 dark:border-grey-800' data-testid='retention-offer-item'>
                             <td className='p-0'>
-                                <a className='block cursor-pointer p-5 pl-0' onClick={() => handleRetentionOfferClick(offer.id)}>
+                                <a className='block cursor-pointer p-5 pl-0' onClick={() => handleOfferEdit(offer.id)}>
                                     <span className='font-semibold'>{offer.name}</span><br />
                                     <span className='text-sm text-grey-700'>{offer.description}</span>
                                 </a>
                             </td>
                             <td className='whitespace-nowrap p-0 text-sm'>
-                                <a className='block cursor-pointer p-5' onClick={() => handleRetentionOfferClick(offer.id)}>
+                                <a className='block cursor-pointer p-5' onClick={() => handleOfferEdit(offer.id)}>
                                     {offer.terms ? (
                                         <>
                                             <span className='text-[1.3rem] font-medium uppercase'>{offer.terms}</span><br />
@@ -164,13 +164,13 @@ const OffersRetention: React.FC = () => {
                                     className={`block cursor-pointer p-5 ${redemptionFilterUrl ? 'hover:underline' : ''}`}
                                     data-testid={`retention-redemptions-link-${offer.id}`}
                                     href={redemptionFilterUrl}
-                                    onClick={!redemptionFilterUrl ? () => handleRetentionOfferClick(offer.id) : undefined}
+                                    onClick={!redemptionFilterUrl ? () => handleOfferEdit(offer.id) : undefined}
                                 >
                                     {offer.redemptions}
                                 </a>
                             </td>
                             <td className='whitespace-nowrap p-0 text-sm'>
-                                <a className='block cursor-pointer p-5' onClick={() => handleRetentionOfferClick(offer.id)}>
+                                <a className='block cursor-pointer p-5' onClick={() => handleOfferEdit(offer.id)}>
                                     {offer.status === 'active' ? (
                                         <span className='text-sm font-semibold text-green'>Active</span>
                                     ) : (
