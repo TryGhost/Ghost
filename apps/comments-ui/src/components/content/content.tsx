@@ -101,8 +101,17 @@ const Content = () => {
     }, []);
 
     useEffect(() => {
+        // Capture the parent window reference once so the handler and cleanup
+        // always use the same object. window.parent becomes null when the
+        // iframe is detached from the DOM, but the captured reference remains
+        // valid for removing the listener.
+        const parentWindow = window.parent;
+        if (!parentWindow) {
+            return;
+        }
+
         const handleHashChange = () => {
-            const commentId = parseCommentIdFromHash(window.parent.location.hash);
+            const commentId = parseCommentIdFromHash(parentWindow.location.hash);
             if (commentId && containerRef.current) {
                 const doc = containerRef.current.ownerDocument;
                 const element = doc.getElementById(commentId);
@@ -112,8 +121,8 @@ const Content = () => {
             }
         };
 
-        window.parent.addEventListener('hashchange', handleHashChange);
-        return () => window.parent.removeEventListener('hashchange', handleHashChange);
+        parentWindow.addEventListener('hashchange', handleHashChange);
+        return () => parentWindow.removeEventListener('hashchange', handleHashChange);
     }, [scrollToComment]);
 
     useEffect(() => {
