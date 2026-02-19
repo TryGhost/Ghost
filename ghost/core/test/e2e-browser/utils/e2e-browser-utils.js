@@ -351,9 +351,17 @@ const submitStripePayment = async (page) => {
         }
     }
 
+    /**
+     * Retry submit in case Stripe leaves checkout in a transient state.
+     * Note: if attempt 1 actually charged but redirect exceeds 25s, attempt 2
+     * could trigger a duplicate charge in non-test environments.
+     */
     for (let attempt = 1; attempt <= 3; attempt++) {
         // Wait for submit button complete
-        await page.waitForSelector('[data-testid="hosted-payment-submit-button"].SubmitButton--complete', {state: 'attached'});
+        await page.waitForSelector('[data-testid="hosted-payment-submit-button"].SubmitButton--complete', {
+            state: 'attached',
+            timeout: 5_000
+        });
         await page.getByTestId('hosted-payment-submit-button').click();
 
         try {
