@@ -1,6 +1,6 @@
 import Content from '../../../../src/components/content/content';
 import {AppContext} from '../../../../src/app-context';
-import {render, screen} from '@testing-library/react';
+import {render, screen, act} from '@testing-library/react';
 
 const contextualRender = (ui, {appContext, ...renderOptions}) => {
     const member = appContext?.member ?? null;
@@ -62,6 +62,79 @@ describe('<Content>', function () {
             contextualRender(<Content />, {appContext: {member: {}, openFormCount: 1}});
             expect(screen.queryByTestId('cta-box')).not.toBeInTheDocument();
             expect(screen.queryByTestId('main-form')).toBeInTheDocument();
+        });
+    });
+
+    describe('hashchange listener', function () {
+        let originalParent;
+
+        beforeEach(() => {
+            originalParent = window.parent;
+        });
+
+        afterEach(() => {
+            Object.defineProperty(window, 'parent', {
+                value: originalParent,
+                writable: true,
+                configurable: true
+            });
+        });
+
+        it('does not throw when window.parent becomes null after mount', function () {
+            // Track errors thrown during event dispatch (jsdom reports these
+            // as uncaught errors even though they happen inside an event handler)
+            const errors = [];
+            const onError = (e) => {
+                errors.push(e);
+                e.preventDefault();
+            };
+            window.addEventListener('error', onError);
+
+            contextualRender(<Content />, {appContext: {}});
+
+            // Simulate iframe detachment: window.parent becomes null.
+            // This happens when the iframe is removed from the DOM while
+            // a hashchange event is still queued on the parent window.
+            Object.defineProperty(window, 'parent', {
+                value: null,
+                writable: true,
+                configurable: true
+            });
+
+            act(() => {
+                // Dispatch hashchange on the original parent window — this is
+                // what happens in production: the listener was added to the parent,
+                // and the event fires after the iframe is detached
+                originalParent.dispatchEvent(new HashChangeEvent('hashchange'));
+            });
+
+            window.removeEventListener('error', onError);
+            expect(errors).toHaveLength(0);
+        });
+
+        it('cleanup does not throw when window.parent becomes null on unmount', function () {
+            const errors = [];
+            const onError = (e) => {
+                errors.push(e);
+                e.preventDefault();
+            };
+            window.addEventListener('error', onError);
+
+            const {unmount} = contextualRender(<Content />, {appContext: {}});
+
+            // Simulate iframe detachment before React cleanup runs
+            Object.defineProperty(window, 'parent', {
+                value: null,
+                writable: true,
+                configurable: true
+            });
+
+            // Unmounting triggers the useEffect cleanup which calls
+            // window.parent.removeEventListener — this should not throw
+            unmount();
+
+            window.removeEventListener('error', onError);
+            expect(errors).toHaveLength(0);
         });
     });
 });
