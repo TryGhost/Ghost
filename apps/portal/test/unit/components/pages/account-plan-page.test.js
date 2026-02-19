@@ -300,6 +300,53 @@ describe('Account Plan Page', () => {
         expect(queryByText('Save 20% on your next billing cycle. Then $10/month.')).toBeInTheDocument();
     });
 
+    test('renders rounded cents for percent retention offers', async () => {
+        const paidProduct = getProductData({
+            name: 'Basic',
+            monthlyPrice: getPriceData({interval: 'month', amount: 599, currency: 'usd'}),
+            yearlyPrice: getPriceData({interval: 'year', amount: 10000, currency: 'usd'})
+        });
+        const products = [paidProduct, getProductData({type: 'free'})];
+        const site = getSiteData({
+            products,
+            portalProducts: [paidProduct.id]
+        });
+        const member = getMemberData({
+            paid: true,
+            subscriptions: [
+                getSubscriptionData({
+                    status: 'active',
+                    interval: 'month',
+                    amount: paidProduct.monthlyPrice.amount,
+                    currency: 'USD',
+                    priceId: paidProduct.monthlyPrice.id
+                })
+            ]
+        });
+
+        const retentionOffer = {
+            ...getOfferData({
+                type: 'percent',
+                amount: 20,
+                cadence: 'month',
+                duration: 'once',
+                tierId: paidProduct.id,
+                tierName: paidProduct.name
+            }),
+            redemption_type: 'retention'
+        };
+
+        const {container, queryByRole, queryByText} = customSetup({site, member, offers: [retentionOffer]});
+        const cancelButton = queryByRole('button', {name: 'Cancel subscription'});
+
+        fireEvent.click(cancelButton);
+
+        const discountedAmount = container.querySelector('.gh-portal-product-price .amount');
+        expect(discountedAmount).not.toBeNull();
+        expect(discountedAmount).toHaveTextContent('4.79');
+        expect(queryByText('Save 20% on your next billing cycle. Then $5.99/month.')).toBeInTheDocument();
+    });
+
     test('renders fixed retention offers', async () => {
         const paidProduct = getProductData({
             name: 'Basic',

@@ -24,12 +24,13 @@ import {
     getCompExpiry,
     isInThePast,
     hasNewsletterSendingEnabled,
+    getUpdatedOfferPrice,
+    isComplimentaryMember,
     subscriptionHasFreeMonthsOffer,
     subscriptionHasFreeTrial
 } from '../../src/utils/helpers';
 import * as Fixtures from '../../src/utils/fixtures-generator';
 import {site as FixturesSite, member as FixtureMember, offer as FixtureOffer, transformTierFixture as TransformFixtureTiers} from './test-fixtures';
-import {isComplimentaryMember} from '../../src/utils/helpers';
 
 describe('Helpers - ', () => {
     describe('isComplimentaryMember -', () => {
@@ -204,6 +205,63 @@ describe('Helpers - ', () => {
             let currency1 = 'eur';
             let currency2 = 'usd';
             expect(isSameCurrency(currency1, currency2)).toBe(false);
+        });
+    });
+
+    describe('getUpdatedOfferPrice - ', () => {
+        test('rounds 20% off $5.99 to $4.79', () => {
+            const updatedPrice = getUpdatedOfferPrice({
+                offer: {type: 'percent', amount: 20},
+                price: {amount: 599, currency: 'usd'}
+            });
+
+            expect(updatedPrice).toBe(4.79);
+        });
+
+        test('rounds 33% off $9.99 to $6.69', () => {
+            const updatedPrice = getUpdatedOfferPrice({
+                offer: {type: 'percent', amount: 33},
+                price: {amount: 999, currency: 'usd'}
+            });
+
+            expect(updatedPrice).toBe(6.69);
+        });
+
+        test('returns exact discounted amount when no rounding is needed', () => {
+            const updatedPrice = getUpdatedOfferPrice({
+                offer: {type: 'percent', amount: 50},
+                price: {amount: 1000, currency: 'usd'}
+            });
+
+            expect(updatedPrice).toBe(5);
+        });
+
+        test('rounds 15% off $3.33 to $2.83', () => {
+            const updatedPrice = getUpdatedOfferPrice({
+                offer: {type: 'percent', amount: 15},
+                price: {amount: 333, currency: 'usd'}
+            });
+
+            expect(updatedPrice).toBe(2.83);
+        });
+
+        test('returns expected amount for fixed offers', () => {
+            const updatedPrice = getUpdatedOfferPrice({
+                offer: {type: 'fixed', amount: 100, currency: 'usd'},
+                price: {amount: 599, currency: 'usd'}
+            });
+
+            expect(updatedPrice).toBe(4.99);
+        });
+
+        test('returns formatted price when useFormatted is true', () => {
+            const updatedPrice = getUpdatedOfferPrice({
+                offer: {type: 'percent', amount: 20},
+                price: {amount: 599, currency: 'usd'},
+                useFormatted: true
+            });
+
+            expect(updatedPrice).toBe('$4.79');
         });
     });
 
