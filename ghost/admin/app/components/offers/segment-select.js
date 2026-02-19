@@ -176,7 +176,7 @@ export default class OffersSegmentSelect extends Component {
                 offersGroup.options.push({
                     name: offer.name,
                     id: offer.id,
-                    count: offers.count?.members,
+                    count: offer.count?.members,
                     class: 'segment-offer-redemptions'
                 });
             });
