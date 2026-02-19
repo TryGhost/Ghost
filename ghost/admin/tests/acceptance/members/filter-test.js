@@ -4,7 +4,7 @@ import {authenticateSession} from 'ember-simple-auth/test-support';
 import {blur, click, currentURL, fillIn, find, findAll, focus} from '@ember/test-helpers';
 import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../../helpers/mock-analytics-apps';
 import {datepickerSelect} from 'ember-power-datepicker/test-support';
-import {enableLabsFlag} from '../helpers/labs-flag';
+import {enableLabsFlag} from '../../helpers/labs-flag';
 import {enableNewsletters} from '../../helpers/newsletters';
 import {enablePaidMembers} from '../../helpers/members';
 import {enableStripe} from '../../helpers/stripe';
