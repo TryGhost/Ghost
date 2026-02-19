@@ -5,6 +5,7 @@ import {type ErrorMessages, useForm} from '@tryghost/admin-x-framework/hooks';
 import {Form, PreviewModalContent, Select, type SelectOption, TextArea, TextField, Toggle, showToast} from '@tryghost/admin-x-design-system';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {type Offer, useAddOffer, useBrowseOffers, useEditOffer, useInvalidateOffers} from '@tryghost/admin-x-framework/api/offers';
+import {createOfferRedemptionsFilterUrl, formatOfferTimestamp} from './offer-helpers';
 import {getOfferPortalPreviewUrl, type offerPortalPreviewUrlTypes} from '../../../../utils/get-offers-portal-preview-url';
 import {getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {useEffect, useMemo, useState} from 'react';
@@ -176,8 +177,10 @@ const RetentionOfferSidebar: React.FC<{
     clearError: (field: string) => void;
     errors: ErrorMessages;
     cadence: 'monthly' | 'yearly';
+    lastRedeemed?: string | null;
+    membersFilterUrl?: string | null;
     redemptions: number;
-}> = ({formState, updateForm, clearError, errors, cadence, redemptions}) => {
+}> = ({formState, updateForm, clearError, errors, cadence, lastRedeemed, membersFilterUrl, redemptions}) => {
     const availableDurationOptions = cadence === 'yearly'
         ? durationOptions.filter(option => option.value !== 'repeating')
         : durationOptions;
@@ -188,8 +191,22 @@ const RetentionOfferSidebar: React.FC<{
                 <section>
                     <div className='flex flex-col gap-5 rounded-md border border-grey-300 p-4 pb-3.5 dark:border-grey-800'>
                         <div className='flex flex-col gap-1.5'>
-                            <span className='text-xs font-semibold leading-none text-grey-700'>Performance</span>
-                            <span>{redemptions} redemptions</span>
+                            <div className='flex items-end justify-between'>
+                                <div className='flex flex-col gap-5'>
+                                    <div className='flex flex-col gap-1.5'>
+                                        <span className='text-xs font-semibold leading-none text-grey-700'>Performance</span>
+                                        <span>{redemptions} {redemptions === 1 ? 'redemption' : 'redemptions'}</span>
+                                    </div>
+                                    {redemptions > 0 && lastRedeemed ?
+                                        <div className='flex flex-col gap-1.5'>
+                                            <span className='text-xs font-semibold leading-none text-grey-700'>Last redemption</span>
+                                            <span>{formatOfferTimestamp(lastRedeemed)}</span>
+                                        </div> :
+                                        null
+                                    }
+                                </div>
+                                {redemptions > 0 && membersFilterUrl ? <a className='font-semibold text-green' href={membersFilterUrl}>See members →</a> : null}
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -358,6 +375,24 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
             return total + (offer.redemption_count || 0);
         }, 0);
     }, [retentionOffersByCadence]);
+    const retentionOfferIdsByCadence = useMemo(() => {
+        return retentionOffersByCadence.map(offer => offer.id);
+    }, [retentionOffersByCadence]);
+    const latestRetentionRedemption = useMemo(() => {
+        return retentionOffersByCadence
+            .map(offer => offer.last_redeemed)
+            .filter((lastRedeemed): lastRedeemed is string => !!lastRedeemed)
+            .sort((left, right) => {
+                return new Date(right).getTime() - new Date(left).getTime();
+            })[0] || null;
+    }, [retentionOffersByCadence]);
+    const retentionMembersFilterUrl = useMemo(() => {
+        if (retentionRedemptions === 0 || retentionOfferIdsByCadence.length === 0) {
+            return null;
+        }
+
+        return createOfferRedemptionsFilterUrl(retentionOfferIdsByCadence);
+    }, [retentionOfferIdsByCadence, retentionRedemptions]);
     const [lastPreviewPercentAmount, setLastPreviewPercentAmount] = useState(20);
     const [lastPreviewFreeMonths, setLastPreviewFreeMonths] = useState(1);
     const [initializedOfferKey, setInitializedOfferKey] = useState<string | null>(null);
@@ -525,6 +560,8 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
             clearError={clearError}
             errors={errors}
             formState={formState}
+            lastRedeemed={latestRetentionRedemption}
+            membersFilterUrl={retentionMembersFilterUrl}
             redemptions={retentionRedemptions}
             updateForm={updateForm}
         />

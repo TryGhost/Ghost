@@ -210,7 +210,6 @@ jobs:
       is_six_pr: ${{ env.IS_SIX_PR }}
       is_five: ${{ env.IS_FIVE }}
       member_is_in_org: ${{ steps.check_user_org_membership.outputs.is_member }}
-      has_perf_tests_label: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'perf-tests') }}
       dependency_cache_key: ${{ env.cachekey }}
       node_version: ${{ env.NODE_VERSION }}
       node_test_matrix: ${{ steps.node_matrix.outputs.matrix }}
@@ -408,56 +407,6 @@ jobs:
       run: |
         echo -e "::notice::To view the Playwright report locally, run:\n\nREPORT_DIR=\$(mktemp -d) && gh run download ${{ github.run_id }} -n browser-tests-playwright-report -D \"\$REPORT_DIR\" && npx playwright show-report \"\$REPORT_DIR\""
 
-  job_perf-tests:
-    runs-on:
-      labels: ubuntu-latest-4-cores
-    needs: [job_setup]
-    if: (needs.job_setup.outputs.changed_core == 'true' && needs.job_setup.outputs.is_development == 'true') || needs.job_setup.outputs.has_perf_tests_label == 'true'
-    name: Performance tests
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          submodules: true
-      - uses: actions/setup-node@v4
-        env:
-          FORCE_COLOR: 0
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Restore caches
-        uses: ./.github/actions/restore-cache
-        env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
-
-      - name: Install hyperfine
-        run: |
-          export HYPERFINE_VERSION=1.18.0
-          wget https://github.com/sharkdp/hyperfine/releases/download/v$HYPERFINE_VERSION/hyperfine-v$HYPERFINE_VERSION-x86_64-unknown-linux-gnu.tar.gz
-          tar -zxvf hyperfine-v$HYPERFINE_VERSION-x86_64-unknown-linux-gnu.tar.gz
-          mv hyperfine-v$HYPERFINE_VERSION-x86_64-unknown-linux-gnu/hyperfine /usr/local/bin
-          chmod +x /usr/local/bin/hyperfine
-
-      - name: Build TS code
-        run: yarn nx run-many -t build:tsc
-
-      - name: Run hyperfine on boot
-        working-directory: ghost/core
-        run: hyperfine --show-output --warmup 3 'GHOST_CI_SHUTDOWN_AFTER_BOOT=1 node index.js' --export-json boot-perf.json
-
-      - name: Convert data
-        working-directory: ghost/core
-        run: |
-          jq '[{ name: "Boot time", unit: "s", value: .results[0].median, range: ((.results[0].max - .results[0].min) | tostring) }]' < boot-perf.json > boot-perf-formatted.json
-
-      - name: Run analysis
-        uses: benchmark-action/github-action-benchmark@v1.20.7
-        with:
-          tool: 'customSmallerIsBetter'
-          output-file-path: ghost/core/boot-perf-formatted.json
-          benchmark-data-dir-path: ""
-          gh-repository: github.com/TryGhost/Ghost-Benchmarks
-          github-token: ${{ secrets.CANARY_DOCKER_BUILD }}
-          auto-push: true
 
   job_unit-tests:
     runs-on: ubuntu-latest

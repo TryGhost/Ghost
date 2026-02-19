@@ -30,6 +30,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const routing = useEmberRouting();
     const commentModerationEnabled = useFeatureFlag('commentModeration');
     const isCalendarRouteActive = useIsActiveLink({path: '/posts/calendar'});
+    const membersForwardEnabled = useFeatureFlag('membersForward');
 
     const showTags = currentUser && canManageTags(currentUser);
     const showMembers = currentUser && canManageMembers(currentUser);
@@ -143,7 +144,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                     {showMembers && (
                         <NavMenuItem>
                             <NavMenuItem.Link
-                                to={routing.getRouteUrl('members')}
+                                to={membersForwardEnabled ? 'members-forward' : routing.getRouteUrl('members')}
                                 isActive={routing.isRouteActive(['members', 'member', 'member.new'])}
                             >
                                 <LucideIcon.Users />

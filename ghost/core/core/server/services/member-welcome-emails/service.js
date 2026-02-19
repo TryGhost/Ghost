@@ -17,10 +17,10 @@ class MemberWelcomeEmailService {
     #memberWelcomeEmails = {free: null, paid: null};
     #defaultNewsletterSenderOptions = null;
 
-    constructor() {
+    constructor({t}) {
         emailAddressService.init();
         this.#mailer = new mail.GhostMailer();
-        this.#renderer = new MemberWelcomeEmailRenderer();
+        this.#renderer = new MemberWelcomeEmailRenderer({t});
     }
 
     #getSiteSettings() {
@@ -225,7 +225,17 @@ class MemberWelcomeEmailServiceWrapper {
         if (this.api) {
             return;
         }
-        this.api = new MemberWelcomeEmailService();
+
+        const i18nLib = require('@tryghost/i18n');
+        const events = require('../../lib/common/events');
+
+        const i18n = i18nLib(settingsCache.get('locale') || 'en', 'ghost');
+
+        events.on('settings.locale.edited', (model) => {
+            i18n.changeLanguage(model.get('value'));
+        });
+
+        this.api = new MemberWelcomeEmailService({t: i18n.t});
     }
 }
 
