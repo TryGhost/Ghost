@@ -112,13 +112,21 @@ export default class OffersSegmentSelect extends Component {
             }
         });
 
-        let ids = Array.from(offerIds).map((id) => {
+        const ids = Array.from(offerIds).reduce((result, id) => {
             const offer = this.getOfferById(id);
-            return {
+
+            if (!offer) {
+                return result;
+            }
+
+            result.push({
                 id,
                 name: offer.name
-            };
-        }) || [];
+            });
+
+            return result;
+        }, []);
+
         this.args.onChange?.(ids);
     }
 
