@@ -68,7 +68,7 @@ test.describe('Ghost Admin - Thread Sidebar', () => {
         // Click replies metric on first reply to navigate into its sub-thread
         const firstReplyRow = commentsPage.getThreadCommentById(firstReply.id);
         await commentsPage.getRepliesButton(firstReplyRow).click();
-        await page.waitForURL(new RegExp(`thread=is%3A${firstReply.id}`));
+        await expect(page).toHaveURL(new RegExp(`thread=is%3A${firstReply.id}`));
 
         // Sub-thread should show the reply and its children
         await expect(commentsPage.getThreadCommentById(firstReply.id)).toBeVisible();
@@ -103,7 +103,7 @@ test.describe('Ghost Admin - Thread Sidebar', () => {
         });
         await commentsPage.openThread(commentRow);
 
-        expect(page.url()).toContain(`thread=is%3A${rootComment.id}`);
+        await expect(page).toHaveURL(new RegExp(`thread=is%3A${rootComment.id}`));
         await expect(commentsPage.threadSidebar.getByText('Comment with replies')).toBeVisible();
         await expect(commentsPage.threadSidebar.getByText('A reply to the comment')).toBeVisible();
 
@@ -115,7 +115,7 @@ test.describe('Ghost Admin - Thread Sidebar', () => {
         await commentsPage.getRepliedToLink(replyRow).click();
 
         await commentsPage.waitForThreadSidebar();
-        expect(page.url()).toContain(`thread=is%3A${rootComment.id}`);
+        await expect(page).toHaveURL(new RegExp(`thread=is%3A${rootComment.id}`));
     });
 
     test('loads more replies when clicking load more button', async ({page}) => {
