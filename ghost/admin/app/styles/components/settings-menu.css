@@ -46,11 +46,20 @@
 
 .settings-menu-container {
     z-index: 999;
-    height: 100dvh;
+    height: 100%;
     min-width: 420px;
-    overflow-x: visible;
-    overflow-y: auto;
+    overflow: hidden;
     border-left: 1px solid var(--whitegrey-d1);
+    display: flex;
+    flex-direction: column;
+}
+
+.settings-menu-container #entry-controls {
+    flex: 1;
+    min-height: 0;
+    position: relative;
+    display: flex;
+    flex-direction: column;
 }
 
 .settings-menu-container-wide {
@@ -101,7 +110,11 @@
     top: auto;
     right: auto;
     bottom: auto;
-    height: 100dvh;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 @media (max-width: 500px) {
@@ -115,15 +128,18 @@
 /* ---------------------------------------------------------- */
 
 .settings-menu-header {
-    position: fixed;
+    position: sticky;
+    top: 0;
     display: flex;
     height: 82px; /* 34px + 24px + 24px */
+    min-height: 82px;
     width: 100%;
     padding: 24px;
     justify-content: space-between;
     align-items: center;
     z-index: 3;
     background: var(--white);
+    flex-shrink: 0;
 }
 
 @media (max-width: 1024px) {
@@ -188,7 +204,10 @@
 }
 
 .settings-menu-content {
-    padding: 92px 0 0;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 0;
 }
 
 .gh-post-settings {
@@ -197,7 +216,7 @@
 
 @media (max-width: 1024px) {
     .settings-menu-content {
-        padding-top: 72px;
+        padding-top: 0;
     }
 }
 

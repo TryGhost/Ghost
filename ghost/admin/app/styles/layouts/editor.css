@@ -284,7 +284,8 @@
 /* ---------------------------------------------------------- */
 
 .gh-editor {
-    max-width: calc(100vw - var(--editor-sidebar-width))
+    max-width: calc(100vw - var(--editor-sidebar-width));
+    min-height: 0;
 }
 
 @media (max-width: 1024px) {
@@ -294,11 +295,19 @@
 }
 
 .gh-editor-fullscreen-container {
-    position: fixed;
+    position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Ensure the editor flex row fills the fullscreen container */
+.gh-editor-fullscreen-container > .flex {
+    flex: 1;
+    min-height: 0;
 }
 
 .gh-editor-header {

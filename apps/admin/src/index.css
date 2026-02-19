@@ -40,18 +40,6 @@ body.react-admin #ember-app {
     height: 100%;
 }
 
-/* Override Ember's fixed positioning to work within our flex layout */
-body.react-admin #ember-app .gh-app {
-    position: static;
-    width: 100%;
-    height: 100%;
-}
-
-/* Remove Ember's overflow since we handle scrolling at the SidebarInset level */
-body.react-admin .gh-main {
-    overflow-y: visible;
-}
-
 /* Temporary overrides until Ember transition is finished */
 body.react-admin .gh-canvas-header {
     padding-top: 24px;
