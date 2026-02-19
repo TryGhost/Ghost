@@ -154,8 +154,6 @@ export default class OffersSegmentSelect extends Component {
         const options = yield [];
         const retentionOffersEnabled = Boolean(this.feature.labs?.retentionOffers);
 
-        // fetch all offers with count
-        // TODO: add `include: 'count.members` to query once API supports
         const offers = yield this.store.findAll('offer');
         this.offers = offers;
 
@@ -173,7 +171,6 @@ export default class OffersSegmentSelect extends Component {
                 offersGroup.options.push({
                     name: offer.name,
                     id: offer.id,
-                    count: offer.count?.members,
                     class: 'segment-offer-redemptions'
                 });
             });
