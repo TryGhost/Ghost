@@ -8,19 +8,17 @@ export const ALL_EVENT_TYPES = [
     {event: 'email_delivered_event', icon: 'filter-dropdown-email-received', name: 'Email received', group: 'emails'},
     {event: 'email_complaint_event', icon: 'filter-dropdown-email-flagged-as-spam', name: 'Email flagged as spam', group: 'emails'},
     {event: 'email_failed_event', icon: 'filter-dropdown-email-bounced', name: 'Email bounced', group: 'emails'},
-    {event: 'email_change_event', icon: 'filter-dropdown-email-address-changed', name: 'Email address changed', group: 'emails'}
+    {event: 'email_change_event', icon: 'filter-dropdown-email-address-changed', name: 'Email address changed', group: 'emails'},
+    {event: 'automated_email_sent_event', icon: 'filter-dropdown-email-received', name: 'Welcome email received', group: 'emails'},
+    {event: 'feedback_event', icon: 'filter-dropdown-feedback', name: 'Feedback', group: 'others'}
 ];
 
-export function getAvailableEventTypes(settings, feature, hiddenEvents = []) {
+export function getAvailableEventTypes(settings, hiddenEvents = []) {
     const extended = [...ALL_EVENT_TYPES];
 
-    if (feature.welcomeEmails) {
-        extended.push({event: 'automated_email_sent_event', icon: 'filter-dropdown-email-received', name: 'Welcome email received', group: 'emails'});
-    }
     if (settings.commentsEnabled !== 'off') {
         extended.push({event: 'comment_event', icon: 'filter-dropdown-comments', name: 'Comments', group: 'others'});
     }
-    extended.push({event: 'feedback_event', icon: 'filter-dropdown-feedback', name: 'Feedback', group: 'others'});
     if (settings.emailTrackClicks) {
         extended.push({event: 'click_event', icon: 'filter-dropdown-clicked-in-email', name: 'Clicked link in email', group: 'others'});
     }

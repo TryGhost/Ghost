@@ -3,15 +3,14 @@ import {describe, it} from 'mocha';
 import {expect} from 'chai';
 
 describe('Unit | Utility | event-type-utils', function () {
-    it('should return available event types with settings and features applied', function () {
+    it('should return available event types with settings applied', function () {
         const settings = {
             commentsEnabled: 'on',
             emailTrackClicks: true
         };
-        const feature = {};
         const hiddenEvents = [];
 
-        const eventTypes = getAvailableEventTypes(settings, feature, hiddenEvents);
+        const eventTypes = getAvailableEventTypes(settings, hiddenEvents);
 
         expect(eventTypes).to.deep.include({event: 'comment_event', icon: 'filter-dropdown-comments', name: 'Comments', group: 'others'});
         expect(eventTypes).to.deep.include({event: 'feedback_event', icon: 'filter-dropdown-feedback', name: 'Feedback', group: 'others'});
@@ -47,21 +46,16 @@ describe('Unit | Utility | event-type-utils', function () {
         expect(result).to.be.true;
     });
 
-    it('should return only base event types when no settings or features are enabled', function () {
+    it('should return base event types when no conditional settings are enabled', function () {
         const settings = {
             commentsEnabled: 'off',
             emailTrackClicks: false
         };
-        const feature = {};
         const hiddenEvents = [];
 
-        const eventTypes = getAvailableEventTypes(settings, feature, hiddenEvents);
+        const eventTypes = getAvailableEventTypes(settings, hiddenEvents);
 
-        // Feedback is always included now (audienceFeedback is GA)
-        const expectedTypes = [
-            ...ALL_EVENT_TYPES,
-            {event: 'feedback_event', icon: 'filter-dropdown-feedback', name: 'Feedback', group: 'others'}
-        ];
+        const expectedTypes = [...ALL_EVENT_TYPES];
         expect(eventTypes).to.deep.equal(expectedTypes);
     });
 });
