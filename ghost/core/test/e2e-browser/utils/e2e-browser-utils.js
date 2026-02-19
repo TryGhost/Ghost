@@ -353,8 +353,6 @@ const submitStripePayment = async (page) => {
 
     /**
      * Retry submit in case Stripe leaves checkout in a transient state.
-     * Note: if attempt 1 actually charged but redirect exceeds 25s, attempt 2
-     * could trigger a duplicate charge in non-test environments.
      */
     for (let attempt = 1; attempt <= 3; attempt++) {
         if (!page.url().includes('checkout.stripe.com')) {
