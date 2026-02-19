@@ -586,6 +586,7 @@ const ContentCalendar: React.FC = () => {
         timeZone: siteTimezone,
         order: calendarOrder
     }), [month, posts, siteTimezone, calendarOrder]);
+    const placedPostCount = useMemo(() => calendarDays.reduce((sum, day) => sum + day.posts.length, 0), [calendarDays]);
 
     return (
         <MainLayout>
@@ -646,7 +647,7 @@ const ContentCalendar: React.FC = () => {
                         ) : (
                             <>
                                 <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                                    {posts.length > 0 && (
+                                    {placedPostCount > 0 && (
                                         <div className="flex flex-wrap gap-2">
                                             {legendStatuses.map((status) => {
                                                 const style = POST_STATUS_STYLES[status];
@@ -664,7 +665,7 @@ const ContentCalendar: React.FC = () => {
                                     )}
                                     <MonthNavigation monthLabel={monthLabel} monthOffset={monthOffset} setMonthOffset={setMonthOffset} />
                                 </div>
-                                {posts.length === 0 ? (
+                                {placedPostCount === 0 ? (
                                     <div className="flex min-h-[400px] items-center justify-center">
                                         <EmptyIndicator
                                             actions={hasActiveFilters ? (
