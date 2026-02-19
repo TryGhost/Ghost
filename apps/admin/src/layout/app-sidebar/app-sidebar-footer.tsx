@@ -8,21 +8,16 @@ import {
 } from "@tryghost/shade"
 import WhatsNewDialog from "@/whats-new/components/whats-new-dialog";
 import { UserMenu } from "./user-menu";
-import { useUpgradeStatus } from "./hooks/use-upgrade-status";
-import { useWhatsNewStatus } from "./hooks/use-whats-new-status";
-import { useActiveThemeErrors } from "./hooks/use-theme-errors";
+import { useSidebarBannerState } from "./hooks/use-sidebar-banner-state";
 
 function AppSidebarFooter({ ...props }: React.ComponentProps<typeof SidebarFooter>) {
     const [isWhatsNewDialogOpen, setIsWhatsNewDialogOpen] = useState(false);
-    const { showUpgradeBanner } = useUpgradeStatus();
-    const { showWhatsNewBanner } = useWhatsNewStatus();
-    const {hasErrors} = useActiveThemeErrors();
-    const banner = showUpgradeBanner || showWhatsNewBanner || hasErrors;
+    const {hasBanner} = useSidebarBannerState();
 
     return (
         <>
             <SidebarFooter {...props}>
-                <SidebarGroup className={banner ? 'pt-3' : ''}>
+                <SidebarGroup className={hasBanner ? 'pt-3' : ''}>
                     <SidebarMenu>
                         <SidebarMenuItem>
                             <UserMenu onOpenWhatsNew={() => setIsWhatsNewDialogOpen(true)} />
