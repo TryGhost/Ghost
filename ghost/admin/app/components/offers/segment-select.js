@@ -156,6 +156,7 @@ export default class OffersSegmentSelect extends Component {
     @task
     *fetchOptionsTask() {
         const options = yield [];
+        const retentionOffersEnabled = Boolean(this.feature.labs?.retentionOffers);
 
         // fetch all offers with count
         // TODO: add `include: 'count.members` to query once API supports
@@ -169,7 +170,7 @@ export default class OffersSegmentSelect extends Component {
             };
 
             offers.forEach((offer) => {
-                if (this.getOfferRedemptionType(offer) === 'retention') {
+                if (retentionOffersEnabled && this.getOfferRedemptionType(offer) === 'retention') {
                     return;
                 }
 
@@ -181,7 +182,9 @@ export default class OffersSegmentSelect extends Component {
                 });
             });
 
-            offersGroup.options.push(...this.getRetentionOptions(offers));
+            if (retentionOffersEnabled) {
+                offersGroup.options.push(...this.getRetentionOptions(offers));
+            }
 
             if (offersGroup.options.length > 0) {
                 options.push(offersGroup);
