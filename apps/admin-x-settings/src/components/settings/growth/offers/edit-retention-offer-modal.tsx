@@ -177,11 +177,10 @@ const RetentionOfferSidebar: React.FC<{
     clearError: (field: string) => void;
     errors: ErrorMessages;
     cadence: 'monthly' | 'yearly';
-    createdAt?: string;
     lastRedeemed?: string | null;
     membersFilterUrl?: string | null;
     redemptions: number;
-}> = ({formState, updateForm, clearError, errors, cadence, createdAt, lastRedeemed, membersFilterUrl, redemptions}) => {
+}> = ({formState, updateForm, clearError, errors, cadence, lastRedeemed, membersFilterUrl, redemptions}) => {
     const availableDurationOptions = cadence === 'yearly'
         ? durationOptions.filter(option => option.value !== 'repeating')
         : durationOptions;
@@ -191,10 +190,6 @@ const RetentionOfferSidebar: React.FC<{
             <Form className='grow'>
                 <section>
                     <div className='flex flex-col gap-5 rounded-md border border-grey-300 p-4 pb-3.5 dark:border-grey-800'>
-                        <div className='flex flex-col gap-1.5'>
-                            <span className='text-xs font-semibold leading-none text-grey-700'>Created on</span>
-                            <span>{createdAt ? formatOfferTimestamp(createdAt) : '-'}</span>
-                        </div>
                         <div className='flex flex-col gap-1.5'>
                             <div className='flex items-end justify-between'>
                                 <div className='flex flex-col gap-5'>
@@ -383,14 +378,6 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
     const retentionOfferIdsByCadence = useMemo(() => {
         return retentionOffersByCadence.map(offer => offer.id);
     }, [retentionOffersByCadence]);
-    const firstRetentionOfferCreatedAt = useMemo(() => {
-        return retentionOffersByCadence
-            .map(offer => offer.created_at)
-            .filter((createdAt): createdAt is string => !!createdAt)
-            .sort((left, right) => {
-                return new Date(left).getTime() - new Date(right).getTime();
-            })[0];
-    }, [retentionOffersByCadence]);
     const latestRetentionRedemption = useMemo(() => {
         return retentionOffersByCadence
             .map(offer => offer.last_redeemed)
@@ -571,7 +558,6 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
         <RetentionOfferSidebar
             cadence={cadence}
             clearError={clearError}
-            createdAt={firstRetentionOfferCreatedAt}
             errors={errors}
             formState={formState}
             lastRedeemed={latestRetentionRedemption}

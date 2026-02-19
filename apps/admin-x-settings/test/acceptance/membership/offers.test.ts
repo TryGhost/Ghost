@@ -492,10 +492,7 @@ test.describe('Offers Modal', () => {
             })});
 
             const {modal, retentionModal: monthlyModal} = await openRetentionModal(page, 'Monthly retention');
-            const expectedMonthlyCreatedOn = await formatOfferDateForBrowser(page, '2026-01-19T12:00:00.000Z');
             const expectedMonthlyLastRedemption = await formatOfferDateForBrowser(page, '2026-02-19T12:00:00.000Z');
-            await expect(monthlyModal).toContainText('Created on');
-            await expect(monthlyModal).toContainText(expectedMonthlyCreatedOn);
             await expect(monthlyModal).toContainText('11 redemptions');
             await expect(monthlyModal).toContainText('Last redemption');
             await expect(monthlyModal).toContainText(expectedMonthlyLastRedemption);
@@ -510,11 +507,8 @@ test.describe('Offers Modal', () => {
             await modal.getByText('Yearly retention').click();
 
             const yearlyModal = page.getByTestId('retention-offer-modal');
-            const expectedYearlyCreatedOn = await formatOfferDateForBrowser(page, '2026-01-25T12:00:00.000Z');
             const expectedYearlyLastRedemption = await formatOfferDateForBrowser(page, '2026-02-18T12:00:00.000Z');
             await expect(yearlyModal).toBeVisible();
-            await expect(yearlyModal).toContainText('Created on');
-            await expect(yearlyModal).toContainText(expectedYearlyCreatedOn);
             await expect(yearlyModal).toContainText('9 redemptions');
             await expect(yearlyModal).toContainText('Last redemption');
             await expect(yearlyModal).toContainText(expectedYearlyLastRedemption);
