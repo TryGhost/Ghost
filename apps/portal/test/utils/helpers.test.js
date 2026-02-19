@@ -227,6 +227,24 @@ describe('Helpers - ', () => {
             expect(updatedPrice).toBe(6.69);
         });
 
+        // Edge-case: Stripe applies the rounding per invoice line item, i.e. on the discount line, not on the final invoice amount
+        //
+        // Example:
+        // - Original amount: 101 ($1.01)
+        // - Percent amount: 50 (50%)
+        // - Discount amount should be rounded: 101 * 50/100 = 50.5 -> Rounded to 51 ($0.51)
+        // - Final amount: 101 - 51 = $0.50
+        //
+        // Instead, if we apply rounding to the final amount, we end up with a 1-cent drift: 101 - (101 * 50/100) = 101 - 50.5 = 50.5 -> Rounded to 51 ($0.51)
+        test('rounds 50% off $1.01 to $0.50', () => {
+            const updatedPrice = getUpdatedOfferPrice({
+                offer: {type: 'percent', amount: 50},
+                price: {amount: 101, currency: 'usd'}
+            });
+
+            expect(updatedPrice).toBe(0.50);
+        });
+
         test('returns exact discounted amount when no rounding is needed', () => {
             const updatedPrice = getUpdatedOfferPrice({
                 offer: {type: 'percent', amount: 50},
