@@ -357,6 +357,10 @@ const submitStripePayment = async (page) => {
      * could trigger a duplicate charge in non-test environments.
      */
     for (let attempt = 1; attempt <= 3; attempt++) {
+        if (!page.url().includes('checkout.stripe.com')) {
+            return;
+        }
+
         try {
             // Wait for submit button complete
             await page.waitForSelector('[data-testid="hosted-payment-submit-button"].SubmitButton--complete', {
