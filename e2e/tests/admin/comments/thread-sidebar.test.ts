@@ -14,6 +14,8 @@ test.describe('Ghost Admin - Thread Sidebar', () => {
     let postFactory: PostFactory;
     let memberFactory: MemberFactory;
     let commentFactory: CommentFactory;
+    let post: Awaited<ReturnType<PostFactory['create']>>;
+    let member: Awaited<ReturnType<MemberFactory['create']>>;
 
     test.beforeEach(async ({page}) => {
         postFactory = createPostFactory(page.request);
@@ -21,31 +23,32 @@ test.describe('Ghost Admin - Thread Sidebar', () => {
         commentFactory = createCommentFactory(page.request);
 
         const settingsService = new SettingsService(page.request);
-        await settingsService.setCommentsEnabled('all');
+        [post, member] = await Promise.all([
+            postFactory.create({status: 'published'}),
+            memberFactory.create(),
+            settingsService.setCommentsEnabled('all')
+        ]);
     });
 
     test.describe('thread pagination', () => {
         test.use({labs: {commentModeration: true}});
 
         test('loads more replies when clicking load more button', async ({page}) => {
-            const post = await postFactory.create({status: 'published'});
-            const member = await memberFactory.create();
-
             const rootComment = await commentFactory.create({
                 post_id: post.id,
                 member_id: member.id,
                 html: '<p>Root comment for pagination test</p>'
             });
 
-            // Create 5 replies
-            for (let i = 1; i <= 5; i++) {
-                await commentFactory.create({
+            // Create 5 replies in parallel (order doesn't matter for this test)
+            await Promise.all(
+                Array.from({length: 5}, (_, i) => commentFactory.create({
                     post_id: post.id,
                     member_id: member.id,
                     parent_id: rootComment.id,
-                    html: `<p>Reply number ${i}</p>`
-                });
-            }
+                    html: `<p>Reply number ${i + 1}</p>`
+                }))
+            );
 
             // Intercept API to set a low limit (3) to trigger pagination
             await page.route('**/ghost/api/admin/comments/**', async (route) => {
@@ -63,15 +66,13 @@ test.describe('Ghost Admin - Thread Sidebar', () => {
             await page.goto(`/ghost/#/comments?thread=is:${rootComment.id}`);
             await commentsPage.waitForThreadSidebar();
 
-            // Should see the root comment and first 3 replies
+            // Should see the root comment
             await expect(commentsPage.threadSidebar.getByText('Root comment for pagination test')).toBeVisible();
-            await expect(commentsPage.threadSidebar.getByText('Reply number 1')).toBeVisible();
-            await expect(commentsPage.threadSidebar.getByText('Reply number 2')).toBeVisible();
-            await expect(commentsPage.threadSidebar.getByText('Reply number 3')).toBeVisible();
 
-            // Reply 4 and 5 should not be visible yet
-            await expect(commentsPage.threadSidebar.getByText('Reply number 4')).toBeHidden();
-            await expect(commentsPage.threadSidebar.getByText('Reply number 5')).toBeHidden();
+            // Should see exactly 3 replies initially (not all 5)
+            const threadRows = commentsPage.threadSidebar.getByTestId(/^comment-thread-row-/);
+            // 4 = 1 root comment + 3 replies
+            await expect(threadRows).toHaveCount(4);
 
             // Load more button should be visible
             const loadMoreButton = commentsPage.threadSidebar.getByRole('button', {name: 'Load more replies'});
@@ -80,9 +81,8 @@ test.describe('Ghost Admin - Thread Sidebar', () => {
             // Click load more
             await loadMoreButton.click();
 
-            // Now replies 4 and 5 should be visible
-            await expect(commentsPage.threadSidebar.getByText('Reply number 4')).toBeVisible();
-            await expect(commentsPage.threadSidebar.getByText('Reply number 5')).toBeVisible();
+            // Now all 5 replies should be visible (6 total = 1 root + 5 replies)
+            await expect(threadRows).toHaveCount(6);
 
             // Load more button should be hidden now (no more pages)
             await expect(loadMoreButton).toBeHidden();
@@ -93,9 +93,6 @@ test.describe('Ghost Admin - Thread Sidebar', () => {
         test.use({labs: {commentModeration: true}});
 
         test('opening thread for root comment shows root and direct replies', async ({page}) => {
-            const post = await postFactory.create({status: 'published'});
-            const member = await memberFactory.create();
-
             const rootComment = await commentFactory.create({
                 post_id: post.id,
                 member_id: member.id,
@@ -117,9 +114,6 @@ test.describe('Ghost Admin - Thread Sidebar', () => {
         });
 
         test('opening thread for reply comment shows reply and its children', async ({page}) => {
-            const post = await postFactory.create({status: 'published'});
-            const member = await memberFactory.create();
-
             const rootComment = await commentFactory.create({
                 post_id: post.id,
                 member_id: member.id,
@@ -148,9 +142,6 @@ test.describe('Ghost Admin - Thread Sidebar', () => {
         });
 
         test('replied to link in main list opens thread focused on that comment', async ({page}) => {
-            const post = await postFactory.create({status: 'published'});
-            const member = await memberFactory.create();
-
             const rootComment = await commentFactory.create({
                 post_id: post.id,
                 member_id: member.id,
@@ -177,9 +168,6 @@ test.describe('Ghost Admin - Thread Sidebar', () => {
         });
 
         test('clicking replies metric in main list opens thread for that comment', async ({page}) => {
-            const post = await postFactory.create({status: 'published'});
-            const member = await memberFactory.create();
-
             const rootComment = await commentFactory.create({
                 post_id: post.id,
                 member_id: member.id,
@@ -196,7 +184,10 @@ test.describe('Ghost Admin - Thread Sidebar', () => {
             await commentsPage.goto();
             await commentsPage.waitForComments();
 
-            const commentRow = commentsPage.getCommentRowByText('Comment with replies');
+            // Filter by paragraph content to avoid matching the reply row's "Replied to:" link
+            const commentRow = commentsPage.commentRows.filter({
+                has: page.getByRole('paragraph').filter({hasText: 'Comment with replies'})
+            });
             await commentsPage.openThread(commentRow);
 
             expect(page.url()).toContain(`thread=is%3A${rootComment.id}`);
@@ -205,9 +196,6 @@ test.describe('Ghost Admin - Thread Sidebar', () => {
         });
 
         test('clicking replies metric in thread navigates to that reply', async ({page}) => {
-            const post = await postFactory.create({status: 'published'});
-            const member = await memberFactory.create();
-
             const rootComment = await commentFactory.create({
                 post_id: post.id,
                 member_id: member.id,
@@ -243,9 +231,6 @@ test.describe('Ghost Admin - Thread Sidebar', () => {
         });
 
         test('shows replied to context for selected reply comment in thread', async ({page}) => {
-            const post = await postFactory.create({status: 'published'});
-            const member = await memberFactory.create();
-
             const rootComment = await commentFactory.create({
                 post_id: post.id,
                 member_id: member.id,
@@ -268,9 +253,6 @@ test.describe('Ghost Admin - Thread Sidebar', () => {
         });
 
         test('hides replied to context for direct children in thread', async ({page}) => {
-            const post = await postFactory.create({status: 'published'});
-            const member = await memberFactory.create();
-
             const rootComment = await commentFactory.create({
                 post_id: post.id,
                 member_id: member.id,
