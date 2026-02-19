@@ -688,7 +688,7 @@ describe('{{#get}} helper', function () {
             assert(key.includes('tags,authors'));
             assert(key.includes('title,slug'));
             assert(key.includes('html'));
-            assert(key.includes('2'));
+            assert(/"page"\s*:\s*2/.test(key));
             assert(key.includes('published_at desc'));
             assert(key.includes('123'));
             assert(key.includes('my-post'));
@@ -714,7 +714,7 @@ describe('{{#get}} helper', function () {
 
         it('should make duplicate API calls when deduplication is disabled', async function () {
             // Deduplication disabled by default
-            locals = {root: {_locals: {}}, _queryCache: {}};
+            locals = {root: {_locals: {}}, _queryCache: new Map()};
 
             // First call
             await get.call(
