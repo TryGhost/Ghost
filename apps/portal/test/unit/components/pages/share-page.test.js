@@ -38,7 +38,8 @@ describe('SharePage', () => {
         const pageData = {
             url: 'https://example.com/post?ref=test',
             title: 'Example post title',
-            image: 'https://example.com/post.jpg'
+            image: 'https://example.com/post.jpg',
+            excerpt: 'Example post excerpt'
         };
 
         const {getByRole, getByText, queryByText, getByTestId} = setup({pageData});
@@ -46,6 +47,7 @@ describe('SharePage', () => {
         expect(getByText('Share')).toBeInTheDocument();
         expect(queryByText('Share this post')).not.toBeInTheDocument();
         expect(getByText('Example post title')).toBeInTheDocument();
+        expect(getByText('Example post excerpt')).toBeInTheDocument();
         expect(getByTestId('share-preview-image')).toHaveAttribute('src', 'https://example.com/post.jpg');
 
         const twitterLink = getByRole('link', {name: 'X (Twitter)'});
@@ -88,6 +90,13 @@ describe('SharePage', () => {
         addHeadTag({
             tagName: 'meta',
             attrs: {
+                property: 'og:description',
+                content: 'OG description'
+            }
+        });
+        addHeadTag({
+            tagName: 'meta',
+            attrs: {
                 property: 'og:image',
                 content: 'https://canonical.example/og-image.jpg'
             }
@@ -102,7 +111,23 @@ describe('SharePage', () => {
         expect(twitterUrl.searchParams.get('url')).toBe('https://canonical.example/post');
         expect(twitterUrl.searchParams.get('text')).toBe('OG title');
         expect(getByText('OG title')).toBeInTheDocument();
+        expect(getByText('OG description')).toBeInTheDocument();
         expect(getByTestId('share-preview-image')).toHaveAttribute('src', 'https://canonical.example/og-image.jpg');
+    });
+
+    test('falls back to meta description when og description is missing', () => {
+        addHeadTag({
+            tagName: 'meta',
+            attrs: {
+                name: 'description',
+                content: 'Meta description fallback'
+            }
+        });
+        document.title = 'Document fallback title';
+
+        const {getByText} = setup({pageData: {}});
+
+        expect(getByText('Meta description fallback')).toBeInTheDocument();
     });
 
     test('prefers pageData values over DOM metadata when both are present', () => {
