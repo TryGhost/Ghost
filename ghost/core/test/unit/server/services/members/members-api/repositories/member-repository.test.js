@@ -1674,6 +1674,8 @@ describe('MemberRepository', function () {
 
             // The free welcome email should NOT be sent when stripeCustomer is present
             sinon.assert.notCalled(Outbox.add);
+            sinon.assert.notCalled(AutomatedEmail.findOne);
+            sinon.assert.notCalled(Member.transaction);
         });
     });
 

@@ -356,11 +356,16 @@ module.exports = class MemberRepository {
         const memberAddOptions = {...(options || {}), withRelated};
         let member;
 
-        if (WELCOME_EMAIL_SOURCES.includes(source)) {
-            const freeWelcomeEmail = this._AutomatedEmail ? await this._AutomatedEmail.findOne({slug: MEMBER_WELCOME_EMAIL_SLUGS.free}) : null;
-            const isFreeWelcomeEmailActive = freeWelcomeEmail && freeWelcomeEmail.get('lexical') && freeWelcomeEmail.get('status') === 'active';
-            const isFreeSignup = !stripeCustomer;
+        const isFreeSignup = !stripeCustomer;
+        const shouldCheckFreeWelcomeEmail = WELCOME_EMAIL_SOURCES.includes(source) && isFreeSignup;
+        let isFreeWelcomeEmailActive = false;
 
+        if (shouldCheckFreeWelcomeEmail) {
+            const freeWelcomeEmail = this._AutomatedEmail ? await this._AutomatedEmail.findOne({slug: MEMBER_WELCOME_EMAIL_SLUGS.free}) : null;
+            isFreeWelcomeEmailActive = freeWelcomeEmail && freeWelcomeEmail.get('lexical') && freeWelcomeEmail.get('status') === 'active';
+        }
+
+        if (isFreeWelcomeEmailActive && isFreeSignup) {
             const runMemberCreation = async (transacting) => {
                 const newMember = await this._Member.add({
                     ...memberData,
@@ -368,26 +373,21 @@ module.exports = class MemberRepository {
                     labels
                 }, {...memberAddOptions, transacting});
 
-                // Only send the free welcome email if:
-                // 1. The free welcome email is active
-                // 2. The member is not signing up for a paid subscription (no stripeCustomer)
-                if (isFreeWelcomeEmailActive && isFreeSignup) {
-                    const timestamp = eventData.created_at || newMember.get('created_at');
+                const timestamp = eventData.created_at || newMember.get('created_at');
 
-                    await this._Outbox.add({
-                        id: ObjectId().toHexString(),
-                        event_type: MemberCreatedEvent.name,
-                        payload: JSON.stringify({
-                            memberId: newMember.id,
-                            uuid: newMember.get('uuid'),
-                            email: newMember.get('email'),
-                            name: newMember.get('name'),
-                            source,
-                            timestamp,
-                            status: 'free'
-                        })
-                    }, {transacting});
-                }
+                await this._Outbox.add({
+                    id: ObjectId().toHexString(),
+                    event_type: MemberCreatedEvent.name,
+                    payload: JSON.stringify({
+                        memberId: newMember.id,
+                        uuid: newMember.get('uuid'),
+                        email: newMember.get('email'),
+                        name: newMember.get('name'),
+                        source,
+                        timestamp,
+                        status: 'free'
+                    })
+                }, {transacting});
 
                 return newMember;
             };
@@ -398,9 +398,7 @@ module.exports = class MemberRepository {
                 member = await this._Member.transaction(runMemberCreation);
             }
 
-            if (isFreeWelcomeEmailActive && isFreeSignup) {
-                this.dispatchEvent(StartOutboxProcessingEvent.create({memberId: member.id}), memberAddOptions);
-            }
+            this.dispatchEvent(StartOutboxProcessingEvent.create({memberId: member.id}), memberAddOptions);
         } else {
             member = await this._Member.add({
                 ...memberData,
