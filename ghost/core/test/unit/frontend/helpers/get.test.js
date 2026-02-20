@@ -666,6 +666,14 @@ describe('{{#get}} helper', function () {
             assert(key.length > 0);
         });
 
+        it('should return null when options are not JSON serializable', function () {
+            const circularOptions = {filter: 'featured:true'};
+            circularOptions.self = circularOptions;
+
+            const key = generateCacheKey('posts', circularOptions);
+            assert.equal(key, null);
+        });
+
         it('should include all relevant query parameters', function () {
             const apiOptions = {
                 filter: 'featured:true',

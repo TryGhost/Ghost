@@ -67,14 +67,19 @@ const pathAliases = {
  *
  * @param {string} resource The resource type (posts, tags, etc.)
  * @param {GetHelperAPIOptions} apiOptions The API options
- * @returns {string} Deterministic cache key
+ * @returns {string|null} Deterministic cache key, or null when options are not serializable
  */
 function generateCacheKey(resource, apiOptions) {
     const sortedOptions = Object.fromEntries(
         Object.entries(apiOptions).sort(([a], [b]) => a.localeCompare(b))
     );
 
-    return `${resource}|${JSON.stringify(sortedOptions)}`;
+    try {
+        return `${resource}|${JSON.stringify(sortedOptions)}`;
+    } catch (err) {
+        // If key generation fails, skip deduplication for this invocation.
+        return null;
+    }
 }
 
 /**
@@ -420,7 +425,7 @@ module.exports = async function get(resource, options) {
     if (queryCache) {
         cacheKey = generateCacheKey(resource, apiOptions);
 
-        if (queryCache.has(cacheKey)) {
+        if (cacheKey && queryCache.has(cacheKey)) {
             try {
                 // Await cached promise (handles both resolved and in-flight)
                 const cachedResponse = await queryCache.get(cacheKey);
