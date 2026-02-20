@@ -791,28 +791,33 @@ describe('{{#get}} helper', function () {
             configUtils.set('optimization:getHelper:deduplication', true);
             locals = {root: {_locals: {}}, _queryCache: new Map()};
 
-            // Make a slow browse stub
+            let resolveBrowse;
             browseStub.callsFake(() => {
                 return new Promise((resolve) => {
-                    setTimeout(() => {
-                        resolve({posts: [{id: 'post1'}], meta: meta});
-                    }, 10);
+                    resolveBrowse = resolve;
                 });
             });
 
-            // Make concurrent calls
-            await Promise.all([
-                get.call(
-                    {},
-                    'posts',
-                    {hash: {filter: 'featured:true'}, data: locals, fn: fn, inverse: inverse}
-                ),
-                get.call(
-                    {},
-                    'posts',
-                    {hash: {filter: 'featured:true'}, data: locals, fn: fn, inverse: inverse}
-                )
-            ]);
+            const firstCall = get.call(
+                {},
+                'posts',
+                {hash: {filter: 'featured:true'}, data: locals, fn: fn, inverse: inverse}
+            );
+            const secondCall = get.call(
+                {},
+                'posts',
+                {hash: {filter: 'featured:true'}, data: locals, fn: fn, inverse: inverse}
+            );
+
+            // Verify deduplication while both calls are in-flight.
+            assert.equal(browseStub.callCount, 1);
+            assert.equal(typeof resolveBrowse, 'function');
+
+            if (!resolveBrowse) {
+                throw new Error('Expected browse resolver to be set');
+            }
+            resolveBrowse({posts: [{id: 'post1'}], meta: meta});
+            await Promise.all([firstCall, secondCall]);
 
             // Should only make one API call even for concurrent requests
             assert.equal(browseStub.callCount, 1);
