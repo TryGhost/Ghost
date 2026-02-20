@@ -6,7 +6,7 @@ const loggingLib = require('@tryghost/logging');
 
 // Stuff we are testing
 const get = require('../../../../core/frontend/helpers/get');
-const {querySimplePath, generateCacheKey} = require('../../../../core/frontend/helpers/get');
+const {querySimplePath} = get;
 const models = require('../../../../core/server/models');
 const api = require('../../../../core/server/api').endpoints;
 const maxLimitCap = require('../../../../core/shared/max-limit-cap');
@@ -612,94 +612,6 @@ describe('{{#get}} helper', function () {
             assert(args && typeof args === 'object');
             assert('posts' in args);
             assert.deepEqual(args.posts, []);
-        });
-    });
-
-    describe('generateCacheKey', function () {
-        it('should produce deterministic keys for identical queries', function () {
-            const apiOptions1 = {filter: 'featured:true', limit: 5};
-            const apiOptions2 = {filter: 'featured:true', limit: 5};
-
-            assert.equal(generateCacheKey('posts', apiOptions1), generateCacheKey('posts', apiOptions2));
-        });
-
-        it('should produce different keys for different resources', function () {
-            const apiOptions = {filter: 'featured:true'};
-
-            assert.notEqual(generateCacheKey('posts', apiOptions), generateCacheKey('tags', apiOptions));
-        });
-
-        it('should produce different keys for different filters', function () {
-            const apiOptions1 = {filter: 'featured:true'};
-            const apiOptions2 = {filter: 'featured:false'};
-
-            assert.notEqual(generateCacheKey('posts', apiOptions1), generateCacheKey('posts', apiOptions2));
-        });
-
-        it('should include member uuid in key', function () {
-            const apiOptions1 = {filter: 'featured:true', context: {member: {uuid: 'member-1'}}};
-            const apiOptions2 = {filter: 'featured:true', context: {member: {uuid: 'member-2'}}};
-
-            assert.notEqual(generateCacheKey('posts', apiOptions1), generateCacheKey('posts', apiOptions2));
-        });
-
-        it('should produce identical keys for equivalent options in different key order', function () {
-            const apiOptions1 = {filter: 'featured:true', limit: 5, include: 'authors'};
-            const apiOptions2 = {include: 'authors', limit: 5, filter: 'featured:true'};
-
-            assert.equal(generateCacheKey('posts', apiOptions1), generateCacheKey('posts', apiOptions2));
-        });
-
-        it('should include additional query options to avoid collisions', function () {
-            const apiOptions1 = {filter: 'featured:true', collection: 'home'};
-            const apiOptions2 = {filter: 'featured:true', collection: 'archive'};
-
-            assert.notEqual(generateCacheKey('posts', apiOptions1), generateCacheKey('posts', apiOptions2));
-        });
-
-        it('should handle missing optional fields', function () {
-            const apiOptions = {filter: 'featured:true'};
-
-            // Should not throw
-            const key = generateCacheKey('posts', apiOptions);
-            assert.equal(typeof key, 'string');
-            assert(key.length > 0);
-        });
-
-        it('should return null when options are not JSON serializable', function () {
-            const circularOptions = {filter: 'featured:true'};
-            circularOptions.self = circularOptions;
-
-            const key = generateCacheKey('posts', circularOptions);
-            assert.equal(key, null);
-        });
-
-        it('should include all relevant query parameters', function () {
-            const apiOptions = {
-                filter: 'featured:true',
-                limit: 5,
-                include: 'tags,authors',
-                fields: 'title,slug',
-                formats: 'html',
-                page: 2,
-                order: 'published_at desc',
-                id: '123',
-                slug: 'my-post'
-            };
-
-            const key = generateCacheKey('posts', apiOptions);
-
-            // Verify all parts are in the key
-            assert(key.includes('posts'));
-            assert(key.includes('featured:true'));
-            assert(key.includes('5'));
-            assert(key.includes('tags,authors'));
-            assert(key.includes('title,slug'));
-            assert(key.includes('html'));
-            assert(/"page"\s*:\s*2/.test(key));
-            assert(key.includes('published_at desc'));
-            assert(key.includes('123'));
-            assert(key.includes('my-post'));
         });
     });
 

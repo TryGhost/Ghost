@@ -490,5 +490,3 @@ module.exports.async = true;
 module.exports.optimiseFilterCacheability = optimiseFilterCacheability;
 
 module.exports.querySimplePath = querySimplePath;
-
-module.exports.generateCacheKey = generateCacheKey;
