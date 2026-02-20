@@ -420,6 +420,7 @@ module.exports = async function get(resource, options) {
     // Per-request deduplication: check if we have a cached result for this query
     const queryCache = options.data?._queryCache instanceof Map ? options.data._queryCache : null;
     let cacheKey;
+    let cachedResponse;
 
     if (queryCache) {
         cacheKey = generateCacheKey(resource, apiOptions);
@@ -427,9 +428,7 @@ module.exports = async function get(resource, options) {
         if (cacheKey && queryCache.has(cacheKey)) {
             try {
                 // Await cached promise (handles both resolved and in-flight)
-                const cachedResponse = await queryCache.get(cacheKey);
-                returnedRowsCount = cachedResponse[resource] && cachedResponse[resource].length;
-                return renderResponse(cachedResponse, resource, options, data);
+                cachedResponse = await queryCache.get(cacheKey);
             } catch (error) {
                 // Cached promise rejected - fall through to make new request
                 queryCache.delete(cacheKey);
@@ -438,6 +437,11 @@ module.exports = async function get(resource, options) {
     }
 
     try {
+        if (cachedResponse) {
+            returnedRowsCount = cachedResponse[resource] && cachedResponse[resource].length;
+            return renderResponse(cachedResponse, resource, options, data);
+        }
+
         // Store promise before awaiting to dedupe concurrent in-flight requests
         const responsePromise = makeAPICall(resource, controllerName, action, apiOptions);
 
@@ -452,8 +456,9 @@ module.exports = async function get(resource, options) {
 
         return renderResponse(response, resource, options, data);
     } catch (error) {
-        // Remove failed request from cache so retries can try again
-        if (queryCache && cacheKey) {
+        // Remove failed API request from cache so retries can try again.
+        // Do not evict cache when rendering a cached response fails.
+        if (!cachedResponse && queryCache && cacheKey) {
             queryCache.delete(cacheKey);
         }
         logging.error(error);
