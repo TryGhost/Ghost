@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const shared = require('../../../');
 
 describe('serializers/input/all', function () {
@@ -21,19 +21,19 @@ describe('serializers/input/all', function () {
 
             shared.serializers.input.all.all(apiConfig, frame);
 
-            should.exist(frame.original.include);
-            should.exist(frame.original.fields);
-            should.exist(frame.original.formats);
+            assert.ok(frame.original.include);
+            assert.ok(frame.original.fields);
+            assert.ok(frame.original.formats);
 
-            should.not.exist(frame.options.include);
-            should.not.exist(frame.options.fields);
-            should.exist(frame.options.formats);
-            should.exist(frame.options.columns);
-            should.exist(frame.options.withRelated);
+            assert.equal(frame.options.include, undefined);
+            assert.equal(frame.options.fields, undefined);
+            assert.ok(frame.options.formats);
+            assert.ok(frame.options.columns);
+            assert.ok(frame.options.withRelated);
 
-            frame.options.withRelated.should.eql(['tags']);
-            frame.options.columns.should.eql(['id','status','html']);
-            frame.options.formats.should.eql(['html']);
+            assert.deepEqual(frame.options.withRelated, ['tags']);
+            assert.deepEqual(frame.options.columns, ['id', 'status', 'html']);
+            assert.deepEqual(frame.options.formats, ['html']);
         });
 
         describe('extra allowed internal options', function () {
@@ -52,9 +52,9 @@ describe('serializers/input/all', function () {
 
                 shared.serializers.input.all.all(apiConfig, frame);
 
-                should.exist(frame.options.transacting);
-                should.exist(frame.options.forUpdate);
-                should.exist(frame.options.context);
+                assert.ok(frame.options.transacting);
+                assert.ok(frame.options.forUpdate);
+                assert.ok(frame.options.context);
             });
 
             it('no internal access', function () {
@@ -72,9 +72,9 @@ describe('serializers/input/all', function () {
 
                 shared.serializers.input.all.all(apiConfig, frame);
 
-                should.not.exist(frame.options.transacting);
-                should.not.exist(frame.options.forUpdate);
-                should.exist(frame.options.context);
+                assert.equal(frame.options.transacting, undefined);
+                assert.equal(frame.options.forUpdate, undefined);
+                assert.ok(frame.options.context);
             });
         });
     });

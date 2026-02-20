@@ -1,10 +1,10 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const shared = require('../');
 
 describe('Frame', function () {
     it('constructor', function () {
         const frame = new shared.Frame();
-        Object.keys(frame).should.eql([
+        assert.deepEqual(Object.keys(frame), [
             'original',
             'options',
             'data',
@@ -31,13 +31,13 @@ describe('Frame', function () {
 
             frame.configure({});
 
-            should.exist(frame.options.context.user);
-            should.not.exist(frame.options.include);
-            should.not.exist(frame.options.filter);
-            should.not.exist(frame.options.id);
-            should.not.exist(frame.options.soup);
+            assert.ok(frame.options.context.user);
+            assert.equal(frame.options.include, undefined);
+            assert.equal(frame.options.filter, undefined);
+            assert.equal(frame.options.id, undefined);
+            assert.equal(frame.options.soup, undefined);
 
-            should.exist(frame.data.posts);
+            assert.ok(frame.data.posts);
         });
 
         it('transform with query', function () {
@@ -54,13 +54,13 @@ describe('Frame', function () {
                 options: ['include', 'filter', 'id']
             });
 
-            should.exist(frame.options.context.user);
-            should.exist(frame.options.include);
-            should.exist(frame.options.filter);
-            should.exist(frame.options.id);
-            should.not.exist(frame.options.soup);
+            assert.ok(frame.options.context.user);
+            assert.ok(frame.options.include);
+            assert.ok(frame.options.filter);
+            assert.ok(frame.options.id);
+            assert.equal(frame.options.soup, undefined);
 
-            should.exist(frame.data.posts);
+            assert.ok(frame.data.posts);
         });
 
         it('transform', function () {
@@ -77,8 +77,8 @@ describe('Frame', function () {
                 options: ['include', 'filter', 'slug']
             });
 
-            should.exist(frame.options.context.user);
-            should.exist(frame.options.slug);
+            assert.ok(frame.options.context.user);
+            assert.ok(frame.options.slug);
         });
 
         it('transform with data', function () {
@@ -96,9 +96,47 @@ describe('Frame', function () {
                 data: ['id']
             });
 
-            should.exist(frame.options.context.user);
-            should.not.exist(frame.options.id);
-            should.exist(frame.data.id);
+            assert.ok(frame.options.context.user);
+            assert.equal(frame.options.id, undefined);
+            assert.ok(frame.data.id);
+        });
+
+        it('supports options/data selectors as functions', function () {
+            const original = {
+                context: {user: 'id'},
+                query: {include: 'tags'},
+                params: {slug: 'abc'},
+                options: {id: 'id'}
+            };
+
+            const frame = new shared.Frame(original);
+
+            frame.configure({
+                options() {
+                    return ['include', 'slug'];
+                },
+                data() {
+                    return ['slug', 'id'];
+                }
+            });
+
+            assert.equal(frame.options.include, 'tags');
+            assert.equal(frame.options.slug, 'abc');
+            assert.equal(frame.data.slug, 'abc');
+            assert.equal(frame.data.id, 'id');
+        });
+    });
+
+    describe('headers', function () {
+        it('sets and returns copied headers', function () {
+            const frame = new shared.Frame();
+            frame.setHeader('X-Test', '1');
+
+            const headers = frame.getHeaders();
+            assert.deepEqual(headers, {'X-Test': '1'});
+
+            headers['X-Test'] = '2';
+            assert.deepEqual(frame.getHeaders(), {'X-Test': '1'});
         });
     });
 });

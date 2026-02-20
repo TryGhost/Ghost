@@ -1,5 +1,5 @@
 const errors = require('@tryghost/errors');
-const should = require('should');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const shared = require('../../../');
 
@@ -30,10 +30,10 @@ describe('validators/input/all', function () {
 
             return shared.validators.input.all.all(apiConfig, frame)
                 .then(() => {
-                    should.exist(frame.options.page);
-                    should.exist(frame.options.slug);
-                    should.exist(frame.options.include);
-                    should.exist(frame.options.context);
+                    assert.ok(frame.options.page);
+                    assert.ok(frame.options.slug);
+                    assert.ok(frame.options.include);
+                    assert.ok(frame.options.context);
                 });
         });
 
@@ -56,7 +56,7 @@ describe('validators/input/all', function () {
                 .then(() => {
                     throw new Error('Should not resolve');
                 }, (err) => {
-                    should.exist(err);
+                    assert.ok(err);
                 });
         });
 
@@ -98,10 +98,10 @@ describe('validators/input/all', function () {
 
             return shared.validators.input.all.all(apiConfig, frame)
                 .then(() => {
-                    should.exist(frame.options.page);
-                    should.exist(frame.options.slug);
-                    should.exist(frame.options.include);
-                    should.exist(frame.options.context);
+                    assert.ok(frame.options.page);
+                    assert.ok(frame.options.slug);
+                    assert.ok(frame.options.include);
+                    assert.ok(frame.options.context);
                 });
         });
 
@@ -123,10 +123,10 @@ describe('validators/input/all', function () {
 
             return shared.validators.input.all.all(apiConfig, frame)
                 .then(() => {
-                    should.exist(frame.options.page);
-                    should.exist(frame.options.slug);
-                    should.exist(frame.options.include);
-                    should.exist(frame.options.context);
+                    assert.ok(frame.options.page);
+                    assert.ok(frame.options.slug);
+                    assert.ok(frame.options.include);
+                    assert.ok(frame.options.context);
                 });
         });
 
@@ -149,7 +149,7 @@ describe('validators/input/all', function () {
             return shared.validators.input.all.all(apiConfig, frame)
                 .then(Promise.reject.bind(Promise))
                 .catch((err) => {
-                    should.not.exist(err);
+                    assert.equal(err, undefined);
                 });
         });
 
@@ -170,7 +170,7 @@ describe('validators/input/all', function () {
             return shared.validators.input.all.all(apiConfig, frame)
                 .then(Promise.reject.bind(Promise))
                 .catch((err) => {
-                    should.not.exist(err);
+                    assert.equal(err, undefined);
                 });
         });
 
@@ -192,7 +192,7 @@ describe('validators/input/all', function () {
             return shared.validators.input.all.all(apiConfig, frame)
                 .then(Promise.reject)
                 .catch((err) => {
-                    should.exist(err);
+                    assert.ok(err);
                 });
         });
 
@@ -209,7 +209,29 @@ describe('validators/input/all', function () {
             return shared.validators.input.all.all(apiConfig, frame)
                 .then(Promise.reject)
                 .catch((err) => {
-                    should.exist(err);
+                    assert.ok(err);
+                });
+        });
+
+        it('fails on invalid allowed values for non-include fields', function () {
+            const frame = {
+                options: {
+                    context: {},
+                    formats: 'mobiledoc'
+                }
+            };
+
+            const apiConfig = {
+                options: {
+                    formats: ['html']
+                }
+            };
+
+            return shared.validators.input.all.all(apiConfig, frame)
+                .then(Promise.reject)
+                .catch((err) => {
+                    assert.ok(err);
+                    assert.equal(err.message, 'Validation (AllowedValues) failed for formats');
                 });
         });
     });
@@ -228,8 +250,8 @@ describe('validators/input/all', function () {
             const apiConfig = {};
 
             shared.validators.input.all.browse(apiConfig, frame);
-            should.exist(frame.options.context);
-            should.exist(frame.data.status);
+            assert.ok(frame.options.context);
+            assert.ok(frame.data.status);
         });
 
         it('fails', function () {
@@ -247,7 +269,7 @@ describe('validators/input/all', function () {
             return shared.validators.input.all.browse(apiConfig, frame)
                 .then(Promise.reject)
                 .catch((err) => {
-                    should.exist(err);
+                    assert.ok(err);
                 });
         });
     });
@@ -265,7 +287,7 @@ describe('validators/input/all', function () {
             const apiConfig = {};
 
             shared.validators.input.all.read(apiConfig, frame);
-            shared.validators.input.all.browse.calledOnce.should.be.true();
+            assert.equal(shared.validators.input.all.browse.calledOnce, true);
         });
     });
 
@@ -282,7 +304,7 @@ describe('validators/input/all', function () {
             return shared.validators.input.all.add(apiConfig, frame)
                 .then(Promise.reject)
                 .catch((err) => {
-                    should.exist(err);
+                    assert.ok(err);
                 });
         });
 
@@ -300,7 +322,7 @@ describe('validators/input/all', function () {
             return shared.validators.input.all.add(apiConfig, frame)
                 .then(Promise.reject)
                 .catch((err) => {
-                    should.exist(err);
+                    assert.ok(err);
                 });
         });
 
@@ -325,8 +347,8 @@ describe('validators/input/all', function () {
             return shared.validators.input.all.add(apiConfig, frame)
                 .then(Promise.reject)
                 .catch((err) => {
-                    should.exist(err);
-                    err.message.should.eql('Validation (FieldIsRequired) failed for ["b"]');
+                    assert.ok(err);
+                    assert.equal(err.message, 'Validation (FieldIsRequired) failed for ["b"]');
                 });
         });
 
@@ -352,8 +374,8 @@ describe('validators/input/all', function () {
             return shared.validators.input.all.add(apiConfig, frame)
                 .then(Promise.reject)
                 .catch((err) => {
-                    should.exist(err);
-                    err.message.should.eql('Validation (FieldIsInvalid) failed for ["b"]');
+                    assert.ok(err);
+                    assert.equal(err.message, 'Validation (FieldIsInvalid) failed for ["b"]');
                 });
         });
 
@@ -371,7 +393,7 @@ describe('validators/input/all', function () {
             };
 
             const result = shared.validators.input.all.add(apiConfig, frame);
-            (result instanceof Promise).should.not.be.true();
+            assert.equal(result instanceof Promise, false);
         });
     });
 
@@ -397,8 +419,76 @@ describe('validators/input/all', function () {
             return shared.validators.input.all.edit(apiConfig, frame)
                 .then(Promise.reject)
                 .catch((err) => {
-                    (err instanceof errors.BadRequestError).should.be.true();
+                    assert.equal(err instanceof errors.BadRequestError, true);
                 });
+        });
+
+        it('returns add promise result when add fails', function () {
+            sinon.stub(shared.validators.input.all, 'add').returns(Promise.reject(new Error('add-failed')));
+            return shared.validators.input.all.edit({}, {})
+                .then(Promise.reject)
+                .catch((err) => {
+                    assert.equal(err.message, 'add-failed');
+                });
+        });
+
+        it('checks id mismatch after successful add for non posts/tags', function () {
+            sinon.stub(shared.validators.input.all, 'add').returns(undefined);
+
+            return shared.validators.input.all.edit({
+                docName: 'users'
+            }, {
+                options: {
+                    id: 'id-1'
+                },
+                data: {
+                    users: [{id: 'id-2'}]
+                }
+            })
+                .then(Promise.reject)
+                .catch((err) => {
+                    assert.equal(err instanceof errors.BadRequestError, true);
+                    assert.equal(err.message, 'Invalid id provided.');
+                });
+        });
+
+        it('does not check id mismatch for posts/tags', function () {
+            sinon.stub(shared.validators.input.all, 'add').returns(undefined);
+            const result = shared.validators.input.all.edit({
+                docName: 'posts'
+            }, {
+                options: {id: 'id-1'},
+                data: {
+                    posts: [{id: 'id-2'}]
+                }
+            });
+            assert.equal(result, undefined);
+        });
+    });
+
+    describe('delegated methods', function () {
+        it('changePassword delegates to add', function () {
+            sinon.stub(shared.validators.input.all, 'add').returns('add-result');
+            const result = shared.validators.input.all.changePassword({}, {});
+            assert.equal(result, 'add-result');
+        });
+
+        it('resetPassword delegates to add', function () {
+            sinon.stub(shared.validators.input.all, 'add').returns('add-result');
+            const result = shared.validators.input.all.resetPassword({}, {});
+            assert.equal(result, 'add-result');
+        });
+
+        it('setup delegates to add', function () {
+            sinon.stub(shared.validators.input.all, 'add').returns('add-result');
+            const result = shared.validators.input.all.setup({}, {});
+            assert.equal(result, 'add-result');
+        });
+
+        it('publish delegates to browse', function () {
+            sinon.stub(shared.validators.input.all, 'browse').returns('browse-result');
+            const result = shared.validators.input.all.publish({}, {});
+            assert.equal(result, 'browse-result');
         });
     });
 });

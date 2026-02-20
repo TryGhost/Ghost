@@ -1,4 +1,5 @@
 const errors = require('@tryghost/errors');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const shared = require('../../');
 
@@ -12,7 +13,7 @@ describe('serializers/handle', function () {
             return shared.serializers.handle.input()
                 .then(Promise.reject)
                 .catch((err) => {
-                    (err instanceof errors.IncorrectUsageError).should.be.true();
+                    assert.equal(err instanceof errors.IncorrectUsageError, true);
                 });
         });
 
@@ -20,7 +21,7 @@ describe('serializers/handle', function () {
             return shared.serializers.handle.input({})
                 .then(Promise.reject)
                 .catch((err) => {
-                    (err instanceof errors.IncorrectUsageError).should.be.true();
+                    assert.equal(err instanceof errors.IncorrectUsageError, true);
                 });
         });
 
@@ -112,7 +113,7 @@ describe('serializers/handle', function () {
             return shared.serializers.handle.output([])
                 .then(Promise.reject)
                 .catch((err) => {
-                    (err instanceof errors.IncorrectUsageError).should.be.true();
+                    assert.equal(err instanceof errors.IncorrectUsageError, true);
                 });
         });
 
@@ -120,7 +121,7 @@ describe('serializers/handle', function () {
             return shared.serializers.handle.output([], {})
                 .then(Promise.reject)
                 .catch((err) => {
-                    (err instanceof errors.IncorrectUsageError).should.be.true();
+                    assert.equal(err instanceof errors.IncorrectUsageError, true);
                 });
         });
 

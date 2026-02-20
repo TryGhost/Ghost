@@ -1,5 +1,5 @@
 const errors = require('@tryghost/errors');
-const should = require('should');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const shared = require('../');
 
@@ -25,10 +25,10 @@ describe('Pipeline', function () {
 
                     return shared.pipeline.STAGES.validation.input(apiUtils, apiConfig, apiImpl, frame)
                         .then((response) => {
-                            response.should.eql('response');
+                            assert.equal(response, 'response');
 
-                            apiImpl.validation.calledOnce.should.be.true();
-                            shared.validators.handle.input.called.should.be.false();
+                            assert.equal(apiImpl.validation.calledOnce, true);
+                            assert.equal(shared.validators.handle.input.called, false);
                         });
                 });
 
@@ -59,8 +59,8 @@ describe('Pipeline', function () {
 
                     return shared.pipeline.STAGES.validation.input(apiUtils, apiConfig, apiImpl, frame)
                         .then(() => {
-                            shared.validators.handle.input.calledOnce.should.be.true();
-                            shared.validators.handle.input.calledWith(
+                            assert.equal(shared.validators.handle.input.calledOnce, true);
+                            assert.equal(shared.validators.handle.input.calledWith(
                                 {
                                     docName: 'posts',
                                     options: {
@@ -74,9 +74,45 @@ describe('Pipeline', function () {
                                 },
                                 {
                                     options: {}
-                                }).should.be.true();
+                                }), true);
                         });
                 });
+            });
+        });
+
+        describe('serialisation', function () {
+            it('input calls shared serializer input handler', function () {
+                sinon.stub(shared.serializers.handle, 'input').resolves();
+
+                const apiUtils = {serializers: {input: {posts: {}}}};
+                const apiConfig = {docName: 'posts', method: 'browse'};
+                const apiImpl = {data: ['id']};
+                const frame = {};
+
+                return shared.pipeline.STAGES.serialisation.input(apiUtils, apiConfig, apiImpl, frame)
+                    .then(() => {
+                        assert.equal(shared.serializers.handle.input.calledOnce, true);
+                        assert.deepEqual(shared.serializers.handle.input.args[0][0], {
+                            data: ['id'],
+                            docName: 'posts',
+                            method: 'browse'
+                        });
+                    });
+            });
+
+            it('output calls shared serializer output handler', function () {
+                sinon.stub(shared.serializers.handle, 'output').resolves();
+
+                const apiUtils = {serializers: {output: {posts: {}}}};
+                const apiConfig = {docName: 'posts', method: 'browse'};
+                const apiImpl = {};
+                const frame = {};
+                const response = [{id: '1'}];
+
+                return shared.pipeline.STAGES.serialisation.output(response, apiUtils, apiConfig, apiImpl, frame)
+                    .then(() => {
+                        assert.equal(shared.serializers.handle.output.calledOnceWithExactly(response, apiConfig, apiUtils.serializers.output, frame), true);
+                    });
             });
         });
 
@@ -99,8 +135,8 @@ describe('Pipeline', function () {
                 return shared.pipeline.STAGES.permissions(apiUtils, apiConfig, apiImpl, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        (err instanceof errors.IncorrectUsageError).should.be.true();
-                        apiUtils.permissions.handle.called.should.be.false();
+                        assert.equal(err instanceof errors.IncorrectUsageError, true);
+                        assert.equal(apiUtils.permissions.handle.called, false);
                     });
             });
 
@@ -113,9 +149,9 @@ describe('Pipeline', function () {
 
                 return shared.pipeline.STAGES.permissions(apiUtils, apiConfig, apiImpl, frame)
                     .then((response) => {
-                        response.should.eql('lol');
-                        apiImpl.permissions.calledOnce.should.be.true();
-                        apiUtils.permissions.handle.called.should.be.false();
+                        assert.equal(response, 'lol');
+                        assert.equal(apiImpl.permissions.calledOnce, true);
+                        assert.equal(apiUtils.permissions.handle.called, false);
                     });
             });
 
@@ -128,7 +164,7 @@ describe('Pipeline', function () {
 
                 return shared.pipeline.STAGES.permissions(apiUtils, apiConfig, apiImpl, frame)
                     .then(() => {
-                        apiUtils.permissions.handle.called.should.be.false();
+                        assert.equal(apiUtils.permissions.handle.called, false);
                     });
             });
 
@@ -141,7 +177,7 @@ describe('Pipeline', function () {
 
                 return shared.pipeline.STAGES.permissions(apiUtils, apiConfig, apiImpl, frame)
                     .then(() => {
-                        apiUtils.permissions.handle.calledOnce.should.be.true();
+                        assert.equal(apiUtils.permissions.handle.calledOnce, true);
                     });
             });
 
@@ -160,15 +196,52 @@ describe('Pipeline', function () {
 
                 return shared.pipeline.STAGES.permissions(apiUtils, apiConfig, apiImpl, frame)
                     .then(() => {
-                        apiUtils.permissions.handle.calledOnce.should.be.true();
-                        apiUtils.permissions.handle.calledWith(
+                        assert.equal(apiUtils.permissions.handle.calledOnce, true);
+                        assert.equal(apiUtils.permissions.handle.calledWith(
                             {
                                 docName: 'posts',
                                 unsafeAttrs: ['test']
                             },
                             {
                                 options: {}
-                            }).should.be.true();
+                            }), true);
+                    });
+            });
+
+            it('runs permission before hook', function () {
+                const before = sinon.stub().resolves();
+                const apiConfig = {};
+                const apiImpl = {
+                    permissions: {
+                        before
+                    }
+                };
+                const frame = {};
+
+                return shared.pipeline.STAGES.permissions(apiUtils, apiConfig, apiImpl, frame)
+                    .then(() => {
+                        assert.equal(before.calledOnceWithExactly(frame), true);
+                        assert.equal(apiUtils.permissions.handle.calledOnce, true);
+                    });
+            });
+        });
+
+        describe('query', function () {
+            it('throws when query method is missing', function () {
+                return shared.pipeline.STAGES.query({}, {}, {}, {})
+                    .then(Promise.reject)
+                    .catch((err) => {
+                        assert.equal(err instanceof errors.IncorrectUsageError, true);
+                    });
+            });
+
+            it('runs query when configured', function () {
+                const query = sinon.stub().resolves('result');
+                const frame = {};
+                return shared.pipeline.STAGES.query({}, {}, {query}, frame)
+                    .then((result) => {
+                        assert.equal(result, 'result');
+                        assert.equal(query.calledOnceWithExactly(frame), true);
                     });
             });
         });
@@ -192,12 +265,12 @@ describe('Pipeline', function () {
             const apiUtils = {};
 
             const result = shared.pipeline(apiController, apiUtils);
-            result.should.be.an.Object();
+            assert.equal(typeof result, 'object');
 
-            should.exist(result.add);
-            should.exist(result.browse);
-            result.add.should.be.a.Function();
-            result.browse.should.be.a.Function();
+            assert.ok(result.add);
+            assert.ok(result.browse);
+            assert.equal(typeof result.add, 'function');
+            assert.equal(typeof result.browse, 'function');
         });
 
         it('call api controller fn', function () {
@@ -218,13 +291,70 @@ describe('Pipeline', function () {
 
             return result.add()
                 .then((response) => {
-                    response.should.eql('response');
+                    assert.equal(response, 'response');
 
-                    shared.pipeline.STAGES.validation.input.calledOnce.should.be.true();
-                    shared.pipeline.STAGES.serialisation.input.calledOnce.should.be.true();
-                    shared.pipeline.STAGES.permissions.calledOnce.should.be.true();
-                    shared.pipeline.STAGES.query.calledOnce.should.be.true();
-                    shared.pipeline.STAGES.serialisation.output.calledOnce.should.be.true();
+                    assert.equal(shared.pipeline.STAGES.validation.input.calledOnce, true);
+                    assert.equal(shared.pipeline.STAGES.serialisation.input.calledOnce, true);
+                    assert.equal(shared.pipeline.STAGES.permissions.calledOnce, true);
+                    assert.equal(shared.pipeline.STAGES.query.calledOnce, true);
+                    assert.equal(shared.pipeline.STAGES.serialisation.output.calledOnce, true);
+                });
+        });
+
+        it('supports data and options arguments', function () {
+            const apiController = {
+                docName: 'posts',
+                add: {
+                    headers: {},
+                    permissions: true,
+                    query: sinon.stub().resolves('response')
+                }
+            };
+
+            const apiUtils = {};
+            const result = shared.pipeline(apiController, apiUtils);
+
+            shared.pipeline.STAGES.validation.input.resolves();
+            shared.pipeline.STAGES.serialisation.input.resolves();
+            shared.pipeline.STAGES.permissions.resolves();
+            shared.pipeline.STAGES.query.resolves('response');
+            shared.pipeline.STAGES.serialisation.output.callsFake(function (response, _apiUtils, apiConfig, apiImpl, frame) {
+                frame.response = response;
+            });
+
+            return result.add({posts: [{title: 't'}]}, {context: {internal: true}})
+                .then(() => {
+                    const frame = shared.pipeline.STAGES.validation.input.args[0][3];
+                    assert.deepEqual(frame.data, {posts: [{title: 't'}]});
+                    assert.deepEqual(frame.options.context, {internal: true});
+                });
+        });
+
+        it('supports single undefined argument by defaulting options', function () {
+            const apiController = {
+                docName: 'posts',
+                add: {
+                    headers: {},
+                    permissions: true,
+                    query: sinon.stub().resolves('response')
+                }
+            };
+
+            const apiUtils = {};
+            const result = shared.pipeline(apiController, apiUtils);
+
+            shared.pipeline.STAGES.validation.input.resolves();
+            shared.pipeline.STAGES.serialisation.input.resolves();
+            shared.pipeline.STAGES.permissions.resolves();
+            shared.pipeline.STAGES.query.resolves('response');
+            shared.pipeline.STAGES.serialisation.output.callsFake(function (response, _apiUtils, apiConfig, apiImpl, frame) {
+                frame.response = response;
+            });
+
+            return result.add(undefined)
+                .then(() => {
+                    const frame = shared.pipeline.STAGES.validation.input.args[0][3];
+                    assert.deepEqual(frame.options.context, {});
                 });
         });
 
@@ -240,14 +370,61 @@ describe('Pipeline', function () {
 
             return result.add()
                 .then((response) => {
-                    response.should.eql('response');
+                    assert.equal(response, 'response');
 
-                    shared.pipeline.STAGES.validation.input.called.should.be.false();
-                    shared.pipeline.STAGES.serialisation.input.called.should.be.false();
-                    shared.pipeline.STAGES.permissions.called.should.be.false();
-                    shared.pipeline.STAGES.query.called.should.be.false();
-                    shared.pipeline.STAGES.serialisation.output.called.should.be.false();
+                    assert.equal(shared.pipeline.STAGES.validation.input.called, false);
+                    assert.equal(shared.pipeline.STAGES.serialisation.input.called, false);
+                    assert.equal(shared.pipeline.STAGES.permissions.called, false);
+                    assert.equal(shared.pipeline.STAGES.query.called, false);
+                    assert.equal(shared.pipeline.STAGES.serialisation.output.called, false);
                 });
+        });
+
+        it('uses existing frame instance and generateCacheKeyData', async function () {
+            const apiController = {
+                browse: {
+                    headers: {},
+                    permissions: true,
+                    generateCacheKeyData: sinon.stub().resolves({custom: 'key'}),
+                    query: sinon.stub().resolves('response')
+                }
+            };
+
+            const apiUtils = {};
+            const result = shared.pipeline(apiController, apiUtils, 'content');
+            const frame = new shared.Frame();
+
+            shared.pipeline.STAGES.validation.input.resolves();
+            shared.pipeline.STAGES.serialisation.input.resolves();
+            shared.pipeline.STAGES.permissions.resolves();
+            shared.pipeline.STAGES.query.resolves('response');
+            shared.pipeline.STAGES.serialisation.output.callsFake(function (response, _apiUtils, apiConfig, apiImpl, frameArg) {
+                frameArg.response = response;
+            });
+
+            const response = await result.browse(frame);
+
+            assert.equal(response, 'response');
+            assert.equal(apiController.browse.generateCacheKeyData.calledOnceWithExactly(frame), true);
+            assert.equal(frame.apiType, 'content');
+            assert.equal(frame.docName, undefined);
+            assert.equal(frame.method, 'browse');
+        });
+
+        it('returns cached controller wrapper for same controller object', function () {
+            const apiController = {
+                docName: 'posts',
+                browse: {
+                    headers: {},
+                    permissions: true,
+                    query: sinon.stub().resolves('response')
+                }
+            };
+
+            const first = shared.pipeline(apiController, {});
+            const second = shared.pipeline(apiController, {});
+
+            assert.equal(first, second);
         });
     });
 
@@ -283,18 +460,18 @@ describe('Pipeline', function () {
 
             const response = await result.browse();
 
-            response.should.eql('response');
+            assert.equal(response, 'response');
 
             // request went through all stages
-            shared.pipeline.STAGES.validation.input.calledOnce.should.be.true();
-            shared.pipeline.STAGES.serialisation.input.calledOnce.should.be.true();
-            shared.pipeline.STAGES.permissions.calledOnce.should.be.true();
-            shared.pipeline.STAGES.query.calledOnce.should.be.true();
-            shared.pipeline.STAGES.serialisation.output.calledOnce.should.be.true();
+            assert.equal(shared.pipeline.STAGES.validation.input.calledOnce, true);
+            assert.equal(shared.pipeline.STAGES.serialisation.input.calledOnce, true);
+            assert.equal(shared.pipeline.STAGES.permissions.calledOnce, true);
+            assert.equal(shared.pipeline.STAGES.query.calledOnce, true);
+            assert.equal(shared.pipeline.STAGES.serialisation.output.calledOnce, true);
 
             // cache was set
-            apiController.browse.cache.set.calledOnce.should.be.true();
-            apiController.browse.cache.set.args[0][1].should.equal('response');
+            assert.equal(apiController.browse.cache.set.calledOnce, true);
+            assert.equal(apiController.browse.cache.set.args[0][1], 'response');
         });
 
         it('should use cache if configured on endpoint level', async function () {
@@ -320,17 +497,17 @@ describe('Pipeline', function () {
 
             const response = await result.browse();
 
-            response.should.eql('CACHED RESPONSE');
+            assert.equal(response, 'CACHED RESPONSE');
 
             // request went through all stages
-            shared.pipeline.STAGES.validation.input.calledOnce.should.be.false();
-            shared.pipeline.STAGES.serialisation.input.calledOnce.should.be.false();
-            shared.pipeline.STAGES.permissions.calledOnce.should.be.false();
-            shared.pipeline.STAGES.query.calledOnce.should.be.false();
-            shared.pipeline.STAGES.serialisation.output.calledOnce.should.be.false();
+            assert.equal(shared.pipeline.STAGES.validation.input.calledOnce, false);
+            assert.equal(shared.pipeline.STAGES.serialisation.input.calledOnce, false);
+            assert.equal(shared.pipeline.STAGES.permissions.calledOnce, false);
+            assert.equal(shared.pipeline.STAGES.query.calledOnce, false);
+            assert.equal(shared.pipeline.STAGES.serialisation.output.calledOnce, false);
 
             // cache not set
-            apiController.browse.cache.set.calledOnce.should.be.false();
+            assert.equal(apiController.browse.cache.set.calledOnce, false);
         });
     });
 });
