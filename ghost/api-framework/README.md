@@ -2,6 +2,10 @@
 
 API framework used by Ghost
 
+## Purpose
+
+Composable framework for Ghost API controllers, request framing, validation/serialization pipelines, and HTTP response helpers.
+
 ## Usage
 
 ### Stages
