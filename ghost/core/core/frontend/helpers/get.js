@@ -50,9 +50,9 @@ const pathAliases = {
  * Generate a deterministic cache key for a {{#get}} query.
  * Sorts top-level option keys for deterministic serialization.
  *
- * @param {String} resource - The resource type (posts, tags, etc.)
- * @param {Object} apiOptions - The API options (filter, limit, include, etc.)
- * @returns {String} - Deterministic cache key
+ * @param {string} resource The resource type (posts, tags, etc.)
+ * @param {Readonly<Record<string, unknown>>} apiOptions The API options (filter, limit, include, etc.)
+ * @returns {string} Deterministic cache key
  */
 function generateCacheKey(resource, apiOptions) {
     const sortedOptions = Object.fromEntries(
@@ -322,11 +322,11 @@ async function makeAPICall(resource, controllerName, action, apiOptions) {
 /**
  * Prepare and render the response from a {{#get}} query
  *
- * @param {Object} response - API response
- * @param {String} resource - Resource type (posts, tags, etc.)
- * @param {Object} options - Handlebars options
- * @param {Object} data - Handlebars data frame
- * @returns {String|SafeString} - Rendered template output
+ * @param {Object} response API response
+ * @param {string} resource Resource type (posts, tags, etc.)
+ * @param {Object} options Handlebars options
+ * @param {Object} data Handlebars data frame
+ * @returns {string | SafeString} Rendered template output
  */
 function renderResponse(response, resource, options, data) {
     const templateResponse = {
