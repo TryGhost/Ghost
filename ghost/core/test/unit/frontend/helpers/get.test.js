@@ -722,7 +722,7 @@ describe('{{#get}} helper', function () {
 
         it('should make duplicate API calls when deduplication is disabled', async function () {
             // Deduplication disabled by default
-            locals = {root: {_locals: {}}, _queryCache: new Map()};
+            locals = {root: {_locals: {}}};
 
             // First call
             await get.call(

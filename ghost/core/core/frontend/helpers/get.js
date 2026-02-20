@@ -418,8 +418,7 @@ module.exports = async function get(resource, options) {
     apiOptions.context = {member: data.member};
 
     // Per-request deduplication: check if we have a cached result for this query
-    const enableDeduplication = config.get('optimization:getHelper:deduplication');
-    const queryCache = (enableDeduplication && options.data?._queryCache instanceof Map) ? options.data._queryCache : null;
+    const queryCache = options.data?._queryCache instanceof Map ? options.data._queryCache : null;
     let cacheKey;
 
     if (queryCache) {
