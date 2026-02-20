@@ -47,11 +47,26 @@ const pathAliases = {
 };
 
 /**
+ * @typedef {Object.<string, unknown>} GetHelperAPIOptions
+ * @property {string} [filter] Example: "featured:true" or "featured:true+status:published"
+ * @property {string|number} [limit] Example: "3" or 3 or "all"
+ * @property {string} [include] Example: "tags,authors"
+ * @property {string} [fields] Example: "title,slug"
+ * @property {string} [formats] Example: "html"
+ * @property {string|number} [page] Example: "2" or 2
+ * @property {string} [order] Example: "published_at desc"
+ * @property {string} [id] Example: "123"
+ * @property {string} [slug] Example: "my-post"
+ * @property {{member?: {uuid?: string}}} [context]
+ * NOTE: Themes can pass additional top-level query params, and they are forwarded as-is.
+ */
+
+/**
  * Generate a deterministic cache key for a {{#get}} query.
  * Sorts top-level option keys for deterministic serialization.
  *
  * @param {string} resource The resource type (posts, tags, etc.)
- * @param {Readonly<Record<string, unknown>>} apiOptions The API options (filter, limit, include, etc.)
+ * @param {GetHelperAPIOptions} apiOptions The API options
  * @returns {string} Deterministic cache key
  */
 function generateCacheKey(resource, apiOptions) {
@@ -169,8 +184,8 @@ function resolvePaths(globals, data, value) {
  * Ensure options passed in make sense
  *
  * @param {Object} data
- * @param {Object} options
- * @returns {*}
+ * @param {GetHelperAPIOptions} options
+ * @returns {GetHelperAPIOptions}
  */
 function parseOptions(globals, data, options) {
     if (_.isString(options.filter)) {
@@ -268,7 +283,7 @@ function optimiseFilterCacheability(resource, options) {
  * @param {String} resource
  * @param {String} controllerName
  * @param {String} action
- * @param {Object} apiOptions
+ * @param {GetHelperAPIOptions} apiOptions
  * @returns {Promise<Object>}
  */
 async function makeAPICall(resource, controllerName, action, apiOptions) {
