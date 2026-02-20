@@ -1,4 +1,5 @@
 const errors = require('@tryghost/errors');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const shared = require('../../');
 
@@ -12,7 +13,7 @@ describe('validators/handle', function () {
             return shared.validators.handle.input()
                 .then(Promise.reject)
                 .catch((err) => {
-                    (err instanceof errors.IncorrectUsageError).should.be.true();
+                    assert.equal(err instanceof errors.IncorrectUsageError, true);
                 });
         });
 
@@ -20,7 +21,15 @@ describe('validators/handle', function () {
             return shared.validators.handle.input({})
                 .then(Promise.reject)
                 .catch((err) => {
-                    (err instanceof errors.IncorrectUsageError).should.be.true();
+                    assert.equal(err instanceof errors.IncorrectUsageError, true);
+                });
+        });
+
+        it('no api config passed when validators exist', function () {
+            return shared.validators.handle.input(undefined, {}, {})
+                .then(Promise.reject)
+                .catch((err) => {
+                    assert.equal(err instanceof errors.IncorrectUsageError, true);
                 });
         });
 
@@ -48,11 +57,24 @@ describe('validators/handle', function () {
 
             return shared.validators.handle.input({docName: 'posts', method: 'add'}, apiValidators, {context: {}})
                 .then(() => {
-                    getStub.calledOnce.should.be.true();
-                    addStub.calledOnce.should.be.true();
-                    apiValidators.all.add.calledOnce.should.be.true();
-                    apiValidators.posts.add.calledOnce.should.be.true();
-                    apiValidators.users.add.called.should.be.false();
+                    assert.equal(getStub.calledOnce, true);
+                    assert.equal(addStub.calledOnce, true);
+                    assert.equal(apiValidators.all.add.calledOnce, true);
+                    assert.equal(apiValidators.posts.add.calledOnce, true);
+                    assert.equal(apiValidators.users.add.called, false);
+                });
+        });
+
+        it('calls docName all validator when provided', function () {
+            const apiValidators = {
+                posts: {
+                    all: sinon.stub().resolves()
+                }
+            };
+
+            return shared.validators.handle.input({docName: 'posts', method: 'browse'}, apiValidators, {})
+                .then(() => {
+                    assert.equal(apiValidators.posts.all.calledOnce, true);
                 });
         });
     });

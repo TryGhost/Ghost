@@ -1,10 +1,11 @@
+const assert = require('node:assert/strict');
 const shared = require('../');
 const Frame = require('../lib/Frame');
 
 describe('Headers', function () {
     it('empty headers config', function () {
         return shared.headers.get({}, {}, new Frame()).then((result) => {
-            result.should.eql({});
+            assert.deepEqual(result, {});
         });
     });
 
@@ -12,7 +13,7 @@ describe('Headers', function () {
         it('json', function () {
             return shared.headers.get({}, {disposition: {type: 'json', value: 'value'}}, new Frame())
                 .then((result) => {
-                    result.should.eql({
+                    assert.deepEqual(result, {
                         'Content-Disposition': 'Attachment; filename="value"',
                         'Content-Type': 'application/json',
                         'Content-Length': 2
@@ -23,7 +24,7 @@ describe('Headers', function () {
         it('csv', function () {
             return shared.headers.get({}, {disposition: {type: 'csv', value: 'my.csv'}}, new Frame())
                 .then((result) => {
-                    result.should.eql({
+                    assert.deepEqual(result, {
                         'Content-Disposition': 'Attachment; filename="my.csv"',
                         'Content-Type': 'text/csv'
                     });
@@ -41,7 +42,7 @@ describe('Headers', function () {
                     }
                 }
             }, new Frame());
-            result.should.eql({
+            assert.deepEqual(result, {
                 'Content-Disposition': 'Attachment; filename="awesome-data-2022-08-01.csv"',
                 'Content-Type': 'text/csv'
             });
@@ -49,7 +50,7 @@ describe('Headers', function () {
 
         it('file', async function () {
             const result = await shared.headers.get({}, {disposition: {type: 'file', value: 'my.txt'}}, new Frame());
-            result.should.eql({
+            assert.deepEqual(result, {
                 'Content-Disposition': 'Attachment; filename="my.txt"'
             });
         });
@@ -65,7 +66,7 @@ describe('Headers', function () {
                     }
                 }
             }, new Frame());
-            result.should.eql({
+            assert.deepEqual(result, {
                 'Content-Disposition': 'Attachment; filename="awesome-data-2022-08-01.txt"'
             });
         });
@@ -73,7 +74,7 @@ describe('Headers', function () {
         it('yaml', function () {
             return shared.headers.get('yaml file', {disposition: {type: 'yaml', value: 'my.yaml'}}, new Frame())
                 .then((result) => {
-                    result.should.eql({
+                    assert.deepEqual(result, {
                         'Content-Disposition': 'Attachment; filename="my.yaml"',
                         'Content-Type': 'application/yaml',
                         'Content-Length': 11
@@ -86,7 +87,7 @@ describe('Headers', function () {
         it('default', function () {
             return shared.headers.get({}, {cacheInvalidate: true}, new Frame())
                 .then((result) => {
-                    result.should.eql({
+                    assert.deepEqual(result, {
                         'X-Cache-Invalidate': '/*'
                     });
                 });
@@ -95,7 +96,7 @@ describe('Headers', function () {
         it('custom value', function () {
             return shared.headers.get({}, {cacheInvalidate: {value: 'value'}}, new Frame())
                 .then((result) => {
-                    result.should.eql({
+                    assert.deepEqual(result, {
                         'X-Cache-Invalidate': 'value'
                     });
                 });
@@ -123,7 +124,7 @@ describe('Headers', function () {
 
             return shared.headers.get(apiResult, apiConfigHeaders, frame)
                 .then((result) => {
-                    result.should.eql({
+                    assert.deepEqual(result, {
                         // NOTE: the backslash in the end is important to avoid unecessary 301s using the header
                         Location: 'https://example.com/api/content/posts/id_value/'
                     });
@@ -158,7 +159,7 @@ describe('Headers', function () {
 
             return shared.headers.get(apiResult, apiConfigHeaders, frame)
                 .then((result) => {
-                    result.should.eql({
+                    assert.deepEqual(result, {
                         Location: resolvedLocationUrl
                     });
                 });
@@ -185,7 +186,7 @@ describe('Headers', function () {
             };
 
             const result = await shared.headers.get(apiResult, apiConfigHeaders, frame);
-            result.should.eql({
+            assert.deepEqual(result, {
                 // NOTE: the backslash in the end is important to avoid unecessary 301s using the header
                 Location: 'http://example.com/api/content/posts/id_value/'
             });
@@ -211,7 +212,7 @@ describe('Headers', function () {
 
             return shared.headers.get(apiResult, apiConfigHeaders, frame)
                 .then((result) => {
-                    result.should.eql({
+                    assert.deepEqual(result, {
                         // NOTE: the backslash in the end is important to avoid unecessary 301s using the header
                         Location: 'https://example.com/api/content/posts/id_value/'
                     });
@@ -234,7 +235,7 @@ describe('Headers', function () {
 
             return shared.headers.get(apiResult, apiConfigHeaders, frame)
                 .then((result) => {
-                    result.should.eql({});
+                    assert.deepEqual(result, {});
                 });
         });
     });
