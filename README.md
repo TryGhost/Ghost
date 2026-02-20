@@ -1,5 +1,9 @@
 # Domain Events
 
+## Purpose
+
+Lightweight domain event bus for publishing and subscribing to application-level events.
+
 ## Usage
 
 ```js
