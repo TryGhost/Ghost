@@ -38,7 +38,6 @@ function updateLocalTemplateOptions(req, res, next) {
         status: req.member.status
     } : null;
 
-    // Only create cache object if deduplication feature is enabled
     const enableDeduplication = config.get('optimization:getHelper:deduplication');
 
     hbs.updateLocalTemplateOptions(res.locals, _.merge({}, localTemplateOptions, {
