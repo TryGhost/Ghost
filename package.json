@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/domain-events",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "publishConfig": {
     "access": "public"
   },
