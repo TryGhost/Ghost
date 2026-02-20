@@ -143,7 +143,7 @@ yarn reset:data:empty         # Clear database with no sample data
 The backend follows a **service-oriented architecture**:
 
 - **`api/endpoints/`** — 63 REST API endpoint controllers. Each exports a controller object with CRUD methods (`browse`, `read`, `add`, `edit`, `destroy`) containing options, validation, permissions, and query definitions.
-- **`models/`** — Bookshelf.js models (40+) for all database entities. Base model in `models/base/bookshelf.js`.
+- **`models/`** — Bookshelf.js models (40+) for all database entities. Base model in `models/base/bookshelf.js`. Models have rich lifecycle hooks (`onSaving`, `onSaved`, `onUpdated`, `onDestroyed`) for validation, slug generation, event emission, and cascading updates.
 - **`services/`** — 55+ domain service modules organized by feature (auth, email, members, posts, payments, etc.).
 - **`data/schema/`** — Database schema definitions, validators, and fixtures.
 - **`data/migrations/versions/`** — Timestamped migration files (format: `YYYY-MM-DD-HH-mm-ss-description.js`).
@@ -151,12 +151,16 @@ The backend follows a **service-oriented architecture**:
 
 ### New TypeScript Layer (`ghost/ghost/`)
 
-A newer TypeScript-based architecture using NestJS patterns, with:
+A newer TypeScript-based architecture using NestJS patterns, gated behind the `NestPlayground` labs flag and `GHOST_ENABLE_NEST_FRAMEWORK` env var. Express falls through to NestJS for matched routes when enabled.
+
 - `src/core/` — Core domain logic
-- `src/db/` — Database access
-- `src/http/` — HTTP layer
-- `src/listeners/` — Event listeners
-- `src/nestjs/` — NestJS module setup
+- `src/db/` — Database repositories
+- `src/http/` — HTTP controllers with decorators (`@Roles`, `@UseGuards`)
+- `src/listeners/` — Domain event listeners
+- `src/nestjs/` — NestJS modules, guards (`PermissionsGuard`, `AdminAPIAuthentication`), filters, interceptors
+- `src/common/` — Shared decorators, types, base entity class
+
+Routes are prefixed under `ghost/api/admin` and use role-based access control (Owner, Admin, Editor, Author, Contributor).
 
 ### Frontend Theme Rendering (`ghost/core/core/frontend/`)
 
@@ -164,6 +168,15 @@ Handlebars-based theme rendering system:
 - `helpers/` — Template helpers
 - `services/` — Frontend services (routing, themes, URL)
 - `web/` — Frontend Express routes
+
+### Shared Layer (`ghost/core/core/shared/`)
+
+Accessible to both server and frontend:
+- `config/` — nconf-based configuration loader
+- `settings-cache/` — In-memory cache for database settings
+- `url-utils.js` — URL manipulation (URLs stored with `__GHOST_URL__` placeholder for portability)
+- `labs.js` — Feature flags system
+- `sentry.js` — Error tracking integration
 
 ### Configuration
 
@@ -173,6 +186,15 @@ Ghost uses `nconf` for hierarchical configuration:
 - Default values (lowest priority)
 
 Access via `config.get('key')`. Environment variable format uses double underscores for nesting: `database__connection__host`.
+
+### Key Architectural Patterns
+
+- **Event-driven**: Domain events (`post.published`, `member.added`, etc.) drive side effects across services
+- **URL transform-ready**: All URLs stored with `__GHOST_URL__` placeholder, transformed to absolute URLs on read
+- **Feature flags**: `labs.isSet('featureName')` gates experimental functionality
+- **Lazy service initialization**: Services initialize on demand, configuration passed through provider objects
+- **Transaction support**: Database transactions via `options.transacting` threaded through service/model calls
+- **Role-based access**: Permissions checked per-endpoint (Owner > Admin > Editor > Author > Contributor)
 
 ## Testing Patterns
 
