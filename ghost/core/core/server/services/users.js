@@ -123,9 +123,8 @@ class Users {
                 .transacting(transacting)
                 .where('tag_id', tagId)
                 .select('post_id');
-            usersPostIds = userPosts
-                .map(p => p.post_id)
-                .filter(p => !taggedPostIds.includes(p));
+            const taggedPostIdSet = new Set(taggedPostIds.map(post => post.post_id));
+            usersPostIds = usersPostIds.filter(postId => !taggedPostIdSet.has(postId));
         }
 
         // assign tag to posts
