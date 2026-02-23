@@ -3,6 +3,7 @@ import baseDebug from '@tryghost/debug';
 import logging from '@tryghost/logging';
 import {
     BASE_GHOST_ENV,
+    BUILD_GATEWAY_IMAGE,
     BUILD_IMAGE,
     CADDYFILE_PATHS,
     DEV_ENVIRONMENT,
@@ -20,6 +21,11 @@ import type {GhostConfig} from '@/helpers/playwright/fixture';
 const debug = baseDebug('e2e:GhostManager');
 
 type GhostEnvOverrides = GhostConfig | Record<string, string>;
+interface TinybirdConfigFile {
+    workspaceId?: string;
+    adminToken?: string;
+    trackerToken?: string;
+}
 /**
  * Represents a running Ghost instance for E2E tests.
  */
@@ -38,7 +44,7 @@ export interface GhostManagerConfig {
 }
 
 /**
- * Manages Ghost and Gateway containers for dev environment mode.
+ * Manages Ghost and Gateway containers for E2E tests across dev/build modes.
  * Creates worker-scoped containers that persist across tests.
  */
 export class GhostManager {
@@ -96,9 +102,22 @@ export class GhostManager {
             throw new Error(
                 `Build image not found: ${BUILD_IMAGE}\n\n` +
                 `To fix this, either:\n` +
-                `  1. Build locally: yarn build:e2e-image\n` +
+                `  1. Build locally: yarn workspace @tryghost/e2e build:docker (with GHOST_E2E_BASE_IMAGE set)\n` +
                 `  2. Pull from registry: docker pull ${BUILD_IMAGE}\n` +
                 `  3. Use a different image: GHOST_E2E_IMAGE=<image> yarn test:build`
+            );
+        }
+
+        try {
+            const gatewayImage = this.docker.getImage(BUILD_GATEWAY_IMAGE);
+            await gatewayImage.inspect();
+            debug(`Build gateway image verified: ${BUILD_GATEWAY_IMAGE}`);
+        } catch {
+            throw new Error(
+                `Build gateway image not found: ${BUILD_GATEWAY_IMAGE}\n\n` +
+                `To fix this, either:\n` +
+                `  1. Pull gateway image: docker pull ${BUILD_GATEWAY_IMAGE}\n` +
+                `  2. Use a different gateway image: GHOST_E2E_GATEWAY_IMAGE=<image> yarn test:build`
             );
         }
     }
@@ -197,8 +216,8 @@ export class GhostManager {
         }
 
         // Add Tinybird config if available
-        // Static endpoints are set here; workspaceId and adminToken are sourced from
-        // /mnt/shared-config/.env.tinybird by development.entrypoint.sh
+        // Static endpoints are set here; tokens are loaded from a host-generated
+        // e2e/data/state/tinybird.json file when present.
         if (await isTinybirdAvailable()) {
             env.push(
                 `TB_HOST=http://${TINYBIRD.LOCAL_HOST}:${TINYBIRD.PORT}`,
@@ -208,6 +227,17 @@ export class GhostManager {
                 `tinybird__tracker__endpoint=http://localhost:${this.getGatewayPort()}/.ghost/analytics/api/v1/page_hit`,
                 'tinybird__tracker__datasource=analytics_events'
             );
+
+            const tinybirdConfig = await this.loadTinybirdConfig();
+            if (tinybirdConfig?.workspaceId) {
+                env.push(`tinybird__workspaceId=${tinybirdConfig.workspaceId}`);
+            }
+            if (tinybirdConfig?.adminToken) {
+                env.push(`tinybird__adminToken=${tinybirdConfig.adminToken}`);
+            }
+            if (tinybirdConfig?.trackerToken) {
+                env.push(`TINYBIRD_TRACKER_TOKEN=${tinybirdConfig.trackerToken}`);
+            }
         }
 
         if (extraConfig) {
@@ -220,6 +250,23 @@ export class GhostManager {
         }
 
         return env;
+    }
+
+    private async loadTinybirdConfig(): Promise<TinybirdConfigFile | null> {
+        try {
+            const raw = await readFile(TINYBIRD.JSON_PATH, 'utf8');
+            const parsed = JSON.parse(raw) as TinybirdConfigFile;
+
+            if (!parsed.workspaceId || !parsed.adminToken) {
+                debug(`Tinybird config file is missing required fields: ${TINYBIRD.JSON_PATH}`);
+                return null;
+            }
+
+            return parsed;
+        } catch (error) {
+            debug(`Tinybird config not available at ${TINYBIRD.JSON_PATH}:`, error);
+            return null;
+        }
     }
 
     private async createGhostContainer(
@@ -306,9 +353,12 @@ export class GhostManager {
             'ANALYTICS_PROXY_TARGET=ghost-dev-analytics:3000'
         ];
 
+        // Build mode can use stock Caddy (no custom plugin/image build required)
+        const image = mode === 'build' ? BUILD_GATEWAY_IMAGE : TEST_ENVIRONMENT.gateway.image;
+
         const config: ContainerCreateOptions = {
             name,
-            Image: TEST_ENVIRONMENT.gateway.image,
+            Image: image,
             Env: env,
             ExposedPorts: {'80/tcp': {}},
             HostConfig: {

@@ -43,11 +43,18 @@ export const CADDYFILE_PATHS = {
  */
 export const BUILD_IMAGE = process.env.GHOST_E2E_IMAGE || 'ghost-e2e:local';
 
+/**
+ * Build mode gateway image.
+ * Uses stock Caddy by default so CI does not need a custom gateway build.
+ */
+export const BUILD_GATEWAY_IMAGE = process.env.GHOST_E2E_GATEWAY_IMAGE || 'caddy:2-alpine';
+
 export const TINYBIRD = {
     LOCAL_HOST: 'tinybird-local',
     PORT: 7181,
     CLI_ENV_PATH: '/mnt/shared-config/.env.tinybird',
-    CONFIG_DIR: CONFIG_DIR
+    CONFIG_DIR: CONFIG_DIR,
+    JSON_PATH: path.resolve(CONFIG_DIR, 'tinybird.json')
 };
 
 /**
