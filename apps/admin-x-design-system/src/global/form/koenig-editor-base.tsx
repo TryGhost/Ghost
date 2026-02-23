@@ -18,6 +18,29 @@ export interface KoenigEditorBaseProps {
     className?: string
     inheritFontStyles?: boolean
     loadingFallback?: React.ReactNode
+    fileUploader?: {
+        useFileUpload: () => {
+            progress: number
+            isLoading: boolean
+            errors: Array<{
+                fileName: string
+                message: string
+            }>
+            filesNumber: number
+            upload: (files: Iterable<File> & ArrayLike<File>) => Promise<null | Array<{
+                url: string;
+                fileName: string;
+            }>>;
+        }
+        fileTypes: Record<string, {
+            mimeTypes?: readonly string[]
+            extensions?: readonly string[]
+            endpoint: string
+            requestMethod: 'post' | 'put'
+            resourceName: string
+        }>
+    }
+    cardConfig?: unknown
 }
 
 declare global {
@@ -83,7 +106,9 @@ export const KoenigWrapper: React.FC<KoenigWrapperProps> = ({
     singleParagraph = false,
     children,
     initialEditorState,
-    onChange
+    onChange,
+    fileUploader,
+    cardConfig
 }) => {
     const onError = useCallback((error: unknown) => {
         try {
@@ -134,7 +159,9 @@ export const KoenigWrapper: React.FC<KoenigWrapperProps> = ({
 
     return (
         <koenig.KoenigComposer
+            cardConfig={cardConfig}
             darkMode={darkMode}
+            fileUploader={fileUploader}
             initialEditorState={initialEditorState}
             nodes={koenig[defaultNodes]}
             onError={onError}

@@ -8,6 +8,7 @@ import {didCancel, task} from 'ember-concurrency';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 
+// TODO(NY-1097) This should be DRYed out with what's in the `useFileUpload` hook.
 export const fileTypes = {
     image: {
         mimeTypes: ['image/gif', 'image/jpg', 'image/jpeg', 'image/png', 'image/svg+xml', 'image/webp'],
@@ -468,6 +469,7 @@ export default class KoenigLexicalEditor extends Component {
         };
         const cardConfig = Object.assign({}, defaultCardConfig, props.cardConfig, {pinturaConfig: this.pinturaConfig, visibilitySettings: defaultCardConfig.visibilitySettings});
 
+        // TODO(NY-1097) This should be DRYed out with the other `useFileUpload` hook.
         const useFileUpload = (type = 'image') => {
             const [progress, setProgress] = React.useState(0);
             const [isLoading, setLoading] = React.useState(false);
