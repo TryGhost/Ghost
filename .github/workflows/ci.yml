@@ -1269,19 +1269,28 @@ jobs:
           GHOST_E2E_BASE_IMAGE: ${{ steps.load.outputs.image-tag }}
         run: yarn workspace @tryghost/e2e build:docker
 
-      - name: Pull images
-        env:
-          GHOST_E2E_IMAGE: ghost-e2e:local
-        run: docker compose -f e2e/compose.yml pull
+      - name: Pull build mode gateway image
+        run: docker pull caddy:2-alpine
+
+      - name: Start E2E infra
+        run: yarn workspace @tryghost/e2e infra:up
+
+      - name: Fetch Tinybird config
+        run: yarn workspace @tryghost/e2e tinybird:fetch-config
 
       - name: Setup Playwright
         uses: ./.github/actions/setup-playwright
 
       - name: Run e2e tests
         env:
+          GHOST_E2E_MODE: build
           GHOST_E2E_IMAGE: ghost-e2e:local
           TEST_WORKERS_COUNT: 1
         run: yarn test:e2e:all --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }} --retries=2
+
+      - name: Stop E2E infra
+        if: always()
+        run: yarn workspace @tryghost/e2e infra:down
 
       - name: Upload blob report to GitHub Actions Artifacts
         if: failure()
