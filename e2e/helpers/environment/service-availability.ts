@@ -67,19 +67,13 @@ export async function isDevEnvironmentAvailable(): Promise<boolean> {
 
     return true;
 }
-
-// Cache availability checks per process
-const tinybirdAvailable: boolean | null = null;
-
 /**
  * Check if Tinybird is running.
  * Checks for tinybird-local service in ghost-dev compose project.
  */
 export async function isTinybirdAvailable(): Promise<boolean> {
-    if (tinybirdAvailable !== null) {
-        return tinybirdAvailable;
-    }
-
     const docker = new Docker();
-    return isServiceAvailable(docker, TINYBIRD.LOCAL_HOST);
+    const tinybirdAvailable = await isServiceAvailable(docker, TINYBIRD.LOCAL_HOST);
+    debug(`Tinybird availability for compose project ${DEV_ENVIRONMENT.projectNamespace}:`, tinybirdAvailable);
+    return tinybirdAvailable;
 }
