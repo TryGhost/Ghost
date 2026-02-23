@@ -164,11 +164,11 @@ describe('storage utils', function () {
     });
 
     describe('fn: isInternalImage', function () {
-        before(function () {
+        beforeEach(function () {
             configUtils.set({url: 'http://myblog.com/'});
         });
 
-        after(async function () {
+        afterEach(async function () {
             await configUtils.restore();
         });
 

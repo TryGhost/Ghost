@@ -1451,7 +1451,6 @@ class EmailRenderer {
             height: null
         };
     }
-
 }
 
 module.exports = EmailRenderer;

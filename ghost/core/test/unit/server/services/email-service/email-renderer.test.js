@@ -2989,7 +2989,7 @@ describe('Email renderer', function () {
 
     describe('limitImageWidth', function () {
         it('Limits width of local images', async function () {
-            const isLocal = (url) => url === 'http://your-blog.com/content/images/2017/01/02/example.png';
+            const isLocal = url => url === 'http://your-blog.com/content/images/2017/01/02/example.png';
             const emailRenderer = new EmailRenderer({
                 imageSize: {
                     getCachedImageSizeFromUrl() {
@@ -3011,7 +3011,7 @@ describe('Email renderer', function () {
         });
 
         it('Limits width and height of local images', async function () {
-            const isLocal = (url) => url === 'http://your-blog.com/content/images/2017/01/02/example.png';
+            const isLocal = url => url === 'http://your-blog.com/content/images/2017/01/02/example.png';
             const emailRenderer = new EmailRenderer({
                 imageSize: {
                     getCachedImageSizeFromUrl() {
@@ -3083,8 +3083,34 @@ describe('Email renderer', function () {
             assert.equal(response.href, 'https://example.com/content/images/example.png');
         });
 
+        it('Does not double-rewrite already-sized CDN image URLs', async function () {
+            const emailRenderer = new EmailRenderer({
+                imageSize: {
+                    getCachedImageSizeFromUrl() {
+                        return {
+                            width: 2000,
+                            height: 1000
+                        };
+                    }
+                },
+                storageUtils: {
+                    isLocalImage() {
+                        return false;
+                    },
+                    isInternalImage(url) {
+                        return url.startsWith('https://storage.ghost.is/c/6f/a3/test/content/images/');
+                    }
+                }
+            });
+
+            const response = await emailRenderer.limitImageWidth('https://storage.ghost.is/c/6f/a3/test/content/images/size/w600/2026/02/example.png');
+            assert.equal(response.width, 600);
+            assert.equal(response.height, 300);
+            assert.equal(response.href, 'https://storage.ghost.is/c/6f/a3/test/content/images/size/w600/2026/02/example.png');
+        });
+
         it('Returns default dimensions when getCachedImageSizeFromUrl returns null', async function () {
-            const isLocal = (url) => url === 'http://your-blog.com/content/images/2017/01/02/example.png';
+            const isLocal = url => url === 'http://your-blog.com/content/images/2017/01/02/example.png';
             const emailRenderer = new EmailRenderer({
                 imageSize: {
                     getCachedImageSizeFromUrl() {
