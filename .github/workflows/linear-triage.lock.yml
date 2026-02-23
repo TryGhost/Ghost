@@ -23,7 +23,7 @@
 #
 # Triage new Linear issues for the Berlin Bureau (BER) team — classify type, assign priority, tag product area, and post reasoning comments.
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"1e1d21353d1d28f4313b6d94510c79a616f93ac5ad328a3718b0a1489bad3094","compiler_version":"v0.49.3"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"9257cf83c33958a02eb856ea69019378c83361e2228059960d0d8ae141993532","compiler_version":"v0.49.3"}
 
 name: "Linear Issue Triage Agent"
 "on":
@@ -104,9 +104,6 @@ jobs:
           cat << 'GH_AW_PROMPT_EOF'
           <safe-output-tools>
           Tools: create_issue, missing_tool, missing_data
-          GH_AW_PROMPT_EOF
-          cat "/opt/gh-aw/prompts/safe_outputs_auto_create_issue.md"
-          cat << 'GH_AW_PROMPT_EOF'
           </safe-output-tools>
           <github-context>
           The following GitHub context information is available for this workflow:
@@ -355,12 +352,12 @@ jobs:
           mkdir -p /tmp/gh-aw/safeoutputs
           mkdir -p /tmp/gh-aw/mcp-logs/safeoutputs
           cat > /opt/gh-aw/safeoutputs/config.json << 'GH_AW_SAFE_OUTPUTS_CONFIG_EOF'
-          {"create_issue":{"max":1},"missing_data":{},"missing_tool":{},"noop":{"max":1}}
+          {"create_issue":{"max":1},"missing_data":{},"missing_tool":{}}
           GH_AW_SAFE_OUTPUTS_CONFIG_EOF
           cat > /opt/gh-aw/safeoutputs/tools.json << 'GH_AW_SAFE_OUTPUTS_TOOLS_EOF'
           [
             {
-              "description": "Create a new GitHub issue for tracking bugs, feature requests, or tasks. Use this for actionable work items that need assignment, labeling, and status tracking. For reports, announcements, or status updates that don't require task tracking, use create_discussion instead. CONSTRAINTS: Maximum 1 issue(s) can be created. Title will be prefixed with \"[linear-triage]\". Labels [linear-triage] will be automatically added.",
+              "description": "Create a new GitHub issue for tracking bugs, feature requests, or tasks. Use this for actionable work items that need assignment, labeling, and status tracking. For reports, announcements, or status updates that don't require task tracking, use create_discussion instead. CONSTRAINTS: Maximum 1 issue(s) can be created.",
               "inputSchema": {
                 "additionalProperties": false,
                 "properties": {
@@ -424,23 +421,6 @@ jobs:
                 "type": "object"
               },
               "name": "missing_tool"
-            },
-            {
-              "description": "Log a transparency message when no significant actions are needed. Use this to confirm workflow completion and provide visibility when analysis is complete but no changes or outputs are required (e.g., 'No issues found', 'All checks passed'). This ensures the workflow produces human-visible output even when no other actions are taken.",
-              "inputSchema": {
-                "additionalProperties": false,
-                "properties": {
-                  "message": {
-                    "description": "Status or completion message to log. Should explain what was analyzed and the outcome (e.g., 'Code review complete - no issues found', 'Analysis complete - all tests passing').",
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "message"
-                ],
-                "type": "object"
-              },
-              "name": "noop"
             },
             {
               "description": "Report that data or information needed to complete the task is not available. Use this when you cannot accomplish what was requested because required data, context, or information is missing.",
@@ -549,17 +529,6 @@ jobs:
                   "type": "string",
                   "sanitize": true,
                   "maxLength": 128
-                }
-              }
-            },
-            "noop": {
-              "defaultMax": 1,
-              "fields": {
-                "message": {
-                  "required": true,
-                  "type": "string",
-                  "sanitize": true,
-                  "maxLength": 65000
                 }
               }
             }
@@ -871,7 +840,6 @@ jobs:
       contents: read
       issues: write
     outputs:
-      noop_message: ${{ steps.noop.outputs.noop_message }}
       tools_reported: ${{ steps.missing_tool.outputs.tools_reported }}
       total_count: ${{ steps.missing_tool.outputs.total_count }}
     steps:
@@ -890,20 +858,6 @@ jobs:
           mkdir -p /tmp/gh-aw/safeoutputs/
           find "/tmp/gh-aw/safeoutputs/" -type f -print
           echo "GH_AW_AGENT_OUTPUT=/tmp/gh-aw/safeoutputs/agent_output.json" >> "$GITHUB_ENV"
-      - name: Process No-Op Messages
-        id: noop
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
-        env:
-          GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_NOOP_MAX: "1"
-          GH_AW_WORKFLOW_NAME: "Linear Issue Triage Agent"
-        with:
-          github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
-          script: |
-            const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
-            setupGlobals(core, github, context, exec, io);
-            const { main } = require('/opt/gh-aw/actions/noop.cjs');
-            await main();
       - name: Record Missing Tool
         id: missing_tool
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
@@ -944,8 +898,6 @@ jobs:
           GH_AW_WORKFLOW_NAME: "Linear Issue Triage Agent"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
-          GH_AW_NOOP_MESSAGE: ${{ steps.noop.outputs.noop_message }}
-          GH_AW_NOOP_REPORT_AS_ISSUE: "true"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1097,7 +1049,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_issue\":{\"labels\":[\"linear-triage\"],\"max\":1,\"title_prefix\":\"[linear-triage]\"},\"missing_data\":{},\"missing_tool\":{}}"
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_issue\":{\"max\":1},\"missing_data\":{},\"missing_tool\":{}}"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
