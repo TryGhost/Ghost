@@ -16,7 +16,6 @@ const crypto = require('crypto');
 const DEFAULT_LOCALE = 'en-gb';
 const DEFAULT_ACCENT_COLOR = '#15212A';
 const VALID_HEX_REGEX = /#([0-9a-f]{3}){1,2}$/i;
-const CONTENT_IMAGES_PATH_REGEX = /\/content\/images\//;
 const CONTENT_IMAGES_PATH_WITHOUT_SIZE_REGEX = /\/content\/images\/(?!size\/)/;
 
 // Wrapper function so that i18next-parser can find these strings
@@ -130,7 +129,6 @@ class EmailRenderer {
     #urlUtils;
     #getPostUrl;
     #storageUtils;
-    #imageBaseUrl;
 
     #handlebars;
     #renderTemplate;
@@ -153,8 +151,7 @@ class EmailRenderer {
      * @param {{render(object, options): string}} dependencies.renderers.mobiledoc
      * @param {{getCachedImageSizeFromUrl(url: string): Promise<{url: string, width: number, height: number} | null>}} dependencies.imageSize
      * @param {{urlFor(type: string, optionsOrAbsolute, absolute): string, isSiteUrl(url, context): boolean}} dependencies.urlUtils
-     * @param {{isLocalImage(url: string): boolean}} dependencies.storageUtils
-     * @param {string} [dependencies.imageBaseUrl] CDN base URL for images (e.g. from config urls:image)
+     * @param {{isLocalImage(url: string): boolean, isInternalImage(url: string): boolean}} dependencies.storageUtils
      * @param {(post: Post) => string} dependencies.getPostUrl
      * @param {object} dependencies.linkReplacer
      * @param {object} dependencies.linkTracking
@@ -173,7 +170,6 @@ class EmailRenderer {
         imageSize,
         urlUtils,
         storageUtils,
-        imageBaseUrl,
         getPostUrl,
         linkReplacer,
         linkTracking,
@@ -191,7 +187,6 @@ class EmailRenderer {
         this.#imageSize = imageSize;
         this.#urlUtils = urlUtils;
         this.#storageUtils = storageUtils;
-        this.#imageBaseUrl = (imageBaseUrl || '').replace(/\/+$/, '');
         this.#getPostUrl = getPostUrl;
         this.#linkReplacer = linkReplacer;
         this.#linkTracking = linkTracking;
@@ -1429,7 +1424,7 @@ class EmailRenderer {
                     size.height = visibleHeight;
                 }
 
-                if (this.#isGhostContentImageUrl(href)) {
+                if (this.#storageUtils.isInternalImage(href)) {
                     const sizePath = 'size/w' + (visibleWidth * 2) + (visibleHeight ? 'h' + (visibleHeight * 2) : '') + '/';
                     // we can safely request a 1200px image - Ghost will serve the original if it's smaller
                     return {
@@ -1457,31 +1452,6 @@ class EmailRenderer {
         };
     }
 
-    #isGhostContentImageUrl(href) {
-        if (!CONTENT_IMAGES_PATH_REGEX.test(href)) {
-            return false;
-        }
-
-        if (this.#storageUtils.isLocalImage(href)) {
-            return true;
-        }
-
-        try {
-            const parsedUrl = new URL(href);
-
-            if (this.#urlUtils?.isSiteUrl?.(parsedUrl)) {
-                return true;
-            }
-        } catch {
-            return false;
-        }
-
-        if (this.#imageBaseUrl && href.startsWith(this.#imageBaseUrl + '/')) {
-            return true;
-        }
-
-        return false;
-    }
 }
 
 module.exports = EmailRenderer;

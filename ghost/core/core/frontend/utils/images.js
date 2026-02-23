@@ -1,14 +1,12 @@
 const url = require('url');
 const imageTransform = require('@tryghost/image-transform');
-const config = require('../../shared/config');
 const urlUtils = require('../../shared/url-utils');
+const storageUtils = require('../../server/adapters/storage/utils');
 
 module.exports.detectInternalImage = function detectInternalImage(requestedImageUrl) {
     const siteUrl = urlUtils.getSiteUrl();
-    const imageBaseUrl = (config.get('urls:image') || '').replace(/\/+$/, '');
     const isAbsoluteImage = /https?:\/\//.test(requestedImageUrl);
-    const matchesImageBase = imageBaseUrl && requestedImageUrl.startsWith(imageBaseUrl + '/');
-    const isAbsoluteInternalImage = isAbsoluteImage && (requestedImageUrl.startsWith(siteUrl) || matchesImageBase);
+    const isAbsoluteInternalImage = isAbsoluteImage && (requestedImageUrl.startsWith(siteUrl) || storageUtils.isInternalImage(requestedImageUrl));
 
     // CASE: imagePath is a "protocol relative" url e.g. "//www.gravatar.com/ava..."
     //       by resolving the the imagePath relative to the blog url, we can then
