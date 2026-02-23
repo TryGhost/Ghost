@@ -68,7 +68,7 @@ const Members: React.FC = () => {
     const filtersClassName = cn(
         'flex flex-row',
         !hasFilters && 'items-center gap-2',
-        hasFilters && 'col-start-1 col-end-4 row-start-3 pt-5'
+        hasFilters && 'col-span-full row-start-4 pt-5'
     );
 
     return (

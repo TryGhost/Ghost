@@ -2,7 +2,6 @@ import {
     Button,
     Dialog,
     DialogContent,
-    DialogDescription,
     DialogFooter,
     DialogHeader,
     DialogTitle,
@@ -51,10 +50,9 @@ export function RemoveLabelModal({
         <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogContent className="gap-5">
                 <DialogHeader>
-                    <DialogTitle>Remove label from members</DialogTitle>
-                    <DialogDescription>
-                        Remove a label from {memberCount.toLocaleString()} {memberCount === 1 ? 'member' : 'members'}.
-                    </DialogDescription>
+                    <DialogTitle>
+                        Remove label from {memberCount.toLocaleString()} {memberCount === 1 ? 'member' : 'members'}
+                    </DialogTitle>
                 </DialogHeader>
 
                 <div className="space-y-2">

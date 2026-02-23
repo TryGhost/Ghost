@@ -1,3 +1,4 @@
+const config = require('../../../shared/config');
 const urlUtils = require('../../../shared/url-utils');
 /**
  * @TODO: move `events.js` to here - e.g. storageUtils.getStorage
@@ -50,4 +51,18 @@ exports.isLocalImage = function isLocalImage(imagePath) {
     } else {
         return false;
     }
+};
+
+/**
+ * @description Checks whether the image is managed by Ghost storage (local or CDN)
+ * @param {String} imagePath as URL or filepath
+ * @returns {Boolean}
+ */
+exports.isInternalImage = function isInternalImage(imagePath) {
+    if (this.isLocalImage(imagePath)) {
+        return true;
+    }
+
+    const imageBaseUrl = (config.get('urls:image') || '').replace(/\/+$/, '');
+    return !!(imageBaseUrl && imagePath.startsWith(imageBaseUrl + '/'));
 };
