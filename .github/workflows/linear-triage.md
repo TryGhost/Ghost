@@ -19,8 +19,8 @@ network:
     - node
     - mcp.linear.app
 safe-outputs:
-  noop:
-    max: 1
+  create-issue:
+  noop: false
 ---
 
 # Linear Issue Triage Agent
