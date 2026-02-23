@@ -128,36 +128,27 @@ describe('Unit: Component: koenig-lexical-editor', function () {
         it('shows web and email toggles when no post context is provided', function () {
             const settings = getCardVisibilitySettings();
 
-            expect(settings).to.deep.equal({
-                showWeb: true,
-                showEmail: true
-            });
+            expect(settings).to.equal('web and email');
         });
 
-        it('shows web and email toggles for posts', function () {
+        it('returns web and email for posts', function () {
             const settings = getCardVisibilitySettings({
                 post: {
                     displayName: 'post'
                 }
             });
 
-            expect(settings).to.deep.equal({
-                showWeb: true,
-                showEmail: true
-            });
+            expect(settings).to.equal('web and email');
         });
 
-        it('hides email toggles for pages', function () {
+        it('returns web only for pages', function () {
             const settings = getCardVisibilitySettings({
                 post: {
                     displayName: 'page'
                 }
             });
 
-            expect(settings).to.deep.equal({
-                showWeb: true,
-                showEmail: false
-            });
+            expect(settings).to.equal('web only');
         });
     });
 });

@@ -86,10 +86,7 @@ export function getCardVisibilitySettings(cardConfig = {}) {
     const post = cardConfig.post;
     const isPage = post?.isPage || post?.displayName === 'page';
 
-    return {
-        showWeb: true,
-        showEmail: !isPage
-    };
+    return isPage ? 'web only' : 'web and email';
 }
 
 /**
@@ -468,9 +465,8 @@ export default class KoenigLexicalEditor extends Component {
             stripeEnabled: checkStripeEnabled(), // returns a boolean
             visibilitySettings: getCardVisibilitySettings(props.cardConfig)
         };
-        const cardConfig = Object.assign({}, defaultCardConfig, props.cardConfig, {pinturaConfig: this.pinturaConfig});
-        cardConfig.visibilitySettings = Object.assign({}, defaultCardConfig.visibilitySettings, props.cardConfig?.visibilitySettings);
-        
+        const cardConfig = Object.assign({}, defaultCardConfig, props.cardConfig, {pinturaConfig: this.pinturaConfig, visibilitySettings: defaultCardConfig.visibilitySettings});
+
         const useFileUpload = (type = 'image') => {
             const [progress, setProgress] = React.useState(0);
             const [isLoading, setLoading] = React.useState(false);
