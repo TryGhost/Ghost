@@ -10,9 +10,9 @@ tools:
 mcp-servers:
   linear:
     command: "npx"
-    args: ["-y", "mcp-remote", "https://mcp.linear.app/mcp", "--header", "Authorization:${LINEAR_AUTH_HEADER}"]
+    args: ["-y", "mcp-remote", "https://mcp.linear.app/mcp", "--header", "Authorization:Bearer ${{ secrets.LINEAR_API_KEY }}"]
     env:
-      LINEAR_AUTH_HEADER: Bearer ${{ secrets.LINEAR_API_KEY }}
+      LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
 network:
   allowed:
     - defaults
