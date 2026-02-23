@@ -1,3 +1,5 @@
+const getDiscountWindow = require('./get-discount-window');
+
 /**
  * Determines if a subscription currently has an active offer.
  * Uses discount_start/discount_end (synced from Stripe) when available,
@@ -8,17 +10,23 @@
  * @returns {Promise<boolean>}
  */
 module.exports = async function hasActiveOffer(subscriptionModel, offersAPI) {
-    const discountStart = subscriptionModel.get('discount_start');
-    const discountEnd = subscriptionModel.get('discount_end');
-    const trialEndAt = subscriptionModel.get('trial_end_at');
+    const subscriptionData = {
+        discount_start: subscriptionModel.get('discount_start'),
+        discount_end: subscriptionModel.get('discount_end'),
+        trial_start_at: subscriptionModel.get('trial_start_at'),
+        trial_end_at: subscriptionModel.get('trial_end_at'),
+        start_date: subscriptionModel.get('start_date')
+    };
 
     // Check for active Stripe discount (post-6.16 data)
-    if (discountStart) {
-        return !discountEnd || new Date(discountEnd) > new Date();
+    // discount_start takes precedence over trial and legacy fallback
+    const discountWindow = getDiscountWindow(subscriptionData, null);
+    if (discountWindow) {
+        return !discountWindow.end || new Date(discountWindow.end) > new Date();
     }
 
-    // Check for active trial (trial offers)
-    if (trialEndAt && new Date(trialEndAt) > new Date()) {
+    // Check for active trial (trial/free_months offers)
+    if (subscriptionData.trial_end_at && new Date(subscriptionData.trial_end_at) > new Date()) {
         return true;
     }
 
@@ -35,26 +43,14 @@ module.exports = async function hasActiveOffer(subscriptionModel, offersAPI) {
             return false;
         }
 
-        if (offer.duration === 'forever') {
-            return true;
+        const legacyWindow = getDiscountWindow(subscriptionData, offer);
+        if (legacyWindow) {
+            return !legacyWindow.end || new Date(legacyWindow.end) > new Date();
         }
 
-        if (offer.duration === 'once') {
-            return false; // once = already applied and expired
-        }
-
-        if (offer.duration === 'repeating' && offer.duration_in_months > 0) {
-            const startDate = new Date(subscriptionModel.get('start_date'));
-            const end = new Date(startDate);
-
-            end.setUTCMonth(end.getUTCMonth() + offer.duration_in_months);
-
-            return new Date() < end;
-        }
+        return false;
     } catch (e) {
         // If we can't look up the offer, err on the side of blocking
         return true;
     }
-
-    return false;
 };
