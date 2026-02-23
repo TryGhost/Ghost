@@ -205,9 +205,8 @@ function FreeTrialLabel({subscription}) {
 function FreeMonthsLabel({nextPayment, subscription}) {
     const months = nextPayment?.discount?.amount ?? 0;
     const renewalDate = getDateString(subscription?.current_period_end);
-    const label = months === 1
-        ? `1 month free - Renews ${renewalDate}`
-        : `${months} months free - Renews ${renewalDate}`;
+    const monthsText = months === 1 ? '1 month free' : `${months} months free`;
+    const label = renewalDate ? `${monthsText} - Renews ${renewalDate}` : monthsText;
 
     return (
         <p className="gh-portal-account-discountcontainer" data-testid="offer-label">
