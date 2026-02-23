@@ -11,7 +11,6 @@ import {
     extendedQuoteNodeReplacement,
     extendedTextNodeReplacement
 } from '@tryghost/kg-default-nodes';
-import {FileNode} from '../nodes/FileNode';
 import {HeadingNode, QuoteNode} from '@lexical/rich-text';
 import {HorizontalRuleNode} from '../nodes/HorizontalRuleNode';
 import {HtmlNode} from '../nodes/HtmlNode';
@@ -42,7 +41,6 @@ const EMAIL_EDITOR_NODES = [
     ImageNode,
     CalloutNode,
     HtmlNode,
-    FileNode,
     ButtonNode,
     BookmarkNode,
     EmailCtaNode
