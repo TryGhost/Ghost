@@ -256,14 +256,19 @@ function getOfferMessage(offer, originalPrice, currency, amountOff, subscription
         const months = offer.amount;
         const monthLabel = months === 1 ? '1 month' : `${months} months`;
 
-        let newBillingDate = '';
         if (subscription?.current_period_end) {
             const date = new Date(subscription.current_period_end);
-            date.setMonth(date.getMonth() + months);
-            newBillingDate = getDateString(date.toISOString());
+            const originalDay = date.getDate();
+            let targetMonth = date.getMonth() + months;
+            let targetYear = date.getFullYear() + Math.floor(targetMonth / 12);
+            targetMonth = targetMonth % 12;
+            const daysInTargetMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
+            const newDate = new Date(targetYear, targetMonth, Math.min(originalDay, daysInTargetMonth));
+            const newBillingDate = getDateString(newDate.toISOString());
+            return `Enjoy ${monthLabel} free on us. Your next billing date will be ${newBillingDate}.`;
         }
 
-        return `Enjoy ${monthLabel} free on us. Your next billing date will be ${newBillingDate}.`;
+        return `Enjoy ${monthLabel} free on us.`;
     }
 
     if (offer.duration === 'forever') {
