@@ -258,13 +258,13 @@ function getOfferMessage(offer, originalPrice, currency, amountOff, subscription
 
         if (subscription?.current_period_end) {
             const date = new Date(subscription.current_period_end);
-            const originalDay = date.getDate();
-            let targetMonth = date.getMonth() + months;
-            let targetYear = date.getFullYear() + Math.floor(targetMonth / 12);
+            const originalDay = date.getUTCDate();
+            let targetMonth = date.getUTCMonth() + months;
+            let targetYear = date.getUTCFullYear() + Math.floor(targetMonth / 12);
             targetMonth = targetMonth % 12;
-            const daysInTargetMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
-            const newDate = new Date(targetYear, targetMonth, Math.min(originalDay, daysInTargetMonth));
-            const newBillingDate = getDateString(newDate.toISOString());
+            const daysInTargetMonth = new Date(Date.UTC(targetYear, targetMonth + 1, 0)).getUTCDate();
+            const newDate = new Date(Date.UTC(targetYear, targetMonth, Math.min(originalDay, daysInTargetMonth)));
+            const newBillingDate = newDate.toLocaleDateString('en-GB', {year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC'});
             return `Enjoy ${monthLabel} free on us. Your next billing date will be ${newBillingDate}.`;
         }
 
