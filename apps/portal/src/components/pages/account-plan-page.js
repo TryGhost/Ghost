@@ -251,13 +251,19 @@ function PlansOrProductSection({selectedPlan, onPlanSelect, onPlanCheckout, chan
 }
 
 // TODO: Add i18n once copy is finalized
-function getOfferMessage(offer, originalPrice, currency, amountOff) {
+function getOfferMessage(offer, originalPrice, currency, amountOff, subscription) {
     if (offer.type === 'free_months') {
         const months = offer.amount;
         const monthLabel = months === 1 ? '1 month' : `${months} months`;
-        const dayLabel = months * 30;
 
-        return `Enjoy ${monthLabel} on us. Your next billing date will be pushed back by ${dayLabel} days.`;
+        let newBillingDate = '';
+        if (subscription?.current_period_end) {
+            const date = new Date(subscription.current_period_end);
+            date.setMonth(date.getMonth() + months);
+            newBillingDate = getDateString(date.toISOString());
+        }
+
+        return `Enjoy ${monthLabel} free on us. Your next billing date will be ${newBillingDate}.`;
     }
 
     if (offer.duration === 'forever') {
@@ -281,8 +287,9 @@ function getOfferMessage(offer, originalPrice, currency, amountOff) {
 
 // TODO: Add i18n once copy is finalized
 const RetentionOfferSection = ({offer, product, price, onAcceptOffer, onDeclineOffer}) => {
-    const {brandColor, action} = useContext(AppContext);
+    const {brandColor, action, member} = useContext(AppContext);
     const isAcceptingOffer = action === 'applyOffer:running';
+    const subscription = getMemberSubscription({member});
 
     const originalPrice = formatNumber(price.amount / 100);
     const currency = getCurrencySymbol(price.currency);
@@ -291,9 +298,9 @@ const RetentionOfferSection = ({offer, product, price, onAcceptOffer, onDeclineO
     const discountText = offer.type === 'free_months' ? `${amountOff} free` : `${amountOff} off`;
     const cadenceLabel = offer.cadence === 'month' ? 'Monthly' : 'Yearly';
     const productCadenceLabel = `${product.name} - ${cadenceLabel}`;
-    const displayDescription = offer.display_description || 'We\'d hate to see you go! How about a special offer to stay?';
+    const displayDescription = offer.display_description || 'We\'d hate to see you leave. How about a special offer to stay?';
 
-    const offerMessage = getOfferMessage(offer, originalPrice, currency, amountOff);
+    const offerMessage = getOfferMessage(offer, originalPrice, currency, amountOff, subscription);
 
     // TODO: Add i18n once copy is finalized
     return (

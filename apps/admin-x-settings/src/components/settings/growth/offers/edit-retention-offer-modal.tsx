@@ -230,7 +230,7 @@ const RetentionOfferSidebar: React.FC<{
                                 <TextField
                                     error={Boolean(errors.displayTitle)}
                                     hint={errors.displayTitle}
-                                    placeholder='Before you go...'
+                                    placeholder='Before you go'
                                     title='Display title'
                                     value={formState.displayTitle}
                                     onChange={(e) => {
@@ -239,7 +239,7 @@ const RetentionOfferSidebar: React.FC<{
                                     onKeyDown={() => clearError('displayTitle')}
                                 />
                                 <TextArea
-                                    placeholder='We&#39;d hate to see you go! How about a special offer to stay?'
+                                    placeholder='We&#39;d hate to see you leave. How about a special offer to stay?'
                                     title='Display description'
                                     value={formState.displayDescription}
                                     onChange={(e) => {
