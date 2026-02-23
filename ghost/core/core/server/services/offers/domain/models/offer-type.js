@@ -1,7 +1,7 @@
 const ValueObject = require('./shared/value-object');
 const InvalidOfferType = require('../errors').InvalidOfferType;
 
-/** @extends ValueObject<'fixed'|'percent'|'trial'> */
+/** @extends ValueObject<'fixed'|'percent'|'trial'|'free_months'> */
 class OfferType extends ValueObject {
     /** @param {unknown} type */
     static create(type) {
@@ -10,9 +10,9 @@ class OfferType extends ValueObject {
                 message: 'Offer `type` must be a string.'
             });
         }
-        if (type !== 'percent' && type !== 'fixed' && type !== 'trial') {
+        if (type !== 'percent' && type !== 'fixed' && type !== 'trial' && type !== 'free_months') {
             throw new InvalidOfferType({
-                message: 'Offer `type` must be one of "percent", "fixed" or "trial".'
+                message: 'Offer `type` must be one of "percent", "fixed", "trial" or "free_months".'
             });
         }
 
@@ -26,6 +26,8 @@ class OfferType extends ValueObject {
     static Fixed = new OfferType('fixed');
 
     static Trial = new OfferType('trial');
+
+    static FreeMonths = new OfferType('free_months');
 }
 
 module.exports = OfferType;

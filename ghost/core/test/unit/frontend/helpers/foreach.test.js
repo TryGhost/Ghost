@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const sinon = require('sinon');
 const _ = require('lodash');
 const foreach = require('../../../../core/frontend/helpers/foreach');
@@ -52,7 +51,7 @@ describe('{{#foreach}} helper', function () {
             sinon.assert.callCount(options.fn, _.size(context));
 
             _.each(context, function (value, index) {
-                options.fn.getCall(index).args[0].should.eql(value);
+                assert.equal(options.fn.getCall(index).args[0], value);
                 assert.equal(options.fn.getCall(index).args[1].data, undefined);
             });
         });
@@ -77,7 +76,7 @@ describe('{{#foreach}} helper', function () {
             sinon.assert.callCount(options.fn, _.size(context));
 
             _.each(_.keys(context), function (value, index) {
-                options.fn.getCall(index).args[0].should.eql(context[value]);
+                assert.equal(options.fn.getCall(index).args[0], context[value]);
                 assert.equal(options.fn.getCall(index).args[1].data, undefined);
             });
         });
@@ -103,7 +102,7 @@ describe('{{#foreach}} helper', function () {
             sinon.assert.callCount(options.fn, _.size(context));
 
             _.each(context, function (value, index) {
-                options.fn.getCall(index).args[0].should.eql(value);
+                assert.equal(options.fn.getCall(index).args[0], value);
                 assertExists(options.fn.getCall(index).args[1].data);
 
                 // Expected properties
@@ -115,7 +114,7 @@ describe('{{#foreach}} helper', function () {
                 assert.equal(resultData[index].data.number, index + 1);
             });
 
-            resultData[_.size(context) - 1].data.should.eql(options.fn.lastCall.args[1].data);
+            assert.deepEqual(resultData[_.size(context) - 1].data, options.fn.lastCall.args[1].data);
         });
 
         it('should populate data when private data is supplied (object)', function () {
@@ -145,7 +144,7 @@ describe('{{#foreach}} helper', function () {
             sinon.assert.callCount(options.fn, _.size(context));
 
             _.each(_.keys(context), function (value, index) {
-                options.fn.getCall(index).args[0].should.eql(context[value]);
+                assert.equal(options.fn.getCall(index).args[0], context[value]);
                 assertExists(options.fn.getCall(index).args[1].data);
 
                 // Expected properties
@@ -157,7 +156,7 @@ describe('{{#foreach}} helper', function () {
                 assert.equal(resultData[index].data.number, index + 1);
             });
 
-            resultData[_.size(context) - 1].data.should.eql(options.fn.lastCall.args[1].data);
+            assert.deepEqual(resultData[_.size(context) - 1].data, options.fn.lastCall.args[1].data);
         });
 
         it('should handle rowStart and rowEnd for multiple columns (array)', function () {
@@ -180,7 +179,7 @@ describe('{{#foreach}} helper', function () {
             sinon.assert.callCount(options.fn, _.size(context));
 
             _.each(context, function (value, index) {
-                options.fn.getCall(index).args[0].should.eql(value);
+                assert.equal(options.fn.getCall(index).args[0], value);
                 assertExists(options.fn.getCall(index).args[1].data);
 
                 // Expected properties
@@ -192,7 +191,7 @@ describe('{{#foreach}} helper', function () {
                 assert.equal(resultData[index].data.number, index + 1);
             });
 
-            resultData[_.size(context) - 1].data.should.eql(options.fn.lastCall.args[1].data);
+            assert.deepEqual(resultData[_.size(context) - 1].data, options.fn.lastCall.args[1].data);
         });
 
         it('should handle rowStart and rowEnd for multiple columns (object)', function () {
@@ -222,7 +221,7 @@ describe('{{#foreach}} helper', function () {
             sinon.assert.callCount(options.fn, _.size(context));
 
             _.each(_.keys(context), function (value, index) {
-                options.fn.getCall(index).args[0].should.eql(context[value]);
+                assert.equal(options.fn.getCall(index).args[0], context[value]);
                 assertExists(options.fn.getCall(index).args[1].data);
 
                 // Expected properties
@@ -234,7 +233,7 @@ describe('{{#foreach}} helper', function () {
                 assert.equal(resultData[index].data.number, index + 1);
             });
 
-            resultData[_.size(context) - 1].data.should.eql(options.fn.lastCall.args[1].data);
+            assert.deepEqual(resultData[_.size(context) - 1].data, options.fn.lastCall.args[1].data);
         });
 
         it('should return the correct inverse result if no context is provided', function () {

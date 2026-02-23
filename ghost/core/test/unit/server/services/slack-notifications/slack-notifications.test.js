@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const SlackNotifications = require('../../../../../core/server/services/slack-notifications/slack-notifications');
 const nock = require('nock');

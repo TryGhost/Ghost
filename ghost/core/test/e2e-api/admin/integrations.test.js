@@ -1,7 +1,6 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../utils/assertions');
 const _ = require('lodash');
-const should = require('should');
 const supertest = require('supertest');
 const config = require('../../../core/shared/config');
 const testUtils = require('../../utils');
@@ -85,7 +84,7 @@ describe('Integrations API', function () {
         assert.equal(secret.length, 64);
 
         assertExists(res.headers.location);
-        assert.equal(res.headers.location, `http://127.0.0.1:2369${localUtils.API.getApiQuery('integrations/')}${res.body.integrations[0].id}/`);
+        assert.equal(new URL(res.headers.location).pathname, `/ghost/api/admin/integrations/${res.body.integrations[0].id}/`);
     });
 
     it('Can successfully create a single integration with a webhook', async function () {
@@ -115,7 +114,7 @@ describe('Integrations API', function () {
         assert.equal(webhook.integration_id, integration.id);
 
         assertExists(res.headers.location);
-        assert.equal(res.headers.location, `http://127.0.0.1:2369${localUtils.API.getApiQuery('integrations/')}${res.body.integrations[0].id}/`);
+        assert.equal(new URL(res.headers.location).pathname, `/ghost/api/admin/integrations/${res.body.integrations[0].id}/`);
     });
 
     it('Can successfully get a created integration', async function () {
@@ -262,7 +261,7 @@ describe('Integrations API', function () {
         const [updatedIntegration] = res2.body.integrations;
         const updatedAdminApiKey = updatedIntegration.api_keys.find(key => key.type === 'admin');
         assert.equal(updatedIntegration.id, createdIntegration.id);
-        updatedAdminApiKey.secret.should.not.eql(adminApiKey.secret);
+        assert.notEqual(updatedAdminApiKey.secret, adminApiKey.secret);
 
         const res3 = await request.get(localUtils.API.getApiQuery(`actions/?filter=resource_id:'${adminApiKey.id}'&include=actor`))
             .set('Origin', config.get('url'))
@@ -348,8 +347,8 @@ describe('Integrations API', function () {
         await request.del(localUtils.API.getApiQuery(`integrations/${createdIntegration.id}/`))
             .set('Origin', config.get('url'))
             .expect(204)
-            .expect((_res) => {
-                _res.body.should.be.empty();
+            .expect(({body}) => {
+                assert.deepEqual(body, {});
             });
 
         await request.get(localUtils.API.getApiQuery(`integrations/${createdIntegration.id}/`))

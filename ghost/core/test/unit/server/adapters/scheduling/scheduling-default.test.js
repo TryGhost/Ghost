@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const sinon = require('sinon');
 const moment = require('moment');
 const _ = require('lodash');
@@ -52,7 +51,7 @@ describe('Scheduling Default Adapter', function () {
             assert.equal(scope.adapter.allJobs[moment(dates[7]).valueOf()], undefined);
             assert.equal(scope.adapter._execute.calledTwice, true);
 
-            Object.keys(scope.adapter.allJobs).length.should.eql(dates.length - 2);
+            assert.equal(Object.keys(scope.adapter.allJobs).length, dates.length - 2);
             assert.deepEqual(Object.keys(scope.adapter.allJobs), [
                 moment(dates[2]).valueOf().toString(),
                 moment(dates[6]).valueOf().toString(),
@@ -139,7 +138,7 @@ describe('Scheduling Default Adapter', function () {
 
             sinon.stub(scope.adapter, '_execute').callsFake(function (nextJobs) {
                 assert.equal(Object.keys(nextJobs).length, 121);
-                Object.keys(scope.adapter.allJobs).length.should.eql(1000 - 121);
+                assert.equal(Object.keys(scope.adapter.allJobs).length, 1000 - 121);
                 done();
             });
 

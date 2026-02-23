@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const minify = require('html-minifier').minify;
 const prettifyHTML = require('./prettify-html');
 

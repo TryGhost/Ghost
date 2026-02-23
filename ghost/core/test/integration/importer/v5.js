@@ -73,7 +73,7 @@ describe('Importing 5.x export', function () {
 
         // Imported user
         assert.equal(user2.email, 'import-test-user@ghost.org');
-        user2.id.should.not.equal(LEGACY_HARDCODED_USER_ID);
+        assert.notEqual(user2.id, LEGACY_HARDCODED_USER_ID);
 
         assert.equal(posts.data.length, 2);
 

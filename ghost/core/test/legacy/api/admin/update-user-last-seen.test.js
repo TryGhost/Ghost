@@ -1,6 +1,6 @@
+const assert = require('assert/strict');
 const {assertExists} = require('../../../utils/assertions');
 const sinon = require('sinon');
-const should = require('should');
 
 const {DataGenerator} = require('../../../utils');
 const {agentProvider, fixtureManager} = require('../../../utils/e2e-framework');
@@ -58,7 +58,7 @@ describe('Update User Last Seen', function () {
 
         const ownerAfter = await models.User.findOne({id: userId});
         assertExists(ownerAfter);
-        should(ownerAfter.get('last_seen')).not.eql(lastSeen);
+        assert.notDeepEqual(ownerAfter.get('last_seen'), lastSeen);
     });
 
     it('Should only update last seen after 1 hour', async function () {
@@ -75,7 +75,7 @@ describe('Update User Last Seen', function () {
 
         const ownerAfter = await models.User.findOne({id: userId});
         assertExists(ownerAfter);
-        should(ownerAfter.get('last_seen')).eql(lastSeen);
+        assert.deepEqual(ownerAfter.get('last_seen'), lastSeen);
     });
 
     it('Should always update last seen after login', async function () {
@@ -87,7 +87,7 @@ describe('Update User Last Seen', function () {
 
         const ownerAfter = await models.User.findOne({id: userId});
         assertExists(ownerAfter);
-        should(ownerAfter.get('last_seen')).not.eql(lastSeen);
+        assert.notDeepEqual(ownerAfter.get('last_seen'), lastSeen);
     });
 
     it('Should not update last seen for suspended users', async function () {
@@ -112,6 +112,6 @@ describe('Update User Last Seen', function () {
 
         const ownerAfter = await models.User.findOne({id: userId});
         assertExists(ownerAfter);
-        should(ownerAfter.get('last_seen')).eql(lastSeen);
+        assert.deepEqual(ownerAfter.get('last_seen'), lastSeen);
     });
 });

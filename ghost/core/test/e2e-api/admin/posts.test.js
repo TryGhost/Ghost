@@ -785,9 +785,9 @@ describe('Posts API', function () {
             assert(!post.lexical.includes('__GHOST_URL__'));
         });
 
-        it('Can read Mobiledoc post with CDN URLs for media/files when configured', async function () {
+        it('Can read Mobiledoc post with CDN URLs when configured', async function () {
             urlUtilsHelper.stubUrlUtilsWithCdn({
-                assetBaseUrls: {media: cdnUrl, files: cdnUrl}
+                assetBaseUrls: {media: cdnUrl, files: cdnUrl, image: cdnUrl}
             }, sinon);
 
             const res = await agent
@@ -797,25 +797,30 @@ describe('Posts API', function () {
             const post = res.body.posts[0];
             const mobiledoc = JSON.parse(post.mobiledoc);
 
-            // Images stay on site URL
-            assert.equal(post.feature_image, `${siteUrl}/content/images/feature.jpg`);
-            assert.equal(mobiledoc.cards.find(c => c[0] === 'image')[1].src, `${siteUrl}/content/images/inline.jpg`);
-            // Media/files use CDN URL
+            // All assets use CDN URL
+            assert.equal(post.feature_image, `${cdnUrl}/content/images/feature.jpg`);
+            assert.equal(mobiledoc.cards.find(c => c[0] === 'image')[1].src, `${cdnUrl}/content/images/inline.jpg`);
             assert.equal(mobiledoc.cards.find(c => c[0] === 'file')[1].src, `${cdnUrl}/content/files/document.pdf`);
             assert.equal(mobiledoc.cards.find(c => c[0] === 'video')[1].src, `${cdnUrl}/content/media/video.mp4`);
             assert.equal(mobiledoc.cards.find(c => c[0] === 'audio')[1].src, `${cdnUrl}/content/media/audio.mp3`);
-            // Inserted snippet images stay on site URL
-            assert(post.mobiledoc.includes(`${siteUrl}/content/images/snippet-inline.jpg`));
-            // Inserted snippet media/files use CDN URL
+            // Video/audio thumbnails use CDN URL
+            assert.equal(mobiledoc.cards.find(c => c[0] === 'video')[1].thumbnailSrc, `${cdnUrl}/content/images/video-thumb.jpg`);
+            // Gallery images use CDN URL
+            const galleryCard = mobiledoc.cards.find(c => c[0] === 'gallery');
+            galleryCard[1].images.forEach((image) => {
+                assert(image.src.startsWith(cdnUrl));
+            });
+            // Inserted snippet images use CDN URL
+            assert(post.mobiledoc.includes(`${cdnUrl}/content/images/snippet-inline.jpg`));
             assert(post.mobiledoc.includes(`${cdnUrl}/content/files/snippet-document.pdf`));
             assert(post.mobiledoc.includes(`${cdnUrl}/content/media/snippet-video.mp4`));
             assert(post.mobiledoc.includes(`${cdnUrl}/content/media/snippet-audio.mp3`));
             assert(!post.mobiledoc.includes('__GHOST_URL__'));
         });
 
-        it('Can read Lexical post with CDN URLs for media/files when configured', async function () {
+        it('Can read Lexical post with CDN URLs when configured', async function () {
             urlUtilsHelper.stubUrlUtilsWithCdn({
-                assetBaseUrls: {media: cdnUrl, files: cdnUrl}
+                assetBaseUrls: {media: cdnUrl, files: cdnUrl, image: cdnUrl}
             }, sinon);
 
             const res = await agent
@@ -824,16 +829,20 @@ describe('Posts API', function () {
 
             const post = res.body.posts[0];
 
-            // Images stay on site URL
-            assert.equal(post.feature_image, `${siteUrl}/content/images/feature.jpg`);
-            assert(post.lexical.includes(`${siteUrl}/content/images/inline.jpg`));
-            // Media/files use CDN URL
+            // All assets use CDN URL
+            assert.equal(post.feature_image, `${cdnUrl}/content/images/feature.jpg`);
+            assert(post.lexical.includes(`${cdnUrl}/content/images/inline.jpg`));
             assert(post.lexical.includes(`${cdnUrl}/content/files/document.pdf`));
             assert(post.lexical.includes(`${cdnUrl}/content/media/video.mp4`));
             assert(post.lexical.includes(`${cdnUrl}/content/media/audio.mp3`));
-            // Inserted snippet images stay on site URL
-            assert(post.lexical.includes(`${siteUrl}/content/images/snippet-inline.jpg`));
-            // Inserted snippet media/files use CDN URL
+            // Video/audio thumbnails use CDN URL
+            assert(post.lexical.includes(`${cdnUrl}/content/images/video-thumb.jpg`));
+            assert(post.lexical.includes(`${cdnUrl}/content/images/audio-thumb.jpg`));
+            // Gallery images use CDN URL
+            assert(post.lexical.includes(`${cdnUrl}/content/images/gallery-1.jpg`));
+            assert(post.lexical.includes(`${cdnUrl}/content/images/gallery-2.jpg`));
+            // Inserted snippet images use CDN URL
+            assert(post.lexical.includes(`${cdnUrl}/content/images/snippet-inline.jpg`));
             assert(post.lexical.includes(`${cdnUrl}/content/files/snippet-document.pdf`));
             assert(post.lexical.includes(`${cdnUrl}/content/media/snippet-video.mp4`));
             assert(post.lexical.includes(`${cdnUrl}/content/media/snippet-audio.mp3`));

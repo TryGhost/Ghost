@@ -25,12 +25,12 @@ function slugify(text: string): string {
         .replace(/\-\-+/g, '-');
 }
 
-interface OfferType {
+export interface OfferType {
     title: string;
     description: string;
 }
 
-const ButtonSelect: React.FC<{type: OfferType, checked: boolean, onClick: () => void}> = ({type, checked, onClick}) => {
+export const ButtonSelect: React.FC<{type: OfferType, checked: boolean, onClick: () => void}> = ({type, checked, onClick}) => {
     const checkboxClass = checked ? 'bg-black text-white dark:bg-white dark:text-black' : 'border border-grey-300 dark:border-grey-800';
 
     return (
@@ -579,7 +579,8 @@ const AddOfferModal = () => {
             durationInMonths: formState.durationInMonths || 0,
             currency: formState.currency || 'USD',
             status: formState.status || 'active',
-            tierId: formState.tierId || activeTiers[0]?.id
+            tierId: formState.tierId || activeTiers[0]?.id,
+            redemptionType: 'signup'
         };
     }, [formState, activeTiers]);
 
@@ -621,7 +622,7 @@ const AddOfferModal = () => {
             updateRoute('offers');
         }}
         backDropClick={false}
-        cancelLabel='Close'
+        cancelLabel='Cancel'
         deviceSelector={false}
         dirty={saveState === 'unsaved'}
         height='full'

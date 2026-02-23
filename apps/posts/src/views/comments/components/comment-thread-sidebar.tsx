@@ -17,16 +17,21 @@ interface CommentThreadSidebarProps {
     commentId: string | null;
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    commentPermalinksEnabled?: boolean;
 }
 
 const CommentThreadSidebar: React.FC<CommentThreadSidebarProps> = ({
     commentId,
     open,
-    onOpenChange,
-    commentPermalinksEnabled
+    onOpenChange
 }) => {
-    const {data: threadData, isLoading: isLoadingThread, isError: isThreadError} = useThreadComments(commentId ?? '', {
+    const {
+        data: threadData,
+        isLoading: isLoadingThread,
+        isError: isThreadError,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage
+    } = useThreadComments(commentId ?? '', {
         enabled: open && !!commentId
     });
 
@@ -97,7 +102,9 @@ const CommentThreadSidebar: React.FC<CommentThreadSidebarProps> = ({
                         </div>
                     ) : (
                         <CommentThreadList
-                            commentPermalinksEnabled={commentPermalinksEnabled}
+                            fetchNextPage={fetchNextPage}
+                            hasNextPage={hasNextPage}
+                            isFetchingNextPage={isFetchingNextPage}
                             replies={threadReplies}
                             selectedComment={selectedComment}
                             selectedCommentId={commentId ?? ''}

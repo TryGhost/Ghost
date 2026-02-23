@@ -21,8 +21,6 @@ async function waitForWelcomeEmailReceivedEvent(request: APIRequestContext, memb
 test.describe('Ghost Admin - Member Activity Events', () => {
     let emailClient: EmailClient;
 
-    test.use({labs: {welcomeEmails: true}});
-
     test.beforeEach(async () => {
         emailClient = new MailPit();
     });

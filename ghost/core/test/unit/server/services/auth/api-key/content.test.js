@@ -3,7 +3,6 @@ const {assertExists} = require('../../../../../utils/assertions');
 const errors = require('@tryghost/errors');
 const {authenticateContentApiKey} = require('../../../../../../core/server/services/auth/api-key/content');
 const models = require('../../../../../../core/server/models');
-const should = require('should');
 const sinon = require('sinon');
 
 describe('Content API Key Auth', function () {
@@ -39,7 +38,7 @@ describe('Content API Key Auth', function () {
 
         authenticateContentApiKey(req, res, (arg) => {
             assert.equal(arg, undefined);
-            req.api_key.should.eql(this.fakeApiKey);
+            assert.equal(req.api_key, this.fakeApiKey);
             done();
         });
     });

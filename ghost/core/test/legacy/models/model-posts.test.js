@@ -1,7 +1,6 @@
 const assert = require('node:assert/strict');
-const {assertExists} = require('../../utils/assertions');
+const {assertExists, assertObjectMatches} = require('../../utils/assertions');
 const errors = require('@tryghost/errors');
-const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../utils');
 const moment = require('moment');
@@ -773,7 +772,7 @@ describe('Post Model', function () {
                     assert(publishedPost.get('published_at') instanceof Date);
                     assert.equal(publishedPost.get('published_by'), testUtils.DataGenerator.Content.users[0].id);
                     assert(publishedPost.get('updated_at') instanceof Date);
-                    publishedPost.get('updated_at').should.not.equal(createdPostUpdatedDate);
+                    assert.notEqual(publishedPost.get('updated_at'), createdPostUpdatedDate);
 
                     assert.equal(Object.keys(eventsTriggered).length, 4);
                     assertExists(eventsTriggered['post.published']);
@@ -814,7 +813,7 @@ describe('Post Model', function () {
                     assert.equal(createdPost.get('html'), newPostDB.html);
                     assert.equal(createdPost.has('plaintext'), true);
                     assert.match(createdPost.get('plaintext'), /^testing/);
-                    // createdPost.get('slug').should.equal(newPostDB.slug + '-3');
+                    // assert.equal(createdPost.get('slug'), newPostDB.slug + '-3');
                     assert.equal((!!createdPost.get('featured')), false);
                     assert.equal((!!createdPost.get('page')), false);
 
@@ -842,7 +841,7 @@ describe('Post Model', function () {
                     assert(publishedPost.get('published_at') instanceof Date);
                     assert.equal(publishedPost.get('published_by'), testUtils.DataGenerator.Content.users[0].id);
                     assert(publishedPost.get('updated_at') instanceof Date);
-                    publishedPost.get('updated_at').should.not.equal(createdPostUpdatedDate);
+                    assert.notEqual(publishedPost.get('updated_at'), createdPostUpdatedDate);
 
                     assert.equal(Object.keys(eventsTriggered).length, 4);
                     assertExists(eventsTriggered['post.published']);
@@ -901,9 +900,9 @@ describe('Post Model', function () {
                     }]
                 }, _.merge({withRelated: ['authors']}, context)).then(function (newPost) {
                     assertExists(newPost);
-                    newPost.toJSON().primary_author.id.should.eql(testUtils.DataGenerator.forKnex.users[0].id);
+                    assert.equal(newPost.toJSON().primary_author.id, testUtils.DataGenerator.forKnex.users[0].id);
                     assert.equal(newPost.toJSON().authors.length, 1);
-                    newPost.toJSON().authors[0].id.should.eql(testUtils.DataGenerator.forKnex.users[0].id);
+                    assert.equal(newPost.toJSON().authors[0].id, testUtils.DataGenerator.forKnex.users[0].id);
                     done();
                 }).catch(done);
             });
@@ -1105,9 +1104,9 @@ describe('Post Model', function () {
                         }, context);
                     }).then(function (updatedSecondPost) {
                     // Should have updated from original
-                        updatedSecondPost.get('slug').should.not.equal(secondPost.slug);
+                        assert.notEqual(updatedSecondPost.get('slug'), secondPost.slug);
                         // Should not have a conflicted slug from the first
-                        updatedSecondPost.get('slug').should.not.equal(firstPost.slug);
+                        assert.notEqual(updatedSecondPost.get('slug'), firstPost.slug);
 
                         assert.equal(Object.keys(eventsTriggered).length, 3);
                         assertExists(eventsTriggered['post.edited']);
@@ -1118,53 +1117,54 @@ describe('Post Model', function () {
                         });
                     }).then(function (foundPost) {
                     // Should have updated from original
-                        foundPost.get('slug').should.not.equal(secondPost.slug);
+                        assert.notEqual(foundPost.get('slug'), secondPost.slug);
                         // Should not have a conflicted slug from the first
-                        foundPost.get('slug').should.not.equal(firstPost.slug);
+                        assert.notEqual(foundPost.get('slug'), firstPost.slug);
 
                         done();
                     }).catch(done);
             });
 
             it('it stores urls as transform-ready and reads as absolute', function (done) {
+                const siteUrl = configUtils.config.get('url');
                 const post = {
                     title: 'Absolute->Transform-ready URL Transform Test',
-                    mobiledoc: '{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"http://127.0.0.1:2369/content/images/card.jpg"}]],"markups":[["a",["href","http://127.0.0.1:2369/test"]]],"sections":[[1,"p",[[0,[0],1,"Testing"]]],[10,0]]}',
-                    custom_excerpt: 'Testing <a href="http://127.0.0.1:2369/internal">links</a> in custom excerpts',
-                    codeinjection_head: '<script src="http://127.0.0.1:2369/assets/head.js"></script>',
-                    codeinjection_foot: '<script src="http://127.0.0.1:2369/assets/foot.js"></script>',
-                    feature_image: 'http://127.0.0.1:2369/content/images/feature.png',
-                    canonical_url: 'http://127.0.0.1:2369/canonical',
+                    mobiledoc: `{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"${siteUrl}/content/images/card.jpg"}]],"markups":[["a",["href","${siteUrl}/test"]]],"sections":[[1,"p",[[0,[0],1,"Testing"]]],[10,0]]}`,
+                    custom_excerpt: `Testing <a href="${siteUrl}/internal">links</a> in custom excerpts`,
+                    codeinjection_head: `<script src="${siteUrl}/assets/head.js"></script>`,
+                    codeinjection_foot: `<script src="${siteUrl}/assets/foot.js"></script>`,
+                    feature_image: `${siteUrl}/content/images/feature.png`,
+                    canonical_url: `${siteUrl}/canonical`,
                     posts_meta: {
-                        og_image: 'http://127.0.0.1:2369/content/images/og.png',
-                        twitter_image: 'http://127.0.0.1:2369/content/images/twitter.png'
+                        og_image: `${siteUrl}/content/images/og.png`,
+                        twitter_image: `${siteUrl}/content/images/twitter.png`
                     }
                 };
 
                 models.Post.add(post, context).then((createdPost) => {
-                    assert.equal(createdPost.get('mobiledoc'), '{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"http://127.0.0.1:2369/content/images/card.jpg"}]],"markups":[["a",["href","http://127.0.0.1:2369/test"]]],"sections":[[1,"p",[[0,[0],1,"Testing"]]],[10,0]]}');
-                    assert.equal(createdPost.get('html'), '<p><a href="http://127.0.0.1:2369/test">Testing</a></p><figure class="kg-card kg-image-card"><img src="http://127.0.0.1:2369/content/images/card.jpg" class="kg-image" alt loading="lazy"></figure>');
+                    assert.equal(createdPost.get('mobiledoc'), `{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"${siteUrl}/content/images/card.jpg"}]],"markups":[["a",["href","${siteUrl}/test"]]],"sections":[[1,"p",[[0,[0],1,"Testing"]]],[10,0]]}`);
+                    assert.equal(createdPost.get('html'), `<p><a href="${siteUrl}/test">Testing</a></p><figure class="kg-card kg-image-card"><img src="${siteUrl}/content/images/card.jpg" class="kg-image" alt loading="lazy"></figure>`);
                     assert(createdPost.get('plaintext').includes('Testing'));
-                    assert.equal(createdPost.get('custom_excerpt'), 'Testing <a href="http://127.0.0.1:2369/internal">links</a> in custom excerpts');
-                    assert.equal(createdPost.get('codeinjection_head'), '<script src="http://127.0.0.1:2369/assets/head.js"></script>');
-                    assert.equal(createdPost.get('codeinjection_foot'), '<script src="http://127.0.0.1:2369/assets/foot.js"></script>');
-                    assert.equal(createdPost.get('feature_image'), 'http://127.0.0.1:2369/content/images/feature.png');
-                    assert.equal(createdPost.get('canonical_url'), 'http://127.0.0.1:2369/canonical');
+                    assert.equal(createdPost.get('custom_excerpt'), `Testing <a href="${siteUrl}/internal">links</a> in custom excerpts`);
+                    assert.equal(createdPost.get('codeinjection_head'), `<script src="${siteUrl}/assets/head.js"></script>`);
+                    assert.equal(createdPost.get('codeinjection_foot'), `<script src="${siteUrl}/assets/foot.js"></script>`);
+                    assert.equal(createdPost.get('feature_image'), `${siteUrl}/content/images/feature.png`);
+                    assert.equal(createdPost.get('canonical_url'), `${siteUrl}/canonical`);
 
                     const postMeta = createdPost.relations.posts_meta;
 
-                    assert.equal(postMeta.get('og_image'), 'http://127.0.0.1:2369/content/images/og.png');
-                    assert.equal(postMeta.get('twitter_image'), 'http://127.0.0.1:2369/content/images/twitter.png');
+                    assert.equal(postMeta.get('og_image'), `${siteUrl}/content/images/og.png`);
+                    assert.equal(postMeta.get('twitter_image'), `${siteUrl}/content/images/twitter.png`);
 
                     // ensure canonical_url is not transformed when protocol does not match
                     return createdPost.save({
-                        canonical_url: 'https://127.0.0.1:2369/https-internal',
+                        canonical_url: `${siteUrl.replace('http:', 'https:')}/https-internal`,
                         // sanity check for general absolute->relative transform during edits
-                        feature_image: 'http://127.0.0.1:2369/content/images/updated_feature.png'
+                        feature_image: `${siteUrl}/content/images/updated_feature.png`
                     });
                 }).then((updatedPost) => {
-                    assert.equal(updatedPost.get('canonical_url'), 'https://127.0.0.1:2369/https-internal');
-                    assert.equal(updatedPost.get('feature_image'), 'http://127.0.0.1:2369/content/images/updated_feature.png');
+                    assert.equal(updatedPost.get('canonical_url'), `${siteUrl.replace('http:', 'https:')}/https-internal`);
+                    assert.equal(updatedPost.get('feature_image'), `${siteUrl}/content/images/updated_feature.png`);
 
                     return updatedPost;
                 }).then((updatedPost) => {
@@ -1178,7 +1178,7 @@ describe('Post Model', function () {
                     assert.equal(knexPost.codeinjection_head, '<script src="__GHOST_URL__/assets/head.js"></script>');
                     assert.equal(knexPost.codeinjection_foot, '<script src="__GHOST_URL__/assets/foot.js"></script>');
                     assert.equal(knexPost.feature_image, '__GHOST_URL__/content/images/updated_feature.png');
-                    assert.equal(knexPost.canonical_url, 'https://127.0.0.1:2369/https-internal');
+                    assert.equal(knexPost.canonical_url, `${siteUrl.replace('http:', 'https:')}/https-internal`);
 
                     done();
                 }).catch(done);
@@ -1186,13 +1186,14 @@ describe('Post Model', function () {
 
             // NOTE: separate to the test above because mobiledoc+lexical cannot co-exist
             it('stores lexical as transform-ready and reads as absolute', async function () {
+                const siteUrl = configUtils.config.get('url');
                 const post = {
                     title: 'Absolute->Transform-ready Lexical URL Transform Test',
-                    lexical: `{"root":{"children":[{"type":"image","src":"http://127.0.0.1:2369/content/images/card.jpg"},{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"local link","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"link","version":1,"rel":null,"target":null,"url":"http://127.0.0.1:2369/local"}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1},{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"external link","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"link","version":1,"rel":null,"target":null,"url":"https://example.com/external"}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`
+                    lexical: `{"root":{"children":[{"type":"image","src":"${siteUrl}/content/images/card.jpg"},{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"local link","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"link","version":1,"rel":null,"target":null,"url":"${siteUrl}/local"}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1},{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"external link","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"link","version":1,"rel":null,"target":null,"url":"https://example.com/external"}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`
                 };
 
                 const createdPost = await models.Post.add(post, context);
-                assert.equal(createdPost.get('lexical'), `{"root":{"children":[{"type":"image","src":"http://127.0.0.1:2369/content/images/card.jpg"},{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"local link","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"link","version":1,"rel":null,"target":null,"url":"http://127.0.0.1:2369/local"}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1},{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"external link","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"link","version":1,"rel":null,"target":null,"url":"https://example.com/external"}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`, 'Post.add result');
+                assert.equal(createdPost.get('lexical'), `{"root":{"children":[{"type":"image","src":"${siteUrl}/content/images/card.jpg"},{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"local link","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"link","version":1,"rel":null,"target":null,"url":"${siteUrl}/local"}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1},{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"external link","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"link","version":1,"rel":null,"target":null,"url":"https://example.com/external"}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`, 'Post.add result');
 
                 const knexResult = await db.knex('posts').where({id: createdPost.id});
                 const [knexPost] = knexResult;
@@ -1200,7 +1201,7 @@ describe('Post Model', function () {
             });
 
             describe('URL transformations without CDN config', function () {
-                const siteUrl = 'http://127.0.0.1:2369';
+                const siteUrl = configUtils.config.get('url');
 
                 describe('Mobiledoc', function () {
                     let post, postsMeta, mobiledoc;
@@ -1318,14 +1319,14 @@ describe('Post Model', function () {
             });
 
             describe('URL transformations with CDN config', function () {
-                const siteUrl = 'http://127.0.0.1:2369';
                 const cdnUrl = 'https://cdn.example.com/c/site-uuid';
 
                 beforeEach(function () {
                     urlUtilsHelper.stubUrlUtilsWithCdn({
                         assetBaseUrls: {
                             media: cdnUrl,
-                            files: cdnUrl
+                            files: cdnUrl,
+                            image: cdnUrl
                         }
                     }, sinon);
                 });
@@ -1360,33 +1361,33 @@ describe('Post Model', function () {
                         assert(mobiledocString.includes(`${cdnUrl}/content/media/snippet-audio.mp3`));
                     });
 
-                    it('transforms feature_image to absolute site URL(NOT CDN)', async function () {
+                    it('transforms feature_image to CDN URL', async function () {
                         const post = await models.Post.findOne({slug: 'post-with-all-media-types-mobiledoc'}, {withRelated: ['tags']});
-                        assert.equal(post.get('feature_image'), `${siteUrl}/content/images/feature.jpg`);
+                        assert.equal(post.get('feature_image'), `${cdnUrl}/content/images/feature.jpg`);
                     });
 
-                    it('transforms gallery images to absolute site URL(NOT CDN)', async function () {
+                    it('transforms gallery images to CDN URL', async function () {
                         const post = await models.Post.findOne({slug: 'post-with-all-media-types-mobiledoc'}, {withRelated: ['tags']});
                         const mobiledoc = JSON.parse(post.get('mobiledoc'));
                         const galleryCard = mobiledoc.cards.find(card => card[0] === 'gallery');
                         galleryCard[1].images.forEach((image) => {
-                            image.src.should.startWith(siteUrl);
+                            assert(image.src.startsWith(cdnUrl));
                             assert(image.src.includes('/content/images/'));
                         });
                     });
 
-                    it('transforms inline images to absolute site URL(NOT CDN)', async function () {
+                    it('transforms inline images to CDN URL', async function () {
                         const post = await models.Post.findOne({slug: 'post-with-all-media-types-mobiledoc'}, {withRelated: ['tags']});
                         const mobiledoc = JSON.parse(post.get('mobiledoc'));
                         const imageCard = mobiledoc.cards.find(card => card[0] === 'image');
-                        assert.equal(imageCard[1].src, `${siteUrl}/content/images/inline.jpg`);
+                        assert.equal(imageCard[1].src, `${cdnUrl}/content/images/inline.jpg`);
                     });
 
-                    it('transforms video thumbnailSrc to absolute site URL(NOT CDN)', async function () {
+                    it('transforms video thumbnailSrc to CDN URL', async function () {
                         const post = await models.Post.findOne({slug: 'post-with-all-media-types-mobiledoc'}, {withRelated: ['tags']});
                         const mobiledoc = JSON.parse(post.get('mobiledoc'));
                         const videoCard = mobiledoc.cards.find(card => card[0] === 'video');
-                        assert.equal(videoCard[1].thumbnailSrc, `${siteUrl}/content/images/video-thumb.jpg`);
+                        assert.equal(videoCard[1].thumbnailSrc, `${cdnUrl}/content/images/video-thumb.jpg`);
                     });
                 });
 
@@ -1412,29 +1413,29 @@ describe('Post Model', function () {
                         assert(lexicalString.includes(`${cdnUrl}/content/media/snippet-audio.mp3`));
                     });
 
-                    it('transforms feature_image to absolute site URL(NOT CDN)', async function () {
+                    it('transforms feature_image to CDN URL', async function () {
                         const post = await models.Post.findOne({slug: 'post-with-all-media-types-lexical'}, {withRelated: ['tags']});
-                        assert.equal(post.get('feature_image'), `${siteUrl}/content/images/feature.jpg`);
+                        assert.equal(post.get('feature_image'), `${cdnUrl}/content/images/feature.jpg`);
                     });
 
-                    it('transforms gallery images to absolute site URL(NOT CDN)', async function () {
+                    it('transforms gallery images to CDN URL', async function () {
                         const post = await models.Post.findOne({slug: 'post-with-all-media-types-lexical'}, {withRelated: ['tags']});
                         const lexicalString = post.get('lexical');
-                        assert(lexicalString.includes(`${siteUrl}/content/images/gallery-1.jpg`));
-                        assert(lexicalString.includes(`${siteUrl}/content/images/gallery-2.jpg`));
+                        assert(lexicalString.includes(`${cdnUrl}/content/images/gallery-1.jpg`));
+                        assert(lexicalString.includes(`${cdnUrl}/content/images/gallery-2.jpg`));
                     });
 
-                    it('transforms inline images to absolute site URL(NOT CDN)', async function () {
+                    it('transforms inline images to CDN URL', async function () {
                         const post = await models.Post.findOne({slug: 'post-with-all-media-types-lexical'}, {withRelated: ['tags']});
                         const lexicalString = post.get('lexical');
-                        assert(lexicalString.includes(`${siteUrl}/content/images/inline.jpg`));
+                        assert(lexicalString.includes(`${cdnUrl}/content/images/inline.jpg`));
                     });
 
-                    it('transforms video/audio thumbnails to absolute site URL(NOT CDN)', async function () {
+                    it('transforms video/audio thumbnails to CDN URL', async function () {
                         const post = await models.Post.findOne({slug: 'post-with-all-media-types-lexical'}, {withRelated: ['tags']});
                         const lexicalString = post.get('lexical');
-                        assert(lexicalString.includes(`${siteUrl}/content/images/video-thumb.jpg`));
-                        assert(lexicalString.includes(`${siteUrl}/content/images/audio-thumb.jpg`));
+                        assert(lexicalString.includes(`${cdnUrl}/content/images/video-thumb.jpg`));
+                        assert(lexicalString.includes(`${cdnUrl}/content/images/audio-thumb.jpg`));
                     });
                 });
             });
@@ -1503,7 +1504,7 @@ describe('Post Model', function () {
                     // Double check we can't find any related tags
                     return ghostBookshelf.knex.select().table('posts_tags').where('post_id', firstItemData.id);
                 }).then(function (postsTags) {
-                    postsTags.should.be.empty();
+                    assert.deepEqual(postsTags, []);
 
                     done();
                 }).catch(done);
@@ -1543,7 +1544,7 @@ describe('Post Model', function () {
                     // Double check we can't find any related tags
                     return ghostBookshelf.knex.select().table('posts_tags').where('post_id', firstItemData.id);
                 }).then(function (postsTags) {
-                    postsTags.should.be.empty();
+                    assert.deepEqual(postsTags, []);
 
                     done();
                 }).catch(done);
@@ -1582,7 +1583,7 @@ describe('Post Model', function () {
                     // Double check we can't find any related tags
                     return ghostBookshelf.knex.select().table('posts_tags').where('post_id', firstItemData.id);
                 }).then(function (postsTags) {
-                    postsTags.should.be.empty();
+                    assert.deepEqual(postsTags, []);
 
                     done();
                 }).catch(done);
@@ -1618,7 +1619,7 @@ describe('Post Model', function () {
                     // Double check we can't find any related tags
                     return ghostBookshelf.knex.select().table('posts_tags').where('post_id', firstItemData.id);
                 }).then(function (postsTags) {
-                    postsTags.should.be.empty();
+                    assert.deepEqual(postsTags, []);
 
                     done();
                 }).catch(done);
@@ -2009,7 +2010,8 @@ describe('Post Model', function () {
         it('should create the test data correctly', function (done) {
             // creates a test tag
             assertExists(tagJSON);
-            tagJSON.should.be.an.Array().with.lengthOf(3);
+            assert(Array.isArray(tagJSON));
+            assert.equal(tagJSON.length, 3);
 
             assert.equal(tagJSON[0].name, 'existing tag a');
             assert.equal(tagJSON[1].name, 'existing-tag-b');
@@ -2018,8 +2020,8 @@ describe('Post Model', function () {
             // creates a test post with an array of tags in the correct order
             assertExists(postJSON);
             assert.equal(postJSON.title, 'HTML Ipsum');
-            assertExists(postJSON.tags);
-            postJSON.tags.should.be.an.Array().and.have.lengthOf(3);
+            assert(Array.isArray(postJSON.tags));
+            assert.equal(postJSON.tags.length, 3);
 
             assert.equal(postJSON.tags[0].name, 'tag1');
             assert.equal(postJSON.tags[1].name, 'tag2');
@@ -2039,9 +2041,9 @@ describe('Post Model', function () {
                 updatedPost = updatedPost.toJSON({withRelated: ['tags']});
 
                 assert.equal(updatedPost.tags.length, 1);
-                updatedPost.tags[0].name.should.eql(postJSON.tags[0].name);
+                assert.equal(updatedPost.tags[0].name, postJSON.tags[0].name);
                 assert.equal(updatedPost.tags[0].slug, 'eins');
-                updatedPost.tags[0].id.should.eql(postJSON.tags[0].id);
+                assert.equal(updatedPost.tags[0].id, postJSON.tags[0].id);
             });
         });
 
@@ -2070,19 +2072,19 @@ describe('Post Model', function () {
                     updatedPost = updatedPost.toJSON({withRelated: ['tags']});
 
                     assert.equal(updatedPost.tags.length, 1);
-                    updatedPost.tags[0].should.have.properties({
+                    assertObjectMatches(updatedPost.tags[0], {
                         name: postJSON.tags[0].name,
                         slug: postJSON.tags[0].slug,
                         id: postJSON.tags[0].id
                     });
 
                     updatedAtFormat = moment(updatedPost.tags[0].updated_at).format('YYYY-MM-DD HH:mm:ss');
-                    updatedAtFormat.should.eql(moment(postJSON.tags[0].updated_at).format('YYYY-MM-DD HH:mm:ss'));
-                    updatedAtFormat.should.not.eql(moment(newJSON.tags[0].updated_at).format('YYYY-MM-DD HH:mm:ss'));
+                    assert.equal(updatedAtFormat, moment(postJSON.tags[0].updated_at).format('YYYY-MM-DD HH:mm:ss'));
+                    assert.notEqual(updatedAtFormat, moment(newJSON.tags[0].updated_at).format('YYYY-MM-DD HH:mm:ss'));
 
                     createdAtFormat = moment(updatedPost.tags[0].created_at).format('YYYY-MM-DD HH:mm:ss');
-                    createdAtFormat.should.eql(moment(postJSON.tags[0].created_at).format('YYYY-MM-DD HH:mm:ss'));
-                    createdAtFormat.should.not.eql(moment(newJSON.tags[0].created_at).format('YYYY-MM-DD HH:mm:ss'));
+                    assert.equal(createdAtFormat, moment(postJSON.tags[0].created_at).format('YYYY-MM-DD HH:mm:ss'));
+                    assert.notEqual(createdAtFormat, moment(newJSON.tags[0].created_at).format('YYYY-MM-DD HH:mm:ss'));
                 });
         });
 
@@ -2100,16 +2102,16 @@ describe('Post Model', function () {
                 updatedPost = updatedPost.toJSON({withRelated: ['tags']});
 
                 assert.equal(updatedPost.tags.length, 3);
-                updatedPost.tags[0].should.have.properties({
+                assertObjectMatches(updatedPost.tags[0], {
                     name: 'tag4'
                 });
 
-                updatedPost.tags[1].should.have.properties({
+                assertObjectMatches(updatedPost.tags[1], {
                     name: 'tag3',
                     id: postJSON.tags[2].id
                 });
 
-                updatedPost.tags[2].should.have.properties({
+                assertObjectMatches(updatedPost.tags[2], {
                     name: 'tag1',
                     id: postJSON.tags[0].id
                 });
@@ -2131,9 +2133,9 @@ describe('Post Model', function () {
 
                 assert.equal(updatedPost.tags.length, 3);
 
-                updatedPost.tags[0].should.have.properties({name: 'C', slug: 'c'});
-                updatedPost.tags[1].should.have.properties({name: 'C++', slug: 'c-2'});
-                updatedPost.tags[2].should.have.properties({name: 'C#', slug: 'c-3'});
+                assertObjectMatches(updatedPost.tags[0], {name: 'C', slug: 'c'});
+                assertObjectMatches(updatedPost.tags[1], {name: 'C++', slug: 'c-2'});
+                assertObjectMatches(updatedPost.tags[2], {name: 'C#', slug: 'c-3'});
             });
         });
 
@@ -2159,7 +2161,7 @@ describe('Post Model', function () {
     //    new models.Post().fetch().then(function (model) {
     //        return model.set({'title': "</title></head><body><script>alert('blogtitle');</script>"}).save();
     //    }).then(function (saved) {
-    //        saved.get('title').should.eql("&lt;/title&gt;&lt;/head>&lt;body&gt;[removed]alert&#40;'blogtitle'&#41;;[removed]");
+    //        assert.equal(saved.get('title'), "&lt;/title&gt;&lt;/head>&lt;body&gt;[removed]alert&#40;'blogtitle'&#41;;[removed]");
     //        done();
     //    }).catch(done);
     // });

@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
-const should = require('should');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
 const db = require('../../../../../core/server/data/db');
@@ -51,10 +50,10 @@ describe('Exporter', function () {
                 assert.equal(tablesStub.calledOnce, true);
                 assert.equal(db.knex.called, true);
 
-                knexMock.callCount.should.eql(expectedCallCount);
-                queryMock.select.callCount.should.have.eql(expectedCallCount);
+                assert.equal(knexMock.callCount, expectedCallCount);
+                sinon.assert.callCount(queryMock.select, expectedCallCount);
 
-                let expectedTables = [
+                const expectedTables = new Set([
                     'posts',
                     'posts_authors',
                     'posts_meta',
@@ -75,14 +74,9 @@ describe('Exporter', function () {
                     'offers',
                     'offer_redemptions',
                     'snippets'
-                ];
-
-                for (let call = 0; call < expectedCallCount; call++) {
-                    const arg = knexMock.getCall(call).args[0];
-                    assert(expectedTables.includes(arg));
-                    expectedTables = expectedTables.filter(item => item !== arg);
-                }
-                expectedTables.should.be.empty();
+                ]);
+                const actualTables = new Set(knexMock.getCalls().map(call => call.args[0]));
+                assert.deepEqual(actualTables, expectedTables);
 
                 done();
             }).catch(done);
@@ -103,10 +97,10 @@ describe('Exporter', function () {
                 assert.equal(db.knex.called, true);
                 assert.equal(queryMock.select.called, true);
 
-                knexMock.callCount.should.eql(expectedCallCount);
-                queryMock.select.callCount.should.have.eql(expectedCallCount);
+                assert.equal(knexMock.callCount, expectedCallCount);
+                sinon.assert.callCount(queryMock.select, expectedCallCount);
 
-                let expectedTables = [
+                const expectedTables = new Set([
                     'posts',
                     'posts_authors',
                     'posts_meta',
@@ -126,15 +120,11 @@ describe('Exporter', function () {
                     'products_benefits',
                     'offers',
                     'offer_redemptions',
-                    'snippets'
-                ].concat(include);
-
-                for (let call = 0; call < expectedCallCount; call++) {
-                    const arg = knexMock.getCall(call).args[0];
-                    assert(expectedTables.includes(arg));
-                    expectedTables = expectedTables.filter(item => item !== arg);
-                }
-                expectedTables.should.be.empty();
+                    'snippets',
+                    ...include
+                ]);
+                const actualTables = new Set(knexMock.getCalls().map(call => call.args[0]));
+                assert.deepEqual(actualTables, expectedTables);
 
                 done();
             }).catch(done);
@@ -238,8 +228,8 @@ describe('Exporter', function () {
 
             // NOTE: if default settings changed either modify the settings keys blocklist or increase allowedKeysLength
             //       This is a reminder to think about the importer/exporter scenarios ;)
-            const allowedKeysLength = 95;
-            totalKeysLength.should.eql(SETTING_KEYS_BLOCKLIST.length + allowedKeysLength);
+            const allowedKeysLength = 100;
+            assert.equal(totalKeysLength, SETTING_KEYS_BLOCKLIST.length + allowedKeysLength);
         });
     });
 });

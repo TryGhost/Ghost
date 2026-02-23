@@ -1,8 +1,9 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const moment = require('moment');
 
 const testUtils = require('../../utils');
 const models = require('../../../core/server/models');
+const config = require('../../../core/shared/config');
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyContentVersion, anyEtag, anyUuid, anyISODateTimeWithTZ} = matchers;
 
@@ -37,8 +38,9 @@ describe('Pages Content API', function () {
         assert.equal(res.body.pages[0].slug, 'about');
 
         const urlParts = new URL(res.body.pages[0].url);
-        assert.equal(urlParts.protocol, 'http:');
-        assert.equal(urlParts.host, '127.0.0.1:2369');
+        const configUrl = new URL(config.get('url'));
+        assert.equal(urlParts.protocol, configUrl.protocol);
+        assert.equal(urlParts.host, configUrl.host);
     });
 
     it('Cannot request pages with mobiledoc or lexical formats', async function () {
@@ -74,8 +76,9 @@ describe('Pages Content API', function () {
         assert.equal(res.body.pages[0].slug, fixtureManager.get('posts', 5).slug);
 
         const urlParts = new URL(res.body.pages[0].url);
-        assert.equal(urlParts.protocol, 'http:');
-        assert.equal(urlParts.host, '127.0.0.1:2369');
+        const configUrl = new URL(config.get('url'));
+        assert.equal(urlParts.protocol, configUrl.protocol);
+        assert.equal(urlParts.host, configUrl.host);
     });
 
     it('Can include free and paid tiers for public post', async function () {

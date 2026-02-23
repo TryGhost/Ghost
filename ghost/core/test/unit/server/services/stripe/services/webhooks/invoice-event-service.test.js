@@ -1,7 +1,7 @@
 // const chai = require('chai');
 const sinon = require('sinon');
 // const {expect} = chai;
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const errors = require('@tryghost/errors');
 
 const InvoiceEventService = require('../../../../../../../core/server/services/stripe/services/webhook/invoice-event-service');

@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
-const should = require('should');
 const _ = require('lodash');
 
 const schema = require('../../../../../core/server/data/schema/schema');

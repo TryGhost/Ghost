@@ -18,22 +18,17 @@ const automatedEmailsFixture = {
     }]
 };
 
+const newslettersRequest = {
+    browseNewslettersLimit: {method: 'GET', path: '/newsletters/?filter=status%3Aactive&limit=1', response: responseFixtures.newsletters}
+};
+
 test.describe('Member emails settings', async () => {
     test.describe('Welcome email modal', async () => {
         test('Escape key closes test email dropdown without closing modal', async ({page}) => {
-            // Config with welcomeEmails feature flag enabled
-            const configResponse = {
-                config: {
-                    ...responseFixtures.config.config,
-                    labs: {
-                        welcomeEmails: true
-                    }
-                }
-            };
-
             await mockApi({page, requests: {
                 ...globalDataRequests,
-                browseConfig: {method: 'GET', path: '/config/', response: configResponse},
+                ...newslettersRequest,
+                browseConfig: {method: 'GET', path: '/config/', response: responseFixtures.config},
                 browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: automatedEmailsFixture}
             }});
 
@@ -70,19 +65,10 @@ test.describe('Member emails settings', async () => {
         });
 
         test('Escape key closes modal when test email dropdown is not open', async ({page}) => {
-            // Config with welcomeEmails feature flag enabled
-            const configResponse = {
-                config: {
-                    ...responseFixtures.config.config,
-                    labs: {
-                        welcomeEmails: true
-                    }
-                }
-            };
-
             await mockApi({page, requests: {
                 ...globalDataRequests,
-                browseConfig: {method: 'GET', path: '/config/', response: configResponse},
+                ...newslettersRequest,
+                browseConfig: {method: 'GET', path: '/config/', response: responseFixtures.config},
                 browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: automatedEmailsFixture}
             }});
 
@@ -109,19 +95,10 @@ test.describe('Member emails settings', async () => {
         });
 
         test('Welcome email modal does not start dirty but becomes dirty after edit', async ({page}) => {
-            // Config with welcomeEmails feature flag enabled
-            const configResponse = {
-                config: {
-                    ...responseFixtures.config.config,
-                    labs: {
-                        welcomeEmails: true
-                    }
-                }
-            };
-
             await mockApi({page, requests: {
                 ...globalDataRequests,
-                browseConfig: {method: 'GET', path: '/config/', response: configResponse},
+                ...newslettersRequest,
+                browseConfig: {method: 'GET', path: '/config/', response: responseFixtures.config},
                 browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: automatedEmailsFixture}
             }});
 
@@ -166,19 +143,10 @@ test.describe('Member emails settings', async () => {
         });
 
         test('Escape key does not close modal or navigate away when pressed from Koenig link input', async ({page}) => {
-            // Config with welcomeEmails feature flag enabled
-            const configResponse = {
-                config: {
-                    ...responseFixtures.config.config,
-                    labs: {
-                        welcomeEmails: true
-                    }
-                }
-            };
-
             await mockApi({page, requests: {
                 ...globalDataRequests,
-                browseConfig: {method: 'GET', path: '/config/', response: configResponse},
+                ...newslettersRequest,
+                browseConfig: {method: 'GET', path: '/config/', response: responseFixtures.config},
                 browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: automatedEmailsFixture}
             }});
 
@@ -227,21 +195,128 @@ test.describe('Member emails settings', async () => {
                 document.querySelector('[data-kg-link-input]')?.remove();
             });
         });
+
+        test('uses automated email sender fields when populated, even if newsletter differs', async ({page}) => {
+            const populatedAutomatedEmailsFixture = {
+                automated_emails: [{
+                    ...automatedEmailsFixture.automated_emails[0],
+                    sender_name: 'Automated Sender',
+                    sender_email: 'automated@example.com',
+                    sender_reply_to: 'reply-automated@example.com'
+                }]
+            };
+
+            const defaultNewsletterResponse = {
+                newsletters: [{
+                    ...responseFixtures.newsletters.newsletters[0],
+                    sender_name: 'Newsletter Sender',
+                    sender_email: 'newsletter@example.com',
+                    sender_reply_to: 'support'
+                }],
+                meta: responseFixtures.newsletters.meta
+            };
+
+            await mockApi({page, requests: {
+                ...globalDataRequests,
+                browseConfig: {method: 'GET', path: '/config/', response: responseFixtures.config},
+                browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: populatedAutomatedEmailsFixture},
+                browseNewslettersLimit: {method: 'GET', path: '/newsletters/?filter=status%3Aactive&limit=1', response: defaultNewsletterResponse}
+            }});
+
+            await page.goto('/#/memberemails');
+            await page.waitForLoadState('networkidle');
+
+            const section = page.getByTestId('memberemails');
+            await expect(section).toBeVisible({timeout: 10000});
+            await section.getByTestId('free-welcome-email-preview').click();
+
+            const modal = page.getByTestId('welcome-email-modal');
+            await expect(modal).toBeVisible();
+            await expect(modal).toContainText('Automated Sender');
+            await expect(modal).toContainText('automated@example.com');
+            await expect(modal).toContainText('reply-automated@example.com');
+            await expect(modal).not.toContainText('newsletter@example.com');
+        });
+
+        test('falls back to default newsletter sender values when automated fields are empty', async ({page}) => {
+            const emptyAutomatedSenderFixture = {
+                automated_emails: [{
+                    ...automatedEmailsFixture.automated_emails[0],
+                    sender_name: '   ',
+                    sender_email: '   ',
+                    sender_reply_to: '   '
+                }]
+            };
+
+            const defaultNewsletterResponse = {
+                newsletters: [{
+                    ...responseFixtures.newsletters.newsletters[0],
+                    sender_name: 'Newsletter Sender',
+                    sender_email: 'newsletter@example.com',
+                    sender_reply_to: 'support'
+                }],
+                meta: responseFixtures.newsletters.meta
+            };
+
+            await mockApi({page, requests: {
+                ...globalDataRequests,
+                browseConfig: {method: 'GET', path: '/config/', response: responseFixtures.config},
+                browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: emptyAutomatedSenderFixture},
+                browseNewslettersLimit: {method: 'GET', path: '/newsletters/?filter=status%3Aactive&limit=1', response: defaultNewsletterResponse}
+            }});
+
+            await page.goto('/#/memberemails');
+            await page.waitForLoadState('networkidle');
+
+            const section = page.getByTestId('memberemails');
+            await expect(section).toBeVisible({timeout: 10000});
+            await section.getByTestId('free-welcome-email-preview').click();
+
+            const modal = page.getByTestId('welcome-email-modal');
+            await expect(modal).toBeVisible();
+            await expect(modal).toContainText('Newsletter Sender');
+            await expect(modal).toContainText('newsletter@example.com');
+            await expect(modal).toContainText('support@example.com');
+            await expect(modal).not.toContainText('default@example.com');
+        });
+
+        test('preview card uses newsletter sender name when automated sender name is empty', async ({page}) => {
+            const emptyAutomatedSenderFixture = {
+                automated_emails: [{
+                    ...automatedEmailsFixture.automated_emails[0],
+                    sender_name: '   '
+                }]
+            };
+
+            const defaultNewsletterResponse = {
+                newsletters: [{
+                    ...responseFixtures.newsletters.newsletters[0],
+                    sender_name: 'Newsletter Sender'
+                }],
+                meta: responseFixtures.newsletters.meta
+            };
+
+            await mockApi({page, requests: {
+                ...globalDataRequests,
+                browseConfig: {method: 'GET', path: '/config/', response: responseFixtures.config},
+                browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: emptyAutomatedSenderFixture},
+                browseNewslettersLimit: {method: 'GET', path: '/newsletters/?filter=status%3Aactive&limit=1', response: defaultNewsletterResponse}
+            }});
+
+            await page.goto('/#/memberemails');
+            await page.waitForLoadState('networkidle');
+
+            const section = page.getByTestId('memberemails');
+            await expect(section).toBeVisible({timeout: 10000});
+
+            const cardSenderName = section.locator('[data-testid="free-welcome-email-preview"] .font-semibold').first();
+            await expect(cardSenderName).toHaveText('Newsletter Sender');
+        });
     });
 
     // NY-842: Tests for editing/viewing welcome emails before activation
     test.describe('Email preview visibility and edit-before-activation', async () => {
         test('Email preview card is visible with default subject when no DB row exists', async ({page}) => {
-            // Config with welcomeEmails feature flag enabled
-            const configResponse = {
-                config: {
-                    ...responseFixtures.config.config,
-                    labs: {
-                        welcomeEmails: true
-                    }
-                }
-            };
-
             // Empty automated_emails response - no DB rows exist
             const emptyAutomatedEmailsFixture = {
                 automated_emails: []
@@ -249,7 +324,8 @@ test.describe('Member emails settings', async () => {
 
             await mockApi({page, requests: {
                 ...globalDataRequests,
-                browseConfig: {method: 'GET', path: '/config/', response: configResponse},
+                ...newslettersRequest,
+                browseConfig: {method: 'GET', path: '/config/', response: responseFixtures.config},
                 browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: emptyAutomatedEmailsFixture}
             }});
 
@@ -273,15 +349,6 @@ test.describe('Member emails settings', async () => {
         });
 
         test('Clicking Edit when no row exists creates inactive row then opens modal', async ({page}) => {
-            const configResponse = {
-                config: {
-                    ...responseFixtures.config.config,
-                    labs: {
-                        welcomeEmails: true
-                    }
-                }
-            };
-
             const emptyAutomatedEmailsFixture = {
                 automated_emails: []
             };
@@ -305,7 +372,8 @@ test.describe('Member emails settings', async () => {
 
             const {lastApiRequests} = await mockApi({page, requests: {
                 ...globalDataRequests,
-                browseConfig: {method: 'GET', path: '/config/', response: configResponse},
+                ...newslettersRequest,
+                browseConfig: {method: 'GET', path: '/config/', response: responseFixtures.config},
                 browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: emptyAutomatedEmailsFixture},
                 addAutomatedEmail: {method: 'POST', path: '/automated_emails/', response: createdAutomatedEmailResponse}
             }});
@@ -334,15 +402,6 @@ test.describe('Member emails settings', async () => {
         });
 
         test('Clicking Edit when row exists does NOT create new row, just opens modal', async ({page}) => {
-            const configResponse = {
-                config: {
-                    ...responseFixtures.config.config,
-                    labs: {
-                        welcomeEmails: true
-                    }
-                }
-            };
-
             const existingAutomatedEmailsFixture = {
                 automated_emails: [{
                     id: 'free-welcome-email-id',
@@ -361,7 +420,8 @@ test.describe('Member emails settings', async () => {
 
             const {lastApiRequests} = await mockApi({page, requests: {
                 ...globalDataRequests,
-                browseConfig: {method: 'GET', path: '/config/', response: configResponse},
+                ...newslettersRequest,
+                browseConfig: {method: 'GET', path: '/config/', response: responseFixtures.config},
                 browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: existingAutomatedEmailsFixture},
                 addAutomatedEmail: {method: 'POST', path: '/automated_emails/', response: existingAutomatedEmailsFixture}
             }});
@@ -385,15 +445,6 @@ test.describe('Member emails settings', async () => {
         });
 
         test('Toggle ON when no row exists creates active row', async ({page}) => {
-            const configResponse = {
-                config: {
-                    ...responseFixtures.config.config,
-                    labs: {
-                        welcomeEmails: true
-                    }
-                }
-            };
-
             const emptyAutomatedEmailsFixture = {
                 automated_emails: []
             };
@@ -416,7 +467,8 @@ test.describe('Member emails settings', async () => {
 
             const {lastApiRequests} = await mockApi({page, requests: {
                 ...globalDataRequests,
-                browseConfig: {method: 'GET', path: '/config/', response: configResponse},
+                ...newslettersRequest,
+                browseConfig: {method: 'GET', path: '/config/', response: responseFixtures.config},
                 browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: emptyAutomatedEmailsFixture},
                 addAutomatedEmail: {method: 'POST', path: '/automated_emails/', response: createdActiveResponse}
             }});
@@ -441,15 +493,6 @@ test.describe('Member emails settings', async () => {
         });
 
         test('Toggle ON when inactive row exists updates to active', async ({page}) => {
-            const configResponse = {
-                config: {
-                    ...responseFixtures.config.config,
-                    labs: {
-                        welcomeEmails: true
-                    }
-                }
-            };
-
             const inactiveAutomatedEmailsFixture = {
                 automated_emails: [{
                     id: 'free-welcome-email-id',
@@ -475,7 +518,8 @@ test.describe('Member emails settings', async () => {
 
             const {lastApiRequests} = await mockApi({page, requests: {
                 ...globalDataRequests,
-                browseConfig: {method: 'GET', path: '/config/', response: configResponse},
+                ...newslettersRequest,
+                browseConfig: {method: 'GET', path: '/config/', response: responseFixtures.config},
                 browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: inactiveAutomatedEmailsFixture},
                 editAutomatedEmail: {method: 'PUT', path: '/automated_emails/free-welcome-email-id/', response: updatedActiveResponse}
             }});
@@ -500,15 +544,6 @@ test.describe('Member emails settings', async () => {
         });
 
         test('Toggle OFF when active row exists updates to inactive', async ({page}) => {
-            const configResponse = {
-                config: {
-                    ...responseFixtures.config.config,
-                    labs: {
-                        welcomeEmails: true
-                    }
-                }
-            };
-
             const activeAutomatedEmailsFixture = {
                 automated_emails: [{
                     id: 'free-welcome-email-id',
@@ -534,7 +569,8 @@ test.describe('Member emails settings', async () => {
 
             const {lastApiRequests} = await mockApi({page, requests: {
                 ...globalDataRequests,
-                browseConfig: {method: 'GET', path: '/config/', response: configResponse},
+                ...newslettersRequest,
+                browseConfig: {method: 'GET', path: '/config/', response: responseFixtures.config},
                 browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: activeAutomatedEmailsFixture},
                 editAutomatedEmail: {method: 'PUT', path: '/automated_emails/free-welcome-email-id/', response: updatedInactiveResponse}
             }});

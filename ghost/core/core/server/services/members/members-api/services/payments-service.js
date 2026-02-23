@@ -72,6 +72,11 @@ class PaymentsService {
         let coupon = null;
         let trialDays = null;
         if (offer) {
+            if (!offer.tier) {
+                throw new BadRequestError({
+                    message: 'Offer does not have a tier'
+                });
+            }
             if (!tier.id.equals(offer.tier.id)) {
                 throw new BadRequestError({
                     message: 'This Offer is not valid for the Tier'
@@ -477,7 +482,7 @@ class PaymentsService {
      */
     async getCouponForOffer(offerId) {
         const row = await this.OfferModel.where({id: offerId}).query().select('stripe_coupon_id', 'discount_type').first();
-        if (!row || row.discount_type === 'trial') {
+        if (!row || row.discount_type === 'trial' || row.discount_type === 'free_months') {
             return null;
         }
         if (!row.stripe_coupon_id) {

@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const Migrations = require('../../../../../core/server/services/stripe/stripe-migrations');
 

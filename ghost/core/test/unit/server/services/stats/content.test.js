@@ -1,7 +1,6 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
 const sinon = require('sinon');
-const should = require('should');
 const ContentStatsService = require('../../../../../core/server/services/stats/content-stats-service');
 const tinybird = require('../../../../../core/server/services/stats/utils/tinybird');
 
@@ -71,7 +70,7 @@ describe('ContentStatsService', function () {
             const result = mockTinybirdClient.buildRequest('api_top_pages', options);
 
             assertExists(result.url);
-            result.url.should.startWith('https://api.tinybird.co/v0/pipes/api_top_pages.json?');
+            assert(result.url.startsWith('https://api.tinybird.co/v0/pipes/api_top_pages.json?'));
             assert(result.url.includes('site_uuid=site-id'));
             assert(result.url.includes('date_from=2023-01-01'));
             assert(result.url.includes('date_to=2023-01-31'));
@@ -102,7 +101,8 @@ describe('ContentStatsService', function () {
 
             const result = mockTinybirdClient.parseResponse(mockResponse);
             assertExists(result);
-            result.should.be.an.Array().with.lengthOf(2);
+            assert(Array.isArray(result));
+            assert.equal(result.length, 2);
 
             assert.equal(mockTinybirdClient.parseResponse.calledWith(mockResponse), true);
         });
@@ -117,7 +117,8 @@ describe('ContentStatsService', function () {
 
             const result = service.extractPostUuids(data);
             assertExists(result);
-            result.should.be.an.Array().with.lengthOf(2);
+            assert(Array.isArray(result));
+            assert.equal(result.length, 2);
             assert(result.includes('post-1'));
             assert(result.includes('post-2'));
         });
@@ -131,7 +132,7 @@ describe('ContentStatsService', function () {
 
             const result = service.extractPostUuids(data);
             assertExists(result);
-            result.should.be.an.Array().with.lengthOf(0);
+            assert.deepEqual(result, []);
         });
     });
 
@@ -146,7 +147,6 @@ describe('ContentStatsService', function () {
             const result = await service.lookupPostTitles(['post-1', 'post-2']);
 
             assertExists(result);
-            result.should.have.properties(['post-1', 'post-2']);
             assert.equal(result['post-1'].title, 'Test Post 1');
             assert.equal(result['post-1'].id, 'post-id-1');
             assert.equal(result['post-2'].title, 'Test Post 2');
@@ -181,7 +181,6 @@ describe('ContentStatsService', function () {
 
             const result = service.getResourceTitle('/about/');
             assertExists(result);
-            result.should.have.properties(['title', 'resourceType']);
             assert.equal(result.title, 'About Us');
             assert.equal(result.resourceType, 'page');
         });
@@ -196,7 +195,6 @@ describe('ContentStatsService', function () {
 
             const result = service.getResourceTitle('/tag/news/');
             assertExists(result);
-            result.should.have.properties(['title', 'resourceType']);
             assert.equal(result.title, 'News');
             assert.equal(result.resourceType, 'tag');
         });
@@ -227,7 +225,7 @@ describe('ContentStatsService', function () {
         it('returns empty array for empty input', async function () {
             const result = await service.enrichTopContentData([]);
             assertExists(result);
-            result.should.be.an.Array().with.lengthOf(0);
+            assert.deepEqual(result, []);
 
             assert.equal(service.extractPostUuids.called, false);
             assert.equal(service.lookupPostTitles.called, false);
@@ -246,7 +244,8 @@ describe('ContentStatsService', function () {
             const result = await service.enrichTopContentData(data);
 
             assertExists(result);
-            result.should.be.an.Array().with.lengthOf(2);
+            assert(Array.isArray(result));
+            assert.equal(result.length, 2);
             assert.equal(result[0].title, 'Test Post 1');
             assert.equal(result[0].post_id, 'post-id-1');
             assert.equal(result[0].url_exists, true);
@@ -273,7 +272,8 @@ describe('ContentStatsService', function () {
             const result = await service.enrichTopContentData(data);
 
             assertExists(result);
-            result.should.be.an.Array().with.lengthOf(1);
+            assert(Array.isArray(result));
+            assert.equal(result.length, 1);
             assert.equal(result[0].title, 'About Us');
             assert.equal(result[0].resourceType, 'page');
             assert.equal(result[0].url_exists, true);
@@ -291,7 +291,8 @@ describe('ContentStatsService', function () {
             const result = await service.enrichTopContentData(data);
 
             assertExists(result);
-            result.should.be.an.Array().with.lengthOf(1);
+            assert(Array.isArray(result));
+            assert.equal(result.length, 1);
             assert.equal(result[0].title, 'unknown-page');
             assert.equal(result[0].url_exists, false);
 
@@ -308,7 +309,8 @@ describe('ContentStatsService', function () {
             const result = await service.enrichTopContentData(data);
 
             assertExists(result);
-            result.should.be.an.Array().with.lengthOf(1);
+            assert(Array.isArray(result));
+            assert.equal(result.length, 1);
             assert.equal(result[0].title, 'Homepage');
             assert.equal(result[0].url_exists, false);
         });
@@ -331,7 +333,8 @@ describe('ContentStatsService', function () {
             const result = await service.fetchRawTopContentData(options);
 
             assertExists(result);
-            result.should.be.an.Array().with.lengthOf(1);
+            assert(Array.isArray(result));
+            assert.equal(result.length, 1);
             assert.equal(result[0].pathname, '/test/');
             assert.equal(result[0].visits, 100);
 
@@ -389,7 +392,8 @@ describe('ContentStatsService', function () {
 
             assertExists(result);
             assertExists(result.data);
-            result.data.should.be.an.Array().with.lengthOf(2);
+            assert(Array.isArray(result.data));
+            assert.equal(result.data.length, 2);
             assert('title' in result.data[0]);
             assert('post_id' in result.data[0]);
             assert('title' in result.data[1]);
@@ -413,7 +417,7 @@ describe('ContentStatsService', function () {
 
             assertExists(result);
             assertExists(result.data);
-            result.data.should.be.an.Array().with.lengthOf(0);
+            assert.deepEqual(result.data, []);
 
             assert.equal(service.fetchRawTopContentData.calledOnce, true);
         });
@@ -428,7 +432,7 @@ describe('ContentStatsService', function () {
 
             assertExists(result);
             assertExists(result.data);
-            result.data.should.be.an.Array().with.lengthOf(0);
+            assert.deepEqual(result.data, []);
         });
 
         it('returns empty data array when tinybirdClient is not available', async function () {
@@ -445,7 +449,7 @@ describe('ContentStatsService', function () {
 
             assertExists(result);
             assertExists(result.data);
-            result.data.should.be.an.Array().with.lengthOf(0);
+            assert.deepEqual(result.data, []);
         });
     });
 
@@ -468,7 +472,8 @@ describe('ContentStatsService', function () {
 
             // Verify result is correct
             assertExists(result);
-            result.should.be.an.Array().with.lengthOf(2);
+            assert(Array.isArray(result));
+            assert.equal(result.length, 2);
 
             // Verify tinybird client was called with correct parameters
             assert.equal(mockTinybirdClient.fetch.calledOnce, true);
@@ -487,7 +492,7 @@ describe('ContentStatsService', function () {
             const result = await service.getTopContent({});
 
             assertExists(result);
-            result.should.have.property('data').which.is.an.Array().with.lengthOf(0);
+            assert.deepEqual(result.data, []);
         });
 
         it('passes all filter parameters to tinybird client with correct shape', async function () {

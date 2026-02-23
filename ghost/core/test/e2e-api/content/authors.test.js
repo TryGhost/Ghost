@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const {agentProvider, fixtureManager, matchers, assertions} = require('../../utils/e2e-framework');
 const {anyContentVersion, anyEtag, anyObjectId, anyNumber} = matchers;
 const {cacheInvalidateHeaderNotSet} = assertions;
@@ -42,7 +42,7 @@ describe('Authors Content API', function () {
                 // Verify default order 'name asc'
                 assert.equal(body.authors[0].name, 'Ghost');
                 assert.equal(body.authors[2].name, 'Slimer McEctoplasm');
-                
+
                 // Verify URL structure
                 const urlParts = new URL(body.authors[0].url);
                 assert.ok(['http:', 'https:'].includes(urlParts.protocol));
@@ -80,7 +80,7 @@ describe('Authors Content API', function () {
                 const nonGhostIds = authors
                     .filter(author => author.slug !== 'ghost')
                     .map(author => author.id);
-                
+
                 assert.deepEqual(nonGhostIds, [
                     fixtureManager.get('users', 0).id,
                     fixtureManager.get('users', 3).id

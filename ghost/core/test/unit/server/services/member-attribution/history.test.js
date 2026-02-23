@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 
 const UrlHistory = require('../../../../../core/server/services/member-attribution/url-history');
 
@@ -95,7 +94,7 @@ describe('UrlHistory', function () {
         ];
         for (const input of inputs) {
             const history = UrlHistory.create(input);
-            should(history.history).eql(input);
+            assert.deepEqual(history.history, input);
         }
     });
 

@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 
 // Stuff we are testing
 const page_url = require('../../../../core/frontend/helpers/page_url');

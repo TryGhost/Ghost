@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const AudienceFeedbackService = require('../../../../../core/server/services/audience-feedback/audience-feedback-service');
 
 describe('audienceFeedbackService', function () {

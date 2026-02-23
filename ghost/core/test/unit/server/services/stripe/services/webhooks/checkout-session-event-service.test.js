@@ -1,11 +1,11 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const errors = require('@tryghost/errors');
 const sinon = require('sinon');
 
 const CheckoutSessionEventService = require('../../../../../../../core/server/services/stripe/services/webhook/checkout-session-event-service');
 
 describe('CheckoutSessionEventService', function () {
-    let api, memberRepository, donationRepository, staffServiceEmails, sendSignupEmail;
+    let api, memberRepository, donationRepository, staffServiceEmails, sendSignupEmail, isPaidWelcomeEmailActive;
 
     beforeEach(function () {
         api = {
@@ -36,11 +36,24 @@ describe('CheckoutSessionEventService', function () {
         };
 
         sendSignupEmail = sinon.stub();
+        isPaidWelcomeEmailActive = sinon.stub().resolves(false);
     });
+
+    function createService(deps = {}) {
+        return new CheckoutSessionEventService({
+            api,
+            memberRepository,
+            donationRepository,
+            staffServiceEmails,
+            sendSignupEmail,
+            isPaidWelcomeEmailActive,
+            ...deps
+        });
+    }
 
     describe('handleEvent', function () {
         it('should call handleSetupEvent if session mode is setup', async function () {
-            const service = new CheckoutSessionEventService({api, memberRepository, donationRepository, staffServiceEmails});
+            const service = createService();
             const session = {mode: 'setup'};
             const handleSetupEventStub = sinon.stub(service, 'handleSetupEvent');
 
@@ -50,7 +63,7 @@ describe('CheckoutSessionEventService', function () {
         });
 
         it('should call handleSubscriptionEvent if session mode is subscription', async function () {
-            const service = new CheckoutSessionEventService({api, memberRepository, donationRepository, staffServiceEmails});
+            const service = createService();
             const session = {mode: 'subscription'};
             const handleSubscriptionEventStub = sinon.stub(service, 'handleSubscriptionEvent');
 
@@ -60,7 +73,7 @@ describe('CheckoutSessionEventService', function () {
         });
 
         it('should call handleDonationEvent if session mode is payment and session metadata ghost_donation is present', async function () {
-            const service = new CheckoutSessionEventService({api, memberRepository, donationRepository, staffServiceEmails});
+            const service = createService();
             const session = {mode: 'payment', metadata: {ghost_donation: true}};
             const handleDonationEventStub = sinon.stub(service, 'handleDonationEvent');
 
@@ -70,7 +83,7 @@ describe('CheckoutSessionEventService', function () {
         });
 
         it('should do nothing if session mode is not setup, subscription, or payment', async function () {
-            const service = new CheckoutSessionEventService({api, memberRepository, donationRepository, staffServiceEmails});
+            const service = createService();
             const session = {mode: 'unsupported_mode'};
             const handleSetupEventStub = sinon.stub(service, 'handleSetupEvent');
             const handleSubscriptionEventStub = sinon.stub(service, 'handleSubscriptionEvent');
@@ -86,7 +99,7 @@ describe('CheckoutSessionEventService', function () {
 
     describe('handleDonationEvent', function () {
         it('can handle donation event', async function () {
-            const service = new CheckoutSessionEventService({api, memberRepository, donationRepository, staffServiceEmails});
+            const service = createService();
             const session = {
                 custom_fields: [{key: 'donation_message', text: {value: 'Test donation message'}}],
                 amount_total: 1000,
@@ -125,7 +138,7 @@ describe('CheckoutSessionEventService', function () {
         });
 
         it('donation message is null if its empty', async function () {
-            const service = new CheckoutSessionEventService({api, memberRepository, donationRepository, staffServiceEmails});
+            const service = createService();
             const session = {
                 custom_fields: [{key: 'donation_message', text: {value: ''}},
                     {key: 'donation_message', text: {value: null}}],
@@ -154,7 +167,7 @@ describe('CheckoutSessionEventService', function () {
         });
 
         it('can handle donation event with member', async function () {
-            const service = new CheckoutSessionEventService({api, memberRepository, donationRepository, staffServiceEmails});
+            const service = createService();
             const session = {
                 custom_fields: [{key: 'donation_message', text: {value: 'Test donation message'}}],
                 amount_total: 1000,
@@ -203,7 +216,7 @@ describe('CheckoutSessionEventService', function () {
         });
 
         it('can handle donation event with empty customer email', async function () {
-            const service = new CheckoutSessionEventService({api, memberRepository, donationRepository, staffServiceEmails});
+            const service = createService();
             const session = {
                 custom_fields: [{key: 'donation_message', text: {value: 'Test donation message'}}],
                 amount_total: 1000,
@@ -242,7 +255,7 @@ describe('CheckoutSessionEventService', function () {
 
     describe('handleSetupEvent', function () {
         it('fires getSetupIntent', function () {
-            const service = new CheckoutSessionEventService({api, memberRepository, donationRepository, staffServiceEmails});
+            const service = createService();
             const session = {setup_intent: 'si_123'};
 
             service.handleSetupEvent(session);
@@ -251,7 +264,7 @@ describe('CheckoutSessionEventService', function () {
         });
 
         it('fires getSetupIntent and memberRepository.get', async function () {
-            const service = new CheckoutSessionEventService({api, memberRepository, donationRepository, staffServiceEmails});
+            const service = createService();
             const session = {setup_intent: 'si_123'};
             const setupIntent = {metadata: {customer_id: 'cust_123'}};
 
@@ -264,7 +277,7 @@ describe('CheckoutSessionEventService', function () {
         });
 
         it('fires getSetupIntent, memberRepository.get and attachPaymentMethodToCustomer', async function () {
-            const service = new CheckoutSessionEventService({api, memberRepository, donationRepository, staffServiceEmails});
+            const service = createService();
             const session = {setup_intent: 'si_123'};
             const setupIntent = {metadata: {customer_id: 'cust_123'}, payment_method: 'pm_123'};
             const member = {id: 'member_123', related: sinon.stub()};
@@ -288,7 +301,7 @@ describe('CheckoutSessionEventService', function () {
         });
 
         it('if member is not found, it should return early', async function () {
-            const service = new CheckoutSessionEventService({api, memberRepository, donationRepository, staffServiceEmails});
+            const service = createService();
             const session = {setup_intent: 'si_123'};
             const setupIntent = {metadata: {customer_id: 'cust_123'}};
 
@@ -303,7 +316,7 @@ describe('CheckoutSessionEventService', function () {
         });
 
         it('if setupIntent has subscription_id, it should update subscription default payment method', async function () {
-            const service = new CheckoutSessionEventService({api, memberRepository, donationRepository, staffServiceEmails});
+            const service = createService();
             const session = {setup_intent: 'si_123'};
             const setupIntent = {metadata: {customer_id: 'cust_123', subscription_id: 'sub_123'}, payment_method: 'pm_123'};
             const member = {id: 'member_123'};
@@ -320,7 +333,7 @@ describe('CheckoutSessionEventService', function () {
         });
 
         it('if linkSubscription fails with ER_DUP_ENTRY, it should throw ConflictError', async function () {
-            const service = new CheckoutSessionEventService({api, memberRepository, donationRepository, staffServiceEmails});
+            const service = createService();
             const session = {setup_intent: 'si_123'};
             const setupIntent = {metadata: {customer_id: 'cust_123', subscription_id: 'sub_123'}, payment_method: 'pm_123'};
             const member = {id: 'member_123'};
@@ -340,7 +353,7 @@ describe('CheckoutSessionEventService', function () {
         });
 
         it('if linkSubscription fails with SQLITE_CONSTRAINT, it should throw ConflictError', async function () {
-            const service = new CheckoutSessionEventService({api, memberRepository, donationRepository, staffServiceEmails});
+            const service = createService();
             const session = {setup_intent: 'si_123'};
             const setupIntent = {metadata: {customer_id: 'cust_123', subscription_id: 'sub_123'}, payment_method: 'pm_123'};
             const member = {id: 'member_123'};
@@ -360,7 +373,7 @@ describe('CheckoutSessionEventService', function () {
         });
 
         it('if linkSubscription fails with unexpected error, it should throw', async function () {
-            const service = new CheckoutSessionEventService({api, memberRepository, donationRepository, staffServiceEmails});
+            const service = createService();
             const session = {setup_intent: 'si_123'};
             const setupIntent = {metadata: {customer_id: 'cust_123', subscription_id: 'sub_123'}, payment_method: 'pm_123'};
             const member = {id: 'member_123'};
@@ -381,7 +394,7 @@ describe('CheckoutSessionEventService', function () {
         });
 
         it('updateSubscriptionDefaultPaymentMethod of all active subscriptions', async function () {
-            const service = new CheckoutSessionEventService({api, memberRepository, donationRepository, staffServiceEmails});
+            const service = createService();
             const session = {setup_intent: 'si_123'};
             const setupIntent = {metadata: {customer_id: 'cust_123'}, payment_method: 'pm_123'};
             const member = {id: 'member_123', related: sinon.stub()};
@@ -436,7 +449,7 @@ describe('CheckoutSessionEventService', function () {
         });
 
         it('throws if updateSubscriptionDefaultPaymentMethod fires but cannot link subscription', async function () {
-            const service = new CheckoutSessionEventService({api, memberRepository, donationRepository, staffServiceEmails});
+            const service = createService();
             const session = {setup_intent: 'si_123'};
             const setupIntent = {metadata: {customer_id: 'cust_123'}, payment_method: 'pm_123'};
             const member = {id: 'member_123', related: sinon.stub()};
@@ -473,7 +486,7 @@ describe('CheckoutSessionEventService', function () {
         });
 
         it('throws is linkSubscription fauls with conflict error', async function () {
-            const service = new CheckoutSessionEventService({api, memberRepository, donationRepository, staffServiceEmails});
+            const service = createService();
             const session = {setup_intent: 'si_123'};
             const setupIntent = {metadata: {customer_id: 'cust_123', subscription_id: 'sub_123'}, payment_method: 'pm_123'};
             const member = {id: 'member_123'};
@@ -494,7 +507,7 @@ describe('CheckoutSessionEventService', function () {
         });
 
         it('should throw ConflictError if linkSubscription fails with ER_DUP_ENTRY', async function () {
-            const service = new CheckoutSessionEventService({api, memberRepository, donationRepository, staffServiceEmails});
+            const service = createService();
             const session = {setup_intent: 'si_123'};
             const setupIntent = {metadata: {customer_id: 'cust_123', subscription_id: 'sub_123'}, payment_method: 'pm_123'};
             const member = {id: 'member_123'};
@@ -514,7 +527,7 @@ describe('CheckoutSessionEventService', function () {
         });
 
         it('should throw ConflictError if linkSubscription fails with SQLITE_CONSTRAINT', async function () {
-            const service = new CheckoutSessionEventService({api, memberRepository, donationRepository, staffServiceEmails});
+            const service = createService();
             const session = {setup_intent: 'si_123'};
             const setupIntent = {metadata: {customer_id: 'cust_123', subscription_id: 'sub_123'}, payment_method: 'pm_123'};
             const member = {id: 'member_123'};
@@ -541,7 +554,7 @@ describe('CheckoutSessionEventService', function () {
         let member;
 
         beforeEach(function () {
-            service = new CheckoutSessionEventService({api, memberRepository, donationRepository, staffServiceEmails, sendSignupEmail});
+            service = createService();
             session = {
                 customer: 'cust_123',
                 metadata: {
@@ -677,6 +690,92 @@ describe('CheckoutSessionEventService', function () {
             assert(memberRepository.update.calledOnce);
             const memberData = memberRepository.update.getCall(0).args[0];
             assert.equal(memberData.newsletters, undefined);
+        });
+
+        describe('signup email logic', function () {
+            it('should send signup email for direct checkout flow even when welcome email is active', async function () {
+                api.getCustomer.resolves(customer);
+                memberRepository.get.resolves(null);
+                session.metadata.ghostSignupContext = 'needs_magic_link_email';
+                isPaidWelcomeEmailActive.resolves(true);
+
+                await service.handleSubscriptionEvent(session);
+
+                assert(sendSignupEmail.calledOnce);
+                assert(sendSignupEmail.calledWith('customer@example.com'));
+                assert(!isPaidWelcomeEmailActive.called);
+            });
+
+            it('should send signup email when flow is has_precheckout_magic_link and welcome email is not active', async function () {
+                api.getCustomer.resolves(customer);
+                memberRepository.get.resolves(null);
+                session.metadata.ghostSignupContext = 'has_precheckout_magic_link';
+                isPaidWelcomeEmailActive.resolves(false);
+
+                await service.handleSubscriptionEvent(session);
+
+                assert(sendSignupEmail.calledOnce);
+                assert(sendSignupEmail.calledWith('customer@example.com'));
+            });
+
+            it('should NOT send signup email when flow is has_precheckout_magic_link and welcome email is active', async function () {
+                api.getCustomer.resolves(customer);
+                memberRepository.get.resolves(null);
+                session.metadata.ghostSignupContext = 'has_precheckout_magic_link';
+                isPaidWelcomeEmailActive.resolves(true);
+
+                await service.handleSubscriptionEvent(session);
+
+                assert(!sendSignupEmail.called);
+            });
+
+            it('should send signup email when flow is already_authenticated and welcome email is not active', async function () {
+                api.getCustomer.resolves(customer);
+                memberRepository.get.resolves(null);
+                session.metadata.ghostSignupContext = 'already_authenticated';
+                isPaidWelcomeEmailActive.resolves(false);
+
+                await service.handleSubscriptionEvent(session);
+
+                assert(sendSignupEmail.calledOnce);
+                assert(sendSignupEmail.calledWith('customer@example.com'));
+            });
+
+            it('should NOT send signup email when flow is already_authenticated and welcome email is active', async function () {
+                api.getCustomer.resolves(customer);
+                memberRepository.get.resolves(null);
+                session.metadata.ghostSignupContext = 'already_authenticated';
+                isPaidWelcomeEmailActive.resolves(true);
+
+                await service.handleSubscriptionEvent(session);
+
+                assert(!sendSignupEmail.called);
+            });
+
+            it('should send signup email when flow metadata is missing for backward compatibility', async function () {
+                api.getCustomer.resolves(customer);
+                memberRepository.get.resolves(null);
+                delete session.metadata.ghostSignupContext;
+                isPaidWelcomeEmailActive.resolves(true);
+
+                await service.handleSubscriptionEvent(session);
+
+                assert(sendSignupEmail.calledOnce);
+                assert(sendSignupEmail.calledWith('customer@example.com'));
+                assert(!isPaidWelcomeEmailActive.called);
+            });
+
+            it('should NOT send signup email on upgrade regardless of flow or welcome email', async function () {
+                api.getCustomer.resolves(customer);
+                memberRepository.get.resolves(member);
+                session.metadata.checkoutType = 'upgrade';
+                session.metadata.ghostSignupContext = 'has_precheckout_magic_link';
+                isPaidWelcomeEmailActive.resolves(false);
+
+                await service.handleSubscriptionEvent(session);
+
+                assert(!sendSignupEmail.called);
+            });
         });
     });
 });

@@ -5,7 +5,6 @@
 
 const assert = require('node:assert/strict');
 const {assertExists} = require('../utils/assertions');
-const should = require('should');
 const path = require('path');
 const fs = require('fs');
 

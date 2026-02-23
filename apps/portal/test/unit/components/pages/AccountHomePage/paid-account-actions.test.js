@@ -87,6 +87,87 @@ describe('PaidAccountActions', () => {
             expect(queryByText(/1 Jan 2099/)).toBeInTheDocument();
         });
 
+        test('displays "Free Trial" for trial offers', () => {
+            const products = getProductsData({numOfProducts: 1});
+            const site = getSiteData({products, portalProducts: products.map(p => p.id)});
+
+            const trialEndAt = new Date('2099-01-01T12:00:00.000Z');
+
+            const member = getMemberData({
+                paid: true,
+                subscriptions: [
+                    getSubscriptionData({
+                        status: 'trialing',
+                        amount: 500,
+                        currency: 'USD',
+                        interval: 'month',
+                        offer: {
+                            type: 'trial',
+                            amount: 7,
+                            duration: 'trial'
+                        },
+                        trialEndAt: trialEndAt,
+                        nextPayment: getNextPaymentData({
+                            originalAmount: 500,
+                            amount: 500,
+                            interval: 'month',
+                            currency: 'USD',
+                            discount: null
+                        })
+                    })
+                ]
+            });
+
+            const {queryByText} = setup({site, member});
+
+            expect(queryByText(/Free Trial/)).toBeInTheDocument();
+            expect(queryByText(/Ends/)).toBeInTheDocument();
+            expect(queryByText(/1 Jan 2099/)).toBeInTheDocument();
+        });
+
+        test('displays "{x} month(s) free" for free_months offers', () => {
+            const products = getProductsData({numOfProducts: 1});
+            const site = getSiteData({products, portalProducts: products.map(p => p.id)});
+
+            const trialEndAt = new Date('2099-02-01T12:00:00.000Z');
+
+            const member = getMemberData({
+                paid: true,
+                subscriptions: [
+                    getSubscriptionData({
+                        status: 'active',
+                        amount: 500,
+                        currency: 'USD',
+                        interval: 'month',
+                        offer: {
+                            type: 'free_months',
+                            amount: 1,
+                            duration: 'free_months'
+                        },
+                        trialEndAt: trialEndAt,
+                        nextPayment: getNextPaymentData({
+                            originalAmount: 500,
+                            amount: 500,
+                            interval: 'month',
+                            currency: 'USD',
+                            discount: getDiscountData({
+                                duration: 'free_months',
+                                type: 'free_months',
+                                amount: 1,
+                                end: trialEndAt.toISOString()
+                            })
+                        })
+                    })
+                ]
+            });
+
+            const {queryByText, queryByTestId} = setup({site, member});
+
+            expect(queryByText('$5.00/month')).toBeInTheDocument();
+            expect(queryByTestId('offer-label')).toBeInTheDocument();
+            expect(queryByText(/1 month free/)).toBeInTheDocument();
+        });
+
         test('displays "Complimentary" with expiry date', () => {
             const products = getProductsData({numOfProducts: 1});
             const site = getSiteData({products, portalProducts: products.map(p => p.id)});

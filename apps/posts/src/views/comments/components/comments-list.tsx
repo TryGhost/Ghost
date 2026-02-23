@@ -43,8 +43,7 @@ function CommentsList({
     isFetchingNextPage,
     fetchNextPage,
     onAddFilter,
-    isLoading,
-    commentPermalinksEnabled
+    isLoading
 }: {
     items: Comment[];
     totalItems: number;
@@ -53,7 +52,6 @@ function CommentsList({
     fetchNextPage: () => void;
     onAddFilter: (field: string, value: string, operator?: string) => void;
     isLoading?: boolean;
-    commentPermalinksEnabled?: boolean;
 }) {
     const parentRef = useRef<HTMLDivElement>(null);
     const [searchParams, setSearchParams] = useSearchParams();
@@ -192,7 +190,6 @@ function CommentsList({
                                             />
                                             <CommentMenu
                                                 comment={item}
-                                                commentPermalinksEnabled={commentPermalinksEnabled}
                                             />
                                         </div>
                                     </div>
@@ -216,7 +213,6 @@ function CommentsList({
 
             <CommentThreadSidebar
                 commentId={selectedThreadCommentId}
-                commentPermalinksEnabled={commentPermalinksEnabled}
                 open={threadSidebarOpen}
                 onOpenChange={handleCloseSidebar}
             />

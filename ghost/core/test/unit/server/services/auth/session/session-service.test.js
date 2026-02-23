@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../../utils/assertions');
-const should = require('should');
 const sinon = require('sinon');
 const express = require('express');
 const SessionService = require('../../../../../../core/server/services/auth/session/session-service');
@@ -457,7 +456,7 @@ describe('SessionService', function () {
         });
 
         const authCodeSecond = await sessionServiceSecond.generateAuthCodeForUser(req, res);
-        should.notEqual(authCodeFirst, authCodeSecond);
+        assert.notEqual(authCodeFirst, authCodeSecond);
     });
 
     it('sends an email with the auth code', async function () {

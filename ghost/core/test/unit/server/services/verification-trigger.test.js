@@ -1,8 +1,7 @@
 // Switch these lines once there are useful utils
 // const testUtils = require('./utils');
 const sinon = require('sinon');
-const assert = require('assert/strict');
-require('should');
+const assert = require('node:assert/strict');
 const VerificationTrigger = require('../../../../core/server/services/verification-trigger');
 const DomainEvents = require('@tryghost/domain-events');
 const {MemberCreatedEvent} = require('../../../../core/shared/events');
@@ -65,7 +64,7 @@ describe('Import threshold', function () {
         });
 
         const result = await trigger.getImportThreshold();
-        result.should.eql(Infinity);
+        assert.equal(result, Infinity);
         assert.equal(membersStub.callCount, 0);
     });
 });

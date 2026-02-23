@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const path = require('path');
 const t = require('../../../../core/frontend/helpers/t');
 const themeI18n = require('../../../../core/frontend/services/theme-engine/i18n');

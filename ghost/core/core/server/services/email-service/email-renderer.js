@@ -16,6 +16,7 @@ const crypto = require('crypto');
 const DEFAULT_LOCALE = 'en-gb';
 const DEFAULT_ACCENT_COLOR = '#15212A';
 const VALID_HEX_REGEX = /#([0-9a-f]{3}){1,2}$/i;
+const CONTENT_IMAGES_PATH_WITHOUT_SIZE_REGEX = /\/content\/images\/(?!size\/)/;
 
 // Wrapper function so that i18next-parser can find these strings
 const t = (x) => {
@@ -148,9 +149,9 @@ class EmailRenderer {
      * @param {object} dependencies.renderers
      * @param {{render(object, options): string}} dependencies.renderers.lexical
      * @param {{render(object, options): string}} dependencies.renderers.mobiledoc
-     * @param {{getImageSizeFromUrl(url: string): Promise<{width: number, height: number}>}} dependencies.imageSize
+     * @param {{getCachedImageSizeFromUrl(url: string): Promise<{url: string, width: number, height: number} | null>}} dependencies.imageSize
      * @param {{urlFor(type: string, optionsOrAbsolute, absolute): string, isSiteUrl(url, context): boolean}} dependencies.urlUtils
-     * @param {{isLocalImage(url: string): boolean}} dependencies.storageUtils
+     * @param {{isLocalImage(url: string): boolean, isInternalImage(url: string): boolean}} dependencies.storageUtils
      * @param {(post: Post) => string} dependencies.getPostUrl
      * @param {object} dependencies.linkReplacer
      * @param {object} dependencies.linkTracking
@@ -1402,7 +1403,11 @@ class EmailRenderer {
             };
         } else {
             try {
-                const size = await this.#imageSize.getImageSizeFromUrl(href);
+                const size = await this.#imageSize.getCachedImageSizeFromUrl(href);
+
+                if (!size || !size.width) {
+                    return {href, width: 0, height: null};
+                }
 
                 if (size.width >= visibleWidth) {
                     if (!visibleHeight) {
@@ -1419,10 +1424,11 @@ class EmailRenderer {
                     size.height = visibleHeight;
                 }
 
-                if (this.#storageUtils.isLocalImage(href)) {
+                if (this.#storageUtils.isInternalImage(href)) {
+                    const sizePath = 'size/w' + (visibleWidth * 2) + (visibleHeight ? 'h' + (visibleHeight * 2) : '') + '/';
                     // we can safely request a 1200px image - Ghost will serve the original if it's smaller
                     return {
-                        href: href.replace(/\/content\/images\//, '/content/images/size/w' + (visibleWidth * 2) + (visibleHeight ? 'h' + (visibleHeight * 2) : '') + '/'),
+                        href: href.replace(CONTENT_IMAGES_PATH_WITHOUT_SIZE_REGEX, '/content/images/' + sizePath),
                         width: size.width,
                         height: size.height
                     };

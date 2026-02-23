@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../../../utils');
 const _ = require('lodash');
@@ -82,22 +81,22 @@ describe('Permissions', function () {
             const canThisResult = permissions.canThis();
 
             assert(_.isPlainObject(canThisResult.browse));
-            canThisResult.browse.post.should.be.a.Function();
+            assert.equal(typeof canThisResult.browse.post, 'function');
 
             assert(_.isPlainObject(canThisResult.edit));
-            canThisResult.edit.post.should.be.a.Function();
-            canThisResult.edit.tag.should.be.a.Function();
-            canThisResult.edit.user.should.be.a.Function();
-            canThisResult.edit.page.should.be.a.Function();
+            assert.equal(typeof canThisResult.edit.post, 'function');
+            assert.equal(typeof canThisResult.edit.tag, 'function');
+            assert.equal(typeof canThisResult.edit.user, 'function');
+            assert.equal(typeof canThisResult.edit.page, 'function');
 
             assert(_.isPlainObject(canThisResult.add));
-            canThisResult.add.post.should.be.a.Function();
-            canThisResult.add.user.should.be.a.Function();
-            canThisResult.add.page.should.be.a.Function();
+            assert.equal(typeof canThisResult.add.post, 'function');
+            assert.equal(typeof canThisResult.add.user, 'function');
+            assert.equal(typeof canThisResult.add.page, 'function');
 
             assert(_.isPlainObject(canThisResult.destroy));
-            canThisResult.destroy.post.should.be.a.Function();
-            canThisResult.destroy.user.should.be.a.Function();
+            assert.equal(typeof canThisResult.destroy.post, 'function');
+            assert.equal(typeof canThisResult.destroy.user, 'function');
         });
 
         describe('Non user permissions', function () {

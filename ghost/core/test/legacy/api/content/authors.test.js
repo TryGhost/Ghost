@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const supertest = require('supertest');
 const localUtils = require('./utils');
 const testUtils = require('../../../utils');
@@ -120,7 +119,8 @@ describe('Authors Content API', function () {
             .then((res) => {
                 const jsonResponse = res.body;
 
-                jsonResponse.authors.should.be.an.Array().with.lengthOf(3);
+                assert(Array.isArray(jsonResponse.authors));
+                assert.equal(jsonResponse.authors.length, 3);
                 assert.equal(jsonResponse.authors[0].slug, 'joe-bloggs');
                 assert.equal(jsonResponse.authors[1].slug, 'ghost');
                 assert.equal(jsonResponse.authors[2].slug, 'slimer-mcectoplasm');

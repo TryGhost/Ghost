@@ -8,6 +8,7 @@ const {StripeLiveEnabledEvent, StripeLiveDisabledEvent} = require('./events');
 const SubscriptionEventService = require('./services/webhook/subscription-event-service');
 const InvoiceEventService = require('./services/webhook/invoice-event-service');
 const CheckoutSessionEventService = require('./services/webhook/checkout-session-event-service');
+const memberWelcomeEmailService = require('../member-welcome-emails/service');
 
 /**
  * @typedef {object} IStripeServiceConfig
@@ -120,6 +121,10 @@ module.exports = class StripeService {
                     },
                     tokenData: {}
                 });
+            },
+            async isPaidWelcomeEmailActive() {
+                memberWelcomeEmailService.init();
+                return memberWelcomeEmailService.api.isMemberWelcomeEmailActive('paid');
             }
         });
 

@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../../../utils/assertions');
-const should = require('should');
 const ObjectID = require('bson-objectid').default;
 const errors = require('../../../../../../../core/server/services/offers/domain/errors');
 const Offer = require('../../../../../../../core/server/services/offers/domain/models/offer');
@@ -37,10 +36,7 @@ describe('Offer', function () {
                     id: ObjectID()
                 }
             }, mockUniqueChecker);
-            should.ok(
-                offer instanceof Offer,
-                'Offer.create should return an instance of Offer'
-            );
+            assert(offer instanceof Offer, 'Offer.create should return an instance of Offer');
         });
 
         it('Stores stripe_coupon_id when provided', async function () {
@@ -77,10 +73,45 @@ describe('Offer', function () {
                     id: ObjectID()
                 }
             }, mockUniqueChecker);
-            should.ok(
-                offer instanceof Offer,
-                'Offer.create should return an instance of Offer'
-            );
+            assert(offer instanceof Offer, 'Offer.create should return an instance of Offer');
+        });
+
+        it('Can create a free-months offer on monthly cadence', async function () {
+            const offer = await Offer.create({
+                name: 'My Free Months Offer',
+                code: 'offer-code-free-months',
+                display_title: 'My Offer Title',
+                display_description: 'My Offer Description',
+                cadence: 'month',
+                type: 'free_months',
+                amount: 2,
+                duration: 'free_months',
+                duration_in_months: null,
+                currency: 'USD',
+                tier: {
+                    id: ObjectID()
+                }
+            }, mockUniqueChecker);
+            assert(offer instanceof Offer, 'Should create a free months offer on monthly cadence');
+        });
+
+        it('Can create a free-months offer on yearly cadence', async function () {
+            const offer = await Offer.create({
+                name: 'My Free Months Offer',
+                code: 'offer-code-free-months',
+                display_title: 'My Offer Title',
+                display_description: 'My Offer Description',
+                cadence: 'year',
+                type: 'free_months',
+                amount: 2,
+                duration: 'free_months',
+                duration_in_months: null,
+                currency: 'USD',
+                tier: {
+                    id: ObjectID()
+                }
+            }, mockUniqueChecker);
+            assert(offer instanceof Offer, 'Should create a free months offer on yearly cadence');
         });
 
         it('Throws an error if the duration for trial offer is not right', async function () {
@@ -93,6 +124,27 @@ describe('Offer', function () {
                 type: 'trial',
                 amount: 10,
                 duration: 'forever',
+                currency: 'USD',
+                tier: {
+                    id: ObjectID()
+                }
+            }, mockUniqueChecker).then(() => {
+                assert.fail('Expected an error');
+            }, (err) => {
+                assert(err);
+            });
+        });
+
+        it('Throws an error if the duration for free months offer is invalid', async function () {
+            await Offer.create({
+                name: 'My Free Months Offer',
+                code: 'free-months-test',
+                display_title: 'My Offer Title',
+                display_description: 'My Offer Description',
+                cadence: 'month',
+                type: 'free_months',
+                amount: 2,
+                duration: 'forever', // Should be "free_months"
                 currency: 'USD',
                 tier: {
                     id: ObjectID()
@@ -234,6 +286,27 @@ describe('Offer', function () {
             assert.equal(offer.currency, null);
         });
 
+        it('Has a currency of null if the type is free_months', async function () {
+            const data = {
+                name: 'My Free Months Offer',
+                code: 'offer-code-free-months',
+                display_title: 'My Offer Title',
+                display_description: 'My Offer Description',
+                cadence: 'year',
+                type: 'free_months',
+                amount: 2,
+                duration: 'free_months',
+                currency: 'USD',
+                tier: {
+                    id: ObjectID()
+                }
+            };
+
+            const offer = await Offer.create(data, mockUniqueChecker);
+
+            assert.equal(offer.currency, null);
+        });
+
         it('Can handle ObjectID, string and no id', async function () {
             const data = {
                 name: 'My Offer',
@@ -300,6 +373,92 @@ describe('Offer', function () {
             const offer = await Offer.create(data, mockUniqueChecker);
 
             assert.equal(typeof offer.createdAt, 'string');
+        });
+    });
+
+    describe('Tier and redemption type validation', function () {
+        it('Creates a retention offer with null tier', async function () {
+            const offer = await Offer.create({
+                id: ObjectID(),
+                name: 'Retention Offer',
+                code: 'retention-offer',
+                display_title: 'Stay with us',
+                display_description: 'A discount for staying',
+                cadence: 'month',
+                type: 'percent',
+                amount: 10,
+                duration: 'forever',
+                redemption_type: 'retention',
+                tier: null
+            }, mockUniqueChecker);
+
+            assert(offer instanceof Offer);
+            assert.equal(offer.tier, null);
+            assert.equal(offer.redemptionType.value, 'retention');
+        });
+
+        it('Throws when creating a retention offer with a tier', async function () {
+            try {
+                await Offer.create({
+                    id: ObjectID(),
+                    name: 'Bad Retention Offer',
+                    code: 'bad-retention',
+                    display_title: '',
+                    display_description: '',
+                    cadence: 'month',
+                    type: 'percent',
+                    amount: 10,
+                    duration: 'forever',
+                    redemption_type: 'retention',
+                    tier: {
+                        id: ObjectID()
+                    }
+                }, mockUniqueChecker);
+                assert.fail('Expected an error');
+            } catch (err) {
+                assert(err instanceof errors.InvalidOfferTier);
+            }
+        });
+
+        it('Throws when creating a signup offer without a tier', async function () {
+            try {
+                await Offer.create({
+                    id: ObjectID(),
+                    name: 'Bad Signup Offer',
+                    code: 'bad-signup',
+                    display_title: '',
+                    display_description: '',
+                    cadence: 'month',
+                    type: 'percent',
+                    amount: 10,
+                    duration: 'forever',
+                    redemption_type: 'signup',
+                    tier: null
+                }, mockUniqueChecker);
+                assert.fail('Expected an error');
+            } catch (err) {
+                assert(err instanceof errors.InvalidOfferTier);
+            }
+        });
+
+        it('Throws when creating an offer without a tier and no redemption_type (defaults to signup)', async function () {
+            try {
+                await Offer.create({
+                    id: ObjectID(),
+                    name: 'No Tier Default',
+                    code: 'no-tier-default',
+                    display_title: '',
+                    display_description: '',
+                    cadence: 'month',
+                    type: 'percent',
+                    amount: 10,
+                    duration: 'forever',
+                    tier: null
+                }, mockUniqueChecker);
+                assert.fail('Expected an error');
+            } catch (err) {
+                assert(err instanceof errors.InvalidOfferTier);
+            }
         });
     });
 

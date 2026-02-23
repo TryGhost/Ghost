@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
-const should = require('should');
 const sinon = require('sinon');
 const _ = require('lodash');
 
@@ -61,7 +60,9 @@ describe('Unit - frontend/data/fetch-data', function () {
     it('should handle no options', function (done) {
         data.fetchData(null, null, locals).then(function (result) {
             assertExists(result);
-            result.should.be.an.Object().with.properties('posts', 'meta');
+            assert(result && typeof result === 'object');
+            assert('posts' in result);
+            assert('meta' in result);
             assert(!('data' in result));
 
             assert.equal(browsePostsStub.calledOnce, true);
@@ -76,10 +77,12 @@ describe('Unit - frontend/data/fetch-data', function () {
     it('should handle path options with page/limit', function (done) {
         data.fetchData({page: 2, limit: 10}, null, locals).then(function (result) {
             assertExists(result);
-            result.should.be.an.Object().with.properties('posts', 'meta');
+            assert(result && typeof result === 'object');
+            assert('posts' in result);
+            assert('meta' in result);
             assert(!('data' in result));
 
-            result.posts.length.should.eql(posts.length);
+            assert.equal(result.posts.length, posts.length);
 
             assert.equal(browsePostsStub.calledOnce, true);
             assert(_.isPlainObject(browsePostsStub.firstCall.args[0]));
@@ -109,11 +112,15 @@ describe('Unit - frontend/data/fetch-data', function () {
 
         data.fetchData(pathOptions, routerOptions, locals).then(function (result) {
             assertExists(result);
-            result.should.be.an.Object().with.properties('posts', 'meta', 'data');
-            result.data.should.be.an.Object().with.properties('featured');
+            assert(result && typeof result === 'object');
+            assert('posts' in result);
+            assert('meta' in result);
+            assert('data' in result);
+            assert(result.data && typeof result.data === 'object');
+            assert('featured' in result.data);
 
-            result.posts.length.should.eql(posts.length);
-            result.data.featured.length.should.eql(posts.length);
+            assert.equal(result.posts.length, posts.length);
+            assert.equal(result.data.featured.length, posts.length);
 
             assert.equal(browsePostsStub.calledTwice, true);
             assert.equal(browsePostsStub.firstCall.args[0].include, 'authors,tags,tiers');
@@ -141,11 +148,15 @@ describe('Unit - frontend/data/fetch-data', function () {
         data.fetchData(pathOptions, routerOptions, locals).then(function (result) {
             assertExists(result);
 
-            result.should.be.an.Object().with.properties('posts', 'meta', 'data');
-            result.data.should.be.an.Object().with.properties('featured');
+            assert(result && typeof result === 'object');
+            assert('posts' in result);
+            assert('meta' in result);
+            assert('data' in result);
+            assert(result.data && typeof result.data === 'object');
+            assert('featured' in result.data);
 
-            result.posts.length.should.eql(posts.length);
-            result.data.featured.length.should.eql(posts.length);
+            assert.equal(result.posts.length, posts.length);
+            assert.equal(result.data.featured.length, posts.length);
 
             assert.equal(browsePostsStub.calledTwice, true);
             assert.equal(browsePostsStub.firstCall.args[0].include, 'authors,tags,tiers');
@@ -175,11 +186,15 @@ describe('Unit - frontend/data/fetch-data', function () {
 
         data.fetchData(pathOptions, routerOptions, locals).then(function (result) {
             assertExists(result);
-            result.should.be.an.Object().with.properties('posts', 'meta', 'data');
-            result.data.should.be.an.Object().with.properties('tag');
+            assert(result && typeof result === 'object');
+            assert('posts' in result);
+            assert('meta' in result);
+            assert('data' in result);
+            assert(result.data && typeof result.data === 'object');
+            assert('tag' in result.data);
 
-            result.posts.length.should.eql(posts.length);
-            result.data.tag.length.should.eql(tags.length);
+            assert.equal(result.posts.length, posts.length);
+            assert.equal(result.data.tag.length, tags.length);
 
             assert.equal(browsePostsStub.calledOnce, true);
             assert('include' in browsePostsStub.firstCall.args[0]);
