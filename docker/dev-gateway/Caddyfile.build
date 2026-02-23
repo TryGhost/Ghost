@@ -8,7 +8,7 @@
 :80 {
     log {
         output stdout
-        format transform "{common_log}"
+        format console
     }
 
     # Analytics API - proxy to analytics service
