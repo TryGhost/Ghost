@@ -5,6 +5,7 @@ on:
   schedule: daily on weekdays
 permissions:
   contents: read
+if: github.repository == 'TryGhost/Ghost'
 tools:
   cache-memory: true
 mcp-servers:

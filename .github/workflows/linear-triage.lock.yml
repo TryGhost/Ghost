@@ -23,12 +23,12 @@
 #
 # Triage new Linear issues for the Berlin Bureau (BER) team — classify type, assign priority, tag product area, and post reasoning comments.
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"9257cf83c33958a02eb856ea69019378c83361e2228059960d0d8ae141993532","compiler_version":"v0.49.3"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"6e51286695064c8c3a24ce4f37db1c244faff7482c1c74621b5a2e5c5a04a0a4","compiler_version":"v0.49.3"}
 
 name: "Linear Issue Triage Agent"
 "on":
   schedule:
-  - cron: "2 20 * * 1-5"
+  - cron: "12 22 * * 1-5"
     # Friendly format: daily on weekdays (scattered)
   workflow_dispatch:
 
@@ -41,6 +41,7 @@ run-name: "Linear Issue Triage Agent"
 
 jobs:
   activation:
+    if: github.repository == 'TryGhost/Ghost'
     runs-on: ubuntu-slim
     permissions:
       contents: read
