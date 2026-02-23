@@ -1,4 +1,4 @@
-import {vi} from 'vitest';
+import {vi, type MockInstance} from 'vitest';
 import {getGhostPaths, downloadFile, downloadFromEndpoint, blobDownload, blobDownloadFromEndpoint} from '../../../src/utils/helpers';
 
 describe('helpers utils', () => {
@@ -141,7 +141,7 @@ describe('helpers utils', () => {
         let originalFetch: typeof global.fetch;
         let originalCreateObjectURL: typeof URL.createObjectURL;
         let originalRevokeObjectURL: typeof URL.revokeObjectURL;
-        let appendChildSpy: ReturnType<typeof vi.spyOn>;
+        let appendChildSpy: MockInstance<[node: Node], Node>;
         let removeElementSpy: ReturnType<typeof vi.fn>;
         let clickSpy: ReturnType<typeof vi.fn>;
 
