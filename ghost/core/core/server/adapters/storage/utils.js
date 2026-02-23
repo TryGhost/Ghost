@@ -64,5 +64,5 @@ exports.isInternalImage = function isInternalImage(imagePath) {
     }
 
     const imageBaseUrl = (config.get('urls:image') || '').replace(/\/+$/, '');
-    return imageBaseUrl && imagePath.startsWith(imageBaseUrl + '/');
+    return !!(imageBaseUrl && imagePath.startsWith(imageBaseUrl + '/'));
 };
