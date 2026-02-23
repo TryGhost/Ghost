@@ -1278,15 +1278,27 @@ jobs:
       - name: Fetch Tinybird config
         run: yarn workspace @tryghost/e2e tinybird:fetch-config
 
-      - name: Setup Playwright
-        uses: ./.github/actions/setup-playwright
+      - name: Get Playwright version
+        id: playwright
+        run: |
+          PLAYWRIGHT_VERSION=$(node -p 'require("./e2e/package.json").devDependencies["@playwright/test"]')
+          echo "version=$PLAYWRIGHT_VERSION" >> "$GITHUB_OUTPUT"
 
-      - name: Run e2e tests
-        env:
-          GHOST_E2E_MODE: build
-          GHOST_E2E_IMAGE: ghost-e2e:local
-          TEST_WORKERS_COUNT: 1
-        run: yarn test:e2e:all --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }} --retries=2
+      - name: Pull Playwright image
+        run: docker pull mcr.microsoft.com/playwright:v${{ steps.playwright.outputs.version }}-noble
+
+      - name: Run e2e tests in Playwright container
+        run: |
+          docker run --rm --network host --ipc host \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v "${{ github.workspace }}:${{ github.workspace }}" \
+            -w "${{ github.workspace }}/e2e" \
+            -e CI=true \
+            -e TEST_WORKERS_COUNT=1 \
+            -e GHOST_E2E_MODE=build \
+            -e GHOST_E2E_IMAGE=ghost-e2e:local \
+            mcr.microsoft.com/playwright:v${{ steps.playwright.outputs.version }}-noble \
+            yarn test:all --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }} --retries=2
 
       - name: Stop E2E infra
         if: always()
