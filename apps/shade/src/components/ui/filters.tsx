@@ -1,7 +1,7 @@
 'use client';
 
 import type React from 'react';
-import {createContext, useCallback, useContext, useEffect, useMemo, useRef, useState} from 'react';
+import {createContext, useCallback, useContext, useEffect, useMemo, useState} from 'react';
 import {
     Command,
     CommandEmpty,
@@ -17,12 +17,11 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import {Button} from '@/components/ui/button';
 import {Popover, PopoverContent, PopoverTrigger} from '@/components/ui/popover';
 import {Switch} from '@/components/ui/switch';
 import {Tooltip, TooltipContent, TooltipTrigger} from '@/components/ui/tooltip';
 import {cva, type VariantProps} from 'class-variance-authority';
-import {AlertCircle, Check, Loader2, Pencil, Plus, X} from 'lucide-react';
+import {AlertCircle, Check, Loader2, Plus, X} from 'lucide-react';
 import {cn} from '@/lib/utils';
 
 // i18n Configuration Interface
@@ -763,8 +762,6 @@ export interface FilterFieldConfig<T = unknown> {
     onValueChange?: (values: T[]) => void;
     // Auto-close dropdown after selection (even for multiselect types)
     autoCloseOnSelect?: boolean;
-    // Action callback for individual options (renders an edit icon on hover)
-    onOptionAction?: (option: FilterOption<T>) => void;
 }
 
 // Helper functions to handle both flat and grouped field configurations
@@ -1014,10 +1011,6 @@ function SelectOptionsPopover<T = unknown>({
     const [searchInput, setSearchInput] = useState(field.searchValue || '');
     // Track selected options separately so they persist during async search
     const [cachedSelectedOptions, setCachedSelectedOptions] = useState<FilterOption<T>[]>([]);
-    // Inline editing state
-    const [editingOptionValue, setEditingOptionValue] = useState<T | null>(null);
-    const [editingName, setEditingName] = useState('');
-    const editInputRef = useRef<HTMLInputElement>(null);
     const context = useFilterContext();
 
     // Sync searchInput with controlled searchValue
@@ -1028,10 +1021,7 @@ function SelectOptionsPopover<T = unknown>({
     }, [field.searchValue]);
 
     const isMultiSelect = field.type === 'multiselect' || values.length > 1;
-    const effectiveValues = useMemo(
-        () => ((field.value !== undefined ? (field.value as T[]) : values) || []),
-        [field.value, values]
-    );
+    const effectiveValues = (field.value !== undefined ? (field.value as T[]) : values) || [];
 
     // Focus the search input when the popover opens
     useEffect(() => {
@@ -1094,123 +1084,11 @@ function SelectOptionsPopover<T = unknown>({
 
     const handleClose = () => {
         setOpen(false);
-        setEditingOptionValue(null);
         // Only clear search if not controlled
         if (field.searchValue === undefined) {
             setTimeout(() => setSearchInput(''), 200);
         }
         onClose?.();
-    };
-
-    const startEditing = (option: FilterOption<T>) => {
-        setEditingOptionValue(option.value);
-        setEditingName(option.label);
-        setTimeout(() => editInputRef.current?.focus(), 0);
-    };
-
-    const stopEditing = () => {
-        setEditingOptionValue(null);
-        setEditingName('');
-    };
-
-    const renderOptionRow = (option: FilterOption<T>, isSelected: boolean, onSelect: () => void) => {
-        const isEditing = editingOptionValue !== null && editingOptionValue === option.value;
-
-        if (isEditing) {
-            return (
-                <div key={String(option.value)} className="flex w-full flex-col gap-2 py-2" onMouseDown={e => e.stopPropagation()}>
-                    <input
-                        ref={editInputRef}
-                        className="h-7 w-full rounded-md border border-gray-300 bg-white px-2 text-sm outline-none focus:border-green focus:shadow-[0_0_0_2px_rgba(48,207,67,.25)] dark:border-gray-700 dark:bg-gray-900"
-                        value={editingName}
-                        onChange={e => setEditingName(e.target.value)}
-                        onKeyDown={(e) => {
-                            e.stopPropagation();
-                            if (e.key === 'Escape') {
-                                stopEditing();
-                            }
-                            if (e.key === 'Enter') {
-                                // TODO: Wire up save
-                                stopEditing();
-                            }
-                        }}
-                    />
-                    <div className="flex items-center justify-between">
-                        <Button
-                            className="text-red hover:bg-red/5 hover:text-red"
-                            size="sm"
-                            variant="ghost"
-                            onMouseDown={(e) => {
-                                e.stopPropagation();
-                                e.preventDefault();
-                                // TODO: Wire up delete
-                                stopEditing();
-                            }}
-                        >
-                            Delete
-                        </Button>
-                        <div className="flex items-center gap-1">
-                            <Button
-                                size="sm"
-                                variant="ghost"
-                                onMouseDown={(e) => {
-                                    e.stopPropagation();
-                                    e.preventDefault();
-                                    stopEditing();
-                                }}
-                            >
-                                Cancel
-                            </Button>
-                            <Button
-                                size="sm"
-                                variant="default"
-                                onMouseDown={(e) => {
-                                    e.stopPropagation();
-                                    e.preventDefault();
-                                    // TODO: Wire up save
-                                    stopEditing();
-                                }}
-                            >
-                                Save
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-            );
-        }
-
-        return (
-            <CommandItem
-                key={String(option.value)}
-                className="group flex items-center gap-2"
-                value={isSelected ? undefined : option.label + (option.detail ? ` - ${option.detail}` : '')}
-                onSelect={onSelect}
-            >
-                {option.icon && option.icon}
-                <div className="flex flex-col overflow-hidden">
-                    <span className="truncate text-accent-foreground" title={option.label}>{option.label}</span>
-                    {option.detail && <span className="truncate text-sm text-muted-foreground" title={option.detail}>{option.detail}</span>}
-                </div>
-                <Check className={cn(
-                    'ms-auto shrink-0 text-primary transition-opacity duration-150',
-                    field.onOptionAction && 'group-hover:opacity-0',
-                    !isSelected && 'opacity-0'
-                )} />
-                {field.onOptionAction && (
-                    <button
-                        className="absolute inset-y-0 right-0 flex aspect-square h-full items-center justify-center text-muted-foreground opacity-0 transition-opacity duration-150 hover:text-foreground group-hover:opacity-100"
-                        type="button"
-                        onMouseDown={(e) => {
-                            e.stopPropagation();
-                            e.preventDefault();
-                            startEditing(option);
-                        }}
-                    >
-                        <Pencil className="size-3" />
-                    </button>
-                )}
-            </CommandItem>
-        );
     };
 
     // If inline mode, render the content directly without popover
@@ -1239,22 +1117,35 @@ function SelectOptionsPopover<T = unknown>({
                         {/* Selected items */}
                         {selectedOptions.length > 0 && (
                             <CommandGroup heading={field.label || 'Selected'}>
-                                {selectedOptions.map(option => renderOptionRow(option, true, () => {
-                                    if (isMultiSelect) {
-                                        const next = effectiveValues.filter(v => v !== option.value) as T[];
-                                        if (field.onValueChange) {
-                                            field.onValueChange(next);
-                                        } else {
-                                            onChange(next);
-                                        }
-                                    } else {
-                                        if (field.onValueChange) {
-                                            field.onValueChange([] as T[]);
-                                        } else {
-                                            onChange([] as T[]);
-                                        }
-                                    }
-                                }))}
+                                {selectedOptions.map(option => (
+                                    <CommandItem
+                                        key={String(option.value)}
+                                        className="group flex items-center gap-2"
+                                        onSelect={() => {
+                                            if (isMultiSelect) {
+                                                const next = effectiveValues.filter(v => v !== option.value) as T[];
+                                                if (field.onValueChange) {
+                                                    field.onValueChange(next);
+                                                } else {
+                                                    onChange(next);
+                                                }
+                                            } else {
+                                                if (field.onValueChange) {
+                                                    field.onValueChange([] as T[]);
+                                                } else {
+                                                    onChange([] as T[]);
+                                                }
+                                            }
+                                        }}
+                                    >
+                                        {option.icon && option.icon}
+                                        <div className="flex flex-col overflow-hidden">
+                                            <span className="truncate text-accent-foreground" title={option.label}>{option.label}</span>
+                                            {option.detail && <span className="truncate text-sm text-muted-foreground" title={option.detail}>{option.detail}</span>}
+                                        </div>
+                                        <Check className="ms-auto text-primary" />
+                                    </CommandItem>
+                                ))}
                             </CommandGroup>
                         )}
 
@@ -1263,29 +1154,45 @@ function SelectOptionsPopover<T = unknown>({
                             <>
                                 {selectedOptions.length > 0 && <CommandSeparator />}
                                 <CommandGroup>
-                                    {unselectedOptions.map(option => renderOptionRow(option, false, () => {
-                                        if (isMultiSelect) {
-                                            const newValues = [...effectiveValues, option.value] as T[];
-                                            if (field.maxSelections && newValues.length > field.maxSelections) {
-                                                return;
-                                            }
-                                            if (field.onValueChange) {
-                                                field.onValueChange(newValues);
-                                            } else {
-                                                onChange(newValues);
-                                            }
-                                            if (field.autoCloseOnSelect) {
-                                                onClose?.();
-                                            }
-                                        } else {
-                                            if (field.onValueChange) {
-                                                field.onValueChange([option.value] as T[]);
-                                            } else {
-                                                onChange([option.value] as T[]);
-                                            }
-                                            onClose?.();
-                                        }
-                                    }))}
+                                    {unselectedOptions.map(option => (
+                                        <CommandItem
+                                            key={String(option.value)}
+                                            className="group flex items-center gap-2"
+                                            value={option.label + (option.detail ? ` - ${option.detail}` : '')}
+                                            onSelect={() => {
+                                                if (isMultiSelect) {
+                                                    const newValues = [...effectiveValues, option.value] as T[];
+                                                    if (field.maxSelections && newValues.length > field.maxSelections) {
+                                                        return; // Don't exceed max selections
+                                                    }
+                                                    if (field.onValueChange) {
+                                                        field.onValueChange(newValues);
+                                                    } else {
+                                                        onChange(newValues);
+                                                    }
+                                                    // Auto-close if configured
+                                                    if (field.autoCloseOnSelect) {
+                                                        onClose?.();
+                                                    }
+                                                    // For multiselect, don't close the popover to allow multiple selections
+                                                } else {
+                                                    if (field.onValueChange) {
+                                                        field.onValueChange([option.value] as T[]);
+                                                    } else {
+                                                        onChange([option.value] as T[]);
+                                                    }
+                                                    onClose?.();
+                                                }
+                                            }}
+                                        >
+                                            {option.icon && option.icon}
+                                            <div className="flex flex-col overflow-hidden">
+                                                <span className="truncate text-accent-foreground" title={option.label}>{option.label}</span>
+                                                {option.detail && <span className="truncate text-sm text-muted-foreground" title={option.detail}>{option.detail}</span>}
+                                            </div>
+                                            <Check className="ms-auto text-primary opacity-0" />
+                                        </CommandItem>
+                                    ))}
                                 </CommandGroup>
                             </>
                         )}
@@ -1362,17 +1269,30 @@ function SelectOptionsPopover<T = unknown>({
                         {/* Selected items */}
                         {selectedOptions.length > 0 && (
                             <CommandGroup>
-                                {selectedOptions.map(option => renderOptionRow(option, true, () => {
-                                    if (isMultiSelect) {
-                                        onChange(values.filter(v => v !== option.value) as T[]);
-                                    } else {
-                                        onChange([] as T[]);
-                                    }
-                                    if (!isMultiSelect) {
-                                        setOpen(false);
-                                        handleClose();
-                                    }
-                                }))}
+                                {selectedOptions.map(option => (
+                                    <CommandItem
+                                        key={String(option.value)}
+                                        className="group flex items-center gap-2"
+                                        onSelect={() => {
+                                            if (isMultiSelect) {
+                                                onChange(values.filter(v => v !== option.value) as T[]);
+                                            } else {
+                                                onChange([] as T[]);
+                                            }
+                                            if (!isMultiSelect) {
+                                                setOpen(false);
+                                                handleClose();
+                                            }
+                                        }}
+                                    >
+                                        {option.icon && option.icon}
+                                        <div className="flex flex-col overflow-hidden">
+                                            <span className="truncate text-accent-foreground" title={option.label}>{option.label}</span>
+                                            {option.detail && <span className="truncate text-sm text-muted-foreground" title={option.detail}>{option.detail}</span>}
+                                        </div>
+                                        <Check className="ms-auto text-primary" />
+                                    </CommandItem>
+                                ))}
                             </CommandGroup>
                         )}
 
@@ -1381,22 +1301,37 @@ function SelectOptionsPopover<T = unknown>({
                             <>
                                 {selectedOptions.length > 0 && <CommandSeparator />}
                                 <CommandGroup>
-                                    {unselectedOptions.map(option => renderOptionRow(option, false, () => {
-                                        if (isMultiSelect) {
-                                            const newValues = [...values, option.value] as T[];
-                                            if (field.maxSelections && newValues.length > field.maxSelections) {
-                                                return;
-                                            }
-                                            onChange(newValues);
-                                            if (field.autoCloseOnSelect) {
-                                                handleClose();
-                                            }
-                                        } else {
-                                            onChange([option.value] as T[]);
-                                            setOpen(false);
-                                            handleClose();
-                                        }
-                                    }))}
+                                    {unselectedOptions.map(option => (
+                                        <CommandItem
+                                            key={String(option.value)}
+                                            className="group flex items-center gap-2"
+                                            value={option.label + (option.detail ? ` - ${option.detail}` : '')}
+                                            onSelect={() => {
+                                                if (isMultiSelect) {
+                                                    const newValues = [...values, option.value] as T[];
+                                                    if (field.maxSelections && newValues.length > field.maxSelections) {
+                                                        return; // Don't exceed max selections
+                                                    }
+                                                    onChange(newValues);
+                                                    // Auto-close if configured
+                                                    if (field.autoCloseOnSelect) {
+                                                        handleClose();
+                                                    }
+                                                } else {
+                                                    onChange([option.value] as T[]);
+                                                    setOpen(false);
+                                                    handleClose();
+                                                }
+                                            }}
+                                        >
+                                            {option.icon && option.icon}
+                                            <div className="flex flex-col overflow-hidden">
+                                                <span className="truncate text-accent-foreground" title={option.label}>{option.label}</span>
+                                                {option.detail && <span className="truncate text-sm text-muted-foreground" title={option.detail}>{option.detail}</span>}
+                                            </div>
+                                            <Check className="ms-auto text-primary opacity-0" />
+                                        </CommandItem>
+                                    ))}
                                 </CommandGroup>
                             </>
                         )}

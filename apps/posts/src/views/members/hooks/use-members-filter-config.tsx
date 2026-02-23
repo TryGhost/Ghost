@@ -35,8 +35,6 @@ export interface UseMembersFilterConfigOptions {
     emailTrackClicks?: boolean;
     audienceFeedbackEnabled?: boolean;
     siteTimezone?: string;
-    // Label option action callback (edit icon in filter dropdown)
-    onLabelOptionAction?: (option: FilterOption) => void;
 }
 
 const STATUS_OPTIONS: FilterOption<string>[] = [
@@ -130,8 +128,7 @@ export function useMembersFilterConfig({
     emailTrackOpens = false,
     emailTrackClicks = false,
     audienceFeedbackEnabled = false,
-    siteTimezone = 'Etc/UTC',
-    onLabelOptionAction
+    siteTimezone = 'Etc/UTC'
 }: UseMembersFilterConfigOptions): FilterFieldGroup[] {
     return useMemo(() => {
         const groups: FilterFieldGroup[] = [];
@@ -177,8 +174,7 @@ export function useMembersFilterConfig({
                 onSearchChange: onLabelsSearchChange,
                 searchValue: labelsSearchValue,
                 isLoading: labelsLoading,
-                className: 'w-64',
-                onOptionAction: onLabelOptionAction
+                className: 'w-64'
             });
         }
 
@@ -519,7 +515,6 @@ export function useMembersFilterConfig({
         emailTrackOpens,
         emailTrackClicks,
         audienceFeedbackEnabled,
-        siteTimezone,
-        onLabelOptionAction
+        siteTimezone
     ]);
 }

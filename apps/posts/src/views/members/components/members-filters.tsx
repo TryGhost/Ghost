@@ -1,4 +1,4 @@
-import React, {useCallback} from 'react';
+import React from 'react';
 import {Filter, Filters, LucideIcon} from '@tryghost/shade';
 import {getSettingValue, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {getSiteTimezone} from '@src/utils/get-site-timezone';
@@ -46,12 +46,6 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     const postSearch = useResourceSearch('post');
     const emailSearch = useResourceSearch('email');
 
-    // Label edit action — enables inline editing in the filter dropdown
-    // TODO: Wire up onOptionSave/onOptionDelete for actual API calls
-    const handleLabelOptionAction = useCallback(() => {
-        // No-op: inline edit is handled within the filters component
-    }, []);
-
     // Get filter configuration
     const filterFields = useMembersFilterConfig({
         labels,
@@ -74,8 +68,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
         emailTrackOpens,
         emailTrackClicks,
         audienceFeedbackEnabled,
-        siteTimezone,
-        onLabelOptionAction: handleLabelOptionAction
+        siteTimezone
     });
 
     const hasFilters = filters.length > 0;
