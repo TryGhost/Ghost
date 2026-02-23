@@ -317,6 +317,57 @@ describe('lib/image: image size', function () {
             }).catch(done);
         });
 
+        it('should use storage for local URL and HTTP for CDN URL', async function () {
+            const localImageUrl = 'https://site.com/content/images/image.jpg';
+            const cdnImageUrl = 'https://cdn.com/uuid/content/images/image.jpg';
+            const expectedLocalDimensions = {width: 100, height: 100};
+            const fixturePath = path.join(__dirname, '../../../../utils/fixtures/images/favicon.png');
+
+            const cdnRequestMock = nock('https://cdn.com')
+                .get('/uuid/content/images/image.jpg')
+                .reply(200, GIF1x1);
+
+            const storageReadSpy = sinon.spy(() => {
+                return fs.promises.readFile(fixturePath);
+            });
+
+            const imageSize = new ImageSize({
+                config: {
+                    get: () => {}
+                },
+                tpl: {},
+                storage: {
+                    getStorage: () => ({
+                        read: storageReadSpy
+                    })
+                },
+                storageUtils: {
+                    isLocalImage: imagePath => imagePath === localImageUrl,
+                    getLocalImagesStoragePath: () => 'ignored-by-test'
+                },
+                validator: {
+                    isURL: () => true
+                },
+                urlUtils: {
+                    urlFor: sinon.stub().withArgs('image').returns(localImageUrl),
+                    getSubdir: sinon.stub().returns('')
+                },
+                request: {},
+                probe
+            });
+
+            const localResult = await imageSize.getImageSizeFromUrl(localImageUrl);
+            assert.equal(localResult.url, localImageUrl);
+            assert.equal(localResult.width, expectedLocalDimensions.width);
+            assert.equal(localResult.height, expectedLocalDimensions.height);
+            assert.equal(storageReadSpy.calledOnce, true);
+
+            const cdnResult = await imageSize.getImageSizeFromUrl(cdnImageUrl);
+            assert.equal(cdnResult.url, cdnImageUrl);
+            assert.equal(cdnRequestMock.isDone(), true);
+            assert.equal(storageReadSpy.calledOnce, true);
+        });
+
         it('[failure] can handle an error with statuscode not 200 (probe-image-size)', function (done) {
             const url = 'http://noimagehere.com/files/f/feedough/x/11/1540353_20925115.jpg';
 
