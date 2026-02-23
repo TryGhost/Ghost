@@ -2970,6 +2970,7 @@ describe('Email renderer', function () {
 
     describe('limitImageWidth', function () {
         it('Limits width of local images', async function () {
+            const isLocal = url => url === 'http://your-blog.com/content/images/2017/01/02/example.png';
             const emailRenderer = new EmailRenderer({
                 imageSize: {
                     getCachedImageSizeFromUrl() {
@@ -2980,9 +2981,8 @@ describe('Email renderer', function () {
                     }
                 },
                 storageUtils: {
-                    isLocalImage(url) {
-                        return url === 'http://your-blog.com/content/images/2017/01/02/example.png';
-                    }
+                    isLocalImage: isLocal,
+                    isInternalImage: isLocal
                 }
             });
             const response = await emailRenderer.limitImageWidth('http://your-blog.com/content/images/2017/01/02/example.png');
@@ -2992,6 +2992,7 @@ describe('Email renderer', function () {
         });
 
         it('Limits width and height of local images', async function () {
+            const isLocal = url => url === 'http://your-blog.com/content/images/2017/01/02/example.png';
             const emailRenderer = new EmailRenderer({
                 imageSize: {
                     getCachedImageSizeFromUrl() {
@@ -3002,9 +3003,8 @@ describe('Email renderer', function () {
                     }
                 },
                 storageUtils: {
-                    isLocalImage(url) {
-                        return url === 'http://your-blog.com/content/images/2017/01/02/example.png';
-                    }
+                    isLocalImage: isLocal,
+                    isInternalImage: isLocal
                 }
             });
             const response = await emailRenderer.limitImageWidth('http://your-blog.com/content/images/2017/01/02/example.png', 600, 600);
@@ -3013,7 +3013,85 @@ describe('Email renderer', function () {
             assert.equal(response.href, 'http://your-blog.com/content/images/size/w1200h1200/2017/01/02/example.png');
         });
 
+        it('Limits width of CDN content images', async function () {
+            const emailRenderer = new EmailRenderer({
+                imageSize: {
+                    getCachedImageSizeFromUrl() {
+                        return {
+                            width: 2000,
+                            height: 1000
+                        };
+                    }
+                },
+                storageUtils: {
+                    isLocalImage() {
+                        return false;
+                    },
+                    isInternalImage(url) {
+                        return url.startsWith('https://storage.ghost.is/c/6f/a3/test/content/images/');
+                    }
+                }
+            });
+            const response = await emailRenderer.limitImageWidth('https://storage.ghost.is/c/6f/a3/test/content/images/2026/02/example.png');
+            assert.equal(response.width, 600);
+            assert.equal(response.height, 300);
+            assert.equal(response.href, 'https://storage.ghost.is/c/6f/a3/test/content/images/size/w1200/2026/02/example.png');
+        });
+
+        it('Does not rewrite external content/images URLs', async function () {
+            const emailRenderer = new EmailRenderer({
+                imageSize: {
+                    getCachedImageSizeFromUrl() {
+                        return {
+                            width: 2000,
+                            height: 1000
+                        };
+                    }
+                },
+                storageUtils: {
+                    isLocalImage() {
+                        return false;
+                    },
+                    isInternalImage() {
+                        return false;
+                    }
+                }
+            });
+
+            const response = await emailRenderer.limitImageWidth('https://example.com/content/images/example.png');
+            assert.equal(response.width, 600);
+            assert.equal(response.height, 300);
+            assert.equal(response.href, 'https://example.com/content/images/example.png');
+        });
+
+        it('Does not double-rewrite already-sized CDN image URLs', async function () {
+            const emailRenderer = new EmailRenderer({
+                imageSize: {
+                    getCachedImageSizeFromUrl() {
+                        return {
+                            width: 2000,
+                            height: 1000
+                        };
+                    }
+                },
+                storageUtils: {
+                    isLocalImage() {
+                        return false;
+                    },
+                    isInternalImage(url) {
+                        return url.startsWith('https://storage.ghost.is/c/6f/a3/test/content/images/');
+                    }
+                }
+            });
+
+            const response = await emailRenderer.limitImageWidth('https://storage.ghost.is/c/6f/a3/test/content/images/size/w600/2026/02/example.png');
+            assert.equal(response.width, 600);
+            assert.equal(response.height, 300);
+            assert.equal(response.href, 'https://storage.ghost.is/c/6f/a3/test/content/images/size/w600/2026/02/example.png');
+        });
+
         it('Returns default dimensions when getCachedImageSizeFromUrl returns null', async function () {
+            const isLocal = url => url === 'http://your-blog.com/content/images/2017/01/02/example.png';
             const emailRenderer = new EmailRenderer({
                 imageSize: {
                     getCachedImageSizeFromUrl() {
@@ -3021,9 +3099,8 @@ describe('Email renderer', function () {
                     }
                 },
                 storageUtils: {
-                    isLocalImage(url) {
-                        return url === 'http://your-blog.com/content/images/2017/01/02/example.png';
-                    }
+                    isLocalImage: isLocal,
+                    isInternalImage: isLocal
                 }
             });
             const response = await emailRenderer.limitImageWidth('http://your-blog.com/content/images/2017/01/02/example.png');
@@ -3042,8 +3119,11 @@ describe('Email renderer', function () {
                     }
                 },
                 storageUtils: {
-                    isLocalImage(url) {
-                        return url === 'http://your-blog.com/content/images/2017/01/02/example.png';
+                    isLocalImage() {
+                        return false;
+                    },
+                    isInternalImage() {
+                        return false;
                     }
                 }
             });
@@ -3064,8 +3144,11 @@ describe('Email renderer', function () {
                     }
                 },
                 storageUtils: {
-                    isLocalImage(url) {
-                        return url === 'http://your-blog.com/content/images/2017/01/02/example.png';
+                    isLocalImage() {
+                        return false;
+                    },
+                    isInternalImage() {
+                        return false;
                     }
                 }
             });
@@ -3085,8 +3168,11 @@ describe('Email renderer', function () {
                     }
                 },
                 storageUtils: {
-                    isLocalImage(url) {
-                        return url === 'http://your-blog.com/content/images/2017/01/02/example.png';
+                    isLocalImage() {
+                        return false;
+                    },
+                    isInternalImage() {
+                        return false;
                     }
                 }
             });
@@ -3110,6 +3196,9 @@ describe('Email renderer', function () {
                 imageSize: cachedImageSize,
                 storageUtils: {
                     isLocalImage() {
+                        return false;
+                    },
+                    isInternalImage() {
                         return false;
                     }
                 }
@@ -3135,6 +3224,9 @@ describe('Email renderer', function () {
                 imageSize: cachedImageSize,
                 storageUtils: {
                     isLocalImage() {
+                        return false;
+                    },
+                    isInternalImage() {
                         return false;
                     }
                 }
@@ -3168,6 +3260,9 @@ describe('Email renderer', function () {
                 storageUtils: {
                     isLocalImage() {
                         return false;
+                    },
+                    isInternalImage() {
+                        return false;
                     }
                 }
             });
@@ -3196,6 +3291,9 @@ describe('Email renderer', function () {
                 imageSize: cachedImageSize,
                 storageUtils: {
                     isLocalImage() {
+                        return false;
+                    },
+                    isInternalImage() {
                         return false;
                     }
                 }

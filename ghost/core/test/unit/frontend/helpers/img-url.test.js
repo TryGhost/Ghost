@@ -194,6 +194,57 @@ describe('{{img_url}} helper', function () {
             assert.equal(rendered, 'content/images/size/w400/my-coole-img.jpg');
         });
 
+        describe('with CDN image base URL', function () {
+            before(function () {
+                configUtils.set('urls:image', 'https://storage.ghost.is/c/6f/a3/test/content/images');
+            });
+
+            after(async function () {
+                await configUtils.restore();
+                configUtils.set({url: 'http://localhost:65535/'});
+            });
+
+            it('should output sized url for internal CDN image urls', function () {
+                const rendered = img_url('https://storage.ghost.is/c/6f/a3/test/content/images/my-coole-img.jpg', {
+                    hash: {
+                        size: 'medium'
+                    },
+                    data: {
+                        config: {
+                            image_sizes: {
+                                medium: {
+                                    width: 400
+                                }
+                            }
+                        }
+                    }
+                });
+
+                assertExists(rendered);
+                assert.equal(rendered, 'https://storage.ghost.is/c/6f/a3/test/content/images/size/w400/my-coole-img.jpg');
+            });
+
+            it('should not treat prefix-only CDN urls as internal', function () {
+                const rendered = img_url('https://storage.ghost.is/c/6f/a3/test/content/images-something/my-coole-img.jpg', {
+                    hash: {
+                        size: 'medium'
+                    },
+                    data: {
+                        config: {
+                            image_sizes: {
+                                medium: {
+                                    width: 400
+                                }
+                            }
+                        }
+                    }
+                });
+
+                assertExists(rendered);
+                assert.equal(rendered, 'https://storage.ghost.is/c/6f/a3/test/content/images-something/my-coole-img.jpg');
+            });
+        });
+
         it('ignores invalid size options', function () {
             const rendered = img_url('/content/images/author-image-relative-url.png', {hash: {size: 'invalid-size'}});
             assertExists(rendered);

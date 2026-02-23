@@ -333,6 +333,29 @@ describe('lib/mobiledoc', function () {
             assert.equal(transformed.cards.length, 4);
         });
 
+        it('fetches non-local image sizes from URL', async function () {
+            let mobiledoc = {
+                cards: [
+                    ['image', {src: 'https://storage.ghost.is/c/6f/a3/test/content/images/2026/02/ghost-logo.png'}]
+                ]
+            };
+
+            const cdnMock = nock('https://storage.ghost.is')
+                .get('/c/6f/a3/test/content/images/2026/02/ghost-logo.png')
+                .query(true)
+                .replyWithFile(200, path.join(__dirname, '../../../utils/fixtures/images/ghost-logo.png'), {
+                    'Content-Type': 'image/png'
+                });
+
+            const transformedMobiledoc = await mobiledocLib.populateImageSizes(JSON.stringify(mobiledoc));
+            const transformed = JSON.parse(transformedMobiledoc);
+
+            assert.equal(cdnMock.isDone(), true);
+            assert.equal(transformed.cards.length, 1);
+            assert.equal(transformed.cards[0][1].width, 800);
+            assert.equal(transformed.cards[0][1].height, 257);
+        });
+
         // images can be stored with and without subdir when a subdir is configured
         // but storage adapter always needs paths relative to content dir
         it('works with subdir', async function () {
