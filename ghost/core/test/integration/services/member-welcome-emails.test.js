@@ -5,7 +5,6 @@ const testUtils = require('../../utils');
 const models = require('../../../core/server/models');
 const {OUTBOX_STATUSES} = require('../../../core/server/models/outbox');
 const db = require('../../../core/server/data/db');
-const mockManager = require('../../utils/e2e-framework-mock-manager');
 const mailService = require('../../../core/server/services/mail');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../core/server/services/member-welcome-emails/constants');
 const processOutbox = require('../../../core/server/services/outbox/jobs/lib/process-outbox');
@@ -86,13 +85,10 @@ describe('Member Welcome Emails Integration', function () {
         await db.knex('members').del();
         await db.knex('automated_emails').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free).del();
         await db.knex('automated_emails').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.paid).del();
-        mockManager.restore();
     });
 
-    describe('Member creation with welcome emails enabled', function () {
+    describe('Member creation with welcome emails', function () {
         it('creates outbox entry when member source is "member"', async function () {
-            mockManager.mockLabsEnabled('welcomeEmails');
-
             const member = await membersService.api.members.create({
                 email: 'welcome-test@example.com',
                 name: 'Welcome Test Member'
@@ -115,24 +111,7 @@ describe('Member Welcome Emails Integration', function () {
             assert.equal(payload.status, 'free');
         });
 
-        it('does NOT create outbox entry when welcomeEmails labs flag is off', async function () {
-            mockManager.mockLabsDisabled('welcomeEmails');
-
-            await membersService.api.members.create({
-                email: 'no-welcome@example.com',
-                name: 'No Welcome Member'
-            }, {});
-
-            const outboxEntries = await models.Outbox.findAll({
-                filter: 'event_type:MemberCreatedEvent'
-            });
-
-            assert.equal(outboxEntries.length, 0);
-        });
-
         it('does NOT create outbox entry when member is imported', async function () {
-            mockManager.mockLabsEnabled('welcomeEmails');
-
             await membersService.api.members.create({
                 email: 'imported@example.com',
                 name: 'Imported Member'
@@ -146,8 +125,6 @@ describe('Member Welcome Emails Integration', function () {
         });
 
         it('does NOT create outbox entry when member is created by admin', async function () {
-            mockManager.mockLabsEnabled('welcomeEmails');
-
             await membersService.api.members.create({
                 email: 'admin-created@example.com',
                 name: 'Admin Created Member'
@@ -161,8 +138,6 @@ describe('Member Welcome Emails Integration', function () {
         });
 
         it('creates outbox entry with correct timestamp', async function () {
-            mockManager.mockLabsEnabled('welcomeEmails');
-
             const beforeCreation = new Date(Date.now() - 1000);
 
             await membersService.api.members.create({
@@ -196,7 +171,6 @@ describe('Member Welcome Emails Integration', function () {
 
         beforeEach(function () {
             sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail sent');
-            mockManager.mockLabsEnabled('welcomeEmails');
         });
 
         afterEach(async function () {
