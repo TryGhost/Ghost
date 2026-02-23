@@ -23,7 +23,7 @@
 #
 # Triage new Linear issues for the Berlin Bureau (BER) team — classify type, assign priority, tag product area, and post reasoning comments.
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"572d937d65a98dde9938544c30ed304e6fd6faeb113f27559bcada65817858ae","compiler_version":"v0.49.3"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"1e1d21353d1d28f4313b6d94510c79a616f93ac5ad328a3718b0a1489bad3094","compiler_version":"v0.49.3"}
 
 name: "Linear Issue Triage Agent"
 "on":
@@ -653,13 +653,13 @@ jobs:
                   "mcp-remote",
                   "https://mcp.linear.app/mcp",
                   "--header",
-                  "Authorization:${LINEAR_AUTH_HEADER}"
+                  "Authorization:Bearer \${LINEAR_API_KEY}"
                 ],
                 "tools": [
                   "*"
                 ],
                 "env": {
-                  "LINEAR_AUTH_HEADER": "Bearer \${LINEAR_API_KEY}"
+                  "LINEAR_API_KEY": "\${LINEAR_API_KEY}"
                 }
               },
               "safeoutputs": {
