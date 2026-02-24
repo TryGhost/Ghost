@@ -100,10 +100,8 @@ interface EmailPreviewBodyProps {
 
 const EmailPreviewBody: React.FC<EmailPreviewBodyProps> = ({children, className, isMobile}) => (
     <div className={cn(
-        'mx-auto rounded-b-lg border border-gray-200 bg-white shadow-sm transition-[max-width,height,padding] duration-300 ease-out motion-reduce:transition-none dark:border-grey-900 dark:bg-grey-975 dark:shadow-none',
-        isMobile
-            ? 'w-auto grow-0 max-w-[460px] aspect-[9/15] overflow-y-auto'
-            : 'w-full grow max-w-[780px] h-[clamp(0px,calc(100dvh-320px),82vh)] overflow-y-auto',
+        'mx-auto w-full h-[clamp(0px,calc(100dvh-320px),82vh)] overflow-y-auto rounded-b-lg border border-gray-200 bg-white shadow-sm transition-[max-width,height,padding] duration-300 ease-out motion-reduce:transition-none dark:border-grey-900 dark:bg-grey-975 dark:shadow-none',
+        isMobile ? 'grow-0 max-w-[460px]' : 'grow max-w-[780px]',
         className
     )}>
         {children}
