@@ -1,23 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [[ $# -lt 2 ]]; then
-    echo "Usage: $0 <shard-index> <shard-total> [retries]" >&2
+SHARD_INDEX="${E2E_SHARD_INDEX:-}"
+SHARD_TOTAL="${E2E_SHARD_TOTAL:-}"
+RETRIES="${E2E_RETRIES:-2}"
+
+if [[ -z "$SHARD_INDEX" || -z "$SHARD_TOTAL" ]]; then
+    echo "Missing E2E_SHARD_INDEX or E2E_SHARD_TOTAL environment variables" >&2
     exit 1
 fi
 
-SHARD_INDEX="$1"
-SHARD_TOTAL="$2"
-RETRIES="${3:-2}"
-
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-
-cd "$REPO_ROOT"
-
-PLAYWRIGHT_VERSION="$(node -p 'require("./e2e/package.json").devDependencies["@playwright/test"]')"
-PLAYWRIGHT_IMAGE="mcr.microsoft.com/playwright:v${PLAYWRIGHT_VERSION}-noble"
-WORKSPACE_PATH="${GITHUB_WORKSPACE:-$REPO_ROOT}"
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/load-playwright-container-env.sh"
 
 docker run --rm --network host --ipc host \
   -v /var/run/docker.sock:/var/run/docker.sock \

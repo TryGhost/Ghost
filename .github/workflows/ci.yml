@@ -1261,26 +1261,20 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
-      - name: Build public app UMD bundles
-        run: yarn workspace @tryghost/e2e build:apps
-
-      - name: Build E2E image layer
+      - name: Prepare E2E CI job
         env:
           GHOST_E2E_BASE_IMAGE: ${{ steps.load.outputs.image-tag }}
-        run: yarn workspace @tryghost/e2e build:docker
-
-      - name: Prepare E2E build-mode runtime
-        run: bash ./e2e/scripts/prepare-ci-e2e-build-mode.sh
+        run: bash ./e2e/scripts/prepare-ci-e2e-job.sh
 
       - name: Run e2e tests in Playwright container
-        run: |
-          TEST_WORKERS_COUNT=1 \
-          GHOST_E2E_MODE=build \
-          GHOST_E2E_IMAGE=ghost-e2e:local \
-          bash ./e2e/scripts/run-playwright-ci.sh \
-            ${{ matrix.shardIndex }} \
-            ${{ matrix.shardTotal }} \
-            2
+        env:
+          TEST_WORKERS_COUNT: 1
+          GHOST_E2E_MODE: build
+          GHOST_E2E_IMAGE: ghost-e2e:local
+          E2E_SHARD_INDEX: ${{ matrix.shardIndex }}
+          E2E_SHARD_TOTAL: ${{ matrix.shardTotal }}
+          E2E_RETRIES: 2
+        run: bash ./e2e/scripts/run-playwright-container.sh
 
       - name: Dump E2E docker logs
         if: failure()

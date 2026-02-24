@@ -4,13 +4,6 @@ set -euo pipefail
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/load-playwright-container-env.sh"
 GATEWAY_IMAGE="${GHOST_E2E_GATEWAY_IMAGE:-caddy:2-alpine}"
 
-if [[ -n "${GITHUB_OUTPUT:-}" ]]; then
-    {
-        echo "playwright_version=${PLAYWRIGHT_VERSION}"
-        echo "playwright_image=${PLAYWRIGHT_IMAGE}"
-    } >> "$GITHUB_OUTPUT"
-fi
-
 echo "Preparing E2E build-mode runtime"
 echo "Playwright image: ${PLAYWRIGHT_IMAGE}"
 echo "Gateway image: ${GATEWAY_IMAGE}"
