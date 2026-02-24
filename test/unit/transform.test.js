@@ -76,6 +76,22 @@ describe('Transform', function () {
         });
     });
 
+    describe('canTransformToFormat', function () {
+        it('returns true for supported formats', function () {
+            const assert = require('assert/strict');
+            ['gif', 'jpeg', 'jpg', 'png', 'webp', 'avif'].forEach((format) => {
+                assert.equal(transform.canTransformToFormat(format), true, `expected true for "${format}"`);
+            });
+        });
+
+        it('returns false for unsupported formats', function () {
+            const assert = require('assert/strict');
+            ['ico', 'bmp', 'tiff', 'svg', ''].forEach((format) => {
+                assert.equal(transform.canTransformToFormat(format), false, `expected false for "${format}"`);
+            });
+        });
+    });
+
     describe('cases', function () {
         let sharp, sharpInstance;
 
