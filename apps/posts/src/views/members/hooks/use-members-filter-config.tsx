@@ -163,13 +163,15 @@ export function useMembersFilterConfig({
             basicFields.push({
                 key: 'label',
                 label: 'Label',
-                type: 'select',
+                type: 'multiselect',
                 icon: <LucideIcon.Tag className="size-4" />,
                 options: labelsOptions.length > 0 ? labelsOptions : labels.map(l => ({
                     value: l.slug,
                     label: l.name
                 })),
-                operators: IS_IS_NOT_OPERATORS,
+                defaultOperator: 'is_any_of',
+                hideOperatorSelect: true,
+                autoCloseOnSelect: true,
                 searchable: true,
                 onSearchChange: onLabelsSearchChange,
                 searchValue: labelsSearchValue,

@@ -38,6 +38,9 @@ export const MEMBER_FILTER_FIELDS = [
 
 export type MemberFilterField = typeof MEMBER_FILTER_FIELDS[number];
 
+// Fields that support multiselect (comma-separated values in URL)
+const MULTISELECT_FIELDS = new Set<string>(['label']);
+
 /**
  * Escape a string for NQL (escape single quotes)
  */
@@ -274,11 +277,14 @@ function searchParamsToFilters(searchParams: URLSearchParams): Filter[] {
 
         const parsed = parseFilterValue(queryValue);
         if (parsed) {
+            const values = MULTISELECT_FIELDS.has(field)
+                ? parsed.value.split(',')
+                : [parsed.value];
             filters.push({
                 id: field,
                 field: field,
                 operator: parsed.operator,
-                values: [parsed.value]
+                values
             });
         }
     }
@@ -295,7 +301,10 @@ function filtersToSearchParams(filters: Filter[], search?: string): URLSearchPar
     for (const filter of filters) {
         if (filter.values[0] !== undefined) {
             const key = filter.field;
-            const value = `${filter.operator}:${String(filter.values[0])}`;
+            const serializedValue = MULTISELECT_FIELDS.has(key) && filter.values.length > 1
+                ? filter.values.map(v => String(v)).join(',')
+                : String(filter.values[0]);
+            const value = `${filter.operator}:${serializedValue}`;
             params.set(key, value);
         }
     }
