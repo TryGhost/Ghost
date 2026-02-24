@@ -1,6 +1,7 @@
 // Switch these lines once there are useful utils
 // const testUtils = require('./utils');
 require('./utils');
+const assert = require('assert/strict');
 const fs = require('fs');
 const path = require('path');
 const apiSchema = require('../index');
@@ -99,6 +100,86 @@ describe('Exposes a correct API', function () {
             } catch (err) {
                 err.errorType.should.equal('IncorrectUsageError');
             }
+        });
+
+        it('Accepts valid JSON string in mobiledoc field', async function () {
+            const data = {
+                posts: [{
+                    title: 'test',
+                    mobiledoc: '{"version":"0.3.1","atoms":[]}'
+                }]
+            };
+
+            await apiSchema.validate({data, schema: 'posts-add', definition: 'posts'});
+        });
+
+        it('Rejects invalid JSON string in mobiledoc field', async function () {
+            const data = {
+                posts: [{
+                    title: 'test',
+                    mobiledoc: 'not valid json'
+                }]
+            };
+
+            await assert.rejects(
+                () => apiSchema.validate({data, schema: 'posts-add', definition: 'posts'}),
+                (err) => {
+                    assert.equal(err.errorType, 'ValidationError');
+                    return true;
+                }
+            );
+        });
+
+        it('Accepts lowercase event in webhook', async function () {
+            const data = {
+                webhooks: [{
+                    event: 'post.added',
+                    target_url: 'https://example.com/hook'
+                }]
+            };
+
+            await apiSchema.validate({data, schema: 'webhooks-add', definition: 'webhooks'});
+        });
+
+        it('Rejects uppercase event in webhook', async function () {
+            const data = {
+                webhooks: [{
+                    event: 'Post.Added',
+                    target_url: 'https://example.com/hook'
+                }]
+            };
+
+            await assert.rejects(
+                () => apiSchema.validate({data, schema: 'webhooks-add', definition: 'webhooks'}),
+                (err) => {
+                    assert.equal(err.errorType, 'ValidationError');
+                    return true;
+                }
+            );
+        });
+
+        it('Passes isLowercase check when data is falsy (empty string)', async function () {
+            const data = {
+                webhooks: [{
+                    event: '',
+                    target_url: 'https://example.com/hook'
+                }]
+            };
+
+            await apiSchema.validate({data, schema: 'webhooks-edit', definition: 'webhooks'});
+        });
+
+        it('Uses schema $id for error key when dataPath is empty', async function () {
+            const data = {};
+
+            await assert.rejects(
+                () => apiSchema.validate({data, schema: 'posts-add', definition: 'posts'}),
+                (err) => {
+                    assert.equal(err.errorType, 'ValidationError');
+                    assert.equal(err.property, 'posts');
+                    return true;
+                }
+            );
         });
     });
 });
