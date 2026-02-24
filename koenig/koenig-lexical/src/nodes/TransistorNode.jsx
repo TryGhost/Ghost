@@ -9,12 +9,13 @@ export const INSERT_TRANSISTOR_COMMAND = createCommand();
 
 export class TransistorNode extends BaseTransistorNode {
     static kgMenu = [{
+        section: 'Embeds',
         label: 'Transistor',
         desc: 'Embed a Transistor podcast player',
         Icon: TransistorIcon,
         insertCommand: INSERT_TRANSISTOR_COMMAND,
         matches: ['transistor', 'podcast'],
-        priority: 8,
+        priority: 2,
         shortcut: '/transistor',
         isHidden: ({config}) => {
             return !(config?.feature?.transistor === true);

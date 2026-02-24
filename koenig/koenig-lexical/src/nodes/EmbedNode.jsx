@@ -51,7 +51,7 @@ export class EmbedNode extends BaseEmbedNode {
         insertCommand: INSERT_EMBED_COMMAND,
         queryParams: ['url'],
         matches: ['twitter', 'x'],
-        priority: 2,
+        priority: 3,
         shortcut: '/twitter [url]'
     },
     {
