@@ -30,7 +30,7 @@
     "sinon": "21.0.1"
   },
   "dependencies": {
-    "@tryghost/errors": "1.3.13",
+    "@tryghost/errors": "2.2.1",
     "lodash": "4.17.23",
     "luxon": "3.7.2"
   }
