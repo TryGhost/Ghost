@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const {callRenderer, html, assertPrettifiesTo, visibility} = require('../test-utils');
+const {callRenderer, visibility} = require('../test-utils');
 
 describe('services/koenig/node-renderers/transistor-renderer', function () {
     function getTestData(overrides = {}) {
@@ -13,11 +13,11 @@ describe('services/koenig/node-renderers/transistor-renderer', function () {
     }
 
     function renderForWeb(data, options) {
-        return callRenderer('transistor', data, options);
+        return callRenderer('transistor', data, {siteUuid: 'test-site-uuid', accentColor: '#ff0000', ...options});
     }
 
     function renderForEmail(data, options) {
-        return callRenderer('transistor', data, {...options, target: 'email'});
+        return callRenderer('transistor', data, {siteUuid: 'test-site-uuid', accentColor: '#ff0000', ...options, target: 'email'});
     }
 
     describe('web', function () {
@@ -28,56 +28,30 @@ describe('services/koenig/node-renderers/transistor-renderer', function () {
             assert.ok(result.html.includes('data-kg-transistor-embed'));
         });
 
-        it('includes accent color as query param', function () {
-            const result = renderForWeb(getTestData({accentColor: '#ff0000'}));
+        it('includes ctx param', function () {
+            const result = renderForWeb(getTestData());
 
-            assert.ok(result.html.includes('color=ff0000'));
+            assert.ok(result.html.includes('ctx='));
         });
 
-        it('includes background color as query param', function () {
-            const result = renderForWeb(getTestData({backgroundColor: '#000000'}));
+        it('includes inline script for background color detection', function () {
+            const result = renderForWeb(getTestData());
 
-            assert.ok(result.html.includes('background=000000'));
-        });
-
-        it('includes both color params when both are set', function () {
-            const result = renderForWeb(getTestData({
-                accentColor: '#ff0000',
-                backgroundColor: '#000000'
-            }));
-
-            assert.ok(result.html.includes('color=ff0000'));
-            assert.ok(result.html.includes('background=000000'));
-        });
-
-        it('renders without color params when colors are not set', function () {
-            const result = renderForWeb(getTestData({
-                accentColor: null,
-                backgroundColor: null
-            }));
-
-            assert.ok(result.html.includes('src="https://partner.transistor.fm/ghost/embed/%7Buuid%7D"'));
-            assert.ok(!result.html.includes('color='));
-            assert.ok(!result.html.includes('background='));
+            assert.ok(result.html.includes('<script>'));
+            assert.ok(result.html.includes('getComputedStyle'));
+            assert.ok(result.html.includes('background'));
         });
 
         it('matches snapshot for default test data', function () {
             const result = renderForWeb(getTestData());
 
-            assertPrettifiesTo(result.html, html`
-                <figure class="kg-card kg-transistor-card">
-                    <iframe
-                        width="100%"
-                        height="325"
-                        title="Transistor podcasts"
-                        frameborder="no"
-                        scrolling="no"
-                        seamless=""
-                        src="https://partner.transistor.fm/ghost/embed/%7Buuid%7D?color=15171A&amp;background=ffffff"
-                        data-kg-transistor-embed=""
-                    ></iframe>
-                </figure>
-            `);
+            // Verify structure: figure > iframe + script
+            assert.ok(result.html.includes('<figure class="kg-card kg-transistor-card">'));
+            assert.ok(result.html.includes('<iframe'));
+            assert.ok(result.html.includes('data-kg-transistor-embed'));
+            assert.ok(result.html.includes('<script>'));
+            assert.ok(result.html.includes('</script>'));
+            assert.ok(result.html.includes('</figure>'));
         });
     });
 

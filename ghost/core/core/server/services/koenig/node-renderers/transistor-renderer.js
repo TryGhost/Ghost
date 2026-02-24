@@ -20,13 +20,10 @@ function frontendTemplate(node, document, options) {
     // Use {uuid} placeholder - content.js will substitute with member UUID at request time
     const embedUrl = new URL(`https://partner.transistor.fm/ghost/embed/{uuid}`);
 
-    if (node.accentColor) {
-        embedUrl.searchParams.set('color', node.accentColor.replace(/^#/, ''));
+    if (options.siteUuid) {
+        embedUrl.searchParams.set('ctx', options.siteUuid);
     }
-    if (node.backgroundColor) {
-        embedUrl.searchParams.set('background', node.backgroundColor.replace(/^#/, ''));
-    }
-
+    
     const iframe = document.createElement('iframe');
     iframe.setAttribute('width', '100%');
     iframe.setAttribute('height', '325');
@@ -35,9 +32,11 @@ function frontendTemplate(node, document, options) {
     iframe.setAttribute('scrolling', 'no');
     iframe.setAttribute('seamless', '');
     iframe.setAttribute('src', embedUrl.toString());
-    iframe.setAttribute('data-kg-transistor-embed', '');
-
     figure.appendChild(iframe);
+
+    // Use innerHTML to inject script - jsdom's createElement('script') doesn't serialize textContent in outerHTML
+    // Matches implementation from kg-default-nodes set-src-background-from-parent.js
+    figure.insertAdjacentHTML('beforeend', buildSrcBackgroundScript());
 
     return renderWithVisibility({element: figure}, node.visibility, options);
 }
@@ -85,6 +84,55 @@ function emailTemplate(node, document, options) {
     container.innerHTML = wrappedHtml;
 
     return renderWithVisibility({element: container.firstElementChild}, node.visibility, options);
+}
+
+function buildSrcBackgroundScript() {
+    /* eslint-disable no-undef */
+    // This function is serialized via .toString() and runs in the browser, not Node
+    function setSrcBackgroundFromParent() {
+        const script = document.currentScript;
+        if (!script) {
+            return;
+        }
+
+        const el = script.parentElement.querySelector('iframe');
+        if (!el) {
+            return;
+        }
+
+        function isTransparent(bg) {
+            if (!bg || bg === 'transparent') {
+                return true;
+            }
+            const m = bg.match(/[\d.]+/g);
+            return m && m.length >= 4 && parseFloat(m[3]) === 0;
+        }
+
+        let node = el.parentElement;
+        let bg;
+        while (node) {
+            bg = window.getComputedStyle(node).backgroundColor;
+            if (!isTransparent(bg)) {
+                break;
+            }
+            node = node.parentElement;
+        }
+
+        if (!node || isTransparent(bg)) {
+            return;
+        }
+
+        const m = bg.match(/\d+/g);
+        if (m && m.length >= 3) {
+            const hex = m.slice(0, 3).map(c => parseInt(c).toString(16).padStart(2, '0')).join('');
+            const u = new URL(el.src);
+            u.searchParams.set('background', hex);
+            el.src = u.toString();
+        }
+    }
+    /* eslint-enable no-undef */
+
+    return `<script>(${setSrcBackgroundFromParent.toString()})()</script>`;
 }
 
 module.exports = renderTransistorNode;
