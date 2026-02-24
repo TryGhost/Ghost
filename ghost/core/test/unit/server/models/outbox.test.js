@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const errors = require('@tryghost/errors');
 const models = require('../../../../core/server/models');
 const {OUTBOX_STATUSES} = require('../../../../core/server/models/outbox');
 
@@ -39,6 +40,25 @@ describe('Unit: models/outbox', function () {
             assert.equal(Object.keys(defaults).length, 2);
             assert.equal(defaults.status, OUTBOX_STATUSES.PENDING);
             assert.equal(defaults.retry_count, 0);
+        });
+    });
+
+    describe('validation', function () {
+        it('rejects invalid status values', function () {
+            return models.Outbox.add({
+                event_type: 'MemberCreatedEvent',
+                payload: '{}',
+                status: 'not-a-real-status'
+            })
+                .then(function () {
+                    throw new Error('expected ValidationError');
+                })
+                .catch(function (err) {
+                    assert(Array.isArray(err));
+                    assert.equal(err.length, 1);
+                    assert.equal((err[0] instanceof errors.ValidationError), true);
+                    assert.match(err[0].context, /outbox\.status/);
+                });
         });
     });
 });
