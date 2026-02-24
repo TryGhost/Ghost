@@ -10,8 +10,20 @@ const blockedReferrerDomains = [
     'www.federalreserve.gov',
     'www.chicagomag.com',
     'bailii.org',
-    'www.bailii.org'
+    'www.bailii.org',
+    '*.doubleclick.net'
 ];
+
+const isBlockedReferrerDomain = (domain) => {
+    return blockedReferrerDomains.some((blockedDomain) => {
+        if (blockedDomain.startsWith('*.')) {
+            const suffix = blockedDomain.slice(1);
+            return domain.endsWith(suffix);
+        }
+
+        return blockedDomain === domain;
+    });
+};
 
 /**
  * Adds ?ref to outbound links
@@ -65,7 +77,7 @@ class OutboundLinkTagger {
 
         // Check blocked domains
         const referrerDomain = url.hostname;
-        if (blockedReferrerDomains.includes(referrerDomain)) {
+        if (isBlockedReferrerDomain(referrerDomain)) {
             return url;
         }
 

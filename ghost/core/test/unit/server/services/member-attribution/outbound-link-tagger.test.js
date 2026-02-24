@@ -85,6 +85,11 @@ describe('OutboundLinkTagger', function () {
             const updatedUrlTwo = await service.addToUrl(urlTwo);
 
             assert.equal(updatedUrlTwo.toString(), 'https://web.archive.org/');
+
+            const urlThree = new URL('https://ad.doubleclick.net/');
+            const updatedUrlThree = await service.addToUrl(urlThree);
+
+            assert.equal(updatedUrlThree.toString(), 'https://ad.doubleclick.net/');
         });
 
         it('does not add ref if utm_source is present', async function () {
