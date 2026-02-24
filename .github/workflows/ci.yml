@@ -1717,9 +1717,13 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
       - name: Build Admin
-        env:
-          GHOST_CDN_URL: https://assets.ghost.io/admin-forward/
         run: yarn nx run admin:build
+      - name: Validate admin build
+        run: |
+          test -f apps/admin/dist/index.html
+          grep -q '"./assets/' apps/admin/dist/index.html
+          grep -q 'ghost-cdn-url' apps/admin/dist/index.html
+          echo "Admin build validated: relative paths, ghost-cdn-url meta present"
       - name: Upload build artifact
         id: upload-artifacts
         uses: actions/upload-artifact@v4
