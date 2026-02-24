@@ -82,6 +82,13 @@ export function decoratePostSearchResult(item, settings) {
     }
 }
 
+export function getCardVisibilitySettings(cardConfig = {}) {
+    const post = cardConfig.post;
+    const isPage = post?.isPage || post?.displayName === 'page';
+
+    return isPage ? 'web only' : 'web and email';
+}
+
 /**
  * Fetches the URLs of all active offers
  * @returns {Promise<{label: string, value: string}[]>}
@@ -455,9 +462,10 @@ export default class KoenigLexicalEditor extends Component {
             siteTitle: this.settings.title,
             siteDescription: this.settings.description,
             siteUrl: this.config.getSiteUrl('/'),
-            stripeEnabled: checkStripeEnabled() // returns a boolean
+            stripeEnabled: checkStripeEnabled(), // returns a boolean
+            visibilitySettings: getCardVisibilitySettings(props.cardConfig)
         };
-        const cardConfig = Object.assign({}, defaultCardConfig, props.cardConfig, {pinturaConfig: this.pinturaConfig});
+        const cardConfig = Object.assign({}, defaultCardConfig, props.cardConfig, {pinturaConfig: this.pinturaConfig, visibilitySettings: defaultCardConfig.visibilitySettings});
 
         const useFileUpload = (type = 'image') => {
             const [progress, setProgress] = React.useState(0);
