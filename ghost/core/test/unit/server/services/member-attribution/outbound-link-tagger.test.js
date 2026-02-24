@@ -122,6 +122,17 @@ describe('OutboundLinkTagger', function () {
             assert.equal(updatedUrl.toString(), 'https://example.com/?source=hello');
         });
 
+        it('preserves existing query param encoding when appending ref', async function () {
+            const service = new OutboundLinkTagger({
+                getSiteUrl: () => 'https://blog.com',
+                isEnabled: () => true
+            });
+            const url = new URL('https://adserver.example.com/jump?iu=/12345678/Ad_Unit_1&sz=300x250&c=[TIMESTAMP]');
+            const updatedUrl = await service.addToUrl(url);
+
+            assert.equal(updatedUrl.toString(), 'https://adserver.example.com/jump?iu=/12345678/Ad_Unit_1&sz=300x250&c=[TIMESTAMP]&ref=blog.com');
+        });
+
         it('does not add ref if the protocol is not http(s)', async function () {
             const service = new OutboundLinkTagger({
                 getSiteUrl: () => 'https://blog.com',
