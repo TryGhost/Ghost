@@ -18,10 +18,6 @@ import type {AutomatedEmail} from '@tryghost/admin-x-framework/api/automated-ema
 
 import {
     Button,
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogTitle,
     LucideIcon,
     ToggleGroup,
     ToggleGroupItem,
@@ -41,19 +37,18 @@ const EmailPreviewModalContent = React.forwardRef<
     HTMLDivElement,
     EmailPreviewModalContentProps
 >(({title, deviceSize = 'desktop', onDeviceSizeChange, headerActions, children, className}, ref) => (
-    <DialogContent
+    <div
         ref={ref}
         className={cn(
-            'inset-0 m-[2vmin] flex w-auto max-w-none translate-x-0 flex-col gap-0 overflow-hidden rounded-xl bg-gray-100 p-0',
-            'data-[state=open]:zoom-in-[0.98] data-[state=closed]:zoom-out-[0.98] data-[state=open]:slide-in-from-left-0 data-[state=closed]:slide-out-to-left-0',
+            'flex h-full w-full flex-col gap-0 overflow-hidden rounded-xl bg-gray-100 p-0',
             'dark:bg-gray-975',
             className
         )}
     >
         <div className="border-gray-200 dark:border-gray-900 dark:bg-gray-975 flex shrink-0 items-center justify-between border-b bg-white px-5 py-3">
-            <DialogTitle className="text-xl font-semibold">
+            <h3 className="text-xl font-semibold">
                 {title}
-            </DialogTitle>
+            </h3>
             <div className="absolute left-1/2 -translate-x-1/2">
                 <ToggleGroup
                     type="single"
@@ -79,7 +74,7 @@ const EmailPreviewModalContent = React.forwardRef<
         <div className="flex min-h-0 grow flex-col overflow-y-auto">
             {children}
         </div>
-    </DialogContent>
+    </div>
 ));
 EmailPreviewModalContent.displayName = 'EmailPreviewModalContent';
 
@@ -188,12 +183,19 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
 
     const isDirty = saveState === 'unsaved';
 
+    const closeModal = useCallback(() => {
+        modal.remove();
+        updateRoute('memberemails');
+    }, [modal, updateRoute]);
+
     const handleClose = useCallback(() => {
-        confirmIfDirty(isDirty, () => {
-            modal.remove();
-            updateRoute('memberemails');
-        });
-    }, [isDirty, modal, updateRoute]);
+        if (!isDirty) {
+            closeModal();
+            return;
+        }
+
+        confirmIfDirty(true, closeModal);
+    }, [closeModal, isDirty]);
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -343,21 +345,24 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
     }
 
     return (
-        <Dialog
-            open={modal.visible}
-            onOpenChange={(open) => {
-                if (!open) {
-                    handleClose();
-                }
+        <Modal
+            afterClose={() => {
+                updateRoute('memberemails');
             }}
+            backDropClick={false}
+            dirty={isDirty}
+            footer={false}
+            header={false}
+            padding={false}
+            size='full'
+            testId='welcome-email-modal'
+            width='full'
         >
             <EmailPreviewModalContent
                 deviceSize={deviceSize}
                 headerActions={
                     <>
-                        <DialogClose asChild>
-                            <Button variant="outline" onClick={handleClose}>Close</Button>
-                        </DialogClose>
+                        <Button variant="outline" onClick={handleClose}>Close</Button>
                         <Button
                             disabled={okProps.disabled}
                             onClick={async () => await handleSave({fakeWhenUnchanged: true})}
@@ -368,8 +373,8 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                 }
                 title={modalTitle}
                 onDeviceSizeChange={setDeviceSize}
-            >
-                <div className='flex grow flex-col items-center px-8 pb-8 pt-10'>
+                >
+                    <div className='flex grow flex-col items-center px-8 pb-8 pt-10'>
                     <EmailPreviewEmailHeader className={deviceSize === 'mobile' ? 'max-w-[460px]' : ''}>
                         <div className='flex flex-col gap-2'>
                             <div className='flex items-center'>
@@ -448,7 +453,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                     {errors.lexical && <Hint className='mt-2 max-w-[740px]' color='red'>{errors.lexical}</Hint>}
                 </div>
             </EmailPreviewModalContent>
-        </Dialog>
+        </Modal>
     );
 });
 
