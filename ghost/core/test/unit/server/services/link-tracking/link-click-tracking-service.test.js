@@ -347,5 +347,81 @@ describe('LinkClickTrackingService', function () {
                 errors.BadRequestError
             );
         });
+
+        it('does not duplicate ref when new redirect already includes ref', async function () {
+            const urlUtilsStub = {
+                absoluteToTransformReady: sinon.stub().returnsArg(0),
+                isSiteUrl: sinon.stub().returns(false)
+            };
+            const postLinkRepositoryStub = {
+                updateLinks: sinon.stub().resolves({
+                    successful: 1,
+                    unsuccessful: 0,
+                    errors: [],
+                    unsuccessfulData: []
+                })
+            };
+            const linkRedirectServiceStub = {
+                getFilteredIds: sinon.stub().resolves(['id1'])
+            };
+
+            const service = new LinkClickTrackingService({
+                urlUtils: urlUtilsStub,
+                postLinkRepository: postLinkRepositoryStub,
+                linkRedirectService: linkRedirectServiceStub
+            });
+
+            const options = {
+                filter: 'post_id:1+to:\'https://example.com/subscripe?ref=Test-newsletter\''
+            };
+
+            await service.bulkEdit({
+                action: 'updateLink',
+                meta: {
+                    link: {to: 'https://example.com/subscribe?ref=Test-newsletter'}
+                }
+            }, options);
+
+            const [, updateData] = postLinkRepositoryStub.updateLinks.firstCall.args;
+            assert.equal(updateData.to, 'https://example.com/subscribe?ref=Test-newsletter');
+        });
+
+        it('preserves hash when appending attribution params', async function () {
+            const urlUtilsStub = {
+                absoluteToTransformReady: sinon.stub().returnsArg(0),
+                isSiteUrl: sinon.stub().returns(true)
+            };
+            const postLinkRepositoryStub = {
+                updateLinks: sinon.stub().resolves({
+                    successful: 1,
+                    unsuccessful: 0,
+                    errors: [],
+                    unsuccessfulData: []
+                })
+            };
+            const linkRedirectServiceStub = {
+                getFilteredIds: sinon.stub().resolves(['id1'])
+            };
+
+            const service = new LinkClickTrackingService({
+                urlUtils: urlUtilsStub,
+                postLinkRepository: postLinkRepositoryStub,
+                linkRedirectService: linkRedirectServiceStub
+            });
+
+            const options = {
+                filter: 'post_id:1+to:\'https://example.com/original?ref=Test-newsletter\''
+            };
+
+            await service.bulkEdit({
+                action: 'updateLink',
+                meta: {
+                    link: {to: 'https://ghost.test/path?foo=1#section'}
+                }
+            }, options);
+
+            const [, updateData] = postLinkRepositoryStub.updateLinks.firstCall.args;
+            assert.equal(updateData.to, 'https://ghost.test/path?foo=1&ref=Test-newsletter&attribution_type=post&attribution_id=1#section');
+        });
     });
 });
