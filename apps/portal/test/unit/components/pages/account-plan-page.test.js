@@ -435,7 +435,7 @@ describe('Account Plan Page', () => {
         fireEvent.click(cancelButton);
 
         expect(queryByText('1 month free')).toBeInTheDocument();
-        expect(queryByText('Enjoy 1 month on us. Your next billing date will be pushed back by 30 days.')).toBeInTheDocument();
+        expect(queryByText('Enjoy 1 free month on us. Your next billing date will be 5 Nov 2022.')).toBeInTheDocument();
     });
 
     test('renders forever percent retention offers', async () => {

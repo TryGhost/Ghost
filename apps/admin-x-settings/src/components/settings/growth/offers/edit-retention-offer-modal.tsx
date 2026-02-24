@@ -230,7 +230,7 @@ const RetentionOfferSidebar: React.FC<{
                                 <TextField
                                     error={Boolean(errors.displayTitle)}
                                     hint={errors.displayTitle}
-                                    placeholder='Before you go...'
+                                    placeholder='Before you go'
                                     title='Display title'
                                     value={formState.displayTitle}
                                     onChange={(e) => {
@@ -239,7 +239,7 @@ const RetentionOfferSidebar: React.FC<{
                                     onKeyDown={() => clearError('displayTitle')}
                                 />
                                 <TextArea
-                                    placeholder='We&#39;d hate to see you go! How about a special offer to stay?'
+                                    placeholder='We&#39;d hate to see you leave. How about a special offer to stay?'
                                     title='Display description'
                                     value={formState.displayDescription}
                                     onChange={(e) => {
@@ -434,11 +434,26 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
             const shouldCreateInactiveDraft = !formState.enabled && !editableRetentionOffer && hasFormChangesFromDefault(formState, defaultState);
 
             const createRetentionOffer = async (status: 'active' | 'archived') => {
-                // Generate a random 8-character hex string
-                const hash = Array.from(crypto.getRandomValues(new Uint8Array(4)), b => b.toString(16).padStart(2, '0')).join('');
+                const hash = crypto.getRandomValues(new Uint16Array(1))[0].toString(16).padStart(4, '0');
+
+                let offerDesc: string;
+                if (formTerms.type === 'free_months') {
+                    const monthText = formTerms.amount === 1 ? 'free month' : 'free months';
+                    offerDesc = `${formTerms.amount} ${monthText}`;
+                } else {
+                    let durationText: string;
+                    if (formTerms.duration === 'once') {
+                        durationText = 'next payment';
+                    } else if (formTerms.duration === 'repeating') {
+                        durationText = `for ${formTerms.durationInMonths} ${formTerms.durationInMonths === 1 ? 'month' : 'months'}`;
+                    } else {
+                        durationText = 'forever';
+                    }
+                    offerDesc = `${formTerms.amount}% off ${durationText}`;
+                }
 
                 await addOffer({
-                    name: `Special offer ${hash}`,
+                    name: `Retention ${offerDesc} (${hash})`,
                     code: hash,
                     display_title: displayTitle,
                     display_description: displayDescription,

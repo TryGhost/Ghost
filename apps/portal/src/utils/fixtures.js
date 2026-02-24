@@ -193,7 +193,7 @@ export const member = {
             getSubscriptionData({
                 amount: 1500,
                 startDate: '2019-05-01T11:42:40.000Z',
-                currentPeriodEnd: '2021-06-05T11:42:40.000Z'
+                currentPeriodEnd: new Date().toISOString()
             })
         ]
     })
