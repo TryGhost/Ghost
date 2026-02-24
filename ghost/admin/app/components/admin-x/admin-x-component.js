@@ -1,6 +1,7 @@
 import * as Sentry from '@sentry/ember';
 import Component from '@glimmer/component';
 import React, {Suspense} from 'react';
+import assetBase from 'ghost-admin/utils/asset-base';
 import config from 'ghost-admin/config/environment';
 import fetch from 'fetch';
 import fetchKoenigLexical from 'ghost-admin/utils/fetch-koenig-lexical';
@@ -57,7 +58,7 @@ export const importComponent = async (packageName) => {
         throw new Error(`Missing config for ${packageName}. Add it in asset delivery.`);
     }
 
-    const baseUrl = (config.cdnUrl ? `${config.cdnUrl}assets/` : ghostPaths().assetRootWithHost);
+    const baseUrl = `${assetBase()}assets/`;
     let url = new URL(`${baseUrl}${relativePath}/${config[`${configKey}Filename`]}?v=${config[`${configKey}Hash`]}`);
 
     const customUrl = config[`${configKey}CustomUrl`];

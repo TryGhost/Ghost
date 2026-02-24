@@ -4,6 +4,7 @@ import fs from 'fs';
 import sirv from 'sirv';
 
 const GHOST_ADMIN_PATH = path.resolve(__dirname, '../../ghost/core/core/built/admin');
+const GHOST_ADMIN_DIST = path.resolve(__dirname, '../../ghost/admin/dist');
 
 function isAbsoluteUrl(url: string): boolean {
     return url.startsWith('http://') ||
@@ -29,12 +30,14 @@ export function emberAssetsPlugin() {
         transformIndexHtml: {
             order: 'post',
             handler() {
-                // Path to the Ghost admin index.html file
-                const indexPath = path.resolve(GHOST_ADMIN_PATH, 'index.html');
+                // Read from Ember's own build output (not the combined output
+                // in built/admin which gets overwritten by closeBundle and would
+                // accumulate duplicate path prefixes on repeated builds)
+                const indexPath = path.resolve(GHOST_ADMIN_DIST, 'index.html');
                 try {
                     const indexContent = fs.readFileSync(indexPath, 'utf-8');
                     const base = config.base || '/';
-                    
+
                     // Extract stylesheets
                     const styleRegex = /<link[^>]*rel="stylesheet"[^>]*href="([^"]*)"[^>]*>/g;
                     const styles: HtmlTagDescriptor[] = [];
