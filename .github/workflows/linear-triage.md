@@ -57,7 +57,7 @@ Start by listing available tools to discover the exact tool names and parameters
 
 ## Cache-Memory Format
 
-Store and read a JSON object tracking triaged issues:
+Store and read a JSON file at the **exact path** `cache-memory/triage-cache.json`. Always use this filename — never rename it or create alternative files.
 
 ```json
 {
@@ -67,9 +67,9 @@ Store and read a JSON object tracking triaged issues:
 ```
 
 On each run:
-1. Read from cache-memory to get previously triaged issue identifiers
+1. Read `cache-memory/triage-cache.json` to get previously triaged issue identifiers
 2. Skip any issues already in the list
-3. After processing, update cache-memory with the new list (append newly triaged IDs)
+3. After processing, write the updated list back to `cache-memory/triage-cache.json` (append newly triaged IDs)
 
 ## Triage Rubric
 
