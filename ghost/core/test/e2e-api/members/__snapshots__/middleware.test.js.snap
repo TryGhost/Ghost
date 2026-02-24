@@ -45,12 +45,13 @@ Object {
 
 exports[`Comments API when authenticated can get member data 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "806",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -179,12 +180,13 @@ Object {
 
 exports[`Comments API when authenticated can update comment notifications 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "818",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -217,12 +219,13 @@ Object {
 
 exports[`Comments API when authenticated can update comment notifications 4: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "446",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -272,12 +275,13 @@ Object {
 
 exports[`Comments API when authenticated can update member expertise 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "819",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -327,12 +331,13 @@ Object {
 
 exports[`Comments API when authenticated can update name 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "817",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -382,12 +387,13 @@ Object {
 
 exports[`Comments API when authenticated trims whitespace from expertise 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "808",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -489,7 +495,8 @@ Object {
 
 exports[`Comments API when caching members content is enabled sets ghost-access and ghost-access-hmac cookies 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "806",
   "content-type": "application/json; charset=utf-8",
@@ -498,7 +505,7 @@ Object {
     StringMatching /\\^ghost-access=\\[0-9a-fA-F\\]\\{24\\}:\\\\d\\{10\\}/,
     StringMatching /\\^ghost-access-hmac=\\[a-fA-F0-9\\]\\{64\\}/,
   ],
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -576,12 +583,13 @@ Object {
 
 exports[`Comments API when not authenticated but enabled can update comment notifications 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "299",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
