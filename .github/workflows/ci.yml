@@ -907,110 +907,6 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-  job_docker_build:
-    name: Build & Push Docker Image
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-        with:
-          submodules: true
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Determine build strategy
-        id: strategy
-        run: |
-          IS_FORK_PR="false"
-          if [ "${{ github.event_name }}" = "pull_request" ] && [ "${{ github.event.pull_request.head.repo.full_name }}" != "${{ github.repository }}" ]; then
-            IS_FORK_PR="true"
-          fi
-          IMAGE_NAME="ghcr.io/${{ github.repository_owner }}/ghost-development"
-          if [ "$IS_FORK_PR" = "true" ]; then
-            IMAGE_NAME="ghcr.io/${{ github.event.pull_request.head.repo.owner.login }}/ghost-development"
-          fi
-          CACHE_KEY=$(echo $IMAGE_NAME | tr '[:upper:]' '[:lower:]')
-          echo "is-fork-pr=$IS_FORK_PR" >> $GITHUB_OUTPUT
-          echo "should-push=$( [ "$IS_FORK_PR" = "false" ] && echo "true" || echo "false" )" >> $GITHUB_OUTPUT
-          echo "should-load=$( [ "$IS_FORK_PR" = "true" ] && echo "true" || echo "false" )" >> $GITHUB_OUTPUT
-          echo "image-name=$IMAGE_NAME" >> $GITHUB_OUTPUT
-          echo "cache-key=$CACHE_KEY" >> $GITHUB_OUTPUT
-          echo "Build Strategy: "
-          echo "  Is fork PR: $IS_FORK_PR"
-          echo "  Should push: $( [ "$IS_FORK_PR" = "false" ] && echo "true" || echo "false" )"
-          echo "  Should load: $( [ "$IS_FORK_PR" = "true" ] && echo "true" || echo "false" )"
-          echo "  Image name: $IMAGE_NAME"
-          echo "  Cache key: $CACHE_KEY"
-
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: |
-            ${{ steps.strategy.outputs.image-name }}
-          tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=sha
-            type=raw,value=latest,enable={{is_default_branch}}
-          labels: |
-            org.opencontainers.image.title=Ghost Development
-            org.opencontainers.image.description=Ghost development build
-            org.opencontainers.image.vendor=TryGhost
-            maintainer=TryGhost
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v6
-        id: build
-        with:
-          context: .
-          file: Dockerfile
-          push: ${{ steps.strategy.outputs.should-push }}
-          load: ${{ steps.strategy.outputs.should-load }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          # On PRs: use both main cache and PR-specific cache
-          # On main: only use main cache
-          cache-from: |
-            type=registry,ref=${{ steps.strategy.outputs.cache-key }}:cache-main
-            ${{ github.event_name == 'pull_request' && format('type=registry,ref={0}:cache-pr-{1}', steps.strategy.outputs.cache-key, github.event.pull_request.number) || '' }}
-          # Only export cache if we can push (not on fork PRs)
-          cache-to: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref={0}:cache-{1},mode=max', steps.strategy.outputs.cache-key, github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main') || '' }}
-
-      - name: Save image as artifact (fork PR)
-        if: steps.strategy.outputs.is-fork-pr == 'true'
-        run: |
-          # Get the first tag from the multi-line tags output
-          IMAGE_TAG=$(echo "${{ steps.meta.outputs.tags }}" | head -n1)
-          echo "Saving image: $IMAGE_TAG"
-          docker save "$IMAGE_TAG" | gzip > docker-image.tar.gz
-          echo "Image saved as docker-image.tar.gz"
-          ls -lh docker-image.tar.gz
-
-      - name: Upload image artifact (fork PR)
-        if: steps.strategy.outputs.is-fork-pr == 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: docker-image
-          path: docker-image.tar.gz
-          retention-days: 1
-
-    outputs:
-      image-tags: ${{ steps.meta.outputs.tags }}
-      image-digest: ${{ steps.build.outputs.digest }}
-      is-fork: ${{ steps.strategy.outputs.is-fork-pr }}
-
   job_docker_build_production:
     name: Build & Push Production Docker Images
     needs: [job_setup]
@@ -1130,7 +1026,7 @@ jobs:
           target: full
           build-args: NODE_VERSION=${{ env.NODE_VERSION }}
           push: ${{ steps.strategy.outputs.should-push }}
-          load: ${{ steps.strategy.outputs.should-push == 'false' }}
+          load: true
           tags: ${{ steps.meta-full.outputs.tags }}
           labels: ${{ steps.meta-full.outputs.labels }}
           cache-from: type=registry,ref=ghcr.io/${{ steps.strategy.outputs.owner }}/ghost:cache-main
@@ -1163,35 +1059,10 @@ jobs:
           fi
           echo "tag=$SHA_TAG" >> $GITHUB_OUTPUT
 
-    outputs:
-      image-tags: ${{ steps.meta-full.outputs.tags }}
-      is-fork: ${{ steps.strategy.outputs.is-fork-pr }}
-      core-image-sha-tag: ${{ steps.core-sha-tag.outputs.tag }}
-      admin-artifact-id: ${{ steps.upload-admin.outputs.artifact-id }}
-
-  job_inspect_image:
-    name: Inspect Docker Image
-    needs: job_docker_build
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-        with:
-          sparse-checkout: |
-            .github/actions/load-docker-image
-
-      - name: Load Docker Image
-        id: load
-        uses: ./.github/actions/load-docker-image
-        with:
-          is-fork: ${{ needs.job_docker_build.outputs.is-fork }}
-          image-tags: ${{ needs.job_docker_build.outputs.image-tags }}
-
       - name: Inspect image size and layers
         shell: bash
         run: |
-          IMAGE_TAG="${{ steps.load.outputs.image-tag }}"
+          IMAGE_TAG=$(echo "${{ steps.meta-full.outputs.tags }}" | head -n1)
           echo "Analyzing Docker image: $IMAGE_TAG"
 
           # Get the image size in bytes
@@ -1235,6 +1106,12 @@ jobs:
             done
 
           } >> $GITHUB_STEP_SUMMARY
+
+    outputs:
+      image-tags: ${{ steps.meta-full.outputs.tags }}
+      is-fork: ${{ steps.strategy.outputs.is-fork-pr }}
+      core-image-sha-tag: ${{ steps.core-sha-tag.outputs.tag }}
+      admin-artifact-id: ${{ steps.upload-admin.outputs.artifact-id }}
 
   job_e2e_tests:
     name: E2E Tests (${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
