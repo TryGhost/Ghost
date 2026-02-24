@@ -86,21 +86,6 @@ export const BASE_GHOST_ENV = [
     'mail__options__port=1025'
 ] as const;
 
-/**
- * Public app asset URLs for dev mode only (served via gateway proxying to host dev servers).
- *
- * These are not needed in build mode because build-mode assets are baked into
- * the E2E image via ENV vars in e2e/Dockerfile.e2e.
- */
-export const DEV_ASSET_URLS = [
-    'portal__url=/ghost/assets/portal/portal.min.js',
-    'comments__url=/ghost/assets/comments-ui/comments-ui.min.js',
-    'sodoSearch__url=/ghost/assets/sodo-search/sodo-search.min.js',
-    'sodoSearch__styles=/ghost/assets/sodo-search/main.css',
-    'signupForm__url=/ghost/assets/signup-form/signup-form.min.js',
-    'announcementBar__url=/ghost/assets/announcement-bar/announcement-bar.min.js'
-] as const;
-
 export const TEST_ENVIRONMENT = {
     projectNamespace: 'ghost-dev-e2e',
     gateway: {

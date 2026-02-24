@@ -6,7 +6,6 @@ import {
     BUILD_GATEWAY_IMAGE,
     BUILD_IMAGE,
     CADDYFILE_PATHS,
-    DEV_ASSET_URLS,
     DEV_ENVIRONMENT,
     DEV_SHARED_CONFIG_VOLUME,
     REPO_ROOT,
@@ -208,12 +207,6 @@ export class GhostManager {
             `database__connection__database=${database}`,
             `url=http://localhost:${this.getGatewayPort()}`
         ];
-
-        // For dev mode, add local asset URLs (served via gateway proxying to host dev servers)
-        // Build mode has asset URLs baked into the E2E image via ENV vars
-        if (this.config.mode === 'dev') {
-            env.push(...DEV_ASSET_URLS);
-        }
 
         // Add Tinybird config if available
         // Static endpoints are set here; tokens are loaded from a host-generated
