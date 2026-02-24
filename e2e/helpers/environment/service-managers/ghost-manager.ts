@@ -7,6 +7,7 @@ import {
     BUILD_IMAGE,
     CADDYFILE_PATHS,
     DEV_ENVIRONMENT,
+    DEV_SHARED_CONFIG_VOLUME,
     LOCAL_ASSET_URLS,
     REPO_ROOT,
     TEST_ENVIRONMENT,
@@ -324,7 +325,7 @@ export class GhostManager {
     private getGhostBinds(): string[] {
         const binds: string[] = [
             // Shared config volume for Tinybird credentials (all modes)
-            'ghost-dev_shared-config:/mnt/shared-config:ro'
+            `${DEV_SHARED_CONFIG_VOLUME}:/mnt/shared-config:ro`
         ];
 
         if (this.config.mode === 'dev') {

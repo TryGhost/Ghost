@@ -4,9 +4,6 @@ import {DEV_ENVIRONMENT, TINYBIRD} from './constants';
 
 const debug = baseDebug('e2e:ServiceAvailability');
 
-/**
- * Find running Tinybird containers for a specific Docker Compose project.
- */
 async function isServiceAvailable(docker: Docker, serviceName: string) {
     const containers = await docker.listContainers({
         filters: {

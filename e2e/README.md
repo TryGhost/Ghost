@@ -21,7 +21,7 @@ yarn test
 
 ### Dev Environment Mode (Recommended for Development)
 
-When `yarn dev` is running from the repository root, e2e tests automatically detect it and use a more efficient execution mode:
+Dev mode is the default (`GHOST_E2E_MODE=dev`). Start infra with `yarn dev` (or `infra:up`) before running tests:
 
 ```bash
 # Terminal 1: Start dev environment (from repository root)
@@ -32,6 +32,7 @@ yarn test
 ```
 
 If infra is already running, `yarn workspace @tryghost/e2e infra:up` is safe to run again.
+If you use a custom compose project name locally, set `COMPOSE_PROJECT_NAME` for both infra and tests so E2E-managed image/volume names stay aligned.
 
 ### Build Mode (Prebuilt Image)
 
@@ -204,7 +205,7 @@ Tests run automatically in GitHub Actions on every PR and commit to `main`.
 3. **Build E2E Image**: `yarn workspace @tryghost/e2e build:docker` (layers public apps into `/content/files`)
 4. **Start Infra**: `yarn workspace @tryghost/e2e infra:up` (starts MySQL/Redis/Mailpit/Tinybird services only)
 5. **Fetch Tinybird Config**: `yarn workspace @tryghost/e2e tinybird:fetch-config`
-6. **Test Execution**: Run Playwright E2E tests (CI later runs them inside the official Playwright container)
+6. **Test Execution**: Run Playwright E2E tests inside the official Playwright container
 7. **Artifacts**: Upload Playwright traces and reports on failure
 
 ## Available Scripts

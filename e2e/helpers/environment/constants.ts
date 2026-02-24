@@ -6,18 +6,14 @@ const __dirname = path.dirname(__filename);
 
 export const CONFIG_DIR = path.resolve(__dirname, '../../data/state');
 
-// Repository root path (for compose files and source mounting)
+// Repository root path (for source mounting and config files)
 export const REPO_ROOT = path.resolve(__dirname, '../../..');
 
-/**
- * Compose file paths for infrastructure services.
- * Used by EnvironmentManager to start required services.
- */
-export const COMPOSE_FILES = {
-    infra: path.resolve(REPO_ROOT, 'compose.infra.yaml'),
-    dev: path.resolve(REPO_ROOT, 'compose.dev.yaml'),
-    analytics: path.resolve(REPO_ROOT, 'compose.analytics.yaml')
-} as const;
+export const DEV_COMPOSE_PROJECT = process.env.COMPOSE_PROJECT_NAME || 'ghost-dev';
+// compose.dev.yaml pins the network name explicitly, so this does not follow COMPOSE_PROJECT_NAME.
+export const DEV_NETWORK_NAME = 'ghost_dev';
+export const DEV_SHARED_CONFIG_VOLUME = `${DEV_COMPOSE_PROJECT}_shared-config`;
+export const DEV_PRIMARY_DATABASE = process.env.MYSQL_DATABASE || 'ghost_dev';
 
 /**
  * Caddyfile paths for different modes.
@@ -52,8 +48,6 @@ export const BUILD_GATEWAY_IMAGE = process.env.GHOST_E2E_GATEWAY_IMAGE || 'caddy
 export const TINYBIRD = {
     LOCAL_HOST: 'tinybird-local',
     PORT: 7181,
-    CLI_ENV_PATH: '/mnt/shared-config/.env.tinybird',
-    CONFIG_DIR: CONFIG_DIR,
     JSON_PATH: path.resolve(CONFIG_DIR, 'tinybird.json')
 };
 
@@ -62,8 +56,8 @@ export const TINYBIRD = {
  * Used when yarn dev infrastructure is detected.
  */
 export const DEV_ENVIRONMENT = {
-    projectNamespace: 'ghost-dev',
-    networkName: 'ghost_dev'
+    projectNamespace: DEV_COMPOSE_PROJECT,
+    networkName: DEV_NETWORK_NAME
 } as const;
 
 /**
@@ -108,16 +102,10 @@ export const LOCAL_ASSET_URLS = [
 export const TEST_ENVIRONMENT = {
     projectNamespace: 'ghost-dev-e2e',
     gateway: {
-        image: 'ghost-dev-ghost-dev-gateway'
+        image: `${DEV_COMPOSE_PROJECT}-ghost-dev-gateway`
     },
     ghost: {
-        image: 'ghost-dev-ghost-dev',
-        workdir: '/home/ghost/ghost/core',
-        port: 2368,
-        env: [
-            ...BASE_GHOST_ENV,
-            // Public assets via gateway (same as compose.dev.yaml)
-            ...LOCAL_ASSET_URLS
-        ]   
+        image: `${DEV_COMPOSE_PROJECT}-ghost-dev`,
+        port: 2368
     }
 } as const;
