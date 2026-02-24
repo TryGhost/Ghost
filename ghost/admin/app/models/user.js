@@ -1,6 +1,6 @@
 import BaseModel from './base';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
-import config from 'ghost-admin/config/environment';
+import assetBase from 'ghost-admin/utils/asset-base';
 import {attr, hasMany} from '@ember-data/model';
 import {computed} from '@ember/object';
 import {equal, or} from '@ember/object/computed';
@@ -96,17 +96,17 @@ export default BaseModel.extend(ValidationEngine, {
         }
     }),
 
-    profileImageUrl: computed('ghostPaths.assetRoot', 'profileImage', function () {
+    profileImageUrl: computed('profileImage', function () {
         // keep path separate so asset rewriting correctly picks it up
         let defaultImage = '/img/user-image.png';
-        let defaultPath = (config.cdnUrl ? '' : this.ghostPaths.assetRoot.replace(/\/$/, '')) + defaultImage;
+        let defaultPath = `${assetBase()}assets${defaultImage}`;
         return this.profileImage || defaultPath;
     }),
 
-    coverImageUrl: computed('ghostPaths.assetRoot', 'coverImage', function () {
+    coverImageUrl: computed('coverImage', function () {
         // keep path separate so asset rewriting correctly picks it up
         let defaultImage = '/img/user-cover.png';
-        let defaultPath = (config.cdnUrl ? '' : this.ghostPaths.assetRoot.replace(/\/$/, '')) + defaultImage;
+        let defaultPath = `${assetBase()}assets${defaultImage}`;
         return this.coverImage || defaultPath;
     }),
 
