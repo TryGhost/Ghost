@@ -1057,6 +1057,16 @@ jobs:
           echo "should-push=$( [ "$IS_FORK_PR" = "false" ] && echo "true" || echo "false" )" >> $GITHUB_OUTPUT
           echo "owner=$OWNER" >> $GITHUB_OUTPUT
 
+      - name: Upload admin artifact for CD
+        id: upload-admin
+        if: steps.strategy.outputs.is-fork-pr == 'false'
+        uses: actions/upload-artifact@v4
+        with:
+          name: admin-build-cd
+          path: apps/admin/dist
+          retention-days: 7
+          if-no-files-found: error
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -1143,9 +1153,21 @@ jobs:
           path: docker-image-production.tar.gz
           retention-days: 1
 
+      - name: Extract core image SHA tag
+        id: core-sha-tag
+        run: |
+          SHA_TAG=$(echo "${{ steps.meta-core.outputs.tags }}" | grep "sha-" | head -n1)
+          if [ -z "$SHA_TAG" ]; then
+            echo "::error::Could not extract SHA tag from core image metadata"
+            exit 1
+          fi
+          echo "tag=$SHA_TAG" >> $GITHUB_OUTPUT
+
     outputs:
       image-tags: ${{ steps.meta-full.outputs.tags }}
       is-fork: ${{ steps.strategy.outputs.is-fork-pr }}
+      core-image-sha-tag: ${{ steps.core-sha-tag.outputs.tag }}
+      admin-artifact-id: ${{ steps.upload-admin.outputs.artifact-id }}
 
   job_inspect_image:
     name: Inspect Docker Image
@@ -1737,3 +1759,50 @@ jobs:
           inputs: '{"admin_build_artifact_id":"${{ steps.upload-artifacts.outputs.artifact-id }}", "admin_build_artifact_run_id":"${{ github.run_id }}"}'
           wait-for-completion-timeout: 25m
           wait-for-completion-interval: 30s
+
+  # --------------------------------------------------------------------------- #
+  # Trigger Pro CD — dispatch to Ghost-Moya cd.yml (runs on main + PRs)
+  # --------------------------------------------------------------------------- #
+  trigger_cd:
+    needs: [job_setup, job_docker_build_production]
+    name: Trigger Pro CD
+    runs-on: ubuntu-latest
+    if: |
+      always()
+      && needs.job_setup.result == 'success'
+      && needs.job_docker_build_production.result == 'success'
+      && needs.job_docker_build_production.outputs.is-fork != 'true'
+    steps:
+      - name: Determine dispatch parameters
+        id: params
+        run: |
+          # Force dry_run until cd.yml is validated and ready to replace the existing canary deploy
+          if [ "${{ needs.job_setup.outputs.is_main }}" = "true" ]; then
+            echo "dry_run=true" >> $GITHUB_OUTPUT
+            echo "pr_number=" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "dry_run=true" >> $GITHUB_OUTPUT
+            echo "pr_number=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
+          else
+            echo "skip=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          echo "skip=false" >> $GITHUB_OUTPUT
+
+      - name: Dispatch to Ghost-Moya cd.yml
+        if: steps.params.outputs.skip != 'true'
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.CANARY_DOCKER_BUILD }}
+          repository: TryGhost/Ghost-Moya
+          event-type: ghost-artifacts-ready
+          client-payload: >-
+            {
+              "environment": "staging",
+              "ref": "${{ github.sha }}",
+              "image_tag": "${{ needs.job_docker_build_production.outputs.core-image-sha-tag }}",
+              "dry_run": ${{ steps.params.outputs.dry_run }},
+              "pr_number": "${{ steps.params.outputs.pr_number }}",
+              "admin_artifact_id": "${{ needs.job_docker_build_production.outputs.admin-artifact-id }}",
+              "admin_artifact_run_id": "${{ github.run_id }}"
+            }
