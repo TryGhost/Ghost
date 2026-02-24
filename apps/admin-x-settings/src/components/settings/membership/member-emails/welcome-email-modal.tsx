@@ -369,7 +369,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                 title={modalTitle}
                 onDeviceSizeChange={setDeviceSize}
             >
-                <div className='flex grow flex-col items-center p-8'>
+                <div className='flex grow flex-col items-center px-8 pb-8 pt-10'>
                     <EmailPreviewEmailHeader className={deviceSize === 'mobile' ? 'max-w-[460px]' : ''}>
                         <div className='flex flex-col gap-2'>
                             <div className='flex items-center'>
@@ -418,17 +418,17 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                     <EmailPreviewBody
                         className={cn(
                             errors.lexical ? 'border-red-500' : '',
-                            deviceSize === 'desktop' ? 'px-8' : '',
-                            deviceSize === 'mobile' ? 'px-6' : ''
+                            deviceSize === 'desktop' ? 'px-6' : '',
+                            deviceSize === 'mobile' ? 'px-4' : ''
                         )}
                         isMobile={deviceSize === 'mobile'}
                     >
                         <div
                             className={cn(
                                 deviceSize === 'desktop'
-                                    ? 'mx-auto w-full max-w-[540px] py-8'
+                                    ? 'mx-auto w-full max-w-[620px] pb-8 pt-10'
                                     : deviceSize === 'mobile'
-                                        ? 'mx-auto w-full max-w-[332px] px-10 py-8'
+                                        ? 'mx-auto w-full max-w-[440px] px-6 py-8'
                                         : 'p-8'
                             )}
                             onFocus={() => {
