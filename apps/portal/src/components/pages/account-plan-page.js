@@ -254,7 +254,7 @@ function PlansOrProductSection({selectedPlan, onPlanSelect, onPlanCheckout, chan
 function getOfferMessage(offer, originalPrice, currency, amountOff, subscription) {
     if (offer.type === 'free_months') {
         const months = offer.amount;
-        const monthLabel = months === 1 ? '1 month' : `${months} months`;
+        const monthLabel = months === 1 ? '1 free month' : `${months} free months`;
 
         if (subscription?.current_period_end) {
             const date = new Date(subscription.current_period_end);
@@ -265,10 +265,10 @@ function getOfferMessage(offer, originalPrice, currency, amountOff, subscription
             const daysInTargetMonth = new Date(Date.UTC(targetYear, targetMonth + 1, 0)).getUTCDate();
             const newDate = new Date(Date.UTC(targetYear, targetMonth, Math.min(originalDay, daysInTargetMonth)));
             const newBillingDate = newDate.toLocaleDateString('en-GB', {year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC'});
-            return `Enjoy ${monthLabel} free on us. Your next billing date will be ${newBillingDate}.`;
+            return `Enjoy ${monthLabel} on us. Your next billing date will be ${newBillingDate}.`;
         }
 
-        return `Enjoy ${monthLabel} free on us.`;
+        return `Enjoy ${monthLabel} on us.`;
     }
 
     if (offer.duration === 'forever') {
