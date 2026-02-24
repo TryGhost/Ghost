@@ -815,7 +815,11 @@ describe('StaffService', function () {
                 ), false);
 
                 assert.equal(mailStub.calledWith(
-                    sinon.match.has('html', sinon.match('Reason: Changed my mind!'))
+                    sinon.match.has('html', sinon.match('Cancellation reason'))
+                ), true);
+
+                assert.equal(mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('Changed my mind!'))
                 ), true);
             });
 
@@ -836,7 +840,7 @@ describe('StaffService', function () {
 
                 // Cancellation reason block is hidden
                 assert.equal(mailStub.calledWith(
-                    sinon.match.has('html', sinon.match('Reason: '))
+                    sinon.match.has('html', sinon.match('Cancellation reason'))
                 ), false);
             });
 
@@ -869,7 +873,11 @@ describe('StaffService', function () {
                 ), false);
 
                 assert.equal(mailStub.calledWith(
-                    sinon.match.has('html', sinon.match('Reason: Payment failed'))
+                    sinon.match.has('html', sinon.match('Cancellation reason'))
+                ), true);
+
+                assert.equal(mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('Payment failed'))
                 ), true);
             });
         });
