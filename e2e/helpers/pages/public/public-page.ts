@@ -100,8 +100,8 @@ export class PublicPage extends BasePage {
     }
 
     protected async waitForMemberAttributionReady(): Promise<void> {
-        // Test-only anti-pattern: we synchronize on async client bootstrap state
-        // to keep attribution-dependent assertions deterministic in CI.
+        // TODO: Ideally we should find a way to get rid of this. This is currently needed
+        // to prevent flaky attribution-dependent assertions in CI.
         await this.page.waitForFunction(() => {
             try {
                 const raw = window.sessionStorage.getItem('ghost-history');

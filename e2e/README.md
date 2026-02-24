@@ -33,9 +33,8 @@ yarn test
 
 If infra is already running, `yarn workspace @tryghost/e2e infra:up` is safe to run again.
 For dev-mode test runs, `infra:up` also ensures required local Ghost/gateway dev images exist.
-If you use a custom compose project name locally, set `COMPOSE_PROJECT_NAME` for both infra and tests so E2E-managed image/volume names stay aligned.
 
-### Analytics Development Flow (No Extra Tinybird Steps)
+### Analytics Development Flow
 
 When working on analytics locally, use:
 
