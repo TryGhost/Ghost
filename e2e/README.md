@@ -190,6 +190,13 @@ The fixture resolves isolation mode per test file:
 - Default: per-file isolation (one Ghost environment cycle per file)
 - Opt-in per-test: call `usePerTestIsolation()` from `@/helpers/playwright/isolation` at the root of the file
 - Forced per-test: any run with `fullyParallel: true`
+Role-based authentication is also exposed via a fixture option:
+
+```ts
+test.use({role: 'editor'});
+```
+
+Supported roles are: `owner`, `administrator`, `editor`, `author`, and `contributor`.
 
 ### Test Isolation
 
@@ -198,8 +205,10 @@ Test isolation is still automatic, but no longer always per-test.
 Infrastructure (MySQL, Redis, Mailpit, Tinybird) must already be running before tests start. Use `yarn dev` or `yarn workspace @tryghost/e2e infra:up`.
 
 Global setup (`tests/global.setup.ts`) does:
-- Cleans up e2e containers and test databases
-- Creates a base database, starts Ghost, waits for health, snapshots the DB
+- Validates local fixture cache package (snapshot + role auth states)
+- On cache miss: recreates base DB, creates owner + staff users, stores role auth state files, snapshots DB
+- On cache hit (local only): skips fixture regeneration and reuses cached package
+- In CI: always rebuilds fixture package
 
 Per-file mode (`helpers/playwright/fixture.ts`) does:
 - Clones a new database from snapshot at file boundary
@@ -209,6 +218,7 @@ Per-file mode (`helpers/playwright/fixture.ts`) does:
 Per-test mode (`helpers/playwright/fixture.ts`) does:
 - Clones a new database from snapshot for each test
 - Restarts Ghost with the new database and waits for readiness
+- Creates authenticated admin contexts from the selected role storage state on demand
 
 Environment identity for per-file reuse:
 - `config` participates in the environment identity.
@@ -219,6 +229,7 @@ Environment identity for per-file reuse:
 Fixture option behavior:
 - `config`: use for boot-time Ghost config that should get a fresh environment when it changes.
 - `labs`: use for labs flags that should get a fresh environment when they change.
+- `role`: use for admin sessions that should load a cached auth state for `owner`, `administrator`, `editor`, `author`, or `contributor`.
 - `stripeEnabled`: use for Stripe-backed tests; this always runs each test with a fully isolated Ghost environment.
 
 Escape hatch:
@@ -234,10 +245,18 @@ Opting into per-test isolation:
 
 Global teardown (`tests/global.teardown.ts`) does:
 - Cleans up e2e containers and test databases (infra services stay running)
+- Keeps local snapshot cache for reuse across sessions
+- Deletes snapshot in CI
 
 Modes:
 - Dev mode: Ghost mounts source code and proxies assets to host dev servers
 - Build mode: Ghost uses a prebuilt image and serves assets from `/content/files`
+
+You can force a full local fixture package reset by setting:
+
+```bash
+E2E_FORCE_FIXTURE_RESET=1 yarn test
+```
 
 ### Best Practices
 
