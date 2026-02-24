@@ -18,6 +18,7 @@ docker run --rm --network host --ipc host \
   -w "${WORKSPACE_PATH}/e2e" \
   -e CI=true \
   -e TEST_WORKERS_COUNT="${TEST_WORKERS_COUNT:-1}" \
+  -e COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-ghost-dev}" \
   -e GHOST_E2E_MODE="${GHOST_E2E_MODE:-build}" \
   -e GHOST_E2E_IMAGE="${GHOST_E2E_IMAGE:-ghost-e2e:local}" \
   -e GHOST_E2E_GATEWAY_IMAGE="${GHOST_E2E_GATEWAY_IMAGE:-caddy:2-alpine}" \
