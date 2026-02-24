@@ -37,7 +37,7 @@
     "dockerode": "4.0.9",
     "dotenv": "16.6.1",
     "eslint-plugin-playwright": "2.7.0",
-    "eslint-plugin-no-relative-import-paths": "^1.6.1",
+    "eslint-plugin-no-relative-import-paths": "1.6.1",
     "knex": "3.1.0",
     "mysql2": "3.15.2",
     "ts-node": "10.9.2",
