@@ -25,7 +25,7 @@ run_bg() {
 
 run_bg "pull-gateway-image" docker pull "$GATEWAY_IMAGE"
 run_bg "pull-playwright-image" docker pull "$PLAYWRIGHT_IMAGE"
-run_bg "start-infra" bash "$REPO_ROOT/e2e/scripts/infra-up.sh"
+run_bg "start-infra" env GHOST_E2E_MODE=build bash "$REPO_ROOT/e2e/scripts/infra-up.sh"
 
 for i in "${!pids[@]}"; do
     if ! wait "${pids[$i]}"; then

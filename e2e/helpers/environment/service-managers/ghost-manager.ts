@@ -6,9 +6,9 @@ import {
     BUILD_GATEWAY_IMAGE,
     BUILD_IMAGE,
     CADDYFILE_PATHS,
+    DEV_ASSET_URLS,
     DEV_ENVIRONMENT,
     DEV_SHARED_CONFIG_VOLUME,
-    LOCAL_ASSET_URLS,
     REPO_ROOT,
     TEST_ENVIRONMENT,
     TINYBIRD
@@ -105,7 +105,7 @@ export class GhostManager {
                 `To fix this, either:\n` +
                 `  1. Build locally: yarn workspace @tryghost/e2e build:docker (with GHOST_E2E_BASE_IMAGE set)\n` +
                 `  2. Pull from registry: docker pull ${BUILD_IMAGE}\n` +
-                `  3. Use a different image: GHOST_E2E_IMAGE=<image> yarn test:build`
+                `  3. Use a different image: GHOST_E2E_MODE=build GHOST_E2E_IMAGE=<image> yarn workspace @tryghost/e2e test`
             );
         }
 
@@ -118,7 +118,7 @@ export class GhostManager {
                 `Build gateway image not found: ${BUILD_GATEWAY_IMAGE}\n\n` +
                 `To fix this, either:\n` +
                 `  1. Pull gateway image: docker pull ${BUILD_GATEWAY_IMAGE}\n` +
-                `  2. Use a different gateway image: GHOST_E2E_GATEWAY_IMAGE=<image> yarn test:build`
+                `  2. Use a different gateway image: GHOST_E2E_MODE=build GHOST_E2E_GATEWAY_IMAGE=<image> yarn workspace @tryghost/e2e test`
             );
         }
     }
@@ -210,10 +210,9 @@ export class GhostManager {
         ];
 
         // For dev mode, add local asset URLs (served via gateway proxying to host dev servers)
-        // Registry mode uses production CDN URLs (no override needed)
-        // Local mode has asset URLs baked into the E2E image via ENV vars
+        // Build mode has asset URLs baked into the E2E image via ENV vars
         if (this.config.mode === 'dev') {
-            env.push(...LOCAL_ASSET_URLS);
+            env.push(...DEV_ASSET_URLS);
         }
 
         // Add Tinybird config if available
@@ -243,10 +242,11 @@ export class GhostManager {
 
         if (extraConfig) {
             for (const [key, value] of Object.entries(extraConfig)) {
-                if (typeof value !== 'string') {
-                    continue;
+                if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+                    env.push(`${key}=${String(value)}`);
+                } else {
+                    debug(`buildEnv: skipping non-scalar extraConfig key '${key}' (type: ${typeof value})`);
                 }
-                env.push(`${key}=${value}`);
             }
         }
 

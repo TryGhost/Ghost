@@ -32,6 +32,7 @@ yarn test
 ```
 
 If infra is already running, `yarn workspace @tryghost/e2e infra:up` is safe to run again.
+For dev-mode test runs, `infra:up` also ensures required local Ghost/gateway dev images exist.
 If you use a custom compose project name locally, set `COMPOSE_PROJECT_NAME` for both infra and tests so E2E-managed image/volume names stay aligned.
 
 ### Analytics Development Flow (No Extra Tinybird Steps)
@@ -57,7 +58,7 @@ Use build mode when you don’t want to run dev servers. It uses a prebuilt Ghos
 yarn build
 yarn workspace @tryghost/e2e build:apps
 GHOST_E2E_BASE_IMAGE=<ghost-image> yarn workspace @tryghost/e2e build:docker
-yarn workspace @tryghost/e2e infra:up
+GHOST_E2E_MODE=build yarn workspace @tryghost/e2e infra:up
 
 # Run tests
 GHOST_E2E_MODE=build GHOST_E2E_IMAGE=ghost-e2e:local yarn workspace @tryghost/e2e test

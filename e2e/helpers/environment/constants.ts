@@ -87,10 +87,12 @@ export const BASE_GHOST_ENV = [
 ] as const;
 
 /**
- * Public app asset URLs for dev mode (served via gateway proxying to host dev servers).
- * Build mode assets are baked into the E2E image via ENV vars in e2e/Dockerfile.e2e.
+ * Public app asset URLs for dev mode only (served via gateway proxying to host dev servers).
+ *
+ * These are not needed in build mode because build-mode assets are baked into
+ * the E2E image via ENV vars in e2e/Dockerfile.e2e.
  */
-export const LOCAL_ASSET_URLS = [
+export const DEV_ASSET_URLS = [
     'portal__url=/ghost/assets/portal/portal.min.js',
     'comments__url=/ghost/assets/comments-ui/comments-ui.min.js',
     'sodoSearch__url=/ghost/assets/sodo-search/sodo-search.min.js',
