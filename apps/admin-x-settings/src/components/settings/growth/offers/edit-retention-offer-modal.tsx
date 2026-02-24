@@ -447,7 +447,7 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
                     if (formTerms.duration === 'once') {
                         durationText = 'next payment';
                     } else if (formTerms.duration === 'repeating') {
-                        durationText = `for ${formTerms.durationInMonths} months`;
+                        durationText = `for ${formTerms.durationInMonths} ${formTerms.durationInMonths === 1 ? 'month' : 'months'}`;
                     } else {
                         durationText = 'forever';
                     }
