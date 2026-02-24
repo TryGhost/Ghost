@@ -16,54 +16,6 @@ async function isServiceAvailable(docker: Docker, serviceName: string) {
     });
     return containers.length > 0;
 }
-
-export async function isDevNetworkAvailable(docker: Docker): Promise<boolean> {
-    try {
-        const networks = await docker.listNetworks({
-            filters: {name: [DEV_ENVIRONMENT.networkName]}
-        });
-
-        if (networks.length === 0) {
-            debug('Dev environment not available: network not found');
-            return false;
-        }
-        debug('Dev environment is available');
-        return true;
-    } catch (error) {
-        debug('Error checking dev environment:', error);
-        return false;
-    }
-}
-
-/**
- * Check if the dev environment (yarn dev) is running.
- * Detects by checking for the ghost_dev network and running MySQL container.
- */
-export async function isDevEnvironmentAvailable(): Promise<boolean> {
-    const docker = new Docker();
-
-    if (!await isDevNetworkAvailable(docker)) {
-        debug('Dev environment not available: network not found');
-        return false;
-    }
-
-    if (!await isServiceAvailable(docker, 'mysql')) {
-        debug('Dev environment not available: MySQL container not running');
-        return false;
-    }
-
-    if (!await isServiceAvailable(docker, 'redis')) {
-        debug('Dev environment not available: Redis container not running');
-        return false;
-    }
-
-    if (!await isServiceAvailable(docker, 'mailpit')) {
-        debug('Dev environment not available: Mailpit container not running');
-        return false;
-    }
-
-    return true;
-}
 /**
  * Check if Tinybird is running.
  * Checks for tinybird-local service in ghost-dev compose project.
