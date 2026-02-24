@@ -183,19 +183,11 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
 
     const isDirty = saveState === 'unsaved';
 
-    const closeModal = useCallback(() => {
-        modal.remove();
-        updateRoute('memberemails');
-    }, [modal, updateRoute]);
-
     const handleClose = useCallback(() => {
-        if (!isDirty) {
-            closeModal();
-            return;
-        }
-
-        confirmIfDirty(true, closeModal);
-    }, [closeModal, isDirty]);
+        confirmIfDirty(isDirty, () => {
+            modal.remove();
+        });
+    }, [modal, isDirty]);
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -294,8 +286,8 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                         <div className='flex items-center'>
                             <div className='w-20 shrink-0 font-semibold'>From:</div>
                             <div className='min-w-0 grow'>
-                                <span className='block truncate whitespace-nowrap'>
-                                    <span>{`${resolvedSenderName} `}</span>
+                                <span className='flex gap-1 truncate whitespace-nowrap'>
+                                    <span>{resolvedSenderName}</span>
                                     <span className='text-grey-700 dark:text-grey-400'>{`<${resolvedSenderEmail}>`}</span>
                                 </span>
                             </div>
@@ -382,8 +374,8 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                             <div className='flex items-center py-1'>
                                 <div className='w-20 shrink-0 text-sm font-semibold'>From:</div>
                                 <div className='min-w-0 grow pr-4 text-sm'>
-                                    <span className='block truncate whitespace-nowrap'>
-                                        <span>{`${resolvedSenderName} `}</span>
+                                    <span className='flex gap-1 truncate whitespace-nowrap'>
+                                        <span>{resolvedSenderName}</span>
                                         <span className='text-gray-500 dark:text-gray-400'>{`<${resolvedSenderEmail}>`}</span>
                                     </span>
                                 </div>
@@ -434,10 +426,11 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                     >
                         <div
                             className={cn(
+                                'mx-auto w-full transition-[max-width,padding] duration-300 ease-out motion-reduce:transition-none',
                                 deviceSize === 'desktop'
-                                    ? 'mx-auto w-full max-w-[600px] pb-8 pt-10 transition-[max-width,padding] duration-300 ease-out motion-reduce:transition-none'
+                                    ? 'max-w-[600px] pb-8 pt-10'
                                     : deviceSize === 'mobile'
-                                        ? 'mx-auto w-full max-w-[440px] px-2 py-8 transition-[max-width,padding] duration-300 ease-out motion-reduce:transition-none'
+                                        ? 'max-w-[440px] px-2 py-8'
                                         : 'p-8'
                             )}
                             onFocus={() => {
