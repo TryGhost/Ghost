@@ -28,7 +28,7 @@
 name: "Linear Issue Triage Agent"
 "on":
   schedule:
-  - cron: "12 22 * * 1-5"
+  - cron: "2 20 * * 1-5"
     # Friendly format: daily on weekdays (scattered)
   workflow_dispatch:
 
