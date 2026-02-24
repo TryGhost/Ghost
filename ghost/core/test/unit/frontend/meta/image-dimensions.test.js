@@ -328,4 +328,47 @@ describe('getImageDimensions', function () {
             done();
         }).catch(done);
     });
+
+    it('appends image size prefix to CDN-hosted content images', function (done) {
+        const originalMetaData = {
+            coverImage: {
+                url: 'https://storage.ghost.is/c/6f/a3/site/content/images/2026/02/cover.jpg'
+            },
+            authorImage: {
+                url: 'https://storage.ghost.is/c/6f/a3/site/content/images/2026/02/author.jpg'
+            },
+            ogImage: {
+                url: 'https://storage.ghost.is/c/6f/a3/site/content/images/2026/02/og.jpg'
+            },
+            twitterImage: 'https://storage.ghost.is/c/6f/a3/site/content/images/2026/02/twitter.jpg',
+            site: {
+                logo: {
+                    url: 'https://storage.ghost.is/c/6f/a3/site/content/images/2026/02/logo.jpg'
+                }
+            }
+        };
+
+        const metaData = _.cloneDeep(originalMetaData);
+
+        sizeOfStub.callsFake(() => ({
+            width: 2000,
+            height: 1200,
+            type: 'jpg'
+        }));
+
+        getImageDimensions.__set__('imageSizeCache', {
+            getCachedImageSizeFromUrl: sizeOfStub
+        });
+
+        getImageDimensions(metaData).then(function (result) {
+            assertExists(result);
+            assert.equal(result.coverImage.url, 'https://storage.ghost.is/c/6f/a3/site/content/images/size/w1200/2026/02/cover.jpg');
+            assert.equal(result.authorImage.url, 'https://storage.ghost.is/c/6f/a3/site/content/images/size/w1200/2026/02/author.jpg');
+            assert.equal(result.ogImage.url, 'https://storage.ghost.is/c/6f/a3/site/content/images/size/w1200/2026/02/og.jpg');
+            assert.equal(result.twitterImage, 'https://storage.ghost.is/c/6f/a3/site/content/images/size/w1200/2026/02/twitter.jpg');
+            // logo dimensions are computed but logo URL is not resized in this path
+            assert.equal(result.site.logo.url, originalMetaData.site.logo.url);
+            done();
+        }).catch(done);
+    });
 });

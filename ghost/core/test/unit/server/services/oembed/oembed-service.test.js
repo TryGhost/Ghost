@@ -1,6 +1,7 @@
 const assert = require('node:assert/strict');
 const nock = require('nock');
 const got = require('got');
+const sinon = require('sinon');
 
 const OembedService = require('../../../../../core/server/services/oembed/oembed-service');
 
@@ -223,6 +224,44 @@ describe('oembed-service', function () {
                 });
 
             await oembedService.fetchOembedDataFromUrl('https://youtube.com/live/1234?param=existing');
+        });
+    });
+
+    describe('processImageFromUrl', function () {
+        it('stores downloaded bookmark assets via image storage and returns stored URL', async function () {
+            const saveRaw = sinon.stub().resolves('https://storage.ghost.is/c/6f/a3/site/content/images/thumbnail/sample.png');
+            const generateUnique = sinon.stub().resolves('/tmp/content/images/thumbnail/sample.png');
+            const getSanitizedFileName = sinon.stub().returns('sample');
+
+            const service = new OembedService({
+                config: {
+                    getContentPath() {
+                        return '/tmp/content/images';
+                    }
+                },
+                storage: {
+                    getStorage() {
+                        return {
+                            getSanitizedFileName,
+                            generateUnique,
+                            saveRaw
+                        };
+                    }
+                },
+                externalRequest() {
+                    return {
+                        buffer: async () => Buffer.from('img-bytes')
+                    };
+                }
+            });
+
+            const storedUrl = await service.processImageFromUrl('https://example.com/sample.png?token=abc', 'thumbnail');
+
+            assert.equal(storedUrl, 'https://storage.ghost.is/c/6f/a3/site/content/images/thumbnail/sample.png');
+            assert.equal(getSanitizedFileName.calledOnce, true);
+            assert.equal(generateUnique.calledOnce, true);
+            assert.equal(saveRaw.calledOnce, true);
+            assert.equal(saveRaw.firstCall.args[1], 'thumbnail/sample.png');
         });
     });
 });

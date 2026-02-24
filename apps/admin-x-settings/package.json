@@ -42,7 +42,7 @@
     "@codemirror/lang-html": "6.4.11",
     "@tryghost/color-utils": "0.2.10",
     "@tryghost/i18n": "0.0.0",
-    "@tryghost/kg-unsplash-selector": "0.3.12",
+    "@tryghost/kg-unsplash-selector": "0.3.17",
     "@tryghost/limit-service": "1.4.1",
     "@tryghost/nql": "0.12.10",
     "@tryghost/timezone-data": "0.4.12",

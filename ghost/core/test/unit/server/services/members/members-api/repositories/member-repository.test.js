@@ -238,7 +238,6 @@ describe('MemberRepository', function () {
         let stripeAPIService;
         let productRepository;
         let offersAPI;
-        let labsService;
         let subscriptionData;
         let subscriptionCreatedNotifySpy;
         let offerRedemptionNotifySpy;
@@ -334,10 +333,6 @@ describe('MemberRepository', function () {
                 update: sinon.stub().resolves({})
             };
 
-            labsService = {
-                isSet: sinon.stub().returns(true)
-            };
-
             offersAPI = {
                 ensureOfferForStripeCoupon: sinon.stub().resolves({
                     id: 'offer_new'
@@ -352,7 +347,6 @@ describe('MemberRepository', function () {
                 MemberPaidSubscriptionEvent,
                 MemberProductEvent,
                 productRepository,
-                labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
             });
@@ -384,7 +378,6 @@ describe('MemberRepository', function () {
                 MemberProductEvent,
                 productRepository,
                 offersAPI,
-                labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
             });
@@ -432,7 +425,6 @@ describe('MemberRepository', function () {
                 MemberPaidSubscriptionEvent,
                 MemberProductEvent,
                 productRepository,
-                labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
             });
@@ -508,7 +500,6 @@ describe('MemberRepository', function () {
                 MemberProductEvent,
                 productRepository: productRepositoryWithTier,
                 offersAPI,
-                labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
             });
@@ -584,7 +575,6 @@ describe('MemberRepository', function () {
                 MemberProductEvent,
                 productRepository: productRepositoryWithTier,
                 offersAPI,
-                labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
             });
@@ -658,7 +648,6 @@ describe('MemberRepository', function () {
                 MemberProductEvent,
                 productRepository: productRepositoryWithTier,
                 offersAPI,
-                labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
             });
@@ -720,7 +709,6 @@ describe('MemberRepository', function () {
                 MemberProductEvent,
                 productRepository,
                 offersAPI,
-                labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
             });
@@ -776,7 +764,6 @@ describe('MemberRepository', function () {
                 MemberProductEvent,
                 productRepository,
                 offersAPI,
-                labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
             });
@@ -814,7 +801,6 @@ describe('MemberRepository', function () {
                 MemberPaidSubscriptionEvent,
                 MemberProductEvent,
                 productRepository,
-                labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
             });
@@ -869,7 +855,6 @@ describe('MemberRepository', function () {
                 MemberPaidSubscriptionEvent,
                 MemberProductEvent,
                 productRepository,
-                labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
             });
@@ -910,7 +895,6 @@ describe('MemberRepository', function () {
                 MemberPaidSubscriptionEvent,
                 MemberProductEvent,
                 productRepository,
-                labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
             });
@@ -951,7 +935,6 @@ describe('MemberRepository', function () {
                 MemberPaidSubscriptionEvent,
                 MemberProductEvent,
                 productRepository,
-                labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
             });
@@ -1000,7 +983,6 @@ describe('MemberRepository', function () {
                 MemberPaidSubscriptionEvent,
                 MemberProductEvent,
                 productRepository,
-                labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
             });
@@ -1048,7 +1030,6 @@ describe('MemberRepository', function () {
                 MemberProductEvent,
                 productRepository,
                 offersAPI,
-                labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
             });
@@ -1081,7 +1062,6 @@ describe('MemberRepository', function () {
                 MemberPaidSubscriptionEvent,
                 MemberProductEvent,
                 productRepository,
-                labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
             });
@@ -1129,7 +1109,6 @@ describe('MemberRepository', function () {
                 MemberPaidSubscriptionEvent,
                 MemberProductEvent,
                 productRepository,
-                labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
             });
@@ -1176,7 +1155,6 @@ describe('MemberRepository', function () {
                 MemberPaidSubscriptionEvent,
                 MemberProductEvent,
                 productRepository,
-                labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
             });
@@ -1241,7 +1219,6 @@ describe('MemberRepository', function () {
                 MemberProductEvent,
                 productRepository,
                 offersAPI,
-                labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
             });
@@ -1304,7 +1281,6 @@ describe('MemberRepository', function () {
                 MemberPaidSubscriptionEvent,
                 MemberProductEvent,
                 productRepository,
-                labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
             });
@@ -1373,7 +1349,6 @@ describe('MemberRepository', function () {
                 MemberProductEvent,
                 productRepository,
                 offersAPI,
-                labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
             });
@@ -1441,7 +1416,6 @@ describe('MemberRepository', function () {
                 MemberProductEvent,
                 productRepository,
                 offersAPI,
-                labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
             });
@@ -1481,7 +1455,6 @@ describe('MemberRepository', function () {
         let MemberSubscribeEvent;
         let newslettersService;
         let AutomatedEmail;
-        let labsService;
         const oldNodeEnv = process.env.NODE_ENV;
 
         beforeEach(function () {
@@ -1543,15 +1516,6 @@ describe('MemberRepository', function () {
                     })
                 })
             };
-
-            labsService = {
-                isSet: sinon.stub().callsFake((flag) => {
-                    if (flag === 'welcomeEmails') {
-                        return true;
-                    }
-                    return false;
-                })
-            };
         });
 
         afterEach(function () {
@@ -1566,7 +1530,6 @@ describe('MemberRepository', function () {
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
                 AutomatedEmail,
-                labsService,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -1583,25 +1546,6 @@ describe('MemberRepository', function () {
             assert.equal(payload.source, 'member');
         });
 
-        it('does NOT create outbox entry when welcomeEmails labs flag is off', async function () {
-            labsService.isSet.withArgs('welcomeEmails').returns(false);
-
-            const repo = new MemberRepository({
-                Member,
-                Outbox,
-                MemberStatusEvent,
-                MemberSubscribeEventModel: MemberSubscribeEvent,
-                newslettersService,
-                AutomatedEmail,
-                labsService,
-                OfferRedemption: mockOfferRedemption
-            });
-
-            await repo.create({email: 'test@example.com', name: 'Test Member'}, {});
-
-            sinon.assert.notCalled(Outbox.add);
-        });
-
         it('does not create outbox entry for disallowed sources', async function () {
             const repo = new MemberRepository({
                 Member,
@@ -1610,7 +1554,6 @@ describe('MemberRepository', function () {
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
                 AutomatedEmail,
-                labsService,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -1635,7 +1578,6 @@ describe('MemberRepository', function () {
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
                 AutomatedEmail,
-                labsService,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -1654,7 +1596,6 @@ describe('MemberRepository', function () {
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
                 AutomatedEmail,
-                labsService,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -1679,7 +1620,6 @@ describe('MemberRepository', function () {
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
                 AutomatedEmail,
-                labsService,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -1700,7 +1640,6 @@ describe('MemberRepository', function () {
                 newslettersService,
                 AutomatedEmail,
                 StripeCustomer,
-                labsService,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -1728,6 +1667,8 @@ describe('MemberRepository', function () {
 
             // The free welcome email should NOT be sent when stripeCustomer is present
             sinon.assert.notCalled(Outbox.add);
+            sinon.assert.notCalled(AutomatedEmail.findOne);
+            sinon.assert.notCalled(Member.transaction);
         });
     });
 
@@ -1741,7 +1682,6 @@ describe('MemberRepository', function () {
         let stripeAPIService;
         let productRepository;
         let AutomatedEmail;
-        let labsService;
         let subscriptionData;
 
         beforeEach(function () {
@@ -1871,15 +1811,6 @@ describe('MemberRepository', function () {
                     })
                 })
             };
-
-            labsService = {
-                isSet: sinon.stub().callsFake((flag) => {
-                    if (flag === 'welcomeEmails') {
-                        return true;
-                    }
-                    return false;
-                })
-            };
         });
 
         afterEach(function () {
@@ -1906,7 +1837,6 @@ describe('MemberRepository', function () {
                 stripeAPIService,
                 productRepository,
                 AutomatedEmail,
-                labsService,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -1932,47 +1862,6 @@ describe('MemberRepository', function () {
             assert.ok(payload.timestamp);
         });
 
-        it('does NOT create outbox entry when welcomeEmails labs flag is off', async function () {
-            labsService.isSet.withArgs('welcomeEmails').returns(false);
-
-            Member.edit.resolves({
-                attributes: {status: 'paid'},
-                _previousAttributes: {status: 'free'},
-                get: sinon.stub().callsFake((key) => {
-                    const data = {status: 'paid'};
-                    return data[key];
-                })
-            });
-
-            const repo = new MemberRepository({
-                Member,
-                Outbox,
-                MemberPaidSubscriptionEvent,
-                StripeCustomerSubscription,
-                MemberProductEvent,
-                MemberStatusEvent,
-                stripeAPIService,
-                productRepository,
-                AutomatedEmail,
-                labsService,
-                OfferRedemption: mockOfferRedemption
-            });
-
-            sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
-
-            await repo.linkSubscription({
-                id: 'member_id_123',
-                subscription: subscriptionData
-            }, {
-                transacting: {
-                    executionPromise: Promise.resolve()
-                },
-                context: {}
-            });
-
-            sinon.assert.notCalled(Outbox.add);
-        });
-
         it('does NOT create outbox entry for disallowed sources', async function () {
             Member.edit.resolves({
                 attributes: {status: 'paid'},
@@ -1993,7 +1882,6 @@ describe('MemberRepository', function () {
                 stripeAPIService,
                 productRepository,
                 AutomatedEmail,
-                labsService,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -2047,7 +1935,6 @@ describe('MemberRepository', function () {
                 stripeAPIService,
                 productRepository,
                 AutomatedEmail,
-                labsService,
                 OfferRedemption: mockOfferRedemption
             });
 

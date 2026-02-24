@@ -25,8 +25,7 @@ const GA_FEATURES = [
     'customFonts',
     'explore',
     'commentModeration',
-    'featurebaseFeedback',
-    'welcomeEmails'
+    'featurebaseFeedback'
 ];
 
 // These features are considered publicly available and can be enabled/disabled by users
