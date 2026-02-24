@@ -495,16 +495,12 @@ export default class KoenigLexicalEditor extends Component {
                 if (type === 'file') {
                     return true;
                 }
-                let extensions = fileTypes[type].extensions;
-                let [, extension] = (/(?:\.([^.]+))?$/).exec(file.name);
+                const extensions = fileTypes[type].extensions;
+                const [, extension] = (/(?:\.([^.]+))?$/).exec(file.name) ?? [];
 
                 // if extensions is falsy exit early and accept all files
                 if (!extensions) {
                     return true;
-                }
-
-                if (!Array.isArray(extensions)) {
-                    extensions = extensions.split(',');
                 }
 
                 if (!extension || extensions.indexOf(extension.toLowerCase()) === -1) {
