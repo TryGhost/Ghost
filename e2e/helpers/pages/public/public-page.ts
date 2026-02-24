@@ -85,7 +85,6 @@ export class PublicPage extends BasePage {
         }
         await this.enableAnalyticsRequests();
         const result = await super.goto(url, options);
-        await this.waitForMemberAttributionReady();
         if (pageHitPromise) {
             await pageHitPromise;
         }
