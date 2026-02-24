@@ -76,44 +76,6 @@ describe('Offer', function () {
             assert(offer instanceof Offer, 'Offer.create should return an instance of Offer');
         });
 
-        it('Can create a free-months offer on monthly cadence', async function () {
-            const offer = await Offer.create({
-                name: 'My Free Months Offer',
-                code: 'offer-code-free-months',
-                display_title: 'My Offer Title',
-                display_description: 'My Offer Description',
-                cadence: 'month',
-                type: 'free_months',
-                amount: 2,
-                duration: 'free_months',
-                duration_in_months: null,
-                currency: 'USD',
-                tier: {
-                    id: ObjectID()
-                }
-            }, mockUniqueChecker);
-            assert(offer instanceof Offer, 'Should create a free months offer on monthly cadence');
-        });
-
-        it('Can create a free-months offer on yearly cadence', async function () {
-            const offer = await Offer.create({
-                name: 'My Free Months Offer',
-                code: 'offer-code-free-months',
-                display_title: 'My Offer Title',
-                display_description: 'My Offer Description',
-                cadence: 'year',
-                type: 'free_months',
-                amount: 2,
-                duration: 'free_months',
-                duration_in_months: null,
-                currency: 'USD',
-                tier: {
-                    id: ObjectID()
-                }
-            }, mockUniqueChecker);
-            assert(offer instanceof Offer, 'Should create a free months offer on yearly cadence');
-        });
-
         it('Throws an error if the duration for trial offer is not right', async function () {
             await Offer.create({
                 name: 'My Trial Offer',
@@ -124,27 +86,6 @@ describe('Offer', function () {
                 type: 'trial',
                 amount: 10,
                 duration: 'forever',
-                currency: 'USD',
-                tier: {
-                    id: ObjectID()
-                }
-            }, mockUniqueChecker).then(() => {
-                assert.fail('Expected an error');
-            }, (err) => {
-                assert(err);
-            });
-        });
-
-        it('Throws an error if the duration for free months offer is invalid', async function () {
-            await Offer.create({
-                name: 'My Free Months Offer',
-                code: 'free-months-test',
-                display_title: 'My Offer Title',
-                display_description: 'My Offer Description',
-                cadence: 'month',
-                type: 'free_months',
-                amount: 2,
-                duration: 'forever', // Should be "free_months"
                 currency: 'USD',
                 tier: {
                     id: ObjectID()
@@ -275,27 +216,6 @@ describe('Offer', function () {
                 type: 'trial',
                 amount: 20,
                 duration: 'trial',
-                currency: 'USD',
-                tier: {
-                    id: ObjectID()
-                }
-            };
-
-            const offer = await Offer.create(data, mockUniqueChecker);
-
-            assert.equal(offer.currency, null);
-        });
-
-        it('Has a currency of null if the type is free_months', async function () {
-            const data = {
-                name: 'My Free Months Offer',
-                code: 'offer-code-free-months',
-                display_title: 'My Offer Title',
-                display_description: 'My Offer Description',
-                cadence: 'year',
-                type: 'free_months',
-                amount: 2,
-                duration: 'free_months',
                 currency: 'USD',
                 tier: {
                     id: ObjectID()

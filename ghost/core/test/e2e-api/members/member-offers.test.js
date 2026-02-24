@@ -909,8 +909,6 @@ describe('Members API - Member Offers', function () {
             const stripeSubscriptionId = subscription.get('subscription_id');
             const cadence = stripePrice.get('interval');
 
-            const currentPeriodEnd = subscription.get('current_period_end');
-
             const mockPrice = {
                 id: stripePrice.get('stripe_price_id'),
                 product: stripeProduct.get('stripe_product_id'),
@@ -958,20 +956,20 @@ describe('Members API - Member Offers', function () {
             });
 
             const retentionOffer = await models.Offer.add({
-                name: 'Free Months Retention Offer',
-                code: 'free-months-retention',
+                name: 'Free Month Retention Offer',
+                code: 'free-month-retention',
                 portal_title: '1 month free',
                 portal_description: 'Stay with us!',
-                discount_type: 'free_months',
-                discount_amount: 1,
-                duration: 'free_months',
-                duration_in_months: null,
+                discount_type: 'percent',
+                discount_amount: 100,
+                duration: 'repeating',
+                duration_in_months: 1,
                 interval: cadence,
                 product_id: null,
                 currency: null,
                 active: true,
                 redemption_type: 'retention',
-                stripe_coupon_id: null // Free months offer don't rely on Stripe coupons
+                stripe_coupon_id: null
             });
 
             try {
@@ -987,15 +985,6 @@ describe('Members API - Member Offers', function () {
                 await subscription.refresh();
                 assert.equal(subscription.get('offer_id'), retentionOffer.id);
 
-                // Trial period should be set to current period end + 1 month
-                const expectedTrialEnd = new Date(currentPeriodEnd);
-                expectedTrialEnd.setUTCMonth(expectedTrialEnd.getUTCMonth() + 1);
-
-                const trialEndAt = subscription.get('trial_end_at');
-
-                assert.ok(trialEndAt, 'trial_end_at should be set');
-                assert.equal(new Date(trialEndAt).getTime(), expectedTrialEnd.getTime());
-
                 // Verify offer redemption was recorded
                 const redemption = await models.OfferRedemption.findOne({
                     offer_id: retentionOffer.id,
@@ -1010,7 +999,7 @@ describe('Members API - Member Offers', function () {
                 if (redemption) {
                     await models.OfferRedemption.destroy({id: redemption.id});
                 }
-                await subscription.save({offer_id: null, trial_end_at: null}, {patch: true});
+                await subscription.save({offer_id: null}, {patch: true});
                 await models.Offer.destroy({id: retentionOffer.id});
             }
         });
