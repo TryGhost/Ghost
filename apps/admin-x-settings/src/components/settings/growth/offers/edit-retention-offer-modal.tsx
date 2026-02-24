@@ -436,9 +436,26 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
             const createRetentionOffer = async (status: 'active' | 'archived') => {
                 // Generate a random 8-character hex string
                 const hash = Array.from(crypto.getRandomValues(new Uint8Array(4)), b => b.toString(16).padStart(2, '0')).join('');
+                const shortHash = hash.slice(0, 4);
+
+                let offerDesc: string;
+                if (formTerms.type === 'free_months') {
+                    const monthText = formTerms.amount === 1 ? 'free month' : 'free months';
+                    offerDesc = `${formTerms.amount} ${monthText}`;
+                } else {
+                    let durationText: string;
+                    if (formTerms.duration === 'once') {
+                        durationText = 'next payment';
+                    } else if (formTerms.duration === 'repeating') {
+                        durationText = `for ${formTerms.durationInMonths} months`;
+                    } else {
+                        durationText = 'forever';
+                    }
+                    offerDesc = `${formTerms.amount}% off ${durationText}`;
+                }
 
                 await addOffer({
-                    name: `Special offer ${hash}`,
+                    name: `Retention ${offerDesc} (${shortHash})`,
                     code: hash,
                     display_title: displayTitle,
                     display_description: displayDescription,
