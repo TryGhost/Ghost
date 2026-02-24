@@ -51,7 +51,7 @@ const EmailPreviewModalContent = React.forwardRef<
         )}
     >
         <div className="border-gray-200 dark:border-gray-900 dark:bg-gray-975 flex shrink-0 items-center justify-between border-b bg-white px-5 py-3">
-            <DialogTitle className="text-sm font-semibold">
+            <DialogTitle className="text-xl font-semibold">
                 {title}
             </DialogTitle>
             <div className="absolute left-1/2 -translate-x-1/2">
@@ -157,6 +157,8 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
     const [siteTitle] = getSettingValues<string>(settings, ['title']);
     const {resolvedSenderName, resolvedSenderEmail, resolvedReplyToEmail, hasDistinctReplyTo} = useWelcomeEmailSenderDetails(automatedEmail);
     const welcomeEmailEditorEnabled = useFeatureFlag('welcomeEmailEditor');
+    const emailTypeLabel = emailType === 'paid' ? 'Paid' : 'Free';
+    const modalTitle = `${emailTypeLabel} members welcome email`;
 
     const {formState, saveState, updateForm, setFormState, handleSave, okProps, errors, validate} = useForm({
         initialState: {
@@ -265,7 +267,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                 <div className='-mx-8 flex h-[calc(100vh-16vmin)] flex-col overflow-y-auto dark:!bg-grey-975'>
                     <div className='sticky top-0 z-10 flex flex-col gap-2 border-b border-grey-100 bg-white p-5 dark:border-grey-900 dark:bg-grey-975'>
                         <div className='mb-2 flex items-center justify-between'>
-                            <h3 className='font-semibold'>{emailType === 'paid' ? 'Paid' : 'Free'} members welcome email</h3>
+                            <h3 className='text-lg font-semibold'>{modalTitle}</h3>
                             <div className='flex items-center gap-2'>
                                 <div ref={dropdownRef} className='relative'>
                                     <LegacyButton
@@ -364,7 +366,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                         </Button>
                     </>
                 }
-                title='Welcome email'
+                title={modalTitle}
                 onDeviceSizeChange={setDeviceSize}
             >
                 <div className='flex grow flex-col items-center p-8'>
