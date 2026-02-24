@@ -292,22 +292,24 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                             </div>
                         </div>
                         <div className='flex items-center'>
-                            <div className='w-20 font-semibold'>From:</div>
-                            <div className='flex grow items-center gap-1'>
-                                <span>{resolvedSenderName}</span>
-                                <span className='text-grey-700 dark:text-grey-400'>{`<${resolvedSenderEmail}>`}</span>
+                            <div className='w-20 shrink-0 font-semibold'>From:</div>
+                            <div className='min-w-0 grow'>
+                                <span className='block truncate whitespace-nowrap'>
+                                    <span>{`${resolvedSenderName} `}</span>
+                                    <span className='text-grey-700 dark:text-grey-400'>{`<${resolvedSenderEmail}>`}</span>
+                                </span>
                             </div>
                         </div>
                         {hasDistinctReplyTo && (
                             <div className='flex items-center py-0.5'>
-                                <div className='w-20 font-semibold'>Reply-to:</div>
+                                <div className='w-20 shrink-0 font-semibold'>Reply-to:</div>
                                 <div className='grow text-grey-700 dark:text-grey-400'>
                                     {resolvedReplyToEmail}
                                 </div>
                             </div>
                         )}
                         <div className='flex items-center'>
-                            <div className='w-20 font-semibold'>Subject:</div>
+                            <div className='w-20 shrink-0 font-semibold'>Subject:</div>
                             <div className='grow'>
                                 <TextField
                                     className='w-full'
@@ -373,15 +375,17 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                 }
                 title={modalTitle}
                 onDeviceSizeChange={setDeviceSize}
-                >
-                    <div className='flex grow flex-col items-center px-8 pb-8 pt-10'>
+            >
+                <div className='flex grow flex-col items-center px-8 pb-8 pt-10'>
                     <EmailPreviewEmailHeader className={deviceSize === 'mobile' ? 'max-w-[460px]' : ''}>
                         <div className='flex flex-col gap-2'>
-                            <div className='flex items-center'>
-                                <div className='w-20 text-sm font-semibold'>From:</div>
-                                <div className='flex grow items-center gap-1 text-sm'>
-                                    <span>{resolvedSenderName}</span>
-                                    <span className='text-gray-500 dark:text-gray-400'>{`<${resolvedSenderEmail}>`}</span>
+                            <div className='flex items-center py-1'>
+                                <div className='w-20 shrink-0 text-sm font-semibold'>From:</div>
+                                <div className='min-w-0 grow pr-4 text-sm'>
+                                    <span className='block truncate whitespace-nowrap'>
+                                        <span>{`${resolvedSenderName} `}</span>
+                                        <span className='text-gray-500 dark:text-gray-400'>{`<${resolvedSenderEmail}>`}</span>
+                                    </span>
                                 </div>
                                 <div ref={dropdownRef} className='relative'>
                                     <LegacyButton
@@ -398,14 +402,14 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                             </div>
                             {hasDistinctReplyTo && (
                                 <div className='flex items-center'>
-                                    <div className='w-20 text-sm font-semibold'>Reply-to:</div>
+                                    <div className='w-20 shrink-0 text-sm font-semibold'>Reply-to:</div>
                                     <div className='text-gray-500 dark:text-gray-400 grow text-sm'>
                                         {resolvedReplyToEmail}
                                     </div>
                                 </div>
                             )}
                             <div className='flex items-center'>
-                                <div className='w-20 text-sm font-semibold'>Subject:</div>
+                                <div className='w-20 shrink-0 text-sm font-semibold'>Subject:</div>
                                 <div className='grow'>
                                     <TextField
                                         className='w-full'
@@ -431,9 +435,9 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                         <div
                             className={cn(
                                 deviceSize === 'desktop'
-                                    ? 'mx-auto w-full max-w-[620px] pb-8 pt-10'
+                                    ? 'mx-auto w-full max-w-[640px] pb-8 pt-10'
                                     : deviceSize === 'mobile'
-                                        ? 'mx-auto w-full max-w-[440px] px-6 py-8'
+                                        ? 'mx-auto w-full max-w-[440px] px-2 py-8'
                                         : 'p-8'
                             )}
                             onFocus={() => {
