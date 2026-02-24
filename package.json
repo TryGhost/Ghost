@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "@tryghost/errors": "1.3.13",
-    "fs-extra": "^11.3.2"
+    "fs-extra": "11.3.3"
   },
   "optionalDependencies": {
     "sharp": "^0.34.2"
