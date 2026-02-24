@@ -401,9 +401,15 @@ export class GhostManager {
                 }
             });
 
-            await Promise.all(
+            const results = await Promise.allSettled(
                 containers.map(c => this.docker.getContainer(c.Id).remove({force: true}))
             );
+
+            for (const [index, result] of results.entries()) {
+                if (result.status === 'rejected') {
+                    debug('cleanupAllContainers: failed to remove container', containers[index]?.Id, result.reason);
+                }
+            }
         } catch (error) {
             debug('cleanupAllContainers: failed to list/remove containers', error);
         }
