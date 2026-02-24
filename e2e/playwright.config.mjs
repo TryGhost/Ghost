@@ -40,7 +40,8 @@ const config = {
             testMatch: /global\.setup\.ts/,
             testDir: './tests',
             teardown: 'global-teardown',
-            timeout: 60 * 1000 // 60 seconds for setup
+            workers: 1,
+            timeout: 5 * 60 * 1000
         },
         {
             name: 'main',
