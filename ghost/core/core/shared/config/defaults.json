@@ -308,6 +308,5 @@
         "batchSize": 1000,
         "captureLinkClickBadMemberUuid": false
     },
-    "disableJSBackups": false,
-    "memberWelcomeEmailTestInbox": ""
+    "disableJSBackups": false
 }

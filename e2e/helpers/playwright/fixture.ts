@@ -14,7 +14,6 @@ export interface User {
 }
 
 export interface GhostConfig {
-    memberWelcomeEmailTestInbox?: string;
     hostSettings__billing__enabled?: string;
     hostSettings__billing__url?: string;
     hostSettings__forceUpgrade?: string;
@@ -61,7 +60,6 @@ async function setupNewAuthenticatedPage(browser: Browser, baseURL: string, ghos
  *
  * Optionally allows setting labs flags via test.use({labs: {featureName: true}})
  * and Stripe connection via test.use({stripeConnected: true})
- * and Ghost config via test.use({config: {memberWelcomeEmailTestInbox: 'test@ghost.org'}})
  */
 export const test = base.extend<GhostInstanceFixture>({
     // Define options that can be set per test or describe block
