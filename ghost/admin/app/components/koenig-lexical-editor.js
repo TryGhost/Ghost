@@ -528,7 +528,7 @@ export default class KoenigLexicalEditor extends Component {
             };
 
             const _uploadFile = async (file, {formData = {}} = {}) => {
-                progressTracker.current[file] = 0;
+                progressTracker.current.set(file, 0);
 
                 const fileFormData = new FormData();
                 fileFormData.append('file', file, file.name);
