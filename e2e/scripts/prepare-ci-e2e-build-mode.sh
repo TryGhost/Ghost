@@ -40,3 +40,5 @@ for i in "${!pids[@]}"; do
         exit 1
     fi
 done
+
+node "$REPO_ROOT/e2e/scripts/sync-tinybird-state.mjs"

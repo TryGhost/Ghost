@@ -8,5 +8,3 @@ cd "$REPO_ROOT"
 
 docker compose -f compose.dev.yaml -f compose.dev.analytics.yaml up -d --wait \
   mysql redis mailpit tinybird-local tb-cli analytics
-
-node "$REPO_ROOT/e2e/scripts/sync-tinybird-state.mjs"

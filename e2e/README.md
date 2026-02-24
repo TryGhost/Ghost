@@ -34,6 +34,20 @@ yarn test
 If infra is already running, `yarn workspace @tryghost/e2e infra:up` is safe to run again.
 If you use a custom compose project name locally, set `COMPOSE_PROJECT_NAME` for both infra and tests so E2E-managed image/volume names stay aligned.
 
+### Analytics Development Flow (No Extra Tinybird Steps)
+
+When working on analytics locally, use:
+
+```bash
+# Terminal 1 (repo root)
+yarn dev:analytics
+
+# Terminal 2
+yarn workspace @tryghost/e2e test:analytics
+```
+
+E2E test scripts automatically sync Tinybird tokens and reset analytics test state when Tinybird is running.
+
 ### Build Mode (Prebuilt Image)
 
 Use build mode when you don’t want to run dev servers. It uses a prebuilt Ghost image and serves public assets from `/content/files`.
@@ -48,8 +62,6 @@ yarn workspace @tryghost/e2e infra:up
 # Run tests
 GHOST_E2E_MODE=build GHOST_E2E_IMAGE=ghost-e2e:local yarn workspace @tryghost/e2e test
 ```
-
-`infra:up` also syncs `e2e/data/state/tinybird.json` and truncates the Tinybird `analytics_events` datasource when Tinybird is available.
 
 For a CI-like local preflight (pulls Playwright + gateway images and starts infra), run:
 
@@ -210,10 +222,9 @@ Tests run automatically in GitHub Actions on every PR and commit to `main`.
 1. **Setup**: Ubuntu runner with Node.js and Docker
 2. **Build Assets**: Build server/admin assets and public app UMD bundles
 3. **Build E2E Image**: `yarn workspace @tryghost/e2e build:docker` (layers public apps into `/content/files`)
-4. **Start Infra**: `yarn workspace @tryghost/e2e infra:up` (starts MySQL/Redis/Mailpit/Tinybird services only)
-5. **Prepare E2E Runtime**: Pull Playwright/gateway images in parallel and start infra (`yarn workspace @tryghost/e2e preflight:build`)
-6. **Test Execution**: Run Playwright E2E tests inside the official Playwright container
-7. **Artifacts**: Upload Playwright traces and reports on failure
+4. **Prepare E2E Runtime**: Pull Playwright/gateway images in parallel, start infra, and sync Tinybird state (`yarn workspace @tryghost/e2e preflight:build`)
+5. **Test Execution**: Run Playwright E2E tests inside the official Playwright container
+6. **Artifacts**: Upload Playwright traces and reports on failure
 
 ## Available Scripts
 
@@ -223,10 +234,9 @@ Within the e2e directory:
 # Run all tests
 yarn test
 
-# Start/stop test infra (MySQL/Redis/Mailpit/Tinybird) and sync Tinybird state
+# Start/stop test infra (MySQL/Redis/Mailpit/Tinybird)
 yarn infra:up
 yarn infra:down
-yarn tinybird:sync
 
 # CI-like preflight for build mode (pulls images + starts infra)
 yarn preflight:build
