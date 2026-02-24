@@ -1,12 +1,12 @@
 import RSVP from 'rsvp';
 import Service, {inject as service} from '@ember/service';
+import assetBase from 'ghost-admin/utils/asset-base';
 import classic from 'ember-classic-decorator';
 import config from 'ghost-admin/config/environment';
 
 @classic
 export default class LazyLoaderService extends Service {
     @service ajax;
-    @service ghostPaths;
 
     // This is needed so we can disable it in unit tests
     testing = undefined;
@@ -35,7 +35,7 @@ export default class LazyLoaderService extends Service {
             let script = document.createElement('script');
             script.type = 'text/javascript';
             script.async = true;
-            script.src = `${config.cdnUrl ? '' : this.ghostPaths.adminRoot}${url}`;
+            script.src = `${assetBase()}${url}`;
 
             let el = document.getElementsByTagName('script')[0];
             el.parentNode.insertBefore(script, el);
@@ -63,7 +63,7 @@ export default class LazyLoaderService extends Service {
             let link = document.createElement('link');
             link.id = `${key}-styles`;
             link.rel = alternate ? 'alternate stylesheet' : 'stylesheet';
-            link.href = `${config.cdnUrl ? '' : this.ghostPaths.adminRoot}${url}`;
+            link.href = `${assetBase()}${url}`;
             link.onload = () => {
                 link.onload = null;
                 if (alternate) {
