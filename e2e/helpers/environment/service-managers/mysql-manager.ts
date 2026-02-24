@@ -3,6 +3,7 @@ import baseDebug from '@tryghost/debug';
 import logging from '@tryghost/logging';
 import {DEV_PRIMARY_DATABASE} from '@/helpers/environment/constants';
 import {PassThrough} from 'stream';
+import {SNAPSHOT_PATH} from '@/helpers/utils/fixture-cache';
 import type {Container} from 'dockerode';
 
 const debug = baseDebug('e2e:MySQLManager');
@@ -135,6 +136,29 @@ export class MySQLManager {
         await this.createDatabase(database);
 
         debug('Base database recreated:', database);
+    }
+
+    async snapshotExists(snapshotPath: string = SNAPSHOT_PATH): Promise<boolean> {
+        try {
+            const output = await this.exec(`[ -f "${snapshotPath}" ] && echo "exists"`);
+            return output.trim() === 'exists';
+        } catch {
+            return false;
+        }
+    }
+
+    async getLatestMigrationName(database: string): Promise<string | null> {
+        try {
+            const output = await this.exec(
+                `mysql -uroot -proot -N -e "SELECT name FROM ${database}.migrations ORDER BY id DESC LIMIT 1;"`
+            );
+
+            const trimmed = output.trim();
+            return trimmed.length > 0 ? trimmed : null;
+        } catch (error) {
+            debug('Failed to read migrations table (MySQL may not be running):', error);
+            return null;
+        }
     }
 
     private parseDatabaseNames(text: string) {

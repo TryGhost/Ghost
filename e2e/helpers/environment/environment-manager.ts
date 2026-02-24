@@ -2,6 +2,7 @@ import baseDebug from '@tryghost/debug';
 import logging from '@tryghost/logging';
 import {GhostInstance, MySQLManager} from './service-managers';
 import {GhostManager} from './service-managers/ghost-manager';
+import {getLatestMigrationFileName, getMissingAuthStateFiles, shouldForceFixtureReset} from '@/helpers/utils/fixture-cache';
 import {randomUUID} from 'crypto';
 import type {GhostConfig} from '@/helpers/playwright/fixture';
 
@@ -15,6 +16,10 @@ const debug = baseDebug('e2e:EnvironmentManager');
  */
 export type EnvironmentMode = 'dev' | 'build';
 type GhostEnvOverrides = GhostConfig | Record<string, string>;
+type CacheStatus =
+    | {isValid: true; reason: 'cache_hit'}
+    | {isValid: false; reason: 'ci_always_rebuild' | 'forced_fixture_reset' | 'missing_snapshot' | 'missing_auth_state' | 'missing_migration_files' | 'missing_migrations_table' | 'migration_mismatch'};
+type GlobalSetupResult = {baseUrl: string; cacheHit: boolean};
 
 /**
  * Orchestrates e2e test environment.
@@ -54,29 +59,45 @@ export class EnvironmentManager {
     }
 
     /**
-     * Global setup - creates database snapshot for test isolation.
-     * 
-     * Creates the worker 0 containers (Ghost + Gateway) and waits for Ghost to
-     * become healthy. Ghost automatically runs migrations on startup. Once healthy,
-     * we snapshot the database for test isolation.
+     * Global setup for the fixture package.
+     *
+     * On cache miss: recreate the base database and boot Ghost so migrations run.
+     * On cache hit: reuse existing base DB + snapshot/auth state package.
+     *
+     * Snapshot creation is deferred until global.setup.ts completes user onboarding.
      */
-    async globalSetup(): Promise<void> {
+    async globalSetup(): Promise<GlobalSetupResult> {
         logging.info(`Starting ${this.mode} environment global setup...`);
 
-        await this.cleanupResources();
+        const cacheStatus = await this.getCacheStatus();
+        const cacheHit = cacheStatus.isValid;
+        if (cacheHit) {
+            logging.info('Fixture cache hit - reusing snapshot + auth state package');
+        } else {
+            logging.info(`Fixture cache miss (${cacheStatus.reason}) - rebuilding fixture package`);
+        }
 
-        // Create base database
-        await this.mysql.recreateBaseDatabase('ghost_e2e_base');
+        await this.cleanupResources({deleteSnapshot: !cacheHit});
 
-        // Create containers and wait for Ghost to be healthy (runs migrations)
+        if (!cacheHit) {
+            await this.mysql.recreateBaseDatabase('ghost_e2e_base');
+        }
+
         await this.ghost.setup('ghost_e2e_base');
         await this.ghost.waitForReady();
         this.initialized = true;
 
-        // Snapshot the migrated database for test isolation
-        await this.mysql.createSnapshot('ghost_e2e_base');
+        const baseUrl = `http://localhost:${this.ghost.getGatewayPort()}`;
 
         logging.info(`${this.mode} environment global setup complete`);
+        return {baseUrl, cacheHit};
+    }
+
+    /**
+     * Persist a reusable DB snapshot after global user/role setup is complete.
+     */
+    async createSnapshot(): Promise<void> {
+        await this.mysql.createSnapshot('ghost_e2e_base');
     }
 
     /**
@@ -89,7 +110,7 @@ export class EnvironmentManager {
         }
 
         logging.info(`Starting ${this.mode} environment global teardown...`);
-        await this.cleanupResources();
+        await this.cleanupResources({deleteSnapshot: this.isCI()});
         logging.info(`${this.mode} environment global teardown complete`);
     }
 
@@ -133,15 +154,60 @@ export class EnvironmentManager {
         await this.mysql.cleanupTestDatabase(instance.database);
     }
 
-    private async cleanupResources(): Promise<void> {
+    private async cleanupResources(options: {deleteSnapshot?: boolean} = {}): Promise<void> {
+        const shouldDeleteSnapshot = options.deleteSnapshot ?? true;
+
         logging.info('Cleaning up e2e resources...');
         await this.ghost.cleanupAllContainers();
         await this.mysql.dropAllTestDatabases();
-        await this.mysql.deleteSnapshot();
+        if (shouldDeleteSnapshot) {
+            await this.mysql.deleteSnapshot();
+        }
+        this.initialized = false;
         logging.info('E2E resources cleaned up');
     }
 
     private shouldPreserveEnvironment(): boolean {
         return process.env.PRESERVE_ENV === 'true';
+    }
+
+    private isCI(): boolean {
+        return process.env.CI === 'true';
+    }
+
+    private async getCacheStatus(): Promise<CacheStatus> {
+        if (this.isCI()) {
+            return {isValid: false, reason: 'ci_always_rebuild'};
+        }
+
+        if (shouldForceFixtureReset()) {
+            return {isValid: false, reason: 'forced_fixture_reset'};
+        }
+
+        const snapshotExists = await this.mysql.snapshotExists();
+        if (!snapshotExists) {
+            return {isValid: false, reason: 'missing_snapshot'};
+        }
+
+        const missingAuthStateFiles = getMissingAuthStateFiles();
+        if (missingAuthStateFiles.length > 0) {
+            return {isValid: false, reason: 'missing_auth_state'};
+        }
+
+        const latestMigrationFileName = await getLatestMigrationFileName();
+        if (!latestMigrationFileName) {
+            return {isValid: false, reason: 'missing_migration_files'};
+        }
+
+        const latestAppliedMigration = await this.mysql.getLatestMigrationName('ghost_e2e_base');
+        if (!latestAppliedMigration) {
+            return {isValid: false, reason: 'missing_migrations_table'};
+        }
+
+        if (latestAppliedMigration !== latestMigrationFileName) {
+            return {isValid: false, reason: 'migration_mismatch'};
+        }
+
+        return {isValid: true, reason: 'cache_hit'};
     }
 }

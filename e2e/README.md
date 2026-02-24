@@ -183,6 +183,14 @@ Tests use [Project Dependencies](https://playwright.dev/docs/test-global-setup-t
 [Playwright Fixtures](https://playwright.dev/docs/test-fixtures) are defined in `helpers/playwright/fixture.ts` and provide reusable test setup/teardown logic.
 For example, a `ghostInstance` fixture creates a new Ghost instance with its own database for each test, to ensure isolation between tests.
 
+Role-based authentication is also exposed via a fixture option:
+
+```ts
+test.use({role: 'editor'});
+```
+
+Supported roles are: `owner`, `administrator`, `editor`, `author`, and `contributor`.
+
 ### Test Isolation 
 
 Test isolation is extremely important to avoid flaky tests that are hard to debug. For the most part, you shouldn't have to worry about this when writing tests, because each test gets a fresh Ghost instance with its own database.
@@ -190,19 +198,30 @@ Test isolation is extremely important to avoid flaky tests that are hard to debu
 Infrastructure (MySQL, Redis, Mailpit, Tinybird) must already be running before tests start. Use `yarn dev` or `yarn workspace @tryghost/e2e infra:up`.
 
 Global setup (`tests/global.setup.ts`) does:
-- Cleans up e2e containers and test databases
-- Creates a base database, starts Ghost, waits for health, snapshots the DB
+- Validates local fixture cache package (snapshot + role auth states)
+- On cache miss: recreates base DB, creates owner + staff users, stores role auth state files, snapshots DB
+- On cache hit (local only): skips fixture regeneration and reuses cached package
+- In CI: always rebuilds fixture package
 
 Per-test (`helpers/playwright/fixture.ts`) does:
 - Clones a new database from the snapshot
 - Restarts Ghost with the new database and waits for readiness
+- Opens an authenticated browser context using the selected role storage state
 
 Global teardown (`tests/global.teardown.ts`) does:
 - Cleans up e2e containers and test databases (infra services stay running)
+- Keeps local snapshot cache for reuse across sessions
+- Deletes snapshot in CI
 
 Modes:
 - Dev mode: Ghost mounts source code and proxies assets to host dev servers
 - Build mode: Ghost uses a prebuilt image and serves assets from `/content/files`
+
+You can force a full local fixture package reset by setting:
+
+```bash
+E2E_FORCE_FIXTURE_RESET=1 yarn test
+```
 
 ### Best Practices
 
