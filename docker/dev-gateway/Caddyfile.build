@@ -11,6 +11,17 @@
         format console
     }
 
+    # Ghost API with canonical Origin to keep admin session origin stable across worker ports
+    handle /ghost/api/* {
+        reverse_proxy {env.GHOST_BACKEND} {
+            header_up Host {host}
+            header_up Origin http://localhost:2368
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto https
+        }
+    }
+
     # Analytics API - proxy to analytics service
     # Handles paths like /.ghost/analytics/* or /blog/.ghost/analytics/*
     @analytics_paths path_regexp analytics_match ^(.*)/\.ghost/analytics(.*)$
@@ -28,6 +39,7 @@
     handle {
         reverse_proxy {env.GHOST_BACKEND} {
             header_up Host {host}
+            header_up Origin http://localhost:2368
             header_up X-Real-IP {remote_host}
             header_up X-Forwarded-For {remote_host}
             header_up X-Forwarded-Proto https
