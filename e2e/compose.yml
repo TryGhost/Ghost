@@ -51,7 +51,7 @@ services:
         condition: service_healthy
 
   analytics:
-    image: ghost/traffic-analytics:1.0.44
+    image: ghost/traffic-analytics:1.0.97
     platform: linux/amd64
     command: ["node", "--enable-source-maps", "dist/server.js"]
     entrypoint: [ "/app/entrypoint.sh" ]
