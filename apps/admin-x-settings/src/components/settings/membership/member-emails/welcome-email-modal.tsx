@@ -85,7 +85,7 @@ interface EmailPreviewEmailHeaderProps {
 
 const EmailPreviewEmailHeader: React.FC<EmailPreviewEmailHeaderProps> = ({children, className}) => (
     <div className={cn(
-        'mx-auto w-full max-w-[740px] rounded-t-lg border border-b-0 border-gray-200 bg-white px-6 py-4 transition-[max-width,padding] duration-300 ease-out motion-reduce:transition-none dark:border-gray-900 dark:bg-gray-950',
+        'mx-auto w-full max-w-[780px] rounded-t-lg border border-b-0 border-gray-200 bg-white px-6 py-4 transition-[max-width,padding] duration-300 ease-out motion-reduce:transition-none dark:border-grey-900 dark:bg-grey-975',
         className
     )}>
         {children}
@@ -100,10 +100,10 @@ interface EmailPreviewBodyProps {
 
 const EmailPreviewBody: React.FC<EmailPreviewBodyProps> = ({children, className, isMobile}) => (
     <div className={cn(
-        'mx-auto rounded-b-lg border border-gray-200 bg-white shadow-sm transition-[max-width,height,padding] duration-300 ease-out motion-reduce:transition-none dark:border-gray-900 dark:bg-gray-950 dark:shadow-none',
+        'mx-auto rounded-b-lg border border-gray-200 bg-white shadow-sm transition-[max-width,height,padding] duration-300 ease-out motion-reduce:transition-none dark:border-grey-900 dark:bg-grey-975 dark:shadow-none',
         isMobile
             ? 'w-auto grow-0 max-w-[460px] aspect-[9/15] overflow-y-auto'
-            : 'w-full grow max-w-[740px] h-[clamp(0px,calc(100dvh-320px),82vh)] overflow-y-auto',
+            : 'w-full grow max-w-[780px] h-[clamp(0px,calc(100dvh-320px),82vh)] overflow-y-auto',
         className
     )}>
         {children}
@@ -437,7 +437,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                         <div
                             className={cn(
                                 deviceSize === 'desktop'
-                                    ? 'mx-auto w-full max-w-[640px] pb-8 pt-10 transition-[max-width,padding] duration-300 ease-out motion-reduce:transition-none'
+                                    ? 'mx-auto w-full max-w-[600px] pb-8 pt-10 transition-[max-width,padding] duration-300 ease-out motion-reduce:transition-none'
                                     : deviceSize === 'mobile'
                                         ? 'mx-auto w-full max-w-[440px] px-2 py-8 transition-[max-width,padding] duration-300 ease-out motion-reduce:transition-none'
                                         : 'p-8'
