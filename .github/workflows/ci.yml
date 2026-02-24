@@ -1269,68 +1269,22 @@ jobs:
           GHOST_E2E_BASE_IMAGE: ${{ steps.load.outputs.image-tag }}
         run: yarn workspace @tryghost/e2e build:docker
 
-      - name: Pull build mode gateway image
-        run: docker pull caddy:2-alpine
-
-      - name: Start E2E infra
-        run: yarn workspace @tryghost/e2e infra:up
-
-      - name: Fetch Tinybird config
-        run: yarn workspace @tryghost/e2e tinybird:fetch-config
-
-      - name: Get Playwright version
-        id: playwright
-        run: |
-          PLAYWRIGHT_VERSION=$(node -p 'require("./e2e/package.json").devDependencies["@playwright/test"]')
-          echo "version=$PLAYWRIGHT_VERSION" >> "$GITHUB_OUTPUT"
-
-      - name: Pull Playwright image
-        run: docker pull mcr.microsoft.com/playwright:v${{ steps.playwright.outputs.version }}-noble
+      - name: Prepare E2E build-mode runtime
+        run: bash ./e2e/scripts/prepare-ci-e2e-build-mode.sh
 
       - name: Run e2e tests in Playwright container
         run: |
-          docker run --rm --network host --ipc host \
-            -v /var/run/docker.sock:/var/run/docker.sock \
-            -v "${{ github.workspace }}:${{ github.workspace }}" \
-            -w "${{ github.workspace }}/e2e" \
-            -e CI=true \
-            -e TEST_WORKERS_COUNT=1 \
-            -e GHOST_E2E_MODE=build \
-            -e GHOST_E2E_IMAGE=ghost-e2e:local \
-            mcr.microsoft.com/playwright:v${{ steps.playwright.outputs.version }}-noble \
-            yarn test:all --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }} --retries=2
+          TEST_WORKERS_COUNT=1 \
+          GHOST_E2E_MODE=build \
+          GHOST_E2E_IMAGE=ghost-e2e:local \
+          bash ./e2e/scripts/run-playwright-ci.sh \
+            ${{ matrix.shardIndex }} \
+            ${{ matrix.shardTotal }} \
+            2
 
       - name: Dump E2E docker logs
         if: failure()
-        run: |
-          echo "::group::docker ps -a"
-          docker ps -a --format 'table {{.Names}}\t{{.Image}}\t{{.Status}}'
-          echo "::endgroup::"
-
-          dump_container_logs() {
-            local pattern="$1"
-            local label="$2"
-            local found=0
-
-            while IFS= read -r container_name; do
-              if [ -z "$container_name" ]; then
-                continue
-              fi
-
-              found=1
-              echo "::group::${label}: ${container_name}"
-              docker inspect "$container_name" --format 'State={{json .State}}' || true
-              docker logs --tail=500 "$container_name" || true
-              echo "::endgroup::"
-            done < <(docker ps -a --format '{{.Names}}' | grep -E "$pattern" || true)
-
-            if [ "$found" -eq 0 ]; then
-              echo "No containers matched ${label} pattern: ${pattern}"
-            fi
-          }
-
-          dump_container_logs '^ghost-e2e-worker-' 'Ghost worker'
-          dump_container_logs '^ghost-e2e-gateway-' 'E2E gateway'
+        run: bash ./e2e/scripts/dump-e2e-docker-logs.sh
 
       - name: Stop E2E infra
         if: always()

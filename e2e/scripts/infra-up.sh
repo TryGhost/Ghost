@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+
+cd "$REPO_ROOT"
+
+docker compose -f compose.dev.yaml -f compose.dev.analytics.yaml up -d --wait \
+  mysql redis mailpit tinybird-local tb-cli analytics
+
+node "$REPO_ROOT/e2e/scripts/sync-tinybird-state.mjs"
