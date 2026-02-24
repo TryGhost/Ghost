@@ -10,6 +10,11 @@ const sinon = require('sinon');
 const errors = require('./fixtures/errors');
 
 describe('Limit Service', function () {
+    it('is exported via the package index', function () {
+        const LimitServiceFromIndex = require('../index');
+        assert.equal(LimitServiceFromIndex, LimitService);
+    });
+
     describe('Lodash Template', function () {
         it('Does not get clobbered by this lib', function () {
             require('../lib/limit');
@@ -360,6 +365,28 @@ describe('Limit Service', function () {
                 should.fail(limitService, 'Should have errored');
             } catch (err) {
                 err.message.should.eql(`Attempted to check an allowlist limit without a value`);
+            }
+        });
+    });
+
+    describe('checkWouldGoOverLimit', function () {
+        it('rethrows non-HostLimitError from errorIfWouldGoOverLimit', async function () {
+            const limitService = new LimitService();
+
+            let limits = {
+                customThemes: {
+                    allowlist: ['casper', 'dawn', 'lyra']
+                }
+            };
+
+            limitService.loadLimits({limits, errors});
+
+            try {
+                await limitService.checkWouldGoOverLimit('customThemes', {});
+                assert.fail('Should have thrown');
+            } catch (err) {
+                assert.equal(err.errorType, 'IncorrectUsageError');
+                assert.match(err.message, /allowlist limit without a value/);
             }
         });
     });

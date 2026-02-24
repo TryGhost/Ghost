@@ -73,6 +73,22 @@ describe('Limit', function () {
                 assert.equal(limit.isDisabled(), false);
             });
         });
+
+        it('uses custom error message when error is provided', async function () {
+            const config = {
+                disabled: true,
+                error: 'Custom flag limit error message'
+            };
+            const limit = new FlagLimit({name: 'limitFlaggy', config, errors});
+
+            try {
+                await limit.errorIfWouldGoOverLimit();
+                should.fail('Should have errored');
+            } catch (err) {
+                assert.equal(err.errorType, 'HostLimitError');
+                assert.equal(err.message, 'Custom flag limit error message');
+            }
+        });
     });
 
     describe('Max Limit', function () {
@@ -381,6 +397,45 @@ describe('Limit', function () {
                 sinon.assert.alwaysCalledWithExactly(config.currentCountQuery, transaction);
             });
         });
+
+        describe('generateError', function () {
+            it('includes help link when helpLink is provided', function () {
+                const helpPreservingErrors = {
+                    IncorrectUsageError: errors.IncorrectUsageError,
+                    HostLimitError: class extends errors.HostLimitError {
+                        constructor(options) {
+                            super(options);
+                            this.help = options.help;
+                        }
+                    }
+                };
+                const config = {
+                    max: 5,
+                    currentCountQuery: () => {},
+                    error: 'Over the limit of {{max}}'
+                };
+                const limit = new MaxLimit({name: 'maxy', config, helpLink: 'https://example.com/help', errors: helpPreservingErrors});
+                const error = limit.generateError(10);
+
+                assert.equal(error.errorDetails.name, 'maxy');
+                assert.equal(error.help, 'https://example.com/help');
+            });
+
+            it('falls back to default message when error template throws', function () {
+                const config = {
+                    max: 5,
+                    currentCountQuery: () => {},
+                    error: 'Limit reached',
+                    formatter: () => {
+                        throw new Error('formatter failed');
+                    }
+                };
+                const limit = new MaxLimit({name: 'maxy', config, errors});
+                const error = limit.generateError(10);
+
+                assert.equal(error.message, 'This action would exceed the maxy limit on your current plan.');
+            });
+        });
     });
 
     describe('Periodic Max Limit', function () {
@@ -671,6 +726,22 @@ describe('Limit', function () {
                 sinon.assert.alwaysCalledWith(config.currentCountQuery, transaction);
             });
         });
+
+        describe('generateError', function () {
+            it('falls back to default message when error template throws', function () {
+                const config = {
+                    maxPeriodic: 100,
+                    currentCountQuery: () => {},
+                    interval: 'month',
+                    startDate: '2021-01-01T00:00:00Z',
+                    error: '{{max.foo.bar}}'
+                };
+                const limit = new MaxPeriodicLimit({name: 'mailguard', config, errors});
+                const error = limit.generateError(50);
+
+                assert.equal(error.message, 'This action would exceed the mailguard limit on your current plan.');
+            });
+        });
     });
 
     describe('Allowlist limit', function () {
@@ -703,6 +774,72 @@ describe('Limit', function () {
             } catch (error) {
                 error.errorType.should.equal('HostLimitError');
             }
+        });
+
+        it('uses custom error message in generateError when error is provided', async function () {
+            const limit = new AllowlistLimit({name: 'test', config: {
+                allowlist: ['test', 'ok'],
+                error: 'Custom allowlist error'
+            }, errors});
+
+            try {
+                await limit.errorIfIsOverLimit({value: 'unknown value'});
+                should.fail('Should have failed');
+            } catch (error) {
+                assert.equal(error.errorType, 'HostLimitError');
+                assert.equal(error.message, 'Custom allowlist error');
+            }
+        });
+
+        describe('errorIfWouldGoOverLimit', function () {
+            it('passes for values in the allowlist', async function () {
+                const limit = new AllowlistLimit({name: 'test', config: {
+                    allowlist: ['test', 'ok']
+                }, errors});
+
+                await limit.errorIfWouldGoOverLimit({value: 'test'});
+            });
+
+            it('throws for values not in the allowlist', async function () {
+                const limit = new AllowlistLimit({name: 'test', config: {
+                    allowlist: ['test', 'ok']
+                }, errors});
+
+                try {
+                    await limit.errorIfWouldGoOverLimit({value: 'unknown'});
+                    should.fail('Should have failed');
+                } catch (error) {
+                    assert.equal(error.errorType, 'HostLimitError');
+                }
+            });
+
+            it('throws IncorrectUsageError when metadata is missing', async function () {
+                const limit = new AllowlistLimit({name: 'test', config: {
+                    allowlist: ['test', 'ok']
+                }, errors});
+
+                try {
+                    await limit.errorIfWouldGoOverLimit();
+                    should.fail('Should have failed');
+                } catch (error) {
+                    assert.equal(error.errorType, 'IncorrectUsageError');
+                    assert.match(error.message, /allowlist limit without a value/);
+                }
+            });
+
+            it('throws IncorrectUsageError when metadata.value is missing', async function () {
+                const limit = new AllowlistLimit({name: 'test', config: {
+                    allowlist: ['test', 'ok']
+                }, errors});
+
+                try {
+                    await limit.errorIfWouldGoOverLimit({});
+                    should.fail('Should have failed');
+                } catch (error) {
+                    assert.equal(error.errorType, 'IncorrectUsageError');
+                    assert.match(error.message, /allowlist limit without a value/);
+                }
+            });
         });
     });
 });

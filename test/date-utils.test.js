@@ -4,6 +4,7 @@ require('./utils');
 
 const {DateTime} = require('luxon');
 const sinon = require('sinon');
+const assert = require('node:assert').strict;
 const {lastPeriodStart} = require('../lib/date-utils');
 
 describe('Date Utils', function () {
@@ -71,6 +72,15 @@ describe('Date Utils', function () {
             const lastPeriodStartDate = lastPeriodStart('2019-04-30T01:59:42Z', 'month');
 
             lastPeriodStartDate.should.equal('2021-02-28T01:59:42.000Z');
+        });
+
+        it('throws IncorrectUsageError for unsupported interval', function () {
+            assert.throws(() => {
+                lastPeriodStart('2021-01-01T00:00:00Z', 'week');
+            }, (err) => {
+                assert.equal(err.message, 'Invalid interval specified. Only "month" value is accepted.');
+                return true;
+            });
         });
     });
 });
