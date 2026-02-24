@@ -19,4 +19,4 @@ if [[ "$MODE" != "build" ]]; then
 fi
 
 docker compose -f compose.dev.yaml -f compose.dev.analytics.yaml up -d --wait \
-  mysql redis mailpit tinybird-local tb-cli analytics
+  mysql redis mailpit tinybird-local analytics
