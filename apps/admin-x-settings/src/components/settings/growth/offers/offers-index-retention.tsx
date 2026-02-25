@@ -76,15 +76,6 @@ export const getOfferDiscount = (type: string, amount: number, cadence: string, 
     };
 };
 
-export const EmptyState: React.FC<{title?: string, description: string, buttonAction: () => void, buttonLabel: string}> = ({title = 'No offers found', description, buttonAction, buttonLabel}) => (
-    <div className='flex h-full grow flex-col items-center justify-center text-center'>
-        <Icon className='-mt-14' colorClass='text-grey-700 -mt-6' name='tags-block' size='lg' />
-        <h1 className='mt-4 text-xl'>{title}</h1>
-        <p className='mt-1.5 max-w-[420px]'>{description}</p>
-        <Button className="mt-6" color="grey" label={buttonLabel} onClick={buttonAction}></Button>
-    </div>
-);
-
 const OffersFilterPopover: React.FC<{
     showArchived: boolean;
     setShowArchived: (show: boolean) => void;
@@ -215,12 +206,10 @@ const RetentionOfferRow: React.FC<{
 export const OffersIndexModal: React.FC = () => {
     const modal = useModal();
     const {updateRoute} = useRouting();
-    const {data: {offers: allOffers = []} = {}, isFetching: isFetchingOffers} = useBrowseOffers();
+    const {data: {offers: allOffers = []} = {}} = useBrowseOffers();
     const {data: {tiers: allTiers} = {}} = useBrowseTiers();
     const signupOffers = allOffers.filter(offer => offer.redemption_type === 'signup');
     const retentionOffers = getRetentionOffers(allOffers);
-    const activeRetentionOffers = retentionOffers.filter(o => o.status === 'active');
-
     const {sortingState, setSortingState} = useSortingState();
     const offersSorting = sortingState?.find(sorting => sorting.type === 'offers');
 
@@ -288,8 +277,6 @@ export const OffersIndexModal: React.FC = () => {
         const offerTier = allTiers?.find(tier => tier.id === offer?.tier?.id);
         return offer.status === 'archived' || (offerTier && offerTier.active === false);
     };
-
-    const hasNoContent = filteredSignupOffers.length === 0 && activeRetentionOffers.length === 0;
 
     const buttons: ButtonProps[] = [
         {
@@ -405,14 +392,7 @@ export const OffersIndexModal: React.FC = () => {
         width={1140}
     >
         <div className='flex h-full flex-col pt-8'>
-            {hasNoContent && !isFetchingOffers ?
-                <EmptyState
-                    buttonAction={() => updateRoute('offers/new')}
-                    buttonLabel='Create an offer'
-                    description='Grow your audience with discounts or free trials.'
-                /> :
-                listLayoutOutput
-            }
+            {listLayoutOutput}
         </div>
     </Modal>;
 };
