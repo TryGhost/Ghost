@@ -43,8 +43,8 @@ ENV portal__url=/ghost/assets/portal/portal.min.js \
     announcementBar__url=/ghost/assets/announcement-bar/announcement-bar.min.js
 
 # Source code will be mounted from host at /home/ghost/ghost/core
-# This allows node --watch to pick up file changes for hot-reload
+# This allows the Ghost dev script to pick up file changes for hot-reload
 WORKDIR /home/ghost/ghost/core
 
 ENTRYPOINT ["/home/ghost/entrypoint.sh"]
-CMD ["node", "--watch", "--import=tsx", "index.js"]
+CMD ["yarn", "dev"]

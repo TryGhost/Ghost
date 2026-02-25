@@ -22,7 +22,7 @@
   "scripts": {
     "archive": "npm pack",
     "pack:standalone": "rm -rf package ghost-*.tgz && npm pack && tar -xzf ghost-*.tgz && cp ../../yarn.lock package/ && rm ghost-*.tgz",
-    "dev": "node --watch --import=tsx index.js",
+    "dev": "nodemon --watch . --watch ../i18n --watch ../parse-email-address --ext js,mjs,cjs,json,ts,tsx --exec \"node --import=tsx\" index.js",
     "build:assets": "yarn build:assets:css && yarn build:assets:js",
     "build:assets:js": "node bin/minify-assets.js",
     "build:assets:css": "postcss core/frontend/public/ghost.css --no-map --use cssnano -o core/frontend/public/ghost.min.css",
@@ -253,6 +253,7 @@
     "mocha-slow-test-reporter": "0.1.2",
     "mock-knex": "TryGhost/mock-knex#68948e11b0ea4fe63456098dfdc169bea7f62009",
     "nock": "13.5.6",
+    "nodemon": "3.1.11",
     "papaparse": "5.3.2",
     "parse-prometheus-text-format": "1.1.1",
     "postcss": "8.5.6",
