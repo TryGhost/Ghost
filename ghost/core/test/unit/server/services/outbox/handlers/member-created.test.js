@@ -7,9 +7,9 @@ const {captureLoggerOutput} = require('../../../../../utils/logging-utils');
 describe('member-created handler', function () {
     let handler;
     let memberWelcomeEmailServiceStub;
-    let loggingStub;
     let AutomatedEmailStub;
     let AutomatedEmailRecipientStub;
+    let logCapture;
 
     beforeEach(function () {
         handler = rewire('../../../../../../core/server/services/outbox/handlers/member-created.js');
@@ -20,11 +20,6 @@ describe('member-created handler', function () {
             }
         };
 
-        loggingStub = {
-            warn: sinon.stub(),
-            error: sinon.stub()
-        };
-
         AutomatedEmailStub = {
             findOne: sinon.stub().resolves({id: 'ae123'})
         };
@@ -33,13 +28,16 @@ describe('member-created handler', function () {
             add: sinon.stub().resolves()
         };
 
+        logCapture = captureLoggerOutput(logging);
+
         handler.__set__('memberWelcomeEmailService', memberWelcomeEmailServiceStub);
-        handler.__set__('logging', loggingStub);
+        handler.__set__('logging', logging);
         handler.__set__('AutomatedEmail', AutomatedEmailStub);
         handler.__set__('AutomatedEmailRecipient', AutomatedEmailRecipientStub);
     });
 
     afterEach(function () {
+        logCapture.restore();
         sinon.restore();
     });
 
@@ -57,7 +55,8 @@ describe('member-created handler', function () {
         });
 
         sinon.assert.calledOnce(memberWelcomeEmailServiceStub.api.send);
-        sinon.assert.calledOnce(loggingStub.error);
+        const errorLog = logCapture.output.find(log => log.level === 50 && log.message?.includes('Failed to track automated email send'));
+        assert.ok(errorLog);
     });
 
     it('logs error when tracking fails', async function () {
@@ -74,37 +73,29 @@ describe('member-created handler', function () {
             }
         });
 
-        sinon.assert.calledOnce(loggingStub.error);
-        const errorCall = loggingStub.error.getCall(0);
-        assert.ok(errorCall.args[0].message.includes('Failed to track automated email send'));
-        assert.equal(errorCall.args[0].err, dbError);
+        const errorLog = logCapture.output.find(log => log.level === 50 && log.message?.includes('Failed to track automated email send'));
+        assert.ok(errorLog);
+        assert.equal(errorLog.msg, dbError.message);
     });
 
     it('logs warning when status has no slug mapping', async function () {
-        const capture = captureLoggerOutput(logging);
-        handler.__set__('logging', logging);
+        await handler.handle({
+            payload: {
+                memberId: 'member123',
+                uuid: 'uuid-123',
+                email: 'test@example.com',
+                name: 'Test Member',
+                status: 'comped'
+            }
+        });
 
-        try {
-            await handler.handle({
-                payload: {
-                    memberId: 'member123',
-                    uuid: 'uuid-123',
-                    email: 'test@example.com',
-                    name: 'Test Member',
-                    status: 'comped'
-                }
-            });
-
-            sinon.assert.calledOnce(memberWelcomeEmailServiceStub.api.send);
-            const warningLog = capture.output.find(log => log.level === 40 && log.msg === 'No automated email slug found for member status');
-            assert.ok(warningLog);
-            assert.deepEqual(warningLog.system, {
-                event: 'outbox.member_created.no_slug_mapping',
-                member_status: 'comped'
-            });
-            sinon.assert.notCalled(AutomatedEmailRecipientStub.add);
-        } finally {
-            capture.restore();
-        }
+        sinon.assert.calledOnce(memberWelcomeEmailServiceStub.api.send);
+        const warningLog = logCapture.output.find(log => log.level === 40 && log.msg === 'No automated email slug found for member status');
+        assert.ok(warningLog);
+        assert.deepEqual(warningLog.system, {
+            event: 'outbox.member_created.no_slug_mapping',
+            member_status: 'comped'
+        });
+        sinon.assert.notCalled(AutomatedEmailRecipientStub.add);
     });
 });
