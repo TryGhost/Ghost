@@ -178,7 +178,7 @@ export function planClickHandler({event, el, errorEl, siteUrl, site, member, cli
             })
         }).then(function (res) {
             if (!res.ok) {
-                throw new Error(t('Could not create stripe checkout session'));
+                throw new Error(t('Could not create Stripe checkout session'));
             }
             return res.json();
         });
