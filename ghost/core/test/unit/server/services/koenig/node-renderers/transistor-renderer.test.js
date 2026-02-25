@@ -21,11 +21,18 @@ describe('services/koenig/node-renderers/transistor-renderer', function () {
     }
 
     describe('web', function () {
-        it('renders iframe with URL-encoded %7Buuid%7D placeholder', function () {
+        it('renders iframe with URL-encoded %7Buuid%7D placeholder in data-src', function () {
             const result = renderForWeb(getTestData());
 
-            assert.ok(result.html.includes('src="https://partner.transistor.fm/ghost/embed/%7Buuid%7D'));
+            assert.ok(result.html.includes('data-src="https://partner.transistor.fm/ghost/embed/%7Buuid%7D'));
             assert.ok(result.html.includes('data-kg-transistor-embed'));
+        });
+
+        it('does not set src directly on the iframe', function () {
+            const result = renderForWeb(getTestData());
+
+            // iframe should use data-src, not src - the inline script sets src after detecting background
+            assert.ok(!result.html.includes(' src="https://partner.transistor.fm'));
         });
 
         it('includes ctx param', function () {
@@ -39,7 +46,8 @@ describe('services/koenig/node-renderers/transistor-renderer', function () {
 
             assert.ok(result.html.includes('<script>'));
             assert.ok(result.html.includes('getComputedStyle'));
-            assert.ok(result.html.includes('background'));
+            assert.ok(result.html.includes('data-src'));
+            assert.ok(result.html.includes('colorToRgb'));
         });
 
         it('matches snapshot for default test data', function () {

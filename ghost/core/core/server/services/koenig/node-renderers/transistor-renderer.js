@@ -31,7 +31,8 @@ function frontendTemplate(node, document, options) {
     iframe.setAttribute('frameborder', 'no');
     iframe.setAttribute('scrolling', 'no');
     iframe.setAttribute('seamless', '');
-    iframe.setAttribute('src', embedUrl.toString());
+    iframe.setAttribute('data-src', embedUrl.toString());
+    iframe.setAttribute('data-kg-transistor-embed', '');
     figure.appendChild(iframe);
 
     // Use innerHTML to inject script - jsdom's createElement('script') doesn't serialize textContent in outerHTML
@@ -95,40 +96,52 @@ function buildSrcBackgroundScript() {
             return;
         }
 
-        const el = script.parentElement.querySelector('iframe');
+        const el = script.parentElement.querySelector('iframe[data-src]');
         if (!el) {
             return;
         }
 
-        function isTransparent(bg) {
-            if (!bg || bg === 'transparent') {
-                return true;
-            }
-            const m = bg.match(/[\d.]+/g);
-            return m && m.length >= 4 && parseFloat(m[3]) === 0;
+        const baseSrc = el.getAttribute('data-src');
+
+        function colorToRgb(color) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1;
+            canvas.height = 1;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = color;
+            ctx.fillRect(0, 0, 1, 1);
+            const [r, g, b, a] = ctx.getImageData(0, 0, 1, 1).data;
+            return {r, g, b, a};
         }
 
         let node = el.parentElement;
         let bg;
         while (node) {
             bg = window.getComputedStyle(node).backgroundColor;
-            if (!isTransparent(bg)) {
-                break;
+            if (bg && bg !== 'transparent') {
+                const {a} = colorToRgb(bg);
+                if (a > 0) {
+                    break;
+                }
             }
             node = node.parentElement;
         }
 
-        if (!node || isTransparent(bg)) {
+        if (!node || !bg || bg === 'transparent') {
+            el.src = baseSrc;
             return;
         }
 
-        const m = bg.match(/\d+/g);
-        if (m && m.length >= 3) {
-            const hex = m.slice(0, 3).map(c => parseInt(c).toString(16).padStart(2, '0')).join('');
-            const u = new URL(el.src);
-            u.searchParams.set('background', hex);
-            el.src = u.toString();
+        const {r, g, b, a} = colorToRgb(bg);
+        if (a === 0) {
+            el.src = baseSrc;
+            return;
         }
+
+        const hex = [r, g, b].map(c => c.toString(16).padStart(2, '0')).join('');
+        const u = new URL(baseSrc);
+        u.searchParams.set('background', hex);
+        el.src = u.toString();
     }
     /* eslint-enable no-undef */
 
