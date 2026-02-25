@@ -61,12 +61,16 @@ const buildUrl = (baseHref: string, key: string, value: string): string => {
     return result.toString();
 };
 
+const encodeRecipientForGmailUrl = (recipient: string) => (
+    encodeURIComponent(recipient).replaceAll('%40', '@')
+);
+
 const PROVIDERS: ReadonlyArray<Provider> = [
     {
         name: 'gmail',
         domains: ['gmail.com', 'googlemail.com', 'google.com'],
         getDesktopLink: ({recipient, sender}) => (
-            `https://mail.google.com/mail/u/${encodeURIComponent(
+            `https://mail.google.com/mail/u/${encodeRecipientForGmailUrl(
                 recipient
             )}/#search/from%3A(${encodeURIComponent(
                 sender
