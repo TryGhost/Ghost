@@ -22,7 +22,7 @@
   "scripts": {
     "archive": "npm pack",
     "pack:standalone": "rm -rf package ghost-*.tgz && npm pack && tar -xzf ghost-*.tgz && cp ../../yarn.lock package/ && rm ghost-*.tgz",
-    "dev": "nodemon --watch . --watch ../i18n --watch ../parse-email-address --ext js,mjs,cjs,json,ts,tsx --exec \"node --import=tsx\" index.js",
+    "dev": "nodemon index.js",
     "build:assets": "yarn build:assets:css && yarn build:assets:js",
     "build:assets:js": "node bin/minify-assets.js",
     "build:assets:css": "postcss core/frontend/public/ghost.css --no-map --use cssnano -o core/frontend/public/ghost.min.css",
