@@ -57,7 +57,7 @@ describe('ResourceService', function () {
                 new URL('https://site.com/blah/post-resource')
             );
 
-            assert(getResource.calledWithExactly('/post-resource'));
+            sinon.assert.calledWithExactly(getResource, '/post-resource');
 
             assert.equal(result.type, 'post');
             assert.equal(result.id.toHexString(), '63ce473f992390b739b00b01');
@@ -88,7 +88,7 @@ describe('ResourceService', function () {
                 new URL('https://site.com/blah/tag-resource')
             );
 
-            assert(getResource.calledWithExactly('/tag-resource'));
+            sinon.assert.calledWithExactly(getResource, '/tag-resource');
 
             assert.equal(result.type, null);
             assert.equal(result.id, null);
@@ -119,7 +119,7 @@ describe('ResourceService', function () {
                 new URL('https://site.com/blah/no-resource')
             );
 
-            assert(getResource.calledWithExactly('/no-resource'));
+            sinon.assert.calledWithExactly(getResource, '/no-resource');
 
             assert.equal(result.type, null);
             assert.equal(result.id, null);

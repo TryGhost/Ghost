@@ -51,9 +51,9 @@ describe('Unit: models/settings', function () {
                 type: 'string'
             })
                 .then(() => {
-                    assert.equal(eventSpy.calledTwice, true);
-                    assert.equal(eventSpy.firstCall.calledWith('settings.added'), true);
-                    assert.equal(eventSpy.secondCall.calledWith('settings.description.added'), true);
+                    sinon.assert.calledTwice(eventSpy);
+                    sinon.assert.calledWith(eventSpy.firstCall, 'settings.added');
+                    sinon.assert.calledWith(eventSpy.secondCall, 'settings.description.added');
                 });
         });
 
@@ -75,9 +75,9 @@ describe('Unit: models/settings', function () {
                 value: 'edited value'
             })
                 .then(() => {
-                    assert.equal(eventSpy.calledTwice, true);
-                    assert.equal(eventSpy.firstCall.calledWith('settings.edited'), true);
-                    assert.equal(eventSpy.secondCall.calledWith('settings.description.edited'), true);
+                    sinon.assert.calledTwice(eventSpy);
+                    sinon.assert.calledWith(eventSpy.firstCall, 'settings.edited');
+                    sinon.assert.calledWith(eventSpy.secondCall, 'settings.description.edited');
                 });
         });
     });

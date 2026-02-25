@@ -99,7 +99,7 @@ describe('IncomingRecommendationController', function () {
                     data: {},
                     options: {}
                 });
-                assert(listSpy.calledOnce);
+                sinon.assert.calledOnce(listSpy);
                 const args = listSpy.getCall(0).args[0];
                 assert.deepEqual(args.limit, 5);
             });
@@ -111,7 +111,7 @@ describe('IncomingRecommendationController', function () {
                         limit: 100
                     }
                 });
-                assert(listSpy.calledOnce);
+                sinon.assert.calledOnce(listSpy);
                 const args = listSpy.getCall(0).args[0];
                 assert.deepEqual(args.limit, 100);
             });
@@ -136,7 +136,7 @@ describe('IncomingRecommendationController', function () {
                     options: {
                     }
                 });
-                assert(listSpy.calledOnce);
+                sinon.assert.calledOnce(listSpy);
                 const args = listSpy.getCall(0).args[0];
                 assert.deepEqual(args.page, 1);
             });
@@ -148,7 +148,7 @@ describe('IncomingRecommendationController', function () {
                         page: 2
                     }
                 });
-                assert(listSpy.calledOnce);
+                sinon.assert.calledOnce(listSpy);
                 const args = listSpy.getCall(0).args[0];
                 assert.deepEqual(args.page, 2);
             });

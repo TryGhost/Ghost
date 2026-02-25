@@ -35,23 +35,23 @@ describe('frontendCaching', function () {
     it('should set cache control to private if the blog is private', function () {
         res.isPrivateBlog = true;
         middleware(req, res, next);
-        assert(res.set.calledOnce);
-        assert.ok(res.set.calledWith({'Cache-Control': testUtils.cacheRules.private}));
+        sinon.assert.calledOnce(res.set);
+        sinon.assert.calledWith(res.set, {'Cache-Control': testUtils.cacheRules.private});
     });
 
     it('should set cache control to private if the request is made by a member', function () {
         req.member = true;
         middleware(req, res, next);
-        assert.ok(res.set.calledOnce);
-        assert.ok(res.set.calledWith({'Cache-Control': testUtils.cacheRules.private}));
+        sinon.assert.calledOnce(res.set);
+        sinon.assert.calledWith(res.set, {'Cache-Control': testUtils.cacheRules.private});
     });
 
     it('should set cache control to public if the site is public and the request is not made by a member', function () {
         req.member = undefined;
         res.isPrivateBlog = undefined;
         middleware(req, res, next);
-        assert.ok(res.set.calledOnce);
-        assert.ok(res.set.calledWith({'Cache-Control': testUtils.cacheRules.public}));
+        sinon.assert.calledOnce(res.set);
+        sinon.assert.calledWith(res.set, {'Cache-Control': testUtils.cacheRules.public});
     });
 
     it('should set cache control to public if the request is made by a member and caching members content is enabled', function () {
@@ -61,16 +61,16 @@ describe('frontendCaching', function () {
         };
         res.isPrivateBlog = undefined;
         middleware(req, res, next);
-        assert.equal(res.set.callCount, 2);
-        assert.ok(res.set.calledWith({'Cache-Control': testUtils.cacheRules.public}));
-        assert.ok(res.set.calledWith({'X-Member-Cache-Tier': 'freeTierId'}));
+        sinon.assert.calledTwice(res.set);
+        sinon.assert.calledWith(res.set, {'Cache-Control': testUtils.cacheRules.public});
+        sinon.assert.calledWith(res.set, {'X-Member-Cache-Tier': 'freeTierId'});
     });
 
     it('should set cache control to no-cache if the path starts with /p/', function () {
         req.path = '/p/test';
         middleware(req, res, next);
-        assert.equal(res.set.callCount, 1);
-        assert.ok(res.set.calledWith({'Cache-Control': testUtils.cacheRules.noCache}));
+        sinon.assert.calledOnce(res.set);
+        sinon.assert.calledWith(res.set, {'Cache-Control': testUtils.cacheRules.noCache});
     });
 
     describe('calculateMemberTier', function () {

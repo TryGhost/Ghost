@@ -258,7 +258,7 @@ describe('Unit: models/base/plugins/actions', function () {
 
                 TestModel.prototype.addAction.call(testModel, testModel, 'edited', options);
 
-                assert.equal(getActionStub.called, false);
+                sinon.assert.notCalled(getActionStub);
             });
         });
 

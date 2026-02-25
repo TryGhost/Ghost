@@ -63,7 +63,7 @@ describe('ContentFileImporter', function () {
 
         await imageImporter.doImport(inputData.images);
 
-        assert.equal(storageApi.save.calledTwice, true);
+        sinon.assert.calledTwice(storageApi.save);
     });
 
     it('does import the files correctly', async function () {
@@ -77,7 +77,7 @@ describe('ContentFileImporter', function () {
 
         await imageImporter.doImport(inputData.files);
 
-        assert.equal(storageApi.save.calledOnce, true);
+        sinon.assert.calledOnce(storageApi.save);
         assert.equal(storageApi.save.args[0][0].name, 'best-memes.pdf');
         assert.equal(storageApi.save.args[0][0].newPath, '/content/files/best-memes.pdf');
     });

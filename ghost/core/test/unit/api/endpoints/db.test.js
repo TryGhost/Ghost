@@ -1,4 +1,3 @@
-const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const models = require('../../../../core/server/models');
 const dbController = require('../../../../core/server/api/endpoints/db');
@@ -38,10 +37,10 @@ describe('DB controller', function () {
             await dbController.importContent.query(frame);
 
             // Verify the user's email was used
-            assert(mockUser.get.calledWith('email'));
-            assert(importer.importFromFile.calledWith(frame.file, sinon.match({
+            sinon.assert.calledWith(mockUser.get, 'email');
+            sinon.assert.calledWith(importer.importFromFile, frame.file, sinon.match({
                 user: {email: 'user@example.com'}
-            })));
+            }));
         });
 
         it('uses owner email fallback when frame.user is missing', async function () {
@@ -58,11 +57,11 @@ describe('DB controller', function () {
             await dbController.importContent.query(frame);
 
             // Verify the owner fallback path was used
-            assert(models.User.getOwnerUser.calledOnce);
-            assert(mockOwnerUser.get.calledWith('email'));
-            assert(importer.importFromFile.calledWith(frame.file, sinon.match({
+            sinon.assert.calledOnce(models.User.getOwnerUser);
+            sinon.assert.calledWith(mockOwnerUser.get, 'email');
+            sinon.assert.calledWith(importer.importFromFile, frame.file, sinon.match({
                 user: {email: 'owner@example.com'}
-            })));
+            }));
         });
     });
 });

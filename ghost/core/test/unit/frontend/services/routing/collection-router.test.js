@@ -47,11 +47,11 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             assert.deepEqual(collectionRouter.templates, []);
             assert.equal(collectionRouter.getPermalinks().getValue(), '/:slug/');
 
-            assert.equal(routerCreatedSpy.calledOnce, true);
-            assert.equal(routerCreatedSpy.calledWith(collectionRouter), true);
+            sinon.assert.calledOnce(routerCreatedSpy);
+            sinon.assert.calledWith(routerCreatedSpy, collectionRouter);
 
-            assert.equal(mountRouteSpy.callCount, 3);
-            assert.equal(express.Router.param.callCount, 2);
+            sinon.assert.calledThrice(mountRouteSpy);
+            sinon.assert.calledTwice(express.Router.param);
 
             // parent route
             assert.equal(mountRouteSpy.args[0][0], '/');
@@ -65,7 +65,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             assert.equal(mountRouteSpy.args[2][0], '/:slug/:options(edit)?/');
             assert.equal(mountRouteSpy.args[2][1], controllers.entry);
 
-            assert.equal(mountRouterSpy.callCount, 1);
+            sinon.assert.calledOnce(mountRouterSpy);
             assert.equal(mountRouterSpy.args[0][0], '/');
             assert.equal(mountRouterSpy.args[0][1], collectionRouter.rssRouter.router());
         });
@@ -94,10 +94,10 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             assert.deepEqual(collectionRouter.templates, []);
             assert.equal(collectionRouter.getPermalinks().getValue(), '/blog/:year/:slug/');
 
-            assert.equal(routerCreatedSpy.calledOnce, true);
-            assert.equal(routerCreatedSpy.calledWith(collectionRouter), true);
+            sinon.assert.calledOnce(routerCreatedSpy);
+            sinon.assert.calledWith(routerCreatedSpy, collectionRouter);
 
-            assert.equal(mountRouteSpy.callCount, 3);
+            sinon.assert.calledThrice(mountRouteSpy);
 
             // parent route
             assert.equal(mountRouteSpy.args[0][0], '/blog/');
@@ -111,7 +111,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             assert.equal(mountRouteSpy.args[2][0], '/blog/:year/:slug/:options(edit)?/');
             assert.equal(mountRouteSpy.args[2][1], controllers.entry);
 
-            assert.equal(mountRouterSpy.callCount, 1);
+            sinon.assert.calledOnce(mountRouterSpy);
             assert.equal(mountRouterSpy.args[0][0], '/blog/');
             assert.equal(mountRouterSpy.args[0][1], collectionRouter.rssRouter.router());
         });
@@ -136,7 +136,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
 
             collectionRouter._prepareEntriesContext(req, res, next);
 
-            assert.equal(next.calledOnce, true);
+            sinon.assert.calledOnce(next);
             assert.deepEqual(res.routerOptions, {
                 type: 'collection',
                 filter: undefined,
@@ -164,7 +164,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
 
             collectionRouter._prepareEntriesContext(req, res, next);
 
-            assert.equal(next.calledOnce, true);
+            sinon.assert.calledOnce(next);
             assert.deepEqual(res.routerOptions, {
                 type: 'collection',
                 filter: undefined,

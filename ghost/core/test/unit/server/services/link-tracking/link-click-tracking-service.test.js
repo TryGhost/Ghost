@@ -20,9 +20,9 @@ describe('LinkClickTrackingService', function () {
                 }
             });
             service.init();
-            assert.ok(subscribe.calledOnce);
+            sinon.assert.calledOnce(subscribe);
             service.init();
-            assert.ok(subscribe.calledOnce);
+            sinon.assert.calledOnce(subscribe);
         });
     });
 
@@ -66,7 +66,7 @@ describe('LinkClickTrackingService', function () {
             assert.equal(updatedUrl.toString(), 'https://example.com/r/uniqueslug');
 
             // Check getSlugUrl called
-            assert(getSlugUrl.calledOnce);
+            sinon.assert.calledOnce(getSlugUrl);
 
             // Check save called
             assert(
@@ -102,7 +102,7 @@ describe('LinkClickTrackingService', function () {
             assert.equal(updatedUrl.toString(), 'https://example.com/r/uniqueslug?m=123');
 
             // Check getSlugUrl called
-            assert(getSlugUrl.calledOnce);
+            sinon.assert.calledOnce(getSlugUrl);
 
             // Check save called
             assert(
@@ -137,7 +137,7 @@ describe('LinkClickTrackingService', function () {
             });
 
             service.subscribe();
-            assert(!save.called);
+            sinon.assert.notCalled(save);
         });
 
         it('Tracks redirects with a member id', async function () {
@@ -163,7 +163,7 @@ describe('LinkClickTrackingService', function () {
             });
 
             service.subscribe();
-            assert(save.calledOnce);
+            sinon.assert.calledOnce(save);
 
             assert.equal(save.firstCall.args[0].member_uuid, 'memberId');
             assert.equal(save.firstCall.args[0].link_id, linkId);
@@ -246,7 +246,7 @@ describe('LinkClickTrackingService', function () {
 
             const result = await service.bulkEdit(data, options);
 
-            assert.equal(postLinkRepositoryStub.updateLinks.calledOnce, true);
+            sinon.assert.calledOnce(postLinkRepositoryStub.updateLinks);
             assert.deepEqual(result, {
                 successful: 0,
                 unsuccessful: 0,
@@ -295,7 +295,7 @@ describe('LinkClickTrackingService', function () {
 
             const result = await service.bulkEdit(data, options);
 
-            assert.equal(postLinkRepositoryStub.updateLinks.calledOnce, true);
+            sinon.assert.calledOnce(postLinkRepositoryStub.updateLinks);
             assert.deepEqual(result, {
                 successful: 0,
                 unsuccessful: 0,

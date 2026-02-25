@@ -97,7 +97,7 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
-                assert.equal(fn.called, true);
+                sinon.assert.called(fn);
                 const args = fn.firstCall.args[0];
                 assert(args && typeof args === 'object');
                 assert('posts' in args);
@@ -128,12 +128,12 @@ describe('{{#get}} helper', function () {
                 'authors',
                 {hash: {}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
-                assert.equal(fn.called, true);
+                sinon.assert.called(fn);
                 const args = fn.firstCall.args[0];
                 assert(args && typeof args === 'object');
                 assert('authors' in args);
                 assert.deepEqual(fn.firstCall.args[0].authors, []);
-                assert.equal(inverse.called, false);
+                sinon.assert.notCalled(inverse);
 
                 done();
             }).catch(done);
@@ -159,12 +159,12 @@ describe('{{#get}} helper', function () {
                 'newsletters',
                 {hash: {}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
-                assert.equal(fn.called, true);
+                sinon.assert.called(fn);
                 const args = fn.firstCall.args[0];
                 assert(args && typeof args === 'object');
                 assert('newsletters' in args);
                 assert.deepEqual(fn.firstCall.args[0].newsletters, []);
-                assert.equal(inverse.called, false);
+                sinon.assert.notCalled(inverse);
 
                 done();
             }).catch(done);
@@ -178,8 +178,8 @@ describe('{{#get}} helper', function () {
                 'magic',
                 {hash: {}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
-                assert.equal(fn.called, false);
-                assert.equal(inverse.calledOnce, true);
+                sinon.assert.notCalled(fn);
+                sinon.assert.calledOnce(inverse);
                 const args = inverse.firstCall.args[1];
                 assert(args && typeof args === 'object');
                 assert('data' in args);
@@ -198,8 +198,8 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {slug: 'thing!'}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
-                assert.equal(fn.called, false);
-                assert.equal(inverse.calledOnce, true);
+                sinon.assert.notCalled(fn);
+                sinon.assert.calledOnce(inverse);
                 const args = inverse.firstCall.args[1];
                 assert(args && typeof args === 'object');
                 assert('data' in args);
@@ -218,8 +218,8 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {data: locals}
             ).then(function () {
-                assert.equal(fn.called, false);
-                assert.equal(inverse.called, false);
+                sinon.assert.notCalled(fn);
+                sinon.assert.notCalled(inverse);
 
                 done();
             }).catch(done);
@@ -584,9 +584,9 @@ describe('{{#get}} helper', function () {
             );
 
             // A log message will be output
-            assert.equal(logging.warn.calledOnce, true);
+            sinon.assert.calledOnce(logging.warn);
             // The get helper will return as per usual
-            assert.equal(fn.calledOnce, true);
+            sinon.assert.calledOnce(fn);
             const args = fn.firstCall.args[0];
             assert(args && typeof args === 'object');
             assert('posts' in args);
@@ -605,9 +605,9 @@ describe('{{#get}} helper', function () {
 
             assert(result.toString().includes('data-aborted-get-helper'));
             // A log message will be output
-            assert.equal(logging.error.calledOnce, true);
+            sinon.assert.calledOnce(logging.error);
             // The get helper gets called with an empty array of results
-            assert.equal(fn.calledOnce, true);
+            sinon.assert.calledOnce(fn);
             const args = fn.firstCall.args[0];
             assert(args && typeof args === 'object');
             assert('posts' in args);
@@ -651,7 +651,7 @@ describe('{{#get}} helper', function () {
             );
 
             // Should make two API calls since deduplication is disabled
-            assert.equal(browseStub.callCount, 2);
+            sinon.assert.calledTwice(browseStub);
         });
 
         it('should deduplicate identical queries when enabled', async function () {
@@ -673,9 +673,9 @@ describe('{{#get}} helper', function () {
             );
 
             // Should only make one API call
-            assert.equal(browseStub.callCount, 1);
+            sinon.assert.calledOnce(browseStub);
             // But both calls should have rendered
-            assert.equal(fn.callCount, 2);
+            sinon.assert.calledTwice(fn);
         });
 
         it('should make separate API calls for different queries when enabled', async function () {
@@ -697,7 +697,7 @@ describe('{{#get}} helper', function () {
             );
 
             // Should make two API calls for different queries
-            assert.equal(browseStub.callCount, 2);
+            sinon.assert.calledTwice(browseStub);
         });
 
         it('should include member uuid in cache key', async function () {
@@ -720,7 +720,7 @@ describe('{{#get}} helper', function () {
             );
 
             // Should make two API calls because member context is different
-            assert.equal(browseStub.callCount, 2);
+            sinon.assert.calledTwice(browseStub);
         });
 
         it('should not cache failed API requests', async function () {
@@ -746,7 +746,7 @@ describe('{{#get}} helper', function () {
             );
 
             // Should make two API calls because first one failed
-            assert.equal(browseStub.callCount, 2);
+            sinon.assert.calledTwice(browseStub);
         });
 
         it('should work without _queryCache in data', async function () {
@@ -761,8 +761,8 @@ describe('{{#get}} helper', function () {
                 {hash: {filter: 'featured:true'}, data: locals, fn: fn, inverse: inverse}
             );
 
-            assert.equal(browseStub.callCount, 1);
-            assert.equal(fn.callCount, 1);
+            sinon.assert.calledOnce(browseStub);
+            sinon.assert.calledOnce(fn);
         });
 
         it('should deduplicate queries with same parameters in different order', async function () {
@@ -784,7 +784,7 @@ describe('{{#get}} helper', function () {
             );
 
             // Should only make one API call
-            assert.equal(browseStub.callCount, 1);
+            sinon.assert.calledOnce(browseStub);
         });
 
         it('should handle concurrent identical requests', async function () {
@@ -810,7 +810,7 @@ describe('{{#get}} helper', function () {
             );
 
             // Verify deduplication while both calls are in-flight.
-            assert.equal(browseStub.callCount, 1);
+            sinon.assert.calledOnce(browseStub);
             assert.equal(typeof resolveBrowse, 'function');
 
             if (!resolveBrowse) {
@@ -820,9 +820,9 @@ describe('{{#get}} helper', function () {
             await Promise.all([firstCall, secondCall]);
 
             // Should only make one API call even for concurrent requests
-            assert.equal(browseStub.callCount, 1);
+            sinon.assert.calledOnce(browseStub);
             // Both should have rendered
-            assert.equal(fn.callCount, 2);
+            sinon.assert.calledTwice(fn);
         });
 
         it('should not reuse the same response object instance across renders', async function () {
@@ -841,7 +841,7 @@ describe('{{#get}} helper', function () {
                 {hash: {filter: 'featured:true'}, data: locals, fn: fn, inverse: inverse}
             );
 
-            assert.equal(browseStub.callCount, 1);
+            sinon.assert.calledOnce(browseStub);
             assert.notEqual(fn.firstCall.args[0], fn.secondCall.args[0]);
         });
     });

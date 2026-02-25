@@ -89,7 +89,7 @@ describe('Local Images Storage', function () {
 
     it('should create month and year directory', function (done) {
         localFileStore.save(image).then(function () {
-            assert.equal(fsMkdirsStub.calledOnce, true);
+            sinon.assert.calledOnce(fsMkdirsStub);
             assert.equal(fsMkdirsStub.args[0][0], path.resolve('./content/images/2013/09'));
 
             done();
@@ -98,7 +98,7 @@ describe('Local Images Storage', function () {
 
     it('should copy temp file to new location', function (done) {
         localFileStore.save(image).then(function () {
-            assert.equal(fsCopyStub.calledOnce, true);
+            sinon.assert.calledOnce(fsCopyStub);
             assert.equal(fsCopyStub.args[0][0], 'tmp/123456.jpg');
             assert.equal(fsCopyStub.args[0][1], path.resolve('./content/images/2013/09/IMAGE.jpg'));
 

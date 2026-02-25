@@ -100,7 +100,7 @@ describe('SlackNotifications', function () {
                 }]
             };
 
-            assert(sendStub.calledOnce === true);
+            sinon.assert.calledOnce(sendStub);
             assert(sendStub.calledWith(expectedResult, 'https://slack-webhook.example') === true);
         });
 
@@ -168,7 +168,7 @@ describe('SlackNotifications', function () {
                 }]
             };
 
-            assert(sendStub.calledOnce === true);
+            sinon.assert.calledOnce(sendStub);
             assert(sendStub.calledWith(expectedResult, 'https://slack-webhook.example') === true);
         });
 
@@ -237,7 +237,7 @@ describe('SlackNotifications', function () {
                 }]
             };
 
-            assert(sendStub.calledOnce === true);
+            sinon.assert.calledOnce(sendStub);
             assert(sendStub.calledWith(expectedResult, 'https://slack-webhook.example') === true);
         });
 
@@ -296,7 +296,7 @@ describe('SlackNotifications', function () {
 
             await slackNotifications.send({data: 'test'}, 'https://slack-webhook.com');
             assert(loggingErrorStub.callCount === 0);
-            assert(gotStub.calledOnce === true);
+            sinon.assert.calledOnce(gotStub);
             const gotStubArgs = gotStub.getCall(0).args;
             assert.deepEqual(gotStubArgs, expectedRequestOptions);
         });

@@ -73,9 +73,9 @@ describe('Scheduling: Post Scheduler', function () {
                     setTimeout(resolve, 100);
                 });
 
-                assert.equal(adapter.schedule.called, true);
+                sinon.assert.called(adapter.schedule);
 
-                assert.equal(adapter.schedule.calledOnce, true);
+                sinon.assert.calledOnce(adapter.schedule);
 
                 assert.equal(adapter.schedule.args[0][0].time, moment(post.get('published_at')).valueOf());
                 assert(adapter.schedule.args[0][0].url.startsWith(urlUtils.urlJoin('http://scheduler.local:1111/', 'schedules', 'posts', post.get('id'), '?token=')));

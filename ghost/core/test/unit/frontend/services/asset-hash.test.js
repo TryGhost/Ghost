@@ -57,11 +57,11 @@ describe('Asset Hash Service', function () {
 
             // First call - should read file
             assetHash.getHashForFile(testFilePath);
-            assert.equal(readFileSyncSpy.callCount, 1);
+            sinon.assert.calledOnce(readFileSyncSpy);
 
             // Second call - should use cache
             assetHash.getHashForFile(testFilePath);
-            assert.equal(readFileSyncSpy.callCount, 1); // Still 1, not 2
+            sinon.assert.calledOnce(readFileSyncSpy); // Still 1, not 2
         });
 
         it('should re-read file if mtime has changed', function () {
@@ -71,7 +71,7 @@ describe('Asset Hash Service', function () {
 
             // First call
             const hash1 = assetHash.getHashForFile(testFilePath);
-            assert.equal(readFileSyncSpy.callCount, 1);
+            sinon.assert.calledOnce(readFileSyncSpy);
 
             // Simulate mtime change by stubbing statSync
             const futureTime = new Date(originalStat.mtimeMs + 1000);
@@ -82,7 +82,7 @@ describe('Asset Hash Service', function () {
             // Clear cache entry by calling with different mtime
             // The service should detect mtime change and re-read
             const hash2 = assetHash.getHashForFile(testFilePath);
-            assert.equal(readFileSyncSpy.callCount, 2); // File was re-read
+            sinon.assert.calledTwice(readFileSyncSpy); // File was re-read
 
             // Both hashes should be the same (same content) but cache was invalidated
             assert.equal(hash1, hash2);
@@ -96,14 +96,14 @@ describe('Asset Hash Service', function () {
 
             // First call - should read file
             assetHash.getHashForFile(testFilePath);
-            assert.equal(readFileSyncSpy.callCount, 1);
+            sinon.assert.calledOnce(readFileSyncSpy);
 
             // Clear cache
             assetHash.clearCache();
 
             // Next call should read file again
             assetHash.getHashForFile(testFilePath);
-            assert.equal(readFileSyncSpy.callCount, 2);
+            sinon.assert.calledTwice(readFileSyncSpy);
         });
     });
 

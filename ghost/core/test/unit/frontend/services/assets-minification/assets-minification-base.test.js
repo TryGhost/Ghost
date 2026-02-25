@@ -48,9 +48,9 @@ describe('AssetsMinificationBase', function () {
             ]);
 
             assert.equal(loadCallCount, 1, 'load() should be called exactly once');
-            assert.equal(next1.callCount, 1);
-            assert.equal(next2.callCount, 1);
-            assert.equal(next3.callCount, 1);
+            sinon.assert.calledOnce(next1);
+            sinon.assert.calledOnce(next2);
+            sinon.assert.calledOnce(next3);
         });
 
         it('writes the asset file only once when concurrent requests trigger load()', async function () {
@@ -113,7 +113,7 @@ describe('AssetsMinificationBase', function () {
             await middleware({}, {}, next);
 
             assert.equal(loadCallCount, 0);
-            assert.equal(next.callCount, 1);
+            sinon.assert.calledOnce(next);
         });
 
         it('calls load() again after invalidate()', async function () {
@@ -174,7 +174,7 @@ describe('AssetsMinificationBase', function () {
             await secondRequest;
 
             assert.equal(loadCallCount, 2, 'load() should be called twice (once per invalidation cycle)');
-            assert.equal(next.callCount, 2);
+            sinon.assert.calledTwice(next);
         });
 
         it('clears loading promise after load() completes', async function () {

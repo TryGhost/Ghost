@@ -81,7 +81,7 @@ describe('UNIT: Settings Service', function () {
                 await settingsService.validateSiteUuid();
                 assert.fail('Should have thrown IncorrectUsageError');
             } catch (error) {
-                assert.equal(loggingStub.calledOnce, true);
+                sinon.assert.calledOnce(loggingStub);
                 assert.equal(error.constructor.name, 'IncorrectUsageError');
                 assert.equal(error.message, 'Site UUID configuration does not match database value');
             }

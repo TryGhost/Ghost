@@ -68,7 +68,7 @@ describe('Session controller', function () {
             }}).then((fn) => {
                 fn(fakeReq, fakeRes, fakeNext);
             }).then(function () {
-                assert.equal(fakeReq.brute.reset.callCount, 1);
+                sinon.assert.calledOnce(fakeReq.brute.reset);
 
                 const createSessionStubCall = createSessionStub.getCall(0);
                 assert.equal(fakeReq.user, fakeUser);
@@ -101,8 +101,8 @@ describe('Session controller', function () {
             }}).then((fn) => {
                 fn(fakeReq, fakeRes, fakeNext);
             }).then(function () {
-                assert.equal(fakeReq.brute.reset.callCount, 1);
-                assert.equal(fakeNext.callCount, 1);
+                sinon.assert.calledOnce(fakeReq.brute.reset);
+                sinon.assert.calledOnce(fakeNext);
                 assert.equal(fakeNext.args[0][0], resetError);
             });
         });
@@ -129,7 +129,7 @@ describe('Session controller', function () {
             }}).then((fn) => {
                 fn(fakeReq, fakeRes, fakeNext);
             }).then(function () {
-                assert.equal(fakeReq.brute.reset.callCount, 1);
+                sinon.assert.calledOnce(fakeReq.brute.reset);
 
                 const createSessionStubCall = createSessionStub.getCall(0);
                 assert.equal(fakeReq.user, fakeUser);
@@ -163,7 +163,7 @@ describe('Session controller', function () {
             }}).then((fn) => {
                 fn(fakeReq, fakeRes, fakeNext);
             }).then(function () {
-                assert.equal(fakeReq.brute.reset.callCount, 1);
+                sinon.assert.calledOnce(fakeReq.brute.reset);
 
                 const createSessionStubCall = createSessionStub.getCall(0);
                 assert.equal(fakeReq.user, fakeUser);

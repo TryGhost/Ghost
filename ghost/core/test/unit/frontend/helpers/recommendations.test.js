@@ -171,7 +171,7 @@ describe('{{#recommendations}} helper', function () {
             );
 
             // An error message is logged
-            assert.equal(logging.error.calledOnce, true);
+            sinon.assert.calledOnce(logging.error);
 
             // No HTML is rendered
             assert(response !== null && typeof response === 'object');

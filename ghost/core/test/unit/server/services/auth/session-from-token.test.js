@@ -1,4 +1,3 @@
-const assert = require('node:assert/strict');
 const express = require('express');
 const sinon = require('sinon');
 const SessionFromToken = require('../../../../../core/server/services/auth/session/session-from-token');
@@ -30,15 +29,15 @@ describe('SessionFromToken', function () {
 
         await handler(req, res, next);
 
-        assert(getTokenFromRequest.calledOnceWith(req));
+        sinon.assert.calledOnceWithExactly(getTokenFromRequest, req);
         const token = await getTokenFromRequest.returnValues[0];
 
-        assert(getLookupFromToken.calledOnceWith(token));
+        sinon.assert.calledOnceWithExactly(getLookupFromToken, token);
         const email = await getLookupFromToken.returnValues[0];
 
-        assert(findUserByLookup.calledOnceWith(email));
+        sinon.assert.calledOnceWithExactly(findUserByLookup, email);
         const foundUser = await findUserByLookup.returnValues[0];
 
-        assert(createSession.calledOnceWith(req, res, foundUser));
+        sinon.assert.calledOnceWithExactly(createSession, req, res, foundUser);
     });
 });

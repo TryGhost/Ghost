@@ -116,7 +116,7 @@ describe('lib/image: blog icon', function () {
             }});
 
             blogIcon.getIconPath();
-            assert.equal(stub.calledOnce, true);
+            sinon.assert.calledOnce(stub);
         });
 
         it('custom uploaded png blog icon', function () {
@@ -132,7 +132,7 @@ describe('lib/image: blog icon', function () {
             }});
 
             blogIcon.getIconPath();
-            assert.equal(stub.calledOnce, true);
+            sinon.assert.calledOnce(stub);
         });
 
         it('default ico blog icon', function () {

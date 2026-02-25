@@ -29,7 +29,7 @@ describe('Theme Handler', function () {
             assertExists(res.locals.version);
             assertExists(res.locals.safeVersion);
             assert.equal(res.locals.relativeUrl, req.path);
-            assert.equal(next.called, true);
+            sinon.assert.called(next);
         });
     });
 });

@@ -55,7 +55,7 @@ describe('Members Service Middleware', function () {
             await membersMiddleware.createSessionFromMagicLink(req, res, next);
 
             // Check behavior
-            assert.equal(next.calledOnce, true);
+            sinon.assert.calledOnce(next);
             assert.deepEqual(next.firstCall.args, []);
         });
 
@@ -77,8 +77,8 @@ describe('Members Service Middleware', function () {
             await membersMiddleware.createSessionFromMagicLink(req, res, next);
 
             // Check behavior
-            assert.equal(next.calledOnce, false);
-            assert.equal(res.redirect.calledOnce, true);
+            sinon.assert.notCalled(next);
+            sinon.assert.calledOnce(res.redirect);
             assert.equal(res.redirect.firstCall.args[0], '/blah/?action=signup&success=true');
         });
 
@@ -93,8 +93,8 @@ describe('Members Service Middleware', function () {
             await membersMiddleware.createSessionFromMagicLink(req, res, next);
 
             // Check behavior
-            assert.equal(next.calledOnce, false);
-            assert.equal(res.redirect.calledOnce, true);
+            sinon.assert.notCalled(next);
+            sinon.assert.calledOnce(res.redirect);
             assert.equal(res.redirect.firstCall.args[0], '/blah/?action=signup&success=false');
         });
 
@@ -116,8 +116,8 @@ describe('Members Service Middleware', function () {
             await membersMiddleware.createSessionFromMagicLink(req, res, next);
 
             // Check behavior
-            assert.equal(next.calledOnce, false);
-            assert.equal(res.redirect.calledOnce, true);
+            sinon.assert.notCalled(next);
+            sinon.assert.calledOnce(res.redirect);
             assert.equal(res.redirect.firstCall.args[0], 'https://custom.com/redirect/');
         });
 
@@ -139,8 +139,8 @@ describe('Members Service Middleware', function () {
             await membersMiddleware.createSessionFromMagicLink(req, res, next);
 
             // Check behavior
-            assert.equal(next.calledOnce, false);
-            assert.equal(res.redirect.calledOnce, true);
+            sinon.assert.notCalled(next);
+            sinon.assert.calledOnce(res.redirect);
             assert.equal(res.redirect.firstCall.args[0], 'https://custom.com/paid/');
         });
 
@@ -155,8 +155,8 @@ describe('Members Service Middleware', function () {
             await membersMiddleware.createSessionFromMagicLink(req, res, next);
 
             // Check behavior
-            assert.equal(next.calledOnce, false);
-            assert.equal(res.redirect.calledOnce, true);
+            sinon.assert.notCalled(next);
+            sinon.assert.calledOnce(res.redirect);
             assert.equal(res.redirect.firstCall.args[0], 'https://site.com/blah/my-post/?action=signin&success=true#comment-123');
         });
 
@@ -171,8 +171,8 @@ describe('Members Service Middleware', function () {
             await membersMiddleware.createSessionFromMagicLink(req, res, next);
 
             // Check behavior
-            assert.equal(next.calledOnce, false);
-            assert.equal(res.redirect.calledOnce, true);
+            sinon.assert.notCalled(next);
+            sinon.assert.calledOnce(res.redirect);
             assert.equal(res.redirect.firstCall.args[0], 'https://site.com/blah/my-post/?action=signup&success=true#comment-123');
         });
 
@@ -187,8 +187,8 @@ describe('Members Service Middleware', function () {
             await membersMiddleware.createSessionFromMagicLink(req, res, next);
 
             // Check behavior
-            assert.equal(next.calledOnce, false);
-            assert.equal(res.redirect.calledOnce, true);
+            sinon.assert.notCalled(next);
+            sinon.assert.calledOnce(res.redirect);
             assert.equal(res.redirect.firstCall.args[0], '/blah/?action=signin&success=true');
         });
     });
@@ -219,9 +219,9 @@ describe('Members Service Middleware', function () {
             await membersMiddleware.updateMemberNewsletters(req, res);
 
             // Check behavior
-            assert.equal(res.writeHead.calledOnce, true);
+            sinon.assert.calledOnce(res.writeHead);
             assert.equal(res.writeHead.firstCall.args[0], 404);
-            assert.equal(res.end.calledOnce, true);
+            sinon.assert.calledOnce(res.end);
             assert.equal(res.end.firstCall.args[0], 'Email address not found.');
         });
 
@@ -240,9 +240,9 @@ describe('Members Service Middleware', function () {
             await membersMiddleware.updateMemberNewsletters(req, res);
 
             // Check behavior
-            assert.equal(res.writeHead.calledOnce, true);
+            sinon.assert.calledOnce(res.writeHead);
             assert.equal(res.writeHead.firstCall.args[0], 404);
-            assert.equal(res.end.calledOnce, true);
+            sinon.assert.calledOnce(res.end);
             assert.equal(res.end.firstCall.args[0], 'Email address not found.');
         });
 
@@ -269,7 +269,7 @@ describe('Members Service Middleware', function () {
             });
             await membersMiddleware.updateMemberNewsletters(req, res);
             // the stubbing of the api is difficult to test with the current design, so we just check that the response is sent
-            assert.equal(res.json.calledOnce, true);
+            sinon.assert.calledOnce(res.json);
         });
 
         it('returns 400 on error', async function () {
@@ -293,9 +293,9 @@ describe('Members Service Middleware', function () {
             await membersMiddleware.updateMemberNewsletters(req, res);
 
             // Check behavior
-            assert.equal(res.writeHead.calledOnce, true);
+            sinon.assert.calledOnce(res.writeHead);
             assert.equal(res.writeHead.firstCall.args[0], 400);
-            assert.equal(res.end.calledOnce, true);
+            sinon.assert.calledOnce(res.end);
             assert.equal(res.end.firstCall.args[0], 'Failed to update newsletters');
         });
     });

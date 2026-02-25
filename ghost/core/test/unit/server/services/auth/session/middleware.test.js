@@ -105,7 +105,7 @@ describe('Session Service', function () {
             });
 
             await middleware.createSession(req, res, next);
-            assert.equal(next.callCount, 1);
+            sinon.assert.calledOnce(next);
             assert.equal(next.args[0][0].statusCode, 403);
             assert.equal(next.args[0][0].code, '2FA_NEW_DEVICE_DETECTED');
         });
@@ -141,7 +141,7 @@ describe('Session Service', function () {
             });
 
             await middleware.createSession(req, res, next);
-            assert.equal(next.callCount, 1);
+            sinon.assert.calledOnce(next);
             assert.equal(next.args[0][0].statusCode, 403);
             assert.equal(next.args[0][0].code, '2FA_TOKEN_REQUIRED');
         });
@@ -203,9 +203,9 @@ describe('Session Service', function () {
 
             await middleware.sendAuthCode(req, res, nextStub);
 
-            assert.equal(sendAuthCodeToUserStub.callCount, 1);
-            assert.equal(nextStub.callCount, 0);
-            assert.equal(sendStatusStub.callCount, 1);
+            sinon.assert.calledOnce(sendAuthCodeToUserStub);
+            sinon.assert.notCalled(nextStub);
+            sinon.assert.calledOnce(sendStatusStub);
             assert.equal(sendStatusStub.args[0][0], 200);
         });
 
@@ -225,9 +225,9 @@ describe('Session Service', function () {
 
             await middleware.sendAuthCode(req, res, nextStub);
 
-            assert.equal(sendAuthCodeToUserStub.callCount, 1);
-            assert.equal(nextStub.callCount, 1);
-            assert.equal(sendStatusStub.callCount, 0);
+            sinon.assert.calledOnce(sendAuthCodeToUserStub);
+            sinon.assert.calledOnce(nextStub);
+            sinon.assert.notCalled(sendStatusStub);
         });
     });
 
@@ -249,9 +249,9 @@ describe('Session Service', function () {
 
             await middleware.verifyAuthCode(req, res, nextStub);
 
-            assert.equal(verifyAuthCodeForUserStub.callCount, 1);
-            assert.equal(nextStub.callCount, 0);
-            assert.equal(sendStatusStub.callCount, 1);
+            sinon.assert.calledOnce(verifyAuthCodeForUserStub);
+            sinon.assert.notCalled(nextStub);
+            sinon.assert.calledOnce(sendStatusStub);
             assert.equal(sendStatusStub.args[0][0], 200);
         });
 
@@ -271,9 +271,9 @@ describe('Session Service', function () {
 
             await middleware.verifyAuthCode(req, res, nextStub);
 
-            assert.equal(verifyAuthCodeForUserStub.callCount, 1);
-            assert.equal(nextStub.callCount, 0);
-            assert.equal(sendStatusStub.callCount, 1);
+            sinon.assert.calledOnce(verifyAuthCodeForUserStub);
+            sinon.assert.notCalled(nextStub);
+            sinon.assert.calledOnce(sendStatusStub);
             assert.equal(sendStatusStub.args[0][0], 401);
         });
 
@@ -293,9 +293,9 @@ describe('Session Service', function () {
 
             await middleware.verifyAuthCode(req, res, nextStub);
 
-            assert.equal(verifyAuthCodeForUserStub.callCount, 1);
-            assert.equal(nextStub.callCount, 1);
-            assert.equal(sendStatusStub.callCount, 0);
+            sinon.assert.calledOnce(verifyAuthCodeForUserStub);
+            sinon.assert.calledOnce(nextStub);
+            sinon.assert.notCalled(sendStatusStub);
         });
     });
 });

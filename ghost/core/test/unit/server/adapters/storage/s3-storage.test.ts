@@ -332,7 +332,7 @@ describe('S3Storage', function () {
         sendStub.rejects(createNotFoundError());
 
         await storage.delete('ghost.txt', 'content/files');
-        assert.equal(sendStub.callCount, 1);
+        sinon.assert.calledOnce(sendStub);
     });
 
     it('exists rethrows unexpected S3 errors', async function () {
@@ -806,7 +806,7 @@ describe('S3Storage', function () {
             }, '2024/06');
 
             // Should have: CreateMultipartUpload + 3 UploadPart + CompleteMultipartUpload = 5 calls
-            assert.equal(sendStub.callCount, 5);
+            sinon.assert.callCount(sendStub, 5);
 
             // Verify 3 parts were uploaded
             const uploadPartCalls = sendStub.getCalls().filter(call => call.args[0] instanceof UploadPartCommand);

@@ -40,18 +40,18 @@ describe('Frontend Error Handler', function () {
 
     // Helper functions to reduce assertion duplication
     function assertPlainTextResponse(response, statusCode, message) {
-        assert.equal(response.status.calledOnceWithExactly(statusCode), true);
-        assert.equal(response.type.calledOnceWithExactly('text/plain'), true);
-        assert.equal(response.send.calledOnce, true);
+        sinon.assert.calledOnceWithExactly(response.status, statusCode);
+        sinon.assert.calledOnceWithExactly(response.type, 'text/plain');
+        sinon.assert.calledOnce(response.send);
         assert.equal(response.send.firstCall.args[0], message);
-        assert.equal(response.render.called, false);
+        sinon.assert.notCalled(response.render);
     }
 
     function assertHtmlResponse(response, expectedHtml) {
-        assert.equal(response.render.calledOnce, true);
-        assert.equal(response.send.calledOnceWithExactly(expectedHtml), true);
-        assert.equal(response.status.called, false);
-        assert.equal(response.type.called, false);
+        sinon.assert.calledOnce(response.render);
+        sinon.assert.calledOnceWithExactly(response.send, expectedHtml);
+        sinon.assert.notCalled(response.status);
+        sinon.assert.notCalled(response.type);
     }
 
     describe('themeErrorRenderer', function () {
@@ -196,7 +196,7 @@ describe('Frontend Error Handler', function () {
             await themeErrorRenderer(err, req, res, next);
 
             assertHtmlResponse(res, mockHtml);
-            assert.equal(next.called, false);
+            sinon.assert.notCalled(next);
         });
 
         it('should render HTML for paths with trailing slash', async function () {
@@ -214,7 +214,7 @@ describe('Frontend Error Handler', function () {
             await themeErrorRenderer(err, req, res, next);
 
             assertHtmlResponse(res, mockHtml);
-            assert.equal(next.called, false);
+            sinon.assert.notCalled(next);
         });
 
         it('should handle render failures gracefully', async function () {
@@ -231,9 +231,9 @@ describe('Frontend Error Handler', function () {
 
             await themeErrorRenderer(err, req, res, next);
 
-            assert.equal(res.render.calledOnce, true);
-            assert.equal(res.status.calledOnceWithExactly(500), true);
-            assert.equal(res.send.calledOnce, true);
+            sinon.assert.calledOnce(res.render);
+            sinon.assert.calledOnceWithExactly(res.status, 500);
+            sinon.assert.calledOnce(res.send);
             
             const errorHtml = res.send.firstCall.args[0];
             assert(errorHtml.includes('Oops, seems there is an error in the error template'));

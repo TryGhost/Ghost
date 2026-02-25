@@ -96,8 +96,8 @@ describe('Themes middleware', function () {
             try {
                 assert.equal(err, undefined);
 
-                assert.equal(fakeActiveTheme.mount.called, true);
-                assert.equal(fakeActiveTheme.mount.calledWith(req.app), true);
+                sinon.assert.called(fakeActiveTheme.mount);
+                sinon.assert.calledWith(fakeActiveTheme.mount, req.app);
 
                 done();
             } catch (error) {
@@ -113,7 +113,7 @@ describe('Themes middleware', function () {
             try {
                 assert.equal(err, undefined);
 
-                assert.equal(fakeActiveTheme.mount.called, false);
+                sinon.assert.notCalled(fakeActiveTheme.mount);
 
                 done();
             } catch (error) {
@@ -133,8 +133,8 @@ describe('Themes middleware', function () {
                 assertExists(err);
                 assert.equal(err.message, 'The currently active theme "bacon-sensation" is missing.');
 
-                assert.equal(activeThemeGetStub.called, true);
-                assert.equal(fakeActiveTheme.mount.called, false);
+                sinon.assert.called(activeThemeGetStub);
+                sinon.assert.notCalled(fakeActiveTheme.mount);
 
                 done();
             } catch (error) {
@@ -151,7 +151,7 @@ describe('Themes middleware', function () {
                 try {
                     assert.equal(err, undefined);
 
-                    assert.equal(hbsUpdateTemplateOptionsStub.calledOnce, true);
+                    sinon.assert.calledOnce(hbsUpdateTemplateOptionsStub);
                     const templateOptions = hbsUpdateTemplateOptionsStub.firstCall.args[0];
                     const data = templateOptions.data;
 
@@ -222,7 +222,7 @@ describe('Themes middleware', function () {
                 try {
                     assert.equal(err, undefined);
 
-                    assert.equal(hbsUpdateLocalTemplateOptionsStub.calledOnce, true);
+                    sinon.assert.calledOnce(hbsUpdateLocalTemplateOptionsStub);
                     const templateOptions = hbsUpdateLocalTemplateOptionsStub.firstCall.args[1];
                     const data = templateOptions.data;
 
@@ -246,7 +246,7 @@ describe('Themes middleware', function () {
                 try {
                     assert.equal(err, undefined);
 
-                    assert.equal(hbsUpdateLocalTemplateOptionsStub.calledOnce, true);
+                    sinon.assert.calledOnce(hbsUpdateLocalTemplateOptionsStub);
                     const templateOptions = hbsUpdateLocalTemplateOptionsStub.firstCall.args[1];
                     const data = templateOptions.data;
 
@@ -272,7 +272,7 @@ describe('Themes middleware', function () {
                 try {
                     assert.equal(err, undefined);
 
-                    assert.equal(hbsUpdateLocalTemplateOptionsStub.calledOnce, true);
+                    sinon.assert.calledOnce(hbsUpdateLocalTemplateOptionsStub);
                     const templateOptions = hbsUpdateLocalTemplateOptionsStub.firstCall.args[1];
                     const data = templateOptions.data;
 
@@ -298,7 +298,7 @@ describe('Themes middleware', function () {
                 try {
                     assert.equal(err, undefined);
 
-                    assert.equal(hbsUpdateLocalTemplateOptionsStub.calledOnce, true);
+                    sinon.assert.calledOnce(hbsUpdateLocalTemplateOptionsStub);
                     const templateOptions = hbsUpdateLocalTemplateOptionsStub.firstCall.args[1];
                     const data = templateOptions.data;
 
@@ -327,7 +327,7 @@ describe('Themes middleware', function () {
                 try {
                     assert.equal(err, undefined);
 
-                    assert.equal(hbsUpdateLocalTemplateOptionsStub.calledOnce, true);
+                    sinon.assert.calledOnce(hbsUpdateLocalTemplateOptionsStub);
                     const templateOptions = hbsUpdateLocalTemplateOptionsStub.firstCall.args[1];
                     const data = templateOptions.data;
 
@@ -352,7 +352,7 @@ describe('Themes middleware', function () {
                 try {
                     assert.equal(err, undefined);
 
-                    assert.equal(hbsUpdateLocalTemplateOptionsStub.calledOnce, true);
+                    sinon.assert.calledOnce(hbsUpdateLocalTemplateOptionsStub);
                     const templateOptions = hbsUpdateLocalTemplateOptionsStub.firstCall.args[1];
                     const data = templateOptions.data;
 

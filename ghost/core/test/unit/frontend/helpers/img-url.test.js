@@ -32,21 +32,21 @@ describe('{{img_url}} helper', function () {
             const rendered = img_url('/content/images/image-relative-url.png', {});
             assertExists(rendered);
             assert.equal(rendered, '/content/images/image-relative-url.png');
-            assert.equal(logWarnStub.called, false);
+            sinon.assert.notCalled(logWarnStub);
         });
 
         it('should output relative url of image if the input is absolute', function () {
             const rendered = img_url('http://localhost:65535/content/images/image-relative-url.png', {});
             assertExists(rendered);
             assert.equal(rendered, '/content/images/image-relative-url.png');
-            assert.equal(logWarnStub.called, false);
+            sinon.assert.notCalled(logWarnStub);
         });
 
         it('should output absolute url of image if the option is present ', function () {
             const rendered = img_url('/content/images/image-relative-url.png', {hash: {absolute: 'true'}});
             assertExists(rendered);
             assert.equal(rendered, 'http://localhost:65535/content/images/image-relative-url.png');
-            assert.equal(logWarnStub.called, false);
+            sinon.assert.notCalled(logWarnStub);
         });
 
         it('should NOT output absolute url of image if the option is "false" ', function () {
@@ -59,25 +59,25 @@ describe('{{img_url}} helper', function () {
             const rendered = img_url('/content/images/author-image-relative-url.png', {});
             assertExists(rendered);
             assert.equal(rendered, '/content/images/author-image-relative-url.png');
-            assert.equal(logWarnStub.called, false);
+            sinon.assert.notCalled(logWarnStub);
         });
 
         it('should have no output if the image attribute is not provided (with warning)', function () {
             const rendered = img_url({hash: {absolute: 'true'}});
             assert.equal(rendered, undefined);
-            assert.equal(logWarnStub.calledOnce, true);
+            sinon.assert.calledOnce(logWarnStub);
         });
 
         it('should have no output if the image attribute evaluates to undefined (with warning)', function () {
             const rendered = img_url(undefined, {hash: {absolute: 'true'}});
             assert.equal(rendered, undefined);
-            assert.equal(logWarnStub.calledOnce, true);
+            sinon.assert.calledOnce(logWarnStub);
         });
 
         it('should have no output if the image attribute evaluates to null (no waring)', function () {
             const rendered = img_url(null, {hash: {absolute: 'true'}});
             assert.equal(rendered, undefined);
-            assert.equal(logWarnStub.calledOnce, false);
+            sinon.assert.notCalled(logWarnStub);
         });
     });
 
@@ -249,7 +249,7 @@ describe('{{img_url}} helper', function () {
             const rendered = img_url('/content/images/author-image-relative-url.png', {hash: {size: 'invalid-size'}});
             assertExists(rendered);
             assert.equal(rendered, '/content/images/author-image-relative-url.png');
-            assert.equal(logWarnStub.called, false);
+            sinon.assert.notCalled(logWarnStub);
         });
 
         it('ignores misconfigured sizes', function () {
@@ -267,7 +267,7 @@ describe('{{img_url}} helper', function () {
             });
             assertExists(rendered);
             assert.equal(rendered, '/content/images/author-image-relative-url.png');
-            assert.equal(logWarnStub.called, false);
+            sinon.assert.notCalled(logWarnStub);
         });
 
         it('ignores format if size is missing', function () {
@@ -285,7 +285,7 @@ describe('{{img_url}} helper', function () {
             });
             assertExists(rendered);
             assert.equal(rendered, '/content/images/author-image-relative-url.png');
-            assert.equal(logWarnStub.called, false);
+            sinon.assert.notCalled(logWarnStub);
         });
 
         it('adds format and size options', function () {
@@ -304,7 +304,7 @@ describe('{{img_url}} helper', function () {
             });
             assertExists(rendered);
             assert.equal(rendered, '/content/images/size/w600/format/webp/author-image-relative-url.png');
-            assert.equal(logWarnStub.called, false);
+            sinon.assert.notCalled(logWarnStub);
         });
 
         it('ignores invalid formats', function () {
@@ -323,7 +323,7 @@ describe('{{img_url}} helper', function () {
             });
             assertExists(rendered);
             assert.equal(rendered, '/content/images/size/w600/author-image-relative-url.png');
-            assert.equal(logWarnStub.called, false);
+            sinon.assert.notCalled(logWarnStub);
         });
     });
 

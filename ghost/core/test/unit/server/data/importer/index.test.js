@@ -148,7 +148,7 @@ describe('Importer', function () {
             const removeStub = sinon.stub(fs, 'remove').withArgs(file).returns(Promise.resolve());
 
             await ImportManager.cleanUp();
-            assert.equal(removeStub.calledOnce, true);
+            sinon.assert.calledOnce(removeStub);
             assert.equal(ImportManager.fileToDelete, null);
         });
 
@@ -157,7 +157,7 @@ describe('Importer', function () {
             const removeStub = sinon.stub(fs, 'remove').returns(Promise.resolve());
 
             await ImportManager.cleanUp();
-            assert.equal(removeStub.called, false);
+            sinon.assert.notCalled(removeStub);
         });
 
         it('silently ignores clean up errors', async function () {
@@ -167,8 +167,8 @@ describe('Importer', function () {
             const removeStub = sinon.stub(fs, 'remove').withArgs(file).returns(Promise.reject(new Error('Unknown file')));
 
             await ImportManager.cleanUp();
-            assert.equal(removeStub.calledOnce, true);
-            assert.equal(loggingStub.calledOnce, true);
+            sinon.assert.calledOnce(removeStub);
+            sinon.assert.calledOnce(loggingStub);
             assert.equal(ImportManager.fileToDelete, null);
         });
 
@@ -180,8 +180,8 @@ describe('Importer', function () {
                 const fileSpy = sinon.stub(ImportManager, 'processFile').returns(Promise.resolve({}));
 
                 ImportManager.loadFile(testFile).then(function () {
-                    assert.equal(zipSpy.calledOnce, false);
-                    assert.equal(fileSpy.calledOnce, true);
+                    sinon.assert.notCalled(zipSpy);
+                    sinon.assert.calledOnce(fileSpy);
                     done();
                 }).catch(done);
             });
@@ -193,8 +193,8 @@ describe('Importer', function () {
                 const fileSpy = sinon.stub(ImportManager, 'processFile').resolves({});
 
                 ImportManager.loadFile(testZip).then(function () {
-                    assert.equal(zipSpy.calledOnce, true);
-                    assert.equal(fileSpy.calledOnce, false);
+                    sinon.assert.calledOnce(zipSpy);
+                    sinon.assert.notCalled(fileSpy);
                     done();
                 }).catch(done);
             });
@@ -219,17 +219,17 @@ describe('Importer', function () {
                 getFileSpy.withArgs(RevueHandler, sinon.match.string).returns([{path: '/tmp/dir/myFile.json', name: 'myFile.json'}]);
 
                 ImportManager.processZip(testZip).then(function (zipResult) {
-                    assert.equal(extractSpy.calledOnce, true);
-                    assert.equal(validSpy.calledOnce, true);
-                    assert.equal(baseDirSpy.calledOnce, true);
-                    assert.equal(getFileSpy.callCount, 6);
-                    assert.equal(jsonSpy.calledOnce, true);
-                    assert.equal(imageSpy.called, false);
-                    assert.equal(mdSpy.called, false);
-                    assert.equal(revueSpy.called, true);
+                    sinon.assert.calledOnce(extractSpy);
+                    sinon.assert.calledOnce(validSpy);
+                    sinon.assert.calledOnce(baseDirSpy);
+                    sinon.assert.callCount(getFileSpy, 6);
+                    sinon.assert.calledOnce(jsonSpy);
+                    sinon.assert.notCalled(imageSpy);
+                    sinon.assert.notCalled(mdSpy);
+                    sinon.assert.called(revueSpy);
 
                     ImportManager.processFile(testFile, '.json').then(function (fileResult) {
-                        assert.equal(jsonSpy.calledTwice, true);
+                        sinon.assert.calledTwice(jsonSpy);
 
                         // They should both have data keys, and they should be equivalent
                         assert('data' in zipResult);
@@ -319,7 +319,7 @@ describe('Importer', function () {
                     const zipResult = await ImportManager.processZip(testZip);
                     assertExists(zipResult.data);
                     assert.equal(zipResult.images, undefined);
-                    assert.equal(extractSpy.calledOnce, true);
+                    sinon.assert.calledOnce(extractSpy);
                 });
 
                 it('accepts a zip without a base directory', async function () {
@@ -329,7 +329,7 @@ describe('Importer', function () {
                     const zipResult = await ImportManager.processZip(testZip);
                     assertExists(zipResult.data);
                     assert.equal(zipResult.images, undefined);
-                    assert.equal(extractSpy.calledOnce, true);
+                    sinon.assert.calledOnce(extractSpy);
                 });
 
                 it('accepts a zip with an image directory', async function () {
@@ -339,7 +339,7 @@ describe('Importer', function () {
                     const zipResult = await ImportManager.processZip(testZip);
                     assert.equal(zipResult.images.length, 1);
                     assert.equal(zipResult.data, undefined);
-                    assert.equal(extractSpy.calledOnce, true);
+                    sinon.assert.calledOnce(extractSpy);
                 });
 
                 it('accepts a zip with uppercase image extensions', async function () {
@@ -349,7 +349,7 @@ describe('Importer', function () {
                     const zipResult = await ImportManager.processZip(testZip);
                     assert.equal(zipResult.images.length, 1);
                     assert.equal(zipResult.data, undefined);
-                    assert.equal(extractSpy.calledOnce, true);
+                    sinon.assert.calledOnce(extractSpy);
                 });
 
                 it('throws zipContainsMultipleDataFormats', async function () {
@@ -357,7 +357,7 @@ describe('Importer', function () {
                     const extractSpy = sinon.stub(ImportManager, 'extractZip').returns(Promise.resolve(testDir));
 
                     await assert.rejects(ImportManager.processZip(testZip), /multiple data formats/);
-                    assert.equal(extractSpy.calledOnce, true);
+                    sinon.assert.calledOnce(extractSpy);
                 });
 
                 it('throws noContentToImport', async function () {
@@ -365,7 +365,7 @@ describe('Importer', function () {
                     const extractSpy = sinon.stub(ImportManager, 'extractZip').returns(Promise.resolve(testDir));
 
                     await assert.rejects(ImportManager.processZip(testZip), /not include any content/);
-                    assert.equal(extractSpy.calledOnce, true);
+                    sinon.assert.calledOnce(extractSpy);
                 });
             });
 
@@ -436,12 +436,12 @@ describe('Importer', function () {
                 const revueSpy = sinon.spy(RevueImporter, 'preProcess');
 
                 ImportManager.preProcess(inputCopy).then(function (output) {
-                    assert.equal(revueSpy.calledOnce, true);
-                    assert.equal(revueSpy.calledWith(inputCopy), true);
-                    assert.equal(dataSpy.calledOnce, true);
-                    assert.equal(dataSpy.calledWith(inputCopy), true);
-                    assert.equal(imageSpy.calledOnce, true);
-                    assert.equal(imageSpy.calledWith(inputCopy), true);
+                    sinon.assert.calledOnce(revueSpy);
+                    sinon.assert.calledWith(revueSpy, inputCopy);
+                    sinon.assert.calledOnce(dataSpy);
+                    sinon.assert.calledWith(dataSpy, inputCopy);
+                    sinon.assert.calledOnce(imageSpy);
+                    sinon.assert.calledWith(imageSpy, inputCopy);
                     // eql checks for equality
                     // equal checks the references are for the same object
                     assert.notEqual(output, input);
@@ -480,8 +480,8 @@ describe('Importer', function () {
                 ImportManager.doImport(inputCopy).then(function (output) {
                     // eql checks for equality
                     // equal checks the references are for the same object
-                    assert.equal(dataSpy.calledOnce, true);
-                    assert.equal(imageSpy.calledOnce, true);
+                    sinon.assert.calledOnce(dataSpy);
+                    sinon.assert.calledOnce(imageSpy);
                     assert.deepEqual(dataSpy.getCall(0).args[0], expectedData);
                     assert.deepEqual(imageSpy.getCall(0).args[0], expectedImages);
 
@@ -514,11 +514,11 @@ describe('Importer', function () {
                 const cleanupSpy = sinon.stub(ImportManager, 'cleanUp').returns(Promise.resolve());
 
                 ImportManager.importFromFile({name: 'test.json', path: '/test.json'}).then(function () {
-                    assert.equal(loadFileSpy.calledOnce, true);
-                    assert.equal(preProcessSpy.calledOnce, true);
-                    assert.equal(doImportSpy.calledOnce, true);
-                    assert.equal(generateReportSpy.calledOnce, true);
-                    assert.equal(cleanupSpy.calledOnce, true);
+                    sinon.assert.calledOnce(loadFileSpy);
+                    sinon.assert.calledOnce(preProcessSpy);
+                    sinon.assert.calledOnce(doImportSpy);
+                    sinon.assert.calledOnce(generateReportSpy);
+                    sinon.assert.calledOnce(cleanupSpy);
                     sinon.assert.callOrder(loadFileSpy, preProcessSpy, doImportSpy, generateReportSpy, cleanupSpy);
 
                     done();

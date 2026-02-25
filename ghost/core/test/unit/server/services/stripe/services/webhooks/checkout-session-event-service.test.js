@@ -59,7 +59,7 @@ describe('CheckoutSessionEventService', function () {
 
             await service.handleEvent(session);
 
-            assert(handleSetupEventStub.calledWith(session));
+            sinon.assert.calledWith(handleSetupEventStub, session);
         });
 
         it('should call handleSubscriptionEvent if session mode is subscription', async function () {
@@ -69,7 +69,7 @@ describe('CheckoutSessionEventService', function () {
 
             await service.handleEvent(session);
 
-            assert(handleSubscriptionEventStub.calledWith(session));
+            sinon.assert.calledWith(handleSubscriptionEventStub, session);
         });
 
         it('should call handleDonationEvent if session mode is payment and session metadata ghost_donation is present', async function () {
@@ -79,7 +79,7 @@ describe('CheckoutSessionEventService', function () {
 
             await service.handleEvent(session);
 
-            assert(handleDonationEventStub.calledWith(session));
+            sinon.assert.calledWith(handleDonationEventStub, session);
         });
 
         it('should do nothing if session mode is not setup, subscription, or payment', async function () {
@@ -91,9 +91,9 @@ describe('CheckoutSessionEventService', function () {
 
             await service.handleEvent(session);
 
-            assert(!handleSetupEventStub.called);
-            assert(!handleSubscriptionEventStub.called);
-            assert(!handleDonationEventStub.called);
+            sinon.assert.notCalled(handleSetupEventStub);
+            sinon.assert.notCalled(handleSubscriptionEventStub);
+            sinon.assert.notCalled(handleDonationEventStub);
         });
     });
 
@@ -120,7 +120,7 @@ describe('CheckoutSessionEventService', function () {
 
             await service.handleDonationEvent(session);
 
-            assert(donationRepository.save.calledOnce);
+            sinon.assert.calledOnce(donationRepository.save);
 
             const savedDonationEvent = donationRepository.save.getCall(0).args[0];
 
@@ -160,7 +160,7 @@ describe('CheckoutSessionEventService', function () {
 
             await service.handleDonationEvent(session);
 
-            assert(donationRepository.save.calledOnce);
+            sinon.assert.calledOnce(donationRepository.save);
 
             const savedDonationEvent = donationRepository.save.getCall(0).args[0];
             assert.equal(savedDonationEvent.donationMessage, null);
@@ -198,7 +198,7 @@ describe('CheckoutSessionEventService', function () {
             await service.handleDonationEvent(session);
 
             // expect(donationRepository.save.calledOnce).to.be.true;
-            assert(donationRepository.save.calledOnce);
+            sinon.assert.calledOnce(donationRepository.save);
 
             const savedDonationEvent = donationRepository.save.getCall(0).args[0];
 
@@ -245,7 +245,7 @@ describe('CheckoutSessionEventService', function () {
 
             await service.handleDonationEvent(session);
 
-            assert(donationRepository.save.calledOnce);
+            sinon.assert.calledOnce(donationRepository.save);
 
             const savedDonationEvent = donationRepository.save.getCall(0).args[0];
 
@@ -260,7 +260,7 @@ describe('CheckoutSessionEventService', function () {
 
             service.handleSetupEvent(session);
 
-            assert(api.getSetupIntent.calledWith('si_123'));
+            sinon.assert.calledWith(api.getSetupIntent, 'si_123');
         });
 
         it('fires getSetupIntent and memberRepository.get', async function () {
@@ -272,8 +272,8 @@ describe('CheckoutSessionEventService', function () {
 
             await service.handleSetupEvent(session);
 
-            assert(api.getSetupIntent.calledWith('si_123'));
-            assert(memberRepository.get.calledWith({customer_id: 'cust_123'}));
+            sinon.assert.calledWith(api.getSetupIntent, 'si_123');
+            sinon.assert.calledWith(memberRepository.get, {customer_id: 'cust_123'});
         });
 
         it('fires getSetupIntent, memberRepository.get and attachPaymentMethodToCustomer', async function () {
@@ -295,9 +295,9 @@ describe('CheckoutSessionEventService', function () {
 
             await service.handleSetupEvent(session);
 
-            assert(api.getSetupIntent.calledWith('si_123'));
-            assert(memberRepository.get.calledWith({customer_id: 'cust_123'}));
-            assert(api.attachPaymentMethodToCustomer.called);
+            sinon.assert.calledWith(api.getSetupIntent, 'si_123');
+            sinon.assert.calledWith(memberRepository.get, {customer_id: 'cust_123'});
+            sinon.assert.called(api.attachPaymentMethodToCustomer);
         });
 
         it('if member is not found, it should return early', async function () {
@@ -310,9 +310,9 @@ describe('CheckoutSessionEventService', function () {
 
             await service.handleSetupEvent(session);
 
-            assert(api.getSetupIntent.calledWith('si_123'));
-            assert(memberRepository.get.calledWith({customer_id: 'cust_123'}));
-            assert(!api.attachPaymentMethodToCustomer.called);
+            sinon.assert.calledWith(api.getSetupIntent, 'si_123');
+            sinon.assert.calledWith(memberRepository.get, {customer_id: 'cust_123'});
+            sinon.assert.notCalled(api.attachPaymentMethodToCustomer);
         });
 
         it('if setupIntent has subscription_id, it should update subscription default payment method', async function () {
@@ -328,8 +328,8 @@ describe('CheckoutSessionEventService', function () {
 
             await service.handleSetupEvent(session);
 
-            assert(api.updateSubscriptionDefaultPaymentMethod.calledWith('sub_123', 'pm_123'));
-            assert(memberRepository.linkSubscription.calledWith({id: 'member_123', subscription: updatedSubscription}));
+            sinon.assert.calledWith(api.updateSubscriptionDefaultPaymentMethod, 'sub_123', 'pm_123');
+            sinon.assert.calledWith(memberRepository.linkSubscription, {id: 'member_123', subscription: updatedSubscription});
         });
 
         it('if linkSubscription fails with ER_DUP_ENTRY, it should throw ConflictError', async function () {
@@ -445,7 +445,7 @@ describe('CheckoutSessionEventService', function () {
 
             await service.handleSetupEvent(session);
 
-            assert(api.updateSubscriptionDefaultPaymentMethod.calledTwice);
+            sinon.assert.calledTwice(api.updateSubscriptionDefaultPaymentMethod);
         });
 
         it('throws if updateSubscriptionDefaultPaymentMethod fires but cannot link subscription', async function () {
@@ -597,8 +597,8 @@ describe('CheckoutSessionEventService', function () {
 
             await service.handleSubscriptionEvent(session);
 
-            assert(api.getCustomer.calledWith('cust_123', {expand: ['subscriptions.data.default_payment_method']}));
-            assert(memberRepository.get.calledWith({email: 'customer@example.com'}));
+            sinon.assert.calledWith(api.getCustomer, 'cust_123', {expand: ['subscriptions.data.default_payment_method']});
+            sinon.assert.calledWith(memberRepository.get, {email: 'customer@example.com'});
         });
 
         it('should create new member if not found', async function () {
@@ -607,7 +607,7 @@ describe('CheckoutSessionEventService', function () {
 
             await service.handleSubscriptionEvent(session);
 
-            assert(memberRepository.create.calledOnce);
+            sinon.assert.calledOnce(memberRepository.create);
             const memberData = memberRepository.create.getCall(0).args[0];
 
             assert.equal(memberData.email, 'customer@example.com');
@@ -631,7 +631,7 @@ describe('CheckoutSessionEventService', function () {
 
             await service.handleSubscriptionEvent(session);
 
-            assert(memberRepository.create.calledOnce);
+            sinon.assert.calledOnce(memberRepository.create);
             const memberData = memberRepository.create.getCall(0).args[0];
 
             assert.equal(memberData.email, 'customer@example.com');
@@ -661,7 +661,7 @@ describe('CheckoutSessionEventService', function () {
             customer.subscriptions.data[0].default_payment_method.billing_details.name = 'New Customer Name';
             await service.handleSubscriptionEvent(session);
 
-            assert(memberRepository.update.calledOnce);
+            sinon.assert.calledOnce(memberRepository.update);
             const memberData = memberRepository.update.getCall(0).args[0];
             assert.equal(memberData.name, 'New Customer Name');
         });
@@ -674,7 +674,7 @@ describe('CheckoutSessionEventService', function () {
             customer.subscriptions.data[0].default_payment_method.billing_details.name = 'New Customer Name';
             await service.handleSubscriptionEvent(session);
 
-            assert(memberRepository.update.calledOnce);
+            sinon.assert.calledOnce(memberRepository.update);
             const memberData = memberRepository.update.getCall(0).args[0];
             assert.equal(memberData.name, 'New Customer Name');
         });
@@ -687,7 +687,7 @@ describe('CheckoutSessionEventService', function () {
             customer.subscriptions.data[0].default_payment_method.billing_details.name = 'New Customer Name';
             await service.handleSubscriptionEvent(session);
 
-            assert(memberRepository.update.calledOnce);
+            sinon.assert.calledOnce(memberRepository.update);
             const memberData = memberRepository.update.getCall(0).args[0];
             assert.equal(memberData.newsletters, undefined);
         });
@@ -701,9 +701,9 @@ describe('CheckoutSessionEventService', function () {
 
                 await service.handleSubscriptionEvent(session);
 
-                assert(sendSignupEmail.calledOnce);
-                assert(sendSignupEmail.calledWith('customer@example.com'));
-                assert(!isPaidWelcomeEmailActive.called);
+                sinon.assert.calledOnce(sendSignupEmail);
+                sinon.assert.calledWith(sendSignupEmail, 'customer@example.com');
+                sinon.assert.notCalled(isPaidWelcomeEmailActive);
             });
 
             it('should send signup email when flow is has_precheckout_magic_link and welcome email is not active', async function () {
@@ -714,8 +714,8 @@ describe('CheckoutSessionEventService', function () {
 
                 await service.handleSubscriptionEvent(session);
 
-                assert(sendSignupEmail.calledOnce);
-                assert(sendSignupEmail.calledWith('customer@example.com'));
+                sinon.assert.calledOnce(sendSignupEmail);
+                sinon.assert.calledWith(sendSignupEmail, 'customer@example.com');
             });
 
             it('should NOT send signup email when flow is has_precheckout_magic_link and welcome email is active', async function () {
@@ -726,7 +726,7 @@ describe('CheckoutSessionEventService', function () {
 
                 await service.handleSubscriptionEvent(session);
 
-                assert(!sendSignupEmail.called);
+                sinon.assert.notCalled(sendSignupEmail);
             });
 
             it('should send signup email when flow is already_authenticated and welcome email is not active', async function () {
@@ -737,8 +737,8 @@ describe('CheckoutSessionEventService', function () {
 
                 await service.handleSubscriptionEvent(session);
 
-                assert(sendSignupEmail.calledOnce);
-                assert(sendSignupEmail.calledWith('customer@example.com'));
+                sinon.assert.calledOnce(sendSignupEmail);
+                sinon.assert.calledWith(sendSignupEmail, 'customer@example.com');
             });
 
             it('should NOT send signup email when flow is already_authenticated and welcome email is active', async function () {
@@ -749,7 +749,7 @@ describe('CheckoutSessionEventService', function () {
 
                 await service.handleSubscriptionEvent(session);
 
-                assert(!sendSignupEmail.called);
+                sinon.assert.notCalled(sendSignupEmail);
             });
 
             it('should send signup email when flow metadata is missing for backward compatibility', async function () {
@@ -760,9 +760,9 @@ describe('CheckoutSessionEventService', function () {
 
                 await service.handleSubscriptionEvent(session);
 
-                assert(sendSignupEmail.calledOnce);
-                assert(sendSignupEmail.calledWith('customer@example.com'));
-                assert(!isPaidWelcomeEmailActive.called);
+                sinon.assert.calledOnce(sendSignupEmail);
+                sinon.assert.calledWith(sendSignupEmail, 'customer@example.com');
+                sinon.assert.notCalled(isPaidWelcomeEmailActive);
             });
 
             it('should NOT send signup email on upgrade regardless of flow or welcome email', async function () {
@@ -774,7 +774,7 @@ describe('CheckoutSessionEventService', function () {
 
                 await service.handleSubscriptionEvent(session);
 
-                assert(!sendSignupEmail.called);
+                sinon.assert.notCalled(sendSignupEmail);
             });
         });
     });

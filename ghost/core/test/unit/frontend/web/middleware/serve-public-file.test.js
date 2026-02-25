@@ -29,7 +29,7 @@ describe('servePublicFile', function () {
         const middleware = servePublicFile('static', 'robots.txt', 'text/plain', 3600);
         req.path = '/favicon.ico';
         middleware(req, res, next);
-        assert.equal(next.called, true);
+        sinon.assert.called(next);
     });
 
     it('should load the file and send it with the correct headers', function () {
@@ -48,14 +48,14 @@ describe('servePublicFile', function () {
 
         middleware(req, res, next);
 
-        assert.equal(next.called, false);
+        sinon.assert.notCalled(next);
         assert(fileStub.firstCall.args[0].endsWith('core/frontend/public/robots.txt'));
-        assert.equal(res.writeHead.called, true);
+        sinon.assert.called(res.writeHead);
         assert.equal(res.writeHead.args[0][0], 200);
-        assert.equal(res.writeHead.calledWith(200, sinon.match.has('Content-Type')), true);
-        assert.equal(res.writeHead.calledWith(200, sinon.match.has('Content-Length')), true);
-        assert.equal(res.writeHead.calledWith(200, sinon.match.has('ETag')), true);
-        assert.equal(res.writeHead.calledWith(200, sinon.match.has('Cache-Control', 'public, max-age=3600')), true);
+        sinon.assert.calledWith(res.writeHead, 200, sinon.match.has('Content-Type'));
+        sinon.assert.calledWith(res.writeHead, 200, sinon.match.has('Content-Length'));
+        sinon.assert.calledWith(res.writeHead, 200, sinon.match.has('ETag'));
+        sinon.assert.calledWith(res.writeHead, 200, sinon.match.has('Cache-Control', 'public, max-age=3600'));
     });
 
     it('should send the file from the cache the second time', function () {
@@ -75,19 +75,19 @@ describe('servePublicFile', function () {
         middleware(req, res, next);
         middleware(req, res, next);
 
-        assert.equal(next.called, false);
+        sinon.assert.notCalled(next);
 
         // File only gets read onece
-        assert.equal(fileStub.calledOnce, true);
+        sinon.assert.calledOnce(fileStub);
         assert(fileStub.firstCall.args[0].endsWith('core/frontend/public/robots.txt'));
 
         // File gets served twice
-        assert.equal(res.writeHead.calledTwice, true);
+        sinon.assert.calledTwice(res.writeHead);
         assert.equal(res.writeHead.args[0][0], 200);
-        assert.equal(res.writeHead.calledWith(200, sinon.match.has('Content-Type')), true);
-        assert.equal(res.writeHead.calledWith(200, sinon.match.has('Content-Length')), true);
-        assert.equal(res.writeHead.calledWith(200, sinon.match.has('ETag')), true);
-        assert.equal(res.writeHead.calledWith(200, sinon.match.has('Cache-Control', 'public, max-age=3600')), true);
+        sinon.assert.calledWith(res.writeHead, 200, sinon.match.has('Content-Type'));
+        sinon.assert.calledWith(res.writeHead, 200, sinon.match.has('Content-Length'));
+        sinon.assert.calledWith(res.writeHead, 200, sinon.match.has('ETag'));
+        sinon.assert.calledWith(res.writeHead, 200, sinon.match.has('Cache-Control', 'public, max-age=3600'));
     });
 
     it('should not cache files requested with a different v tag', function () {
@@ -112,18 +112,18 @@ describe('servePublicFile', function () {
         req.query = {v: 2};
         middleware(req, res, next);
 
-        assert.equal(fileStub.calledTwice, true);
+        sinon.assert.calledTwice(fileStub);
 
-        assert.equal(next.called, false);
+        sinon.assert.notCalled(next);
         assert(fileStub.firstCall.args[0].endsWith('core/frontend/public/robots.txt'));
         assert(fileStub.secondCall.args[0].endsWith('core/frontend/public/robots.txt'));
 
-        assert.equal(res.writeHead.calledThrice, true);
+        sinon.assert.calledThrice(res.writeHead);
         assert.equal(res.writeHead.args[0][0], 200);
-        assert.equal(res.writeHead.calledWith(200, sinon.match.has('Content-Type')), true);
-        assert.equal(res.writeHead.calledWith(200, sinon.match.has('Content-Length')), true);
-        assert.equal(res.writeHead.calledWith(200, sinon.match.has('ETag')), true);
-        assert.equal(res.writeHead.calledWith(200, sinon.match.has('Cache-Control', 'public, max-age=3600')), true);
+        sinon.assert.calledWith(res.writeHead, 200, sinon.match.has('Content-Type'));
+        sinon.assert.calledWith(res.writeHead, 200, sinon.match.has('Content-Length'));
+        sinon.assert.calledWith(res.writeHead, 200, sinon.match.has('ETag'));
+        sinon.assert.calledWith(res.writeHead, 200, sinon.match.has('Cache-Control', 'public, max-age=3600'));
     });
 
     it('should replace {{blog-url}} in text/plain', function () {
@@ -141,10 +141,10 @@ describe('servePublicFile', function () {
         };
 
         middleware(req, res, next);
-        assert.equal(next.called, false);
-        assert.equal(res.writeHead.called, true);
+        sinon.assert.notCalled(next);
+        sinon.assert.called(res.writeHead);
 
-        assert.equal(res.end.calledWith(`User-agent: ${config.get('url')}`), true);
+        sinon.assert.calledWith(res.end, `User-agent: ${config.get('url')}`);
     });
 
     it('should 404 for ENOENT on general files', function () {
@@ -164,8 +164,8 @@ describe('servePublicFile', function () {
 
         middleware(req, res, next);
 
-        assert.equal(next.called, true);
-        assert.equal(next.calledWith(sinon.match({errorType: 'NotFoundError', code: 'PUBLIC_FILE_NOT_FOUND'})), true);
+        sinon.assert.called(next);
+        sinon.assert.calledWith(next, sinon.match({errorType: 'NotFoundError', code: 'PUBLIC_FILE_NOT_FOUND'}));
     });
 
     it('can serve a built asset file as well as public files', function () {
@@ -184,8 +184,8 @@ describe('servePublicFile', function () {
 
         middleware(req, res, next);
 
-        assert.equal(next.called, false);
-        assert.equal(res.writeHead.called, true);
+        sinon.assert.notCalled(next);
+        sinon.assert.called(res.writeHead);
         assert.equal(res.writeHead.args[0][0], 200);
 
         assert(fileStub.firstCall.args[0].endsWith('/public/something.css'));

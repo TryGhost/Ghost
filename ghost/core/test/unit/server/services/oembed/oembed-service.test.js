@@ -258,9 +258,9 @@ describe('oembed-service', function () {
             const storedUrl = await service.processImageFromUrl('https://example.com/sample.png?token=abc', 'thumbnail');
 
             assert.equal(storedUrl, 'https://storage.ghost.is/c/6f/a3/site/content/images/thumbnail/sample.png');
-            assert.equal(getSanitizedFileName.calledOnce, true);
-            assert.equal(generateUnique.calledOnce, true);
-            assert.equal(saveRaw.calledOnce, true);
+            sinon.assert.calledOnce(getSanitizedFileName);
+            sinon.assert.calledOnce(generateUnique);
+            sinon.assert.calledOnce(saveRaw);
             assert.equal(saveRaw.firstCall.args[1], 'thumbnail/sample.png');
         });
     });
