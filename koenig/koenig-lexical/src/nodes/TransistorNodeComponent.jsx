@@ -22,7 +22,7 @@ export const TransistorNodeComponent = ({
     const {cardConfig, darkMode} = React.useContext(KoenigComposerContext);
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
 
-    const {visibilityOptions: rawVisibilityOptions, toggleVisibility} = useVisibilityToggle(editor, nodeKey, cardConfig);
+    const {isVisibilityEnabled, visibilityOptions: rawVisibilityOptions, toggleVisibility} = useVisibilityToggle(editor, nodeKey, cardConfig);
 
     // Filter out nonMembers option - Transistor requires a member UUID so public visitors can't see it
     const visibilityOptions = React.useMemo(() => {
@@ -102,7 +102,7 @@ export const TransistorNodeComponent = ({
                 </ToolbarMenu>
             </ActionToolbar>
 
-            {isEditing && (
+            {isVisibilityEnabled && isEditing && (
                 <SettingsPanel
                     darkMode={darkMode}
                     defaultTab="visibility"

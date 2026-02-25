@@ -73,6 +73,15 @@ describe('useVisibilityToggle', () => {
         expect(visibilityUtils.getVisibilityOptions).toHaveBeenCalledWith(visibility, {isStripeEnabled: true, showWeb: true, showEmail: false});
     });
 
+    it('calls getVisibilityOptions with showEmail only when visibilitySettings is "email only"', () => {
+        vi.spyOn(visibilityUtils, 'getVisibilityOptions');
+        cardConfig.visibilitySettings = VISIBILITY_SETTINGS.EMAIL_ONLY;
+        const visibility = {web: {nonMember: false, memberSegment: ''}, email: {memberSegment: 'status:free,status:-free'}};
+        node.visibility = visibility;
+        renderHook(() => useVisibilityToggle(editor, 'testKey', cardConfig));
+        expect(visibilityUtils.getVisibilityOptions).toHaveBeenCalledWith(visibility, {isStripeEnabled: true, showWeb: false, showEmail: true});
+    });
+
     it('returns correct visibilityOptions', () => {
         const {result} = callHook({web: {nonMember: true, memberSegment: 'status:free'}, email: {memberSegment: 'status:free'}});
         const {visibilityOptions} = result.current;
@@ -142,13 +151,64 @@ describe('useVisibilityToggle', () => {
         ]);
     });
 
-    it('safely no-ops when toggling a hidden visibility group', () => {
+    it('returns isVisibilityEnabled as false when visibilitySettings is "none"', () => {
+        cardConfig.visibilitySettings = VISIBILITY_SETTINGS.NONE;
+        const {result} = renderHook(() => useVisibilityToggle(editor, 'testKey', cardConfig));
+
+        expect(result.current.isVisibilityEnabled).toBe(false);
+        expect(result.current.visibilityOptions).toEqual([]);
+    });
+
+    it('returns isVisibilityEnabled as true when visibilitySettings is "web and email"', () => {
+        cardConfig.visibilitySettings = VISIBILITY_SETTINGS.WEB_AND_EMAIL;
+        const {result} = renderHook(() => useVisibilityToggle(editor, 'testKey', cardConfig));
+
+        expect(result.current.isVisibilityEnabled).toBe(true);
+    });
+
+    it('returns isVisibilityEnabled as true when visibilitySettings is "web only"', () => {
+        cardConfig.visibilitySettings = VISIBILITY_SETTINGS.WEB_ONLY;
+        const {result} = renderHook(() => useVisibilityToggle(editor, 'testKey', cardConfig));
+
+        expect(result.current.isVisibilityEnabled).toBe(true);
+    });
+
+    it('returns isVisibilityEnabled as true when visibilitySettings is "email only"', () => {
+        cardConfig.visibilitySettings = VISIBILITY_SETTINGS.EMAIL_ONLY;
+        const {result} = renderHook(() => useVisibilityToggle(editor, 'testKey', cardConfig));
+
+        expect(result.current.isVisibilityEnabled).toBe(true);
+    });
+
+    it('safely no-ops when toggling a hidden email group with "web only" setting', () => {
         cardConfig.visibilitySettings = VISIBILITY_SETTINGS.WEB_ONLY;
         const {result} = renderHook(() => useVisibilityToggle(editor, 'testKey', cardConfig));
         const beforeVisibility = structuredClone(node.visibility);
 
         act(() => result.current.toggleVisibility('email', 'freeMembers', false));
 
+        expect(node.visibility).toEqual(beforeVisibility);
+    });
+
+    it('safely no-ops when toggling a hidden web group with "email only" setting', () => {
+        cardConfig.visibilitySettings = VISIBILITY_SETTINGS.EMAIL_ONLY;
+        const {result} = renderHook(() => useVisibilityToggle(editor, 'testKey', cardConfig));
+        const beforeVisibility = structuredClone(node.visibility);
+
+        act(() => result.current.toggleVisibility('web', 'nonMembers', false));
+
+        expect(node.visibility).toEqual(beforeVisibility);
+    });
+
+    it('safely no-ops when toggling any group with "none" setting', () => {
+        cardConfig.visibilitySettings = VISIBILITY_SETTINGS.NONE;
+        const {result} = renderHook(() => useVisibilityToggle(editor, 'testKey', cardConfig));
+        const beforeVisibility = structuredClone(node.visibility);
+
+        act(() => result.current.toggleVisibility('web', 'nonMembers', false));
+        expect(node.visibility).toEqual(beforeVisibility);
+
+        act(() => result.current.toggleVisibility('email', 'freeMembers', false));
         expect(node.visibility).toEqual(beforeVisibility);
     });
 });

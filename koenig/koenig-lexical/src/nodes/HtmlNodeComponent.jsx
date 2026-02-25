@@ -21,7 +21,7 @@ export function HtmlNodeComponent({nodeKey, html}) {
 
     const {showVisibilitySettings} = useKoenigSelectedCardContext();
 
-    const {visibilityOptions, toggleVisibility} = useVisibilityToggle(editor, nodeKey, cardConfig);
+    const {isVisibilityEnabled, visibilityOptions, toggleVisibility} = useVisibilityToggle(editor, nodeKey, cardConfig);
 
     const settingsTabs = [
         {id: 'visibility', label: 'Visibility'}
@@ -89,14 +89,18 @@ export function HtmlNodeComponent({nodeKey, html}) {
                         label="Edit"
                         onClick={handleToolbarEdit}
                     />
-                    <ToolbarMenuSeparator />
-                    <ToolbarMenuItem
-                        dataTestId="show-visibility"
-                        icon="visibility"
-                        isActive={showVisibilitySettings}
-                        label="Visibility"
-                        onClick={handleVisibilityToggle}
-                    />
+                    {isVisibilityEnabled && (
+                        <>
+                            <ToolbarMenuSeparator />
+                            <ToolbarMenuItem
+                                dataTestId="show-visibility"
+                                icon="visibility"
+                                isActive={showVisibilitySettings}
+                                label="Visibility"
+                                onClick={handleVisibilityToggle}
+                            />
+                        </>
+                    )}
                     <ToolbarMenuSeparator hide={!cardConfig.createSnippet} />
                     <ToolbarMenuItem
                         dataTestId="create-snippet"
@@ -109,7 +113,7 @@ export function HtmlNodeComponent({nodeKey, html}) {
                 </ToolbarMenu>
             </ActionToolbar>
 
-            {showVisibilitySettings && cardContext.isSelected && (
+            {isVisibilityEnabled && showVisibilitySettings && cardContext.isSelected && (
                 <SettingsPanel
                     darkMode={darkMode}
                     defaultTab="visibility"

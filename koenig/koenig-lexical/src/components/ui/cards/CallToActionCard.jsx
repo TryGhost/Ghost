@@ -124,10 +124,12 @@ export function CallToActionCard({
 
     const {isLoading, progress} = imageUploader || {};
 
+    const hasVisibilityOptions = Array.isArray(visibilityOptions) && visibilityOptions.length > 0;
+
     const tabs = [
         {id: 'content', label: 'Content'},
         {id: 'design', label: 'Design'},
-        {id: 'visibility', label: 'Visibility'}
+        ...(hasVisibilityOptions ? [{id: 'visibility', label: 'Visibility'}] : [])
     ];
 
     const layoutOptions = [

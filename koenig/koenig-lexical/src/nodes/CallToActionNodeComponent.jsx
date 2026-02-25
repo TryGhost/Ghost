@@ -38,7 +38,7 @@ export const CallToActionNodeComponent = ({
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
     const imageDragHandler = useFileDragAndDrop({handleDrop: handleImageDrop});
 
-    const {visibilityOptions, toggleVisibility} = useVisibilityToggle(editor, nodeKey, cardConfig);
+    const {isVisibilityEnabled, visibilityOptions, toggleVisibility} = useVisibilityToggle(editor, nodeKey, cardConfig);
 
     const {showVisibilitySettings} = useKoenigSelectedCardContext();
 
@@ -185,7 +185,7 @@ export const CallToActionNodeComponent = ({
                 setFileInputRef={ref => fileInputRef.current = ref}
                 showButton={showButton}
                 showDividers={showDividers}
-                showVisibilitySettings={showVisibilitySettings}
+                showVisibilitySettings={isVisibilityEnabled && showVisibilitySettings}
                 sponsorLabelHtmlEditor={sponsorLabelHtmlEditor}
                 sponsorLabelHtmlEditorInitialState={sponsorLabelHtmlEditorInitialState}
                 text={textValue}
