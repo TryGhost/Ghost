@@ -13,6 +13,14 @@ function renderTransistorNode(node, options = {}) {
     return frontendTemplate(node, document, options);
 }
 
+function setIframeAttributes(iframe) {
+    iframe.setAttribute('width', '100%');
+    iframe.setAttribute('height', '325');
+    iframe.setAttribute('frameborder', 'no');
+    iframe.setAttribute('scrolling', 'no');
+    iframe.setAttribute('seamless', '');
+}
+
 function frontendTemplate(node, document, options) {
     const figure = document.createElement('figure');
     figure.setAttribute('class', 'kg-card kg-transistor-card');
@@ -23,14 +31,10 @@ function frontendTemplate(node, document, options) {
     if (options.siteUuid) {
         embedUrl.searchParams.set('ctx', options.siteUuid);
     }
-    
+
     const iframe = document.createElement('iframe');
-    iframe.setAttribute('width', '100%');
-    iframe.setAttribute('height', '325');
+    setIframeAttributes(iframe);
     iframe.setAttribute('title', 'Transistor podcasts');
-    iframe.setAttribute('frameborder', 'no');
-    iframe.setAttribute('scrolling', 'no');
-    iframe.setAttribute('seamless', '');
     iframe.setAttribute('data-src', embedUrl.toString());
     iframe.setAttribute('data-kg-transistor-embed', '');
     figure.appendChild(iframe);
@@ -39,7 +43,15 @@ function frontendTemplate(node, document, options) {
     // Matches implementation from kg-default-nodes set-src-background-from-parent.js
     figure.insertAdjacentHTML('beforeend', buildSrcBackgroundScript());
 
-    return renderWithVisibility({element: figure}, node.visibility, options);
+    // noscript fallback with src (not data-src) so the iframe loads without JS
+    const noscript = document.createElement('noscript');
+    const fallbackIframe = document.createElement('iframe');
+    setIframeAttributes(fallbackIframe);
+    fallbackIframe.setAttribute('src', embedUrl.toString());
+    noscript.appendChild(fallbackIframe);
+    figure.appendChild(noscript);
+
+    return renderWithVisibility({element: figure, type: 'inner'}, node.visibility, options);
 }
 
 function emailTemplate(node, document, options) {

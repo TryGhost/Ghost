@@ -28,11 +28,13 @@ describe('services/koenig/node-renderers/transistor-renderer', function () {
             assert.ok(result.html.includes('data-kg-transistor-embed'));
         });
 
-        it('does not set src directly on the iframe', function () {
+        it('includes noscript fallback with src for non-JS environments', function () {
             const result = renderForWeb(getTestData());
 
-            // iframe should use data-src, not src - the inline script sets src after detecting background
-            assert.ok(!result.html.includes(' src="https://partner.transistor.fm'));
+            assert.ok(result.html.includes('<noscript>'));
+            assert.ok(result.html.includes('</noscript>'));
+            // noscript iframe uses src directly (not data-src) so it loads without JS
+            assert.match(result.html, /<noscript><iframe[^>]*src="https:\/\/partner\.transistor\.fm/);
         });
 
         it('includes ctx param', function () {
@@ -53,13 +55,13 @@ describe('services/koenig/node-renderers/transistor-renderer', function () {
         it('matches snapshot for default test data', function () {
             const result = renderForWeb(getTestData());
 
-            // Verify structure: figure > iframe + script
-            assert.ok(result.html.includes('<figure class="kg-card kg-transistor-card">'));
+            // type: 'inner' means output is the figure's innerHTML (iframe + script + noscript)
             assert.ok(result.html.includes('<iframe'));
             assert.ok(result.html.includes('data-kg-transistor-embed'));
             assert.ok(result.html.includes('<script>'));
             assert.ok(result.html.includes('</script>'));
-            assert.ok(result.html.includes('</figure>'));
+            assert.ok(result.html.includes('<noscript>'));
+            assert.ok(result.html.includes('</noscript>'));
         });
     });
 
