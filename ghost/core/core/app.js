@@ -3,10 +3,14 @@ const express = require('./shared/express');
 const config = require('./shared/config');
 const logging = require('@tryghost/logging');
 const urlService = require('./server/services/url');
-
 const fs = require('fs');
 const path = require('path');
+/** @import {Application as ExpressApplication, Request, RequestHandler} from 'express' */
 
+/**
+ * @param {Request} req
+ * @returns {boolean}
+ */
 const isMaintenanceModeEnabled = (req) => {
     if (req.app.get('maintenance') || config.get('maintenance').enabled || !urlService.hasFinished()) {
         return true;
@@ -15,7 +19,7 @@ const isMaintenanceModeEnabled = (req) => {
     return false;
 };
 
-// We never want middleware functions to be anonymous
+/** @type {RequestHandler} */
 const maintenanceMiddleware = function maintenanceMiddleware(req, res, next) {
     if (!isMaintenanceModeEnabled(req)) {
         return next();
@@ -28,7 +32,10 @@ const maintenanceMiddleware = function maintenanceMiddleware(req, res, next) {
     fs.createReadStream(path.resolve(__dirname, './server/views/maintenance.html')).pipe(res);
 };
 
-// Used by Ghost (Pro) to ensure that requests cannot be served by the wrong site
+/**
+ * Used by Ghost (Pro) to ensure that requests cannot be served by the wrong site.
+ * @type {RequestHandler}
+ */
 const siteIdMiddleware = function siteIdMiddleware(req, res, next) {
     const configSiteId = config.get('hostSettings:siteId');
     const headerSiteId = req.headers['x-site-id'];
@@ -46,6 +53,7 @@ const siteIdMiddleware = function siteIdMiddleware(req, res, next) {
     res.end();
 };
 
+/** @returns {ExpressApplication} */
 const rootApp = () => {
     const app = express('root');
     app.use(sentry.requestHandler);
