@@ -272,10 +272,10 @@ test.describe('Offers Modal', () => {
             code: string;
             display_title: string;
             display_description: string;
-            type: 'percent' | 'free_months';
+            type: 'percent';
             cadence: 'month' | 'year';
             amount: number;
-            duration: 'forever' | 'once' | 'repeating' | 'free_months';
+            duration: 'forever' | 'once' | 'repeating';
             duration_in_months: number | null;
             currency_restriction: boolean;
             currency: string | null;
@@ -393,10 +393,11 @@ test.describe('Offers Modal', () => {
                         name: 'Yearly retention archived',
                         code: 'yearly-retention-archived',
                         display_title: 'Stay with us',
-                        type: 'free_months',
+                        type: 'percent',
                         cadence: 'year',
-                        amount: 2,
-                        duration: 'free_months',
+                        amount: 100,
+                        duration: 'repeating',
+                        duration_in_months: 2,
                         status: 'archived',
                         redemption_count: 9
                     }),
@@ -440,9 +441,9 @@ test.describe('Offers Modal', () => {
                         code: 'monthly-retention-active',
                         display_title: 'Stay monthly',
                         display_description: 'Monthly description',
-                        amount: 40,
+                        amount: 100,
                         duration: 'repeating',
-                        duration_in_months: 3,
+                        duration_in_months: 2,
                         redemption_count: 7,
                         created_at: '2026-02-17T12:00:00.000Z',
                         last_redeemed: '2026-02-18T12:00:00.000Z'
@@ -453,10 +454,10 @@ test.describe('Offers Modal', () => {
                         code: 'yearly-retention-active',
                         display_title: 'Stay yearly',
                         display_description: 'Yearly description',
-                        type: 'free_months',
+                        type: 'percent',
                         cadence: 'year',
-                        amount: 2,
-                        duration: 'free_months',
+                        amount: 30,
+                        duration: 'once',
                         redemption_count: 4,
                         created_at: '2026-02-16T12:00:00.000Z',
                         last_redeemed: '2026-02-17T12:00:00.000Z'
@@ -478,10 +479,11 @@ test.describe('Offers Modal', () => {
                         name: 'Yearly retention archived',
                         code: 'yearly-retention-archived',
                         display_title: 'Older yearly retention',
-                        type: 'free_months',
+                        type: 'percent',
                         cadence: 'year',
-                        amount: 1,
-                        duration: 'free_months',
+                        amount: 100,
+                        duration: 'repeating',
+                        duration_in_months: 1,
                         status: 'archived',
                         redemption_count: 5,
                         created_at: '2026-01-25T12:00:00.000Z',
@@ -499,8 +501,7 @@ test.describe('Offers Modal', () => {
             await expect(monthlyModal.getByLabel('Enable monthly retention')).toBeChecked();
             await expect(monthlyModal.getByLabel('Display title')).toHaveValue('Stay monthly');
             await expect(monthlyModal.getByLabel('Display description')).toHaveValue('Monthly description');
-            await expect(monthlyModal.getByLabel('Amount off')).toHaveValue('40');
-            await expect(monthlyModal.getByTestId('duration-months-input')).toHaveValue('3');
+            await expect(monthlyModal.getByLabel('Free months')).toHaveValue('2');
 
             await monthlyModal.getByRole('button', {name: 'Cancel'}).click();
             await modal.getByText('Yearly retention').click();
@@ -515,7 +516,7 @@ test.describe('Offers Modal', () => {
             await expect(yearlyModal.getByLabel('Enable yearly retention')).toBeChecked();
             await expect(yearlyModal.getByLabel('Display title')).toHaveValue('Stay yearly');
             await expect(yearlyModal.getByLabel('Display description')).toHaveValue('Yearly description');
-            await expect(yearlyModal.getByLabel('Free months')).toHaveValue('2');
+            await expect(yearlyModal.getByLabel('Amount off')).toHaveValue('30');
         });
 
         test('Shows validation errors for invalid retention values on save', async ({page}) => {
@@ -612,15 +613,18 @@ test.describe('Offers Modal', () => {
             expect(decodeURIComponent(params.get('display_title') || '')).toBe('Before you go');
             expect(decodeURIComponent(params.get('display_description') || '')).toBe('Please stay <script>alert(1)</script>');
             expect(params.get('redemption_type')).toBe('retention');
-            expect(params.get('type')).toBe('free_months');
-            expect(params.get('amount')).toBe('2');
+            expect(params.get('type')).toBe('percent');
+            expect(params.get('amount')).toBe('100');
+            expect(params.get('duration')).toBe('repeating');
+            expect(params.get('duration_in_months')).toBe('2');
             expect(params.get('cadence')).toBe('month');
             expect(params.get('tier_id')).toBeTruthy();
 
             await retentionModal.getByLabel('Free months').fill('');
             params = await getPreviewParams();
-            expect(params.get('type')).toBe('free_months');
-            expect(params.get('amount')).toBe('2');
+            expect(params.get('type')).toBe('percent');
+            expect(params.get('amount')).toBe('100');
+            expect(params.get('duration_in_months')).toBe('2');
 
             await retentionModal.getByRole('button', {name: /Percentage discount/}).click();
             await retentionModal.getByLabel('Amount off').fill('35');

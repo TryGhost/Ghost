@@ -39,14 +39,19 @@ const getRetentionOfferIdsByCadence = (offers: Offer[], cadence: RetentionCadenc
         .map(offer => offer.id);
 };
 
+const isFreeMonthsOffer = (offer: Offer): boolean => {
+    return offer.type === 'percent' && offer.amount === 100 && offer.duration === 'repeating';
+};
+
 const getRetentionTerms = (offer: Offer | null): string | null => {
     if (!offer) {
         return null;
     }
 
-    if (offer.type === 'free_months') {
-        const monthLabel = offer.amount === 1 ? 'month' : 'months';
-        return `${offer.amount} ${monthLabel} free`;
+    if (isFreeMonthsOffer(offer)) {
+        const months = offer.duration_in_months || 0;
+        const monthLabel = months === 1 ? 'month' : 'months';
+        return `${months} ${monthLabel} free`;
     }
 
     if (offer.type === 'percent') {
@@ -61,7 +66,7 @@ const getRetentionTermsDetail = (offer: Offer | null): string | null => {
         return null;
     }
 
-    if (offer.type === 'free_months') {
+    if (isFreeMonthsOffer(offer)) {
         return '';
     }
 
