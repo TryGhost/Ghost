@@ -400,6 +400,28 @@ describe('Mail: Ghostmailer', function () {
             assert(!sentMessage['o:tag'].includes('blog-123123'));
         });
 
+        it('should include custom mailgun tags passed by the caller', async function () {
+            configUtils.set({
+                hostSettings: {siteId: '123123'}
+            });
+            sandbox.stub(settingsCache, 'get').withArgs('email_track_opens').returns(false);
+
+            mailer = new mail.GhostMailer();
+            mailer.state.usingMailgun = true;
+            const sendMailSpy = sandbox.stub(mailer.transport, 'sendMail').resolves({});
+
+            await mailer.send({
+                to: 'user@example.com',
+                subject: 'test',
+                html: 'content',
+                mailgunTags: ['member-welcome-email']
+            });
+
+            const sentMessage = sendMailSpy.firstCall.args[0];
+            assert(sentMessage['o:tag'].includes('transactional-email'));
+            assert(sentMessage['o:tag'].includes('member-welcome-email'));
+        });
+
         it('should not add tag when not using Mailgun transport', async function () {
             configUtils.set({
                 hostSettings: {siteId: '999999'}

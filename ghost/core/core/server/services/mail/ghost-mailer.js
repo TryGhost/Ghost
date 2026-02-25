@@ -131,7 +131,7 @@ module.exports = class GhostMailer {
 
         const messageToSend = createMessage(message);
         if (this.state.usingMailgun) {
-            const tags = this.getTags();
+            const tags = this.getTags(message.mailgunTags);
             if (tags.length > 0) {
                 messageToSend['o:tag'] = tags;
             }
@@ -195,7 +195,7 @@ module.exports = class GhostMailer {
         return tpl(messages.messageSent);
     }
 
-    getTags() {
+    getTags(additionalTags = []) {
         const tagList = [...DEFAULT_TAGS];
 
         const siteId = config.get('hostSettings:siteId');
@@ -203,6 +203,10 @@ module.exports = class GhostMailer {
             tagList.push(`blog-${siteId}`);
         }
 
-        return tagList;
+        if (Array.isArray(additionalTags) && additionalTags.length > 0) {
+            tagList.push(...additionalTags);
+        }
+
+        return [...new Set(tagList)];
     }
 };
