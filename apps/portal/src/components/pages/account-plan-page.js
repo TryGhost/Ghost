@@ -5,7 +5,7 @@ import CloseButton from '../common/close-button';
 import BackButton from '../common/back-button';
 import {MultipleProductsPlansSection} from '../common/plans-section';
 import {getDateString} from '../../utils/date-time';
-import {formatNumber, getAvailablePrices, getCurrencySymbol, getFilteredPrices, getMemberActivePrice, getMemberActiveProduct, getMemberSubscription, getOfferOffAmount, getPriceFromSubscription, getProductFromId, getProductFromPrice, getSubscriptionFromId, getUpdatedOfferPrice, getUpgradeProducts, hasMultipleProductsFeature, isComplimentaryMember, isPaidMember} from '../../utils/helpers';
+import {formatNumber, getAvailablePrices, getCurrencySymbol, getFilteredPrices, isFreeMonthsOffer, getMemberActivePrice, getMemberActiveProduct, getMemberSubscription, getOfferOffAmount, getPriceFromSubscription, getProductFromId, getProductFromPrice, getSubscriptionFromId, getUpdatedOfferPrice, getUpgradeProducts, hasMultipleProductsFeature, isComplimentaryMember, isPaidMember} from '../../utils/helpers';
 import Interpolate from '@doist/react-interpolate';
 import {t} from '../../utils/i18n';
 
@@ -252,8 +252,8 @@ function PlansOrProductSection({selectedPlan, onPlanSelect, onPlanCheckout, chan
 
 // TODO: Add i18n once copy is finalized
 function getOfferMessage(offer, originalPrice, currency, amountOff, subscription) {
-    if (offer.type === 'free_months') {
-        const months = offer.amount;
+    if (isFreeMonthsOffer(offer)) {
+        const months = offer.duration_in_months;
         const monthLabel = months === 1 ? '1 free month' : `${months} free months`;
 
         if (subscription?.current_period_end) {
@@ -300,7 +300,7 @@ const RetentionOfferSection = ({offer, product, price, onAcceptOffer, onDeclineO
     const currency = getCurrencySymbol(price.currency);
     const discountedPrice = formatNumber(getUpdatedOfferPrice({offer, price}));
     const amountOff = getOfferOffAmount({offer});
-    const discountText = offer.type === 'free_months' ? `${amountOff} free` : `${amountOff} off`;
+    const discountText = isFreeMonthsOffer(offer) ? `${amountOff} free` : `${amountOff} off`;
     const cadenceLabel = offer.cadence === 'month' ? 'Monthly' : 'Yearly';
     const productCadenceLabel = `${product.name} - ${cadenceLabel}`;
     const displayDescription = offer.display_description || 'We\'d hate to see you leave. How about a special offer to stay?';
@@ -322,7 +322,7 @@ const RetentionOfferSection = ({offer, product, price, onAcceptOffer, onDeclineO
 
                 <div className="gh-portal-offer-details">
                     <div className="gh-portal-retention-offer-price">
-                        {!(offer.type === 'free_months') && (
+                        {!isFreeMonthsOffer(offer) && (
                             <>
                                 <div className="gh-portal-product-price">
                                     <span className="currency-sign">{currency}</span>

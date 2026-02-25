@@ -710,12 +710,12 @@ describe('Helpers - ', () => {
             expect(subscriptionHasFreeTrial({sub})).toBe(true);
         });
 
-        it('returns false for free_months offers', () => {
+        it('returns false for free months (percent/100/repeating) offers', () => {
             const futureDate = new Date();
             futureDate.setDate(futureDate.getDate() + 3);
             const sub = {
-                offer: {type: 'free_months'},
-                trial_end_at: futureDate.toISOString()
+                offer: {type: 'percent', amount: 100, duration: 'repeating', redemption_type: 'retention'},
+                next_payment: {discount: {end: futureDate.toISOString()}}
             };
 
             expect(subscriptionHasFreeTrial({sub})).toBe(false);
@@ -723,12 +723,12 @@ describe('Helpers - ', () => {
     });
 
     describe('subscriptionHasFreeMonthsOffer', () => {
-        it('returns true for active free_months offers', () => {
+        it('returns true for active percent/100/repeating retention offers with future discount end', () => {
             const futureDate = new Date();
             futureDate.setDate(futureDate.getDate() + 3);
             const sub = {
-                offer: {type: 'free_months'},
-                trial_end_at: futureDate.toISOString()
+                offer: {type: 'percent', amount: 100, duration: 'repeating', redemption_type: 'retention'},
+                next_payment: {discount: {end: futureDate.toISOString()}}
             };
 
             expect(subscriptionHasFreeMonthsOffer({sub})).toBe(true);
@@ -745,7 +745,29 @@ describe('Helpers - ', () => {
             expect(subscriptionHasFreeMonthsOffer({sub})).toBe(false);
         });
 
-        it('returns false for trial subscriptions', () => {
+        it('returns false for regular percent offers (not 100%)', () => {
+            const futureDate = new Date();
+            futureDate.setDate(futureDate.getDate() + 3);
+            const sub = {
+                offer: {type: 'percent', amount: 50, duration: 'repeating', redemption_type: 'retention'},
+                next_payment: {discount: {end: futureDate.toISOString()}}
+            };
+
+            expect(subscriptionHasFreeMonthsOffer({sub})).toBe(false);
+        });
+
+        it('returns false when discount end date is in the past', () => {
+            const pastDate = new Date();
+            pastDate.setDate(pastDate.getDate() - 3);
+            const sub = {
+                offer: {type: 'percent', amount: 100, duration: 'repeating', redemption_type: 'retention'},
+                next_payment: {discount: {end: pastDate.toISOString()}}
+            };
+
+            expect(subscriptionHasFreeMonthsOffer({sub})).toBe(false);
+        });
+
+        it('returns false for null offer', () => {
             const futureDate = new Date();
             futureDate.setDate(futureDate.getDate() + 3);
             const sub = {

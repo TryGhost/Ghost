@@ -203,8 +203,9 @@ function FreeTrialLabel({subscription}) {
 
 // TODO: Add i18n once copy is finalized
 function FreeMonthsLabel({nextPayment, subscription}) {
-    const months = nextPayment?.discount?.amount ?? 0;
-    const renewalDate = getDateString(subscription?.current_period_end);
+    const months = subscription?.offer?.duration_in_months ?? 0;
+    const discountEnd = nextPayment?.discount?.end;
+    const renewalDate = discountEnd ? getDateString(discountEnd) : null;
     const monthsText = months === 1 ? '1 month free' : `${months} months free`;
     const label = renewalDate ? `${monthsText} - Renews ${renewalDate}` : monthsText;
 

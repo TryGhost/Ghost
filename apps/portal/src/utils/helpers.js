@@ -540,11 +540,19 @@ export function subscriptionHasFreeTrial({sub} = {}) {
     return isTrialActive;
 }
 
-export function subscriptionHasFreeMonthsOffer({sub} = {}) {
-    const isFreeMonths = sub?.offer?.type === 'free_months';
-    const isFreeMonthsActive = isFreeMonths && sub?.trial_end_at && !isInThePast(new Date(sub?.trial_end_at));
+export function isFreeMonthsOffer(offer) {
+    return offer?.type === 'percent'
+        && offer?.amount === 100
+        && offer?.duration === 'repeating'
+        && offer?.redemption_type === 'retention';
+}
 
-    return isFreeMonthsActive;
+export function subscriptionHasFreeMonthsOffer({sub} = {}) {
+    if (!isFreeMonthsOffer(sub?.offer)) {
+        return false;
+    }
+    const discountEnd = sub?.next_payment?.discount?.end;
+    return discountEnd && !isInThePast(new Date(discountEnd));
 }
 
 export function isInThePast(date) {
@@ -797,12 +805,13 @@ export function getPriceIdFromPageQuery({site, pageQuery}) {
 
 // TODO: Add i18n once copy is finalized
 export const getOfferOffAmount = ({offer}) => {
-    if (offer.type === 'fixed') {
+    if (isFreeMonthsOffer(offer)) {
+        const months = offer.duration_in_months;
+        return `${months === 1 ? '1 month' : `${months} months`}`;
+    } else if (offer.type === 'fixed') {
         return `${getCurrencySymbol(offer.currency)}${offer.amount / 100}`;
     } else if (offer.type === 'percent') {
         return `${offer.amount}%`;
-    } else if (offer.type === 'free_months') {
-        return `${offer.amount === 1 ? '1 month' : `${offer.amount} months`}`;
     }
     return '';
 };
