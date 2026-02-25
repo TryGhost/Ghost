@@ -157,13 +157,13 @@ const RetentionOfferRow: React.FC<{
     return (
         <tr className='group relative scale-100 border-b border-b-grey-200 dark:border-grey-800' data-testid='retention-offer-item'>
             <td className='p-0'>
-                <a className='block cursor-pointer p-5 pl-0' onClick={onClick}>
+                <button className='block w-full cursor-pointer p-5 pl-0 text-left' type="button" onClick={onClick}>
                     <span className='font-semibold'>{offer.name}</span><br />
                     <span className='text-sm text-grey-700'>{offer.description}</span>
-                </a>
+                </button>
             </td>
             <td className='whitespace-nowrap p-0 text-sm'>
-                <a className='block cursor-pointer p-5' onClick={onClick}>
+                <button className='block w-full cursor-pointer p-5 text-left' type="button" onClick={onClick}>
                     {offer.terms ? (
                         <>
                             <span className='text-[1.3rem] font-medium uppercase'>{offer.terms}</span><br />
@@ -172,31 +172,41 @@ const RetentionOfferRow: React.FC<{
                     ) : (
                         <span className='text-grey-700'>&ndash;</span>
                     )}
-                </a>
+                </button>
             </td>
             <td className='whitespace-nowrap p-0 text-sm'>
-                <a className='block cursor-pointer p-5' onClick={onClick}>
+                <button className='block w-full cursor-pointer p-5 text-left' type="button" onClick={onClick}>
                     <span className='text-grey-700'>&ndash;</span>
-                </a>
+                </button>
             </td>
             <td className='whitespace-nowrap p-0 text-sm'>
-                <a
-                    className={`block cursor-pointer p-5 ${redemptionFilterUrl ? 'hover:underline' : ''}`}
-                    data-testid={`retention-redemptions-link-${offer.id}`}
-                    href={redemptionFilterUrl}
-                    onClick={!redemptionFilterUrl ? onClick : undefined}
-                >
-                    {offer.redemptions}
-                </a>
+                {redemptionFilterUrl ? (
+                    <a
+                        className='block cursor-pointer p-5 hover:underline'
+                        data-testid={`retention-redemptions-link-${offer.id}`}
+                        href={redemptionFilterUrl}
+                    >
+                        {offer.redemptions}
+                    </a>
+                ) : (
+                    <button
+                        className='block w-full cursor-pointer p-5 text-left'
+                        data-testid={`retention-redemptions-link-${offer.id}`}
+                        type="button"
+                        onClick={onClick}
+                    >
+                        {offer.redemptions}
+                    </button>
+                )}
             </td>
             <td className='whitespace-nowrap p-0 text-sm'>
-                <a className='block cursor-pointer p-5' onClick={onClick}>
+                <button className='block w-full cursor-pointer p-5 text-left' type="button" onClick={onClick}>
                     {offer.status === 'active' ? (
                         <span className='inline-flex items-center rounded-full bg-[rgba(48,207,67,0.15)] px-2 py-0.5 text-2xs font-semibold uppercase tracking-wide text-green'>Active</span>
                     ) : (
                         <span className='inline-flex items-center rounded-full bg-grey-200 px-2 py-0.5 text-2xs font-semibold uppercase tracking-wide text-grey-700 dark:bg-grey-900 dark:text-grey-500'>Inactive</span>
                     )}
-                </a>
+                </button>
             </td>
         </tr>
     );
