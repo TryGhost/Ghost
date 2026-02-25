@@ -4,6 +4,7 @@ const mail = require('../../../../../core/server/services/mail');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const configUtils = require('../../../../utils/config-utils');
 const urlUtils = require('../../../../../core/shared/url-utils');
+const logging = require('@tryghost/logging');
 let mailer;
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
@@ -420,6 +421,44 @@ describe('Mail: Ghostmailer', function () {
             const sentMessage = sendMailSpy.firstCall.args[0];
             assert(sentMessage['o:tag'].includes('transactional-email'));
             assert(sentMessage['o:tag'].includes('member-welcome-email'));
+        });
+
+        it('should truncate tags to Mailgun maximum and log warning', async function () {
+            configUtils.set({
+                hostSettings: {siteId: '123123'}
+            });
+            sandbox.stub(settingsCache, 'get').withArgs('email_track_opens').returns(false);
+            const warnStub = sandbox.stub(logging, 'warn');
+
+            mailer = new mail.GhostMailer();
+            mailer.state.usingMailgun = true;
+            const sendMailSpy = sandbox.stub(mailer.transport, 'sendMail').resolves({});
+
+            await mailer.send({
+                to: 'user@example.com',
+                subject: 'test',
+                html: 'content',
+                mailgunTags: [
+                    'tag-1',
+                    'tag-2',
+                    'tag-3',
+                    'tag-4',
+                    'tag-5',
+                    'tag-6',
+                    'tag-7',
+                    'tag-8',
+                    'tag-9'
+                ]
+            });
+
+            const sentMessage = sendMailSpy.firstCall.args[0];
+            assert.equal(sentMessage['o:tag'].length, 10);
+            assert.equal(sentMessage['o:tag'][0], 'ghost-email');
+            assert.equal(sentMessage['o:tag'][1], 'transactional-email');
+            assert.equal(sentMessage['o:tag'][2], 'blog-123123');
+            assert.equal(sentMessage['o:tag'].includes('tag-8'), false);
+            assert.equal(sentMessage['o:tag'].includes('tag-9'), false);
+            sinon.assert.calledWithMatch(warnStub, sinon.match('Mailgun tag count exceeded 10'));
         });
 
         it('should not add tag when not using Mailgun transport', async function () {

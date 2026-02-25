@@ -2,6 +2,7 @@
 // Handles sending email for Ghost
 const _ = require('lodash');
 const config = require('../../../shared/config');
+const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const settingsCache = require('../../../shared/settings-cache');
@@ -18,6 +19,7 @@ const messages = {
 };
 const EmailAddressParser = require('../email-address/email-address-parser');
 const DEFAULT_TAGS = ['ghost-email', 'transactional-email'];
+const MAX_MAILGUN_TAGS = 10;
 
 function getDomain() {
     const domain = urlUtils.urlFor('home', true).match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
@@ -207,6 +209,17 @@ module.exports = class GhostMailer {
             tagList.push(...additionalTags);
         }
 
-        return [...new Set(tagList)];
+        const uniqueTags = [...new Set(tagList)];
+
+        if (uniqueTags.length > MAX_MAILGUN_TAGS) {
+            const keptTags = uniqueTags.slice(0, MAX_MAILGUN_TAGS);
+            const droppedTags = uniqueTags.slice(MAX_MAILGUN_TAGS);
+
+            logging.warn(`[MAIL] Mailgun tag count exceeded ${MAX_MAILGUN_TAGS}; truncating tags. Kept: ${keptTags.join(', ')}. Dropped: ${droppedTags.join(', ')}`);
+
+            return keptTags;
+        }
+
+        return uniqueTags;
     }
 };
