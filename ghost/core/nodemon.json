@@ -1,0 +1,13 @@
+{
+  "watch": [
+    ".",
+    "../*"
+  ],
+  "ignore": [
+    "../admin/**",
+    "content/**",
+    "core/built/**"
+  ],
+  "ext": "js,mjs,cjs,json,ts,tsx",
+  "exec": "node --import=tsx"
+}
