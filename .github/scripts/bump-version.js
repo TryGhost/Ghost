@@ -23,8 +23,7 @@ const semver = require('semver');
         const bumpedVersion = semver.inc(current_version, 'minor');
         newVersion = `${bumpedVersion}-pre-g${buildString}`;
     } else {
-        const gitVersion = await exec('git describe --long HEAD').then(({stdout}) => stdout.trim().replace(/^v/, ''));
-        newVersion = gitVersion;
+        newVersion = `${current_version}-0-g${buildString}`;
     }
 
     newVersion += '+moya';

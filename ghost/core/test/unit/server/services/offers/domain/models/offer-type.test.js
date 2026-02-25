@@ -4,11 +4,10 @@ const OfferType = require('../../../../../../../core/server/services/offers/doma
 
 describe('OfferType', function () {
     describe('OfferType.create factory', function () {
-        it('Creates an Offer type containing either "fixed", "percent", "trial" or "free_months"', function () {
+        it('Creates an Offer type containing either "fixed", "percent" or "trial"', function () {
             OfferType.create('fixed');
             OfferType.create('percent');
             OfferType.create('trial');
-            OfferType.create('free_months');
 
             try {
                 OfferType.create('other');
@@ -44,13 +43,6 @@ describe('OfferType', function () {
         it('Is an OfferType with a value of "trial"', function () {
             assert.equal(OfferType.Trial.value, 'trial');
             assert(OfferType.Trial.equals(OfferType.create('trial')));
-        });
-    });
-
-    describe('OfferType.FreeMonths', function () {
-        it('Is an OfferType with a value of "free_months"', function () {
-            assert.equal(OfferType.FreeMonths.value, 'free_months');
-            assert(OfferType.FreeMonths.equals(OfferType.create('free_months')));
         });
     });
 });

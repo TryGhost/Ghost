@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 
-const {OfferPercentageAmount, OfferFixedAmount, OfferTrialAmount, OfferFreeMonthsAmount} = require('../../../../../../../core/server/services/offers/domain/models/offer-amount');
+const {OfferPercentageAmount, OfferFixedAmount, OfferTrialAmount} = require('../../../../../../../core/server/services/offers/domain/models/offer-amount');
 
 describe('OfferAmount', function () {
     describe('OfferPercentageAmount', function () {
@@ -133,55 +133,6 @@ describe('OfferAmount', function () {
             const cadence = OfferTrialAmount.create(42);
 
             assert(typeof cadence.value === 'number');
-        });
-    });
-
-    describe('OfferFreeMonthsAmount', function () {
-        describe('OfferFreeMonthsAmount.create factory', function () {
-            it('Will only create an OfferFreeMonthsAmount containing an integer greater than 0', function () {
-                try {
-                    OfferFreeMonthsAmount.create();
-                    assert.fail();
-                } catch (err) {
-                    assert(err instanceof OfferFreeMonthsAmount.InvalidOfferAmount, 'expected an InvalidOfferAmount error');
-                }
-
-                try {
-                    OfferFreeMonthsAmount.create('1');
-                    assert.fail();
-                } catch (err) {
-                    assert(err instanceof OfferFreeMonthsAmount.InvalidOfferAmount, 'expected an InvalidOfferAmount error');
-                }
-
-                try {
-                    OfferFreeMonthsAmount.create(0);
-                    assert.fail();
-                } catch (err) {
-                    assert(err instanceof OfferFreeMonthsAmount.InvalidOfferAmount, 'expected an InvalidOfferAmount error');
-                }
-
-                try {
-                    OfferFreeMonthsAmount.create(-1);
-                    assert.fail();
-                } catch (err) {
-                    assert(err instanceof OfferFreeMonthsAmount.InvalidOfferAmount, 'expected an InvalidOfferAmount error');
-                }
-
-                try {
-                    OfferFreeMonthsAmount.create(3.14);
-                    assert.fail();
-                } catch (err) {
-                    assert(err instanceof OfferFreeMonthsAmount.InvalidOfferAmount, 'expected an InvalidOfferAmount error');
-                }
-
-                OfferFreeMonthsAmount.create(1);
-            });
-        });
-
-        it('Exposes a number on the value property', function () {
-            const cadence = OfferFreeMonthsAmount.create(2);
-
-            assert.equal(typeof cadence.value, 'number');
         });
     });
 });
