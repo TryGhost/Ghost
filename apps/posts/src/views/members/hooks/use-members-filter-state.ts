@@ -39,7 +39,7 @@ export const MEMBER_FILTER_FIELDS = [
 export type MemberFilterField = typeof MEMBER_FILTER_FIELDS[number];
 
 // Fields that support multiselect (comma-separated values in URL)
-const MULTISELECT_FIELDS = new Set<string>(['label']);
+const MULTISELECT_FIELDS = new Set<string>(['label', 'offer_redemptions']);
 
 /**
  * Escape a string for NQL (escape single quotes)
