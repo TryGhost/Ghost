@@ -71,10 +71,18 @@ export class EnvironmentManager {
     /**
      * Setup that executes on each test start
      */
-    public async perTestSetup(options: {config?: unknown} = {}): Promise<GhostInstance> {
+    public async perTestSetup(options: {
+        config?: unknown;
+        stripe?: {
+            secretKey: string;
+            publishableKey: string;
+        };
+    } = {}): Promise<GhostInstance> {
         try {
             const {siteUuid, instanceId} = this.uniqueTestDetails();
-            await this.mysql.setupTestDatabase(instanceId, siteUuid);
+            await this.mysql.setupTestDatabase(instanceId, siteUuid, {
+                stripe: options.stripe
+            });
 
             return await this.ghost.createAndStartInstance(instanceId, siteUuid, options.config);
         } catch (error) {

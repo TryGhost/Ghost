@@ -107,7 +107,7 @@ test.describe('Ghost Admin - Member Welcome Emails', () => {
 });
 
 test.describe('Ghost Admin - Paid Member Welcome Emails', () => {
-    test.use({stripeConnected: true});
+    test.use({stripeEnabled: true});
 
     test('can enable paid welcome emails', async ({page}) => {
         const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);

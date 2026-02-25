@@ -26,11 +26,19 @@ export class MySQLManager {
         this.containerName = containerName;
     }
 
-    async setupTestDatabase(databaseName: string, siteUuid: string): Promise<void> {
+    async setupTestDatabase(databaseName: string, siteUuid: string, options: {
+        stripe?: {
+            secretKey: string;
+            publishableKey: string;
+        };
+    } = {}): Promise<void> {
         try {
             await this.createDatabase(databaseName);
             await this.restoreDatabaseFromSnapshot(databaseName);
             await this.updateSiteUuid(databaseName, siteUuid);
+            if (options.stripe) {
+                await this.updateStripeSettings(databaseName, options.stripe.secretKey, options.stripe.publishableKey);
+            }
 
             debug('Test database setup completed:', databaseName, 'with site_uuid:', siteUuid);
         } catch (error) {
@@ -168,6 +176,22 @@ export class MySQLManager {
         await this.exec(command);
 
         debug('site_uuid updated in database settings:', siteUuid);
+    }
+
+    async updateStripeSettings(database: string, secretKey: string, publishableKey: string): Promise<void> {
+        debug('Updating Stripe settings in database:', database);
+
+        const escapedSecretKey = secretKey.replace(/'/g, '\\\'');
+        const escapedPublishableKey = publishableKey.replace(/'/g, '\\\'');
+        const command = 'mysql -uroot -proot -e "UPDATE \\`' + database + '\\`.settings SET value = CASE \\`key\\` ' +
+            'WHEN \'stripe_secret_key\' THEN \'' + escapedSecretKey + '\' ' +
+            'WHEN \'stripe_publishable_key\' THEN \'' + escapedPublishableKey + '\' ' +
+            'ELSE value END, updated_at = NOW() ' +
+            'WHERE \\`key\\` IN (\'stripe_secret_key\', \'stripe_publishable_key\');"';
+
+        await this.exec(command);
+
+        debug('Stripe settings updated in database');
     }
 
     private async exec(command: string) {

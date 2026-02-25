@@ -2,6 +2,7 @@
 const {VersionMismatchError} = require('@tryghost/errors');
 // @ts-ignore
 const debug = require('@tryghost/debug')('stripe');
+const ghostConfig = require('../../../shared/config');
 const Stripe = require('stripe').Stripe;
 
 /* Stripe has the following rate limits:
@@ -125,9 +126,22 @@ module.exports = class StripeAPI {
         // Lazyloaded to protect sites without Stripe configured
         const LeakyBucket = require('leaky-bucket');
 
-        this._stripe = new Stripe(config.secretKey, {
+        const stripeConfig = {
             apiVersion: STRIPE_API_VERSION
-        });
+        };
+        const stripeApiHost = ghostConfig.get('STRIPE_API_HOST');
+        if (stripeApiHost) {
+            stripeConfig.host = stripeApiHost;
+        }
+        const stripeApiPort = ghostConfig.get('STRIPE_API_PORT');
+        if (stripeApiPort !== undefined && stripeApiPort !== null && stripeApiPort !== '') {
+            stripeConfig.port = parseInt(stripeApiPort, 10);
+        }
+        const stripeApiProtocol = ghostConfig.get('STRIPE_API_PROTOCOL');
+        if (stripeApiProtocol) {
+            stripeConfig.protocol = stripeApiProtocol;
+        }
+        this._stripe = new Stripe(config.secretKey, stripeConfig);
         this._config = config;
         this._testMode = config.secretKey && config.secretKey.startsWith('sk_test_');
         if (this._testMode) {

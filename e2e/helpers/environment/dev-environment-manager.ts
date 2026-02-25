@@ -74,7 +74,13 @@ export class DevEnvironmentManager {
     /**
      * Per-test setup - creates containers on first call, then clones database and restarts Ghost.
      */
-    async perTestSetup(options: {config?: unknown} = {}): Promise<GhostInstance> {
+    async perTestSetup(options: {
+        config?: unknown;
+        stripe?: {
+            secretKey: string;
+            publishableKey: string;
+        };
+    } = {}): Promise<GhostInstance> {
         // Lazy initialization of Ghost containers (once per worker)
         if (!this.initialized) {
             debug('Initializing Ghost containers for worker', this.workerIndex);
@@ -86,7 +92,9 @@ export class DevEnvironmentManager {
         const instanceId = `ghost_e2e_${siteUuid.replace(/-/g, '_')}`;
 
         // Setup database
-        await this.mysql.setupTestDatabase(instanceId, siteUuid);
+        await this.mysql.setupTestDatabase(instanceId, siteUuid, {
+            stripe: options.stripe
+        });
 
         // Restart Ghost with new database
         const extraConfig = options.config as Record<string, string> | undefined;
