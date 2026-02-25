@@ -50,7 +50,7 @@
     "Continue": "Tęsti",
     "Continue subscription": "Pratęsti prenumeratą",
     "Could not create Stripe billing portal session": "",
-    "Could not create stripe checkout session": "",
+    "Could not create Stripe checkout session": "",
     "Could not sign in. Login link expired.": "Nepavyko prijungti. Prisijungimo nuoroda nebegalioja.",
     "Could not update email! Invalid link.": "Nepavyko atnaujinti el. pašto adreso! Negaliojanti nuoroda.",
     "Create a new contact": "Sukurti naują kontaktą",

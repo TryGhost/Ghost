@@ -50,7 +50,7 @@
     "Continue": "Tiếp tục",
     "Continue subscription": "Tiếp tục đăng ký",
     "Could not create Stripe billing portal session": "",
-    "Could not create stripe checkout session": "Không thể tạo phiên thanh toán Stripe",
+    "Could not create Stripe checkout session": "Không thể tạo phiên thanh toán Stripe",
     "Could not sign in. Login link expired.": "Không thể đăng nhập. Liên kết đăng nhập hết hạn.",
     "Could not update email! Invalid link.": "Không thể cập nhật email. Liên kết không hợp lệ.",
     "Create a new contact": "Tạo liên hệ mới",

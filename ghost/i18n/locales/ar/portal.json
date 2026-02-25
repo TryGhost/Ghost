@@ -50,7 +50,7 @@
     "Continue": "استمرار",
     "Continue subscription": "متابعة الاشتراك",
     "Could not create Stripe billing portal session": "",
-    "Could not create stripe checkout session": "Stripe تعذر إنشاء جلسة دفع ",
+    "Could not create Stripe checkout session": "Stripe تعذر إنشاء جلسة دفع ",
     "Could not sign in. Login link expired.": ".تعذر تسجيل الدخول. رابط تسجيل الدخول منتهي الصلاحية",
     "Could not update email! Invalid link.": ".تعذر تحديث البريد الإلكتروني! الرابط غير صالح",
     "Create a new contact": "إنشاء جهة اتصال جديدة",

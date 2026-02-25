@@ -50,7 +50,7 @@
     "Continue": "Endelea",
     "Continue subscription": "Endelea na usajili",
     "Could not create Stripe billing portal session": "",
-    "Could not create stripe checkout session": "",
+    "Could not create Stripe checkout session": "",
     "Could not sign in. Login link expired.": "Haikuweza kuingia. Kiungo cha kuingia kimeisha muda.",
     "Could not update email! Invalid link.": "Haikuweza kusasisha barua pepe! Kiungo batili.",
     "Create a new contact": "Unda mawasiliano mapya",

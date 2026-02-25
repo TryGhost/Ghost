@@ -50,7 +50,7 @@
     "Continue": "続ける",
     "Continue subscription": "購読を続ける",
     "Could not create Stripe billing portal session": "",
-    "Could not create stripe checkout session": "Stripeチェックアウトセッションを作成できませんでした。",
+    "Could not create Stripe checkout session": "Stripeチェックアウトセッションを作成できませんでした。",
     "Could not sign in. Login link expired.": "ログインできませんでした。ログインリンクの有効期限が切れています。",
     "Could not update email! Invalid link.": "メールアドレスを更新できませんでした。無効なリンクです。",
     "Create a new contact": "新しい連絡先を作成",
