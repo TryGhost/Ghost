@@ -198,6 +198,11 @@ module.exports = class GhostMailer {
         return tpl(messages.messageSent);
     }
 
+    /**
+     * Builds the Mailgun tag list from defaults, site tag, and optional extra tags.
+     * @param {string[]} [additionalTags]
+     * @returns {string[]}
+     */
     getTags(additionalTags = []) {
         const tagList = [...DEFAULT_TAGS];
 
