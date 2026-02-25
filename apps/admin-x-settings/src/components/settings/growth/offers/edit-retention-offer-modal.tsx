@@ -148,7 +148,7 @@ const getOfferTerms = (offer: Offer | null): RetentionOfferTerms | null => {
     // A free months offer is stored as percent/100/repeating
     // but getFormOfferTerms also returns percent/100/repeating for free_months form type
     // so terms comparison works correctly without special-casing
-    const durationInMonths = offer.duration === 'repeating' ? offer.duration_in_months || 0 : 0;
+    const durationInMonths = offer.duration_in_months ?? 0;
 
     return {
         type: 'percent',
