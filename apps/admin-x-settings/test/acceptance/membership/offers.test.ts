@@ -349,18 +349,17 @@ test.describe('Offers Modal', () => {
             };
         };
 
-        const openRetentionTab = async (page: Page) => {
+        const openOffersModal = async (page: Page) => {
             await page.goto('/');
             const section = page.getByTestId('offers');
             await section.getByRole('button', {name: 'Manage offers'}).click();
 
             const modal = page.getByTestId('offers-modal');
-            await modal.getByRole('tab', {name: 'Retention'}).click();
             return modal;
         };
 
         const openRetentionModal = async (page: Page, name: 'Monthly retention' | 'Yearly retention') => {
-            const modal = await openRetentionTab(page);
+            const modal = await openOffersModal(page);
             await modal.getByText(name).click();
             const retentionModal = page.getByTestId('retention-offer-modal');
             await expect(retentionModal).toBeVisible();
@@ -412,7 +411,7 @@ test.describe('Offers Modal', () => {
                 ]
             })});
 
-            const modal = await openRetentionTab(page);
+            const modal = await openOffersModal(page);
             const rows = modal.getByTestId('retention-offer-item');
             await expect(rows).toHaveCount(2);
 
@@ -501,7 +500,7 @@ test.describe('Offers Modal', () => {
             await expect(monthlyModal.getByLabel('Display title')).toHaveValue('Stay monthly');
             await expect(monthlyModal.getByLabel('Display description')).toHaveValue('Monthly description');
             await expect(monthlyModal.getByLabel('Amount off')).toHaveValue('40');
-            await expect(monthlyModal.getByLabel('Duration in months')).toHaveValue('3');
+            await expect(monthlyModal.getByTestId('duration-months-input')).toHaveValue('3');
 
             await monthlyModal.getByRole('button', {name: 'Cancel'}).click();
             await modal.getByText('Yearly retention').click();

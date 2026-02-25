@@ -298,9 +298,8 @@ const createOffer = async (page, {name, tierName, offerType, amount, discountTyp
             await page.getByLabel('Amount off').fill(`${amount}`);
             if (discountType === 'multiple-months') {
                 await chooseOptionInSelect(page.getByTestId('duration-select-offers'), `Multiple-months`);
-                await page.getByLabel('Duration in months').fill(discountDuration.toString());
-                // await page.locator('[data-test-select="offer-duration"]').selectOption('repeating');
-                // await page.locator('input#duration-months').fill(discountDuration.toString());
+                const durationInput = page.getByTestId('duration-months-input');
+                await durationInput.fill(discountDuration.toString());
             }
 
             if (discountType === 'forever') {
