@@ -21,7 +21,7 @@ const OffersRouteHandler: React.FC<OffersRouteHandlerProps> = ({route}) => {
         const retentionId = route.split('/').pop();
         return <EditRetentionOfferModal id={retentionId ? retentionId : ''} />;
     } else if (retentionOffersEnabled && route === 'offers/edit/retention') {
-        return <OffersIndexRetentionModal defaultTab='retention' />;
+        return <OffersIndexRetentionModal />;
     } else if (!retentionOffersEnabled && route.startsWith('offers/edit/retention')) {
         return <OffersIndexModal />;
     } else if (route.startsWith('offers/edit/') && route.length > 'offers/edit/'.length) {
