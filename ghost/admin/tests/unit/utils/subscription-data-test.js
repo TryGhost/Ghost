@@ -152,8 +152,8 @@ describe('Unit: Util: subscription-data', function () {
             expect(trialUntil(sub)).to.equal('31 May 2222');
         });
 
-        it('returns undefined for free_months offers', function () {
-            let sub = {status: 'active', trial_end_at: '2222-05-31', offer: {type: 'free_months'}};
+        it('returns undefined for percent/100/repeating (free months) offers', function () {
+            let sub = {status: 'active', trial_end_at: '2222-05-31', offer: {type: 'percent', amount: 100, duration: 'repeating'}};
             expect(trialUntil(sub)).to.be.undefined;
         });
 
@@ -298,15 +298,16 @@ describe('Unit: Util: subscription-data', function () {
             });
         });
 
-        it('returns renews details for free_months offers', function () {
+        it('returns renews details for percent/100/repeating (free months) offers', function () {
             let sub = {
                 id: 'defined',
                 status: 'active',
                 cancel_at_period_end: false,
                 current_period_end: '2222-05-31',
-                trial_end_at: '2222-05-31',
                 offer: {
-                    type: 'free_months'
+                    type: 'percent',
+                    amount: 100,
+                    duration: 'repeating'
                 },
                 tier: null,
                 price: {
@@ -529,13 +530,13 @@ describe('Unit: Util: subscription-data', function () {
                 expected: {label: 'Retention offer', detail: '25% off forever'}
             },
             {
-                name: 'retention + free_months (no discount end)',
-                offer: {redemption_type: 'retention', type: 'free_months', amount: 1, duration: 'free_months'},
+                name: 'retention + percent/100/repeating (free months, no discount end)',
+                offer: {redemption_type: 'retention', type: 'percent', amount: 100, duration: 'repeating', duration_in_months: 1},
                 expected: {label: 'Retention offer', detail: '1 month free'}
             },
             {
-                name: 'retention + free_months (with discount end)',
-                offer: {id: 'offer_2', redemption_type: 'retention', type: 'free_months', amount: 1, duration: 'free_months'},
+                name: 'retention + percent/100/repeating (free months, with discount end)',
+                offer: {id: 'offer_2', redemption_type: 'retention', type: 'percent', amount: 100, duration: 'repeating', duration_in_months: 1},
                 sub: {next_payment: {discount: {offer_id: 'offer_2', end: '2026-02-17T00:00:00.000Z'}}},
                 expected: {label: 'Retention offer', detail: '1 month free until Feb 2026'}
             },
