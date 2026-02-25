@@ -6,55 +6,49 @@ const __dirname = path.dirname(__filename);
 
 export const CONFIG_DIR = path.resolve(__dirname, '../../data/state');
 
-export const DOCKER_COMPOSE_CONFIG = {
-    FILE_PATH: path.resolve(__dirname, '../../compose.yml'),
-    PROJECT: 'ghost-e2e'
-};
+// Repository root path (for source mounting and config files)
+export const REPO_ROOT = path.resolve(__dirname, '../../..');
 
-export const GHOST_DEFAULTS = {
-    PORT: 2368
-};
+export const DEV_COMPOSE_PROJECT = process.env.COMPOSE_PROJECT_NAME || 'ghost-dev';
+// compose.dev.yaml pins the network name explicitly, so this does not follow COMPOSE_PROJECT_NAME.
+export const DEV_NETWORK_NAME = 'ghost_dev';
+export const DEV_SHARED_CONFIG_VOLUME = `${DEV_COMPOSE_PROJECT}_shared-config`;
+export const DEV_PRIMARY_DATABASE = process.env.MYSQL_DATABASE || 'ghost_dev';
 
-export interface GhostImageProfile {
-    image: string;
-    workdir: string;
-    command: string[];
-}
+/**
+ * Caddyfile paths for different modes.
+ * - dev: Proxies to host dev servers for HMR
+ * - build: Minimal passthrough (assets served by Ghost from /content/files/)
+ */
+export const CADDYFILE_PATHS = {
+    dev: path.resolve(REPO_ROOT, 'docker/dev-gateway/Caddyfile'),
+    build: path.resolve(REPO_ROOT, 'docker/dev-gateway/Caddyfile.build')
+} as const;
 
-export function getImageProfile(): GhostImageProfile {
-    const image = process.env.GHOST_E2E_IMAGE || 'ghost-e2e:local';
-    return {
-        image,
-        workdir: '/home/ghost',
-        command: ['node', 'index.js']
-    };
-}
+/**
+ * Build mode image configuration.
+ * Used for build mode - can be locally built or pulled from registry.
+ * 
+ * Override with environment variable:
+ * - GHOST_E2E_IMAGE: Image name (default: ghost-e2e:local)
+ * 
+ * Examples:
+ * - Local: ghost-e2e:local (built from e2e/Dockerfile.e2e)
+ * - Registry: ghcr.io/tryghost/ghost:latest (as E2E base image)
+ * - Community: ghost
+ */
+export const BUILD_IMAGE = process.env.GHOST_E2E_IMAGE || 'ghost-e2e:local';
 
-export const MYSQL = {
-    HOST: 'mysql',
-    PORT: 3306,
-    USER: 'root',
-    PASSWORD: 'root'
-};
+/**
+ * Build mode gateway image.
+ * Uses stock Caddy by default so CI does not need a custom gateway build.
+ */
+export const BUILD_GATEWAY_IMAGE = process.env.GHOST_E2E_GATEWAY_IMAGE || 'caddy:2-alpine';
 
 export const TINYBIRD = {
     LOCAL_HOST: 'tinybird-local',
     PORT: 7181,
-    CLI_ENV_PATH: '/mnt/shared-config/.env.tinybird',
-    CONFIG_DIR: CONFIG_DIR
-};
-
-export const PUBLIC_APPS = {
-    PORTAL_URL: '/ghost/assets/portal/portal.min.js',
-    COMMENTS_URL: '/ghost/assets/comments-ui/comments-ui.min.js',
-    SODO_SEARCH_URL: '/ghost/assets/sodo-search/sodo-search.min.js',
-    SODO_SEARCH_STYLES: '/ghost/assets/sodo-search/main.css',
-    SIGNUP_FORM_URL: '/ghost/assets/signup-form/signup-form.min.js',
-    ANNOUNCEMENT_BAR_URL: '/ghost/assets/announcement-bar/announcement-bar.min.js'
-};
-
-export const MAILPIT = {
-    PORT: 1025
+    JSON_PATH: path.resolve(CONFIG_DIR, 'tinybird.json')
 };
 
 /**
@@ -62,49 +56,43 @@ export const MAILPIT = {
  * Used when yarn dev infrastructure is detected.
  */
 export const DEV_ENVIRONMENT = {
-    projectNamespace: 'ghost-dev',
-    networkName: 'ghost_dev'
+    projectNamespace: DEV_COMPOSE_PROJECT,
+    networkName: DEV_NETWORK_NAME
 } as const;
+
+/**
+ * Base environment variables shared by all modes.
+ */
+export const BASE_GHOST_ENV = [
+    // Environment configuration
+    'NODE_ENV=development',
+    'server__host=0.0.0.0',
+    'server__port=2368',
+
+    // Database configuration (database name is set per container)
+    'database__client=mysql2',
+    'database__connection__host=ghost-dev-mysql',
+    'database__connection__port=3306',
+    'database__connection__user=root',
+    'database__connection__password=root',
+
+    // Redis configuration
+    'adapters__cache__Redis__host=ghost-dev-redis',
+    'adapters__cache__Redis__port=6379',
+
+    // Email configuration
+    'mail__transport=SMTP',
+    'mail__options__host=ghost-dev-mailpit',
+    'mail__options__port=1025'
+] as const;
 
 export const TEST_ENVIRONMENT = {
     projectNamespace: 'ghost-dev-e2e',
     gateway: {
-        image: 'ghost-dev-ghost-dev-gateway'
+        image: `${DEV_COMPOSE_PROJECT}-ghost-dev-gateway`
     },
     ghost: {
-        image: 'ghost-dev-ghost-dev',
-        workdir: '/home/ghost/ghost/core',
-        port: 2368,
-        env: [
-            // Environment configuration
-            'NODE_ENV=development',
-            'server__host=0.0.0.0',
-            `server__port=2368`,
-
-            // Database configuration (database name is set per container)
-            'database__client=mysql2',
-            `database__connection__host=ghost-dev-mysql`,
-            `database__connection__port=3306`,
-            `database__connection__user=root`,
-            `database__connection__password=root`,
-
-            // Redis configuration
-            'adapters__cache__Redis__host=ghost-dev-redis',
-            'adapters__cache__Redis__port=6379',
-
-            // Email configuration
-            'mail__transport=SMTP',
-            'mail__options__host=ghost-dev-mailpit',
-            'mail__options__port=1025',
-
-            // Public assets via gateway (same as compose.dev.yaml)
-            `portal__url=${PUBLIC_APPS.PORTAL_URL}`,
-            `comments__url=${PUBLIC_APPS.COMMENTS_URL}`,
-            `sodoSearch__url=${PUBLIC_APPS.SODO_SEARCH_URL}`,
-            `sodoSearch__styles=${PUBLIC_APPS.SODO_SEARCH_STYLES}`,
-            `signupForm__url=${PUBLIC_APPS.SIGNUP_FORM_URL}`,
-            `announcementBar__url=${PUBLIC_APPS.ANNOUNCEMENT_BAR_URL}`
-        ]   
+        image: `${DEV_COMPOSE_PROJECT}-ghost-dev`,
+        port: 2368
     }
 } as const;
-

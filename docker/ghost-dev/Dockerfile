@@ -33,10 +33,18 @@ RUN --mount=type=cache,target=/usr/local/share/.cache/yarn,id=yarn-cache \
 COPY docker/ghost-dev/entrypoint.sh entrypoint.sh
 RUN chmod +x entrypoint.sh
 
+# Public app assets are served via /ghost/assets/* in dev mode.
+# Caddy forwards these paths to host frontend dev servers.
+ENV portal__url=/ghost/assets/portal/portal.min.js \
+    comments__url=/ghost/assets/comments-ui/comments-ui.min.js \
+    sodoSearch__url=/ghost/assets/sodo-search/sodo-search.min.js \
+    sodoSearch__styles=/ghost/assets/sodo-search/main.css \
+    signupForm__url=/ghost/assets/signup-form/signup-form.min.js \
+    announcementBar__url=/ghost/assets/announcement-bar/announcement-bar.min.js
+
 # Source code will be mounted from host at /home/ghost/ghost/core
 # This allows node --watch to pick up file changes for hot-reload
 WORKDIR /home/ghost/ghost/core
 
 ENTRYPOINT ["/home/ghost/entrypoint.sh"]
 CMD ["node", "--watch", "--import=tsx", "index.js"]
-

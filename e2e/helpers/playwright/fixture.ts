@@ -55,9 +55,9 @@ async function setupNewAuthenticatedPage(browser: Browser, baseURL: string, ghos
  * Playwright fixture that provides a unique Ghost instance for each test
  * Each instance gets its own database, runs on a unique port, and includes authentication
  *
- * Automatically detects if dev environment (yarn dev) is running:
- * - Dev mode: Uses worker-scoped containers with per-test database cloning (faster)
- * - Standalone mode: Uses per-test containers (traditional behavior)
+ * Uses the unified E2E environment manager:
+ * - Dev mode (default): Worker-scoped containers with per-test database cloning
+ * - Build mode: Same isolation model, but Ghost runs from a prebuilt image
  *
  * Optionally allows setting labs flags via test.use({labs: {featureName: true}})
  * and Stripe connection via test.use({stripeConnected: true})

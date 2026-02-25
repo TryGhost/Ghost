@@ -1261,27 +1261,28 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
-      - name: Build public app UMD bundles
-        run: yarn workspace @tryghost/e2e build:apps
-
-      - name: Build E2E image layer
+      - name: Prepare E2E CI job
         env:
           GHOST_E2E_BASE_IMAGE: ${{ steps.load.outputs.image-tag }}
-        run: yarn workspace @tryghost/e2e build:docker
+        run: bash ./e2e/scripts/prepare-ci-e2e-job.sh
 
-      - name: Pull images
+      - name: Run e2e tests in Playwright container
         env:
-          GHOST_E2E_IMAGE: ghost-e2e:local
-        run: docker compose -f e2e/compose.yml pull
-
-      - name: Setup Playwright
-        uses: ./.github/actions/setup-playwright
-
-      - name: Run e2e tests
-        env:
-          GHOST_E2E_IMAGE: ghost-e2e:local
           TEST_WORKERS_COUNT: 1
-        run: yarn test:e2e:all --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }} --retries=2
+          GHOST_E2E_MODE: build
+          GHOST_E2E_IMAGE: ghost-e2e:local
+          E2E_SHARD_INDEX: ${{ matrix.shardIndex }}
+          E2E_SHARD_TOTAL: ${{ matrix.shardTotal }}
+          E2E_RETRIES: 2
+        run: bash ./e2e/scripts/run-playwright-container.sh
+
+      - name: Dump E2E docker logs
+        if: failure()
+        run: bash ./e2e/scripts/dump-e2e-docker-logs.sh
+
+      - name: Stop E2E infra
+        if: always()
+        run: yarn workspace @tryghost/e2e infra:down
 
       - name: Upload blob report to GitHub Actions Artifacts
         if: failure()
