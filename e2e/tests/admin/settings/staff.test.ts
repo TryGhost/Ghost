@@ -1,15 +1,15 @@
+import {AdminStaffDetailsPage} from '@/admin-pages';
 import {expect, test} from '@/helpers/playwright';
 
 test.describe('Ghost Admin - Staff settings', () => {
     test('redirects my-profile to the current user profile', async ({page}) => {
-        await page.goto('/ghost/#/my-profile');
+        const staffDetailsPage = new AdminStaffDetailsPage(page);
 
-        const userDetailModal = page.getByTestId('user-detail-modal');
-        await expect(userDetailModal).toBeVisible();
+        await staffDetailsPage.gotoMyProfile();
 
-        const slugInput = userDetailModal.getByRole('textbox', {name: 'Slug'});
-        await expect(slugInput).toBeVisible();
-        await expect(slugInput).toHaveValue(/^(?!me$).+/);
+        await expect(staffDetailsPage.userDetailModal).toBeVisible();
+        await expect(staffDetailsPage.slugInput).toBeVisible();
+        await expect(staffDetailsPage.slugInput).toHaveValue(/^(?!me$).+/);
         await expect(page).toHaveURL(/\/ghost\/#\/settings\/staff\/(?!me$)[^/]+$/);
     });
 });
