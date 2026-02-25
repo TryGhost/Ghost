@@ -576,15 +576,14 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
 
 const UserDetailModal: React.FC<RoutingModalProps> = ({params}) => {
     const {currentUser} = useGlobalData();
-    const requestedSlug = params?.slug === 'me' ? currentUser.slug : params?.slug;
 
     // Skip API call if it's the current user (we already have their data)
-    const isCurrentUser = currentUser.slug === requestedSlug;
+    const isCurrentUser = currentUser.slug === params?.slug;
 
     // Fetch user by slug if it's not the current user
     const {data: fetchedUserData} = useGetUserBySlug(
-        requestedSlug || '',
-        {enabled: !isCurrentUser && !!requestedSlug}
+        params?.slug || '',
+        {enabled: !isCurrentUser && !!params?.slug}
     );
 
     // Use current user data or fetched user data

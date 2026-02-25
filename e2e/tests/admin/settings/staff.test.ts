@@ -1,8 +1,8 @@
 import {expect, test} from '@/helpers/playwright';
 
 test.describe('Ghost Admin - Staff settings', () => {
-    test('redirects staff/me to the current user profile', async ({page}) => {
-        await page.goto('/ghost/#/settings/staff/me');
+    test('redirects my-profile to the current user profile', async ({page}) => {
+        await page.goto('/ghost/#/my-profile');
 
         const userDetailModal = page.getByTestId('user-detail-modal');
         await expect(userDetailModal).toBeVisible();

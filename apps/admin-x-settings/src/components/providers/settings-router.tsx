@@ -1,5 +1,4 @@
 import React, {useEffect} from 'react';
-import {useGlobalData} from './global-data-provider';
 import {useRouteChangeCallback, useRouting} from '@tryghost/admin-x-framework/routing';
 import {useScrollSectionContext} from '../../hooks/use-scroll-section';
 import type {ModalName} from './routing/modals';
@@ -46,26 +45,13 @@ export const loadModals = () => import('./routing/modals');
 
 const SettingsRouter: React.FC = () => {
     const {updateNavigatedSection, scrollToSection} = useScrollSectionContext();
-    const {currentUser} = useGlobalData();
-    const {route, updateRoute} = useRouting();
+    const {route} = useRouting();
     // get current route
     useRouteChangeCallback((newPath, oldPath) => {
         if (newPath === oldPath) {
             scrollToSection(newPath.split('/')[0]);
         }
     }, [scrollToSection]);
-
-    useEffect(() => {
-        if (!route) {
-            return;
-        }
-
-        const normalizedRoute = route.replace(/^staff\/me(?=\/|$)/, `staff/${currentUser.slug}`);
-
-        if (normalizedRoute !== route) {
-            updateRoute(normalizedRoute);
-        }
-    }, [currentUser.slug, route, updateRoute]);
 
     useEffect(() => {
         if (route !== undefined) {
