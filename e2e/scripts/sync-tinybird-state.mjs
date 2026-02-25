@@ -82,21 +82,6 @@ function fetchConfigFromTbCli() {
     ]);
 }
 
-function truncateAnalyticsEvents() {
-    runCompose([
-        'run',
-        '--rm',
-        '-T',
-        'tb-cli',
-        'tb',
-        'datasource',
-        'truncate',
-        'analytics_events',
-        '--yes',
-        '--cascade'
-    ]);
-}
-
 function writeConfig(env) {
     fs.mkdirSync(stateDir, {recursive: true});
     fs.writeFileSync(configPath, JSON.stringify({
@@ -123,14 +108,6 @@ try {
 
     writeConfig(env);
     log(`Wrote Tinybird config to ${configPath}`);
-
-    try {
-        truncateAnalyticsEvents();
-        log('Truncated Tinybird analytics_events datasource');
-    } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        throw new Error(`Failed to truncate Tinybird analytics_events datasource: ${message}`);
-    }
 } catch (error) {
     clearConfigIfPresent();
     const message = error instanceof Error ? error.message : String(error);

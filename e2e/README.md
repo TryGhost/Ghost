@@ -46,7 +46,7 @@ yarn dev:analytics
 yarn workspace @tryghost/e2e test:analytics
 ```
 
-E2E test scripts automatically sync Tinybird tokens and reset analytics test state when Tinybird is running.
+E2E test scripts automatically sync Tinybird tokens when Tinybird is running.
 
 ### Build Mode (Prebuilt Image)
 
