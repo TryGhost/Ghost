@@ -81,9 +81,9 @@ export class PublicPage extends BasePage {
         const testInfo = test.info();
         let pageHitPromise = null;
         if (testInfo.project.name === 'analytics') {
+            await this.enableAnalyticsRequests();
             pageHitPromise = this.pageHitRequestPromise();
         }
-        await this.enableAnalyticsRequests();
         const result = await super.goto(url, options);
         if (pageHitPromise) {
             await pageHitPromise;
