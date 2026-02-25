@@ -17,7 +17,7 @@ module.exports = async function hasActiveOffer(subscriptionModel, offersAPI) {
         return !discountEnd || new Date(discountEnd) > new Date();
     }
 
-    // Check for active trial (trial/free_months offers)
+    // Check for active trial (trial offers)
     if (trialEndAt && new Date(trialEndAt) > new Date()) {
         return true;
     }

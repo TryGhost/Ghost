@@ -423,46 +423,6 @@ describe('StripeAPI', function () {
         });
     });
 
-    describe('updateSubscriptionTrialEnd', function () {
-        const mockSubscription = {
-            id: 'sub_456',
-            status: 'active',
-            trial_end: 1735689600
-        };
-
-        beforeEach(function () {
-            mockStripe = {
-                subscriptions: {
-                    update: sinon.stub().resolves(mockSubscription)
-                }
-            };
-            const mockStripeConstructor = sinon.stub().returns(mockStripe);
-            StripeAPI.__set__('Stripe', mockStripeConstructor);
-            api.configure({
-                secretKey: ''
-            });
-        });
-
-        afterEach(function () {
-            sinon.restore();
-        });
-
-        it('updates trial_end with proration_behavior', async function () {
-            const result = await api.updateSubscriptionTrialEnd('sub_456', 1735689600, {
-                prorationBehavior: 'none'
-            });
-
-            assert.equal(mockStripe.subscriptions.update.callCount, 1);
-            assert.equal(mockStripe.subscriptions.update.args[0][0], 'sub_456');
-            assert.deepEqual(mockStripe.subscriptions.update.args[0][1], {
-                trial_end: 1735689600,
-                proration_behavior: 'none'
-            });
-
-            assert.deepEqual(result, mockSubscription);
-        });
-    });
-
     describe('createCheckoutSetupSession automatic tax flag', function () {
         beforeEach(function () {
             mockStripe = {

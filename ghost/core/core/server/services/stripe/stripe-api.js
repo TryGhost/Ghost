@@ -860,25 +860,6 @@ module.exports = class StripeAPI {
     }
 
     /**
-     * Update the trial end for a Stripe Subscription by ID.
-     *
-     * @param {string} id - The ID of the subscription to update
-     * @param {number} trialEnd - Unix timestamp in seconds
-     * @param {object} [options={}]
-     * @param {('always_invoice'|'create_prorations'|'none')} [options.prorationBehavior='none']
-     *
-     * @returns {Promise<ISubscription>}
-     */
-    async updateSubscriptionTrialEnd(id, trialEnd, options = {}) {
-        await this._rateLimitBucket.throttle();
-        const subscription = await this._stripe.subscriptions.update(id, {
-            trial_end: trialEnd,
-            proration_behavior: options.prorationBehavior || 'none'
-        });
-        return subscription;
-    }
-
-    /**
      * Update the price of the Stripe SubscriptionItem by Subscription ID,
      * SubscriptionItem ID, and Price ID.
      *

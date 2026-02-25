@@ -1261,7 +1261,7 @@ describe('MemberRepository', function () {
         });
 
         it('dispatches OfferRedemptionEvent with created_at timestamp when no Stripe discount is present', async function () {
-            // Trial/free_months offers don't have Stripe discounts — timestamp falls back to created_at
+            // Trial offers don't have Stripe discounts — timestamp falls back to created_at
             const subCreatedAt = new Date('2025-06-15T00:00:00Z');
 
             const repo = new MemberRepository({

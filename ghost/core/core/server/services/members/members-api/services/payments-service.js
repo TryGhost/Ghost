@@ -482,7 +482,7 @@ class PaymentsService {
      */
     async getCouponForOffer(offerId) {
         const row = await this.OfferModel.where({id: offerId}).query().select('stripe_coupon_id', 'discount_type').first();
-        if (!row || row.discount_type === 'trial' || row.discount_type === 'free_months') {
+        if (!row || row.discount_type === 'trial') {
             return null;
         }
         if (!row.stripe_coupon_id) {

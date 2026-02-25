@@ -64,7 +64,7 @@ describe('hasActiveOffer', function () {
         assert.equal(result, false);
     });
 
-    // Trial-based offers (free_months, trial)
+    // Trial-based offers (trial)
 
     it('returns true when trial_end_at is in the future', async function () {
         const futureDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
