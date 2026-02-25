@@ -86,7 +86,7 @@ module.exports = class WebhookController {
 
         const customerId = this.getEventCustomerId(event);
         if (this.shouldIgnoreEvent(event, customerId)) {
-            logging.info(`Ignoring webhook ${event.type} for customer ${customerId} based on stripe_webhook_customer_ignore_list config.`);
+            logging.info(`Ignoring webhook ${event.type} for customer ${customerId} based on stripeWebhookCustomerIgnoreList config.`);
 
             res.writeHead(200);
             return res.end();

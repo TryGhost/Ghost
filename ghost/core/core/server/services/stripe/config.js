@@ -73,7 +73,7 @@ module.exports = {
         }
 
         const webhookHandlerUrl = new URL('members/webhooks/stripe/', urlUtils.getSiteUrl());
-        const webhookCustomerIgnoreList = parseIgnoreCustomerList(config.get('stripe_webhook_customer_ignore_list'));
+        const webhookCustomerIgnoreList = parseIgnoreCustomerList(config.get('stripeWebhookCustomerIgnoreList'));
 
         const urls = getStripeUrlConfig();
         const siteUrl = urlUtils.getSiteUrl();

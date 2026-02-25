@@ -28,7 +28,7 @@ function createUrlUtilsMock() {
 }
 
 describe('Stripe - config', function () {
-    const ignoreCustomerConfigKey = 'stripe_webhook_customer_ignore_list';
+    const ignoreCustomerConfigKey = 'stripeWebhookCustomerIgnoreList';
 
     beforeEach(function () {
         configUtils.set({
