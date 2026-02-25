@@ -28,14 +28,14 @@ describe('RSS: Renderer', function () {
         rssCacheStub.returns(Promise.resolve('dummyxml'));
 
         renderer.render(res, baseUrl).then(function () {
-            assert.equal(rssCacheStub.calledOnce, true);
+            sinon.assert.calledOnce(rssCacheStub);
             assert.deepEqual(rssCacheStub.firstCall.args, ['/rss/', {}]);
 
-            assert.equal(res.set.calledOnce, true);
-            assert.equal(res.set.calledWith('Content-Type', 'application/rss+xml; charset=UTF-8'), true);
+            sinon.assert.calledOnce(res.set);
+            sinon.assert.calledWith(res.set, 'Content-Type', 'application/rss+xml; charset=UTF-8');
 
-            assert.equal(res.send.calledOnce, true);
-            assert.equal(res.send.calledWith('dummyxml'), true);
+            sinon.assert.calledOnce(res.send);
+            sinon.assert.calledWith(res.send, 'dummyxml');
 
             done();
         }).catch(done);
@@ -47,14 +47,14 @@ describe('RSS: Renderer', function () {
         res.locals = {foo: 'bar'};
 
         renderer.render(res, baseUrl).then(function () {
-            assert.equal(rssCacheStub.calledOnce, true);
+            sinon.assert.calledOnce(rssCacheStub);
             assert.deepEqual(rssCacheStub.firstCall.args, ['/rss/', {foo: 'bar'}]);
 
-            assert.equal(res.set.calledOnce, true);
-            assert.equal(res.set.calledWith('Content-Type', 'application/rss+xml; charset=UTF-8'), true);
+            sinon.assert.calledOnce(res.set);
+            sinon.assert.calledWith(res.set, 'Content-Type', 'application/rss+xml; charset=UTF-8');
 
-            assert.equal(res.send.calledOnce, true);
-            assert.equal(res.send.calledWith('dummyxml'), true);
+            sinon.assert.calledOnce(res.send);
+            sinon.assert.calledWith(res.send, 'dummyxml');
 
             done();
         }).catch(done);
@@ -67,14 +67,14 @@ describe('RSS: Renderer', function () {
         const data = {foo: 'baz', fizz: 'buzz'};
 
         renderer.render(res, baseUrl, data).then(function () {
-            assert.equal(rssCacheStub.calledOnce, true);
+            sinon.assert.calledOnce(rssCacheStub);
             assert.deepEqual(rssCacheStub.firstCall.args, ['/rss/', {foo: 'baz', fizz: 'buzz'}]);
 
-            assert.equal(res.set.calledOnce, true);
-            assert.equal(res.set.calledWith('Content-Type', 'application/rss+xml; charset=UTF-8'), true);
+            sinon.assert.calledOnce(res.set);
+            sinon.assert.calledWith(res.set, 'Content-Type', 'application/rss+xml; charset=UTF-8');
 
-            assert.equal(res.send.calledOnce, true);
-            assert.equal(res.send.calledWith('dummyxml'), true);
+            sinon.assert.calledOnce(res.send);
+            sinon.assert.calledWith(res.send, 'dummyxml');
 
             done();
         }).catch(done);
@@ -88,11 +88,11 @@ describe('RSS: Renderer', function () {
         }).catch(function (err) {
             assert.equal(err.message, 'Fake Error');
 
-            assert.equal(rssCacheStub.calledOnce, true);
+            sinon.assert.calledOnce(rssCacheStub);
             assert.deepEqual(rssCacheStub.firstCall.args, ['/rss/', {}]);
 
-            assert.equal(res.set.called, false);
-            assert.equal(res.send.called, false);
+            sinon.assert.notCalled(res.set);
+            sinon.assert.notCalled(res.send);
 
             done();
         });

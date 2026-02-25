@@ -110,6 +110,6 @@ describe('SubscriptionEventService', function () {
 
         await service.handleSubscriptionEvent(subscription);
 
-        assert(memberRepository.linkSubscription.calledWith({id: 'member_123', subscription}));
+        sinon.assert.calledWith(memberRepository.linkSubscription, {id: 'member_123', subscription});
     });
 });

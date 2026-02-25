@@ -290,7 +290,7 @@ describe('MembersCSVImporterStripeUtils', function () {
             assert.equal(result.stripePriceId, stripeCustomerSubscriptionItem.price.id);
             assert.equal(result.isNewStripePrice, false);
 
-            assert.equal(stripeAPIServiceStub.updateSubscriptionItemPrice.calledOnce, false);
+            sinon.assert.notCalled(stripeAPIServiceStub.updateSubscriptionItemPrice);
         });
 
         it('updates the Stripe customer\'s subscription if they already have a subscription, but to some other Ghost product', async function () {
@@ -311,7 +311,7 @@ describe('MembersCSVImporterStripeUtils', function () {
             assert.equal(result.stripePriceId, GHOST_PRODUCT_STRIPE_PRICE_ID);
             assert.equal(result.isNewStripePrice, false);
 
-            assert.equal(stripeAPIServiceStub.updateSubscriptionItemPrice.calledOnce, true);
+            sinon.assert.calledOnce(stripeAPIServiceStub.updateSubscriptionItemPrice);
             assert.equal(stripeAPIServiceStub.updateSubscriptionItemPrice.calledWithExactly(
                 stripeCustomer.subscriptions.data[0].id,
                 stripeCustomerSubscriptionItem.id,
@@ -354,7 +354,7 @@ describe('MembersCSVImporterStripeUtils', function () {
             assert.equal(result.isNewStripePrice, true);
 
             // Assert subscription was updated
-            assert.equal(stripeAPIServiceStub.updateSubscriptionItemPrice.calledOnce, true);
+            sinon.assert.calledOnce(stripeAPIServiceStub.updateSubscriptionItemPrice);
             assert.equal(stripeAPIServiceStub.updateSubscriptionItemPrice.calledWithExactly(
                 stripeCustomer.subscriptions.data[0].id,
                 stripeCustomerSubscriptionItem.id,
@@ -378,7 +378,7 @@ describe('MembersCSVImporterStripeUtils', function () {
                 product_id: PRODUCT_ID
             }, OPTIONS);
 
-            assert.equal(productRepositoryStub.update.calledOnce, true);
+            sinon.assert.calledOnce(productRepositoryStub.update);
             assert.equal(productRepositoryStub.update.calledWithExactly(
                 {
                     id: PRODUCT_ID,
@@ -407,7 +407,7 @@ describe('MembersCSVImporterStripeUtils', function () {
 
             await membersCSVImporterStripeUtils.archivePrice(stripePriceId);
 
-            assert.equal(stripeAPIServiceStub.updatePrice.calledOnce, true);
+            sinon.assert.calledOnce(stripeAPIServiceStub.updatePrice);
             assert.equal(stripeAPIServiceStub.updatePrice.calledWithExactly(stripePriceId, {active: false}), true);
         });
     });

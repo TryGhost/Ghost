@@ -412,7 +412,7 @@ describe('Email renderer', function () {
             });
 
             // Verify crypto.randomUUID was never called since uniqueid wasn't used
-            assert.equal(randomUUIDSpy.callCount, 0);
+            sinon.assert.notCalled(randomUUIDSpy);
 
             randomUUIDSpy.restore();
         });
@@ -1897,7 +1897,7 @@ describe('Email renderer', function () {
             );
 
             // Verify tracking was called for the Transistor link
-            assert.equal(addTrackingToUrlStub.called, true);
+            sinon.assert.called(addTrackingToUrlStub);
             const transistorCall = addTrackingToUrlStub.getCalls().find(
                 call => call.args[0].href.includes('transistor.fm')
             );

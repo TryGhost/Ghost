@@ -1,4 +1,3 @@
-const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const fs = require('fs-extra');
 const models = require('../../../../../core/server/models');
@@ -27,9 +26,9 @@ describe('Backup', function () {
 
     it('should create a backup JSON file', function (done) {
         dbBackup.backup().then(function () {
-            assert.equal(exportStub.calledOnce, true);
-            assert.equal(filenameStub.calledOnce, true);
-            assert.equal(fsStub.calledOnce, true);
+            sinon.assert.calledOnce(exportStub);
+            sinon.assert.calledOnce(filenameStub);
+            sinon.assert.calledOnce(fsStub);
 
             done();
         }).catch(done);
@@ -39,9 +38,9 @@ describe('Backup', function () {
         configUtils.set('disableJSBackups', true);
 
         dbBackup.backup().then(function () {
-            assert.equal(exportStub.called, false);
-            assert.equal(filenameStub.called, false);
-            assert.equal(fsStub.called, false);
+            sinon.assert.notCalled(exportStub);
+            sinon.assert.notCalled(filenameStub);
+            sinon.assert.notCalled(fsStub);
 
             done();
         }).catch(done);

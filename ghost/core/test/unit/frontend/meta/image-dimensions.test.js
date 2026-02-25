@@ -46,10 +46,10 @@ describe('getImageDimensions', function () {
 
         getImageDimensions(metaData).then(function (result) {
             assertExists(result);
-            assert.equal(sizeOfStub.calledWith(metaData.coverImage.url), true);
-            assert.equal(sizeOfStub.calledWith(metaData.authorImage.url), true);
-            assert.equal(sizeOfStub.calledWith(metaData.ogImage.url), true);
-            assert.equal(sizeOfStub.calledWith(metaData.site.logo.url), true);
+            sinon.assert.calledWith(sizeOfStub, metaData.coverImage.url);
+            sinon.assert.calledWith(sizeOfStub, metaData.authorImage.url);
+            sinon.assert.calledWith(sizeOfStub, metaData.ogImage.url);
+            sinon.assert.calledWith(sizeOfStub, metaData.site.logo.url);
             assert('dimensions' in result.coverImage);
             assert('url' in result.coverImage);
             assert.equal(result.coverImage.dimensions.width, 50);
@@ -99,10 +99,10 @@ describe('getImageDimensions', function () {
 
         getImageDimensions(metaData).then(function (result) {
             assertExists(result);
-            assert.equal(sizeOfStub.calledWith(metaData.coverImage.url), true);
-            assert.equal(sizeOfStub.calledWith(metaData.authorImage.url), true);
-            assert.equal(sizeOfStub.calledWith(metaData.ogImage.url), true);
-            assert.equal(sizeOfStub.calledWith(metaData.site.logo.url), true);
+            sinon.assert.calledWith(sizeOfStub, metaData.coverImage.url);
+            sinon.assert.calledWith(sizeOfStub, metaData.authorImage.url);
+            sinon.assert.calledWith(sizeOfStub, metaData.ogImage.url);
+            sinon.assert.calledWith(sizeOfStub, metaData.site.logo.url);
             assert(!('dimensions' in result.coverImage));
             assert('url' in result.coverImage);
             assert(!('dimensions' in result.authorImage));
@@ -145,10 +145,10 @@ describe('getImageDimensions', function () {
 
         getImageDimensions(metaData).then(function (result) {
             assertExists(result);
-            assert.equal(sizeOfStub.calledWith(metaData.coverImage.url), true);
-            assert.equal(sizeOfStub.calledWith(metaData.authorImage.url), true);
-            assert.equal(sizeOfStub.calledWith(metaData.ogImage.url), true);
-            assert.equal(sizeOfStub.calledWith(metaData.site.logo.url), true);
+            sinon.assert.calledWith(sizeOfStub, metaData.coverImage.url);
+            sinon.assert.calledWith(sizeOfStub, metaData.authorImage.url);
+            sinon.assert.calledWith(sizeOfStub, metaData.ogImage.url);
+            sinon.assert.calledWith(sizeOfStub, metaData.site.logo.url);
             assert('url' in result.coverImage);
             assert('dimensions' in result.coverImage);
             assert.equal(result.coverImage.dimensions.height, 480);
@@ -199,10 +199,10 @@ describe('getImageDimensions', function () {
 
         getImageDimensions(metaData).then(function (result) {
             assertExists(result);
-            assert.equal(sizeOfStub.calledWith(metaData.coverImage.url), true);
-            assert.equal(sizeOfStub.calledWith(metaData.authorImage.url), true);
-            assert.equal(sizeOfStub.calledWith(metaData.ogImage.url), true);
-            assert.equal(sizeOfStub.calledWith(metaData.site.logo.url), true);
+            sinon.assert.calledWith(sizeOfStub, metaData.coverImage.url);
+            sinon.assert.calledWith(sizeOfStub, metaData.authorImage.url);
+            sinon.assert.calledWith(sizeOfStub, metaData.ogImage.url);
+            sinon.assert.calledWith(sizeOfStub, metaData.site.logo.url);
             assert('dimensions' in result.coverImage);
             assert('url' in result.coverImage);
             assert.equal(result.coverImage.dimensions.height, 480);
@@ -259,11 +259,11 @@ describe('getImageDimensions', function () {
 
         getImageDimensions(metaData).then(function (result) {
             assertExists(result);
-            assert.equal(sizeOfStub.calledWith(originalMetaData.coverImage.url), true);
-            assert.equal(sizeOfStub.calledWith(originalMetaData.authorImage.url), true);
-            assert.equal(sizeOfStub.calledWith(originalMetaData.ogImage.url), true);
-            assert.equal(sizeOfStub.calledWith(originalMetaData.twitterImage), true);
-            assert.equal(sizeOfStub.calledWith(originalMetaData.site.logo.url), true);
+            sinon.assert.calledWith(sizeOfStub, originalMetaData.coverImage.url);
+            sinon.assert.calledWith(sizeOfStub, originalMetaData.authorImage.url);
+            sinon.assert.calledWith(sizeOfStub, originalMetaData.ogImage.url);
+            sinon.assert.calledWith(sizeOfStub, originalMetaData.twitterImage);
+            sinon.assert.calledWith(sizeOfStub, originalMetaData.site.logo.url);
             assert('url' in result.coverImage);
             assert.equal(result.coverImage.url, 'http://mysite.com/content/images/size/w1200/mypostcoverimage.jpg');
             assert('dimensions' in result.coverImage);

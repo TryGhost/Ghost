@@ -240,7 +240,7 @@ describe('ExplorePingService', function () {
 
             await explorePingService.makeRequest('https://test.com', payload);
 
-            assert.equal(requestStub.calledOnce, true);
+            sinon.assert.calledOnce(requestStub);
             assert.equal(requestStub.firstCall.args[0], 'https://test.com');
             assert.deepEqual(requestStub.firstCall.args[1], {
                 method: 'POST',
@@ -256,7 +256,7 @@ describe('ExplorePingService', function () {
 
             await explorePingService.makeRequest('https://test.com', {});
 
-            assert.equal(loggingStub.warn.calledOnce, true);
+            sinon.assert.calledOnce(loggingStub.warn);
             assert.equal(loggingStub.warn.firstCall.args[0], 'Explore Error');
             assert.equal(loggingStub.warn.firstCall.args[1], 'Network error');
         });
@@ -268,7 +268,7 @@ describe('ExplorePingService', function () {
 
             await explorePingService.ping();
 
-            assert.equal(requestStub.called, false);
+            sinon.assert.notCalled(requestStub);
         });
 
         it('does not ping if explore URL is not set', async function () {
@@ -276,8 +276,8 @@ describe('ExplorePingService', function () {
 
             await explorePingService.ping();
 
-            assert.equal(requestStub.called, false);
-            assert.equal(loggingStub.warn.calledOnce, true);
+            sinon.assert.notCalled(requestStub);
+            sinon.assert.calledOnce(loggingStub.warn);
             assert.equal(loggingStub.warn.firstCall.args[0], 'Explore URL not set');
         });
 
@@ -286,7 +286,7 @@ describe('ExplorePingService', function () {
 
             await explorePingService.ping();
 
-            assert.equal(requestStub.called, false);
+            sinon.assert.notCalled(requestStub);
         });
 
         it('pings with constructed payload when properly configured', async function () {
@@ -294,7 +294,7 @@ describe('ExplorePingService', function () {
 
             await explorePingService.ping();
 
-            assert.equal(requestStub.calledOnce, true);
+            sinon.assert.calledOnce(requestStub);
             assert.equal(requestStub.firstCall.args[0], 'https://explore.testing.com');
             const payload = await explorePingService.constructPayload();
             assert.equal(requestStub.firstCall.args[1].body, JSON.stringify(payload));

@@ -90,7 +90,7 @@ describe('Process Outbox Job', function () {
 
             const entriesAfterJob = await models.Outbox.findAll();
             assert.equal(entriesAfterJob.length, 0);
-            assert.equal(mailService.GhostMailer.prototype.send.callCount, 1);
+            sinon.assert.calledOnce(mailService.GhostMailer.prototype.send);
         });
 
         it('does nothing when there are no pending entries', async function () {
@@ -101,7 +101,7 @@ describe('Process Outbox Job', function () {
 
             const entriesAfterJob = await models.Outbox.findAll();
             assert.equal(entriesAfterJob.length, 0);
-            assert.equal(mailService.GhostMailer.prototype.send.callCount, 0);
+            sinon.assert.notCalled(mailService.GhostMailer.prototype.send);
         });
 
         it('processes multiple entries in a batch', async function () {
@@ -145,7 +145,7 @@ describe('Process Outbox Job', function () {
 
             const entriesAfterJob = await models.Outbox.findAll();
             assert.equal(entriesAfterJob.length, 0);
-            assert.equal(mailService.GhostMailer.prototype.send.callCount, 3);
+            sinon.assert.calledThrice(mailService.GhostMailer.prototype.send);
         });
 
         it('ignores entries that are not pending', async function () {
@@ -178,7 +178,7 @@ describe('Process Outbox Job', function () {
 
             const entriesAfterJob = await models.Outbox.findAll();
             assert.equal(entriesAfterJob.length, 2);
-            assert.equal(mailService.GhostMailer.prototype.send.callCount, 0);
+            sinon.assert.notCalled(mailService.GhostMailer.prototype.send);
         });
 
         it('increments retry_count and keeps entry pending when handler fails', async function () {
