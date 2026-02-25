@@ -63,12 +63,12 @@ const getResolvedAmount = ({
     return percentAmount > 0 ? percentAmount : lastPercentAmount;
 };
 
-const getDefaultState = (): RetentionOfferFormState => {
+const getDefaultState = (cadence: 'monthly' | 'yearly' = 'monthly'): RetentionOfferFormState => {
     return {
         enabled: false,
         displayTitle: '',
         displayDescription: '',
-        type: 'free_months',
+        type: cadence === 'yearly' ? 'percent' : 'free_months',
         percentAmount: 20,
         duration: 'once',
         durationInMonths: 1,
@@ -80,8 +80,8 @@ const isFreeMonthsPattern = (offer: Offer): boolean => {
     return offer.type === 'percent' && offer.amount === 100 && offer.duration === 'repeating';
 };
 
-const getRetentionOfferFormState = (offer: Offer | null): RetentionOfferFormState => {
-    const defaultState = getDefaultState();
+const getRetentionOfferFormState = (offer: Offer | null, cadence: 'monthly' | 'yearly' = 'monthly'): RetentionOfferFormState => {
+    const defaultState = getDefaultState(cadence);
 
     if (!offer) {
         return defaultState;
@@ -422,7 +422,7 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
     };
 
     const {formState, setFormState, updateForm, handleSave, saveState, okProps, errors, clearError} = useForm({
-        initialState: getDefaultState(),
+        initialState: getDefaultState(cadence),
         savingDelay: 500,
         onSave: async () => {
             let didMutate = false;
@@ -440,7 +440,7 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
                 ? displayTitle !== (editableRetentionOffer.display_title || '') ||
                     displayDescription !== (editableRetentionOffer.display_description || '')
                 : displayTitle !== '' || displayDescription !== '';
-            const defaultState = getDefaultState();
+            const defaultState = getDefaultState(cadence);
             const shouldCreateInactiveDraft = !formState.enabled && !editableRetentionOffer && hasFormChangesFromDefault(formState, defaultState);
 
             const createRetentionOffer = async (status: 'active' | 'archived') => {
@@ -560,9 +560,9 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
             return;
         }
 
-        setFormState(() => getRetentionOfferFormState(editableRetentionOffer));
+        setFormState(() => getRetentionOfferFormState(editableRetentionOffer, cadence));
         setInitializedOfferKey(currentOfferKey);
-    }, [currentOfferKey, editableRetentionOffer, hasFetchedOffers, initializedOfferKey, isFetchingOffers, saveState, setFormState]);
+    }, [cadence, currentOfferKey, editableRetentionOffer, hasFetchedOffers, initializedOfferKey, isFetchingOffers, saveState, setFormState]);
 
     useEffect(() => {
         if (formState.percentAmount > 0) {
