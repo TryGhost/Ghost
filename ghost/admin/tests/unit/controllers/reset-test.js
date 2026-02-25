@@ -24,7 +24,7 @@ describe('Unit: Controller: reset', function () {
 
         controller.ajax = {
             put: sinon.stub().resolves({
-                password_reset: [{message: 'Password reset successful', emailVerificationToken: '123456'}]
+                password_reset: [{message: 'Password reset successful'}]
             })
         };
 
@@ -33,6 +33,8 @@ describe('Unit: Controller: reset', function () {
         };
 
         controller.session = {
+            setup: sinon.stub().resolves(),
+            handleAuthentication: sinon.stub().resolves(),
             authenticate: sinon.stub().resolves()
         };
 
@@ -52,6 +54,47 @@ describe('Unit: Controller: reset', function () {
             }
         });
         expect(controller.notifications.showNotification.calledOnce).to.be.true;
+        expect(controller.session.setup.calledOnce).to.be.true;
+        expect(controller.session.handleAuthentication.calledOnce).to.be.true;
+        expect(controller.session.authenticate.called).to.be.false;
+    });
+
+    it('uses credential login with token when legacy backend returns emailVerificationToken', async function () {
+        const controller = this.owner.lookup('controller:reset');
+
+        controller.token = btoa('token|test@example.com|moredata');
+        controller.newPassword = 'newpassword123';
+        controller.ne2Password = 'newpassword123';
+        controller.hasValidated = {
+            addObjects: sinon.stub()
+        };
+        controller.validate = sinon.stub().resolves();
+
+        controller.ghostPaths = {
+            url: {
+                api: sinon.stub().returns('/api/endpoint')
+            }
+        };
+
+        controller.ajax = {
+            put: sinon.stub().resolves({
+                password_reset: [{message: 'Password reset successful', emailVerificationToken: '123456'}]
+            })
+        };
+
+        controller.notifications = {
+            showNotification: sinon.stub()
+        };
+
+        controller.session = {
+            setup: sinon.stub().resolves(),
+            handleAuthentication: sinon.stub().resolves(),
+            authenticate: sinon.stub().resolves()
+        };
+
+        const result = await controller.resetPasswordTask.perform();
+
+        expect(result).to.be.true;
         expect(controller.session.authenticate.calledWith(
             'authenticator:cookie',
             {
@@ -60,6 +103,8 @@ describe('Unit: Controller: reset', function () {
                 token: '123456'
             }
         )).to.be.true;
+        expect(controller.session.setup.called).to.be.false;
+        expect(controller.session.handleAuthentication.called).to.be.false;
     });
 
     it('handles validation errors correctly', async function () {
