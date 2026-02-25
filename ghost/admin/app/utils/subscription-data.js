@@ -129,18 +129,18 @@ export function getOfferDisplayData(offer, sub = {}) {
     const isRetention = offer.redemption_type === 'retention';
     const label = isRetention ? 'Retention offer' : 'Signup offer';
 
+    const isFreeMonths = offer.type === 'percent' && offer.amount === 100 && offer.duration === 'repeating';
+
     let discount;
     if (offer.type === 'trial') {
         discount = `${offer.amount} days free`;
-    } else if (offer.type === 'percent' && offer.amount === 100 && offer.duration === 'repeating') {
+    } else if (isFreeMonths) {
         discount = `${offer.duration_in_months} ${offer.duration_in_months === 1 ? 'month' : 'months'} free`;
     } else if (offer.type === 'fixed') {
         discount = `${getSymbol(offer.currency)}${getNonDecimal(offer.amount)} off`;
     } else {
         discount = `${offer.amount}% off`;
     }
-
-    const isFreeMonths = offer.type === 'percent' && offer.amount === 100 && offer.duration === 'repeating';
 
     let detail;
     if (isRetention) {
