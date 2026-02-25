@@ -39,7 +39,7 @@ export const ButtonSelect: React.FC<{type: OfferType, checked: boolean, onClick:
                 <div className={`mt-0.5 flex size-4 items-center justify-center rounded-full ${checkboxClass}`}>
                     {checked ? <Icon className='w-[7px] stroke-[4]' name='check' size='custom' /> : null}
                 </div>
-                <div className='flex flex-col'>
+                <div className='-mt-px flex flex-col'>
                     <span>{type.title}</span>
                     <span className='text-sm'>{type.description}</span>
                 </div>
@@ -258,9 +258,11 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                             />
 
                             {
-                                overrides.duration === 'repeating' && <TextField title='Duration in months' type='number' onChange={(e) => {
-                                    handleDurationInMonthsInput(e);
-                                }} />
+                                overrides.duration === 'repeating' && <div className='-mt-4'>
+                                    <TextField data-testid='duration-months-input' rightPlaceholder={`${overrides.durationInMonths === 1 ? 'month' : 'months'}`} type='number' value={overrides.durationInMonths === 0 ? '' : String(overrides.durationInMonths)} onChange={(e) => {
+                                        handleDurationInMonthsInput(e);
+                                    }} />
+                                </div>
                             }
                             </>
                         }
@@ -352,7 +354,7 @@ const AddOfferModal = () => {
             cadence: selectedTier?.dataset?.period || '',
             amount: 0,
             duration: 'once',
-            durationInMonths: 0,
+            durationInMonths: 1,
             currency: selectedTier?.dataset?.currency || 'USD',
             status: 'active',
             tierId: selectedTier?.dataset?.id || '',
