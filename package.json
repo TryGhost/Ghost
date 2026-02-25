@@ -30,7 +30,8 @@
   },
   "dependencies": {
     "@tryghost/errors": "2.2.1",
-    "ajv": "^6.12.6",
+    "ajv": "^8.0.0",
+    "ajv-formats": "^3.0.1",
     "lodash": "4.17.23"
   }
 }
