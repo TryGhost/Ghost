@@ -46,7 +46,14 @@ describe('useFetchApi', () => {
                 if (req.url?.includes('slow')) {
                     await sleep(100);
                 }
-                res.writeHead(200, {'Content-Type': 'application/json'});
+                res.writeHead(200, {
+                    'Content-Type': 'application/json',
+                    // jsdom's `XMLHttpRequest` needs these CORS headers.
+                    'Access-Control-Allow-Origin': req.headers.origin || '*',
+                    'Access-Control-Allow-Methods': '*',
+                    'Access-Control-Allow-Headers': '*',
+                    'Access-Control-Allow-Credentials': 'true'
+                });
                 res.end(JSON.stringify({
                     method: req.method,
                     headers: req.headers,
@@ -93,5 +100,22 @@ describe('useFetchApi', () => {
             timeout: 20,
             retry: false
         })).rejects.toBeInstanceOf(TimeoutError);
+    });
+
+    it('emits upload progress when onUploadProgress is provided', async () => {
+        const {result} = renderHook(() => useFetchApi(), {wrapper});
+
+        const onUploadProgress = vi.fn();
+
+        const data = await result.current<TestResponseBody>(`${baseUrl}/ghost/api/admin/test/`, {
+            method: 'POST',
+            body: 'test',
+            retry: false,
+            onUploadProgress
+        });
+
+        expect(data.body).toBe('test');
+
+        expect(onUploadProgress).toHaveBeenCalledWith(expect.any(Number));
     });
 });
