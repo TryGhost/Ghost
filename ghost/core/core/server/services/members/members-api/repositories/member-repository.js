@@ -8,7 +8,6 @@ const ObjectId = require('bson-objectid').default;
 const {NotFoundError} = require('@tryghost/errors');
 const validator = require('@tryghost/validator');
 const crypto = require('crypto');
-const addCalendarMonths = require('../utils/add-calendar-months');
 const hasActiveOffer = require('../utils/has-active-offer');
 const StartOutboxProcessingEvent = require('../../../outbox/events/start-outbox-processing-event');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../member-welcome-emails/constants');
@@ -1797,33 +1796,8 @@ module.exports = class MemberRepository {
         }
 
         const stripeSubscriptionId = subscriptionModel.get('subscription_id');
-        const isFreeMonthsOffer = offer.type === 'free_months';
 
-        if (isFreeMonthsOffer) {
-            const currentPeriodEnd = subscriptionModel.get('current_period_end');
-            if (!currentPeriodEnd) {
-                throw new errors.BadRequestError({
-                    message: tpl(messages.subscriptionNotActive)
-                });
-            }
-
-            const trialEndDate = addCalendarMonths(currentPeriodEnd, offer.amount);
-            const trialEnd = Math.floor(trialEndDate.getTime() / 1000);
-
-            const updatedSubscription = await this._stripeAPIService.updateSubscriptionTrialEnd(
-                stripeSubscriptionId,
-                trialEnd,
-                {prorationBehavior: 'none'}
-            );
-
-            return this.linkSubscription({
-                id: member.id,
-                subscription: updatedSubscription,
-                offerId: data.offerId
-            }, options);
-        }
-
-        // Besides free_months and trial offers, all other offers rely on a Stripe Coupon
+        // Besides trial offers, all other offers rely on a Stripe Coupon
         if (!data.couponId) {
             throw new errors.BadRequestError({
                 message: tpl(messages.offerNoCoupon)

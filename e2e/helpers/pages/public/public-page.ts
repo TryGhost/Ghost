@@ -84,7 +84,6 @@ export class PublicPage extends BasePage {
             await this.enableAnalyticsRequests();
             pageHitPromise = this.pageHitRequestPromise();
         }
-        await this.enableAnalyticsRequests();
         const result = await super.goto(url, options);
         if (pageHitPromise) {
             await pageHitPromise;
@@ -100,11 +99,32 @@ export class PublicPage extends BasePage {
         });
     }
 
+    protected async waitForMemberAttributionReady(): Promise<void> {
+        // TODO: Ideally we should find a way to get rid of this. This is currently needed
+        // to prevent flaky attribution-dependent assertions in CI.
+        await this.page.waitForFunction(() => {
+            try {
+                const raw = window.sessionStorage.getItem('ghost-history');
+
+                if (!raw) {
+                    return false;
+                }
+
+                const history = JSON.parse(raw);
+                return Array.isArray(history) && history.length > 0;
+            } catch {
+                return false;
+            }
+        });
+    }
+
     async openPortalViaSubscribeButton(): Promise<void> {
+        await this.waitForMemberAttributionReady();
         await this.portal.clickLinkAndWaitForPopup(this.subscribeLink);
     }
 
     async openPortalViaSignInLink(): Promise<void> {
+        await this.waitForMemberAttributionReady();
         await this.portal.clickLinkAndWaitForPopup(this.signInLink);
     }
 }

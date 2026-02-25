@@ -11,7 +11,7 @@
  * @prop {string} display_title
  * @prop {string} display_description
  *
- * @prop {'percent'|'fixed'|'trial'|'free_months'} type
+ * @prop {'percent'|'fixed'|'trial'} type
  *
  * @prop {'month'|'year'} cadence
  * @prop {number} amount
@@ -19,7 +19,7 @@
  * @prop {boolean} currency_restriction
  * @prop {string} currency
  *
- * @prop {'once'|'repeating'|'forever'|'trial'|'free_months'} duration
+ * @prop {'once'|'repeating'|'forever'|'trial'} duration
  * @prop {null|number} duration_in_months
  *
  * @prop {'active'|'archived'} status

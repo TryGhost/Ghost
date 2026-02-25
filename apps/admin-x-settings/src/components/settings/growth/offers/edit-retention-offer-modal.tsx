@@ -37,7 +37,7 @@ const durationOptions: SelectOption[] = [
 const MAX_PERCENT_AMOUNT = 100;
 
 type RetentionOfferTerms = {
-    type: 'percent' | 'free_months';
+    type: 'percent';
     amount: number;
     duration: string;
     durationInMonths: number;
@@ -63,12 +63,12 @@ const getResolvedAmount = ({
     return percentAmount > 0 ? percentAmount : lastPercentAmount;
 };
 
-const getDefaultState = (): RetentionOfferFormState => {
+const getDefaultState = (cadence: 'monthly' | 'yearly' = 'monthly'): RetentionOfferFormState => {
     return {
         enabled: false,
         displayTitle: '',
         displayDescription: '',
-        type: 'free_months',
+        type: cadence === 'yearly' ? 'percent' : 'free_months',
         percentAmount: 20,
         duration: 'once',
         durationInMonths: 1,
@@ -76,26 +76,30 @@ const getDefaultState = (): RetentionOfferFormState => {
     };
 };
 
-const getRetentionOfferFormState = (offer: Offer | null): RetentionOfferFormState => {
-    const defaultState = getDefaultState();
+const isFreeMonthsPattern = (offer: Offer): boolean => {
+    return offer.type === 'percent' && offer.amount === 100 && offer.duration === 'repeating';
+};
+
+const getRetentionOfferFormState = (offer: Offer | null, cadence: 'monthly' | 'yearly' = 'monthly'): RetentionOfferFormState => {
+    const defaultState = getDefaultState(cadence);
 
     if (!offer) {
         return defaultState;
     }
 
-    const isPercentOffer = offer.type === 'percent';
-    const isFreeMonthsOffer = offer.type === 'free_months';
+    const isFreeMonths = isFreeMonthsPattern(offer);
+    const isPercentOffer = offer.type === 'percent' && !isFreeMonths;
     const repeatingDurationInMonths = offer.duration === 'repeating' && offer.duration_in_months ? offer.duration_in_months : defaultState.durationInMonths;
 
     return {
         enabled: offer.status === 'active',
         displayTitle: offer.display_title || '',
         displayDescription: offer.display_description || '',
-        type: isFreeMonthsOffer ? 'free_months' : 'percent',
+        type: isFreeMonths ? 'free_months' : 'percent',
         percentAmount: isPercentOffer ? offer.amount : defaultState.percentAmount,
         duration: isPercentOffer ? offer.duration : defaultState.duration,
         durationInMonths: repeatingDurationInMonths,
-        freeMonths: isFreeMonthsOffer ? offer.amount : defaultState.freeMonths
+        freeMonths: isFreeMonths ? (offer.duration_in_months || defaultState.freeMonths) : defaultState.freeMonths
     };
 };
 
@@ -118,10 +122,10 @@ const getFormOfferTerms = ({
 
     if (formState.type === 'free_months') {
         return {
-            type: 'free_months',
-            amount,
-            duration: 'free_months',
-            durationInMonths: 0
+            type: 'percent',
+            amount: 100,
+            duration: 'repeating',
+            durationInMonths: amount
         };
     }
 
@@ -141,14 +145,15 @@ const getOfferTerms = (offer: Offer | null): RetentionOfferTerms | null => {
         return null;
     }
 
-    const type = offer.type === 'free_months' ? 'free_months' : 'percent';
-    const duration = type === 'free_months' ? 'free_months' : offer.duration;
-    const durationInMonths = duration === 'repeating' ? offer.duration_in_months || 0 : 0;
+    // A free months offer is stored as percent/100/repeating
+    // but getFormOfferTerms also returns percent/100/repeating for free_months form type
+    // so terms comparison works correctly without special-casing
+    const durationInMonths = offer.duration_in_months ?? 0;
 
     return {
-        type,
+        type: 'percent',
         amount: offer.amount,
-        duration,
+        duration: offer.duration,
         durationInMonths
     };
 };
@@ -210,9 +215,10 @@ const RetentionOfferSidebar: React.FC<{
                         </div>
                     </div>
                 </section>
-                <section className='mt-4'>
+                <section className='mt-2'>
                     <Toggle
                         key={`retention-toggle-${cadence}-${formState.enabled ? 'enabled' : 'disabled'}`}
+                        align='center'
                         checked={formState.enabled}
                         direction='rtl'
                         hint={cadence === 'monthly' ? 'Applied to monthly plans' : 'Applied to annual plans'}
@@ -224,7 +230,7 @@ const RetentionOfferSidebar: React.FC<{
                 </section>
                 {formState.enabled && (
                     <>
-                        <section className='mt-4'>
+                        <section className='mt-2'>
                             <h2 className='mb-4 text-lg'>General</h2>
                             <div className='flex flex-col gap-6'>
                                 <TextField
@@ -263,15 +269,17 @@ const RetentionOfferSidebar: React.FC<{
                                             });
                                         }}
                                     />
-                                    <ButtonSelect
-                                        checked={formState.type === 'free_months'}
-                                        type={typeOptions[1]}
-                                        onClick={() => {
-                                            clearError('amount');
-                                            clearError('durationInMonths');
-                                            updateForm(state => ({...state, type: 'free_months'}));
-                                        }}
-                                    />
+                                    {cadence === 'monthly' && (
+                                        <ButtonSelect
+                                            checked={formState.type === 'free_months'}
+                                            type={typeOptions[1]}
+                                            onClick={() => {
+                                                clearError('amount');
+                                                clearError('durationInMonths');
+                                                updateForm(state => ({...state, type: 'free_months'}));
+                                            }}
+                                        />
+                                    )}
                                 </div>
                                 {formState.type === 'percent' && (
                                     <>
@@ -301,19 +309,21 @@ const RetentionOfferSidebar: React.FC<{
                                             }}
                                         />
                                         {formState.duration === 'repeating' && (
-                                            <TextField
-                                                error={Boolean(errors.durationInMonths)}
-                                                hint={errors.durationInMonths}
-                                                rightPlaceholder={`${formState.durationInMonths === 1 ? 'month' : 'months'}`}
-                                                title='Duration in months'
-                                                type='number'
-                                                value={formState.durationInMonths === 0 ? '' : String(formState.durationInMonths)}
-                                                onChange={(e) => {
-                                                    const nextValue = Number(e.target.value);
-                                                    updateForm(state => ({...state, durationInMonths: Number.isNaN(nextValue) ? 0 : nextValue}));
-                                                }}
-                                                onKeyDown={() => clearError('durationInMonths')}
-                                            />
+                                            <div className='-mt-4'>
+                                                <TextField
+                                                    data-testid='duration-months-input'
+                                                    error={Boolean(errors.durationInMonths)}
+                                                    hint={errors.durationInMonths}
+                                                    rightPlaceholder={`${formState.durationInMonths === 1 ? 'month' : 'months'}`}
+                                                    type='number'
+                                                    value={formState.durationInMonths === 0 ? '' : String(formState.durationInMonths)}
+                                                    onChange={(e) => {
+                                                        const nextValue = Number(e.target.value);
+                                                        updateForm(state => ({...state, durationInMonths: Number.isNaN(nextValue) ? 0 : nextValue}));
+                                                    }}
+                                                    onKeyDown={() => clearError('durationInMonths')}
+                                                />
+                                            </div>
                                         )}
                                     </>
                                 )}
@@ -412,7 +422,7 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
     };
 
     const {formState, setFormState, updateForm, handleSave, saveState, okProps, errors, clearError} = useForm({
-        initialState: getDefaultState(),
+        initialState: getDefaultState(cadence),
         savingDelay: 500,
         onSave: async () => {
             let didMutate = false;
@@ -430,16 +440,17 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
                 ? displayTitle !== (editableRetentionOffer.display_title || '') ||
                     displayDescription !== (editableRetentionOffer.display_description || '')
                 : displayTitle !== '' || displayDescription !== '';
-            const defaultState = getDefaultState();
+            const defaultState = getDefaultState(cadence);
             const shouldCreateInactiveDraft = !formState.enabled && !editableRetentionOffer && hasFormChangesFromDefault(formState, defaultState);
 
             const createRetentionOffer = async (status: 'active' | 'archived') => {
                 const hash = crypto.getRandomValues(new Uint16Array(1))[0].toString(16).padStart(4, '0');
 
                 let offerDesc: string;
-                if (formTerms.type === 'free_months') {
-                    const monthText = formTerms.amount === 1 ? 'free month' : 'free months';
-                    offerDesc = `${formTerms.amount} ${monthText}`;
+                const isFreeMonths = formTerms.amount === 100 && formTerms.duration === 'repeating';
+                if (isFreeMonths) {
+                    const monthText = formTerms.durationInMonths === 1 ? 'free month' : 'free months';
+                    offerDesc = `${formTerms.durationInMonths} ${monthText}`;
                 } else {
                     let durationText: string;
                     if (formTerms.duration === 'once') {
@@ -549,9 +560,9 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
             return;
         }
 
-        setFormState(() => getRetentionOfferFormState(editableRetentionOffer));
+        setFormState(() => getRetentionOfferFormState(editableRetentionOffer, cadence));
         setInitializedOfferKey(currentOfferKey);
-    }, [currentOfferKey, editableRetentionOffer, hasFetchedOffers, initializedOfferKey, isFetchingOffers, saveState, setFormState]);
+    }, [cadence, currentOfferKey, editableRetentionOffer, hasFetchedOffers, initializedOfferKey, isFetchingOffers, saveState, setFormState]);
 
     useEffect(() => {
         if (formState.percentAmount > 0) {
@@ -566,7 +577,7 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
     }, [formState.freeMonths]);
 
     const goBack = () => {
-        updateRoute('offers/edit/retention');
+        updateRoute('offers/edit');
     };
 
     const sidebar = (
@@ -593,11 +604,8 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
     };
 
     const previewData: offerPortalPreviewUrlTypes = useMemo(() => {
-        const isFreeMonthsOffer = formState.type === 'free_months';
-        const previewAmount = getResolvedAmount({
-            type: formState.type,
-            percentAmount: formState.percentAmount,
-            freeMonths: formState.freeMonths,
+        const previewTerms = getFormOfferTerms({
+            formState,
             lastPercentAmount: lastPreviewPercentAmount,
             lastFreeMonths: lastPreviewFreeMonths
         });
@@ -615,11 +623,11 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
             code: `${cadence}-retention`,
             displayTitle: formState.displayTitle || '',
             displayDescription: formState.displayDescription || '',
-            type: isFreeMonthsOffer ? 'free_months' : 'percent',
+            type: previewTerms.type,
             cadence: offerCadence,
-            amount: previewAmount,
-            duration: isFreeMonthsOffer ? 'free_months' : formState.duration,
-            durationInMonths: formState.durationInMonths,
+            amount: previewTerms.amount,
+            duration: previewTerms.duration,
+            durationInMonths: previewTerms.durationInMonths,
             currency: '',
             status: 'active',
             tierId: previewTier?.id || '',
