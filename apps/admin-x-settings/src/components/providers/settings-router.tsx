@@ -1,7 +1,7 @@
 import React, {useEffect} from 'react';
+import {useGlobalData} from './global-data-provider';
 import {useRouteChangeCallback, useRouting} from '@tryghost/admin-x-framework/routing';
 import {useScrollSectionContext} from '../../hooks/use-scroll-section';
-import {useGlobalData} from './global-data-provider';
 import type {ModalName} from './routing/modals';
 
 export const modalPaths: {[key: string]: ModalName} = {

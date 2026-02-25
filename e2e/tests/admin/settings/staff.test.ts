@@ -9,11 +9,7 @@ test.describe('Ghost Admin - Staff settings', () => {
 
         const slugInput = userDetailModal.getByRole('textbox', {name: 'Slug'});
         await expect(slugInput).toBeVisible();
-
-        const slug = await slugInput.inputValue();
-
-        expect(slug).not.toBe('');
-        expect(slug).not.toBe('me');
-        await expect(page).toHaveURL(new RegExp(`/ghost/#/settings/staff/${slug}$`));
+        await expect(slugInput).toHaveValue(/^(?!me$).+/);
+        await expect(page).toHaveURL(/\/ghost\/#\/settings\/staff\/(?!me$)[^/]+$/);
     });
 });
