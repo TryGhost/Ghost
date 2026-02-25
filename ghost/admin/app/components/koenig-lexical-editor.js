@@ -462,6 +462,7 @@ export default class KoenigLexicalEditor extends Component {
             siteTitle: this.settings.title,
             siteDescription: this.settings.description,
             siteUrl: this.config.getSiteUrl('/'),
+            siteUuid: this.config.site_uuid,
             stripeEnabled: checkStripeEnabled(), // returns a boolean
             visibilitySettings: getCardVisibilitySettings(props.cardConfig)
         };
