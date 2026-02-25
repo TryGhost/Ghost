@@ -219,6 +219,9 @@ export const OffersIndexModal: React.FC = () => {
     const sortDirection = offersSorting?.direction || 'desc';
 
     const handleOfferEdit = (id: string) => {
+        if (!id) {
+            return;
+        }
         sessionStorage.setItem('editOfferPageSource', 'offersIndex');
         updateRoute(`offers/edit/${id}`);
     };
@@ -356,12 +359,12 @@ export const OffersIndexModal: React.FC = () => {
 
                     return (
                         <tr key={offer.id} className={`group relative scale-100 border-b border-b-grey-200 dark:border-grey-800 ${archived ? 'opacity-60' : ''}`} data-testid="offer-item">
-                            <td className='p-0'><a className='block cursor-pointer p-5 pl-0' onClick={() => handleOfferEdit(offer?.id ? offer.id : '')}><span className='font-semibold'>{offer?.name}</span><br /><span className='text-sm text-grey-700'>{offerTier.name} {getOfferCadence(offer.cadence)}</span></a></td>
-                            <td className='whitespace-nowrap p-0 text-sm'><a className='block cursor-pointer p-5' onClick={() => handleOfferEdit(offer?.id ? offer.id : '')}><span className='text-[1.3rem] font-medium uppercase'>{discountOffer}</span><br /><span className='text-grey-700'>{offer.type !== 'trial' ? getOfferDuration(offer.duration) : 'Trial period'}</span></a></td>
-                            <td className='whitespace-nowrap p-0 text-sm'><a className='block cursor-pointer p-5' onClick={() => handleOfferEdit(offer?.id ? offer.id : '')}><span className='font-medium'>{updatedPriceWithCurrency}</span> {offer.type !== 'trial' ? <span className='relative text-xs text-grey-700 before:absolute before:-inset-x-0.5 before:top-1/2 before:rotate-[-20deg] before:border-t before:content-[""]'>{originalPriceWithCurrency}</span> : null}</a></td>
+                            <td className='p-0'><a className='block cursor-pointer p-5 pl-0' onClick={() => handleOfferEdit(offer.id)}><span className='font-semibold'>{offer?.name}</span><br /><span className='text-sm text-grey-700'>{offerTier.name} {getOfferCadence(offer.cadence)}</span></a></td>
+                            <td className='whitespace-nowrap p-0 text-sm'><a className='block cursor-pointer p-5' onClick={() => handleOfferEdit(offer.id)}><span className='text-[1.3rem] font-medium uppercase'>{discountOffer}</span><br /><span className='text-grey-700'>{offer.type !== 'trial' ? getOfferDuration(offer.duration) : 'Trial period'}</span></a></td>
+                            <td className='whitespace-nowrap p-0 text-sm'><a className='block cursor-pointer p-5' onClick={() => handleOfferEdit(offer.id)}><span className='font-medium'>{updatedPriceWithCurrency}</span> {offer.type !== 'trial' ? <span className='relative text-xs text-grey-700 before:absolute before:-inset-x-0.5 before:top-1/2 before:rotate-[-20deg] before:border-t before:content-[""]'>{originalPriceWithCurrency}</span> : null}</a></td>
                             <td className='whitespace-nowrap p-0 text-sm'><a className={`block cursor-pointer p-5 ${offer.redemption_count === 0 ? '' : 'hover:underline'}`} href={offer.redemption_count > 0 && offer.id ? createRedemptionFilterUrl(offer.id) : undefined} onClick={offer.redemption_count === 0 && offer.id ? () => handleOfferEdit(offer.id) : undefined}>{offer.redemption_count}</a></td>
                             <td className='whitespace-nowrap p-0 text-sm'>
-                                <a className='block cursor-pointer p-5' onClick={() => handleOfferEdit(offer?.id ? offer.id : '')}>
+                                <a className='block cursor-pointer p-5' onClick={() => handleOfferEdit(offer.id)}>
                                     {archived ? (
                                         <span className='inline-flex items-center rounded-full bg-grey-200 px-2 py-0.5 text-2xs font-semibold uppercase tracking-wide text-grey-700 dark:bg-grey-900 dark:text-grey-500'>Archived</span>
                                     ) : (
