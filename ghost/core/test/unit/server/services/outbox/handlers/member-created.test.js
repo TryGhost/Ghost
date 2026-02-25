@@ -1,9 +1,8 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const rewire = require('rewire');
-const bunyan = require('bunyan');
-const {PassThrough} = require('stream');
 const logging = require('@tryghost/logging');
+const {captureLoggerOutput} = require('../../../../../utils/logging-utils');
 
 describe('member-created handler', function () {
     let handler;
@@ -44,49 +43,6 @@ describe('member-created handler', function () {
         sinon.restore();
     });
 
-    function captureLoggerOutput() {
-        const output = [];
-        const stream = new PassThrough();
-        let buffered = '';
-
-        stream.on('data', (chunk) => {
-            buffered += chunk.toString();
-            const lines = buffered.split('\n');
-            buffered = lines.pop();
-
-            for (const line of lines) {
-                if (!line.trim()) {
-                    continue;
-                }
-
-                output.push(JSON.parse(line));
-            }
-        });
-
-        const originalStreams = logging.streams;
-        logging.streams = {
-            capture: {
-                name: 'capture',
-                log: bunyan.createLogger({
-                    name: 'test-logger',
-                    streams: [{
-                        type: 'stream',
-                        stream,
-                        level: 'trace'
-                    }]
-                })
-            }
-        };
-
-        return {
-            output,
-            restore() {
-                logging.streams = originalStreams;
-                stream.destroy();
-            }
-        };
-    }
-
     it('sends email even when tracking fails', async function () {
         AutomatedEmailRecipientStub.add.rejects(new Error('Database error'));
 
@@ -125,7 +81,7 @@ describe('member-created handler', function () {
     });
 
     it('logs warning when status has no slug mapping', async function () {
-        const capture = captureLoggerOutput();
+        const capture = captureLoggerOutput(logging);
         handler.__set__('logging', logging);
 
         try {
