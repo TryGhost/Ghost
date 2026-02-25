@@ -70,7 +70,7 @@
         "lint:test": "eslint -c test/.eslintrc.cjs --ext .js,.ts,.cjs,.tsx test/ --cache"
     },
     "files": [
-        "es",
+        "dist",
         "types"
     ],
     "devDependencies": {
