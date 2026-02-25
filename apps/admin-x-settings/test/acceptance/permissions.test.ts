@@ -1,7 +1,19 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, meWithRole, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
+import {globalDataRequests, limitRequests, meWithRole, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('User permissions', async () => {
+    test('Redirects staff/me to current user profile', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            ...limitRequests
+        }});
+
+        await page.goto('/#/settings/staff/me');
+
+        await expect(page).toHaveURL(new RegExp(`#\\/settings\\/staff\\/${responseFixtures.me.users[0].slug}$`));
+        await expect(page.getByTestId('user-detail-modal')).toBeVisible();
+    });
+
     test('Editors can only see users', async ({page}) => {
         await mockApi({page, requests: {
             ...globalDataRequests,
