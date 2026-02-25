@@ -500,7 +500,7 @@ test.describe('Offers Modal', () => {
             await expect(monthlyModal.getByLabel('Display title')).toHaveValue('Stay monthly');
             await expect(monthlyModal.getByLabel('Display description')).toHaveValue('Monthly description');
             await expect(monthlyModal.getByLabel('Amount off')).toHaveValue('40');
-            await expect(monthlyModal.getByLabel('Duration in months')).toHaveValue('3');
+            await expect(monthlyModal.getByTestId('duration-months-input')).toHaveValue('3');
 
             await monthlyModal.getByRole('button', {name: 'Cancel'}).click();
             await modal.getByText('Yearly retention').click();

@@ -304,6 +304,7 @@ const RetentionOfferSidebar: React.FC<{
                                         {formState.duration === 'repeating' && (
                                             <div className='-mt-4'>
                                                 <TextField
+                                                    data-testid='duration-months-input'
                                                     error={Boolean(errors.durationInMonths)}
                                                     hint={errors.durationInMonths}
                                                     rightPlaceholder={`${formState.durationInMonths === 1 ? 'month' : 'months'}`}
