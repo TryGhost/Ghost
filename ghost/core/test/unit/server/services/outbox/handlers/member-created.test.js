@@ -1,6 +1,9 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const rewire = require('rewire');
+const bunyan = require('bunyan');
+const {PassThrough} = require('stream');
+const logging = require('@tryghost/logging');
 
 describe('member-created handler', function () {
     let handler;
@@ -41,6 +44,49 @@ describe('member-created handler', function () {
         sinon.restore();
     });
 
+    function captureLoggerOutput() {
+        const output = [];
+        const stream = new PassThrough();
+        let buffered = '';
+
+        stream.on('data', (chunk) => {
+            buffered += chunk.toString();
+            const lines = buffered.split('\n');
+            buffered = lines.pop();
+
+            for (const line of lines) {
+                if (!line.trim()) {
+                    continue;
+                }
+
+                output.push(JSON.parse(line));
+            }
+        });
+
+        const originalStreams = logging.streams;
+        logging.streams = {
+            capture: {
+                name: 'capture',
+                log: bunyan.createLogger({
+                    name: 'test-logger',
+                    streams: [{
+                        type: 'stream',
+                        stream,
+                        level: 'trace'
+                    }]
+                })
+            }
+        };
+
+        return {
+            output,
+            restore() {
+                logging.streams = originalStreams;
+                stream.destroy();
+            }
+        };
+    }
+
     it('sends email even when tracking fails', async function () {
         AutomatedEmailRecipientStub.add.rejects(new Error('Database error'));
 
@@ -79,19 +125,30 @@ describe('member-created handler', function () {
     });
 
     it('logs warning when status has no slug mapping', async function () {
-        await handler.handle({
-            payload: {
-                memberId: 'member123',
-                uuid: 'uuid-123',
-                email: 'test@example.com',
-                name: 'Test Member',
-                status: 'comped'
-            }
-        });
+        const capture = captureLoggerOutput();
+        handler.__set__('logging', logging);
 
-        sinon.assert.calledOnce(memberWelcomeEmailServiceStub.api.send);
-        sinon.assert.calledOnce(loggingStub.warn);
-        assert.ok(loggingStub.warn.getCall(0).args[0].includes('No automated email slug found'));
-        sinon.assert.notCalled(AutomatedEmailRecipientStub.add);
+        try {
+            await handler.handle({
+                payload: {
+                    memberId: 'member123',
+                    uuid: 'uuid-123',
+                    email: 'test@example.com',
+                    name: 'Test Member',
+                    status: 'comped'
+                }
+            });
+
+            sinon.assert.calledOnce(memberWelcomeEmailServiceStub.api.send);
+            const warningLog = capture.output.find(log => log.level === 40 && log.msg === 'No automated email slug found for member status');
+            assert.ok(warningLog);
+            assert.deepEqual(warningLog.system, {
+                event: 'outbox.member_created.no_slug_mapping',
+                member_status: 'comped'
+            });
+            sinon.assert.notCalled(AutomatedEmailRecipientStub.add);
+        } finally {
+            capture.restore();
+        }
     });
 });
