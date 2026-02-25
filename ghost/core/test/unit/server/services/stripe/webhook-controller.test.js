@@ -115,6 +115,43 @@ describe('WebhookController', function () {
         assert(res.end.called);
     });
 
+    it('should ignore customer.subscription.updated events for customers in the ignore list', async function () {
+        const event = {
+            id: 'evt_123',
+            type: 'customer.subscription.updated',
+            data: {
+                object: {customer: 'cust_123'}
+            }
+        };
+
+        controller.configure({webhookCustomerIgnoreList: ['cust_123']});
+        deps.webhookManager.parseWebhook.returns(event);
+
+        await controller.handle(req, res);
+
+        assert(deps.subscriptionEventService.handleSubscriptionEvent.notCalled);
+        assert(res.writeHead.calledWith(200));
+        assert(res.end.called);
+    });
+
+    it('should handle customer.subscription.updated events for customers not in the ignore list', async function () {
+        const event = {
+            type: 'customer.subscription.updated',
+            data: {
+                object: {customer: 'cust_123'}
+            }
+        };
+
+        controller.configure({webhookCustomerIgnoreList: ['cust_999']});
+        deps.webhookManager.parseWebhook.returns(event);
+
+        await controller.handle(req, res);
+
+        assert(deps.subscriptionEventService.handleSubscriptionEvent.calledOnce);
+        assert(res.writeHead.calledWith(200));
+        assert(res.end.called);
+    });
+
     it('should handle customer.subscription.deleted event', async function () {
         const event = {
             type: 'customer.subscription.deleted',
