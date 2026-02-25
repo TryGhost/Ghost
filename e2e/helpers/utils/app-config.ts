@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 // load environment variables from .env file
-dotenv.config();
+dotenv.config({quiet: true});
 
 // Simple config object with just the values
 export const appConfig = {
