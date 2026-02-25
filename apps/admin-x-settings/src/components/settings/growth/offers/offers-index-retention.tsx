@@ -12,9 +12,8 @@ import {currencyToDecimal, getSymbol} from '../../../../utils/currency';
 import {numberWithCommas} from '../../../../utils/helpers';
 import {useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
 import {useModal} from '@ebay/nice-modal-react';
+import {useOffersShowArchived, useSortingState} from '../../../providers/settings-app-provider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
-import {useSortingState} from '../../../providers/settings-app-provider';
-import {useState} from 'react';
 
 export type OfferType = 'percent' | 'fixed' | 'trial';
 
@@ -213,7 +212,7 @@ export const OffersIndexModal: React.FC = () => {
     const {sortingState, setSortingState} = useSortingState();
     const offersSorting = sortingState?.find(sorting => sorting.type === 'offers');
 
-    const [showArchived, setShowArchived] = useState(false);
+    const {offersShowArchived: showArchived, setOffersShowArchived: setShowArchived} = useOffersShowArchived();
 
     const sortOption = offersSorting?.option || 'date-added';
     const sortDirection = offersSorting?.direction || 'desc';
