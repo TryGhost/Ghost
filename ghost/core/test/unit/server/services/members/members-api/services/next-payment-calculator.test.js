@@ -182,6 +182,7 @@ describe('NextPaymentCalculator', function () {
             assert.equal(result.discount.end, null);
             assert.equal(result.discount.amount, 50);
             assert.equal(result.discount.type, 'percent');
+            assert.equal(result.discount.duration_in_months, null);
         });
 
         it('handles once duration', function () {
@@ -202,6 +203,7 @@ describe('NextPaymentCalculator', function () {
             assert.equal(result.discount.amount, 50);
             assert.equal(result.discount.type, 'percent');
             assert.equal(result.discount.offer_id, 'offer_123');
+            assert.equal(result.discount.duration_in_months, null);
         });
 
         it('handles active repeating offers', function () {
@@ -223,6 +225,7 @@ describe('NextPaymentCalculator', function () {
             assert.equal(result.discount.amount, 20);
             assert.equal(result.discount.type, 'percent');
             assert.equal(result.discount.offer_id, 'offer_123');
+            assert.equal(result.discount.duration_in_months, 888);
         });
 
         // Backportability tests - for signup offers without discount_start/discount_end
@@ -276,6 +279,7 @@ describe('NextPaymentCalculator', function () {
                 assert.notEqual(result.discount, null);
                 assert.equal(result.discount.start, '2025-01-01T00:00:00.000Z');
                 assert.equal(result.discount.end, '2099-01-01T00:00:00.000Z'); // start_date + 888 months
+                assert.equal(result.discount.duration_in_months, 888);
             });
 
             it('repeating offer is inactive when start_date + duration_in_months is in the past', function () {
