@@ -9,11 +9,13 @@ const Agent = require('@tryghost/express-test');
  */
 class TestAgent extends Agent {
     constructor(app, options) {
+        const originUrl = new URL(options.originURL);
+
         super(app, {
             baseUrl: options.apiURL,
             headers: {
-                host: options.originURL.replace(/http:\/\//, ''),
-                origin: options.originURL
+                host: originUrl.host,
+                origin: originUrl.origin
             },
             queryParams: options.queryParams
         });

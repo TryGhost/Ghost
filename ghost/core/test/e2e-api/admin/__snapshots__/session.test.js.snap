@@ -1,21 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Sessions API Staff 2FA can login with 2FA code in session creation request 1: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "7",
-  "content-type": "text/plain; charset=utf-8",
-  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "set-cookie": Array [
-    StringMatching /\\^ghost-admin-api-session=/,
-  ],
-  "vary": "Accept-Version, Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
 exports[`Sessions API Staff 2FA can verify a session with 2FA code 1: [body] 1`] = `
 Object {
   "errors": Array [
@@ -35,6 +19,40 @@ Object {
 `;
 
 exports[`Sessions API Staff 2FA can verify a session with 2FA code 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "329",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "set-cookie": Array [
+    StringMatching /\\^ghost-admin-api-session=/,
+  ],
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Sessions API Staff 2FA rejects a 2FA code when reused in a fresh session 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": "2FA_NEW_DEVICE_DETECTED",
+      "context": "A 6-digit sign-in verification code has been sent to your email to keep your account safe.",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "User must verify session to login.",
+      "property": null,
+      "type": "Needs2FAError",
+    },
+  ],
+}
+`;
+
+exports[`Sessions API Staff 2FA rejects a 2FA code when reused in a fresh session 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",

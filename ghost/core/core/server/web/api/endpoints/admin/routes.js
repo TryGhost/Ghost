@@ -1,6 +1,7 @@
 const express = require('../../../../../shared/express');
 const api = require('../../../../api').endpoints;
 const {http} = require('@tryghost/api-framework');
+const auth = require('../../../../services/auth');
 const apiMw = require('../../middleware');
 const mw = require('./middleware');
 
@@ -284,7 +285,11 @@ module.exports = function apiRoutes() {
         shared.middleware.brute.userReset,
         http(api.authentication.generateResetToken)
     );
-    router.put('/authentication/password_reset', shared.middleware.brute.globalBlock, http(api.authentication.resetPassword));
+    router.put('/authentication/password_reset',
+        shared.middleware.brute.globalBlock,
+        auth.session.initSession,
+        http(api.authentication.resetPassword)
+    );
     router.post('/authentication/invitation', http(api.authentication.acceptInvitation));
     router.get('/authentication/invitation', http(api.authentication.isInvitation));
     router.post('/authentication/setup', http(api.authentication.setup));
