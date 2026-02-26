@@ -454,12 +454,18 @@ describe('Mail: Ghostmailer', function () {
             });
 
             const sentMessage = sendMailSpy.firstCall.args[0];
-            assert.equal(sentMessage['o:tag'].length, 10);
-            assert.equal(sentMessage['o:tag'][0], 'ghost-email');
-            assert.equal(sentMessage['o:tag'][1], 'transactional-email');
-            assert.equal(sentMessage['o:tag'][2], 'blog-123123');
-            assert.equal(sentMessage['o:tag'].includes('tag-8'), false);
-            assert.equal(sentMessage['o:tag'].includes('tag-9'), false);
+            assert.deepEqual(sentMessage['o:tag'], [
+                'ghost-email',
+                'transactional-email',
+                'blog-123123',
+                'tag-1',
+                'tag-2',
+                'tag-3',
+                'tag-4',
+                'tag-5',
+                'tag-6',
+                'tag-7'
+            ]);
             sinon.assert.called(warnStub);
         });
 
