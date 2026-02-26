@@ -43,11 +43,13 @@ function captureLoggerOutput() {
     });
 
     const originalStreams = logging.streams;
+    const originalSerializerSource = Object.values(originalStreams)[0]?.log?.serializers;
     logging.streams = {
         capture: {
             name: 'capture',
             log: bunyan.createLogger({
                 name: 'test-logger',
+                serializers: originalSerializerSource || logging.serializers,
                 streams: [{
                     type: 'stream',
                     stream,
