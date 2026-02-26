@@ -115,7 +115,7 @@ describe('Permissions', function () {
                         .catch(function (err) {
                             assert.equal(err.errorType, 'NoPermissionError');
 
-                            assert.equal(findPostSpy.callCount, 0);
+                            sinon.assert.notCalled(findPostSpy);
                             done();
                         });
                 });
@@ -131,7 +131,7 @@ describe('Permissions', function () {
                         .catch(function (err) {
                             assert.equal(err.errorType, 'NoPermissionError');
 
-                            assert.equal(findPostSpy.callCount, 1);
+                            sinon.assert.calledOnce(findPostSpy);
                             assert.deepEqual(findPostSpy.firstCall.args[0], {id: 1, status: 'all'});
                             done();
                         });
@@ -148,7 +148,7 @@ describe('Permissions', function () {
                         .catch(function (err) {
                             assert.equal(err.errorType, 'NoPermissionError');
 
-                            assert.equal(findPostSpy.callCount, 1);
+                            sinon.assert.calledOnce(findPostSpy);
                             assert.deepEqual(findPostSpy.firstCall.args[0], {id: 1, status: 'all'});
                             done();
                         });
@@ -161,7 +161,7 @@ describe('Permissions', function () {
                         .post({id: 1}) // post id
                         .then(function () {
                             // We don't get this far, permissions are instantly granted for internal
-                            assert.equal(findPostSpy.callCount, 0);
+                            sinon.assert.notCalled(findPostSpy);
                             done();
                         })
                         .catch(function () {
@@ -180,7 +180,7 @@ describe('Permissions', function () {
                         .catch(function (err) {
                             assert.equal(err.errorType, 'NoPermissionError');
 
-                            assert.equal(findPostSpy.callCount, 1);
+                            sinon.assert.calledOnce(findPostSpy);
                             assert.deepEqual(findPostSpy.firstCall.args[0], {id: 1, status: 'all'});
                             done();
                         });
@@ -200,7 +200,7 @@ describe('Permissions', function () {
                             assert.equal(err.errorType, 'NoPermissionError');
 
                             // We don't look up tags
-                            assert.equal(findTagSpy.callCount, 0);
+                            sinon.assert.notCalled(findTagSpy);
                             done();
                         });
                 });
@@ -212,7 +212,7 @@ describe('Permissions', function () {
                         .tag({id: 1}) // tag id
                         .then(function () {
                             // We don't look up tags
-                            assert.equal(findTagSpy.callCount, 0);
+                            sinon.assert.notCalled(findTagSpy);
                             done();
                         })
                         .catch(function () {
@@ -231,7 +231,7 @@ describe('Permissions', function () {
                         .catch(function (err) {
                             assert.equal(err.errorType, 'NoPermissionError');
 
-                            assert.equal(findTagSpy.callCount, 0);
+                            sinon.assert.notCalled(findTagSpy);
                             done();
                         });
                 });
@@ -260,7 +260,7 @@ describe('Permissions', function () {
                         done(new Error('was able to edit tag without permission'));
                     })
                     .catch(function (err) {
-                        assert.equal(userProviderStub.callCount, 1);
+                        sinon.assert.calledOnce(userProviderStub);
                         assert.equal(err.errorType, 'NoPermissionError');
                         done();
                     });
@@ -280,7 +280,7 @@ describe('Permissions', function () {
                     .edit
                     .tag({id: 1}) // tag id in model syntax
                     .then(function (res) {
-                        assert.equal(userProviderStub.callCount, 1);
+                        sinon.assert.calledOnce(userProviderStub);
                         assert.equal(res, undefined);
                         done();
                     })
@@ -301,7 +301,7 @@ describe('Permissions', function () {
                     .edit
                     .tag() // tag id in model syntax
                     .then(function (res) {
-                        assert.equal(userProviderStub.callCount, 1);
+                        sinon.assert.calledOnce(userProviderStub);
                         assert.equal(res, undefined);
                         done();
                     })
@@ -323,7 +323,7 @@ describe('Permissions', function () {
                     .edit
                     .tag({id: 1}) // tag id in model syntax
                     .then(function (res) {
-                        assert.equal(userProviderStub.callCount, 1);
+                        sinon.assert.calledOnce(userProviderStub);
                         assert.equal(res, undefined);
                         done();
                     })
@@ -351,7 +351,7 @@ describe('Permissions', function () {
                     .edit
                     .tag({id: 1}) // tag id in model syntax
                     .then(function (res) {
-                        assert.equal(apiKeyProviderStub.callCount, 1);
+                        sinon.assert.calledOnce(apiKeyProviderStub);
                         assert.equal(res, undefined);
                         done();
                     })
@@ -386,8 +386,8 @@ describe('Permissions', function () {
                     .edit
                     .tag({id: 1})
                     .then(function (res) {
-                        assert.equal(userProviderStub.callCount, 1);
-                        assert.equal(apiKeyProviderStub.callCount, 1);
+                        sinon.assert.calledOnce(userProviderStub);
+                        sinon.assert.calledOnce(apiKeyProviderStub);
                         assert.equal(res, undefined);
                         done();
                     })
@@ -417,8 +417,8 @@ describe('Permissions', function () {
                     .edit
                     .tag({id: 1})
                     .then(function (res) {
-                        assert.equal(userProviderStub.callCount, 1);
-                        assert.equal(apiKeyProviderStub.callCount, 1);
+                        sinon.assert.calledOnce(userProviderStub);
+                        sinon.assert.calledOnce(apiKeyProviderStub);
                         assert.equal(res, undefined);
                         // Fixed: Now uses USER permission instead of API key logic
                         done();
@@ -454,8 +454,8 @@ describe('Permissions', function () {
                         done(new Error('Should have failed using USER permissions (ignoring API key permissions)'));
                     })
                     .catch(function (err) {
-                        assert.equal(userProviderStub.callCount, 1);
-                        assert.equal(apiKeyProviderStub.callCount, 1);
+                        sinon.assert.calledOnce(userProviderStub);
+                        sinon.assert.calledOnce(apiKeyProviderStub);
                         assert.equal(err.errorType, 'NoPermissionError');
                         // Fixed: Now uses USER permission instead of API key logic
                         done();
@@ -488,8 +488,8 @@ describe('Permissions', function () {
                         done(new Error('Should have failed due to no permissions'));
                     })
                     .catch(function (err) {
-                        assert.equal(userProviderStub.callCount, 1);
-                        assert.equal(apiKeyProviderStub.callCount, 1);
+                        sinon.assert.calledOnce(userProviderStub);
+                        sinon.assert.calledOnce(apiKeyProviderStub);
                         assert.equal(err.errorType, 'NoPermissionError');
                         done();
                     });
@@ -518,8 +518,8 @@ describe('Permissions', function () {
                     .edit
                     .tag({id: 1})
                     .then(function (res) {
-                        assert.equal(userProviderStub.callCount, 1);
-                        assert.equal(apiKeyProviderStub.callCount, 1);
+                        sinon.assert.calledOnce(userProviderStub);
+                        sinon.assert.calledOnce(apiKeyProviderStub);
                         assert.equal(res, undefined);
                         done();
                     })
@@ -551,8 +551,8 @@ describe('Permissions', function () {
                         .edit
                         .tag({id: 1})
                         .then(function (res) {
-                            assert.equal(userProviderStub.callCount, 1);
-                            assert.equal(apiKeyProviderStub.callCount, 1);
+                            sinon.assert.calledOnce(userProviderStub);
+                            sinon.assert.calledOnce(apiKeyProviderStub);
                             assert.equal(res, undefined);
                             done();
                         })
@@ -587,8 +587,8 @@ describe('Permissions', function () {
                             done(new Error('Should have failed using USER permissions (ignoring API key permissions)'));
                         })
                         .catch(function (err) {
-                            assert.equal(userProviderStub.callCount, 1);
-                            assert.equal(apiKeyProviderStub.callCount, 1);
+                            sinon.assert.calledOnce(userProviderStub);
+                            sinon.assert.calledOnce(apiKeyProviderStub);
                             assert.equal(err.errorType, 'NoPermissionError');
                             done();
                         });
@@ -617,8 +617,8 @@ describe('Permissions', function () {
                         .edit
                         .tag({id: 1})
                         .then(function (res) {
-                            assert.equal(userProviderStub.callCount, 1);
-                            assert.equal(apiKeyProviderStub.callCount, 1);
+                            sinon.assert.calledOnce(userProviderStub);
+                            sinon.assert.calledOnce(apiKeyProviderStub);
                             assert.equal(res, undefined);
                             done();
                         })
@@ -657,7 +657,7 @@ describe('Permissions', function () {
                         1, 'edit', sinon.match.object, sinon.match.object, sinon.match.object, true, true
                     );
 
-                    assert.equal(userProviderStub.callCount, 1);
+                    sinon.assert.calledOnce(userProviderStub);
                     assert.equal(err.message, 'Hello World!');
                     done();
                 });
@@ -686,7 +686,7 @@ describe('Permissions', function () {
                         1, 'edit', sinon.match.object, sinon.match.object, sinon.match.object, true, true
                     );
 
-                    assert.equal(userProviderStub.callCount, 1);
+                    sinon.assert.calledOnce(userProviderStub);
                     assert.equal(res, undefined);
                     done();
                 })

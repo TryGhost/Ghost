@@ -419,10 +419,11 @@ describe('Account Plan Page', () => {
 
         const retentionOffer = {
             ...getOfferData({
-                type: 'free_months',
-                amount: 1,
+                type: 'percent',
+                amount: 100,
                 cadence: 'month',
-                duration: 'free_months',
+                duration: 'repeating',
+                durationInMonths: 1,
                 tierId: paidProduct.id,
                 tierName: paidProduct.name
             }),

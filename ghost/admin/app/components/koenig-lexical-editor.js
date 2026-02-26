@@ -462,6 +462,7 @@ export default class KoenigLexicalEditor extends Component {
             siteTitle: this.settings.title,
             siteDescription: this.settings.description,
             siteUrl: this.config.getSiteUrl('/'),
+            siteUuid: this.config.site_uuid,
             stripeEnabled: checkStripeEnabled(), // returns a boolean
             visibilitySettings: getCardVisibilitySettings(props.cardConfig)
         };
@@ -528,7 +529,7 @@ export default class KoenigLexicalEditor extends Component {
             };
 
             const _uploadFile = async (file, {formData = {}} = {}) => {
-                progressTracker.current[file] = 0;
+                progressTracker.current.set(file, 0);
 
                 const fileFormData = new FormData();
                 fileFormData.append('file', file, file.name);

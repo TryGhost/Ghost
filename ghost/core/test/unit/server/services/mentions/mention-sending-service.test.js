@@ -208,7 +208,7 @@ describe('MentionSendingService', function () {
                     html: 'same'
                 }
             }));
-            assert(errorLogStub.calledTwice);
+            sinon.assert.calledTwice(errorLogStub);
         });
 
         it('Sends no mentions for posts without html and previous html', async function () {
@@ -226,7 +226,7 @@ describe('MentionSendingService', function () {
                     html: ''
                 }
             }));
-            assert(stub.notCalled);
+            sinon.assert.notCalled(stub);
         });
     });
 
@@ -298,7 +298,7 @@ describe('MentionSendingService', function () {
             `});
             assert.equal(scope.isDone(), true);
             assert.equal(counter, 3);
-            assert(errorLogStub.calledOnce);
+            sinon.assert.calledOnce(errorLogStub);
         });
 
         it('Sends to deleted links', async function () {

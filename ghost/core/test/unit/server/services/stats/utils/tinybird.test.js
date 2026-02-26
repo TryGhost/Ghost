@@ -224,7 +224,7 @@ describe('Tinybird Client', function () {
             assert.equal(result[0].visits, 100);
 
             // Verify request was called with correct parameters
-            assert.equal(mockRequest.get.calledOnce, true);
+            sinon.assert.calledOnce(mockRequest.get);
             const [url, options] = mockRequest.get.firstCall.args;
             assert(url.startsWith('https://api.tinybird.co/v0/pipes/test_pipe.json?'));
             assert.equal(options.headers.Authorization, 'Bearer mock-jwt-token');
@@ -237,7 +237,7 @@ describe('Tinybird Client', function () {
             const result = await tinybirdClient.fetch('test_pipe', {});
 
             assert.equal(result, null);
-            assert.equal(mockRequest.get.calledOnce, true);
+            sinon.assert.calledOnce(mockRequest.get);
         });
 
         it('returns null when response parsing fails', async function () {
@@ -249,7 +249,7 @@ describe('Tinybird Client', function () {
             const result = await tinybirdClient.fetch('test_pipe', {});
 
             assert.equal(result, null);
-            assert.equal(mockRequest.get.calledOnce, true);
+            sinon.assert.calledOnce(mockRequest.get);
         });
     });
 });

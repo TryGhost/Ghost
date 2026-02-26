@@ -118,7 +118,7 @@ describe('Last Seen At Updater', function () {
                 membersEvents.lastSeenAtUpdater.cachedUpdateLastSeenAt(memberId, previousLastSeen, firstDate)
             ]);
 
-            assert.equal(spy.callCount, 1);
+            sinon.assert.calledOnce(spy);
 
             clock.restore();
         });

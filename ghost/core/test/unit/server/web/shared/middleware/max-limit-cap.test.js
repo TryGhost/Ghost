@@ -36,7 +36,7 @@ describe('Max Limit Cap Middleware', function () {
             maxLimitCap[0](req, res, next);
 
             assert.equal(req.query.limit, undefined);
-            assert.equal(next.calledOnce, true);
+            sinon.assert.calledOnce(next);
         });
     });
 
@@ -47,7 +47,7 @@ describe('Max Limit Cap Middleware', function () {
             maxLimitCap[0](req, res, next);
 
             assert.equal(req.query.limit, 50);
-            assert.equal(next.calledOnce, true);
+            sinon.assert.calledOnce(next);
         });
 
         it('should handle string limit values', function () {
@@ -56,7 +56,7 @@ describe('Max Limit Cap Middleware', function () {
             maxLimitCap[0](req, res, next);
 
             assert.equal(req.query.limit, '25');
-            assert.equal(next.calledOnce, true);
+            sinon.assert.calledOnce(next);
         });
     });
 
@@ -67,7 +67,7 @@ describe('Max Limit Cap Middleware', function () {
             maxLimitCap[0](req, res, next);
 
             assert.equal(req.query.limit, 100);
-            assert.equal(next.calledOnce, true);
+            sinon.assert.calledOnce(next);
         });
 
         it('should cap string limit values to 100', function () {
@@ -76,7 +76,7 @@ describe('Max Limit Cap Middleware', function () {
             maxLimitCap[0](req, res, next);
 
             assert.equal(req.query.limit, 100);
-            assert.equal(next.calledOnce, true);
+            sinon.assert.calledOnce(next);
         });
     });
 
@@ -89,7 +89,7 @@ describe('Max Limit Cap Middleware', function () {
             maxLimitCap[0](req, res, next);
 
             assert.equal(req.query.limit, 100);
-            assert.equal(next.calledOnce, true);
+            sinon.assert.calledOnce(next);
         });
 
         it('should allow "all" when allowLimitAll is true', function () {
@@ -100,7 +100,7 @@ describe('Max Limit Cap Middleware', function () {
             maxLimitCap[0](req, res, next);
 
             assert.equal(req.query.limit, 'all');
-            assert.equal(next.calledOnce, true);
+            sinon.assert.calledOnce(next);
         });
     });
 
@@ -113,7 +113,7 @@ describe('Max Limit Cap Middleware', function () {
             maxLimitCap[0](req, res, next);
 
             assert.equal(req.query.limit, 50); // Should cap to configured maxLimit
-            assert.equal(next.calledOnce, true);
+            sinon.assert.calledOnce(next);
         });
 
         it('should not modify limit below custom maxLimit', function () {
@@ -124,7 +124,7 @@ describe('Max Limit Cap Middleware', function () {
             maxLimitCap[0](req, res, next);
 
             assert.equal(req.query.limit, 30);
-            assert.equal(next.calledOnce, true);
+            sinon.assert.calledOnce(next);
         });
     });
 
@@ -137,7 +137,7 @@ describe('Max Limit Cap Middleware', function () {
             maxLimitCap[0](req, res, next);
 
             assert.equal(req.query.limit, 1000);
-            assert.equal(next.calledOnce, true);
+            sinon.assert.calledOnce(next);
         });
 
         it('should not cap limit for /api/admin/emails/ endpoints', function () {
@@ -148,7 +148,7 @@ describe('Max Limit Cap Middleware', function () {
             maxLimitCap[0](req, res, next);
 
             assert.equal(req.query.limit, 500);
-            assert.equal(next.calledOnce, true);
+            sinon.assert.calledOnce(next);
         });
 
         it('should not cap limit for /api/admin/emails/ recipient-failures', function () {
@@ -159,7 +159,7 @@ describe('Max Limit Cap Middleware', function () {
             maxLimitCap[0](req, res, next);
 
             assert.equal(req.query.limit, 'all');
-            assert.equal(next.calledOnce, true);
+            sinon.assert.calledOnce(next);
         });
 
         it('should cap limit for non-exception endpoints', function () {
@@ -170,7 +170,7 @@ describe('Max Limit Cap Middleware', function () {
             maxLimitCap[0](req, res, next);
 
             assert.equal(req.query.limit, 100);
-            assert.equal(next.calledOnce, true);
+            sinon.assert.calledOnce(next);
         });
     });
 
@@ -181,7 +181,7 @@ describe('Max Limit Cap Middleware', function () {
             maxLimitCap[0](req, res, next);
 
             assert.equal(req.query.limit, 100);
-            assert.equal(next.calledOnce, true);
+            sinon.assert.calledOnce(next);
         });
 
         it('should handle limit of 0', function () {
@@ -190,7 +190,7 @@ describe('Max Limit Cap Middleware', function () {
             maxLimitCap[0](req, res, next);
 
             assert.equal(req.query.limit, 0);
-            assert.equal(next.calledOnce, true);
+            sinon.assert.calledOnce(next);
         });
 
         it('should handle negative limit values', function () {
@@ -199,7 +199,7 @@ describe('Max Limit Cap Middleware', function () {
             maxLimitCap[0](req, res, next);
 
             assert.equal(req.query.limit, -10);
-            assert.equal(next.calledOnce, true);
+            sinon.assert.calledOnce(next);
         });
 
         it('should handle non-numeric string limits', function () {
@@ -208,7 +208,7 @@ describe('Max Limit Cap Middleware', function () {
             maxLimitCap[0](req, res, next);
 
             assert.equal(req.query.limit, 100);
-            assert.equal(next.calledOnce, true);
+            sinon.assert.calledOnce(next);
         });
 
         it('should handle paths that partially match exception endpoints', function () {
@@ -219,7 +219,7 @@ describe('Max Limit Cap Middleware', function () {
             maxLimitCap[0](req, res, next);
 
             assert.equal(req.query.limit, 100);
-            assert.equal(next.calledOnce, true);
+            sinon.assert.calledOnce(next);
         });
     });
 

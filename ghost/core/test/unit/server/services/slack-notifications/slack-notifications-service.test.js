@@ -89,7 +89,7 @@ describe('SlackNotificationsService', function () {
                 await DomainEvents.allSettled();
 
                 assert(loggingSpy.callCount === 0);
-                assert(slackNotificationStub.calledOnce);
+                sinon.assert.calledOnce(slackNotificationStub);
             });
 
             it('does not send notification when milestones is disabled in hostSettings', async function () {
@@ -214,7 +214,7 @@ describe('SlackNotificationsService', function () {
 
                 await DomainEvents.allSettled();
                 const loggingSpyCall = loggingSpy.getCall(0).args[0];
-                assert(loggingSpy.calledOnce);
+                sinon.assert.calledOnce(loggingSpy);
                 assert(loggingSpyCall instanceof Error);
             });
         });

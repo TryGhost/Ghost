@@ -26,18 +26,15 @@ describe('Admin App', function () {
             // default config: configUtils.set('adminFrameProtection', true);
             controller(req, res);
 
-            assert.equal(res.sendFile.called, true);
-            assert.equal(res.sendFile.calledWith(
-                sinon.match.string,
-                sinon.match.hasNested('headers.X-Frame-Options', sinon.match('sameorigin'))
-            ), true);
+            sinon.assert.called(res.sendFile);
+            sinon.assert.calledWith(res.sendFile, sinon.match.string, sinon.match.hasNested('headers.X-Frame-Options', sinon.match('sameorigin')));
         });
 
         it('doesn\'t add x-frame-options header when adminFrameProtection is disabled', function () {
             configUtils.set('adminFrameProtection', false);
             controller(req, res);
 
-            assert.equal(res.sendFile.called, true);
+            sinon.assert.called(res.sendFile);
             assert.equal(res.sendFile.calledWith(
                 sinon.match.string,
                 sinon.match.hasNested('headers.X-Frame-Options')

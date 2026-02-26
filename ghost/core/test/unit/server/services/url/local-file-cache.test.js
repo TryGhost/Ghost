@@ -66,7 +66,7 @@ describe('Unit: services/url/LocalFileCache', function () {
             const result = await localFileCache.write('urls', {data: 'test'});
 
             assert.equal(result, true);
-            assert.equal(writeFileStub.called, true);
+            sinon.assert.called(writeFileStub);
         });
 
         it('does not write to the file system is writes are disabled', async function () {
@@ -83,7 +83,7 @@ describe('Unit: services/url/LocalFileCache', function () {
             const result = await localFileCache.write('urls', {data: 'test'});
 
             assert.equal(result, null);
-            assert.equal(writeFileStub.called, false);
+            sinon.assert.notCalled(writeFileStub);
         });
     });
 });

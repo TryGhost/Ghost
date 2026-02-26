@@ -66,17 +66,17 @@ describe('Unit: utils/serializers/output/mappers', function () {
 
             await mappers.posts(post, frame);
 
-            assert.equal(dateUtil.forPost.callCount, 1);
+            sinon.assert.calledOnce(dateUtil.forPost);
 
-            assert.equal(extraAttrsUtils.forPost.callCount, 1);
+            sinon.assert.calledOnce(extraAttrsUtils.forPost);
 
-            assert.equal(cleanUtil.post.callCount, 1);
-            assert.equal(cleanUtil.tag.callCount, 1);
-            assert.equal(cleanUtil.author.callCount, 1);
+            sinon.assert.calledOnce(cleanUtil.post);
+            sinon.assert.calledOnce(cleanUtil.tag);
+            sinon.assert.calledOnce(cleanUtil.author);
 
-            assert.equal(urlUtil.forPost.callCount, 1);
-            assert.equal(urlUtil.forTag.callCount, 1);
-            assert.equal(urlUtil.forUser.callCount, 1);
+            sinon.assert.calledOnce(urlUtil.forPost);
+            sinon.assert.calledOnce(urlUtil.forTag);
+            sinon.assert.calledOnce(urlUtil.forUser);
 
             assert.deepEqual(urlUtil.forTag.getCall(0).args, ['id3', {id: 'id3', feature_image: 'value'}, frame.options]);
             assert.deepEqual(urlUtil.forUser.getCall(0).args, ['id4', {name: 'Ghosty', id: 'id4'}, frame.options]);
@@ -103,9 +103,9 @@ describe('Unit: utils/serializers/output/mappers', function () {
 
             mappers.users(user, frame);
 
-            assert.equal(urlUtil.forUser.callCount, 1);
+            sinon.assert.calledOnce(urlUtil.forUser);
             assert.deepEqual(urlUtil.forUser.getCall(0).args, ['id1', user, frame.options]);
-            assert.equal(cleanUtil.author.callCount, 1);
+            sinon.assert.calledOnce(cleanUtil.author);
         });
     });
 
@@ -129,9 +129,9 @@ describe('Unit: utils/serializers/output/mappers', function () {
 
             mappers.tags(tag, frame);
 
-            assert.equal(urlUtil.forTag.callCount, 1);
+            sinon.assert.calledOnce(urlUtil.forTag);
             assert.deepEqual(urlUtil.forTag.getCall(0).args, ['id3', tag, frame.options]);
-            assert.equal(cleanUtil.tag.callCount, 1);
+            sinon.assert.calledOnce(cleanUtil.tag);
         });
     });
 

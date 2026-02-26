@@ -242,7 +242,7 @@ describe('Milestones Service', function () {
         assert.ok(arrMilestoneModel.get('created_at'));
         assert.equal(arrMilestoneModel.get('email_sent_at'), null);
 
-        assert(loggingStub.called);
+        sinon.assert.called(loggingStub);
     });
 
     it('Does not run ARR milestones when Stripe is not live enabled', async function () {
@@ -265,7 +265,7 @@ describe('Milestones Service', function () {
         assert.ok(memberMilestoneModel.get('created_at'));
         assert.equal(memberMilestoneModel.get('email_sent_at'), null);
 
-        assert(loggingStub.called);
+        sinon.assert.called(loggingStub);
     });
 
     it('Does not send emails for milestones when imported members present', async function () {
@@ -295,6 +295,6 @@ describe('Milestones Service', function () {
 
         assert.equal(arrMilestoneModel, null);
 
-        assert(loggingStub.called);
+        sinon.assert.called(loggingStub);
     });
 });

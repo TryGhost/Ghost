@@ -35,7 +35,7 @@ describe('RSS: Cache', function () {
                 xmlData1 = _xmlData;
 
                 // We should have called generateFeed
-                assert.equal(generateSpy.callCount, 1);
+                sinon.assert.calledOnce(generateSpy);
 
                 // Call RSS again to check that we didn't rebuild
                 return rssCache.getXML('/rss/', data);
@@ -44,7 +44,7 @@ describe('RSS: Cache', function () {
                 // Assertions
 
                 // We should not have called generateFeed again
-                assert.equal(generateSpy.callCount, 1);
+                sinon.assert.calledOnce(generateSpy);
 
                 // The data should be identical, no changing lastBuildDate
                 assert.equal(xmlData1, xmlData2);

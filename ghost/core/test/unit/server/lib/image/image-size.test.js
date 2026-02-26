@@ -360,12 +360,12 @@ describe('lib/image: image size', function () {
             assert.equal(localResult.url, localImageUrl);
             assert.equal(localResult.width, expectedLocalDimensions.width);
             assert.equal(localResult.height, expectedLocalDimensions.height);
-            assert.equal(storageReadSpy.calledOnce, true);
+            sinon.assert.calledOnce(storageReadSpy);
 
             const cdnResult = await imageSize.getImageSizeFromUrl(cdnImageUrl);
             assert.equal(cdnResult.url, cdnImageUrl);
             assert.equal(cdnRequestMock.isDone(), true);
-            assert.equal(storageReadSpy.calledOnce, true);
+            sinon.assert.calledOnce(storageReadSpy);
         });
 
         it('[failure] can handle an error with statuscode not 200 (probe-image-size)', function (done) {

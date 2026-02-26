@@ -129,11 +129,13 @@ export function getOfferDisplayData(offer, sub = {}) {
     const isRetention = offer.redemption_type === 'retention';
     const label = isRetention ? 'Retention offer' : 'Signup offer';
 
+    const isFreeMonths = offer.type === 'percent' && offer.amount === 100 && offer.duration === 'repeating';
+
     let discount;
     if (offer.type === 'trial') {
         discount = `${offer.amount} days free`;
-    } else if (offer.type === 'free_months') {
-        discount = `${offer.amount} ${offer.amount === 1 ? 'month' : 'months'} free`;
+    } else if (isFreeMonths) {
+        discount = `${offer.duration_in_months} ${offer.duration_in_months === 1 ? 'month' : 'months'} free`;
     } else if (offer.type === 'fixed') {
         discount = `${getSymbol(offer.currency)}${getNonDecimal(offer.amount)} off`;
     } else {
@@ -148,6 +150,9 @@ export function getOfferDisplayData(offer, sub = {}) {
 
         if (discountEnd) {
             detail = `${discount} until ${moment(discountEnd).format('MMM YYYY')}`;
+        } else if (isFreeMonths) {
+            // "N months free" is self-contained, no need to append "for N months"
+            detail = discount;
         } else if (offer.duration === 'repeating' && offer.duration_in_months) {
             detail = `${discount} for ${offer.duration_in_months} ${offer.duration_in_months === 1 ? 'month' : 'months'}`;
         } else if (offer.duration === 'forever') {

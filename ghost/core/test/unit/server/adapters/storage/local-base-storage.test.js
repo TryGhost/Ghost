@@ -86,7 +86,7 @@ describe('Local Storage Base', function () {
                 }, '2026/01');
 
                 // Verify getUniqueFileName was called with the absolute path
-                assert.ok(localStorageBase.getUniqueFileName.calledOnce);
+                sinon.assert.calledOnce(localStorageBase.getUniqueFileName);
                 const [, targetDir] = localStorageBase.getUniqueFileName.firstCall.args;
                 assert.equal(targetDir, '/var/www/ghost/content/media/2026/01');
 
@@ -129,7 +129,7 @@ describe('Local Storage Base', function () {
                 await localStorageBase.exists('video.mp4', '2026/01');
 
                 // Verify fs.stat was called with the correct absolute path
-                assert.ok(statStub.calledOnce);
+                sinon.assert.calledOnce(statStub);
                 assert.equal(statStub.firstCall.args[0], '/var/www/ghost/content/media/2026/01/video.mp4');
             });
         });
@@ -147,7 +147,7 @@ describe('Local Storage Base', function () {
                 await localStorageBase.delete('video.mp4', '2026/01');
 
                 // Verify fs.remove was called with the correct absolute path
-                assert.ok(removeStub.calledOnce);
+                sinon.assert.calledOnce(removeStub);
                 assert.equal(removeStub.firstCall.args[0], '/var/www/ghost/content/media/2026/01/video.mp4');
             });
         });

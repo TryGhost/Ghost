@@ -1,5 +1,5 @@
 import AppContext from '../../../../app-context';
-import {getCompExpiry, getMemberSubscription, hasOnlyFreePlan, isComplimentaryMember, subscriptionHasFreeTrial} from '../../../../utils/helpers';
+import {getCompExpiry, getMemberSubscription, hasOnlyFreePlan, isComplimentaryMember, subscriptionHasFreeMonthsOffer, subscriptionHasFreeTrial} from '../../../../utils/helpers';
 import {getDateString} from '../../../../utils/date-time';
 import {useContext} from 'react';
 
@@ -45,9 +45,14 @@ const AccountWelcome = () => {
                 </div>
             );
         }
+
+        const renewalDate = subscriptionHasFreeMonthsOffer({sub: subscription})
+            ? subscription?.next_payment?.discount?.end
+            : currentPeriodEnd;
+
         return (
             <div className='gh-portal-section'>
-                <p className='gh-portal-text-center gh-portal-free-ctatext'>{t(`Your subscription will renew on {renewalDate}`, {renewalDate: getDateString(currentPeriodEnd)})}</p>
+                <p className='gh-portal-text-center gh-portal-free-ctatext'>{t(`Your subscription will renew on {renewalDate}`, {renewalDate: getDateString(renewalDate)})}</p>
             </div>
         );
     }
