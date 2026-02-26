@@ -50,7 +50,7 @@
     "Continue": "Nadaljuj",
     "Continue subscription": "Nadaljuj naročnino",
     "Could not create Stripe billing portal session": "",
-    "Could not create stripe checkout session": "Ni bilo mogoče ustvariti seje za Stripe checkout",
+    "Could not create Stripe checkout session": "Ni bilo mogoče ustvariti seje za Stripe checkout",
     "Could not sign in. Login link expired.": "Prijava ni uspela. Povezava za prijavo je potekla.",
     "Could not update email! Invalid link.": "Posodobitev e-pošte ni uspela! Neveljavna povezava.",
     "Create a new contact": "Ustvari nov stik",

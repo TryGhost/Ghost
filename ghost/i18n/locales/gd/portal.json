@@ -50,7 +50,7 @@
     "Continue": "Lèan ort",
     "Continue subscription": "Cùm am fo-sgrìobhadh a’ dol",
     "Could not create Stripe billing portal session": "",
-    "Could not create stripe checkout session": "Cha ghabh seisean stripe a thòiseachadh",
+    "Could not create Stripe checkout session": "Cha ghabh seisean Stripe a thòiseachadh",
     "Could not sign in. Login link expired.": "Chan urrainn dhut clàradh a-steach. Dh’fhalbh an ùine air a’ cheangal a lean thu.",
     "Could not update email! Invalid link.": "Cha do ghabh am post-d ùrachadh! Ceangal mì-dhligheach",
     "Create a new contact": "Cruthaich neach-aithne ùr",

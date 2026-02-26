@@ -50,7 +50,7 @@
     "Continue": "Continuar",
     "Continue subscription": "Continuar subscrição",
     "Could not create Stripe billing portal session": "",
-    "Could not create stripe checkout session": "",
+    "Could not create Stripe checkout session": "",
     "Could not sign in. Login link expired.": "Não foi possível registar. O link de login expirou.",
     "Could not update email! Invalid link.": "Não foi possível atualizar o email! Link inválido.",
     "Create a new contact": "Criar novo contacto",

@@ -50,7 +50,7 @@
     "Continue": "继续",
     "Continue subscription": "继续订阅",
     "Could not create Stripe billing portal session": "",
-    "Could not create stripe checkout session": "无法创建 Stripe 结账会话",
+    "Could not create Stripe checkout session": "无法创建 Stripe 结账会话",
     "Could not sign in. Login link expired.": "无法登录。登录链接已过期。",
     "Could not update email! Invalid link.": "无法更新电子邮件！链接无效。",
     "Create a new contact": "创建新联系",

@@ -50,7 +50,7 @@
     "Continue": "Үргэлжлүүлэх",
     "Continue subscription": "Захиалгыг үргэлжлүүлэх",
     "Could not create Stripe billing portal session": "",
-    "Could not create stripe checkout session": "Stripe төлбөрийн хэсгийг үүсгэж чадсангүй",
+    "Could not create Stripe checkout session": "Stripe төлбөрийн хэсгийг үүсгэж чадсангүй",
     "Could not sign in. Login link expired.": "Нэвтэрч чадсангүй. Нэвтрэх холбоосны хугацаа дууссан.",
     "Could not update email! Invalid link.": "Имэйлийг шинэчлэх боломжгүй! Буруу холбоос.",
     "Create a new contact": "Шинэ харилцагч үүсгэх",

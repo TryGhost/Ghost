@@ -50,7 +50,7 @@
     "Continue": "ඉදිරියට යන්න",
     "Continue subscription": "Subscription එක පවත්වාගෙන යන්න",
     "Could not create Stripe billing portal session": "",
-    "Could not create stripe checkout session": "",
+    "Could not create Stripe checkout session": "",
     "Could not sign in. Login link expired.": "Sign in වීමට නොහැකි විය. Login link එක කල් ඉකුත් වී ඇත.",
     "Could not update email! Invalid link.": "Email ලිපිනය update කළ නොහැකි විය. වැරදි link එකකි.",
     "Create a new contact": "අලුත් contact එකක් නිර්මාණය කරන්න",

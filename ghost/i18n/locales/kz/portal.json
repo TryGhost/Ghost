@@ -50,7 +50,7 @@
     "Continue": "Жалғастыру",
     "Continue subscription": "Жазылымды жалғастыру",
     "Could not create Stripe billing portal session": "",
-    "Could not create stripe checkout session": "",
+    "Could not create Stripe checkout session": "",
     "Could not sign in. Login link expired.": "Кіру мүмкін болмады. Кіру сілтемесінің мерзімі өтіп кетті.",
     "Could not update email! Invalid link.": "Email поштаны жаңарту мүмкін болмады! Жарамсыз сілтеме.",
     "Create a new contact": "Жаңа контакт құру",

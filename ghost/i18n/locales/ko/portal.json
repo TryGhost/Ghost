@@ -50,7 +50,7 @@
     "Continue": "계속",
     "Continue subscription": "구독 계속",
     "Could not create Stripe billing portal session": "",
-    "Could not create stripe checkout session": "Stripe 결제 세션을 생성할 수 없었어요",
+    "Could not create Stripe checkout session": "Stripe 결제 세션을 생성할 수 없었어요",
     "Could not sign in. Login link expired.": "로그인할 수 없어요. 로그인 링크가 만료되었어요.",
     "Could not update email! Invalid link.": "이메일을 업데이트할 수 없어요! 잘못된 링크이에요.",
     "Create a new contact": "새 연락처 만들기",

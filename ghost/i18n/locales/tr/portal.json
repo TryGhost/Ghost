@@ -50,7 +50,7 @@
     "Continue": "Devam et",
     "Continue subscription": "Aboneliğe devam et",
     "Could not create Stripe billing portal session": "",
-    "Could not create stripe checkout session": "Stripe ödeme oturumu oluşturulamadı",
+    "Could not create Stripe checkout session": "Stripe ödeme oturumu oluşturulamadı",
     "Could not sign in. Login link expired.": "Oturum açılamadı. Oturum açma bağlantısının süresi doldu.",
     "Could not update email! Invalid link.": "E-posta güncellenemedi! Geçersiz link.",
     "Create a new contact": "Yeni bir kullanıcı oluştur",

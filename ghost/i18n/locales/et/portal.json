@@ -50,7 +50,7 @@
     "Continue": "Jätka",
     "Continue subscription": "Jätka tellimust",
     "Could not create Stripe billing portal session": "",
-    "Could not create stripe checkout session": "",
+    "Could not create Stripe checkout session": "",
     "Could not sign in. Login link expired.": "Ei saanud sisse logida. Sisselogimislink on aegunud.",
     "Could not update email! Invalid link.": "E-posti ei saanud uuendada! Vigane link.",
     "Create a new contact": "Loo uus kontakt",

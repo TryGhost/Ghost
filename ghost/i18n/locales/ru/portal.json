@@ -50,7 +50,7 @@
     "Continue": "Продолжить",
     "Continue subscription": "Возобновить подписку",
     "Could not create Stripe billing portal session": "",
-    "Could not create stripe checkout session": "Не удалось создать сеанс оформления заказа через Stripe",
+    "Could not create Stripe checkout session": "Не удалось создать сеанс оформления заказа через Stripe",
     "Could not sign in. Login link expired.": "Не удалось войти. Срок действия ссылки для входа истёк.",
     "Could not update email! Invalid link.": "Не удалось обновить email адрес! Неверная ссылка.",
     "Create a new contact": "Создать новый контакт",

@@ -50,7 +50,7 @@
     "Continue": "जारी रखें",
     "Continue subscription": "सदस्यता जारी रखें",
     "Could not create Stripe billing portal session": "",
-    "Could not create stripe checkout session": "स्ट्राइप चेकआउट सत्र बनाने में असमर्थ",
+    "Could not create Stripe checkout session": "स्ट्राइप चेकआउट सत्र बनाने में असमर्थ",
     "Could not sign in. Login link expired.": "साइन इन नहीं कर सके। लॉगिन लिंक समाप्त हो गया।",
     "Could not update email! Invalid link.": "ईमेल अपडेट नहीं कर सके! अमान्य लिंक।",
     "Create a new contact": "एक नया संपर्क बनाएं",

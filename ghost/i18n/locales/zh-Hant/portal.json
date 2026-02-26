@@ -50,7 +50,7 @@
     "Continue": "繼續",
     "Continue subscription": "繼續訂閱",
     "Could not create Stripe billing portal session": "",
-    "Could not create stripe checkout session": "無法建立 Stripe 結帳的連線",
+    "Could not create Stripe checkout session": "無法建立 Stripe 結帳的連線",
     "Could not sign in. Login link expired.": "無法登入。登入連結已過期。",
     "Could not update email! Invalid link.": "無法更新電子郵件。連結無效。",
     "Create a new contact": "建立新的聯絡人",

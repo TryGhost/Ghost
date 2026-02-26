@@ -50,7 +50,7 @@
     "Continue": "Продължи",
     "Continue subscription": "Продължете абонамента",
     "Could not create Stripe billing portal session": "Неуспешна сесия с платежната система Stripe",
-    "Could not create stripe checkout session": "Неуспешен опит за плащане чрез Stripe",
+    "Could not create Stripe checkout session": "Неуспешен опит за плащане чрез Stripe",
     "Could not sign in. Login link expired.": "Неуспешно влизане. Линкът е с изтекла валидност.",
     "Could not update email! Invalid link.": "Не успяхме да обновим имейла! Невалиден линк.",
     "Create a new contact": "Създайте нов контакт",

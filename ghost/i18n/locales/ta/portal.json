@@ -50,7 +50,7 @@
     "Continue": "தொடரவும்",
     "Continue subscription": "சந்தாவைத் தொடரவும்",
     "Could not create Stripe billing portal session": "",
-    "Could not create stripe checkout session": "ஸ்ட்ரைப் செக்அவுட் அமர்வை உருவாக்க முடியவில்லை",
+    "Could not create Stripe checkout session": "ஸ்ட்ரைப் செக்அவுட் அமர்வை உருவாக்க முடியவில்லை",
     "Could not sign in. Login link expired.": "உள்நுழைய முடியவில்லை. உள்நுழைவு இணைப்பு காலாவதியானது.",
     "Could not update email! Invalid link.": "மின்னஞ்சலை புதுப்பிக்க முடியவில்லை! தவறான இணைப்பு.",
     "Create a new contact": "புதிய தொடர்பை உருவாக்கு",

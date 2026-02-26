@@ -50,7 +50,7 @@
     "Continue": "המשך",
     "Continue subscription": "המשך מנוי",
     "Could not create Stripe billing portal session": "",
-    "Could not create stripe checkout session": "לא ניתן ליצור סשן של קופה של סטרייפ",
+    "Could not create Stripe checkout session": "לא ניתן ליצור סשן של קופה של סטרייפ",
     "Could not sign in. Login link expired.": "כניסה נכשלה. פג תוקפו של לינק הכניסה",
     "Could not update email! Invalid link.": "עדכון המייל נכשל! לינק לא תקין.",
     "Create a new contact": "צרו איש קשר חדש",

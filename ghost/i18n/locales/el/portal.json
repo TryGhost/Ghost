@@ -50,7 +50,7 @@
     "Continue": "Συνέχεια",
     "Continue subscription": "Συνέχεια συνδρομής",
     "Could not create Stripe billing portal session": "",
-    "Could not create stripe checkout session": "",
+    "Could not create Stripe checkout session": "",
     "Could not sign in. Login link expired.": "Δεν ήταν δυνατή η σύνδεση. Ο σύνδεσμος σύνδεσης έχει λήξει.",
     "Could not update email! Invalid link.": "Δεν ήταν δυνατή η ενημέρωση του email! Μη έγκυρος σύνδεσμος.",
     "Create a new contact": "Δημιουργήστε νέα επαφή",

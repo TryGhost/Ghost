@@ -50,7 +50,7 @@
     "Continue": "Pokračovať",
     "Continue subscription": "Pokračovať s odberom",
     "Could not create Stripe billing portal session": "",
-    "Could not create stripe checkout session": "Nepodarilo sa vytvoriť reláciu platby cez Stripe",
+    "Could not create Stripe checkout session": "Nepodarilo sa vytvoriť reláciu platby cez Stripe",
     "Could not sign in. Login link expired.": "Prihlásenie sa nepodarilo. Odkaz na prihlásenie vypršal.",
     "Could not update email! Invalid link.": "Zmena e-mailu sa nepodarila. Neplatný odkaz.",
     "Create a new contact": "Vytvoriť nový kontakt",

@@ -50,7 +50,7 @@
     "Continue": "Turpināt",
     "Continue subscription": "Turpināt abonēšanu",
     "Could not create Stripe billing portal session": "",
-    "Could not create stripe checkout session": "Nevarēja izveidot stripe izrakstīšanās sesiju",
+    "Could not create Stripe checkout session": "Nevarēja izveidot Stripe izrakstīšanās sesiju",
     "Could not sign in. Login link expired.": "Nevarēja pierakstīties. Pieteikšanās saites derīguma termiņš ir beidzies.",
     "Could not update email! Invalid link.": "Nevarēja atjaunināt e-pastu! Nederīga saite.",
     "Create a new contact": "Izveidojiet jaunu kontaktu",

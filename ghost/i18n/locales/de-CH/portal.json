@@ -50,7 +50,7 @@
     "Continue": "Weiter",
     "Continue subscription": "Abonnement fortsetzen",
     "Could not create Stripe billing portal session": "Es ist nicht möglich, eine Stripe-Abrechnungssitzung zu erstellen",
-    "Could not create stripe checkout session": "Zahlungsabwicklung über Stripe konnte nicht ausgeführt werden",
+    "Could not create Stripe checkout session": "Zahlungsabwicklung über Stripe konnte nicht ausgeführt werden",
     "Could not sign in. Login link expired.": "Anmeldung nicht möglich. Der Anmelde-Link ist abgelaufen.",
     "Could not update email! Invalid link.": "E-Mail-Aktualisierung fehlgeschlagen. Link nicht gültig.",
     "Create a new contact": "Neuen Kontakt anlegen",
