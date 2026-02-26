@@ -17,7 +17,7 @@ async function handle({payload}) {
                     event: 'outbox.member_created.no_slug_mapping',
                     member_status: payload.status
                 }
-            }, 'No automated email slug found for member status');
+            }, `${LOG_KEY} No automated email slug found for member status`);
             return;
         }
 
@@ -40,7 +40,7 @@ async function handle({payload}) {
                 event: 'outbox.member_created.track_send_failed'
             },
             err
-        }, 'Failed to track automated email send');
+        }, `${LOG_KEY} Failed to track automated email send`);
     }
 }
 

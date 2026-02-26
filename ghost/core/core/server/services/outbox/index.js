@@ -28,7 +28,7 @@ class OutboxServiceWrapper {
                 system: {
                     event: 'outbox.processing.skipped_already_running'
                 }
-            }, 'Outbox job already running, skipping');
+            }, `${OUTBOX_LOG_KEY}: Outbox job already running, skipping`);
             return;
         }
         this.processing = true;
