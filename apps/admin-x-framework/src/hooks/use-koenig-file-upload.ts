@@ -94,7 +94,9 @@ export const useKoenigFileUpload = (type: KoenigFileUploadType = 'image'): FileU
 
         let totalProgress = 0;
 
-        progressTracker.current.forEach(value => totalProgress += value);
+        progressTracker.current.forEach((value) => {
+            totalProgress += value;
+        });
 
         setProgress(Math.round(totalProgress / progressTracker.current.size));
     }
