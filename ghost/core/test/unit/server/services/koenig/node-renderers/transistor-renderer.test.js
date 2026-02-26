@@ -46,7 +46,6 @@ describe('services/koenig/node-renderers/transistor-renderer', function () {
         it('matches snapshot for default test data', function () {
             const result = renderForWeb(getTestData());
 
-            // type: 'inner' means output is the figure's innerHTML
             assert.ok(result.html.includes('kg-transistor-placeholder'));
             assert.ok(result.html.includes('kg-transistor-title'));
             assert.ok(result.html.includes('kg-transistor-description'));
