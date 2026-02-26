@@ -214,6 +214,49 @@ describe('useKoenigFileUpload', () => {
         expect(result.current.errors).toHaveLength(0);
     });
 
+    it('extracts error message from server error response', async () => {
+        uploadResponse = serverErrorUploadResponse;
+
+        const {result} = renderHook(() => useKoenigFileUpload('image'));
+
+        const file = makeFile('photo.jpg');
+        await act(async () => {
+            await result.current.upload([file]);
+        });
+
+        expect(result.current.errors).toHaveLength(1);
+        expect(result.current.errors[0].fileName).toBe('photo.jpg');
+        expect(result.current.errors[0].message).toBe(
+            'Request is larger than the maximum file size the server allows'
+        );
+    });
+
+    it('rejects files with no extension for image type', async () => {
+        const {result} = renderHook(() => useKoenigFileUpload('image'));
+
+        const file = makeFile('README', 'application/octet-stream');
+        const uploadResult = await act(async () => (
+            await result.current.upload([file])
+        ));
+
+        expect(uploadResult).toBeNull();
+        expect(result.current.errors).toHaveLength(1);
+        expect(result.current.errors[0].fileName).toBe('README');
+        expect(result.current.errors[0].message).toMatch(/not supported/i);
+    });
+
+    it('skips validation for file type and accepts any extension', async () => {
+        const {result} = renderHook(() => useKoenigFileUpload('file'));
+
+        const file = makeFile('document.xyz', 'application/octet-stream');
+        const uploadResult = await act(async () => (
+            await result.current.upload([file])
+        ));
+
+        expect(uploadResult).not.toBeNull();
+        expect(result.current.errors).toHaveLength(0);
+    });
+
     it('accepts all supported image extensions', async () => {
         const supportedExtensions = ['gif', 'jpg', 'jpeg', 'png', 'svg', 'svgz', 'webp'];
 
