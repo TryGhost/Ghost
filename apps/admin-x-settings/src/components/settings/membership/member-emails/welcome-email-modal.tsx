@@ -23,8 +23,6 @@ import {
 
 interface EmailPreviewModalContentProps {
     title: string;
-    deviceSize?: 'desktop' | 'mobile';
-    onDeviceSizeChange?: (size: 'desktop' | 'mobile') => void;
     headerActions?: React.ReactNode;
     children: React.ReactNode;
     className?: string;
@@ -74,13 +72,11 @@ const EmailPreviewEmailHeader: React.FC<EmailPreviewEmailHeaderProps> = ({childr
 interface EmailPreviewBodyProps {
     children: React.ReactNode;
     className?: string;
-    isMobile?: boolean;
 }
 
-const EmailPreviewBody: React.FC<EmailPreviewBodyProps> = ({children, className, isMobile}) => (
+const EmailPreviewBody: React.FC<EmailPreviewBodyProps> = ({children, className}) => (
     <div className={cn(
-        'mx-auto w-full h-[clamp(0px,calc(100dvh-320px),82vh)] overflow-y-auto rounded-b-lg border border-gray-200 bg-white shadow-sm transition-[max-width,height,padding] duration-300 ease-out motion-reduce:transition-none dark:border-grey-900 dark:bg-grey-975 dark:shadow-none',
-        isMobile ? 'grow-0 max-w-[460px]' : 'grow max-w-[780px]',
+        'mx-auto w-full h-[clamp(0px,calc(100dvh-320px),82vh)] overflow-y-auto rounded-b-lg border border-gray-200 bg-white shadow-sm transition-[max-width,height,padding] duration-300 ease-out motion-reduce:transition-none dark:border-grey-900 dark:bg-grey-975 dark:shadow-none grow max-w-[780px] px-6',
         className
     )}>
         {children}
@@ -122,7 +118,6 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
     const {updateRoute} = useRouting();
     const {mutateAsync: editAutomatedEmail} = useEditAutomatedEmail();
     const [showTestDropdown, setShowTestDropdown] = useState(false);
-    const [deviceSize, setDeviceSize] = useState<'desktop' | 'mobile'>('desktop');
     const dropdownRef = useRef<HTMLDivElement>(null);
     const normalizedLexical = useRef<string>(automatedEmail?.lexical || '');
     const hasEditorBeenFocused = useRef(false);
@@ -332,7 +327,6 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
             width='full'
         >
             <EmailPreviewModalContent
-                deviceSize={deviceSize}
                 headerActions={
                     <>
                         <Button variant="outline" onClick={handleClose}>Close</Button>
@@ -345,10 +339,9 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                     </>
                 }
                 title={modalTitle}
-                onDeviceSizeChange={setDeviceSize}
             >
                 <div className='flex grow flex-col items-center p-6'>
-                    <EmailPreviewEmailHeader className={deviceSize === 'mobile' ? 'max-w-[460px]' : ''}>
+                    <EmailPreviewEmailHeader>
                         <div className='flex flex-col gap-2'>
                             <div className='flex items-center py-1'>
                                 <div className='w-20 shrink-0 text-sm font-semibold'>From:</div>
@@ -374,7 +367,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                             {hasDistinctReplyTo && (
                                 <div className='flex items-center'>
                                     <div className='w-20 shrink-0 text-sm font-semibold'>Reply-to:</div>
-                                    <div className='text-gray-500 dark:text-gray-400 grow text-sm'>
+                                    <div className='grow text-gray-500 text-sm dark:text-gray-400'>
                                         {resolvedReplyToEmail}
                                     </div>
                                 </div>
@@ -395,23 +388,9 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                             </div>
                         </div>
                     </EmailPreviewEmailHeader>
-                    <EmailPreviewBody
-                        className={cn(
-                            errors.lexical ? 'border-red-500' : '',
-                            deviceSize === 'desktop' ? 'px-6' : '',
-                            deviceSize === 'mobile' ? 'px-4' : ''
-                        )}
-                        isMobile={deviceSize === 'mobile'}
-                    >
+                    <EmailPreviewBody className={errors.lexical ? 'border-red-500' : ''}>
                         <div
-                            className={cn(
-                                'mx-auto w-full transition-[max-width,padding] duration-300 ease-out motion-reduce:transition-none',
-                                deviceSize === 'desktop'
-                                    ? 'max-w-[600px] pb-8 pt-10'
-                                    : deviceSize === 'mobile'
-                                        ? 'max-w-[440px] px-2 py-8'
-                                        : 'p-8'
-                            )}
+                            className='mx-auto w-full max-w-[600px] pb-8 pt-10 transition-[max-width,padding] duration-300 ease-out motion-reduce:transition-none'
                             onFocus={() => {
                                 hasEditorBeenFocused.current = true;
                             }}
