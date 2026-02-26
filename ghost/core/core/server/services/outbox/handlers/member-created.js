@@ -36,9 +36,11 @@ async function handle({payload}) {
         });
     } catch (err) {
         logging.error({
-            message: `${LOG_KEY} Failed to track automated email send`,
+            system: {
+                event: 'outbox.member_created.track_send_failed'
+            },
             err
-        });
+        }, 'Failed to track automated email send');
     }
 }
 

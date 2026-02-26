@@ -53,8 +53,9 @@ describe('member-created handler', function () {
         });
 
         sinon.assert.calledOnce(memberWelcomeEmailServiceStub.api.send);
-        const errorLog = logCapture.output.find(log => log.level === 50 && log.message?.includes('Failed to track automated email send'));
+        const errorLog = findByEvent(logCapture.output, 'outbox.member_created.track_send_failed');
         assert.ok(errorLog);
+        assert.ok(errorLog.msg.startsWith('Failed to track automated email send'));
     });
 
     it('logs error when tracking fails', async function () {
@@ -71,9 +72,10 @@ describe('member-created handler', function () {
             }
         });
 
-        const errorLog = logCapture.output.find(log => log.level === 50 && log.message?.includes('Failed to track automated email send'));
+        const errorLog = findByEvent(logCapture.output, 'outbox.member_created.track_send_failed');
         assert.ok(errorLog);
-        assert.equal(errorLog.msg, dbError.message);
+        assert.ok(errorLog.msg.startsWith('Failed to track automated email send'));
+        assert.ok(errorLog.msg.includes(dbError.message));
     });
 
     it('logs warning when status has no slug mapping', async function () {
