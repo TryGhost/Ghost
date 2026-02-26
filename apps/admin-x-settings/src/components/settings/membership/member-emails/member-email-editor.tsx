@@ -35,7 +35,15 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
         // Horizontal ruler
         '[&_:is(hr)]:pt-0',
         // Paragraph spacing & bold
-        '[&_p]:mb-4 [&_strong]:font-semibold'
+        '[&_p]:mb-4 [&_strong]:font-semibold',
+        // Nested-editor (callout, etc.) fixes: align placeholder with text
+        // 1. Override placeholder font/size/line-height to match the <p> styles
+        '[&_.not-kg-prose>div]:!font-inter [&_.not-kg-prose>div]:!tracking-tight [&_.not-kg-prose>div]:!text-xl [&_.not-kg-prose>div]:!leading-[1.6]',
+        // 2. Remove paragraph bottom-margin inside nested editors so the
+        //    placeholder translate-y lines up with the cursor
+        '[&_.kg-inherit-styles_p]:!mb-0',
+        // 3. Nudge nested editor text down to vertically align with the emoji
+        '[&_.kg-inherit-styles]:!pt-[3px]'
     );
 
     // Koenig's onChange passes the Lexical state as a plain object,
