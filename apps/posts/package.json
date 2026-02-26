@@ -50,16 +50,24 @@
     "nx": {
         "targets": {
             "build": {
-                "dependsOn": []
+                "dependsOn": [
+                    "^build"
+                ]
             },
             "dev": {
-                "dependsOn": []
+                "dependsOn": [
+                    "^build"
+                ]
             },
             "test:unit": {
-                "dependsOn": []
+                "dependsOn": [
+                    "^build"
+                ]
             },
             "test:acceptance": {
-                "dependsOn": []
+                "dependsOn": [
+                    "^build"
+                ]
             }
         }
     }

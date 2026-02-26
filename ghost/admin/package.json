@@ -184,7 +184,16 @@
     "targets": {
       "build:dev": {
         "dependsOn": [
-          "build:dev"
+          "build:dev",
+          {
+            "projects": [
+              "@tryghost/admin-x-settings",
+              "@tryghost/activitypub",
+              "@tryghost/posts",
+              "@tryghost/stats"
+            ],
+            "target": "build"
+          }
         ]
       },
       "build": {

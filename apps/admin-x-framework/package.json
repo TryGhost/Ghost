@@ -8,55 +8,68 @@
     "exports": {
         ".": {
             "import": "./src/index.ts",
-            "types": "./types/generated/index.d.ts"
+            "types": "./types/generated/index.d.ts",
+            "require": "./dist/index.cjs"
         },
         "./errors": {
             "import": "./src/errors.ts",
-            "types": "./types/generated/errors.d.ts"
+            "types": "./types/generated/errors.d.ts",
+            "require": "./dist/errors.cjs"
         },
         "./helpers": {
             "import": "./src/helpers.ts",
-            "types": "./types/generated/helpers.d.ts"
+            "types": "./types/generated/helpers.d.ts",
+            "require": "./dist/helpers.cjs"
         },
         "./hooks": {
             "import": "./src/hooks.ts",
-            "types": "./types/generated/hooks.d.ts"
+            "types": "./types/generated/hooks.d.ts",
+            "require": "./dist/hooks.cjs"
         },
         "./routing": {
             "import": "./src/routing.ts",
-            "types": "./types/generated/routing.d.ts"
+            "types": "./types/generated/routing.d.ts",
+            "require": "./dist/routing.cjs"
         },
         "./api/*": {
             "import": "./src/api/*.ts",
-            "types": "./types/generated/api/*.d.ts"
+            "types": "./types/generated/api/*.d.ts",
+            "require": "./dist/api/*.cjs"
         },
         "./utils/post-utils": {
             "import": "./src/utils/post-utils.ts",
-            "types": "./types/generated/utils/post-utils.d.ts"
+            "types": "./types/generated/utils/post-utils.d.ts",
+            "require": "./dist/utils/post-utils.cjs"
         },
         "./vite": {
             "import": "./src/vite.ts",
-            "types": "./types/generated/vite.d.ts"
+            "types": "./types/generated/vite.d.ts",
+            "require": "./dist/vite.cjs"
         },
         "./playwright": {
             "import": "./src/playwright.ts",
-            "types": "./types/generated/playwright.d.ts"
+            "types": "./types/generated/playwright.d.ts",
+            "require": "./dist/playwright.cjs"
         },
         "./test/render": {
             "import": "./src/test/render.tsx",
-            "types": "./types/generated/test/render.d.ts"
+            "types": "./types/generated/test/render.d.ts",
+            "require": "./dist/test/render.cjs"
         },
         "./test/render-shade": {
             "import": "./src/test/render-shade.tsx",
-            "types": "./types/generated/test/render-shade.d.ts"
+            "types": "./types/generated/test/render-shade.d.ts",
+            "require": "./dist/test/render-shade.cjs"
         },
         "./test/test-utils": {
             "import": "./src/test/test-utils.tsx",
-            "types": "./types/generated/test/test-utils.d.ts"
+            "types": "./types/generated/test/test-utils.d.ts",
+            "require": "./dist/test/test-utils.cjs"
         },
         "./test/*": {
             "import": "./src/test/*.ts",
-            "types": "./types/generated/test/*.d.ts"
+            "types": "./types/generated/test/*.d.ts",
+            "require": "./dist/test/*.cjs"
         }
     },
     "sideEffects": false,
@@ -110,10 +123,14 @@
     "nx": {
         "targets": {
             "build": {
-                "dependsOn": []
+                "dependsOn": [
+                    "^build"
+                ]
             },
             "test:unit": {
-                "dependsOn": []
+                "dependsOn": [
+                    "^build"
+                ]
             }
         }
     }
