@@ -55,6 +55,17 @@ const fetchWithXhr = (
     {method, headers, credentials, body, signal}: InternalRequestInit
 ): Promise<Response> => (
     new Promise((resolve, reject) => {
+        const onabort = () => {
+            reject(new DOMException('Aborted', 'AbortError'));
+        };
+
+        // It's possible that the signal is already aborted if this isn't the
+        // first time the request was attempted.
+        if (signal.aborted) {
+            onabort();
+            return;
+        }
+
         const xhr = new XMLHttpRequest();
 
         xhr.open(method, endpoint.toString(), true);
@@ -94,21 +105,13 @@ const fetchWithXhr = (
             reject(new TypeError('Network request failed'));
         };
 
-        xhr.onabort = () => {
-            reject(new DOMException('Aborted', 'AbortError'));
-        };
+        xhr.onabort = onabort;
 
         signal.addEventListener('abort', () => {
             xhr.abort();
         });
 
         xhr.send(body);
-
-        // It's possible that the signal is already aborted if this isn't the
-        // first time the request was attempted.
-        if (signal.aborted) {
-            xhr.abort();
-        }
     })
 );
 
