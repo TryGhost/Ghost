@@ -195,7 +195,7 @@
     "moment": "2.24.0",
     "moment-timezone": "0.5.45",
     "multer": "2.0.2",
-    "mysql2": "3.17.5",
+    "mysql2": "3.18.0",
     "nconf": "0.13.0",
     "node-fetch": "2.7.0",
     "node-jose": "2.2.0",
