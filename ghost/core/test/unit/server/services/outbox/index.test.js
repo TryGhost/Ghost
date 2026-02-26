@@ -2,7 +2,6 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const rewire = require('rewire');
 const DomainEvents = require('@tryghost/domain-events');
-const logging = require('@tryghost/logging');
 const {captureLoggerOutput, findByEvent} = require('../../../../utils/logging-utils');
 const StartOutboxProcessingEvent = require('../../../../../core/server/services/outbox/events/start-outbox-processing-event');
 
@@ -17,7 +16,7 @@ describe('Outbox Service', function () {
 
         processOutboxStub = sinon.stub().resolves('Processed');
         jobsStub = {scheduleOutboxJob: sinon.stub()};
-        logCapture = captureLoggerOutput(logging);
+        logCapture = captureLoggerOutput();
 
         service.__set__('processOutbox', processOutboxStub);
         service.__set__('jobs', jobsStub);

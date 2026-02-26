@@ -1,7 +1,6 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const rewire = require('rewire');
-const logging = require('@tryghost/logging');
 const {captureLoggerOutput, findByEvent} = require('../../../../../utils/logging-utils');
 
 describe('member-created handler', function () {
@@ -28,7 +27,7 @@ describe('member-created handler', function () {
             add: sinon.stub().resolves()
         };
 
-        logCapture = captureLoggerOutput(logging);
+        logCapture = captureLoggerOutput();
 
         handler.__set__('memberWelcomeEmailService', memberWelcomeEmailServiceStub);
         handler.__set__('AutomatedEmail', AutomatedEmailStub);

@@ -1,5 +1,6 @@
 const bunyan = require('bunyan');
 const {PassThrough} = require('stream');
+const logging = require('@tryghost/logging');
 
 /**
  * Parse newline-delimited JSON log records from a buffered string.
@@ -29,10 +30,9 @@ function parseBufferedJsonLogs(buffer, output) {
  * This allows tests to assert on real serialized JSON output from
  * `@tryghost/logging` without stubbing logger methods.
  *
- * @param {import('@tryghost/logging')} logging - Logger singleton to capture.
  * @returns {{output: Array<object>, restore: () => void}} Capture handle.
  */
-function captureLoggerOutput(logging) {
+function captureLoggerOutput() {
     const output = [];
     const stream = new PassThrough();
     let buffered = '';
