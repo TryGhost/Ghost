@@ -65,7 +65,7 @@
     "Continue": "Continue button",
     "Continue subscription": "Button to continue a (cancelled) paid subscription",
     "Could not create Stripe billing portal session": "",
-    "Could not create stripe checkout session": "An error message indicating a problem with Stripe",
+    "Could not create Stripe checkout session": "An error message indicating a problem with Stripe",
     "Could not sign in. Login link expired.": "Message when a login link has expired",
     "Could not update email! Invalid link.": "Message when an email update link is invalid",
     "Create a new contact": "A section title in email receiving FAQ",

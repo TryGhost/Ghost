@@ -50,7 +50,7 @@
     "Continue": "চালিয়ে যান",
     "Continue subscription": "সাবস্ক্রিপশন চালিয়ে যান",
     "Could not create Stripe billing portal session": "",
-    "Could not create stripe checkout session": "",
+    "Could not create Stripe checkout session": "",
     "Could not sign in. Login link expired.": "সাইন ইন করতে পারেনি। লগইন লিঙ্কের মেয়াদ শেষ হয়েছে।",
     "Could not update email! Invalid link.": "ইমেল আপডেট করতে পারেনি! অবৈধ লিঙ্ক।",
     "Create a new contact": "একটি নতুন যোগাযোগ তৈরি করুন",

@@ -50,7 +50,7 @@
     "Continue": "Fortsätt",
     "Continue subscription": "Förläng prenumeration",
     "Could not create Stripe billing portal session": "",
-    "Could not create stripe checkout session": "Kunde inte skapa session för stripe-utcheckning",
+    "Could not create Stripe checkout session": "Kunde inte skapa session för Stripe-utcheckning",
     "Could not sign in. Login link expired.": "Kunde inte logga in. Inloggningslänken har slutat gälla.",
     "Could not update email! Invalid link.": "Kunde inte uppdatera e-postadressen. Länken fungerande inte.",
     "Create a new contact": "Skapa en ny kontakt",

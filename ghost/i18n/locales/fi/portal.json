@@ -50,7 +50,7 @@
     "Continue": "Jatka",
     "Continue subscription": "Jatka tilaustasi",
     "Could not create Stripe billing portal session": "",
-    "Could not create stripe checkout session": "Maksaminen stripe-palvelussa ei onnistu",
+    "Could not create Stripe checkout session": "Maksaminen Stripe-palvelussa ei onnistu",
     "Could not sign in. Login link expired.": "Kirjautuminen epäonnistui. Kirjautumislinkki on vanhentunut.",
     "Could not update email! Invalid link.": "Sähköpostia ei pystytty päivittämään! Linkki ei toimi.",
     "Create a new contact": "Luo uusi kontakti",

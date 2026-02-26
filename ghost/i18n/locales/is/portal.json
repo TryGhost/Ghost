@@ -50,7 +50,7 @@
     "Continue": "Áfram",
     "Continue subscription": "Halda áfram í áskrift",
     "Could not create Stripe billing portal session": "",
-    "Could not create stripe checkout session": "",
+    "Could not create Stripe checkout session": "",
     "Could not sign in. Login link expired.": "Innskráning mistókst. Hlekkurinn varð óvirkur.",
     "Could not update email! Invalid link.": "Breyting á netfangi mistókst! Ógildur hlekkur.",
     "Create a new contact": "Skrá nýjan tengilið",
