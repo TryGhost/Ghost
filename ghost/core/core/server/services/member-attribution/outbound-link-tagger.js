@@ -83,16 +83,22 @@ class OutboundLinkTagger {
 
         // Tag url with site's base domain, excluding www
         const domain = this.getDomainFromUrl(this.siteUrl);
+        let ref;
         if (useNewsletter) {
             const name = slugify(useNewsletter.get('name'));
 
             // If newsletter name ends with newsletter, don't add it again
-            const ref = name.endsWith('newsletter') ? name : `${name}-newsletter`;
-            url.searchParams.append('ref', ref);
+            ref = name.endsWith('newsletter') ? name : `${name}-newsletter`;
         } else {
-            url.searchParams.append('ref', domain);
+            ref = domain;
         }
-        return url;
+
+        // Append ref param via string concatenation instead of searchParams.append()
+        // to avoid re-serializing the entire query string through the
+        // application/x-www-form-urlencoded encoder, which encodes characters
+        // like / and [ that some services (e.g. Google Ad Manager) need unescaped
+        const separator = url.search ? '&' : '?';
+        return new URL(url.href.replace(/#.*$/, '') + separator + 'ref=' + encodeURIComponent(ref) + url.hash);
     }
 
     async addToHtml(html) {
