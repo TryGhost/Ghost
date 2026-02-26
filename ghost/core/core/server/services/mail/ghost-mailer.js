@@ -214,7 +214,7 @@ module.exports = class GhostMailer {
         if (Array.isArray(additionalTags) && additionalTags.length > 0) {
             const cleanedTags = additionalTags
                 .filter(tag => typeof tag === 'string')
-                .map(tag => tag.trim())
+                .map(tag => tag.trim().toLowerCase())
                 .filter(tag => tag.length > 0);
 
             tagList.push(...cleanedTags);
