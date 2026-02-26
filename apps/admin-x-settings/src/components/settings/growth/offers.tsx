@@ -73,16 +73,22 @@ const Offers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     let offerButtonText = 'Manage offers';
     let offerButtonLink = openOfferListModal;
     let descriptionButtonText = 'Learn more';
-    if (signupOffers.length > 0) {
-        offerButtonText = 'Manage offers';
-        offerButtonLink = openOfferListModal;
-    } else if (paidActiveTiers.length === 0 && signupOffers.length === 0) {
+    if (!retentionOffersEnabled) {
+        if (signupOffers.length > 0) {
+            offerButtonText = 'Manage offers';
+            offerButtonLink = openOfferListModal;
+        } else if (paidActiveTiers.length === 0 && signupOffers.length === 0) {
+            offerButtonText = '';
+            offerButtonLink = openTiers;
+            descriptionButtonText = '';
+        } else if (paidActiveTiers.length > 0 && signupOffers.length === 0) {
+            offerButtonText = 'Add offer';
+            offerButtonLink = openAddModal;
+        }
+    } else if (paidActiveTiers.length === 0) {
         offerButtonText = '';
         offerButtonLink = openTiers;
         descriptionButtonText = '';
-    } else if (paidActiveTiers.length > 0 && signupOffers.length === 0) {
-        offerButtonText = 'Add offer';
-        offerButtonLink = openAddModal;
     }
 
     return (
