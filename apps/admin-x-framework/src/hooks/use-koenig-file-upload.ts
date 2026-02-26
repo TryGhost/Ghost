@@ -61,21 +61,8 @@ interface FileUploadHook {
     isLoading: boolean;
     errors: UploadError[];
     filesNumber: number;
-    upload: (files: IterableArrayLike<File>) => Promise<UploadResult[] | null>;
+    upload: (files: FileList | ReadonlyArray<File>) => Promise<UploadResult[] | null>;
 }
-
-/**
- * This type satisfies two constraints:
- *
- * - In the real world, `upload` is called with a `FileList`. This object is
- *   iterable and array-like but isn't a real array.
- * - In tests, `upload` is called with an array. (You're not supposed to create
- *   `FileList`s manually, so we need an alternative, and arrays are the most
- *   straightforward.)
- *
- * @see {FileList}
- */
-type IterableArrayLike<T> = Iterable<T> & ArrayLike<T>;
 
 const getStringAtPath = (maybeObj: unknown, path: Iterable<PropertyKey>): null | string => {
     let current = maybeObj;
@@ -202,7 +189,7 @@ export const useKoenigFileUpload = (type: KoenigFileUploadType = 'image'): FileU
         }
     };
 
-    const upload = async (files: IterableArrayLike<File> = [], options: UploadOptions = {}) => {
+    const upload = async (files: FileList | ReadonlyArray<File> = [], options: UploadOptions = {}) => {
         setFilesNumber(files.length);
         setLoading(true);
 
