@@ -1,7 +1,9 @@
-import React, {useCallback} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import useFeatureFlag from '../../../../hooks/use-feature-flag';
 import {KoenigEditorBase, type KoenigInstance, LoadingIndicator} from '@tryghost/admin-x-design-system';
 import {cn} from '@tryghost/shade';
+import {koenigFileUploadTypes, useKoenigFileUpload} from '@tryghost/admin-x-framework/hooks';
+import {useFramework} from '@tryghost/admin-x-framework';
 
 export interface MemberEmailsEditorProps {
     value?: string;
@@ -11,6 +13,11 @@ export interface MemberEmailsEditorProps {
     onChange?: (value: string) => void;
 }
 
+const fileUploader = {
+    useFileUpload: useKoenigFileUpload,
+    fileTypes: koenigFileUploadTypes
+};
+
 const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
     value,
     placeholder,
@@ -19,6 +26,10 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
     onChange
 }) => {
     const welcomeEmailEditorEnabled = useFeatureFlag('welcomeEmailEditor');
+    const {unsplashConfig} = useFramework();
+
+    const cardConfig = useMemo(() => ({unsplash: unsplashConfig}), [unsplashConfig]);
+
     const baseEditorStyles = cn(
         // Base typography
         'text-[1.6rem] leading-[1.6] tracking-[-0.01em]',
@@ -67,13 +78,15 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
     return (
         <div onKeyDown={handleKeyDown}>
             <KoenigEditorBase
+                cardConfig={cardConfig}
                 className={cn(baseEditorStyles, className)}
                 emojiPicker={true}
+                fileUploader={fileUploader}
                 inheritFontStyles={false}
                 initialEditorState={value}
                 loadingFallback={<LoadingIndicator delay={200} size="lg" />}
                 nodes={welcomeEmailEditorEnabled ? 'EMAIL_EDITOR_NODES' : 'EMAIL_NODES'}
-                placeholder={placeholder}   
+                placeholder={placeholder}
                 singleParagraph={singleParagraph}
                 onChange={handleChange}
             >
@@ -92,12 +105,8 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
                                 <koenig.CardMenuPlugin />
                                 <koenig.EmailCtaPlugin />
                                 <koenig.HtmlPlugin />
+                                <koenig.ImagePlugin />
                                 <koenig.KoenigSelectorPlugin />
-                                {/* TODO: we need to wire up card config to enable snippets */}
-                                {/* <koenig.KoenigSnippetPlugin /> */}
-                                {/* TODO: we need to wire up a fileUploader prop + fileUploadHook to enable files+images */}
-                                {/* <koenig.FilePlugin /> */}
-                                {/* <koenig.ImagePlugin /> */}
                             </>
                         )}
 

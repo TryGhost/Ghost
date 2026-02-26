@@ -16,6 +16,8 @@ export {useTinybirdToken} from './hooks/use-tinybird-token';
 export type {UseTinybirdTokenResult} from './hooks/use-tinybird-token';
 export {useTinybirdQuery} from './hooks/use-tinybird-query';
 export type {UseTinybirdQueryOptions} from './hooks/use-tinybird-query';
+export {useKoenigFileUpload, koenigFileUploadTypes} from './hooks/use-koenig-file-upload';
+export type {KoenigFileUploadType} from './hooks/use-koenig-file-upload';
 
 // Currency utilities
 export {getSymbol} from './utils/currency';
