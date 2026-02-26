@@ -4,7 +4,6 @@ const path = require('path');
 const os = require('os');
 const fs = require('fs-extra');
 const crypto = require('crypto');
-const should = require('should');
 const supertest = require('supertest');
 const sinon = require('sinon');
 const config = require('../../../../core/shared/config');
@@ -53,7 +52,7 @@ describe('DB API', function () {
                 assert.equal(jsonResponse.db.length, 1);
 
                 // NOTE: default tables + 1 from include parameters
-                Object.keys(jsonResponse.db[0].data).length.should.eql(TABLE_ALLOWLIST_LENGTH + 1);
+                assert.equal(Object.keys(jsonResponse.db[0].data).length, TABLE_ALLOWLIST_LENGTH + 1);
             });
     });
 
@@ -308,8 +307,8 @@ describe('DB API', function () {
         assert.equal(res2.body.posts.length, 1);
 
         // Ensure the author is not imported with the legacy hardcoded user id
-        res2.body.posts[0].authors[0].id.should.not.equal(LEGACY_HARDCODED_USER_ID);
-        res2.body.posts[0].primary_author.id.should.not.equal(LEGACY_HARDCODED_USER_ID);
+        assert.notEqual(res2.body.posts[0].authors[0].id, LEGACY_HARDCODED_USER_ID);
+        assert.notEqual(res2.body.posts[0].primary_author.id, LEGACY_HARDCODED_USER_ID);
 
         const usersResponse = await request.get(localUtils.API.getApiQuery('users/'))
             .set('Origin', config.get('url'))
@@ -320,9 +319,9 @@ describe('DB API', function () {
         assert.equal(usersResponse.body.users.length, 3);
 
         // Ensure user is not imported with the legacy hardcoded user id
-        usersResponse.body.users[0].id.should.not.equal(LEGACY_HARDCODED_USER_ID);
-        usersResponse.body.users[1].id.should.not.equal(LEGACY_HARDCODED_USER_ID);
-        usersResponse.body.users[2].id.should.not.equal(LEGACY_HARDCODED_USER_ID);
+        assert.notEqual(usersResponse.body.users[0].id, LEGACY_HARDCODED_USER_ID);
+        assert.notEqual(usersResponse.body.users[1].id, LEGACY_HARDCODED_USER_ID);
+        assert.notEqual(usersResponse.body.users[2].id, LEGACY_HARDCODED_USER_ID);
     });
 
     it('Can import a JSON database with products', async function () {
@@ -373,7 +372,7 @@ describe('DB API', function () {
         assert.equal(post.get('email_recipient_filter'), 'status:-free');
 
         // Check this post is connected to the imported product
-        post.relations.tiers.models.map(m => m.id).should.match([product.id]);
+        assert.deepEqual(post.relations.tiers.models.map(m => m.id), [product.id]);
 
         // Check stripe prices
         const monthlyPrice = await models.StripePrice.findOne({id: product.get('monthly_price_id')});
@@ -475,7 +474,7 @@ describe('DB API (cleaned)', function () {
         assert.equal(post.get('email_recipient_filter'), 'status:-free');
 
         // Check this post is connected to the imported product
-        post.relations.tiers.models.map(m => m.id).should.match([product.id]);
+        assert.deepEqual(post.relations.tiers.models.map(m => m.id), [product.id]);
 
         // Check stripe prices
         const monthlyPrice = await models.StripePrice.findOne({stripe_price_id: 'price_a425520db0'});

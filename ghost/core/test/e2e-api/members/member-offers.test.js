@@ -1,6 +1,6 @@
 const {agentProvider, mockManager, fixtureManager} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const DomainEvents = require('@tryghost/domain-events');
 
 let membersAgent;
@@ -238,7 +238,7 @@ describe('Members API - Member Offers', function () {
             }
         });
 
-        it('returns empty offers if subscription already has an offer applied', async function () {
+        it('returns empty offers if subscription has an active discount', async function () {
             // Get the paid member's subscription
             const member = await models.Member.findOne({email: 'paid@test.com'}, {
                 withRelated: [
@@ -273,7 +273,7 @@ describe('Members API - Member Offers', function () {
                 redemption_type: 'retention'
             });
 
-            // Create a signup offer and apply it to the subscription
+            // Create a signup offer and apply it with an active discount window
             const signupOffer = await models.Offer.add({
                 name: 'Signup Offer',
                 code: 'signup-offer',
@@ -289,8 +289,15 @@ describe('Members API - Member Offers', function () {
                 redemption_type: 'signup'
             });
 
-            // Set the offer_id on the subscription
-            await subscription.save({offer_id: signupOffer.id}, {patch: true});
+            // CASE: Set offer_id AND discount_start/end to simulate an active discount
+            const now = new Date();
+            const discountStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000); // 7 days ago
+            const discountEnd = new Date(now.getTime() + 23 * 24 * 60 * 60 * 1000); // 23 days from now
+            await subscription.save({
+                offer_id: signupOffer.id,
+                discount_start: discountStart,
+                discount_end: discountEnd
+            }, {patch: true});
 
             try {
                 const token = await getIdentityToken('paid@test.com');
@@ -300,12 +307,92 @@ describe('Members API - Member Offers', function () {
                     .body({identity: token})
                     .expectStatus(200);
 
-                // Should not return retention offers if subscription already has an offer
+                // Should not return retention offers if subscription has an active discount
                 assert.deepEqual(body, {offers: []});
             } finally {
                 // Clean up
-                await subscription.save({offer_id: null}, {patch: true});
+                await subscription.save({offer_id: null, discount_start: null, discount_end: null}, {patch: true});
                 await models.Offer.destroy({id: offer.id});
+                await models.Offer.destroy({id: signupOffer.id});
+            }
+        });
+
+        it('returns retention offers if subscription has an expired discount', async function () {
+            // Get the paid member's subscription
+            const member = await models.Member.findOne({email: 'paid@test.com'}, {
+                withRelated: [
+                    'stripeSubscriptions',
+                    'stripeSubscriptions.stripePrice',
+                    'stripeSubscriptions.stripePrice.stripeProduct',
+                    'stripeSubscriptions.stripePrice.stripeProduct.product'
+                ]
+            });
+
+            const subscription = member.related('stripeSubscriptions').models[0];
+            const stripePrice = subscription.related('stripePrice');
+            const stripeProduct = stripePrice.related('stripeProduct');
+            const product = stripeProduct.related('product');
+
+            const tierId = product.id;
+            const cadence = stripePrice.get('interval');
+
+            // Create a retention offer
+            const retentionOffer = await models.Offer.add({
+                name: 'Test Retention Expired',
+                code: 'test-retention-expired',
+                portal_title: '20% off',
+                portal_description: 'Stay with us!',
+                discount_type: 'percent',
+                discount_amount: 20,
+                duration: 'once',
+                interval: cadence,
+                product_id: null,
+                currency: null,
+                active: true,
+                redemption_type: 'retention'
+            });
+
+            // Create a signup offer with an expired discount window
+            const signupOffer = await models.Offer.add({
+                name: 'Expired Signup Offer',
+                code: 'expired-signup-offer',
+                portal_title: '10% off',
+                portal_description: 'Welcome!',
+                discount_type: 'percent',
+                discount_amount: 10,
+                duration: 'once',
+                interval: cadence,
+                product_id: tierId,
+                currency: null,
+                active: true,
+                redemption_type: 'signup'
+            });
+
+            // CASE: Set offer_id with expired discount_start/end
+            const now = new Date();
+            const discountStart = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000); // 60 days ago
+            const discountEnd = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000); // 30 days ago
+            await subscription.save({
+                offer_id: signupOffer.id,
+                discount_start: discountStart,
+                discount_end: discountEnd
+            }, {patch: true});
+
+            try {
+                const token = await getIdentityToken('paid@test.com');
+
+                const {body} = await membersAgent
+                    .post('/api/member/offers')
+                    .body({identity: token})
+                    .expectStatus(200);
+
+                // Should return retention offers since the old discount has expired
+                assert.equal(body.offers.length, 1);
+                assert.equal(body.offers[0].id, retentionOffer.id);
+            } finally {
+                // Clean up
+                await subscription.save({offer_id: null, discount_start: null, discount_end: null}, {patch: true});
+                await models.Offer.destroy({id: retentionOffer.id});
                 await models.Offer.destroy({id: signupOffer.id});
             }
         });
@@ -400,7 +487,7 @@ describe('Members API - Member Offers', function () {
                 .expectStatus(404);
         });
 
-        it('returns 400 when subscription already has an offer', async function () {
+        it('returns 400 when subscription has an active discount', async function () {
             const {subscription} = await getMemberSubscription('paid@test.com');
             const stripePrice = subscription.related('stripePrice');
             const stripeProduct = stripePrice.related('stripeProduct');
@@ -426,7 +513,7 @@ describe('Members API - Member Offers', function () {
                 redemption_type: 'retention'
             });
 
-            // Create another offer and apply it to subscription
+            // Create another offer and apply it with an active discount window
             const existingOffer = await models.Offer.add({
                 name: 'Existing Offer',
                 code: 'existing-offer',
@@ -442,7 +529,15 @@ describe('Members API - Member Offers', function () {
                 redemption_type: 'signup'
             });
 
-            await subscription.save({offer_id: existingOffer.id}, {patch: true});
+            // CASE: Set offer_id AND discount_start/end to simulate an active discount
+            const now = new Date();
+            const discountStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            const discountEnd = new Date(now.getTime() + 23 * 24 * 60 * 60 * 1000);
+            await subscription.save({
+                offer_id: existingOffer.id,
+                discount_start: discountStart,
+                discount_end: discountEnd
+            }, {patch: true});
 
             try {
                 const token = await getIdentityToken('paid@test.com');
@@ -452,7 +547,7 @@ describe('Members API - Member Offers', function () {
                     .body({identity: token, offer_id: retentionOffer.id})
                     .expectStatus(400);
             } finally {
-                await subscription.save({offer_id: null}, {patch: true});
+                await subscription.save({offer_id: null, discount_start: null, discount_end: null}, {patch: true});
                 await models.Offer.destroy({id: retentionOffer.id});
                 await models.Offer.destroy({id: existingOffer.id});
             }
@@ -802,120 +897,6 @@ describe('Members API - Member Offers', function () {
                     await models.OfferRedemption.destroy({id: redemption.id});
                 }
                 await subscription.save({offer_id: null}, {patch: true});
-                await models.Offer.destroy({id: retentionOffer.id});
-            }
-        });
-
-        it('successfully applies free months retention offer to subscription', async function () {
-            const {subscription} = await getMemberSubscription('paid@test.com');
-            const stripePrice = subscription.related('stripePrice');
-            const stripeProduct = stripePrice.related('stripeProduct');
-
-            const stripeSubscriptionId = subscription.get('subscription_id');
-            const cadence = stripePrice.get('interval');
-
-            const currentPeriodEnd = subscription.get('current_period_end');
-
-            const mockPrice = {
-                id: stripePrice.get('stripe_price_id'),
-                product: stripeProduct.get('stripe_product_id'),
-                active: true,
-                nickname: cadence,
-                unit_amount: stripePrice.get('amount'),
-                currency: stripePrice.get('currency'),
-                type: 'recurring',
-                recurring: {
-                    interval: cadence
-                }
-            };
-            mockManager.stripeMocker.prices.push(mockPrice);
-
-            // Add the customer to the stripe mocker so getCustomer works in linkSubscription
-            const customerId = subscription.get('customer_id');
-            mockManager.stripeMocker.customers.push({
-                id: customerId,
-                object: 'customer',
-                email: 'paid@test.com',
-                invoice_settings: {
-                    default_payment_method: null
-                },
-                subscriptions: {
-                    type: 'list',
-                    data: []
-                }
-            });
-
-            // Add the subscription to the stripe mocker so it can be updated
-            mockManager.stripeMocker.subscriptions.push({
-                id: stripeSubscriptionId,
-                object: 'subscription',
-                status: 'active',
-                customer: customerId,
-                cancel_at_period_end: false,
-                current_period_end: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60,
-                start_date: Math.floor(Date.now() / 1000) - 30 * 24 * 60 * 60,
-                items: {
-                    data: [{
-                        id: 'si_test',
-                        price: mockPrice
-                    }]
-                }
-            });
-
-            const retentionOffer = await models.Offer.add({
-                name: 'Free Months Retention Offer',
-                code: 'free-months-retention',
-                portal_title: '1 month free',
-                portal_description: 'Stay with us!',
-                discount_type: 'free_months',
-                discount_amount: 1,
-                duration: 'free_months',
-                duration_in_months: null,
-                interval: cadence,
-                product_id: null,
-                currency: null,
-                active: true,
-                redemption_type: 'retention',
-                stripe_coupon_id: null // Free months offer don't rely on Stripe coupons
-            });
-
-            try {
-                const token = await getIdentityToken('paid@test.com');
-
-                await membersAgent
-                    .post(`/api/subscriptions/${stripeSubscriptionId}/apply-offer`)
-                    .body({identity: token, offer_id: retentionOffer.id})
-                    .expectStatus(204);
-
-                await DomainEvents.allSettled();
-
-                await subscription.refresh();
-                assert.equal(subscription.get('offer_id'), retentionOffer.id);
-
-                // Trial period should be set to current period end + 1 month
-                const expectedTrialEnd = new Date(currentPeriodEnd);
-                expectedTrialEnd.setUTCMonth(expectedTrialEnd.getUTCMonth() + 1);
-
-                const trialEndAt = subscription.get('trial_end_at');
-
-                assert.ok(trialEndAt, 'trial_end_at should be set');
-                assert.equal(new Date(trialEndAt).getTime(), expectedTrialEnd.getTime());
-
-                // Verify offer redemption was recorded
-                const redemption = await models.OfferRedemption.findOne({
-                    offer_id: retentionOffer.id,
-                    subscription_id: subscription.id
-                });
-                assert.ok(redemption, 'Offer redemption should be recorded');
-            } finally {
-                const redemption = await models.OfferRedemption.findOne({
-                    offer_id: retentionOffer.id,
-                    subscription_id: subscription.id
-                });
-                if (redemption) {
-                    await models.OfferRedemption.destroy({id: redemption.id});
-                }
-                await subscription.save({offer_id: null, trial_end_at: null}, {patch: true});
                 await models.Offer.destroy({id: retentionOffer.id});
             }
         });

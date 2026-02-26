@@ -47,6 +47,16 @@ module.exports = {
             };
         }
 
+        function parseIgnoreCustomerList(value) {
+            if (!Array.isArray(value)) {
+                return [];
+            }
+
+            return value
+                .map(customerId => String(customerId).trim())
+                .filter(Boolean);
+        }
+
         const keys = settingsHelpers.getActiveStripeKeys();
         if (!keys) {
             return null;
@@ -63,6 +73,7 @@ module.exports = {
         }
 
         const webhookHandlerUrl = new URL('members/webhooks/stripe/', urlUtils.getSiteUrl());
+        const webhookCustomerIgnoreList = parseIgnoreCustomerList(config.get('stripeWebhookCustomerIgnoreList'));
 
         const urls = getStripeUrlConfig();
         const siteUrl = urlUtils.getSiteUrl();
@@ -76,6 +87,7 @@ module.exports = {
             },
             webhookSecret: webhookSecret,
             webhookHandlerUrl: webhookHandlerUrl.href,
+            webhookCustomerIgnoreList,
             siteUrl
         };
     }

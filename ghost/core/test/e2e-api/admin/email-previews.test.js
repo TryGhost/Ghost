@@ -1,6 +1,6 @@
 const {agentProvider, fixtureManager, matchers, mockManager} = require('../../utils/e2e-framework');
 const {anyEtag, anyErrorId, anyContentVersion, anyString} = matchers;
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const {assertMatchSnapshot} = require('../../utils/assertions');
 const config = require('../../../core/shared/config');
 const sinon = require('sinon');
@@ -161,7 +161,11 @@ describe('Email Preview API', function () {
         it('uses the posts newsletter by default', async function () {
             const defaultNewsletter = await models.Newsletter.getDefaultNewsletter();
             const selectedNewsletter = fixtureManager.get('newsletters', 0);
-            defaultNewsletter.id.should.not.eql(selectedNewsletter.id, 'Should use a non-default newsletter for this test');
+            assert.notEqual(
+                defaultNewsletter.id,
+                selectedNewsletter.id,
+                'Should use a non-default newsletter for this test'
+            );
 
             const post = testUtils.DataGenerator.forKnex.createPost({
                 id: ObjectId().toHexString(),
@@ -203,7 +207,11 @@ describe('Email Preview API', function () {
             const defaultNewsletter = await models.Newsletter.getDefaultNewsletter();
             const selectedNewsletter = fixtureManager.get('newsletters', 0);
 
-            selectedNewsletter.id.should.not.eql(defaultNewsletter.id, 'Should use a non-default newsletter for this test');
+            assert.notEqual(
+                selectedNewsletter.id,
+                defaultNewsletter.id,
+                'Should use a non-default newsletter for this test'
+            );
 
             const post = testUtils.DataGenerator.forKnex.createPost({
                 id: ObjectId().toHexString(),

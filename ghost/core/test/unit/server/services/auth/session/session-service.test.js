@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../../utils/assertions');
-const should = require('should');
 const sinon = require('sinon');
 const express = require('express');
 const SessionService = require('../../../../../../core/server/services/auth/session/session-service');
@@ -60,7 +59,7 @@ describe('SessionService', function () {
         assert.equal(req.session.user_id, 'egg');
 
         const actualUser = await sessionService.getUserForSession(req, res);
-        assert(findUserById.calledWith(sinon.match({id: 'egg'})));
+        sinon.assert.calledWith(findUserById, sinon.match({id: 'egg'}));
 
         const expectedUser = await findUserById.returnValues[0];
         assert.equal(actualUser, expectedUser);
@@ -457,7 +456,7 @@ describe('SessionService', function () {
         });
 
         const authCodeSecond = await sessionServiceSecond.generateAuthCodeForUser(req, res);
-        should.notEqual(authCodeFirst, authCodeSecond);
+        assert.notEqual(authCodeFirst, authCodeSecond);
     });
 
     it('sends an email with the auth code', async function () {
@@ -504,7 +503,7 @@ describe('SessionService', function () {
 
         await sessionService.sendAuthCodeToUser(req, res);
 
-        assert(mailer.send.calledOnce);
+        sinon.assert.calledOnce(mailer.send);
         const emailArgs = mailer.send.firstCall.args[0];
         assert.equal(emailArgs.to, 'test@example.com');
         assert.match(emailArgs.subject, /Ghost sign in verification code/);

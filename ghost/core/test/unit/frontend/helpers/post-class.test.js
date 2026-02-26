@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../utils/assertions');
-const should = require('should');
 
 // Stuff we are testing
 const post_class = require('../../../../core/frontend/helpers/post_class');

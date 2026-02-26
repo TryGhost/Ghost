@@ -23,6 +23,45 @@ module.exports = class WebhookController {
     }
 
     /**
+     * @param {object} config
+     * @param {string[]} config.webhookCustomerIgnoreList
+     */
+    configure({webhookCustomerIgnoreList = []}) {
+        this.webhookCustomerIgnoreSet = new Set(
+            webhookCustomerIgnoreList.filter(Boolean)
+        );
+    }
+
+    /**
+     * @param {import('stripe').Stripe.Event} event
+     * @returns {string | null}
+     */
+    getEventCustomerId(event) {
+        const customer = event?.data?.object?.customer;
+        if (typeof customer === 'string') {
+            return customer;
+        }
+
+        if (customer && typeof customer.id === 'string') {
+            return customer.id;
+        }
+
+        return null;
+    }
+
+    /**
+     * @param {import('stripe').Stripe.Event} event
+     * @returns {boolean}
+     */
+    shouldIgnoreEvent(event, customerId) {
+        if (event.type !== 'customer.subscription.updated') {
+            return false;
+        }
+
+        return typeof customerId === 'string' && this.webhookCustomerIgnoreSet?.has(customerId) === true;
+    }
+
+    /**
      * Handles a Stripe webhook event.
      * - Parses the webhook event
      * - Delegates the event to the appropriate handler
@@ -45,7 +84,16 @@ module.exports = class WebhookController {
             return res.end();
         }
 
+        const customerId = this.getEventCustomerId(event);
+        if (this.shouldIgnoreEvent(event, customerId)) {
+            logging.info(`Ignoring webhook ${event.type} for customer ${customerId} based on stripeWebhookCustomerIgnoreList config.`);
+
+            res.writeHead(200);
+            return res.end();
+        }
+
         logging.info(`Handling webhook ${event.type}`);
+
         try {
             await this.handleEvent(event);
             res.writeHead(200);

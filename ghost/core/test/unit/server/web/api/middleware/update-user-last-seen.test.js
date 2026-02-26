@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const sinon = require('sinon');
 const moment = require('moment');
 const updateUserLastSeenMiddleware = require('../../../../../../core/server/web/api/middleware/update-user-last-seen');
@@ -36,7 +35,7 @@ describe('updateUserLastSeenMiddleware', function () {
             };
             updateUserLastSeenMiddleware({user: fakeUser}, {}, function next(err) {
                 assert.equal(err, undefined);
-                assert.equal(fakeUser.updateLastSeen.callCount, 1);
+                sinon.assert.calledOnce(fakeUser.updateLastSeen);
                 done();
             });
         });
@@ -50,7 +49,7 @@ describe('updateUserLastSeenMiddleware', function () {
             };
             updateUserLastSeenMiddleware({user: fakeUser}, {}, function next(err) {
                 assert.equal(err, fakeError);
-                assert.equal(fakeUser.updateLastSeen.callCount, 1);
+                sinon.assert.calledOnce(fakeUser.updateLastSeen);
                 done();
             });
         });

@@ -1,7 +1,7 @@
 const {agentProvider, fixtureManager, mockManager} = require('../../../utils/e2e-framework');
 const models = require('../../../../core/server/models');
 const sinon = require('sinon');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const jobManager = require('../../../../core/server/services/jobs/job-service');
 const configUtils = require('../../../utils/config-utils');
 
@@ -167,7 +167,7 @@ describe('Domain Warming Integration Tests', function () {
             assert.equal(customDomainCount, totalCount, 'All emails should use custom domain when total < warmup limit');
             assert.equal(fallbackDomainCount, 0, 'No emails should use fallback domain when total < warmup limit');
 
-            assert.ok(mockManager.getMailgunCreateMessageStub().called);
+            sinon.assert.called(mockManager.getMailgunCreateMessageStub());
         });
 
         it('increases custom domain limit on subsequent day', async function () {

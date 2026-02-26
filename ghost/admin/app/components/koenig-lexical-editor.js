@@ -82,6 +82,13 @@ export function decoratePostSearchResult(item, settings) {
     }
 }
 
+export function getCardVisibilitySettings(cardConfig = {}) {
+    const post = cardConfig.post;
+    const isPage = post?.isPage || post?.displayName === 'page';
+
+    return isPage ? 'web only' : 'web and email';
+}
+
 /**
  * Fetches the URLs of all active offers
  * @returns {Promise<{label: string, value: string}[]>}
@@ -455,9 +462,11 @@ export default class KoenigLexicalEditor extends Component {
             siteTitle: this.settings.title,
             siteDescription: this.settings.description,
             siteUrl: this.config.getSiteUrl('/'),
-            stripeEnabled: checkStripeEnabled() // returns a boolean
+            siteUuid: this.config.site_uuid,
+            stripeEnabled: checkStripeEnabled(), // returns a boolean
+            visibilitySettings: getCardVisibilitySettings(props.cardConfig)
         };
-        const cardConfig = Object.assign({}, defaultCardConfig, props.cardConfig, {pinturaConfig: this.pinturaConfig});
+        const cardConfig = Object.assign({}, defaultCardConfig, props.cardConfig, {pinturaConfig: this.pinturaConfig, visibilitySettings: defaultCardConfig.visibilitySettings});
 
         const useFileUpload = (type = 'image') => {
             const [progress, setProgress] = React.useState(0);
@@ -487,16 +496,12 @@ export default class KoenigLexicalEditor extends Component {
                 if (type === 'file') {
                     return true;
                 }
-                let extensions = fileTypes[type].extensions;
-                let [, extension] = (/(?:\.([^.]+))?$/).exec(file.name);
+                const extensions = fileTypes[type].extensions;
+                const [, extension] = (/(?:\.([^.]+))?$/).exec(file.name) ?? [];
 
                 // if extensions is falsy exit early and accept all files
                 if (!extensions) {
                     return true;
-                }
-
-                if (!Array.isArray(extensions)) {
-                    extensions = extensions.split(',');
                 }
 
                 if (!extension || extensions.indexOf(extension.toLowerCase()) === -1) {
@@ -524,7 +529,7 @@ export default class KoenigLexicalEditor extends Component {
             };
 
             const _uploadFile = async (file, {formData = {}} = {}) => {
-                progressTracker.current[file] = 0;
+                progressTracker.current.set(file, 0);
 
                 const fileFormData = new FormData();
                 fileFormData.append('file', file, file.name);

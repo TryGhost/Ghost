@@ -1,6 +1,6 @@
 const {expect} = require('@playwright/test');
 const test = require('../fixtures/ghost-test');
-const {createMember, impersonateMember, completeStripeSubscription} = require('../utils');
+const {createMember, impersonateMember, submitStripePayment} = require('../utils');
 
 test.describe('Portal', () => {
     test.describe('Donations', () => {
@@ -16,7 +16,7 @@ test.describe('Portal', () => {
             if (await sharedPage.getByTestId('card-tab-button').isVisible()) {
                 await sharedPage.getByTestId('card-tab-button').dispatchEvent('click');
             }
-            await completeStripeSubscription(sharedPage);
+            await submitStripePayment(sharedPage);
             await sharedPage.waitForSelector('[data-testid="portal-popup-frame"]', {state: 'visible'});
             expect(sharedPage.url()).toMatch(/[^\/]\/#\/portal\/support\/success/); // Ensure correct URL and no double-slash
             const portalFrame = sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
@@ -45,7 +45,7 @@ test.describe('Portal', () => {
             if (await sharedPage.getByTestId('card-tab-button').isVisible()) {
                 await sharedPage.getByTestId('card-tab-button').dispatchEvent('click');
             }
-            await completeStripeSubscription(sharedPage);
+            await submitStripePayment(sharedPage);
 
             // Check success notification
             const notificationFrame = sharedPage.frameLocator('[data-testid="portal-notification-frame"]');
@@ -76,7 +76,7 @@ test.describe('Portal', () => {
             if (await sharedPage.getByTestId('card-tab-button').isVisible()) {
                 await sharedPage.getByTestId('card-tab-button').dispatchEvent('click');
             }
-            await completeStripeSubscription(sharedPage);
+            await submitStripePayment(sharedPage);
 
             // Check success message
             await sharedPage.waitForSelector('[data-testid="portal-popup-frame"]', {state: 'visible'});

@@ -1,7 +1,6 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../../../utils/assertions');
 const find = require('lodash/find');
-const should = require('should');
 const SettingsImporter = require('../../../../../../../core/server/data/importer/importers/data/settings-importer');
 
 describe('SettingsImporter', function () {

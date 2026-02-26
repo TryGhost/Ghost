@@ -1,4 +1,3 @@
-const assert = require('assert/strict');
 const sinon = require('sinon');
 const WebhookController = require('../../../../../core/server/services/stripe/webhook-controller');
 
@@ -34,14 +33,14 @@ describe('WebhookController', function () {
     it('should return 400 if request body or signature is missing', async function () {
         req.body = null;
         await controller.handle(req, res);
-        assert(res.writeHead.calledWith(400));
+        sinon.assert.calledWith(res.writeHead, 400);
     });
 
     it('should return 401 if webhook signature is invalid', async function () {
         deps.webhookManager.parseWebhook.throws(new Error('Invalid signature'));
         await controller.handle(req, res);
-        assert(res.writeHead.calledWith(401));
-        assert(res.end.called);
+        sinon.assert.calledWith(res.writeHead, 401);
+        sinon.assert.called(res.end);
     });
 
     it('should handle customer.subscription.created event', async function () {
@@ -55,9 +54,9 @@ describe('WebhookController', function () {
 
         await controller.handle(req, res);
 
-        assert(deps.subscriptionEventService.handleSubscriptionEvent.calledOnce);
-        assert(res.writeHead.calledWith(200));
-        assert(res.end.called);
+        sinon.assert.calledOnce(deps.subscriptionEventService.handleSubscriptionEvent);
+        sinon.assert.calledWith(res.writeHead, 200);
+        sinon.assert.called(res.end);
     });
 
     it('should handle invoice.payment_succeeded event', async function () {
@@ -71,9 +70,9 @@ describe('WebhookController', function () {
 
         await controller.handle(req, res);
 
-        assert(deps.invoiceEventService.handleInvoiceEvent.calledOnce);
-        assert(res.writeHead.calledWith(200));
-        assert(res.end.called);
+        sinon.assert.calledOnce(deps.invoiceEventService.handleInvoiceEvent);
+        sinon.assert.calledWith(res.writeHead, 200);
+        sinon.assert.called(res.end);
 
         // expect(deps.invoiceEventService.handleInvoiceEvent.calledOnce).to.be.true;
         // expect(res.writeHead.calledWith(200)).to.be.true;
@@ -90,9 +89,9 @@ describe('WebhookController', function () {
         deps.webhookManager.parseWebhook.returns(event);
 
         await controller.handle(req, res);
-        assert(deps.checkoutSessionEventService.handleEvent.calledOnce);
-        assert(res.writeHead.calledWith(200));
-        assert(res.end.called);
+        sinon.assert.calledOnce(deps.checkoutSessionEventService.handleEvent);
+        sinon.assert.calledWith(res.writeHead, 200);
+        sinon.assert.called(res.end);
         // expect(deps.checkoutSessionEventService.handleEvent.calledOnce).to.be.true;
         // expect(res.writeHead.calledWith(200)).to.be.true;
         // expect(res.end.called).to.be.true;
@@ -110,9 +109,46 @@ describe('WebhookController', function () {
 
         await controller.handle(req, res);
 
-        assert(deps.subscriptionEventService.handleSubscriptionEvent.calledOnce);
-        assert(res.writeHead.calledWith(200));
-        assert(res.end.called);
+        sinon.assert.calledOnce(deps.subscriptionEventService.handleSubscriptionEvent);
+        sinon.assert.calledWith(res.writeHead, 200);
+        sinon.assert.called(res.end);
+    });
+
+    it('should ignore customer.subscription.updated events for customers in the ignore list', async function () {
+        const event = {
+            id: 'evt_123',
+            type: 'customer.subscription.updated',
+            data: {
+                object: {customer: 'cust_123'}
+            }
+        };
+
+        controller.configure({webhookCustomerIgnoreList: ['cust_123']});
+        deps.webhookManager.parseWebhook.returns(event);
+
+        await controller.handle(req, res);
+
+        sinon.assert.notCalled(deps.subscriptionEventService.handleSubscriptionEvent);
+        sinon.assert.calledWith(res.writeHead, 200);
+        sinon.assert.called(res.end);
+    });
+
+    it('should handle customer.subscription.updated events for customers not in the ignore list', async function () {
+        const event = {
+            type: 'customer.subscription.updated',
+            data: {
+                object: {customer: 'cust_123'}
+            }
+        };
+
+        controller.configure({webhookCustomerIgnoreList: ['cust_999']});
+        deps.webhookManager.parseWebhook.returns(event);
+
+        await controller.handle(req, res);
+
+        sinon.assert.calledOnce(deps.subscriptionEventService.handleSubscriptionEvent);
+        sinon.assert.calledWith(res.writeHead, 200);
+        sinon.assert.called(res.end);
     });
 
     it('should handle customer.subscription.deleted event', async function () {
@@ -127,9 +163,9 @@ describe('WebhookController', function () {
 
         await controller.handle(req, res);
 
-        assert(deps.subscriptionEventService.handleSubscriptionEvent.calledOnce);
-        assert(res.writeHead.calledWith(200));
-        assert(res.end.called);
+        sinon.assert.calledOnce(deps.subscriptionEventService.handleSubscriptionEvent);
+        sinon.assert.calledWith(res.writeHead, 200);
+        sinon.assert.called(res.end);
     });
 
     it('should return 500 if an error occurs', async function () {
@@ -145,8 +181,8 @@ describe('WebhookController', function () {
 
         await controller.handle(req, res);
 
-        assert(res.writeHead.calledWith(500));
-        assert(res.end.called);
+        sinon.assert.calledWith(res.writeHead, 500);
+        sinon.assert.called(res.end);
     });
 
     it('should not handle unknown event type', async function () {
@@ -161,7 +197,7 @@ describe('WebhookController', function () {
 
         await controller.handle(req, res);
 
-        assert(res.writeHead.calledWith(200));
-        assert(res.end.called);
+        sinon.assert.calledWith(res.writeHead, 200);
+        sinon.assert.called(res.end);
     });
 });

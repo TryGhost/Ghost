@@ -20,40 +20,23 @@
             </p>
             {{/if}}
         </div>
-        {{#if (or @sub.cancellationReason @sub.offer)}}
+        {{#if this.formattedOffers.length}}
+        <div class="gh-membertier-offers">
+            <div class="gh-membertier-details">
+                {{#each this.formattedOffers as |offer|}}
+                <p>
+                    {{offer.label}}&nbsp;&mdash;&nbsp;<span>{{offer.detail}}</span>
+                </p>
+                {{/each}}
+            </div>
+        </div>
+        {{/if}}
+        {{#if @sub.cancellationReason}}
         <div class="gh-membertier-offer-cancellation">
-            {{#if @sub.cancellationReason}}
             <div>
                 <h4>Cancellation reason</h4>
                 <div class="gh-membertier-cancelreason">{{@sub.cancellationReason}}</div>
             </div>
-            {{/if}}
-            {{#if @sub.offer}}
-                {{#if (eq @sub.offer.type "trial")}}
-                <div>
-                    <h4>Offer</h4>
-                    <span class="gh-cp-membertier-pricelabel"> {{@sub.offer.name}} </span>
-                    &ndash; {{@sub.offer.amount}} days free
-                </div>
-                {{else if (eq @sub.offer.type "free_months")}}
-                <div>
-                    <h4>Offer</h4>
-                    <span class="gh-cp-membertier-pricelabel"> {{@sub.offer.name}} </span>
-                    &ndash; {{@sub.offer.amount}} {{if (eq @sub.offer.amount 1) "month" "months"}} free
-                </div>
-                {{else}}
-                <div>
-                    <h4>Offer</h4>
-                    <span class="gh-cp-membertier-pricelabel"> {{@sub.offer.name}}
-                    {{#if (eq @sub.offer.type 'fixed')}}
-                    &ndash; {{currency-symbol @sub.offer.currency}}{{gh-price-amount @sub.offer.amount}} off
-                    {{else}}
-                    &ndash; {{@sub.offer.amount}}% off
-                    {{/if}}
-                    </span>
-                </div>
-                {{/if}}
-            {{/if}}
         </div>
         {{/if}}
     </div>

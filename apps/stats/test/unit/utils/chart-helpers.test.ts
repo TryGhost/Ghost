@@ -7,7 +7,8 @@ import {
     determineAggregationStrategy,
     getMonthKey,
     getPeriodText,
-    sanitizeChartData
+    sanitizeChartData,
+    truncateLeadingEmptyData
 } from '@src/utils/chart-helpers';
 import {describe, expect, it} from 'vitest';
 
@@ -48,6 +49,85 @@ describe('chart-helpers', () => {
             STATS_RANGE_OPTIONS.push(customRange);
             expect(getPeriodText(customRange.value)).toBe('custom range');
             STATS_RANGE_OPTIONS.pop(); // Clean up
+        });
+    });
+
+    describe('truncateLeadingEmptyData', () => {
+        it('removes leading zero entries, keeping one before first real data', () => {
+            const data = [
+                {date: '2024-01-01', value: 0},
+                {date: '2024-02-01', value: 0},
+                {date: '2024-03-01', value: 0},
+                {date: '2024-04-01', value: 0},
+                {date: '2024-05-01', value: 0},
+                {date: '2024-06-01', value: 0}, // Should be kept (one before first real data)
+                {date: '2024-07-01', value: 10}, // First real data
+                {date: '2024-08-01', value: 20}
+            ];
+
+            const result = truncateLeadingEmptyData(data);
+
+            expect(result.length).toBe(3);
+            expect(result[0].date).toBe('2024-06-01');
+            expect(result[0].value).toBe(0);
+            expect(result[1].date).toBe('2024-07-01');
+            expect(result[1].value).toBe(10);
+            expect(result[2].date).toBe('2024-08-01');
+            expect(result[2].value).toBe(20);
+        });
+
+        it('returns data unchanged if first entry has data', () => {
+            const data = [
+                {date: '2024-01-01', value: 10},
+                {date: '2024-02-01', value: 20}
+            ];
+
+            const result = truncateLeadingEmptyData(data);
+
+            expect(result).toEqual(data);
+        });
+
+        it('returns data unchanged if only one leading zero', () => {
+            const data = [
+                {date: '2024-01-01', value: 0},
+                {date: '2024-02-01', value: 10}
+            ];
+
+            const result = truncateLeadingEmptyData(data);
+
+            expect(result).toEqual(data);
+        });
+
+        it('handles empty array', () => {
+            const result = truncateLeadingEmptyData([]);
+            expect(result).toEqual([]);
+        });
+
+        it('handles all zero values', () => {
+            const data = [
+                {date: '2024-01-01', value: 0},
+                {date: '2024-02-01', value: 0},
+                {date: '2024-03-01', value: 0}
+            ];
+
+            const result = truncateLeadingEmptyData(data);
+            expect(result).toEqual(data);
+        });
+
+        it('preserves trailing zeros after real data', () => {
+            const data = [
+                {date: '2024-01-01', value: 0},
+                {date: '2024-02-01', value: 0},
+                {date: '2024-03-01', value: 10},
+                {date: '2024-04-01', value: 0}, // Trailing zero should be kept
+                {date: '2024-05-01', value: 0} // Trailing zero should be kept
+            ];
+
+            const result = truncateLeadingEmptyData(data);
+
+            expect(result.length).toBe(4);
+            expect(result[0].date).toBe('2024-02-01'); // One zero before first real data
+            expect(result[3].date).toBe('2024-05-01'); // Trailing zeros preserved
         });
     });
 

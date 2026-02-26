@@ -1,7 +1,6 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
 const sinon = require('sinon');
-const should = require('should');
 const rewire = require('rewire');
 const fs = require('fs-extra');
 const path = require('path');
@@ -55,8 +54,9 @@ describe('UNIT > SettingsLoader:', function () {
 
             const result = await settingsLoader.loadSettings();
             assertExists(result);
-            result.should.be.an.Object().with.properties('routes', 'collections', 'taxonomies');
-            assert.equal(fsReadFileStub.calledOnce, true);
+            assert(typeof result === 'object' && result !== null);
+            assert('routes' in result && 'collections' in result && 'taxonomies' in result);
+            sinon.assert.calledOnce(fsReadFileStub);
         });
 
         it('can find yaml settings file and returns a settings object', async function () {
@@ -75,10 +75,11 @@ describe('UNIT > SettingsLoader:', function () {
             });
             const setting = await settingsLoader.loadSettings();
             assertExists(setting);
-            setting.should.be.an.Object().with.properties('routes', 'collections', 'taxonomies');
+            assert(typeof setting === 'object' && setting !== null);
+            assert('routes' in setting && 'collections' in setting && 'taxonomies' in setting);
 
-            assert.equal(fsReadFileSpy.calledOnce, true);
-            assert.equal(fsReadFileSpy.calledWith(expectedSettingsFile), true);
+            sinon.assert.calledOnce(fsReadFileSpy);
+            sinon.assert.calledWith(fsReadFileSpy, expectedSettingsFile);
             sinon.assert.calledOnce(yamlParserStub);
         });
 
@@ -131,8 +132,8 @@ describe('UNIT > SettingsLoader:', function () {
                 throw new Error('Should have failed already');
             } catch (err) {
                 assert.match(err.message, /Error trying to load YAML setting for routes from/);
-                assert.equal(fsReadFileStub.calledWith(expectedSettingsFile), true);
-                assert.equal(yamlParserStub.calledOnce, false);
+                sinon.assert.calledWith(fsReadFileStub, expectedSettingsFile);
+                sinon.assert.notCalled(yamlParserStub);
             }
         });
     });

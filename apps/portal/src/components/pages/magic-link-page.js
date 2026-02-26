@@ -4,6 +4,7 @@ import CloseButton from '../common/close-button';
 import InboxLinkButton from '../common/inbox-link-button';
 import AppContext from '../../app-context';
 import {ReactComponent as EnvelopeIcon} from '../../images/icons/envelope.svg';
+import {isIos} from '../../utils/is-ios';
 import {t} from '../../utils/i18n';
 
 export const MagicLinkStyles = `
@@ -162,9 +163,8 @@ export default class MagicLinkPage extends React.Component {
     }
 
     renderCloseButton() {
-        const {site, inboxLinks} = this.context;
-        const isInboxLinksEnabled = site.labs?.inboxlinks !== false;
-        if (isInboxLinksEnabled && inboxLinks) {
+        const {inboxLinks} = this.context;
+        if (inboxLinks && !isIos(navigator)) {
             return <InboxLinkButton inboxLinks={inboxLinks} />;
         } else {
             return (
@@ -233,8 +233,7 @@ export default class MagicLinkPage extends React.Component {
     }
 
     renderOTCForm() {
-        const {action, actionErrorMessage, otcRef, site, inboxLinks} = this.context;
-        const isInboxLinksEnabled = site.labs?.inboxlinks !== false;
+        const {action, actionErrorMessage, otcRef, inboxLinks} = this.context;
         const errors = this.state.errors || {};
 
         if (!otcRef) {
@@ -278,7 +277,7 @@ export default class MagicLinkPage extends React.Component {
                 </section>
 
                 <footer className='gh-portal-signin-footer gh-button-row'>
-                    {isInboxLinksEnabled && inboxLinks && !this.state.otc ? (
+                    {inboxLinks && !isIos(navigator) && !this.state.otc ? (
                         <InboxLinkButton inboxLinks={inboxLinks} />
                     ) : (
                         <ActionButton

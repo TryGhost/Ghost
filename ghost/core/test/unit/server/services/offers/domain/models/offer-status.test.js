@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 
 const OfferStatus = require('../../../../../../../core/server/services/offers/domain/models/offer-status');
 
@@ -13,20 +12,14 @@ describe('OfferStatus', function () {
                 OfferStatus.create('other');
                 assert.fail();
             } catch (err) {
-                should.ok(
-                    err instanceof OfferStatus.InvalidOfferStatus,
-                    'expected an InvalidOfferStatus error'
-                );
+                assert(err instanceof OfferStatus.InvalidOfferStatus, 'expected an InvalidOfferStatus error');
             }
 
             try {
                 OfferStatus.create();
                 assert.fail();
             } catch (err) {
-                should.ok(
-                    err instanceof OfferStatus.InvalidOfferStatus,
-                    'expected an InvalidOfferStatus error'
-                );
+                assert(err instanceof OfferStatus.InvalidOfferStatus, 'expected an InvalidOfferStatus error');
             }
         });
     });

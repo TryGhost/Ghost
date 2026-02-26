@@ -67,7 +67,7 @@ const PaidAccountActions = () => {
                     <p className={oldPriceClassName}>
                         {label}
                     </p>
-                    <FreeMonthsLabel nextPayment={nextPayment} />
+                    <FreeMonthsLabel nextPayment={nextPayment} subscription={subscription} />
                 </>
             );
         }
@@ -202,9 +202,12 @@ function FreeTrialLabel({subscription}) {
 }
 
 // TODO: Add i18n once copy is finalized
-function FreeMonthsLabel({nextPayment}) {
-    const months = nextPayment.discount.amount;
-    const label = months === 1 ? '1 month free' : `${months} months free`;
+function FreeMonthsLabel({nextPayment, subscription}) {
+    const months = subscription?.offer?.duration_in_months ?? 0;
+    const discountEnd = nextPayment?.discount?.end;
+    const renewalDate = discountEnd ? getDateString(discountEnd) : null;
+    const monthsText = months === 1 ? '1 month free' : `${months} months free`;
+    const label = renewalDate ? `${monthsText} - Renews ${renewalDate}` : monthsText;
 
     return (
         <p className="gh-portal-account-discountcontainer" data-testid="offer-label">

@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const MemoryTTLCache = require('../../../../../core/server/adapters/cache/AdapterCacheMemoryTTL');
 
 const sleep = ms => (

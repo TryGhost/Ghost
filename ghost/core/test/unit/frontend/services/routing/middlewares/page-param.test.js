@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
 const urlUtils = require('../../../../../../core/shared/url-utils');
@@ -30,8 +29,8 @@ describe('UNIT: services/routing/middleware/page-param', function () {
 
         middleware.pageParam(req, res, next, 2);
 
-        assert.equal(urlUtils.redirect301.called, false);
-        assert.equal(next.calledOnce, true);
+        sinon.assert.notCalled(urlUtils.redirect301);
+        sinon.assert.calledOnce(next);
         assert.equal(req.params.page, 2);
     });
 
@@ -41,8 +40,8 @@ describe('UNIT: services/routing/middleware/page-param', function () {
 
         middleware.pageParam(req, res, next, 1);
 
-        assert.equal(urlUtils.redirect301.calledOnce, true);
-        assert.equal(next.called, false);
+        sinon.assert.calledOnce(urlUtils.redirect301);
+        sinon.assert.notCalled(next);
     });
 
     it('404 for /page/0/', function () {
@@ -51,8 +50,8 @@ describe('UNIT: services/routing/middleware/page-param', function () {
 
         middleware.pageParam(req, res, next, 0);
 
-        assert.equal(urlUtils.redirect301.called, false);
-        assert.equal(next.calledOnce, true);
+        sinon.assert.notCalled(urlUtils.redirect301);
+        sinon.assert.calledOnce(next);
         assert.equal((next.args[0][0] instanceof errors.NotFoundError), true);
     });
 
@@ -62,8 +61,8 @@ describe('UNIT: services/routing/middleware/page-param', function () {
 
         middleware.pageParam(req, res, next, 'something');
 
-        assert.equal(urlUtils.redirect301.called, false);
-        assert.equal(next.calledOnce, true);
+        sinon.assert.notCalled(urlUtils.redirect301);
+        sinon.assert.calledOnce(next);
         assert.equal((next.args[0][0] instanceof errors.NotFoundError), true);
     });
 
@@ -73,7 +72,7 @@ describe('UNIT: services/routing/middleware/page-param', function () {
 
         middleware.pageParam(req, res, next, 1);
 
-        assert.equal(urlUtils.redirect301.calledOnce, true);
-        assert.equal(next.called, false);
+        sinon.assert.calledOnce(urlUtils.redirect301);
+        sinon.assert.notCalled(next);
     });
 });

@@ -1,7 +1,6 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../../../utils/assertions');
 const nock = require('nock');
-const should = require('should');
 const GeolocationService = require('../../../../../../../core/server/services/members/members-api/services/geolocation-service');
 
 const RESPONSE = {
@@ -40,7 +39,7 @@ describe('lib/geolocation', function () {
 
             assert.equal(scope.isDone(), true, 'request was not made');
             assertExists(result, 'nothing was returned');
-            result.should.deepEqual(RESPONSE, 'result didn\'t match expected response');
+            assert.deepEqual(result, RESPONSE, 'result didn\'t match expected response');
         });
 
         it('fetches from geojs.io with IPv6 address', async function () {
@@ -52,7 +51,7 @@ describe('lib/geolocation', function () {
 
             assert.equal(scope.isDone(), true, 'request was not made');
             assertExists(result, 'nothing was returned');
-            result.should.deepEqual(RESPONSE, 'result didn\'t match expected response');
+            assert.deepEqual(result, RESPONSE, 'result didn\'t match expected response');
         });
 
         it('handles non-IP addresses', async function () {

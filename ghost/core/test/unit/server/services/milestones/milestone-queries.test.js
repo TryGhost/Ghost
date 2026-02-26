@@ -1,5 +1,5 @@
 const db = require('../../../../../core/server/data/db');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 
 describe('MilestoneQueries', function () {

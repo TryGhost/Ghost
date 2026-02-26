@@ -1,5 +1,5 @@
 const MentionSendingService = require('../../../../../core/server/services/mentions/mention-sending-service');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const nock = require('nock');
 // non-standard to use externalRequest here, but this is required for the overrides in the libary, which we want to test for security reasons in combination with the package
 const externalRequest = require('../../../../../core/server/lib/request-external.js');
@@ -208,7 +208,7 @@ describe('MentionSendingService', function () {
                     html: 'same'
                 }
             }));
-            assert(errorLogStub.calledTwice);
+            sinon.assert.calledTwice(errorLogStub);
         });
 
         it('Sends no mentions for posts without html and previous html', async function () {
@@ -226,7 +226,7 @@ describe('MentionSendingService', function () {
                     html: ''
                 }
             }));
-            assert(stub.notCalled);
+            sinon.assert.notCalled(stub);
         });
     });
 
@@ -298,7 +298,7 @@ describe('MentionSendingService', function () {
             `});
             assert.equal(scope.isDone(), true);
             assert.equal(counter, 3);
-            assert(errorLogStub.calledOnce);
+            sinon.assert.calledOnce(errorLogStub);
         });
 
         it('Sends to deleted links', async function () {

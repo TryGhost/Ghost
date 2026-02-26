@@ -1,7 +1,6 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
 const errors = require('@tryghost/errors');
-const should = require('should');
 const sinon = require('sinon');
 const CachedImageSizeFromUrl = require('../../../../../core/server/lib/image/cached-image-size-from-url');
 const InMemoryCache = require('../../../../../core/server/adapters/cache/MemoryCache');
@@ -41,7 +40,7 @@ describe('lib/image: image size cache', function () {
         // first call to get result from `getImageSizeFromUrl`
 
         assertExists(cacheStore);
-        cacheStore.get(url).should.not.be.undefined;
+        assertExists(cacheStore.get(url));
         const image = cacheStore.get(url);
         assertExists(image.width);
         assert.equal(image.width, 50);
@@ -51,10 +50,10 @@ describe('lib/image: image size cache', function () {
         // second call to check if values get returned from cache
         await cachedImageSizeFromUrl.getCachedImageSizeFromUrl(url);
 
-        assert.equal(imageSizeSpy.calledOnce, true);
+        sinon.assert.calledOnce(imageSizeSpy);
         assert.equal(imageSizeSpy.calledTwice, false);
 
-        cacheStore.get(url).should.not.be.undefined;
+        assertExists(cacheStore.get(url));
         const image2 = cacheStore.get(url);
         assertExists(image2.width);
         assert.equal(image2.width, 50);
@@ -81,7 +80,7 @@ describe('lib/image: image size cache', function () {
         // Transient errors should NOT be cached
         assert.equal(cacheStore.get(url), undefined);
         sinon.assert.calledOnce(loggingStub);
-        assert.equal(sizeOfStub.calledOnce, true);
+        sinon.assert.calledOnce(sizeOfStub);
 
         // Second call should retry the fetch since nothing was cached
         const result2 = await cachedImageSizeFromUrl.getCachedImageSizeFromUrl(url);
@@ -90,7 +89,7 @@ describe('lib/image: image size cache', function () {
 
         // Cache should still be empty after the second transient error
         assert.equal(cacheStore.get(url), undefined);
-        assert.equal(sizeOfStub.calledTwice, true);
+        sinon.assert.calledTwice(sizeOfStub);
     });
 
     it('should cache NotFoundError permanently and not refetch on subsequent calls', async function () {
@@ -108,7 +107,7 @@ describe('lib/image: image size cache', function () {
         assert.equal(result, null);
 
         // Verify 404 was cached with notFound marker
-        cacheStore.get(url).should.not.be.undefined;
+        assertExists(cacheStore.get(url));
         const image = cacheStore.get(url);
         assert.equal(image.url, url);
         assert.equal(image.notFound, true);
@@ -116,7 +115,7 @@ describe('lib/image: image size cache', function () {
         // Second call should NOT refetch — 404 is permanent
         const secondResult = await cachedImageSizeFromUrl.getCachedImageSizeFromUrl(url);
         assert.equal(secondResult, null);
-        assert.equal(sizeOfStub.calledOnce, true);
+        sinon.assert.calledOnce(sizeOfStub);
     });
 
     it('should retry fetch when cache has a stale error entry (no dimensions)', async function () {
@@ -137,7 +136,7 @@ describe('lib/image: image size cache', function () {
 
         assert.equal(result.width, 500);
         assert.equal(result.height, 400);
-        assert.equal(sizeOfStub.calledOnce, true);
+        sinon.assert.calledOnce(sizeOfStub);
 
         // Verify cache was overwritten with valid dimensions
         const cached = cacheStore.get(url);

@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
-const should = require('should');
 const Gravatar = require('../../../../../core/server/lib/image/gravatar');
 
 describe('lib/image: gravatar', function () {
@@ -71,7 +70,7 @@ describe('lib/image: gravatar', function () {
                 } : null;
             }
         }, request: (url, options) => {
-            options.timeout.request.should.eql(delay);
+            assert.equal(options.timeout.request, delay);
         }});
 
         gravatar.lookup({email: 'exists@example.com'}, delay);

@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../../../utils/assertions');
-const should = require('should');
 const middleware = require('../../../../../../../core/server/web/api/endpoints/content/middleware');
 
 describe('Content API middleware', function () {

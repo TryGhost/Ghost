@@ -1,4 +1,4 @@
-const assert = require('assert').strict;
+const assert = require('node:assert/strict');
 const configUtils = require('../utils/config-utils');
 
 function clearModuleCache() {

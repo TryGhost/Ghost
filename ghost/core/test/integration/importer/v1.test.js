@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const testUtils = require('../../utils');
 const {exportedBodyV1} = require('../../utils/fixtures/export/body-generator');
 
@@ -39,7 +38,7 @@ describe('Importer 1.0', function () {
                 const posts = result[0].data.map(model => model.toJSON());
 
                 assert.equal(posts.length, 2);
-                posts[0].comment_id.should.eql(exportData.data.posts[1].id);
+                assert.equal(posts[0].comment_id, exportData.data.posts[1].id);
                 assert.equal(posts[1].comment_id, '2');
             });
     });
@@ -180,7 +179,7 @@ describe('Importer 1.0', function () {
                     assert.equal(posts[0].html, '<!--kg-card-begin: markdown--><h1 id="thisismypostcontent">This is my post content</h1>\n<!--kg-card-end: markdown-->');
                     const expectedMobiledoc = JSON.parse(exportData.data.posts[0].mobiledoc);
                     expectedMobiledoc.ghostVersion = '3.0';
-                    posts[0].mobiledoc.should.eql(JSON.stringify(expectedMobiledoc));
+                    assert.equal(posts[0].mobiledoc, JSON.stringify(expectedMobiledoc));
                 });
         });
 

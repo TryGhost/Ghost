@@ -6,7 +6,7 @@ import ErrorBoundary from '../error-boundary';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type FetchKoenigLexical = () => Promise<any>
 
-export type NodeType = 'DEFAULT_NODES' | 'BASIC_NODES' | 'MINIMAL_NODES' | 'EMAIL_NODES';
+export type NodeType = 'DEFAULT_NODES' | 'BASIC_NODES' | 'MINIMAL_NODES' | 'EMAIL_NODES' | 'EMAIL_EDITOR_NODES';
 
 export interface KoenigEditorBaseProps {
     onBlur?: () => void
@@ -126,7 +126,8 @@ export const KoenigWrapper: React.FC<KoenigWrapperProps> = ({
         DEFAULT_NODES: koenig.DEFAULT_TRANSFORMERS,
         BASIC_NODES: koenig.BASIC_TRANSFORMERS,
         MINIMAL_NODES: koenig.MINIMAL_TRANSFORMERS,
-        EMAIL_NODES: koenig.EMAIL_TRANSFORMERS
+        EMAIL_NODES: koenig.EMAIL_TRANSFORMERS,
+        EMAIL_EDITOR_NODES: koenig.EMAIL_TRANSFORMERS
     };
 
     const defaultNodes = nodes || 'DEFAULT_NODES';

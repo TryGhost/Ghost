@@ -1,4 +1,3 @@
-const should = require('should');
 const handlebars = require('../../../../core/frontend/services/theme-engine/engine').handlebars;
 
 const concat = require('../../../../core/frontend/helpers/concat');

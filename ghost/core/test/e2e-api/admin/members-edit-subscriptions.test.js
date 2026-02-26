@@ -1,7 +1,7 @@
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyContentVersion, anyEtag, anyObjectId, anyUuid, anyISODateTime, anyString, anyArray} = matchers;
 const testUtils = require('../../utils');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const models = require('../../../core/server/models');
 const {stripeMocker} = require('../../utils/e2e-framework-mock-manager');
 const DomainEvents = require('@tryghost/domain-events/lib/DomainEvents');

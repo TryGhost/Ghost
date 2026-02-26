@@ -2,7 +2,7 @@ const {agentProvider, fixtureManager, mockManager} = require('../../../utils/e2e
 const moment = require('moment');
 const models = require('../../../../core/server/models');
 const sinon = require('sinon');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const jobManager = require('../../../../core/server/services/jobs/job-service');
 const _ = require('lodash');
 const configUtils = require('../../../utils/config-utils');
@@ -219,7 +219,7 @@ describe.skip('Batch sending tests', function () {
 
         const {emailModel} = await sendEmail(agent);
 
-        assert(addStub.calledOnce);
+        sinon.assert.calledOnce(addStub);
         assert.ok(laterMember);
         addStub.restore();
 
@@ -597,7 +597,7 @@ describe.skip('Batch sending tests', function () {
             const memberIds = emailRecipients.models.map(recipient => recipient.get('member_id'));
             assert.equal(memberIds.length, _.uniq(memberIds).length);
 
-            assert.equal(stubbedSend.callCount, 4);
+            sinon.assert.callCount(stubbedSend, 4);
             const calls = stubbedSend.getCalls();
             const deadline = new Date(t0.getTime() + targetDeliveryWindow);
 

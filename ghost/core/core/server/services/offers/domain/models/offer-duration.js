@@ -3,7 +3,7 @@ const InvalidOfferDuration = require('../errors').InvalidOfferDuration;
 
 /**
  * @typedef {object} BasicDuration
- * @prop {'once'|'forever'|'trial'|'free_months'} type
+ * @prop {'once'|'forever'|'trial'} type
  */
 
 /**
@@ -26,9 +26,9 @@ class OfferDuration extends ValueObject {
                 message: 'Offer `duration` must be a string.'
             });
         }
-        if (type !== 'once' && type !== 'repeating' && type !== 'forever' && type !== 'trial' && type !== 'free_months') {
+        if (type !== 'once' && type !== 'repeating' && type !== 'forever' && type !== 'trial') {
             throw new InvalidOfferDuration({
-                message: 'Offer `duration` must be one of "once", "repeating", "forever", "trial" or "free_months".'
+                message: 'Offer `duration` must be one of "once", "repeating", "forever" or "trial".'
             });
         }
         if (type !== 'repeating') {

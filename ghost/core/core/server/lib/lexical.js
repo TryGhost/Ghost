@@ -3,6 +3,7 @@ const errors = require('@tryghost/errors');
 const urlUtils = require('../../shared/url-utils');
 const config = require('../../shared/config');
 const labs = require('../../shared/labs');
+const settingsCache = require('../../shared/settings-cache');
 const storage = require('../adapters/storage');
 
 let nodes;
@@ -80,6 +81,7 @@ module.exports = {
         }
 
         const options = Object.assign({
+            siteUuid: settingsCache.get('site_uuid'),
             siteUrl: config.get('url'),
             imageBaseUrl: config.get('urls:image') || '',
             imageOptimization: config.get('imageOptimization'),

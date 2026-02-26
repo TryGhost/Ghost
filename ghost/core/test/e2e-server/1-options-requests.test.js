@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const {agentProvider, matchers, cacheRules} = require('../utils/e2e-framework');
 const {anyContentVersion} = matchers;
 const config = require('../../core/shared/config');
