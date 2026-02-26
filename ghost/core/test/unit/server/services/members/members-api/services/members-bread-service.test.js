@@ -590,6 +590,7 @@ describe('MemberBreadService', function () {
             assert.equal(nextPayment.discount.type, 'percent');
             assert.equal(nextPayment.discount.amount, 20);
             assert.equal(nextPayment.discount.duration, 'repeating');
+            assert.equal(nextPayment.discount.duration_in_months, 12);
         });
 
         it('attaches offer_redemptions to subscriptions', async function () {

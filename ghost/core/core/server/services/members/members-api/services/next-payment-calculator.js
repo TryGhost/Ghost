@@ -8,6 +8,7 @@
  * @prop {string} start
  * @prop {string|null} end
  * @prop {'once'|'repeating'|'forever'} duration
+ * @prop {number|null} duration_in_months
  * @prop {'percent'|'fixed'} type
  * @prop {number} amount
  */
@@ -75,6 +76,7 @@ class NextPaymentCalculator {
                 start: activeDiscount.start ? new Date(activeDiscount.start).toISOString() : null,
                 end: activeDiscount.end ? new Date(activeDiscount.end).toISOString() : null,
                 duration: offer.duration,
+                duration_in_months: offer.duration_in_months,
                 type: offer.type,
                 amount: offer.amount
             }
