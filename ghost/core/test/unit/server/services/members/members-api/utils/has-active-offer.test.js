@@ -7,13 +7,12 @@ describe('hasActiveOffer', function () {
         sinon.restore();
     });
 
-    function createSubscriptionModel({discountStart = null, discountEnd = null, trialStartAt = null, trialEndAt = null, offerId = null, startDate = null} = {}) {
+    function createSubscriptionModel({discountStart = null, discountEnd = null, trialEndAt = null, offerId = null, startDate = null} = {}) {
         return {
             get: sinon.stub().callsFake((key) => {
                 const values = {
                     discount_start: discountStart,
                     discount_end: discountEnd,
-                    trial_start_at: trialStartAt,
                     trial_end_at: trialEndAt,
                     offer_id: offerId,
                     start_date: startDate

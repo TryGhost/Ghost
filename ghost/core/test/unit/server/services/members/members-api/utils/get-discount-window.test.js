@@ -6,65 +6,10 @@ describe('getDiscountWindow', function () {
         return {
             discount_start: null,
             discount_end: null,
-            trial_start_at: null,
-            trial_end_at: null,
             start_date: new Date('2025-01-01T00:00:00.000Z'),
             ...overrides
         };
     }
-
-    // Free months offers (trial-based)
-
-    describe('free months offers', function () {
-        it('returns window when trial is still active', function () {
-            const now = new Date();
-            const trialStart = new Date(now.getTime() - (7 * 24 * 60 * 60 * 1000));
-            const trialEnd = new Date(now.getTime() + (30 * 24 * 60 * 60 * 1000));
-            const subscription = createSubscription({
-                trial_start_at: trialStart,
-                trial_end_at: trialEnd
-            });
-
-            const result = getDiscountWindow(subscription, {type: 'free_months'});
-
-            assert.deepEqual(result, {start: trialStart, end: trialEnd});
-        });
-
-        it('returns null when trial has expired', function () {
-            const now = new Date();
-            const trialStart = new Date(now.getTime() - (60 * 24 * 60 * 60 * 1000));
-            const trialEnd = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
-            const subscription = createSubscription({
-                trial_start_at: trialStart,
-                trial_end_at: trialEnd
-            });
-
-            const result = getDiscountWindow(subscription, {type: 'free_months'});
-
-            assert.equal(result, null);
-        });
-
-        it('returns null when trial_end_at is missing', function () {
-            const subscription = createSubscription();
-
-            const result = getDiscountWindow(subscription, {type: 'free_months'});
-
-            assert.equal(result, null);
-        });
-
-        it('returns null for trial_start_at but uses fallback', function () {
-            const now = new Date();
-            const trialEnd = new Date(now.getTime() + (30 * 24 * 60 * 60 * 1000));
-            const subscription = createSubscription({
-                trial_start_at: null,
-                trial_end_at: trialEnd
-            });
-
-            const result = getDiscountWindow(subscription, {type: 'free_months'});
-
-            assert.deepEqual(result, {start: null, end: trialEnd});
-        });
-    });
 
     // Stripe coupon discount (post-6.16 data)
 

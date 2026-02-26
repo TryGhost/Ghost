@@ -13,8 +13,6 @@ module.exports = async function hasActiveOffer(subscriptionModel, offersAPI) {
     const subscriptionData = {
         discount_start: subscriptionModel.get('discount_start'),
         discount_end: subscriptionModel.get('discount_end'),
-        trial_start_at: subscriptionModel.get('trial_start_at'),
-        trial_end_at: subscriptionModel.get('trial_end_at'),
         start_date: subscriptionModel.get('start_date')
     };
 
@@ -25,8 +23,9 @@ module.exports = async function hasActiveOffer(subscriptionModel, offersAPI) {
         return !discountWindow.end || new Date(discountWindow.end) > new Date();
     }
 
-    // Check for active trial (trial/free_months offers)
-    if (subscriptionData.trial_end_at && new Date(subscriptionData.trial_end_at) > new Date()) {
+    // Check for active trial (trial offers)
+    const trialEndAt = subscriptionModel.get('trial_end_at');
+    if (trialEndAt && new Date(trialEndAt) > new Date()) {
         return true;
     }
 

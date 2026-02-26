@@ -2,36 +2,16 @@
  * Computes the discount window for a subscription based on available data.
  * Returns {start, end} if a discount window can be determined, null otherwise.
  *
- * Handles three data paths:
- * 1. Free months offers - uses trial_start_at / trial_end_at
- * 2. Stripe coupon discounts (post-6.16) - uses discount_start / discount_end
- * 3. Legacy fallback - computes from offer duration and start_date
+ * Handles two data paths:
+ * 1. Stripe coupon discounts (post-6.16) - uses discount_start / discount_end
+ * 2. Legacy fallback - computes from offer duration and start_date
  *
- * @param {object} subscription - plain object with: discount_start, discount_end,
- *   trial_start_at, trial_end_at, start_date
- * @param {object|null} offer - offer data with: type, duration, duration_in_months.
+ * @param {object} subscription - plain object with: discount_start, discount_end, start_date
+ * @param {object|null} offer - offer data with: duration, duration_in_months.
  *   Pass null to skip offer-dependent checks.
  * @returns {{start: *, end: *}|null}
  */
 module.exports = function getDiscountWindow(subscription, offer) {
-    // Free months offers use trial periods in Stripe
-    if (offer?.type === 'free_months') {
-        if (!subscription.trial_end_at) {
-            return null;
-        }
-
-        const end = new Date(subscription.trial_end_at);
-
-        if (new Date() >= end) {
-            return null;
-        }
-
-        return {
-            start: subscription.trial_start_at,
-            end
-        };
-    }
-
     // Stripe coupon discount (post-6.16 data)
     if (subscription.discount_start) {
         return {

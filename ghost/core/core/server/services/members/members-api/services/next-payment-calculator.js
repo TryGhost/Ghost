@@ -104,11 +104,10 @@ class NextPaymentCalculator {
      */
     _getActiveDiscount(subscription, offer) {
         // Skip if there's no Stripe discount data and the offer isn't eligible for legacy backport:
-        // - free_months offers use trial periods (always eligible)
         // - signup offers are backported for legacy data without discount_start
         // - retention offers are excluded because they were introduced after discount_start
         //   was available, so missing discount_start means there's no active discount
-        if (!subscription.discount_start && offer.type !== 'free_months' && offer.redemption_type !== 'signup') {
+        if (!subscription.discount_start && offer.redemption_type !== 'signup') {
             return null;
         }
 
