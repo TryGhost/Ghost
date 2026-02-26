@@ -39,6 +39,15 @@ export const AccountPlanPageStyles = `
         padding: 6px 12px;
     }
 
+    .gh-portal-retention-offer {
+        margin-top: -24px !important;
+    }
+
+    .gh-portal-retention-offer > p {
+        max-width: 400px;
+        margin-inline: auto;
+    }
+
     .gh-portal-retention-offer-price {
         display: flex;
         align-items: center;
