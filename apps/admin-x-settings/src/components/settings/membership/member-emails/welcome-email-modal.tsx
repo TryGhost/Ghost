@@ -18,9 +18,6 @@ import type {AutomatedEmail} from '@tryghost/admin-x-framework/api/automated-ema
 
 import {
     Button,
-    LucideIcon,
-    ToggleGroup,
-    ToggleGroupItem,
     cn
 } from '@tryghost/shade';
 
@@ -36,7 +33,7 @@ interface EmailPreviewModalContentProps {
 const EmailPreviewModalContent = React.forwardRef<
     HTMLDivElement,
     EmailPreviewModalContentProps
->(({title, deviceSize = 'desktop', onDeviceSizeChange, headerActions, children, className}, ref) => (
+>(({title, headerActions, children, className}, ref) => (
     <div
         ref={ref}
         className={cn(
@@ -49,24 +46,6 @@ const EmailPreviewModalContent = React.forwardRef<
             <h3 className="text-xl font-semibold">
                 {title}
             </h3>
-            <div className="absolute left-1/2 -translate-x-1/2">
-                <ToggleGroup
-                    type="single"
-                    value={deviceSize}
-                    onValueChange={(value) => {
-                        if (value && onDeviceSizeChange) {
-                            onDeviceSizeChange(value as 'desktop' | 'mobile');
-                        }
-                    }}
-                >
-                    <ToggleGroupItem aria-label="Desktop preview" value="desktop">
-                        <LucideIcon.Monitor className="size-4" />
-                    </ToggleGroupItem>
-                    <ToggleGroupItem aria-label="Mobile preview" value="mobile">
-                        <LucideIcon.Smartphone className="size-4" />
-                    </ToggleGroupItem>
-                </ToggleGroup>
-            </div>
             <div className="flex items-center gap-2">
                 {headerActions}
             </div>
@@ -368,7 +347,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                 title={modalTitle}
                 onDeviceSizeChange={setDeviceSize}
             >
-                <div className='flex grow flex-col items-center px-8 pb-8 pt-10'>
+                <div className='flex grow flex-col items-center p-6'>
                     <EmailPreviewEmailHeader className={deviceSize === 'mobile' ? 'max-w-[460px]' : ''}>
                         <div className='flex flex-col gap-2'>
                             <div className='flex items-center py-1'>
