@@ -21,47 +21,34 @@ describe('services/koenig/node-renderers/transistor-renderer', function () {
     }
 
     describe('web', function () {
-        it('renders iframe with URL-encoded %7Buuid%7D placeholder in data-src', function () {
+        it('renders static placeholder card', function () {
             const result = renderForWeb(getTestData());
 
-            assert.ok(result.html.includes('data-src="https://partner.transistor.fm/ghost/embed/%7Buuid%7D'));
-            assert.ok(result.html.includes('data-kg-transistor-embed'));
+            assert.ok(result.html.includes('kg-transistor-placeholder'));
+            assert.ok(result.html.includes('kg-transistor-icon'));
+            assert.ok(result.html.includes('kg-transistor-content'));
         });
 
-        it('includes noscript fallback with src for non-JS environments', function () {
+        it('renders placeholder title and description', function () {
             const result = renderForWeb(getTestData());
 
-            assert.ok(result.html.includes('<noscript>'));
-            assert.ok(result.html.includes('</noscript>'));
-            // noscript iframe uses src directly (not data-src) so it loads without JS
-            assert.match(result.html, /<noscript><iframe[^>]*src="https:\/\/partner\.transistor\.fm/);
+            assert.ok(result.html.includes('Members-only podcasts'));
+            assert.ok(result.html.includes('Your Transistor podcasts will appear here.'));
         });
 
-        it('includes ctx param', function () {
+        it('does not render iframe embed markup', function () {
             const result = renderForWeb(getTestData());
 
-            assert.ok(result.html.includes('ctx='));
-        });
-
-        it('includes inline script for background color detection', function () {
-            const result = renderForWeb(getTestData());
-
-            assert.ok(result.html.includes('<script>'));
-            assert.ok(result.html.includes('getComputedStyle'));
-            assert.ok(result.html.includes('data-src'));
-            assert.ok(result.html.includes('colorToRgb'));
+            assert.ok(!result.html.includes('<iframe'));
+            assert.ok(!result.html.includes('data-kg-transistor-embed'));
         });
 
         it('matches snapshot for default test data', function () {
             const result = renderForWeb(getTestData());
 
-            // type: 'inner' means output is the figure's innerHTML (iframe + script + noscript)
-            assert.ok(result.html.includes('<iframe'));
-            assert.ok(result.html.includes('data-kg-transistor-embed'));
-            assert.ok(result.html.includes('<script>'));
-            assert.ok(result.html.includes('</script>'));
-            assert.ok(result.html.includes('<noscript>'));
-            assert.ok(result.html.includes('</noscript>'));
+            assert.ok(result.html.includes('kg-transistor-placeholder'));
+            assert.ok(result.html.includes('kg-transistor-title'));
+            assert.ok(result.html.includes('kg-transistor-description'));
         });
     });
 
