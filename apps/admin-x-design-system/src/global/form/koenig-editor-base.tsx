@@ -28,7 +28,7 @@ export interface KoenigEditorBaseProps {
             }>
             filesNumber: number
             upload: (files: Iterable<File> & ArrayLike<File>) => Promise<null | Array<{
-                url: string;
+                url: undefined | string;
                 fileName: string;
             }>>;
         }

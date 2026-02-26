@@ -52,7 +52,7 @@ interface UploadError {
 }
 
 interface UploadResult {
-    url: string;
+    url: undefined | string;
     fileName: string;
 }
 
@@ -176,7 +176,7 @@ export const useKoenigFileUpload = (type: FileType = 'image'): FileUploadHook =>
             progressTracker.current.set(file, 100);
             updateProgress();
 
-            let responseUrl;
+            let responseUrl: undefined | string;
             if (uploadResponse) {
                 const resource = uploadResponse[koenigFileUploadTypes[type].resourceName];
                 if (resource && Array.isArray(resource) && resource[0]) {
