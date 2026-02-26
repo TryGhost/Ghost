@@ -1,5 +1,6 @@
 import * as Sentry from '@sentry/react';
 import React, {Suspense, useCallback, useMemo} from 'react';
+import type {KoenigFileUploadType} from '@tryghost/admin-x-framework/hooks';
 import {useDesignSystem, useFocusContext} from '../../providers/design-system-provider';
 import ErrorBoundary from '../error-boundary';
 
@@ -19,7 +20,7 @@ export interface KoenigEditorBaseProps {
     inheritFontStyles?: boolean
     loadingFallback?: React.ReactNode
     fileUploader?: {
-        useFileUpload: () => {
+        useFileUpload: (type?: KoenigFileUploadType) => {
             progress: number
             isLoading: boolean
             errors: Array<{

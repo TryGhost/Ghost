@@ -39,7 +39,7 @@ export const koenigFileUploadTypes = {
     }
 } as const;
 
-type FileType = keyof typeof koenigFileUploadTypes;
+export type KoenigFileUploadType = keyof typeof koenigFileUploadTypes;
 
 interface UploadOptions {
     formData?: Record<string, string | Blob>;
@@ -89,7 +89,7 @@ const getStringAtPath = (maybeObj: unknown, path: Iterable<PropertyKey>): null |
     return (typeof current === 'string') ? current : null;
 };
 
-export const useKoenigFileUpload = (type: FileType = 'image'): FileUploadHook => {
+export const useKoenigFileUpload = (type: KoenigFileUploadType = 'image'): FileUploadHook => {
     const [progress, setProgress] = useState(0);
     const [isLoading, setLoading] = useState(false);
     const [errors, setErrors] = useState<UploadError[]>([]);
