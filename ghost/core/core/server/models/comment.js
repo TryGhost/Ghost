@@ -268,7 +268,7 @@ const Comment = ghostBookshelf.Model.extend({
                 const statusPlaceholders = excludedCommentStatuses.map(() => '?').join(',');
 
                 // Split into two separate indexed subqueries instead of a single OR-based query.
-                // The OR between parent_id and in_reply_to_id defeats MySQL index usage,
+                // An OR between parent_id and in_reply_to_id defeats MySQL index usage,
                 // causing full table scans. Two separate subqueries each use their own index.
                 modelOrCollection.query('columns', 'comments.*', ghostBookshelf.knex.raw(`(
                     (SELECT COUNT(*) FROM comments AS r1
