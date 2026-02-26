@@ -107,9 +107,11 @@ const fetchWithXhr = (
 
         xhr.onabort = onabort;
 
-        signal.addEventListener('abort', () => {
-            xhr.abort();
-        });
+        const onSignalAbort = () => xhr.abort();
+        signal.addEventListener('abort', onSignalAbort);
+        xhr.onloadend = () => {
+            signal.removeEventListener('abort', onSignalAbort);
+        };
 
         xhr.send(body);
     })
