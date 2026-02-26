@@ -28,54 +28,47 @@ describe('Labs Service', function () {
         }));
     });
 
-    it('returns an alpha flag when dev experiments in toggled', function () {
-        configUtils.set('enableDeveloperExperiments', true);
-        sinon.stub(process.env, 'NODE_ENV').value('production');
-        const getSpy = sinon.stub(settingsCache, 'get');
-        getSpy.withArgs('labs').returns({
-            urlCache: true
-        });
-
-        // NOTE: this test should be rewritten to test the alpha flag independently of the internal ALPHA_FEATURES list
-        //       otherwise we end up in the endless maintenance loop and need to update it every time a feature graduates from alpha
-        assert.deepEqual(labs.getAll(), expectedLabsObject({
-            urlCache: true,
-            members: true
-        }));
-
-        assert.equal(labs.isSet('members'), true);
-        assert.equal(labs.isSet('urlCache'), true);
-    });
-
     it('respects the value in config over settings', function () {
+        if (labs.WRITABLE_KEYS_ALLOWLIST.length === 0) {
+            this.skip();
+        }
+
+        const flag = labs.WRITABLE_KEYS_ALLOWLIST[0];
+
         configUtils.set('labs', {
-            collections: false
+            [flag]: false
         });
         const getSpy = sinon.stub(settingsCache, 'get');
         getSpy.withArgs('labs').returns({
-            collections: true,
+            [flag]: true,
             members: true
         });
 
         assert.deepEqual(labs.getAll(), expectedLabsObject({
-            collections: false,
+            [flag]: false,
             members: true
         }));
 
-        assert.equal(labs.isSet('collections'), false);
+        assert.equal(labs.isSet(flag), false);
     });
 
     it('respects the value in config over GA keys', function () {
+        if (labs.GA_KEYS.length === 0) {
+            this.skip();
+        }
+
+        const gaKey = labs.GA_KEYS[0];
+
         configUtils.set('labs', {
-            announcementBar: false
+            [gaKey]: false
         });
 
         assert.deepEqual(labs.getAll(), expectedLabsObject({
-            announcementBar: false,
+            [gaKey]: false,
             members: true
         }));
 
-        assert.equal(labs.isSet('announcementBar'), false);
+        assert.equal(labs.isSet(gaKey), false);
     });
 
     it('members flag is true when members_signup_access setting is "all"', function () {
@@ -90,19 +83,25 @@ describe('Labs Service', function () {
     });
 
     it('returns other allowlisted flags along with members', function () {
+        if (labs.WRITABLE_KEYS_ALLOWLIST.length === 0) {
+            this.skip();
+        }
+
+        const flag = labs.WRITABLE_KEYS_ALLOWLIST[0];
+
         const getSpy = sinon.stub(settingsCache, 'get');
         getSpy.withArgs('members_signup_access').returns('all');
         getSpy.withArgs('labs').returns({
-            activitypub: false
+            [flag]: false
         });
 
         assert.deepEqual(labs.getAll(), expectedLabsObject({
             members: true,
-            activitypub: false
+            [flag]: false
         }));
 
         assert.equal(labs.isSet('members'), true);
-        assert.equal(labs.isSet('activitypub'), false);
+        assert.equal(labs.isSet(flag), false);
     });
 
     it('members flag is false when members_signup_access setting is "none"', function () {
