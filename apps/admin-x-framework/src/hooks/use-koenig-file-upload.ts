@@ -138,7 +138,7 @@ export const useKoenigFileUpload = (type: KoenigFileUploadType = 'image'): FileU
         return validationResult;
     };
 
-    const _uploadFile = async (file: File, {formData = {}}: UploadOptions = {}) => {
+    const uploadFile = async (file: File, {formData = {}}: UploadOptions = {}) => {
         progressTracker.current.set(file, 0);
 
         const fileFormData = new FormData();
@@ -207,7 +207,7 @@ export const useKoenigFileUpload = (type: KoenigFileUploadType = 'image'): FileU
 
         for (let i = 0; i < files.length; i += 1) {
             const file = files[i];
-            uploadPromises.push(_uploadFile(file, options));
+            uploadPromises.push(uploadFile(file, options));
         }
 
         try {
