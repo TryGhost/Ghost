@@ -5,6 +5,8 @@ const MEMBER_WELCOME_EMAIL_SLUGS = {
     paid: 'member-welcome-email-paid'
 };
 
+const MEMBER_WELCOME_EMAIL_TAG = 'member-welcome-email';
+
 const MESSAGES = {
     NO_MEMBER_WELCOME_EMAIL: 'No member welcome email found',
     INVALID_LEXICAL_STRUCTURE: 'Member welcome email has invalid content structure',
@@ -16,6 +18,7 @@ const MESSAGES = {
 
 module.exports = {
     MEMBER_WELCOME_EMAIL_LOG_KEY,
+    MEMBER_WELCOME_EMAIL_TAG,
     MEMBER_WELCOME_EMAIL_SLUGS,
     MESSAGES
 };

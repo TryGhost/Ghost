@@ -345,6 +345,7 @@ describe('Member Welcome Emails Integration', function () {
             sinon.assert.calledOnce(mailService.GhostMailer.prototype.send);
             const sendCall = mailService.GhostMailer.prototype.send.firstCall;
             assert.equal(sendCall.args[0].to, memberEmail);
+            assert.deepEqual(sendCall.args[0].tags, ['member-welcome-email']);
         });
 
         it('uses configured sender and reply-to when sending member welcome email', async function () {
