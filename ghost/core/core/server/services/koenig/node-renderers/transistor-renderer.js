@@ -65,18 +65,20 @@ function emailTemplate(node, document, options) {
     const cardHtml = html`
         <table class="kg-card kg-transistor-card" cellspacing="0" cellpadding="0" border="0" width="100%">
             <tr>
-                <td style="padding: 4px;">
-                    <table cellspacing="0" cellpadding="0" border="0" width="100%">
+                <td style="padding: 24px; text-align: center;">
+                    <table cellspacing="0" cellpadding="0" border="0" width="100%" style="text-align: center;">
                         <tr>
-                            <td valign="middle" width="56" style="padding-right: 14px;">
-                                <a href="${transistorUrl}" style="display: block; width: 52px; height: 52px; padding-top: 4px; padding-right: 4px; padding-bottom: 4px; padding-left: 4px; border-radius: 2px; background-color: ${accentColor}">
+                            <td style="text-align: center; padding-bottom: 12px;">
+                                <a href="${transistorUrl}" style="display: inline-block; width: 72px; height: 72px; padding-top: 4px; padding-right: 4px; padding-bottom: 4px; padding-left: 4px; border-radius: 8px; background-color: ${accentColor}">
                                     <img src="https://static.ghost.org/v6.0.0/images/transistor-logo-ondark.png"
-                                        width="36" height="36"
+                                        width="40" height="40"
                                         alt="Transistor"
-                                        style="width: 36px; height: 36px; padding: 8px;">
+                                        style="width: 40px; height: 40px; padding: 16px;">
                                 </a>
                             </td>
-                            <td valign="middle" style="vertical-align: middle;">
+                        </tr>
+                        <tr>
+                            <td style="text-align: center;">
                                 <a href="${transistorUrl}" class="kg-transistor-title">
                                     Listen to your podcasts
                                 </a>
