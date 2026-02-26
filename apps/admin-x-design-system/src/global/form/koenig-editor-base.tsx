@@ -19,26 +19,8 @@ export interface KoenigEditorBaseProps {
     inheritFontStyles?: boolean
     loadingFallback?: React.ReactNode
     fileUploader?: {
-        useFileUpload: (type?: string) => {
-            progress: number
-            isLoading: boolean
-            errors: Array<{
-                fileName: string
-                message: string
-            }>
-            filesNumber: number
-            upload: (files: FileList) => Promise<null | Array<{
-                url: undefined | string;
-                fileName: string;
-            }>>;
-        }
-        fileTypes: Record<string, {
-            mimeTypes?: readonly string[]
-            extensions?: readonly string[]
-            endpoint: string
-            requestMethod: 'post' | 'put'
-            resourceName: string
-        }>
+        useFileUpload: unknown
+        fileTypes: unknown
     }
     cardConfig?: unknown
 }
