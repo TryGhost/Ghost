@@ -22,6 +22,7 @@ import {
     isSigninAllowed,
     isSignupAllowed,
     getCompExpiry,
+    getFreeMonthsOfferRenewalDate,
     isInThePast,
     hasNewsletterSendingEnabled,
     getUpdatedOfferPrice,
@@ -684,6 +685,32 @@ describe('Helpers - ', () => {
 
             expect(isInThePast(pastDate)).toEqual(true);
             expect(isInThePast(futureDate)).toEqual(false);
+        });
+    });
+
+    describe('getFreeMonthsOfferRenewalDate', () => {
+        it('adds the free month duration to the current period end date', () => {
+            const renewalDate = getFreeMonthsOfferRenewalDate({
+                currentPeriodEnd: '2026-03-26T12:00:00.000Z',
+                durationInMonths: 1
+            });
+
+            expect(renewalDate).toBe('26 Apr 2026');
+        });
+
+        it('clamps to the end of target month when the original day does not exist', () => {
+            const renewalDate = getFreeMonthsOfferRenewalDate({
+                currentPeriodEnd: '2025-01-31T12:00:00.000Z',
+                durationInMonths: 1
+            });
+
+            expect(renewalDate).toBe('28 Feb 2025');
+        });
+
+        it('returns an empty string for invalid input', () => {
+            expect(getFreeMonthsOfferRenewalDate({durationInMonths: 1})).toBe('');
+            expect(getFreeMonthsOfferRenewalDate({currentPeriodEnd: '2025-01-01T00:00:00.000Z', durationInMonths: 0})).toBe('');
+            expect(getFreeMonthsOfferRenewalDate({currentPeriodEnd: 'not-a-date', durationInMonths: 1})).toBe('');
         });
     });
 

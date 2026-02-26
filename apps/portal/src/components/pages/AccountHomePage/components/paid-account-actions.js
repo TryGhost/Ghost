@@ -1,5 +1,5 @@
 import AppContext from '../../../../app-context';
-import {getCompExpiry, getMemberSubscription, getMemberTierName, hasMultipleProductsFeature, hasOnlyFreePlan, isComplimentaryMember, isPaidMember, subscriptionHasFreeTrial, subscriptionHasFreeMonthsOffer} from '../../../../utils/helpers';
+import {getCompExpiry, getFreeMonthsOfferRenewalDate, getMemberSubscription, getMemberTierName, hasMultipleProductsFeature, hasOnlyFreePlan, isComplimentaryMember, isPaidMember, subscriptionHasFreeTrial, subscriptionHasFreeMonthsOffer} from '../../../../utils/helpers';
 import {getDateString} from '../../../../utils/date-time';
 import {ReactComponent as LoaderIcon} from '../../../../images/icons/loader.svg';
 import {ReactComponent as OfferTagIcon} from '../../../../images/icons/offer-tag.svg';
@@ -67,7 +67,7 @@ const PaidAccountActions = () => {
                     <p className={oldPriceClassName}>
                         {label}
                     </p>
-                    <FreeMonthsLabel nextPayment={nextPayment} subscription={subscription} />
+                    <FreeMonthsLabel subscription={subscription} />
                 </>
             );
         }
@@ -202,10 +202,12 @@ function FreeTrialLabel({subscription}) {
 }
 
 // TODO: Add i18n once copy is finalized
-function FreeMonthsLabel({nextPayment, subscription}) {
+function FreeMonthsLabel({subscription}) {
     const months = subscription?.offer?.duration_in_months ?? 0;
-    const discountEnd = nextPayment?.discount?.end;
-    const renewalDate = discountEnd ? getDateString(discountEnd) : null;
+    const renewalDate = getFreeMonthsOfferRenewalDate({
+        currentPeriodEnd: subscription?.current_period_end,
+        durationInMonths: months
+    });
     const monthsText = months === 1 ? '1 month free' : `${months} months free`;
     const label = renewalDate ? `${monthsText} - Renews ${renewalDate}` : monthsText;
 

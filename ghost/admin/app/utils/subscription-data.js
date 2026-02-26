@@ -2,6 +2,7 @@ import moment from 'moment-timezone';
 import {getNonDecimal, getSymbol} from 'ghost-admin/utils/currency';
 
 export function getSubscriptionData(sub) {
+    const freeMonthsRenewalDate = getFreeMonthsRenewalDate(sub);
     const data = {
         ...sub,
         attribution: {
@@ -10,7 +11,7 @@ export function getSubscriptionData(sub) {
             referrerMedium: sub.attribution?.referrer_medium || '-'
         },
         startDate: sub.start_date ? moment(sub.start_date).format('D MMM YYYY') : '-',
-        validUntil: validUntil(sub),
+        validUntil: freeMonthsRenewalDate || validUntil(sub),
         hasEnded: isCanceled(sub),
         willEndSoon: isSetToCancel(sub),
         cancellationReason: sub.cancellation_reason,
@@ -88,6 +89,26 @@ export function trialUntil(sub) {
     return undefined;
 }
 
+function isFreeMonthsOffer(offer) {
+    return offer?.type === 'percent'
+        && offer?.amount === 100
+        && offer?.duration === 'repeating'
+        && offer?.redemption_type === 'retention';
+}
+
+function getFreeMonthsRenewalDate(sub = {}) {
+    const freeMonthsOffer = sub.offer;
+
+    if (!isFreeMonthsOffer(freeMonthsOffer)) {
+        return undefined;
+    }
+
+    const durationInMonths = Number(freeMonthsOffer.duration_in_months);
+    const currentPeriodEnd = moment.utc(sub.current_period_end);
+
+    return currentPeriodEnd.add(Math.trunc(durationInMonths), 'months').format('D MMM YYYY');
+}
+
 export function validityDetails(data, separatorNeeded = false) {
     const separator = separatorNeeded ? ' – ' : '';
     const space = data.validUntil ? ' ' : '';
@@ -129,7 +150,7 @@ export function getOfferDisplayData(offer, sub = {}) {
     const isRetention = offer.redemption_type === 'retention';
     const label = isRetention ? 'Retention offer' : 'Signup offer';
 
-    const isFreeMonths = offer.type === 'percent' && offer.amount === 100 && offer.duration === 'repeating';
+    const isFreeMonths = isFreeMonthsOffer(offer);
 
     let discount;
     if (offer.type === 'trial') {
@@ -169,6 +190,10 @@ export function getOfferDisplayData(offer, sub = {}) {
 
 export function getDiscountPrice(sub) {
     if (!sub.next_payment || !sub.next_payment.discount) {
+        return null;
+    }
+
+    if (isFreeMonthsOffer(sub.offer)) {
         return null;
     }
 

@@ -305,9 +305,17 @@ describe('Unit: Util: subscription-data', function () {
                 cancel_at_period_end: false,
                 current_period_end: '2222-05-31',
                 offer: {
+                    id: 'offer_1',
                     type: 'percent',
                     amount: 100,
-                    duration: 'repeating'
+                    duration: 'repeating',
+                    duration_in_months: 1
+                },
+                next_payment: {
+                    amount: 0,
+                    original_amount: 5000,
+                    currency: 'usd',
+                    discount: {offer_id: 'offer_1', end: '2222-05-31'}
                 },
                 tier: null,
                 price: {
@@ -322,11 +330,11 @@ describe('Unit: Util: subscription-data', function () {
                 isComplimentary: false,
                 compExpiry: undefined,
                 hasEnded: false,
-                validUntil: '31 May 2222',
+                validUntil: '30 Jun 2222',
                 willEndSoon: false,
                 trialUntil: undefined,
                 priceLabel: 'Free tier',
-                validityDetails: ' – Renews 31 May 2222'
+                validityDetails: ' – Renews 30 Jun 2222'
             });
         });
 
@@ -479,6 +487,35 @@ describe('Unit: Util: subscription-data', function () {
 
             expect(data.hasActiveDiscount).to.be.undefined;
         });
+
+        it('does not set hasActiveDiscount for free months offers', function () {
+            const sub = {
+                id: 'sub_1',
+                status: 'active',
+                cancel_at_period_end: false,
+                current_period_end: '2026-03-26',
+                offer: {
+                    id: 'offer_1',
+                    type: 'percent',
+                    amount: 100,
+                    duration: 'repeating',
+                    duration_in_months: 1
+                },
+                price: {currency: 'usd', amount: 500},
+                next_payment: {
+                    amount: 0,
+                    original_amount: 500,
+                    currency: 'usd',
+                    discount: {offer_id: 'offer_1', end: '2026-03-26'}
+                }
+            };
+
+            const data = getSubscriptionData(sub);
+
+            expect(data.hasActiveDiscount).to.be.undefined;
+            expect(data.discountedPrice).to.be.undefined;
+            expect(data.originalPrice).to.be.undefined;
+        });
     });
 
     describe('getOfferDisplayData', function () {
@@ -615,6 +652,26 @@ describe('Unit: Util: subscription-data', function () {
                 discountedPrice: {currencySymbol: '€', nonDecimalAmount: 70},
                 originalPrice: {currencySymbol: '€', nonDecimalAmount: 100}
             });
+        });
+
+        it('returns null for free months offers', function () {
+            const result = getDiscountPrice({
+                offer: {
+                    id: 'offer_1',
+                    type: 'percent',
+                    amount: 100,
+                    duration: 'repeating',
+                    duration_in_months: 1
+                },
+                next_payment: {
+                    amount: 0,
+                    original_amount: 5000,
+                    currency: 'usd',
+                    discount: {offer_id: 'offer_1', end: '2026-09-01'}
+                }
+            });
+
+            expect(result).to.be.null;
         });
     });
 });

@@ -547,6 +547,29 @@ export function isFreeMonthsOffer(offer) {
         && offer?.redemption_type === 'retention';
 }
 
+export function getFreeMonthsOfferRenewalDate({currentPeriodEnd, durationInMonths} = {}) {
+    const months = Number(durationInMonths);
+    const periodEndDate = new Date(currentPeriodEnd);
+
+    if (Number.isNaN(periodEndDate.getTime()) || Number.isNaN(months) || months < 1) {
+        return '';
+    }
+
+    const originalDay = periodEndDate.getUTCDate();
+    const totalMonths = periodEndDate.getUTCMonth() + Math.trunc(months);
+    const targetYear = periodEndDate.getUTCFullYear() + Math.floor(totalMonths / 12);
+    const targetMonth = totalMonths % 12;
+    const daysInTargetMonth = new Date(Date.UTC(targetYear, targetMonth + 1, 0)).getUTCDate();
+    const nextBillingDate = new Date(Date.UTC(targetYear, targetMonth, Math.min(originalDay, daysInTargetMonth)));
+
+    return nextBillingDate.toLocaleDateString('en-GB', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        timeZone: 'UTC'
+    });
+}
+
 export function subscriptionHasFreeMonthsOffer({sub} = {}) {
     if (!isFreeMonthsOffer(sub?.offer)) {
         return false;

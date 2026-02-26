@@ -129,7 +129,8 @@ describe('PaidAccountActions', () => {
             const products = getProductsData({numOfProducts: 1});
             const site = getSiteData({products, portalProducts: products.map(p => p.id)});
 
-            const discountEnd = new Date('2099-02-01T12:00:00.000Z');
+            const currentPeriodEnd = new Date('2099-01-01T12:00:00.000Z');
+            const discountEnd = new Date('2099-01-01T12:00:00.000Z');
 
             const member = getMemberData({
                 paid: true,
@@ -157,7 +158,8 @@ describe('PaidAccountActions', () => {
                                 amount: 100,
                                 end: discountEnd.toISOString()
                             })
-                        })
+                        }),
+                        currentPeriodEnd: currentPeriodEnd.toISOString()
                     })
                 ]
             });
@@ -166,7 +168,7 @@ describe('PaidAccountActions', () => {
 
             expect(queryByText('$5.00/month')).toBeInTheDocument();
             expect(queryByTestId('offer-label')).toBeInTheDocument();
-            expect(queryByText(/1 month free/)).toBeInTheDocument();
+            expect(queryByText('1 month free - Renews 1 Feb 2099')).toBeInTheDocument();
         });
 
         test('displays "Complimentary" with expiry date', () => {

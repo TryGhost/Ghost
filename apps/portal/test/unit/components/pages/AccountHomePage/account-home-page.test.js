@@ -1,7 +1,7 @@
 import {render, fireEvent} from '../../../../utils/test-utils';
 import AccountHomePage from '../../../../../src/components/pages/AccountHomePage/account-home-page';
 import {site} from '../../../../../src/utils/fixtures';
-import {getSiteData, getNewslettersData} from '../../../../../src/utils/fixtures-generator';
+import {getDiscountData, getMemberData, getNewslettersData, getNextPaymentData, getProductsData, getSiteData, getSubscriptionData} from '../../../../../src/utils/fixtures-generator';
 
 const setup = (overrides) => {
     const {mockDoActionFn, ...utils} = render(
@@ -34,6 +34,49 @@ describe('Account Home Page', () => {
 
         fireEvent.click(logoutBtn);
         expect(mockDoActionFn).toHaveBeenCalledWith('signout');
+    });
+
+    test('shows free months renewal date based on the paid billing date', () => {
+        const products = getProductsData({numOfProducts: 1});
+        const siteData = getSiteData({products, portalProducts: products.map(p => p.id)});
+        const currentPeriodEnd = new Date('2099-01-01T12:00:00.000Z');
+        const discountEnd = new Date('2099-01-01T12:00:00.000Z');
+
+        const member = getMemberData({
+            paid: true,
+            subscriptions: [
+                getSubscriptionData({
+                    status: 'active',
+                    amount: 500,
+                    currency: 'USD',
+                    interval: 'month',
+                    offer: {
+                        type: 'percent',
+                        amount: 100,
+                        duration: 'repeating',
+                        duration_in_months: 1,
+                        redemption_type: 'retention'
+                    },
+                    currentPeriodEnd: currentPeriodEnd.toISOString(),
+                    nextPayment: getNextPaymentData({
+                        originalAmount: 500,
+                        amount: 500,
+                        interval: 'month',
+                        currency: 'USD',
+                        discount: getDiscountData({
+                            duration: 'repeating',
+                            type: 'percent',
+                            amount: 100,
+                            end: discountEnd.toISOString()
+                        })
+                    })
+                })
+            ]
+        });
+
+        const {utils} = setup({site: siteData, member});
+
+        expect(utils.queryByText('Your subscription will renew on 1 Feb 2099')).toBeInTheDocument();
     });
 
     test('can show Manage button for few newsletters', () => {
