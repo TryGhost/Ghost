@@ -50,7 +50,7 @@
     "Continue": "Continuă",
     "Continue subscription": "Continuă abonamentul",
     "Could not create Stripe billing portal session": "",
-    "Could not create stripe checkout session": "",
+    "Could not create Stripe checkout session": "",
     "Could not sign in. Login link expired.": "Nu s-a putut autentifica. Link-ul de autentificare a expirat.",
     "Could not update email! Invalid link.": "Nu s-a putut actualiza emailul! Link invalid.",
     "Create a new contact": "Creează un nou contact",

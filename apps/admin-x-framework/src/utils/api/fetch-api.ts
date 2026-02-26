@@ -55,6 +55,17 @@ const fetchWithXhr = (
     {method, headers, credentials, body, signal}: InternalRequestInit
 ): Promise<Response> => (
     new Promise((resolve, reject) => {
+        const onabort = () => {
+            reject(new DOMException('Aborted', 'AbortError'));
+        };
+
+        // It's possible that the signal is already aborted if this isn't the
+        // first time the request was attempted.
+        if (signal.aborted) {
+            onabort();
+            return;
+        }
+
         const xhr = new XMLHttpRequest();
 
         xhr.open(method, endpoint.toString(), true);
@@ -94,21 +105,15 @@ const fetchWithXhr = (
             reject(new TypeError('Network request failed'));
         };
 
-        xhr.onabort = () => {
-            reject(new DOMException('Aborted', 'AbortError'));
+        xhr.onabort = onabort;
+
+        const onSignalAbort = () => xhr.abort();
+        signal.addEventListener('abort', onSignalAbort);
+        xhr.onloadend = () => {
+            signal.removeEventListener('abort', onSignalAbort);
         };
 
-        signal.addEventListener('abort', () => {
-            xhr.abort();
-        });
-
         xhr.send(body);
-
-        // It's possible that the signal is already aborted if this isn't the
-        // first time the request was attempted.
-        if (signal.aborted) {
-            xhr.abort();
-        }
     })
 );
 
@@ -174,41 +179,43 @@ export const useFetchApi = () => {
         // Otherwise, we prefer `fetch`.
         const fetchFn = onUploadProgress ? fetchWithXhr.bind(null, onUploadProgress) : fetch;
 
-        if (timeout) {
-            setTimeout(() => controller.abort(), timeout);
-        }
+        const timeoutHandle = timeout ? setTimeout(() => controller.abort(), timeout) : undefined;
 
-        while (attempts === 0 || retry) {
-            try {
-                const response = await fetchFn(endpoint, requestInit);
-                return handleResponse(response) as ResponseData;
-            } catch (error) {
-                retryingMs = Date.now() - startTime;
+        try {
+            while (attempts === 0 || retry) {
+                try {
+                    const response = await fetchFn(endpoint, requestInit);
+                    return handleResponse(response) as ResponseData;
+                } catch (error) {
+                    retryingMs = Date.now() - startTime;
 
-                if (retry && (import.meta.env.MODE !== 'development' && retryableErrors.some(errorClass => error instanceof errorClass) && retryingMs <= maxRetryingMs)) {
-                    await new Promise((resolve) => {
-                        setTimeout(resolve, retryPeriods[attempts] || retryPeriods[retryPeriods.length - 1]);
-                    });
-                    attempts += 1;
-                    continue;
-                }
+                    if (retry && (import.meta.env.MODE !== 'development' && retryableErrors.some(errorClass => error instanceof errorClass) && retryingMs <= maxRetryingMs)) {
+                        await new Promise((resolve) => {
+                            setTimeout(resolve, retryPeriods[attempts] || retryPeriods[retryPeriods.length - 1]);
+                        });
+                        attempts += 1;
+                        continue;
+                    }
 
-                if (attempts !== 0 && sentryDSN) {
-                    Sentry.captureMessage('Request failed after multiple attempts', {extra: getErrorData()});
-                }
+                    if (attempts !== 0 && sentryDSN) {
+                        Sentry.captureMessage('Request failed after multiple attempts', {extra: getErrorData()});
+                    }
 
-                if (error && typeof error === 'object' && 'name' in error && error.name === 'AbortError') {
-                    throw new TimeoutError();
-                }
+                    if (error && typeof error === 'object' && 'name' in error && error.name === 'AbortError') {
+                        throw new TimeoutError();
+                    }
 
-                let newError = error;
+                    let newError = error;
 
-                if (!(error instanceof APIError)) {
-                    newError = new ServerUnreachableError({cause: error});
-                }
+                    if (!(error instanceof APIError)) {
+                        newError = new ServerUnreachableError({cause: error});
+                    }
 
-                throw newError;
-            };
+                    throw newError;
+                };
+            }
+        } finally {
+            clearTimeout(timeoutHandle);
         }
 
         // Used for type checking

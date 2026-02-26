@@ -257,19 +257,19 @@ const RetentionOfferSidebar: React.FC<{
                         <section className='mt-4'>
                             <h2 className='mb-4 text-lg'>Details</h2>
                             <div className='flex flex-col gap-6'>
-                                <div className='flex flex-col gap-4 rounded-md border border-grey-200 p-4 dark:border-grey-800'>
-                                    <ButtonSelect
-                                        checked={formState.type === 'percent'}
-                                        type={typeOptions[0]}
-                                        onClick={() => {
-                                            clearError('amount');
-                                            clearError('durationInMonths');
-                                            updateForm((state) => {
-                                                return {...state, type: 'percent', percentAmount: state.percentAmount};
-                                            });
-                                        }}
-                                    />
-                                    {cadence === 'monthly' && (
+                                {cadence === 'monthly' && (
+                                    <div className='flex flex-col gap-4 rounded-md border border-grey-200 p-4 dark:border-grey-800'>
+                                        <ButtonSelect
+                                            checked={formState.type === 'percent'}
+                                            type={typeOptions[0]}
+                                            onClick={() => {
+                                                clearError('amount');
+                                                clearError('durationInMonths');
+                                                updateForm((state) => {
+                                                    return {...state, type: 'percent', percentAmount: state.percentAmount};
+                                                });
+                                            }}
+                                        />
                                         <ButtonSelect
                                             checked={formState.type === 'free_months'}
                                             type={typeOptions[1]}
@@ -279,8 +279,8 @@ const RetentionOfferSidebar: React.FC<{
                                                 updateForm(state => ({...state, type: 'free_months'}));
                                             }}
                                         />
-                                    )}
-                                </div>
+                                    </div>
+                                )}
                                 {formState.type === 'percent' && (
                                     <>
                                         <TextField

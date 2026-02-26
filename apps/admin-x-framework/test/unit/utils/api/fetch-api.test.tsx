@@ -75,6 +75,8 @@ describe('useFetchApi', () => {
     afterEach(async () => {
         const close = promisify(server.close.bind(server));
         await close();
+
+        vi.restoreAllMocks();
     });
 
     it('makes an API request', async () => {
@@ -103,9 +105,15 @@ describe('useFetchApi', () => {
     });
 
     it('emits upload progress when onUploadProgress is provided', async () => {
-        const {result} = renderHook(() => useFetchApi(), {wrapper});
-
+        const realXhrSend = XMLHttpRequest.prototype.send;
+        vi.spyOn(XMLHttpRequest.prototype, 'send').mockImplementation(function (this: XMLHttpRequest, ...args) {
+            this.upload.dispatchEvent(new ProgressEvent('progress', {lengthComputable: false, loaded: 2, total: 3}));
+            this.upload.dispatchEvent(new ProgressEvent('progress', {lengthComputable: true, loaded: 1, total: 10}));
+            this.upload.dispatchEvent(new ProgressEvent('progress', {lengthComputable: true, loaded: 9, total: 10}));
+            realXhrSend.apply(this, args);
+        });
         const onUploadProgress = vi.fn();
+        const {result} = renderHook(() => useFetchApi(), {wrapper});
 
         const data = await result.current<TestResponseBody>(`${baseUrl}/ghost/api/admin/test/`, {
             method: 'POST',
@@ -115,7 +123,7 @@ describe('useFetchApi', () => {
         });
 
         expect(data.body).toBe('test');
-
-        expect(onUploadProgress).toHaveBeenCalledWith(expect.any(Number));
+        expect(onUploadProgress).toHaveBeenCalledWith(10);
+        expect(onUploadProgress).toHaveBeenCalledWith(90);
     });
 });

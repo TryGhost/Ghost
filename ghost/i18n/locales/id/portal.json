@@ -50,7 +50,7 @@
     "Continue": "Lanjutkan",
     "Continue subscription": "Lanjutkan berlangganan",
     "Could not create Stripe billing portal session": "",
-    "Could not create stripe checkout session": "Tidak dapat membuat sesi checkout Stripe",
+    "Could not create Stripe checkout session": "Tidak dapat membuat sesi checkout Stripe",
     "Could not sign in. Login link expired.": "Tidak dapat masuk. Tautan masuk telah kedaluwarsa.",
     "Could not update email! Invalid link.": "Tidak dapat memperbarui email! Tautan tidak valid.",
     "Create a new contact": "Buat kontak baru",

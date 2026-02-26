@@ -50,7 +50,7 @@
     "Continue": "Fortsett",
     "Continue subscription": "Fortsett abonnement",
     "Could not create Stripe billing portal session": "",
-    "Could not create stripe checkout session": "Kunne ikke opprette utsjekkingssesjon hos Stripe",
+    "Could not create Stripe checkout session": "Kunne ikke opprette utsjekkingssesjon hos Stripe",
     "Could not sign in. Login link expired.": "Kunne ikke logge inn. Påloggingslenken har utløpt.",
     "Could not update email! Invalid link.": "Kunne ikke oppdatere e-post! Ugyldig lenke.",
     "Create a new contact": "Opprett en ny kontakt",

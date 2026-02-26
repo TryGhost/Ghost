@@ -50,7 +50,7 @@
     "Continue": "Fortsæt",
     "Continue subscription": "Fortsæt tilmelding",
     "Could not create Stripe billing portal session": "",
-    "Could not create stripe checkout session": "Kunne ikke oprette Stripe checkout-session",
+    "Could not create Stripe checkout session": "Kunne ikke oprette Stripe checkout-session",
     "Could not sign in. Login link expired.": "Kunne ikke log ind. Log ind link udløbet.",
     "Could not update email! Invalid link.": "Kunne ikke opdatere e-mail! Ugyldigt link.",
     "Create a new contact": "Opret ny kontakt",

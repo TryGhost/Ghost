@@ -2,12 +2,15 @@ const {
     BadRequestError
 } = require('@tryghost/errors');
 const errors = require('@tryghost/errors');
+const crypto = require('crypto');
 const emailTemplate = require('./emails/signin');
 const UAParser = require('ua-parser-js');
 const got = require('got');
 const otp = require('../otp');
 const IPV4_REGEX = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
 const IPV6_REGEX = /^(?:[A-F0-9]{1,4}:){7}[A-F0-9]{1,4}$/i;
+const AUTH_CODE_VALIDITY_MS = 5 * 60 * 1000;
+const AUTH_CODE_CHALLENGE_BYTES = 16;
 
 /**
  * @typedef {object} User
@@ -23,6 +26,8 @@ const IPV6_REGEX = /^(?:[A-F0-9]{1,4}:){7}[A-F0-9]{1,4}$/i;
  * @prop {string} user_agent
  * @prop {string} ip
  * @prop {boolean} verified
+ * @prop {string} [auth_code_challenge]
+ * @prop {number} [auth_code_generated_at]
  */
 
 /**
@@ -36,6 +41,7 @@ const IPV6_REGEX = /^(?:[A-F0-9]{1,4}:){7}[A-F0-9]{1,4}$/i;
  * @prop {(req: Req, res: Res) => Promise<void>} removeUserForSession
  * @prop {(req: Req, res: Res, user: User) => Promise<void>} createSessionForUser
  * @prop {(req: Req, res: Res) => Promise<void>} createVerifiedSessionForUser
+ * @prop {(options: {session: Session, user: User, origin: string, userAgent?: string, ip?: string}) => Promise<void>} assignVerifiedUserToSession
  * @prop {(req: Req, res: Res) => Promise<void>} verifySession
  * @prop {(req: Req, res: Res) => Promise<void>} sendAuthCodeToUser
  * @prop {(req: Req, res: Res) => Promise<boolean>} verifyAuthCodeForUser
@@ -68,6 +74,49 @@ module.exports = function createSessionService({
     isStaffDeviceVerificationDisabled,
     t
 }) {
+    function createAuthCodeChallenge() {
+        return crypto.randomBytes(AUTH_CODE_CHALLENGE_BYTES).toString('hex');
+    }
+
+    function rotateAuthCodeChallenge(session) {
+        session.auth_code_challenge = createAuthCodeChallenge();
+        session.auth_code_generated_at = Date.now();
+    }
+
+    function ensureAuthCodeChallenge(session) {
+        if (!session.auth_code_challenge) {
+            rotateAuthCodeChallenge(session);
+        }
+        return session.auth_code_challenge;
+    }
+
+    function invalidateAuthCodeChallenge(session) {
+        session.auth_code_challenge = undefined;
+        session.auth_code_generated_at = undefined;
+    }
+
+    function hasValidAuthCodeChallenge(session) {
+        if (!session.auth_code_challenge || !session.auth_code_generated_at) {
+            return false;
+        }
+
+        return (Date.now() - session.auth_code_generated_at) <= AUTH_CODE_VALIDITY_MS;
+    }
+
+    function verifyAuthCode(session, token, secret) {
+        if (!token || !session.user_id || !hasValidAuthCodeChallenge(session)) {
+            return false;
+        }
+
+        const verified = otp.verify(session.user_id, token, secret, session.auth_code_challenge);
+
+        if (verified) {
+            invalidateAuthCodeChallenge(session);
+        }
+
+        return verified;
+    }
+
     /**
      * cookieCsrfProtection
      *
@@ -76,13 +125,24 @@ module.exports = function createSessionService({
      * @returns {Promise<void>}
      */
     function cookieCsrfProtection(req, session) {
+        const origin = getOriginOfRequest(req);
+
+        // Check that the origin matches the admin URL to prevent cross-origin
+        // requests (e.g. no-cors form submissions from phishing sites)
+        const adminUrl = urlUtils.getAdminUrl() || urlUtils.getSiteUrl();
+        const adminOrigin = new URL(adminUrl).origin;
+
+        if (origin !== adminOrigin) {
+            throw new BadRequestError({
+                message: `Request made from incorrect origin. Expected '${adminOrigin}' received '${origin}'.`
+            });
+        }
+
         // If there is no origin on the session object it means this is a *new*
         // session, that hasn't been initialised yet. So we don't need CSRF protection
         if (!session.origin) {
             return;
         }
-
-        const origin = getOriginOfRequest(req);
 
         if (session.origin !== origin) {
             throw new BadRequestError({
@@ -100,6 +160,45 @@ module.exports = function createSessionService({
         return getSettingsCache('require_email_mfa') === true;
     }
 
+    async function assignUserToSession({
+        session,
+        user,
+        origin,
+        userAgent,
+        ip,
+        verificationToken
+    }) {
+        if (!origin) {
+            throw new BadRequestError({
+                message: 'Could not determine origin of request. Please ensure an Origin or Referrer header is present.'
+            });
+        }
+
+        if (session.user_id && session.user_id !== user.id) {
+            invalidateAuthCodeChallenge(session);
+        }
+
+        session.user_id = user.id;
+        session.origin = origin;
+        session.user_agent = userAgent;
+        session.ip = ip;
+
+        // If a verification token was provided with the login request, verify it
+        if (verificationToken) {
+            const secret = getSettingsCache('admin_session_secret');
+            const isAuthCodeVerified = verifyAuthCode(session, verificationToken, secret);
+
+            if (isAuthCodeVerified) {
+                session.verified = true;
+                invalidateAuthCodeChallenge(session);
+            }
+        }
+
+        if (isStaffDeviceVerificationDisabled()) {
+            session.verified = true;
+        }
+    }
+
     /**
      * createSessionForUser
      *
@@ -111,28 +210,14 @@ module.exports = function createSessionService({
     async function createSessionForUser(req, res, user) {
         const session = await getSession(req, res);
         const origin = getOriginOfRequest(req);
-        if (!origin) {
-            throw new BadRequestError({
-                message: 'Could not determine origin of request. Please ensure an Origin or Referrer header is present.'
-            });
-        }
-
-        session.user_id = user.id;
-        session.origin = origin;
-        session.user_agent = req.get('user-agent');
-        session.ip = req.ip;
-
-        // If a verification token was provided with the login request, verify it
-        if (req.body && req.body.token) {
-            const secret = getSettingsCache('admin_session_secret');
-            if (otp.verify(session.user_id, req.body.token, secret)) {
-                session.verified = true;
-            }
-        }
-
-        if (isStaffDeviceVerificationDisabled()) {
-            session.verified = true;
-        }
+        await assignUserToSession({
+            session,
+            user,
+            origin,
+            userAgent: req.get('user-agent'),
+            ip: req.ip,
+            verificationToken: req.body && req.body.token
+        });
     }
 
     /**
@@ -149,6 +234,31 @@ module.exports = function createSessionService({
     }
 
     /**
+     * assignVerifiedUserToSession
+     *
+     * @param {{session: Session, user: User, origin: string, userAgent?: string, ip?: string}} options
+     * @returns {Promise<void>}
+     */
+    async function assignVerifiedUserToSession({
+        session,
+        user,
+        origin,
+        userAgent,
+        ip
+    }) {
+        await assignUserToSession({
+            session,
+            user,
+            origin,
+            userAgent,
+            ip
+        });
+
+        session.verified = true;
+        invalidateAuthCodeChallenge(session);
+    }
+
+    /**
      * generateAuthCodeForUser
      *
      * @param {Req} req
@@ -158,7 +268,8 @@ module.exports = function createSessionService({
     async function generateAuthCodeForUser(req, res) {
         const session = await getSession(req, res);
         const secret = getSettingsCache('admin_session_secret');
-        return otp.generate(session.user_id, secret);
+        const challenge = ensureAuthCodeChallenge(session);
+        return otp.generate(session.user_id, secret, challenge);
     }
 
     /**
@@ -170,8 +281,12 @@ module.exports = function createSessionService({
      */
     async function verifyAuthCodeForUser(req, res) {
         const session = await getSession(req, res);
+        cookieCsrfProtection(req, session);
+
         const secret = getSettingsCache('admin_session_secret');
-        return otp.verify(session.user_id, req.body.token, secret);
+        const token = req.body && req.body.token;
+
+        return verifyAuthCode(session, token, secret);
     }
 
     const formatTime = new Intl.DateTimeFormat('en-GB', {
@@ -244,6 +359,15 @@ module.exports = function createSessionService({
      */
     async function sendAuthCodeToUser(req, res) {
         const session = await getSession(req, res);
+        cookieCsrfProtection(req, session);
+
+        if (!session.user_id) {
+            throw new BadRequestError({
+                message: 'Could not fetch user from the session.'
+            });
+        }
+
+        rotateAuthCodeChallenge(session);
         const token = await generateAuthCodeForUser(req, res);
 
         let user;
@@ -297,6 +421,7 @@ module.exports = function createSessionService({
     async function verifySession(req, res) {
         const session = await getSession(req, res);
         session.verified = true;
+        invalidateAuthCodeChallenge(session);
     }
 
     /**
@@ -324,6 +449,7 @@ module.exports = function createSessionService({
             session.verified = undefined;
         }
 
+        invalidateAuthCodeChallenge(session);
         session.user_id = undefined;
     }
 
@@ -363,6 +489,7 @@ module.exports = function createSessionService({
         getUserForSession,
         createSessionForUser,
         createVerifiedSessionForUser,
+        assignVerifiedUserToSession,
         removeUserForSession,
         verifySession,
         isVerifiedSession,
