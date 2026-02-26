@@ -107,8 +107,6 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
                                 <koenig.HtmlPlugin />
                                 <koenig.ImagePlugin />
                                 <koenig.KoenigSelectorPlugin />
-                                {/* TODO: we need to wire up card config to enable snippets */}
-                                {/* <koenig.KoenigSnippetPlugin /> */}
                             </>
                         )}
 
