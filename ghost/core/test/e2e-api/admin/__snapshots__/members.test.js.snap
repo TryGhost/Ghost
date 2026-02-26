@@ -2034,7 +2034,6 @@ If you did not make this request, you can simply delete this message. You will n
 exports[`Members API Can add and send a signup confirmation email 5: [metadata 1] 1`] = `
 Object {
   "encoding": "base64",
-  "forceTextContent": true,
   "from": "\\"Ghost's Test Site\\" <noreply@127.0.0.1>",
   "generateTextFromHTML": false,
   "headers": Object {
