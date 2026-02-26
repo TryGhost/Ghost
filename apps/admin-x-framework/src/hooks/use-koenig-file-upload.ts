@@ -144,7 +144,7 @@ export const useKoenigFileUpload = (type: KoenigFileUploadType = 'image'): FileU
         const fileFormData = new FormData();
         fileFormData.append('file', file, file.name);
 
-        Object.keys(formData || {}).forEach((key) => {
+        Object.keys(formData).forEach((key) => {
             fileFormData.append(key, formData[key]);
         });
 
