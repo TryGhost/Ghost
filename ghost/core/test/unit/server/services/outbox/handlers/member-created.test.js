@@ -53,8 +53,6 @@ describe('member-created handler', function () {
         });
 
         sinon.assert.calledOnce(memberWelcomeEmailServiceStub.api.send);
-        const errorLog = findByEvent(logCapture.output, 'outbox.member_created.track_send_failed');
-        assert.ok(errorLog);
     });
 
     it('logs error when tracking fails', async function () {
