@@ -20,7 +20,6 @@ describe('Outbox Service', function () {
         logCapture = captureLoggerOutput(logging);
 
         service.__set__('processOutbox', processOutboxStub);
-        service.__set__('logging', logging);
         service.__set__('jobs', jobsStub);
     });
 

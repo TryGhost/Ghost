@@ -31,7 +31,6 @@ describe('member-created handler', function () {
         logCapture = captureLoggerOutput(logging);
 
         handler.__set__('memberWelcomeEmailService', memberWelcomeEmailServiceStub);
-        handler.__set__('logging', logging);
         handler.__set__('AutomatedEmail', AutomatedEmailStub);
         handler.__set__('AutomatedEmailRecipient', AutomatedEmailRecipientStub);
     });
