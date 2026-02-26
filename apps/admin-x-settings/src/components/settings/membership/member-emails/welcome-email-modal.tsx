@@ -367,7 +367,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                             {hasDistinctReplyTo && (
                                 <div className='flex items-center'>
                                     <div className='w-20 shrink-0 text-sm font-semibold'>Reply-to:</div>
-                                    <div className='grow text-gray-500 text-sm dark:text-gray-400'>
+                                    <div className='text-gray-500 dark:text-gray-400 grow text-sm'>
                                         {resolvedReplyToEmail}
                                     </div>
                                 </div>
