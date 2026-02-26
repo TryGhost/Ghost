@@ -90,24 +90,26 @@ export function TransistorCard({
 function TransistorPlaceholder() {
     return (
         <div
-            className="relative flex items-center gap-5 p-2"
+            className="relative flex flex-col items-center gap-6 px-6 py-8"
             data-testid="transistor-placeholder"
         >
-            <div className="flex size-20 shrink-0 items-center justify-center rounded-md bg-accent">
-                <TransistorIcon className="size-10 text-white" />
+            <div className="size-22 flex shrink-0 items-center justify-center rounded-xl bg-accent">
+                <TransistorIcon className="size-12 text-white" />
             </div>
-            <div className="flex min-h-20 max-w-[480px] flex-col justify-center">
-                <div className="text-[1.6rem] font-semibold leading-tight text-black dark:text-white">
+            <div className="min-h-22 flex max-w-[480px] flex-col justify-center">
+                <div className="text-center text-[2.1rem] font-semibold leading-[-0.08px] text-black dark:text-white">
                     Members-only podcasts
                 </div>
-                <div className="mt-1 text-[1.4rem] leading-snug text-grey-700 dark:text-grey-500">
-                    Your members will see their private podcast feed here, with links to listen in any podcast app.
+                <div className="mt-3 text-center text-[1.4rem] leading-normal text-grey-700 dark:text-grey-500">
+                    Your Transistor podcasts will appear here. Members will see subscribe links based on their access level.
                 </div>
             </div>
+            {/*
+            TODO: decide on whether to show Transistor Logo in the Editor
             <div className="absolute bottom-4 right-5 flex items-center gap-1.5 text-grey-500 dark:text-grey-600">
                 <TransistorIcon className="size-4" />
                 <span className="text-[1.3rem] font-medium">Transistor</span>
-            </div>
+            </div> */}
         </div>
     );
 }
