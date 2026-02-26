@@ -224,9 +224,8 @@ module.exports = class GhostMailer {
 
         if (uniqueTags.length > MAX_MAILGUN_TAGS) {
             const keptTags = uniqueTags.slice(0, MAX_MAILGUN_TAGS);
-            const droppedTags = uniqueTags.slice(MAX_MAILGUN_TAGS);
 
-            logging.warn(`[MAIL] Mailgun tag count exceeded ${MAX_MAILGUN_TAGS}; truncating tags. Kept: ${keptTags.join(', ')}. Dropped: ${droppedTags.join(', ')}`);
+            logging.warn(`[MAIL] Mailgun tag count exceeded ${MAX_MAILGUN_TAGS}; truncating tags from ${uniqueTags.length} to ${MAX_MAILGUN_TAGS}.`);
 
             return keptTags;
         }

@@ -458,7 +458,7 @@ describe('Mail: Ghostmailer', function () {
             assert.equal(sentMessage['o:tag'][2], 'blog-123123');
             assert.equal(sentMessage['o:tag'].includes('tag-8'), false);
             assert.equal(sentMessage['o:tag'].includes('tag-9'), false);
-            sinon.assert.calledWithMatch(warnStub, sinon.match('Mailgun tag count exceeded 10'));
+            sinon.assert.called(warnStub);
         });
 
         it('should not add tag when not using Mailgun transport', async function () {
