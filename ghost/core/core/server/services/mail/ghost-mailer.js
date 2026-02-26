@@ -63,12 +63,13 @@ function getFromAddress(requestedFromAddress, requestedReplyToAddress) {
  */
 function createMessage(message) {
     const encoding = 'base64';
-    const generateTextFromHTML = !message.forceTextContent;
+    const {forceTextContent, tags, ...cleanMessage} = message;
+    const generateTextFromHTML = !forceTextContent;
 
     const addresses = getFromAddress(message.from, message.replyTo);
 
     return {
-        ...message,
+        ...cleanMessage,
         ...addresses,
         generateTextFromHTML,
         encoding,

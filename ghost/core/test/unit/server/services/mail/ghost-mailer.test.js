@@ -421,6 +421,8 @@ describe('Mail: Ghostmailer', function () {
             const sentMessage = sendMailSpy.firstCall.args[0];
             assert(sentMessage['o:tag'].includes('transactional-email'));
             assert(sentMessage['o:tag'].includes('member-welcome-email'));
+            assert.equal(sentMessage.tags, undefined);
+            assert.equal(sentMessage.forceTextContent, undefined);
         });
 
         it('should truncate tags to Mailgun maximum and log warning', async function () {
