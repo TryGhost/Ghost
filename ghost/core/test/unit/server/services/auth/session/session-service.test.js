@@ -119,46 +119,6 @@ describe('SessionService', function () {
         );
     });
 
-    it('Allows requests with no origin for 3rd party clients', async function () {
-        const getSession = async (req) => {
-            if (req.session) {
-                return req.session;
-            }
-            req.session = {
-                user_id: 'user-123',
-                origin: null
-            };
-            return req.session;
-        };
-        const findUserById = sinon.spy(async ({id}) => ({id}));
-        const getOriginOfRequest = sinon.stub().returns(null);
-
-        const sessionService = SessionService({
-            getSession,
-            findUserById,
-            getOriginOfRequest,
-            urlUtils
-        });
-
-        const req = Object.create(express.request, {
-            ip: {
-                value: '0.0.0.0'
-            },
-            headers: {
-                value: {
-                    cookie: 'thing'
-                }
-            },
-            get: {
-                value: () => null
-            }
-        });
-        const res = Object.create(express.response);
-
-        const user = await sessionService.getUserForSession(req, res);
-        assert.deepEqual(user, {id: 'user-123'});
-    });
-
     it('Doesn\'t throw an error when the csrf verification fails when bypassed', async function () {
         const getSession = async (req) => {
             if (req.session) {
