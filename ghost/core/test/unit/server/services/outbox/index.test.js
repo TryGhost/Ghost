@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const rewire = require('rewire');
 const DomainEvents = require('@tryghost/domain-events');
 const logging = require('@tryghost/logging');
-const {captureLoggerOutput} = require('../../../../utils/logging-utils');
+const {captureLoggerOutput, findByEvent} = require('../../../../utils/logging-utils');
 const StartOutboxProcessingEvent = require('../../../../../core/server/services/outbox/events/start-outbox-processing-event');
 
 describe('Outbox Service', function () {
@@ -50,7 +50,7 @@ describe('Outbox Service', function () {
             await service.startProcessing();
 
             sinon.assert.notCalled(processOutboxStub);
-            const infoLog = logCapture.output.find(log => log.level === 30 && log.msg === 'Outbox job already running, skipping');
+            const infoLog = findByEvent(logCapture.output, 'outbox.processing.skipped_already_running');
             assert.ok(infoLog);
             assert.deepEqual(infoLog.system, {
                 event: 'outbox.processing.skipped_already_running'

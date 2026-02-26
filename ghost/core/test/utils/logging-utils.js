@@ -67,6 +67,30 @@ function captureLoggerOutput(logging) {
     };
 }
 
+/**
+ * Find the first structured log record matching a system event.
+ *
+ * @param {Array<object>} output - Captured log records.
+ * @param {string} event - Structured event name to match.
+ * @returns {object|undefined} First matching log record.
+ */
+function findByEvent(output, event) {
+    return output.find(log => log.system?.event === event);
+}
+
+/**
+ * Find all structured log records matching a system event.
+ *
+ * @param {Array<object>} output - Captured log records.
+ * @param {string} event - Structured event name to match.
+ * @returns {Array<object>} Matching log records.
+ */
+function findAllByEvent(output, event) {
+    return output.filter(log => log.system?.event === event);
+}
+
 module.exports = {
-    captureLoggerOutput
+    captureLoggerOutput,
+    findByEvent,
+    findAllByEvent
 };

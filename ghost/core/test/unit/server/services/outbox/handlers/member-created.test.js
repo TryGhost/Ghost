@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const rewire = require('rewire');
 const logging = require('@tryghost/logging');
-const {captureLoggerOutput} = require('../../../../../utils/logging-utils');
+const {captureLoggerOutput, findByEvent} = require('../../../../../utils/logging-utils');
 
 describe('member-created handler', function () {
     let handler;
@@ -90,7 +90,7 @@ describe('member-created handler', function () {
         });
 
         sinon.assert.calledOnce(memberWelcomeEmailServiceStub.api.send);
-        const warningLog = logCapture.output.find(log => log.level === 40 && log.msg === 'No automated email slug found for member status');
+        const warningLog = findByEvent(logCapture.output, 'outbox.member_created.no_slug_mapping');
         assert.ok(warningLog);
         assert.deepEqual(warningLog.system, {
             event: 'outbox.member_created.no_slug_mapping',
