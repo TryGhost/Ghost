@@ -118,7 +118,7 @@ module.exports = class GhostMailer {
      * @param {string} [message.replyTo]
      * @param {string} [message.from] - sender email address
      * @param {string} [message.text] - text version of this message
-     * @param {string[]} [message.mailgunTags] - optional additional Mailgun tags
+     * @param {string[]} [message.tags] - optional additional Mailgun tags
      * @param {boolean} [message.forceTextContent] - maps to generateTextFromHTML nodemailer option
      * which is: "if set to true uses HTML to generate plain text body part from the HTML if the text is not defined"
      * (ref: https://github.com/nodemailer/nodemailer/tree/da2f1d278f91b4262e940c0b37638e7027184b1d#e-mail-message-fields)
@@ -134,7 +134,7 @@ module.exports = class GhostMailer {
 
         const messageToSend = createMessage(message);
         if (this.state.usingMailgun) {
-            const tags = this.getTags(message.mailgunTags);
+            const tags = this.getTags(message.tags);
             if (tags.length > 0) {
                 messageToSend['o:tag'] = tags;
             }

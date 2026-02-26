@@ -157,7 +157,7 @@ class MemberWelcomeEmailService {
             html,
             text,
             forceTextContent: true,
-            mailgunTags: [MEMBER_WELCOME_EMAIL_TAG],
+            tags: [MEMBER_WELCOME_EMAIL_TAG],
             ...senderOptions
         });
     }

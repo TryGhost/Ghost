@@ -401,7 +401,7 @@ describe('Mail: Ghostmailer', function () {
             assert(!sentMessage['o:tag'].includes('blog-123123'));
         });
 
-        it('should include custom mailgun tags passed by the caller', async function () {
+        it('should include custom tags passed by the caller', async function () {
             configUtils.set({
                 hostSettings: {siteId: '123123'}
             });
@@ -415,7 +415,7 @@ describe('Mail: Ghostmailer', function () {
                 to: 'user@example.com',
                 subject: 'test',
                 html: 'content',
-                mailgunTags: ['member-welcome-email']
+                tags: ['member-welcome-email']
             });
 
             const sentMessage = sendMailSpy.firstCall.args[0];
@@ -438,7 +438,7 @@ describe('Mail: Ghostmailer', function () {
                 to: 'user@example.com',
                 subject: 'test',
                 html: 'content',
-                mailgunTags: [
+                tags: [
                     'tag-1',
                     'tag-2',
                     'tag-3',
