@@ -436,7 +436,53 @@ describe('Account Plan Page', () => {
         fireEvent.click(cancelButton);
 
         expect(queryByText('1 month free')).toBeInTheDocument();
-        expect(queryByText('Enjoy 1 free month on us. Your next billing date will be 5 Nov 2022.')).toBeInTheDocument();
+        expect(queryByText('Enjoy 1 free month on us. You won\'t be charged until 5 Nov 2022.')).toBeInTheDocument();
+    });
+
+    test('renders multi-month free months retention offers', async () => {
+        const paidProduct = getProductData({
+            name: 'Basic',
+            monthlyPrice: getPriceData({interval: 'month', amount: 1000, currency: 'usd'}),
+            yearlyPrice: getPriceData({interval: 'year', amount: 10000, currency: 'usd'})
+        });
+        const products = [paidProduct, getProductData({type: 'free'})];
+        const site = getSiteData({
+            products,
+            portalProducts: [paidProduct.id]
+        });
+        const member = getMemberData({
+            paid: true,
+            subscriptions: [
+                getSubscriptionData({
+                    status: 'active',
+                    interval: 'month',
+                    amount: paidProduct.monthlyPrice.amount,
+                    currency: 'USD',
+                    priceId: paidProduct.monthlyPrice.id
+                })
+            ]
+        });
+
+        const retentionOffer = {
+            ...getOfferData({
+                type: 'percent',
+                amount: 100,
+                cadence: 'month',
+                duration: 'repeating',
+                durationInMonths: 3,
+                tierId: paidProduct.id,
+                tierName: paidProduct.name
+            }),
+            redemption_type: 'retention'
+        };
+
+        const {queryByRole, queryByText} = customSetup({site, member, offers: [retentionOffer]});
+        const cancelButton = queryByRole('button', {name: 'Cancel subscription'});
+
+        fireEvent.click(cancelButton);
+
+        expect(queryByText('3 months free')).toBeInTheDocument();
+        expect(queryByText('Enjoy 3 free months on us. You won\'t be charged until 5 Jan 2023.')).toBeInTheDocument();
     });
 
     test('renders forever percent retention offers', async () => {
