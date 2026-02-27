@@ -52,6 +52,10 @@ module.exports = function apiRoutes() {
     router.post('/comments', mw.authAdminApi, http(api.comments.add));
     router.put('/comments/:id', mw.authAdminApi, http(api.comments.edit));
 
+    // ## Bluesky
+    router.post('/bluesky/publish', mw.authAdminApi, http(api.bluesky.publish));
+    router.put('/bluesky/link', mw.authAdminApi, http(api.bluesky.link));
+
     // ## Pages
     router.get('/pages', mw.authAdminApi, http(api.pages.browse));
     router.del('/pages', mw.authAdminApi, http(api.pages.bulkDestroy));

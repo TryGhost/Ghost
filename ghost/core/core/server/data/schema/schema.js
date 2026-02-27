@@ -118,7 +118,9 @@ module.exports = {
         frontmatter: {type: 'text', maxlength: 65535, nullable: true},
         feature_image_alt: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 191}}},
         feature_image_caption: {type: 'text', maxlength: 65535, nullable: true},
-        email_only: {type: 'boolean', nullable: false, defaultTo: false}
+        email_only: {type: 'boolean', nullable: false, defaultTo: false},
+        bluesky_post_uri: {type: 'string', maxlength: 500, nullable: true},
+        bluesky_post_url: {type: 'string', maxlength: 2000, nullable: true}
     },
     // NOTE: this is the staff table
     users: {
@@ -982,6 +984,7 @@ module.exports = {
         in_reply_to_id: {type: 'string', maxlength: 24, nullable: true, unique: false, references: 'comments.id', setNullDelete: true},
         status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'published', validations: {isIn: [['published', 'hidden', 'deleted']]}},
         html: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
+        bluesky_reply_uri: {type: 'string', maxlength: 500, nullable: true},
         edited_at: {type: 'dateTime', nullable: true},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: false}

@@ -170,9 +170,17 @@ const controller = {
                     frame.options,
                     validatedCreatedAt
                 );
-            
+
+            // Store Bluesky reply URI if provided (from inbound sync)
+            if (data.bluesky_reply_uri && result) {
+                await models.Comment.edit(
+                    {bluesky_reply_uri: data.bluesky_reply_uri},
+                    {id: result.id || result.get('id')}
+                );
+            }
+
             handleCacheHeaders(result, frame);
-            
+
             return result;
         }
     }

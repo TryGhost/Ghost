@@ -344,6 +344,26 @@
         "atproto_client_name": {
             "defaultValue": "",
             "type": "string"
+        },
+        "bluesky_blog_handle": {
+            "defaultValue": "",
+            "type": "string"
+        },
+        "bluesky_blog_did": {
+            "defaultValue": "",
+            "type": "string"
+        },
+        "bluesky_blog_app_password": {
+            "defaultValue": "",
+            "type": "string"
+        },
+        "bluesky_comment_sync_enabled": {
+            "defaultValue": "false",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
         }
     },
     "portal": {

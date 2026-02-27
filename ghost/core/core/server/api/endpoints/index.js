@@ -221,6 +221,10 @@ module.exports = {
         return apiFramework.pipeline(require('./comment-likes'), localUtils);
     },
 
+    get bluesky() {
+        return apiFramework.pipeline(require('./bluesky'), localUtils);
+    },
+
     get links() {
         return apiFramework.pipeline(require('./links'), localUtils);
     },

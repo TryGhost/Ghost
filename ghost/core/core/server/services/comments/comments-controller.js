@@ -2,6 +2,7 @@ const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const nql = require('@tryghost/nql');
 const {splitFilter} = require('@tryghost/mongo-utils');
+const logging = require('@tryghost/logging');
 
 /**
  * @typedef {import('@tryghost/api-framework').Frame} Frame
@@ -263,9 +264,76 @@ module.exports = class CommentsController {
                 parentId ? `/api/members/comments/${parentId}/replies/` : null
             ].filter(path => path !== null);
             frame.setHeader('X-Cache-Invalidate', pathsToInvalidate.join(', '));
+
+            // Outbound Bluesky sync — post this comment to the linked Bluesky thread
+            this.#syncCommentToBluesky(result, frame).catch((err) => {
+                logging.error({message: 'Bluesky outbound sync error', err});
+            });
         }
 
         return result;
+    }
+
+    /**
+     * Post a Ghost comment to the linked Bluesky thread (fire-and-forget)
+     */
+    async #syncCommentToBluesky(comment, frame) {
+        try {
+            const blueskySync = require('../bluesky-sync');
+            if (!blueskySync.isEnabled()) {
+                return;
+            }
+
+            const syncService = blueskySync.getSyncService();
+            if (!syncService) {
+                return;
+            }
+
+            const postId = comment.get('post_id');
+            const memberId = frame.options.context?.member?.id;
+            if (!memberId || !postId) {
+                return;
+            }
+
+            // Get the member to check if they have a Bluesky identity
+            const member = await this.service.models.Member.findOne({id: memberId});
+            if (!member) {
+                return;
+            }
+
+            // Strip HTML tags for plain text
+            const text = comment.get('html')?.replace(/<[^>]+>/g, '') || '';
+            if (!text.trim()) {
+                return;
+            }
+
+            // Find the parent comment's Bluesky URI for threading
+            const parentId = comment.get('parent_id');
+            let parentBlueskyUri = null;
+            if (parentId) {
+                const parentComment = await this.service.models.Comment.findOne({id: parentId});
+                parentBlueskyUri = parentComment?.get('bluesky_reply_uri') || null;
+            }
+
+            const replyUri = await syncService.postCommentToBluesky({
+                postId,
+                commentText: text,
+                memberName: member.get('name') || 'Anonymous',
+                memberBlueskyDid: member.get('atproto_did') || null,
+                parentBlueskyUri
+            });
+
+            // Store the Bluesky reply URI on the comment for future threading
+            if (replyUri) {
+                await this.service.models.Comment.edit(
+                    {bluesky_reply_uri: replyUri},
+                    {id: comment.id || comment.get('id')}
+                );
+            }
+        } catch (err) {
+            // Don't throw — this is fire-and-forget
+            logging.error({message: 'Bluesky outbound comment sync failed', err});
+        }
     }
 
     async destroy() {
