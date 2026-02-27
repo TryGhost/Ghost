@@ -433,7 +433,10 @@ const Member = ghostBookshelf.Model.extend({
         // to serve a blank image if there is no gravatar for the member's email.
         // Will not use gravatar if privacy.useGravatar is false in config
         attrs.avatar_image = null;
-        if (attrs.email && !config.isPrivacyDisabled('useGravatar')) {
+        if (attrs.bluesky_avatar_url) {
+            // Bluesky avatar takes priority for AT Proto members
+            attrs.avatar_image = attrs.bluesky_avatar_url;
+        } else if (attrs.email && !config.isPrivacyDisabled('useGravatar')) {
             const {gravatar} = require('../lib/image');
             attrs.avatar_image = gravatar.url(attrs.email, {size: 250, default: 'blank'});
         }

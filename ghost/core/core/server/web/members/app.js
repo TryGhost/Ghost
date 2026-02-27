@@ -15,6 +15,7 @@ const api = require('../../api').endpoints;
 
 const commentRouter = require('../comments');
 const announcementRouter = require('../announcement');
+const atprotoMembersMiddleware = require('../../services/atproto-oauth/members-middleware');
 
 /**
  * @returns {import('express').Application}
@@ -101,6 +102,11 @@ module.exports = function setupMembersApp() {
             return membersService.api.middleware.verifyOTC(req, res, next);
         }
     );
+    // AT Proto (Bluesky) OAuth
+    membersApp.get('/api/atproto/client-metadata.json', atprotoMembersMiddleware.serveClientMetadata);
+    membersApp.post('/api/atproto/authorize', bodyParser.json(), atprotoMembersMiddleware.authorize);
+    membersApp.get('/api/atproto/callback', atprotoMembersMiddleware.callback);
+
     membersApp.post('/api/create-stripe-checkout-session', function lazyCreateCheckoutSessionMw(req, res, next) {
         return membersService.api.middleware.createCheckoutSession(req, res, next);
     });

@@ -16,7 +16,9 @@ export default class SigninPage extends React.Component {
         super(props);
         this.state = {
             email: '',
-            token: undefined
+            token: undefined,
+            blueskyHandle: '',
+            showBlueskyInput: false
         };
     }
 
@@ -49,6 +51,14 @@ export default class SigninPage extends React.Component {
         });
     }
 
+    handleBlueskySignin(e) {
+        e.preventDefault();
+        const {blueskyHandle} = this.state;
+        if (blueskyHandle && blueskyHandle.trim()) {
+            this.context.doAction('signinWithBluesky', {handle: blueskyHandle.trim()});
+        }
+    }
+
     handleInputChange(e, field) {
         const fieldName = field.name;
         this.setState({
@@ -60,6 +70,12 @@ export default class SigninPage extends React.Component {
         // Handles submit on Enter press
         if (e.keyCode === 13){
             this.handleSignin(e);
+        }
+    }
+
+    onBlueskyKeyDown(e) {
+        if (e.keyCode === 13) {
+            this.handleBlueskySignin(e);
         }
     }
 
@@ -116,6 +132,71 @@ export default class SigninPage extends React.Component {
         );
     }
 
+    renderBlueskyLogin() {
+        const {site, action} = this.context;
+        if (!site.atproto_oauth_enabled) {
+            return null;
+        }
+
+        const isRunning = (action === 'signinWithBluesky:running');
+        const {showBlueskyInput} = this.state;
+
+        if (!showBlueskyInput) {
+            return (
+                <div className='gh-portal-bluesky-section'>
+                    <div className='gh-portal-divider'>
+                        <span className='gh-portal-divider-line'></span>
+                        <span className='gh-portal-divider-text'>{t('or')}</span>
+                        <span className='gh-portal-divider-line'></span>
+                    </div>
+                    <button
+                        data-test-button='bluesky-signin'
+                        className='gh-portal-btn gh-portal-btn-bluesky'
+                        onClick={() => this.setState({showBlueskyInput: true})}
+                        style={{width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'}}
+                    >
+                        <BlueskySvg />
+                        <span>{t('Sign in with Bluesky')}</span>
+                    </button>
+                </div>
+            );
+        }
+
+        return (
+            <div className='gh-portal-bluesky-section'>
+                <div className='gh-portal-divider'>
+                    <span className='gh-portal-divider-line'></span>
+                    <span className='gh-portal-divider-text'>{t('or')}</span>
+                    <span className='gh-portal-divider-line'></span>
+                </div>
+                <div className='gh-portal-bluesky-input' style={{marginBottom: '12px'}}>
+                    <label className='gh-portal-input-label' style={{marginBottom: '4px', display: 'block'}}>
+                        {t('Bluesky Handle')}
+                    </label>
+                    <input
+                        data-test-input='bluesky-handle'
+                        type='text'
+                        className='gh-portal-input'
+                        value={this.state.blueskyHandle}
+                        placeholder='yourname.bsky.social'
+                        onChange={e => this.setState({blueskyHandle: e.target.value})}
+                        onKeyDown={e => this.onBlueskyKeyDown(e)}
+                        autoFocus
+                    />
+                </div>
+                <ActionButton
+                    dataTestId='bluesky-signin-submit'
+                    style={{width: '100%'}}
+                    onClick={e => this.handleBlueskySignin(e)}
+                    disabled={isRunning || !this.state.blueskyHandle.trim()}
+                    brandColor={this.context.brandColor}
+                    label={isRunning ? t('Redirecting...') : t('Continue with Bluesky')}
+                    isRunning={isRunning}
+                />
+            </div>
+        );
+    }
+
     renderSignupMessage() {
         const {brandColor} = this.context;
         return (
@@ -163,6 +244,7 @@ export default class SigninPage extends React.Component {
                 </div>
                 <footer className='gh-portal-signin-footer'>
                     {this.renderSubmitButton()}
+                    {this.renderBlueskyLogin()}
                     {isSignupAvailable && this.renderSignupMessage()}
                 </footer>
             </section>
@@ -224,4 +306,12 @@ export default class SigninPage extends React.Component {
             </>
         );
     }
+}
+
+function BlueskySvg() {
+    return (
+        <svg width="20" height="20" viewBox="0 0 600 530" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path d="m135.72 44.03c66.496 49.921 138.02 151.14 164.28 205.46 26.262-54.316 97.782-155.54 164.28-205.46 47.98-36.021 125.72-63.892 125.72 24.795 0 17.712-10.155 148.79-16.111 170.07-20.703 73.984-96.144 92.854-163.25 81.433 117.3 19.964 147.14 86.092 82.697 152.22-122.39 125.59-175.91-31.511-189.63-71.766-2.514-7.3797-3.6904-10.832-3.7077-7.8964-0.0174-2.9357-1.1937 0.51669-3.7077 7.8964-13.714 40.255-67.233 197.36-189.63 71.766-64.444-66.128-34.605-132.26 82.697-152.22-67.108 11.421-142.55-7.4491-163.25-81.433-5.9562-21.282-16.111-152.36-16.111-170.07 0-88.687 77.742-60.816 125.72-24.795z" />
+        </svg>
+    );
 }

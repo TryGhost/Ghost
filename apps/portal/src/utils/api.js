@@ -265,6 +265,28 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             }
         },
 
+        async authorizeAtproto({handle}) {
+            const url = endpointFor({type: 'members', resource: 'atproto/authorize'});
+            const res = await makeRequest({
+                url,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({handle})
+            });
+
+            if (res.ok) {
+                return res.json();
+            } else {
+                const humanError = await HumanReadableError.fromApiResponse(res);
+                if (humanError) {
+                    throw humanError;
+                }
+                throw new Error('Failed to initiate Bluesky login');
+            }
+        },
+
         /**
          * @returns {{
          *     inboxLinks?: {

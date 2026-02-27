@@ -29,7 +29,9 @@ module.exports.formattedMemberResponse = function formattedMemberResponse(member
         created_at: member.created_at,
         enable_comment_notifications: member.enable_comment_notifications,
         can_comment: member.can_comment,
-        commenting: member.commenting
+        commenting: member.commenting,
+        bluesky_handle: member.bluesky_handle || null,
+        atproto_did: member.atproto_did || null
     };
     if (member.newsletters) {
         data.newsletters = formatNewsletterResponse(member.newsletters);

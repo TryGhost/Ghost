@@ -136,6 +136,16 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
                 }}
                 onKeyDown={() => clearError('bluesky')} />
             <TextField
+                data-testid="bluesky-did-input"
+                hint="Your AT Protocol DID for staff login via Bluesky (e.g. did:plc:abc123). Find it at bsky.app/profile/you → ... → Share → Copy DID."
+                maxLength={191}
+                placeholder='did:plc:...'
+                title="Bluesky DID (for staff login)"
+                value={user.bluesky_did || ''}
+                onChange={(e) => {
+                    setUserData({...user, bluesky_did: e.target.value});
+                }} />
+            <TextField
                 data-testid="threads-input"
                 error={!!errors?.threads}
                 hint={errors?.threads}

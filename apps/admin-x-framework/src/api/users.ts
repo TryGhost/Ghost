@@ -20,6 +20,7 @@ export type User = {
     twitter: string|null;
     threads: string|null;
     bluesky: string|null;
+    bluesky_did: string|null;
     mastodon: string|null;
     tiktok: string|null;
     youtube: string|null;

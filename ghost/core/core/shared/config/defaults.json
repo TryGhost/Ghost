@@ -25,7 +25,7 @@
     },
     "adapters": {
         "sso": {
-            "active": "DefaultSSOAdapter"
+            "active": "ATProtoSSOAdapter"
         },
         "cache": {
             "active": "MemoryCache",

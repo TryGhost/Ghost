@@ -332,6 +332,18 @@
         "blocked_email_domains": {
             "defaultValue": "[]",
             "type": "array"
+        },
+        "atproto_oauth_enabled": {
+            "defaultValue": "false",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
+        },
+        "atproto_client_name": {
+            "defaultValue": "",
+            "type": "string"
         }
     },
     "portal": {

@@ -136,6 +136,7 @@ module.exports = {
         twitter: {type: 'string', maxlength: 2000, nullable: true},
         threads: {type: 'string', maxlength: 191, nullable: true},
         bluesky: {type: 'string', maxlength: 191, nullable: true},
+        bluesky_did: {type: 'string', maxlength: 191, nullable: true, unique: true},
         mastodon: {type: 'string', maxlength: 191, nullable: true},
         tiktok: {type: 'string', maxlength: 191, nullable: true},
         youtube: {type: 'string', maxlength: 191, nullable: true},
@@ -436,6 +437,9 @@ module.exports = {
         last_seen_at: {type: 'dateTime', nullable: true},
         last_commented_at: {type: 'dateTime', nullable: true},
         commenting: {type: 'text', maxlength: 65535, nullable: true},
+        atproto_did: {type: 'string', maxlength: 191, nullable: true, unique: true},
+        bluesky_handle: {type: 'string', maxlength: 191, nullable: true},
+        bluesky_avatar_url: {type: 'string', maxlength: 2000, nullable: true},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
         '@@INDEXES@@': [

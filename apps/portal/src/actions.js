@@ -109,6 +109,25 @@ async function signin({data, api, state}) {
     }
 }
 
+async function signinWithBluesky({data, api}) {
+    try {
+        const {handle} = data;
+        const response = await api.member.authorizeAtproto({handle});
+        if (response.url) {
+            window.location.assign(response.url);
+        }
+        return {};
+    } catch (e) {
+        return {
+            action: 'signinWithBluesky:failed',
+            popupNotification: createPopupNotification({
+                type: 'signinWithBluesky:failed', autoHide: false, closeable: true, status: 'error',
+                message: chooseBestErrorMessage(e, t('Failed to sign in with Bluesky'))
+            })
+        };
+    }
+}
+
 function startSigninOTCFromCustomForm({data, state}) {
     const email = (data?.email || '').trim();
     const otcRef = data?.otcRef;
@@ -660,6 +679,7 @@ const Actions = {
     back,
     signout,
     signin,
+    signinWithBluesky,
     startSigninOTCFromCustomForm,
     verifyOTC,
     signup,

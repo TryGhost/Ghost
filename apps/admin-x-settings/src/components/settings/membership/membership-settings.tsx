@@ -1,4 +1,5 @@
 import Access from './access';
+import ATProtoSettings from './atproto-settings';
 import MemberEmails from './member-emails';
 import Portal from './portal';
 import React from 'react';
@@ -15,7 +16,8 @@ export const searchKeywords = {
     tiers: ['membership', 'tiers', 'payment', 'paid', 'stripe'],
     portal: ['membership', 'portal', 'signup', 'sign up', 'signin', 'sign in', 'login', 'account', 'membership', 'support', 'email', 'address', 'support email address', 'support address'],
     memberEmails: ['membership', 'signup', 'welcome email', 'email', 'new user', 'new member', 'account'],
-    tips: ['growth', 'tips', 'donations', 'one time', 'payment']
+    tips: ['growth', 'tips', 'donations', 'one time', 'payment'],
+    atproto: ['membership', 'bluesky', 'atproto', 'at protocol', 'oauth', 'login', 'sign in', 'decentralized']
 };
 
 const MembershipSettings: React.FC = () => {
@@ -30,6 +32,7 @@ const MembershipSettings: React.FC = () => {
             <SpamFilters keywords={searchKeywords.access} />
             <Tiers keywords={searchKeywords.tiers} />
             <Portal keywords={searchKeywords.portal} />
+            <ATProtoSettings keywords={searchKeywords.atproto} />
             {hasWelcomeEmails && <MemberEmails keywords={searchKeywords.memberEmails} />}
             {hasTipsAndDonations && hasStripeEnabled && <TipsAndDonations keywords={searchKeywords.tips} />}
         </SearchableSection>

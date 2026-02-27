@@ -10,7 +10,9 @@ export type Member = {
     name: string,
     avatar_image: string,
     expertise: string,
-    can_comment?: boolean
+    can_comment?: boolean,
+    bluesky_handle?: string,
+    atproto_did?: string
 }
 
 export type Comment = {
