@@ -16,6 +16,7 @@ const messages = {
     invalidEmail: 'Email is not valid',
     blockedEmailDomain: 'Signups from this email domain are currently restricted.',
     badRequest: 'Bad Request.',
+    invalidRedirectUrl: 'Invalid redirect URL.',
     notFound: 'Not Found.',
     offerNotFound: 'This offer does not exist.',
     offerArchived: 'This offer is archived.',
@@ -135,6 +136,27 @@ module.exports = class RouterController {
         }
     }
 
+    _validateRedirectUrl(url) {
+        if (!url) {
+            return;
+        }
+
+        let parsed;
+        try {
+            parsed = new URL(url);
+        } catch (e) {
+            throw new BadRequestError({
+                message: tpl(messages.invalidRedirectUrl)
+            });
+        }
+
+        if (!this._urlUtils.isSiteUrl(parsed)) {
+            throw new BadRequestError({
+                message: tpl(messages.invalidRedirectUrl)
+            });
+        }
+    }
+
     async createCheckoutSetupSession(req, res) {
         const identity = req.body.identity;
 
@@ -189,6 +211,9 @@ module.exports = class RouterController {
             currency = subscription.get('plan_currency') || undefined;
             customer = await this._stripeAPIService.getCustomer(subscription.get('customer_id'));
         }
+
+        this._validateRedirectUrl(req.body.successUrl);
+        this._validateRedirectUrl(req.body.cancelUrl);
 
         const session = await this._stripeAPIService.createCheckoutSetupSession(customer, {
             successUrl: req.body.successUrl,
@@ -254,6 +279,8 @@ module.exports = class RouterController {
         }
 
         const configurationId = this._settingsCache.get('stripe_billing_portal_configuration_id');
+
+        this._validateRedirectUrl(req.body.returnUrl);
 
         const session = await this._stripeAPIService.createBillingPortalSession(customer, {
             returnUrl: req.body.returnUrl,
@@ -647,6 +674,9 @@ module.exports = class RouterController {
         if (metadata.newsletters) {
             metadata.newsletters = JSON.stringify(await this._validateNewsletters(JSON.parse(metadata.newsletters)));
         }
+
+        this._validateRedirectUrl(req.body.successUrl);
+        this._validateRedirectUrl(req.body.cancelUrl);
 
         // Build options
         const options = {
