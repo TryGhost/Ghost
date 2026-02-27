@@ -1,5 +1,5 @@
 import AppContext from '../../../../app-context';
-import {getCompExpiry, getMemberSubscription, getMemberTierName, hasMultipleProductsFeature, hasOnlyFreePlan, isComplimentaryMember, isPaidMember, subscriptionHasFreeTrial, subscriptionHasFreeMonthsOffer} from '../../../../utils/helpers';
+import {getCompExpiry, getMemberSubscription, getMemberTierName, hasMultipleProductsFeature, hasOnlyFreePlan, isComplimentaryMember, isPaidMember, subscriptionHasFreeTrial} from '../../../../utils/helpers';
 import {getDateString} from '../../../../utils/date-time';
 import {ReactComponent as LoaderIcon} from '../../../../images/icons/loader.svg';
 import {ReactComponent as OfferTagIcon} from '../../../../images/icons/offer-tag.svg';
@@ -55,19 +55,6 @@ const PaidAccountActions = () => {
                         {label}
                     </p>
                     <FreeTrialLabel subscription={subscription} />
-                </>
-            );
-        }
-
-        const freeMonthOffer = subscriptionHasFreeMonthsOffer({sub: subscription});
-
-        if (freeMonthOffer) {
-            return (
-                <>
-                    <p className={oldPriceClassName}>
-                        {label}
-                    </p>
-                    <FreeMonthsLabel nextPayment={nextPayment} subscription={subscription} />
                 </>
             );
         }
@@ -199,22 +186,6 @@ function FreeTrialLabel({subscription}) {
         );
     }
     return null;
-}
-
-// TODO: Add i18n once copy is finalized
-function FreeMonthsLabel({nextPayment, subscription}) {
-    const months = subscription?.offer?.duration_in_months ?? 0;
-    const discountEnd = nextPayment?.discount?.end;
-    const renewalDate = discountEnd ? getDateString(discountEnd) : null;
-    const monthsText = months === 1 ? '1 month free' : `${months} months free`;
-    const label = renewalDate ? `${monthsText} - Renews ${renewalDate}` : monthsText;
-
-    return (
-        <p className="gh-portal-account-discountcontainer" data-testid="offer-label">
-            <OfferTagIcon className="gh-portal-account-tagicon" />
-            <span>{label}</span>
-        </p>
-    );
 }
 
 /**
