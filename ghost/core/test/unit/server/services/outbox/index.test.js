@@ -1,27 +1,29 @@
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const rewire = require('rewire');
 const DomainEvents = require('@tryghost/domain-events');
+const {captureLoggerOutput, findByEvent} = require('../../../../utils/logging-utils');
 const StartOutboxProcessingEvent = require('../../../../../core/server/services/outbox/events/start-outbox-processing-event');
 
 describe('Outbox Service', function () {
     let service;
     let processOutboxStub;
-    let loggingStub;
     let jobsStub;
+    let logCapture;
 
     beforeEach(function () {
         service = rewire('../../../../../core/server/services/outbox/index.js');
 
         processOutboxStub = sinon.stub().resolves('Processed');
-        loggingStub = {info: sinon.stub(), error: sinon.stub()};
         jobsStub = {scheduleOutboxJob: sinon.stub()};
+        logCapture = captureLoggerOutput();
 
         service.__set__('processOutbox', processOutboxStub);
-        service.__set__('logging', loggingStub);
         service.__set__('jobs', jobsStub);
     });
 
     afterEach(async function () {
+        logCapture.restore();
         sinon.restore();
         await DomainEvents.allSettled();
     });
@@ -46,7 +48,11 @@ describe('Outbox Service', function () {
             await service.startProcessing();
 
             sinon.assert.notCalled(processOutboxStub);
-            sinon.assert.calledOnce(loggingStub.info);
+            const infoLog = findByEvent(logCapture.output, 'outbox.processing.skipped_already_running');
+            assert.ok(infoLog);
+            assert.deepEqual(infoLog.system, {
+                event: 'outbox.processing.skipped_already_running'
+            });
         });
     });
 });

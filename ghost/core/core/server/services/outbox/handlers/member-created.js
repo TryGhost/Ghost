@@ -12,7 +12,12 @@ async function handle({payload}) {
     try {
         const slug = MEMBER_WELCOME_EMAIL_SLUGS[payload.status];
         if (!slug) {
-            logging.warn(`${LOG_KEY} No automated email slug found for member status: ${payload.status}`);
+            logging.warn({
+                system: {
+                    event: 'outbox.member_created.no_slug_mapping',
+                    member_status: payload.status
+                }
+            }, `${LOG_KEY} No automated email slug found for member status`);
             return;
         }
 
@@ -31,9 +36,11 @@ async function handle({payload}) {
         });
     } catch (err) {
         logging.error({
-            message: `${LOG_KEY} Failed to track automated email send`,
+            system: {
+                event: 'outbox.member_created.track_send_failed'
+            },
             err
-        });
+        }, `${LOG_KEY} Failed to track automated email send`);
     }
 }
 
