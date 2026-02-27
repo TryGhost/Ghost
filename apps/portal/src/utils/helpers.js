@@ -930,6 +930,22 @@ export function getUrlHistory() {
     }
 }
 
+export function addMonths(date, numberOfMonths = 1) {
+    const originalDate = new Date(date);
+
+    if (isNaN(originalDate.getTime())) {
+        return null;
+    }
+
+    const originalDay = originalDate.getUTCDate();
+    let targetMonth = originalDate.getUTCMonth() + numberOfMonths;
+    let targetYear = originalDate.getUTCFullYear() + Math.floor(targetMonth / 12);
+    targetMonth = targetMonth % 12;
+    const daysInTargetMonth = new Date(Date.UTC(targetYear, targetMonth + 1, 0)).getUTCDate();
+
+    return new Date(Date.UTC(targetYear, targetMonth, Math.min(originalDay, daysInTargetMonth)));
+}
+
 // Check if member is a recent member, i.e. created in last 24 hours
 export function isRecentMember({member}) {
     if (!member?.created_at) {
