@@ -141,7 +141,8 @@ class EmailServiceWrapper {
             membersRepository,
             verificationTrigger: membersService.verificationTrigger,
             emailAnalyticsJobs,
-            domainWarmingService
+            domainWarmingService,
+            emailSendingDisabledMessage: configService.get('hostSettings:emailVerification:emailSendingDisabledMessage')
         });
 
         this.controller = new EmailController(this.service, {

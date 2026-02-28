@@ -35,6 +35,7 @@ class EmailService {
     #verificationTrigger;
     #emailAnalyticsJobs;
     #domainWarmingService;
+    #emailSendingDisabledMessage;
 
     /**
      *
@@ -51,6 +52,7 @@ class EmailService {
      * @param {VerificationTrigger} dependencies.verificationTrigger
      * @param {object} dependencies.emailAnalyticsJobs
      * @param {DomainWarmingService} dependencies.domainWarmingService
+     * @param {string} [dependencies.emailSendingDisabledMessage] - Custom message for when email sending is disabled due to verification
      */
     constructor({
         batchSendingService,
@@ -63,7 +65,8 @@ class EmailService {
         membersRepository,
         verificationTrigger,
         emailAnalyticsJobs,
-        domainWarmingService
+        domainWarmingService,
+        emailSendingDisabledMessage
     }) {
         this.#batchSendingService = batchSendingService;
         this.#models = models;
@@ -76,6 +79,7 @@ class EmailService {
         this.#verificationTrigger = verificationTrigger;
         this.#emailAnalyticsJobs = emailAnalyticsJobs;
         this.#domainWarmingService = domainWarmingService;
+        this.#emailSendingDisabledMessage = emailSendingDisabledMessage;
     }
 
     /**
@@ -96,7 +100,8 @@ class EmailService {
         // Check if email verification is required
         if (await this.#verificationTrigger.checkVerificationRequired()) {
             throw new errors.HostLimitError({
-                message: tpl(messages.emailSendingDisabled)
+                message: this.#emailSendingDisabledMessage || tpl(messages.emailSendingDisabled),
+                code: 'EMAIL_VERIFICATION_NEEDED'
             });
         }
     }

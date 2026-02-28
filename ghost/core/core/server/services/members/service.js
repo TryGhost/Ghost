@@ -111,7 +111,8 @@ const initVerificationTrigger = () => {
         },
         membersStats,
         Settings: models.Settings,
-        eventRepository: membersApi.events
+        eventRepository: membersApi.events,
+        emailVerificationNeededMessage: config.get('hostSettings:emailVerification:emailVerificationNeededMessage')
     });
 };
 
