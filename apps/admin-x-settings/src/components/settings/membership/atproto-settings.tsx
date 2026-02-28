@@ -29,8 +29,8 @@ const ATProtoSettings: React.FC<{ keywords: string[] }> = ({keywords}) => {
         'bluesky_comment_sync_enabled'
     ]);
 
-    const isEnabled = atprotoOAuthEnabled === 'true' || atprotoOAuthEnabled === true;
-    const isSyncEnabled = blueskyCommentSyncEnabled === 'true' || blueskyCommentSyncEnabled === true;
+    const isEnabled = atprotoOAuthEnabled === 'true';
+    const isSyncEnabled = blueskyCommentSyncEnabled === 'true';
     const hasBlogAccount = !!blueskyBlogHandle;
 
     const values = (
@@ -62,7 +62,7 @@ const ATProtoSettings: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 direction='rtl'
                 hint='Allow members to sign in with their Bluesky identity'
                 label='Enable Bluesky Login'
-                onChange={(checked: boolean) => updateSetting('atproto_oauth_enabled', checked)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateSetting('atproto_oauth_enabled', e.target.checked)}
             />
             {isEnabled && (
                 <TextField
@@ -96,7 +96,7 @@ const ATProtoSettings: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         direction='rtl'
                         hint='Pull Bluesky replies into Ghost comments and post Ghost comments to Bluesky threads'
                         label='Bidirectional Comment Sync'
-                        onChange={(checked: boolean) => updateSetting('bluesky_comment_sync_enabled', checked)}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateSetting('bluesky_comment_sync_enabled', e.target.checked)}
                     />
                 </>
             )}
