@@ -1,6 +1,6 @@
 const MailgunEmailProvider = require('../../../../../core/server/services/email-service/mailgun-email-provider');
 const sinon = require('sinon');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 
 describe('Mailgun Email Provider', function () {
     describe('send', function () {

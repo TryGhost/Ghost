@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 
 const EventProcessingResult = require('../../../../../core/server/services/email-analytics/event-processing-result');
 

@@ -60,14 +60,12 @@ describe('API hooks', () => {
                 expect(mock.calls.length).toBe(1);
                 expect(mock.calls[0]).toEqual(['http://localhost:3000/ghost/api/admin/test/', {
                     credentials: 'include',
-                    dataType: 'test',
                     headers: {
                         'app-pragma': 'no-cache',
                         'x-ghost-version': '5.x'
                     },
                     method: 'GET',
                     mode: 'cors',
-                    path: '/test/',
                     signal: expect.any(AbortSignal)
                 }]);
             });
@@ -92,7 +90,6 @@ describe('API hooks', () => {
                 expect(mock.calls.length).toBe(1);
                 expect(mock.calls[0]).toEqual(['http://localhost:3000/ghost/api/admin/test/', {
                     credentials: 'include',
-                    dataType: 'test',
                     headers: {
                         'Content-Type': 'ALOHA',
                         'app-pragma': 'no-cache',
@@ -100,7 +97,6 @@ describe('API hooks', () => {
                     },
                     method: 'GET',
                     mode: 'cors',
-                    path: '/test/',
                     signal: expect.any(AbortSignal)
                 }]);
             });

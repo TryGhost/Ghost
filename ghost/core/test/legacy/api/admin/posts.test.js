@@ -1,7 +1,6 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../utils/assertions');
 const _ = require('lodash');
-const should = require('should');
 const supertest = require('supertest');
 const ObjectId = require('bson-objectid').default;
 const moment = require('moment-timezone');
@@ -112,7 +111,7 @@ describe('Posts API', function () {
                     localUtils.API.checkResponse(jsonResponse, 'posts');
                     assert.equal(jsonResponse.posts.length, 2);
                     jsonResponse.posts.forEach((post) => {
-                        should.notEqual(post.meta_description, null);
+                        assert.notEqual(post.meta_description, null);
                     });
 
                     localUtils.API.checkResponse(
@@ -818,10 +817,10 @@ describe('Posts API', function () {
                 })
                 .then((model) => {
                     // We expect that the changed properties aren't changed, they are still the same than before.
-                    model.get('created_at').toISOString().should.not.eql(post.created_at);
+                    assert.notEqual(model.get('created_at').toISOString(), post.created_at);
 
                     // `updated_at` is automatically set, but it's not the date we send to override.
-                    model.get('updated_at').toISOString().should.not.eql(post.updated_at);
+                    assert.notEqual(model.get('updated_at').toISOString(), post.updated_at);
                 });
         });
 

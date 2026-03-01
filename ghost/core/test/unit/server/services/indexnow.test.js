@@ -35,9 +35,9 @@ describe('IndexNow', function () {
     describe('listen()', function () {
         it('should initialise events correctly', function () {
             indexnow.listen();
-            assert.equal(eventStub.calledTwice, true);
-            assert.equal(eventStub.calledWith('post.published'), true);
-            assert.equal(eventStub.calledWith('post.published.edited'), true);
+            sinon.assert.calledTwice(eventStub);
+            sinon.assert.calledWith(eventStub, 'post.published');
+            sinon.assert.calledWith(eventStub, 'post.published.edited');
         });
     });
 
@@ -73,8 +73,8 @@ describe('IndexNow', function () {
 
             listener(testModel);
 
-            assert.equal(pingStub.calledOnce, true);
-            assert.equal(pingStub.calledWith(testPost), true);
+            sinon.assert.calledOnce(pingStub);
+            sinon.assert.calledWith(pingStub, testPost);
 
             resetIndexNow();
         });
@@ -100,7 +100,7 @@ describe('IndexNow', function () {
 
             listener(testModel, {importing: true});
 
-            assert.equal(pingStub.calledOnce, false);
+            sinon.assert.notCalled(pingStub);
 
             resetIndexNow();
         });
@@ -146,7 +146,7 @@ describe('IndexNow', function () {
 
             listener(testModel);
 
-            assert.equal(pingStub.calledOnce, false);
+            sinon.assert.notCalled(pingStub);
 
             resetIndexNow();
         });
@@ -178,7 +178,7 @@ describe('IndexNow', function () {
 
             listener(testModel);
 
-            assert.equal(pingStub.calledOnce, true);
+            sinon.assert.calledOnce(pingStub);
 
             resetIndexNow();
         });
@@ -210,7 +210,7 @@ describe('IndexNow', function () {
 
             listener(testModel);
 
-            assert.equal(pingStub.calledOnce, true);
+            sinon.assert.calledOnce(pingStub);
 
             resetIndexNow();
         });
@@ -242,7 +242,7 @@ describe('IndexNow', function () {
 
             listener(testModel);
 
-            assert.equal(pingStub.calledOnce, true);
+            sinon.assert.calledOnce(pingStub);
 
             resetIndexNow();
         });
@@ -260,7 +260,7 @@ describe('IndexNow', function () {
 
             await ping(testPost);
 
-            assert.equal(loggingStub.calledOnce, true);
+            sinon.assert.calledOnce(loggingStub);
         });
 
         it('with default post should not execute ping', async function () {
@@ -327,7 +327,7 @@ describe('IndexNow', function () {
             // Should NOT have made the ping request
             assert.equal(pingRequest.isDone(), false);
             // Should have logged a warning
-            assert.equal(loggingStub.calledOnce, true);
+            sinon.assert.calledOnce(loggingStub);
             assert(loggingStub.args[0][0].includes('API key not available'));
         });
 
@@ -341,7 +341,7 @@ describe('IndexNow', function () {
             await ping(testPost);
 
             assert.equal(pingRequest.isDone(), true);
-            assert.equal(loggingStub.calledOnce, true);
+            sinon.assert.calledOnce(loggingStub);
         });
 
         it('captures && logs errors from 400 requests', async function () {
@@ -354,7 +354,7 @@ describe('IndexNow', function () {
             await ping(testPost);
 
             assert.equal(pingRequest.isDone(), true);
-            assert.equal(loggingStub.calledOnce, true);
+            sinon.assert.calledOnce(loggingStub);
         });
 
         it('captures && logs validation errors from 422 requests', async function () {
@@ -367,7 +367,7 @@ describe('IndexNow', function () {
             await ping(testPost);
 
             assert.equal(pingRequest.isDone(), true);
-            assert.equal(loggingStub.calledOnce, true);
+            sinon.assert.calledOnce(loggingStub);
             assert(loggingStub.args[0][0].message.includes('key validation failed'));
         });
 
@@ -381,7 +381,7 @@ describe('IndexNow', function () {
             await ping(testPost);
 
             assert.equal(pingRequest.isDone(), true);
-            assert.equal(loggingStub.calledOnce, true);
+            sinon.assert.calledOnce(loggingStub);
         });
     });
 

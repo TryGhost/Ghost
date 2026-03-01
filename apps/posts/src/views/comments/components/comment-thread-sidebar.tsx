@@ -17,14 +17,12 @@ interface CommentThreadSidebarProps {
     commentId: string | null;
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    commentPermalinksEnabled?: boolean;
 }
 
 const CommentThreadSidebar: React.FC<CommentThreadSidebarProps> = ({
     commentId,
     open,
-    onOpenChange,
-    commentPermalinksEnabled
+    onOpenChange
 }) => {
     const {
         data: threadData,
@@ -104,7 +102,6 @@ const CommentThreadSidebar: React.FC<CommentThreadSidebarProps> = ({
                         </div>
                     ) : (
                         <CommentThreadList
-                            commentPermalinksEnabled={commentPermalinksEnabled}
                             fetchNextPage={fetchNextPage}
                             hasNextPage={hasNextPage}
                             isFetchingNextPage={isFetchingNextPage}

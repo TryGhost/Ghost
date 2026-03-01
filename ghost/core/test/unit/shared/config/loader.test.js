@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const path = require('path');
 const rewire = require('rewire');
 const _ = require('lodash');
@@ -140,7 +139,7 @@ describe('Config Loader', function () {
 
             configUtils.set('paths:contentPath', contentPath);
             assert.equal(configUtils.config.get('paths').contentPath, contentPath);
-            configUtils.config.getContentPath('images').should.eql(contentPath + 'images/');
+            assert.equal(configUtils.config.getContentPath('images'), contentPath + 'images/');
         });
     });
 });

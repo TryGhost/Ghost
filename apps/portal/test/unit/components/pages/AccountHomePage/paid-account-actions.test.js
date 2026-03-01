@@ -125,11 +125,11 @@ describe('PaidAccountActions', () => {
             expect(queryByText(/1 Jan 2099/)).toBeInTheDocument();
         });
 
-        test('displays "{x} month(s) free" for free_months offers', () => {
+        test('displays "{x} month(s) free" for free months (percent/100/repeating) offers', () => {
             const products = getProductsData({numOfProducts: 1});
             const site = getSiteData({products, portalProducts: products.map(p => p.id)});
 
-            const trialEndAt = new Date('2099-02-01T12:00:00.000Z');
+            const discountEnd = new Date('2099-02-01T12:00:00.000Z');
 
             const member = getMemberData({
                 paid: true,
@@ -140,21 +140,22 @@ describe('PaidAccountActions', () => {
                         currency: 'USD',
                         interval: 'month',
                         offer: {
-                            type: 'free_months',
-                            amount: 1,
-                            duration: 'free_months'
+                            type: 'percent',
+                            amount: 100,
+                            duration: 'repeating',
+                            duration_in_months: 1,
+                            redemption_type: 'retention'
                         },
-                        trialEndAt: trialEndAt,
                         nextPayment: getNextPaymentData({
                             originalAmount: 500,
                             amount: 500,
                             interval: 'month',
                             currency: 'USD',
                             discount: getDiscountData({
-                                duration: 'free_months',
-                                type: 'free_months',
-                                amount: 1,
-                                end: trialEndAt.toISOString()
+                                duration: 'repeating',
+                                type: 'percent',
+                                amount: 100,
+                                end: discountEnd.toISOString()
                             })
                         })
                     })

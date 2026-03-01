@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 
 const SingleUseTokenProvider = require('../../../../../core/server/services/members/single-use-token-provider');
 

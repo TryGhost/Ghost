@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const jwt = require('jsonwebtoken');
 const {agentProvider, fixtureManager} = require('../../utils/e2e-framework');
 const configUtils = require('../../utils/config-utils');

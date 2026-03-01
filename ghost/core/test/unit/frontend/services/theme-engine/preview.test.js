@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const should = require('should');
+// No need for 'should' anymore
 
 const preview = require('../../../../../core/frontend/services/theme-engine/preview');
 
@@ -19,7 +19,6 @@ describe('Theme Preview', function () {
 
         let siteData = preview.handle(req, {});
 
-        siteData.should.be.an.Object().with.properties('logo');
         assert.equal(siteData.logo, null);
     });
 
@@ -28,7 +27,6 @@ describe('Theme Preview', function () {
 
         let siteData = preview.handle(req, {});
 
-        siteData.should.be.an.Object().with.properties('cover_image');
         assert.equal(siteData.cover_image, null);
     });
 
@@ -37,7 +35,6 @@ describe('Theme Preview', function () {
 
         let siteData = preview.handle(req, {});
 
-        siteData.should.be.an.Object().with.properties('accent_color');
         assert.equal(siteData.accent_color, '#f02d2d');
     });
 
@@ -45,7 +42,6 @@ describe('Theme Preview', function () {
         previewString = 'c=%23f02d2d&icon=&logo=&cover=null';
 
         let siteData = preview.handle(req, {});
-        siteData.should.be.an.Object().with.properties('accent_color', 'icon', 'logo', 'cover_image');
 
         assert.equal(siteData.accent_color, '#f02d2d');
         assert.equal(siteData.icon, null);

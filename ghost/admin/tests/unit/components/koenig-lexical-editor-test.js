@@ -1,5 +1,5 @@
 import sinon from 'sinon';
-import {decoratePostSearchResult, offerUrls} from 'ghost-admin/components/koenig-lexical-editor';
+import {decoratePostSearchResult, getCardVisibilitySettings, offerUrls} from 'ghost-admin/components/koenig-lexical-editor';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 
@@ -121,6 +121,34 @@ describe('Unit: Component: koenig-lexical-editor', function () {
                 {label: 'Offer — Yellow Thursday', value: 'https://example.com?offer=yellow-thursday'},
                 {label: 'Offer — Green Friday', value: 'https://example.com?offer=green-friday'}
             ]);
+        });
+    });
+
+    describe('getCardVisibilitySettings()', function () {
+        it('shows web and email toggles when no post context is provided', function () {
+            const settings = getCardVisibilitySettings();
+
+            expect(settings).to.equal('web and email');
+        });
+
+        it('returns web and email for posts', function () {
+            const settings = getCardVisibilitySettings({
+                post: {
+                    displayName: 'post'
+                }
+            });
+
+            expect(settings).to.equal('web and email');
+        });
+
+        it('returns web only for pages', function () {
+            const settings = getCardVisibilitySettings({
+                post: {
+                    displayName: 'page'
+                }
+            });
+
+            expect(settings).to.equal('web only');
         });
     });
 });

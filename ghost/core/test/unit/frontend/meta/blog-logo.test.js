@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../utils/assertions');
-const should = require('should');
 const getBlogLogo = require('../../../../core/frontend/meta/blog-logo');
 const sinon = require('sinon');
 const settingsCache = require('../../../../core/shared/settings-cache');

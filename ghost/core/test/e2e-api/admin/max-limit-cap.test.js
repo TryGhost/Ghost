@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {agentProvider, fixtureManager} = require('../../utils/e2e-framework');
-const should = require('should');
 const sinon = require('sinon');
 const db = require('../../../core/server/data/db');
 const ObjectId = require('bson-objectid').default;

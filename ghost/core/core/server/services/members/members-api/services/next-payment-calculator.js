@@ -7,8 +7,9 @@
  * @prop {string} offer_id
  * @prop {string} start
  * @prop {string|null} end
- * @prop {'once'|'repeating'|'forever'|'free_months'} duration
- * @prop {'percent'|'fixed'|'free_months'} type
+ * @prop {'once'|'repeating'|'forever'} duration
+ * @prop {number|null} duration_in_months
+ * @prop {'percent'|'fixed'} type
  * @prop {number} amount
  */
 
@@ -75,6 +76,7 @@ class NextPaymentCalculator {
                 start: activeDiscount.start ? new Date(activeDiscount.start).toISOString() : null,
                 end: activeDiscount.end ? new Date(activeDiscount.end).toISOString() : null,
                 duration: offer.duration,
+                duration_in_months: offer.duration_in_months,
                 type: offer.type,
                 amount: offer.amount
             }
@@ -99,21 +101,7 @@ class NextPaymentCalculator {
      * @returns {ActiveDiscount|null}
      */
     _getActiveDiscount(subscription, offer) {
-        // Free months are based on trial periods in Stripe: they're active if the trial period is still ongoing
-        if (offer.type === 'free_months') {
-            const end = new Date(subscription.trial_end_at);
-
-            if (new Date() >= end) {
-                return null;
-            }
-
-            return {
-                start: subscription.trial_start_at,
-                end
-            };
-        }
-
-        // Other offers are based on a Stripe coupon, with a discount_start / discount_end
+        // Offers are based on a Stripe coupon, with a discount_start / discount_end
         if (subscription.discount_start) {
             return {
                 start: subscription.discount_start,
@@ -160,7 +148,7 @@ class NextPaymentCalculator {
     _calculateDiscountedAmount(originalAmount, offer) {
         if (offer.type === 'percent') {
             const discount = Math.round(originalAmount * (offer.amount / 100));
-            return Math.max(0, originalAmount - discount);
+            return originalAmount - discount;
         }
 
         if (offer.type === 'fixed') {

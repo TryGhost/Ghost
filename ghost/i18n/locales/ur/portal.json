@@ -50,7 +50,7 @@
     "Continue": "جاری رکھیں",
     "Continue subscription": "سبسکرپشن جاری رکھیں",
     "Could not create Stripe billing portal session": "Stripe بلنگ پورٹل سیشن نہیں بنایا جا سکا",
-    "Could not create stripe checkout session": "Stripe چیک آؤٹ سیشن نہیں بنایا جا سکا",
+    "Could not create Stripe checkout session": "Stripe چیک آؤٹ سیشن نہیں بنایا جا سکا",
     "Could not sign in. Login link expired.": "سائن ان نہیں ہو سکا۔ لاگ ان لنک کی میعاد ختم ہو گئی۔",
     "Could not update email! Invalid link.": "ای میل اپ ڈیٹ نہیں ہو سکی! غلط لنک۔",
     "Create a new contact": "نیا رابطہ بنائیں",

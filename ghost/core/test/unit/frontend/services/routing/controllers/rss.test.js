@@ -67,7 +67,7 @@ describe('Unit - services/routing/controllers/rss', function () {
 
         rssServiceRenderStub.callsFake(function (_res, baseUrl, data) {
             assert.equal(baseUrl, '/rss/');
-            data.posts.should.eql(posts);
+            assert.equal(data.posts, posts);
             assert.equal(data.title, 'Ghost');
             assert.equal(data.description, 'Ghost is cool!');
             done();

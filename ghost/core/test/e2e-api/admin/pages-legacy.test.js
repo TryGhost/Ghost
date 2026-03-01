@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../utils/assertions');
-const should = require('should');
 const supertest = require('supertest');
 const moment = require('moment');
 const _ = require('lodash');
@@ -88,12 +87,12 @@ describe('Pages API', function () {
 
         const modelJson = model.toJSON();
 
-        modelJson.title.should.eql(page.title);
-        modelJson.status.should.eql(page.status);
+        assert.equal(modelJson.title, page.title);
+        assert.equal(modelJson.status, page.status);
         assert.equal(modelJson.type, 'page');
 
-        modelJson.posts_meta.feature_image_alt.should.eql(page.feature_image_alt);
-        modelJson.posts_meta.feature_image_caption.should.eql(page.feature_image_caption);
+        assert.equal(modelJson.posts_meta.feature_image_alt, page.feature_image_alt);
+        assert.equal(modelJson.posts_meta.feature_image_caption, page.feature_image_caption);
     });
 
     it('Can add a page with mobiledoc', async function () {
@@ -392,7 +391,7 @@ describe('Pages API', function () {
 
         assertExists(res2.headers['x-cache-invalidate']);
         localUtils.API.checkResponse(res2.body.pages[0], 'page', ['reading_time']);
-        res2.body.pages[0].tiers.length.should.eql(paidTiers.length);
+        assert.equal(res2.body.pages[0].tiers.length, paidTiers.length);
 
         const model = await models.Post.findOne({
             id: res2.body.pages[0].id
@@ -429,7 +428,7 @@ describe('Pages API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(204);
 
-        res.body.should.be.empty();
+        assert.deepEqual(res.body, {});
         assert.equal(res.headers['x-cache-invalidate'], '/*');
     });
 });

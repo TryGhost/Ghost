@@ -1,7 +1,6 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
 const sinon = require('sinon');
-const should = require('should');
 const fs = require('fs-extra');
 const path = require('path');
 const DefaultSettingsManager = require('../../../../../core/server/services/route-settings/default-settings-manager');
@@ -33,7 +32,7 @@ describe('UNIT > Settings Service DefaultSettingsManager:', function () {
             await defaultSettingsManager.ensureSettingsFileExists();
 
             // Assert did not attempt to copy the default config
-            assert.equal(fsCopyStub.called, false);
+            sinon.assert.notCalled(fsCopyStub);
         });
 
         it('copies default settings file if no file found', async function () {
@@ -57,7 +56,7 @@ describe('UNIT > Settings Service DefaultSettingsManager:', function () {
             await defaultSettingsManager.ensureSettingsFileExists();
 
             // Assert attempt to copy the default config
-            assert.equal(fsCopyStub.calledOnce, true);
+            sinon.assert.calledOnce(fsCopyStub);
         });
 
         it('rejects, if error is not a not found error', async function () {
@@ -81,8 +80,8 @@ describe('UNIT > Settings Service DefaultSettingsManager:', function () {
             } catch (error) {
                 assertExists(error);
                 assert.equal(error.message, `Error trying to access settings files in ${destinationFolderPath}.`);
-                assert.equal(fsReadFileStub.calledOnce, true);
-                assert.equal(fsCopyStub.called, false);
+                sinon.assert.calledOnce(fsReadFileStub);
+                sinon.assert.notCalled(fsCopyStub);
             }
         });
     });

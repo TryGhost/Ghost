@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const _ = require('lodash');
 const ObjectId = require('bson-objectid').default;
 const testUtils = require('../../../../utils');
@@ -32,7 +31,7 @@ describe('Validate Schema', function () {
 
                     // NOTE: Some of these fields are auto-filled in the model layer (e.g. created_at, created_at etc.)
                     ['id', 'uuid', 'slug', 'title', 'created_at'].forEach(function (attr) {
-                        errorMessages.should.match(new RegExp('posts.' + attr));
+                        assert.match(errorMessages, RegExp('posts.' + attr));
                     });
                 });
         });

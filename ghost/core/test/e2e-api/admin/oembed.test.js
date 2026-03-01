@@ -2,7 +2,6 @@ const assert = require('node:assert/strict');
 const {assertExists} = require('../../utils/assertions');
 const nock = require('nock');
 const sinon = require('sinon');
-const should = require('should');
 const supertest = require('supertest');
 const testUtils = require('../../utils/index');
 const config = require('../../../core/shared/config/index');
@@ -281,7 +280,7 @@ describe('Oembed API', function () {
         assert.equal(pageMock.isDone(), true);
 
         // Check that the substitute icon URL is returned in place of the original
-        res.body.metadata.icon.should.eql(`${urlUtils.urlFor('home', true)}content/images/icon/image-01.png`);
+        assert.equal(res.body.metadata.icon, `${urlUtils.urlFor('home', true)}content/images/icon/image-01.png`);
     });
 
     it('should fetch and store thumbnails', async function () {
@@ -305,7 +304,7 @@ describe('Oembed API', function () {
         assert.equal(pageMock.isDone(), true);
 
         // Check that the substitute thumbnail URL is returned in place of the original
-        res.body.metadata.thumbnail.should.eql(`${urlUtils.urlFor('home', true)}content/images/thumbnail/image-01.png`);
+        assert.equal(res.body.metadata.thumbnail, `${urlUtils.urlFor('home', true)}content/images/thumbnail/image-01.png`);
     });
 
     it('should prevent SSRF attacks via bookmark image fetching', async function () {
@@ -824,7 +823,7 @@ describe('Oembed API', function () {
             assert.equal(pageMock.isDone(), true);
             assert.equal(res.body.type, 'bookmark');
             assert.equal(res.body.url, 'http://example.com');
-            res.body.metadata.title.should.eql(utfString);
+            assert.equal(res.body.metadata.title, utfString);
         });
 
         it('does not fail on unknown charset', async function () {

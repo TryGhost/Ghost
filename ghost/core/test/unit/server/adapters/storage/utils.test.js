@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
 const sinon = require('sinon');
 const urlUtils = require('../../../../../core/shared/url-utils');
+const configUtils = require('../../../../utils/config-utils');
 
 // Stuff we are testing
 const storageUtils = require('../../../../../core/server/adapters/storage/utils');
@@ -159,6 +160,66 @@ describe('storage utils', function () {
             result = storageUtils.isLocalImage(url);
             assertExists(result);
             assert.equal(result, false);
+        });
+    });
+
+    describe('fn: isInternalImage', function () {
+        beforeEach(function () {
+            configUtils.set({url: 'http://myblog.com/'});
+        });
+
+        afterEach(async function () {
+            await configUtils.restore();
+        });
+
+        it('should return true for local images', function () {
+            urlForStub = sinon.stub(urlUtils, 'urlFor');
+            urlForStub.withArgs('home').returns('http://myblog.com/');
+            urlGetSubdirStub = sinon.stub(urlUtils, 'getSubdir');
+            urlGetSubdirStub.returns('');
+
+            assert.equal(storageUtils.isInternalImage('http://myblog.com/content/images/2026/02/photo.png'), true);
+        });
+
+        it('should return true for CDN images when urls:image is configured', function () {
+            configUtils.set('urls:image', 'https://storage.ghost.is/c/6f/a3/test/content/images');
+
+            urlForStub = sinon.stub(urlUtils, 'urlFor');
+            urlForStub.withArgs('home').returns('http://myblog.com/');
+            urlGetSubdirStub = sinon.stub(urlUtils, 'getSubdir');
+            urlGetSubdirStub.returns('');
+
+            assert.equal(storageUtils.isInternalImage('https://storage.ghost.is/c/6f/a3/test/content/images/2026/02/photo.png'), true);
+        });
+
+        it('should return false for CDN prefix-only matches', function () {
+            configUtils.set('urls:image', 'https://storage.ghost.is/c/6f/a3/test/content/images');
+
+            urlForStub = sinon.stub(urlUtils, 'urlFor');
+            urlForStub.withArgs('home').returns('http://myblog.com/');
+            urlGetSubdirStub = sinon.stub(urlUtils, 'getSubdir');
+            urlGetSubdirStub.returns('');
+
+            assert.equal(storageUtils.isInternalImage('https://storage.ghost.is/c/6f/a3/test/content/images-other/photo.png'), false);
+        });
+
+        it('should return false for external images', function () {
+            urlForStub = sinon.stub(urlUtils, 'urlFor');
+            urlForStub.withArgs('home').returns('http://myblog.com/');
+            urlGetSubdirStub = sinon.stub(urlUtils, 'getSubdir');
+            urlGetSubdirStub.returns('');
+
+            assert.equal(storageUtils.isInternalImage('https://example.com/content/images/photo.png'), false);
+        });
+
+        it('should fall back to isLocalImage when no CDN config', function () {
+            urlForStub = sinon.stub(urlUtils, 'urlFor');
+            urlForStub.withArgs('home').returns('http://myblog.com/');
+            urlGetSubdirStub = sinon.stub(urlUtils, 'getSubdir');
+            urlGetSubdirStub.returns('');
+
+            assert.equal(storageUtils.isInternalImage('/content/images/2026/02/photo.png'), true);
+            assert.equal(storageUtils.isInternalImage('https://external.com/photo.png'), false);
         });
     });
 });

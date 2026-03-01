@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
 const SingleUseTokenProvider = require('../../../core/server/services/members/single-use-token-provider');
@@ -11,7 +11,7 @@ const membersService = require('../../../core/server/services/members');
 const {anyErrorId} = matchers;
 
 // Updated to reflect current total based on test output
-const CURRENT_SETTINGS_COUNT = 93;
+const CURRENT_SETTINGS_COUNT = 99;
 
 const settingsMatcher = {};
 

@@ -1,6 +1,4 @@
-const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
-const should = require('should');
 const sinon = require('sinon');
 const helpers = require('../../../../../core/frontend/services/helpers');
 const AppProxy = require('../../../../../core/frontend/services/apps/proxy');
@@ -33,7 +31,7 @@ describe('Apps', function () {
 
             appProxy.helperService.registerHelper('myTestHelper', sinon.stub().returns('test result'));
 
-            assert.equal(registerSpy.called, true);
+            sinon.assert.called(registerSpy);
         });
     });
 });

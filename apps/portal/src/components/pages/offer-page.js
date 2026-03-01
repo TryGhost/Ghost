@@ -4,7 +4,7 @@ import AppContext from '../../app-context';
 import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg';
 import CloseButton from '../common/close-button';
 import InputForm from '../common/input-form';
-import {getCurrencySymbol, getProductFromId, hasMultipleProductsFeature, isSameCurrency, formatNumber, hasMultipleNewsletters} from '../../utils/helpers';
+import {getCurrencySymbol, getProductFromId, hasMultipleProductsFeature, getUpdatedOfferPrice, formatNumber, hasMultipleNewsletters} from '../../utils/helpers';
 import {ValidateInputForm} from '../../utils/form';
 import {interceptAnchorClicks} from '../../utils/links';
 import {sanitizeHtml} from '../../utils/sanitize-html';
@@ -487,20 +487,6 @@ export default class OfferPage extends React.Component {
         return `${getCurrencySymbol(price.currency)}${originalAmount}/${offer.cadence}`;
     }
 
-    getUpdatedPrice({offer, product}) {
-        const price = offer.cadence === 'month' ? product.monthlyPrice : product.yearlyPrice;
-        const originalAmount = price.amount;
-        let updatedAmount;
-        if (offer.type === 'fixed' && isSameCurrency(offer.currency, price.currency)) {
-            updatedAmount = ((originalAmount - offer.amount)) / 100;
-            return updatedAmount > 0 ? updatedAmount : 0;
-        } else if (offer.type === 'percent') {
-            updatedAmount = (originalAmount - ((originalAmount * offer.amount) / 100)) / 100;
-            return updatedAmount;
-        }
-        return originalAmount / 100;
-    }
-
     renderRoundedPrice(price) {
         if (price % 1 !== 0) {
             const roundedPrice = Math.round(price * 100) / 100;
@@ -657,7 +643,7 @@ export default class OfferPage extends React.Component {
             return null;
         }
         const price = offer.cadence === 'month' ? product.monthlyPrice : product.yearlyPrice;
-        const updatedPrice = this.getUpdatedPrice({offer, product});
+        const updatedPrice = getUpdatedOfferPrice({offer, price});
         const benefits = product.benefits || [];
 
         const currencyClass = (getCurrencySymbol(price.currency)).length > 1 ? 'long' : '';

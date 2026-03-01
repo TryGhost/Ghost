@@ -1,4 +1,3 @@
-import useFeatureFlag from '../../../../hooks/use-feature-flag';
 import {SettingGroup, SettingGroupContent, Toggle} from '@tryghost/admin-x-design-system';
 import {type User, hasAdminAccess} from '@tryghost/admin-x-framework/api/users';
 import {checkStripeEnabled} from '@tryghost/admin-x-framework/api/settings';
@@ -6,7 +5,6 @@ import {useGlobalData} from '../../../providers/global-data-provider';
 
 const EmailNotificationsInputs: React.FC<{ user: User; setUserData: (user: User) => void; }> = ({user, setUserData}) => {
     const {config, settings} = useGlobalData();
-    const hasWebmentions = useFeatureFlag('webmentions');
     const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
 
     return (
@@ -21,15 +19,6 @@ const EmailNotificationsInputs: React.FC<{ user: User; setUserData: (user: User)
                 }}
             />
             {hasAdminAccess(user) && <>
-                {hasWebmentions && <Toggle
-                    checked={user.mention_notifications}
-                    direction='rtl'
-                    hint='Every time another site links to your work'
-                    label='Mentions'
-                    onChange={(e) => {
-                        setUserData?.({...user, mention_notifications: e.target.checked});
-                    }}
-                />}
                 <Toggle
                     checked={user.recommendation_notifications}
                     direction='rtl'

@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const {callRenderer, html, assertPrettifiesTo, assertPrettifiedIncludes} = require('../test-utils');
 
 describe('services/koenig/node-renderers/product-renderer', function () {

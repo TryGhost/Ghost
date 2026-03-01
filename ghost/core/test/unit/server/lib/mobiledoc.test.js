@@ -1,7 +1,6 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../utils/assertions');
 const path = require('path');
-const should = require('should');
 const sinon = require('sinon');
 const nock = require('nock');
 const configUtils = require('../../../utils/config-utils');
@@ -332,6 +331,29 @@ describe('lib/mobiledoc', function () {
             sinon.assert.calledOnce(loggingStub);
 
             assert.equal(transformed.cards.length, 4);
+        });
+
+        it('fetches non-local image sizes from URL', async function () {
+            let mobiledoc = {
+                cards: [
+                    ['image', {src: 'https://storage.ghost.is/c/6f/a3/test/content/images/2026/02/ghost-logo.png'}]
+                ]
+            };
+
+            const cdnMock = nock('https://storage.ghost.is')
+                .get('/c/6f/a3/test/content/images/2026/02/ghost-logo.png')
+                .query(true)
+                .replyWithFile(200, path.join(__dirname, '../../../utils/fixtures/images/ghost-logo.png'), {
+                    'Content-Type': 'image/png'
+                });
+
+            const transformedMobiledoc = await mobiledocLib.populateImageSizes(JSON.stringify(mobiledoc));
+            const transformed = JSON.parse(transformedMobiledoc);
+
+            assert.equal(cdnMock.isDone(), true);
+            assert.equal(transformed.cards.length, 1);
+            assert.equal(transformed.cards[0][1].width, 800);
+            assert.equal(transformed.cards[0][1].height, 257);
         });
 
         // images can be stored with and without subdir when a subdir is configured

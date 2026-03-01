@@ -1,5 +1,5 @@
 const PostsService = require('../../../../../core/server/services/posts/posts-service');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 
 describe('Posts Service', function () {
@@ -76,13 +76,7 @@ describe('Posts Service', function () {
             const result = await makePostService().copyPost(frame);
 
             // Ensure copied post is created
-            assert.equal(
-                postModelStub.add.calledOnceWithExactly(
-                    sinon.match.object,
-                    frame.options
-                ),
-                true
-            );
+            sinon.assert.calledOnceWithExactly(postModelStub.add, sinon.match.object, frame.options);
 
             // Ensure copied post is returned
             assert.deepEqual(result, copiedPost);

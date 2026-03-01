@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 
 const OfferTitle = require('../../../../../../../core/server/services/offers/domain/models/offer-title');
 
@@ -16,20 +15,14 @@ describe('OfferTitle', function () {
                 OfferTitle.create(12);
                 assert.fail();
             } catch (err) {
-                should.ok(
-                    err instanceof OfferTitle.InvalidOfferTitle,
-                    'expected an InvalidOfferTitle error'
-                );
+                assert(err instanceof OfferTitle.InvalidOfferTitle, 'expected an InvalidOfferTitle error');
             }
 
             try {
                 OfferTitle.create({});
                 assert.fail();
             } catch (err) {
-                should.ok(
-                    err instanceof OfferTitle.InvalidOfferTitle,
-                    'expected an InvalidOfferTitle error'
-                );
+                assert(err instanceof OfferTitle.InvalidOfferTitle, 'expected an InvalidOfferTitle error');
             }
         });
 
@@ -48,10 +41,7 @@ describe('OfferTitle', function () {
                 OfferTitle.create(tooLong);
                 assert.fail();
             } catch (err) {
-                should.ok(
-                    err instanceof OfferTitle.InvalidOfferTitle,
-                    'expected an InvalidOfferTitle error'
-                );
+                assert(err instanceof OfferTitle.InvalidOfferTitle, 'expected an InvalidOfferTitle error');
             }
         });
 

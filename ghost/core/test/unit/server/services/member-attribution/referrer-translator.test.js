@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 
 const ReferrerTranslator = require('../../../../../core/server/services/member-attribution/referrer-translator');
 

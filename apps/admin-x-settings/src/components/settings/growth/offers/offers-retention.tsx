@@ -1,95 +1,119 @@
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {type Offer} from '@tryghost/admin-x-framework/api/offers';
 
-// TODO: Replace placeholder data with real retention offer data from API
+type RetentionCadence = 'month' | 'year';
 
-type RetentionOffer = {
+export type RetentionOffer = {
     id: string;
     name: string;
     description: string;
     terms: string | null; // e.g. "50% OFF" when active
     termsDetail: string | null; // e.g. "Next payment" when active
+    redemptionOfferIds: string[];
     redemptions: number;
     status: 'active' | 'inactive';
 };
 
-const placeholderRetentionOffers: RetentionOffer[] = [
-    {
-        id: 'monthly',
-        name: 'Monthly retention',
-        description: 'Applied to monthly plans',
-        terms: '50% OFF',
-        termsDetail: 'Next payment',
-        redemptions: 3,
-        status: 'active'
-    },
-    {
-        id: 'yearly',
-        name: 'Yearly retention',
-        description: 'Applied to annual plans',
-        terms: null,
-        termsDetail: null,
-        redemptions: 0,
-        status: 'inactive'
-    }
-];
-
-const OffersRetention: React.FC = () => {
-    const {updateRoute} = useRouting();
-
-    const handleRetentionOfferClick = (id: string) => {
-        updateRoute(`offers/edit/retention/${id}`);
-    };
-
-    return (
-        <div className='overflow-x-auto'>
-            <table className='m-0 w-full table-fixed'>
-                <colgroup>
-                    <col />
-                    <col className='w-[220px]' />
-                    <col className='w-[220px]' />
-                    <col className='w-[220px]' />
-                    <col className='w-[80px]' />
-                </colgroup>
-                {placeholderRetentionOffers.map(offer => (
-                    <tr key={offer.id} className='group relative scale-100 border-b border-b-grey-200 dark:border-grey-800' data-testid='retention-offer-item'>
-                        <td className='p-0'>
-                            <a className='block cursor-pointer p-5 pl-0' onClick={() => handleRetentionOfferClick(offer.id)}>
-                                <span className='font-semibold'>{offer.name}</span><br />
-                                <span className='text-sm text-grey-700'>{offer.description}</span>
-                            </a>
-                        </td>
-                        <td className='whitespace-nowrap p-0 text-sm'>
-                            <a className='block cursor-pointer p-5' onClick={() => handleRetentionOfferClick(offer.id)}>
-                                {offer.terms ? (
-                                    <>
-                                        <span className='text-[1.3rem] font-medium uppercase'>{offer.terms}</span><br />
-                                        <span className='text-grey-700'>{offer.termsDetail}</span>
-                                    </>
-                                ) : (
-                                    <span className='text-grey-700'>&ndash;</span>
-                                )}
-                            </a>
-                        </td>
-                        <td className='whitespace-nowrap p-0 text-sm'>
-                            <a className='block cursor-pointer p-5' onClick={() => handleRetentionOfferClick(offer.id)}>
-                                {offer.redemptions}
-                            </a>
-                        </td>
-                        <td className='whitespace-nowrap p-0 text-sm'>
-                            <a className='block cursor-pointer p-5' onClick={() => handleRetentionOfferClick(offer.id)}>
-                                {offer.status === 'active' ? (
-                                    <span className='text-sm font-semibold text-green'>Active</span>
-                                ) : (
-                                    <span className='text-sm text-grey-700'>Inactive</span>
-                                )}
-                            </a>
-                        </td>
-                        <td className='w-[80px] p-0'></td>
-                    </tr>
-                ))}
-            </table>
-        </div>
-    );
+const getActiveRetentionOfferByCadence = (offers: Offer[], cadence: RetentionCadence): Offer | null => {
+    return offers.find((offer) => {
+        return offer.redemption_type === 'retention' &&
+            offer.cadence === cadence &&
+            offer.status === 'active';
+    }) || null;
 };
 
-export default OffersRetention;
+const getRetentionRedemptionsByCadence = (offers: Offer[], cadence: RetentionCadence): number => {
+    return offers.reduce((total, offer) => {
+        if (offer.redemption_type !== 'retention' || offer.cadence !== cadence) {
+            return total;
+        }
+
+        return total + (offer.redemption_count || 0);
+    }, 0);
+};
+
+const getRetentionOfferIdsByCadence = (offers: Offer[], cadence: RetentionCadence): string[] => {
+    return offers
+        .filter((offer) => {
+            return offer.redemption_type === 'retention' && offer.cadence === cadence;
+        })
+        .map(offer => offer.id);
+};
+
+const isFreeMonthsOffer = (offer: Offer): boolean => {
+    return offer.type === 'percent' && offer.amount === 100 && offer.duration === 'repeating';
+};
+
+const getRetentionTerms = (offer: Offer | null): string | null => {
+    if (!offer) {
+        return null;
+    }
+
+    if (isFreeMonthsOffer(offer)) {
+        const months = offer.duration_in_months || 0;
+        const monthLabel = months === 1 ? 'month' : 'months';
+        return `${months} ${monthLabel} free`;
+    }
+
+    if (offer.type === 'percent') {
+        return `${offer.amount}% OFF`;
+    }
+
+    return null;
+};
+
+const getRetentionTermsDetail = (offer: Offer | null): string | null => {
+    if (!offer) {
+        return null;
+    }
+
+    if (isFreeMonthsOffer(offer)) {
+        return '';
+    }
+
+    if (offer.duration === 'once') {
+        return 'First payment';
+    }
+
+    if (offer.duration === 'repeating' && offer.duration_in_months) {
+        const monthLabel = offer.duration_in_months === 1 ? 'month' : 'months';
+        return `For ${offer.duration_in_months} ${monthLabel}`;
+    }
+
+    if (offer.duration === 'forever') {
+        return 'Forever';
+    }
+
+    return null;
+};
+
+export const getRetentionOffers = (offers: Offer[]): RetentionOffer[] => {
+    const monthlyOffer = getActiveRetentionOfferByCadence(offers, 'month');
+    const yearlyOffer = getActiveRetentionOfferByCadence(offers, 'year');
+    const monthlyOfferIds = getRetentionOfferIdsByCadence(offers, 'month');
+    const yearlyOfferIds = getRetentionOfferIdsByCadence(offers, 'year');
+    const monthlyRedemptions = getRetentionRedemptionsByCadence(offers, 'month');
+    const yearlyRedemptions = getRetentionRedemptionsByCadence(offers, 'year');
+
+    return [
+        {
+            id: 'monthly',
+            name: 'Monthly retention',
+            description: 'Applied to monthly plans',
+            terms: getRetentionTerms(monthlyOffer),
+            termsDetail: getRetentionTermsDetail(monthlyOffer),
+            redemptionOfferIds: monthlyOfferIds,
+            redemptions: monthlyRedemptions,
+            status: monthlyOffer ? 'active' : 'inactive'
+        },
+        {
+            id: 'yearly',
+            name: 'Yearly retention',
+            description: 'Applied to annual plans',
+            terms: getRetentionTerms(yearlyOffer),
+            termsDetail: getRetentionTermsDetail(yearlyOffer),
+            redemptionOfferIds: yearlyOfferIds,
+            redemptions: yearlyRedemptions,
+            status: yearlyOffer ? 'active' : 'inactive'
+        }
+    ];
+};
