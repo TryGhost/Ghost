@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const should = require('should');
+const {assertExists} = require('../utils/assertions');
 const supertest = require('supertest');
 const path = require('path');
 const moment = require('moment');
@@ -10,7 +10,7 @@ function assertCorrectFrontendHeaders(res) {
     assert.equal(res.headers['x-cache-invalidate'], undefined);
     assert.equal(res.headers['X-CSRF-Token'], undefined);
     assert.equal(res.headers['set-cookie'], undefined);
-    should.exist(res.headers.date);
+    assertExists(res.headers.date);
 }
 
 describe('Custom Frontend routing', function () {
@@ -58,7 +58,7 @@ describe('Custom Frontend routing', function () {
                 const year = todayMoment.format('YYYY');
                 const postLink = `/blog/${year}/welcome/`;
 
-                content.indexOf(postLink).should.be.above(0);
+                assert(content.indexOf(postLink) > 0);
             });
     });
 

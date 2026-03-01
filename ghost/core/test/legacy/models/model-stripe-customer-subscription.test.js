@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const should = require('should');
+const {assertExists} = require('../../utils/assertions');
 const {Member} = require('../../../core/server/models/member');
 const {MemberStripeCustomer} = require('../../../core/server/models/member-stripe-customer');
 const {Product} = require('../../../core/server/models/product');
@@ -71,7 +71,7 @@ describe('StripeCustomerSubscription Model', function run() {
 
             const customer = subscription.related('customer');
 
-            should.exist(customer, 'StripeCustomerSubscription should have been fetched with customer');
+            assertExists(customer, 'StripeCustomerSubscription should have been fetched with customer');
 
             assert.equal(customer.get('customer_id'), 'fake_customer_id');
         });

@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const should = require('should');
+const {assertExists} = require('../../utils/assertions');
 const supertest = require('supertest');
 const testUtils = require('../../utils');
 const config = require('../../../core/shared/config');
@@ -128,7 +128,7 @@ describe('Admin API key authentication', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200);
 
-            should.exist(secondResponse.body.explore);
+            assertExists(secondResponse.body.explore);
         });
     });
 });

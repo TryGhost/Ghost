@@ -178,7 +178,7 @@ export function planClickHandler({event, el, errorEl, siteUrl, site, member, cli
             })
         }).then(function (res) {
             if (!res.ok) {
-                throw new Error(t('Could not create stripe checkout session'));
+                throw new Error(t('Could not create Stripe checkout session'));
             }
             return res.json();
         });
@@ -205,7 +205,7 @@ export function planClickHandler({event, el, errorEl, siteUrl, site, member, cli
     });
 }
 
-export function handleDataAttributes({siteUrl, site = {}, member, doAction, captureException} = {}) {
+export function handleDataAttributes({siteUrl, site = {}, member, offers = [], doAction, captureException} = {}) {
     if (!siteUrl) {
         return;
     }
@@ -270,7 +270,7 @@ export function handleDataAttributes({siteUrl, site = {}, member, doAction, capt
                     })
                 }).then(function (res) {
                     if (!res.ok) {
-                        throw new Error(t('Could not create stripe checkout session'));
+                        throw new Error(t('Could not create Stripe checkout session'));
                     }
                     return res.json();
                 });
@@ -372,15 +372,31 @@ export function handleDataAttributes({siteUrl, site = {}, member, doAction, capt
         el.addEventListener('click', clickHandler);
     });
 
+    const hasRetentionOffers = (offers || []).some(offer => offer.redemption_type === 'retention');
+
     Array.prototype.forEach.call(document.querySelectorAll('[data-members-cancel-subscription]'), function (el) {
         let errorEl = el.parentElement.querySelector('[data-members-error]');
         function clickHandler(event) {
-            el.removeEventListener('click', clickHandler);
             event.preventDefault();
-            el.classList.remove('error');
-            el.classList.add('loading');
 
             let subscriptionId = el.dataset.membersCancelSubscription;
+
+            // If retention offer is available, open Portal to show the offer
+            if (hasRetentionOffers) {
+                doAction('openPopup', {
+                    page: 'accountPlan',
+                    pageData: {
+                        subscriptionId,
+                        action: 'cancel'
+                    }
+                });
+
+                return;
+            }
+
+            el.removeEventListener('click', clickHandler);
+            el.classList.remove('error');
+            el.classList.add('loading');
 
             if (errorEl) {
                 errorEl.innerText = '';

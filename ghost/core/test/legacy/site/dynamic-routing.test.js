@@ -3,7 +3,7 @@
 // These tests are here to cover the headers sent with requests and high-level redirects that can't be
 // tested with the unit tests
 const assert = require('node:assert/strict');
-const should = require('should');
+const {assertExists} = require('../../utils/assertions');
 const supertest = require('supertest');
 const sinon = require('sinon');
 const moment = require('moment');
@@ -25,7 +25,7 @@ describe('Dynamic Routing', function () {
             assert.equal(res.headers['x-cache-invalidate'], undefined);
             assert.equal(res.headers['X-CSRF-Token'], undefined);
             assert.equal(res.headers['set-cookie'], undefined);
-            should.exist(res.headers.date);
+            assertExists(res.headers.date);
 
             done();
         };
@@ -62,7 +62,7 @@ describe('Dynamic Routing', function () {
                     assert.equal(res.headers['x-cache-invalidate'], undefined);
                     assert.equal(res.headers['X-CSRF-Token'], undefined);
                     assert.equal(res.headers['set-cookie'], undefined);
-                    should.exist(res.headers.date);
+                    assertExists(res.headers.date);
 
                     assert.equal($('title').text(), 'Ghost');
                     assert.equal($('body.home-template').length, 1);
@@ -135,7 +135,7 @@ describe('Dynamic Routing', function () {
                     assert.equal(res.headers['x-cache-invalidate'], undefined);
                     assert.equal(res.headers['X-CSRF-Token'], undefined);
                     assert.equal(res.headers['set-cookie'], undefined);
-                    should.exist(res.headers.date);
+                    assertExists(res.headers.date);
 
                     assert.equal($('body').attr('class'), 'tag-template tag-getting-started has-sans-title has-sans-body');
                     assert.equal($('article.post').length, 5);
@@ -197,7 +197,7 @@ describe('Dynamic Routing', function () {
 
             it('should redirect to tag settings', function (done) {
                 request.get('/tag/getting-started/edit/')
-                    .expect('Location', 'http://127.0.0.1:2369/ghost/#/tags/getting-started/')
+                    .expect('Location', /\/ghost\/#\/tags\/getting-started\//)
                     .expect('Cache-Control', testUtils.cacheRules.public)
                     .expect(302)
                     .end(doEnd(done));
@@ -397,7 +397,7 @@ describe('Dynamic Routing', function () {
 
             it('should redirect to editor', function (done) {
                 request.get('/author/ghost-owner/edit/')
-                    .expect('Location', 'http://127.0.0.1:2369/ghost/#/settings/staff/ghost-owner/')
+                    .expect('Location', /\/ghost\/#\/settings\/staff\/ghost-owner\//)
                     .expect('Cache-Control', testUtils.cacheRules.public)
                     .expect(302)
                     .end(doEnd(done));

@@ -1,5 +1,5 @@
-const assert = require('assert/strict');
-const should = require('should');
+const assert = require('node:assert/strict');
+const {assertExists, assertObjectMatches} = require('../../utils/assertions');
 const sinon = require('sinon');
 const testUtils = require('../../utils');
 const models = require('../../../core/server/models/index');
@@ -29,17 +29,16 @@ function buildMember(status, products = []) {
 }
 
 function testPosts(posts, map) {
-    posts.should.be.an.Array();
-    posts.length.should.eql(DEFAULT_POST_FIXTURE_COUNT + Object.keys(map).length);
+    assert(Array.isArray(posts));
+    assert.equal(posts.length, DEFAULT_POST_FIXTURE_COUNT + Object.keys(map).length);
 
     // Free post
     for (const postID in map) {
         const expectData = map[postID];
 
         const post = posts.find(p => p.id === postID);
-        should.exist(post);
-
-        post.should.match(expectData);
+        assertExists(post);
+        assertObjectMatches(post, expectData);
     }
 }
 

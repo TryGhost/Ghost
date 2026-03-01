@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const errors = require('@tryghost/errors');
-const should = require('should');
 const sinon = require('sinon');
 const rewire = require('rewire');
 const _ = require('lodash');
@@ -30,16 +30,19 @@ describe('Importer', function () {
 
     describe('ImportManager', function () {
         it('has the correct interface', function () {
-            ImportManager.handlers.should.be.instanceof(Array).and.have.lengthOf(6);
-            ImportManager.importers.should.be.instanceof(Array).and.have.lengthOf(5);
-            ImportManager.loadFile.should.be.instanceof(Function);
-            ImportManager.preProcess.should.be.instanceof(Function);
-            ImportManager.doImport.should.be.instanceof(Function);
-            ImportManager.generateReport.should.be.instanceof(Function);
+            assert(Array.isArray(ImportManager.handlers));
+            assert.equal(ImportManager.handlers.length, 6);
+            assert(Array.isArray(ImportManager.importers));
+            assert.equal(ImportManager.importers.length, 5);
+            assert.equal(typeof ImportManager.loadFile, 'function');
+            assert.equal(typeof ImportManager.preProcess, 'function');
+            assert.equal(typeof ImportManager.doImport, 'function');
+            assert.equal(typeof ImportManager.generateReport, 'function');
         });
 
         it('gets the correct extensions', function () {
-            ImportManager.getExtensions().should.be.instanceof(Array).and.have.lengthOf(32);
+            assert(Array.isArray(ImportManager.getExtensions()));
+            assert.equal(ImportManager.getExtensions().length, 32);
             assert(ImportManager.getExtensions().includes('.csv'));
             assert(ImportManager.getExtensions().includes('.json'));
             assert(ImportManager.getExtensions().includes('.zip'));
@@ -69,7 +72,8 @@ describe('Importer', function () {
         });
 
         it('gets the correct types', function () {
-            ImportManager.getContentTypes().should.be.instanceof(Array).and.have.lengthOf(35);
+            assert(Array.isArray(ImportManager.getContentTypes()));
+            assert.equal(ImportManager.getContentTypes().length, 35);
             assert(ImportManager.getContentTypes().includes('image/jpeg'));
             assert(ImportManager.getContentTypes().includes('image/png'));
             assert(ImportManager.getContentTypes().includes('image/gif'));
@@ -115,7 +119,8 @@ describe('Importer', function () {
         });
 
         it('gets the correct directories', function () {
-            ImportManager.getDirectories().should.be.instanceof(Array).and.have.lengthOf(4);
+            assert(Array.isArray(ImportManager.getDirectories()));
+            assert.equal(ImportManager.getDirectories().length, 4);
             assert(ImportManager.getDirectories().includes('images'));
             assert(ImportManager.getDirectories().includes('content'));
             assert(ImportManager.getDirectories().includes('media'));
@@ -143,7 +148,7 @@ describe('Importer', function () {
             const removeStub = sinon.stub(fs, 'remove').withArgs(file).returns(Promise.resolve());
 
             await ImportManager.cleanUp();
-            assert.equal(removeStub.calledOnce, true);
+            sinon.assert.calledOnce(removeStub);
             assert.equal(ImportManager.fileToDelete, null);
         });
 
@@ -152,7 +157,7 @@ describe('Importer', function () {
             const removeStub = sinon.stub(fs, 'remove').returns(Promise.resolve());
 
             await ImportManager.cleanUp();
-            assert.equal(removeStub.called, false);
+            sinon.assert.notCalled(removeStub);
         });
 
         it('silently ignores clean up errors', async function () {
@@ -162,8 +167,8 @@ describe('Importer', function () {
             const removeStub = sinon.stub(fs, 'remove').withArgs(file).returns(Promise.reject(new Error('Unknown file')));
 
             await ImportManager.cleanUp();
-            assert.equal(removeStub.calledOnce, true);
-            assert.equal(loggingStub.calledOnce, true);
+            sinon.assert.calledOnce(removeStub);
+            sinon.assert.calledOnce(loggingStub);
             assert.equal(ImportManager.fileToDelete, null);
         });
 
@@ -175,8 +180,8 @@ describe('Importer', function () {
                 const fileSpy = sinon.stub(ImportManager, 'processFile').returns(Promise.resolve({}));
 
                 ImportManager.loadFile(testFile).then(function () {
-                    assert.equal(zipSpy.calledOnce, false);
-                    assert.equal(fileSpy.calledOnce, true);
+                    sinon.assert.notCalled(zipSpy);
+                    sinon.assert.calledOnce(fileSpy);
                     done();
                 }).catch(done);
             });
@@ -188,8 +193,8 @@ describe('Importer', function () {
                 const fileSpy = sinon.stub(ImportManager, 'processFile').resolves({});
 
                 ImportManager.loadFile(testZip).then(function () {
-                    assert.equal(zipSpy.calledOnce, true);
-                    assert.equal(fileSpy.calledOnce, false);
+                    sinon.assert.calledOnce(zipSpy);
+                    sinon.assert.notCalled(fileSpy);
                     done();
                 }).catch(done);
             });
@@ -214,22 +219,22 @@ describe('Importer', function () {
                 getFileSpy.withArgs(RevueHandler, sinon.match.string).returns([{path: '/tmp/dir/myFile.json', name: 'myFile.json'}]);
 
                 ImportManager.processZip(testZip).then(function (zipResult) {
-                    assert.equal(extractSpy.calledOnce, true);
-                    assert.equal(validSpy.calledOnce, true);
-                    assert.equal(baseDirSpy.calledOnce, true);
-                    assert.equal(getFileSpy.callCount, 6);
-                    assert.equal(jsonSpy.calledOnce, true);
-                    assert.equal(imageSpy.called, false);
-                    assert.equal(mdSpy.called, false);
-                    assert.equal(revueSpy.called, true);
+                    sinon.assert.calledOnce(extractSpy);
+                    sinon.assert.calledOnce(validSpy);
+                    sinon.assert.calledOnce(baseDirSpy);
+                    sinon.assert.callCount(getFileSpy, 6);
+                    sinon.assert.calledOnce(jsonSpy);
+                    sinon.assert.notCalled(imageSpy);
+                    sinon.assert.notCalled(mdSpy);
+                    sinon.assert.called(revueSpy);
 
                     ImportManager.processFile(testFile, '.json').then(function (fileResult) {
-                        assert.equal(jsonSpy.calledTwice, true);
+                        sinon.assert.calledTwice(jsonSpy);
 
                         // They should both have data keys, and they should be equivalent
-                        zipResult.should.have.property('data');
-                        fileResult.should.have.property('data');
-                        zipResult.should.eql(fileResult);
+                        assert('data' in zipResult);
+                        assert('data' in fileResult);
+                        assert.deepEqual(zipResult, fileResult);
                         done();
                     });
                 }).catch(done);
@@ -239,61 +244,61 @@ describe('Importer', function () {
                 it('accepts a zip with a base directory', function () {
                     const testDir = path.resolve('test/utils/fixtures/import/zips/zip-with-base-dir');
 
-                    ImportManager.isValidZip(testDir).should.be.ok();
+                    assert(ImportManager.isValidZip(testDir));
                 });
 
                 it('accepts a zip without a base directory', function () {
                     const testDir = path.resolve('test/utils/fixtures/import/zips/zip-without-base-dir');
 
-                    ImportManager.isValidZip(testDir).should.be.ok();
+                    assert(ImportManager.isValidZip(testDir));
                 });
 
                 it('accepts a zip with an image directory', function () {
                     const testDir = path.resolve('test/utils/fixtures/import/zips/zip-image-dir');
 
-                    ImportManager.isValidZip(testDir).should.be.ok();
+                    assert(ImportManager.isValidZip(testDir));
                 });
 
                 it('accepts a zip with a content directory', function () {
                     const testDir = path.resolve('test/utils/fixtures/import/zips/zip-content-dir');
 
-                    ImportManager.isValidZip(testDir).should.be.ok();
+                    assert(ImportManager.isValidZip(testDir));
                 });
 
                 it('accepts a zip with a content/images directory', function () {
                     const testDir = path.resolve('test/utils/fixtures/import/zips/zip-content-images-subdir');
 
-                    ImportManager.isValidZip(testDir).should.be.ok();
+                    assert(ImportManager.isValidZip(testDir));
                 });
 
                 it('accepts a zip with a media directory', function () {
                     const testDir = path.resolve('test/utils/fixtures/import/zips/zip-media-dir');
 
-                    ImportManager.isValidZip(testDir).should.be.ok();
+                    assert(ImportManager.isValidZip(testDir));
                 });
 
                 it('accepts a zip with a files directory', function () {
                     const testDir = path.resolve('test/utils/fixtures/import/zips/zip-files-dir');
 
-                    ImportManager.isValidZip(testDir).should.be.ok();
+                    assert(ImportManager.isValidZip(testDir));
                 });
 
                 it('accepts a zip with uppercase image extensions', function () {
                     const testDir = path.resolve('test/utils/fixtures/import/zips/zip-uppercase-extensions');
 
-                    ImportManager.isValidZip(testDir).should.be.ok();
+                    assert(ImportManager.isValidZip(testDir));
                 });
 
                 it('fails a zip with two base directories', function () {
                     const testDir = path.resolve('test/utils/fixtures/import/zips/zip-with-double-base-dir');
 
-                    ImportManager.isValidZip.bind(ImportManager, testDir).should.throw(errors.UnsupportedMediaTypeError);
+                    assert.throws(ImportManager.isValidZip.bind(ImportManager, testDir), errors.UnsupportedMediaTypeError);
                 });
 
                 it('fails a zip with no content', function () {
                     const testDir = path.resolve('test/utils/fixtures/import/zips/zip-invalid');
 
-                    ImportManager.isValidZip.bind(ImportManager, testDir).should.throw(errors.UnsupportedMediaTypeError);
+                    assert.throws(ImportManager.isValidZip.bind(ImportManager, testDir), errors.UnsupportedMediaTypeError);
                 });
             });
 
@@ -312,9 +317,9 @@ describe('Importer', function () {
                     const extractSpy = sinon.stub(ImportManager, 'extractZip').returns(Promise.resolve(testDir));
 
                     const zipResult = await ImportManager.processZip(testZip);
-                    zipResult.data.should.not.be.undefined();
+                    assertExists(zipResult.data);
                     assert.equal(zipResult.images, undefined);
-                    assert.equal(extractSpy.calledOnce, true);
+                    sinon.assert.calledOnce(extractSpy);
                 });
 
                 it('accepts a zip without a base directory', async function () {
@@ -322,9 +327,9 @@ describe('Importer', function () {
                     const extractSpy = sinon.stub(ImportManager, 'extractZip').returns(Promise.resolve(testDir));
 
                     const zipResult = await ImportManager.processZip(testZip);
-                    zipResult.data.should.not.be.undefined();
+                    assertExists(zipResult.data);
                     assert.equal(zipResult.images, undefined);
-                    assert.equal(extractSpy.calledOnce, true);
+                    sinon.assert.calledOnce(extractSpy);
                 });
 
                 it('accepts a zip with an image directory', async function () {
@@ -334,7 +339,7 @@ describe('Importer', function () {
                     const zipResult = await ImportManager.processZip(testZip);
                     assert.equal(zipResult.images.length, 1);
                     assert.equal(zipResult.data, undefined);
-                    assert.equal(extractSpy.calledOnce, true);
+                    sinon.assert.calledOnce(extractSpy);
                 });
 
                 it('accepts a zip with uppercase image extensions', async function () {
@@ -344,23 +349,23 @@ describe('Importer', function () {
                     const zipResult = await ImportManager.processZip(testZip);
                     assert.equal(zipResult.images.length, 1);
                     assert.equal(zipResult.data, undefined);
-                    assert.equal(extractSpy.calledOnce, true);
+                    sinon.assert.calledOnce(extractSpy);
                 });
 
                 it('throws zipContainsMultipleDataFormats', async function () {
                     const testDir = path.resolve('test/utils/fixtures/import/zips/zip-multiple-data-formats');
                     const extractSpy = sinon.stub(ImportManager, 'extractZip').returns(Promise.resolve(testDir));
 
-                    await should(ImportManager.processZip(testZip)).rejectedWith(/multiple data formats/);
-                    assert.equal(extractSpy.calledOnce, true);
+                    await assert.rejects(ImportManager.processZip(testZip), /multiple data formats/);
+                    sinon.assert.calledOnce(extractSpy);
                 });
 
                 it('throws noContentToImport', async function () {
                     const testDir = path.resolve('test/utils/fixtures/import/zips/zip-empty');
                     const extractSpy = sinon.stub(ImportManager, 'extractZip').returns(Promise.resolve(testDir));
 
-                    await should(ImportManager.processZip(testZip)).rejectedWith(/not include any content/);
-                    assert.equal(extractSpy.calledOnce, true);
+                    await assert.rejects(ImportManager.processZip(testZip), /not include any content/);
+                    sinon.assert.calledOnce(extractSpy);
                 });
             });
 
@@ -392,7 +397,7 @@ describe('Importer', function () {
                 it('throws invalidZipFileBaseDirectory', function () {
                     const testDir = path.resolve('test/utils/fixtures/import/zips/zip-empty');
 
-                    should(() => ImportManager.getBaseDirectory(testDir)).throwError(/invalid zip file/i);
+                    assert.throws(() => ImportManager.getBaseDirectory(testDir), /invalid zip file/i);
                 });
             });
 
@@ -431,19 +436,19 @@ describe('Importer', function () {
                 const revueSpy = sinon.spy(RevueImporter, 'preProcess');
 
                 ImportManager.preProcess(inputCopy).then(function (output) {
-                    assert.equal(revueSpy.calledOnce, true);
-                    assert.equal(revueSpy.calledWith(inputCopy), true);
-                    assert.equal(dataSpy.calledOnce, true);
-                    assert.equal(dataSpy.calledWith(inputCopy), true);
-                    assert.equal(imageSpy.calledOnce, true);
-                    assert.equal(imageSpy.calledWith(inputCopy), true);
+                    sinon.assert.calledOnce(revueSpy);
+                    sinon.assert.calledWith(revueSpy, inputCopy);
+                    sinon.assert.calledOnce(dataSpy);
+                    sinon.assert.calledWith(dataSpy, inputCopy);
+                    sinon.assert.calledOnce(imageSpy);
+                    sinon.assert.calledWith(imageSpy, inputCopy);
                     // eql checks for equality
                     // equal checks the references are for the same object
-                    output.should.not.equal(input);
-                    output.should.have.property('preProcessedByData', true);
-                    output.should.have.property('preProcessedByImage', true);
-                    output.should.have.property('preProcessedByMedia', true);
-                    output.should.have.property('preProcessedByFiles', true);
+                    assert.notEqual(output, input);
+                    assert.equal(output.preProcessedByData, true);
+                    assert.equal(output.preProcessedByImage, true);
+                    assert.equal(output.preProcessedByMedia, true);
+                    assert.equal(output.preProcessedByFiles, true);
                     done();
                 }).catch(done);
             });
@@ -475,13 +480,13 @@ describe('Importer', function () {
                 ImportManager.doImport(inputCopy).then(function (output) {
                     // eql checks for equality
                     // equal checks the references are for the same object
-                    assert.equal(dataSpy.calledOnce, true);
-                    assert.equal(imageSpy.calledOnce, true);
-                    dataSpy.getCall(0).args[0].should.eql(expectedData);
-                    imageSpy.getCall(0).args[0].should.eql(expectedImages);
+                    sinon.assert.calledOnce(dataSpy);
+                    sinon.assert.calledOnce(imageSpy);
+                    assert.deepEqual(dataSpy.getCall(0).args[0], expectedData);
+                    assert.deepEqual(imageSpy.getCall(0).args[0], expectedImages);
 
                     // we stubbed this as a noop but ImportManager calls with sequence, so we should get an array
-                    output.should.eql({images: expectedImages, data: expectedData});
+                    assert.deepEqual(output, {images: expectedImages, data: expectedData});
                     done();
                 }).catch(done);
             });
@@ -494,7 +499,7 @@ describe('Importer', function () {
             it('is currently a noop', function (done) {
                 const input = [{data: {}, images: []}];
                 ImportManager.generateReport(input).then(function (output) {
-                    output.should.equal(input);
+                    assert.equal(output, input);
                     done();
                 }).catch(done);
             });
@@ -509,11 +514,11 @@ describe('Importer', function () {
                 const cleanupSpy = sinon.stub(ImportManager, 'cleanUp').returns(Promise.resolve());
 
                 ImportManager.importFromFile({name: 'test.json', path: '/test.json'}).then(function () {
-                    assert.equal(loadFileSpy.calledOnce, true);
-                    assert.equal(preProcessSpy.calledOnce, true);
-                    assert.equal(doImportSpy.calledOnce, true);
-                    assert.equal(generateReportSpy.calledOnce, true);
-                    assert.equal(cleanupSpy.calledOnce, true);
+                    sinon.assert.calledOnce(loadFileSpy);
+                    sinon.assert.calledOnce(preProcessSpy);
+                    sinon.assert.calledOnce(doImportSpy);
+                    sinon.assert.calledOnce(generateReportSpy);
+                    sinon.assert.calledOnce(cleanupSpy);
                     sinon.assert.callOrder(loadFileSpy, preProcessSpy, doImportSpy, generateReportSpy, cleanupSpy);
 
                     done();
@@ -525,12 +530,12 @@ describe('Importer', function () {
     describe('JSONHandler', function () {
         it('has the correct interface', function () {
             assert.equal(JSONHandler.type, 'data');
-            JSONHandler.extensions.should.be.instanceof(Array).and.have.lengthOf(1);
-            assert(JSONHandler.extensions.includes('.json'));
-            JSONHandler.contentTypes.should.be.instanceof(Array).and.have.lengthOf(2);
+            assert.deepEqual(JSONHandler.extensions, ['.json']);
+            assert(Array.isArray(JSONHandler.contentTypes));
+            assert.equal(JSONHandler.contentTypes.length, 2);
             assert(JSONHandler.contentTypes.includes('application/octet-stream'));
             assert(JSONHandler.contentTypes.includes('application/json'));
-            JSONHandler.loadFile.should.be.instanceof(Function);
+            assert.equal(typeof JSONHandler.loadFile, 'function');
         });
 
         it('correctly handles a valid db api wrapper', function (done) {
@@ -563,13 +568,15 @@ describe('Importer', function () {
     describe('MarkdownHandler', function () {
         it('has the correct interface', function () {
             assert.equal(MarkdownHandler.type, 'data');
-            MarkdownHandler.extensions.should.be.instanceof(Array).and.have.lengthOf(2);
+            assert(Array.isArray(MarkdownHandler.extensions));
+            assert.equal(MarkdownHandler.extensions.length, 2);
             assert(MarkdownHandler.extensions.includes('.md'));
             assert(MarkdownHandler.extensions.includes('.markdown'));
-            MarkdownHandler.contentTypes.should.be.instanceof(Array).and.have.lengthOf(2);
+            assert(Array.isArray(MarkdownHandler.contentTypes));
+            assert.equal(MarkdownHandler.contentTypes.length, 2);
             assert(MarkdownHandler.contentTypes.includes('application/octet-stream'));
             assert(MarkdownHandler.contentTypes.includes('text/plain'));
-            MarkdownHandler.loadFile.should.be.instanceof(Function);
+            assert.equal(typeof MarkdownHandler.loadFile, 'function');
         });
 
         it('does convert a markdown file into a post object', function (done) {
@@ -587,7 +594,7 @@ describe('Importer', function () {
                 assert.equal(result.data.posts[0].title, 'test-1');
                 assert.equal(result.data.posts[0].created_at, 1418990400000);
                 assert.equal(moment.utc(result.data.posts[0].created_at).format('DD MM YY HH:mm'), '19 12 14 12:00');
-                result.data.posts[0].should.not.have.property('image');
+                assert(!('image' in result.data.posts[0]));
 
                 done();
             }).catch(done);
@@ -607,7 +614,7 @@ describe('Importer', function () {
                 assert.equal(result.data.posts[0].slug, 'test-2');
                 assert.equal(result.data.posts[0].title, 'Welcome to Ghost');
                 assert.equal(result.data.posts[0].created_at, 1418990400000);
-                result.data.posts[0].should.not.have.property('image');
+                assert(!('image' in result.data.posts[0]));
 
                 done();
             }).catch(done);
@@ -648,7 +655,7 @@ describe('Importer', function () {
                 assert.equal(result.data.posts[0].title, 'Welcome to Ghost');
                 assert.equal(result.data.posts[0].published_at, 1418990400000);
                 assert.equal(moment.utc(result.data.posts[0].published_at).format('DD MM YY HH:mm'), '19 12 14 12:00');
-                result.data.posts[0].should.not.have.property('image');
+                assert(!('image' in result.data.posts[0]));
 
                 done();
             }).catch(done);
@@ -663,7 +670,7 @@ describe('Importer', function () {
             }];
 
             MarkdownHandler.loadFile(file).then(function (result) {
-                result.data.posts.should.be.empty();
+                assert.equal(result.data.posts.length, 0);
 
                 done();
             }).catch(done);
@@ -697,7 +704,7 @@ describe('Importer', function () {
                 assert.equal(result.data.posts[one].title, 'Welcome to Ghost');
                 assert.equal(result.data.posts[one].published_at, 1418990400000);
                 assert.equal(moment.utc(result.data.posts[one].published_at).format('DD MM YY HH:mm'), '19 12 14 12:00');
-                result.data.posts[one].should.not.have.property('image');
+                assert(!('image' in result.data.posts[one]));
 
                 // draft-2014-12-19-test-3.md
                 assert.equal(result.data.posts[two].markdown, 'You\'re live! Nice.');
@@ -715,8 +722,8 @@ describe('Importer', function () {
     describe('DataImporter', function () {
         it('has the correct interface', function () {
             assert.equal(DataImporter.type, 'data');
-            DataImporter.preProcess.should.be.instanceof(Function);
-            DataImporter.doImport.should.be.instanceof(Function);
+            assert.equal(typeof DataImporter.preProcess, 'function');
+            assert.equal(typeof DataImporter.doImport, 'function');
         });
 
         it('does preprocess posts, users and tags correctly', function () {
@@ -724,9 +731,9 @@ describe('Importer', function () {
             const outputData = DataImporter.preProcess(_.cloneDeep(inputData));
 
             // Data preprocess is a noop
-            inputData.data.data.posts[0].should.eql(outputData.data.data.posts[0]);
-            inputData.data.data.tags[0].should.eql(outputData.data.data.tags[0]);
-            inputData.data.data.users[0].should.eql(outputData.data.data.users[0]);
+            assert.deepEqual(inputData.data.data.posts[0], outputData.data.data.posts[0]);
+            assert.deepEqual(inputData.data.data.tags[0], outputData.data.data.tags[0]);
+            assert.deepEqual(inputData.data.data.users[0], outputData.data.data.users[0]);
         });
     });
 });

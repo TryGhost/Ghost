@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const should = require('should');
+const {assertExists} = require('../../../utils/assertions');
 const supertest = require('supertest');
 const testUtils = require('../../../utils');
 const config = require('../../../../core/shared/config');
@@ -37,14 +37,14 @@ describe('Webhooks API', function () {
                 assert.equal(res.headers['x-cache-invalidate'], undefined);
                 const jsonResponse = res.body;
 
-                should.exist(jsonResponse);
-                should.exist(jsonResponse.webhooks);
-                should.exist(jsonResponse.webhooks[0].event);
-                should.exist(jsonResponse.webhooks[0].target_url);
+                assertExists(jsonResponse);
+                assertExists(jsonResponse.webhooks);
+                assertExists(jsonResponse.webhooks[0].event);
+                assertExists(jsonResponse.webhooks[0].target_url);
 
                 assert.equal(jsonResponse.webhooks[0].event, 'test.create');
                 assert.equal(jsonResponse.webhooks[0].target_url, 'http://example.com/webhooks/test/extra/canary');
-                jsonResponse.webhooks[0].integration_id.should.eql(testUtils.DataGenerator.Content.api_keys[0].integration_id);
+                assert.equal(jsonResponse.webhooks[0].integration_id, testUtils.DataGenerator.Content.api_keys[0].integration_id);
                 assert.equal(jsonResponse.webhooks[0].name, 'test');
                 assert.equal(jsonResponse.webhooks[0].secret, 'thisissecret');
                 assert.equal(jsonResponse.webhooks[0].api_version, 'canary');

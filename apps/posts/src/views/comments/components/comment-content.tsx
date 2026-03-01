@@ -47,7 +47,7 @@ function CommentContent({item}: {item: Comment}) {
                     dangerouslySetInnerHTML={{__html: item.html || ''}}
                     ref={contentRef}
                     className={cn(
-                        'prose flex-1 text-base leading-[1.5em] [&_*]:leading-[1.5em] [&_*]:text-base [&_*]:font-normal [&_blockquote]:border-l-[3px] [&_blockquote]:border-foreground [&_blockquote]:p-0 [&_blockquote]:pl-3 [&_blockquote_p]:mt-0 [&_a]:underline',
+                        'prose flex-1 text-base max-w-[80ch] balance leading-[1.5em] [&_*]:leading-[1.5em] [&_*]:text-base [&_*]:font-normal [&_blockquote]:border-l-[3px] [&_blockquote]:border-foreground [&_blockquote]:p-0 [&_blockquote]:pl-3 [&_blockquote_p]:mt-0 [&_a]:underline',
                         (isExpanded ?
                             '-mb-1 [&_p]:mb-[0.85em]'
                             :

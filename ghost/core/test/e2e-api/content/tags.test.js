@@ -1,5 +1,5 @@
-const assert = require('assert/strict');
-const should = require('should');
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../utils/assertions');
 const supertest = require('supertest');
 const _ = require('lodash');
 const url = require('url');
@@ -33,7 +33,7 @@ describe('Tags Content API', function () {
 
         assert.equal(res.headers['x-cache-invalidate'], undefined);
         const jsonResponse = res.body;
-        should.exist(jsonResponse.tags);
+        assertExists(jsonResponse.tags);
         localUtils.API.checkResponse(jsonResponse, 'tags');
         assert.equal(jsonResponse.tags.length, 5);
         localUtils.API.checkResponse(jsonResponse.tags[0], 'tag', ['url']);
@@ -50,9 +50,9 @@ describe('Tags Content API', function () {
             assert.equal(jsonResponse.tags[4].name, 'kitchen sink');
         }
 
-        should.exist(res.body.tags[0].url);
-        should.exist(url.parse(res.body.tags[0].url).protocol);
-        should.exist(url.parse(res.body.tags[0].url).host);
+        assertExists(res.body.tags[0].url);
+        assertExists(url.parse(res.body.tags[0].url).protocol);
+        assertExists(url.parse(res.body.tags[0].url).host);
     });
 
     it('Can request tags with limit=all', async function () {
@@ -64,7 +64,7 @@ describe('Tags Content API', function () {
 
         assert.equal(res.headers['x-cache-invalidate'], undefined);
         const jsonResponse = res.body;
-        should.exist(jsonResponse.tags);
+        assertExists(jsonResponse.tags);
         localUtils.API.checkResponse(jsonResponse, 'tags');
         assert.equal(jsonResponse.tags.length, 5);
         localUtils.API.checkResponse(jsonResponse.tags[0], 'tag', ['url']);
@@ -80,7 +80,7 @@ describe('Tags Content API', function () {
 
         assert.equal(res.headers['x-cache-invalidate'], undefined);
         const jsonResponse = res.body;
-        should.exist(jsonResponse.tags);
+        assertExists(jsonResponse.tags);
         localUtils.API.checkResponse(jsonResponse, 'tags');
         assert.equal(jsonResponse.tags.length, 3);
         localUtils.API.checkResponse(jsonResponse.tags[0], 'tag', ['url']);
@@ -96,8 +96,8 @@ describe('Tags Content API', function () {
 
         const jsonResponse = res.body;
 
-        should.exist(jsonResponse.tags);
-        jsonResponse.tags.should.be.an.Array().with.lengthOf(5);
+        assert(Array.isArray(jsonResponse.tags));
+        assert.equal(jsonResponse.tags.length, 5);
 
         // Each tag should have the correct count
         assert.equal(_.find(jsonResponse.tags, {name: 'Getting Started'}).count.posts, 7);
@@ -123,6 +123,20 @@ describe('Tags Content API', function () {
         assert(getTag('kitchen sink').url.endsWith('/tag/kitchen-sink/'));
         assert(getTag('bacon').url.endsWith('/tag/bacon/'));
         assert(getTag('chorizo').url.endsWith('/tag/chorizo/'));
+    });
+
+    it('Can request tags with slug filter ordering', async function () {
+        const res = await request.get(localUtils.API.getApiQuery(`tags/?key=${validKey}&filter=slug:[bacon,chorizo]`))
+            .set('Origin', testUtils.API.getURL())
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.public)
+            .expect(200);
+
+        const jsonResponse = res.body;
+        assertExists(jsonResponse.tags);
+        // Should return tags matching the slug filter, ordered by slug position
+        assert.equal(jsonResponse.tags[0].slug, 'bacon');
+        assert.equal(jsonResponse.tags[1].slug, 'chorizo');
     });
 
     it('Can use single url field and have valid url fields', async function () {

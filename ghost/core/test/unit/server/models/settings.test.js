@@ -1,8 +1,9 @@
 const assert = require('node:assert/strict');
-const should = require('should');
+const {assertExists} = require('../../../utils/assertions');
 const sinon = require('sinon');
 const mockDb = require('mock-knex');
 const models = require('../../../../core/server/models');
+const config = require('../../../../core/shared/config');
 const {knex} = require('../../../../core/server/data/db');
 const events = require('../../../../core/server/lib/common/events');
 const errors = require('@tryghost/errors');
@@ -50,9 +51,9 @@ describe('Unit: models/settings', function () {
                 type: 'string'
             })
                 .then(() => {
-                    assert.equal(eventSpy.calledTwice, true);
-                    assert.equal(eventSpy.firstCall.calledWith('settings.added'), true);
-                    assert.equal(eventSpy.secondCall.calledWith('settings.description.added'), true);
+                    sinon.assert.calledTwice(eventSpy);
+                    sinon.assert.calledWith(eventSpy.firstCall, 'settings.added');
+                    sinon.assert.calledWith(eventSpy.secondCall, 'settings.description.added');
                 });
         });
 
@@ -74,9 +75,9 @@ describe('Unit: models/settings', function () {
                 value: 'edited value'
             })
                 .then(() => {
-                    assert.equal(eventSpy.calledTwice, true);
-                    assert.equal(eventSpy.firstCall.calledWith('settings.edited'), true);
-                    assert.equal(eventSpy.secondCall.calledWith('settings.description.edited'), true);
+                    sinon.assert.calledTwice(eventSpy);
+                    sinon.assert.calledWith(eventSpy.firstCall, 'settings.edited');
+                    sinon.assert.calledWith(eventSpy.secondCall, 'settings.description.edited');
                 });
         });
     });
@@ -84,23 +85,24 @@ describe('Unit: models/settings', function () {
     describe('format', function () {
         it('transforms urls when persisting to db', function () {
             const setting = models.Settings.forge();
+            const siteUrl = config.get('url');
 
-            let returns = setting.formatOnWrite({key: 'cover_image', value: 'http://127.0.0.1:2369/cover_image.png', type: 'string'});
+            let returns = setting.formatOnWrite({key: 'cover_image', value: `${siteUrl}/cover_image.png`, type: 'string'});
             assert.equal(returns.value, '__GHOST_URL__/cover_image.png');
 
-            returns = setting.formatOnWrite({key: 'logo', value: 'http://127.0.0.1:2369/logo.png', type: 'string'});
+            returns = setting.formatOnWrite({key: 'logo', value: `${siteUrl}/logo.png`, type: 'string'});
             assert.equal(returns.value, '__GHOST_URL__/logo.png');
 
-            returns = setting.formatOnWrite({key: 'icon', value: 'http://127.0.0.1:2369/icon.png', type: 'string'});
+            returns = setting.formatOnWrite({key: 'icon', value: `${siteUrl}/icon.png`, type: 'string'});
             assert.equal(returns.value, '__GHOST_URL__/icon.png');
 
-            returns = setting.formatOnWrite({key: 'portal_button_icon', value: 'http://127.0.0.1:2369/portal_button_icon.png', type: 'string'});
+            returns = setting.formatOnWrite({key: 'portal_button_icon', value: `${siteUrl}/portal_button_icon.png`, type: 'string'});
             assert.equal(returns.value, '__GHOST_URL__/portal_button_icon.png');
 
-            returns = setting.formatOnWrite({key: 'og_image', value: 'http://127.0.0.1:2369/og_image.png', type: 'string'});
+            returns = setting.formatOnWrite({key: 'og_image', value: `${siteUrl}/og_image.png`, type: 'string'});
             assert.equal(returns.value, '__GHOST_URL__/og_image.png');
 
-            returns = setting.formatOnWrite({key: 'twitter_image', value: 'http://127.0.0.1:2369/twitter_image.png', type: 'string'});
+            returns = setting.formatOnWrite({key: 'twitter_image', value: `${siteUrl}/twitter_image.png`, type: 'string'});
             assert.equal(returns.value, '__GHOST_URL__/twitter_image.png');
         });
     });
@@ -108,6 +110,7 @@ describe('Unit: models/settings', function () {
     describe('parse', function () {
         it('ensure correct parsing when fetching from db', function () {
             const setting = models.Settings.forge();
+            const siteUrl = config.get('url');
 
             let returns = setting.parse({key: 'is_private', value: 'false', type: 'boolean'});
             assert.equal(returns.value, false);
@@ -131,22 +134,22 @@ describe('Unit: models/settings', function () {
             assert.equal(returns.value, 'null');
 
             returns = setting.parse({key: 'cover_image', value: '__GHOST_URL__/cover_image.png', type: 'string'});
-            assert.equal(returns.value, 'http://127.0.0.1:2369/cover_image.png');
+            assert.equal(returns.value, `${siteUrl}/cover_image.png`);
 
             returns = setting.parse({key: 'logo', value: '__GHOST_URL__/logo.png', type: 'string'});
-            assert.equal(returns.value, 'http://127.0.0.1:2369/logo.png');
+            assert.equal(returns.value, `${siteUrl}/logo.png`);
 
             returns = setting.parse({key: 'icon', value: '__GHOST_URL__/icon.png', type: 'string'});
-            assert.equal(returns.value, 'http://127.0.0.1:2369/icon.png');
+            assert.equal(returns.value, `${siteUrl}/icon.png`);
 
             returns = setting.parse({key: 'portal_button_icon', value: '__GHOST_URL__/portal_button_icon.png', type: 'string'});
-            assert.equal(returns.value, 'http://127.0.0.1:2369/portal_button_icon.png');
+            assert.equal(returns.value, `${siteUrl}/portal_button_icon.png`);
 
             returns = setting.parse({key: 'og_image', value: '__GHOST_URL__/og_image.png', type: 'string'});
-            assert.equal(returns.value, 'http://127.0.0.1:2369/og_image.png');
+            assert.equal(returns.value, `${siteUrl}/og_image.png`);
 
             returns = setting.parse({key: 'twitter_image', value: '__GHOST_URL__/twitter_image.png', type: 'string'});
-            assert.equal(returns.value, 'http://127.0.0.1:2369/twitter_image.png');
+            assert.equal(returns.value, `${siteUrl}/twitter_image.png`);
         });
     });
 
@@ -161,8 +164,8 @@ describe('Unit: models/settings', function () {
             } catch (err) {
                 error = err;
             } finally {
-                should.exist(error, `Setting Model should throw when saving invalid ${key}`);
-                should.ok(error instanceof errors.ValidationError, 'Setting Model should throw ValidationError');
+                assertExists(error, `Setting Model should throw when saving invalid ${key}`);
+                assert(error instanceof errors.ValidationError, 'Setting Model should throw ValidationError');
             }
         }
 
@@ -177,17 +180,11 @@ describe('Unit: models/settings', function () {
 
             const setting = models.Settings.forge({key, value, type, group});
 
-            let error;
-            try {
-                await setting.save();
-                error = null;
-            } catch (err) {
-                error = err;
-            } finally {
-                tracker.uninstall();
-                mockDb.unmock(knex);
-                should.not.exist(error, `Setting Model should not throw when saving valid ${key}`);
-            }
+            // This should not reject.
+            await setting.save();
+
+            tracker.uninstall();
+            mockDb.unmock(knex);
         }
 
         it('throws when stripe_secret_key is invalid', async function () {

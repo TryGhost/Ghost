@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const should = require('should');
+const {assertExists} = require('../../../../utils/assertions');
 const sinon = require('sinon');
 const fs = require('fs-extra');
 
@@ -24,7 +24,7 @@ describe('Unit: services/url/LocalFileCache', function () {
 
             const cachedUrls = await localFileCache.read('urls');
 
-            cachedUrls.should.not.be.undefined();
+            assertExists(cachedUrls);
             assert.equal(cachedUrls.urls, 'urls!');
         });
 
@@ -66,7 +66,7 @@ describe('Unit: services/url/LocalFileCache', function () {
             const result = await localFileCache.write('urls', {data: 'test'});
 
             assert.equal(result, true);
-            assert.equal(writeFileStub.called, true);
+            sinon.assert.called(writeFileStub);
         });
 
         it('does not write to the file system is writes are disabled', async function () {
@@ -83,7 +83,7 @@ describe('Unit: services/url/LocalFileCache', function () {
             const result = await localFileCache.write('urls', {data: 'test'});
 
             assert.equal(result, null);
-            assert.equal(writeFileStub.called, false);
+            sinon.assert.notCalled(writeFileStub);
         });
     });
 });

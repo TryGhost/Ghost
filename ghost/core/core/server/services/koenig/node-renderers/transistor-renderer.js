@@ -16,40 +16,37 @@ function renderTransistorNode(node, options = {}) {
 function frontendTemplate(node, document, options) {
     const figure = document.createElement('figure');
     figure.setAttribute('class', 'kg-card kg-transistor-card');
-    const memberUuid = options.memberUuid;
 
-    if (!memberUuid) {
-        // Transistor does not support public/non-member embeds for now, so we return null
-        return null;
-    }
+    const placeholder = document.createElement('div');
+    placeholder.setAttribute('class', 'kg-transistor-placeholder');
 
-    const embedUrl = new URL(`https://partner.transistor.fm/ghost/embed/${memberUuid}`);
+    const icon = document.createElement('div');
+    icon.setAttribute('class', 'kg-transistor-icon');
+    icon.innerHTML = `<svg viewBox="5 0.5 144 144" xmlns="http://www.w3.org/2000/svg"><g fill="currentColor"><path d="M77 120.3c-2.6 0-4.8-2.1-4.8-4.8V29.4c0-2.6 2.1-4.8 4.8-4.8s4.8 2.1 4.8 4.8v86.2c0 2.6-2.2 4.7-4.8 4.7z"/><path d="M57 77.3H34c-2.6 0-4.8-2.1-4.8-4.8 0-2.6 2.1-4.8 4.8-4.8h23c2.6 0 4.8 2.1 4.8 4.8 0 2.6-2.1 4.8-4.8 4.8z"/><path d="M120.1 77.3h-23c-2.6 0-4.8-2.1-4.8-4.8 0-2.6 2.1-4.8 4.8-4.8h23c2.6 0 4.8 2.1 4.8 4.8 0 2.6-2.2 4.8-4.8 4.8z"/><path d="M77 144.5c-39.7 0-72-32.3-72-72s32.3-72 72-72 72 32.3 72 72-32.3 72-72 72zM77 10c-34.4 0-62.4 28-62.4 62.4 0 34.4 28 62.4 62.4 62.4 34.4 0 62.4-28 62.4-62.4C139.4 38 111.4 10 77 10z"/></g></svg>`;
 
-    if (node.accentColor) {
-        embedUrl.searchParams.set('color', node.accentColor.replace(/^#/, ''));
-    }
-    if (node.backgroundColor) {
-        embedUrl.searchParams.set('background', node.backgroundColor.replace(/^#/, ''));
-    }
+    const content = document.createElement('div');
+    content.setAttribute('class', 'kg-transistor-content');
 
-    const iframe = document.createElement('iframe');
-    iframe.setAttribute('width', '100%');
-    iframe.setAttribute('height', '400');
-    iframe.setAttribute('title', 'Transistor podcasts');
-    iframe.setAttribute('frameborder', 'no');
-    iframe.setAttribute('scrolling', 'no');
-    iframe.setAttribute('seamless', '');
-    iframe.setAttribute('src', embedUrl.toString());
-    iframe.setAttribute('data-kg-transistor-embed', '');
+    const title = document.createElement('div');
+    title.setAttribute('class', 'kg-transistor-title');
+    title.textContent = 'Members-only podcasts';
 
-    figure.appendChild(iframe);
+    const description = document.createElement('div');
+    description.setAttribute('class', 'kg-transistor-description');
+    description.textContent = 'Your Transistor podcasts will appear here. Members will see subscribe links based on their access level.';
 
-    return renderWithVisibility({element: figure}, node.visibility, options);
+    content.appendChild(title);
+    content.appendChild(description);
+    placeholder.appendChild(icon);
+    placeholder.appendChild(content);
+    figure.appendChild(placeholder);
+
+    return renderWithVisibility({element: figure, type: 'inner'}, node.visibility, options);
 }
 
 function emailTemplate(node, document, options) {
-    const accentColor = node.accentColor || '#15171A';
-    const transistorLogo = 'data:image/svg+xml,' + encodeURIComponent(`<svg viewBox="5 0.5 144 144" xmlns="http://www.w3.org/2000/svg"><g fill="${accentColor}"><path d="M77 120.3c-2.6 0-4.8-2.1-4.8-4.8V29.4c0-2.6 2.1-4.8 4.8-4.8s4.8 2.1 4.8 4.8v86.2c0 2.6-2.2 4.7-4.8 4.7z"/><path d="M57 77.3H34c-2.6 0-4.8-2.1-4.8-4.8 0-2.6 2.1-4.8 4.8-4.8h23c2.6 0 4.8 2.1 4.8 4.8 0 2.6-2.1 4.8-4.8 4.8z"/><path d="M120.1 77.3h-23c-2.6 0-4.8-2.1-4.8-4.8 0-2.6 2.1-4.8 4.8-4.8h23c2.6 0 4.8 2.1 4.8 4.8 0 2.6-2.2 4.8-4.8 4.8z"/><path d="M77 144.5c-39.7 0-72-32.3-72-72s32.3-72 72-72 72 32.3 72 72-32.3 72-72 72zM77 10c-34.4 0-62.4 28-62.4 62.4 0 34.4 28 62.4 62.4 62.4 34.4 0 62.4-28 62.4-62.4C139.4 38 111.4 10 77 10z"/></g></svg>`);
+    // Use the site accent color from the newsletter/email design settings
+    const accentColor = options.design?.accentColor || '#15171A';
 
     // Use {uuid} replacement string - wrapReplacementStrings converts this to %%{uuid}%%
     // which gets replaced with actual member UUID when email is sent to each recipient
@@ -58,21 +55,29 @@ function emailTemplate(node, document, options) {
     const cardHtml = html`
         <table class="kg-card kg-transistor-card" cellspacing="0" cellpadding="0" border="0" width="100%">
             <tr>
-                <td align="center" style="padding: 24px 0; text-align: center;">
-                    <a href="${transistorUrl}" style="text-decoration: none;">
-                        <img src="${transistorLogo}"
-                             width="56" height="56"
-                             alt="Transistor"
-                             style="border-radius: 8px; display: block; margin: 0 auto 12px auto;">
-                    </a>
-                    <a href="${transistorUrl}"
-                       style="font-weight: 600; text-decoration: none; color: ${accentColor}; font-size: 16px; display: block;">
-                        Listen on Transistor
-                    </a>
-                    <a href="${transistorUrl}"
-                       style="color: #738a94; font-size: 14px; text-decoration: none; display: block; margin-top: 4px;">
-                        Get your private podcast feed
-                    </a>
+                <td style="padding: 24px; text-align: center;">
+                    <table cellspacing="0" cellpadding="0" border="0" width="100%" style="text-align: center;">
+                        <tr>
+                            <td style="text-align: center; padding-bottom: 12px;">
+                                <a href="${transistorUrl}" style="display: inline-block; width: 72px; height: 72px; padding-top: 4px; padding-right: 4px; padding-bottom: 4px; padding-left: 4px; border-radius: 8px; background-color: ${accentColor}">
+                                    <img src="https://static.ghost.org/v6.0.0/images/transistor-logo-ondark.png"
+                                        width="40" height="40"
+                                        alt="Transistor"
+                                        style="width: 40px; height: 40px; padding: 16px;">
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center;">
+                                <a href="${transistorUrl}" class="kg-transistor-title">
+                                    Listen to your podcasts
+                                </a>
+                                <a href="${transistorUrl}"  class="kg-transistor-description">
+                                    Subscribe and listen to your personal podcast feed in your favorite app.
+                                </a>
+                            </td>
+                        </tr>
+                    </table>
                 </td>
             </tr>
         </table>

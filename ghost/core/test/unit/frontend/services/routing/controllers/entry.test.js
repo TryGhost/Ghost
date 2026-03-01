@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const should = require('should');
+const {assertExists} = require('../../../../../utils/assertions');
 const sinon = require('sinon');
 const testUtils = require('../../../../../utils');
 const configUtils = require('../../../../../utils/config-utils');
@@ -120,7 +120,7 @@ describe('Unit - services/routing/controllers/entry', function () {
 
             urlUtilsRedirectToAdminStub.callsFake(function (statusCode, _res, editorUrl) {
                 assert.equal(statusCode, 302);
-                editorUrl.should.eql(EDITOR_URL + post.id);
+                assert.equal(editorUrl, EDITOR_URL + post.id);
                 done();
             });
 
@@ -147,7 +147,7 @@ describe('Unit - services/routing/controllers/entry', function () {
 
             controllers.entry(req, res, async (err) => {
                 await configUtils.restore();
-                assert.equal(urlUtilsRedirectToAdminStub.called, false);
+                sinon.assert.notCalled(urlUtilsRedirectToAdminStub);
                 assert.equal(err, undefined);
                 done(err);
             });
@@ -193,12 +193,12 @@ describe('Unit - services/routing/controllers/entry', function () {
                 });
 
             urlUtilsRedirect301Stub.callsFake(function (_res, postUrl) {
-                postUrl.should.eql(post.url);
+                assert.equal(postUrl, post.url);
                 done();
             });
 
             controllers.entry(req, res, function (err) {
-                should.exist(err);
+                assertExists(err);
                 done(err);
             });
         });
@@ -222,7 +222,7 @@ describe('Unit - services/routing/controllers/entry', function () {
                 });
 
             urlUtilsRedirect301Stub.callsFake(function (_res, postUrl) {
-                postUrl.should.eql(post.url + '?query=true');
+                assert.equal(postUrl, post.url + '?query=true');
                 done();
             });
 

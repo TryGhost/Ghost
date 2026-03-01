@@ -1,8 +1,7 @@
 // Switch these lines once there are useful utils
 // const testUtils = require('./utils');
 const sinon = require('sinon');
-const assert = require('assert/strict');
-require('should');
+const assert = require('node:assert/strict');
 const VerificationTrigger = require('../../../../core/server/services/verification-trigger');
 const DomainEvents = require('@tryghost/domain-events');
 const {MemberCreatedEvent} = require('../../../../core/shared/events');
@@ -65,8 +64,8 @@ describe('Import threshold', function () {
         });
 
         const result = await trigger.getImportThreshold();
-        result.should.eql(Infinity);
-        assert.equal(membersStub.callCount, 0);
+        assert.equal(result, Infinity);
+        sinon.assert.notCalled(membersStub);
     });
 });
 
@@ -98,8 +97,8 @@ describe('Email verification flow', function () {
         });
 
         assert.equal(result.needsVerification, true);
-        assert.equal(emailStub.callCount, 1);
-        assert.equal(settingsStub.callCount, 1);
+        sinon.assert.calledOnce(emailStub);
+        sinon.assert.calledOnce(settingsStub);
     });
 
     it('Does not trigger verification when already verified', async function () {
@@ -120,8 +119,8 @@ describe('Email verification flow', function () {
         });
 
         assert.equal(result.needsVerification, false);
-        assert.equal(emailStub.callCount, 0);
-        assert.equal(settingsStub.callCount, 0);
+        sinon.assert.notCalled(emailStub);
+        sinon.assert.notCalled(settingsStub);
     });
 
     it('Does not trigger verification when already in progress', async function () {
@@ -142,8 +141,8 @@ describe('Email verification flow', function () {
         });
 
         assert.equal(result.needsVerification, false);
-        assert.equal(emailStub.callCount, 0);
-        assert.equal(settingsStub.callCount, 0);
+        sinon.assert.notCalled(emailStub);
+        sinon.assert.notCalled(settingsStub);
     });
 
     it('Throws when `throwsOnTrigger` is true', async function () {
@@ -158,10 +157,12 @@ describe('Email verification flow', function () {
             sendVerificationEmail: emailStub
         });
 
-        await trigger._startVerificationProcess({
-            amount: 10,
-            throwOnTrigger: true
-        }).should.be.rejected();
+        await assert.rejects(
+            trigger._startVerificationProcess({
+                amount: 10,
+                throwOnTrigger: true
+            })
+        );
     });
 
     it('Sends a message containing the number of members imported', async function () {
@@ -181,7 +182,7 @@ describe('Email verification flow', function () {
             throwOnTrigger: false
         });
 
-        emailStub.lastCall.firstArg.should.eql({
+        assert.deepEqual(emailStub.lastCall.firstArg, {
             subject: 'Email needs verification',
             message: 'Email verification needed for site: {siteUrl}, has imported: {amountTriggered} members in the last 30 days.',
             amountTriggered: 10
@@ -231,11 +232,11 @@ describe('Email verification flow', function () {
             source: 'api'
         }, new Date()));
 
-        assert.equal(eventStub.callCount, 1);
-        eventStub.lastCall.lastArg.should.have.property('source');
+        sinon.assert.calledOnce(eventStub);
+        assert('source' in eventStub.lastCall.lastArg);
         assert.equal(eventStub.lastCall.lastArg.source, 'api');
-        eventStub.lastCall.lastArg.should.have.property('created_at');
-        eventStub.lastCall.lastArg.created_at.should.have.property('$gt');
+        assert('created_at' in eventStub.lastCall.lastArg);
+        assert('$gt' in eventStub.lastCall.lastArg.created_at);
         assert.match(eventStub.lastCall.lastArg.created_at.$gt, /\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/);
     });
 
@@ -264,7 +265,7 @@ describe('Email verification flow', function () {
             source: 'api'
         }, new Date()));
 
-        assert.equal(eventStub.callCount, 0);
+        sinon.assert.notCalled(eventStub);
     });
 
     it('Triggers when a number of members are imported', async function () {
@@ -305,15 +306,15 @@ describe('Email verification flow', function () {
 
         await trigger.testImportThreshold();
 
-        assert.equal(eventStub.callCount, 2);
-        eventStub.firstCall.lastArg.should.have.property('source');
+        sinon.assert.calledTwice(eventStub);
+        assert('source' in eventStub.firstCall.lastArg);
         assert.equal(eventStub.firstCall.lastArg.source, 'import');
-        eventStub.firstCall.lastArg.should.have.property('created_at');
-        eventStub.firstCall.lastArg.created_at.should.have.property('$gt');
+        assert('created_at' in eventStub.firstCall.lastArg);
+        assert('$gt' in eventStub.firstCall.lastArg.created_at);
         assert.match(eventStub.firstCall.lastArg.created_at.$gt, /\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/);
 
-        assert.equal(emailStub.callCount, 1);
-        emailStub.lastCall.firstArg.should.eql({
+        sinon.assert.calledOnce(emailStub);
+        assert.deepEqual(emailStub.lastCall.firstArg, {
             subject: 'Email needs verification',
             message: 'Email verification needed for site: {siteUrl}, has imported: {amountTriggered} members in the last 30 days.',
             amountTriggered: 10
@@ -428,15 +429,15 @@ describe('Email verification flow', function () {
             }
         });
 
-        assert.equal(eventStub.callCount, 2);
-        eventStub.firstCall.lastArg.should.have.property('source');
+        sinon.assert.calledTwice(eventStub);
+        assert('source' in eventStub.firstCall.lastArg);
         assert.equal(eventStub.firstCall.lastArg.source, 'admin');
-        eventStub.firstCall.lastArg.should.have.property('created_at');
-        eventStub.firstCall.lastArg.created_at.should.have.property('$gt');
+        assert('created_at' in eventStub.firstCall.lastArg);
+        assert('$gt' in eventStub.firstCall.lastArg.created_at);
         assert.match(eventStub.firstCall.lastArg.created_at.$gt, /\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/);
 
-        assert.equal(emailStub.callCount, 1);
-        emailStub.lastCall.firstArg.should.eql({
+        sinon.assert.calledOnce(emailStub);
+        assert.deepEqual(emailStub.lastCall.firstArg, {
             subject: 'Email needs verification',
             message: 'Email verification needed for site: {siteUrl} has added: {amountTriggered} members through the Admin client in the last 30 days.',
             amountTriggered: 10
@@ -486,15 +487,15 @@ describe('Email verification flow', function () {
             }
         });
 
-        assert.equal(eventStub.callCount, 2);
-        eventStub.firstCall.lastArg.should.have.property('source');
+        sinon.assert.calledTwice(eventStub);
+        assert('source' in eventStub.firstCall.lastArg);
         assert.equal(eventStub.firstCall.lastArg.source, 'api');
-        eventStub.firstCall.lastArg.should.have.property('created_at');
-        eventStub.firstCall.lastArg.created_at.should.have.property('$gt');
+        assert('created_at' in eventStub.firstCall.lastArg);
+        assert('$gt' in eventStub.firstCall.lastArg.created_at);
         assert.match(eventStub.firstCall.lastArg.created_at.$gt, /\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/);
 
-        assert.equal(emailStub.callCount, 1);
-        emailStub.lastCall.firstArg.should.eql({
+        sinon.assert.calledOnce(emailStub);
+        assert.deepEqual(emailStub.lastCall.firstArg, {
             subject: 'Email needs verification',
             message: 'Email verification needed for site: {siteUrl} has added: {amountTriggered} members through the API in the last 30 days.',
             amountTriggered: 10
@@ -540,9 +541,9 @@ describe('Email verification flow', function () {
         await trigger.testImportThreshold();
 
         // We shouldn't be fetching the events if the threshold is Infinity
-        assert.equal(eventStub.callCount, 0);
+        sinon.assert.notCalled(eventStub);
 
         // We shouldn't be sending emails if the threshold is Infinity
-        assert.equal(emailStub.callCount, 0);
+        sinon.assert.notCalled(emailStub);
     });
 });

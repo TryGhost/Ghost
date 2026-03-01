@@ -8,6 +8,7 @@
  * @prop {string} start
  * @prop {string|null} end
  * @prop {'once'|'repeating'|'forever'} duration
+ * @prop {number|null} duration_in_months
  * @prop {'percent'|'fixed'} type
  * @prop {number} amount
  */
@@ -47,41 +48,35 @@ class NextPaymentCalculator {
         const interval = subscription.plan.interval;
         const currency = subscription.plan.currency;
         const offer = subscription.offer || null;
+        const defaultNextPayment = {
+            original_amount: originalAmount,
+            amount: originalAmount,
+            interval,
+            currency,
+            discount: null
+        };
 
         if (!offer || offer.type === 'trial') {
-            return {
-                original_amount: originalAmount,
-                amount: originalAmount,
-                interval,
-                currency,
-                discount: null
-            };
+            return defaultNextPayment;
         }
 
         const activeDiscount = this._getActiveDiscount(subscription, offer);
 
         if (!activeDiscount) {
-            return {
-                original_amount: originalAmount,
-                amount: originalAmount,
-                interval,
-                currency,
-                discount: null
-            };
+            return defaultNextPayment;
         }
 
         const discountedAmount = this._calculateDiscountedAmount(originalAmount, offer);
 
         return {
-            original_amount: originalAmount,
+            ...defaultNextPayment,
             amount: discountedAmount,
-            interval,
-            currency,
             discount: {
                 offer_id: offer.id,
                 start: activeDiscount.start ? new Date(activeDiscount.start).toISOString() : null,
                 end: activeDiscount.end ? new Date(activeDiscount.end).toISOString() : null,
                 duration: offer.duration,
+                duration_in_months: offer.duration_in_months,
                 type: offer.type,
                 amount: offer.amount
             }
@@ -106,6 +101,7 @@ class NextPaymentCalculator {
      * @returns {ActiveDiscount|null}
      */
     _getActiveDiscount(subscription, offer) {
+        // Offers are based on a Stripe coupon, with a discount_start / discount_end
         if (subscription.discount_start) {
             return {
                 start: subscription.discount_start,
@@ -113,7 +109,7 @@ class NextPaymentCalculator {
             };
         }
 
-        // Backportability for signup offers without discount_start / discount_end
+        // Backportability for old signup offers without discount_start / discount_end
         if (offer.redemption_type !== 'signup') {
             return null;
         }
@@ -152,7 +148,7 @@ class NextPaymentCalculator {
     _calculateDiscountedAmount(originalAmount, offer) {
         if (offer.type === 'percent') {
             const discount = Math.round(originalAmount * (offer.amount / 100));
-            return Math.max(0, originalAmount - discount);
+            return originalAmount - discount;
         }
 
         if (offer.type === 'fixed') {

@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const concat = require('../../../../core/frontend/helpers/concat');
 const link = require('../../../../core/frontend/helpers/link');
 const url = require('../../../../core/frontend/helpers/url');
@@ -41,10 +40,10 @@ describe('{{link}} helper', function () {
 
     describe('basic behavior: simple links without context', function () {
         it('throws an error for missing href=""', function () {
-            (function compileWith() {
+            assert.throws((function compileWith() {
                 compile('{{#link}}text{{/link}}')
                     .with({});
-            }).should.throw();
+            }));
         });
 
         it('silently accepts an empty href...', function () {

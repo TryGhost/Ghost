@@ -1,5 +1,5 @@
 const LastSeenAtCache = require('../../../../../core/server/services/members-events/last-seen-at-cache');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const moment = require('moment-timezone');
 

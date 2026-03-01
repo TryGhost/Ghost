@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const should = require('should');
+const {assertExists} = require('../../utils/assertions');
 const supertest = require('supertest');
 const sinon = require('sinon');
 const testUtils = require('../../utils');
@@ -34,8 +34,8 @@ describe('Invites API', function () {
 
             assert.equal(res.headers['x-cache-invalidate'], undefined);
             const jsonResponse = res.body;
-            should.exist(jsonResponse);
-            should.exist(jsonResponse.invites);
+            assertExists(jsonResponse);
+            assertExists(jsonResponse.invites);
             assert.equal(jsonResponse.invites.length, 2);
 
             localUtils.API.checkResponse(jsonResponse, 'invites');
@@ -43,13 +43,13 @@ describe('Invites API', function () {
 
             assert.equal(jsonResponse.invites[0].status, 'sent');
             assert.equal(jsonResponse.invites[0].email, 'test1@ghost.org');
-            jsonResponse.invites[0].role_id.should.eql(testUtils.roles.ids.admin);
+            assert.equal(jsonResponse.invites[0].role_id, testUtils.roles.ids.admin);
 
             assert.equal(jsonResponse.invites[1].status, 'sent');
             assert.equal(jsonResponse.invites[1].email, 'test2@ghost.org');
-            jsonResponse.invites[1].role_id.should.eql(testUtils.roles.ids.author);
+            assert.equal(jsonResponse.invites[1].role_id, testUtils.roles.ids.author);
 
-            assert.equal(mailService.GhostMailer.prototype.send.called, false);
+            sinon.assert.notCalled(mailService.GhostMailer.prototype.send);
         });
 
         it('Can read an invitation by id', async function () {
@@ -61,13 +61,13 @@ describe('Invites API', function () {
 
             assert.equal(res.headers['x-cache-invalidate'], undefined);
             const jsonResponse = res.body;
-            should.exist(jsonResponse);
-            should.exist(jsonResponse.invites);
+            assertExists(jsonResponse);
+            assertExists(jsonResponse.invites);
             assert.equal(jsonResponse.invites.length, 1);
 
             localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
 
-            assert.equal(mailService.GhostMailer.prototype.send.called, false);
+            sinon.assert.notCalled(mailService.GhostMailer.prototype.send);
         });
 
         it('Can add a new invite', async function () {
@@ -83,17 +83,17 @@ describe('Invites API', function () {
 
             assert.equal(res.headers['x-cache-invalidate'], undefined);
             const jsonResponse = res.body;
-            should.exist(jsonResponse);
-            should.exist(jsonResponse.invites);
+            assertExists(jsonResponse);
+            assertExists(jsonResponse.invites);
             assert.equal(jsonResponse.invites.length, 1);
 
             localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
-            jsonResponse.invites[0].role_id.should.eql(testUtils.getExistingData().roles[1].id);
+            assert.equal(jsonResponse.invites[0].role_id, testUtils.getExistingData().roles[1].id);
 
-            assert.equal(mailService.GhostMailer.prototype.send.called, true);
+            sinon.assert.called(mailService.GhostMailer.prototype.send);
 
-            should.exist(res.headers.location);
-            res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('invites/')}${res.body.invites[0].id}/`);
+            assertExists(res.headers.location);
+            assert.equal(new URL(res.headers.location).pathname, `/ghost/api/admin/invites/${res.body.invites[0].id}/`);
         });
 
         it('Can destroy an existing invite', async function () {
@@ -102,7 +102,7 @@ describe('Invites API', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(204);
 
-            assert.equal(mailService.GhostMailer.prototype.send.called, false);
+            sinon.assert.notCalled(mailService.GhostMailer.prototype.send);
         });
 
         it('Cannot destroy an non-existent invite', async function () {
@@ -114,7 +114,7 @@ describe('Invites API', function () {
                     assert.equal(res.body.errors[0].message, 'Resource not found error, cannot delete invite.');
                 });
 
-            assert.equal(mailService.GhostMailer.prototype.send.called, false);
+            sinon.assert.notCalled(mailService.GhostMailer.prototype.send);
         });
     });
     
@@ -147,17 +147,17 @@ describe('Invites API', function () {
 
             assert.equal(res.headers['x-cache-invalidate'], undefined);
             const jsonResponse = res.body;
-            should.exist(jsonResponse);
-            should.exist(jsonResponse.invites);
+            assertExists(jsonResponse);
+            assertExists(jsonResponse.invites);
             assert.equal(jsonResponse.invites.length, 1);
 
             localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
-            jsonResponse.invites[0].role_id.should.eql(roleId);
+            assert.equal(jsonResponse.invites[0].role_id, roleId);
 
-            assert.equal(mailService.GhostMailer.prototype.send.called, true);
+            sinon.assert.called(mailService.GhostMailer.prototype.send);
 
-            should.exist(res.headers.location);
-            res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('invites/')}${res.body.invites[0].id}/`);
+            assertExists(res.headers.location);
+            assert.equal(new URL(res.headers.location).pathname, `/ghost/api/admin/invites/${res.body.invites[0].id}/`);
         });
 
         it('Can add a new invite by API Key with the Editor Role', async function () {
@@ -174,17 +174,17 @@ describe('Invites API', function () {
 
             assert.equal(res.headers['x-cache-invalidate'], undefined);
             const jsonResponse = res.body;
-            should.exist(jsonResponse);
-            should.exist(jsonResponse.invites);
+            assertExists(jsonResponse);
+            assertExists(jsonResponse.invites);
             assert.equal(jsonResponse.invites.length, 1);
 
             localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
-            jsonResponse.invites[0].role_id.should.eql(roleId);
+            assert.equal(jsonResponse.invites[0].role_id, roleId);
 
-            assert.equal(mailService.GhostMailer.prototype.send.called, true);
+            sinon.assert.called(mailService.GhostMailer.prototype.send);
 
-            should.exist(res.headers.location);
-            res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('invites/')}${res.body.invites[0].id}/`);
+            assertExists(res.headers.location);
+            assert.equal(new URL(res.headers.location).pathname, `/ghost/api/admin/invites/${res.body.invites[0].id}/`);
         });
 
         it('Can add a new invite by API Key with the Contributor Role', async function () {
@@ -201,17 +201,17 @@ describe('Invites API', function () {
 
             assert.equal(res.headers['x-cache-invalidate'], undefined);
             const jsonResponse = res.body;
-            should.exist(jsonResponse);
-            should.exist(jsonResponse.invites);
+            assertExists(jsonResponse);
+            assertExists(jsonResponse.invites);
             assert.equal(jsonResponse.invites.length, 1);
 
             localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
-            jsonResponse.invites[0].role_id.should.eql(roleId);
+            assert.equal(jsonResponse.invites[0].role_id, roleId);
 
-            assert.equal(mailService.GhostMailer.prototype.send.called, true);
+            sinon.assert.called(mailService.GhostMailer.prototype.send);
 
-            should.exist(res.headers.location);
-            res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('invites/')}${res.body.invites[0].id}/`);
+            assertExists(res.headers.location);
+            assert.equal(new URL(res.headers.location).pathname, `/ghost/api/admin/invites/${res.body.invites[0].id}/`);
         });
 
         it('Can add a new invite by API Key with the Super Editor Role', async function () {
@@ -228,17 +228,17 @@ describe('Invites API', function () {
 
             assert.equal(res.headers['x-cache-invalidate'], undefined);
             const jsonResponse = res.body;
-            should.exist(jsonResponse);
-            should.exist(jsonResponse.invites);
+            assertExists(jsonResponse);
+            assertExists(jsonResponse.invites);
             assert.equal(jsonResponse.invites.length, 1);
 
             localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
-            jsonResponse.invites[0].role_id.should.eql(roleId);
+            assert.equal(jsonResponse.invites[0].role_id, roleId);
 
-            assert.equal(mailService.GhostMailer.prototype.send.called, true);
+            sinon.assert.called(mailService.GhostMailer.prototype.send);
 
-            should.exist(res.headers.location);
-            res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('invites/')}${res.body.invites[0].id}/`);
+            assertExists(res.headers.location);
+            assert.equal(new URL(res.headers.location).pathname, `/ghost/api/admin/invites/${res.body.invites[0].id}/`);
         });
 
         it('Can not add a new invite by API Key with the Administrator Role', async function () {

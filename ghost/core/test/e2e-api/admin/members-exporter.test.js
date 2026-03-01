@@ -1,9 +1,9 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../utils/assertions');
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyContentVersion, anyString} = matchers;
 
 const crypto = require('crypto');
-const should = require('should');
 const Papa = require('papaparse');
 const models = require('../../../core/server/models');
 const moment = require('moment');
@@ -24,12 +24,12 @@ let tiers, labels, newsletters;
 
 function basicAsserts(member, row) {
     // Basic checks
-    should(row.email).eql(member.get('email'));
-    should(row.name).eql(member.get('name'));
-    should(row.note).eql(member.get('note') || '');
+    assert.equal(row.email, member.get('email'));
+    assert.equal(row.name, member.get('name'));
+    assert.equal(row.note, member.get('note') || '');
 
     assert.equal(row.deleted_at, '');
-    should(row.created_at).eql(moment(member.get('created_at')).toISOString());
+    assert.equal(row.created_at, moment(member.get('created_at')).toISOString());
 }
 
 /**
@@ -56,7 +56,7 @@ async function testOutput(member, asserts, filters = []) {
 
         let csv = Papa.parse(res.text, {header: true});
         let row = csv.data.find(r => r.id === member.id);
-        should.exist(row);
+        assertExists(row);
 
         asserts(row);
 
@@ -81,7 +81,7 @@ describe('Members API — exportCSV', function () {
         });
 
         tiers = (await models.Product.findAll()).models.filter(m => m.get('type') === 'paid');
-        tiers.length.should.be.greaterThan(1, 'These tests requires at least two paid tiers');
+        assert(tiers.length > 1, 'These tests requires at least two paid tiers');
 
         await models.Label.add({
             name: 'Label A'
@@ -92,10 +92,10 @@ describe('Members API — exportCSV', function () {
         });
 
         labels = (await models.Label.findAll()).models;
-        labels.length.should.be.greaterThan(1, 'These tests requires at least two labels');
+        assert(labels.length > 1, 'These tests requires at least two labels');
 
         newsletters = (await models.Newsletter.findAll()).models;
-        newsletters.length.should.be.greaterThan(1, 'These tests requires at least two newsletters');
+        assert(newsletters.length > 1, 'These tests requires at least two newsletters');
     });
 
     beforeEach(function () {
@@ -119,7 +119,7 @@ describe('Members API — exportCSV', function () {
             basicAsserts(member, row);
             assert.equal(row.subscribed_to_emails, 'false');
             assert.equal(row.complimentary_plan, '');
-            should(row.tiers.split(',').sort().join(',')).eql(tiersList);
+            assert.equal(row.tiers.split(',').sort().join(','), tiersList);
         }, [`filter=tier:[${tiers[0].get('slug')}]`, 'filter=subscribed:false']);
     });
 
@@ -156,7 +156,7 @@ describe('Members API — exportCSV', function () {
             basicAsserts(member, row);
             assert.equal(row.subscribed_to_emails, 'false');
             assert.equal(row.complimentary_plan, '');
-            should(row.labels.split(',').sort().join(',')).eql(labelsList);
+            assert.equal(row.labels.split(',').sort().join(','), labelsList);
             assert.equal(row.tiers, '');
         }, [`filter=label:${labels[0].get('slug')}`, 'filter=subscribed:false']);
     });

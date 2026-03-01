@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../utils/assertions');
 const nock = require('nock');
 const sinon = require('sinon');
-const should = require('should');
 const supertest = require('supertest');
 const testUtils = require('../../utils/index');
 const config = require('../../../core/shared/config/index');
@@ -67,7 +67,7 @@ describe('Oembed API', function () {
             .expect(200);
 
         assert.equal(requestMock.isDone(), true);
-        should.exist(res.body.html);
+        assertExists(res.body.html);
     });
 
     it('does not use http preferentially to https', async function () {
@@ -92,7 +92,7 @@ describe('Oembed API', function () {
 
         assert.equal(httpMock.isDone(), false);
         assert.equal(httpsMock.isDone(), true);
-        should.exist(res.body.html);
+        assertExists(res.body.html);
     });
 
     it('errors with a useful message when embedding is disabled', async function () {
@@ -122,7 +122,7 @@ describe('Oembed API', function () {
             .expect(422);
 
         assert.equal(requestMock.isDone(), true);
-        should.exist(res.body.errors);
+        assertExists(res.body.errors);
         assert.match(res.body.errors[0].context, /URL contains a private resource/i);
     });
 
@@ -189,7 +189,7 @@ describe('Oembed API', function () {
                 .expect(422);
 
             assert.equal(pageMock.isDone(), true);
-            should.exist(res.body.errors);
+            assertExists(res.body.errors);
             assert.match(res.body.errors[0].context, /insufficient metadata/i);
         });
 
@@ -220,7 +220,7 @@ describe('Oembed API', function () {
                 .expect(422);
 
             assert.equal(pageMock.isDone(), false); // we shouldn't hit this; blocked by externalRequest
-            should.exist(res.body.errors);
+            assertExists(res.body.errors);
         });
 
         it('errors when fetched url is incorrect', async function () {
@@ -231,7 +231,7 @@ describe('Oembed API', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(422);
 
-            should.exist(res.body.errors);
+            assertExists(res.body.errors);
         });
 
         it('should replace icon URL when it returns 404', async function () {
@@ -280,7 +280,7 @@ describe('Oembed API', function () {
         assert.equal(pageMock.isDone(), true);
 
         // Check that the substitute icon URL is returned in place of the original
-        res.body.metadata.icon.should.eql(`${urlUtils.urlFor('home', true)}content/images/icon/image-01.png`);
+        assert.equal(res.body.metadata.icon, `${urlUtils.urlFor('home', true)}content/images/icon/image-01.png`);
     });
 
     it('should fetch and store thumbnails', async function () {
@@ -304,7 +304,7 @@ describe('Oembed API', function () {
         assert.equal(pageMock.isDone(), true);
 
         // Check that the substitute thumbnail URL is returned in place of the original
-        res.body.metadata.thumbnail.should.eql(`${urlUtils.urlFor('home', true)}content/images/thumbnail/image-01.png`);
+        assert.equal(res.body.metadata.thumbnail, `${urlUtils.urlFor('home', true)}content/images/thumbnail/image-01.png`);
     });
 
     it('should prevent SSRF attacks via bookmark image fetching', async function () {
@@ -351,8 +351,8 @@ describe('Oembed API', function () {
         assert.equal(attackerPageMock.isDone(), true);
 
         // Check if the internal service was called - this indicates SSRF occurred
-        internalServiceThumbnailMock.isDone().should.be.false('Thumbnail SSRF occurred');
-        internalServiceIconMock.isDone().should.be.false('Icon SSRF occurred');
+        assert.equal(internalServiceThumbnailMock.isDone(), false, 'Thumbnail SSRF occurred');
+        assert.equal(internalServiceIconMock.isDone(), false, 'Icon SSRF occurred');
 
         // Body contains the fallback data after requests failed
         assert.equal(res.body.metadata.icon, 'https://static.ghost.org/v5.0.0/images/link-icon.svg');
@@ -561,7 +561,7 @@ describe('Oembed API', function () {
             assert.equal(pageMock.isDone(), true);
             assert.equal(oembedMock.isDone(), true);
 
-            res.body.should.deepEqual({
+            assert.deepEqual(res.body, {
                 version: '1.0',
                 type: 'video',
                 html: '<p>Test</p>',
@@ -823,7 +823,7 @@ describe('Oembed API', function () {
             assert.equal(pageMock.isDone(), true);
             assert.equal(res.body.type, 'bookmark');
             assert.equal(res.body.url, 'http://example.com');
-            res.body.metadata.title.should.eql(utfString);
+            assert.equal(res.body.metadata.title, utfString);
         });
 
         it('does not fail on unknown charset', async function () {

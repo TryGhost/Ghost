@@ -483,7 +483,7 @@ module.exports = {
         active: {type: 'boolean', nullable: false, defaultTo: true},
         name: {type: 'string', maxlength: 191, nullable: false, unique: true},
         code: {type: 'string', maxlength: 191, nullable: false, unique: true},
-        product_id: {type: 'string', maxlength: 24, nullable: false, references: 'products.id'},
+        product_id: {type: 'string', maxlength: 24, nullable: true, references: 'products.id'},
         stripe_coupon_id: {type: 'string', maxlength: 255, nullable: true, unique: true},
         interval: {type: 'string', maxlength: 50, nullable: false, validations: {isIn: [['month', 'year']]}},
         currency: {type: 'string', maxlength: 50, nullable: true},
@@ -1125,7 +1125,13 @@ module.exports = {
     outbox: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         event_type: {type: 'string', maxlength: 50, nullable: false},
-        status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'pending'},
+        status: {
+            type: 'string',
+            maxlength: 50,
+            nullable: false,
+            defaultTo: 'pending',
+            validations: {isIn: [['pending', 'processing', 'failed', 'completed']]}
+        },
         payload: {type: 'text', maxlength: 65535, nullable: false},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true},

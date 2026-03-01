@@ -1788,6 +1788,50 @@ img.kg-cta-image {
     color: rgba(0, 0, 0, 0.6) !important;
     {{/if}}
 }
+
+.kg-transistor-card {
+    width: auto;
+    width: 100%;
+    margin: 0 auto 1.5em;
+    border-radius: 10px;
+    {{#if backgroundIsDark}}
+        background-color: #15212A;
+        background-color: rgba(0, 0, 0, 0.15);
+        border: 1px solid #343434;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+    {{else}}
+        background-color: #ffffff;
+        background-color: rgba(255, 255, 255, 0.25);
+        border: 1px solid #e0e7eb;
+        border: 1px solid rgba(0, 0, 0, 0.12);
+    {{/if}}
+}
+.kg-transistor-title {
+    display: block;
+    padding-right: 20px;
+    padding-bottom: 4px;
+    padding-top: 4px;
+    font-size: 17px;
+    font-weight: 600;
+    line-height: 18px;
+    text-decoration: none !important;
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}} !important;
+}
+.kg-transistor-description {
+    display: inline-block;
+    max-width: 400px;
+    font-size: 14px;
+    line-height: 1.4em;
+    text-decoration: none !important;
+    {{#if backgroundIsDark}}
+    color: #ffffff !important;
+    color: rgba(255, 255, 255, 0.6) !important;
+    {{else}}
+    color: #15212a !important;
+    color: rgba(0, 0, 0, 0.6) !important;
+    {{/if}}
+}
+
 .kg-file-card {
     width: auto;
     width: 100%;

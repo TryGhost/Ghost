@@ -1,6 +1,6 @@
 const path = require('path');
-const assert = require('assert/strict');
-const should = require('should');
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../utils/assertions');
 const supertest = require('supertest');
 const testUtils = require('../../utils');
 const localUtils = require('./utils');
@@ -32,7 +32,7 @@ describe('Members Importer API', function () {
 
     it('Can import CSV', async function () {
         const filteredNewsletters = newsletters.filter(n => n.get('subscribe_on_signup'));
-        filteredNewsletters.length.should.be.greaterThan(0, 'For this test to work, we need at least one newsletter fixture with subscribe_on_signup = true');
+        assert(filteredNewsletters.length > 0, 'For this test to work, we need at least one newsletter fixture with subscribe_on_signup = true');
 
         const res = await request
             .post(localUtils.API.getApiQuery(`members/upload/`))
@@ -45,9 +45,9 @@ describe('Members Importer API', function () {
         assert.equal(res.headers['x-cache-invalidate'], undefined);
         const jsonResponse = res.body;
 
-        should.exist(jsonResponse);
-        should.exist(jsonResponse.meta);
-        should.exist(jsonResponse.meta.stats);
+        assertExists(jsonResponse);
+        assertExists(jsonResponse.meta);
+        assertExists(jsonResponse.meta.stats);
 
         assert.equal(jsonResponse.meta.stats.imported, 2);
         assert.equal(jsonResponse.meta.stats.invalid.length, 0);
@@ -63,24 +63,24 @@ describe('Members Importer API', function () {
             .expect(200);
 
         const jsonResponse2 = res2.body;
-        should.exist(jsonResponse2);
-        should.exist(jsonResponse2.members);
+        assertExists(jsonResponse2);
+        assertExists(jsonResponse2.members);
         assert.equal(jsonResponse2.members.length, 2);
 
         const importedMember1 = jsonResponse2.members.find(m => m.email === 'jbloggs@example.com');
-        should.exist(importedMember1);
+        assertExists(importedMember1);
         assert.equal(importedMember1.name, 'joe');
         assert.equal(importedMember1.note, null);
         assert.equal(importedMember1.subscribed, true);
-        importedMember1.newsletters.length.should.equal(filteredNewsletters.length);
+        assert.equal(importedMember1.newsletters.length, filteredNewsletters.length);
         assert.equal(importedMember1.labels.length, 1);
         assert.equal(testUtils.API.isISO8601(importedMember1.created_at), true);
         assert.equal(importedMember1.comped, false);
-        importedMember1.subscriptions.should.not.be.undefined();
+        assertExists(importedMember1.subscriptions);
         assert.equal(importedMember1.subscriptions.length, 0);
 
         const importedMember2 = jsonResponse2.members.find(m => m.email === 'test@example.com');
-        should.exist(importedMember2);
+        assertExists(importedMember2);
         assert.equal(importedMember2.name, 'test');
         assert.equal(importedMember2.note, 'test note');
         assert.equal(importedMember2.subscribed, false);
@@ -89,7 +89,7 @@ describe('Members Importer API', function () {
         assert.equal(testUtils.API.isISO8601(importedMember2.created_at), true);
         assert.equal(importedMember2.created_at, '1991-10-02T20:30:31.000Z');
         assert.equal(importedMember2.comped, false);
-        importedMember2.subscriptions.should.not.be.undefined();
+        assertExists(importedMember2.subscriptions);
         assert.equal(importedMember2.subscriptions.length, 0);
     });
 
@@ -108,16 +108,16 @@ describe('Members Importer API', function () {
     //         .expect('Content-Type', /json/)
     //         .expect('Cache-Control', testUtils.cacheRules.private)
     //         .then((res) => {
-    //             should.not.exist(res.headers['x-cache-invalidate']);
+    //             assert(!res.headers['x-cache-invalidate']);
 
     //             const jsonResponse = res.body;
 
-    //             should.exist(jsonResponse);
-    //             should.exist(jsonResponse.meta);
-    //             should.exist(jsonResponse.meta.stats);
-    //             should.exist(jsonResponse.meta.import_label);
+    //             assertExists(jsonResponse);
+    //             assertExists(jsonResponse.meta);
+    //             assertExists(jsonResponse.meta.stats);
+    //             assertExists(jsonResponse.meta.import_label);
 
-    //             jsonResponse.meta.stats.imported.should.equal(8);
+    //             assert.equal(jsonResponse.meta.stats.imported, 8);
 
     //             return jsonResponse.meta.import_label;
     //         })
@@ -129,11 +129,11 @@ describe('Members Importer API', function () {
     //                 .expect('Cache-Control', testUtils.cacheRules.private)
     //                 .expect(200)
     //                 .then((res) => {
-    //                     should.not.exist(res.headers['x-cache-invalidate']);
+    //                     assert(!res.headers['x-cache-invalidate']);
     //                     const jsonResponse = res.body;
-    //                     should.exist(jsonResponse);
-    //                     should.exist(jsonResponse.members);
-    //                     jsonResponse.members.should.have.length(8);
+    //                     assertExists(jsonResponse);
+    //                     assertExists(jsonResponse.members);
+    //                     assert.equal(jsonResponse.members.length, 8);
     //                 })
     //                 .then(() => importLabel);
     //         })
@@ -146,12 +146,12 @@ describe('Members Importer API', function () {
     //                 .expect('Cache-Control', testUtils.cacheRules.private)
     //                 .expect(200)
     //                 .then((res) => {
-    //                     should.not.exist(res.headers['x-cache-invalidate']);
+    //                     assert(!res.headers['x-cache-invalidate']);
     //                     const jsonResponse = res.body;
-    //                     should.exist(jsonResponse);
-    //                     should.exist(jsonResponse.meta);
-    //                     should.exist(jsonResponse.meta.stats);
-    //                     should.exist(jsonResponse.meta.stats.successful);
+    //                     assertExists(jsonResponse);
+    //                     assertExists(jsonResponse.meta);
+    //                     assertExists(jsonResponse.meta.stats);
+    //                     assertExists(jsonResponse.meta.stats.successful);
     //                     assert.equal(jsonResponse.meta.stats.successful, 8);
     //                 })
     //                 .then(() => importLabel);
@@ -165,16 +165,16 @@ describe('Members Importer API', function () {
     //                 .expect(200)
     //                 .then((res) => {
     //                     const jsonResponse = res.body;
-    //                     should.exist(jsonResponse);
-    //                     should.exist(jsonResponse.members);
-    //                     jsonResponse.members.should.have.length(0);
+    //                     assertExists(jsonResponse);
+    //                     assertExists(jsonResponse.members);
+    //                     assert.equal(jsonResponse.members.length, 0);
     //                 });
     //         });
     // });
 
     it('Can bulk unsubscribe members with filter', async function () {
         const filteredNewsletters = newsletters.filter(n => n.get('subscribe_on_signup'));
-        filteredNewsletters.length.should.be.greaterThan(0, 'For this test to work, we need at least one newsletter fixture with subscribe_on_signup = true');
+        assert(filteredNewsletters.length > 0, 'For this test to work, we need at least one newsletter fixture with subscribe_on_signup = true');
 
         // import our dummy data for deletion
         await request
@@ -196,7 +196,7 @@ describe('Members Importer API', function () {
             return member.subscribed && member.newsletters.length > 0;
         });
 
-        should.ok(allMembersSubscribed);
+        assert(allMembersSubscribed);
 
         const bulkUnsubscribeResponse = await request
             .put(localUtils.API.getApiQuery('members/bulk/?filter=label:bulk-unsubscribe-test'))
@@ -210,10 +210,10 @@ describe('Members Importer API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
 
-        should.exist(bulkUnsubscribeResponse.body.bulk);
-        should.exist(bulkUnsubscribeResponse.body.bulk.meta);
-        should.exist(bulkUnsubscribeResponse.body.bulk.meta.stats);
-        should.exist(bulkUnsubscribeResponse.body.bulk.meta.stats.successful);
+        assertExists(bulkUnsubscribeResponse.body.bulk);
+        assertExists(bulkUnsubscribeResponse.body.bulk.meta);
+        assertExists(bulkUnsubscribeResponse.body.bulk.meta.stats);
+        assertExists(bulkUnsubscribeResponse.body.bulk.meta.stats.successful);
         assert.equal(bulkUnsubscribeResponse.body.bulk.meta.stats.successful, 8);
 
         const postUnsubscribeBrowseResponse = await request
@@ -228,7 +228,7 @@ describe('Members Importer API', function () {
             return member.newsletters.length === 0;
         });
 
-        should.ok(allMembersUnsubscribed);
+        assert(allMembersUnsubscribed);
     });
 
     it('Can bulk add and remove labels to members with filter', async function () {
@@ -266,10 +266,10 @@ describe('Members Importer API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
 
-        should.exist(bulkAddLabelResponse.body.bulk);
-        should.exist(bulkAddLabelResponse.body.bulk.meta);
-        should.exist(bulkAddLabelResponse.body.bulk.meta.stats);
-        should.exist(bulkAddLabelResponse.body.bulk.meta.stats.successful);
+        assertExists(bulkAddLabelResponse.body.bulk);
+        assertExists(bulkAddLabelResponse.body.bulk.meta);
+        assertExists(bulkAddLabelResponse.body.bulk.meta.stats);
+        assertExists(bulkAddLabelResponse.body.bulk.meta.stats.successful);
         assert.equal(bulkAddLabelResponse.body.bulk.meta.stats.successful, 8);
 
         const postLabelAddBrowseResponse = await request
@@ -298,10 +298,10 @@ describe('Members Importer API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
 
-        should.exist(bulkRemoveLabelResponse.body.bulk);
-        should.exist(bulkRemoveLabelResponse.body.bulk.meta);
-        should.exist(bulkRemoveLabelResponse.body.bulk.meta.stats);
-        should.exist(bulkRemoveLabelResponse.body.bulk.meta.stats.successful);
+        assertExists(bulkRemoveLabelResponse.body.bulk);
+        assertExists(bulkRemoveLabelResponse.body.bulk.meta);
+        assertExists(bulkRemoveLabelResponse.body.bulk.meta.stats);
+        assertExists(bulkRemoveLabelResponse.body.bulk.meta.stats.successful);
         assert.equal(bulkRemoveLabelResponse.body.bulk.meta.stats.successful, 8);
 
         const postLabelRemoveBrowseResponse = await request

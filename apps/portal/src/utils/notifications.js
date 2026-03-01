@@ -22,8 +22,8 @@ export const handleStripeActions = ({status, billingOnly}) => {
         };
     }
 
-    if (billingOnly && ['billing-update-success', 'billing-update-cancel'].includes(status)) {
-        const statusVal = status === 'billing-update-success' ? 'success' : 'warning';
+    if (billingOnly && ['billing-portal-closed', 'billing-update-success', 'billing-update-cancel'].includes(status)) {
+        const statusVal = status === 'billing-update-cancel' ? 'warning' : 'success';
         return {
             type: 'stripe:billing-update',
             status: statusVal,

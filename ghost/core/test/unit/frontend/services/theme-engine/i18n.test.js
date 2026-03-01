@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const sinon = require('sinon');
 
 const I18n = require('../../../../../core/frontend/services/theme-engine/i18n/i18n');
@@ -27,7 +26,7 @@ describe('I18n Class behavior', function () {
             i18n.init();
 
             assert.equal(i18n.locale(), 'fr');
-            assert.equal(fileSpy.calledTwice, true);
+            sinon.assert.calledTwice(fileSpy);
             assert.equal(fileSpy.secondCall.args[0], 'en');
         });
     });
@@ -45,7 +44,7 @@ describe('I18n Class behavior', function () {
         });
 
         it('correctly loads strings', function () {
-            i18n._strings.should.eql(fakeStrings);
+            assert.equal(i18n._strings, fakeStrings);
         });
 
         it('correctly uses dot notation', function () {
@@ -59,9 +58,10 @@ describe('I18n Class behavior', function () {
         });
 
         it('errors for invalid strings', function () {
-            should(function () {
-                i18n.t('unknown string');
-            }).throw('i18n.t() called with an invalid key: unknown string');
+            assert.throws(
+                () => i18n.t('unknown string'),
+                {message: 'i18n.t() called with an invalid key: unknown string'}
+            );
         });
     });
 
@@ -80,7 +80,7 @@ describe('I18n Class behavior', function () {
         });
 
         it('correctly loads strings', function () {
-            i18n._strings.should.eql(fakeStrings);
+            assert.equal(i18n._strings, fakeStrings);
         });
 
         it('correctly uses fulltext with bracket notation', function () {

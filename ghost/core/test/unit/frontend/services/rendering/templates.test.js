@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const should = require('should');
+const {assertExists} = require('../../../../utils/assertions');
 const sinon = require('sinon');
 const rewire = require('rewire');
 const templates = rewire('../../../../../core/frontend/services/rendering/templates');
@@ -16,60 +16,60 @@ describe('templates', function () {
 
     describe('[private fn] getEntriesTemplateHierarchy', function () {
         it('should return just index for empty options', function () {
-            _private.getEntriesTemplateHierarchy({}).should.eql(['index']);
+            assert.deepEqual(_private.getEntriesTemplateHierarchy({}), ['index']);
         });
 
         it('should return just index if collection name is index', function () {
-            _private.getEntriesTemplateHierarchy({name: 'index'}).should.eql(['index']);
+            assert.deepEqual(_private.getEntriesTemplateHierarchy({name: 'index'}), ['index']);
         });
 
         it('should return custom templates even if the collection is index', function () {
-            _private.getEntriesTemplateHierarchy({name: 'index', templates: ['something']}).should.eql(['something', 'index']);
+            assert.deepEqual(_private.getEntriesTemplateHierarchy({name: 'index', templates: ['something']}), ['something', 'index']);
         });
 
         it('should return collection name', function () {
-            _private.getEntriesTemplateHierarchy({name: 'podcast'}).should.eql(['podcast', 'index']);
+            assert.deepEqual(_private.getEntriesTemplateHierarchy({name: 'podcast'}), ['podcast', 'index']);
         });
 
         it('should return custom templates', function () {
-            _private.getEntriesTemplateHierarchy({name: 'podcast', templates: ['mozart']}).should.eql(['mozart', 'podcast', 'index']);
+            assert.deepEqual(_private.getEntriesTemplateHierarchy({name: 'podcast', templates: ['mozart']}), ['mozart', 'podcast', 'index']);
         });
 
         it('should return just index if collection name is index even if slug is set', function () {
-            _private.getEntriesTemplateHierarchy({name: 'index', slugTemplate: true}, {slugParam: 'test'}).should.eql(['index']);
+            assert.deepEqual(_private.getEntriesTemplateHierarchy({name: 'index', slugTemplate: true}, {slugParam: 'test'}), ['index']);
         });
 
         it('should return collection, index if collection has name', function () {
-            _private.getEntriesTemplateHierarchy({name: 'tag'}).should.eql(['tag', 'index']);
+            assert.deepEqual(_private.getEntriesTemplateHierarchy({name: 'tag'}), ['tag', 'index']);
         });
 
         it('should return collection-slug, collection, index if collection has name & slug + slugTemplate set', function () {
-            _private.getEntriesTemplateHierarchy({
+            assert.deepEqual(_private.getEntriesTemplateHierarchy({
                 name: 'tag',
                 slugTemplate: true
-            }, {slugParam: 'test'}).should.eql(['tag-test', 'tag', 'index']);
+            }, {slugParam: 'test'}), ['tag-test', 'tag', 'index']);
         });
 
         it('should return front, collection-slug, collection, index if name, slugParam+slugTemplate & frontPageTemplate+pageParam=1 is set', function () {
-            _private.getEntriesTemplateHierarchy({
+            assert.deepEqual(_private.getEntriesTemplateHierarchy({
                 name: 'tag',
                 slugTemplate: true,
                 frontPageTemplate: 'front-tag'
-            }, {page: 1, path: '/', slugParam: 'test'}).should.eql(['front-tag', 'tag-test', 'tag', 'index']);
+            }, {page: 1, path: '/', slugParam: 'test'}), ['front-tag', 'tag-test', 'tag', 'index']);
         });
 
         it('should return home, index for index collection if front is set and pageParam = 1', function () {
-            _private.getEntriesTemplateHierarchy({
+            assert.deepEqual(_private.getEntriesTemplateHierarchy({
                 name: 'index',
                 frontPageTemplate: 'home'
-            }, {path: '/'}).should.eql(['home', 'index']);
+            }, {path: '/'}), ['home', 'index']);
         });
 
         it('should not use frontPageTemplate if not / collection', function () {
-            _private.getEntriesTemplateHierarchy({
+            assert.deepEqual(_private.getEntriesTemplateHierarchy({
                 name: 'index',
                 frontPageTemplate: 'home'
-            }, {path: '/magic/'}).should.eql(['index']);
+            }, {path: '/magic/'}), ['index']);
         });
     });
 
@@ -130,7 +130,7 @@ describe('templates', function () {
             hasTemplateStub.returns(false);
 
             const view = _private.getTemplateForEntry({title: 'hey'}, 'page');
-            should.exist(view);
+            assertExists(view);
             assert.equal(view, 'post');
         });
 
@@ -149,7 +149,7 @@ describe('templates', function () {
                     page: 0,
                     slug: 'test-post'
                 });
-                should.exist(view);
+                assertExists(view);
                 assert.equal(view, 'post');
             });
 
@@ -159,7 +159,7 @@ describe('templates', function () {
                     page: 0,
                     slug: 'welcome-to-ghost'
                 });
-                should.exist(view);
+                assertExists(view);
                 assert.equal(view, 'post-welcome-to-ghost');
             });
 
@@ -167,7 +167,7 @@ describe('templates', function () {
                 const view = _private.getTemplateForEntry({
                     slug: 'contact'
                 }, 'page');
-                should.exist(view);
+                assertExists(view);
                 assert.equal(view, 'page');
             });
 
@@ -175,7 +175,7 @@ describe('templates', function () {
                 const view = _private.getTemplateForEntry({
                     slug: 'about'
                 }, 'page');
-                should.exist(view);
+                assertExists(view);
                 assert.equal(view, 'page-about');
             });
 
@@ -186,7 +186,7 @@ describe('templates', function () {
                     page: 0,
                     custom_template: 'custom-about'
                 });
-                should.exist(view);
+                assertExists(view);
                 assert.equal(view, 'custom-about');
             });
 
@@ -197,7 +197,7 @@ describe('templates', function () {
                     page: 1,
                     custom_template: 'custom-about'
                 });
-                should.exist(view);
+                assertExists(view);
                 assert.equal(view, 'custom-about');
             });
 
@@ -208,7 +208,7 @@ describe('templates', function () {
                     page: 0,
                     custom_template: 'custom-about'
                 });
-                should.exist(view);
+                assertExists(view);
                 assert.equal(view, 'post');
             });
 
@@ -218,7 +218,7 @@ describe('templates', function () {
                 const view = _private.getTemplateForEntry({
                     custom_template: 'custom-about'
                 }, 'page');
-                should.exist(view);
+                assertExists(view);
                 assert.equal(view, 'page');
             });
 
@@ -231,7 +231,7 @@ describe('templates', function () {
                     slug: 'about',
                     custom_template: 'custom-about'
                 });
-                should.exist(view);
+                assertExists(view);
                 assert.equal(view, 'post-about');
             });
 
@@ -244,7 +244,7 @@ describe('templates', function () {
                     slug: 'about',
                     custom_template: 'custom-about'
                 });
-                should.exist(view);
+                assertExists(view);
                 assert.equal(view, 'post');
             });
         });
@@ -267,7 +267,7 @@ describe('templates', function () {
 
             it('will return correct view for a tag', function () {
                 const view = _private.getTemplateForEntries({name: 'tag', slugTemplate: true}, {slugParam: 'development'});
-                should.exist(view);
+                assertExists(view);
                 assert.equal(view, 'index');
             });
         });
@@ -282,20 +282,20 @@ describe('templates', function () {
 
             it('will return correct view for a tag when template exists', function () {
                 const view = _private.getTemplateForEntries({name: 'tag', slugTemplate: true}, {slugParam: 'design'});
-                should.exist(view);
+                assertExists(view);
                 assert.equal(view, 'tag-design');
             });
 
             it('will return correct view for a tag', function () {
                 const view = _private.getTemplateForEntries({name: 'tag', slugTemplate: true}, {slugParam: 'development'});
-                should.exist(view);
+                assertExists(view);
                 assert.equal(view, 'tag');
             });
         });
 
         it('will fall back to index even if no index.hbs', function () {
             const view = _private.getTemplateForEntries({name: 'tag', slugTemplate: true}, {slugParam: 'development'});
-            should.exist(view);
+            assertExists(view);
             assert.equal(view, 'index');
         });
     });
@@ -409,10 +409,10 @@ describe('templates', function () {
             assert.equal(res._template, 'thing');
 
             // And nothing got called
-            assert.equal(stubs.pickTemplate.called, false);
-            assert.equal(stubs.getTemplateForEntry.called, false);
-            assert.equal(stubs.getTemplateForEntries.called, false);
-            assert.equal(stubs.getTemplateForError.called, false);
+            sinon.assert.notCalled(stubs.pickTemplate);
+            sinon.assert.notCalled(stubs.getTemplateForEntry);
+            sinon.assert.notCalled(stubs.getTemplateForEntries);
+            sinon.assert.notCalled(stubs.getTemplateForError);
         });
 
         it('defaults to index', function () {
@@ -425,10 +425,10 @@ describe('templates', function () {
             assert.equal(res._template, 'index');
 
             // And nothing got called
-            assert.equal(stubs.pickTemplate.called, false);
-            assert.equal(stubs.getTemplateForEntry.called, false);
-            assert.equal(stubs.getTemplateForEntries.called, false);
-            assert.equal(stubs.getTemplateForError.called, false);
+            sinon.assert.notCalled(stubs.pickTemplate);
+            sinon.assert.notCalled(stubs.getTemplateForEntry);
+            sinon.assert.notCalled(stubs.getTemplateForEntries);
+            sinon.assert.notCalled(stubs.getTemplateForError);
         });
 
         it('calls pickTemplate for custom routes', function () {
@@ -445,12 +445,12 @@ describe('templates', function () {
             assert.equal(res._template, 'testFromPickTemplate');
 
             // Only pickTemplate got called
-            assert.equal(stubs.pickTemplate.called, true);
-            assert.equal(stubs.getTemplateForEntry.called, false);
-            assert.equal(stubs.getTemplateForEntries.called, false);
-            assert.equal(stubs.getTemplateForError.called, false);
+            sinon.assert.called(stubs.pickTemplate);
+            sinon.assert.notCalled(stubs.getTemplateForEntry);
+            sinon.assert.notCalled(stubs.getTemplateForEntries);
+            sinon.assert.notCalled(stubs.getTemplateForError);
 
-            assert.equal(stubs.pickTemplate.calledWith('test', 'path/to/local/test.hbs'), true);
+            sinon.assert.calledWith(stubs.pickTemplate, 'test', 'path/to/local/test.hbs');
         });
 
         it('calls getTemplateForEntry for entry routes', function () {
@@ -468,12 +468,12 @@ describe('templates', function () {
             assert.equal(res._template, 'testFromEntry');
 
             // Only pickTemplate got called
-            assert.equal(stubs.pickTemplate.called, false);
-            assert.equal(stubs.getTemplateForEntry.called, true);
-            assert.equal(stubs.getTemplateForEntries.called, false);
-            assert.equal(stubs.getTemplateForError.called, false);
+            sinon.assert.notCalled(stubs.pickTemplate);
+            sinon.assert.called(stubs.getTemplateForEntry);
+            sinon.assert.notCalled(stubs.getTemplateForEntries);
+            sinon.assert.notCalled(stubs.getTemplateForError);
 
-            assert.equal(stubs.getTemplateForEntry.calledWith({slug: 'test'}), true);
+            sinon.assert.calledWith(stubs.getTemplateForEntry, {slug: 'test'});
         });
 
         it('calls getTemplateForEntries for type collection', function () {
@@ -491,12 +491,12 @@ describe('templates', function () {
             assert.equal(res._template, 'testFromEntries');
 
             // Only pickTemplate got called
-            assert.equal(stubs.pickTemplate.called, false);
-            assert.equal(stubs.getTemplateForEntry.called, false);
-            assert.equal(stubs.getTemplateForEntries.called, true);
-            assert.equal(stubs.getTemplateForError.called, false);
+            sinon.assert.notCalled(stubs.pickTemplate);
+            sinon.assert.notCalled(stubs.getTemplateForEntry);
+            sinon.assert.called(stubs.getTemplateForEntries);
+            sinon.assert.notCalled(stubs.getTemplateForError);
 
-            assert.equal(stubs.getTemplateForEntries.calledWith({testCollection: 'test', type: 'collection'}), true);
+            sinon.assert.calledWith(stubs.getTemplateForEntries, {testCollection: 'test', type: 'collection'});
         });
 
         it('calls getTemplateForEntries for type channel', function () {
@@ -514,12 +514,12 @@ describe('templates', function () {
             assert.equal(res._template, 'testFromEntries');
 
             // Only pickTemplate got called
-            assert.equal(stubs.pickTemplate.called, false);
-            assert.equal(stubs.getTemplateForEntry.called, false);
-            assert.equal(stubs.getTemplateForEntries.called, true);
-            assert.equal(stubs.getTemplateForError.called, false);
+            sinon.assert.notCalled(stubs.pickTemplate);
+            sinon.assert.notCalled(stubs.getTemplateForEntry);
+            sinon.assert.called(stubs.getTemplateForEntries);
+            sinon.assert.notCalled(stubs.getTemplateForError);
 
-            assert.equal(stubs.getTemplateForEntries.calledWith({testChannel: 'test', type: 'channel'}), true);
+            sinon.assert.calledWith(stubs.getTemplateForEntries, {testChannel: 'test', type: 'channel'});
         });
 
         it('calls getTemplateForError if there is an error', function () {
@@ -541,12 +541,12 @@ describe('templates', function () {
             assert.equal(res._template, 'testFromError');
 
             // Only pickTemplate got called
-            assert.equal(stubs.pickTemplate.called, false);
-            assert.equal(stubs.getTemplateForEntry.called, false);
-            assert.equal(stubs.getTemplateForEntries.called, false);
-            assert.equal(stubs.getTemplateForError.called, true);
+            sinon.assert.notCalled(stubs.pickTemplate);
+            sinon.assert.notCalled(stubs.getTemplateForEntry);
+            sinon.assert.notCalled(stubs.getTemplateForEntries);
+            sinon.assert.called(stubs.getTemplateForError);
 
-            assert.equal(stubs.getTemplateForError.calledWith(404), true);
+            sinon.assert.calledWith(stubs.getTemplateForError, 404);
         });
     });
 });

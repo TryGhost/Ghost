@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const should = require('should');
 const fs = require('fs-extra');
 const path = require('path');
 const bridge = require('../../../../../core/bridge');
@@ -43,7 +42,7 @@ describe('UNIT > Settings Service DefaultSettingsManager:', function () {
 
             try {
                 await defaultSettingsManager.setFromFilePath(incomingSettingsPath);
-                should.fail('should.fail');
+                assert.fail();
             } catch (error) {
                 assert.match(error.message, /YAMLException: bad indentation of a mapping entry/);
             }

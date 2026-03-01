@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const should = require('should');
+const {assertExists} = require('../../../utils/assertions');
 const supertest = require('supertest');
 const jwt = require('jsonwebtoken');
 const jwksClient = require('jwks-rsa');
@@ -51,8 +51,8 @@ describe('Identities API', function () {
                 .then((res) => {
                     assert.equal(res.headers['x-cache-invalidate'], undefined);
                     const jsonResponse = res.body;
-                    should.exist(jsonResponse);
-                    should.exist(jsonResponse.identities);
+                    assertExists(jsonResponse);
+                    assertExists(jsonResponse.identities);
 
                     identity = jsonResponse.identities[0];
                 })
@@ -97,8 +97,8 @@ describe('Identities API', function () {
                 .then((res) => {
                     assert.equal(res.headers['x-cache-invalidate'], undefined);
                     const jsonResponse = res.body;
-                    should.exist(jsonResponse);
-                    should.exist(jsonResponse.identities);
+                    assertExists(jsonResponse);
+                    assertExists(jsonResponse.identities);
 
                     identity = jsonResponse.identities[0];
                 })

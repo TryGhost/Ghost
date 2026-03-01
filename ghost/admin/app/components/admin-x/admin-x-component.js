@@ -131,7 +131,6 @@ export default class AdminXComponent extends Component {
     @service settings;
     @service router;
     @service membersUtils;
-    @service themeManagement;
     @service stateBridge;
 
     @inject config;

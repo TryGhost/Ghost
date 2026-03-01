@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const should = require('should');
+const {assertExists} = require('../../../utils/assertions');
 const sinon = require('sinon');
 const ghost_foot = require('../../../../core/frontend/helpers/ghost_foot');
 const {settingsCache} = require('../../../../core/frontend/services/proxy');
@@ -19,7 +19,7 @@ describe('{{ghost_foot}} helper', function () {
         settingsCacheStub.withArgs('codeinjection_foot').returns('<script>var test = \'I am a variable!\'</script>');
 
         const rendered = ghost_foot({data: {}});
-        should.exist(rendered);
+        assertExists(rendered);
         assert.match(rendered.string, /<script>var test = 'I am a variable!'<\/script>/);
     });
 
@@ -35,7 +35,7 @@ describe('{{ghost_foot}} helper', function () {
                 }
             }
         });
-        should.exist(rendered);
+        assertExists(rendered);
         assert.match(rendered.string, /<script>var test = 'I am a variable!'<\/script>/);
         assert.match(rendered.string, /post-codeinjection/);
     });
@@ -52,7 +52,7 @@ describe('{{ghost_foot}} helper', function () {
                 }
             }
         });
-        should.exist(rendered);
+        assertExists(rendered);
         assert.match(rendered.string, /<script>var test = 'I am a variable!'<\/script>/);
         assert.doesNotMatch(rendered.string, /post-codeinjection/);
     });
@@ -69,7 +69,7 @@ describe('{{ghost_foot}} helper', function () {
                 }
             }
         });
-        should.exist(rendered);
+        assertExists(rendered);
         assert.match(rendered.string, /<script>var test = 'I am a variable!'<\/script>/);
         assert.doesNotMatch(rendered.string, /post-codeinjection/);
     });
@@ -78,7 +78,7 @@ describe('{{ghost_foot}} helper', function () {
         settingsCacheStub.withArgs('codeinjection_foot').returns('');
 
         const rendered = ghost_foot({data: {}});
-        should.exist(rendered);
+        assertExists(rendered);
         assert.equal(rendered.string, '');
     });
 
@@ -86,7 +86,7 @@ describe('{{ghost_foot}} helper', function () {
         settingsCacheStub.withArgs('codeinjection_foot').returns(undefined);
 
         const rendered = ghost_foot({data: {}});
-        should.exist(rendered);
+        assertExists(rendered);
         assert.equal(rendered.string, '');
     });
 });

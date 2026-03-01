@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-require('should');
 
 const sinon = require('sinon');
 const configUtils = require('../../../../utils/config-utils');
@@ -33,7 +32,7 @@ describe('EmailAnalyticsService', function () {
             // these are null because we're not running them before calling this
             const service = new EmailAnalyticsService({});
             const result = service.getStatus();
-            result.should.deepEqual({
+            assert.deepEqual(result, {
                 latest: {
                     jobName: 'email-analytics-latest-others',
                     running: false
@@ -64,7 +63,7 @@ describe('EmailAnalyticsService', function () {
             });
 
             const result = await service.getLastNonOpenedEventTimestamp();
-            result.should.eql(new Date(1));
+            assert.deepEqual(result, new Date(1));
         });
 
         it('returns the fallback if nothing is found', async function () {
@@ -76,7 +75,7 @@ describe('EmailAnalyticsService', function () {
             });
 
             const result = await service.getLastNonOpenedEventTimestamp();
-            result.should.eql(new Date(Date.now() - 30 * 60 * 1000)); // should be 30 mins prior
+            assert.deepEqual(result, new Date(Date.now() - 30 * 60 * 1000)); // should be 30 mins prior
         });
     });
 
@@ -90,7 +89,7 @@ describe('EmailAnalyticsService', function () {
             });
 
             const result = await service.getLastOpenedEventTimestamp();
-            result.should.eql(new Date(1));
+            assert.deepEqual(result, new Date(1));
         });
 
         it('returns the fallback if nothing is found', async function () {
@@ -102,7 +101,7 @@ describe('EmailAnalyticsService', function () {
             });
 
             const result = await service.getLastOpenedEventTimestamp();
-            result.should.eql(new Date(Date.now() - 30 * 60 * 1000)); // should be 30 mins prior
+            assert.deepEqual(result, new Date(Date.now() - 30 * 60 * 1000)); // should be 30 mins prior
         });
     });
 
@@ -125,8 +124,8 @@ describe('EmailAnalyticsService', function () {
                     }]
                 });
                 await service.fetchLatestOpenedEvents();
-                assert.equal(fetchLatestSpy.calledOnce, true);
-                fetchLatestSpy.getCall(0).args[1].should.have.property('events', ['opened']);
+                sinon.assert.calledOnce(fetchLatestSpy);
+                assert.deepEqual(fetchLatestSpy.getCall(0).args[1].events, ['opened']);
             });
 
             it('quits if the end is before the begin', async function () {
@@ -143,7 +142,7 @@ describe('EmailAnalyticsService', function () {
                     }]
                 });
                 await service.fetchLatestOpenedEvents();
-                assert.equal(fetchLatestSpy.calledOnce, false);
+                sinon.assert.notCalled(fetchLatestSpy);
             });
         });
 
@@ -162,8 +161,8 @@ describe('EmailAnalyticsService', function () {
                     }]
                 });
                 await service.fetchLatestNonOpenedEvents();
-                assert.equal(fetchLatestSpy.calledOnce, true);
-                fetchLatestSpy.getCall(0).args[1].should.have.property('events', ['delivered', 'failed', 'unsubscribed', 'complained']);
+                sinon.assert.calledOnce(fetchLatestSpy);
+                assert.deepEqual(fetchLatestSpy.getCall(0).args[1].events, ['delivered', 'failed', 'unsubscribed', 'complained']);
             });
 
             it('quits if the end is before the begin', async function () {
@@ -180,7 +179,7 @@ describe('EmailAnalyticsService', function () {
                     }]
                 });
                 await service.fetchLatestNonOpenedEvents();
-                assert.equal(fetchLatestSpy.calledOnce, false);
+                sinon.assert.notCalled(fetchLatestSpy);
             });
         });
         describe('fetchScheduled', function () {
@@ -217,8 +216,8 @@ describe('EmailAnalyticsService', function () {
             it('returns 0 when nothing is scheduled', async function () {
                 const result = await service.fetchScheduled();
                 assert.equal(result.eventCount, 0);
-                assert.equal(processEventBatchStub.called, false);
-                assert.equal(aggregateStatsStub.called, false);
+                sinon.assert.notCalled(processEventBatchStub);
+                sinon.assert.notCalled(aggregateStatsStub);
             });
 
             it('returns 0 when fetch is canceled', async function () {
@@ -229,8 +228,8 @@ describe('EmailAnalyticsService', function () {
                 service.cancelScheduled();
                 const result = await service.fetchScheduled();
                 assert.equal(result.eventCount, 0);
-                assert.equal(processEventBatchStub.called, false);
-                assert.equal(aggregateStatsStub.called, false);
+                sinon.assert.notCalled(processEventBatchStub);
+                sinon.assert.notCalled(aggregateStatsStub);
             });
 
             it('fetches events with correct parameters', async function () {
@@ -242,8 +241,8 @@ describe('EmailAnalyticsService', function () {
                 const result = await service.fetchScheduled({maxEvents: 100});
 
                 assert.equal(result.eventCount, 10);
-                assert.equal(setJobStatusStub.calledOnce, true);
-                assert.equal(processEventBatchStub.calledOnce, true);
+                sinon.assert.calledOnce(setJobStatusStub);
+                sinon.assert.calledOnce(processEventBatchStub);
             });
 
             it('bails when end date is before begin date', async function () {
@@ -293,7 +292,7 @@ describe('EmailAnalyticsService', function () {
                     }]
                 });
                 await service.fetchMissing();
-                assert.equal(fetchLatestSpy.calledOnce, true);
+                sinon.assert.calledOnce(fetchLatestSpy);
             });
         });
     });
@@ -384,10 +383,10 @@ describe('EmailAnalyticsService', function () {
                             timestamp: new Date(3)
                         }], result, fetchData);
 
-                        assert.equal(eventProcessor.handleDelivered.callCount, 2);
-                        assert.equal(eventProcessor.handleOpened.callCount, 1);
+                        sinon.assert.calledTwice(eventProcessor.handleDelivered);
+                        sinon.assert.calledOnce(eventProcessor.handleOpened);
 
-                        result.should.deepEqual(new EventProcessingResult({
+                        assert.deepEqual(result, new EventProcessingResult({
                             delivered: 2,
                             opened: 1,
                             unprocessable: 0,
@@ -395,7 +394,7 @@ describe('EmailAnalyticsService', function () {
                             memberIds: [1]
                         }));
 
-                        fetchData.should.deepEqual({
+                        assert.deepEqual(fetchData, {
                             lastEventTimestamp: new Date(3)
                         });
                     });
@@ -415,9 +414,9 @@ describe('EmailAnalyticsService', function () {
                             timestamp: new Date(1)
                         }], result, fetchData);
 
-                        assert.equal(eventProcessor.handleOpened.calledOnce, true);
+                        sinon.assert.calledOnce(eventProcessor.handleOpened);
 
-                        result.should.deepEqual(new EventProcessingResult({
+                        assert.deepEqual(result, new EventProcessingResult({
                             delivered: 0,
                             opened: 1,
                             unprocessable: 0,
@@ -425,7 +424,7 @@ describe('EmailAnalyticsService', function () {
                             memberIds: [1]
                         }));
 
-                        fetchData.should.deepEqual({
+                        assert.deepEqual(fetchData, {
                             lastEventTimestamp: new Date(1)
                         });
                     });
@@ -445,9 +444,9 @@ describe('EmailAnalyticsService', function () {
                             timestamp: new Date(1)
                         }], result, fetchData);
 
-                        assert.equal(eventProcessor.handleDelivered.calledOnce, true);
+                        sinon.assert.calledOnce(eventProcessor.handleDelivered);
 
-                        result.should.deepEqual(new EventProcessingResult({
+                        assert.deepEqual(result, new EventProcessingResult({
                             delivered: 1,
                             opened: 0,
                             unprocessable: 0,
@@ -455,7 +454,7 @@ describe('EmailAnalyticsService', function () {
                             memberIds: [1]
                         }));
 
-                        fetchData.should.deepEqual({
+                        assert.deepEqual(fetchData, {
                             lastEventTimestamp: new Date(1)
                         });
                     });
@@ -476,15 +475,15 @@ describe('EmailAnalyticsService', function () {
                             timestamp: new Date(1)
                         }], result, fetchData);
 
-                        assert.equal(eventProcessor.handlePermanentFailed.calledOnce, true);
+                        sinon.assert.calledOnce(eventProcessor.handlePermanentFailed);
 
-                        result.should.deepEqual(new EventProcessingResult({
+                        assert.deepEqual(result, new EventProcessingResult({
                             permanentFailed: 1,
                             emailIds: [1],
                             memberIds: [1]
                         }));
 
-                        fetchData.should.deepEqual({
+                        assert.deepEqual(fetchData, {
                             lastEventTimestamp: new Date(1)
                         });
                     });
@@ -505,15 +504,15 @@ describe('EmailAnalyticsService', function () {
                             timestamp: new Date(1)
                         }], result, fetchData);
 
-                        assert.equal(eventProcessor.handleTemporaryFailed.calledOnce, true);
+                        sinon.assert.calledOnce(eventProcessor.handleTemporaryFailed);
 
-                        result.should.deepEqual(new EventProcessingResult({
+                        assert.deepEqual(result, new EventProcessingResult({
                             temporaryFailed: 1,
                             emailIds: [1],
                             memberIds: [1]
                         }));
 
-                        fetchData.should.deepEqual({
+                        assert.deepEqual(fetchData, {
                             lastEventTimestamp: new Date(1)
                         });
                     });
@@ -533,17 +532,17 @@ describe('EmailAnalyticsService', function () {
                             timestamp: new Date(1)
                         }], result, fetchData);
 
-                        assert.equal(eventProcessor.handleUnsubscribed.calledOnce, true);
-                        assert.equal(eventProcessor.handleDelivered.called, false);
-                        assert.equal(eventProcessor.handleOpened.called, false);
+                        sinon.assert.calledOnce(eventProcessor.handleUnsubscribed);
+                        sinon.assert.notCalled(eventProcessor.handleDelivered);
+                        sinon.assert.notCalled(eventProcessor.handleOpened);
 
-                        result.should.deepEqual(new EventProcessingResult({
+                        assert.deepEqual(result, new EventProcessingResult({
                             unsubscribed: 1,
                             emailIds: [1],
                             memberIds: [1]
                         }));
 
-                        fetchData.should.deepEqual({
+                        assert.deepEqual(fetchData, {
                             lastEventTimestamp: new Date(1)
                         });
                     });
@@ -563,17 +562,17 @@ describe('EmailAnalyticsService', function () {
                             timestamp: new Date(1)
                         }], result, fetchData);
 
-                        assert.equal(eventProcessor.handleComplained.calledOnce, true);
-                        assert.equal(eventProcessor.handleDelivered.called, false);
-                        assert.equal(eventProcessor.handleOpened.called, false);
+                        sinon.assert.calledOnce(eventProcessor.handleComplained);
+                        sinon.assert.notCalled(eventProcessor.handleDelivered);
+                        sinon.assert.notCalled(eventProcessor.handleOpened);
 
-                        result.should.deepEqual(new EventProcessingResult({
+                        assert.deepEqual(result, new EventProcessingResult({
                             complained: 1,
                             emailIds: [1],
                             memberIds: [1]
                         }));
 
-                        fetchData.should.deepEqual({
+                        assert.deepEqual(fetchData, {
                             lastEventTimestamp: new Date(1)
                         });
                     });
@@ -593,14 +592,14 @@ describe('EmailAnalyticsService', function () {
                             timestamp: new Date(1)
                         }], result, fetchData);
 
-                        assert.equal(eventProcessor.handleDelivered.called, false);
-                        assert.equal(eventProcessor.handleOpened.called, false);
+                        sinon.assert.notCalled(eventProcessor.handleDelivered);
+                        sinon.assert.notCalled(eventProcessor.handleOpened);
 
-                        result.should.deepEqual(new EventProcessingResult({
+                        assert.deepEqual(result, new EventProcessingResult({
                             unhandled: 1
                         }));
 
-                        fetchData.should.deepEqual({
+                        assert.deepEqual(fetchData, {
                             lastEventTimestamp: new Date(1)
                         });
                     });
@@ -635,7 +634,7 @@ describe('EmailAnalyticsService', function () {
                             timestamp: new Date(1)
                         }], result, fetchData);
 
-                        result.should.deepEqual(new EventProcessingResult({
+                        assert.deepEqual(result, new EventProcessingResult({
                             unprocessable: 1
                         }));
                     });
@@ -655,7 +654,7 @@ describe('EmailAnalyticsService', function () {
                             timestamp: new Date(1)
                         }], result, fetchData);
 
-                        result.should.deepEqual(new EventProcessingResult({
+                        assert.deepEqual(result, new EventProcessingResult({
                             unprocessable: 1
                         }));
                     });
@@ -676,7 +675,7 @@ describe('EmailAnalyticsService', function () {
                             severity: 'permanent'
                         }], result, fetchData);
 
-                        result.should.deepEqual(new EventProcessingResult({
+                        assert.deepEqual(result, new EventProcessingResult({
                             unprocessable: 1
                         }));
                     });
@@ -697,7 +696,7 @@ describe('EmailAnalyticsService', function () {
                             severity: 'temporary'
                         }], result, fetchData);
 
-                        result.should.deepEqual(new EventProcessingResult({
+                        assert.deepEqual(result, new EventProcessingResult({
                             unprocessable: 1
                         }));
                     });
@@ -717,7 +716,7 @@ describe('EmailAnalyticsService', function () {
                             timestamp: new Date(1)
                         }], result, fetchData);
 
-                        result.should.deepEqual(new EventProcessingResult({
+                        assert.deepEqual(result, new EventProcessingResult({
                             unprocessable: 1
                         }));
                     });
@@ -737,7 +736,7 @@ describe('EmailAnalyticsService', function () {
                             timestamp: new Date(1)
                         }], result, fetchData);
 
-                        result.should.deepEqual(new EventProcessingResult({
+                        assert.deepEqual(result, new EventProcessingResult({
                             unprocessable: 1
                         }));
                     });
@@ -765,12 +764,12 @@ describe('EmailAnalyticsService', function () {
 
                     if (batchProcessing) {
                         // In batched mode, should call batchGetRecipients and flushBatchedUpdates
-                        assert.equal(eventProcessor.batchGetRecipients.calledOnce, true);
-                        assert.equal(eventProcessor.flushBatchedUpdates.calledOnce, true);
+                        sinon.assert.calledOnce(eventProcessor.batchGetRecipients);
+                        sinon.assert.calledOnce(eventProcessor.flushBatchedUpdates);
                     } else {
                         // In sequential mode, should not call batch methods
-                        assert.equal(eventProcessor.batchGetRecipients.called, false);
-                        assert.equal(eventProcessor.flushBatchedUpdates.called, false);
+                        sinon.assert.notCalled(eventProcessor.batchGetRecipients);
+                        sinon.assert.notCalled(eventProcessor.flushBatchedUpdates);
                     }
                 });
             });
@@ -806,16 +805,16 @@ describe('EmailAnalyticsService', function () {
                     memberIds: ['m-1', 'm-2']
                 });
 
-                assert.equal(service.queries.aggregateEmailStats.calledTwice, true);
-                assert.equal(service.queries.aggregateEmailStats.calledWith('e-1'), true);
-                assert.equal(service.queries.aggregateEmailStats.calledWith('e-2'), true);
+                sinon.assert.calledTwice(service.queries.aggregateEmailStats);
+                sinon.assert.calledWith(service.queries.aggregateEmailStats, 'e-1');
+                sinon.assert.calledWith(service.queries.aggregateEmailStats, 'e-2');
 
                 // In batched mode, aggregateMemberStatsBatch should be called
-                assert.equal(service.queries.aggregateMemberStatsBatch.calledOnce, true);
-                assert.equal(service.queries.aggregateMemberStatsBatch.calledWith(['m-1', 'm-2']), true);
+                sinon.assert.calledOnce(service.queries.aggregateMemberStatsBatch);
+                sinon.assert.calledWith(service.queries.aggregateMemberStatsBatch, ['m-1', 'm-2']);
 
                 // Sequential method should not be called
-                assert.equal(service.queries.aggregateMemberStats.called, false);
+                sinon.assert.notCalled(service.queries.aggregateMemberStats);
             });
         });
 
@@ -844,17 +843,17 @@ describe('EmailAnalyticsService', function () {
                     memberIds: ['m-1', 'm-2']
                 });
 
-                assert.equal(service.queries.aggregateEmailStats.calledTwice, true);
-                assert.equal(service.queries.aggregateEmailStats.calledWith('e-1'), true);
-                assert.equal(service.queries.aggregateEmailStats.calledWith('e-2'), true);
+                sinon.assert.calledTwice(service.queries.aggregateEmailStats);
+                sinon.assert.calledWith(service.queries.aggregateEmailStats, 'e-1');
+                sinon.assert.calledWith(service.queries.aggregateEmailStats, 'e-2');
 
                 // In sequential mode, aggregateMemberStats should be called for each member
-                assert.equal(service.queries.aggregateMemberStats.calledTwice, true);
-                assert.equal(service.queries.aggregateMemberStats.calledWith('m-1'), true);
-                assert.equal(service.queries.aggregateMemberStats.calledWith('m-2'), true);
+                sinon.assert.calledTwice(service.queries.aggregateMemberStats);
+                sinon.assert.calledWith(service.queries.aggregateMemberStats, 'm-1');
+                sinon.assert.calledWith(service.queries.aggregateMemberStats, 'm-2');
 
                 // Batch method should not be called
-                assert.equal(service.queries.aggregateMemberStatsBatch.called, false);
+                sinon.assert.notCalled(service.queries.aggregateMemberStatsBatch);
             });
         });
     });
@@ -870,8 +869,8 @@ describe('EmailAnalyticsService', function () {
 
             await service.aggregateEmailStats('memberId');
 
-            assert.equal(service.queries.aggregateEmailStats.calledOnce, true);
-            service.queries.aggregateEmailStats.calledWith('memberId').should.be.true;
+            sinon.assert.calledOnce(service.queries.aggregateEmailStats);
+            sinon.assert.calledWith(service.queries.aggregateEmailStats, 'memberId');
         });
     });
 
@@ -886,8 +885,8 @@ describe('EmailAnalyticsService', function () {
 
             await service.aggregateMemberStats('memberId');
 
-            assert.equal(service.queries.aggregateMemberStats.calledOnce, true);
-            service.queries.aggregateMemberStats.calledWith('memberId').should.be.true;
+            sinon.assert.calledOnce(service.queries.aggregateMemberStats);
+            sinon.assert.calledWith(service.queries.aggregateMemberStats, 'memberId');
         });
     });
 });

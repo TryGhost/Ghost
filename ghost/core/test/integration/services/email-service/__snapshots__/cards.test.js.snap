@@ -7797,7 +7797,35 @@ table.body h2 span {
         <![endif]-->
     </head>
     <body data-testid=\\"email-preview-body\\" style=\\"background-color: #fff; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; font-size: 18px; line-height: 0; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #15212A;\\">
-        <span class=\\"preheader\\" style=\\"color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;\\">A random test post &#x2013; </span>
+        <span class=\\"preheader\\" style=\\"color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;\\">This is just a simple paragraph, no frills.
+
+This is block quote
+
+This is a...different block quote
+
+
+This is a heading!
+
+
+Here&#39;s a smaller heading.
+
+
+A heading
+
+
+and a paragraph (in markdown!)
+
+
+
+
+A paragraph inside an HTML card.
+
+
+And another one, with some bold text.
+
+
+
+Ghost: Independent technology for modern publishingBeautiful, modern publishing with newsletters and premium subscriptions built-in. Used by Sky, 404Media, Lever News, Tangle, The Browser, and thousands more.Ghost - The Profes</span>
         <!-- SPACING TO AVOID BODY TEXT BEING DUPLICATED IN PREVIEW TEXT -->
         <div style=\\"display:none; max-height:0; overflow:hidden; mso-hide: all;\\" aria-hidden=\\"true\\" role=\\"presentation\\">
             &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD;  &#xA0;
@@ -8203,7 +8231,7 @@ table.body h2 span {
                 </td>
             </tr>
         
-        </tbody></table><table class=\\"kg-card kg-transistor-card\\" cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; margin-top: 1.5em;\\"><tbody><tr><td align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 24px 0; text-align: center;\\" valign=\\"top\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; color: #FF1A75; text-decoration: none;\\" target=\\"_blank\\"><img src=\\"data:image/svg+xml,%3Csvg%20viewBox%3D%225%200.5%20144%20144%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22%2315171A%22%3E%3Cpath%20d%3D%22M77%20120.3c-2.6%200-4.8-2.1-4.8-4.8V29.4c0-2.6%202.1-4.8%204.8-4.8s4.8%202.1%204.8%204.8v86.2c0%202.6-2.2%204.7-4.8%204.7z%22%2F%3E%3Cpath%20d%3D%22M57%2077.3H34c-2.6%200-4.8-2.1-4.8-4.8%200-2.6%202.1-4.8%204.8-4.8h23c2.6%200%204.8%202.1%204.8%204.8%200%202.6-2.1%204.8-4.8%204.8z%22%2F%3E%3Cpath%20d%3D%22M120.1%2077.3h-23c-2.6%200-4.8-2.1-4.8-4.8%200-2.6%202.1-4.8%204.8-4.8h23c2.6%200%204.8%202.1%204.8%204.8%200%202.6-2.2%204.8-4.8%204.8z%22%2F%3E%3Cpath%20d%3D%22M77%20144.5c-39.7%200-72-32.3-72-72s32.3-72%2072-72%2072%2032.3%2072%2072-32.3%2072-72%2072zM77%2010c-34.4%200-62.4%2028-62.4%2062.4%200%2034.4%2028%2062.4%2062.4%2062.4%2034.4%200%2062.4-28%2062.4-62.4C139.4%2038%20111.4%2010%2077%2010z%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E\\" width=\\"56\\" height=\\"56\\" alt=\\"Transistor\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; border-radius: 8px; display: block; margin: 0 auto 12px auto;\\"></a><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; font-weight: 600; text-decoration: none; color: #15171A; font-size: 16px; display: block;\\" target=\\"_blank\\"> Listen on Transistor </a><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; color: #738a94; font-size: 14px; text-decoration: none; display: block; margin-top: 4px;\\" target=\\"_blank\\"> Get your private podcast feed </a></td></tr></tbody></table>
+        </tbody></table><table class=\\"kg-card kg-transistor-card\\" cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto; width: 100%; margin: 0 auto 1.5em; border-radius: 10px; background-color: #ffffff; background-color: rgba(255, 255, 255, 0.25); border: 1px solid #e0e7eb; border: 1px solid rgba(0, 0, 0, 0.12); margin-top: 1.5em;\\" bgcolor=\\"rgba(255, 255, 255, 0.25)\\"><tbody><tr><td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 24px; text-align: center;\\" align=\\"center\\" valign=\\"top\\"><table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; text-align: center;\\" align=\\"center\\"><tbody><tr><td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; text-align: center; padding-bottom: 12px;\\" align=\\"center\\" valign=\\"top\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; color: #FF1A75; text-decoration: underline; display: inline-block; width: 72px; height: 72px; padding-top: 4px; padding-right: 4px; padding-bottom: 4px; padding-left: 4px; border-radius: 8px; background-color: #FF1A75;\\" target=\\"_blank\\"><img src=\\"https://static.ghost.org/v6.0.0/images/transistor-logo-ondark.png\\" width=\\"40\\" height=\\"40\\" alt=\\"Transistor\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; width: 40px; height: 40px; padding: 16px;\\"></a></td></tr><tr><td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; text-align: center;\\" align=\\"center\\" valign=\\"top\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"kg-transistor-title\\" style=\\"display: block; padding-right: 20px; padding-bottom: 4px; padding-top: 4px; font-size: 17px; font-weight: 600; line-height: 18px; overflow-wrap: anywhere; text-decoration: none; color: #15212A;\\" target=\\"_blank\\"> Listen to your podcasts </a><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"kg-transistor-description\\" style=\\"display: inline-block; max-width: 400px; font-size: 14px; line-height: 1.4em; overflow-wrap: anywhere; text-decoration: none; color: #15212a; color: rgba(0, 0, 0, 0.6);\\" target=\\"_blank\\"> Subscribe and listen to your personal podcast feed in your favorite app. </a></td></tr></tbody></table></td></tr></tbody></table>
                                                 <!-- POST CONTENT END -->
 
                                             </td>
@@ -8714,7 +8742,7 @@ Learn more [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 
-http://127.0.0.1:2369/r/xxxxxx?m=member-uuid Listen on Transistor [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid] Get your private podcast feed [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
+http://127.0.0.1:2369/r/xxxxxx?m=member-uuid Listen to your podcasts [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid] Subscribe and listen to your personal podcast feed in your favorite app. [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 
@@ -9210,7 +9238,49 @@ table.body h2 span {
         <![endif]-->
     </head>
     <body data-testid=\\"email-preview-body\\" style=\\"background-color: #fff; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; font-size: 18px; line-height: 0; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #15212A;\\">
-        <span class=\\"preheader\\" style=\\"color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;\\">A random test post &#x2013; </span>
+        <span class=\\"preheader\\" style=\\"color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;\\">This is just a simple paragraph, no frills.
+
+&gt; This is block quote
+
+&gt; This is a...different block quote
+
+
+This is a heading!
+
+
+Here&#39;s a smaller heading.
+
+A lovely cow
+
+
+A heading
+
+
+and a paragraph (in markdown!)
+
+
+
+
+A paragraph inside an HTML card.
+
+
+And another one, with some bold text.
+
+
+
+----------------------------------------
+
+&#xA0;
+
+A gallery.
+
+
+
+
+
+
+Ghost: Independent technology for modern publishing
+Beautiful, modern publishing with newsletters and premium subscriptions built-in. Used by Sky,</span>
         <!-- SPACING TO AVOID BODY TEXT BEING DUPLICATED IN PREVIEW TEXT -->
         <div style=\\"display:none; max-height:0; overflow:hidden; mso-hide: all;\\" aria-hidden=\\"true\\" role=\\"presentation\\">
             &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#x2007;&#x34F; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD; &#xAD;  &#xA0;
@@ -9616,7 +9686,7 @@ table.body h2 span {
                 </td>
             </tr>
         
-        </tbody></table><table class=\\"kg-card kg-transistor-card\\" cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; margin-top: 1.5em;\\"><tbody><tr><td align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 24px 0; text-align: center;\\" valign=\\"top\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; color: #FF1A75; text-decoration: none;\\" target=\\"_blank\\"><img src=\\"data:image/svg+xml,%3Csvg%20viewBox%3D%225%200.5%20144%20144%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22%2315171A%22%3E%3Cpath%20d%3D%22M77%20120.3c-2.6%200-4.8-2.1-4.8-4.8V29.4c0-2.6%202.1-4.8%204.8-4.8s4.8%202.1%204.8%204.8v86.2c0%202.6-2.2%204.7-4.8%204.7z%22%2F%3E%3Cpath%20d%3D%22M57%2077.3H34c-2.6%200-4.8-2.1-4.8-4.8%200-2.6%202.1-4.8%204.8-4.8h23c2.6%200%204.8%202.1%204.8%204.8%200%202.6-2.1%204.8-4.8%204.8z%22%2F%3E%3Cpath%20d%3D%22M120.1%2077.3h-23c-2.6%200-4.8-2.1-4.8-4.8%200-2.6%202.1-4.8%204.8-4.8h23c2.6%200%204.8%202.1%204.8%204.8%200%202.6-2.2%204.8-4.8%204.8z%22%2F%3E%3Cpath%20d%3D%22M77%20144.5c-39.7%200-72-32.3-72-72s32.3-72%2072-72%2072%2032.3%2072%2072-32.3%2072-72%2072zM77%2010c-34.4%200-62.4%2028-62.4%2062.4%200%2034.4%2028%2062.4%2062.4%2062.4%2034.4%200%2062.4-28%2062.4-62.4C139.4%2038%20111.4%2010%2077%2010z%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E\\" width=\\"56\\" height=\\"56\\" alt=\\"Transistor\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; border-radius: 8px; display: block; margin: 0 auto 12px auto;\\"></a><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; font-weight: 600; text-decoration: none; color: #15171A; font-size: 16px; display: block;\\" target=\\"_blank\\"> Listen on Transistor </a><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; color: #738a94; font-size: 14px; text-decoration: none; display: block; margin-top: 4px;\\" target=\\"_blank\\"> Get your private podcast feed </a></td></tr></tbody></table>
+        </tbody></table><table class=\\"kg-card kg-transistor-card\\" cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto; width: 100%; margin: 0 auto 1.5em; border-radius: 10px; background-color: #ffffff; background-color: rgba(255, 255, 255, 0.25); border: 1px solid #e0e7eb; border: 1px solid rgba(0, 0, 0, 0.12); margin-top: 1.5em;\\" bgcolor=\\"rgba(255, 255, 255, 0.25)\\"><tbody><tr><td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 24px; text-align: center;\\" align=\\"center\\" valign=\\"top\\"><table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; text-align: center;\\" align=\\"center\\"><tbody><tr><td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; text-align: center; padding-bottom: 12px;\\" align=\\"center\\" valign=\\"top\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; color: #FF1A75; text-decoration: underline; display: inline-block; width: 72px; height: 72px; padding-top: 4px; padding-right: 4px; padding-bottom: 4px; padding-left: 4px; border-radius: 8px; background-color: #FF1A75;\\" target=\\"_blank\\"><img src=\\"https://static.ghost.org/v6.0.0/images/transistor-logo-ondark.png\\" width=\\"40\\" height=\\"40\\" alt=\\"Transistor\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; width: 40px; height: 40px; padding: 16px;\\"></a></td></tr><tr><td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; text-align: center;\\" align=\\"center\\" valign=\\"top\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"kg-transistor-title\\" style=\\"display: block; padding-right: 20px; padding-bottom: 4px; padding-top: 4px; font-size: 17px; font-weight: 600; line-height: 18px; overflow-wrap: anywhere; text-decoration: none; color: #15212A;\\" target=\\"_blank\\"> Listen to your podcasts </a><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"kg-transistor-description\\" style=\\"display: inline-block; max-width: 400px; font-size: 14px; line-height: 1.4em; overflow-wrap: anywhere; text-decoration: none; color: #15212a; color: rgba(0, 0, 0, 0.6);\\" target=\\"_blank\\"> Subscribe and listen to your personal podcast feed in your favorite app. </a></td></tr></tbody></table></td></tr></tbody></table>
                                                 <!-- POST CONTENT END -->
 
                                             </td>
@@ -10133,7 +10203,7 @@ Learn more [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 
-http://127.0.0.1:2369/r/xxxxxx?m=member-uuid Listen on Transistor [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid] Get your private podcast feed [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
+http://127.0.0.1:2369/r/xxxxxx?m=member-uuid Listen to your podcasts [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid] Subscribe and listen to your personal podcast feed in your favorite app. [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 

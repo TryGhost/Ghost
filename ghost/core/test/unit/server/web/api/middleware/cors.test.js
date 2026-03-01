@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const sinon = require('sinon');
 const rewire = require('rewire');
 const configUtils = require('../../../../../utils/config-utils');
@@ -62,7 +61,7 @@ describe('cors', function () {
         cors(req, res, next);
 
         sinon.assert.calledOnce(res.end);
-        res.headers['Access-Control-Allow-Origin'].should.equal(origin);
+        assert.equal(res.headers['Access-Control-Allow-Origin'], origin);
 
         done();
     });
@@ -77,7 +76,7 @@ describe('cors', function () {
         cors(req, res, next);
 
         sinon.assert.calledOnce(res.end);
-        res.headers['Access-Control-Allow-Origin'].should.equal(origin);
+        assert.equal(res.headers['Access-Control-Allow-Origin'], origin);
 
         done();
     });
@@ -109,7 +108,7 @@ describe('cors', function () {
         cors(req, res, next);
 
         sinon.assert.calledOnce(res.end);
-        res.headers['Access-Control-Allow-Origin'].should.equal(origin);
+        assert.equal(res.headers['Access-Control-Allow-Origin'], origin);
 
         done();
     });
@@ -131,7 +130,7 @@ describe('cors', function () {
         cors(req, res, next);
 
         sinon.assert.called(res.end);
-        res.headers['Access-Control-Allow-Origin'].should.equal(origin);
+        assert.equal(res.headers['Access-Control-Allow-Origin'], origin);
 
         done();
     });

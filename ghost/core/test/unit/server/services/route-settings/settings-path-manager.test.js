@@ -1,22 +1,14 @@
-// Switch these lines once there are useful utils
 const assert = require('node:assert/strict');
-// const testUtils = require('./utils');
-const should = require('should');
 const SettingsPathManager = require('../../../../../core/server/services/route-settings/settings-path-manager');
 
 describe('Settings Path Manager', function () {
     it('throws when paths parameter is not provided', function () {
-        try {
-            const settingsPathManager = new SettingsPathManager({
+        assert.throws(() => {
+            new SettingsPathManager({
                 paths: [],
                 type: 'routes'
             });
-
-            should.fail(settingsPathManager, 'Should have errored');
-        } catch (err) {
-            should.exist(err);
-            assert.match(err.message, /paths values/g);
-        }
+        }, /paths values/g);
     });
 
     describe('getDefaultFilePath', function () {

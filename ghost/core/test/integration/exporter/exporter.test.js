@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const should = require('should');
+const {assertExists} = require('../../utils/assertions');
 const sinon = require('sinon');
 const testUtils = require('../../utils');
 const _ = require('lodash');
@@ -18,7 +18,7 @@ describe('Exporter', function () {
     });
     beforeEach(testUtils.setup('default', 'settings'));
 
-    should.exist(exporter);
+    assertExists(exporter);
 
     it('exports expected table data', function (done) {
         exporter.doExport().then(function (exportData) {
@@ -102,15 +102,19 @@ describe('Exporter', function () {
                 'webhooks'
             ];
 
-            should.exist(exportData);
-            should.exist(exportData.meta);
-            should.exist(exportData.data);
+            assertExists(exportData);
+            assertExists(exportData.meta);
+            assertExists(exportData.data);
 
             // NOTE: using `Object.keys` here instead of `should.have.only.keys` assertion
             //       because when `have.only.keys` fails there's no useful diff
-            Object.keys(exportData.data).sort().should.eql(tables.sort());
-            Object.keys(exportData.data).sort().should.containDeep(Object.keys(exportedBodyLatest().db[0].data));
-            exportData.meta.version.should.equal(ghostVersion.full);
+            assert.deepEqual(Object.keys(exportData.data).sort(), tables.sort());
+            assert(
+                Object.keys(exportedBodyLatest().db[0].data).every(key => (
+                    Object.hasOwnProperty.call(exportData.data, key)
+                ))
+            );
+            assert.equal(exportData.meta.version, ghostVersion.full);
 
             // excludes table should contain no data
             const excludedTables = [

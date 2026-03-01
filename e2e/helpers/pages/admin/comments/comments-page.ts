@@ -16,6 +16,10 @@ export class CommentsPage extends AdminPage {
     readonly commentingDisabledIndicator = (row: Locator) => row.getByTestId('commenting-disabled-indicator');
     readonly hideCommentsCheckbox: Locator;
 
+    readonly threadSidebar: Locator;
+    readonly threadSidebarTitle: Locator;
+    readonly threadCommentRows: Locator;
+
     constructor(page: Page) {
         super(page);
         this.pageUrl = '/ghost/#/comments';
@@ -27,11 +31,15 @@ export class CommentsPage extends AdminPage {
         this.viewMemberMenuItem = page.getByRole('menuitem', {name: 'View member'});
         this.disableCommentingMenuItem = page.getByRole('menuitem', {name: 'Disable commenting'});
         this.enableCommentingMenuItem = page.getByRole('menuitem', {name: 'Enable commenting'});
-        this.disableCommentsModal = page.getByRole('dialog');
+        this.disableCommentsModal = page.getByRole('dialog', {name: 'Disable comments'});
         this.disableCommentsModalTitle = this.disableCommentsModal.getByRole('heading', {name: 'Disable comments'});
-        this.disableCommentsButton = page.getByRole('button', {name: 'Disable comments'});
+        this.disableCommentsButton = this.disableCommentsModal.getByRole('button', {name: 'Disable comments'});
         this.cancelButton = this.disableCommentsModal.getByRole('button', {name: 'Cancel'});
-        this.hideCommentsCheckbox = page.getByRole('checkbox', {name: 'Hide all previous comments'});
+        this.hideCommentsCheckbox = this.disableCommentsModal.getByRole('checkbox', {name: 'Hide all previous comments'});
+
+        this.threadSidebar = page.getByRole('dialog', {name: 'Thread'});
+        this.threadSidebarTitle = this.threadSidebar.getByRole('heading', {name: 'Thread'});
+        this.threadCommentRows = page.getByTestId(/^comment-thread-row-/);
     }
 
     async waitForComments(): Promise<void> {
@@ -60,5 +68,31 @@ export class CommentsPage extends AdminPage {
 
     async confirmDisableCommenting(): Promise<void> {
         await this.disableCommentsButton.click();
+    }
+
+    getRepliesButton(row: Locator): Locator {
+        // Use first() because nested replies also have their own replies-metric
+        return row.getByTestId('replies-metric').first();
+    }
+
+    async openThread(row: Locator): Promise<void> {
+        await this.getRepliesButton(row).click();
+        await this.threadSidebar.waitFor({state: 'visible'});
+    }
+
+    async waitForThreadSidebar(): Promise<void> {
+        await this.threadSidebar.waitFor({state: 'visible'});
+    }
+
+    getThreadCommentByText(text: string): Locator {
+        return this.threadCommentRows.filter({hasText: text});
+    }
+
+    getThreadCommentById(commentId: string): Locator {
+        return this.page.getByTestId(`comment-thread-row-${commentId}`);
+    }
+
+    getRepliedToLink(row: Locator): Locator {
+        return row.getByTestId('replied-to-link');
     }
 }

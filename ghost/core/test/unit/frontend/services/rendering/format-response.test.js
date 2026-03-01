@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const testUtils = require('../../../../utils');
 const helpers = require('../../../../../core/frontend/services/rendering');
 const {SafeString} = require('../../../../../core/frontend/services/handlebars');
@@ -30,8 +29,8 @@ describe('Unit - services/routing/helpers/format-response', function () {
 
             const formatted = helpers.formatResponse.entry(postObject);
 
-            formatted.should.be.an.Object().with.property('post');
-            formatted.post.should.eql(postObject);
+            assert(formatted && typeof formatted === 'object');
+            assert.equal(formatted.post, postObject);
         });
 
         it('should return the post object with html strings converted to SafeString', function () {
@@ -39,7 +38,7 @@ describe('Unit - services/routing/helpers/format-response', function () {
 
             const formatted = helpers.formatResponse.entry(postObject);
 
-            formatted.post.feature_image_caption.should.be.an.instanceof(SafeString);
+            assert(formatted.post.feature_image_caption instanceof SafeString);
         });
 
         it('should set up @page local for posts', function () {
@@ -48,8 +47,6 @@ describe('Unit - services/routing/helpers/format-response', function () {
 
             helpers.formatResponse.entry(postObject, ['post'], locals);
 
-            locals.should.be.an.Object().with.properties('_templateOptions');
-            locals._templateOptions.data.should.be.an.Object().with.properties('page');
             assert.equal(locals._templateOptions.data.page.show_title_and_feature_image, true);
         });
 
@@ -59,10 +56,8 @@ describe('Unit - services/routing/helpers/format-response', function () {
 
             const formatted = helpers.formatResponse.entry(postObject, ['page'], locals);
 
-            formatted.page.should.not.have.property('show_title_and_feature_image');
+            assert(!('show_title_and_feature_image' in formatted.page));
 
-            locals.should.be.an.Object().with.properties('_templateOptions');
-            locals._templateOptions.data.should.be.an.Object().with.properties('page');
             assert.equal(locals._templateOptions.data.page.show_title_and_feature_image, true);
         });
 
@@ -72,10 +67,8 @@ describe('Unit - services/routing/helpers/format-response', function () {
 
             const formatted = helpers.formatResponse.entry(postObject, ['page'], locals);
 
-            formatted.page.should.not.have.property('show_title_and_feature_image');
+            assert(!('show_title_and_feature_image' in formatted.page));
 
-            locals.should.be.an.Object().with.properties('_templateOptions');
-            locals._templateOptions.data.should.be.an.Object().with.properties('page');
             assert.equal(locals._templateOptions.data.page.show_title_and_feature_image, false);
         });
     });
@@ -89,9 +82,8 @@ describe('Unit - services/routing/helpers/format-response', function () {
 
             const formatted = helpers.formatResponse.entries(data);
 
-            formatted.should.be.an.Object().with.properties('posts', 'pagination');
-            formatted.posts.should.eql(data.posts);
-            formatted.pagination.should.eql(data.meta.pagination);
+            assert.equal(formatted.posts, data.posts);
+            assert.equal(formatted.pagination, data.meta.pagination);
         });
 
         it('should flatten api read responses which have no pagination data', function () {
@@ -103,8 +95,9 @@ describe('Unit - services/routing/helpers/format-response', function () {
 
             const formatted = helpers.formatResponse.entries(data);
 
-            formatted.should.be.an.Object().with.properties('posts', 'pagination', 'tag');
-            formatted.tag.should.eql(data.data.tag[0]);
+            assert(formatted && typeof formatted === 'object');
+            assert('posts' in formatted && 'pagination' in formatted && 'tag' in formatted);
+            assert.equal(formatted.tag, data.data.tag[0]);
         });
 
         it('should remove the meta key from api browse responses', function () {
@@ -121,8 +114,9 @@ describe('Unit - services/routing/helpers/format-response', function () {
 
             const formatted = helpers.formatResponse.entries(data);
 
-            formatted.should.be.an.Object().with.properties('posts', 'pagination', 'featured');
-            formatted.featured.should.be.an.Object().with.properties('posts', 'pagination');
+            assert(formatted && typeof formatted === 'object');
+            assert('posts' in formatted && 'pagination' in formatted && 'featured' in formatted);
+            assert('posts' in formatted.featured && 'pagination' in formatted.featured);
         });
 
         it('should return post objects with html strings converted to SafeString', function () {
@@ -146,11 +140,11 @@ describe('Unit - services/routing/helpers/format-response', function () {
 
             const formatted = helpers.formatResponse.entries(data);
 
-            formatted.posts[0].feature_image_caption.should.be.an.instanceof(SafeString);
-            formatted.posts[1].feature_image_caption.should.be.an.instanceof(SafeString);
-            formatted.featured_single.feature_image_caption.should.be.an.instanceof(SafeString);
-            formatted.featured_multiple[0].feature_image_caption.should.be.an.instanceof(SafeString);
-            formatted.featured_multiple[1].feature_image_caption.should.be.an.instanceof(SafeString);
+            assert(formatted.posts[0].feature_image_caption instanceof SafeString);
+            assert(formatted.posts[1].feature_image_caption instanceof SafeString);
+            assert(formatted.featured_single.feature_image_caption instanceof SafeString);
+            assert(formatted.featured_multiple[0].feature_image_caption instanceof SafeString);
+            assert(formatted.featured_multiple[1].feature_image_caption instanceof SafeString);
         });
 
         it('should set @page when data.page is present (e.g. custom routing)', function () {
@@ -163,10 +157,8 @@ describe('Unit - services/routing/helpers/format-response', function () {
             const locals = {};
 
             const formatted = helpers.formatResponse.entries(data, true, locals);
-            formatted.page.should.not.have.property('show_title_and_feature_image');
+            assert(!('show_title_and_feature_image' in formatted.page));
 
-            locals.should.be.an.Object().with.properties('_templateOptions');
-            locals._templateOptions.data.should.be.an.Object().with.properties('page');
             assert.equal(locals._templateOptions.data.page.show_title_and_feature_image, false);
         });
     });

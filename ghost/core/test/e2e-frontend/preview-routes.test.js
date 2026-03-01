@@ -3,7 +3,7 @@
 // Mocking out the models to not touch the DB would turn these into unit tests, and should probably be done in future,
 // But then again testing real code, rather than mock code, might be more useful...
 const assert = require('node:assert/strict');
-const should = require('should');
+const {assertExists} = require('../utils/assertions');
 
 const sinon = require('sinon');
 const supertest = require('supertest');
@@ -17,19 +17,19 @@ function assertCorrectFrontendHeaders(res) {
     assert.equal(res.headers['x-cache-invalidate'], undefined);
     assert.equal(res.headers['X-CSRF-Token'], undefined);
     assert.equal(res.headers['set-cookie'], undefined);
-    should.exist(res.headers.date);
+    assertExists(res.headers.date);
 }
 
 function assertPaywallRendered(res) {
-    res.text.should.match(/Before paywall/, 'Content before paywall should be rendered');
-    res.text.should.not.match(/After paywall/, 'Content after paywall should not be rendered');
-    res.text.should.match(/This post is for/, 'Paywall should be rendered');
+    assert.match(res.text, /Before paywall/, 'Content before paywall should be rendered');
+    assert.doesNotMatch(res.text, /After paywall/, 'Content after paywall should not be rendered');
+    assert.match(res.text, /This post is for/, 'Paywall should be rendered');
 }
 
 function assertNoPaywallRendered(res) {
-    res.text.should.match(/Before paywall/, 'Content before paywall should be rendered');
-    res.text.should.match(/After paywall/, 'Content after paywall should be rendered');
-    res.text.should.not.match(/This post is for/, 'Paywall should not be rendered');
+    assert.match(res.text, /Before paywall/, 'Content before paywall should be rendered');
+    assert.match(res.text, /After paywall/, 'Content after paywall should be rendered');
+    assert.doesNotMatch(res.text, /This post is for/, 'Paywall should not be rendered');
 }
 
 describe('Frontend Routing: Preview Routes', function () {
@@ -67,16 +67,16 @@ describe('Frontend Routing: Preview Routes', function () {
                 assert.equal(res.headers['x-cache-invalidate'], undefined);
                 assert.equal(res.headers['X-CSRF-Token'], undefined);
                 assert.equal(res.headers['set-cookie'], undefined);
-                should.exist(res.headers.date);
+                assertExists(res.headers.date);
 
                 assert.equal($('title').text(), 'Not finished yet');
                 assert.equal($('meta[name="description"]').attr('content'), 'meta description for draft post');
 
                 // @TODO: use theme from fixtures and don't rely on content/themes/casper
-                // $('.content .post').length.should.equal(1);
-                // $('.poweredby').text().should.equal('Proudly published with Ghost');
-                // $('body.post-template').length.should.equal(1);
-                // $('article.post').length.should.equal(1);
+                // assert.equal($('.content .post').length, 1);
+                // assert.equal($('.poweredby').text(), 'Proudly published with Ghost');
+                // assert.equal($('body.post-template').length, 1);
+                // assert.equal($('article.post').length, 1);
             });
     });
 

@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const should = require('should');
+const {assertExists} = require('../../utils/assertions');
 const sinon = require('sinon');
 const cheerio = require('cheerio');
 const testUtils = require('../../utils');
@@ -155,12 +155,12 @@ describe('Frontend behavior tests', function () {
 
                         assert.equal($('.post-card').length, 2);
 
-                        should.exist(response.res.locals.context);
-                        should.exist(response.res.locals.version);
-                        should.exist(response.res.locals.safeVersion);
-                        should.exist(response.res.locals.safeVersion);
-                        should.exist(response.res.locals.relativeUrl);
-                        should.exist(response.res.routerOptions);
+                        assertExists(response.res.locals.context);
+                        assertExists(response.res.locals.version);
+                        assertExists(response.res.locals.safeVersion);
+                        assertExists(response.res.locals.safeVersion);
+                        assertExists(response.res.locals.relativeUrl);
+                        assertExists(response.res.routerOptions);
                     });
             });
 
@@ -1543,7 +1543,7 @@ describe('Frontend behavior tests', function () {
                 .then(function (response) {
                     const $ = cheerio.load(response.body);
                     assert.equal(response.statusCode, 200);
-                    assert.equal($('head link')[1].attribs.href, 'http://127.0.0.1:2369/rss/');
+                    assert.equal($('head link')[1].attribs.href, `${configUtils.config.get('url')}/rss/`);
                 });
         });
     });

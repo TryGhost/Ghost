@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const should = require('should');
+const {assertExists} = require('../../../../utils/assertions');
 const sinon = require('sinon');
 const configUtils = require('../../../../utils/config-utils');
 const urlUtils = require('../../../../../core/shared/url-utils');
@@ -44,7 +44,7 @@ describe('UNIT - services/routing/ParentRouter', function () {
                 }
             };
 
-            should.exist(parentRouter._getSiteRouter(req));
+            assertExists(parentRouter._getSiteRouter(req));
         });
     });
 
@@ -75,8 +75,8 @@ describe('UNIT - services/routing/ParentRouter', function () {
             }];
 
             parentRouter._respectDominantRouter(req, res, next, 'bacon');
-            assert.equal(next.called, false);
-            assert.equal(redirect301Stub.withArgs(res, '/channel/').calledOnce, true);
+            sinon.assert.notCalled(next);
+            sinon.assert.calledOnce(redirect301Stub.withArgs(res, '/channel/'));
         });
 
         it('redirect with query params', function () {
@@ -105,8 +105,8 @@ describe('UNIT - services/routing/ParentRouter', function () {
             }];
 
             parentRouter._respectDominantRouter(req, res, next, 'bacon');
-            assert.equal(next.called, false);
-            assert.equal(redirect301Stub.withArgs(res, '/channel/?a=b').calledOnce, true);
+            sinon.assert.notCalled(next);
+            sinon.assert.calledOnce(redirect301Stub.withArgs(res, '/channel/?a=b'));
         });
 
         it('redirect rss', function () {
@@ -135,8 +135,8 @@ describe('UNIT - services/routing/ParentRouter', function () {
             }];
 
             parentRouter._respectDominantRouter(req, res, next, 'bacon');
-            assert.equal(next.called, false);
-            assert.equal(redirect301Stub.withArgs(res, '/channel/rss/').calledOnce, true);
+            sinon.assert.notCalled(next);
+            sinon.assert.calledOnce(redirect301Stub.withArgs(res, '/channel/rss/'));
         });
 
         it('redirect pagination', function () {
@@ -165,8 +165,8 @@ describe('UNIT - services/routing/ParentRouter', function () {
             }];
 
             parentRouter._respectDominantRouter(req, res, next, 'bacon');
-            assert.equal(next.called, false);
-            assert.equal(redirect301Stub.withArgs(res, '/channel/page/2/').calledOnce, true);
+            sinon.assert.notCalled(next);
+            sinon.assert.calledOnce(redirect301Stub.withArgs(res, '/channel/page/2/'));
         });
 
         it('redirect correctly with subdirectory', function () {
@@ -197,8 +197,8 @@ describe('UNIT - services/routing/ParentRouter', function () {
             }];
 
             parentRouter._respectDominantRouter(req, res, next, 'bacon');
-            assert.equal(next.called, false);
-            assert.equal(redirect301Stub.withArgs(res, '/blog/channel/').calledOnce, true);
+            sinon.assert.notCalled(next);
+            sinon.assert.calledOnce(redirect301Stub.withArgs(res, '/blog/channel/'));
         });
 
         it('no redirect: different data key', function () {
@@ -224,8 +224,8 @@ describe('UNIT - services/routing/ParentRouter', function () {
             }];
 
             parentRouter._respectDominantRouter(req, res, next, 'bacon');
-            assert.equal(next.called, true);
-            assert.equal(redirect301Stub.called, false);
+            sinon.assert.called(next);
+            sinon.assert.notCalled(redirect301Stub);
         });
 
         it('no redirect: no channel defined', function () {
@@ -246,8 +246,8 @@ describe('UNIT - services/routing/ParentRouter', function () {
             }];
 
             parentRouter._respectDominantRouter(req, res, next, 'bacon');
-            assert.equal(next.called, true);
-            assert.equal(redirect301Stub.called, false);
+            sinon.assert.called(next);
+            sinon.assert.notCalled(redirect301Stub);
         });
 
         it('redirect primary tag permalink', function () {
@@ -276,8 +276,8 @@ describe('UNIT - services/routing/ParentRouter', function () {
             }];
 
             parentRouter._respectDominantRouter(req, res, next, 'welcome');
-            assert.equal(next.called, false);
-            assert.equal(redirect301Stub.withArgs(res, '/route/?x=y').calledOnce, true);
+            sinon.assert.notCalled(next);
+            sinon.assert.calledOnce(redirect301Stub.withArgs(res, '/route/?x=y'));
         });
     });
 
@@ -343,7 +343,7 @@ describe('UNIT - services/routing/ParentRouter', function () {
                 }
             };
 
-            should.exist(parentRouter.isRedirectEnabled('tags', 'bacon'));
+            assertExists(parentRouter.isRedirectEnabled('tags', 'bacon'));
         });
 
         it('redirect (pages)', function () {
@@ -356,7 +356,7 @@ describe('UNIT - services/routing/ParentRouter', function () {
                 }
             };
 
-            should.exist(parentRouter.isRedirectEnabled('pages', 'home'));
+            assertExists(parentRouter.isRedirectEnabled('pages', 'home'));
         });
     });
 });

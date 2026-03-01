@@ -1,5 +1,4 @@
 const path = require('path');
-const should = require('should');
 const supertest = require('supertest');
 const testUtils = require('../../../utils');
 const localUtils = require('./utils');
@@ -10,7 +9,8 @@ const models = require('../../../../core/server/models');
 const jobManager = require('../../../../core/server/services/jobs/job-service');
 
 const {mockManager} = require('../../../utils/e2e-framework');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../utils/assertions');
 
 let request;
 let emailMockReceiver;
@@ -45,11 +45,11 @@ describe('Members Importer API', function () {
                 assert.equal(res.headers['x-cache-invalidate'], undefined);
                 const jsonResponse = res.body;
 
-                should.exist(jsonResponse);
-                should.exist(jsonResponse.meta);
-                should.exist(jsonResponse.meta.stats);
+                assertExists(jsonResponse);
+                assertExists(jsonResponse.meta);
+                assertExists(jsonResponse.meta.stats);
 
-                should.exist(jsonResponse.meta.import_label);
+                assertExists(jsonResponse.meta.import_label);
                 assert.match(jsonResponse.meta.import_label.slug, /^import-/);
                 assert.equal(jsonResponse.meta.stats.imported, 2);
                 assert.equal(jsonResponse.meta.stats.invalid.length, 0);
@@ -66,34 +66,34 @@ describe('Members Importer API', function () {
                 assert.equal(res.headers['x-cache-invalidate'], undefined);
                 const jsonResponse = res.body;
 
-                should.exist(jsonResponse);
-                should.exist(jsonResponse.members);
+                assertExists(jsonResponse);
+                assertExists(jsonResponse.members);
                 assert.equal(jsonResponse.members.length, 2);
 
                 const importedMember1 = jsonResponse.members.find(m => m.email === 'member+labels_1@example.com');
-                should.exist(importedMember1);
+                assertExists(importedMember1);
                 assert.equal(importedMember1.name, null);
                 assert.equal(importedMember1.note, null);
                 assert.equal(importedMember1.subscribed, true);
                 assert.equal(importedMember1.comped, false);
-                importedMember1.subscriptions.should.not.be.undefined();
+                assertExists(importedMember1.subscriptions);
                 assert.equal(importedMember1.subscriptions.length, 0);
 
                 // check label order
                 // 1 unique global + 1 record labels + 1 auto generated label
                 assert.equal(importedMember1.labels.length, 3);
-                should.exist(importedMember1.labels.find(({slug}) => slug === 'label'));
-                should.exist(importedMember1.labels.find(({slug}) => slug === 'global-label-1'));
-                should.exist(importedMember1.labels.find(({slug}) => slug.match(/^import-/)));
+                assertExists(importedMember1.labels.find(({slug}) => slug === 'label'));
+                assertExists(importedMember1.labels.find(({slug}) => slug === 'global-label-1'));
+                assertExists(importedMember1.labels.find(({slug}) => slug.match(/^import-/)));
 
                 const importedMember2 = jsonResponse.members.find(m => m.email === 'member+labels_2@example.com');
-                should.exist(importedMember2);
+                assertExists(importedMember2);
                 // 1 unique global + 2 record labels
                 assert.equal(importedMember2.labels.length, 4);
-                should.exist(importedMember2.labels.find(({slug}) => slug === 'another-label'));
-                should.exist(importedMember2.labels.find(({slug}) => slug === 'and-one-more'));
-                should.exist(importedMember2.labels.find(({slug}) => slug === 'global-label-1'));
-                should.exist(importedMember2.labels.find(({slug}) => slug.match(/^import-/)));
+                assertExists(importedMember2.labels.find(({slug}) => slug === 'another-label'));
+                assertExists(importedMember2.labels.find(({slug}) => slug === 'and-one-more'));
+                assertExists(importedMember2.labels.find(({slug}) => slug === 'global-label-1'));
+                assertExists(importedMember2.labels.find(({slug}) => slug.match(/^import-/)));
             });
     });
 
@@ -112,14 +112,14 @@ describe('Members Importer API', function () {
                 assert.equal(res.headers['x-cache-invalidate'], undefined);
                 const jsonResponse = res.body;
 
-                should.exist(jsonResponse);
-                should.exist(jsonResponse.meta);
-                should.exist(jsonResponse.meta.stats);
+                assertExists(jsonResponse);
+                assertExists(jsonResponse.meta);
+                assertExists(jsonResponse.meta.stats);
 
                 assert.equal(jsonResponse.meta.stats.imported, 1);
                 assert.equal(jsonResponse.meta.stats.invalid.length, 0);
 
-                should.exist(jsonResponse.meta.import_label);
+                assertExists(jsonResponse.meta.import_label);
                 assert.match(jsonResponse.meta.import_label.slug, /^import-/);
             })
             .then(() => {
@@ -134,9 +134,9 @@ describe('Members Importer API', function () {
                 assert.equal(res.headers['x-cache-invalidate'], undefined);
                 const jsonResponse = res.body;
 
-                should.exist(jsonResponse);
-                should.exist(jsonResponse.members);
-                should.exist(jsonResponse.members[0]);
+                assertExists(jsonResponse);
+                assertExists(jsonResponse.members);
+                assertExists(jsonResponse.members[0]);
 
                 const importedMember1 = jsonResponse.members[0];
                 assert.equal(importedMember1.email, 'member+mapped_1@example.com');
@@ -144,7 +144,7 @@ describe('Members Importer API', function () {
                 assert.equal(importedMember1.note, 'do map me');
                 assert.equal(importedMember1.subscribed, true);
                 assert.equal(importedMember1.comped, false);
-                importedMember1.subscriptions.should.not.be.undefined();
+                assertExists(importedMember1.subscriptions);
                 assert.equal(importedMember1.subscriptions.length, 0);
                 assert.equal(importedMember1.labels.length, 1); // auto-generated import label
             });
@@ -162,9 +162,9 @@ describe('Members Importer API', function () {
                 assert.equal(res.headers['x-cache-invalidate'], undefined);
                 const jsonResponse = res.body;
 
-                should.exist(jsonResponse);
-                should.exist(jsonResponse.meta);
-                should.exist(jsonResponse.meta.stats);
+                assertExists(jsonResponse);
+                assertExists(jsonResponse.meta);
+                assertExists(jsonResponse.meta.stats);
 
                 assert.equal(jsonResponse.meta.stats.imported, 2);
                 assert.equal(jsonResponse.meta.stats.invalid.length, 0);
@@ -181,20 +181,20 @@ describe('Members Importer API', function () {
                 assert.equal(res.headers['x-cache-invalidate'], undefined);
                 const jsonResponse = res.body;
 
-                should.exist(jsonResponse);
-                should.exist(jsonResponse.members);
+                assertExists(jsonResponse);
+                assertExists(jsonResponse.members);
 
                 const defaultMember1 = jsonResponse.members.find(member => (member.email === 'member+defaults_1@example.com'));
                 assert.equal(defaultMember1.name, null);
                 assert.equal(defaultMember1.note, null);
                 assert.equal(defaultMember1.subscribed, true);
                 assert.equal(defaultMember1.comped, false);
-                defaultMember1.subscriptions.should.not.be.undefined();
+                assertExists(defaultMember1.subscriptions);
                 assert.equal(defaultMember1.subscriptions.length, 0);
                 assert.equal(defaultMember1.labels.length, 1); // auto-generated import label
 
                 const defaultMember2 = jsonResponse.members.find(member => (member.email === 'member+defaults_2@example.com'));
-                should(defaultMember2).not.be.undefined();
+                assertExists(defaultMember2);
             });
     });
 
@@ -210,8 +210,8 @@ describe('Members Importer API', function () {
                 assert.equal(res.headers['x-cache-invalidate'], undefined);
                 const jsonResponse = res.body;
 
-                should.exist(jsonResponse);
-                should.exist(jsonResponse.meta);
+                assertExists(jsonResponse);
+                assertExists(jsonResponse.meta);
                 assert.equal(jsonResponse.meta.stats, undefined);
             });
     });
@@ -229,9 +229,9 @@ describe('Members Importer API', function () {
                 assert.equal(res.headers['x-cache-invalidate'], undefined);
                 const jsonResponse = res.body;
 
-                should.exist(jsonResponse);
-                should.exist(jsonResponse.meta);
-                should.exist(jsonResponse.meta.stats);
+                assertExists(jsonResponse);
+                assertExists(jsonResponse.meta);
+                assertExists(jsonResponse.meta.stats);
 
                 assert.equal(jsonResponse.meta.stats.imported, 1);
                 assert.equal(jsonResponse.meta.stats.invalid.length, 2);
@@ -239,7 +239,7 @@ describe('Members Importer API', function () {
                 assert.match(jsonResponse.meta.stats.invalid[0].error, /Invalid Email/);
                 assert.match(jsonResponse.meta.stats.invalid[1].error, /Invalid Email/);
 
-                should.exist(jsonResponse.meta.import_label);
+                assertExists(jsonResponse.meta.import_label);
                 assert.match(jsonResponse.meta.import_label.slug, /^import-/);
             });
     });
@@ -265,9 +265,9 @@ describe('Members Importer API', function () {
         assert.equal(res.headers['x-cache-invalidate'], undefined);
         const jsonResponse = res.body;
 
-        should.exist(jsonResponse);
-        should.exist(jsonResponse.meta);
-        should.exist(jsonResponse.meta.stats);
+        assertExists(jsonResponse);
+        assertExists(jsonResponse.meta);
+        assertExists(jsonResponse.meta.stats);
 
         assert.equal(jsonResponse.meta.stats.imported, 10);
         assert.equal(jsonResponse.meta.stats.invalid.length, 0);
@@ -291,9 +291,9 @@ describe('Members Importer API', function () {
         assert.equal(res.headers['x-cache-invalidate'], undefined);
         const jsonResponse = res.body;
 
-        should.exist(jsonResponse);
-        should.exist(jsonResponse.meta);
-        should.exist(jsonResponse.meta.stats);
+        assertExists(jsonResponse);
+        assertExists(jsonResponse.meta);
+        assertExists(jsonResponse.meta.stats);
 
         assert.equal(jsonResponse.meta.stats.imported, 10);
         assert.equal(jsonResponse.meta.stats.invalid.length, 0);
@@ -334,8 +334,8 @@ describe('Members Importer API', function () {
         assert.equal(res.headers['x-cache-invalidate'], undefined);
         const jsonResponse = res.body;
 
-        should.exist(jsonResponse);
-        should.exist(jsonResponse.meta);
+        assertExists(jsonResponse);
+        assertExists(jsonResponse.meta);
 
         // Wait for the job to finish
         await awaitCompletion;

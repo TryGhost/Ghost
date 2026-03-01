@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const should = require('should');
+const {assertExists} = require('../../../utils/assertions');
 const sinon = require('sinon');
 const ObjectId = require('bson-objectid').default;
 const urlService = require('../../../../core/server/services/url');
@@ -28,7 +28,7 @@ describe('getAuthorUrl', function () {
         urlServiceGetUrlByResourceIdStub.withArgs(post.primary_author.id, {absolute: undefined, withSubdirectory: true})
             .returns('author url');
 
-        should.exist(getAuthorUrl({
+        assertExists(getAuthorUrl({
             context: ['post'],
             post: post
         }));
@@ -45,7 +45,7 @@ describe('getAuthorUrl', function () {
         urlServiceGetUrlByResourceIdStub.withArgs(post.primary_author.id, {absolute: true, withSubdirectory: true})
             .returns('absolute author url');
 
-        should.exist(getAuthorUrl({
+        assertExists(getAuthorUrl({
             context: ['post'],
             post: post
         }, true));
@@ -60,7 +60,7 @@ describe('getAuthorUrl', function () {
         urlServiceGetUrlByResourceIdStub.withArgs(author.id, {absolute: undefined, withSubdirectory: true})
             .returns('author url');
 
-        should.exist(getAuthorUrl({
+        assertExists(getAuthorUrl({
             author: author
         }));
     });

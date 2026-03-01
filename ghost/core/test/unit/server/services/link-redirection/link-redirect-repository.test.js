@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const sinon = require('sinon');
 const ObjectID = require('bson-objectid').default;
 const EventEmitter = require('events').EventEmitter;
@@ -150,7 +149,6 @@ describe('UNIT: LinkRedirectRepository class', function () {
             const url = new URL('https://example.com/r/1234abcd');
             linkRedirectRepository = createLinkRedirectRepository();
             const result = await linkRedirectRepository.getByURL(url);
-            should(result).be.an.Object();
             assert.equal(result.from.href, url.href);
             assert.equal(result.to.href, 'https://google.com/');
         });
@@ -170,7 +168,6 @@ describe('UNIT: LinkRedirectRepository class', function () {
                 cacheAdapter: cacheAdapterStub
             });
             const result = await linkRedirectRepository.getByURL(url);
-            should(result).be.an.Object();
             assert.equal(result.from.href, 'https://example.com/r/1234abcd');
             assert.equal(result.to.href, 'https://google.com/');
             assert.equal(result.edited, true);
@@ -188,12 +185,11 @@ describe('UNIT: LinkRedirectRepository class', function () {
                 cacheAdapter: cacheAdapterStub
             });
             const result = await linkRedirectRepository.getByURL(url);
-            should(result).be.an.Object();
             assert.equal(result.from.href, 'https://example.com/r/1234abcd');
             assert.equal(result.to.href, 'https://google.com/');
             assert.equal(result.edited, true);
             assert.equal(ObjectID.isValid(result.link_id), true);
-            assert.equal(cacheAdapterStub.set.calledOnce, true);
+            sinon.assert.calledOnce(cacheAdapterStub.set);
         });
     });
 
@@ -211,7 +207,7 @@ describe('UNIT: LinkRedirectRepository class', function () {
                 to: new URL('https://google.com')
             });
             await linkRedirectRepository.save(linkRedirect);
-            assert.equal(cacheAdapterStub.set.calledOnce, true);
+            sinon.assert.calledOnce(cacheAdapterStub.set);
         });
 
         it('should clear cache on site.changed event', function () {
@@ -226,7 +222,7 @@ describe('UNIT: LinkRedirectRepository class', function () {
             });
 
             EventRegistry.emit('site.changed');
-            assert.equal(reset.calledOnce, true);
+            sinon.assert.calledOnce(reset);
         });
     });
 });

@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 
 // Stuff we are testing
 const page_url = require('../../../../core/frontend/helpers/page_url');
@@ -40,6 +39,6 @@ describe('{{page_url}} helper', function () {
         options.data.root.pagination.next = 10;
         options.data.root.pagination.prev = 2;
 
-        page_url(options).should.equal(page_url(1, options));
+        assert.equal(page_url(options), page_url(1, options));
     });
 });

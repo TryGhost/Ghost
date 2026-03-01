@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../utils');
 const models = require('../../../core/server/models/index');
@@ -106,28 +105,28 @@ describe('e2e {{#next_post}} helper', function () {
                 await next_post
                     .call(publicPost, optionsData);
 
-                fn.firstCall.args[0].should.match({id: membersPost.id, access: false});
+                sinon.assert.calledWith(fn.firstCall, sinon.match({id: membersPost.id, access: false}));
             });
 
             it('next paid post', async function () {
                 await next_post
                     .call(membersPost, optionsData);
 
-                fn.firstCall.args[0].should.match({id: paidPost.id, access: false});
+                sinon.assert.calledWith(fn.firstCall, sinon.match({id: paidPost.id, access: false}));
             });
 
             it('next tiers post', async function () {
                 await next_post
                     .call(paidPost, optionsData);
 
-                fn.firstCall.args[0].should.match({id: basicTierPost.id, access: false});
+                sinon.assert.calledWith(fn.firstCall, sinon.match({id: basicTierPost.id, access: false}));
             });
 
             it('next public post', async function () {
                 await next_post
                     .call(basicTierPost, optionsData);
 
-                fn.firstCall.args[0].should.match({id: publicPost2.id, access: true});
+                sinon.assert.calledWith(fn.firstCall, sinon.match({id: publicPost2.id, access: true}));
             });
         });
 
@@ -149,28 +148,28 @@ describe('e2e {{#next_post}} helper', function () {
                 await next_post
                     .call(publicPost, optionsData);
 
-                fn.firstCall.args[0].should.match({id: membersPost.id, access: true});
+                sinon.assert.calledWith(fn.firstCall, sinon.match({id: membersPost.id, access: true}));
             });
 
             it('next paid post', async function () {
                 await next_post
                     .call(membersPost, optionsData);
 
-                fn.firstCall.args[0].should.match({id: paidPost.id, access: false});
+                sinon.assert.calledWith(fn.firstCall, sinon.match({id: paidPost.id, access: false}));
             });
 
             it('next tiers post', async function () {
                 await next_post
                     .call(paidPost, optionsData);
 
-                fn.firstCall.args[0].should.match({id: basicTierPost.id, access: false});
+                sinon.assert.calledWith(fn.firstCall, sinon.match({id: basicTierPost.id, access: false}));
             });
 
             it('next public post', async function () {
                 await next_post
                     .call(basicTierPost, optionsData);
 
-                fn.firstCall.args[0].should.match({id: publicPost2.id, access: true});
+                sinon.assert.calledWith(fn.firstCall, sinon.match({id: publicPost2.id, access: true}));
             });
         });
 
@@ -192,28 +191,28 @@ describe('e2e {{#next_post}} helper', function () {
                 await next_post
                     .call(publicPost, optionsData);
 
-                fn.firstCall.args[0].should.match({id: membersPost.id, access: true});
+                sinon.assert.calledWith(fn.firstCall, sinon.match({id: membersPost.id, access: true}));
             });
 
             it('next paid post', async function () {
                 await next_post
                     .call(membersPost, optionsData);
 
-                fn.firstCall.args[0].should.match({id: paidPost.id, access: true});
+                sinon.assert.calledWith(fn.firstCall, sinon.match({id: paidPost.id, access: true}));
             });
 
             it('next tiers post', async function () {
                 await next_post
                     .call(paidPost, optionsData);
 
-                fn.firstCall.args[0].should.match({id: basicTierPost.id, access: false});
+                sinon.assert.calledWith(fn.firstCall, sinon.match({id: basicTierPost.id, access: false}));
             });
 
             it('next public post', async function () {
                 await next_post
                     .call(basicTierPost, optionsData);
 
-                fn.firstCall.args[0].should.match({id: publicPost2.id, access: true});
+                sinon.assert.calledWith(fn.firstCall, sinon.match({id: publicPost2.id, access: true}));
             });
         });
 
@@ -241,28 +240,28 @@ describe('e2e {{#next_post}} helper', function () {
                 await next_post
                     .call(publicPost, optionsData);
 
-                fn.firstCall.args[0].should.match({id: membersPost.id, access: true});
+                sinon.assert.calledWith(fn.firstCall, sinon.match({id: membersPost.id, access: true}));
             });
 
             it('next paid post', async function () {
                 await next_post
                     .call(membersPost, optionsData);
 
-                fn.firstCall.args[0].should.match({id: paidPost.id, access: true});
+                sinon.assert.calledWith(fn.firstCall, sinon.match({id: paidPost.id, access: true}));
             });
 
             it('next tiers post', async function () {
                 await next_post
                     .call(paidPost, optionsData);
 
-                fn.firstCall.args[0].should.match({id: basicTierPost.id, access: true});
+                sinon.assert.calledWith(fn.firstCall, sinon.match({id: basicTierPost.id, access: true}));
             });
 
             it('next public post', async function () {
                 await next_post
                     .call(basicTierPost, optionsData);
 
-                fn.firstCall.args[0].should.match({id: publicPost2.id, access: true});
+                sinon.assert.calledWith(fn.firstCall, sinon.match({id: publicPost2.id, access: true}));
             });
         });
 
@@ -290,28 +289,28 @@ describe('e2e {{#next_post}} helper', function () {
                 await next_post
                     .call(publicPost, optionsData);
 
-                fn.firstCall.args[0].should.match({id: membersPost.id, access: true});
+                sinon.assert.calledWith(fn.firstCall, sinon.match({id: membersPost.id, access: true}));
             });
 
             it('next paid post', async function () {
                 await next_post
                     .call(membersPost, optionsData);
 
-                fn.firstCall.args[0].should.match({id: paidPost.id, access: true});
+                sinon.assert.calledWith(fn.firstCall, sinon.match({id: paidPost.id, access: true}));
             });
 
             it('next tiers post', async function () {
                 await next_post
                     .call(paidPost, optionsData);
 
-                fn.firstCall.args[0].should.match({id: basicTierPost.id, access: false});
+                sinon.assert.calledWith(fn.firstCall, sinon.match({id: basicTierPost.id, access: false}));
             });
 
             it('next public post', async function () {
                 await next_post
                     .call(basicTierPost, optionsData);
 
-                fn.firstCall.args[0].should.match({id: publicPost2.id, access: true});
+                sinon.assert.calledWith(fn.firstCall, sinon.match({id: publicPost2.id, access: true}));
             });
         });
     });

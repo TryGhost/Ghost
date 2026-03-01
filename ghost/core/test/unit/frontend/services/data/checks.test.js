@@ -1,10 +1,9 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const {checks} = require('../../../../../core/frontend/services/data');
 
 describe('Checks', function () {
     it('methods', function () {
-        Object.keys(checks).should.eql([
+        assert.deepEqual(Object.keys(checks), [
             'isPost',
             'isNewsletter',
             'isPage',

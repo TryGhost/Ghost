@@ -1,9 +1,8 @@
-require('should');
 const sinon = require('sinon');
 const nock = require('nock');
 const moment = require('moment');
 const crypto = require('crypto');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const util = require('util');
 const logging = require('@tryghost/logging');
 const request = require('@tryghost/request');
@@ -101,7 +100,7 @@ describe('Update Check', function () {
 
             await updateCheckService.check();
 
-            assert.equal(requestStub.called, false);
+            sinon.assert.notCalled(requestStub);
         });
 
         it('update check will happen if it\'s time to check', async function () {
@@ -209,16 +208,16 @@ describe('Update Check', function () {
             assert.equal(scope.isDone(), true);
 
             assert.equal(capturedData.ghost_version, '4.0.0');
-            capturedData.node_version.should.equal(process.versions.node);
-            capturedData.env.should.equal(process.env.NODE_ENV);
+            assert.equal(capturedData.node_version, process.versions.node);
+            assert.equal(capturedData.env, process.env.NODE_ENV);
             assert.match(capturedData.database_type, /sqlite3|mysql/);
-            capturedData.blog_id.should.be.a.String();
-            capturedData.blog_id.should.not.be.empty();
-            capturedData.theme.should.be.equal('casperito');
+            assert.equal(typeof capturedData.blog_id, 'string');
+            assert(capturedData.blog_id);
+            assert.equal(capturedData.theme, 'casperito');
             assert.equal(capturedData.blog_created_at, 819846900);
-            capturedData.user_count.should.be.equal(2);
-            capturedData.post_count.should.be.equal(13);
-            capturedData.npm_version.should.be.equal('10.8.2');
+            assert.equal(capturedData.user_count, 2);
+            assert.equal(capturedData.post_count, 13);
+            assert.equal(capturedData.npm_version, '10.8.2');
         });
     });
 
@@ -281,20 +280,20 @@ describe('Update Check', function () {
 
             await updateCheckService.check();
 
-            assert.equal(notificationsAPIAddStub.calledOnce, true);
+            sinon.assert.calledOnce(notificationsAPIAddStub);
             assert.equal(notificationsAPIAddStub.args[0][0].notifications.length, 1);
 
             const targetNotification = notificationsAPIAddStub.args[0][0].notifications[0];
-            targetNotification.dismissible.should.eql(notification.messages[0].dismissible);
-            targetNotification.id.should.eql(notification.messages[0].id);
-            targetNotification.top.should.eql(notification.messages[0].top);
+            assert.equal(targetNotification.dismissible, notification.messages[0].dismissible);
+            assert.equal(targetNotification.id, notification.messages[0].id);
+            assert.equal(targetNotification.top, notification.messages[0].top);
             assert.equal(targetNotification.type, 'info');
-            targetNotification.message.should.eql(notification.messages[0].content);
+            assert.equal(targetNotification.message, notification.messages[0].content);
 
-            assert.equal(usersBrowseStub.calledTwice, true);
+            sinon.assert.calledTwice(usersBrowseStub);
 
             // Second (non statistical) call should be looking for admin users with an 'active' status only
-            usersBrowseStub.args[1][0].should.eql({
+            assert.deepEqual(usersBrowseStub.args[1][0], {
                 limit: 'all',
                 include: ['roles'],
                 filter: 'status:active',
@@ -362,13 +361,13 @@ describe('Update Check', function () {
 
             await updateCheckService.check();
 
-            assert.equal(sendEmailStub.called, true);
+            sinon.assert.called(sendEmailStub);
             assert.equal(sendEmailStub.args[0][0].to, 'jbloggs@example.com');
             assert.equal(sendEmailStub.args[0][0].subject, 'Action required: Critical alert from Ghost instance http://127.0.0.1:2369');
             assert.equal(sendEmailStub.args[0][0].html, '<p>Critical message. Upgrade your site!</p>');
             assert.equal(sendEmailStub.args[0][0].forceTextContent, true);
 
-            assert.equal(notificationsAPIAddStub.calledOnce, true);
+            sinon.assert.calledOnce(notificationsAPIAddStub);
             assert.equal(notificationsAPIAddStub.args[0][0].notifications.length, 1);
         });
 
@@ -417,7 +416,7 @@ describe('Update Check', function () {
 
             await updateCheckService.check();
 
-            assert.equal(notificationsAPIAddStub.calledOnce, false);
+            sinon.assert.notCalled(notificationsAPIAddStub);
         });
     });
 
@@ -434,8 +433,8 @@ describe('Update Check', function () {
 
             updateCheckService.updateCheckError({});
 
-            assert.equal(settingsStub.called, true);
-            assert.equal(logging.error.called, true);
+            sinon.assert.called(settingsStub);
+            sinon.assert.called(logging.error);
             assert.equal(logging.error.args[0][0].context, 'Checking for updates failed, your site will continue to function.');
             assert.equal(logging.error.args[0][0].help, 'If you get this error repeatedly, please seek help from https://ghost.org/docs/');
         });
@@ -456,8 +455,8 @@ describe('Update Check', function () {
                 updateCheckService.updateCheckError({});
                 assert.fail('should have thrown');
             } catch (e) {
-                assert.equal(settingsStub.called, true);
-                assert.equal(logging.error.called, true);
+                sinon.assert.called(settingsStub);
+                sinon.assert.called(logging.error);
                 assert.equal(logging.error.args[0][0].context, 'Checking for updates failed, your site will continue to function.');
                 assert.equal(logging.error.args[0][0].help, 'If you get this error repeatedly, please seek help from https://ghost.org/docs/');
 

@@ -2179,7 +2179,6 @@ Object {
 exports[`Newsletters API Managed email with custom sending domain Can set newsletter reply-to to any email address with required verification 3: [metadata 1] 1`] = `
 Object {
   "encoding": "base64",
-  "forceTextContent": true,
   "from": "\\"Ghost\\" <noreply@sendingdomain.com>",
   "generateTextFromHTML": false,
   "headers": Object {
@@ -3382,7 +3381,6 @@ Object {
 exports[`Newsletters API Managed email without custom sending domain Can set newsletter reply-to to any email address with required verification 3: [metadata 1] 1`] = `
 Object {
   "encoding": "base64",
-  "forceTextContent": true,
   "from": "\\"Ghost\\" <default@email.com>",
   "generateTextFromHTML": false,
   "headers": Object {

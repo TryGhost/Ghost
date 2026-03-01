@@ -1,6 +1,7 @@
 import CommentLikesModal from './comment-likes-modal';
 import CommentReportsModal from './comment-reports-modal';
 import {Comment} from '@tryghost/admin-x-framework/api/comments';
+import {Link, useSearchParams} from '@tryghost/admin-x-framework';
 import {
     LucideIcon,
     Tooltip,
@@ -16,11 +17,13 @@ interface MetricProps {
     icon: React.ReactNode;
     count: number;
     label: string;
+    to?: string;
     onClick?: () => void;
     className?: string;
+    testId?: string;
 }
 
-function Metric({icon, count, label, onClick, className}: MetricProps) {
+function Metric({icon, count, label, to, onClick, className, testId}: MetricProps) {
     const baseClassName = cn('flex items-center gap-1 text-xs text-gray-800', className);
     const content = (
         <>
@@ -29,13 +32,27 @@ function Metric({icon, count, label, onClick, className}: MetricProps) {
         </>
     );
 
+    const isClickable = to || onClick;
+
     return (
         <TooltipProvider>
             <Tooltip>
                 <TooltipTrigger asChild>
-                    {onClick ? (
+                    {to ? (
+                        <Link
+                            className={cn(baseClassName, 'cursor-pointer hover:opacity-70')}
+                            data-testid={testId}
+                            to={to}
+                            onClick={(e: React.MouseEvent) => {
+                                e.stopPropagation();
+                            }}
+                        >
+                            {content}
+                        </Link>
+                    ) : onClick ? (
                         <button
                             className={cn(baseClassName, 'cursor-pointer hover:opacity-70')}
+                            data-testid={testId}
                             type="button"
                             onClick={(e) => {
                                 e.stopPropagation();
@@ -45,30 +62,42 @@ function Metric({icon, count, label, onClick, className}: MetricProps) {
                             {content}
                         </button>
                     ) : (
-                        <div className={baseClassName}>
+                        <div className={baseClassName} data-testid={testId}>
                             {content}
                         </div>
                     )}
                 </TooltipTrigger>
-                <TooltipContent>{onClick ? `View ${label.toLowerCase()}` : label}</TooltipContent>
+                <TooltipContent>{isClickable ? `View ${label.toLowerCase()}` : label}</TooltipContent>
             </Tooltip>
         </TooltipProvider>
     );
 }
 
+/**
+ * Builds a thread link URL that preserves existing search params
+ */
+export function buildThreadLink(searchParams: URLSearchParams, commentId: string | undefined | null): string | undefined {
+    if (!commentId) {
+        return undefined;
+    }
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set('thread', `is:${commentId}`);
+    return `?${newParams.toString()}`;
+}
+
 interface CommentMetricsProps {
     comment: Comment;
-    onRepliesClick: () => void;
     className?: string;
 }
 
 export function CommentMetrics({
     comment,
-    onRepliesClick,
     className
 }: CommentMetricsProps) {
+    const [searchParams] = useSearchParams();
     const [likesModalOpen, setLikesModalOpen] = useState(false);
     const [reportsModalOpen, setReportsModalOpen] = useState(false);
+    const repliesLink = buildThreadLink(searchParams, comment.id);
 
     const repliesCount = comment.count?.direct_replies ?? comment.count?.replies ?? comment.replies?.length ?? 0; // TODO: remove replies fallback once backend is fully rolled out
     const likesCount = comment.count?.likes ?? 0;
@@ -84,7 +113,8 @@ export function CommentMetrics({
                     count={repliesCount}
                     icon={<LucideIcon.Reply size={16} strokeWidth={1.5} />}
                     label="Replies"
-                    onClick={hasReplies ? onRepliesClick : undefined}
+                    testId="replies-metric"
+                    to={hasReplies ? repliesLink : undefined}
                 />
                 <Metric
                     count={likesCount}

@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../utils/assertions');
 const _ = require('lodash');
-const should = require('should');
 const supertest = require('supertest');
 const ObjectId = require('bson-objectid').default;
 const moment = require('moment-timezone');
@@ -45,7 +45,7 @@ describe('Posts API', function () {
 
                     assert.equal(res.headers['x-cache-invalidate'], undefined);
                     const jsonResponse = res.body;
-                    should.exist(jsonResponse.posts);
+                    assertExists(jsonResponse.posts);
                     localUtils.API.checkResponse(jsonResponse, 'posts');
                     assert.equal(jsonResponse.posts.length, 15);
 
@@ -76,7 +76,7 @@ describe('Posts API', function () {
 
                     assert.equal(res.headers['x-cache-invalidate'], undefined);
                     const jsonResponse = res.body;
-                    should.exist(jsonResponse.posts);
+                    assertExists(jsonResponse.posts);
                     localUtils.API.checkResponse(jsonResponse, 'posts');
                     assert.equal(jsonResponse.posts.length, 15);
 
@@ -107,11 +107,11 @@ describe('Posts API', function () {
 
                     assert.equal(res.headers['x-cache-invalidate'], undefined);
                     const jsonResponse = res.body;
-                    should.exist(jsonResponse.posts);
+                    assertExists(jsonResponse.posts);
                     localUtils.API.checkResponse(jsonResponse, 'posts');
                     assert.equal(jsonResponse.posts.length, 2);
                     jsonResponse.posts.forEach((post) => {
-                        should.notEqual(post.meta_description, null);
+                        assert.notEqual(post.meta_description, null);
                     });
 
                     localUtils.API.checkResponse(
@@ -138,10 +138,10 @@ describe('Posts API', function () {
 
                     assert.equal(res.headers['x-cache-invalidate'], undefined);
                     const jsonResponse = res.body;
-                    should.exist(jsonResponse.posts);
+                    assertExists(jsonResponse.posts);
                     localUtils.API.checkResponse(jsonResponse, 'posts');
                     assert.equal(jsonResponse.posts.length, 1);
-                    jsonResponse.posts[0].id.should.equal(testUtils.DataGenerator.Content.posts[2].id);
+                    assert.equal(jsonResponse.posts[0].id, testUtils.DataGenerator.Content.posts[2].id);
                     assert.equal(jsonResponse.posts[0].meta_description, 'meta description for short and sweet');
 
                     localUtils.API.checkResponse(
@@ -168,7 +168,7 @@ describe('Posts API', function () {
 
                     assert.equal(res.headers['x-cache-invalidate'], undefined);
                     const jsonResponse = res.body;
-                    should.exist(jsonResponse.posts);
+                    assertExists(jsonResponse.posts);
                     localUtils.API.checkResponse(jsonResponse, 'posts');
                     assert.equal(jsonResponse.posts.length, 15);
 
@@ -233,7 +233,7 @@ describe('Posts API', function () {
                 .then((res) => {
                     assert.equal(res.headers['x-cache-invalidate'], undefined);
                     const jsonResponse = res.body;
-                    should.exist(jsonResponse.posts);
+                    assertExists(jsonResponse.posts);
                     localUtils.API.checkResponse(jsonResponse, 'posts');
                     assert.equal(jsonResponse.posts.length, 15);
 
@@ -271,8 +271,8 @@ describe('Posts API', function () {
 
                     assert.equal(res.headers['x-cache-invalidate'], undefined);
                     const jsonResponse = res.body;
-                    should.exist(jsonResponse);
-                    should.exist(jsonResponse.errors);
+                    assertExists(jsonResponse);
+                    assertExists(jsonResponse.errors);
                     testUtils.API.checkResponseValue(jsonResponse.errors[0], [
                         'message',
                         'context',
@@ -311,12 +311,12 @@ describe('Posts API', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(201)
                 .then((res) => {
-                    should.exist(res.body.posts);
-                    should.exist(res.body.posts[0].title);
+                    assertExists(res.body.posts);
+                    assertExists(res.body.posts[0].title);
                     assert.equal(res.body.posts[0].title, '(Untitled)');
 
-                    should.exist(res.headers.location);
-                    res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('posts/')}${res.body.posts[0].id}/`);
+                    assertExists(res.headers.location);
+                    assert.equal(new URL(res.headers.location).pathname, `/ghost/api/admin/posts/${res.body.posts[0].id}/`);
                 });
         });
 
@@ -334,8 +334,8 @@ describe('Posts API', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(201)
                 .then((res) => {
-                    should.exist(res.body.posts);
-                    should.exist(res.body.posts[0].title);
+                    assertExists(res.body.posts);
+                    assertExists(res.body.posts[0].title);
                     assert.equal(res.body.posts[0].title, 'Tags test 1');
                     assert.equal(res.body.posts[0].tags.length, 2);
                     assert.equal(res.body.posts[0].tags[0].slug, 'one');
@@ -357,8 +357,8 @@ describe('Posts API', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(201)
                 .then((res) => {
-                    should.exist(res.body.posts);
-                    should.exist(res.body.posts[0].title);
+                    assertExists(res.body.posts);
+                    assertExists(res.body.posts[0].title);
                     assert.equal(res.body.posts[0].title, 'Tags test 2');
                     assert.equal(res.body.posts[0].tags.length, 2);
                     assert.equal(res.body.posts[0].tags[0].slug, 'one');
@@ -380,8 +380,8 @@ describe('Posts API', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(201)
                 .then((res) => {
-                    should.exist(res.body.posts);
-                    should.exist(res.body.posts[0].title);
+                    assertExists(res.body.posts);
+                    assertExists(res.body.posts[0].title);
                     assert.equal(res.body.posts[0].title, 'Tags test 3');
                     assert.equal(res.body.posts[0].tags.length, 2);
                     assert.equal(res.body.posts[0].tags[0].slug, 'one');
@@ -403,8 +403,8 @@ describe('Posts API', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(201)
                 .then((res) => {
-                    should.exist(res.body.posts);
-                    should.exist(res.body.posts[0].title);
+                    assertExists(res.body.posts);
+                    assertExists(res.body.posts[0].title);
                     assert.equal(res.body.posts[0].title, 'Tags test 4');
                     assert.equal(res.body.posts[0].tags.length, 2);
                     assert.equal(res.body.posts[0].tags[0].slug, 'three');
@@ -426,8 +426,8 @@ describe('Posts API', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(201);
 
-            should.exist(res.body.posts);
-            should.exist(res.body.posts[0].title);
+            assertExists(res.body.posts);
+            assertExists(res.body.posts[0].title);
             assert.equal(res.body.posts[0].title, 'Tags test 5');
             assert.equal(res.body.posts[0].tags.length, 1);
             assert.equal(res.body.posts[0].tags[0].slug, 'five-spaces');
@@ -451,11 +451,11 @@ describe('Posts API', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(201);
 
-            should.exist(res2.body.posts);
-            should.exist(res2.body.posts[0].title);
+            assertExists(res2.body.posts);
+            assertExists(res2.body.posts[0].title);
             assert.equal(res2.body.posts[0].title, 'Tags test 6');
             assert.equal(res2.body.posts[0].tags.length, 1);
-            res2.body.posts[0].tags[0].id.should.equal(res.body.posts[0].tags[0].id);
+            assert.equal(res2.body.posts[0].tags[0].id, res.body.posts[0].tags[0].id);
         });
 
         it('can add with tags - slug with spaces not automated', async function () {
@@ -474,8 +474,8 @@ describe('Posts API', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(201);
 
-            should.exist(res.body.posts);
-            should.exist(res.body.posts[0].title);
+            assertExists(res.body.posts);
+            assertExists(res.body.posts[0].title);
             assert.equal(res.body.posts[0].title, 'Tags test 7');
             assert.equal(res.body.posts[0].tags.length, 1);
             assert.equal(res.body.posts[0].tags[0].slug, 'six-spaces');
@@ -497,11 +497,11 @@ describe('Posts API', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(201);
 
-            should.exist(res2.body.posts);
-            should.exist(res2.body.posts[0].title);
+            assertExists(res2.body.posts);
+            assertExists(res2.body.posts[0].title);
             assert.equal(res2.body.posts[0].title, 'Tags test 8');
             assert.equal(res2.body.posts[0].tags.length, 1);
-            res2.body.posts[0].tags[0].id.should.equal(res.body.posts[0].tags[0].id);
+            assert.equal(res2.body.posts[0].tags[0].id, res.body.posts[0].tags[0].id);
         });
 
         it('can add with tags - too long slug', async function () {
@@ -520,11 +520,11 @@ describe('Posts API', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(201);
 
-            should.exist(res.body.posts);
-            should.exist(res.body.posts[0].title);
+            assertExists(res.body.posts);
+            assertExists(res.body.posts[0].title);
             assert.equal(res.body.posts[0].title, 'Tags test 9');
             assert.equal(res.body.posts[0].tags.length, 1);
-            res.body.posts[0].tags[0].slug.should.equal(tooLongSlug.substring(0, 185));
+            assert.equal(res.body.posts[0].tags[0].slug, tooLongSlug.substring(0, 185));
 
             // If we create another post again now that the very long tag exists,
             // we need to make sure it matches correctly and doesn't create a new tag again
@@ -542,11 +542,11 @@ describe('Posts API', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(201);
 
-            should.exist(res2.body.posts);
-            should.exist(res2.body.posts[0].title);
+            assertExists(res2.body.posts);
+            assertExists(res2.body.posts[0].title);
             assert.equal(res2.body.posts[0].title, 'Tags test 10');
             assert.equal(res2.body.posts[0].tags.length, 1);
-            res2.body.posts[0].tags[0].id.should.equal(res.body.posts[0].tags[0].id);
+            assert.equal(res2.body.posts[0].tags[0].id, res.body.posts[0].tags[0].id);
         });
     });
 
@@ -572,9 +572,9 @@ describe('Posts API', function () {
                 })
                 .then((res) => {
                     // @NOTE: if you set published_at to null and the post is published, we set it to NOW in model layer
-                    should.exist(res.headers['x-cache-invalidate']);
-                    should.exist(res.body.posts);
-                    should.exist(res.body.posts[0].published_at);
+                    assertExists(res.headers['x-cache-invalidate']);
+                    assertExists(res.body.posts);
+                    assertExists(res.body.posts[0].published_at);
                 });
         });
 
@@ -592,14 +592,14 @@ describe('Posts API', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(201);
 
-            should.exist(res.body.posts);
-            should.exist(res.body.posts[0].title);
+            assertExists(res.body.posts);
+            assertExists(res.body.posts[0].title);
             assert.equal(res.body.posts[0].title, 'Email me');
             assert.equal(res.body.posts[0].email_only, true);
             assert.equal(res.body.posts[0].status, 'draft');
 
-            should.exist(res.headers.location);
-            res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('posts/')}${res.body.posts[0].id}/`);
+            assertExists(res.headers.location);
+            assert.equal(new URL(res.headers.location).pathname, `/ghost/api/admin/posts/${res.body.posts[0].id}/`);
 
             const publishedRes = await request
                 .put(localUtils.API.getApiQuery(`posts/${res.body.posts[0].id}/?newsletter=${defaultNewsletterSlug}`))
@@ -614,11 +614,11 @@ describe('Posts API', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200);
 
-            should.exist(publishedRes.body.posts);
+            assertExists(publishedRes.body.posts);
             assert.equal(res.body.posts[0].email_only, true);
             assert.equal(publishedRes.body.posts[0].status, 'sent');
 
-            should.exist(publishedRes.body.posts[0].email);
+            assertExists(publishedRes.body.posts[0].email);
             assert.equal(publishedRes.body.posts[0].email.email_count, 4);
         });
 
@@ -635,14 +635,14 @@ describe('Posts API', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(201);
 
-            should.exist(res.body.posts);
-            should.exist(res.body.posts[0].title);
+            assertExists(res.body.posts);
+            assertExists(res.body.posts[0].title);
             assert.equal(res.body.posts[0].title, 'Email me');
             assert.equal(res.body.posts[0].email_only, false);
             assert.equal(res.body.posts[0].status, 'draft');
 
-            should.exist(res.headers.location);
-            res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('posts/')}${res.body.posts[0].id}/`);
+            assertExists(res.headers.location);
+            assert.equal(new URL(res.headers.location).pathname, `/ghost/api/admin/posts/${res.body.posts[0].id}/`);
 
             const publishedRes = await request
                 .put(localUtils.API.getApiQuery(`posts/${res.body.posts[0].id}/?email_segment=status:-free&newsletter=${defaultNewsletterSlug}`))
@@ -658,10 +658,10 @@ describe('Posts API', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200);
 
-            should.exist(publishedRes.body.posts);
+            assertExists(publishedRes.body.posts);
             assert.equal(publishedRes.body.posts[0].status, 'sent');
 
-            should.exist(publishedRes.body.posts[0].email);
+            assertExists(publishedRes.body.posts[0].email);
             assert.equal(publishedRes.body.posts[0].email.email_count, 2);
         });
 
@@ -678,14 +678,14 @@ describe('Posts API', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(201);
 
-            should.exist(res.body.posts);
-            should.exist(res.body.posts[0].title);
+            assertExists(res.body.posts);
+            assertExists(res.body.posts[0].title);
             assert.equal(res.body.posts[0].title, 'Email me');
             assert.equal(res.body.posts[0].email_only, false);
             assert.equal(res.body.posts[0].status, 'draft');
 
-            should.exist(res.headers.location);
-            res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('posts/')}${res.body.posts[0].id}/`);
+            assertExists(res.headers.location);
+            assert.equal(new URL(res.headers.location).pathname, `/ghost/api/admin/posts/${res.body.posts[0].id}/`);
 
             const publishedRes = await request
                 .put(localUtils.API.getApiQuery(`posts/${res.body.posts[0].id}/?email_segment=status:-free&newsletter=${secondNewsletterSlug}`))
@@ -701,10 +701,10 @@ describe('Posts API', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200);
 
-            should.exist(publishedRes.body.posts);
+            assertExists(publishedRes.body.posts);
             assert.equal(publishedRes.body.posts[0].status, 'sent');
 
-            should.exist(publishedRes.body.posts[0].email);
+            assertExists(publishedRes.body.posts[0].email);
             assert.equal(publishedRes.body.posts[0].email.email_count, 2);
         });
 
@@ -732,8 +732,8 @@ describe('Posts API', function () {
                     // NOTE: when ONLY ignored fields are posted they should not change a thing, thus cache stays untouched
                     assert.equal(res.headers['x-cache-invalidate'], undefined);
 
-                    should.exist(res.body.posts);
-                    should.exist(res.body.posts[0].published_at);
+                    assertExists(res.body.posts);
+                    assertExists(res.body.posts[0].published_at);
                     assert.equal(res.body.posts[0].frontmatter, null);
                     assert.equal(res.body.posts[0].plaintext, testUtils.DataGenerator.Content.posts[0].plaintext);
                 });
@@ -788,9 +788,9 @@ describe('Posts API', function () {
                         .expect(200);
                 })
                 .then((res) => {
-                    should.exist(res.body.posts);
-                    should.exist(res.body.posts[0].canonical_url);
-                    res.body.posts[0].canonical_url.should.equal(`${config.get('url')}/canonical/url`);
+                    assertExists(res.body.posts);
+                    assertExists(res.body.posts[0].canonical_url);
+                    assert.equal(res.body.posts[0].canonical_url, `${config.get('url')}/canonical/url`);
                 });
         });
 
@@ -817,10 +817,10 @@ describe('Posts API', function () {
                 })
                 .then((model) => {
                     // We expect that the changed properties aren't changed, they are still the same than before.
-                    model.get('created_at').toISOString().should.not.eql(post.created_at);
+                    assert.notEqual(model.get('created_at').toISOString(), post.created_at);
 
                     // `updated_at` is automatically set, but it's not the date we send to override.
-                    model.get('updated_at').toISOString().should.not.eql(post.updated_at);
+                    assert.notEqual(model.get('updated_at').toISOString(), post.updated_at);
                 });
         });
 
@@ -846,7 +846,7 @@ describe('Posts API', function () {
                         .expect(200);
                 })
                 .then((res) => {
-                    should.exist(res.headers['x-cache-invalidate']);
+                    assertExists(res.headers['x-cache-invalidate']);
                 });
         });
 
@@ -872,9 +872,9 @@ describe('Posts API', function () {
                         .expect(200);
                 })
                 .then((res) => {
-                    should.exist(res.body.posts);
-                    should.exist(res.body.posts[0].title);
-                    res.body.posts[0].title.should.equal(untrimmedTitle.trim());
+                    assertExists(res.body.posts);
+                    assertExists(res.body.posts[0].title);
+                    assert.equal(res.body.posts[0].title, untrimmedTitle.trim());
                 });
         });
 
@@ -900,8 +900,8 @@ describe('Posts API', function () {
                         .expect(200);
                 })
                 .then((res) => {
-                    should.exist(res.body.posts);
-                    should.exist(res.body.posts[0].slug);
+                    assertExists(res.body.posts);
+                    assertExists(res.body.posts[0].slug);
                     assert.equal(res.body.posts[0].slug, 'this-is-invisible');
                 });
         });
@@ -926,8 +926,8 @@ describe('Posts API', function () {
                         .expect(200);
                 })
                 .then((res) => {
-                    should.exist(res.body.posts);
-                    should.exist(res.body.posts[0].visibility);
+                    assertExists(res.body.posts);
+                    assertExists(res.body.posts[0].visibility);
                     assert.equal(res.body.posts[0].visibility, 'members');
                 });
         });
@@ -952,9 +952,9 @@ describe('Posts API', function () {
                         .expect(200);
                 })
                 .then((res) => {
-                    should.exist(res.headers['x-cache-invalidate']);
+                    assertExists(res.headers['x-cache-invalidate']);
 
-                    should.exist(res.body.posts);
+                    assertExists(res.body.posts);
                     assert.equal(res.body.posts[0].meta_title, 'changed meta title');
                 });
         });
@@ -981,11 +981,11 @@ describe('Posts API', function () {
                         .expect(200);
                 })
                 .then((res) => {
-                    should.exist(res.headers['x-cache-invalidate']);
+                    assertExists(res.headers['x-cache-invalidate']);
 
-                    should.exist(res.body.posts);
+                    assertExists(res.body.posts);
                     assert.equal(res.body.posts[0].email_only, true);
-                    assert.equal(res.body.posts[0].url, 'http://127.0.0.1:2369/email/d52c42ae-2755-455c-80ec-70b2ec55c903/');
+                    assert.equal(new URL(res.body.posts[0].url).pathname, '/email/d52c42ae-2755-455c-80ec-70b2ec55c903/');
                 });
         });
 
@@ -1003,8 +1003,8 @@ describe('Posts API', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(201)
                 .then((res) => {
-                    should.exist(res.body.posts);
-                    should.exist(res.body.posts[0].title);
+                    assertExists(res.body.posts);
+                    assertExists(res.body.posts[0].title);
                     assert.equal(res.body.posts[0].title, 'Has a title by no other content');
                     assert.equal(res.body.posts[0].html, undefined);
                     assert.equal(res.body.posts[0].plaintext, undefined);
@@ -1026,7 +1026,7 @@ describe('Posts API', function () {
                 .then((res) => {
                     assert.equal(res.headers['x-cache-invalidate'], undefined);
 
-                    should.exist(res.body.posts);
+                    assertExists(res.body.posts);
                     assert.equal(res.body.posts[0].title, 'Has a title by no other content');
                     assert.equal(res.body.posts[0].html, undefined);
                     assert.equal(res.body.posts[0].plaintext, undefined);
@@ -1079,8 +1079,8 @@ describe('Posts API', function () {
                 .expect(404)
                 .then((res) => {
                     assert.equal(res.headers['x-cache-invalidate'], undefined);
-                    should.exist(res.body);
-                    should.exist(res.body.errors);
+                    assertExists(res.body);
+                    assertExists(res.body.errors);
                     testUtils.API.checkResponseValue(res.body.errors[0], [
                         'message',
                         'context',

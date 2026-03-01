@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const errors = require('@tryghost/errors');
-const should = require('should');
 const sinon = require('sinon');
 const fs = require('fs-extra');
 const moment = require('moment');
@@ -89,8 +89,8 @@ describe('Local Images Storage', function () {
 
     it('should create month and year directory', function (done) {
         localFileStore.save(image).then(function () {
-            assert.equal(fsMkdirsStub.calledOnce, true);
-            fsMkdirsStub.args[0][0].should.equal(path.resolve('./content/images/2013/09'));
+            sinon.assert.calledOnce(fsMkdirsStub);
+            assert.equal(fsMkdirsStub.args[0][0], path.resolve('./content/images/2013/09'));
 
             done();
         }).catch(done);
@@ -98,9 +98,9 @@ describe('Local Images Storage', function () {
 
     it('should copy temp file to new location', function (done) {
         localFileStore.save(image).then(function () {
-            assert.equal(fsCopyStub.calledOnce, true);
+            sinon.assert.calledOnce(fsCopyStub);
             assert.equal(fsCopyStub.args[0][0], 'tmp/123456.jpg');
-            fsCopyStub.args[0][1].should.equal(path.resolve('./content/images/2013/09/IMAGE.jpg'));
+            assert.equal(fsCopyStub.args[0][1], path.resolve('./content/images/2013/09/IMAGE.jpg'));
 
             done();
         }).catch(done);
@@ -183,7 +183,7 @@ describe('Local Images Storage', function () {
             localFileStore.save({
                 name: 'test-1.1.1'
             }).then(function (url) {
-                should.exist(url.match(/test-1.1.1/));
+                assertExists(url.match(/test-1.1.1/));
                 done();
             }).catch(done);
         });
@@ -192,7 +192,7 @@ describe('Local Images Storage', function () {
             localFileStore.save({
                 name: 'test-1.1.1.zip'
             }).then(function (url) {
-                should.exist(url.match(/test-1.1.1.zip/));
+                assertExists(url.match(/test-1.1.1.zip/));
                 done();
             }).catch(done);
         });
@@ -201,7 +201,7 @@ describe('Local Images Storage', function () {
             localFileStore.save({
                 name: 'test-1.1.1.jpeg'
             }).then(function (url) {
-                should.exist(url.match(/test-1.1.1.jpeg/));
+                assertExists(url.match(/test-1.1.1.jpeg/));
                 done();
             }).catch(done);
         });

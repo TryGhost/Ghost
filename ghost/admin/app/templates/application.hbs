@@ -1,7 +1,7 @@
 <GhApp>
     <GhSkipLink @anchor=".gh-main">Skip to main content</GhSkipLink>
 
-    <AlertsWormhole>
+    <RenderInWormhole @elementId="ember-alerts-wormhole">
         {{#if this.upgradeStatus.refreshRequired}}
             <div class="gh-update-banner">
                 {{!-- template-lint-disable no-invalid-link-text --}}
@@ -31,13 +31,9 @@
         {{/if}}
 
         <GhAlerts />
-    </AlertsWormhole>
+    </RenderInWormhole>
 
-    <div class="gh-viewport {{if this.ui.showMobileMenu 'mobile-menu-expanded'}}">
-        {{#if this.showNavMenu}}
-            <GhNavMenu />
-        {{/if}}
-
+    <div class="gh-viewport">
         <main class="gh-main {{this.ui.mainClass}}">
             {{outlet}}
 
@@ -48,13 +44,6 @@
             <GhExploreModal />
         </main>
 
-        <GhNotifications />
-
-        <GhContentCover />
-
-        {{#if this.showMobileNavMenu}}
-            <GhMobileNavBar />
-        {{/if}}
     </div>
 
     {{#if this.showScriptExtension}}
@@ -83,6 +72,10 @@
 
         </style>
     {{/if}}
+
+    <RenderInWormhole @elementId="ember-notifications-wormhole">
+        <GhNotifications />
+    </RenderInWormhole>
 </GhApp>
 
 <div id="unsplash-selector-wormhole"></div>

@@ -2,6 +2,7 @@ import React from "react"
 
 import {
     Button,
+    formatNumber,
     LucideIcon,
     SidebarGroup,
     SidebarGroupContent,
@@ -24,6 +25,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const memberCount = useMemberCount();
     const routing = useEmberRouting();
     const commentModerationEnabled = useFeatureFlag('commentModeration');
+    const membersForwardEnabled = useFeatureFlag('membersForward');
 
     const showTags = currentUser && canManageTags(currentUser);
     const showMembers = currentUser && canManageMembers(currentUser);
@@ -127,14 +129,14 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                     {showMembers && (
                         <NavMenuItem>
                             <NavMenuItem.Link
-                                to={routing.getRouteUrl('members')}
+                                to={membersForwardEnabled ? 'members-forward' : routing.getRouteUrl('members')}
                                 isActive={routing.isRouteActive(['members', 'member', 'member.new'])}
                             >
                                 <LucideIcon.Users />
                                 <NavMenuItem.Label>Members</NavMenuItem.Label>
                             </NavMenuItem.Link>
                             {memberCount != null && (
-                                <SidebarMenuBadge>{memberCount}</SidebarMenuBadge>
+                                <SidebarMenuBadge>{(formatNumber as (value: number) => string)(memberCount)}</SidebarMenuBadge>
                             )}
                         </NavMenuItem>
                     )}

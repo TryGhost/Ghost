@@ -8,7 +8,7 @@ const DEFAULT_FEATURES = {
         enabled: true
     },
     subscription_cancel: {
-        enabled: true
+        enabled: false
     }
 };
 
@@ -109,7 +109,7 @@ class BillingPortalManager {
         } else {
             return {
                 business_profile: {
-                    headline: `Manage your ${this.settingsCache.get('title')} subscription`
+                    headline: `Subscription & payment details`
                 },
                 features: DEFAULT_FEATURES,
                 default_return_url: this.siteUrl

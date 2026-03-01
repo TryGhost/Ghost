@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const should = require('should');
+const {assertExists} = require('../../../utils/assertions');
 const {getSchema, SOCIAL_PLATFORMS} = require('../../../../core/frontend/meta/schema');
 const socialUrls = require('@tryghost/social-urls');
 
@@ -771,7 +771,7 @@ describe('getSchema', function () {
 
         const schema = getSchema(metadata, data);
 
-        should.exist(schema.contributor);
+        assertExists(schema.contributor);
         assert.deepEqual(schema.contributor, [
             {
                 '@type': 'Person',
@@ -826,7 +826,7 @@ describe('getSchema', function () {
 
         const schema = getSchema(metadata, data);
 
-        should.exist(schema.contributor);
+        assertExists(schema.contributor);
         assert.equal(schema.contributor.length, 2);
         assert.deepEqual(schema.contributor[0], {
             '@type': 'Person',
@@ -876,7 +876,7 @@ describe('getSchema', function () {
 
         const schema = getSchema(metadata, data);
 
-        should.exist(schema.contributor);
+        assertExists(schema.contributor);
         assert.deepEqual(schema.contributor[0].sameAs, expectedSameAs);
     });
 
@@ -911,7 +911,7 @@ describe('getSchema', function () {
 
         const schema = getSchema(metadata, data);
 
-        should.exist(schema.contributor);
+        assertExists(schema.contributor);
         assert.deepEqual(schema.contributor[0], {
             '@type': 'Person',
             name: 'Co-Author',
@@ -952,7 +952,7 @@ describe('getSchema', function () {
 
         const schema = getSchema(metadata, data);
 
-        should.exist(schema.contributor);
+        assertExists(schema.contributor);
         assert.deepEqual(schema.contributor[0], {
             '@type': 'Person',
             name: 'Co-Author',
@@ -990,7 +990,7 @@ describe('getSchema', function () {
 
         const schema = getSchema(metadata, data);
 
-        should.exist(schema.contributor);
+        assertExists(schema.contributor);
         assert.deepEqual(schema.contributor[0].sameAs, [
             'http://coauthorsite.com/?user&#x3D;name&amp;param&#x3D;&lt;script&gt;alert(&quot;test&quot;)&lt;/script&gt;',
             'https://www.facebook.com/user&#x3D;name&#x3D;'

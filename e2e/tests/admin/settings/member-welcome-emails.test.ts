@@ -15,8 +15,6 @@ interface AutomatedEmailsResponse {
 }
 
 test.describe('Ghost Admin - Member Welcome Emails', () => {
-    test.use({labs: {welcomeEmails: true}});
-
     test('can enable free welcome emails', async ({page}) => {
         const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);
 
@@ -51,7 +49,6 @@ test.describe('Ghost Admin - Member Welcome Emails', () => {
         await welcomeEmailsSection.disableFreeWelcomeEmail();
 
         await expect(welcomeEmailsSection.freeWelcomeEmailToggle).toHaveAttribute('aria-checked', 'false');
-        await expect(welcomeEmailsSection.freeWelcomeEmailEditButton).toBeHidden();
 
         // TODO: Update test once full E2E functionality is added for welcome emails
         // We shouldn't assert via API directly, but for now this verifies the toggle works as expected
@@ -110,7 +107,7 @@ test.describe('Ghost Admin - Member Welcome Emails', () => {
 });
 
 test.describe('Ghost Admin - Paid Member Welcome Emails', () => {
-    test.use({labs: {welcomeEmails: true}, stripeConnected: true});
+    test.use({stripeConnected: true});
 
     test('can enable paid welcome emails', async ({page}) => {
         const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);

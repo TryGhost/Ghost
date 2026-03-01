@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 import os from 'os';
-dotenv.config();
+dotenv.config({quiet: true});
 
 /*
  * 1/3 of the number of CPU cores seems to strike a good balance. Each worker
@@ -22,7 +22,7 @@ const config = {
         timeout: process.env.CI ? 30 * 1000 : 10 * 1000
     },
     retries: 0, // Retries open the door to flaky tests. If the test needs retries, it's not a good test or the app is broken.
-    maxFailures: 1,
+    maxFailures: process.argv.includes('--ui') ? 0 : 1,
     workers: parseInt(process.env.TEST_WORKERS_COUNT, 10) || getWorkerCount(),
     fullyParallel: true,
     reporter: process.env.CI ? [['list', {printSteps: true}], ['blob']] : [['list', {printSteps: true}], ['html']],

@@ -73,21 +73,6 @@ Object {
 }
 `;
 
-exports[`Offers API Can add a new offer 1: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "450",
-  "content-type": "application/json; charset=utf-8",
-  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/offers\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
-  "x-cache-invalidate": "/*",
-  "x-powered-by": "Express",
-}
-`;
-
 exports[`Offers API Can add a new offer 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
@@ -137,6 +122,48 @@ Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "432",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/offers\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Offers API Can add a retention offer without a tier 1: [body] 1`] = `
+Object {
+  "offers": Array [
+    Object {
+      "amount": 10,
+      "cadence": "month",
+      "code": "stay-with-us",
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "currency": null,
+      "currency_restriction": false,
+      "display_description": "10% off if you stay",
+      "display_title": "Stay With Us",
+      "duration": "forever",
+      "duration_in_months": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "last_redeemed": null,
+      "name": "Stay With Us",
+      "redemption_count": 0,
+      "redemption_type": "retention",
+      "status": "active",
+      "tier": null,
+      "type": "percent",
+    },
+  ],
+}
+`;
+
+exports[`Offers API Can add a retention offer without a tier 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "446",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -353,6 +380,26 @@ Object {
       },
       "type": "trial",
     },
+    Object {
+      "amount": 10,
+      "cadence": "month",
+      "code": "stay-with-us",
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "currency": null,
+      "currency_restriction": false,
+      "display_description": "10% off if you stay",
+      "display_title": "Stay With Us",
+      "duration": "forever",
+      "duration_in_months": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "last_redeemed": null,
+      "name": "Stay With Us",
+      "redemption_count": 0,
+      "redemption_type": "retention",
+      "status": "active",
+      "tier": null,
+      "type": "percent",
+    },
   ],
 }
 `;
@@ -361,7 +408,7 @@ exports[`Offers API Can browse 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2303",
+  "content-length": "2737",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -370,7 +417,226 @@ Object {
 }
 `;
 
-exports[`Offers API Can browse active 1: [body] 1`] = `
+exports[`Offers API Can browse archived 1: [body] 1`] = `
+Object {
+  "offers": Array [
+    Object {
+      "amount": 12,
+      "cadence": "year",
+      "code": "cyber-monday",
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "currency": null,
+      "currency_restriction": false,
+      "display_description": "10% off on yearly plan, only today",
+      "display_title": "Cyber Monday Sale!",
+      "duration": "once",
+      "duration_in_months": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "last_redeemed": null,
+      "name": "Cyber Monday",
+      "redemption_count": 0,
+      "redemption_type": "signup",
+      "status": "archived",
+      "tier": Object {
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Default Product",
+      },
+      "type": "percent",
+    },
+  ],
+}
+`;
+
+exports[`Offers API Can browse archived 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "516",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Offers API Can edit an offer 1: [body] 1`] = `
+Object {
+  "offers": Array [
+    Object {
+      "amount": 12,
+      "cadence": "year",
+      "code": "cyber-monday",
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "currency": null,
+      "currency_restriction": false,
+      "display_description": "10% off on yearly plan, only today",
+      "display_title": "Cyber Monday Sale!",
+      "duration": "once",
+      "duration_in_months": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "last_redeemed": null,
+      "name": "Cyber Monday",
+      "redemption_count": 0,
+      "redemption_type": "signup",
+      "status": "active",
+      "tier": Object {
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Default Product",
+      },
+      "type": "percent",
+    },
+  ],
+}
+`;
+
+exports[`Offers API Can edit an offer 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "514",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Offers API Can filter by status 1: [body] 1`] = `
+Object {
+  "offers": Array [
+    Object {
+      "amount": 50,
+      "cadence": "month",
+      "code": "easter",
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "currency": null,
+      "currency_restriction": false,
+      "display_description": "",
+      "display_title": "",
+      "duration": "once",
+      "duration_in_months": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "last_redeemed": null,
+      "name": "Easter Sales",
+      "redemption_count": 0,
+      "redemption_type": "signup",
+      "status": "active",
+      "tier": Object {
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Default Product",
+      },
+      "type": "percent",
+    },
+    Object {
+      "amount": 20,
+      "cadence": "year",
+      "code": "summer-sale",
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "currency": null,
+      "currency_restriction": false,
+      "display_description": "",
+      "display_title": "",
+      "duration": "once",
+      "duration_in_months": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "last_redeemed": null,
+      "name": "Summer Sale",
+      "redemption_count": 0,
+      "redemption_type": "signup",
+      "status": "active",
+      "tier": Object {
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Default Product",
+      },
+      "type": "percent",
+    },
+    Object {
+      "amount": 100,
+      "cadence": "year",
+      "code": "4th",
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "currency": "USD",
+      "currency_restriction": true,
+      "display_description": "",
+      "display_title": "",
+      "duration": "once",
+      "duration_in_months": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "last_redeemed": null,
+      "name": "Fourth of July Sales",
+      "redemption_count": 0,
+      "redemption_type": "signup",
+      "status": "active",
+      "tier": Object {
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Default Product",
+      },
+      "type": "fixed",
+    },
+    Object {
+      "amount": 20,
+      "cadence": "year",
+      "code": "4th-trial",
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "currency": null,
+      "currency_restriction": false,
+      "display_description": "",
+      "display_title": "",
+      "duration": "trial",
+      "duration_in_months": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "last_redeemed": null,
+      "name": "Fourth of July Sales trial",
+      "redemption_count": 0,
+      "redemption_type": "signup",
+      "status": "active",
+      "tier": Object {
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Default Product",
+      },
+      "type": "trial",
+    },
+    Object {
+      "amount": 10,
+      "cadence": "month",
+      "code": "stay-with-us",
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "currency": null,
+      "currency_restriction": false,
+      "display_description": "10% off if you stay",
+      "display_title": "Stay With Us",
+      "duration": "forever",
+      "duration_in_months": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "last_redeemed": null,
+      "name": "Stay With Us",
+      "redemption_count": 0,
+      "redemption_type": "retention",
+      "status": "active",
+      "tier": null,
+      "type": "percent",
+    },
+  ],
+}
+`;
+
+exports[`Offers API Can filter by status 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "2247",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Offers API Can filter by status and redemption type 1: [body] 1`] = `
 Object {
   "offers": Array [
     Object {
@@ -469,7 +735,7 @@ Object {
 }
 `;
 
-exports[`Offers API Can browse active 2: [headers] 1`] = `
+exports[`Offers API Can filter by status and redemption type 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
@@ -478,93 +744,6 @@ Object {
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Offers API Can browse archived 1: [body] 1`] = `
-Object {
-  "offers": Array [
-    Object {
-      "amount": 12,
-      "cadence": "year",
-      "code": "cyber-monday",
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "currency": null,
-      "currency_restriction": false,
-      "display_description": "10% off on yearly plan, only today",
-      "display_title": "Cyber Monday Sale!",
-      "duration": "once",
-      "duration_in_months": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "last_redeemed": null,
-      "name": "Cyber Monday",
-      "redemption_count": 0,
-      "redemption_type": "signup",
-      "status": "archived",
-      "tier": Object {
-        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-        "name": "Default Product",
-      },
-      "type": "percent",
-    },
-  ],
-}
-`;
-
-exports[`Offers API Can browse archived 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "516",
-  "content-type": "application/json; charset=utf-8",
-  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Offers API Can edit an offer 1: [body] 1`] = `
-Object {
-  "offers": Array [
-    Object {
-      "amount": 12,
-      "cadence": "year",
-      "code": "cyber-monday",
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "currency": null,
-      "currency_restriction": false,
-      "display_description": "10% off on yearly plan, only today",
-      "display_title": "Cyber Monday Sale!",
-      "duration": "once",
-      "duration_in_months": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "last_redeemed": null,
-      "name": "Cyber Monday",
-      "redemption_count": 0,
-      "redemption_type": "signup",
-      "status": "active",
-      "tier": Object {
-        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-        "name": "Default Product",
-      },
-      "type": "percent",
-    },
-  ],
-}
-`;
-
-exports[`Offers API Can edit an offer 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "514",
-  "content-type": "application/json; charset=utf-8",
-  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
-  "x-cache-invalidate": "/*",
   "x-powered-by": "Express",
 }
 `;
@@ -647,6 +826,68 @@ Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "472",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Offers API Cannot create a retention offer with a tier 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Retention offers cannot be associated with a specific tier",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Validation error, cannot save offer.",
+      "property": null,
+      "type": "InvalidOfferTier",
+    },
+  ],
+}
+`;
+
+exports[`Offers API Cannot create a retention offer with a tier 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "281",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Offers API Cannot create a signup offer without a tier 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Signup offers must be associated with a tier",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Validation error, cannot save offer.",
+      "property": null,
+      "type": "InvalidOfferTier",
+    },
+  ],
+}
+`;
+
+exports[`Offers API Cannot create a signup offer without a tier 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "267",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,

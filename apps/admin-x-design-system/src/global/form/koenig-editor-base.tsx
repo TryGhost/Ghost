@@ -6,7 +6,7 @@ import ErrorBoundary from '../error-boundary';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type FetchKoenigLexical = () => Promise<any>
 
-export type NodeType = 'DEFAULT_NODES' | 'BASIC_NODES' | 'MINIMAL_NODES' | 'EMAIL_NODES';
+export type NodeType = 'DEFAULT_NODES' | 'BASIC_NODES' | 'MINIMAL_NODES' | 'EMAIL_NODES' | 'EMAIL_EDITOR_NODES';
 
 export interface KoenigEditorBaseProps {
     onBlur?: () => void
@@ -18,6 +18,11 @@ export interface KoenigEditorBaseProps {
     className?: string
     inheritFontStyles?: boolean
     loadingFallback?: React.ReactNode
+    fileUploader?: {
+        useFileUpload: unknown
+        fileTypes: unknown
+    }
+    cardConfig?: unknown
 }
 
 declare global {
@@ -83,7 +88,9 @@ export const KoenigWrapper: React.FC<KoenigWrapperProps> = ({
     singleParagraph = false,
     children,
     initialEditorState,
-    onChange
+    onChange,
+    fileUploader,
+    cardConfig
 }) => {
     const onError = useCallback((error: unknown) => {
         try {
@@ -126,14 +133,17 @@ export const KoenigWrapper: React.FC<KoenigWrapperProps> = ({
         DEFAULT_NODES: koenig.DEFAULT_TRANSFORMERS,
         BASIC_NODES: koenig.BASIC_TRANSFORMERS,
         MINIMAL_NODES: koenig.MINIMAL_TRANSFORMERS,
-        EMAIL_NODES: koenig.EMAIL_TRANSFORMERS
+        EMAIL_NODES: koenig.EMAIL_TRANSFORMERS,
+        EMAIL_EDITOR_NODES: koenig.EMAIL_TRANSFORMERS
     };
 
     const defaultNodes = nodes || 'DEFAULT_NODES';
 
     return (
         <koenig.KoenigComposer
+            cardConfig={cardConfig}
             darkMode={darkMode}
+            fileUploader={fileUploader}
             initialEditorState={initialEditorState}
             nodes={koenig[defaultNodes]}
             onError={onError}

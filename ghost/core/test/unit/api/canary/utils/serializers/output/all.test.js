@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const should = require('should');
+const {assertExists} = require('../../../../../../utils/assertions');
 const serializers = require('../../../../../../../core/server/api/endpoints/utils/serializers');
 
 describe('Unit: endpoints/utils/serializers/output/all', function () {
@@ -20,7 +20,7 @@ describe('Unit: endpoints/utils/serializers/output/all', function () {
             });
 
             assert.equal(response.posts[0].published_by, undefined);
-            should.exist(response.posts[0].title);
+            assertExists(response.posts[0].title);
 
             response = {
                 post:
@@ -35,7 +35,7 @@ describe('Unit: endpoints/utils/serializers/output/all', function () {
             });
 
             assert.equal(response.post.published_by, undefined);
-            should.exist(response.post.title);
+            assertExists(response.post.title);
 
             response = {
                 pages: [
@@ -59,8 +59,8 @@ describe('Unit: endpoints/utils/serializers/output/all', function () {
 
             assert.equal(response.pages[0].published_by, undefined);
             assert.equal(response.pages[1].published_by, undefined);
-            should.exist(response.pages[0].authors);
-            should.exist(response.pages[0].authors[0].slug);
+            assertExists(response.pages[0].authors);
+            assertExists(response.pages[0].authors[0].slug);
         });
     });
 });

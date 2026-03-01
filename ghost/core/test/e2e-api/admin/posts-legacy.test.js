@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const should = require('should');
+const {assertExists} = require('../../utils/assertions');
 const nock = require('nock');
 const path = require('path');
 const supertest = require('supertest');
@@ -52,7 +52,7 @@ describe('Posts API', function () {
 
         assert.equal(res.headers['x-cache-invalidate'], undefined);
         const jsonResponse = res.body;
-        should.exist(jsonResponse.posts);
+        assertExists(jsonResponse.posts);
         localUtils.API.checkResponse(jsonResponse, 'posts');
         assert.equal(jsonResponse.posts.length, 15);
         localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
@@ -66,19 +66,19 @@ describe('Posts API', function () {
         assert.equal(jsonResponse.posts[14].slug, 'html-ipsum');
 
         // Absolute urls by default
-        assert.match(jsonResponse.posts[0].url, new RegExp(`${config.get('url')}/p/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}`));
-        jsonResponse.posts[2].url.should.eql(`${config.get('url')}/welcome/`);
-        jsonResponse.posts[13].feature_image.should.eql(`${config.get('url')}/content/images/2018/hey.jpg`);
+        assert.match(new URL(jsonResponse.posts[0].url).pathname, /\/p\/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/);
+        assert.equal(new URL(jsonResponse.posts[2].url).pathname, '/welcome/');
+        assert.equal(new URL(jsonResponse.posts[13].feature_image).pathname, '/content/images/2018/hey.jpg');
 
         assert.equal(jsonResponse.posts[0].tags.length, 0);
         assert.equal(jsonResponse.posts[2].tags.length, 1);
         assert.equal(jsonResponse.posts[2].authors.length, 1);
-        jsonResponse.posts[2].tags[0].url.should.eql(`${config.get('url')}/tag/getting-started/`);
-        jsonResponse.posts[2].authors[0].url.should.eql(`${config.get('url')}/author/ghost/`);
+        assert.equal(new URL(jsonResponse.posts[2].tags[0].url).pathname, '/tag/getting-started/');
+        assert.equal(new URL(jsonResponse.posts[2].authors[0].url).pathname, '/author/ghost/');
 
         // Check if the newsletter relation is loaded by default and newsletter_id is not returned
-        jsonResponse.posts[14].id.should.eql(testUtils.DataGenerator.Content.posts[0].id);
-        jsonResponse.posts[14].newsletter.id.should.eql(testUtils.DataGenerator.Content.newsletters[0].id);
+        assert.equal(jsonResponse.posts[14].id, testUtils.DataGenerator.Content.posts[0].id);
+        assert.equal(jsonResponse.posts[14].newsletter.id, testUtils.DataGenerator.Content.newsletters[0].id);
         assert.equal(jsonResponse.posts[14].newsletter_id, undefined);
 
         assert.equal(jsonResponse.posts[0].newsletter, null);
@@ -94,7 +94,7 @@ describe('Posts API', function () {
 
         assert.equal(res.headers['x-cache-invalidate'], undefined);
         const jsonResponse = res.body;
-        should.exist(jsonResponse.posts);
+        assertExists(jsonResponse.posts);
         localUtils.API.checkResponse(jsonResponse, 'posts');
         assert.equal(jsonResponse.posts.length, 3);
         localUtils.API.checkResponse(jsonResponse.posts[0], 'post', ['plaintext']);
@@ -114,7 +114,7 @@ describe('Posts API', function () {
 
         assert.equal(res.headers['x-cache-invalidate'], undefined);
         const jsonResponse = res.body;
-        should.exist(jsonResponse.posts);
+        assertExists(jsonResponse.posts);
         localUtils.API.checkResponse(jsonResponse, 'posts');
         assert.equal(jsonResponse.posts.length, 15);
         localUtils.API.checkResponse(
@@ -136,7 +136,7 @@ describe('Posts API', function () {
 
         assert.equal(res.headers['x-cache-invalidate'], undefined);
         const jsonResponse = res.body;
-        should.exist(jsonResponse.posts);
+        assertExists(jsonResponse.posts);
         localUtils.API.checkResponse(jsonResponse, 'posts');
         assert.equal(jsonResponse.posts.length, 2);
         localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
@@ -173,17 +173,17 @@ describe('Posts API', function () {
 
         assert.equal(res.headers['x-cache-invalidate'], undefined);
         const jsonResponse = res.body;
-        should.exist(jsonResponse);
-        should.exist(jsonResponse.posts);
+        assertExists(jsonResponse);
+        assertExists(jsonResponse.posts);
         localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
-        jsonResponse.posts[0].id.should.equal(testUtils.DataGenerator.Content.posts[0].id);
+        assert.equal(jsonResponse.posts[0].id, testUtils.DataGenerator.Content.posts[0].id);
 
         assert.equal(_.isBoolean(jsonResponse.posts[0].featured), true);
 
         assert.equal(testUtils.API.isISO8601(jsonResponse.posts[0].created_at), true);
 
         // Check if the newsletter relation is loaded by default and newsletter_id is not returned
-        jsonResponse.posts[0].newsletter.id.should.eql(testUtils.DataGenerator.Content.newsletters[0].id);
+        assert.equal(jsonResponse.posts[0].newsletter.id, testUtils.DataGenerator.Content.newsletters[0].id);
         assert.equal(jsonResponse.posts[0].newsletter_id, undefined);
     });
 
@@ -196,10 +196,10 @@ describe('Posts API', function () {
 
         assert.equal(res.headers['x-cache-invalidate'], undefined);
         const jsonResponse = res.body;
-        should.exist(jsonResponse);
-        should.exist(jsonResponse.posts);
+        assertExists(jsonResponse);
+        assertExists(jsonResponse.posts);
         localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
-        jsonResponse.posts[0].id.should.equal(testUtils.DataGenerator.Content.posts[1].id);
+        assert.equal(jsonResponse.posts[0].id, testUtils.DataGenerator.Content.posts[1].id);
 
         assert.equal(_.isBoolean(jsonResponse.posts[0].featured), true);
 
@@ -219,8 +219,8 @@ describe('Posts API', function () {
 
         assert.equal(res.headers['x-cache-invalidate'], undefined);
         const jsonResponse = res.body;
-        should.exist(jsonResponse);
-        should.exist(jsonResponse.posts);
+        assertExists(jsonResponse);
+        assertExists(jsonResponse.posts);
         localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
         assert.equal(jsonResponse.posts[0].slug, 'welcome');
 
@@ -241,21 +241,21 @@ describe('Posts API', function () {
 
         assert.equal(res.headers['x-cache-invalidate'], undefined);
         const jsonResponse = res.body;
-        should.exist(jsonResponse);
-        should.exist(jsonResponse.posts);
+        assertExists(jsonResponse);
+        assertExists(jsonResponse.posts);
 
         localUtils.API.checkResponse(jsonResponse.posts[0], 'post', null, ['count', 'post_revisions']);
 
-        jsonResponse.posts[0].authors[0].should.be.an.Object();
+        assert(_.isPlainObject(jsonResponse.posts[0].authors[0]));
         localUtils.API.checkResponse(jsonResponse.posts[0].authors[0], 'user');
 
-        jsonResponse.posts[0].tags[0].should.be.an.Object();
+        assert(_.isPlainObject(jsonResponse.posts[0].tags[0]));
         localUtils.API.checkResponse(jsonResponse.posts[0].tags[0], 'tag', ['url']);
 
-        jsonResponse.posts[0].email.should.be.an.Object();
+        assert(_.isPlainObject(jsonResponse.posts[0].email));
         localUtils.API.checkResponse(jsonResponse.posts[0].email, 'email');
 
-        jsonResponse.posts[0].newsletter.id.should.eql(testUtils.DataGenerator.Content.newsletters[0].id);
+        assert.equal(jsonResponse.posts[0].newsletter.id, testUtils.DataGenerator.Content.newsletters[0].id);
         assert.equal(jsonResponse.posts[0].newsletter_id, undefined);
     });
 
@@ -280,11 +280,11 @@ describe('Posts API', function () {
 
         assert.equal(res.body.posts.length, 1);
         localUtils.API.checkResponse(res.body.posts[0], 'post');
-        assert.match(res.body.posts[0].url, new RegExp(`${config.get('url')}/p/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}`));
+        assert.match(new URL(res.body.posts[0].url).pathname, /\/p\/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/);
         assert.equal(res.headers['x-cache-invalidate'], undefined);
 
-        should.exist(res.headers.location);
-        res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('posts/')}${res.body.posts[0].id}/`);
+        assertExists(res.headers.location);
+        assert.equal(new URL(res.headers.location).pathname, `/ghost/api/admin/posts/${res.body.posts[0].id}/`);
 
         // Newsletter should be returned as null
         assert.equal(res.body.posts[0].newsletter, null);
@@ -297,14 +297,14 @@ describe('Posts API', function () {
 
         const modelJson = model.toJSON();
 
-        modelJson.title.should.eql(post.title);
-        modelJson.status.should.eql(post.status);
+        assert.equal(modelJson.title, post.title);
+        assert.equal(modelJson.status, post.status);
         assert.equal(modelJson.published_at.toISOString(), '2016-05-30T07:00:00.000Z');
-        modelJson.created_at.toISOString().should.not.eql(post.created_at.toISOString());
-        modelJson.updated_at.toISOString().should.not.eql(post.updated_at.toISOString());
+        assert.notEqual(modelJson.created_at.toISOString(), post.created_at.toISOString());
+        assert.notEqual(modelJson.updated_at.toISOString(), post.updated_at.toISOString());
 
-        modelJson.posts_meta.feature_image_alt.should.eql(post.feature_image_alt);
-        modelJson.posts_meta.feature_image_caption.should.eql(post.feature_image_caption);
+        assert.equal(modelJson.posts_meta.feature_image_alt, post.feature_image_alt);
+        assert.equal(modelJson.posts_meta.feature_image_caption, post.feature_image_caption);
     });
 
     it('Can include free and paid tiers for public post', async function () {
@@ -406,7 +406,7 @@ describe('Posts API', function () {
 
         const uuid = res2.body.posts[0].uuid;
         const expectedPattern = `/p/${uuid}/, /p/${uuid}/?member_status=anonymous, /p/${uuid}/?member_status=free, /p/${uuid}/?member_status=paid`;
-        res2.headers['x-cache-invalidate'].should.eql(expectedPattern);
+        assert.equal(res2.headers['x-cache-invalidate'], expectedPattern);
 
         // Newsletter should be returned as null
         assert.equal(res2.body.posts[0].newsletter, null);
@@ -445,7 +445,7 @@ describe('Posts API', function () {
 
         const uuid = res2.body.posts[0].uuid;
         const expectedPattern = `/p/${uuid}/, /p/${uuid}/?member_status=anonymous, /p/${uuid}/?member_status=free, /p/${uuid}/?member_status=paid`;
-        res2.headers['x-cache-invalidate'].should.eql(expectedPattern);
+        assert.equal(res2.headers['x-cache-invalidate'], expectedPattern);
 
         assert.equal(unsplashMock.isDone(), true);
 
@@ -832,7 +832,7 @@ describe('Posts API', function () {
         }, testUtils.context.internal);
 
         assert.equal(model.get('newsletter_id'), null);
-        should.exist(model.get('published_by'));
+        assertExists(model.get('published_by'));
 
         // Check email
         // Note: we only create an email if we have members susbcribed to the newsletter
@@ -889,7 +889,7 @@ describe('Posts API', function () {
             .expect(200);
 
         // Check newsletter relation is loaded in response
-        should(finalPost.body.posts[0].newsletter.id).eql(newsletterId);
+        assert.equal(finalPost.body.posts[0].newsletter.id, newsletterId);
         assert.equal(finalPost.body.posts[0].email_segment, 'all');
         assert.equal(finalPost.body.posts[0].newsletter_id, undefined);
 
@@ -897,8 +897,8 @@ describe('Posts API', function () {
             id
         }, testUtils.context.internal);
 
-        should(model.get('newsletter_id')).eql(newsletterId);
-        should.exist(model.get('published_by'));
+        assert.equal(model.get('newsletter_id'), newsletterId);
+        assertExists(model.get('published_by'));
 
         // Check email
         // Note: we only create an email if we have members susbcribed to the newsletter
@@ -906,9 +906,9 @@ describe('Posts API', function () {
             post_id: id
         }, testUtils.context.internal);
 
-        should.exist(email);
-        should(email.get('newsletter_id')).eql(newsletterId);
-        should(email.get('status')).equalOneOf('pending', 'submitted', 'submitting');
+        assertExists(email);
+        assert.equal(email.get('newsletter_id'), newsletterId);
+        assert(['pending', 'submitted', 'submitting'].includes(email.get('status')));
     });
 
     it('Interprets sent as published for a post with email', async function () {
@@ -957,7 +957,7 @@ describe('Posts API', function () {
             .expect(200);
 
         // Check newsletter relation is loaded in response
-        should(finalPost.body.posts[0].newsletter.id).eql(newsletterId);
+        assert.equal(finalPost.body.posts[0].newsletter.id, newsletterId);
         assert.equal(finalPost.body.posts[0].email_segment, 'all');
         assert.equal(finalPost.body.posts[0].newsletter_id, undefined);
 
@@ -968,8 +968,8 @@ describe('Posts API', function () {
             id
         }, testUtils.context.internal);
 
-        should(model.get('newsletter_id')).eql(newsletterId);
-        should.exist(model.get('published_by'));
+        assert.equal(model.get('newsletter_id'), newsletterId);
+        assertExists(model.get('published_by'));
 
         // Check email
         // Note: we only create an email if we have members susbcribed to the newsletter
@@ -977,9 +977,9 @@ describe('Posts API', function () {
             post_id: id
         }, testUtils.context.internal);
 
-        should.exist(email);
-        should(email.get('newsletter_id')).eql(newsletterId);
-        should(email.get('status')).equalOneOf('pending', 'submitted', 'submitting');
+        assertExists(email);
+        assert.equal(email.get('newsletter_id'), newsletterId);
+        assert(['pending', 'submitted', 'submitting'].includes(email.get('status')));
     });
 
     it('Can publish an email_only post by setting status to published', async function () {
@@ -1027,7 +1027,7 @@ describe('Posts API', function () {
 
         const publishedPost = publishedRes.body.posts[0];
 
-        publishedPost.newsletter.id.should.eql(newsletterId);
+        assert.equal(publishedPost.newsletter.id, newsletterId);
         assert.equal(publishedPost.email_segment, 'all');
         assert.equal(publishedPost.status, 'sent');
         assert.equal(publishedPost.newsletter_id, undefined);
@@ -1038,18 +1038,18 @@ describe('Posts API', function () {
         }, testUtils.context.internal);
 
         assert.equal(model.get('status'), 'sent');
-        should(model.get('newsletter_id')).eql(newsletterId);
+        assert.equal(model.get('newsletter_id'), newsletterId);
         assert.equal(model.get('email_recipient_filter'), 'all');
-        should.exist(model.get('published_by'));
+        assertExists(model.get('published_by'));
 
         // We should have an email
         const email = await models.Email.findOne({
             post_id: id
         }, testUtils.context.internal);
 
-        should(email.get('newsletter_id')).eql(newsletterId);
+        assert.equal(email.get('newsletter_id'), newsletterId);
         assert.equal(email.get('recipient_filter'), 'all');
-        should(email.get('status')).equalOneOf('pending', 'submitted', 'submitting');
+        assert(['pending', 'submitted', 'submitting'].includes(email.get('status')));
     });
 
     it('Can publish an email_only post with free filter', async function () {
@@ -1096,7 +1096,7 @@ describe('Posts API', function () {
 
         const publishedPost = publishedRes.body.posts[0];
 
-        publishedPost.newsletter.id.should.eql(newsletterId);
+        assert.equal(publishedPost.newsletter.id, newsletterId);
         assert.equal(publishedPost.email_segment, 'status:free');
         assert.equal(publishedPost.status, 'sent');
         assert.equal(publishedPost.newsletter_id, undefined);
@@ -1107,18 +1107,18 @@ describe('Posts API', function () {
         }, testUtils.context.internal);
 
         assert.equal(model.get('status'), 'sent');
-        should(model.get('newsletter_id')).eql(newsletterId);
+        assert.equal(model.get('newsletter_id'), newsletterId);
         assert.equal(model.get('email_recipient_filter'), 'status:free');
-        should.exist(model.get('published_by'));
+        assertExists(model.get('published_by'));
 
         // We should have an email
         const email = await models.Email.findOne({
             post_id: id
         }, testUtils.context.internal);
 
-        should(email.get('newsletter_id')).eql(newsletterId);
+        assert.equal(email.get('newsletter_id'), newsletterId);
         assert.equal(email.get('recipient_filter'), 'status:free');
-        should(email.get('status')).equalOneOf('pending', 'submitted', 'submitting');
+        assert(['pending', 'submitted', 'submitting'].includes(email.get('status')));
     });
 
     it('Can publish an email_only post by setting the status to sent', async function () {
@@ -1165,7 +1165,7 @@ describe('Posts API', function () {
 
         const publishedPost = publishedRes.body.posts[0];
 
-        publishedPost.newsletter.id.should.eql(newsletterId);
+        assert.equal(publishedPost.newsletter.id, newsletterId);
         assert.equal(publishedPost.email_segment, 'status:free');
         assert.equal(publishedPost.status, 'sent');
         assert.equal(publishedPost.newsletter_id, undefined);
@@ -1176,18 +1176,18 @@ describe('Posts API', function () {
         }, testUtils.context.internal);
 
         assert.equal(model.get('status'), 'sent');
-        should(model.get('newsletter_id')).eql(newsletterId);
+        assert.equal(model.get('newsletter_id'), newsletterId);
         assert.equal(model.get('email_recipient_filter'), 'status:free');
-        should.exist(model.get('published_by'));
+        assertExists(model.get('published_by'));
 
         // We should have an email
         const email = await models.Email.findOne({
             post_id: id
         }, testUtils.context.internal);
 
-        should(email.get('newsletter_id')).eql(newsletterId);
+        assert.equal(email.get('newsletter_id'), newsletterId);
         assert.equal(email.get('recipient_filter'), 'status:free');
-        should(email.get('status')).equalOneOf('pending', 'submitted', 'submitting');
+        assert(['pending', 'submitted', 'submitting'].includes(email.get('status')));
     });
 
     it('Can publish a scheduled post', async function () {
@@ -1228,7 +1228,7 @@ describe('Posts API', function () {
 
         const scheduledPost = scheduledRes.body.posts[0];
 
-        scheduledPost.newsletter.id.should.eql(newsletterId);
+        assert.equal(scheduledPost.newsletter.id, newsletterId);
         assert.equal(scheduledPost.email_segment, 'all');
         assert.equal(scheduledPost.newsletter_id, undefined);
 
@@ -1237,7 +1237,7 @@ describe('Posts API', function () {
             status: 'scheduled'
         }, testUtils.context.internal);
 
-        should(model.get('newsletter_id')).eql(newsletterId);
+        assert.equal(model.get('newsletter_id'), newsletterId);
         assert.equal(model.get('email_recipient_filter'), 'all');
         assert.equal(model.get('published_by'), null);
 
@@ -1266,11 +1266,11 @@ describe('Posts API', function () {
             id
         }, testUtils.context.internal);
 
-        should(model.get('newsletter_id')).eql(newsletterId);
+        assert.equal(model.get('newsletter_id'), newsletterId);
         assert.equal(model.get('email_recipient_filter'), 'all');
-        should.exist(model.get('published_by'));
+        assertExists(model.get('published_by'));
 
-        publishedPost.newsletter.id.should.eql(newsletterId);
+        assert.equal(publishedPost.newsletter.id, newsletterId);
         assert.equal(publishedPost.newsletter_id, undefined);
 
         // Check email is sent to the correct newsletter
@@ -1278,9 +1278,9 @@ describe('Posts API', function () {
             post_id: id
         }, testUtils.context.internal);
 
-        should(email.get('newsletter_id')).eql(newsletterId);
+        assert.equal(email.get('newsletter_id'), newsletterId);
         assert.equal(email.get('recipient_filter'), 'all');
-        should(email.get('status')).equalOneOf('pending', 'submitted', 'submitting');
+        assert(['pending', 'submitted', 'submitting'].includes(email.get('status')));
     });
 
     it('Can publish a scheduled post with custom email segment', async function () {
@@ -1321,7 +1321,7 @@ describe('Posts API', function () {
 
         const scheduledPost = scheduledRes.body.posts[0];
 
-        scheduledPost.newsletter.id.should.eql(newsletterId);
+        assert.equal(scheduledPost.newsletter.id, newsletterId);
         assert.equal(scheduledPost.email_segment, 'status:free');
         assert.equal(scheduledPost.newsletter_id, undefined);
 
@@ -1330,7 +1330,7 @@ describe('Posts API', function () {
             status: 'scheduled'
         }, testUtils.context.internal);
 
-        should(model.get('newsletter_id')).eql(newsletterId);
+        assert.equal(model.get('newsletter_id'), newsletterId);
         assert.equal(model.get('email_recipient_filter'), 'status:free');
 
         // We should not have an email
@@ -1358,10 +1358,10 @@ describe('Posts API', function () {
             id
         }, testUtils.context.internal);
 
-        should(model.get('newsletter_id')).eql(newsletterId);
+        assert.equal(model.get('newsletter_id'), newsletterId);
         assert.equal(model.get('email_recipient_filter'), 'status:free');
 
-        publishedPost.newsletter.id.should.eql(newsletterId);
+        assert.equal(publishedPost.newsletter.id, newsletterId);
         assert.equal(publishedPost.newsletter_id, undefined);
 
         // Check email is sent to the correct newsletter
@@ -1369,9 +1369,9 @@ describe('Posts API', function () {
             post_id: id
         }, testUtils.context.internal);
 
-        should(email.get('newsletter_id')).eql(newsletterId);
+        assert.equal(email.get('newsletter_id'), newsletterId);
         assert.equal(email.get('recipient_filter'), 'status:free');
-        should(email.get('status')).equalOneOf('pending', 'submitted', 'submitting');
+        assert(['pending', 'submitted', 'submitting'].includes(email.get('status')));
     });
 
     it('Can publish a scheduled post without newsletter', async function () {
@@ -1500,7 +1500,7 @@ describe('Posts API', function () {
 
         const scheduledPost = scheduledRes.body.posts[0];
 
-        scheduledPost.newsletter.id.should.eql(newsletterId);
+        assert.equal(scheduledPost.newsletter.id, newsletterId);
         assert.equal(scheduledPost.email_segment, 'all');
         assert.equal(scheduledPost.status, 'scheduled');
         assert.equal(scheduledPost.email_only, true);
@@ -1511,7 +1511,7 @@ describe('Posts API', function () {
             status: 'scheduled'
         }, testUtils.context.internal);
 
-        should(model.get('newsletter_id')).eql(newsletterId);
+        assert.equal(model.get('newsletter_id'), newsletterId);
         assert.equal(model.get('status'), 'scheduled');
         assert.equal(model.get('email_recipient_filter'), 'all');
 
@@ -1540,11 +1540,11 @@ describe('Posts API', function () {
             status: 'all'
         }, testUtils.context.internal);
 
-        should(model.get('newsletter_id')).eql(newsletterId);
+        assert.equal(model.get('newsletter_id'), newsletterId);
         assert.equal(model.get('status'), 'sent');
         assert.equal(model.get('email_recipient_filter'), 'all');
 
-        publishedPost.newsletter.id.should.eql(newsletterId);
+        assert.equal(publishedPost.newsletter.id, newsletterId);
         assert.equal(publishedPost.newsletter_id, undefined);
 
         // Check email is sent to the correct newsletter
@@ -1552,9 +1552,9 @@ describe('Posts API', function () {
             post_id: id
         }, testUtils.context.internal);
 
-        should(email.get('newsletter_id')).eql(newsletterId);
+        assert.equal(email.get('newsletter_id'), newsletterId);
         assert.equal(email.get('recipient_filter'), 'all');
-        should(email.get('status')).equalOneOf('pending', 'submitted', 'submitting');
+        assert(['pending', 'submitted', 'submitting'].includes(email.get('status')));
     });
 
     it('Can\'t change the newsletter once it has been sent', async function () {
@@ -1598,7 +1598,7 @@ describe('Posts API', function () {
             .expect(200);
 
         // Check newsletter relation is loaded in response
-        should(res2.body.posts[0].newsletter.id).eql(newsletterId);
+        assert.equal(res2.body.posts[0].newsletter.id, newsletterId);
         assert.equal(res2.body.posts[0].email_segment, 'status:-free');
 
         assert.equal(res2.body.posts[0].newsletter_id, undefined);
@@ -1607,7 +1607,7 @@ describe('Posts API', function () {
             id: id,
             status: 'published'
         }, testUtils.context.internal);
-        should(model.get('newsletter_id')).eql(newsletterId);
+        assert.equal(model.get('newsletter_id'), newsletterId);
         assert.equal(model.get('email_recipient_filter'), 'status:-free');
 
         // Check email is sent to the correct newsletter
@@ -1615,9 +1615,9 @@ describe('Posts API', function () {
             post_id: id
         }, testUtils.context.internal);
 
-        should(email.get('newsletter_id')).eql(newsletterId);
+        assert.equal(email.get('newsletter_id'), newsletterId);
         assert.equal(email.get('recipient_filter'), 'status:-free');
-        should(email.get('status')).equalOneOf('pending', 'submitted', 'submitting');
+        assert(['pending', 'submitted', 'submitting'].includes(email.get('status')));
 
         const unpublished = {
             status: 'draft',
@@ -1634,7 +1634,7 @@ describe('Posts API', function () {
 
         // Check newsletter relation is loaded in response
         // We should keep it, because we already sent an email
-        should(res3.body.posts[0].newsletter.id).eql(newsletterId);
+        assert.equal(res3.body.posts[0].newsletter.id, newsletterId);
         assert.equal(res2.body.posts[0].email_segment, 'status:-free');
         assert.equal(res3.body.posts[0].newsletter_id, undefined);
 
@@ -1643,7 +1643,7 @@ describe('Posts API', function () {
             status: 'draft'
         }, testUtils.context.internal);
 
-        should(model.get('newsletter_id')).eql(newsletterId);
+        assert.equal(model.get('newsletter_id'), newsletterId);
 
         // Check email
         // Note: we only create an email if we have members susbcribed to the newsletter
@@ -1651,8 +1651,8 @@ describe('Posts API', function () {
             post_id: id
         }, testUtils.context.internal);
 
-        should.exist(email);
-        should(email.get('newsletter_id')).eql(newsletterId);
+        assertExists(email);
+        assert.equal(email.get('newsletter_id'), newsletterId);
 
         const republished = {
             status: 'published',
@@ -1669,7 +1669,7 @@ describe('Posts API', function () {
 
         // Check newsletter relation is loaded in response
         // + did update the newsletter id
-        should(res4.body.posts[0].newsletter.id).eql(newsletterId);
+        assert.equal(res4.body.posts[0].newsletter.id, newsletterId);
         assert.equal(res4.body.posts[0].email_segment, 'status:-free');
         assert.equal(res4.body.posts[0].newsletter_id, undefined);
 
@@ -1677,7 +1677,7 @@ describe('Posts API', function () {
             id: id,
             status: 'published'
         }, testUtils.context.internal);
-        should(model.get('newsletter_id')).eql(newsletterId);
+        assert.equal(model.get('newsletter_id'), newsletterId);
 
         // Should not change if status remains published
         const res5 = await request
@@ -1690,7 +1690,7 @@ describe('Posts API', function () {
 
         // Check newsletter relation is loaded in response
         // + did not update the newsletter id
-        should(res5.body.posts[0].newsletter.id).eql(newsletterId);
+        assert.equal(res5.body.posts[0].newsletter.id, newsletterId);
         assert.equal(res5.body.posts[0].email_segment, 'status:-free');
         assert.equal(res5.body.posts[0].newsletter_id, undefined);
 
@@ -1700,7 +1700,7 @@ describe('Posts API', function () {
         }, testUtils.context.internal);
 
         // Test if the newsletter_id option was ignored
-        should(model.get('newsletter_id')).eql(newsletterId);
+        assert.equal(model.get('newsletter_id'), newsletterId);
     });
 
     it('Cannot get post via pages endpoint', async function () {
@@ -1779,7 +1779,7 @@ describe('Posts API', function () {
                 .expect(200);
 
             // Check newsletter relation is loaded in response
-            should(finalPost.body.posts[0].newsletter.id).eql(newsletterId);
+            assert.equal(finalPost.body.posts[0].newsletter.id, newsletterId);
             assert.equal(finalPost.body.posts[0].email_segment, 'all');
             assert.equal(finalPost.body.posts[0].newsletter_id, undefined);
 
@@ -1787,7 +1787,7 @@ describe('Posts API', function () {
                 id
             }, testUtils.context.internal);
 
-            should(model.get('newsletter_id')).eql(newsletterId);
+            assert.equal(model.get('newsletter_id'), newsletterId);
 
             // Check email
             // Note: we only create an email if we have members susbcribed to the newsletter
@@ -1795,9 +1795,9 @@ describe('Posts API', function () {
                 post_id: id
             }, testUtils.context.internal);
 
-            should.exist(email);
-            should(email.get('newsletter_id')).eql(newsletterId);
-            should(email.get('status')).equalOneOf('pending', 'submitted', 'submitting');
+            assertExists(email);
+            assert.equal(email.get('newsletter_id'), newsletterId);
+            assert(['pending', 'submitted', 'submitting'].includes(email.get('status')));
         });
 
         it('Can publish an email_only post', async function () {
@@ -1840,7 +1840,7 @@ describe('Posts API', function () {
 
             const publishedPost = publishedRes.body.posts[0];
 
-            publishedPost.newsletter.id.should.eql(newsletterId);
+            assert.equal(publishedPost.newsletter.id, newsletterId);
             assert.equal(publishedPost.email_segment, 'all');
             assert.equal(publishedPost.status, 'sent');
             assert.equal(publishedPost.newsletter_id, undefined);
@@ -1851,7 +1851,7 @@ describe('Posts API', function () {
             }, testUtils.context.internal);
 
             assert.equal(model.get('status'), 'sent');
-            should(model.get('newsletter_id')).eql(newsletterId);
+            assert.equal(model.get('newsletter_id'), newsletterId);
             assert.equal(model.get('email_recipient_filter'), 'all');
 
             // We should have an email
@@ -1859,9 +1859,9 @@ describe('Posts API', function () {
                 post_id: id
             }, testUtils.context.internal);
 
-            should(email.get('newsletter_id')).eql(newsletterId);
+            assert.equal(email.get('newsletter_id'), newsletterId);
             assert.equal(email.get('recipient_filter'), 'all');
-            should(email.get('status')).equalOneOf('pending', 'submitted', 'submitting');
+            assert(['pending', 'submitted', 'submitting'].includes(email.get('status')));
         });
     });
 

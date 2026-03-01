@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const should = require('should');
+const {assertExists} = require('../../../../utils/assertions');
 const sinon = require('sinon');
 const path = require('path');
 const BlogIcon = require('../../../../../core/server/lib/image/blog-icon');
@@ -16,7 +16,7 @@ describe('lib/image: blog icon', function () {
                     }
                 }
             }});
-            blogIcon.getIconUrl().should.deepEqual([{relativeUrl: '/content/images/2017/04/my-icon.ico'}, undefined]);
+            assert.deepEqual(blogIcon.getIconUrl(), [{relativeUrl: '/content/images/2017/04/my-icon.ico'}, undefined]);
         });
 
         it('custom uploaded png blog icon', function () {
@@ -29,7 +29,20 @@ describe('lib/image: blog icon', function () {
                     }
                 }
             }});
-            blogIcon.getIconUrl().should.deepEqual([{relativeUrl: '/content/images/size/w256h256/2017/04/my-icon.png'}, undefined]);
+            assert.deepEqual(blogIcon.getIconUrl(), [{relativeUrl: '/content/images/size/w256h256/2017/04/my-icon.png'}, undefined]);
+        });
+
+        it('custom uploaded CDN png blog icon', function () {
+            const blogIcon = new BlogIcon({config: {}, storageUtils: {}, urlUtils: {
+                urlFor: (key, boolean) => [key, boolean]
+            }, settingsCache: {
+                get: (key) => {
+                    if (key === 'icon') {
+                        return 'https://storage.ghost.is/c/6f/a3/site/content/images/2026/02/my-icon.png';
+                    }
+                }
+            }});
+            assert.deepEqual(blogIcon.getIconUrl(), [{relativeUrl: 'https://storage.ghost.is/c/6f/a3/site/content/images/size/w256h256/2026/02/my-icon.png'}, undefined]);
         });
 
         it('default ico blog icon', function () {
@@ -38,7 +51,7 @@ describe('lib/image: blog icon', function () {
             }, settingsCache: {
                 get: () => {}
             }});
-            blogIcon.getIconUrl().should.deepEqual({relativeUrl: '/favicon.ico'});
+            assert.deepEqual(blogIcon.getIconUrl(), {relativeUrl: '/favicon.ico'});
         });
 
         describe('absolute URL', function () {
@@ -52,7 +65,7 @@ describe('lib/image: blog icon', function () {
                         }
                     }
                 }});
-                blogIcon.getIconUrl({absolute: true}).should.deepEqual([{relativeUrl: '/content/images/2017/04/my-icon.ico'}, true]);
+                assert.deepEqual(blogIcon.getIconUrl({absolute: true}), [{relativeUrl: '/content/images/2017/04/my-icon.ico'}, true]);
             });
 
             it('custom uploaded png blog icon', function () {
@@ -65,7 +78,7 @@ describe('lib/image: blog icon', function () {
                         }
                     }
                 }});
-                blogIcon.getIconUrl({absolute: true}).should.deepEqual([{relativeUrl: '/content/images/size/w256h256/2017/04/my-icon.png'}, true]);
+                assert.deepEqual(blogIcon.getIconUrl({absolute: true}), [{relativeUrl: '/content/images/size/w256h256/2017/04/my-icon.png'}, true]);
             });
 
             it('default ico blog icon', function () {
@@ -74,7 +87,7 @@ describe('lib/image: blog icon', function () {
                 }, settingsCache: {
                     get: () => {}
                 }});
-                blogIcon.getIconUrl({absolute: true}).should.deepEqual([{relativeUrl: '/favicon.ico'}, true]);
+                assert.deepEqual(blogIcon.getIconUrl({absolute: true}), [{relativeUrl: '/favicon.ico'}, true]);
             });
 
             it('returns null if no fallback is requested', function () {
@@ -103,7 +116,7 @@ describe('lib/image: blog icon', function () {
             }});
 
             blogIcon.getIconPath();
-            assert.equal(stub.calledOnce, true);
+            sinon.assert.calledOnce(stub);
         });
 
         it('custom uploaded png blog icon', function () {
@@ -119,7 +132,7 @@ describe('lib/image: blog icon', function () {
             }});
 
             blogIcon.getIconPath();
-            assert.equal(stub.calledOnce, true);
+            sinon.assert.calledOnce(stub);
         });
 
         it('default ico blog icon', function () {
@@ -133,7 +146,7 @@ describe('lib/image: blog icon', function () {
             }, storageUtils: {}, urlUtils: {}, settingsCache: {
                 get: () => {}
             }});
-            blogIcon.getIconPath().should.eql(path.join(root, 'favicon.ico'));
+            assert.equal(blogIcon.getIconPath(), path.join(root, 'favicon.ico'));
         });
     });
 
@@ -176,8 +189,8 @@ describe('lib/image: blog icon', function () {
             const blogIcon = new BlogIcon({config: {}, storageUtils: {}, urlUtils: {}, settingsCache: {}});
             blogIcon.getIconDimensions(path.join(__dirname, '../../../../utils/fixtures/images/favicon.ico'))
                 .then(function (result) {
-                    should.exist(result);
-                    result.should.eql({
+                    assertExists(result);
+                    assert.deepEqual(result, {
                         width: 48,
                         height: 48
                     });
@@ -189,8 +202,8 @@ describe('lib/image: blog icon', function () {
             const blogIcon = new BlogIcon({config: {}, storageUtils: {}, urlUtils: {}, settingsCache: {}});
             blogIcon.getIconDimensions(path.join(__dirname, '../../../../utils/fixtures/images/favicon.png'))
                 .then(function (result) {
-                    should.exist(result);
-                    result.should.eql({
+                    assertExists(result);
+                    assert.deepEqual(result, {
                         width: 100,
                         height: 100
                     });
@@ -202,8 +215,8 @@ describe('lib/image: blog icon', function () {
             const blogIcon = new BlogIcon({config: {}, storageUtils: {}, urlUtils: {}, settingsCache: {}});
             blogIcon.getIconDimensions(path.join(__dirname, '../../../../utils/fixtures/images/favicon_multi_sizes.ico'))
                 .then(function (result) {
-                    should.exist(result);
-                    result.should.eql({
+                    assertExists(result);
+                    assert.deepEqual(result, {
                         width: 64,
                         height: 64
                     });
@@ -217,7 +230,7 @@ describe('lib/image: blog icon', function () {
 
             blogIcon.getIconDimensions(path.join(__dirname, '../../../../utils/fixtures/images/favicon_multi_sizes_FILE_DOES_NOT_EXIST.ico'))
                 .catch(function (error) {
-                    should.exist(error);
+                    assertExists(error);
                     assert.equal(error.message, 'Could not fetch icon dimensions.');
                     done();
                 });

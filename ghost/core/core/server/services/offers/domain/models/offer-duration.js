@@ -28,7 +28,7 @@ class OfferDuration extends ValueObject {
         }
         if (type !== 'once' && type !== 'repeating' && type !== 'forever' && type !== 'trial') {
             throw new InvalidOfferDuration({
-                message: 'Offer `duration` must be one of "once", "repeating", "forever" or "trial.'
+                message: 'Offer `duration` must be one of "once", "repeating", "forever" or "trial".'
             });
         }
         if (type !== 'repeating') {
@@ -56,4 +56,3 @@ class OfferDuration extends ValueObject {
 }
 
 module.exports = OfferDuration;
-

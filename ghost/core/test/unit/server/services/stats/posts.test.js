@@ -1,5 +1,5 @@
 const knex = require('knex').default;
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const moment = require('moment-timezone');
 const PostsStatsService = require('../../../../../core/server/services/stats/posts-stats-service');
 

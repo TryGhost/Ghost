@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const should = require('should');
+const {assertExists} = require('../../../utils/assertions');
 const hbs = require('../../../../core/frontend/services/theme-engine/engine');
 const configUtils = require('../../../utils/config-utils');
 const path = require('path');
@@ -52,27 +52,27 @@ describe('{{navigation}} helper', function () {
     it('should throw errors on invalid data', function () {
         // Test 1: navigation = string
         optionsData.data.site.navigation = 'not an object';
-        runHelperThunk(optionsData).should.throwError('navigation data is not an object or is a function');
+        assert.throws(runHelperThunk(optionsData), {message: 'navigation data is not an object or is a function'});
 
         // Test 2: navigation = function
         optionsData.data.site.navigation = function () {
         };
-        runHelperThunk(optionsData).should.throwError('navigation data is not an object or is a function');
+        assert.throws(runHelperThunk(optionsData), {message: 'navigation data is not an object or is a function'});
 
         // Test 3: invalid label
         optionsData.data.site.navigation = [{label: 1, url: 'bar'}];
-        runHelperThunk(optionsData).should.throwError('Invalid value, Url and Label must be strings');
+        assert.throws(runHelperThunk(optionsData), {message: 'Invalid value, Url and Label must be strings'});
 
         // Test 4: invalid url
         optionsData.data.site.navigation = [{label: 'foo', url: 1}];
-        runHelperThunk(optionsData).should.throwError('Invalid value, Url and Label must be strings');
+        assert.throws(runHelperThunk(optionsData), {message: 'Invalid value, Url and Label must be strings'});
     });
 
     it('can render empty nav', function () {
         const rendered = runHelper(optionsData);
 
-        should.exist(rendered);
-        rendered.string.should.be.equal('');
+        assertExists(rendered);
+        assert.equal(rendered.string, '');
     });
 
     it('can handle relativeUrl not being set (e.g. for images/assets)', function () {
@@ -95,7 +95,7 @@ describe('{{navigation}} helper', function () {
         optionsData.data.site.navigation = [singleItem];
         rendered = runHelper(optionsData);
 
-        should.exist(rendered);
+        assertExists(rendered);
         assert(rendered.string.includes('li'));
         assert(rendered.string.includes('nav-foo'));
         assert(rendered.string.includes(testUrl));
@@ -111,7 +111,7 @@ describe('{{navigation}} helper', function () {
         optionsData.data.site.navigation = [firstItem, secondItem];
         rendered = runHelper(optionsData);
 
-        should.exist(rendered);
+        assertExists(rendered);
         assert(rendered.string.includes('nav-foo'));
         assert(rendered.string.includes('nav-bar-baz-qux'));
         assert(rendered.string.includes(testUrl));
@@ -127,7 +127,7 @@ describe('{{navigation}} helper', function () {
         optionsData.data.root.relativeUrl = '/foo';
         rendered = runHelper(optionsData);
 
-        should.exist(rendered);
+        assertExists(rendered);
         assert(rendered.string.includes('nav-foo'));
         assert(rendered.string.includes('nav-current'));
         assert(rendered.string.includes('nav-foo nav-current'));
@@ -143,7 +143,7 @@ describe('{{navigation}} helper', function () {
         optionsData.data.root.relativeUrl = '/foo/';
         rendered = runHelper(optionsData);
 
-        should.exist(rendered);
+        assertExists(rendered);
         assert(rendered.string.includes('nav-foo'));
         assert(rendered.string.includes('nav-current'));
         assert(rendered.string.includes('nav-foo nav-current'));
@@ -157,7 +157,7 @@ describe('{{navigation}} helper', function () {
         optionsData.data.site.navigation = [firstItem];
         rendered = runHelper(optionsData);
 
-        should.exist(rendered);
+        assertExists(rendered);
         assert(!rendered.string.includes('&#x3D;'));
         assert(!rendered.string.includes('&amp;'));
         assert(rendered.string.includes('/?foo=bar&baz=qux'));
@@ -170,7 +170,7 @@ describe('{{navigation}} helper', function () {
         optionsData.data.site.navigation = [firstItem];
         rendered = runHelper(optionsData);
 
-        should.exist(rendered);
+        assertExists(rendered);
         assert(rendered.string.includes('foo=space%20bar'));
         assert(!rendered.string.includes('<script>alert("gotcha")</script>'));
         assert(rendered.string.includes('%3Cscript%3Ealert(%22gotcha%22)%3C/script%3E'));
@@ -183,7 +183,7 @@ describe('{{navigation}} helper', function () {
         optionsData.data.site.navigation = [firstItem];
         rendered = runHelper(optionsData);
 
-        should.exist(rendered);
+        assertExists(rendered);
         assert(!rendered.string.includes('foo=space%2520bar'));
     });
 
@@ -197,7 +197,7 @@ describe('{{navigation}} helper', function () {
             optionsData.hash = {type: 'secondary'};
             rendered = runHelper(optionsData);
 
-            should.exist(rendered);
+            assertExists(rendered);
             assert(rendered.string.includes('li'));
             assert(rendered.string.includes('nav-foo'));
             assert(rendered.string.includes(testUrl));
@@ -214,7 +214,7 @@ describe('{{navigation}} helper', function () {
             optionsData.hash = {type: 'secondary'};
             rendered = runHelper(optionsData);
 
-            should.exist(rendered);
+            assertExists(rendered);
             assert(rendered.string.includes('nav-foo'));
             assert(rendered.string.includes('nav-bar-baz-qux'));
             assert(rendered.string.includes(testUrl));
@@ -257,7 +257,7 @@ describe('{{navigation}} helper with custom template', function () {
 
         rendered = runHelper(optionsData);
 
-        should.exist(rendered);
+        assertExists(rendered);
         assert(rendered.string.includes('Chaos is a ladder'));
         assert(!rendered.string.includes('isHeader is set'));
         assert(!rendered.string.includes('Jeremy Bearimy baby!'));
@@ -274,7 +274,7 @@ describe('{{navigation}} helper with custom template', function () {
 
         rendered = runHelper(optionsData);
 
-        should.exist(rendered);
+        assertExists(rendered);
         assert(!rendered.string.includes('Chaos is a ladder'));
         assert(rendered.string.includes('isHeader is set'));
         assert(!rendered.string.includes('Jeremy Bearimy baby!'));
@@ -291,7 +291,7 @@ describe('{{navigation}} helper with custom template', function () {
 
         rendered = runHelper(optionsData);
 
-        should.exist(rendered);
+        assertExists(rendered);
         assert(!rendered.string.includes('Chaos is a ladder'));
         assert(!rendered.string.includes('isHeader is set'));
         assert(rendered.string.includes('Jeremy Bearimy baby!'));

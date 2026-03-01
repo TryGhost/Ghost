@@ -18,7 +18,7 @@ export type Theme = {
 }
 
 export type InstalledTheme = Theme & {
-    gscan_errors?: ThemeProblem<'error'>[];
+    errors?: ThemeProblem<'error'>[];
     warnings?: ThemeProblem<'warning'>[];
 }
 

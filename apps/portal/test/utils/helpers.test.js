@@ -1,7 +1,36 @@
-import {hasAvailablePrices, getAllProductsForSite, getAvailableProducts, getCurrencySymbol, getFreeProduct, getMemberName, getMemberSubscription, getPriceFromSubscription, getPriceIdFromPageQuery, getSupportAddress, getDefaultNewsletterSender, getUrlHistory, hasMultipleProducts, isActiveOffer, isRetentionOffer, isInviteOnly, isPaidMember, isPaidMembersOnly, isSameCurrency, transformApiTiersData, isSigninAllowed, isSignupAllowed, getCompExpiry, isInThePast, hasNewsletterSendingEnabled} from '../../src/utils/helpers';
+import {
+    hasAvailablePrices,
+    getAllProductsForSite,
+    getAvailableProducts,
+    getCurrencySymbol,
+    getFreeProduct,
+    getMemberName,
+    getMemberSubscription,
+    getPriceFromSubscription,
+    getPriceIdFromPageQuery,
+    getSupportAddress,
+    getDefaultNewsletterSender,
+    getUrlHistory,
+    hasMultipleProducts,
+    isActiveOffer,
+    isRetentionOffer,
+    isInviteOnly,
+    isPaidMember,
+    isPaidMembersOnly,
+    isSameCurrency,
+    transformApiTiersData,
+    isSigninAllowed,
+    isSignupAllowed,
+    getCompExpiry,
+    isInThePast,
+    hasNewsletterSendingEnabled,
+    getUpdatedOfferPrice,
+    isComplimentaryMember,
+    subscriptionHasFreeMonthsOffer,
+    subscriptionHasFreeTrial
+} from '../../src/utils/helpers';
 import * as Fixtures from '../../src/utils/fixtures-generator';
 import {site as FixturesSite, member as FixtureMember, offer as FixtureOffer, transformTierFixture as TransformFixtureTiers} from './test-fixtures';
-import {isComplimentaryMember} from '../../src/utils/helpers';
 
 describe('Helpers - ', () => {
     describe('isComplimentaryMember -', () => {
@@ -116,6 +145,37 @@ describe('Helpers - ', () => {
             const value = isActiveOffer({offer: FixtureOffer, site: FixturesSite.singleTier.onlyFreePlan});
             expect(value).toBe(false);
         });
+
+        test('returns true for active retention offer', () => {
+            const nullTierOffer = {
+                ...FixtureOffer,
+                tier: null,
+                redemption_type: 'retention'
+            };
+            const value = isActiveOffer({offer: nullTierOffer, site: FixturesSite.singleTier.basic});
+            expect(value).toBe(true);
+        });
+
+        test('returns false for active null-tier non-retention offer', () => {
+            const nullTierSignupOffer = {
+                ...FixtureOffer,
+                tier: null,
+                redemption_type: 'signup'
+            };
+            const value = isActiveOffer({offer: nullTierSignupOffer, site: FixturesSite.singleTier.basic});
+            expect(value).toBe(false);
+        });
+
+        test('returns false for archived null-tier offer', () => {
+            const archivedNullTierOffer = {
+                ...FixtureOffer,
+                tier: null,
+                redemption_type: 'retention',
+                status: 'archived'
+            };
+            const value = isActiveOffer({offer: archivedNullTierOffer, site: FixturesSite.singleTier.basic});
+            expect(value).toBe(false);
+        });
     });
 
     describe('isRetentionOffer -', () => {
@@ -145,6 +205,81 @@ describe('Helpers - ', () => {
             let currency1 = 'eur';
             let currency2 = 'usd';
             expect(isSameCurrency(currency1, currency2)).toBe(false);
+        });
+    });
+
+    describe('getUpdatedOfferPrice - ', () => {
+        test('rounds 20% off $5.99 to $4.79', () => {
+            const updatedPrice = getUpdatedOfferPrice({
+                offer: {type: 'percent', amount: 20},
+                price: {amount: 599, currency: 'usd'}
+            });
+
+            expect(updatedPrice).toBe(4.79);
+        });
+
+        test('rounds 33% off $9.99 to $6.69', () => {
+            const updatedPrice = getUpdatedOfferPrice({
+                offer: {type: 'percent', amount: 33},
+                price: {amount: 999, currency: 'usd'}
+            });
+
+            expect(updatedPrice).toBe(6.69);
+        });
+
+        // Edge-case: Stripe applies the rounding per invoice line item, i.e. on the discount line, not on the final invoice amount
+        //
+        // Example:
+        // - Original amount: 101 ($1.01)
+        // - Percent amount: 50 (50%)
+        // - Discount amount should be rounded: 101 * 50/100 = 50.5 -> Rounded to 51 ($0.51)
+        // - Final amount: 101 - 51 = $0.50
+        //
+        // Instead, if we apply rounding to the final amount, we end up with a 1-cent drift: 101 - (101 * 50/100) = 101 - 50.5 = 50.5 -> Rounded to 51 ($0.51)
+        test('rounds 50% off $1.01 to $0.50', () => {
+            const updatedPrice = getUpdatedOfferPrice({
+                offer: {type: 'percent', amount: 50},
+                price: {amount: 101, currency: 'usd'}
+            });
+
+            expect(updatedPrice).toBe(0.50);
+        });
+
+        test('returns exact discounted amount when no rounding is needed', () => {
+            const updatedPrice = getUpdatedOfferPrice({
+                offer: {type: 'percent', amount: 50},
+                price: {amount: 1000, currency: 'usd'}
+            });
+
+            expect(updatedPrice).toBe(5);
+        });
+
+        test('rounds 15% off $3.33 to $2.83', () => {
+            const updatedPrice = getUpdatedOfferPrice({
+                offer: {type: 'percent', amount: 15},
+                price: {amount: 333, currency: 'usd'}
+            });
+
+            expect(updatedPrice).toBe(2.83);
+        });
+
+        test('returns expected amount for fixed offers', () => {
+            const updatedPrice = getUpdatedOfferPrice({
+                offer: {type: 'fixed', amount: 100, currency: 'usd'},
+                price: {amount: 599, currency: 'usd'}
+            });
+
+            expect(updatedPrice).toBe(4.99);
+        });
+
+        test('returns formatted price when useFormatted is true', () => {
+            const updatedPrice = getUpdatedOfferPrice({
+                offer: {type: 'percent', amount: 20},
+                price: {amount: 599, currency: 'usd'},
+                useFormatted: true
+            });
+
+            expect(updatedPrice).toBe('$4.79');
         });
     });
 
@@ -549,6 +684,98 @@ describe('Helpers - ', () => {
 
             expect(isInThePast(pastDate)).toEqual(true);
             expect(isInThePast(futureDate)).toEqual(false);
+        });
+    });
+
+    describe('subscriptionHasFreeTrial', () => {
+        it('returns true for active trial subscriptions', () => {
+            const futureDate = new Date();
+            futureDate.setDate(futureDate.getDate() + 3);
+            const sub = {
+                offer: null,
+                trial_end_at: futureDate.toISOString()
+            };
+
+            expect(subscriptionHasFreeTrial({sub})).toBe(true);
+        });
+
+        it('returns true for active trial offers', () => {
+            const futureDate = new Date();
+            futureDate.setDate(futureDate.getDate() + 3);
+            const sub = {
+                offer: {type: 'trial'},
+                trial_end_at: futureDate.toISOString()
+            };
+
+            expect(subscriptionHasFreeTrial({sub})).toBe(true);
+        });
+
+        it('returns false for free months (percent/100/repeating) offers', () => {
+            const futureDate = new Date();
+            futureDate.setDate(futureDate.getDate() + 3);
+            const sub = {
+                offer: {type: 'percent', amount: 100, duration: 'repeating', redemption_type: 'retention'},
+                next_payment: {discount: {end: futureDate.toISOString()}}
+            };
+
+            expect(subscriptionHasFreeTrial({sub})).toBe(false);
+        });
+    });
+
+    describe('subscriptionHasFreeMonthsOffer', () => {
+        it('returns true for active percent/100/repeating retention offers with future discount end', () => {
+            const futureDate = new Date();
+            futureDate.setDate(futureDate.getDate() + 3);
+            const sub = {
+                offer: {type: 'percent', amount: 100, duration: 'repeating', redemption_type: 'retention'},
+                next_payment: {discount: {end: futureDate.toISOString()}}
+            };
+
+            expect(subscriptionHasFreeMonthsOffer({sub})).toBe(true);
+        });
+
+        it('returns false for trial offers', () => {
+            const futureDate = new Date();
+            futureDate.setDate(futureDate.getDate() + 3);
+            const sub = {
+                offer: {type: 'trial'},
+                trial_end_at: futureDate.toISOString()
+            };
+
+            expect(subscriptionHasFreeMonthsOffer({sub})).toBe(false);
+        });
+
+        it('returns false for regular percent offers (not 100%)', () => {
+            const futureDate = new Date();
+            futureDate.setDate(futureDate.getDate() + 3);
+            const sub = {
+                offer: {type: 'percent', amount: 50, duration: 'repeating', redemption_type: 'retention'},
+                next_payment: {discount: {end: futureDate.toISOString()}}
+            };
+
+            expect(subscriptionHasFreeMonthsOffer({sub})).toBe(false);
+        });
+
+        it('returns false when discount end date is in the past', () => {
+            const pastDate = new Date();
+            pastDate.setDate(pastDate.getDate() - 3);
+            const sub = {
+                offer: {type: 'percent', amount: 100, duration: 'repeating', redemption_type: 'retention'},
+                next_payment: {discount: {end: pastDate.toISOString()}}
+            };
+
+            expect(subscriptionHasFreeMonthsOffer({sub})).toBe(false);
+        });
+
+        it('returns false for null offer', () => {
+            const futureDate = new Date();
+            futureDate.setDate(futureDate.getDate() + 3);
+            const sub = {
+                offer: null,
+                trial_end_at: futureDate.toISOString()
+            };
+
+            expect(subscriptionHasFreeMonthsOffer({sub})).toBe(false);
         });
     });
 

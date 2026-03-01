@@ -29,16 +29,14 @@ git remote add origin git@github.com:<YourUsername>/Ghost.git
 #### 2. Install and Setup
 
 ```bash
-# Run initial setup
-# This installs dependencies, initializes the database,
-# sets up git hooks, and initializes submodules
+# Install dependencies and initialize submodules
 yarn setup
 ```
 
 #### 3. Start Ghost
 
 ```bash
-# Start development server (uses Docker for backend services)
+# Start development (runs Docker backend services + frontend dev servers)
 yarn dev
 ```
 
@@ -57,9 +55,8 @@ yarn fix
 # Update to latest main branch
 yarn main
 
-# Reset and reinitialize database
-yarn knex-migrator reset
-yarn knex-migrator init
+# Reset running dev data
+yarn reset:data
 ```
 
 ## Repository Structure

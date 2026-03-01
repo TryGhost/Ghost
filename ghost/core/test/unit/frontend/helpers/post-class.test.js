@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const should = require('should');
+const {assertExists} = require('../../../utils/assertions');
 
 // Stuff we are testing
 const post_class = require('../../../../core/frontend/helpers/post_class');
@@ -8,14 +8,14 @@ describe('{{post_class}} helper', function () {
     it('can render class string', function () {
         const rendered = post_class.call({});
 
-        should.exist(rendered);
+        assertExists(rendered);
         assert.equal(rendered.string, 'post no-image');
     });
 
     it('can render class string without no-image class', function () {
         const rendered = post_class.call({feature_image: 'blah'});
 
-        should.exist(rendered);
+        assertExists(rendered);
         assert.equal(rendered.string, 'post');
     });
 
@@ -23,7 +23,7 @@ describe('{{post_class}} helper', function () {
         const post = {featured: true};
         const rendered = post_class.call(post);
 
-        should.exist(rendered);
+        assertExists(rendered);
         assert.equal(rendered.string, 'post featured no-image');
     });
 
@@ -31,7 +31,7 @@ describe('{{post_class}} helper', function () {
         const post = {featured: true, feature_image: 'asdass'};
         const rendered = post_class.call(post);
 
-        should.exist(rendered);
+        assertExists(rendered);
         assert.equal(rendered.string, 'post featured');
     });
 
@@ -39,7 +39,7 @@ describe('{{post_class}} helper', function () {
         const post = {page: true};
         const rendered = post_class.call(post);
 
-        should.exist(rendered);
+        assertExists(rendered);
         assert.equal(rendered.string, 'post no-image page');
     });
 
@@ -47,7 +47,7 @@ describe('{{post_class}} helper', function () {
         const post = {page: true, feature_image: 'asdasdas'};
         const rendered = post_class.call(post);
 
-        should.exist(rendered);
+        assertExists(rendered);
         assert.equal(rendered.string, 'post page');
     });
 });

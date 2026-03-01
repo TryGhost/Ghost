@@ -1,5 +1,6 @@
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
+import useFeatureFlag from '../../../hooks/use-feature-flag';
 import {Button, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {CopyLinkButton, createRedemptionFilterUrl, getOfferDiscount} from './offers/offers-index';
 import {type Offer, useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
@@ -31,6 +32,7 @@ const OfferContainer: React.FC<{offerTitle: string, tier: Tier, cadence: string,
 const Offers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {updateRoute} = useRouting();
     const {settings, config} = useGlobalData();
+    const retentionOffersEnabled = useFeatureFlag('retentionOffers');
 
     const {data: {offers: allOffers = []} = {}} = useBrowseOffers();
 
@@ -40,7 +42,7 @@ const Offers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const signupOffers = allOffers.filter(offer => offer.redemption_type === 'signup');
 
     const activeOffers = signupOffers
-        .map(offer => ({...offer, tier: paidActiveTiers.find(tier => tier.id === offer.tier.id)}))
+        .map(offer => ({...offer, tier: paidActiveTiers.find(tier => tier.id === offer.tier?.id)}))
         .filter((offer): offer is Offer & {tier: Tier} => offer.status === 'active' && !!offer.tier);
 
     activeOffers.sort((a, b) => {
@@ -71,28 +73,34 @@ const Offers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     let offerButtonText = 'Manage offers';
     let offerButtonLink = openOfferListModal;
     let descriptionButtonText = 'Learn more';
-    if (signupOffers.length > 0) {
-        offerButtonText = 'Manage offers';
-        offerButtonLink = openOfferListModal;
-    } else if (paidActiveTiers.length === 0 && signupOffers.length === 0) {
+    if (!retentionOffersEnabled) {
+        if (signupOffers.length > 0) {
+            offerButtonText = 'Manage offers';
+            offerButtonLink = openOfferListModal;
+        } else if (paidActiveTiers.length === 0 && signupOffers.length === 0) {
+            offerButtonText = '';
+            offerButtonLink = openTiers;
+            descriptionButtonText = '';
+        } else if (paidActiveTiers.length > 0 && signupOffers.length === 0) {
+            offerButtonText = 'Add offer';
+            offerButtonLink = openAddModal;
+        }
+    } else if (paidActiveTiers.length === 0) {
         offerButtonText = '';
         offerButtonLink = openTiers;
         descriptionButtonText = '';
-    } else if (paidActiveTiers.length > 0 && signupOffers.length === 0) {
-        offerButtonText = 'Add offer';
-        offerButtonLink = openAddModal;
     }
 
     return (
         <TopLevelGroup
             customButtons={<Button className='mt-[-5px]' color='clear' disabled={!checkStripeEnabled(settings, config)} label={offerButtonText} size='sm' onClick={offerButtonLink}/>}
-            description={<>Create discounts & coupons to boost new subscriptions. {signupOffers.length === 0 && <><a className='text-green' href="https://ghost.org/help/offers" rel="noopener noreferrer" target="_blank">{descriptionButtonText}</a></>}</>}
+            description={<>{retentionOffersEnabled ? 'Create discounts & coupons to boost new subscriptions and retain existing members.' : 'Create discounts & coupons to boost new subscriptions.'} {signupOffers.length === 0 && <><a className='text-green' href="https://ghost.org/help/offers" rel="noopener noreferrer" target="_blank">{descriptionButtonText}</a></>}</>}
             keywords={keywords}
             navid='offers'
             testId='offers'
             title='Offers'
         >
-            {latestThree.length > 0 ?
+            {!retentionOffersEnabled && latestThree.length > 0 ?
                 <div>
                     <div className='grid grid-cols-1 gap-4 min-[900px]:grid-cols-3'>
                         {latestThree.map(offer => (<OfferContainer

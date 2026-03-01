@@ -599,7 +599,7 @@ describe('Acceptance: Editor', function () {
             ).to.equal('/ghost/posts');
         });
 
-        it('renders a breadcrumb back to the analytics list if that\'s where we came from ', async function () {
+        it('renders a breadcrumb back to post analytics root if that\'s where we came from', async function () {
             let post = this.server.create('post', {
                 authors: [author],
                 status: 'published',
@@ -620,7 +620,79 @@ describe('Acceptance: Editor', function () {
             expect(
                 find('[data-test-breadcrumb]').getAttribute('href'),
                 'breadcrumb link'
-            ).to.equal(`#posts-x`);
+            ).to.equal(`#/posts/analytics/${post.id}`);
+        });
+
+        it('renders a breadcrumb back to the post analytics subpage if that\'s where we came from', async function () {
+            let post = this.server.create('post', {
+                authors: [author],
+                status: 'published',
+                title: 'Published Post'
+            });
+
+            await visit(`/posts/analytics/${post.id}/web`);
+            await visit(`/editor/post/${post.id}`);
+
+            expect(
+                find('[data-test-breadcrumb]').textContent.trim(),
+                'breadcrumb text'
+            ).to.contain('Analytics');
+
+            expect(
+                find('[data-test-breadcrumb]').getAttribute('href'),
+                'breadcrumb link'
+            ).to.equal(`#/posts/analytics/${post.id}/web`);
+        });
+
+        it('renders a breadcrumb back to stats root if that\'s where we came from', async function () {
+            let post = this.server.create('post', {authors: [author]});
+
+            await visit('/analytics');
+            await visit(`/editor/post/${post.id}`);
+
+            expect(
+                find('[data-test-breadcrumb]').textContent.trim(),
+                'breadcrumb text'
+            ).to.contain('Analytics');
+
+            expect(
+                find('[data-test-breadcrumb]').getAttribute('href'),
+                'breadcrumb link'
+            ).to.equal('#/analytics');
+        });
+
+        it('renders a breadcrumb back to the stats subpage if that\'s where we came from', async function () {
+            let post = this.server.create('post', {authors: [author]});
+
+            await visit('/analytics/web');
+            await visit(`/editor/post/${post.id}`);
+
+            expect(
+                find('[data-test-breadcrumb]').textContent.trim(),
+                'breadcrumb text'
+            ).to.contain('Analytics');
+
+            expect(
+                find('[data-test-breadcrumb]').getAttribute('href'),
+                'breadcrumb link'
+            ).to.equal('#/analytics/web');
+        });
+
+        it('renders a breadcrumb with stats query params if that\'s where we came from', async function () {
+            let post = this.server.create('post', {authors: [author]});
+
+            await visit('/analytics/growth?tab=total-members');
+            await visit(`/editor/post/${post.id}`);
+
+            expect(
+                find('[data-test-breadcrumb]').textContent.trim(),
+                'breadcrumb text'
+            ).to.contain('Analytics');
+
+            expect(
+                find('[data-test-breadcrumb]').getAttribute('href'),
+                'breadcrumb link'
+            ).to.equal('#/analytics/growth?tab=total-members');
         });
 
         it('does not render analytics breadcrumb for a new post', async function () {

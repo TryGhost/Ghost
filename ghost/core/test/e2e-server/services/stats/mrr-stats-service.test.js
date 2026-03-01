@@ -1,7 +1,6 @@
 const assert = require('node:assert/strict');
 const statsService = require('../../../../core/server/services/stats');
 const {agentProvider, fixtureManager, mockManager} = require('../../../utils/e2e-framework');
-require('should');
 const {stripeMocker} = require('../../../utils/e2e-framework-mock-manager');
 const moment = require('moment');
 
@@ -55,7 +54,7 @@ describe('MRR Stats Service', function () {
     describe('getCurrentMrr', function () {
         it('Always returns at least one currency', async function () {
             const result = await statsService.api.mrr.getCurrentMrr();
-            result.should.eql([
+            assert.deepEqual(result, [
                 {
                     currency: 'usd', // need to check capital usage here!
                     mrr: 0
@@ -66,7 +65,7 @@ describe('MRR Stats Service', function () {
         it('Can handle multiple currencies', async function () {
             await createMemberWithSubscription('month', 500, 'eur', '2000-01-10');
             const result = await statsService.api.mrr.getCurrentMrr();
-            result.should.eql([
+            assert.deepEqual(result, [
                 {
                     currency: 'EUR',
                     mrr: 500
@@ -77,7 +76,7 @@ describe('MRR Stats Service', function () {
         it('Increases MRR by 1 / 12 of yearly subscriptions', async function () {
             await createMemberWithSubscription('year', 12, 'usd', '2000-01-10');
             const result = await statsService.api.mrr.getCurrentMrr();
-            result.should.eql([
+            assert.deepEqual(result, [
                 {
                     currency: 'EUR',
                     mrr: 500
@@ -92,7 +91,7 @@ describe('MRR Stats Service', function () {
         it('Increases MRR with monthly subscriptions', async function () {
             await createMemberWithSubscription('month', 1, 'usd', '2000-01-11');
             const result = await statsService.api.mrr.getCurrentMrr();
-            result.should.eql([
+            assert.deepEqual(result, [
                 {
                     currency: 'EUR',
                     mrr: 500
@@ -107,7 +106,7 @@ describe('MRR Stats Service', function () {
         it('Floors results', async function () {
             await createMemberWithSubscription('year', 17, 'usd', '2000-01-12');
             let result = await statsService.api.mrr.getCurrentMrr();
-            result.should.eql([
+            assert.deepEqual(result, [
                 {
                     currency: 'EUR',
                     mrr: 500
@@ -121,7 +120,7 @@ describe('MRR Stats Service', function () {
             // Floor 11/12 to 0 (same as getMRRDelta method)
             await createMemberWithSubscription('year', 11, 'usd', '2000-01-12');
             result = await statsService.api.mrr.getCurrentMrr();
-            result.should.eql([
+            assert.deepEqual(result, [
                 {
                     currency: 'EUR',
                     mrr: 500
@@ -135,7 +134,7 @@ describe('MRR Stats Service', function () {
             // Floor 11/12 to 0, don't combine with previous addition
             await createMemberWithSubscription('year', 11, 'usd', '2000-01-12');
             result = await statsService.api.mrr.getCurrentMrr();
-            result.should.eql([
+            assert.deepEqual(result, [
                 {
                     currency: 'EUR',
                     mrr: 500
@@ -149,7 +148,7 @@ describe('MRR Stats Service', function () {
             // Floor 13/12 to 1
             await createMemberWithSubscription('year', 13, 'usd', '2000-01-12');
             result = await statsService.api.mrr.getCurrentMrr();
-            result.should.eql([
+            assert.deepEqual(result, [
                 {
                     currency: 'EUR',
                     mrr: 500
@@ -175,8 +174,7 @@ describe('MRR Stats Service', function () {
             await createMemberWithSubscription('month', 2, 'usd', moment(today).toISOString());
 
             const results = await statsService.api.mrr.fetchAllDeltas();
-            assert.equal(results.length, 3);
-            results.should.match([
+            assert.deepEqual(results, [
                 {
                     date: ninetyDaysAgo,
                     delta: 500,
@@ -212,7 +210,7 @@ describe('MRR Stats Service', function () {
             const isWithinLast90Days = (date) => {
                 return moment(date).isBetween(ninetyDaysAgo, today, null, '[]');
             };
-            results.length.should.be.above(0);
+            assert(results.length > 0);
             results.forEach((result) => {
                 assert.equal(isWithinLast90Days(result.date), true);
             });

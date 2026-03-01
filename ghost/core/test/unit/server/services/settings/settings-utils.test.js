@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const should = require('should');
 
 describe('Unit: services/settings/settings-utils', function () {
     describe('getOrGenerateSiteUuid', function () {
@@ -30,9 +29,9 @@ describe('Unit: services/settings/settings-utils', function () {
 
             const result = getOrGenerateSiteUuid();
 
-            result.should.equal(testUuid.toLowerCase());
-            assert.equal(configGetStub.calledOnce, true);
-            assert.equal(loggingInfoStub.calledOnce, true);
+            assert.equal(result, testUuid.toLowerCase());
+            sinon.assert.calledOnce(configGetStub);
+            sinon.assert.calledOnce(loggingInfoStub);
         });
 
         it('generates new UUID when config value is not a valid UUID', function () {
@@ -42,8 +41,8 @@ describe('Unit: services/settings/settings-utils', function () {
 
             // Should be a valid UUID v4
             assert.match(result, /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
-            assert.equal(configGetStub.calledOnce, true);
-            assert.equal(loggingInfoStub.calledOnce, true);
+            sinon.assert.calledOnce(configGetStub);
+            sinon.assert.calledOnce(loggingInfoStub);
         });
 
         it('generates new UUID when config value is null', function () {
@@ -53,8 +52,8 @@ describe('Unit: services/settings/settings-utils', function () {
 
             // Should be a valid UUID v4
             assert.match(result, /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
-            assert.equal(configGetStub.calledOnce, true);
-            assert.equal(loggingInfoStub.calledOnce, true);
+            sinon.assert.calledOnce(configGetStub);
+            sinon.assert.calledOnce(loggingInfoStub);
         });
 
         it('generates new UUID when config value is undefined', function () {
@@ -64,8 +63,8 @@ describe('Unit: services/settings/settings-utils', function () {
 
             // Should be a valid UUID v4
             assert.match(result, /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
-            assert.equal(configGetStub.calledOnce, true);
-            assert.equal(loggingInfoStub.calledOnce, true);
+            sinon.assert.calledOnce(configGetStub);
+            sinon.assert.calledOnce(loggingInfoStub);
         });
 
         it('generates new UUID when config throws an error', function () {
@@ -76,8 +75,8 @@ describe('Unit: services/settings/settings-utils', function () {
 
             // Should be a valid UUID v4
             assert.match(result, /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
-            assert.equal(configGetStub.calledOnce, true);
-            assert.equal(loggingErrorStub.calledOnce, true);
+            sinon.assert.calledOnce(configGetStub);
+            sinon.assert.calledOnce(loggingErrorStub);
         });
 
         it('converts uppercase UUID to lowercase', function () {
@@ -86,7 +85,7 @@ describe('Unit: services/settings/settings-utils', function () {
 
             const result = getOrGenerateSiteUuid();
 
-            result.should.equal(testUuid.toLowerCase());
+            assert.equal(result, testUuid.toLowerCase());
             assert.equal(result, '550e8400-e29b-41d4-a716-446655440000');
         });
 
@@ -96,7 +95,7 @@ describe('Unit: services/settings/settings-utils', function () {
 
             const result = getOrGenerateSiteUuid();
 
-            result.should.equal(testUuid.toLowerCase());
+            assert.equal(result, testUuid.toLowerCase());
             assert.equal(result, '550e8400-e29b-41d4-a716-446655440000');
         });
 
@@ -107,10 +106,10 @@ describe('Unit: services/settings/settings-utils', function () {
             const result1 = getOrGenerateSiteUuid();
             const result2 = getOrGenerateSiteUuid();
 
-            result1.should.equal(result2);
-            result1.should.equal(testUuid.toLowerCase());
+            assert.equal(result1, result2);
+            assert.equal(result1, testUuid.toLowerCase());
             // Config should only be called once due to caching
-            assert.equal(configGetStub.calledOnce, true);
+            sinon.assert.calledOnce(configGetStub);
         });
     });
 });

@@ -534,10 +534,25 @@ export function getSubFreeTrialDaysLeft({sub} = {}) {
 }
 
 export function subscriptionHasFreeTrial({sub} = {}) {
-    if (sub?.trial_end_at && !isInThePast(new Date(sub?.trial_end_at))) {
-        return true;
+    const isTrial = !sub?.offer || sub?.offer?.type === 'trial';
+    const isTrialActive = isTrial && sub?.trial_end_at && !isInThePast(new Date(sub?.trial_end_at));
+
+    return isTrialActive;
+}
+
+export function isFreeMonthsOffer(offer) {
+    return offer?.type === 'percent'
+        && offer?.amount === 100
+        && offer?.duration === 'repeating'
+        && offer?.redemption_type === 'retention';
+}
+
+export function subscriptionHasFreeMonthsOffer({sub} = {}) {
+    if (!isFreeMonthsOffer(sub?.offer)) {
+        return false;
     }
-    return false;
+    const discountEnd = sub?.next_payment?.discount?.end;
+    return discountEnd && !isInThePast(new Date(discountEnd));
 }
 
 export function isInThePast(date) {
@@ -788,8 +803,12 @@ export function getPriceIdFromPageQuery({site, pageQuery}) {
     return null;
 }
 
+// TODO: Add i18n once copy is finalized
 export const getOfferOffAmount = ({offer}) => {
-    if (offer.type === 'fixed') {
+    if (isFreeMonthsOffer(offer)) {
+        const months = offer.duration_in_months;
+        return `${months === 1 ? '1 month' : `${months} months`}`;
+    } else if (offer.type === 'fixed') {
         return `${getCurrencySymbol(offer.currency)}${offer.amount / 100}`;
     } else if (offer.type === 'percent') {
         return `${offer.amount}%`;
@@ -798,19 +817,22 @@ export const getOfferOffAmount = ({offer}) => {
 };
 
 export const getUpdatedOfferPrice = ({offer, price, useFormatted = false}) => {
-    const originalAmount = price.amount;
-    let updatedAmount;
+    const originalAmountInCents = price.amount;
+    let updatedAmountInCents = originalAmountInCents;
+
     if (offer.type === 'fixed' && isSameCurrency(offer.currency, price.currency)) {
-        updatedAmount = ((originalAmount - offer.amount)) / 100;
-        updatedAmount = updatedAmount > 0 ? updatedAmount : 0;
+        updatedAmountInCents = Math.max(0, (originalAmountInCents - offer.amount));
     } else if (offer.type === 'percent') {
-        updatedAmount = (originalAmount - ((originalAmount * offer.amount) / 100)) / 100;
-    } else {
-        updatedAmount = originalAmount / 100;
+        const discountInCents = Math.round(originalAmountInCents * (offer.amount / 100));
+        updatedAmountInCents = Math.max(0, (originalAmountInCents - discountInCents));
     }
+
+    const updatedAmount = updatedAmountInCents / 100;
+
     if (useFormatted) {
         return Intl.NumberFormat('en', {currency: price?.currency, style: 'currency'}).format(updatedAmount);
     }
+
     return updatedAmount;
 };
 
@@ -821,6 +843,11 @@ export const isRetentionOffer = ({offer}) => {
 export const isActiveOffer = ({site, offer}) => {
     if (offer?.status !== 'active') {
         return false;
+    }
+
+    // Null-tier offers are only valid for retention
+    if (!offer.tier) {
+        return isRetentionOffer({offer});
     }
 
     // Check if the corresponding tier has been archived

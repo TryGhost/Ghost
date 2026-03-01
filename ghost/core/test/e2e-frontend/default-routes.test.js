@@ -6,7 +6,7 @@
 // Mocking out the models to not touch the DB would turn these into unit tests, and should probably be done in future,
 // But then again testing real code, rather than mock code, might be more useful...
 const assert = require('node:assert/strict');
-const should = require('should');
+const {assertExists} = require('../utils/assertions');
 const sinon = require('sinon');
 const supertest = require('supertest');
 const moment = require('moment');
@@ -14,6 +14,7 @@ const cheerio = require('cheerio');
 const _ = require('lodash');
 const testUtils = require('../utils');
 const configUtils = require('../utils/config-utils');
+const config = require('../../core/shared/config');
 const settingsCache = require('../../core/shared/settings-cache');
 const origCache = _.cloneDeep(settingsCache);
 
@@ -21,7 +22,7 @@ function assertCorrectFrontendHeaders(res) {
     assert.equal(res.headers['x-cache-invalidate'], undefined);
     assert.equal(res.headers['X-CSRF-Token'], undefined);
     assert.equal(res.headers['set-cookie'], undefined);
-    should.exist(res.headers.date);
+    assertExists(res.headers.date);
 }
 
 describe('Default Frontend routing', function () {
@@ -127,7 +128,7 @@ describe('Default Frontend routing', function () {
                     assert(res.text.includes('<title>Start here for a quick overview of everything you need to know</title>'));
                     assert.match(res.text, /<h1[^>]*?>Start here for a quick overview of everything you need to know<\/h1>/);
                     // We should write a single test for this, or encapsulate it as an assertion
-                    // E.g. res.text.should.not.containInvalidUrls()
+                    // E.g. assertDoesNotContainInvalidUrls(res.text)
                     assert(!res.text.includes('__GHOST_URL__'));
                 });
         });
@@ -344,15 +345,13 @@ describe('Default Frontend routing', function () {
                 .expect(200)
                 .expect(assertCorrectFrontendHeaders);
 
-            res.text.should.equal(
-                'User-agent: *\n' +
-                'Sitemap: http://127.0.0.1:2369/sitemap.xml\nDisallow: /ghost/\n' +
-                'Disallow: /email/\n' +
-                'Disallow: /members/api/comments/counts/\n' +
-                'Disallow: /r/\n' +
-                'Disallow: /webmentions/receive/\n' +
-                'Disallow: /.ghost/analytics/api/\n'
-            );
+            assert.equal(res.text, 'User-agent: *\n' +
+            `Sitemap: ${config.get('url')}/sitemap.xml\nDisallow: /ghost/\n` +
+            'Disallow: /email/\n' +
+            'Disallow: /members/api/comments/counts/\n' +
+            'Disallow: /r/\n' +
+            'Disallow: /webmentions/receive/\n' +
+            'Disallow: /.ghost/analytics/api/\n');
         });
 
         it('should retrieve default favicon.ico', async function () {
@@ -404,7 +403,7 @@ describe('Default Frontend routing', function () {
                 .expect((res) => {
                     assert.match(res.text, /urlset/);
                     // CASE: the index page should always be present in pages sitemap
-                    assert(res.text.includes('<loc>http://127.0.0.1:2369/</loc>'));
+                    assert(res.text.includes(`<loc>${config.get('url')}/</loc>`));
                     assert(!res.text.includes('__GHOST_URL__'));
                 });
         });
@@ -529,7 +528,7 @@ describe('Default Frontend routing', function () {
                 .expect(200)
                 .expect(assertCorrectFrontendHeaders)
                 .expect((res) => {
-                    res.text.should.match('User-agent: *\nDisallow: /');
+                    assert(res.text.includes('User-agent: *\nDisallow: /'));
                 });
         });
     });

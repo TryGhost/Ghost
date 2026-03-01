@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const MilestonesService = require('../../../../../core/server/services/milestones/milestones-service');
 const InMemoryMilestoneRepository = require('../../../../../core/server/services/milestones/in-memory-milestone-repository');
 const Milestone = require('../../../../../core/server/services/milestones/milestone');
@@ -69,7 +69,7 @@ describe('MilestonesService', function () {
             assert(arrResult.name === 'arr-0-usd');
 
             const domainEventSpyResult = domainEventSpy.getCall(0).args[0];
-            assert(domainEventSpy.calledOnce === true);
+            sinon.assert.calledOnce(domainEventSpy);
             assert(domainEventSpyResult.data.milestone);
             assert(domainEventSpyResult.data.meta.currentValue === 43);
             assert(domainEventSpyResult.data.meta.reason === 'initial');
@@ -101,7 +101,7 @@ describe('MilestonesService', function () {
             assert(arrResult.emailSentAt === null);
             assert(arrResult.name === 'arr-1000-usd');
 
-            assert(domainEventSpy.calledTwice === true);
+            sinon.assert.calledTwice(domainEventSpy);
             const firstDomainEventSpyCall = domainEventSpy.getCall(0).args[0];
             const secondDomainEventSpyCall = domainEventSpy.getCall(1).args[0];
             assert(firstDomainEventSpyCall.data.milestone);
@@ -361,7 +361,7 @@ describe('MilestonesService', function () {
             assert(membersResult.name === 'members-0');
 
             const domainEventSpyResult = domainEventSpy.getCall(0).args[0];
-            assert(domainEventSpy.calledOnce === true);
+            sinon.assert.calledOnce(domainEventSpy);
             assert(domainEventSpyResult.data.milestone);
             assert(domainEventSpyResult.data.meta.currentValue === 6);
             assert(domainEventSpyResult.data.meta.reason === 'initial');
@@ -392,7 +392,7 @@ describe('MilestonesService', function () {
             assert(membersResult.emailSentAt === null);
             assert(domainEventSpy.callCount === 2);
 
-            assert(domainEventSpy.calledTwice === true);
+            sinon.assert.calledTwice(domainEventSpy);
             const firstDomainEventSpyCall = domainEventSpy.getCall(0).args[0];
             const secondDomainEventSpyCall = domainEventSpy.getCall(1).args[0];
             assert(firstDomainEventSpyCall.data.milestone);

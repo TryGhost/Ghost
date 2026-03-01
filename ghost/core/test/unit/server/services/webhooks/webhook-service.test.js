@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const sinon = require('sinon');
 
 const createWebhookService = require('../../../../../core/server/services/webhooks/webhooks-service');
@@ -33,7 +32,7 @@ describe('Webhook Service', function () {
 
         try {
             await webhookService.add(fakeWebhook, {});
-            should.fail('should have thrown');
+            assert.fail('should have thrown');
         } catch (err) {
             assert.equal(err.name, 'CustomTestError');
         }

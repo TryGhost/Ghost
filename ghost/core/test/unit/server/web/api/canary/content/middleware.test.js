@@ -1,10 +1,10 @@
 const assert = require('node:assert/strict');
-const should = require('should');
+const {assertExists} = require('../../../../../../utils/assertions');
 const middleware = require('../../../../../../../core/server/web/api/endpoints/content/middleware');
 
 describe('Content API middleware', function () {
     it('exports an authenticatePublic middleware', function () {
-        should.exist(middleware.authenticatePublic);
+        assertExists(middleware.authenticatePublic);
     });
 
     describe('authenticatePublic', function () {

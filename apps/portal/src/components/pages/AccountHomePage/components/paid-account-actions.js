@@ -1,5 +1,5 @@
 import AppContext from '../../../../app-context';
-import {getCompExpiry, getMemberSubscription, getMemberTierName, hasMultipleProductsFeature, hasOnlyFreePlan, isComplimentaryMember, isPaidMember, subscriptionHasFreeTrial} from '../../../../utils/helpers';
+import {getCompExpiry, getMemberSubscription, getMemberTierName, hasMultipleProductsFeature, hasOnlyFreePlan, isComplimentaryMember, isPaidMember, subscriptionHasFreeTrial, subscriptionHasFreeMonthsOffer} from '../../../../utils/helpers';
 import {getDateString} from '../../../../utils/date-time';
 import {ReactComponent as LoaderIcon} from '../../../../images/icons/loader.svg';
 import {ReactComponent as OfferTagIcon} from '../../../../images/icons/offer-tag.svg';
@@ -9,9 +9,9 @@ import {t} from '../../../../utils/i18n';
 const PaidAccountActions = () => {
     const {member, site, doAction} = useContext(AppContext);
 
-    const onEditBilling = () => {
+    const onManageBilling = () => {
         const subscription = getMemberSubscription({member});
-        doAction('editBilling', {subscriptionId: subscription.id});
+        doAction('manageBilling', {subscriptionId: subscription.id});
     };
 
     const openUpdatePlan = () => {
@@ -45,10 +45,10 @@ const PaidAccountActions = () => {
         let oldPriceClassName = '';
 
         const hasFreeTrial = subscriptionHasFreeTrial({sub: subscription});
+
         if (hasFreeTrial) {
             oldPriceClassName = 'gh-portal-account-old-price';
-        }
-        if (hasFreeTrial) {
+
             return (
                 <>
                     <p className={oldPriceClassName}>
@@ -59,10 +59,25 @@ const PaidAccountActions = () => {
             );
         }
 
+        const freeMonthOffer = subscriptionHasFreeMonthsOffer({sub: subscription});
+
+        if (freeMonthOffer) {
+            return (
+                <>
+                    <p className={oldPriceClassName}>
+                        {label}
+                    </p>
+                    <FreeMonthsLabel nextPayment={nextPayment} subscription={subscription} />
+                </>
+            );
+        }
+
         let offerLabelStr = getOfferLabel({nextPayment});
+
         if (offerLabelStr) {
             oldPriceClassName = 'gh-portal-account-old-price';
         }
+
         const OfferLabel = () => {
             if (offerLabelStr) {
                 return (
@@ -113,7 +128,7 @@ const PaidAccountActions = () => {
 
     const BillingSection = ({defaultCardLast4, isComplimentary}) => {
         const {action} = useContext(AppContext);
-        const label = action === 'editBilling:running' ? (
+        const label = action === 'manageBilling:running' ? (
             <LoaderIcon className='gh-portal-billing-button-loader' />
         ) : t('Update');
         if (isComplimentary) {
@@ -123,13 +138,13 @@ const PaidAccountActions = () => {
         return (
             <section>
                 <div className='gh-portal-list-detail'>
-                    <h3>{t('Billing info')}</h3>
+                    <h3>{t('Billing info & receipts')}</h3>
                     <CardLabel defaultCardLast4={defaultCardLast4} />
                 </div>
                 <button
                     className='gh-portal-btn gh-portal-btn-list'
-                    onClick={e => onEditBilling(e)}
-                    data-test-button='update-billing'
+                    onClick={e => onManageBilling(e)}
+                    data-test-button='manage-billing'
                 >
                     {label}
                 </button>
@@ -184,6 +199,22 @@ function FreeTrialLabel({subscription}) {
         );
     }
     return null;
+}
+
+// TODO: Add i18n once copy is finalized
+function FreeMonthsLabel({nextPayment, subscription}) {
+    const months = subscription?.offer?.duration_in_months ?? 0;
+    const discountEnd = nextPayment?.discount?.end;
+    const renewalDate = discountEnd ? getDateString(discountEnd) : null;
+    const monthsText = months === 1 ? '1 month free' : `${months} months free`;
+    const label = renewalDate ? `${monthsText} - Renews ${renewalDate}` : monthsText;
+
+    return (
+        <p className="gh-portal-account-discountcontainer" data-testid="offer-label">
+            <OfferTagIcon className="gh-portal-account-tagicon" />
+            <span>{label}</span>
+        </p>
+    );
 }
 
 /**

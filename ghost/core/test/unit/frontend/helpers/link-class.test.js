@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const concat = require('../../../../core/frontend/helpers/concat');
 const link_class = require('../../../../core/frontend/helpers/link_class');
 const handlebars = require('../../../../core/frontend/services/theme-engine/engine').handlebars;
@@ -38,10 +37,10 @@ describe('{{link_class}} helper', function () {
     });
 
     it('throws an error for missing for=""', function () {
-        (function compileWith() {
+        assert.throws((function compileWith() {
             compile('{{link_class}}')
                 .with({});
-        }).should.throw();
+        }));
     });
 
     it('silently accepts an empty for...', function () {

@@ -1,9 +1,10 @@
 import App from '../src/app';
 import {site as FixturesSite, member as FixtureMember} from './utils/test-fixtures';
-import {fireEvent, appRender, within} from './utils/test-utils';
+import {fireEvent, appRender, within, waitFor} from './utils/test-utils';
 import setupGhostApi from '../src/utils/api';
 import * as helpers from '../src/utils/helpers';
 import {formSubmitHandler, planClickHandler, handleDataAttributes} from '../src/data-attributes';
+import {getOfferData} from '../src/utils/fixtures-generator';
 import {vi} from 'vitest';
 
 // Mock data
@@ -652,6 +653,78 @@ describe('Member Data attributes:', () => {
             expect(window.fetch).toHaveBeenLastCalledWith('https://portal.localhost/members/api/send-magic-link/', {body: expectedBody, headers: {'Content-Type': 'application/json'}, method: 'POST'});
         });
     });
+
+    describe('data-members-cancel-subscription', () => {
+        test('opens Portal when retention offers exist', () => {
+            const siteUrl = 'https://portal.localhost';
+            const doAction = vi.fn();
+            const retentionOffer = getOfferData({redemptionType: 'retention'});
+
+            document.body.innerHTML = `
+                <a data-members-cancel-subscription="sub_123">Cancel</a>
+            `;
+
+            handleDataAttributes({siteUrl, offers: [retentionOffer], doAction});
+
+            const button = document.querySelector('[data-members-cancel-subscription]');
+            button.click();
+
+            expect(doAction).toHaveBeenCalledWith('openPopup', {
+                page: 'accountPlan',
+                pageData: {
+                    subscriptionId: 'sub_123',
+                    action: 'cancel'
+                }
+            });
+            expect(window.fetch).not.toHaveBeenCalled();
+        });
+
+        test('falls back to direct API call when no retention offers exist', async () => {
+            const siteUrl = 'https://portal.localhost';
+            const doAction = vi.fn();
+
+            document.body.innerHTML = `
+                <a data-members-cancel-subscription="sub_123">Cancel</a>
+            `;
+
+            handleDataAttributes({siteUrl, offers: [], doAction});
+
+            const button = document.querySelector('[data-members-cancel-subscription]');
+            button.click();
+
+            await waitFor(() => {
+                expect(window.fetch).toHaveBeenCalled();
+            });
+
+            expect(doAction).not.toHaveBeenCalled();
+            expect(window.fetch).toHaveBeenCalledWith(
+                'https://portal.localhost/members/api/session',
+                {credentials: 'same-origin'}
+            );
+        });
+
+        test('ignores non-retention offers and uses direct API call', async () => {
+            const siteUrl = 'https://portal.localhost';
+            const doAction = vi.fn();
+            const signupOffer = getOfferData({redemptionType: 'signup'});
+
+            document.body.innerHTML = `
+                <a data-members-cancel-subscription="sub_123">Cancel</a>
+            `;
+
+            handleDataAttributes({siteUrl, offers: [signupOffer], doAction});
+
+            const button = document.querySelector('[data-members-cancel-subscription]');
+            button.click();
+
+            await waitFor(() => {
+                expect(window.fetch).toHaveBeenCalled();
+            });
+
+            expect(doAction).not.toHaveBeenCalled();
+            expect(window.fetch).toHaveBeenCalled();
+        });
+    });
 });
 
 const setup = async ({site, member = null, showPopup = true}) => {
@@ -934,7 +1007,7 @@ describe('Portal Data attributes:', () => {
                 })
                 .mockResolvedValueOnce({
                     ok: false,
-                    json: async () => ({errors: [{message: 'No member exists with this email address. Please sign up first.'}]}),
+                    json: async () => ({errors: [{message: 'No member exists with this e-mail address. Please sign up first.'}]}),
                     status: 400
                 });
 
@@ -942,7 +1015,7 @@ describe('Portal Data attributes:', () => {
 
             expect(window.fetch).toHaveBeenCalledTimes(2);
             expect(form.classList.add).toHaveBeenCalledWith('error');
-            expect(errorEl.innerText).toBe('No member exists with this email address. Please sign up first.');
+            expect(errorEl.innerText).toBe('No member exists with this e-mail address. Please sign up first.');
         });
     });
 });

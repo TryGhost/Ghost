@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const should = require('should');
+const {assertExists} = require('../../../utils/assertions');
 const themeList = require('../../../../core/server/services/themes/list');
 const sinon = require('sinon');
 
@@ -45,7 +45,7 @@ describe('{{body_class}} helper', function () {
         options.data.root.context = ['home'];
 
         const rendered = body_class.call({}, options);
-        should.exist(rendered);
+        assertExists(rendered);
 
         assert.equal(rendered.string, 'home-template');
     });

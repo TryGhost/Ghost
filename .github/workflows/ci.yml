@@ -1,7 +1,7 @@
 name: CI
 on:
   pull_request:
-    types: [opened, synchronize, reopened, labeled, unlabeled]
+    types: [opened, synchronize, reopened]
   push:
     # Ref: GHA Filter pattern syntax: https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#filter-pattern-cheat-sheet
     # Run on pushes to main, release branches, and previous/future major version branches
@@ -30,14 +30,6 @@ jobs:
   job_setup:
     name: Setup
     runs-on: ubuntu-latest
-    # Having certain parts of our huge CI workflow run on a specific label is an anti-pattern.
-    # Long term, we want to get away from this by having all of our tests run on every PR, and have the staging deploy either be automatic or a different workflow
-    # This logic skips the entire workflow if triggered by a label that doesn't contain "test" or "deploy" - there's nothing new to do in that case
-    if: |
-      github.event_name != 'pull_request' ||
-      (github.event.action == 'labeled' && (contains(github.event.label.name, 'test') || contains(github.event.label.name, 'deploy'))) ||
-      (github.event.action == 'unlabeled' && (contains(github.event.label.name, 'test') || contains(github.event.label.name, 'deploy'))) ||
-      (github.event.action != 'labeled' && github.event.action != 'unlabeled')
     timeout-minutes: 15
     env:
       IS_MAIN: ${{ github.ref == 'refs/heads/main' }}
@@ -49,7 +41,7 @@ jobs:
       pull-requests: read
     steps:
       - name: Checkout current commit
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ env.HEAD_COMMIT }}
           fetch-depth: 2
@@ -145,8 +137,6 @@ jobs:
             tinybird:
               - 'ghost/core/core/server/data/tinybird/**'
               - '!ghost/core/core/server/data/tinybird/**/*.md'
-            browser-tests:
-              - 'ghost/core/test/e2e-browser/**'
             any-code:
               - '!**/*.md'
 
@@ -212,7 +202,6 @@ jobs:
       changed_sodo_search: ${{ steps.changed.outputs.sodo-search }}
       changed_tinybird: ${{ steps.changed.outputs.tinybird }}
       changed_any_code: ${{ steps.changed.outputs.any-code }}
-      changed_browser_tests: ${{ steps.changed.outputs.browser-tests }}
       changed_new_package: ${{ steps.added.outputs.new-package }}
       base_commit: ${{ env.BASE_COMMIT }}
       is_main: ${{ env.IS_MAIN }}
@@ -221,11 +210,30 @@ jobs:
       is_six_pr: ${{ env.IS_SIX_PR }}
       is_five: ${{ env.IS_FIVE }}
       member_is_in_org: ${{ steps.check_user_org_membership.outputs.is_member }}
-      has_browser_tests_label: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'browser-tests') }}
-      has_perf_tests_label: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'perf-tests') }}
       dependency_cache_key: ${{ env.cachekey }}
       node_version: ${{ env.NODE_VERSION }}
       node_test_matrix: ${{ steps.node_matrix.outputs.matrix }}
+
+  job_app_version_bump_check:
+    name: Check app version bump
+    runs-on: ubuntu-latest
+    needs: [job_setup]
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout PR head commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Fetch main branch
+        run: git fetch --no-tags origin main
+
+      - name: Check app version bump
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_COMPARE_SHA: ${{ github.event.pull_request.head.sha }}
+        run: node .github/scripts/check-app-version-bump.js
 
   job_lint:
     runs-on: ubuntu-latest
@@ -233,7 +241,7 @@ jobs:
     if: needs.job_setup.outputs.changed_any_code == 'true'
     name: Lint
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 1000
       - uses: actions/setup-node@v4
@@ -272,7 +280,7 @@ jobs:
         || needs.job_setup.outputs.changed_portal == 'true'
         || needs.job_setup.outputs.changed_core == 'true'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -296,7 +304,7 @@ jobs:
       CI: true
       COVERAGE: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -332,21 +340,12 @@ jobs:
     runs-on:
       labels: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_any_code == 'true' && (needs.job_setup.outputs.is_six_pr == 'true' || needs.job_setup.outputs.is_development == 'true' || needs.job_setup.outputs.has_browser_tests_label == 'true' || needs.job_setup.outputs.changed_browser_tests == 'true')
+    # Skip on forked PRs - Stripe secrets are not available
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       with:
         submodules: true
-    - name: Check secrets
-      if: github.event_name == 'pull_request'
-      env:
-        STRIPE_PUBLISHABLE_KEY: ${{ secrets.STRIPE_PUBLISHABLE_KEY }}
-      run: |
-        if [ -z "${{ env.STRIPE_PUBLISHABLE_KEY }}" ]; then
-          echo "Stripe Publishable Key is not available. Did you open this PR from a fork?"
-          echo "If so, please re-open the PR from a branch in the upstream TryGhost/Ghost repository."
-          exit 1
-        fi
     - uses: actions/setup-node@v4
       env:
         FORCE_COLOR: 0
@@ -403,56 +402,11 @@ jobs:
         path: ghost/core/playwright-report
         retention-days: 30
 
-  job_perf-tests:
-    runs-on:
-      labels: ubuntu-latest-4-cores
-    needs: [job_setup]
-    if: (needs.job_setup.outputs.changed_core == 'true' && needs.job_setup.outputs.is_development == 'true') || needs.job_setup.outputs.has_perf_tests_label == 'true'
-    name: Performance tests
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: true
-      - uses: actions/setup-node@v4
-        env:
-          FORCE_COLOR: 0
-        with:
-          node-version: ${{ env.NODE_VERSION }}
+    - name: View Test Report command
+      if: failure()
+      run: |
+        echo -e "::notice::To view the Playwright report locally, run:\n\nREPORT_DIR=\$(mktemp -d) && gh run download ${{ github.run_id }} -n browser-tests-playwright-report -D \"\$REPORT_DIR\" && npx playwright show-report \"\$REPORT_DIR\""
 
-      - name: Restore caches
-        uses: ./.github/actions/restore-cache
-        env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
-
-      - name: Install hyperfine
-        run: |
-          export HYPERFINE_VERSION=1.18.0
-          wget https://github.com/sharkdp/hyperfine/releases/download/v$HYPERFINE_VERSION/hyperfine-v$HYPERFINE_VERSION-x86_64-unknown-linux-gnu.tar.gz
-          tar -zxvf hyperfine-v$HYPERFINE_VERSION-x86_64-unknown-linux-gnu.tar.gz
-          mv hyperfine-v$HYPERFINE_VERSION-x86_64-unknown-linux-gnu/hyperfine /usr/local/bin
-          chmod +x /usr/local/bin/hyperfine
-
-      - name: Build TS code
-        run: yarn nx run-many -t build:tsc
-
-      - name: Run hyperfine on boot
-        working-directory: ghost/core
-        run: hyperfine --show-output --warmup 3 'GHOST_CI_SHUTDOWN_AFTER_BOOT=1 node index.js' --export-json boot-perf.json
-
-      - name: Convert data
-        working-directory: ghost/core
-        run: |
-          jq '[{ name: "Boot time", unit: "s", value: .results[0].median, range: ((.results[0].max - .results[0].min) | tostring) }]' < boot-perf.json > boot-perf-formatted.json
-
-      - name: Run analysis
-        uses: benchmark-action/github-action-benchmark@v1.20.7
-        with:
-          tool: 'customSmallerIsBetter'
-          output-file-path: ghost/core/boot-perf-formatted.json
-          benchmark-data-dir-path: ""
-          gh-repository: github.com/TryGhost/Ghost-Benchmarks
-          github-token: ${{ secrets.CANARY_DOCKER_BUILD }}
-          auto-push: true
 
   job_unit-tests:
     runs-on: ubuntu-latest
@@ -463,7 +417,7 @@ jobs:
         node: ${{ fromJSON(needs.job_setup.outputs.node_test_matrix) }}
     name: Unit tests (Node ${{ matrix.node }})
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 1000
       - uses: actions/setup-node@v4
@@ -482,11 +436,23 @@ jobs:
         with:
           timezoneLinux: "America/New_York"
 
-      # Ensure all built packages are built before running tests (admin is built in job_setup)
-      - name: Build remaining assets
-        run: yarn nx run-many -t build --exclude=ghost-admin
+      - name: Determine affected unit-test projects
+        id: affected_unit_projects
+        run: |
+          PROJECTS=$(yarn -s nx show projects --affected --withTarget=test:unit --base=${{ needs.job_setup.outputs.BASE_COMMIT }} --sep=, | tr -d '\n')
+          echo "projects=$PROJECTS" >> "$GITHUB_OUTPUT"
 
-      - run: yarn nx affected -t test:unit --base=${{ needs.job_setup.outputs.BASE_COMMIT }}
+      # Build only projects that will run unit tests
+      - name: Build assets for affected unit tests
+        if: steps.affected_unit_projects.outputs.projects != ''
+        run: yarn nx run-many -t build --projects="${{ steps.affected_unit_projects.outputs.projects }}"
+
+      - name: Run unit tests
+        run: yarn nx affected -t test:unit --base=${{ needs.job_setup.outputs.BASE_COMMIT }}
+        env:
+          FORCE_COLOR: 0
+          GHOST_UNIT_TEST_VARIANT: ci
+          NX_SKIP_LOG_GROUPING: true
 
       - uses: actions/upload-artifact@v4
         if: matrix.node == env.NODE_VERSION
@@ -505,6 +471,20 @@ jobs:
     runs-on: ubuntu-latest
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_core == 'true'
+    services:
+      mysql:
+        image: ${{ matrix.env.DB == 'mysql8' && 'mysql:8.0' || '' }}
+        env:
+          MYSQL_DATABASE: ghost_testing
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306
+        options: >-
+          --tmpfs /var/lib/mysql
+          --health-cmd "mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
     strategy:
       matrix:
         node: ${{ fromJSON(needs.job_setup.outputs.node_test_matrix) }}
@@ -521,32 +501,12 @@ jobs:
       NODE_ENV: ${{ matrix.env.NODE_ENV }}
     name: Acceptance tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v4
         env:
           FORCE_COLOR: 0
         with:
           node-version: ${{ matrix.node }}
-
-      - name: Shutdown MySQL
-        run: sudo service mysql stop
-        if: matrix.env.DB == 'mysql8'
-
-      - name: Login to Docker Hub
-        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - uses: tryghost/mysql-action@main
-        if: matrix.env.DB == 'mysql8'
-        timeout-minutes: 3
-        with:
-          authentication plugin: 'caching_sha2_password'
-          mysql version: '8.0'
-          mysql database: 'ghost_testing'
-          mysql root password: 'root'
 
       - name: Restore caches
         uses: ./.github/actions/restore-cache
@@ -567,7 +527,10 @@ jobs:
 
       - name: Set env vars (MySQL)
         if: contains(matrix.env.DB, 'mysql')
-        run: echo "database__connection__password=root" >> $GITHUB_ENV
+        run: |
+          echo "database__connection__host=127.0.0.1" >> $GITHUB_ENV
+          echo "database__connection__port=${{ job.services.mysql.ports['3306'] }}" >> $GITHUB_ENV
+          echo "database__connection__password=root" >> $GITHUB_ENV
 
       - name: E2E tests
         working-directory: ghost/core
@@ -596,6 +559,20 @@ jobs:
     runs-on: ubuntu-latest
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_core == 'true'
+    services:
+      mysql:
+        image: ${{ matrix.env.DB == 'mysql8' && 'mysql:8.0' || '' }}
+        env:
+          MYSQL_DATABASE: ghost_testing
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306
+        options: >-
+          --tmpfs /var/lib/mysql
+          --health-cmd "mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
     strategy:
       matrix:
         include:
@@ -612,7 +589,7 @@ jobs:
       NODE_ENV: ${{ matrix.env.NODE_ENV }}
     name: Legacy tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: true
       - uses: actions/setup-node@v4
@@ -620,19 +597,6 @@ jobs:
           FORCE_COLOR: 0
         with:
           node-version: ${{ matrix.node }}
-
-      - name: Shutdown MySQL
-        run: sudo service mysql stop
-        if: matrix.env.DB == 'mysql8'
-
-      - uses: tryghost/mysql-action@main
-        if: matrix.env.DB == 'mysql8'
-        timeout-minutes: 3
-        with:
-          authentication plugin: 'caching_sha2_password'
-          mysql version: '8.0'
-          mysql database: 'ghost_testing'
-          mysql root password: 'root'
 
       - name: Restore caches
         uses: ./.github/actions/restore-cache
@@ -648,7 +612,10 @@ jobs:
 
       - name: Set env vars (MySQL)
         if: contains(matrix.env.DB, 'mysql')
-        run: echo "database__connection__password=root" >> $GITHUB_ENV
+        run: |
+          echo "database__connection__host=127.0.0.1" >> $GITHUB_ENV
+          echo "database__connection__port=${{ job.services.mysql.ports['3306'] }}" >> $GITHUB_ENV
+          echo "database__connection__password=root" >> $GITHUB_ENV
 
       - name: Legacy tests
         working-directory: ghost/core
@@ -669,7 +636,7 @@ jobs:
     env:
       CI: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v4
         env:
           FORCE_COLOR: 0
@@ -709,7 +676,7 @@ jobs:
     env:
       CI: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v4
         env:
           FORCE_COLOR: 0
@@ -749,7 +716,7 @@ jobs:
     env:
       CI: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v4
         env:
           FORCE_COLOR: 0
@@ -789,7 +756,7 @@ jobs:
     env:
       CI: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v4
         env:
           FORCE_COLOR: 0
@@ -840,7 +807,7 @@ jobs:
       TINYBIRD_HOST_STAGING: ${{ secrets.TINYBIRD_HOST_STAGING }}
       TINYBIRD_TOKEN_STAGING: ${{ secrets.TINYBIRD_TOKEN_STAGING }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install Tinybird CLI
         run: curl -fsSL https://tinybird.co/install.sh | sh
       - name: Build project
@@ -858,7 +825,7 @@ jobs:
     if: needs.job_setup.outputs.changed_core == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           submodules: true
@@ -940,8 +907,9 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-  job_docker_build:
-    name: Build & Push Docker Image
+  job_docker_build_production:
+    name: Build & Push Production Docker Images
+    needs: [job_setup]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -952,121 +920,149 @@ jobs:
         with:
           submodules: true
 
+      - uses: actions/setup-node@v4
+        env:
+          FORCE_COLOR: 0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Restore caches
+        uses: ./.github/actions/restore-cache
+        env:
+          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+
+      - name: Build server and admin assets
+        run: yarn build:production
+
+      - name: Pack standalone distribution
+        run: yarn workspace ghost pack:standalone
+
+      - name: Prepare Docker build context
+        run: mv ghost/core/package/ /tmp/ghost-production/
+
+      - name: Determine push strategy
+        id: strategy
+        run: |
+          IS_FORK_PR="false"
+          if [ "${{ github.event_name }}" = "pull_request" ] && \
+             [ "${{ github.event.pull_request.head.repo.full_name }}" != "${{ github.repository }}" ]; then
+            IS_FORK_PR="true"
+          fi
+          OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          echo "is-fork-pr=$IS_FORK_PR" >> $GITHUB_OUTPUT
+          echo "should-push=$( [ "$IS_FORK_PR" = "false" ] && echo "true" || echo "false" )" >> $GITHUB_OUTPUT
+          echo "owner=$OWNER" >> $GITHUB_OUTPUT
+
+      - name: Upload admin artifact for CD
+        id: upload-admin
+        if: steps.strategy.outputs.is-fork-pr == 'false'
+        uses: actions/upload-artifact@v4
+        with:
+          name: admin-build-cd
+          path: apps/admin/dist
+          retention-days: 7
+          if-no-files-found: error
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
       - name: Log in to GitHub Container Registry
+        if: steps.strategy.outputs.should-push == 'true'
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Determine build strategy
-        id: strategy
-        run: |
-          IS_FORK_PR="false"
-          if [ "${{ github.event_name }}" = "pull_request" ] && [ "${{ github.event.pull_request.head.repo.full_name }}" != "${{ github.repository }}" ]; then
-            IS_FORK_PR="true"
-          fi
-          IMAGE_NAME="ghcr.io/${{ github.repository_owner }}/ghost-development"
-          if [ "$IS_FORK_PR" = "true" ]; then
-            IMAGE_NAME="ghcr.io/${{ github.event.pull_request.head.repo.owner.login }}/ghost-development"
-          fi
-          CACHE_KEY=$(echo $IMAGE_NAME | tr '[:upper:]' '[:lower:]')
-          echo "is-fork-pr=$IS_FORK_PR" >> $GITHUB_OUTPUT
-          echo "should-push=$( [ "$IS_FORK_PR" = "false" ] && echo "true" || echo "false" )" >> $GITHUB_OUTPUT
-          echo "should-load=$( [ "$IS_FORK_PR" = "true" ] && echo "true" || echo "false" )" >> $GITHUB_OUTPUT
-          echo "image-name=$IMAGE_NAME" >> $GITHUB_OUTPUT
-          echo "cache-key=$CACHE_KEY" >> $GITHUB_OUTPUT
-          echo "Build Strategy: "
-          echo "  Is fork PR: $IS_FORK_PR"
-          echo "  Should push: $( [ "$IS_FORK_PR" = "false" ] && echo "true" || echo "false" )"
-          echo "  Should load: $( [ "$IS_FORK_PR" = "true" ] && echo "true" || echo "false" )"
-          echo "  Image name: $IMAGE_NAME"
-          echo "  Cache key: $CACHE_KEY"
-
-      - name: Docker meta
-        id: meta
+      - name: Docker meta (core)
+        id: meta-core
         uses: docker/metadata-action@v5
         with:
-          images: |
-            ${{ steps.strategy.outputs.image-name }}
+          images: ghcr.io/${{ steps.strategy.outputs.owner }}/ghost-core
           tags: |
             type=ref,event=branch
             type=ref,event=pr
             type=sha
             type=raw,value=latest,enable={{is_default_branch}}
           labels: |
-            org.opencontainers.image.title=Ghost Development
-            org.opencontainers.image.description=Ghost development build
+            org.opencontainers.image.title=Ghost Core
+            org.opencontainers.image.description=Ghost production build (server only, no admin)
             org.opencontainers.image.vendor=TryGhost
-            maintainer=TryGhost
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v6
-        id: build
+      - name: Docker meta (full)
+        id: meta-full
+        uses: docker/metadata-action@v5
         with:
-          context: .
-          file: Dockerfile
-          push: ${{ steps.strategy.outputs.should-push }}
-          load: ${{ steps.strategy.outputs.should-load }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          # On PRs: use both main cache and PR-specific cache
-          # On main: only use main cache
-          cache-from: |
-            type=registry,ref=${{ steps.strategy.outputs.cache-key }}:cache-main
-            ${{ github.event_name == 'pull_request' && format('type=registry,ref={0}:cache-pr-{1}', steps.strategy.outputs.cache-key, github.event.pull_request.number) || '' }}
-          # Only export cache if we can push (not on fork PRs)
-          cache-to: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref={0}:cache-{1},mode=max', steps.strategy.outputs.cache-key, github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main') || '' }}
+          images: ghcr.io/${{ steps.strategy.outputs.owner }}/ghost
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha
+            type=raw,value=latest,enable={{is_default_branch}}
+          labels: |
+            org.opencontainers.image.title=Ghost
+            org.opencontainers.image.description=Ghost production build (server + admin)
+            org.opencontainers.image.vendor=TryGhost
 
-      - name: Save image as artifact (fork PR)
+      - name: Build & push core image
+        uses: docker/build-push-action@v6
+        with:
+          context: /tmp/ghost-production
+          file: Dockerfile.production
+          target: core
+          build-args: NODE_VERSION=${{ env.NODE_VERSION }}
+          push: ${{ steps.strategy.outputs.should-push }}
+          load: ${{ steps.strategy.outputs.should-push == 'false' }}
+          tags: ${{ steps.meta-core.outputs.tags }}
+          labels: ${{ steps.meta-core.outputs.labels }}
+          cache-from: type=registry,ref=ghcr.io/${{ steps.strategy.outputs.owner }}/ghost-core:cache-main
+          cache-to: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref=ghcr.io/{0}/ghost-core:cache-{1},mode=max', steps.strategy.outputs.owner, github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main') || '' }}
+
+      - name: Build & push full image
+        uses: docker/build-push-action@v6
+        with:
+          context: /tmp/ghost-production
+          file: Dockerfile.production
+          target: full
+          build-args: NODE_VERSION=${{ env.NODE_VERSION }}
+          push: ${{ steps.strategy.outputs.should-push }}
+          load: true
+          tags: ${{ steps.meta-full.outputs.tags }}
+          labels: ${{ steps.meta-full.outputs.labels }}
+          cache-from: type=registry,ref=ghcr.io/${{ steps.strategy.outputs.owner }}/ghost:cache-main
+          cache-to: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref=ghcr.io/{0}/ghost:cache-{1},mode=max', steps.strategy.outputs.owner, github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main') || '' }}
+
+      - name: Save full image as artifact (fork PR)
         if: steps.strategy.outputs.is-fork-pr == 'true'
         run: |
-          # Get the first tag from the multi-line tags output
-          IMAGE_TAG=$(echo "${{ steps.meta.outputs.tags }}" | head -n1)
+          IMAGE_TAG=$(echo "${{ steps.meta-full.outputs.tags }}" | head -n1)
           echo "Saving image: $IMAGE_TAG"
-          docker save "$IMAGE_TAG" | gzip > docker-image.tar.gz
-          echo "Image saved as docker-image.tar.gz"
-          ls -lh docker-image.tar.gz
+          docker save "$IMAGE_TAG" | gzip > docker-image-production.tar.gz
+          echo "Image saved as docker-image-production.tar.gz"
+          ls -lh docker-image-production.tar.gz
 
       - name: Upload image artifact (fork PR)
         if: steps.strategy.outputs.is-fork-pr == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: docker-image
-          path: docker-image.tar.gz
+          name: docker-image-production
+          path: docker-image-production.tar.gz
           retention-days: 1
 
-    outputs:
-      image-tags: ${{ steps.meta.outputs.tags }}
-      image-digest: ${{ steps.build.outputs.digest }}
-      is-fork: ${{ steps.strategy.outputs.is-fork-pr }}
-
-  job_inspect_image:
-    name: Inspect Docker Image
-    needs: job_docker_build
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          sparse-checkout: |
-            .github/actions/load-docker-image
-
-      - name: Load Docker Image
-        id: load
-        uses: ./.github/actions/load-docker-image
-        with:
-          is-fork: ${{ needs.job_docker_build.outputs.is-fork }}
-          image-tags: ${{ needs.job_docker_build.outputs.image-tags }}
+      - name: Extract core image SHA tag
+        id: core-sha-tag
+        run: |
+          SHA_TAG=$(echo "${{ steps.meta-core.outputs.tags }}" | grep "sha-" | head -n1)
+          if [ -z "$SHA_TAG" ]; then
+            echo "::error::Could not extract SHA tag from core image metadata"
+            exit 1
+          fi
+          echo "tag=$SHA_TAG" >> $GITHUB_OUTPUT
 
       - name: Inspect image size and layers
         shell: bash
         run: |
-          IMAGE_TAG="${{ steps.load.outputs.image-tag }}"
+          IMAGE_TAG=$(echo "${{ steps.meta-full.outputs.tags }}" | head -n1)
           echo "Analyzing Docker image: $IMAGE_TAG"
 
           # Get the image size in bytes
@@ -1111,10 +1107,16 @@ jobs:
 
           } >> $GITHUB_STEP_SUMMARY
 
+    outputs:
+      image-tags: ${{ steps.meta-full.outputs.tags }}
+      is-fork: ${{ steps.strategy.outputs.is-fork-pr }}
+      core-image-sha-tag: ${{ steps.core-sha-tag.outputs.tag }}
+      admin-artifact-id: ${{ steps.upload-admin.outputs.artifact-id }}
+
   job_e2e_tests:
     name: E2E Tests (${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
     runs-on: ubuntu-latest
-    needs: [job_docker_build, job_setup]
+    needs: [job_docker_build_production, job_setup]
     strategy:
       fail-fast: true
       matrix:
@@ -1122,7 +1124,7 @@ jobs:
         shardTotal: [4]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
         # TODO: Build tb-cli in a separate workflow and pull from GHCR instead of building here
       - name: Set up Docker Buildx
@@ -1142,16 +1144,12 @@ jobs:
         uses: ./.github/actions/load-docker-image
         id: load
         with:
-          is-fork: ${{ needs.job_docker_build.outputs.is-fork }}
-          image-tags: ${{ needs.job_docker_build.outputs.image-tags }}
+          is-fork: ${{ needs.job_docker_build_production.outputs.is-fork }}
+          image-tags: ${{ needs.job_docker_build_production.outputs.image-tags }}
+          artifact-name: docker-image-production
 
       - name: Setup Docker Registry Mirrors
         uses: ./.github/actions/setup-docker-registry-mirrors
-
-      - name: Pull images
-        env:
-          GHOST_IMAGE_TAG: ${{ steps.load.outputs.image-tag }}
-        run: docker compose -f e2e/compose.yml pull
 
       - uses: actions/setup-node@v4
         with:
@@ -1162,14 +1160,28 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
-      - name: Setup Playwright
-        uses: ./.github/actions/setup-playwright
-
-      - name: Run e2e tests
+      - name: Prepare E2E CI job
         env:
-          GHOST_IMAGE_TAG: ${{ steps.load.outputs.image-tag }}
+          GHOST_E2E_BASE_IMAGE: ${{ steps.load.outputs.image-tag }}
+        run: bash ./e2e/scripts/prepare-ci-e2e-job.sh
+
+      - name: Run e2e tests in Playwright container
+        env:
           TEST_WORKERS_COUNT: 1
-        run: yarn test:e2e:all --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }} --retries=2
+          GHOST_E2E_MODE: build
+          GHOST_E2E_IMAGE: ghost-e2e:local
+          E2E_SHARD_INDEX: ${{ matrix.shardIndex }}
+          E2E_SHARD_TOTAL: ${{ matrix.shardTotal }}
+          E2E_RETRIES: 2
+        run: bash ./e2e/scripts/run-playwright-container.sh
+
+      - name: Dump E2E docker logs
+        if: failure()
+        run: bash ./e2e/scripts/dump-e2e-docker-logs.sh
+
+      - name: Stop E2E infra
+        if: always()
+        run: yarn workspace @tryghost/e2e infra:down
 
       - name: Upload blob report to GitHub Actions Artifacts
         if: failure()
@@ -1203,7 +1215,7 @@ jobs:
       fail-fast: false
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - uses: actions/setup-node@v4
         with:
@@ -1287,7 +1299,7 @@ jobs:
     ]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Restore Admin coverage
         if: contains(needs.job_admin-tests.result, 'success')
@@ -1327,6 +1339,7 @@ jobs:
     needs:
       [
         job_setup,
+        job_app_version_bump_check,
         job_lint,
         job_i18n,
         job_ghost-cli,
@@ -1444,7 +1457,7 @@ jobs:
             cdn_paths: 'https://cdn.jsdelivr.net/ghost/announcement-bar@~CURRENT_MINOR/umd/announcement-bar.min.js'
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -1551,7 +1564,7 @@ jobs:
     if: always() && github.event_name == 'push' && needs.job_setup.outputs.changed_tinybird == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird-tests.result == 'success' && needs.job_setup.outputs.is_main == 'true'
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Deploy to Staging
         uses: ./.github/actions/deploy-tinybird
         with:
@@ -1571,7 +1584,7 @@ jobs:
     if: always() && github.event_name == 'push' && needs.job_setup.outputs.changed_tinybird == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird-tests.result == 'success' && needs.deploy_tinybird_staging.result == 'success' && needs.job_setup.outputs.is_main == 'true'
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Deploy to Production
         uses: ./.github/actions/deploy-tinybird
         with:
@@ -1593,7 +1606,7 @@ jobs:
       && needs.job_setup.outputs.is_main == 'true'
       && needs.job_required_tests.result == 'success'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v4
         env:
           FORCE_COLOR: 0
@@ -1623,3 +1636,50 @@ jobs:
           inputs: '{"admin_build_artifact_id":"${{ steps.upload-artifacts.outputs.artifact-id }}", "admin_build_artifact_run_id":"${{ github.run_id }}"}'
           wait-for-completion-timeout: 25m
           wait-for-completion-interval: 30s
+
+  # --------------------------------------------------------------------------- #
+  # Trigger Pro CD — dispatch to Ghost-Moya cd.yml (runs on main + PRs)
+  # --------------------------------------------------------------------------- #
+  trigger_cd:
+    needs: [job_setup, job_docker_build_production]
+    name: Trigger Pro CD
+    runs-on: ubuntu-latest
+    if: |
+      always()
+      && needs.job_setup.result == 'success'
+      && needs.job_docker_build_production.result == 'success'
+      && needs.job_docker_build_production.outputs.is-fork != 'true'
+    steps:
+      - name: Determine dispatch parameters
+        id: params
+        run: |
+          # Force dry_run until cd.yml is validated and ready to replace the existing canary deploy
+          if [ "${{ needs.job_setup.outputs.is_main }}" = "true" ]; then
+            echo "dry_run=true" >> $GITHUB_OUTPUT
+            echo "pr_number=" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "dry_run=true" >> $GITHUB_OUTPUT
+            echo "pr_number=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
+          else
+            echo "skip=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          echo "skip=false" >> $GITHUB_OUTPUT
+
+      - name: Dispatch to Ghost-Moya cd.yml
+        if: steps.params.outputs.skip != 'true'
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.CANARY_DOCKER_BUILD }}
+          repository: TryGhost/Ghost-Moya
+          event-type: ghost-artifacts-ready
+          client-payload: >-
+            {
+              "environment": "staging",
+              "ref": "${{ github.sha }}",
+              "image_tag": "${{ needs.job_docker_build_production.outputs.core-image-sha-tag }}",
+              "dry_run": ${{ steps.params.outputs.dry_run }},
+              "pr_number": "${{ steps.params.outputs.pr_number }}",
+              "admin_artifact_id": "${{ needs.job_docker_build_production.outputs.admin-artifact-id }}",
+              "admin_artifact_run_id": "${{ github.run_id }}"
+            }

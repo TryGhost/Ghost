@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const should = require('should');
+const {assertExists} = require('../../../../utils/assertions');
 const fs = require('fs-extra');
 const StorageBase = require('ghost-storage-base');
 const configUtils = require('../../../../utils/config-utils');
@@ -90,7 +90,7 @@ describe('storage: index_spec', function () {
         try {
             storage.getStorage();
         } catch (err) {
-            should.exist(err);
+            assertExists(err);
             assert.equal(err.errorType, 'IncorrectUsageError');
         }
     });

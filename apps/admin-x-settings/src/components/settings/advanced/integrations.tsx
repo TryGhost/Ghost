@@ -155,7 +155,7 @@ const BuiltInIntegrations: React.FC = () => {
                     detail='Give your members access to private podcasts'
                     icon={<Icon name='transistor' size={32} />}
                     testId='transistor-integration'
-                    title='Transistor' />
+                    title='Transistor.fm' />
             )}
 
         </List>

@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const should = require('should');
+const {assertExists} = require('../../../../utils/assertions');
 const sinon = require('sinon');
 
 const ghostVersion = require('@tryghost/version');
@@ -37,9 +37,9 @@ describe('Notifications Service', function () {
 
             const createdNotification = notificationsToAdd[0];
 
-            createdNotification.id.should.not.be.undefined();
+            assertExists(createdNotification.id);
             assert.equal(createdNotification.custom, true);
-            createdNotification.createdAt.should.not.be.undefined();
+            assertExists(createdNotification.createdAt);
             assert.equal(createdNotification.status, 'alert');
             assert.equal(createdNotification.type, 'info');
             assert.equal(createdNotification.dismissible, false);
@@ -69,7 +69,7 @@ describe('Notifications Service', function () {
 
             const notifications = notificationSvc.browse({user: owner});
 
-            should.exist(notifications);
+            assertExists(notifications);
             assert.equal(notifications.length, 1);
         });
 
@@ -98,7 +98,7 @@ describe('Notifications Service', function () {
 
             const notifications = notificationSvc.browse({user: owner});
 
-            should.exist(notifications);
+            assertExists(notifications);
             assert.equal(notifications.length, 1);
         });
 
@@ -127,7 +127,7 @@ describe('Notifications Service', function () {
 
             const notifications = notificationSvc.browse({user: owner});
 
-            should.exist(notifications);
+            assertExists(notifications);
             assert.equal(notifications.length, 0);
         });
 
@@ -156,7 +156,7 @@ describe('Notifications Service', function () {
 
             const notifications = notificationSvc.browse({user: owner});
 
-            should.exist(notifications);
+            assertExists(notifications);
             assert.equal(notifications.length, 0);
         });
 
@@ -185,7 +185,7 @@ describe('Notifications Service', function () {
 
             const notifications = notificationSvc.browse({user: owner});
 
-            should.exist(notifications);
+            assertExists(notifications);
             assert.equal(notifications.length, 0);
         });
 
@@ -227,7 +227,7 @@ describe('Notifications Service', function () {
 
             const notifications = notificationSvc.browse({user: owner});
 
-            should.exist(notifications);
+            assertExists(notifications);
             assert.equal(notifications.length, 2);
             assert.equal(notifications[0].message, 'should be visible');
             assert.equal(notifications[1].message, 'visible even though without a created at property');
@@ -252,11 +252,11 @@ describe('Notifications Service', function () {
 
             const notifications = notificationSvc.browse({user: owner});
 
-            should.exist(notifications);
+            assertExists(notifications);
             assert.equal(notifications.length, 0);
 
-            assert.equal(settingsModelStub.called, true);
-            settingsModelStub.args[0][0].should.eql([{
+            sinon.assert.called(settingsModelStub);
+            assert.deepEqual(settingsModelStub.args[0][0], [{
                 key: 'notifications',
                 value: '[]'
             }]);
@@ -280,10 +280,10 @@ describe('Notifications Service', function () {
 
             const notifications = notificationSvc.browse({user: owner});
 
-            should.exist(notifications);
+            assertExists(notifications);
             assert.equal(notifications.length, 1);
 
-            assert.equal(settingsModelStub.called, false);
+            sinon.assert.notCalled(settingsModelStub);
         });
     });
 });

@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const should = require('should');
+const {assertExists} = require('../../../utils/assertions');
 const supertest = require('supertest');
 const _ = require('lodash');
 const localUtils = require('./utils');
@@ -45,19 +45,19 @@ describe('api/endpoints/content/tags', function () {
             .then((res) => {
                 assert.equal(res.headers['x-cache-invalidate'], undefined);
                 const jsonResponse = res.body;
-                should.exist(jsonResponse);
-                should.exist(jsonResponse.tags);
+                assertExists(jsonResponse);
+                assertExists(jsonResponse.tags);
                 assert.equal(jsonResponse.tags.length, 5);
                 localUtils.API.checkResponse(jsonResponse.tags[0], 'tag', ['count', 'url']);
 
-                jsonResponse.meta.pagination.should.have.property('page', 1);
-                jsonResponse.meta.pagination.should.have.property('limit', 15);
-                jsonResponse.meta.pagination.should.have.property('pages', 4);
-                jsonResponse.meta.pagination.should.have.property('total', 57);
-                jsonResponse.meta.pagination.should.have.property('next', 2);
-                jsonResponse.meta.pagination.should.have.property('prev', null);
+                assert.equal(jsonResponse.meta.pagination.page, 1);
+                assert.equal(jsonResponse.meta.pagination.limit, 15);
+                assert.equal(jsonResponse.meta.pagination.pages, 4);
+                assert.equal(jsonResponse.meta.pagination.total, 57);
+                assert.equal(jsonResponse.meta.pagination.next, 2);
+                assert.equal(jsonResponse.meta.pagination.prev, null);
 
-                should.exist(jsonResponse.tags[0].count.posts);
+                assertExists(jsonResponse.tags[0].count.posts);
                 // Each tag should have the correct count
                 assert.equal(_.find(jsonResponse.tags, {name: 'Getting Started'}).count.posts, 7);
                 assert.equal(_.find(jsonResponse.tags, {name: 'kitchen sink'}).count.posts, 2);
@@ -74,7 +74,8 @@ describe('api/endpoints/content/tags', function () {
             .then((res) => {
                 const jsonResponse = res.body;
 
-                jsonResponse.tags.should.be.an.Array().with.lengthOf(3);
+                assert(Array.isArray(jsonResponse.tags));
+                assert.equal(jsonResponse.tags.length, 3);
                 assert.equal(jsonResponse.tags[0].slug, 'kitchen-sink');
                 assert.equal(jsonResponse.tags[1].slug, 'bacon');
                 assert.equal(jsonResponse.tags[2].slug, 'chorizo');

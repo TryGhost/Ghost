@@ -1,5 +1,5 @@
 const {agentProvider, fixtureManager, mockManager} = require('../../utils/e2e-framework');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const mentionsService = require('../../../core/server/services/mentions');
 const recommendationsService = require('../../../core/server/services/recommendations');
 

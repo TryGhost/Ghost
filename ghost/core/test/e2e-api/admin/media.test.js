@@ -1,7 +1,6 @@
 const assert = require('node:assert/strict');
 const path = require('path');
 const fs = require('fs-extra');
-const should = require('should');
 const supertest = require('supertest');
 const sinon = require('sinon');
 const localUtils = require('./utils');
@@ -39,12 +38,12 @@ describe('Media API', function () {
                 .attach('thumbnail', path.join(__dirname, '/../../utils/fixtures/images/ghost-logo.png'))
                 .expect(201);
 
-            assert.match(res.body.media[0].url, new RegExp(`${config.get('url')}/content/media/\\d+/\\d+/sample_640x360.mp4`));
-            assert.match(res.body.media[0].thumbnail_url, new RegExp(`${config.get('url')}/content/media/\\d+/\\d+/sample_640x360_thumb.png`));
+            assert.match(new URL(res.body.media[0].url).pathname, /\/content\/media\/\d+\/\d+\/sample_640x360\.mp4/);
+            assert.match(new URL(res.body.media[0].thumbnail_url).pathname, /\/content\/media\/\d+\/\d+\/sample_640x360_thumb\.png/);
             assert.equal(res.body.media[0].ref, 'https://ghost.org/sample_640x360.mp4');
 
-            media.push(res.body.media[0].url.replace(config.get('url'), ''));
-            media.push(res.body.media[0].thumbnail_url.replace(config.get('url'), ''));
+            media.push(new URL(res.body.media[0].url).pathname);
+            media.push(new URL(res.body.media[0].thumbnail_url).pathname);
         });
 
         it('Can upload a WebM without a thumbnail', async function () {
@@ -55,11 +54,11 @@ describe('Media API', function () {
                 .attach('file', path.join(__dirname, '/../../utils/fixtures/media/sample_640x360.webm'))
                 .expect(201);
 
-            assert.match(res.body.media[0].url, new RegExp(`${config.get('url')}/content/media/\\d+/\\d+/sample_640x360.webm`));
+            assert.match(new URL(res.body.media[0].url).pathname, /\/content\/media\/\d+\/\d+\/sample_640x360\.webm/);
             assert.equal(res.body.media[0].thumbnail_url, null);
             assert.equal(res.body.media[0].ref, 'https://ghost.org/sample_640x360.webm');
 
-            media.push(res.body.media[0].url.replace(config.get('url'), ''));
+            media.push(new URL(res.body.media[0].url).pathname);
         });
 
         it('Can upload an Ogg', async function () {
@@ -71,10 +70,10 @@ describe('Media API', function () {
                 .attach('thumbnail', path.join(__dirname, '/../../utils/fixtures/images/ghost-logo.png'))
                 .expect(201);
 
-            assert.match(res.body.media[0].url, new RegExp(`${config.get('url')}/content/media/\\d+/\\d+/sample_640x360.ogv`));
+            assert.match(new URL(res.body.media[0].url).pathname, /\/content\/media\/\d+\/\d+\/sample_640x360\.ogv/);
             assert.equal(res.body.media[0].ref, 'https://ghost.org/sample_640x360.ogv');
 
-            media.push(res.body.media[0].url.replace(config.get('url'), ''));
+            media.push(new URL(res.body.media[0].url).pathname);
         });
 
         it('Can upload an mp3', async function () {
@@ -85,10 +84,10 @@ describe('Media API', function () {
                 .attach('file', path.join(__dirname, '/../../utils/fixtures/media/sample.mp3'))
                 .expect(201);
 
-            assert.match(res.body.media[0].url, new RegExp(`${config.get('url')}/content/media/\\d+/\\d+/sample.mp3`));
+            assert.match(new URL(res.body.media[0].url).pathname, /\/content\/media\/\d+\/\d+\/sample\.mp3/);
             assert.equal(res.body.media[0].ref, 'audio_file_123');
 
-            media.push(res.body.media[0].url.replace(config.get('url'), ''));
+            media.push(new URL(res.body.media[0].url).pathname);
         });
 
         it('Can upload an m4a with audio/mp4 content type', async function () {
@@ -99,10 +98,10 @@ describe('Media API', function () {
                 .attach('file', path.join(__dirname, '/../../utils/fixtures/media/sample.m4a'), {filename: 'audio-mp4.m4a', contentType: 'audio/mp4'})
                 .expect(201);
 
-            assert.match(res.body.media[0].url, new RegExp(`${config.get('url')}/content/media/\\d+/\\d+/audio-mp4.m4a`));
+            assert.match(new URL(res.body.media[0].url).pathname, /\/content\/media\/\d+\/\d+\/audio-mp4\.m4a/);
             assert.equal(res.body.media[0].ref, 'audio_file_mp4');
 
-            media.push(res.body.media[0].url.replace(config.get('url'), ''));
+            media.push(new URL(res.body.media[0].url).pathname);
         });
 
         it('Can upload an m4a with audio/x-m4a content type', async function () {
@@ -113,10 +112,10 @@ describe('Media API', function () {
                 .attach('file', path.join(__dirname, '/../../utils/fixtures/media/sample.m4a'), {filename: 'audio-x-m4a.m4a', contentType: 'audio/x-m4a'})
                 .expect(201);
 
-            assert.match(res.body.media[0].url, new RegExp(`${config.get('url')}/content/media/\\d+/\\d+/audio-x-m4a.m4a`));
+            assert.match(new URL(res.body.media[0].url).pathname, /\/content\/media\/\d+\/\d+\/audio-x-m4a\.m4a/);
             assert.equal(res.body.media[0].ref, 'audio_file_x_m4a');
 
-            media.push(res.body.media[0].url.replace(config.get('url'), ''));
+            media.push(new URL(res.body.media[0].url).pathname);
         });
 
         it('Rejects non-media file type', async function () {
@@ -191,8 +190,8 @@ describe('Media API', function () {
 
             assert.equal(res.body.media[0].ref, 'https://ghost.org/sample_640x360.mp4');
 
-            media.push(res.body.media[0].url.replace(config.get('url'), ''));
-            media.push(res.body.media[0].thumbnail_url.replace(config.get('url'), ''));
+            media.push(new URL(res.body.media[0].url).pathname);
+            media.push(new URL(res.body.media[0].thumbnail_url).pathname);
 
             const thumbnailRes = await request.put(localUtils.API.getApiQuery(`media/thumbnail/upload`))
                 .set('Origin', config.get('url'))
@@ -203,9 +202,9 @@ describe('Media API', function () {
                 .expect(200);
 
             const thumbnailUrl = res.body.media[0].url.replace('.mp4', '_thumb.jpg');
-            thumbnailRes.body.media[0].url.should.equal(thumbnailUrl);
+            assert.equal(thumbnailRes.body.media[0].url, thumbnailUrl);
             assert.equal(thumbnailRes.body.media[0].ref, 'updated_thumbnail');
-            media.push(thumbnailRes.body.media[0].url.replace(config.get('url'), ''));
+            media.push(new URL(thumbnailRes.body.media[0].url).pathname);
         });
 
         it('Can create new thumbnail based on parent media URL without existing thumbnail', async function () {
@@ -216,7 +215,7 @@ describe('Media API', function () {
                 .attach('file', path.join(__dirname, '/../../utils/fixtures/media/sample_640x360.mp4'))
                 .expect(201);
 
-            media.push(res.body.media[0].url.replace(config.get('url'), ''));
+            media.push(new URL(res.body.media[0].url).pathname);
 
             const thumbnailRes = await request.put(localUtils.API.getApiQuery(`media/thumbnail/upload`))
                 .set('Origin', config.get('url'))
@@ -227,10 +226,10 @@ describe('Media API', function () {
                 .expect(200);
 
             const thumbnailUrl = res.body.media[0].url.replace('.mp4', '_thumb.jpg');
-            thumbnailRes.body.media[0].url.should.equal(thumbnailUrl);
+            assert.equal(thumbnailRes.body.media[0].url, thumbnailUrl);
             assert.equal(thumbnailRes.body.media[0].ref, 'updated_thumbnail_2');
 
-            media.push(thumbnailRes.body.media[0].url.replace(config.get('url'), ''));
+            media.push(new URL(thumbnailRes.body.media[0].url).pathname);
         });
     });
 });

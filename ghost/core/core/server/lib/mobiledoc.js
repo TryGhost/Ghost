@@ -3,6 +3,7 @@ const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const config = require('../../shared/config');
 const storage = require('../adapters/storage');
+const storageUtils = require('../adapters/storage/utils');
 
 let cardFactory;
 let cards;
@@ -31,6 +32,7 @@ module.exports = {
 
             cardFactory = new CardFactory({
                 siteUrl: config.get('url'),
+                imageBaseUrl: config.get('urls:image') || '',
                 imageOptimization: config.get('imageOptimization'),
                 canTransformImage(storagePath) {
                     const imageTransform = require('@tryghost/image-transform');
@@ -131,8 +133,16 @@ module.exports = {
             }
 
             const isUnsplash = payload.src.match(/images\.unsplash\.com/);
+            const isRelativeImagePath = /^\/content\/images\//.test(payload.src);
             try {
-                const size = isUnsplash ? await getUnsplashSize(payload.src) : await imageSize.getOriginalImageSizeFromStorageUrl(payload.src);
+                let size;
+                if (isUnsplash) {
+                    size = await getUnsplashSize(payload.src);
+                } else if (isRelativeImagePath || storageUtils.isLocalImage(payload.src)) {
+                    size = await imageSize.getOriginalImageSizeFromStorageUrl(payload.src);
+                } else {
+                    size = await imageSize.getImageSizeFromUrl(payload.src);
+                }
 
                 if (size && size.width && size.height) {
                     payload.width = size.width;

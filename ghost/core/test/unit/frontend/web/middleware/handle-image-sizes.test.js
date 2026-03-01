@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const sinon = require('sinon');
 const storage = require('../../../../../core/server/adapters/storage');
 const activeTheme = require('../../../../../core/frontend/services/theme-engine/active');
@@ -386,7 +385,7 @@ describe('handleImageSizes middleware', function () {
                     return done(err);
                 }
                 try {
-                    assert.equal(spy.calledOnceWithExactly({path: '/blank_o.png'}), true);
+                    sinon.assert.calledOnceWithExactly(spy, {path: '/blank_o.png'});
                 } catch (e) {
                     return done(e);
                 }
@@ -420,8 +419,8 @@ describe('handleImageSizes middleware', function () {
                     return done(err);
                 }
                 try {
-                    assert.equal(spy.calledOnceWithExactly({path: '/blank_o.png'}), true);
-                    assert.equal(typeStub.calledOnceWithExactly('webp'), true);
+                    sinon.assert.calledOnceWithExactly(spy, {path: '/blank_o.png'});
+                    sinon.assert.calledOnceWithExactly(typeStub, 'webp');
                 } catch (e) {
                     return done(e);
                 }
@@ -568,13 +567,13 @@ describe('handleImageSizes middleware', function () {
                     return done(err);
                 }
                 try {
-                    assert.equal(resizeFromBufferStub.calledOnceWithExactly(buffer, {
+                    sinon.assert.calledOnceWithExactly(resizeFromBufferStub, buffer, {
                         withoutEnlargement: false,
                         width: 1000,
                         format: 'png',
                         timeout: handleImageSizes.RESIZE_TIMEOUT_SECONDS
-                    }), true);
-                    assert.equal(typeStub.calledOnceWithExactly('png'), true);
+                    });
+                    sinon.assert.calledOnceWithExactly(typeStub, 'png');
                 } catch (e) {
                     return done(e);
                 }
@@ -608,13 +607,13 @@ describe('handleImageSizes middleware', function () {
                     return done(err);
                 }
                 try {
-                    assert.equal(resizeFromBufferStub.calledOnceWithExactly(buffer, {
+                    sinon.assert.calledOnceWithExactly(resizeFromBufferStub, buffer, {
                         withoutEnlargement: true,
                         width: 1000,
                         format: 'webp',
                         timeout: handleImageSizes.RESIZE_TIMEOUT_SECONDS
-                    }), true);
-                    assert.equal(typeStub.calledOnceWithExactly('webp'), true);
+                    });
+                    sinon.assert.calledOnceWithExactly(typeStub, 'webp');
                 } catch (e) {
                     return done(e);
                 }
@@ -648,13 +647,13 @@ describe('handleImageSizes middleware', function () {
                     return done(err);
                 }
                 try {
-                    assert.equal(resizeFromBufferStub.calledOnceWithExactly(buffer, {
+                    sinon.assert.calledOnceWithExactly(resizeFromBufferStub, buffer, {
                         withoutEnlargement: true,
                         width: 1000,
                         format: 'avif',
                         timeout: handleImageSizes.RESIZE_TIMEOUT_SECONDS
-                    }), true);
-                    assert.equal(typeStub.calledOnceWithExactly('image/avif'), true);
+                    });
+                    sinon.assert.calledOnceWithExactly(typeStub, 'image/avif');
                 } catch (e) {
                     return done(e);
                 }
@@ -688,13 +687,13 @@ describe('handleImageSizes middleware', function () {
                     return done(err);
                 }
                 try {
-                    assert.equal(resizeFromBufferStub.calledOnceWithExactly(buffer, {
+                    sinon.assert.calledOnceWithExactly(resizeFromBufferStub, buffer, {
                         withoutEnlargement: true,
                         width: 1000,
                         format: 'webp',
                         timeout: handleImageSizes.RESIZE_TIMEOUT_SECONDS
-                    }), true);
-                    assert.equal(typeStub.calledOnceWithExactly('webp'), true);
+                    });
+                    sinon.assert.calledOnceWithExactly(typeStub, 'webp');
                 } catch (e) {
                     return done(e);
                 }
@@ -728,13 +727,13 @@ describe('handleImageSizes middleware', function () {
                     return done(err);
                 }
                 try {
-                    assert.equal(resizeFromBufferStub.calledOnceWithExactly(buffer, {
+                    sinon.assert.calledOnceWithExactly(resizeFromBufferStub, buffer, {
                         withoutEnlargement: true,
                         width: 1000,
                         format: 'gif',
                         timeout: handleImageSizes.RESIZE_TIMEOUT_SECONDS
-                    }), true);
-                    assert.equal(typeStub.calledOnceWithExactly('gif'), true);
+                    });
+                    sinon.assert.calledOnceWithExactly(typeStub, 'gif');
                 } catch (e) {
                     return done(e);
                 }

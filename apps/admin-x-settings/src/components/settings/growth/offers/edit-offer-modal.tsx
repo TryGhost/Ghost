@@ -126,7 +126,7 @@ const Sidebar: React.FC<{
                                 </div>
                             </div>
                         </section>
-                        <section className='mt-4'>
+                        <section className='mt-2'>
                             <h2 className='mb-4 text-lg'>General</h2>
                             <div className='flex flex-col gap-6'>
                                 <TextField
@@ -143,6 +143,17 @@ const Sidebar: React.FC<{
                                     onKeyDown={() => clearError('name')}
                                 />
                                 <TextField
+                                    containerClassName='group'
+                                    error={Boolean(errors.code)}
+                                    hint={errors.code || (offer?.code !== '' ? <span className='truncate text-grey-700'>{homepageUrl}<span className='font-bold text-black dark:text-white'>{offer?.code}</span></span> : null)}
+                                    placeholder='black-friday'
+                                    rightPlaceholder={offer?.code !== '' ? <Button className='mr-0.5 mt-1' color='green' label={isCopied ? 'Copied!' : 'Copy link'} size='sm' onClick={handleCopyClick} /> : null}
+                                    title='Offer code'
+                                    value={offer?.code}
+                                    onChange={e => updateOffer({code: e.target.value})}
+                                    onKeyDown={() => clearError('code')}
+                                />
+                                <TextField
                                     error={Boolean(errors.displayTitle)}
                                     hint={errors.displayTitle}
                                     placeholder='Black Friday Special'
@@ -156,15 +167,6 @@ const Sidebar: React.FC<{
                                     title='Display description'
                                     value={offer?.display_description}
                                     onChange={e => updateOffer({display_description: e.target.value})}
-                                />
-                                <TextField
-                                    error={Boolean(errors.code)}
-                                    hint={errors.code || (offer?.code !== '' ? <div className='flex items-center justify-between'><div>{homepageUrl}<span className='font-bold'>{offer?.code}</span></div><span></span><Button className='text-xs' color='green' label={`${isCopied ? 'Copied' : 'Copy'}`} size='sm' link onClick={handleCopyClick} /></div> : null)}
-                                    placeholder='black-friday'
-                                    title='Offer code'
-                                    value={offer?.code}
-                                    onChange={e => updateOffer({code: e.target.value})}
-                                    onKeyDown={() => clearError('code')}
                                 />
                             </div>
                         </section>
@@ -241,7 +243,8 @@ const EditOfferModal: React.FC<{id: string}> = ({id}) => {
             durationInMonths: formState?.duration_in_months || 0,
             currency: formState?.currency || '',
             status: formState?.status || '',
-            tierId: formState?.tier.id || ''
+            tierId: formState?.tier?.id || '',
+            redemptionType: 'signup'
         };
 
         const newHref = getOfferPortalPreviewUrl(dataset, siteData.url);
@@ -253,33 +256,39 @@ const EditOfferModal: React.FC<{id: string}> = ({id}) => {
         portalParent='offers'
     />;
 
+    const goBack = () => {
+        if (sessionStorage.getItem('editOfferPageSource') === 'offers') {
+            sessionStorage.removeItem('editOfferPageSource');
+            updateRoute('offers');
+        } else {
+            sessionStorage.removeItem('editOfferPageSource');
+            updateRoute('offers/edit');
+        }
+    };
+
     return offerById ? <PreviewModalContent
         afterClose={() => {
             updateRoute('offers');
         }}
         backDropClick={false}
-        cancelLabel='Close'
+        cancelLabel='Cancel'
         deviceSelector={false}
         dirty={saveState === 'unsaved'}
         height='full'
         okColor={okProps.color}
         okLabel={okProps.label || 'Save'}
         preview={iframe}
-        previewToolbar={false}
+        previewToolbarBreadcrumbs={[
+            {label: 'Offers', onClick: goBack},
+            {label: formState?.name || 'Offer'}
+        ]}
         sidebar={sidebar}
         size='lg'
         testId='offer-update-modal'
         title='Offer'
         width={1140}
-        onCancel={() => {
-            if (sessionStorage.getItem('editOfferPageSource') === 'offers') {
-                sessionStorage.removeItem('editOfferPageSource');
-                updateRoute('offers');
-            } else {
-                sessionStorage.removeItem('editOfferPageSource');
-                updateRoute('offers/edit');
-            }
-        }}
+        onBreadcrumbsBack={goBack}
+        onCancel={goBack}
         onOk={async () => {
             try {
                 if (await handleSave({force: true})) {

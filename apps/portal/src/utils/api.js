@@ -551,38 +551,6 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             return responseJson;
         },
 
-        async manageBilling({returnUrl, subscriptionId} = {}) {
-            const identity = await api.member.identity();
-            const url = endpointFor({type: 'members', resource: 'create-stripe-billing-portal-session'});
-            if (!returnUrl) {
-                const returnUrlObj = new URL(siteUrl);
-                returnUrlObj.searchParams.set('stripe', 'billing-portal-closed');
-                returnUrl = returnUrlObj.href;
-            }
-
-            return makeRequest({
-                url,
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    identity: identity,
-                    subscription_id: subscriptionId,
-                    returnUrl
-                })
-            }).then(function (res) {
-                if (!res.ok) {
-                    throw new Error('Unable to create Stripe billing portal session');
-                }
-                return res.json();
-            }).then(function (result) {
-                return window.location.assign(result.url);
-            }).catch(function (err) {
-                throw err;
-            });
-        },
-
         async editBilling({successUrl, cancelUrl, subscriptionId} = {}) {
             const siteUrlObj = new URL(siteUrl);
             const identity = await api.member.identity();
@@ -624,6 +592,38 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                 if (result.error) {
                     throw new Error(result.error.message);
                 }
+            }).catch(function (err) {
+                throw err;
+            });
+        },
+
+        async manageBilling({returnUrl, subscriptionId} = {}) {
+            const identity = await api.member.identity();
+            const url = endpointFor({type: 'members', resource: 'create-stripe-billing-portal-session'});
+            if (!returnUrl) {
+                const returnUrlObj = new URL(siteUrl);
+                returnUrlObj.searchParams.set('stripe', 'billing-portal-closed');
+                returnUrl = returnUrlObj.href;
+            }
+
+            return makeRequest({
+                url,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    identity: identity,
+                    subscription_id: subscriptionId,
+                    returnUrl
+                })
+            }).then(function (res) {
+                if (!res.ok) {
+                    throw new Error('Unable to create Stripe billing portal session');
+                }
+                return res.json();
+            }).then(function (result) {
+                return window.location.assign(result.url);
             }).catch(function (err) {
                 throw err;
             });

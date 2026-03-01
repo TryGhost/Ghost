@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../../../utils/assertions');
 const find = require('lodash/find');
-const should = require('should');
 const SettingsImporter = require('../../../../../../../core/server/data/importer/importers/data/settings-importer');
 
 describe('SettingsImporter', function () {
@@ -126,7 +126,7 @@ describe('SettingsImporter', function () {
                 message: 'IMPORTANT: Content in this import was previously published on a private Ghost install, but the current site is public. Are your privacy settings up to date?'
             });
 
-            should.exist(problem);
+            assertExists(problem);
         });
 
         it('Adds a problem if unable to parse data from slack configuration', function () {
@@ -149,7 +149,7 @@ describe('SettingsImporter', function () {
                 message: 'Failed to parse the value of slack setting value'
             });
 
-            should.exist(problem);
+            assertExists(problem);
         });
 
         it('Ignores slack URL from import files in all forms', function () {

@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const fs = require('fs/promises');
 const path = require('path');
 const fsExtra = require('fs-extra');
@@ -236,7 +236,7 @@ describe('i18n', function () {
             await fsExtra.writeFile(path.join(themeLocalesPath, 'en.json'), 'also invalid json');
 
             const t = i18n('de', 'theme', {themePath: themeLocalesPath}).t;
-            
+
             // Should fall back to returning the key itself since both files failed
             assert.equal(t('Read more'), 'Read more');
             assert.equal(t('Subscribe'), 'Subscribe');
@@ -257,7 +257,7 @@ describe('i18n', function () {
             await fsExtra.writeJson(path.join(themeLocalesPath, 'en.json'), themeContent);
 
             const t = i18n('en', 'theme', {themePath: themeLocalesPath}).t;
-            
+
             // Should be able to access both direct properties and properties from the default export
             assert.equal(t('Read more'), 'Read more directly');
             assert.equal(t('Subscribe'), 'Subscribe directly');
@@ -276,7 +276,7 @@ describe('i18n', function () {
             await fsExtra.writeJson(path.join(themeLocalesPath, 'en.json'), themeContent);
 
             const t = i18n('en', 'theme', {themePath: themeLocalesPath}).t;
-            
+
             // Should only use direct properties, ignoring the non-object default export
             assert.equal(t('Read more'), 'Read more');
             assert.equal(t('Subscribe'), 'Subscribe');

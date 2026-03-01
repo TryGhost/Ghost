@@ -1,5 +1,6 @@
 const assert = require('node:assert/strict');
-const should = require('should');
+const {assertExists} = require('../../../../../utils/assertions');
+const _ = require('lodash');
 const sinon = require('sinon');
 const ghostLocals = require('../../../../../../core/server/web/parent/middleware/ghost-locals');
 
@@ -24,11 +25,11 @@ describe('Theme Handler', function () {
 
             ghostLocals(req, res, next);
 
-            res.locals.should.be.an.Object();
-            should.exist(res.locals.version);
-            should.exist(res.locals.safeVersion);
-            res.locals.relativeUrl.should.equal(req.path);
-            assert.equal(next.called, true);
+            assert(_.isPlainObject(res.locals));
+            assertExists(res.locals.version);
+            assertExists(res.locals.safeVersion);
+            assert.equal(res.locals.relativeUrl, req.path);
+            sinon.assert.called(next);
         });
     });
 });

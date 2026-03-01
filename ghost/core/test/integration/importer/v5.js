@@ -73,14 +73,14 @@ describe('Importing 5.x export', function () {
 
         // Imported user
         assert.equal(user2.email, 'import-test-user@ghost.org');
-        user2.id.should.not.equal(LEGACY_HARDCODED_USER_ID);
+        assert.notEqual(user2.id, LEGACY_HARDCODED_USER_ID);
 
         assert.equal(posts.data.length, 2);
 
         const post1 = posts.data[0].toJSON();
         const post2 = posts.data[1].toJSON();
 
-        post1.authors[0].id.should.equal(user2.id);
-        post2.authors[0].id.should.equal(user2.id);
+        assert.equal(post1.authors[0].id, user2.id);
+        assert.equal(post2.authors[0].id, user2.id);
     });
 });

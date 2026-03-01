@@ -1,7 +1,6 @@
 const LinkClickTrackingService = require('../../../../../core/server/services/link-tracking/link-click-tracking-service');
 const sinon = require('sinon');
-const should = require('should');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const ObjectID = require('bson-objectid').default;
 const PostLink = require('../../../../../core/server/services/link-tracking/post-link');
 const RedirectEvent = require('../../../../../core/server/services/link-redirection/redirect-event');
@@ -21,9 +20,9 @@ describe('LinkClickTrackingService', function () {
                 }
             });
             service.init();
-            assert.ok(subscribe.calledOnce);
+            sinon.assert.calledOnce(subscribe);
             service.init();
-            assert.ok(subscribe.calledOnce);
+            sinon.assert.calledOnce(subscribe);
         });
     });
 
@@ -67,7 +66,7 @@ describe('LinkClickTrackingService', function () {
             assert.equal(updatedUrl.toString(), 'https://example.com/r/uniqueslug');
 
             // Check getSlugUrl called
-            assert(getSlugUrl.calledOnce);
+            sinon.assert.calledOnce(getSlugUrl);
 
             // Check save called
             assert(
@@ -103,7 +102,7 @@ describe('LinkClickTrackingService', function () {
             assert.equal(updatedUrl.toString(), 'https://example.com/r/uniqueslug?m=123');
 
             // Check getSlugUrl called
-            assert(getSlugUrl.calledOnce);
+            sinon.assert.calledOnce(getSlugUrl);
 
             // Check save called
             assert(
@@ -138,7 +137,7 @@ describe('LinkClickTrackingService', function () {
             });
 
             service.subscribe();
-            assert(!save.called);
+            sinon.assert.notCalled(save);
         });
 
         it('Tracks redirects with a member id', async function () {
@@ -164,7 +163,7 @@ describe('LinkClickTrackingService', function () {
             });
 
             service.subscribe();
-            assert(save.calledOnce);
+            sinon.assert.calledOnce(save);
 
             assert.equal(save.firstCall.args[0].member_uuid, 'memberId');
             assert.equal(save.firstCall.args[0].link_id, linkId);
@@ -202,7 +201,7 @@ describe('LinkClickTrackingService', function () {
                     link: {to: 'https://example.com'}
                 }
             }, options);
-            should(result).eql({
+            assert.deepEqual(result, {
                 successful: 0,
                 unsuccessful: 0,
                 errors: [],
@@ -247,8 +246,8 @@ describe('LinkClickTrackingService', function () {
 
             const result = await service.bulkEdit(data, options);
 
-            assert.equal(postLinkRepositoryStub.updateLinks.calledOnce, true);
-            should(result).eql({
+            sinon.assert.calledOnce(postLinkRepositoryStub.updateLinks);
+            assert.deepEqual(result, {
                 successful: 0,
                 unsuccessful: 0,
                 errors: [],
@@ -296,8 +295,8 @@ describe('LinkClickTrackingService', function () {
 
             const result = await service.bulkEdit(data, options);
 
-            assert.equal(postLinkRepositoryStub.updateLinks.calledOnce, true);
-            should(result).eql({
+            sinon.assert.calledOnce(postLinkRepositoryStub.updateLinks);
+            assert.deepEqual(result, {
                 successful: 0,
                 unsuccessful: 0,
                 errors: [],
@@ -343,7 +342,86 @@ describe('LinkClickTrackingService', function () {
                 }
             };
 
-            await should(service.bulkEdit(data, options)).be.rejectedWith(errors.BadRequestError);
+            await assert.rejects(
+                service.bulkEdit(data, options),
+                errors.BadRequestError
+            );
+        });
+
+        it('does not duplicate ref when new redirect already includes ref', async function () {
+            const urlUtilsStub = {
+                absoluteToTransformReady: sinon.stub().returnsArg(0),
+                isSiteUrl: sinon.stub().returns(false)
+            };
+            const postLinkRepositoryStub = {
+                updateLinks: sinon.stub().resolves({
+                    successful: 1,
+                    unsuccessful: 0,
+                    errors: [],
+                    unsuccessfulData: []
+                })
+            };
+            const linkRedirectServiceStub = {
+                getFilteredIds: sinon.stub().resolves(['id1'])
+            };
+
+            const service = new LinkClickTrackingService({
+                urlUtils: urlUtilsStub,
+                postLinkRepository: postLinkRepositoryStub,
+                linkRedirectService: linkRedirectServiceStub
+            });
+
+            const options = {
+                filter: 'post_id:1+to:\'https://example.com/subscripe?ref=Test-newsletter\''
+            };
+
+            await service.bulkEdit({
+                action: 'updateLink',
+                meta: {
+                    link: {to: 'https://example.com/subscribe?ref=Test-newsletter'}
+                }
+            }, options);
+
+            const [, updateData] = postLinkRepositoryStub.updateLinks.firstCall.args;
+            assert.equal(updateData.to, 'https://example.com/subscribe?ref=Test-newsletter');
+        });
+
+        it('preserves hash when appending attribution params', async function () {
+            const urlUtilsStub = {
+                absoluteToTransformReady: sinon.stub().returnsArg(0),
+                isSiteUrl: sinon.stub().returns(true)
+            };
+            const postLinkRepositoryStub = {
+                updateLinks: sinon.stub().resolves({
+                    successful: 1,
+                    unsuccessful: 0,
+                    errors: [],
+                    unsuccessfulData: []
+                })
+            };
+            const linkRedirectServiceStub = {
+                getFilteredIds: sinon.stub().resolves(['id1'])
+            };
+
+            const service = new LinkClickTrackingService({
+                urlUtils: urlUtilsStub,
+                postLinkRepository: postLinkRepositoryStub,
+                linkRedirectService: linkRedirectServiceStub
+            });
+
+            const options = {
+                filter: 'post_id:1+to:\'https://example.com/original?ref=Test-newsletter\''
+            };
+
+            await service.bulkEdit({
+                action: 'updateLink',
+                meta: {
+                    link: {to: 'https://ghost.test/path?foo=1#section'}
+                }
+            }, options);
+
+            const [, updateData] = postLinkRepositoryStub.updateLinks.firstCall.args;
+            assert.equal(updateData.to, 'https://ghost.test/path?foo=1&ref=Test-newsletter&attribution_type=post&attribution_id=1#section');
         });
     });
 });

@@ -19,8 +19,8 @@ const statusTransformer = mapKeyValues({
     }]
 });
 
-const rejectNonStatusTransformer = input => mapQuery(input, function (value, key) {
-    if (key !== 'status') {
+const rejectInvalidTransformer = input => mapQuery(input, function (value, key) {
+    if (key !== 'status' && key !== 'redemption_type') {
         return;
     }
 
@@ -29,7 +29,7 @@ const rejectNonStatusTransformer = input => mapQuery(input, function (value, key
     };
 });
 
-const mongoTransformer = flowRight(statusTransformer, rejectNonStatusTransformer);
+const mongoTransformer = flowRight(statusTransformer, rejectInvalidTransformer);
 
 /**
  * @typedef {object} BaseOptions
@@ -125,10 +125,9 @@ class OfferBookshelfRepository {
                 redemptionCount: count,
                 redemption_type: json.redemption_type,
                 status: json.active ? 'active' : 'archived',
-                tier: {
-                    id: json.product.id,
-                    name: json.product.name
-                },
+                tier: json.product && json.product.id
+                    ? {id: json.product.id, name: json.product.name}
+                    : null,
                 created_at: json.created_at,
                 last_redeemed: lastRedeemedObject.length > 0 ? lastRedeemedObject[0].created_at : null
             }, null);
@@ -196,17 +195,36 @@ class OfferBookshelfRepository {
     }
 
     /**
-     * @param {object} options
-     * @param {string} options.subscriptionId
-     * @param {import('knex').Knex.Transaction} [options.transacting]
+     * @param {string} subscriptionId
+     * @param {BaseOptions} [options]
      * @returns {Promise<string[]>}
      */
-    async getRedeemedOfferIdsForSubscription({subscriptionId, transacting}) {
+    async getRedeemedOfferIdsForSubscription(subscriptionId, options = {}) {
         const redemptions = await this.OfferRedemptionModel.where({
             subscription_id: subscriptionId
-        }).fetchAll({transacting, columns: ['offer_id']});
+        }).fetchAll({transacting: options.transacting, columns: ['offer_id']});
 
         return redemptions.map(r => r.get('offer_id'));
+    }
+
+    /**
+     * @param {string[]} subscriptionIds
+     * @param {BaseOptions} [options]
+     * @returns {Promise<Array<{subscription_id: string, offer_id: string}>>}
+     */
+    async getRedeemedOfferIdsForSubscriptions(subscriptionIds, options = {}) {
+        if (subscriptionIds.length === 0) {
+            return [];
+        }
+
+        const redemptions = await this.OfferRedemptionModel
+            .query(qb => qb.whereIn('subscription_id', subscriptionIds))
+            .fetchAll({transacting: options.transacting, columns: ['subscription_id', 'offer_id']});
+
+        return redemptions.map(r => ({
+            subscription_id: r.get('subscription_id'),
+            offer_id: r.get('offer_id')
+        }));
     }
 
     /**
@@ -225,7 +243,7 @@ class OfferBookshelfRepository {
             discount_type: offer.type.value === 'fixed' ? 'amount' : offer.type.value,
             discount_amount: offer.amount.value,
             interval: offer.cadence.value,
-            product_id: offer.tier.id,
+            product_id: offer.tier ? offer.tier.id : null,
             duration: offer.duration.value.type,
             duration_in_months: offer.duration.value.type === 'repeating' ? offer.duration.value.months : null,
             currency: offer.currency ? offer.currency.value : null,

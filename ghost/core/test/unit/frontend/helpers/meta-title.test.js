@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const should = require('should');
+const {assertExists} = require('../../../utils/assertions');
 const sinon = require('sinon');
 const configUtils = require('../../../utils/config-utils');
 const meta_title = require('../../../../core/frontend/helpers/meta_title');
@@ -26,7 +26,7 @@ describe('{{meta_title}} helper', function () {
                 {data: {root: {context: ['home']}}}
             );
 
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(String(rendered), 'Ghost');
         });
 
@@ -36,7 +36,7 @@ describe('{{meta_title}} helper', function () {
                 {data: {root: {context: [], pagination: {total: 2, page: 2}}}}
             );
 
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(String(rendered), 'Ghost (Page 2)');
         });
 
@@ -46,7 +46,7 @@ describe('{{meta_title}} helper', function () {
                 {data: {root: {context: ['post']}}}
             );
 
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(String(rendered), 'Post Title');
         });
 
@@ -56,7 +56,7 @@ describe('{{meta_title}} helper', function () {
                 {data: {root: {context: ['post']}}}
             );
 
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(String(rendered), 'Awesome Post');
         });
 
@@ -66,7 +66,7 @@ describe('{{meta_title}} helper', function () {
                 {data: {root: {context: ['page']}}}
             );
 
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(String(rendered), 'All about my awesomeness');
         });
 
@@ -78,7 +78,7 @@ describe('{{meta_title}} helper', function () {
                 {data: {root: {context: ['tag']}}}
             );
 
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(String(rendered), 'Rasper Red - Ghost');
         });
 
@@ -88,7 +88,7 @@ describe('{{meta_title}} helper', function () {
                 {data: {root: {context: ['tag', 'paged'], pagination: {total: 2, page: 2}}}}
             );
 
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(String(rendered), 'Rasper Red - Ghost (Page 2)');
         });
 
@@ -98,7 +98,7 @@ describe('{{meta_title}} helper', function () {
                 {data: {root: {context: ['tag']}}}
             );
 
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(String(rendered), 'Sasper Red');
         });
 
@@ -108,7 +108,7 @@ describe('{{meta_title}} helper', function () {
                 {data: {root: {context: ['tag']}}}
             );
 
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(String(rendered), 'Sasper Red');
         });
 
@@ -118,7 +118,7 @@ describe('{{meta_title}} helper', function () {
                 {data: {root: {context: ['author']}}}
             );
 
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(String(rendered), 'Donald Duck - Ghost');
         });
 
@@ -128,7 +128,7 @@ describe('{{meta_title}} helper', function () {
                 {data: {root: {context: ['author', 'paged'], pagination: {total: 2, page: 2}}}}
             );
 
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(String(rendered), 'Donald Duck - Ghost (Page 2)');
         });
 
@@ -138,7 +138,7 @@ describe('{{meta_title}} helper', function () {
                 {data: {root: {context: ['post']}}}
             );
 
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(String(rendered), 'Post Title "</>');
         });
 
@@ -148,7 +148,7 @@ describe('{{meta_title}} helper', function () {
                 {data: {root: {context: ['home']}}}
             );
 
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(String(rendered), 'Awesome Post');
         });
     });
@@ -167,7 +167,7 @@ describe('{{meta_title}} helper', function () {
                 {data: {root: {context: ['home']}}}
             );
 
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(String(rendered), 'Meta Title Ghost');
         });
 
@@ -177,7 +177,7 @@ describe('{{meta_title}} helper', function () {
                 {data: {root: {context: [], pagination: {total: 2, page: 2}}}}
             );
 
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(String(rendered), 'Ghost (Page 2)');
         });
 
@@ -189,7 +189,7 @@ describe('{{meta_title}} helper', function () {
                 {data: {root: {context: ['tag']}}}
             );
 
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(String(rendered), 'Rasper Red - Ghost');
         });
 
@@ -199,7 +199,7 @@ describe('{{meta_title}} helper', function () {
                 {data: {root: {context: ['author']}}}
             );
 
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(String(rendered), 'Donald Duck - Ghost');
         });
 
@@ -209,7 +209,7 @@ describe('{{meta_title}} helper', function () {
                 {data: {root: {context: ['author', 'paged'], pagination: {total: 2, page: 2}}}}
             );
 
-            should.exist(rendered);
+            assertExists(rendered);
             assert.equal(String(rendered), 'Donald Duck - Ghost (Page 2)');
         });
     });

@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 
 const MemberAttributionService = require('../../../../../core/server/services/member-attribution/member-attribution-service');
 
@@ -35,7 +34,8 @@ describe('MemberAttributionService', function () {
             });
             const attribution = await service.getAttributionFromContext({importer: true});
 
-            should(attribution).containEql({referrerSource: 'Imported', referrerMedium: 'Member Importer'});
+            assert.equal(attribution.referrerSource, 'Imported');
+            assert.equal(attribution.referrerMedium, 'Member Importer');
         });
 
         it('returns attribution for admin context', async function () {
@@ -44,7 +44,8 @@ describe('MemberAttributionService', function () {
             });
             const attribution = await service.getAttributionFromContext({user: 'abc'});
 
-            should(attribution).containEql({referrerSource: 'Created manually', referrerMedium: 'Ghost Admin'});
+            assert.equal(attribution.referrerSource, 'Created manually');
+            assert.equal(attribution.referrerMedium, 'Ghost Admin');
         });
 
         it('returns attribution for api without integration context', async function () {
@@ -55,7 +56,8 @@ describe('MemberAttributionService', function () {
                 api_key: 'abc'
             });
 
-            should(attribution).containEql({referrerSource: 'Created via API', referrerMedium: 'Admin API'});
+            assert.equal(attribution.referrerSource, 'Created via API');
+            assert.equal(attribution.referrerMedium, 'Admin API');
         });
 
         it('returns attribution for api with integration context', async function () {
@@ -76,7 +78,8 @@ describe('MemberAttributionService', function () {
                 integration: {id: 'integration_1'}
             });
 
-            should(attribution).containEql({referrerSource: 'Integration: Test Integration', referrerMedium: 'Admin API'});
+            assert.equal(attribution.referrerSource, 'Integration: Test Integration');
+            assert.equal(attribution.referrerMedium, 'Admin API');
         });
     });
 
@@ -104,7 +107,7 @@ describe('MemberAttributionService', function () {
                     return null;
                 }
             };
-            should(service.getEventAttribution(model)).eql({
+            assert.deepEqual(service.getEventAttribution(model), {
                 id: null,
                 url: null,
                 title: 'added',
@@ -144,7 +147,7 @@ describe('MemberAttributionService', function () {
                     return null;
                 }
             };
-            should(service.getEventAttribution(model)).eql({
+            assert.deepEqual(service.getEventAttribution(model), {
                 id: null,
                 type: 'url',
                 url: '/my/url/',
@@ -195,7 +198,7 @@ describe('MemberAttributionService', function () {
                     return {};
                 }
             };
-            should(service.getEventAttribution(model)).eql({
+            assert.deepEqual(service.getEventAttribution(model), {
                 id: 'test_user_id',
                 type: 'user',
                 url: '/my/url/',
@@ -212,7 +215,7 @@ describe('MemberAttributionService', function () {
             const service = new MemberAttributionService({
                 attributionBuilder: {
                     getAttribution: async function (history) {
-                        should(history).have.property('length');
+                        assert('length' in history);
                         return {success: true};
                     }
                 },
@@ -226,7 +229,7 @@ describe('MemberAttributionService', function () {
             const service = new MemberAttributionService({
                 attributionBuilder: {
                     getAttribution: async function (history) {
-                        should(history).have.property('length', 0);
+                        assert.equal(history.length, 0);
                         return {success: true};
                     }
                 },

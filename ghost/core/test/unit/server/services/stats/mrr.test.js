@@ -3,7 +3,6 @@ const MrrStatsService = require('../../../../../core/server/services/stats/mrr-s
 const moment = require('moment');
 const sinon = require('sinon');
 const knex = require('knex').default;
-const should = require('should');
 
 describe('MrrStatsService', function () {
     describe('getHistory', function () {
@@ -63,7 +62,7 @@ describe('MrrStatsService', function () {
          * @param {string} currency - Expected currency
          */
         function assertMrrEntry(result, date, mrr, currency = 'usd') {
-            result.should.eql({
+            assert.deepEqual(result, {
                 date: date,
                 mrr: mrr,
                 currency: currency
@@ -80,7 +79,7 @@ describe('MrrStatsService', function () {
                 mrr: item.mrr,
                 currency: item.currency || 'usd'
             }));
-            totals.should.eql(expectedTotals);
+            assert.deepEqual(totals, expectedTotals);
         }
 
         /**

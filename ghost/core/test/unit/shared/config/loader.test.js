@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const path = require('path');
 const rewire = require('rewire');
 const _ = require('lodash');
@@ -81,11 +80,12 @@ describe('Config Loader', function () {
 
             assert(!customConfig.get('paths:corePath').includes('try-to-override'));
             assert.equal(customConfig.get('database:client'), 'sqlite3');
-            assert.equal(customConfig.get('database:connection:filename'), '/hehe.db');
+            // Note: database:connection:filename is now set via process.env in overrides.js
+            // for concurrent test isolation, so we skip asserting the config file value
             assert.equal(customConfig.get('database:debug'), true);
-            assert.equal(customConfig.get('url'), 'http://localhost:2368');
+            // Note: url is now set via process.env in overrides.js for dynamic port allocation
             assert.equal(customConfig.get('logging:level'), 'error');
-            customConfig.get('logging:transports').should.eql(['stdout']);
+            assert.deepEqual(customConfig.get('logging:transports'), ['stdout']);
         });
 
         it('should load JSONC files', function () {
@@ -108,7 +108,7 @@ describe('Config Loader', function () {
             // NOTE: using `Object.keys` here instead of `should.have.keys` assertion
             //       because when `have.keys` fails there's no useful diff
             //       and it doesn't make sure to check for "extra" keys
-            Object.keys(pathConfig).should.eql([
+            assert.deepEqual(Object.keys(pathConfig), [
                 'contentPath',
                 'fixtures',
                 'defaultSettings',
@@ -131,15 +131,15 @@ describe('Config Loader', function () {
             const pathConfig = configUtils.config.get('paths');
             const appRoot = path.resolve(__dirname, '../../../../');
 
-            pathConfig.should.have.property('appRoot', appRoot);
+            assert.equal(pathConfig.appRoot, appRoot);
         });
 
         it('should allow specific properties to be user defined', function () {
             const contentPath = path.join(configUtils.config.get('paths').appRoot, 'otherContent', '/');
 
             configUtils.set('paths:contentPath', contentPath);
-            configUtils.config.get('paths').should.have.property('contentPath', contentPath);
-            configUtils.config.getContentPath('images').should.eql(contentPath + 'images/');
+            assert.equal(configUtils.config.get('paths').contentPath, contentPath);
+            assert.equal(configUtils.config.getContentPath('images'), contentPath + 'images/');
         });
     });
 });

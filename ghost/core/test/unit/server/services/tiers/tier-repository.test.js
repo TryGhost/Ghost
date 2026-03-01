@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const {Product: ProductModel} = require('../../../../../core/server/models/product');
 const TierRepository = require('../../../../../core/server/services/tiers/tier-repository');
@@ -37,11 +37,11 @@ describe('TierRepository', function () {
 
         await repository.save(tier);
 
-        assert(ProductModel.add.calledOnce);
+        sinon.assert.calledOnce(ProductModel.add);
 
         const result = await repository.getById(tier.id);
 
-        assert(ProductModel.findOne.notCalled);
+        sinon.assert.notCalled(ProductModel.findOne);
 
         assert(result);
 
@@ -49,6 +49,6 @@ describe('TierRepository', function () {
 
         await repository.save(tier);
 
-        assert(ProductModel.edit.calledOnce);
+        sinon.assert.calledOnce(ProductModel.edit);
     });
 });

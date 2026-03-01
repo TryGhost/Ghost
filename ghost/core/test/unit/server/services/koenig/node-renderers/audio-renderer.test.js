@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const {callRenderer, html, assertPrettifiesTo} = require('../test-utils');
 
 describe('koenig/services/node-renderers/audio-renderer', function () {

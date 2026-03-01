@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const _ = require('lodash');
-const should = require('should');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
 const Queue = require('../../../../../core/server/services/url/queue');
@@ -28,7 +28,7 @@ describe('Unit: services/url/Queue', function () {
             event: 'chocolate'
         }, null);
 
-        should.exist(queue.queue.chocolate);
+        assertExists(queue.queue.chocolate);
         assert.equal(queue.queue.chocolate.subscribers.length, 1);
 
         queue.register({
@@ -41,21 +41,21 @@ describe('Unit: services/url/Queue', function () {
             event: 'nachos'
         }, null);
 
-        should.exist(queue.queue.chocolate);
-        should.exist(queue.queue.nachos);
+        assertExists(queue.queue.chocolate);
+        assertExists(queue.queue.nachos);
 
         assert.equal(queue.queue.chocolate.subscribers.length, 2);
         assert.equal(queue.queue.nachos.subscribers.length, 1);
 
         // events have not been triggered yet
-        queue.toNotify.should.eql({});
+        assert.deepEqual(queue.toNotify, {});
     });
 
     describe('fn: start (no tolerance)', function () {
         it('no subscribers', function (done) {
             queue.addListener('ended', function (event) {
                 assert.equal(event, 'nachos');
-                assert.equal(queueRunSpy.callCount, 1);
+                sinon.assert.calledOnce(queueRunSpy);
                 done();
             });
 
@@ -69,7 +69,7 @@ describe('Unit: services/url/Queue', function () {
 
             queue.addListener('ended', function (event) {
                 assert.equal(event, 'nachos');
-                assert.equal(queueRunSpy.callCount, 2);
+                sinon.assert.calledTwice(queueRunSpy);
                 assert.equal(notified, 1);
                 done();
             });
@@ -93,9 +93,9 @@ describe('Unit: services/url/Queue', function () {
                 assert.equal(event, 'nachos');
 
                 // 9 subscribers + start triggers run
-                assert.equal(queueRunSpy.callCount, 10);
+                sinon.assert.callCount(queueRunSpy, 10);
                 assert.equal(notified, 9);
-                order.should.eql([0, 1, 2, 3, 4, 5, 6, 7, 8]);
+                assert.deepEqual(order, [0, 1, 2, 3, 4, 5, 6, 7, 8]);
                 done();
             });
 
@@ -118,7 +118,7 @@ describe('Unit: services/url/Queue', function () {
 
             queue.addListener('ended', function (event) {
                 assert.equal(event, 'nachos');
-                assert.equal(queueRunSpy.callCount, 1);
+                sinon.assert.calledOnce(queueRunSpy);
                 assert.equal(notified, 0);
                 done();
             });
@@ -145,7 +145,7 @@ describe('Unit: services/url/Queue', function () {
                 event: 'nachos'
             });
 
-            assert.equal(logging.error.calledOnce, true);
+            sinon.assert.calledOnce(logging.error);
             assert.equal(queue.toNotify.nachos.notified.length, 0);
         });
     });

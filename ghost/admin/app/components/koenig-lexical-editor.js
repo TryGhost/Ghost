@@ -8,6 +8,7 @@ import {didCancel, task} from 'ember-concurrency';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 
+// TODO(NY-1097) This should be DRYed out with what's in the `useFileUpload` hook.
 export const fileTypes = {
     image: {
         mimeTypes: ['image/gif', 'image/jpg', 'image/jpeg', 'image/png', 'image/svg+xml', 'image/webp'],
@@ -80,6 +81,13 @@ export function decoratePostSearchResult(item, settings) {
             item.metaIconTitle = 'Specific tiers only';
         }
     }
+}
+
+export function getCardVisibilitySettings(cardConfig = {}) {
+    const post = cardConfig.post;
+    const isPage = post?.isPage || post?.displayName === 'page';
+
+    return isPage ? 'web only' : 'web and email';
 }
 
 /**
@@ -252,7 +260,12 @@ export default class KoenigLexicalEditor extends Component {
         if (this.offers) {
             return this.offers;
         }
-        this.offers = yield this.store.query('offer', {filter: 'status:active'});
+
+        // Only fetch active signup offers for use in link dropdowns
+        // - Archived offers (status:archived) should not appear
+        // - Retention offers (redemption_type:retention) are only triggered during cancellation flows, not via offer links
+        this.offers = yield this.store.query('offer', {filter: 'status:active+redemption_type:signup'});
+
         return this.offers;
     }
 
@@ -450,10 +463,13 @@ export default class KoenigLexicalEditor extends Component {
             siteTitle: this.settings.title,
             siteDescription: this.settings.description,
             siteUrl: this.config.getSiteUrl('/'),
-            stripeEnabled: checkStripeEnabled() // returns a boolean
+            siteUuid: this.config.site_uuid,
+            stripeEnabled: checkStripeEnabled(), // returns a boolean
+            visibilitySettings: getCardVisibilitySettings(props.cardConfig)
         };
-        const cardConfig = Object.assign({}, defaultCardConfig, props.cardConfig, {pinturaConfig: this.pinturaConfig});
+        const cardConfig = Object.assign({}, defaultCardConfig, props.cardConfig, {pinturaConfig: this.pinturaConfig, visibilitySettings: defaultCardConfig.visibilitySettings});
 
+        // TODO(NY-1097) This should be DRYed out with the other `useFileUpload` hook.
         const useFileUpload = (type = 'image') => {
             const [progress, setProgress] = React.useState(0);
             const [isLoading, setLoading] = React.useState(false);
@@ -482,16 +498,12 @@ export default class KoenigLexicalEditor extends Component {
                 if (type === 'file') {
                     return true;
                 }
-                let extensions = fileTypes[type].extensions;
-                let [, extension] = (/(?:\.([^.]+))?$/).exec(file.name);
+                const extensions = fileTypes[type].extensions;
+                const [, extension] = (/(?:\.([^.]+))?$/).exec(file.name) ?? [];
 
                 // if extensions is falsy exit early and accept all files
                 if (!extensions) {
                     return true;
-                }
-
-                if (!Array.isArray(extensions)) {
-                    extensions = extensions.split(',');
                 }
 
                 if (!extension || extensions.indexOf(extension.toLowerCase()) === -1) {
@@ -519,7 +531,7 @@ export default class KoenigLexicalEditor extends Component {
             };
 
             const _uploadFile = async (file, {formData = {}} = {}) => {
-                progressTracker.current[file] = 0;
+                progressTracker.current.set(file, 0);
 
                 const fileFormData = new FormData();
                 fileFormData.append('file', file, file.name);

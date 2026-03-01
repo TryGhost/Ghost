@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const errors = require('@tryghost/errors');
 const rewire = require('rewire');
-const should = require('should');
 const sinon = require('sinon');
 const Queue = require('../../../../../core/server/services/url/queue');
 const Resources = require('../../../../../core/server/services/url/resources');
@@ -42,15 +42,15 @@ describe('Unit: services/url/UrlService', function () {
     });
 
     it('instantiate', function () {
-        should.exist(urlService.utils);
-        should.exist(urlService.urls);
-        should.exist(urlService.resources);
-        should.exist(urlService.queue);
+        assertExists(urlService.utils);
+        assertExists(urlService.urls);
+        assertExists(urlService.resources);
+        assertExists(urlService.queue);
 
-        urlService.urlGenerators.should.eql([]);
+        assert.deepEqual(urlService.urlGenerators, []);
         assert.equal(urlService.hasFinished(), false);
 
-        assert.equal(urlService.queue.addListener.calledTwice, true);
+        sinon.assert.calledTwice(urlService.queue.addListener);
         assert.equal(urlService.queue.addListener.args[0][0], 'started');
         assert.equal(urlService.queue.addListener.args[1][0], 'ended');
     });
@@ -80,7 +80,7 @@ describe('Unit: services/url/UrlService', function () {
             assert.equal(urlService.getResourceById('id12345'), true);
             done(new Error('expected error'));
         } catch (err) {
-            should.exist(err);
+            assertExists(err);
             assert.equal(err.code, 'URLSERVICE_RESOURCE_NOT_FOUND');
             done();
         }
@@ -110,7 +110,7 @@ describe('Unit: services/url/UrlService', function () {
 
             urlService.finished = true;
             urlService.urls.getByUrl.withArgs('/blog-post/').returns([{resource: resource}]);
-            urlService.getResource('/blog-post/').should.eql(resource);
+            assert.equal(urlService.getResource('/blog-post/'), resource);
         });
 
         it('two resources for url found', function () {
@@ -128,7 +128,7 @@ describe('Unit: services/url/UrlService', function () {
 
             urlService.finished = true;
             urlService.urls.getByUrl.withArgs('/blog-post/').returns([object1, object2]);
-            urlService.getResource('/blog-post/').should.eql(object2.resource);
+            assert.equal(urlService.getResource('/blog-post/'), object2.resource);
         });
 
         it('two resources for url found (reverse registration order)', function () {
@@ -146,7 +146,7 @@ describe('Unit: services/url/UrlService', function () {
 
             urlService.finished = true;
             urlService.urls.getByUrl.withArgs('/blog-post/').returns([object1, object2]);
-            urlService.getResource('/blog-post/').should.eql(object1.resource);
+            assert.equal(urlService.getResource('/blog-post/'), object1.resource);
         });
     });
 
@@ -201,7 +201,7 @@ describe('Unit: services/url/UrlService', function () {
             urlService.urls.getByResourceId.withArgs(1).returns(null);
             urlService.getUrlByResourceId(1, {absolute: true});
 
-            assert.equal(urlService.utils.createUrl.calledWith('/404/', true), true);
+            sinon.assert.calledWith(urlService.utils.createUrl, '/404/', true);
         });
 
         it('found', function () {
@@ -215,7 +215,7 @@ describe('Unit: services/url/UrlService', function () {
 
             urlService.urls.getByResourceId.withArgs(1).returns({url: '/post/'});
             urlService.getUrlByResourceId(1, {absolute: true});
-            assert.equal(urlService.utils.createUrl.calledWith('/post/', true), true);
+            sinon.assert.calledWith(urlService.utils.createUrl, '/post/', true);
         });
 
         it('not found: withSubdirectory', function () {
@@ -224,7 +224,7 @@ describe('Unit: services/url/UrlService', function () {
 
             urlService.urls.getByResourceId.withArgs(1).returns(null);
             urlService.getUrlByResourceId(1, {withSubdirectory: true});
-            assert.equal(urlService.utils.createUrl.calledWith('/404/', false), true);
+            sinon.assert.calledWith(urlService.utils.createUrl, '/404/', false);
         });
 
         it('not found: withSubdirectory + absolute', function () {
@@ -233,7 +233,7 @@ describe('Unit: services/url/UrlService', function () {
 
             urlService.urls.getByResourceId.withArgs(1).returns(null);
             urlService.getUrlByResourceId(1, {withSubdirectory: true, absolute: true});
-            assert.equal(urlService.utils.createUrl.calledWith('/404/', true), true);
+            sinon.assert.calledWith(urlService.utils.createUrl, '/404/', true);
         });
 
         it('found: withSubdirectory', function () {
@@ -242,7 +242,7 @@ describe('Unit: services/url/UrlService', function () {
 
             urlService.urls.getByResourceId.withArgs(1).returns({url: '/post/'});
             urlService.getUrlByResourceId(1, {withSubdirectory: true});
-            assert.equal(urlService.utils.createUrl.calledWith('/post/', false), true);
+            sinon.assert.calledWith(urlService.utils.createUrl, '/post/', false);
         });
 
         it('found: withSubdirectory + absolute', function () {
@@ -251,7 +251,7 @@ describe('Unit: services/url/UrlService', function () {
 
             urlService.urls.getByResourceId.withArgs(1).returns({url: '/post/'});
             urlService.getUrlByResourceId(1, {withSubdirectory: true, absolute: true});
-            assert.equal(urlService.utils.createUrl.calledWith('/post/', true), true);
+            sinon.assert.calledWith(urlService.utils.createUrl, '/post/', true);
         });
     });
 });

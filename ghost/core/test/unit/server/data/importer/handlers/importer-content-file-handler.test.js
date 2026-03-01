@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const path = require('path');
 const ImporterContentFileHandler = require('../../../../../../core/server/data/importer/handlers/importer-content-file-handler');
 

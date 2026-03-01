@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const {BillingPortalManager} = require('../../../../../core/server/services/stripe/billing-portal-manager');
 
@@ -49,8 +49,8 @@ describe('BillingPortalManager', function () {
 
             await manager.start();
 
-            assert.equal(mockApi.createBillingPortalConfiguration.called, false);
-            assert.equal(mockApi.updateBillingPortalConfiguration.called, false);
+            sinon.assert.notCalled(mockApi.createBillingPortalConfiguration);
+            sinon.assert.notCalled(mockApi.updateBillingPortalConfiguration);
         });
 
         it('creates new configuration if none exists', async function () {
@@ -67,8 +67,8 @@ describe('BillingPortalManager', function () {
 
             await manager.start();
 
-            assert.equal(mockApi.createBillingPortalConfiguration.calledOnce, true);
-            assert.equal(mockSettingsModel.edit.calledOnce, true);
+            sinon.assert.calledOnce(mockApi.createBillingPortalConfiguration);
+            sinon.assert.calledOnce(mockSettingsModel.edit);
             assert.deepEqual(mockSettingsModel.edit.firstCall.args[0], [{
                 key: 'stripe_billing_portal_configuration_id',
                 value: 'bpc_new123'
@@ -89,9 +89,9 @@ describe('BillingPortalManager', function () {
 
             await manager.start();
 
-            assert.equal(mockApi.updateBillingPortalConfiguration.calledOnce, true);
-            assert.equal(mockApi.createBillingPortalConfiguration.called, false);
-            assert.equal(mockSettingsModel.edit.called, false);
+            sinon.assert.calledOnce(mockApi.updateBillingPortalConfiguration);
+            sinon.assert.notCalled(mockApi.createBillingPortalConfiguration);
+            sinon.assert.notCalled(mockSettingsModel.edit);
         });
 
         it('saves new configuration ID when it changes after update', async function () {
@@ -108,7 +108,7 @@ describe('BillingPortalManager', function () {
 
             await manager.start();
 
-            assert.equal(mockSettingsModel.edit.calledOnce, true);
+            sinon.assert.calledOnce(mockSettingsModel.edit);
             assert.deepEqual(mockSettingsModel.edit.firstCall.args[0], [{
                 key: 'stripe_billing_portal_configuration_id',
                 value: 'bpc_new'
@@ -131,7 +131,7 @@ describe('BillingPortalManager', function () {
             const result = await manager.createOrUpdateConfiguration(null);
 
             assert.equal(result, 'bpc_new123');
-            assert.equal(mockApi.createBillingPortalConfiguration.calledOnce, true);
+            sinon.assert.calledOnce(mockApi.createBillingPortalConfiguration);
         });
 
         it('updates existing configuration when id is provided', async function () {
@@ -148,7 +148,7 @@ describe('BillingPortalManager', function () {
             const result = await manager.createOrUpdateConfiguration('bpc_existing123');
 
             assert.equal(result, 'bpc_existing123');
-            assert.equal(mockApi.updateBillingPortalConfiguration.calledOnce, true);
+            sinon.assert.calledOnce(mockApi.updateBillingPortalConfiguration);
             assert.equal(mockApi.updateBillingPortalConfiguration.firstCall.args[0], 'bpc_existing123');
         });
 
@@ -169,8 +169,8 @@ describe('BillingPortalManager', function () {
             const result = await manager.createOrUpdateConfiguration('bpc_deleted');
 
             assert.equal(result, 'bpc_new456');
-            assert.equal(mockApi.updateBillingPortalConfiguration.calledOnce, true);
-            assert.equal(mockApi.createBillingPortalConfiguration.calledOnce, true);
+            sinon.assert.calledOnce(mockApi.updateBillingPortalConfiguration);
+            sinon.assert.calledOnce(mockApi.createBillingPortalConfiguration);
         });
 
         it('throws error when update fails with non-resource_missing error', async function () {
@@ -207,12 +207,12 @@ describe('BillingPortalManager', function () {
 
             assert.deepEqual(options, {
                 business_profile: {
-                    headline: 'Manage your My Ghost Site subscription'
+                    headline: 'Subscription & payment details'
                 },
                 features: {
                     invoice_history: {enabled: true},
                     payment_method_update: {enabled: true},
-                    subscription_cancel: {enabled: true}
+                    subscription_cancel: {enabled: false}
                 },
                 default_return_url: 'https://example.com'
             });
@@ -240,7 +240,7 @@ describe('BillingPortalManager', function () {
                         enabled: true
                     },
                     subscription_cancel: {
-                        enabled: true
+                        enabled: false
                     }
                 }
             });
@@ -258,7 +258,7 @@ describe('BillingPortalManager', function () {
 
             const options = manager.getConfigurationOptions();
 
-            assert.equal(options.business_profile.headline, 'Manage your Awesome Blog subscription');
+            assert.equal(options.business_profile.headline, 'Subscription & payment details');
         });
     });
 });
