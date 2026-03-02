@@ -21,6 +21,12 @@ env:
     ~/.cache/ms-playwright/
   NX_REJECT_UNKNOWN_LOCAL_CACHE: 0
   NODE_VERSION: 22.18.0
+  # Disable v8-compile-cache to prevent intermittent V8 deserializer crashes
+  # when multiple parallel Nx workers race to read/write shared bytecode cache
+  # files. The cache lives in /tmp and is discarded after each run anyway,
+  # so disabling it has no meaningful performance impact in CI.
+  # See: https://github.com/nodejs/node/issues/51555
+  DISABLE_V8_COMPILE_CACHE: 1
 
 concurrency:
   group: ${{ github.head_ref || github.run_id }}
