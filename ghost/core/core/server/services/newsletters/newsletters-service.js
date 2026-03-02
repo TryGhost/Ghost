@@ -27,8 +27,9 @@ class NewslettersService {
      * @param {ILimitService} options.limitService
      * @param {Object} options.emailAddressService
      * @param {Object} options.labs
+     * @param {Object} options.emailVerificationService
      */
-    constructor({NewsletterModel, MemberModel, mail, singleUseTokenProvider, urlUtils, limitService, labs, emailAddressService}) {
+    constructor({NewsletterModel, MemberModel, mail, singleUseTokenProvider, urlUtils, limitService, labs, emailAddressService, emailVerificationService}) {
         this.NewsletterModel = NewsletterModel;
         this.MemberModel = MemberModel;
         this.urlUtils = urlUtils;
@@ -38,6 +39,8 @@ class NewslettersService {
         this.labs = labs;
         /** @private */
         this.emailAddressService = emailAddressService;
+        /** @private */
+        this.emailVerificationService = emailVerificationService;
 
         /* email verification setup */
 
@@ -297,6 +300,14 @@ class NewslettersService {
                         // This is some custom behaviour that allows swapping sender_email to sender_reply_to without requiring validation again
                         continue;
                     }
+
+                    // Check if already verified in centralized service
+                    const isVerified = await this.emailVerificationService.check(email);
+                    if (isVerified) {
+                        // Already verified — allow the save
+                        continue;
+                    }
+
                     delete cleanedAttrs[property];
                     emailsToVerify.push({email, property});
                 }
@@ -324,7 +335,11 @@ class NewslettersService {
     async respondWithEmailVerification(newsletter, emailsToVerify) {
         if (emailsToVerify.length > 0) {
             for (const {email, property} of emailsToVerify) {
-                await this.sendEmailVerificationMagicLink({id: newsletter.get('id'), email, property});
+                await this.emailVerificationService.add(email, {
+                    type: 'newsletter',
+                    id: newsletter.get('id'),
+                    property
+                });
             }
 
             newsletter.meta = newsletter.meta || {};
@@ -334,30 +349,6 @@ class NewslettersService {
         return newsletter;
     }
 
-    /**
-     * @private
-     */
-    async sendEmailVerificationMagicLink({id, email, property = 'sender_from'}) {
-        const fromEmail = this.emailAddressService.service.defaultFromAddress;
-        const {ghostMailer} = this;
-
-        this.magicLinkService.transporter = {
-            sendMail(message) {
-                if (process.env.NODE_ENV !== 'production') {
-                    logging.warn(message.text);
-                }
-                let msg = Object.assign({
-                    from: fromEmail,
-                    subject: 'Verify email address',
-                    forceTextContent: true
-                }, message);
-
-                return ghostMailer.send(msg);
-            }
-        };
-
-        return this.magicLinkService.sendMagicLink({email, tokenData: {id, property, value: email}});
-    }
 }
 
 /**
