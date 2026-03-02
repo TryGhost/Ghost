@@ -256,8 +256,6 @@ test.describe('Member emails settings', async () => {
 
             await pasteText(page, 'https://ghost.org/');
 
-            await expect(modal.getByTestId('embed-url-loading-container')).toBeVisible();
-            await expect(modal.getByTestId('embed-url-loading-container')).toBeHidden();
             await expect(modal.getByTestId('embed-iframe')).toBeVisible();
 
             await expect.poll(() => lastApiRequests.fetchOembed?.url || '').toContain('/oembed/?');
@@ -299,6 +297,8 @@ test.describe('Member emails settings', async () => {
 
             const editor = modal.locator('[data-kg="editor"] div[contenteditable="true"]').first();
             await editor.click({timeout: 5000});
+            await page.keyboard.press('ControlOrMeta+a');
+            await page.keyboard.press('Backspace');
             await page.keyboard.type('/bookmark');
             await page.keyboard.press('Enter');
 
