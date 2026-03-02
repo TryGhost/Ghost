@@ -4,7 +4,11 @@ import {useKoenigLinkSuggestions} from '@tryghost/admin-x-framework';
 
 export const useWelcomeEmailLinkSuggestions = () => {
     const {settings, siteData} = useGlobalData();
-    const [membersSignupAccess, donationsEnabled, recommendationsEnabled] = getSettingValues(settings, [
+    const [
+        membersSignupAccess,
+        donationsEnabled = false,
+        recommendationsEnabled = false
+    ] = getSettingValues(settings, [
         'members_signup_access',
         'donations_enabled',
         'recommendations_enabled'
