@@ -1,3 +1,4 @@
+import './verified-emails-modal'; // Side-effect import to register the modal with NiceModal
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import {
@@ -80,7 +81,7 @@ const VerifiedEmailSelect: React.FC<VerifiedEmailSelectProps> = ({
             });
             setNewEmail('');
             setAddMode(false);
-        } catch (e) {
+        } catch {
             showToast({
                 type: 'error',
                 message: 'Failed to send verification email'
@@ -90,7 +91,6 @@ const VerifiedEmailSelect: React.FC<VerifiedEmailSelectProps> = ({
 
     const handleOpenManageModal = () => {
         setOpen(false);
-        // VerifiedEmailsModal will be created in Task 15
         NiceModal.show('verified-emails-modal');
     };
 
@@ -192,8 +192,8 @@ const VerifiedEmailSelect: React.FC<VerifiedEmailSelectProps> = ({
                                             <CommandItem
                                                 key={email.id}
                                                 className="opacity-50"
-                                                disabled
                                                 value={email.email}
+                                                disabled
                                             >
                                                 <span>{email.email}</span>
                                                 <Badge className="ml-auto" variant="secondary">Pending</Badge>
