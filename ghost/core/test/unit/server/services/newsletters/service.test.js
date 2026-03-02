@@ -26,6 +26,7 @@ describe('NewslettersService', function () {
     /** @type {NewslettersService.ILimitService} */
     let limitService;
     let emailMockReceiver;
+    let emailVerificationService;
 
     before(function () {
         models.init();
@@ -34,6 +35,15 @@ describe('NewslettersService', function () {
 
         limitService = {
             async errorIfWouldGoOverLimit() {}
+        };
+
+        emailVerificationService = {
+            async check() {
+                return false;
+            },
+            async add() {
+                return {pending: true};
+            }
         };
 
         newsletterService = new NewslettersService({
@@ -65,7 +75,8 @@ describe('NewslettersService', function () {
                         }
                     }
                 })
-            }
+            },
+            emailVerificationService
         });
     });
 
