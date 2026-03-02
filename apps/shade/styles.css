@@ -1,10 +1,3 @@
-@import "tailwindcss/theme.css";
-@import "./preflight.css";
-@import "tailwindcss/utilities.css";
-@import "tw-animate-css";
-
-@config "./tailwind.config.cjs";
-
 @import url(https://fonts.bunny.net/css?family=cardo:400,700);
 @import url(https://fonts.bunny.net/css?family=manrope:300,500,700);
 @import url(https://fonts.bunny.net/css?family=merriweather:300,700);
@@ -26,6 +19,13 @@
 @import url(https://fonts.bunny.net/css?family=space-mono:400,700);
 @import url(https://fonts.bunny.net/css?family=fira-mono:400,700);
 @import url(https://fonts.bunny.net/css?family=jetbrains-mono:400,700);
+
+@import "tailwindcss/theme.css";
+@import "./preflight.css";
+@import "tailwindcss/utilities.css";
+@import "tw-animate-css";
+
+@config "./tailwind.config.cjs";
 
 /* CSS variables — outside @layer so they're in the implicit layer */
 :root {
