@@ -1,5 +1,6 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../utils/assertions');
+const sinon = require('sinon');
 const hbs = require('../../../../core/frontend/services/theme-engine/engine');
 const configUtils = require('../../../utils/config-utils');
 const path = require('path');
@@ -117,6 +118,7 @@ describe('{{content}} helper with no access', function () {
 
             after(function () {
                 i18nSetup.teardown();
+                sinon.restore();
             });
 
             beforeEach(function () {

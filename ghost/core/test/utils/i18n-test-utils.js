@@ -33,7 +33,6 @@ function setupI18nTest({useNewTranslation, locale = 'en', activeTheme = 'locale-
          * Clean up all i18n state. Call in `after()`.
          */
         teardown() {
-            sinon.restore();
             themeI18n.basePath = ogI18nBasePath;
             themeI18next.basePath = ogI18nextBasePath;
             themeI18n._strings = null;

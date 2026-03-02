@@ -136,6 +136,7 @@ describe('private.hbs template translation', function () {
 
             after(function () {
                 i18nSetup.teardown();
+                sinon.restore();
             });
 
             it('renders English strings when locale is en', function () {

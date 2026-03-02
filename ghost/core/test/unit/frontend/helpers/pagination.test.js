@@ -1,5 +1,6 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../utils/assertions');
+const sinon = require('sinon');
 const hbs = require('../../../../core/frontend/services/theme-engine/engine');
 const configUtils = require('../../../utils/config-utils');
 const path = require('path');
@@ -63,6 +64,7 @@ describe('{{pagination}} helper', function () {
 
             after(function () {
                 i18nSetup.teardown();
+                sinon.restore();
             });
 
             it('can render single page with no pagination necessary', function () {
