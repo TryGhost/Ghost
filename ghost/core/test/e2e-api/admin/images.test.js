@@ -446,8 +446,13 @@ describe('Images API', function () {
 
         const originalFilePath = p.join(__dirname, '/../../utils/fixtures/images/loadingcat.gif');
         const fileContents = await fs.readFile(originalFilePath);
-        await uploadImageRequest({fileContents, filename: 'loadingcat.gif', contentType: 'image/gif'})
+        const {body} = await uploadImageRequest({fileContents, filename: 'loadingcat.gif', contentType: 'image/gif'})
             .expectStatus(201);
+
+        const relativePath = body.images[0].url.replace(urlUtils.urlFor('home', true), '/');
+        const filePath = config.getContentPath('images') + relativePath.replace('/content/images/', '');
+        images.push(filePath);
+        images.push(imageTransform.generateOriginalImageName(filePath));
 
         assert.ok(saveSpy.called, 'save() should have been called');
         const fileArg = saveSpy.firstCall.args[0];
