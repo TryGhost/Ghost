@@ -200,7 +200,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
 
     // "Sent" Chart
     const sentChartData: NewsletterRadialChartData[] = [
-        {datatype: 'Sent', value: 1, fill: 'url(#gradientPurple)', color: 'hsl(var(--chart-purple))'}
+        {datatype: 'Sent', value: 1, fill: 'url(#gradientPurple)', color: 'var(--chart-purple)'}
     ];
 
     const sentChartConfig = {
@@ -217,8 +217,8 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
 
     // "Opened" Chart
     const openedChartData: NewsletterRadialChartData[] = [
-        {datatype: 'Average', value: averageStats.openedRate, fill: 'url(#gradientGray)', color: 'hsl(var(--chart-gray))'},
-        {datatype: 'This newsletter', value: stats.openedRate, fill: 'url(#gradientBlue)', color: 'hsl(var(--chart-blue))'}
+        {datatype: 'Average', value: averageStats.openedRate, fill: 'url(#gradientGray)', color: 'var(--chart-gray)'},
+        {datatype: 'This newsletter', value: stats.openedRate, fill: 'url(#gradientBlue)', color: 'var(--chart-blue)'}
     ];
 
     const openedChartConfig = {
@@ -235,8 +235,8 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
 
     // "Clicked" Chart
     const clickedChartData: NewsletterRadialChartData[] = [
-        {datatype: 'Average', value: averageStats.clickedRate, fill: 'url(#gradientGray)', color: 'hsl(var(--chart-gray))'},
-        {datatype: 'This newsletter', value: stats.clickedRate, fill: 'url(#gradientTeal)', color: 'hsl(var(--chart-teal))'}
+        {datatype: 'Average', value: averageStats.clickedRate, fill: 'url(#gradientGray)', color: 'var(--chart-gray)'},
+        {datatype: 'This newsletter', value: stats.clickedRate, fill: 'url(#gradientTeal)', color: 'var(--chart-teal)'}
     ];
 
     const clickedChartConfig = {
@@ -380,7 +380,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                         <div className={`group/block relative border-r-0 px-6 transition-all hover:bg-muted/25 ${emailTrackClicksEnabled && 'md:border-r'}`}>
                                             <BlockTooltip
                                                 avgValue={formatPercentage(averageStats.openedRate)}
-                                                dataColor='hsl(var(--chart-blue))'
+                                                dataColor='var(--chart-blue)'
                                                 value={formatPercentage(stats.openedRate)}
                                             />
                                             <NewsletterRadialChart
@@ -402,7 +402,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                         <div className='group/block relative px-6 transition-all hover:bg-muted/25'>
                                             <BlockTooltip
                                                 avgValue={formatPercentage(averageStats.clickedRate)}
-                                                dataColor='hsl(var(--chart-teal))'
+                                                dataColor='var(--chart-teal)'
                                                 value={formatPercentage(stats.clickedRate)}
                                             />
                                             <NewsletterRadialChart

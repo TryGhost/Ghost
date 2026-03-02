@@ -128,7 +128,7 @@ const LocationsCard: React.FC<LocationsCardProps> = ({data, isLoading, range, on
 
         if (currentData) {
             const opacity = opacityByValue[currentData.relativeValue] || '';
-            return cn('fill-[hsl(var(--chart-blue))]', opacity);
+            return cn('fill-[var(--chart-blue)]', opacity);
         }
 
         return 'fill-gray-300 dark:fill-gray-900/75';
