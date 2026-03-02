@@ -5,6 +5,17 @@ import {getTinybirdToken} from '../../../src/api/tinybird';
 import {FrameworkProvider} from '../../../src/providers/framework-provider';
 import {withMockFetch} from '../../utils/mock-fetch';
 
+// Mock the currentUser API for permission checks
+vi.mock('../../../src/api/current-user', () => ({
+    useCurrentUser: vi.fn().mockReturnValue({
+        data: {
+            id: '1',
+            name: 'Test User',
+            roles: [{name: 'Administrator', id: '1'}]
+        }
+    })
+}));
+
 const queryClient = new QueryClient({
     defaultOptions: {
         queries: {
