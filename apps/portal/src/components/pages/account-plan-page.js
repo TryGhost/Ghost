@@ -68,7 +68,7 @@ function getConfirmationPageTitle({confirmationType, pendingOffer}) {
     } else if (confirmationType === 'subscribe') {
         return t('Subscribe');
     } else if (confirmationType === 'offerRetention') {
-        return pendingOffer?.display_title || 'Before you go';
+        return pendingOffer?.display_title || t('Before you go');
     }
 }
 
@@ -259,41 +259,56 @@ function PlansOrProductSection({selectedPlan, onPlanSelect, onPlanCheckout, chan
     );
 }
 
-// TODO: Add i18n once copy is finalized
+function getRetentionOfferLabel(offer, amountOff) {
+    if (isFreeMonthsOffer(offer)) {
+        const months = offer.duration_in_months;
+        if (months === 1) {
+            return t('1 month free');
+        }
+        return t('{months} months free', {months});
+    }
+
+    return t('{amountOff} off', {amountOff});
+}
+
 function getRetentionOfferMessage(offer, originalPrice, currency, amountOff, subscription) {
     if (isFreeMonthsOffer(offer)) {
         const months = offer.duration_in_months;
-        const monthLabel = months === 1 ? '1 free month' : `${months} free months`;
         const nextPaymentDate = addMonths(subscription.current_period_end, months);
         const nextPaymentDateFormatted = nextPaymentDate ? nextPaymentDate.toLocaleDateString('en-GB', {year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC'}) : null;
 
         if (nextPaymentDateFormatted) {
-            return `Enjoy ${monthLabel} on us. You won't be charged until ${nextPaymentDateFormatted}.`;
+            if (months === 1) {
+                return t('Enjoy a free month on us. You won\'t be charged until {newBillingDate}.', {newBillingDate: nextPaymentDateFormatted});
+            }
+            return t('Enjoy {months} free months on us. You won\'t be charged until {newBillingDate}.', {months, newBillingDate: nextPaymentDateFormatted});
         }
 
-        return `Enjoy ${monthLabel} on us.`;
+        if (months === 1) {
+            return t('Enjoy a free month on us.');
+        }
+        return t('Enjoy {months} free months on us.', {months});
     }
 
     if (offer.duration === 'forever') {
-        return `Enjoy ${amountOff} off forever.`;
+        return t('Enjoy {amountOff} off forever.', {amountOff});
     }
 
     if (offer.duration === 'once') {
-        return `Save ${amountOff} on your next billing cycle. Then ${currency}${originalPrice}/${offer.cadence}.`;
+        return t('Save {amountOff} on your next billing cycle. Then {currency}{originalPrice}/{cadence}.', {amountOff, currency, originalPrice, cadence: offer.cadence});
     }
 
     if (offer.duration === 'repeating' && offer.duration_in_months === 1) {
-        return `Save ${amountOff} on your next billing cycle. Then ${currency}${originalPrice}/${offer.cadence}.`;
+        return t('Save {amountOff} on your next billing cycle. Then {currency}{originalPrice}/{cadence}.', {amountOff, currency, originalPrice, cadence: offer.cadence});
     }
 
     if (offer.duration === 'repeating' && offer.duration_in_months > 1) {
-        return `Save ${amountOff} on your next ${offer.duration_in_months} billing cycles. Then ${currency}${originalPrice}/${offer.cadence}.`;
+        return t('Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.', {amountOff, durationInMonths: offer.duration_in_months, currency, originalPrice, cadence: offer.cadence});
     }
 
     return '';
 }
 
-// TODO: Add i18n once copy is finalized
 const RetentionOfferSection = ({offer, product, price, onAcceptOffer, onDeclineOffer}) => {
     const {brandColor, action, member} = useContext(AppContext);
     const isAcceptingOffer = action === 'applyOffer:running';
@@ -303,14 +318,14 @@ const RetentionOfferSection = ({offer, product, price, onAcceptOffer, onDeclineO
     const currency = getCurrencySymbol(price.currency);
     const discountedPrice = formatNumber(getUpdatedOfferPrice({offer, price}));
     const amountOff = getOfferOffAmount({offer});
-    const discountText = isFreeMonthsOffer(offer) ? `${amountOff} free` : `${amountOff} off`;
-    const cadenceLabel = offer.cadence === 'month' ? 'Monthly' : 'Yearly';
-    const productCadenceLabel = `${product.name} - ${cadenceLabel}`;
-    const displayDescription = offer.display_description || 'We\'d hate to see you leave. How about a special offer to stay?';
 
+    const cadenceLabel = offer.cadence === 'month' ? t('Monthly') : t('Yearly');
+    const productCadenceLabel = `${product.name} - ${cadenceLabel}`;
+    const displayDescription = offer.display_description || t('We\'d hate to see you leave. How about a special offer to stay?');
+
+    const offerLabel = getRetentionOfferLabel(offer, amountOff);
     const offerMessage = getRetentionOfferMessage(offer, originalPrice, currency, amountOff, subscription);
 
-    // TODO: Add i18n once copy is finalized
     return (
         <div className="gh-portal-logged-out-form-container gh-portal-offer gh-portal-retention-offer">
             <p className="gh-portal-text-center">
@@ -320,7 +335,7 @@ const RetentionOfferSection = ({offer, product, price, onAcceptOffer, onDeclineO
             <div className="gh-portal-offer-bar">
                 <div className="gh-portal-offer-title">
                     <h4>{productCadenceLabel}</h4>
-                    <h5 className="gh-portal-discount-label">{discountText}</h5>
+                    <h5 className="gh-portal-discount-label">{offerLabel}</h5>
                 </div>
 
                 <div className="gh-portal-offer-details">
@@ -342,7 +357,6 @@ const RetentionOfferSection = ({offer, product, price, onAcceptOffer, onDeclineO
                     </p>
                 </div>
 
-                {/* TODO: Add i18n once copy is finalized */}
                 <ActionButton
                     dataTestId={'accept-retention-offer'}
                     onClick={onAcceptOffer}
@@ -350,7 +364,7 @@ const RetentionOfferSection = ({offer, product, price, onAcceptOffer, onDeclineO
                     disabled={isAcceptingOffer}
                     isPrimary={true}
                     brandColor={brandColor}
-                    label="Continue subscription"
+                    label={t('Continue subscription')}
                     style={{
                         width: '100%',
                         height: '40px',
@@ -359,7 +373,6 @@ const RetentionOfferSection = ({offer, product, price, onAcceptOffer, onDeclineO
                 />
             </div>
 
-            {/* TODO: Add i18n once copy is finalized */}
             <ActionButton
                 dataTestId={'decline-retention-offer'}
                 onClick={onDeclineOffer}
@@ -367,7 +380,7 @@ const RetentionOfferSection = ({offer, product, price, onAcceptOffer, onDeclineO
                 isDestructive={true}
                 classes={'gh-portal-btn-text'}
                 brandColor={brandColor}
-                label="No thanks, I want to cancel"
+                label={t('No thanks, I want to cancel')}
                 style={{
                     width: '100%',
                     marginTop: '32px',
@@ -376,7 +389,6 @@ const RetentionOfferSection = ({offer, product, price, onAcceptOffer, onDeclineO
             />
         </div>
     );
-    /* eslint-enable i18next/no-literal-string */
 };
 
 // For free members

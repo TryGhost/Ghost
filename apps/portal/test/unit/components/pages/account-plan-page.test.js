@@ -436,7 +436,7 @@ describe('Account Plan Page', () => {
         fireEvent.click(cancelButton);
 
         expect(queryByText('1 month free')).toBeInTheDocument();
-        expect(queryByText('Enjoy 1 free month on us. You won\'t be charged until 5 Nov 2022.')).toBeInTheDocument();
+        expect(queryByText('Enjoy a free month on us. You won\'t be charged until 5 Nov 2022.')).toBeInTheDocument();
     });
 
     test('renders multi-month free months retention offers', async () => {
