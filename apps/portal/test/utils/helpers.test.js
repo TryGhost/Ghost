@@ -26,7 +26,8 @@ import {
     hasNewsletterSendingEnabled,
     getUpdatedOfferPrice,
     isComplimentaryMember,
-    subscriptionHasFreeTrial
+    subscriptionHasFreeTrial,
+    addMonths
 } from '../../src/utils/helpers';
 import * as Fixtures from '../../src/utils/fixtures-generator';
 import {site as FixturesSite, member as FixtureMember, offer as FixtureOffer, transformTierFixture as TransformFixtureTiers} from './test-fixtures';
@@ -718,6 +719,69 @@ describe('Helpers - ', () => {
             };
 
             expect(subscriptionHasFreeTrial({sub})).toBe(false);
+        });
+    });
+
+    describe('addMonths', () => {
+        it('adds one month by default', () => {
+            const date = new Date(Date.UTC(2024, 0, 15));
+            const result = addMonths(date);
+            expect(result).toEqual(new Date(Date.UTC(2024, 1, 15)));
+        });
+
+        it('adds multiple months', () => {
+            const date = new Date(Date.UTC(2024, 0, 10));
+            const result = addMonths(date, 3);
+            expect(result).toEqual(new Date(Date.UTC(2024, 3, 10)));
+        });
+
+        it('wraps around to the next year', () => {
+            const date = new Date(Date.UTC(2024, 10, 5));
+            const result = addMonths(date, 3);
+            expect(result).toEqual(new Date(Date.UTC(2025, 1, 5)));
+        });
+
+        it('clamps to the last day of a shorter month (Jan 31 + 1 month)', () => {
+            const date = new Date(Date.UTC(2024, 0, 31));
+            const result = addMonths(date, 1);
+            expect(result).toEqual(new Date(Date.UTC(2024, 1, 29)));
+        });
+
+        it('clamps to 28 Feb in non-leap year', () => {
+            const date = new Date(Date.UTC(2023, 0, 31));
+            const result = addMonths(date, 1);
+            expect(result).toEqual(new Date(Date.UTC(2023, 1, 28)));
+        });
+
+        it('handles adding 12 months (full year)', () => {
+            const date = new Date(Date.UTC(2024, 5, 15));
+            const result = addMonths(date, 12);
+            expect(result).toEqual(new Date(Date.UTC(2025, 5, 15)));
+        });
+
+        it('handles adding more than 12 months', () => {
+            const date = new Date(Date.UTC(2024, 0, 1));
+            const result = addMonths(date, 25);
+            expect(result).toEqual(new Date(Date.UTC(2026, 1, 1)));
+        });
+
+        it('accepts a date string', () => {
+            const result = addMonths('2024-03-15T00:00:00.000Z', 2);
+            expect(result).toEqual(new Date(Date.UTC(2024, 4, 15)));
+        });
+
+        it('accepts a timestamp number', () => {
+            const ts = Date.UTC(2024, 0, 10);
+            const result = addMonths(ts, 1);
+            expect(result).toEqual(new Date(Date.UTC(2024, 1, 10)));
+        });
+
+        it('returns null for an invalid date', () => {
+            expect(addMonths('not-a-date', 1)).toBeNull();
+        });
+
+        it('returns null for undefined', () => {
+            expect(addMonths(undefined, 1)).toBeNull();
         });
     });
 

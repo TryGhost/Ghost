@@ -5,7 +5,7 @@ import CloseButton from '../common/close-button';
 import BackButton from '../common/back-button';
 import {MultipleProductsPlansSection} from '../common/plans-section';
 import {getDateString} from '../../utils/date-time';
-import {formatNumber, getAvailablePrices, getCurrencySymbol, getFilteredPrices, isFreeMonthsOffer, getMemberActivePrice, getMemberActiveProduct, getMemberSubscription, getOfferOffAmount, getPriceFromSubscription, getProductFromId, getProductFromPrice, getSubscriptionFromId, getUpdatedOfferPrice, getUpgradeProducts, hasMultipleProductsFeature, isComplimentaryMember, isPaidMember} from '../../utils/helpers';
+import {addMonths, formatNumber, getAvailablePrices, getCurrencySymbol, getFilteredPrices, isFreeMonthsOffer, getMemberActivePrice, getMemberActiveProduct, getMemberSubscription, getOfferOffAmount, getPriceFromSubscription, getProductFromId, getProductFromPrice, getSubscriptionFromId, getUpdatedOfferPrice, getUpgradeProducts, hasMultipleProductsFeature, isComplimentaryMember, isPaidMember} from '../../utils/helpers';
 import Interpolate from '@doist/react-interpolate';
 import {t} from '../../utils/i18n';
 
@@ -260,21 +260,15 @@ function PlansOrProductSection({selectedPlan, onPlanSelect, onPlanCheckout, chan
 }
 
 // TODO: Add i18n once copy is finalized
-function getOfferMessage(offer, originalPrice, currency, amountOff, subscription) {
+function getRetentionOfferMessage(offer, originalPrice, currency, amountOff, subscription) {
     if (isFreeMonthsOffer(offer)) {
         const months = offer.duration_in_months;
         const monthLabel = months === 1 ? '1 free month' : `${months} free months`;
+        const nextPaymentDate = addMonths(subscription.current_period_end, months);
+        const nextPaymentDateFormatted = nextPaymentDate ? nextPaymentDate.toLocaleDateString('en-GB', {year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC'}) : null;
 
-        if (subscription?.current_period_end) {
-            const date = new Date(subscription.current_period_end);
-            const originalDay = date.getUTCDate();
-            let targetMonth = date.getUTCMonth() + months;
-            let targetYear = date.getUTCFullYear() + Math.floor(targetMonth / 12);
-            targetMonth = targetMonth % 12;
-            const daysInTargetMonth = new Date(Date.UTC(targetYear, targetMonth + 1, 0)).getUTCDate();
-            const newDate = new Date(Date.UTC(targetYear, targetMonth, Math.min(originalDay, daysInTargetMonth)));
-            const newBillingDate = newDate.toLocaleDateString('en-GB', {year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC'});
-            return `Enjoy ${monthLabel} on us. You won't be charged until ${newBillingDate}.`;
+        if (nextPaymentDateFormatted) {
+            return `Enjoy ${monthLabel} on us. You won't be charged until ${nextPaymentDateFormatted}.`;
         }
 
         return `Enjoy ${monthLabel} on us.`;
@@ -314,7 +308,7 @@ const RetentionOfferSection = ({offer, product, price, onAcceptOffer, onDeclineO
     const productCadenceLabel = `${product.name} - ${cadenceLabel}`;
     const displayDescription = offer.display_description || 'We\'d hate to see you leave. How about a special offer to stay?';
 
-    const offerMessage = getOfferMessage(offer, originalPrice, currency, amountOff, subscription);
+    const offerMessage = getRetentionOfferMessage(offer, originalPrice, currency, amountOff, subscription);
 
     // TODO: Add i18n once copy is finalized
     return (
