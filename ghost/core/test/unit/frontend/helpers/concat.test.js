@@ -154,3 +154,10 @@ describe('{{concat}} helper', function () {
         shouldCompileToExpected(templateString, {post: {title: 'My Post', slug: 'my-post'}}, expected);
     });
 });
+
+// TEMPORARY: Deliberate failure to test CI log output legibility — remove before merging
+describe('CI log output experiment', function () {
+    it('TEMPORARY FAILING TEST — do not merge', function () {
+        throw new Error('This test is intentionally failing to test CI log output legibility');
+    });
+});
