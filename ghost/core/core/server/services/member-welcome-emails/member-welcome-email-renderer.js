@@ -16,13 +16,6 @@ class MemberWelcomeEmailRenderer {
 
     constructor({t}) {
         this.Handlebars = require('handlebars').create();
-        this.Handlebars.registerHelper('if', function (conditional, options) {
-            if (conditional) {
-                return options.fn(this);
-            } else {
-                return options.inverse(this);
-            }
-        });
         this.Handlebars.registerHelper('t', function (key, options) {
             let hash = options?.hash;
             return t(key, hash || options || {});
