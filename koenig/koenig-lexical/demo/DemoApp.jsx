@@ -18,7 +18,7 @@ import {
     BASIC_NODES, BASIC_TRANSFORMERS, BookmarkPlugin,
     ButtonPlugin, CalloutPlugin, CardMenuPlugin, EMAIL_EDITOR_NODES,
     EMAIL_TRANSFORMERS, EmEnDashPlugin, EmailCtaPlugin, EmojiPickerPlugin, 
-    FilePlugin, HorizontalRulePlugin, HtmlPlugin, ImagePlugin,
+    HorizontalRulePlugin, HtmlPlugin, ImagePlugin,
     KoenigComposableEditor, KoenigComposer, KoenigEditor, KoenigSelectorPlugin, KoenigSnippetPlugin, ListPlugin, MINIMAL_NODES,
     MINIMAL_TRANSFORMERS, ReplacementStringsPlugin, RestrictContentPlugin, TKCountPlugin, WordCountPlugin
 } from '../src';
@@ -173,7 +173,6 @@ function DemoEditor({editorType, registerAPI, cursorDidExitAtTop, darkMode, setW
                 <EmailCtaPlugin />
                 <EmEnDashPlugin />
                 <EmojiPickerPlugin />
-                <FilePlugin />
                 <HorizontalRulePlugin />
                 <HtmlPlugin />
                 <ImagePlugin /> 
