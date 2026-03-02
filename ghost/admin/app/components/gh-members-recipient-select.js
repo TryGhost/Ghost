@@ -1,5 +1,6 @@
 import Component from '@glimmer/component';
 import flattenGroupedOptions from 'ghost-admin/utils/flatten-grouped-options';
+import {TrackedArray} from 'tracked-built-ins';
 import {action} from '@ember/object';
 import {isBlank} from '@ember/utils';
 import {inject as service} from '@ember/service';
@@ -7,13 +8,16 @@ import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 const BASE_FILTERS = ['status:free', 'status:-free'];
+const PAGE_SIZE = 100;
 
 export default class GhMembersRecipientSelect extends Component {
     @service membersUtils;
     @service store;
 
     @tracked forceSpecificChecked = false;
-    @tracked specificOptions = [];
+    @tracked _tierOptions = [];
+    @tracked _labelOptions = new TrackedArray();
+    _labelsMeta = null;
 
     constructor() {
         super(...arguments);
@@ -51,6 +55,19 @@ export default class GhMembersRecipientSelect extends Component {
 
     get isSpecificChecked() {
         return this.forceSpecificChecked || this.specificFilters.size > 0;
+    }
+
+    get specificOptions() {
+        const options = [...this._tierOptions];
+
+        if (this._labelOptions.length > 0) {
+            options.unshift({
+                groupName: 'Labels',
+                options: [...this._labelOptions]
+            });
+        }
+
+        return options;
     }
 
     get selectedSpecificOptions() {
@@ -136,33 +153,36 @@ export default class GhMembersRecipientSelect extends Component {
     }
 
     @task
-    *fetchSpecificOptionsTask() {
-        const options = [];
-
-        // fetch labels w̶i̶t̶h̶ c̶o̶u̶n̶t̶s̶
-        // TODO: add `include: 'count.members` to query once API is fixed
-        const labels = yield this.store.query('label', {limit: 100, order: 'name asc'});
-
-        if (labels.length > 0) {
-            const labelsGroup = {
-                groupName: 'Labels',
-                options: []
-            };
-
-            labels.forEach((label) => {
-                labelsGroup.options.push({
-                    name: label.name,
-                    segment: `label:${label.slug}`,
-                    count: label.count?.members,
-                    class: 'segment-label'
-                });
-            });
-
-            options.push(labelsGroup);
+    *loadMoreLabelsTask() {
+        if (this._labelsMeta?.pagination && this._labelsMeta.pagination.pages <= this._labelsMeta.pagination.page) {
+            return;
         }
+
+        const page = this._labelsMeta?.pagination.page ? this._labelsMeta.pagination.page + 1 : 1;
+        const labels = yield this.store.query('label', {limit: PAGE_SIZE, page, order: 'name asc'});
+
+        labels.forEach((label) => {
+            this._labelOptions.push({
+                name: label.name,
+                segment: `label:${label.slug}`,
+                count: label.count?.members,
+                class: 'segment-label'
+            });
+        });
+
+        this._labelsMeta = labels.meta;
+    }
+
+    @task
+    *fetchSpecificOptionsTask() {
+        // fetch first page of labels (labels are last so infinite scroll works)
+        // TODO: add `include: 'count.members` to query once API is fixed
+        yield this.loadMoreLabelsTask.perform();
+
         // fetch all tiers w̶i̶t̶h̶ c̶o̶u̶n̶t̶s̶
         // TODO: add `include: 'count.members` to query once API supports
         const tiers = yield this.store.query('tier', {filter: 'type:paid', limit: 'all'});
+        const tierOptions = [];
 
         if (tiers.length > 1) {
             const activeTiersGroup = {
@@ -190,10 +210,10 @@ export default class GhMembersRecipientSelect extends Component {
                 }
             });
 
-            options.push(activeTiersGroup);
-            options.push(archivedTiersGroup);
+            tierOptions.push(activeTiersGroup);
+            tierOptions.push(archivedTiersGroup);
         }
 
-        this.specificOptions = options;
+        this._tierOptions = tierOptions;
     }
 }

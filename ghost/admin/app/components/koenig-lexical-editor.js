@@ -242,7 +242,18 @@ export default class KoenigLexicalEditor extends Component {
             return this.labels;
         }
 
-        this.labels = yield this.store.query('label', {limit: 100, fields: 'id, name', order: 'name asc'});
+        let allLabels = [];
+        let page = 1;
+        let totalPages = 1;
+
+        while (page <= totalPages) {
+            const result = yield this.store.query('label', {limit: 100, page, fields: 'id, name', order: 'name asc'});
+            allLabels.push(...result.toArray());
+            totalPages = result.meta.pagination.pages;
+            page += 1;
+        }
+
+        this.labels = allLabels;
         return this.labels;
     }
 

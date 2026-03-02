@@ -1,14 +1,19 @@
 import Component from '@glimmer/component';
+import {TrackedArray} from 'tracked-built-ins';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
+const PAGE_SIZE = 100;
+
 export default class GhMembersSegmentSelect extends Component {
     @service store;
     @service feature;
 
-    @tracked _options = [];
+    @tracked _baseOptions = [];
+    @tracked _labelOptions = new TrackedArray();
+    _labelsMeta = null;
 
     get renderInPlace() {
         return this.args.renderInPlace === undefined ? false : this.args.renderInPlace;
@@ -17,6 +22,19 @@ export default class GhMembersSegmentSelect extends Component {
     constructor() {
         super(...arguments);
         this.fetchOptionsTask.perform();
+    }
+
+    get _options() {
+        const options = [...this._baseOptions];
+
+        if (this._labelOptions.length > 0 && !this.args.hideLabels) {
+            options.push({
+                groupName: 'Labels',
+                options: [...this._labelOptions]
+            });
+        }
+
+        return options;
     }
 
     get options() {
@@ -55,6 +73,27 @@ export default class GhMembersSegmentSelect extends Component {
     setSegment(options) {
         const segment = options.mapBy('segment').join(',') || null;
         this.args.onChange?.(segment);
+    }
+
+    @task
+    *loadMoreLabelsTask() {
+        if (this._labelsMeta?.pagination && this._labelsMeta.pagination.pages <= this._labelsMeta.pagination.page) {
+            return;
+        }
+
+        const page = this._labelsMeta?.pagination.page ? this._labelsMeta.pagination.page + 1 : 1;
+        const labels = yield this.store.query('label', {limit: PAGE_SIZE, page, order: 'name asc'});
+
+        labels.forEach((label) => {
+            this._labelOptions.push({
+                name: label.name,
+                segment: `label:${label.slug}`,
+                count: label.count?.members,
+                class: 'segment-label'
+            });
+        });
+
+        this._labelsMeta = labels.meta;
     }
 
     @task
@@ -111,28 +150,6 @@ export default class GhMembersSegmentSelect extends Component {
             }
         }
 
-        // fetch labels w̶i̶t̶h̶ c̶o̶u̶n̶t̶s̶
-        // TODO: add `include: 'count.members` to query once API is fixed
-        const labels = yield this.store.query('label', {limit: 100, order: 'name asc'});
-
-        if (labels.length > 0 && !this.args.hideLabels) {
-            const labelsGroup = {
-                groupName: 'Labels',
-                options: []
-            };
-
-            labels.forEach((label) => {
-                labelsGroup.options.push({
-                    name: label.name,
-                    segment: `label:${label.slug}`,
-                    count: label.count?.members,
-                    class: 'segment-label'
-                });
-            });
-
-            options.push(labelsGroup);
-        }
-
         const offers = yield this.store.findAll('offer');
 
         if (offers.length > 0) {
@@ -153,6 +170,10 @@ export default class GhMembersSegmentSelect extends Component {
             options.push(offersGroup);
         }
 
-        this._options = options;
+        this._baseOptions = options;
+
+        // fetch first page of labels (labels are last so infinite scroll works)
+        // TODO: add `include: 'count.members` to query once API is fixed
+        yield this.loadMoreLabelsTask.perform();
     }
 }

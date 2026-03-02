@@ -1,39 +1,110 @@
 import Component from '@glimmer/component';
+import {TrackedArray} from 'tracked-built-ins';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
+const PAGE_SIZE = 100;
+
 export default class GhMemberSingleLabelInput extends Component {
     @service store;
     @service labelsManager;
 
-    @tracked selectedLabel;
-    @tracked _availableLabels = [];
-    @tracked _hasLoaded = false;
+    @tracked _selectedLabel = null;
+    @tracked _initialLabels = new TrackedArray();
+    @tracked _searchedLabels = new TrackedArray();
+
+    _initialLabelsMeta = null;
+    _hasLoadedInitialLabels = false;
+    _searchedLabelsQuery = null;
+    _searchedLabelsMeta = null;
+
+    _powerSelectAPI = null;
 
     get availableLabels() {
-        return this.labelsManager.sortLabels(this._availableLabels);
+        return this.labelsManager.sortLabels(this._initialLabels.toArray());
+    }
+
+    get useServerSideSearch() {
+        const hasLoadedAnyLabels = !!this._initialLabelsMeta;
+        const hasLoadedAllLabels = hasLoadedAnyLabels && parseInt(this._initialLabelsMeta.pagination.pages, 10) === parseInt(this._initialLabelsMeta.pagination.page, 10);
+
+        return !hasLoadedAllLabels;
     }
 
     constructor(...args) {
         super(...args);
-        this.loadLabelsTask.perform();
+        this.loadInitialLabelsTask.perform();
     }
 
     @task
-    *loadLabelsTask() {
-        const labels = yield this.store.query('label', {limit: 100, page: 1, order: 'name asc'});
-        this._availableLabels = labels.toArray();
-        this._hasLoaded = true;
+    *loadInitialLabelsTask() {
+        const labels = yield this.store.query('label', {limit: PAGE_SIZE, page: 1, order: 'name asc'});
+        this._initialLabels.push(...labels.toArray());
+        this._initialLabelsMeta = labels.meta;
 
-        this.selectedLabel = this.args.label || this.availableLabels[0]?.get('id');
-        this.args.onChange(this.selectedLabel);
+        const sorted = this.availableLabels;
+        if (this.args.label) {
+            this._selectedLabel = sorted.find(l => l.id === this.args.label) || sorted[0];
+        } else {
+            this._selectedLabel = sorted[0];
+        }
+        if (this._selectedLabel) {
+            this.args.onChange(this._selectedLabel.id);
+        }
     }
 
     @action
-    updateLabel(newLabel) {
-        this.selectedLabel = newLabel;
-        this.args.onChange(newLabel);
+    registerPowerSelectAPI(api) {
+        this._powerSelectAPI = api;
+    }
+
+    @task
+    *loadMoreLabelsTask() {
+        const isSearch = !!this._powerSelectAPI?.searchText;
+        if (isSearch) {
+            if (!this.useServerSideSearch) {
+                return;
+            }
+
+            if (this.searchLabelsTask.isRunning) {
+                return;
+            }
+
+            if (this._searchedLabelsMeta?.pagination && this._searchedLabelsMeta.pagination.pages <= this._searchedLabelsMeta.pagination.page) {
+                return;
+            }
+
+            const page = this._searchedLabelsMeta.pagination.page + 1;
+            const labels = yield this.labelsManager.searchLabelsTask.perform(this._searchedLabelsQuery, {page});
+            this._searchedLabels.push(...labels.toArray());
+            this._searchedLabelsMeta = labels.meta;
+        } else {
+            if (this._initialLabelsMeta?.pagination && this._initialLabelsMeta.pagination.pages <= this._initialLabelsMeta.pagination.page) {
+                return;
+            }
+
+            const page = this._initialLabelsMeta?.pagination.page ? this._initialLabelsMeta.pagination.page + 1 : 1;
+            const labels = yield this.store.query('label', {limit: PAGE_SIZE, page, order: 'name asc'});
+            this._initialLabels.push(...labels.toArray());
+            this._initialLabelsMeta = labels.meta;
+        }
+    }
+
+    @task
+    *searchLabelsTask(term) {
+        this._searchedLabelsQuery = term;
+        const labels = yield this.labelsManager.searchLabelsTask.perform(term);
+        this._searchedLabelsMeta = labels.meta;
+
+        this._searchedLabels = new TrackedArray(this.labelsManager.sortLabels(labels.toArray()));
+        return this._searchedLabels;
+    }
+
+    @action
+    updateLabel(label) {
+        this._selectedLabel = label;
+        this.args.onChange(label?.id);
     }
 }
