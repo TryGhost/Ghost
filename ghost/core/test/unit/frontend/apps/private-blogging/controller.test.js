@@ -112,6 +112,12 @@ describe('private.hbs template translation', function () {
         });
     });
 
+    after(function () {
+        hbs.handlebars.unregisterHelper('input_password');
+        hbs.handlebars.unregisterHelper('asset');
+        hbs.handlebars.unregisterHelper('img_url');
+    });
+
     function renderPrivateTemplate(context) {
         return compiledTemplate(context);
     }
