@@ -1,37 +1,38 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
+import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
-export default class GhMemberLabelInput extends Component {
+export default class GhMemberSingleLabelInput extends Component {
     @service store;
+    @service labelsManager;
 
     @tracked selectedLabel;
+    @tracked _availableLabels = [];
+    @tracked _hasLoaded = false;
 
     get availableLabels() {
-        return this._availableLabels.toArray().sort((labelA, labelB) => {
-            return labelA.name.localeCompare(labelB.name, undefined, {ignorePunctuation: true});
-        });
-    }
-
-    get availableLabelNames() {
-        return this.availableLabels.map(label => label.name.toLowerCase());
+        return this.labelsManager.sortLabels(this._availableLabels);
     }
 
     constructor(...args) {
         super(...args);
-        // perform a background query to fetch all users and set `availableLabels`
-        // to a live-query that will be immediately populated with what's in the
-        // store and be updated when the above query returns
-        this.store.query('label', {limit: 'all'});
-        this._availableLabels = this.store.peekAll('label');
+        this.loadLabelsTask.perform();
+    }
+
+    @task
+    *loadLabelsTask() {
+        const labels = yield this.store.query('label', {limit: 100, page: 1, order: 'name asc'});
+        this._availableLabels = labels.toArray();
+        this._hasLoaded = true;
+
         this.selectedLabel = this.args.label || this.availableLabels[0]?.get('id');
         this.args.onChange(this.selectedLabel);
     }
 
     @action
     updateLabel(newLabel) {
-        // update labels
         this.selectedLabel = newLabel;
         this.args.onChange(newLabel);
     }

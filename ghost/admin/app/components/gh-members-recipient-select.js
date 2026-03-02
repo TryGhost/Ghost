@@ -139,9 +139,9 @@ export default class GhMembersRecipientSelect extends Component {
     *fetchSpecificOptionsTask() {
         const options = [];
 
-        // fetch all labels w̶i̶t̶h̶ c̶o̶u̶n̶t̶s̶
+        // fetch labels w̶i̶t̶h̶ c̶o̶u̶n̶t̶s̶
         // TODO: add `include: 'count.members` to query once API is fixed
-        const labels = yield this.store.query('label', {limit: 'all'});
+        const labels = yield this.store.query('label', {limit: 100, order: 'name asc'});
 
         if (labels.length > 0) {
             const labelsGroup = {

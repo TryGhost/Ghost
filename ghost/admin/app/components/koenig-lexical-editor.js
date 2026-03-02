@@ -242,7 +242,7 @@ export default class KoenigLexicalEditor extends Component {
             return this.labels;
         }
 
-        this.labels = yield this.store.query('label', {limit: 'all', fields: 'id, name'});
+        this.labels = yield this.store.query('label', {limit: 100, fields: 'id, name', order: 'name asc'});
         return this.labels;
     }
 
