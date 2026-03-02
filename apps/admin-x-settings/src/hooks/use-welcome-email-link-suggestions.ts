@@ -13,11 +13,11 @@ export const useWelcomeEmailLinkSuggestions = () => {
     if (typeof membersSignupAccess !== 'string') {
         throw new TypeError('members_signup_access should be a string');
     }
-    if (typeof donationsEnabled !== 'string') {
-        throw new TypeError('donations_enabled should be a string');
+    if (typeof donationsEnabled !== 'boolean') {
+        throw new TypeError('donations_enabled should be a boolean');
     }
-    if (typeof recommendationsEnabled !== 'string') {
-        throw new TypeError('recommendations_enabled should be a string');
+    if (typeof recommendationsEnabled !== 'boolean') {
+        throw new TypeError('recommendations_enabled should be a boolean');
     }
 
     return useKoenigLinkSuggestions({
