@@ -805,9 +805,10 @@ module.exports = class MemberRepository {
             }
         }
 
+        // require: false so concurrent deletes don't throw "No Rows Deleted"
         return this._Member.destroy({
             id: data.id
-        }, options);
+        }, {...options, require: false});
     }
 
     async bulkDestroy(options) {
