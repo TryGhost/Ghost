@@ -3,19 +3,20 @@ import {Button, Input, Popover, PopoverContent, PopoverTrigger} from '@tryghost/
 import {type MemberView, useDeleteMemberView, useSaveMemberView} from '../hooks/use-member-views';
 import type {Filter} from '@tryghost/shade';
 
-interface SaveViewPopoverProps {
+interface ManageViewPopoverProps {
     filters: Filter[];
     existingViews: MemberView[];
     activeView?: MemberView | null;
     onDeleted?: () => void;
 }
 
-const SaveViewPopover: React.FC<SaveViewPopoverProps> = ({filters, existingViews, activeView, onDeleted}) => {
+const ManageViewPopover: React.FC<ManageViewPopoverProps> = ({filters, existingViews, activeView, onDeleted}) => {
     const [open, setOpen] = useState(false);
     const [name, setName] = useState('');
     const [error, setError] = useState('');
     const [saving, setSaving] = useState(false);
     const [deleting, setDeleting] = useState(false);
+    const [confirmingDelete, setConfirmingDelete] = useState(false);
     const saveMemberView = useSaveMemberView();
     const deleteMemberView = useDeleteMemberView();
 
@@ -35,9 +36,8 @@ const SaveViewPopover: React.FC<SaveViewPopoverProps> = ({filters, existingViews
             return;
         }
 
-        // Check for duplicate name (skip if name unchanged in edit mode)
-        const nameUnchanged = isEditing && trimmed.toLowerCase() === activeView.name.trim().toLowerCase();
-        if (!nameUnchanged) {
+        // In create mode only, check for duplicate name before calling the hook
+        if (!isEditing) {
             const duplicate = existingViews.find(v => v.name.trim().toLowerCase() === trimmed.toLowerCase()
             );
             if (duplicate) {
@@ -48,7 +48,8 @@ const SaveViewPopover: React.FC<SaveViewPopoverProps> = ({filters, existingViews
 
         setSaving(true);
         try {
-            await saveMemberView(trimmed, filters);
+            // In edit mode, pass activeView so the hook uses it as the identity anchor
+            await saveMemberView(trimmed, filters, isEditing ? activeView : undefined);
             setName('');
             setError('');
             setOpen(false);
@@ -69,6 +70,7 @@ const SaveViewPopover: React.FC<SaveViewPopoverProps> = ({filters, existingViews
             await deleteMemberView(activeView);
             setName('');
             setError('');
+            setConfirmingDelete(false);
             setOpen(false);
             onDeleted?.();
         } catch (e) {
@@ -91,6 +93,7 @@ const SaveViewPopover: React.FC<SaveViewPopoverProps> = ({filters, existingViews
             if (!isOpen) {
                 setName('');
                 setError('');
+                setConfirmingDelete(false);
             }
         }}>
             <PopoverTrigger asChild>
@@ -121,33 +124,55 @@ const SaveViewPopover: React.FC<SaveViewPopoverProps> = ({filters, existingViews
                         )}
                     </div>
                     {isEditing ? (
-                        <div className="flex items-center justify-between">
-                            <Button
-                                className="text-red hover:bg-red/5 hover:text-red"
-                                disabled={deleting}
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => void handleDelete()}
-                            >
-                                {deleting ? 'Deleting...' : 'Delete'}
-                            </Button>
-                            <div className="flex items-center gap-2">
-                                <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => setOpen(false)}
-                                >
-                                    Cancel
-                                </Button>
-                                <Button
-                                    disabled={saving || !name.trim()}
-                                    size="sm"
-                                    onClick={() => void handleSave()}
-                                >
-                                    {saving ? 'Saving...' : 'Save'}
-                                </Button>
+                        confirmingDelete ? (
+                            <div className="flex items-center justify-between">
+                                <span className="text-sm text-muted-foreground">Delete view?</span>
+                                <div className="flex items-center gap-2">
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => setConfirmingDelete(false)}
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button
+                                        disabled={deleting}
+                                        size="sm"
+                                        variant="destructive"
+                                        onClick={() => void handleDelete()}
+                                    >
+                                        {deleting ? 'Deleting...' : 'Delete'}
+                                    </Button>
+                                </div>
                             </div>
-                        </div>
+                        ) : (
+                            <div className="flex items-center justify-between">
+                                <Button
+                                    className="text-red hover:bg-red/5 hover:text-red"
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => setConfirmingDelete(true)}
+                                >
+                                    Delete
+                                </Button>
+                                <div className="flex items-center gap-2">
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => setOpen(false)}
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button
+                                        disabled={saving || !name.trim()}
+                                        size="sm"
+                                        onClick={() => void handleSave()}
+                                    >
+                                        {saving ? 'Saving...' : 'Save'}
+                                    </Button>
+                                </div>
+                            </div>
+                        )
                     ) : (
                         <Button
                             className="w-full"
@@ -163,4 +188,4 @@ const SaveViewPopover: React.FC<SaveViewPopoverProps> = ({filters, existingViews
     );
 };
 
-export default SaveViewPopover;
+export default ManageViewPopover;

@@ -1,19 +1,6 @@
 import { useLocation } from '@tryghost/admin-x-framework';
 import { NavMenuItem } from './nav-menu-item';
-import { useMemberViews, type MemberView } from './hooks/use-member-views';
-
-/**
- * Convert a filter record to a URL search params string
- */
-function filterToSearchString(filter: Record<string, string | null>): string {
-    const params = new URLSearchParams();
-    for (const [key, value] of Object.entries(filter)) {
-        if (value != null) {
-            params.set(key, value);
-        }
-    }
-    return params.toString();
-}
+import { useMemberViews, filterRecordToSearchParams, type MemberView } from '@tryghost/posts/src/views/members/hooks/use-member-views';
 
 /**
  * Check if the current URL search params match a view's filter
@@ -28,17 +15,13 @@ function isViewActive(currentSearch: string, viewFilter: Record<string, string |
         }
     }
 
-    // Both must have the same number of params
-    const currentKeys = Array.from(currentParams.keys()).sort();
-    const viewKeys = Array.from(viewParams.keys()).sort();
-
-    if (currentKeys.length !== viewKeys.length) {
-        return false;
+    // A view is active if all of its filter params are present and equal in the current URL
+    for (const [key, value] of viewParams.entries()) {
+        if (currentParams.get(key) !== value) {
+            return false;
+        }
     }
-
-    return currentKeys.every((key, i) =>
-        key === viewKeys[i] && currentParams.get(key) === viewParams.get(key)
-    );
+    return true;
 }
 
 function MemberViewItem({ view, isOnMembersForward, currentSearch }: {
@@ -46,7 +29,7 @@ function MemberViewItem({ view, isOnMembersForward, currentSearch }: {
     isOnMembersForward: boolean;
     currentSearch: string;
 }) {
-    const searchString = filterToSearchString(view.filter);
+    const searchString = filterRecordToSearchParams(view.filter).toString();
     const to = `members-forward?${searchString}`;
     const active = isOnMembersForward && isViewActive(currentSearch, view.filter);
 

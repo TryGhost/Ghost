@@ -1,3 +1,4 @@
+import {MULTISELECT_FIELDS} from './use-members-filter-state';
 import {getSettingValue, useBrowseSettings, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useCallback, useMemo} from 'react';
 import {z} from 'zod';
@@ -12,8 +13,6 @@ const memberViewSchema = z.object({
     filter: z.record(z.string(), z.string().nullable())
 });
 
-const sharedViewsSchema = z.array(memberViewSchema);
-
 export type MemberView = z.infer<typeof memberViewSchema>;
 
 /**
@@ -24,7 +23,10 @@ export function filtersToRecord(filters: Filter[]): Record<string, string> {
     const record: Record<string, string> = {};
     for (const filter of filters) {
         if (filter.values[0] !== undefined) {
-            record[filter.field] = `${filter.operator}:${String(filter.values[0])}`;
+            const serializedValue = MULTISELECT_FIELDS.has(filter.field) && filter.values.length > 1
+                ? filter.values.map(v => String(v)).join(',')
+                : String(filter.values[0]);
+            record[filter.field] = `${filter.operator}:${serializedValue}`;
         }
     }
     return record;
@@ -65,28 +67,36 @@ function parseSharedViews(settingsData: {settings: Array<{key: string; value: st
     const json = getSettingValue<string>(settingsData?.settings ?? null, 'shared_views') ?? '[]';
     try {
         const parsed: unknown = JSON.parse(json);
-        const result = sharedViewsSchema.safeParse(parsed);
-        if (!result.success) {
+
+        if (!Array.isArray(parsed)) {
             return [];
         }
-        return result.data;
+
+        return parsed.flatMap((item) => {
+            const result = memberViewSchema.safeParse(item);
+            return result.success ? [result.data] : [];
+        });
     } catch {
         return [];
     }
 }
 
 /**
+ * Generic hook to read shared views for any route from the shared_views setting
+ */
+export function useSharedViews(route: string): MemberView[] {
+    const {data: settingsData} = useBrowseSettings();
+
+    return useMemo(() => {
+        return parseSharedViews(settingsData).filter(v => v.route === route);
+    }, [settingsData, route]);
+}
+
+/**
  * Hook to read member views from the shared_views setting
  */
 export function useMemberViews() {
-    const {data: settingsData} = useBrowseSettings();
-
-    const memberViews = useMemo(() => {
-        const allViews = parseSharedViews(settingsData);
-        return allViews.filter(v => v.route === 'members');
-    }, [settingsData]);
-
-    return memberViews;
+    return useSharedViews('members');
 }
 
 /**
@@ -96,32 +106,29 @@ export function useSaveMemberView() {
     const {data: settingsData} = useBrowseSettings();
     const {mutateAsync: editSettings} = useEditSettings();
 
-    const save = useCallback(async (name: string, filters: Filter[]) => {
+    const save = useCallback(async (name: string, filters: Filter[], originalView?: MemberView) => {
         const allViews = parseSharedViews(settingsData);
         const filterRecord = filtersToRecord(filters);
 
-        // Check for duplicate name with different filter
-        const duplicate = allViews.find(v => v.route === 'members' &&
-            v.name.trim().toLowerCase() === name.trim().toLowerCase() &&
-            !isFilterEqual(v.filter, filterRecord)
-        );
-
-        if (duplicate) {
-            throw new Error('A view with this name already exists');
-        }
-
-        // Check if an identical view already exists (same filter)
-        const existing = allViews.find(v => v.route === 'members' &&
-            isFilterEqual(v.filter, filterRecord)
-        );
-
         let updatedViews: MemberView[];
-        if (existing) {
-            // Update existing view
-            updatedViews = allViews.map(v => (v === existing ? {...v, name: name.trim()} : v)
-            );
+
+        if (originalView) {
+            // Edit mode: find original view by name and update it
+            updatedViews = allViews.map(v => (v.route === 'members' &&
+                v.name.trim().toLowerCase() === originalView.name.trim().toLowerCase()
+                ? {...v, name: name.trim(), filter: filterRecord}
+                : v
+            ));
         } else {
-            // Add new view
+            // Create mode: name is the identifier, no duplicates allowed
+            const duplicate = allViews.find(v => v.route === 'members' &&
+                v.name.trim().toLowerCase() === name.trim().toLowerCase()
+            );
+
+            if (duplicate) {
+                throw new Error('A view with this name already exists');
+            }
+
             updatedViews = [...allViews, {
                 name: name.trim(),
                 route: 'members',
@@ -147,7 +154,9 @@ export function useDeleteMemberView() {
 
     const deleteView = useCallback(async (view: MemberView) => {
         const allViews = parseSharedViews(settingsData);
-        const updatedViews = allViews.filter(v => !(v.route === 'members' && v.name === view.name && isFilterEqual(v.filter, view.filter))
+        // Match by name only — name is the canonical identifier for a member view
+        const updatedViews = allViews.filter(v => !(v.route === 'members' &&
+            v.name.trim().toLowerCase() === view.name.trim().toLowerCase())
         );
 
         await editSettings([{

@@ -17,7 +17,7 @@ import { useMemberCount } from "./hooks/use-member-count";
 import { useNavigationExpanded } from "./hooks/use-navigation-preferences";
 import { NavCustomViews } from "./nav-custom-views";
 import { NavMemberViews } from "./nav-member-views";
-import { useMemberViews } from "./hooks/use-member-views";
+import { useMemberViews } from "@tryghost/posts/src/views/members/hooks/use-member-views";
 import { useEmberRouting } from "@/ember-bridge";
 import { useFeatureFlag } from "@/hooks/use-feature-flag";
 

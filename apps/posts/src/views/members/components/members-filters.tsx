@@ -1,5 +1,5 @@
+import ManageViewPopover from './manage-view-popover';
 import React, {useCallback, useMemo} from 'react';
-import SaveViewPopover from './save-view-popover';
 import {Filter, FilterOption, Filters, LucideIcon} from '@tryghost/shade';
 import {Offer} from '@tryghost/admin-x-framework/api/offers';
 import {getSettingValue, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
@@ -216,7 +216,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
                 <LucideIcon.X className="size-4" />
                 Clear
             </button>
-            <SaveViewPopover activeView={activeView} existingViews={savedViews} filters={filters} onDeleted={() => onFiltersChange([])} />
+            <ManageViewPopover activeView={activeView} existingViews={savedViews} filters={filters} onDeleted={() => onFiltersChange([])} />
         </div>
     ) : undefined;
 
