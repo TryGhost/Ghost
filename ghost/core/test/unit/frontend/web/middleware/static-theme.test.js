@@ -242,6 +242,96 @@ describe('staticTheme', function () {
         });
     });
 
+    describe('URL-encoded extension bypass prevention', function () {
+        it('should skip for URL-encoded .hbs extension (h%62s)', function (done) {
+            req.path = 'mytemplate.h%62s';
+
+            staticTheme()(req, res, function next() {
+                sinon.assert.notCalled(activeThemeStub);
+                sinon.assert.notCalled(expressStaticStub);
+
+                done();
+            });
+        });
+
+        it('should skip for URL-encoded .json extension (%6Ason)', function (done) {
+            req.path = 'package.%6Ason';
+
+            staticTheme()(req, res, function next() {
+                sinon.assert.notCalled(activeThemeStub);
+                sinon.assert.notCalled(expressStaticStub);
+
+                done();
+            });
+        });
+
+        it('should skip for URL-encoded .md extension (%6Dd)', function (done) {
+            req.path = 'README.%6Dd';
+
+            staticTheme()(req, res, function next() {
+                sinon.assert.notCalled(activeThemeStub);
+                sinon.assert.notCalled(expressStaticStub);
+
+                done();
+            });
+        });
+
+        it('should skip for URL-encoded .lock extension (l%6Fck)', function (done) {
+            req.path = 'yarn.l%6Fck';
+
+            staticTheme()(req, res, function next() {
+                sinon.assert.notCalled(activeThemeStub);
+                sinon.assert.notCalled(expressStaticStub);
+
+                done();
+            });
+        });
+
+        it('should skip for URL-encoded .log extension (%6Cog)', function (done) {
+            req.path = 'ghost.%6Cog';
+
+            staticTheme()(req, res, function next() {
+                sinon.assert.notCalled(activeThemeStub);
+                sinon.assert.notCalled(expressStaticStub);
+
+                done();
+            });
+        });
+
+        it('should skip for URL-encoded gulpfile.js (g%75lpfile.js)', function (done) {
+            req.path = 'g%75lpfile.js';
+
+            staticTheme()(req, res, function next() {
+                sinon.assert.notCalled(activeThemeStub);
+                sinon.assert.notCalled(expressStaticStub);
+
+                done();
+            });
+        });
+
+        it('should skip for URL-encoded .hbs in /assets/ path', function (done) {
+            req.path = '/assets/mytemplate.h%62s';
+
+            staticTheme()(req, res, function next() {
+                sinon.assert.notCalled(activeThemeStub);
+                sinon.assert.notCalled(expressStaticStub);
+
+                done();
+            });
+        });
+
+        it('should skip for malformed URL encoding in denied file', function (done) {
+            req.path = 'mytemplate.h%ZZs';
+
+            staticTheme()(req, res, function next() {
+                sinon.assert.notCalled(activeThemeStub);
+                sinon.assert.notCalled(expressStaticStub);
+
+                done();
+            });
+        });
+    });
+
     describe('paths without file extensions', function () {
         it('should skip for root path /', function (done) {
             req.path = '/';
