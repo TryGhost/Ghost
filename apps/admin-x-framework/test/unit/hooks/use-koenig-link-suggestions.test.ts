@@ -1,3 +1,4 @@
+import type {MockedFunction} from 'vitest';
 import {renderHook} from '@testing-library/react';
 import {useKoenigLinkSuggestions} from '../../../src/hooks/use-koenig-link-suggestions';
 
@@ -17,12 +18,18 @@ import * as offersModule from '../../../src/api/offers';
 import * as postsModule from '../../../src/api/posts';
 import useFilterableApi from '../../../src/hooks/use-filterable-api';
 
-const mockUseBrowseOffers = vi.mocked(offersModule.useBrowseOffers);
-const mockUseBrowsePosts = vi.mocked(postsModule.useBrowsePosts);
-const mockUseFilterableApi = vi.mocked(useFilterableApi);
-
 describe('useKoenigLinkSuggestions', () => {
+    let mockUseBrowseOffers: MockedFunction<typeof offersModule.useBrowseOffers>;
+    let mockUseBrowsePosts: MockedFunction<typeof postsModule.useBrowsePosts>;
+    let mockUseFilterableApi: MockedFunction<typeof useFilterableApi>;
+
     beforeEach(() => {
+        mockUseBrowseOffers = vi.mocked(offersModule.useBrowseOffers);
+        mockUseBrowsePosts = vi.mocked(postsModule.useBrowsePosts);
+        mockUseFilterableApi = vi.mocked(useFilterableApi);
+    });
+
+    afterEach(() => {
         mockUseBrowseOffers.mockReset();
         mockUseBrowsePosts.mockReset();
         mockUseFilterableApi.mockReset();
