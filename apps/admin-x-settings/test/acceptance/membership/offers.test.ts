@@ -106,7 +106,7 @@ test.describe('Offers Modal', () => {
         const sidebar = addModal.getByTestId('add-offer-sidebar');
         await expect(sidebar).toContainText(/Name is required/);
         await expect(sidebar).toContainText(/Code is required/);
-        await expect(sidebar).toContainText(/Enter an amount greater than 0./);
+        await expect(sidebar).toContainText(/Enter an amount between 1 and 100%./);
         await expect(sidebar).toContainText(/Display title is required/);
     });
 
@@ -168,7 +168,7 @@ test.describe('Offers Modal', () => {
         const sidebar = addModal.getByTestId('add-offer-sidebar');
         await expect(sidebar).toContainText(/Name is required/);
         await expect(sidebar).toContainText(/Code is required/);
-        await expect(sidebar).toContainText(/Enter an amount greater than 0./);
+        await expect(sidebar).toContainText(/Enter an amount between 1 and 100%./);
         await expect(sidebar).toContainText(/Display title is required/);
     });
 
