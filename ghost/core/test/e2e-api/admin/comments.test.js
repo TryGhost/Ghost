@@ -1337,12 +1337,14 @@ describe(`Admin Comments API`, function () {
             await dbFns.addComment({
                 post_id: fixtureManager.get('posts', 0).id,
                 member_id: fixtureManager.get('members', 0).id,
-                html: '<p>Comment on post 1</p>'
+                html: '<p>Comment on post 1</p>',
+                created_at: new Date('2025-01-01T00:00:00.000Z')
             });
             await dbFns.addComment({
                 post_id: fixtureManager.get('posts', 1).id,
                 member_id: fixtureManager.get('members', 0).id,
-                html: '<p>Comment on post 2</p>'
+                html: '<p>Comment on post 2</p>',
+                created_at: new Date('2024-01-01T00:00:00.000Z')
             });
 
             await adminApi.get('/comments/')
