@@ -353,6 +353,7 @@ module.exports = {
                 pageminsidebar: '116rem'
             },
             borderRadius: {
+                xs: 'calc(var(--radius) - 6px)',
                 sm: 'calc(var(--radius) - 4px)',
                 DEFAULT: '0.4rem',
                 md: 'calc(var(--radius) - 2px)',
