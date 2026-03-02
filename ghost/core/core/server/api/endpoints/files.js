@@ -12,7 +12,8 @@ const controller = {
         async query(frame) {
             const filePath = await storage.getStorage('files').save({
                 name: frame.file.originalname,
-                path: frame.file.path
+                path: frame.file.path,
+                type: frame.file.mimetype
             });
 
             return {
