@@ -1,4 +1,5 @@
 import {getDateString} from './date-time';
+import {t} from './i18n';
 
 export function removePortalLinkFromUrl() {
     const [path] = window.location.hash.substr(1).split('?');
@@ -795,11 +796,14 @@ export function getPriceIdFromPageQuery({site, pageQuery}) {
     return null;
 }
 
-// TODO: Add i18n once copy is finalized
 export const getOfferOffAmount = ({offer}) => {
     if (isFreeMonthsOffer(offer)) {
         const months = offer.duration_in_months;
-        return `${months === 1 ? '1 month' : `${months} months`}`;
+        if (months === 1) {
+            return t('1 month');
+        }
+
+        return t('{months} months', {months});
     } else if (offer.type === 'fixed') {
         return `${getCurrencySymbol(offer.currency)}${offer.amount / 100}`;
     } else if (offer.type === 'percent') {
