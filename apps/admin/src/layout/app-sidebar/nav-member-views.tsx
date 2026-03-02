@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useLocation } from '@tryghost/admin-x-framework';
 import { NavMenuItem } from './nav-menu-item';
 import { useMemberViews, type MemberView } from './hooks/use-member-views';
@@ -42,8 +41,6 @@ function isViewActive(currentSearch: string, viewFilter: Record<string, string |
     );
 }
 
-const MAX_VISIBLE = 5;
-
 function MemberViewItem({ view, isOnMembersForward, currentSearch }: {
     view: MemberView;
     isOnMembersForward: boolean;
@@ -69,20 +66,16 @@ function MemberViewItem({ view, isOnMembersForward, currentSearch }: {
 export function NavMemberViews() {
     const memberViews = useMemberViews();
     const location = useLocation();
-    const [showAll, setShowAll] = useState(false);
 
     if (memberViews.length === 0) {
         return null;
     }
 
     const isOnMembersForward = location.pathname === '/members-forward';
-    const hasOverflow = memberViews.length > MAX_VISIBLE;
-    const visibleViews = hasOverflow ? memberViews.slice(0, MAX_VISIBLE) : memberViews;
-    const overflowViews = hasOverflow ? memberViews.slice(MAX_VISIBLE) : [];
 
     return (
         <>
-            {visibleViews.map(view => (
+            {memberViews.map(view => (
                 <MemberViewItem
                     key={view.name}
                     view={view}
@@ -90,29 +83,6 @@ export function NavMemberViews() {
                     currentSearch={location.search}
                 />
             ))}
-            {hasOverflow && (
-                <>
-                    <div className={`grid transition-all duration-200 ease-out ${showAll ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
-                        <div className="overflow-hidden">
-                            {overflowViews.map(view => (
-                                <MemberViewItem
-                                    key={view.name}
-                                    view={view}
-                                    isOnMembersForward={isOnMembersForward}
-                                    currentSearch={location.search}
-                                />
-                            ))}
-                        </div>
-                    </div>
-                    <button
-                        className="pl-9 py-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-                        type="button"
-                        onClick={() => setShowAll(!showAll)}
-                    >
-                        {showAll ? 'Show less' : 'Show all'}
-                    </button>
-                </>
-            )}
         </>
     );
 }

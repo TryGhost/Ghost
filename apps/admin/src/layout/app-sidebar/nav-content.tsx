@@ -131,10 +131,10 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                         </NavMenuItem>
                     )}
 
-                    {showMembers && membersForwardEnabled && (
+                    {showMembers && (
                         <>
                             <NavMenuItem>
-                                {hasMemberViews && (
+                                {membersForwardEnabled && hasMemberViews && (
                                     <Button
                                         aria-controls="members-submenu"
                                         aria-expanded={membersExpanded}
@@ -153,10 +153,10 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                                     </Button>
                                 )}
                                 <NavMenuItem.Link
-                                    to="members-forward"
+                                    to={membersForwardEnabled ? 'members-forward' : routing.getRouteUrl('members')}
                                     isActive={routing.isRouteActive(['members', 'member', 'member.new'])}
                                 >
-                                    <LucideIcon.Users className={hasMemberViews ? "opacity-0 sidebar:opacity-100 sidebar:group-hover/menu-item:opacity-0 pointer-events-none transition-all" : ""} />
+                                    <LucideIcon.Users className={membersForwardEnabled && hasMemberViews ? "opacity-0 sidebar:opacity-100 sidebar:group-hover/menu-item:opacity-0 pointer-events-none transition-all" : ""} />
                                     <NavMenuItem.Label>Members</NavMenuItem.Label>
                                 </NavMenuItem.Link>
                                 {memberCount != null && (
@@ -164,32 +164,12 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                                 )}
                             </NavMenuItem>
 
-                            {hasMemberViews && (
-                                <div
-                                    id="members-submenu"
-                                    className={`grid transition-all duration-200 ease-out ${membersExpanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}
-                                >
-                                    <div className="overflow-hidden">
-                                        <NavMemberViews />
-                                    </div>
-                                </div>
+                            {membersForwardEnabled && hasMemberViews && (
+                                <NavSubMenu id="members-submenu" isExpanded={membersExpanded}>
+                                    <NavMemberViews />
+                                </NavSubMenu>
                             )}
                         </>
-                    )}
-
-                    {showMembers && !membersForwardEnabled && (
-                        <NavMenuItem>
-                            <NavMenuItem.Link
-                                to={routing.getRouteUrl('members')}
-                                isActive={routing.isRouteActive(['members', 'member', 'member.new'])}
-                            >
-                                <LucideIcon.Users />
-                                <NavMenuItem.Label>Members</NavMenuItem.Label>
-                            </NavMenuItem.Link>
-                            {memberCount != null && (
-                                <SidebarMenuBadge>{(formatNumber as (value: number) => string)(memberCount)}</SidebarMenuBadge>
-                            )}
-                        </NavMenuItem>
                     )}
 
                     {showMembers && commentModerationEnabled && (

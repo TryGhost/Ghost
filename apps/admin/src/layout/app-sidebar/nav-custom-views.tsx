@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { z } from 'zod';
 import { useBrowseSettings, getSettingValue } from '@tryghost/admin-x-framework/api/settings';
 import { NavMenuItem } from './nav-menu-item';
@@ -32,39 +32,9 @@ interface NavCustomViewsProps {
     route?: 'posts' | 'pages';
 }
 
-const MAX_VISIBLE = 2;
-
-function CustomViewItem({ view, route, routing }: {
-    view: z.infer<typeof customViewSchema>;
-    route: string;
-    routing: ReturnType<typeof useEmberRouting>;
-}) {
-    const viewUrl = routing.getRouteUrl(route, view.filter);
-    const isActive = routing.isRouteActive(route, view.filter);
-
-    return (
-        <NavMenuItem key={viewUrl}>
-            <NavMenuItem.Link
-                className="pl-9"
-                to={viewUrl}
-                isActive={isActive}
-            >
-                <NavMenuItem.Label className="grow">{view.name}</NavMenuItem.Label>
-                <span
-                    className="size-2 rounded-full shrink-0 mx-0.5"
-                    style={{backgroundColor: getColorHex(view.color)}}
-                    data-color={view.color}
-                    aria-hidden="true"
-                />
-            </NavMenuItem.Link>
-        </NavMenuItem>
-    );
-}
-
 export function NavCustomViews({ route = 'posts' }: NavCustomViewsProps) {
     const { data: settingsData } = useBrowseSettings();
     const routing = useEmberRouting();
-    const [showAll, setShowAll] = useState(false);
 
     const customViews = useMemo(() => {
         const sharedViewsJson = getSettingValue<string>(settingsData?.settings, 'shared_views') ?? '[]';
@@ -89,34 +59,30 @@ export function NavCustomViews({ route = 'posts' }: NavCustomViewsProps) {
         return null;
     }
 
-    const hasOverflow = customViews.length > MAX_VISIBLE;
-    const visibleViews = hasOverflow ? customViews.slice(0, MAX_VISIBLE) : customViews;
-    const overflowViews = hasOverflow ? customViews.slice(MAX_VISIBLE) : [];
-
     return (
         <>
-            {visibleViews.map(view => (
-                <CustomViewItem key={routing.getRouteUrl(route, view.filter)} view={view} route={route} routing={routing} />
-            ))}
-            {hasOverflow && (
-                <>
-                    <div className={`grid transition-all duration-200 ease-out ${showAll ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
-                        <div className="overflow-hidden">
-                            {overflowViews.map(view => (
-                                <CustomViewItem key={routing.getRouteUrl(route, view.filter)} view={view} route={route} routing={routing} />
-                            ))}
-                        </div>
-                    </div>
-                    <button
-                        className="pl-9 py-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-                        type="button"
-                        onClick={() => setShowAll(!showAll)}
-                    >
-                        {showAll ? 'Show less' : 'Show all'}
-                    </button>
-                </>
-            )}
+            {customViews.map((view) => {
+                const viewUrl = routing.getRouteUrl(route, view.filter);
+                const isActive = routing.isRouteActive(route, view.filter);
+
+                return (
+                    <NavMenuItem key={viewUrl}>
+                        <NavMenuItem.Link
+                            className="pl-9"
+                            to={viewUrl}
+                            isActive={isActive}
+                        >
+                            <NavMenuItem.Label className="grow">{view.name}</NavMenuItem.Label>
+                            <span
+                                className="size-2 rounded-full shrink-0 mx-0.5"
+                                style={{backgroundColor: getColorHex(view.color)}}
+                                data-color={view.color}
+                                aria-hidden="true"
+                            />
+                        </NavMenuItem.Link>
+                    </NavMenuItem>
+                );
+            })}
         </>
     );
 }
-
