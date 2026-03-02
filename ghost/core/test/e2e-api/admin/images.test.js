@@ -440,6 +440,25 @@ describe('Images API', function () {
             });
     });
 
+    it('Passes the content type to the storage adapter when uploading a GIF', async function () {
+        const store = storage.getStorage('images');
+        const saveSpy = sinon.spy(store, 'save');
+
+        const originalFilePath = p.join(__dirname, '/../../utils/fixtures/images/loadingcat.gif');
+        const fileContents = await fs.readFile(originalFilePath);
+        const {body} = await uploadImageRequest({fileContents, filename: 'loadingcat.gif', contentType: 'image/gif'})
+            .expectStatus(201);
+
+        const relativePath = body.images[0].url.replace(urlUtils.urlFor('home', true), '/');
+        const filePath = config.getContentPath('images') + relativePath.replace('/content/images/', '');
+        images.push(filePath);
+        images.push(imageTransform.generateOriginalImageName(filePath));
+
+        assert.ok(saveSpy.called, 'save() should have been called');
+        const fileArg = saveSpy.firstCall.args[0];
+        assert.equal(fileArg.type, 'image/gif', 'save() should receive the correct content type for image files');
+    });
+
     it('Does not return HTTP 500 when image processing fails', async function () {
         sinon.stub(imageTransform, 'resizeFromPath').rejects(new Error('Image processing failed'));
 
