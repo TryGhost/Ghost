@@ -428,39 +428,7 @@ describe('MemberWelcomeEmailRenderer', function () {
             assert(result.html.includes('background-color: #ff0000'));
         });
 
-        it('centers button cards by default when no explicit alignment is set', async function () {
-            lexicalRenderStub.resolves(`
-                <table class="kg-card kg-button-card" border="0" cellpadding="0" cellspacing="0">
-                    <tbody>
-                        <tr>
-                            <td class="kg-card-spacing">
-                                <table class="btn" border="0" cellspacing="0" cellpadding="0">
-                                    <tbody>
-                                        <tr>
-                                            <td align="center">
-                                                <a href="https://example.com">Click me</a>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            `);
-            const renderer = new MemberWelcomeEmailRenderer({t: key => key});
-
-            const result = await renderer.render({
-                lexical: '{}',
-                subject: 'Welcome!',
-                member: {name: 'John', email: 'john@example.com'},
-                siteSettings: defaultSiteSettings
-            });
-
-            assert.match(result.html, /<table[^>]*class="btn"[^>]*align="center"/);
-        });
-
-        it('preserves explicit button alignment values', async function () {
+        it('does not inline margin 0 auto on button tables that would override alignment', async function () {
             lexicalRenderStub.resolves(`
                 <table class="kg-card kg-button-card" border="0" cellpadding="0" cellspacing="0">
                     <tbody>
@@ -491,66 +459,9 @@ describe('MemberWelcomeEmailRenderer', function () {
 
             assert.match(result.html, /<table[^>]*class="btn"[^>]*align="left"/);
 
-            // Verify no margin:0 auto is inlined that would override the align attribute
             const btnMatch = result.html.match(/<table[^>]*class="btn"[^>]*>/);
             assert(btnMatch, 'should have a btn table');
-            assert(!btnMatch[0].includes('margin: 0 auto'), 'left-aligned button should not have margin: 0 auto');
-        });
-
-        it('normalizes invalid button table alignment values to center', async function () {
-            lexicalRenderStub.resolves(`
-                <div class="btn btn-accent">
-                    <table border="0" cellspacing="0" cellpadding="0" align="undefined">
-                        <tbody>
-                            <tr>
-                                <td align="center">
-                                    <a href="https://example.com">Click me</a>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            `);
-            const renderer = new MemberWelcomeEmailRenderer({t: key => key});
-
-            const result = await renderer.render({
-                lexical: '{}',
-                subject: 'Welcome!',
-                member: {name: 'John', email: 'john@example.com'},
-                siteSettings: defaultSiteSettings
-            });
-
-            assert.match(result.html, /<table[^>]*align="center"/);
-            assert(!result.html.includes('align="undefined"'));
-        });
-
-        it('normalizes nested .btn table alignment values to center', async function () {
-            lexicalRenderStub.resolves(`
-                <div class="btn btn-accent">
-                    <div>
-                        <table border="0" cellspacing="0" cellpadding="0" align="undefined">
-                            <tbody>
-                                <tr>
-                                    <td align="center">
-                                        <a href="https://example.com">Click me</a>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            `);
-            const renderer = new MemberWelcomeEmailRenderer({t: key => key});
-
-            const result = await renderer.render({
-                lexical: '{}',
-                subject: 'Welcome!',
-                member: {name: 'John', email: 'john@example.com'},
-                siteSettings: defaultSiteSettings
-            });
-
-            assert.match(result.html, /<table[^>]*align="center"/);
-            assert(!result.html.includes('align="undefined"'));
+            assert(!btnMatch[0].includes('margin: 0 auto'), 'button should not have margin: 0 auto');
         });
 
         it('inlines figcaption styles for image card captions', async function () {

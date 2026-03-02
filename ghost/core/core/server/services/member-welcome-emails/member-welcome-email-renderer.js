@@ -2,7 +2,6 @@ const fs = require('fs');
 const path = require('path');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const juice = require('juice');
-const cheerio = require('cheerio');
 const lexicalLib = require('../../lib/lexical');
 const errors = require('@tryghost/errors');
 const {textColorForBackgroundColor} = require('@tryghost/color-utils');
@@ -38,28 +37,6 @@ class MemberWelcomeEmailRenderer {
             'utf8'
         );
         this.#wrapperTemplate = this.Handlebars.compile(wrapperSource);
-    }
-
-    /**
-     * Some email clients ignore CSS table centering, so ensure button cards
-     * always have an explicit HTML align attribute when none is provided.
-     * @param {string} html
-     * @returns {string}
-     */
-    #ensureButtonCardAlignment(html) {
-        const $ = cheerio.load(html, {decodeEntities: false}, false);
-        const validAlignments = new Set(['left', 'center', 'right']);
-        const setDefaultAlignIfInvalid = function (_, element) {
-            const existingAlign = ($(element).attr('align') || '').trim().toLowerCase();
-            if (!validAlignments.has(existingAlign)) {
-                $(element).attr('align', 'center');
-            }
-        };
-
-        // Button card and CTA variants can render tables with missing/invalid align values.
-        $('table.btn, .btn table').each(setDefaultAlignIfInvalid);
-        $('.kg-cta-button-container').each(setDefaultAlignIfInvalid);
-        return $.html();
     }
 
     /**
@@ -143,9 +120,7 @@ class MemberWelcomeEmailRenderer {
             '$1'
         );
 
-        const contentWithReplacements = this.#ensureButtonCardAlignment(
-            this.#applyReplacements({definitions, text: content, escapeHtml: true})
-        );
+        const contentWithReplacements = this.#applyReplacements({definitions, text: content, escapeHtml: true});
         const subjectWithReplacements = this.#applyReplacements({definitions, text: subject, escapeHtml: false});
 
         const managePreferencesUrl = new URL('#/portal/account/newsletters', siteSettings.url).href;
