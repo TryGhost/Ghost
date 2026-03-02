@@ -44,14 +44,14 @@ describe('useKoenigLinkSuggestions', () => {
                     {name: 'Retention promo', code: '/offer/retention/', status: 'active', redemption_type: 'retention'}
                 ]
             }
-        } as ReturnType<typeof offersModule.useBrowseOffers>);
+        } as any);
         mockUseBrowsePosts.mockReturnValue({
             data: {posts: []},
             refetch: vi.fn()
-        } as ReturnType<typeof postsModule.useBrowsePosts>);
+        } as any);
         mockUseFilterableApi
-            .mockReturnValueOnce({loadData: vi.fn().mockResolvedValue([])})
-            .mockReturnValueOnce({loadData: vi.fn().mockResolvedValue([])});
+            .mockReturnValueOnce({loadData: vi.fn().mockResolvedValue([])} as any)
+            .mockReturnValueOnce({loadData: vi.fn().mockResolvedValue([])} as any);
 
         const {result} = renderHook(() => useKoenigLinkSuggestions({
             siteUrl: 'https://example.com/',
@@ -75,7 +75,7 @@ describe('useKoenigLinkSuggestions', () => {
 
     it('returns cached latest posts links for empty search term', async () => {
         const refetch = vi.fn();
-        mockUseBrowseOffers.mockReturnValue({data: {offers: []}} as ReturnType<typeof offersModule.useBrowseOffers>);
+        mockUseBrowseOffers.mockReturnValue({data: {offers: []}} as any);
         mockUseBrowsePosts.mockReturnValue({
             data: {
                 posts: [
@@ -83,10 +83,10 @@ describe('useKoenigLinkSuggestions', () => {
                 ]
             },
             refetch
-        } as ReturnType<typeof postsModule.useBrowsePosts>);
+        } as any);
         mockUseFilterableApi
-            .mockReturnValueOnce({loadData: vi.fn().mockResolvedValue([])})
-            .mockReturnValueOnce({loadData: vi.fn().mockResolvedValue([])});
+            .mockReturnValueOnce({loadData: vi.fn().mockResolvedValue([])} as any)
+            .mockReturnValueOnce({loadData: vi.fn().mockResolvedValue([])} as any);
 
         const {result} = renderHook(() => useKoenigLinkSuggestions({
             siteUrl: 'https://example.com/',
@@ -122,14 +122,14 @@ describe('useKoenigLinkSuggestions', () => {
             {id: 'pg2', title: 'Draft Page', url: '/about-draft/', status: 'draft', visibility: 'members', published_at: '2025-01-04T00:00:00.000Z'}
         ]);
 
-        mockUseBrowseOffers.mockReturnValue({data: {offers: []}} as ReturnType<typeof offersModule.useBrowseOffers>);
+        mockUseBrowseOffers.mockReturnValue({data: {offers: []}} as any);
         mockUseBrowsePosts.mockReturnValue({
             data: {posts: []},
             refetch: vi.fn()
-        } as ReturnType<typeof postsModule.useBrowsePosts>);
+        } as any);
         mockUseFilterableApi
-            .mockReturnValueOnce({loadData: loadPosts})
-            .mockReturnValueOnce({loadData: loadPages});
+            .mockReturnValueOnce({loadData: loadPosts} as any)
+            .mockReturnValueOnce({loadData: loadPages} as any);
 
         const {result} = renderHook(() => useKoenigLinkSuggestions({
             siteUrl: 'https://example.com/',
