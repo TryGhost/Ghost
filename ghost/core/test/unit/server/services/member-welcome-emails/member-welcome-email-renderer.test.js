@@ -553,6 +553,92 @@ describe('MemberWelcomeEmailRenderer', function () {
             assert(!result.html.includes('align="undefined"'));
         });
 
+        it('inlines figcaption styles for image card captions', async function () {
+            lexicalRenderStub.resolves(`
+                <figure class="kg-card kg-image-card kg-card-hascaption">
+                    <img src="https://example.com/photo.jpg" class="kg-image" alt="alt text" loading="lazy" width="600" height="400">
+                    <figcaption>A caption</figcaption>
+                </figure>
+            `);
+            const renderer = new MemberWelcomeEmailRenderer({t: key => key});
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Welcome!',
+                member: {name: 'John', email: 'john@example.com'},
+                siteSettings: defaultSiteSettings
+            });
+
+            // figcaption should have centered text and muted color inlined
+            assert(result.html.includes('A caption'));
+            const figcaptionMatch = result.html.match(/<figcaption[^>]*style="([^"]*)"[^>]*>/);
+            assert(figcaptionMatch, 'figcaption should have inline styles');
+            const figcaptionStyle = figcaptionMatch[1];
+            assert(figcaptionStyle.includes('text-align: center'), 'figcaption should be centered');
+            assert(figcaptionStyle.includes('font-size: 13px'), 'figcaption should have 13px font');
+        });
+
+        it('inlines figure margin and image max-width for image cards', async function () {
+            lexicalRenderStub.resolves(`
+                <figure class="kg-card kg-image-card">
+                    <img src="https://example.com/photo.jpg" class="kg-image" alt="alt text" loading="lazy" width="600" height="400">
+                </figure>
+            `);
+            const renderer = new MemberWelcomeEmailRenderer({t: key => key});
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Welcome!',
+                member: {name: 'John', email: 'john@example.com'},
+                siteSettings: defaultSiteSettings
+            });
+
+            // figure should have margin inlined
+            const figureMatch = result.html.match(/<figure[^>]*style="([^"]*)"[^>]*>/);
+            assert(figureMatch, 'figure should have inline styles');
+            assert(figureMatch[1].includes('margin: 0 0 1.5em'), 'figure should have bottom margin');
+
+            // img should have max-width
+            const imgMatch = result.html.match(/<img[^>]*style="([^"]*)"[^>]*>/);
+            assert(imgMatch, 'img should have inline styles');
+            assert(imgMatch[1].includes('max-width: 100%'), 'img should have max-width: 100%');
+        });
+
+        it('inlines width 100% on button card outer table', async function () {
+            lexicalRenderStub.resolves(`
+                <table class="kg-card kg-button-card" border="0" cellpadding="0" cellspacing="0">
+                    <tbody>
+                        <tr>
+                            <td class="kg-card-spacing">
+                                <table class="btn" border="0" cellspacing="0" cellpadding="0" align="center">
+                                    <tbody>
+                                        <tr>
+                                            <td align="center">
+                                                <a href="https://example.com">Click</a>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            `);
+            const renderer = new MemberWelcomeEmailRenderer({t: key => key});
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Welcome!',
+                member: {name: 'John', email: 'john@example.com'},
+                siteSettings: defaultSiteSettings
+            });
+
+            // The outer kg-button-card table should have width: 100% inlined
+            const buttonCardMatch = result.html.match(/<table[^>]*class="kg-card kg-button-card"[^>]*style="([^"]*)"[^>]*>/);
+            assert(buttonCardMatch, 'button card table should have inline styles');
+            assert(buttonCardMatch[1].includes('width: 100%'), 'button card table should have width: 100%');
+        });
+
         it('preserves explicit right alignment values', async function () {
             lexicalRenderStub.resolves(`
                 <table class="kg-card kg-button-card" border="0" cellpadding="0" cellspacing="0">
