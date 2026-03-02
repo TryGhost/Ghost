@@ -547,14 +547,6 @@ export function isFreeMonthsOffer(offer) {
         && offer?.redemption_type === 'retention';
 }
 
-export function subscriptionHasFreeMonthsOffer({sub} = {}) {
-    if (!isFreeMonthsOffer(sub?.offer)) {
-        return false;
-    }
-    const discountEnd = sub?.next_payment?.discount?.end;
-    return discountEnd && !isInThePast(new Date(discountEnd));
-}
-
 export function isInThePast(date) {
     return date < new Date();
 }
