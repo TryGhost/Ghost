@@ -28,9 +28,7 @@ export const useNavigationExpanded = (expandedKey: keyof NavigationPreferences['
 
     const setExpanded = async (value: boolean) => {
         return editNavigationPreferences({
-            expanded: {
-                [expandedKey]: value
-            },
+            expanded: { [expandedKey]: value } as NavigationPreferences['expanded'],
         });
     };
 
