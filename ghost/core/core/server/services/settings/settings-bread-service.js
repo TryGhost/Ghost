@@ -26,13 +26,15 @@ class SettingsBREADService {
      * @param {Object} options.labsService - labs service instance
      * @param {Object} options.limitsService - limits service instance
      * @param {{service: Object}} options.emailAddressService
+     * @param {Object} options.emailVerificationService
      */
-    constructor({SettingsModel, settingsCache, labsService, limitsService, mail, singleUseTokenProvider, urlUtils, emailAddressService}) {
+    constructor({SettingsModel, settingsCache, labsService, limitsService, mail, singleUseTokenProvider, urlUtils, emailAddressService, emailVerificationService}) {
         this.SettingsModel = SettingsModel;
         this.settingsCache = settingsCache;
         this.labs = labsService;
         this.limitsService = limitsService;
         this.emailAddressService = emailAddressService;
+        this.emailVerificationService = emailVerificationService;
 
         /* email verification setup */
 
@@ -325,7 +327,14 @@ class SettingsBREADService {
                     }
 
                     if (validated.verificationEmailRequired) {
-                        emailsToVerify.push({email, key});
+                        // Check if already verified in centralized service
+                        const isVerified = await this.emailVerificationService.check(email);
+                        if (isVerified) {
+                            // Already verified — allow the save
+                            filteredSettings.push(setting);
+                        } else {
+                            emailsToVerify.push({email, key});
+                        }
                     } else {
                         filteredSettings.push(setting);
                     }
@@ -348,8 +357,6 @@ class SettingsBREADService {
             return false;
         }
 
-        // TODO: check for known/verified email
-
         return true;
     }
 
@@ -359,7 +366,10 @@ class SettingsBREADService {
     async respondWithEmailVerification(settings, emailsToVerify) {
         if (emailsToVerify.length > 0) {
             for (const {email, key} of emailsToVerify) {
-                await this.sendEmailVerificationMagicLink({email, key});
+                await this.emailVerificationService.add(email, {
+                    type: 'setting',
+                    key
+                });
             }
 
             settings.meta = settings.meta || {};
@@ -369,30 +379,6 @@ class SettingsBREADService {
         return settings;
     }
 
-    /**
-     * @private
-     */
-    async sendEmailVerificationMagicLink({email, key}) {
-        const fromEmail = this.emailAddressService.service.defaultFromAddress;
-        const {ghostMailer} = this;
-
-        this.magicLinkService.transporter = {
-            sendMail(message) {
-                if (process.env.NODE_ENV !== 'production') {
-                    logging.warn(message.text);
-                }
-                let msg = Object.assign({
-                    from: fromEmail,
-                    subject: 'Verify email address',
-                    forceTextContent: true
-                }, message);
-
-                return ghostMailer.send(msg);
-            }
-        };
-
-        return this.magicLinkService.sendMagicLink({email, tokenData: {key, value: email}});
-    }
 }
 
 module.exports = SettingsBREADService;
