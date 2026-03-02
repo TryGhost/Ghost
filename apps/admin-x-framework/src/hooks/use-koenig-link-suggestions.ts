@@ -1,6 +1,6 @@
 import {useBrowseOffers} from '../api/offers';
 import {useBrowsePosts} from '../api/posts';
-import {useCallback, useRef} from 'react';
+import {useCallback, useMemo} from 'react';
 import useFilterableApi from './use-filterable-api';
 
 type SearchIndexResult = {
@@ -39,7 +39,7 @@ export const useKoenigLinkSuggestions = ({
     recommendationsEnabled
 }: UseKoenigLinkSuggestionsProps) => {
     const {data: offersData} = useBrowseOffers();
-    const {data: latestPostsData, refetch: refetchLatestPosts} = useBrowsePosts({
+    const {data: latestPostsData} = useBrowsePosts({
         searchParams: {
             filter: 'status:published',
             fields: 'id,url,title,visibility,published_at',
@@ -57,7 +57,22 @@ export const useKoenigLinkSuggestions = ({
         filterKey: 'title',
         responseKey: 'pages'
     });
-    const defaultLinksRef = useRef<LinkGroup[] | null>(null);
+
+    const defaultLinks = useMemo<LinkGroup[]>(() => {
+        const posts = latestPostsData?.posts || [];
+        const latestPosts = posts.map(post => ({
+            id: post.id,
+            title: post.title,
+            url: post.url,
+            visibility: post.visibility,
+            publishedAt: post.published_at
+        }));
+
+        return [{
+            label: 'Latest posts',
+            items: latestPosts
+        }];
+    }, [latestPostsData?.posts]);
 
     const fetchAutocompleteLinks = useCallback(async () => {
         const defaults = [
@@ -84,31 +99,7 @@ export const useKoenigLinkSuggestions = ({
 
     const searchLinks = useCallback(async (term: string) => {
         if (!term) {
-            if (defaultLinksRef.current) {
-                return defaultLinksRef.current;
-            }
-
-            let posts = latestPostsData?.posts || [];
-
-            if (!posts.length) {
-                const latestPostsResponse = await refetchLatestPosts();
-                posts = latestPostsResponse.data?.posts || [];
-            }
-
-            const latestPosts = posts.map(post => ({
-                id: post.id,
-                title: post.title,
-                url: post.url,
-                visibility: post.visibility,
-                publishedAt: post.published_at
-            }));
-
-            defaultLinksRef.current = [{
-                label: 'Latest posts',
-                items: latestPosts
-            }];
-
-            return defaultLinksRef.current;
+            return defaultLinks;
         }
 
         const [posts, pages] = await Promise.all([
@@ -142,7 +133,7 @@ export const useKoenigLinkSuggestions = ({
                     }))
             }
         ].filter(group => group.items.length > 0);
-    }, [latestPostsData?.posts, refetchLatestPosts, searchPages, searchPosts]);
+    }, [defaultLinks, searchPages, searchPosts]);
 
     return {
         fetchAutocompleteLinks,
