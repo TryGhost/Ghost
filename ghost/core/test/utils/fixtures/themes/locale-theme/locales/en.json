@@ -1,4 +1,10 @@
 {
     "Top left Button": "Left Button on Top",
-    "Welcome, {name}": "Welcome, {name}"
+    "Welcome, {name}": "Welcome, {name}",
+    "This page is for paying subscribers only": "This page is for paying subscribers only",
+    "Already have an account?": "Already have an account?",
+    "Page {page} of {totalPages}": "Page {page} of {totalPages}",
+    "This site is private.": "This site is private.",
+    "Password": "Password",
+    "Access site": "Access site"
 }
