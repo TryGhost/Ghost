@@ -5,3 +5,4 @@ export {default as useHandleError} from './hooks/use-handle-error';
 export {usePermission} from './hooks/use-permissions';
 export {useKoenigFileUpload, koenigFileUploadTypes} from './hooks/use-koenig-file-upload';
 export type {KoenigFileUploadType} from './hooks/use-koenig-file-upload';
+export {useKoenigLinkSuggestions} from './hooks/use-koenig-link-suggestions';

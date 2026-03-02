@@ -4,6 +4,7 @@ import {KoenigEditorBase, type KoenigInstance, LoadingIndicator} from '@tryghost
 import {cn} from '@tryghost/shade';
 import {koenigFileUploadTypes, useKoenigFileUpload} from '@tryghost/admin-x-framework/hooks';
 import {useFramework} from '@tryghost/admin-x-framework';
+import {useWelcomeEmailLinkSuggestions} from '../../../../hooks/use-welcome-email-link-suggestions';
 
 export interface MemberEmailsEditorProps {
     value?: string;
@@ -27,8 +28,13 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
 }) => {
     const welcomeEmailEditorEnabled = useFeatureFlag('welcomeEmailEditor');
     const {unsplashConfig} = useFramework();
+    const {fetchAutocompleteLinks, searchLinks} = useWelcomeEmailLinkSuggestions();
 
-    const cardConfig = useMemo(() => ({unsplash: unsplashConfig}), [unsplashConfig]);
+    const cardConfig = useMemo(() => ({
+        unsplash: unsplashConfig,
+        fetchAutocompleteLinks,
+        searchLinks
+    }), [fetchAutocompleteLinks, searchLinks, unsplashConfig]);
 
     const baseEditorStyles = cn(
         // Base typography
