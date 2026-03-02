@@ -2,8 +2,10 @@ const fs = require('fs');
 const path = require('path');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const juice = require('juice');
+const cheerio = require('cheerio');
 const lexicalLib = require('../../lib/lexical');
 const errors = require('@tryghost/errors');
+const {textColorForBackgroundColor} = require('@tryghost/color-utils');
 const {MESSAGES} = require('./constants');
 const {wrapReplacementStrings} = require('../koenig/render-utils/replacement-strings');
 
@@ -15,15 +17,49 @@ class MemberWelcomeEmailRenderer {
 
     constructor({t}) {
         this.Handlebars = require('handlebars').create();
+        this.Handlebars.registerHelper('if', function (conditional, options) {
+            if (conditional) {
+                return options.fn(this);
+            } else {
+                return options.inverse(this);
+            }
+        });
         this.Handlebars.registerHelper('t', function (key, options) {
             let hash = options?.hash;
             return t(key, hash || options || {});
         });
+        const cardStylesSource = fs.readFileSync(
+            path.join(__dirname, './email-templates/partials/card-styles.hbs'),
+            'utf8'
+        );
+        this.Handlebars.registerPartial('cardStyles', cardStylesSource);
         const wrapperSource = fs.readFileSync(
             path.join(__dirname, './email-templates/wrapper.hbs'),
             'utf8'
         );
         this.#wrapperTemplate = this.Handlebars.compile(wrapperSource);
+    }
+
+    /**
+     * Some email clients ignore CSS table centering, so ensure button cards
+     * always have an explicit HTML align attribute when none is provided.
+     * @param {string} html
+     * @returns {string}
+     */
+    #ensureButtonCardAlignment(html) {
+        const $ = cheerio.load(html, {decodeEntities: false}, false);
+        const validAlignments = new Set(['left', 'center', 'right']);
+        const setDefaultAlignIfInvalid = function (_, element) {
+            const existingAlign = ($(element).attr('align') || '').trim().toLowerCase();
+            if (!validAlignments.has(existingAlign)) {
+                $(element).attr('align', 'center');
+            }
+        };
+
+        // Button card and CTA variants can render tables with missing/invalid align values.
+        $('table.btn, .btn table').each(setDefaultAlignIfInvalid);
+        $('.kg-cta-button-container').each(setDefaultAlignIfInvalid);
+        return $.html();
     }
 
     /**
@@ -107,18 +143,31 @@ class MemberWelcomeEmailRenderer {
             '$1'
         );
 
-        const contentWithReplacements = this.#applyReplacements({definitions, text: content, escapeHtml: true});
+        const contentWithReplacements = this.#ensureButtonCardAlignment(
+            this.#applyReplacements({definitions, text: content, escapeHtml: true})
+        );
         const subjectWithReplacements = this.#applyReplacements({definitions, text: subject, escapeHtml: false});
 
         const managePreferencesUrl = new URL('#/portal/account/newsletters', siteSettings.url).href;
         const year = new Date().getFullYear();
+        const accentColor = siteSettings.accentColor || '#15212A';
+        const accentContrastColor = textColorForBackgroundColor(accentColor).hex();
 
         const html = this.#wrapperTemplate({
             content: contentWithReplacements,
             subject: subjectWithReplacements,
             siteTitle: siteSettings.title,
             siteUrl: siteSettings.url,
-            accentColor: siteSettings.accentColor,
+            accentColor,
+            accentContrastColor,
+            backgroundIsDark: false,
+            hasRoundedImageCorners: false,
+            sectionTitleColor: null,
+            titleWeight: '700',
+            hasOutlineButtons: false,
+            buttonColor: accentColor,
+            buttonTextColor: accentContrastColor,
+            buttonBorderRadius: '6px',
             managePreferencesUrl,
             year
         });

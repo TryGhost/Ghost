@@ -388,5 +388,196 @@ describe('MemberWelcomeEmailRenderer', function () {
             assert(result.html.includes('Gérer vos préférences'));
             assert(!result.html.includes('Manage your preferences'));
         });
+
+        it('applies shared Koenig card styles used by newsletters', async function () {
+            lexicalRenderStub.resolves(`
+                <table class="kg-card kg-button-card" border="0" cellpadding="0" cellspacing="0">
+                    <tbody>
+                        <tr>
+                            <td class="kg-card-spacing">
+                                <table class="btn" border="0" cellspacing="0" cellpadding="0" align="center">
+                                    <tbody>
+                                        <tr>
+                                            <td align="center">
+                                                <a href="https://example.com">Click me</a>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="kg-card kg-callout-card kg-callout-card-blue">
+                    <div class="kg-callout-emoji">💡</div>
+                    <div class="kg-callout-text">Shared styles</div>
+                </div>
+            `);
+            const renderer = new MemberWelcomeEmailRenderer({t: key => key});
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Welcome!',
+                member: {name: 'John', email: 'john@example.com'},
+                siteSettings: defaultSiteSettings
+            });
+
+            assert(result.html.includes('kg-callout-card'));
+            assert(result.html.includes('padding: 24px'));
+            assert(result.html.includes('table class="btn"'));
+            assert(result.html.includes('background-color: #ff0000'));
+        });
+
+        it('centers button cards by default when no explicit alignment is set', async function () {
+            lexicalRenderStub.resolves(`
+                <table class="kg-card kg-button-card" border="0" cellpadding="0" cellspacing="0">
+                    <tbody>
+                        <tr>
+                            <td class="kg-card-spacing">
+                                <table class="btn" border="0" cellspacing="0" cellpadding="0">
+                                    <tbody>
+                                        <tr>
+                                            <td align="center">
+                                                <a href="https://example.com">Click me</a>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            `);
+            const renderer = new MemberWelcomeEmailRenderer({t: key => key});
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Welcome!',
+                member: {name: 'John', email: 'john@example.com'},
+                siteSettings: defaultSiteSettings
+            });
+
+            assert.match(result.html, /<table[^>]*class="btn"[^>]*align="center"/);
+        });
+
+        it('preserves explicit button alignment values', async function () {
+            lexicalRenderStub.resolves(`
+                <table class="kg-card kg-button-card" border="0" cellpadding="0" cellspacing="0">
+                    <tbody>
+                        <tr>
+                            <td class="kg-card-spacing">
+                                <table class="btn" border="0" cellspacing="0" cellpadding="0" align="left">
+                                    <tbody>
+                                        <tr>
+                                            <td align="center">
+                                                <a href="https://example.com">Left</a>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            `);
+            const renderer = new MemberWelcomeEmailRenderer({t: key => key});
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Welcome!',
+                member: {name: 'John', email: 'john@example.com'},
+                siteSettings: defaultSiteSettings
+            });
+
+            assert.match(result.html, /<table[^>]*class="btn"[^>]*align="left"/);
+        });
+
+        it('normalizes invalid button table alignment values to center', async function () {
+            lexicalRenderStub.resolves(`
+                <div class="btn btn-accent">
+                    <table border="0" cellspacing="0" cellpadding="0" align="undefined">
+                        <tbody>
+                            <tr>
+                                <td align="center">
+                                    <a href="https://example.com">Click me</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `);
+            const renderer = new MemberWelcomeEmailRenderer({t: key => key});
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Welcome!',
+                member: {name: 'John', email: 'john@example.com'},
+                siteSettings: defaultSiteSettings
+            });
+
+            assert.match(result.html, /<table[^>]*align="center"/);
+            assert(!result.html.includes('align="undefined"'));
+        });
+
+        it('normalizes nested .btn table alignment values to center', async function () {
+            lexicalRenderStub.resolves(`
+                <div class="btn btn-accent">
+                    <div>
+                        <table border="0" cellspacing="0" cellpadding="0" align="undefined">
+                            <tbody>
+                                <tr>
+                                    <td align="center">
+                                        <a href="https://example.com">Click me</a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `);
+            const renderer = new MemberWelcomeEmailRenderer({t: key => key});
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Welcome!',
+                member: {name: 'John', email: 'john@example.com'},
+                siteSettings: defaultSiteSettings
+            });
+
+            assert.match(result.html, /<table[^>]*align="center"/);
+            assert(!result.html.includes('align="undefined"'));
+        });
+
+        it('preserves explicit right alignment values', async function () {
+            lexicalRenderStub.resolves(`
+                <table class="kg-card kg-button-card" border="0" cellpadding="0" cellspacing="0">
+                    <tbody>
+                        <tr>
+                            <td class="kg-card-spacing">
+                                <table class="btn" border="0" cellspacing="0" cellpadding="0" align="right">
+                                    <tbody>
+                                        <tr>
+                                            <td align="center">
+                                                <a href="https://example.com">Right</a>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            `);
+            const renderer = new MemberWelcomeEmailRenderer({t: key => key});
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Welcome!',
+                member: {name: 'John', email: 'john@example.com'},
+                siteSettings: defaultSiteSettings
+            });
+
+            assert.match(result.html, /<table[^>]*class="btn"[^>]*align="right"/);
+        });
     });
 });
