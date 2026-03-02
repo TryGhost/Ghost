@@ -18,7 +18,7 @@ interface postAnalyticsProps {}
 
 const FunnelArrow: React.FC = () => {
     return (
-        <div className='absolute -right-4 top-1/2 z-10 hidden size-8 -translate-y-1/2 items-center justify-center rounded-full border bg-background text-muted-foreground   md:!visible md:!flex'>
+        <div className='absolute -right-4 top-1/2 z-10 hidden size-8 -translate-y-1/2 items-center justify-center rounded-full border bg-background text-muted-foreground   md:visible! md:flex!'>
             <LucideIcon.ChevronRight className='ml-0.5' size={16} strokeWidth={1.5}/>
         </div>
     );
@@ -298,7 +298,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                             });
                                             navigate(`/members?${params.toString()}`, {crossApp: true});
                                         }}>
-                                            <div className='ml-0.5 size-[9px] rounded-full bg-chart-purple !text-sm opacity-50 lg:text-base'></div>
+                                            <div className='ml-0.5 size-[9px] rounded-full bg-chart-purple text-sm! opacity-50 lg:text-base'></div>
                                     Sent
                                         </KpiCardLabel>
                                         <KpiCardContent>
@@ -324,7 +324,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                 });
                                                 navigate(`/members?${params.toString()}`, {crossApp: true});
                                             }}>
-                                                <div className='ml-0.5 size-[9px] rounded-full bg-chart-blue !text-sm opacity-50 lg:text-base'></div>
+                                                <div className='ml-0.5 size-[9px] rounded-full bg-chart-blue text-sm! opacity-50 lg:text-base'></div>
                                                 Opened
                                             </KpiCardLabel>
                                             <KpiCardContent>
@@ -351,7 +351,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                 });
                                                 navigate(`/members?${params.toString()}`, {crossApp: true});
                                             }}>
-                                                <div className='ml-0.5 size-[9px] rounded-full bg-chart-teal !text-sm opacity-50 lg:text-base'></div>
+                                                <div className='ml-0.5 size-[9px] rounded-full bg-chart-teal text-sm! opacity-50 lg:text-base'></div>
                                                 Clicked
                                             </KpiCardLabel>
                                             <KpiCardContent>

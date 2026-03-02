@@ -70,7 +70,7 @@ const Step2: React.FC = () => {
     return (
         <div className='relative flex size-full max-h-screen flex-col gap-4 overflow-hidden px-14'>
             <img className='absolute left-1/2 top-[120px] w-full min-w-[1240px] max-w-[1300px] -translate-x-1/2 dark:hidden' src={apDashedLines} />
-            <img className='absolute left-1/2 top-[120px] hidden w-full min-w-[1240px] max-w-[1300px] -translate-x-1/2 dark:!visible dark:!block' src={apDashedLinesDark} />
+            <img className='absolute left-1/2 top-[120px] hidden w-full min-w-[1240px] max-w-[1300px] -translate-x-1/2 dark:visible! dark:block!' src={apDashedLinesDark} />
             <Header>
                 <div className='flex flex-col justify-between gap-4 text-xl font-medium'>
                     <h1 className='max-w-[680px]'>Feel the network effect.</h1>

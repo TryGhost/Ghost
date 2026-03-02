@@ -37,7 +37,7 @@ const MobileMenuButton: React.FC<MobileMenuButtonProps> = ({onToggleMobileSideba
             variant='ghost'
             onClick={onToggleMobileSidebar}
         >
-            <LucideIcon.Menu className='!size-5' />
+            <LucideIcon.Menu className='size-5!' />
         </Button>
     );
 };

@@ -235,7 +235,7 @@ const Growth: React.FC = () => {
                                     ) : (
                                         !appSettings?.analytics.membersTrackSources ? (
                                             <TableRow className='last:border-none'>
-                                                <TableCell className='border-none py-12 group-hover:!bg-transparent' colSpan={appSettings?.paidMembersEnabled ? 4 : 2}>
+                                                <TableCell className='border-none py-12 group-hover:bg-transparent!' colSpan={appSettings?.paidMembersEnabled ? 4 : 2}>
                                                     <DisabledSourcesIndicator />
                                                 </TableCell>
                                             </TableRow>
@@ -246,7 +246,7 @@ const Growth: React.FC = () => {
                                                         <div className='group/link inline-flex flex-col items-start gap-px'>
                                                             {post.post_id && post.attribution_type === 'post' ?
                                                                 <Button
-                                                                    className='h-auto whitespace-normal p-0 text-left font-medium leading-tight hover:!underline'
+                                                                    className='h-auto whitespace-normal p-0 text-left font-medium leading-tight hover:underline!'
                                                                     title='View post analytics'
                                                                     variant='link'
                                                                     onClick={getClickHandler(post.attribution_url, post.post_id, site.url || '', navigate, post.attribution_type)}
@@ -280,7 +280,7 @@ const Growth: React.FC = () => {
                                             ))
                                         ) : (
                                             <TableRow className='border-none'>
-                                                <TableCell className='py-12 group-hover:!bg-transparent' colSpan={appSettings?.paidMembersEnabled ? 4 : 2}>
+                                                <TableCell className='py-12 group-hover:bg-transparent!' colSpan={appSettings?.paidMembersEnabled ? 4 : 2}>
                                                     <EmptyIndicator
                                                         description='Try adjusting your date range to see more data.'
                                                         title={`No conversions ${getPeriodText(range)}`}

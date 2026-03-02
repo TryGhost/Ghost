@@ -183,7 +183,7 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({
                                 goToPrev();
                             }}
                         >
-                            <LucideIcon.ChevronLeft className="!size-6" />
+                            <LucideIcon.ChevronLeft className="size-6!" />
                             <span className="sr-only">Previous image</span>
                         </Button>
 
@@ -195,14 +195,14 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({
                                 goToNext();
                             }}
                         >
-                            <LucideIcon.ChevronRight className="!size-6" />
+                            <LucideIcon.ChevronRight className="size-6!" />
                             <span className="sr-only">Next image</span>
                         </Button>
                     </>
                 )}
                 <DialogClose asChild>
                     <Button className="absolute right-5 top-5 size-11 rounded-full bg-black/50 p-0 hover:bg-black/70">
-                        <LucideIcon.X className="!size-5" />
+                        <LucideIcon.X className="size-5!" />
                         <span className="sr-only">Close</span>
                     </Button>
                 </DialogClose>

@@ -234,7 +234,7 @@ const NewsletterKPIs: React.FC<{
 
     return (
         <Tabs defaultValue={initialTab} variant='kpis'>
-            <TabsList className={`-mx-6 hidden grid-cols-3 md:!visible md:!grid ${gridClass}`}>
+            <TabsList className={`-mx-6 hidden grid-cols-3 md:visible! md:grid! ${gridClass}`}>
                 <KpiTabTrigger className={`${!emailTrackOpensEnabled && !emailTrackClicksEnabled && 'cursor-auto after:hidden'}`} value="total-subscribers" onClick={() => {
                     handleTabChange('total-subscribers');
                 }}>
@@ -336,7 +336,7 @@ const NewsletterKPIs: React.FC<{
                                 <>
                                     <ChartContainer className='aspect-auto h-[200px] w-full md:h-[220px] xl:h-[320px]' config={barChartConfig}>
                                         <Recharts.BarChart
-                                            className={isHoveringClickable ? '!cursor-pointer' : ''}
+                                            className={isHoveringClickable ? 'cursor-pointer!' : ''}
                                             data={avgsData}
                                             margin={{
                                                 top: 20

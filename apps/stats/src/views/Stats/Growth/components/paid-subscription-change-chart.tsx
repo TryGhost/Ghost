@@ -404,7 +404,7 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
                                 />
                                 <ChartTooltip
                                     content={<ChartTooltipContent
-                                        className='!min-w-[120px] px-3 py-2'
+                                        className='min-w-[120px]! px-3 py-2'
                                         formatter={(value, name, payload, index) => {
                                             const rawValue = Number(value);
                                             let displayValue = '0';

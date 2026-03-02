@@ -342,7 +342,7 @@ const Notifications: React.FC = () => {
                                                                     name: actor.name,
                                                                     handle: actor.handle
                                                                 }}
-                                                                className='-ml-2 !bg-[#F3F3F3] outline outline-2 outline-white group-hover:!bg-[#EDEEF0] group-hover:outline-gray-75 dark:outline-black group-hover:dark:outline-gray-950'
+                                                                className='-ml-2 bg-[#F3F3F3]! outline outline-2 outline-white group-hover:bg-[#EDEEF0]! group-hover:outline-gray-75 dark:outline-black group-hover:dark:outline-gray-950'
                                                                 size='notification'
                                                             />
                                                         ))}

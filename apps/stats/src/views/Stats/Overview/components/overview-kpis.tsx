@@ -130,11 +130,11 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
     const limiter = useLimiter();
     const isWebAnalyticsLimited = limiter.isLimited('limitAnalytics');
 
-    const areaChartClassName = '-mb-3 h-[10vw] max-h-[200px] min-h-[100px] hover:!cursor-pointer';
+    const areaChartClassName = '-mb-3 h-[10vw] max-h-[200px] min-h-[100px] hover:cursor-pointer!';
 
     if (isLoading) {
         return (
-            <EmptyCard className='flex h-[calc(10vw+116px)] max-h-[416px] min-h-20 items-center justify-center hover:!cursor-pointer'>
+            <EmptyCard className='flex h-[calc(10vw+116px)] max-h-[416px] min-h-20 items-center justify-center hover:cursor-pointer!'>
                 <BarChartLoadingIndicator />
             </EmptyCard>
         );

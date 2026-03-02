@@ -148,10 +148,10 @@ const BlueskySharing: React.FC = () => {
             <div className='mx-auto max-w-[620px] py-[min(4vh,48px)]'>
                 <div className='flex items-center justify-between gap-8'>
                     <H2>Bluesky sharing</H2>
-                    {showAsEnabled && <Button className='group w-24 translate-y-1 px-2 hover:!bg-red/5 hover:text-red' size='default' variant='outline' onClick={() => setShowConfirm(true)}>
+                    {showAsEnabled && <Button className='group w-24 translate-y-1 px-2 hover:bg-red/5! hover:text-red' size='default' variant='outline' onClick={() => setShowConfirm(true)}>
                         <span className='size-2 rounded-full bg-green group-hover:hidden'></span>
                         <span className='group-hover:hidden'>Enabled</span>
-                        <span className='hidden group-hover:!visible group-hover:!inline'>Disable</span>
+                        <span className='hidden group-hover:visible! group-hover:inline!'>Disable</span>
                     </Button>}
                 </div>
                 {!showAsEnabled ?

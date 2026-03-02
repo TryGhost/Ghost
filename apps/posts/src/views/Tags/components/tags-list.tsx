@@ -67,7 +67,7 @@ function TagsList({
                 className="flex table-fixed flex-col lg:table"
                 data-testid="tags-list"
             >
-                <TableHeader className="hidden lg:!visible lg:!table-header-group">
+                <TableHeader className="hidden lg:visible! lg:table-header-group!">
                     <TableRow>
                         <TableHead className="w-auto px-4">
                             Tag

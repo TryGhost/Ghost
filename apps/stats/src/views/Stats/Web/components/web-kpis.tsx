@@ -84,7 +84,7 @@ const WebKPIs: React.FC<WebKPIsProps> = ({data, range, isLoading}) => {
 
     return (
         <Tabs data-testid='web-graph' defaultValue="visits" variant='kpis'>
-            <TabsList className="-mx-6 hidden grid-cols-2 md:!visible md:!grid">
+            <TabsList className="-mx-6 hidden grid-cols-2 md:visible! md:grid!">
                 <KpiTabTrigger value="visits" onClick={() => setCurrentTab('visits')}>
                     <KpiTabValue color='var(--chart-blue)' label="Unique visitors" value={kpiValues.visits} />
                 </KpiTabTrigger>
