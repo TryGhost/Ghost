@@ -1,10 +1,7 @@
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
-const fs = require('fs/promises');
-const path = require('path');
 const urlUtils = require('../../../shared/url-utils');
 const settingsCache = require('../../../shared/settings-cache');
-const config = require('../../../shared/config');
 const emailAddressService = require('../email-address');
 const settingsHelpers = require('../settings-helpers');
 const EmailAddressParser = require('../email-address/email-address-parser');
@@ -24,33 +21,6 @@ class MemberWelcomeEmailService {
         emailAddressService.init();
         this.#mailer = new mail.GhostMailer();
         this.#renderer = new MemberWelcomeEmailRenderer({t});
-    }
-
-    async #debugRenderedEmail({emailType, recipientEmail, subject, html, text}) {
-        if (process.env.GHOST_DEBUG_MEMBER_WELCOME_EMAIL_OUTPUT !== 'true') {
-            return;
-        }
-
-        const payload = {
-            timestamp: new Date().toISOString(),
-            emailType,
-            recipientEmail,
-            subject,
-            html,
-            text
-        };
-
-        logging.info(`${MEMBER_WELCOME_EMAIL_LOG_KEY} Rendered email payload ${JSON.stringify(payload)}`);
-
-        const outputFilePath = process.env.GHOST_DEBUG_MEMBER_WELCOME_EMAIL_OUTPUT_FILE ||
-            path.join(config.getContentPath('logs'), 'member-welcome-email-debug.log');
-
-        try {
-            await fs.appendFile(outputFilePath, `${JSON.stringify(payload)}\n`);
-            logging.info(`${MEMBER_WELCOME_EMAIL_LOG_KEY} Debug payload written to ${outputFilePath}`);
-        } catch (err) {
-            logging.error(`${MEMBER_WELCOME_EMAIL_LOG_KEY} Failed to write debug payload file: ${err.message}`);
-        }
     }
 
     #getSiteSettings() {
@@ -178,14 +148,6 @@ class MemberWelcomeEmailService {
             },
             siteSettings: this.#getSiteSettings()
         });
-        await this.#debugRenderedEmail({
-            emailType: 'send',
-            recipientEmail: member.email,
-            subject,
-            html,
-            text
-        });
-
         const senderOptions = await this.#getSenderOptions();
 
         await this.#mailer.send({
@@ -243,14 +205,6 @@ class MemberWelcomeEmailService {
             member: testMember,
             siteSettings: this.#getSiteSettings()
         });
-        await this.#debugRenderedEmail({
-            emailType: 'sendTestEmail',
-            recipientEmail: email,
-            subject: renderedSubject,
-            html,
-            text
-        });
-
         // Test sends should always reflect the latest newsletter sender settings.
         const senderOptions = await this.#getDefaultNewsletterSenderOptions();
 
