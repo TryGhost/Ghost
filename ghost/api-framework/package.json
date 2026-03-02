@@ -13,7 +13,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "echo \"Implement me!\"",
-    "test:unit": "NODE_ENV=testing c8 --all --reporter text --reporter cobertura --check-coverage --100 -- mocha --reporter dot './test/**/*.test.js'",
+    "test:unit": "NODE_ENV=testing vitest run --coverage --config ../../vitest.config.ts",
     "test": "yarn test:unit",
     "lint:code": "eslint *.js lib/ --ext .js --cache",
     "lint": "yarn lint:code && yarn lint:test",
@@ -24,7 +24,6 @@
     "lib"
   ],
   "devDependencies": {
-    "c8": "11.0.0",
     "mocha": "11.7.5",
     "sinon": "21.0.1"
   },
