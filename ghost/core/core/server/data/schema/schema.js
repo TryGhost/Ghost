@@ -19,6 +19,8 @@ module.exports = {
         sender_name: {type: 'string', maxlength: 191, nullable: true},
         sender_email: {type: 'string', maxlength: 191, nullable: true},
         sender_reply_to: {type: 'string', maxlength: 191, nullable: false, defaultTo: 'newsletter'},
+        sender_email_verified_email_id: {type: 'string', maxlength: 24, nullable: true, references: 'verified_emails.id', setNullDelete: true},
+        sender_reply_to_verified_email_id: {type: 'string', maxlength: 24, nullable: true, references: 'verified_emails.id', setNullDelete: true},
         status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'active', validations: {isIn: [['active', 'archived']]}},
         visibility: {
             type: 'string',
