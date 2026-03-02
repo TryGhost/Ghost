@@ -65,129 +65,143 @@ describe('HTTP', function () {
         });
     });
 
-    it('api response is fn', function (done) {
-        const response = sinon.stub().callsFake(function (_req, _res, _next) {
-            assert.ok(_req);
-            assert.ok(_res);
-            assert.ok(_next);
-            assert.equal(apiImpl.calledOnce, true);
-            assert.equal(_res.json.called, false);
-            done();
-        });
-
-        const apiImpl = sinon.stub().resolves(response);
-        shared.http(apiImpl)(req, res, next);
-    });
-
-    it('api response is fn (data)', function (done) {
-        const apiImpl = sinon.stub().resolves('data');
-
-        next.callsFake(done);
-
-        res.json.callsFake(function () {
-            assert.equal(shared.headers.get.calledOnce, true);
-            assert.equal(res.status.calledOnce, true);
-            assert.equal(res.send.called, false);
-            done();
-        });
-
-        shared.http(apiImpl)(req, res, next);
-    });
-
-    it('handles api key, user and plain text response', function (done) {
-        req.vhost = null;
-        req.user = {id: 'user-id'};
-        req.api_key = {
-            get(key) {
-                return {
-                    id: 'api-key-id',
-                    type: 'admin',
-                    integration_id: 'integration-id'
-                }[key];
-            }
-        };
-
-        const apiImpl = sinon.stub().resolves('plain body');
-        apiImpl.response = {format: 'plain'};
-        apiImpl.statusCode = 201;
-
-        res.send.callsFake(() => {
-            assert.equal(res.status.calledOnceWithExactly(201), true);
-            assert.equal(res.headers.constructor, Object);
-            assert.equal(res.json.called, false);
-
-            const frame = apiImpl.args[0][0];
-            assert.equal(frame.options.context.api_key.id, 'api-key-id');
-            assert.equal(frame.options.context.integration.id, 'integration-id');
-            assert.equal(frame.options.context.user, 'user-id');
-            done();
-        });
-
-        shared.http(apiImpl)(req, res, next);
-    });
-
-    it('supports async response format and statusCode function', function (done) {
-        const apiImpl = sinon.stub().resolves({ok: true});
-        apiImpl.statusCode = sinon.stub().returns(204);
-        apiImpl.response = {
-            format() {
-                return Promise.resolve('plain');
-            }
-        };
-
-        res.send.callsFake(() => {
-            assert.equal(apiImpl.statusCode.calledOnce, true);
-            assert.equal(res.status.calledOnceWithExactly(204), true);
-            done();
-        });
-
-        shared.http(apiImpl)(req, res, next);
-    });
-
-    it('supports sync response format function', function (done) {
-        const apiImpl = sinon.stub().resolves('plain body');
-        apiImpl.response = {
-            format() {
-                return 'plain';
-            }
-        };
-
-        res.send.callsFake(() => {
-            assert.equal(res.send.calledOnce, true);
-            assert.equal(res.json.called, false);
-            done();
-        });
-
-        shared.http(apiImpl)(req, res, next);
-    });
-
-    it('passes errors to next with frame options', function (done) {
-        const error = new Error('failure');
-        const apiImpl = sinon.stub().rejects(error);
-
-        next.callsFake((err) => {
-            assert.equal(err, error);
-            assert.deepEqual(req.frameOptions, {
-                docName: null,
-                method: null
+    it('api response is fn', async function () {
+        await new Promise((resolve) => {
+            const response = sinon.stub().callsFake(function (_req, _res, _next) {
+                assert.ok(_req);
+                assert.ok(_res);
+                assert.ok(_next);
+                assert.equal(apiImpl.calledOnce, true);
+                assert.equal(_res.json.called, false);
+                resolve();
             });
-            done();
-        });
 
-        shared.http(apiImpl)(req, res, next);
+            const apiImpl = sinon.stub().resolves(response);
+            shared.http(apiImpl)(req, res, next);
+        });
     });
 
-    it('uses req.url pathname when originalUrl is missing', function (done) {
-        req.originalUrl = undefined;
-        req.url = '/ghost/api/content/posts/?include=authors';
+    it('api response is fn (data)', async function () {
+        await new Promise((resolve) => {
+            const apiImpl = sinon.stub().resolves('data');
 
-        const apiImpl = sinon.stub().resolves({});
-        res.json.callsFake(() => {
-            const frame = apiImpl.args[0][0];
-            assert.equal(frame.original.url.pathname, '/ghost/api/content/posts/');
-            done();
+            next.callsFake(resolve);
+
+            res.json.callsFake(function () {
+                assert.equal(shared.headers.get.calledOnce, true);
+                assert.equal(res.status.calledOnce, true);
+                assert.equal(res.send.called, false);
+                resolve();
+            });
+
+            shared.http(apiImpl)(req, res, next);
         });
+    });
 
-        shared.http(apiImpl)(req, res, next);
+    it('handles api key, user and plain text response', async function () {
+        await new Promise((resolve) => {
+            req.vhost = null;
+            req.user = {id: 'user-id'};
+            req.api_key = {
+                get(key) {
+                    return {
+                        id: 'api-key-id',
+                        type: 'admin',
+                        integration_id: 'integration-id'
+                    }[key];
+                }
+            };
+
+            const apiImpl = sinon.stub().resolves('plain body');
+            apiImpl.response = {format: 'plain'};
+            apiImpl.statusCode = 201;
+
+            res.send.callsFake(() => {
+                assert.equal(res.status.calledOnceWithExactly(201), true);
+                assert.equal(res.headers.constructor, Object);
+                assert.equal(res.json.called, false);
+
+                const frame = apiImpl.args[0][0];
+                assert.equal(frame.options.context.api_key.id, 'api-key-id');
+                assert.equal(frame.options.context.integration.id, 'integration-id');
+                assert.equal(frame.options.context.user, 'user-id');
+                resolve();
+            });
+
+            shared.http(apiImpl)(req, res, next);
+        });
+    });
+
+    it('supports async response format and statusCode function', async function () {
+        await new Promise((resolve) => {
+            const apiImpl = sinon.stub().resolves({ok: true});
+            apiImpl.statusCode = sinon.stub().returns(204);
+            apiImpl.response = {
+                format() {
+                    return Promise.resolve('plain');
+                }
+            };
+
+            res.send.callsFake(() => {
+                assert.equal(apiImpl.statusCode.calledOnce, true);
+                assert.equal(res.status.calledOnceWithExactly(204), true);
+                resolve();
+            });
+
+            shared.http(apiImpl)(req, res, next);
+        });
+    });
+
+    it('supports sync response format function', async function () {
+        await new Promise((resolve) => {
+            const apiImpl = sinon.stub().resolves('plain body');
+            apiImpl.response = {
+                format() {
+                    return 'plain';
+                }
+            };
+
+            res.send.callsFake(() => {
+                assert.equal(res.send.calledOnce, true);
+                assert.equal(res.json.called, false);
+                resolve();
+            });
+
+            shared.http(apiImpl)(req, res, next);
+        });
+    });
+
+    it('passes errors to next with frame options', async function () {
+        await new Promise((resolve) => {
+            const error = new Error('failure');
+            const apiImpl = sinon.stub().rejects(error);
+
+            next.callsFake((err) => {
+                assert.equal(err, error);
+                assert.deepEqual(req.frameOptions, {
+                    docName: null,
+                    method: null
+                });
+                resolve();
+            });
+
+            shared.http(apiImpl)(req, res, next);
+        });
+    });
+
+    it('uses req.url pathname when originalUrl is missing', async function () {
+        await new Promise((resolve) => {
+            req.originalUrl = undefined;
+            req.url = '/ghost/api/content/posts/?include=authors';
+
+            const apiImpl = sinon.stub().resolves({});
+            res.json.callsFake(() => {
+                const frame = apiImpl.args[0][0];
+                assert.equal(frame.original.url.pathname, '/ghost/api/content/posts/');
+                resolve();
+            });
+
+            shared.http(apiImpl)(req, res, next);
+        });
     });
 });
