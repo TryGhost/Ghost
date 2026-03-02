@@ -16,6 +16,8 @@ import {resetQueryParams} from 'ghost-admin/helpers/reset-query-params';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
+const LABEL_PAGE_SIZE = 100;
+
 const PAID_PARAMS = [{
     name: 'All members',
     value: null
@@ -179,7 +181,7 @@ export default class MembersController extends Controller {
                 return;
             }
 
-            if (this._searchedLabelsMeta && this._searchedLabelsMeta.pagination.pages <= this._searchedLabelsMeta.pagination.page) {
+            if (!this._searchedLabelsMeta || (this._searchedLabelsMeta.pagination.pages <= this._searchedLabelsMeta.pagination.page)) {
                 return;
             }
 
@@ -193,7 +195,7 @@ export default class MembersController extends Controller {
             }
 
             const page = this._initialLabelsMeta?.pagination.page ? this._initialLabelsMeta.pagination.page + 1 : 1;
-            const labels = yield this.store.query('label', {limit: 100, page, order: 'name asc'});
+            const labels = yield this.store.query('label', {limit: LABEL_PAGE_SIZE, page, order: 'name asc'});
             this._initialLabels.push(...labels.toArray());
             this._initialLabelsMeta = labels.meta;
         }

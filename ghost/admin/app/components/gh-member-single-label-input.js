@@ -16,7 +16,6 @@ export default class GhMemberSingleLabelInput extends Component {
     @tracked _searchedLabels = new TrackedArray();
 
     _initialLabelsMeta = null;
-    _hasLoadedInitialLabels = false;
     _searchedLabelsQuery = null;
     _searchedLabelsMeta = null;
 
@@ -60,7 +59,7 @@ export default class GhMemberSingleLabelInput extends Component {
         this._powerSelectAPI = api;
     }
 
-    @task
+    @task({drop: true})
     *loadMoreLabelsTask() {
         const isSearch = !!this._powerSelectAPI?.searchText;
         if (isSearch) {
@@ -72,7 +71,7 @@ export default class GhMemberSingleLabelInput extends Component {
                 return;
             }
 
-            if (this._searchedLabelsMeta?.pagination && this._searchedLabelsMeta.pagination.pages <= this._searchedLabelsMeta.pagination.page) {
+            if (!this._searchedLabelsMeta || (this._searchedLabelsMeta.pagination.pages <= this._searchedLabelsMeta.pagination.page)) {
                 return;
             }
 

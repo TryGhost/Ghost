@@ -152,7 +152,7 @@ export default class GhMembersRecipientSelect extends Component {
         this.args.onChange?.(newFilter);
     }
 
-    @task
+    @task({drop: true})
     *loadMoreLabelsTask() {
         if (this._labelsMeta?.pagination && this._labelsMeta.pagination.pages <= this._labelsMeta.pagination.page) {
             return;

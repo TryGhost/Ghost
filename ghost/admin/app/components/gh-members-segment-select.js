@@ -75,7 +75,7 @@ export default class GhMembersSegmentSelect extends Component {
         this.args.onChange?.(segment);
     }
 
-    @task
+    @task({drop: true})
     *loadMoreLabelsTask() {
         if (this._labelsMeta?.pagination && this._labelsMeta.pagination.pages <= this._labelsMeta.pagination.page) {
             return;

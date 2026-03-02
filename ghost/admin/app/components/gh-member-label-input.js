@@ -72,12 +72,12 @@ export default class GhMemberLabelInput extends Component {
     @action
     async loadInitialLabels() {
         if (!this._hasLoadedInitialLabels) {
-            await this.loadMoreLabelsTask.perform(false);
+            await this.loadMoreLabelsTask.perform();
             this._hasLoadedInitialLabels = true;
         }
     }
 
-    @task
+    @task({drop: true})
     *loadMoreLabelsTask() {
         const isSearch = !!this._powerSelectAPI?.searchText;
         if (isSearch) {
@@ -89,7 +89,7 @@ export default class GhMemberLabelInput extends Component {
                 return;
             }
 
-            if (this._searchedLabelsMeta?.pagination && this._searchedLabelsMeta.pagination.pages <= this._searchedLabelsMeta.pagination.page) {
+            if (!this._searchedLabelsMeta || (this._searchedLabelsMeta.pagination.pages <= this._searchedLabelsMeta.pagination.page)) {
                 return;
             }
 
