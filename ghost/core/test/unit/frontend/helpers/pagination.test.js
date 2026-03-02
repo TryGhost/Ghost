@@ -1,14 +1,11 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../utils/assertions');
-const sinon = require('sinon');
 const hbs = require('../../../../core/frontend/services/theme-engine/engine');
 const configUtils = require('../../../utils/config-utils');
 const path = require('path');
 const page_url = require('../../../../core/frontend/helpers/page_url');
 const t = require('../../../../core/frontend/helpers/t');
-const themeI18n = require('../../../../core/frontend/services/theme-engine/i18n');
-const themeI18next = require('../../../../core/frontend/services/theme-engine/i18next');
-const labs = require('../../../../core/shared/labs');
+const {setupI18nTest, initLocale} = require('../../../utils/i18n-test-utils');
 const pagination = require('../../../../core/frontend/helpers/pagination');
 
 describe('{{pagination}} helper', function () {
@@ -43,6 +40,7 @@ describe('{{pagination}} helper', function () {
         assert.throws(runHelper(function () {
         }), {message: expectedMessage});
     });
+
     const i18nImplementations = [
         {name: 'themeI18n (legacy)', useNewTranslation: false},
         {name: 'themeI18next (new)', useNewTranslation: true}
@@ -52,36 +50,19 @@ describe('{{pagination}} helper', function () {
 
     i18nImplementations.forEach(({name, useNewTranslation}) => {
         describe(`rendering with ${name}`, function () {
-            let ogI18nBasePath;
-            let ogI18nextBasePath;
+            let i18nSetup;
 
             before(function () {
-                sinon.stub(labs, 'isSet').withArgs('themeTranslation').returns(useNewTranslation);
+                i18nSetup = setupI18nTest({useNewTranslation, locale: 'en'});
+            });
 
-                ogI18nBasePath = themeI18n.basePath;
-                ogI18nextBasePath = themeI18next.basePath;
-                const themesPath = path.join(__dirname, '../../../utils/fixtures/themes/');
-                themeI18n.basePath = themesPath;
-                themeI18next.basePath = themesPath;
-
-                if (useNewTranslation) {
-                    themeI18next.init({activeTheme: 'locale-theme', locale: 'en'});
-                } else {
-                    themeI18n.init({activeTheme: 'locale-theme', locale: 'en'});
-                }
+            afterEach(function () {
+                // Reset locale to English after each test to prevent leaking
+                initLocale({useNewTranslation, locale: 'en'});
             });
 
             after(function () {
-                sinon.restore();
-                themeI18n.basePath = ogI18nBasePath;
-                themeI18next.basePath = ogI18nextBasePath;
-                // Reset i18n singleton state so it does not leak into other test suites
-                themeI18n._strings = null;
-                themeI18n._locale = themeI18n.defaultLocale?.() ?? 'en';
-                themeI18n._activetheme = undefined;
-                themeI18next._i18n = null;
-                themeI18next._locale = 'en';
-                themeI18next._activeTheme = null;
+                i18nSetup.teardown();
             });
 
             it('can render single page with no pagination necessary', function () {
@@ -138,11 +119,7 @@ describe('{{pagination}} helper', function () {
             });
 
             it('translates page indicator when locale is German', function () {
-                if (useNewTranslation) {
-                    themeI18next.init({activeTheme: 'locale-theme', locale: 'de'});
-                } else {
-                    themeI18n.init({activeTheme: 'locale-theme', locale: 'de'});
-                }
+                initLocale({useNewTranslation, locale: 'de'});
                 const rendered = pagination.call({
                     pagination: {page: 1, prev: null, next: null, limit: 15, total: 8, pages: 1},
                     tag: {slug: 'slug'}
@@ -152,11 +129,7 @@ describe('{{pagination}} helper', function () {
             });
 
             it('falls back to English when locale is fr (no fr.json)', function () {
-                if (useNewTranslation) {
-                    themeI18next.init({activeTheme: 'locale-theme', locale: 'fr'});
-                } else {
-                    themeI18n.init({activeTheme: 'locale-theme', locale: 'fr'});
-                }
+                initLocale({useNewTranslation, locale: 'fr'});
                 const rendered = pagination.call({
                     pagination: {page: 1, prev: null, next: null, limit: 15, total: 8, pages: 1},
                     tag: {slug: 'slug'}
@@ -166,6 +139,7 @@ describe('{{pagination}} helper', function () {
             });
         });
     });
+
     it('validates values', function () {
         const runErrorTest = function (data) {
             return function () {
