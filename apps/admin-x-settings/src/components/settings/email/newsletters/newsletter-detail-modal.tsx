@@ -1,6 +1,7 @@
 import NewsletterPreview from './newsletter-preview';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useCallback, useEffect, useState} from 'react';
+import VerifiedEmailSelect from '../verified-email-select';
 import useSettingGroup from '../../../../hooks/use-setting-group';
 import validator from 'validator';
 import {Button, ButtonGroup, ColorPickerField, ConfirmationModal, Form, Heading, Hint, HtmlField, Icon, ImageUpload, LimitModal, PreviewModalContent, Select, type SelectOption, Separator, type Tab, TabView, TextArea, TextField, Toggle, ToggleGroup, showToast} from '@tryghost/admin-x-design-system';
@@ -42,7 +43,30 @@ const ReplyToEmailField: React.FC<{
         setSenderReplyTo(rendered);
     };
 
-    // Pro users without custom sending domains
+    // For managed email, use the VerifiedEmailSelect combobox
+    if (isManagedEmail(config)) {
+        return (
+            <VerifiedEmailSelect
+                context={{
+                    type: 'newsletter',
+                    id: newsletter.id,
+                    property: 'sender_reply_to'
+                }}
+                placeholder={newsletterAddress || 'Reply-to email'}
+                specialOptions={[
+                    {value: 'newsletter', label: 'Newsletter address'},
+                    {value: 'support', label: 'Support address'}
+                ]}
+                value={newsletter.sender_reply_to}
+                onChange={(value) => {
+                    updateNewsletter({sender_reply_to: value});
+                    clearError('sender_reply_to');
+                }}
+            />
+        );
+    }
+
+    // Self-hosted: keep existing TextField
     return (
         <TextField
             error={Boolean(errors.sender_reply_to)}
@@ -192,26 +216,22 @@ const Sidebar: React.FC<{
             );
         }
 
-        // Pro users with custom sending domains
-        if (hasSendingDomain(config)) {
-            return (
-                <TextField
-                    error={Boolean(errors.sender_email)}
-                    hint={errors.sender_email}
-                    maxLength={191}
-                    placeholder={defaultEmailAddress}
-                    title="Sender email address"
-                    value={newsletter.sender_email || ''}
-                    onChange={(e) => {
-                        updateNewsletter({sender_email: e.target.value});
-                    }}
-                    onKeyDown={() => clearError('sender_email')}
-                />
-            );
-        }
-
-        // Pro users without custom sending domains
-        // We're not showing the field since it's not editable
+        // Managed email: use VerifiedEmailSelect
+        return (
+            <VerifiedEmailSelect
+                context={{
+                    type: 'newsletter',
+                    id: newsletter.id,
+                    property: 'sender_email'
+                }}
+                placeholder={defaultEmailAddress || 'Sender email'}
+                value={newsletter.sender_email || ''}
+                onChange={(value) => {
+                    updateNewsletter({sender_email: value});
+                    clearError('sender_email');
+                }}
+            />
+        );
     };
 
     const headingFontWeightOptions = fontWeightOptions[newsletter.title_font_category || 'sans_serif'].options;
