@@ -490,6 +490,11 @@ describe('MemberWelcomeEmailRenderer', function () {
             });
 
             assert.match(result.html, /<table[^>]*class="btn"[^>]*align="left"/);
+
+            // Verify no margin:0 auto is inlined that would override the align attribute
+            const btnMatch = result.html.match(/<table[^>]*class="btn"[^>]*>/);
+            assert(btnMatch, 'should have a btn table');
+            assert(!btnMatch[0].includes('margin: 0 auto'), 'left-aligned button should not have margin: 0 auto');
         });
 
         it('normalizes invalid button table alignment values to center', async function () {

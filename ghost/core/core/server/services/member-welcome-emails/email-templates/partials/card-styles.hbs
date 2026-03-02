@@ -4,11 +4,37 @@ td.kg-card-spacing {
     padding: 0 0 1.5em 0;
 }
 
+figure {
+    margin: 0 0 1.5em;
+    padding: 0;
+}
+
+figcaption {
+    text-align: center;
+    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+    font-size: 13px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    line-height: 1.5em;
+    {{#if backgroundIsDark}}
+        color: #ffffff;
+        color: rgba(255, 255, 255, .6);
+    {{else}}
+        color: #15212a;
+        color: rgba(0, 0, 0, 0.6);
+    {{/if}}
+}
+
+figcaption a {
+    text-decoration: none!important;
+}
+
 .kg-image-card img {
     display: block;
     margin: 0 auto;
     height: auto;
     width: auto;
+    max-width: 100%;
     {{#if hasRoundedImageCorners}}
         border-radius: 6px;
     {{/if}}
@@ -76,8 +102,8 @@ td.kg-card-spacing {
     BUTTONS
 ------------------------------------- */
 
-.kg-button-card table.btn {
-    margin: 0 auto;
+.kg-button-card {
+    width: 100%;
 }
 
 table.btn {
