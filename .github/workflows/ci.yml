@@ -452,7 +452,6 @@ jobs:
         env:
           FORCE_COLOR: 0
           GHOST_UNIT_TEST_VARIANT: ci
-          NX_SKIP_LOG_GROUPING: true
 
       - uses: actions/upload-artifact@v4
         if: matrix.node == env.NODE_VERSION
