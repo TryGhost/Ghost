@@ -209,6 +209,10 @@ module.exports = {
         return apiFramework.pipeline(require('./newsletters'), localUtils);
     },
 
+    get verifiedEmails() {
+        return apiFramework.pipeline(require('./verified-emails'), localUtils);
+    },
+
     get comments() {
         return apiFramework.pipeline(require('./comments'), localUtils);
     },
