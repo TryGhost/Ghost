@@ -270,11 +270,11 @@ class EmailVerificationService {
         // Check newsletters by FK columns
         for (const [property, fkColumn] of Object.entries(FK_COLUMNS)) {
             const newsletters = await this.#NewsletterModel.findAll({
-                filter: `${fkColumn}:${id}`
+                filter: `${fkColumn}:'${id}'`
             });
 
-            if (newsletters && newsletters.length > 0) {
-                for (const newsletter of newsletters) {
+            if (newsletters && newsletters.models.length > 0) {
+                for (const newsletter of newsletters.models) {
                     usages.push(`newsletter "${newsletter.get('name')}" (${property})`);
                 }
             }
@@ -283,11 +283,11 @@ class EmailVerificationService {
         // Check automated_emails by FK columns
         for (const [property, fkColumn] of Object.entries(FK_COLUMNS)) {
             const automatedEmails = await this.#AutomatedEmailModel.findAll({
-                filter: `${fkColumn}:${id}`
+                filter: `${fkColumn}:'${id}'`
             });
 
-            if (automatedEmails && automatedEmails.length > 0) {
-                for (const automatedEmail of automatedEmails) {
+            if (automatedEmails && automatedEmails.models.length > 0) {
+                for (const automatedEmail of automatedEmails.models) {
                     usages.push(`automated email "${automatedEmail.get('name')}" (${property})`);
                 }
             }
