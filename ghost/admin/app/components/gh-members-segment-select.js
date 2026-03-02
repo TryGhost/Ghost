@@ -1,19 +1,15 @@
 import Component from '@glimmer/component';
-import {TrackedArray} from 'tracked-built-ins';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
-const PAGE_SIZE = 100;
-
 export default class GhMembersSegmentSelect extends Component {
     @service store;
     @service feature;
+    @service labelsManager;
 
     @tracked _baseOptions = [];
-    @tracked _labelOptions = new TrackedArray();
-    _labelsMeta = null;
 
     get renderInPlace() {
         return this.args.renderInPlace === undefined ? false : this.args.renderInPlace;
@@ -26,11 +22,17 @@ export default class GhMembersSegmentSelect extends Component {
 
     get _options() {
         const options = [...this._baseOptions];
+        const labels = this.labelsManager.labels;
 
-        if (this._labelOptions.length > 0 && !this.args.hideLabels) {
+        if (labels.length > 0 && !this.args.hideLabels) {
             options.push({
                 groupName: 'Labels',
-                options: [...this._labelOptions]
+                options: labels.map(label => ({
+                    name: label.name,
+                    segment: `label:${label.slug}`,
+                    count: label.count?.members,
+                    class: 'segment-label'
+                }))
             });
         }
 
@@ -77,23 +79,7 @@ export default class GhMembersSegmentSelect extends Component {
 
     @task({drop: true})
     *loadMoreLabelsTask() {
-        if (this._labelsMeta?.pagination && this._labelsMeta.pagination.pages <= this._labelsMeta.pagination.page) {
-            return;
-        }
-
-        const page = this._labelsMeta?.pagination.page ? this._labelsMeta.pagination.page + 1 : 1;
-        const labels = yield this.store.query('label', {limit: PAGE_SIZE, page, order: 'name asc'});
-
-        labels.forEach((label) => {
-            this._labelOptions.push({
-                name: label.name,
-                segment: `label:${label.slug}`,
-                count: label.count?.members,
-                class: 'segment-label'
-            });
-        });
-
-        this._labelsMeta = labels.meta;
+        yield this.labelsManager.loadMoreTask.perform();
     }
 
     @task
@@ -174,6 +160,6 @@ export default class GhMembersSegmentSelect extends Component {
 
         // fetch first page of labels (labels are last so infinite scroll works)
         // TODO: add `include: 'count.members` to query once API is fixed
-        yield this.loadMoreLabelsTask.perform();
+        yield this.labelsManager.loadMoreTask.perform();
     }
 }

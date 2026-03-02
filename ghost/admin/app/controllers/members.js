@@ -16,8 +16,6 @@ import {resetQueryParams} from 'ghost-admin/helpers/reset-query-params';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
-const LABEL_PAGE_SIZE = 100;
-
 const PAID_PARAMS = [{
     name: 'All members',
     value: null
@@ -67,9 +65,6 @@ export default class MembersController extends Controller {
     @tracked softFilters = A([]);
     @tracked isExporting = false;
 
-    @tracked _initialLabels = new TrackedArray();
-    _initialLabelsMeta = null;
-    _hasLoadedInitialLabels = false;
     @tracked _searchedLabels = new TrackedArray();
     _searchedLabelsQuery = null;
     _searchedLabelsMeta = null;
@@ -154,10 +149,10 @@ export default class MembersController extends Controller {
     get availableLabels() {
         let options = [{name: 'All labels', slug: null}];
 
-        options = options.concat(this.labelsManager.sortLabels(this._initialLabels));
+        options = options.concat(this.labelsManager.labels);
 
         if (this.label && !options.findBy('slug', this.label)) {
-            const foundLabel = this.store.peekAll('label').find(l => l.slug === this.label);
+            const foundLabel = this.labelsManager.findBySlug(this.label);
             if (foundLabel) {
                 options.push(foundLabel);
             }
@@ -168,9 +163,8 @@ export default class MembersController extends Controller {
 
     @action
     async loadInitialLabels() {
-        if (!this._hasLoadedInitialLabels) {
-            await this.loadMoreLabelsTask.perform(false);
-            this._hasLoadedInitialLabels = true;
+        if (!this.labelsManager.hasLoaded) {
+            await this.labelsManager.loadMoreTask.perform();
         }
     }
 
@@ -190,14 +184,7 @@ export default class MembersController extends Controller {
             this._searchedLabels.push(...this.labelsManager.sortLabels(labels.toArray()));
             this._searchedLabelsMeta = labels.meta;
         } else {
-            if (this._initialLabelsMeta && this._initialLabelsMeta?.pagination.pages <= this._initialLabelsMeta.pagination.page) {
-                return;
-            }
-
-            const page = this._initialLabelsMeta?.pagination.page ? this._initialLabelsMeta.pagination.page + 1 : 1;
-            const labels = yield this.store.query('label', {limit: LABEL_PAGE_SIZE, page, order: 'name asc'});
-            this._initialLabels.push(...labels.toArray());
-            this._initialLabelsMeta = labels.meta;
+            yield this.labelsManager.loadMoreTask.perform();
         }
     }
 
@@ -548,9 +535,8 @@ export default class MembersController extends Controller {
 
     @task({restartable: true})
     *fetchLabelsTask() {
-        // Labels are now loaded on-demand via loadInitialLabels/loadMoreLabelsTask
-        yield this.loadMoreLabelsTask.perform(false);
-        this._hasLoadedInitialLabels = true;
+        this.labelsManager.reset();
+        yield this.labelsManager.loadMoreTask.perform();
     }
 
     @task({restartable: true})

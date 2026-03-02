@@ -1,6 +1,5 @@
 import Component from '@glimmer/component';
 import flattenGroupedOptions from 'ghost-admin/utils/flatten-grouped-options';
-import {TrackedArray} from 'tracked-built-ins';
 import {action} from '@ember/object';
 import {isBlank} from '@ember/utils';
 import {inject as service} from '@ember/service';
@@ -8,16 +7,14 @@ import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 const BASE_FILTERS = ['status:free', 'status:-free'];
-const PAGE_SIZE = 100;
 
 export default class GhMembersRecipientSelect extends Component {
     @service membersUtils;
     @service store;
+    @service labelsManager;
 
     @tracked forceSpecificChecked = false;
     @tracked _tierOptions = [];
-    @tracked _labelOptions = new TrackedArray();
-    _labelsMeta = null;
 
     constructor() {
         super(...arguments);
@@ -59,11 +56,17 @@ export default class GhMembersRecipientSelect extends Component {
 
     get specificOptions() {
         const options = [...this._tierOptions];
+        const labels = this.labelsManager.labels;
 
-        if (this._labelOptions.length > 0) {
+        if (labels.length > 0) {
             options.unshift({
                 groupName: 'Labels',
-                options: [...this._labelOptions]
+                options: labels.map(label => ({
+                    name: label.name,
+                    segment: `label:${label.slug}`,
+                    count: label.count?.members,
+                    class: 'segment-label'
+                }))
             });
         }
 
@@ -154,30 +157,14 @@ export default class GhMembersRecipientSelect extends Component {
 
     @task({drop: true})
     *loadMoreLabelsTask() {
-        if (this._labelsMeta?.pagination && this._labelsMeta.pagination.pages <= this._labelsMeta.pagination.page) {
-            return;
-        }
-
-        const page = this._labelsMeta?.pagination.page ? this._labelsMeta.pagination.page + 1 : 1;
-        const labels = yield this.store.query('label', {limit: PAGE_SIZE, page, order: 'name asc'});
-
-        labels.forEach((label) => {
-            this._labelOptions.push({
-                name: label.name,
-                segment: `label:${label.slug}`,
-                count: label.count?.members,
-                class: 'segment-label'
-            });
-        });
-
-        this._labelsMeta = labels.meta;
+        yield this.labelsManager.loadMoreTask.perform();
     }
 
     @task
     *fetchSpecificOptionsTask() {
         // fetch first page of labels (labels are last so infinite scroll works)
         // TODO: add `include: 'count.members` to query once API is fixed
-        yield this.loadMoreLabelsTask.perform();
+        yield this.labelsManager.loadMoreTask.perform();
 
         // fetch all tiers w̶i̶t̶h̶ c̶o̶u̶n̶t̶s̶
         // TODO: add `include: 'count.members` to query once API supports

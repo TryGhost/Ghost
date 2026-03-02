@@ -5,31 +5,24 @@ import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
-const PAGE_SIZE = 100;
-
 export default class GhMemberSingleLabelInput extends Component {
     @service store;
     @service labelsManager;
 
     @tracked _selectedLabel = null;
-    @tracked _initialLabels = new TrackedArray();
     @tracked _searchedLabels = new TrackedArray();
 
-    _initialLabelsMeta = null;
     _searchedLabelsQuery = null;
     _searchedLabelsMeta = null;
 
     _powerSelectAPI = null;
 
     get availableLabels() {
-        return this.labelsManager.sortLabels(this._initialLabels.toArray());
+        return this.labelsManager.labels;
     }
 
     get useServerSideSearch() {
-        const hasLoadedAnyLabels = !!this._initialLabelsMeta;
-        const hasLoadedAllLabels = hasLoadedAnyLabels && parseInt(this._initialLabelsMeta.pagination.pages, 10) === parseInt(this._initialLabelsMeta.pagination.page, 10);
-
-        return !hasLoadedAllLabels;
+        return !this.labelsManager.hasLoadedAll;
     }
 
     constructor(...args) {
@@ -39,9 +32,9 @@ export default class GhMemberSingleLabelInput extends Component {
 
     @task
     *loadInitialLabelsTask() {
-        const labels = yield this.store.query('label', {limit: PAGE_SIZE, page: 1, order: 'name asc'});
-        this._initialLabels.push(...labels.toArray());
-        this._initialLabelsMeta = labels.meta;
+        if (!this.labelsManager.hasLoaded) {
+            yield this.labelsManager.loadMoreTask.perform();
+        }
 
         const sorted = this.availableLabels;
         if (this.args.label) {
@@ -80,14 +73,7 @@ export default class GhMemberSingleLabelInput extends Component {
             this._searchedLabels.push(...labels.toArray());
             this._searchedLabelsMeta = labels.meta;
         } else {
-            if (this._initialLabelsMeta?.pagination && this._initialLabelsMeta.pagination.pages <= this._initialLabelsMeta.pagination.page) {
-                return;
-            }
-
-            const page = this._initialLabelsMeta?.pagination.page ? this._initialLabelsMeta.pagination.page + 1 : 1;
-            const labels = yield this.store.query('label', {limit: PAGE_SIZE, page, order: 'name asc'});
-            this._initialLabels.push(...labels.toArray());
-            this._initialLabelsMeta = labels.meta;
+            yield this.labelsManager.loadMoreTask.perform();
         }
     }
 

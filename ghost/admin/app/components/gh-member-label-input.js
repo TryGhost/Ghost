@@ -5,56 +5,36 @@ import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
-const PAGE_SIZE = 100;
-
 export default class GhMemberLabelInput extends Component {
     @service store;
     @service labelsManager;
 
-    @tracked _initialLabels = new TrackedArray();
     @tracked _searchedLabels = new TrackedArray();
 
-    _initialLabelsMeta = null;
-    _hasLoadedInitialLabels = false;
     _searchedLabelsQuery = null;
     _searchedLabelsMeta = null;
 
     _powerSelectAPI = null;
 
-    constructor() {
-        super(...arguments);
-        this.addInitialLabels(this.selectedLabels);
-    }
-
     get availableLabels() {
         const selectedLabels = this.selectedLabels;
-        return this.labelsManager.sortLabels(this._initialLabels.filter(label => !selectedLabels.includes(label)));
+        return this.labelsManager.sortLabels(this.labelsManager._labels.filter(label => !selectedLabels.includes(label)));
     }
 
     get useServerSideSearch() {
-        const hasLoadedAnyLabels = !!this._initialLabelsMeta;
-        const hasLoadedAllLabels = hasLoadedAnyLabels && parseInt(this._initialLabelsMeta.pagination.pages, 10) === parseInt(this._initialLabelsMeta.pagination.page, 10);
-
-        return !hasLoadedAllLabels;
+        return !this.labelsManager.hasLoadedAll;
     }
 
     get selectedLabels() {
         if (typeof this.args.labels === 'object') {
             if (this.args.labels?.length && typeof this.args.labels[0] === 'string') {
                 return this.args.labels.map((d) => {
-                    return this._findLabelBySlug(d);
+                    return this.labelsManager.findBySlug(d);
                 }).filter(Boolean) || [];
             }
             return this.args.labels || [];
         }
         return [];
-    }
-
-    @action
-    addInitialLabels(labels) {
-        const selectedLabels = this.selectedLabels;
-        const deduplicatedLabels = labels.filter(label => !selectedLabels.includes(label) && !this._initialLabels.includes(label));
-        this._initialLabels.push(...deduplicatedLabels);
     }
 
     @action
@@ -71,9 +51,8 @@ export default class GhMemberLabelInput extends Component {
 
     @action
     async loadInitialLabels() {
-        if (!this._hasLoadedInitialLabels) {
-            await this.loadMoreLabelsTask.perform();
-            this._hasLoadedInitialLabels = true;
+        if (!this.labelsManager.hasLoaded) {
+            await this.labelsManager.loadMoreTask.perform();
         }
     }
 
@@ -98,14 +77,7 @@ export default class GhMemberLabelInput extends Component {
             this.addSearchedLabels(labels.toArray());
             this._searchedLabelsMeta = labels.meta;
         } else {
-            if (this._initialLabelsMeta?.pagination && this._initialLabelsMeta.pagination.pages <= this._initialLabelsMeta.pagination.page) {
-                return;
-            }
-
-            const page = this._initialLabelsMeta?.pagination.page ? this._initialLabelsMeta.pagination.page + 1 : 1;
-            const labels = yield this.store.query('label', {limit: PAGE_SIZE, page, order: 'name asc'});
-            this.addInitialLabels(labels.toArray());
-            this._initialLabelsMeta = labels.meta;
+            yield this.labelsManager.loadMoreTask.perform();
         }
     }
 
@@ -131,7 +103,7 @@ export default class GhMemberLabelInput extends Component {
 
     willDestroy() {
         super.willDestroy?.(...arguments);
-        this._initialLabels.forEach((label) => {
+        this.store.peekAll('label').forEach((label) => {
             if (label.get('isNew')) {
                 this.store.deleteRecord(label);
             }
@@ -193,10 +165,6 @@ export default class GhMemberLabelInput extends Component {
             }
             return label.name.toLowerCase() === name.toLowerCase();
         };
-        return this._searchedLabels.find(withMatchingName) || this._initialLabels.find(withMatchingName);
-    }
-
-    _findLabelBySlug(slug) {
-        return this._initialLabels.find(label => label.slug === slug) || this.store.peekAll('label').find(label => label.slug === slug);
+        return this._searchedLabels.find(withMatchingName) || this.labelsManager._labels.find(withMatchingName);
     }
 }
