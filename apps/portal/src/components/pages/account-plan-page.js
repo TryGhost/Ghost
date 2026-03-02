@@ -274,7 +274,7 @@ function getOfferMessage(offer, originalPrice, currency, amountOff, subscription
             const daysInTargetMonth = new Date(Date.UTC(targetYear, targetMonth + 1, 0)).getUTCDate();
             const newDate = new Date(Date.UTC(targetYear, targetMonth, Math.min(originalDay, daysInTargetMonth)));
             const newBillingDate = newDate.toLocaleDateString('en-GB', {year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC'});
-            return `Enjoy ${monthLabel} on us. Your next billing date will be ${newBillingDate}.`;
+            return `Enjoy ${monthLabel} on us. You won't be charged until ${newBillingDate}.`;
         }
 
         return `Enjoy ${monthLabel} on us.`;
