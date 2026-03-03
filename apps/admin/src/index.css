@@ -4,8 +4,8 @@
 @source "../../activitypub/src/**/*.{ts,tsx}";
 @source "../../admin-x-settings/src/**/*.{ts,tsx}";
 @source "../../admin-x-design-system/src/**/*.{ts,tsx}";
-@source "../../../node_modules/@tryghost/kg-unsplash-selector/dist/**/*.js";
 
+@import "@tryghost/kg-unsplash-selector/dist/style.css";
 @import "@tryghost/shade/styles.css";
 
 /* Base layout - grid structure for alerts and main content */
