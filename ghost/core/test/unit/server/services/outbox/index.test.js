@@ -14,7 +14,7 @@ describe('Outbox Service', function () {
     beforeEach(function () {
         service = rewire('../../../../../core/server/services/outbox/index.js');
 
-        processOutboxStub = sinon.stub().resolves('Processed');
+        processOutboxStub = sinon.stub().resolves();
         jobsStub = {scheduleOutboxJob: sinon.stub()};
         logCapture = captureLoggerOutput();
 
@@ -52,6 +52,21 @@ describe('Outbox Service', function () {
             assert.ok(infoLog);
             assert.deepEqual(infoLog.system, {
                 event: 'outbox.processing.skipped_already_running'
+            });
+        });
+    });
+
+    describe('startProcessing error handling', function () {
+        it('logs structured error when processOutbox throws', async function () {
+            processOutboxStub.rejects(new Error('Unexpected failure'));
+            service.init();
+
+            await service.startProcessing();
+
+            const errorLog = findByEvent(logCapture.output, 'outbox.processing.error');
+            assert.ok(errorLog);
+            assert.deepEqual(errorLog.system, {
+                event: 'outbox.processing.error'
             });
         });
     });
