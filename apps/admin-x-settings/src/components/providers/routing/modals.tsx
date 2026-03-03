@@ -31,6 +31,7 @@ import TierDetailModal from '../../settings/membership/tiers/tier-detail-modal';
 import TransistorModal from '../../settings/advanced/integrations/transistor-modal';
 import UnsplashModal from '../../settings/advanced/integrations/unsplash-modal';
 import UserDetailModal from '../../settings/general/user-detail-modal';
+import VerifiedEmailVerifyModal from '../../settings/email/verified-email-verify-modal';
 import ZapierModal from '../../settings/advanced/integrations/zapier-modal';
 
 const modals = {
@@ -55,6 +56,7 @@ const modals = {
     TransistorModal,
     UnsplashModal,
     UserDetailModal,
+    VerifiedEmailVerifyModal,
     ZapierModal,
     AnnouncementBarModal,
     EmbedSignupFormModal,
