@@ -13,6 +13,7 @@ import {LinkInput} from '../components/ui/LinkInput';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu';
 import {dataSrcToFile} from '../utils/dataSrcToFile.js';
+import {getAllowedImageCardWidths, getDefaultImageCardWidth} from '../utils/image-card-widths';
 import {getImageDimensions} from '../utils/getImageDimensions.js';
 import {getImageFilenameFromSrc} from '../utils/getImageFilenameFromSrc';
 import {imageUploadHandler} from '../utils/imageUploadHandler';
@@ -67,6 +68,14 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
 
     const {isEnabled: isPinturaEnabled, openEditor: openImageEditor}
         = usePinturaEditor({config: cardConfig.pinturaConfig});
+        
+    const allowedImageCardWidths = React.useMemo(() => {
+        return getAllowedImageCardWidths(cardConfig?.image?.allowedWidths);
+    }, [cardConfig?.image?.allowedWidths]);
+    const defaultImageCardWidth = React.useMemo(() => {
+        return getDefaultImageCardWidth(allowedImageCardWidths);
+    }, [allowedImageCardWidths]);
+    const hasMultipleImageCardWidths = allowedImageCardWidths.length > 1;
 
     React.useEffect(() => {
         if (!src?.startsWith('data:') || imageUploader.isLoading) {
@@ -178,13 +187,23 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
         });
     });
 
-    const handleImageCardResize = (newWidth) => {
+    const handleImageCardResize = React.useCallback((newWidth) => {
+        if (!allowedImageCardWidths.includes(newWidth)) {
+            return;
+        }
+
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
             node.cardWidth = newWidth; // this is a property on the node, not the card
             setCardWidth(newWidth); // sets the state of the toolbar component
         });
-    };
+    }, [allowedImageCardWidths, editor, nodeKey, setCardWidth]);
+
+    React.useEffect(() => {
+        if (!allowedImageCardWidths.includes(cardWidth)) {
+            handleImageCardResize(defaultImageCardWidth);
+        }
+    }, [allowedImageCardWidths, cardWidth, defaultImageCardWidth, handleImageCardResize]);
 
     const cancelLinkAndReselect = () => {
         setShowLink(false);
@@ -255,27 +274,27 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
                 />
                 <ToolbarMenu>
                     <ToolbarMenuItem
-                        hide={isGif(src)}
+                        hide={isGif(src) || !hasMultipleImageCardWidths || !allowedImageCardWidths.includes('regular')}
                         icon="imgRegular"
                         isActive={cardWidth === 'regular'}
                         label="Regular width"
                         onClick={() => handleImageCardResize('regular')}
                     />
                     <ToolbarMenuItem
-                        hide={isGif(src)}
+                        hide={isGif(src) || !hasMultipleImageCardWidths || !allowedImageCardWidths.includes('wide')}
                         icon="imgWide"
                         isActive={cardWidth === 'wide'}
                         label="Wide width"
                         onClick={() => handleImageCardResize('wide')}
                     />
                     <ToolbarMenuItem
-                        hide={isGif(src)}
+                        hide={isGif(src) || !hasMultipleImageCardWidths || !allowedImageCardWidths.includes('full')}
                         icon="imgFull"
                         isActive={cardWidth === 'full'}
                         label="Full width"
                         onClick={() => handleImageCardResize('full')}
                     />
-                    <ToolbarMenuSeparator hide={isGif(src)} />
+                    <ToolbarMenuSeparator hide={isGif(src) || !hasMultipleImageCardWidths} />
                     <ToolbarMenuItem icon="link" isActive={href || false} label="Link" onClick = {() => {
                         setShowLink(true);
                     }} />

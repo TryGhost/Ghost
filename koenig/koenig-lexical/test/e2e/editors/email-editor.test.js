@@ -1,5 +1,10 @@
+import path from 'path';
 import {assertHTML, focusEditor, html, initialize, insertCard, pasteText} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
+import {fileURLToPath} from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 test.describe('Koenig Editor with email template nodes', async function () {
     let page;
@@ -146,6 +151,29 @@ test.describe('Koenig Editor with email template nodes', async function () {
             await urlInput.press('Enter');
 
             await expect(page.getByTestId('bookmark-title')).toContainText('Ghost');
+        });
+
+        test('image card hides width controls when only one width is configured', async function () {
+            const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
+
+            await focusEditor(page);
+            await page.keyboard.type('image! ');
+
+            const [fileChooser] = await Promise.all([
+                page.waitForEvent('filechooser'),
+                page.click('button[name="placeholder-button"]')
+            ]);
+            await fileChooser.setFiles([filePath]);
+
+            await expect(page.getByTestId('image-card-populated')).toBeVisible();
+            await expect(page.getByTestId('progress-bar')).toBeHidden();
+
+            await page.click('[data-kg-card="image"]');
+            await expect(page.locator('[data-kg-card-toolbar="image"]')).toBeVisible();
+
+            await expect(page.locator('[data-kg-card-toolbar="image"] button[aria-label="Regular width"]')).toHaveCount(0);
+            await expect(page.locator('[data-kg-card-toolbar="image"] button[aria-label="Wide width"]')).toHaveCount(0);
+            await expect(page.locator('[data-kg-card-toolbar="image"] button[aria-label="Full width"]')).toHaveCount(0);
         });
     });
 
