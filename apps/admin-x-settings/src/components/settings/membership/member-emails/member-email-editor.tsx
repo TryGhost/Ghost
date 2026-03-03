@@ -36,7 +36,11 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
         unsplash: unsplashConfig,
         fetchEmbed,
         fetchAutocompleteLinks,
-        searchLinks
+        searchLinks,
+        editorType: 'email',
+        image: {
+            allowedWidths: ['regular']
+        }
     }), [unsplashConfig, fetchEmbed, fetchAutocompleteLinks, searchLinks]);
 
     const baseEditorStyles = cn(
@@ -125,6 +129,7 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
                                 <koenig.CalloutPlugin />
                                 <koenig.CardMenuPlugin />
                                 <koenig.EmailCtaPlugin />
+                                <koenig.EmbedPlugin />
                                 <koenig.HtmlPlugin />
                                 <koenig.ImagePlugin />
                                 <koenig.KoenigSelectorPlugin />
