@@ -346,10 +346,10 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
         if (options.data.site.accent_color) {
             const accentColor = escapeExpression(options.data.site.accent_color);
             const styleTag = `<style>:root {--ghost-accent-color: ${accentColor};}</style>`;
-            const existingScriptIndex = _.findLastIndex(head, str => str.match(/<\/(style|script)>/));
+            const existingStyleIndex = _.findLastIndex(head, str => /<\/style>/.test(str));
 
-            if (existingScriptIndex !== -1) {
-                head[existingScriptIndex] = head[existingScriptIndex] + styleTag;
+            if (existingStyleIndex !== -1) {
+                head[existingStyleIndex] = head[existingStyleIndex] + styleTag;
             } else {
                 head.push(styleTag);
             }
