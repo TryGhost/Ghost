@@ -30,12 +30,20 @@ module.exports = function (Bookshelf) {
                     limit
                 } = options;
 
-                const bookshelfPrototype = Bookshelf.registry.models[modelName].prototype;
                 const tableNames = {
                     Post: 'posts',
                     User: 'users',
                     Tag: 'tags'
                 };
+
+                const tableName = tableNames[modelName];
+                const tableDef = schema.tables[tableName];
+                const booleanColumns = [];
+                for (const key in tableDef) {
+                    if (!key.startsWith('@@') && tableDef[key].type === 'boolean') {
+                        booleanColumns.push(key);
+                    }
+                }
 
                 const relations = {
                     tags: {
@@ -110,20 +118,14 @@ module.exports = function (Bookshelf) {
                 let props = {};
 
                 if (!withRelated) {
-                    return _.map(objects, (object) => {
-                        object = bookshelfPrototype.toJSON.bind({
-                            attributes: object,
-                            related: function (key) {
-                                return object[key];
-                            },
-                            serialize: bookshelfPrototype.serialize,
-                            formatsToJSON: bookshelfPrototype.formatsToJSON
-                        })();
-
-                        object = bookshelfPrototype.fixBools(object);
-                        object = bookshelfPrototype.fixDatesWhenFetch(object);
-                        return object;
-                    });
+                    for (const object of objects) {
+                        for (const col of booleanColumns) {
+                            if (col in object) {
+                                object[col] = !!object[col];
+                            }
+                        }
+                    }
+                    return objects;
                 }
 
                 _.each(withRelated, (withRelatedKey) => {
@@ -174,32 +176,17 @@ module.exports = function (Bookshelf) {
                 const relationsToAttachArray = await Promise.all(Object.values(props));
                 const relationsToAttach = _.zipObject(_.keys(props), relationsToAttachArray);
 
-                objects = _.map(objects, (object) => {
+                for (const object of objects) {
                     for (const relation in relationsToAttach) {
-                        if (!relationsToAttach[relation][object.id]) {
-                            object[relation] = [];
-                            continue;
-                        }
-
-                        object[relation] = relationsToAttach[relation][object.id];
+                        object[relation] = relationsToAttach[relation][object.id] || [];
                     }
 
-                    object = bookshelfPrototype.toJSON.bind({
-                        attributes: object,
-                        _originalOptions: {
-                            withRelated: Object.keys(relationsToAttach)
-                        },
-                        related: function (key) {
-                            return object[key];
-                        },
-                        serialize: bookshelfPrototype.serialize,
-                        formatsToJSON: bookshelfPrototype.formatsToJSON
-                    })();
-
-                    object = bookshelfPrototype.fixBools(object);
-                    object = bookshelfPrototype.fixDatesWhenFetch(object);
-                    return object;
-                });
+                    for (const col of booleanColumns) {
+                        if (col in object) {
+                            object[col] = !!object[col];
+                        }
+                    }
+                }
 
                 debug('attached relations to', modelName);
                 return objects;
