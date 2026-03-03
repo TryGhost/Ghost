@@ -23,6 +23,7 @@ export interface KoenigEditorBaseProps {
         fileTypes: unknown
     }
     cardConfig?: unknown
+    registerAPI?: (API: KoenigInstance | null) => void
 }
 
 declare global {
@@ -32,8 +33,16 @@ declare global {
     }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type KoenigInstance = { [key: string]: any };
+export type KoenigInstance = {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any
+    editorInstance: {
+        getRootElement: () => HTMLElement | null
+    }
+    focusEditor: (options?: {position?: 'top' | 'bottom'}) => void
+    insertParagraphAtBottom: () => void
+    lastNodeIsDecorator: () => boolean
+};
 
 const loadKoenig = function (fetchKoenigLexical: FetchKoenigLexical) {
     let status = 'pending';
@@ -90,7 +99,8 @@ export const KoenigWrapper: React.FC<KoenigWrapperProps> = ({
     initialEditorState,
     onChange,
     fileUploader,
-    cardConfig
+    cardConfig,
+    registerAPI
 }) => {
     const onError = useCallback((error: unknown) => {
         try {
@@ -154,6 +164,7 @@ export const KoenigWrapper: React.FC<KoenigWrapperProps> = ({
                 markdownTransformers={transformers[defaultNodes]}
                 placeholderClassName='koenig-lexical-editor-input-placeholder line-clamp-1'
                 placeholderText={placeholder}
+                registerAPI={registerAPI}
                 singleParagraph={singleParagraph}
                 onBlur={handleBlur}
                 onChange={onChange}

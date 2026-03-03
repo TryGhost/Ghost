@@ -31,6 +31,7 @@ export {getStatEndpointUrl, getToken} from './utils/stats-config';
 export type {Post} from './api/posts';
 export {hasBeenEmailed} from './utils/post-utils';
 export {isEmailOnly, isPublishedOnly, isPublishedAndEmailed, getPostMetricsToDisplay} from './utils/post-helpers';
+export {focusKoenigEditorOnBottomClick} from './utils/focus-koenig-editor-on-bottom-click';
 
 // Source utilities
 export {SOURCE_DOMAIN_MAP, getFaviconDomain, extractDomain, isDomainOrSubdomain, processSources, extendSourcesWithPercentages, normalizeSource} from './utils/source-utils';
