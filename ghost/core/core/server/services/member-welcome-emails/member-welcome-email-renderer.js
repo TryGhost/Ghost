@@ -4,6 +4,7 @@ const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const juice = require('juice');
 const lexicalLib = require('../../lib/lexical');
 const errors = require('@tryghost/errors');
+const {textColorForBackgroundColor} = require('@tryghost/color-utils');
 const {MESSAGES} = require('./constants');
 const {wrapReplacementStrings} = require('../koenig/render-utils/replacement-strings');
 
@@ -19,6 +20,11 @@ class MemberWelcomeEmailRenderer {
             let hash = options?.hash;
             return t(key, hash || options || {});
         });
+        const cardStylesSource = fs.readFileSync(
+            path.join(__dirname, './email-templates/partials/card-styles.hbs'),
+            'utf8'
+        );
+        this.Handlebars.registerPartial('cardStyles', cardStylesSource);
         const wrapperSource = fs.readFileSync(
             path.join(__dirname, './email-templates/wrapper.hbs'),
             'utf8'
@@ -112,13 +118,24 @@ class MemberWelcomeEmailRenderer {
 
         const managePreferencesUrl = new URL('#/portal/account/newsletters', siteSettings.url).href;
         const year = new Date().getFullYear();
+        const accentColor = siteSettings.accentColor || '#15212A';
+        const accentContrastColor = textColorForBackgroundColor(accentColor).hex();
 
         const html = this.#wrapperTemplate({
             content: contentWithReplacements,
             subject: subjectWithReplacements,
             siteTitle: siteSettings.title,
             siteUrl: siteSettings.url,
-            accentColor: siteSettings.accentColor,
+            accentColor,
+            accentContrastColor,
+            backgroundIsDark: false,
+            hasRoundedImageCorners: false,
+            sectionTitleColor: null,
+            titleWeight: '700',
+            hasOutlineButtons: false,
+            buttonColor: accentColor,
+            buttonTextColor: accentContrastColor,
+            buttonBorderRadius: '6px',
             managePreferencesUrl,
             year
         });

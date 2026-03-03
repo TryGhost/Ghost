@@ -1,0 +1,161 @@
+/* Welcome-email Koenig card styles (minimal subset) */
+
+td.kg-card-spacing {
+    padding: 0 0 1.5em 0;
+}
+
+figure {
+    margin: 0 0 1.5em;
+    padding: 0;
+}
+
+figcaption {
+    text-align: center;
+    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+    font-size: 13px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    line-height: 1.5em;
+    {{#if backgroundIsDark}}
+        color: #ffffff;
+        color: rgba(255, 255, 255, .6);
+    {{else}}
+        color: #15212a;
+        color: rgba(0, 0, 0, 0.6);
+    {{/if}}
+}
+
+figcaption a {
+    text-decoration: none!important;
+}
+
+.kg-image-card img {
+    display: block;
+    margin: 0 auto;
+    height: auto;
+    width: auto;
+    max-width: 100%;
+    {{#if hasRoundedImageCorners}}
+        border-radius: 6px;
+    {{/if}}
+}
+
+.kg-image-card span {
+    text-align: center;
+}
+
+.kg-callout-card {
+    display: flex;
+    margin: 0 0 1.5em 0;
+    padding: 24px;
+    border-radius: 8px;
+}
+
+.kg-callout-card-grey {
+    background: #f1f2f4;
+}
+
+.kg-callout-card-white {
+    background: #fff;
+    border: 1px solid #dddedf;
+}
+
+.kg-callout-card-blue {
+    background: #E9F6FB;
+}
+
+.kg-callout-card-green {
+    background: #E8F8EA;
+}
+
+.kg-callout-card-yellow {
+    background: #FCF4E3;
+}
+
+.kg-callout-card-red {
+    background: #FBE9E9;
+}
+
+.kg-callout-card-pink {
+    background: #FCEEF8;
+}
+
+.kg-callout-card-purple {
+    background: #F2EDFC;
+}
+
+.kg-callout-card-accent {
+    background: {{accentColor}};
+    color: #fff;
+}
+
+.kg-callout-card-accent a {
+    color: #fff;
+}
+
+.kg-callout-emoji {
+    padding-right: 12px;
+    font-size: 20px;
+}
+
+/* -------------------------------------
+    BUTTONS
+------------------------------------- */
+
+.kg-button-card {
+    width: 100%;
+}
+
+table.btn {
+    box-sizing: border-box;
+    width: auto;
+}
+
+table.btn td {
+    padding: 8px 20px 9px;
+    {{#if hasOutlineButtons}}
+    color: {{buttonColor}};
+    border: 1px solid {{buttonColor}};
+    border-color: currentColor;
+    background-color: transparent;
+    {{else}}
+    background-color: {{buttonColor}};
+    {{/if}}
+    border-radius: {{buttonBorderRadius}};
+    text-align: center;
+    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+}
+
+table.btn a {
+    box-sizing: border-box;
+    {{#if hasOutlineButtons}}
+    color: {{buttonColor}};
+    {{else}}
+    color: {{buttonTextColor}};
+    {{/if}}
+    cursor: pointer;
+    display: inline-block;
+    font-size: 15px;
+    font-weight: 600;
+    margin: 0;
+    text-decoration: none;
+}
+
+table.btn-accent td {
+    {{#if hasOutlineButtons}}
+    color: {{accentColor}};
+    border: 1px solid {{accentColor}};
+    border-color: currentColor;
+    background-color: transparent;
+    {{else}}
+    background-color: {{accentColor}};
+    {{/if}}
+}
+
+table.btn-accent a {
+    {{#if hasOutlineButtons}}
+    color: {{accentColor}};
+    {{else}}
+    color: {{accentContrastColor}};
+    {{/if}}
+}
