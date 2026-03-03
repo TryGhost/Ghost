@@ -294,8 +294,6 @@ describe('Integration: URL Service + Sitemap', function () {
 
         // Re-insert fixtures after DB teardown
         before(async function () {
-            const {forKnex, markdownToMobiledoc} = testUtils.DataGenerator;
-
             // Reuse the same fixture objects (they have the same IDs)
             await models.Tag.add(fixtures.tagJs, testUtils.context.internal);
             await models.Tag.add(fixtures.tagNode, testUtils.context.internal);
