@@ -8,6 +8,7 @@ import {run} from '@ember/runloop';
 const emberDataTypeMapping = {
     AutomatedEmailsResponseType: null, // automated emails only exist in React admin
     CommentsResponseType: null, // comments only exist in React admin
+    EmailTemplatesResponseType: null, // email templates only exist in React admin
     IntegrationsResponseType: {type: 'integration'},
     InvitesResponseType: {type: 'invite'},
     LabelsResponseType: null, // labels only exist in React admin

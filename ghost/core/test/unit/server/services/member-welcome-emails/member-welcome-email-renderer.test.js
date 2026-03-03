@@ -39,7 +39,7 @@ describe('MemberWelcomeEmailRenderer', function () {
             });
 
             sinon.assert.calledOnce(lexicalRenderStub);
-            sinon.assert.calledWith(lexicalRenderStub, lexicalJson, {target: 'email'});
+            sinon.assert.calledWith(lexicalRenderStub, lexicalJson, sinon.match({target: 'email'}));
         });
 
         it('substitutes member template variables', async function () {
@@ -623,6 +623,263 @@ describe('MemberWelcomeEmailRenderer', function () {
             });
 
             assert.match(result.html, /<table[^>]*class="btn"[^>]*align="right"/);
+        });
+
+        it('renders full-width header with image and title together', async function () {
+            lexicalRenderStub.resolves('<p>Content</p>');
+            const renderer = new MemberWelcomeEmailRenderer({t: key => key});
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Welcome!',
+                member: {name: 'John', email: 'john@example.com'},
+                siteSettings: defaultSiteSettings,
+                designSettings: {
+                    header_image: 'https://example.com/logo.png',
+                    show_header_title: true
+                }
+            });
+
+            // Both image and title should be present (not mutually exclusive)
+            assert(result.html.includes('src="https://example.com/logo.png"'));
+            assert(result.html.includes('text-transform: uppercase'));
+            // Image should be wrapped in a link to siteUrl (juice inlines styles on <a>)
+            assert.match(result.html, /<a[^>]*href="https:\/\/example\.com"[^>]*>\s*<img/);
+            // No max-height: 80px constraint
+            assert(!result.html.includes('max-height: 80px'));
+        });
+
+        it('processes header image through limitImageWidth when deps available', async function () {
+            lexicalRenderStub.resolves('<p>Content</p>');
+            const imageSize = {
+                getCachedImageSizeFromUrl: sinon.stub().resolves({width: 800, height: 200})
+            };
+            const storageUtils = {
+                isInternalImage: sinon.stub().returns(false)
+            };
+            const renderer = new MemberWelcomeEmailRenderer({t: key => key, imageSize, storageUtils});
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Welcome!',
+                member: {name: 'John', email: 'john@example.com'},
+                siteSettings: defaultSiteSettings,
+                designSettings: {
+                    header_image: 'https://example.com/logo.png',
+                    show_header_title: false
+                }
+            });
+
+            sinon.assert.calledWith(imageSize.getCachedImageSizeFromUrl, 'https://example.com/logo.png');
+            // Width should be capped at 600 (visible width)
+            assert(result.html.includes('width="600"'));
+        });
+
+        it('optimizes internal header images with size path', async function () {
+            lexicalRenderStub.resolves('<p>Content</p>');
+            const imageSize = {
+                getCachedImageSizeFromUrl: sinon.stub().resolves({width: 1000, height: 300})
+            };
+            const storageUtils = {
+                isInternalImage: sinon.stub().returns(true)
+            };
+            const renderer = new MemberWelcomeEmailRenderer({t: key => key, imageSize, storageUtils});
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Welcome!',
+                member: {name: 'John', email: 'john@example.com'},
+                siteSettings: defaultSiteSettings,
+                designSettings: {
+                    header_image: 'https://example.com/content/images/logo.png',
+                    show_header_title: false
+                }
+            });
+
+            // Should rewrite URL with size path for 2x retina
+            assert(result.html.includes('/content/images/size/w1200/logo.png'));
+        });
+
+        it('uses extra bottom padding on header image when no title follows', async function () {
+            lexicalRenderStub.resolves('<p>Content</p>');
+            const renderer = new MemberWelcomeEmailRenderer({t: key => key});
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Welcome!',
+                member: {name: 'John', email: 'john@example.com'},
+                siteSettings: defaultSiteSettings,
+                designSettings: {
+                    header_image: 'https://example.com/logo.png',
+                    show_header_title: false
+                }
+            });
+
+            // 48px bottom padding when image is last header element
+            assert(result.html.includes('padding-bottom: 48px'));
+        });
+
+        it('renders header title with uppercase styling and correct font', async function () {
+            lexicalRenderStub.resolves('<p>Content</p>');
+            const renderer = new MemberWelcomeEmailRenderer({t: key => key});
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Welcome!',
+                member: {name: 'John', email: 'john@example.com'},
+                siteSettings: defaultSiteSettings,
+                designSettings: {
+                    show_header_title: true
+                }
+            });
+
+            assert(result.html.includes('text-transform: uppercase'));
+            assert(result.html.includes('letter-spacing: -0.1px'));
+            assert(result.html.includes('font-size: 16px'));
+            assert(result.html.includes('font-weight: 700'));
+        });
+
+        it('renders white header title text on dark header background', async function () {
+            lexicalRenderStub.resolves('<p>Content</p>');
+            const renderer = new MemberWelcomeEmailRenderer({t: key => key});
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Welcome!',
+                member: {name: 'John', email: 'john@example.com'},
+                siteSettings: defaultSiteSettings,
+                designSettings: {
+                    show_header_title: true,
+                    header_background_color: '#000000'
+                }
+            });
+
+            // Title text should be white on dark background
+            assert(result.html.includes('color: #ffffff'));
+        });
+
+        it('renders dark header title text on light header background', async function () {
+            lexicalRenderStub.resolves('<p>Content</p>');
+            const renderer = new MemberWelcomeEmailRenderer({t: key => key});
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Welcome!',
+                member: {name: 'John', email: 'john@example.com'},
+                siteSettings: defaultSiteSettings,
+                designSettings: {
+                    show_header_title: true,
+                    header_background_color: '#ffffff'
+                }
+            });
+
+            // Title text should be dark on light background
+            assert(result.html.includes('color: #15212A'));
+        });
+
+        it('applies underline link style by default', async function () {
+            lexicalRenderStub.resolves('<p><a href="https://example.com">Link</a></p>');
+            const renderer = new MemberWelcomeEmailRenderer({t: key => key});
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Welcome!',
+                member: {name: 'John', email: 'john@example.com'},
+                siteSettings: defaultSiteSettings
+            });
+
+            assert(result.html.includes('text-decoration: underline'));
+        });
+
+        it('applies bold link style when configured', async function () {
+            lexicalRenderStub.resolves('<p><a href="https://example.com">Link</a></p>');
+            const renderer = new MemberWelcomeEmailRenderer({t: key => key});
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Welcome!',
+                member: {name: 'John', email: 'john@example.com'},
+                siteSettings: defaultSiteSettings,
+                designSettings: {
+                    link_style: 'bold'
+                }
+            });
+
+            assert(result.html.includes('font-weight: 700'));
+        });
+
+        it('applies regular (no decoration) link style when configured', async function () {
+            lexicalRenderStub.resolves('<p><a href="https://example.com">Link</a></p>');
+            const renderer = new MemberWelcomeEmailRenderer({t: key => key});
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Welcome!',
+                member: {name: 'John', email: 'john@example.com'},
+                siteSettings: defaultSiteSettings,
+                designSettings: {
+                    link_style: 'regular'
+                }
+            });
+
+            assert(result.html.includes('text-decoration: none'));
+        });
+
+        it('uses serif title font when title_font_category is serif', async function () {
+            lexicalRenderStub.resolves('<h1>Heading</h1><p>Content</p>');
+            const renderer = new MemberWelcomeEmailRenderer({t: key => key});
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Welcome!',
+                member: {name: 'John', email: 'john@example.com'},
+                siteSettings: defaultSiteSettings,
+                designSettings: {
+                    title_font_category: 'serif',
+                    body_font_category: 'sans_serif'
+                }
+            });
+
+            // Headings should use serif font (inlined by juice onto h1 element)
+            assert.match(result.html, /<h1[^>]*style="[^"]*Georgia/);
+        });
+
+        it('applies rounded image corners when configured', async function () {
+            lexicalRenderStub.resolves('<p>Content</p>');
+            const renderer = new MemberWelcomeEmailRenderer({t: key => key});
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Welcome!',
+                member: {name: 'John', email: 'john@example.com'},
+                siteSettings: defaultSiteSettings,
+                designSettings: {
+                    header_image: 'https://example.com/logo.png',
+                    image_corners: 'rounded'
+                }
+            });
+
+            // Image should have border-radius inlined
+            assert.match(result.html, /<img[^>]*style="[^"]*border-radius: 6px/);
+        });
+
+        it('does not render header when neither image nor title is set', async function () {
+            lexicalRenderStub.resolves('<p>Content</p>');
+            const renderer = new MemberWelcomeEmailRenderer({t: key => key});
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Welcome!',
+                member: {name: 'John', email: 'john@example.com'},
+                siteSettings: defaultSiteSettings,
+                designSettings: {
+                    header_image: null,
+                    show_header_title: false
+                }
+            });
+
+            // Should not have header image or uppercase title styling
+            assert(!result.html.includes('text-transform: uppercase'));
         });
     });
 });

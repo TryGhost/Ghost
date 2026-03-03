@@ -537,6 +537,16 @@
                     "object_type": "automated_email"
                 },
                 {
+                    "name": "Read email templates",
+                    "action_type": "read",
+                    "object_type": "email_template"
+                },
+                {
+                    "name": "Edit email templates",
+                    "action_type": "edit",
+                    "object_type": "email_template"
+                },
+                {
                     "name": "Read member signin urls",
                     "action_type": "read",
                     "object_type": "member_signin_url"
@@ -892,6 +902,7 @@
                     "product": "all",
                     "label": "all",
                     "automated_email": "all",
+                    "email_template": ["read", "edit"],
                     "email_preview": "all",
                     "email": "all",
                     "member_signin_url": "read",
@@ -941,6 +952,7 @@
                     "member": "all",
                     "label": "all",
                     "automated_email": "all",
+                    "email_template": ["read", "edit"],
                     "email_preview": "all",
                     "email": "all",
                     "snippet": "all",

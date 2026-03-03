@@ -7,7 +7,7 @@ const settingsHelpers = require('../settings-helpers');
 const EmailAddressParser = require('../email-address/email-address-parser');
 const mail = require('../mail');
 // @ts-expect-error type checker has trouble with the dynamic exporting in models
-const {AutomatedEmail, Newsletter} = require('../../models');
+const {AutomatedEmail, EmailTemplate, Newsletter} = require('../../models');
 const MemberWelcomeEmailRenderer = require('./member-welcome-email-renderer');
 const {MEMBER_WELCOME_EMAIL_LOG_KEY, MEMBER_WELCOME_EMAIL_TAG, MEMBER_WELCOME_EMAIL_SLUGS, MESSAGES} = require('./constants');
 
@@ -15,12 +15,13 @@ class MemberWelcomeEmailService {
     #mailer;
     #renderer;
     #memberWelcomeEmails = {free: null, paid: null};
+    #designSettings = null;
     #defaultNewsletterSenderOptions = null;
 
-    constructor({t}) {
+    constructor({t, imageSize, storageUtils}) {
         emailAddressService.init();
         this.#mailer = new mail.GhostMailer();
-        this.#renderer = new MemberWelcomeEmailRenderer({t});
+        this.#renderer = new MemberWelcomeEmailRenderer({t, imageSize, storageUtils});
     }
 
     #getSiteSettings() {
@@ -93,8 +94,38 @@ class MemberWelcomeEmailService {
         return this.#defaultNewsletterSenderOptions;
     }
 
+    async #loadDesignSettings() {
+        try {
+            const template = await EmailTemplate.findOne({slug: 'automated-email'});
+            if (template) {
+                return {
+                    background_color: template.get('background_color'),
+                    header_background_color: template.get('header_background_color'),
+                    header_image: template.get('header_image'),
+                    show_header_title: template.get('show_header_title'),
+                    footer_content: template.get('footer_content'),
+                    title_font_category: template.get('title_font_category'),
+                    title_font_weight: template.get('title_font_weight'),
+                    body_font_category: template.get('body_font_category'),
+                    section_title_color: template.get('section_title_color'),
+                    button_color: template.get('button_color'),
+                    button_style: template.get('button_style'),
+                    button_corners: template.get('button_corners'),
+                    link_color: template.get('link_color'),
+                    link_style: template.get('link_style'),
+                    image_corners: template.get('image_corners'),
+                    divider_color: template.get('divider_color')
+                };
+            }
+        } catch (err) {
+            logging.warn('Failed to load email template design settings', err);
+        }
+        return {};
+    }
+
     async loadMemberWelcomeEmails() {
         this.#defaultNewsletterSenderOptions = await this.#getDefaultNewsletterSenderOptions();
+        this.#designSettings = await this.#loadDesignSettings();
 
         for (const [memberStatus, slug] of Object.entries(MEMBER_WELCOME_EMAIL_SLUGS)) {
             const row = await AutomatedEmail.findOne({slug});
@@ -146,7 +177,8 @@ class MemberWelcomeEmailService {
                 name: member.name,
                 email: member.email
             },
-            siteSettings: this.#getSiteSettings()
+            siteSettings: this.#getSiteSettings(),
+            designSettings: this.#designSettings || {}
         });
 
         const senderOptions = await this.#getSenderOptions();
@@ -200,11 +232,14 @@ class MemberWelcomeEmailService {
             email: email
         };
 
+        const designSettings = await this.#loadDesignSettings();
+
         const {html, text, subject: renderedSubject} = await this.#renderer.render({
             lexical,
             subject,
             member: testMember,
-            siteSettings: this.#getSiteSettings()
+            siteSettings: this.#getSiteSettings(),
+            designSettings
         });
 
         // Test sends should always reflect the latest newsletter sender settings.
@@ -229,6 +264,8 @@ class MemberWelcomeEmailServiceWrapper {
 
         const i18nLib = require('@tryghost/i18n');
         const events = require('../../lib/common/events');
+        const storageUtils = require('../../adapters/storage/utils');
+        const {cachedImageSizeFromUrl} = require('../../lib/image');
 
         const i18n = i18nLib(settingsCache.get('locale') || 'en', 'ghost');
 
@@ -236,7 +273,7 @@ class MemberWelcomeEmailServiceWrapper {
             i18n.changeLanguage(model.get('value'));
         });
 
-        this.api = new MemberWelcomeEmailService({t: i18n.t});
+        this.api = new MemberWelcomeEmailService({t: i18n.t, imageSize: cachedImageSizeFromUrl, storageUtils});
     }
 }
 

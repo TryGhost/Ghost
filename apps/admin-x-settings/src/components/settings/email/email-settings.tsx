@@ -1,3 +1,4 @@
+import AutomatedEmails from './automated-emails';
 import DefaultRecipients from './default-recipients';
 import EnableNewsletters from './enable-newsletters';
 import MailGun from './mailgun';
@@ -10,6 +11,7 @@ import {useGlobalData} from '../../providers/global-data-provider';
 export const searchKeywords = {
     enableNewsletters: ['emails', 'newsletters', 'newsletter sending', 'enable', 'disable', 'turn on', 'turn off'],
     newsletters: ['newsletters', 'emails', 'design', 'customization'],
+    automatedEmails: ['automated emails', 'automation', 'welcome email', 'customization'],
     defaultRecipients: ['newsletters', 'default recipients', 'emails'],
     mailgun: ['mailgun', 'emails', 'newsletters'],
     newslettersNavMenu: ['emails', 'newsletters', 'newsletter sending', 'enable', 'disable', 'turn on', 'turn off', 'design', 'customization', 'default recipients', 'emails', 'mailgun', 'tips', 'donations', 'one time', 'payment']
@@ -26,6 +28,11 @@ const EmailSettings: React.FC = () => {
                 <>
                     <DefaultRecipients keywords={searchKeywords.defaultRecipients} />
                     <Newsletters keywords={searchKeywords.newsletters} />
+                    <AutomatedEmails keywords={searchKeywords.automatedEmails} />
+                </>
+            )}
+            {newslettersEnabled !== 'disabled' && (
+                <>
                     {!config.mailgunIsConfigured && <MailGun keywords={searchKeywords.mailgun} />}
                 </>
             )}

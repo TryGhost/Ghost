@@ -19,6 +19,7 @@ export const modalPaths: {[key: string]: ModalName} = {
     'stripe-connect': 'StripeConnectModal',
     'newsletters/new': 'AddNewsletterModal',
     'newsletters/:id': 'NewsletterDetailModal',
+    'newsletters/customize/:type/:id': 'EmailCustomizationModal',
     'history/view': 'HistoryModal',
     'history/view/:user': 'HistoryModal',
     'integrations/zapier': 'ZapierModal',
