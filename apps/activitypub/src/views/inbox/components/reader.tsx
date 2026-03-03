@@ -20,9 +20,9 @@ import articleBodyStyles from '@src/components/article-body-styles';
 import getReadingTime from '../../../utils/get-reading-time';
 import {Activity} from '@src/api/activitypub';
 import {cardsCSS, cardsJS} from '@src/utils/cards-assets';
+import {escapeHtml, isSafeUrl, openLinksInNewTab} from '@src/utils/content-formatters';
 import {handleProfileClick} from '@src/utils/handle-profile-click';
 import {isPendingActivity} from '../../../utils/pending-activity';
-import {openLinksInNewTab} from '@src/utils/content-formatters';
 import {useDebounce} from 'use-debounce';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 
@@ -163,15 +163,15 @@ const ArticleBody: React.FC<{
         </head>
         <body>
             <header class='gh-article-header gh-canvas'>
-                <h1 class='gh-article-title is-title' data-test-article-heading>${heading}</h1>
-                ${excerpt ? `<p class='gh-article-excerpt'>${excerpt}</p>` : ''}
-                <a href="${postUrl}" target="_blank" rel="noopener noreferrer" class="gh-article-meta">
+                <h1 class='gh-article-title is-title' data-test-article-heading>${escapeHtml(heading)}</h1>
+                ${excerpt ? `<p class='gh-article-excerpt'>${escapeHtml(excerpt)}</p>` : ''}
+                <a href="${postUrl && isSafeUrl(postUrl) ? escapeHtml(postUrl) : '#'}" target="_blank" rel="noopener noreferrer" class="gh-article-meta">
                     ${authors && authors.length > 0 ? `
                         <div class="gh-article-author-image">
                         ${authors.map(author => `
                                 <span>
                                     ${author.profile_image
-        ? `<img src="${author.profile_image}" alt="${author.name}">`
+        ? `<img src="${escapeHtml(author.profile_image)}" alt="${escapeHtml(author.name)}">`
         : `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" height="24" width="24"><path d="M6.75 6a5.25 5.25 0 1 0 10.5 0 5.25 5.25 0 1 0 -10.5 0" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M2.25 23.25a9.75 9.75 0 0 1 19.5 0" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg>`
 }
                                 </span>
@@ -181,15 +181,15 @@ const ArticleBody: React.FC<{
                     <div class="gh-article-meta-wrapper">
                         ${authors && authors.length > 0 ? `
                             <span class="gh-article-author-name">
-                                ${authors.length > 1 ? `${authors[0].name} and ${authors.length - 1} ${authors.length - 1 === 1 ? 'other' : 'others'}` : authors[0].name}
+                                ${authors.length > 1 ? `${escapeHtml(authors[0].name)} and ${authors.length - 1} ${authors.length - 1 === 1 ? 'other' : 'others'}` : escapeHtml(authors[0].name)}
                             </span>
                         ` : ''}
-                        <span class="gh-article-source">${postUrl ? new URL(postUrl).hostname : ''} <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-external-link-icon lucide-external-link"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></span>
+                        <span class="gh-article-source">${postUrl && isSafeUrl(postUrl) ? escapeHtml(new URL(postUrl).hostname) : ''} <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-external-link-icon lucide-external-link"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></span>
                     </div>
                 </a>
                 ${image ? `
                 <figure class='gh-article-image'>
-                    <img src='${image}' alt='${heading}' />
+                    <img src='${escapeHtml(image)}' alt='${escapeHtml(heading)}' />
                 </figure>
                 ` : ''}
             </header>

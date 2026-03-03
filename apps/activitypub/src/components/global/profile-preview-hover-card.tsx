@@ -4,7 +4,7 @@ import getUsername from '../../utils/get-username';
 import {Account} from '@src/api/activitypub';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Avatar, AvatarFallback, AvatarImage, Badge, H3, HoverCard, HoverCardContent, HoverCardTrigger, LucideIcon, Skeleton, abbreviateNumber} from '@tryghost/shade';
-import {openLinksInNewTab, stripHtml} from '../../utils/content-formatters';
+import {openLinksInNewTab, sanitizeHtml, stripHtml} from '../../utils/content-formatters';
 import {useAccountForUser} from '../../hooks/use-activity-pub-queries';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 
@@ -170,7 +170,7 @@ const ProfilePreviewHoverCard: React.FC<ProfilePreviewHoverCardProps> = ({
                     {isLoading ? (
                         <Skeleton className='h-4 w-48' />
                     ) : !hasLoadingError && bio ? (
-                        <div dangerouslySetInnerHTML={{__html: bio}} className='leading-tight dark:text-gray-300 [&_.invisible]:hidden [&_a:hover]:underline [&_a]:text-[#00a4eb]' />
+                        <div dangerouslySetInnerHTML={{__html: sanitizeHtml(bio)}} className='leading-tight dark:text-gray-300 [&_.invisible]:hidden [&_a:hover]:underline [&_a]:text-[#00a4eb]' />
                     ) : null}
                 </div>
             </HoverCardContent>

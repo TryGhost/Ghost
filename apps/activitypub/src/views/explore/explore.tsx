@@ -6,7 +6,7 @@ import React, {useEffect} from 'react';
 import TopicFilter, {type Topic} from '@src/components/topic-filter';
 import {type Account, type ExploreAccount} from '@src/api/activitypub';
 import {Button, H4, LoadingIndicator, LucideIcon, Skeleton} from '@tryghost/shade';
-import {openLinksInNewTab, stripHtml} from '@src/utils/content-formatters';
+import {openLinksInNewTab, sanitizeHtml, stripHtml} from '@src/utils/content-formatters';
 import {useAccountForUser, useExploreProfilesForUserByTopic} from '@hooks/use-activity-pub-queries';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 import {useOnboardingStatus} from '@src/components/layout/onboarding';
@@ -88,7 +88,7 @@ export const ExploreProfile: React.FC<ExploreProfileProps & {
                         :
                         profile.bio &&
                         <div
-                            dangerouslySetInnerHTML={{__html: openLinksInNewTab(stripHtml(profile.bio, ['a', 'br']))}}
+                            dangerouslySetInnerHTML={{__html: sanitizeHtml(openLinksInNewTab(stripHtml(profile.bio, ['a', 'br'])))}}
                             className='ap-profile-content pointer-events-none mt-0 line-clamp-2 max-w-[460px] break-anywhere'
                         />
                     }

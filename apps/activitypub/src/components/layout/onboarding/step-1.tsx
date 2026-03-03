@@ -3,6 +3,7 @@ import React, {useState} from 'react';
 import apNodes from '@assets/images/onboarding/ap-nodes.png';
 import apNodesDark from '@assets/images/onboarding/ap-nodes-dark.png';
 import {Button, H3, LucideIcon, Skeleton} from '@tryghost/shade';
+import {sanitizeHtml} from '@src/utils/content-formatters';
 import {useAccountForUser} from '@src/hooks/use-activity-pub-queries';
 import {useBrowseUsers} from '@tryghost/admin-x-framework/api/users';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
@@ -80,7 +81,7 @@ const Step1: React.FC = () => {
                         </div>
                         <p className='leading-tight text-gray-800 dark:text-gray-600'>
                             {account?.bio ? (
-                                <span dangerouslySetInnerHTML={{__html: account.bio}} />
+                                <span dangerouslySetInnerHTML={{__html: sanitizeHtml(account.bio)}} />
                             ) : (
                                 <Skeleton count={3} randomize={true} />
                             )}
