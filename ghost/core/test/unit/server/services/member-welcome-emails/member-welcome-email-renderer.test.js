@@ -428,6 +428,49 @@ describe('MemberWelcomeEmailRenderer', function () {
             assert(result.html.includes('background-color: #ff0000'));
         });
 
+        it('applies bookmark and YouTube embed card styles', async function () {
+            lexicalRenderStub.resolves(`
+                <figure class="kg-card kg-bookmark-card">
+                    <a class="kg-bookmark-container" href="https://example.com">
+                        <div class="kg-bookmark-content">
+                            <div class="kg-bookmark-title">Example title</div>
+                            <div class="kg-bookmark-description">Example description</div>
+                            <div class="kg-bookmark-metadata">
+                                <span class="kg-bookmark-author">Example author</span>
+                            </div>
+                        </div>
+                        <div class="kg-bookmark-thumbnail">
+                            <img src="https://example.com/thumb.jpg" alt="">
+                        </div>
+                    </a>
+                </figure>
+                <figure class="kg-card kg-embed-card kg-card-hascaption">
+                    <a class="kg-video-preview" href="https://youtube.com/watch?v=abc123" aria-label="Play video">
+                        <table cellpadding="0" cellspacing="0" border="0" width="100%" role="presentation">
+                            <tr>
+                                <td width="50%" align="center" valign="middle">
+                                    <div class="kg-video-play-button"><div></div></div>
+                                </td>
+                            </tr>
+                        </table>
+                    </a>
+                    <figcaption>Embed note</figcaption>
+                </figure>
+            `);
+            const renderer = new MemberWelcomeEmailRenderer({t: key => key});
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Welcome!',
+                member: {name: 'John', email: 'john@example.com'},
+                siteSettings: defaultSiteSettings
+            });
+
+            assert.match(result.html, /class="kg-bookmark-container"[^>]*style="[^"]*display: flex/);
+            assert.match(result.html, /class="kg-video-preview"[^>]*style="[^"]*background-color: #1d1f21/);
+            assert(result.html.includes('Embed note'));
+        });
+
         it('does not inline margin 0 auto on button tables that would override alignment', async function () {
             lexicalRenderStub.resolves(`
                 <table class="kg-card kg-button-card" border="0" cellpadding="0" cellspacing="0">
