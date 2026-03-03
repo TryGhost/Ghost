@@ -12,9 +12,12 @@ import type {RoutingModalProps} from '@tryghost/admin-x-framework/routing';
 /**
  * Get the route to navigate to after verification based on context
  */
-function getRouteForContext(context?: {type: string; id?: string} | null): string {
+function getRouteForContext(context?: {type: string; id?: string; key?: string} | null): string {
     if (context?.type === 'newsletter' && context.id) {
         return `newsletters/${context.id}`;
+    }
+    if (context?.type === 'setting' && context.key === 'members_support_address') {
+        return 'portal/edit';
     }
     return '';
 }
@@ -43,6 +46,7 @@ const VerifiedEmailVerifyModal: React.FC<RoutingModalProps> = ({searchParams}) =
 
                 // The backend applies the verified email to the target (newsletter/setting/automated_email)
                 // via context stored in the token. Invalidate these caches so the UI picks up the changes.
+                queryClient.invalidateQueries(['VerifiedEmailsResponseType']);
                 queryClient.invalidateQueries(['NewslettersResponseType']);
                 queryClient.invalidateQueries(['SettingsResponseType']);
                 queryClient.invalidateQueries(['AutomatedEmailsResponseType']);

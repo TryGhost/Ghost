@@ -6,14 +6,7 @@ const MagicLink = require('../lib/magic-link/magic-link');
 const sentry = require('../../../shared/sentry');
 
 const messages = {
-    emailInUse: 'Cannot delete verified email: it is currently in use by {usages}',
     verifiedEmailNotFound: 'Verified email not found'
-};
-
-// Map context types to FK column names
-const FK_COLUMNS = {
-    sender_email: 'sender_email_verified_email_id',
-    sender_reply_to: 'sender_reply_to_verified_email_id'
 };
 
 class EmailVerificationService {
@@ -165,65 +158,30 @@ class EmailVerificationService {
         }
 
         await verifiedEmail.save({status: 'verified'}, {patch: true});
-        const verifiedEmailId = verifiedEmail.get('id');
 
         // If context exists, apply the verified email to the target
         if (context) {
-            await this.#applyVerification(email, verifiedEmailId, context);
+            await this.#applyVerification(email, context);
         }
 
         return {verifiedEmail, context};
     }
 
     /**
-     * Delete a verified email by ID
-     * @param {string} id
-     * @throws {ValidationError} if the email is in use
-     */
-    async destroy(id) {
-        const verifiedEmail = await this.#VerifiedEmailModel.findOne({id});
-        if (!verifiedEmail) {
-            throw new errors.NotFoundError({
-                message: tpl(messages.verifiedEmailNotFound)
-            });
-        }
-
-        const usages = await this.#findUsages(id, verifiedEmail.get('email'));
-        if (usages.length > 0) {
-            throw new errors.ValidationError({
-                message: tpl(messages.emailInUse, {usages: usages.join(', ')})
-            });
-        }
-
-        await this.#VerifiedEmailModel.destroy({id});
-    }
-
-    /**
      * Apply a verified email to its target (newsletter, setting, or automated_email)
      * @private
      * @param {string} email
-     * @param {string} verifiedEmailId
      * @param {Object} context
      */
-    async #applyVerification(email, verifiedEmailId, context) {
+    async #applyVerification(email, context) {
         const {type, id, property, key} = context;
 
         if (type === 'newsletter' && id && property) {
-            const fkColumn = FK_COLUMNS[property];
-            const attrs = {[property]: email};
-            if (fkColumn) {
-                attrs[fkColumn] = verifiedEmailId;
-            }
-            await this.#NewsletterModel.edit(attrs, {id});
+            await this.#NewsletterModel.edit({[property]: email}, {id});
         } else if (type === 'setting' && key) {
             await this.#SettingsModel.edit({key, value: email});
         } else if (type === 'automated_email' && id && property) {
-            const fkColumn = FK_COLUMNS[property];
-            const attrs = {[property]: email};
-            if (fkColumn) {
-                attrs[fkColumn] = verifiedEmailId;
-            }
-            await this.#AutomatedEmailModel.edit(attrs, {id});
+            await this.#AutomatedEmailModel.edit({[property]: email}, {id});
         }
     }
 
@@ -253,51 +211,6 @@ class EmailVerificationService {
         };
 
         return this.#magicLinkService.sendMagicLink({email, tokenData: {email, context}});
-    }
-
-    /**
-     * Find usages of a verified email across newsletters, automated_emails, and settings
-     * @private
-     * @param {string} id - verified email ID
-     * @param {string} email - the email address
-     * @returns {Promise<string[]>} - array of usage descriptions
-     */
-    async #findUsages(id, email) {
-        const usages = [];
-
-        // Check newsletters by FK columns
-        for (const [property, fkColumn] of Object.entries(FK_COLUMNS)) {
-            const newsletters = await this.#NewsletterModel.findAll({
-                filter: `${fkColumn}:'${id}'`
-            });
-
-            if (newsletters && newsletters.models.length > 0) {
-                for (const newsletter of newsletters.models) {
-                    usages.push(`newsletter "${newsletter.get('name')}" (${property})`);
-                }
-            }
-        }
-
-        // Check automated_emails by FK columns
-        for (const [property, fkColumn] of Object.entries(FK_COLUMNS)) {
-            const automatedEmails = await this.#AutomatedEmailModel.findAll({
-                filter: `${fkColumn}:'${id}'`
-            });
-
-            if (automatedEmails && automatedEmails.models.length > 0) {
-                for (const automatedEmail of automatedEmails.models) {
-                    usages.push(`automated email "${automatedEmail.get('name')}" (${property})`);
-                }
-            }
-        }
-
-        // Check settings (members_support_address) by text value match
-        const supportAddress = await this.#SettingsModel.findOne({key: 'members_support_address'});
-        if (supportAddress && supportAddress.get('value') === email) {
-            usages.push('setting "members_support_address"');
-        }
-
-        return usages;
     }
 }
 

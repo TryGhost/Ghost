@@ -1,5 +1,10 @@
+const dns = require('node:dns/promises');
 const models = require('../../models');
+const {getInboxLinks} = require('../../lib/get-inbox-links');
 const emailVerificationService = require('../../services/email-verification');
+const emailAddressService = require('../../services/email-address');
+
+const inboxLinksDnsResolver = new dns.Resolver({tries: 1, timeout: 3000});
 
 const controller = {
     docName: 'verified_emails',
@@ -19,7 +24,22 @@ const controller = {
         permissions: true,
         async query(frame) {
             const data = frame.data.verified_emails[0];
-            return await emailVerificationService.add(data.email, data.context);
+            const verifiedEmail = await emailVerificationService.add(data.email, data.context);
+
+            let inboxLinks = null;
+            if (verifiedEmail.get('status') === 'pending') {
+                const sender = emailAddressService.service.defaultFromEmail.address;
+                inboxLinks = await getInboxLinks({
+                    recipient: data.email,
+                    sender,
+                    dnsResolver: inboxLinksDnsResolver
+                }) || null;
+            }
+
+            return {
+                data: [verifiedEmail],
+                meta: {inbox_links: inboxLinks}
+            };
         }
     },
 
@@ -33,16 +53,6 @@ const controller = {
                 data: [verifiedEmail],
                 meta: {context: context || null}
             };
-        }
-    },
-
-    destroy: {
-        statusCode: 204,
-        headers: {cacheInvalidate: true},
-        options: ['id'],
-        permissions: true,
-        async query(frame) {
-            return emailVerificationService.destroy(frame.options.id);
         }
     }
 };

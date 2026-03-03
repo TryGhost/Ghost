@@ -17,7 +17,19 @@ import {
     PopoverTrigger
 } from '@tryghost/shade';
 import {showToast} from '@tryghost/admin-x-design-system';
-import {useAddVerifiedEmail, useBrowseVerifiedEmails} from '@tryghost/admin-x-framework/api/verified-emails';
+import {type InboxLinks, useAddVerifiedEmail, useBrowseVerifiedEmails} from '@tryghost/admin-x-framework/api/verified-emails';
+
+const PROVIDER_LABELS: Record<string, string> = {
+    gmail: 'Open Gmail',
+    outlook: 'Open Outlook',
+    yahoo: 'Open Yahoo Mail',
+    proton: 'Open Proton Mail',
+    icloud: 'Open iCloud Mail',
+    hey: 'Open Hey',
+    aol: 'Open AOL Mail',
+    mailru: 'Open Mail.ru',
+    'dev-mailpit': 'Open Mailpit'
+};
 
 export interface SpecialOption {
     value: string;
@@ -72,6 +84,19 @@ const VerifiedEmailSelect: React.FC<VerifiedEmailSelectProps> = ({
         return placeholder;
     };
 
+    const getVerificationToastMessage = (email: string, inboxLinks?: InboxLinks | null) => {
+        if (inboxLinks) {
+            const label = PROVIDER_LABELS[inboxLinks.provider] || 'Open inbox';
+            return (
+                <span>
+                    Verification email sent to {email}.{' '}
+                    <a className="font-semibold text-black underline dark:text-white" href={inboxLinks.desktop} rel="noreferrer" target="_blank">{label}</a>
+                </span>
+            );
+        }
+        return `Verification email sent to ${email}`;
+    };
+
     const handleAddEmail = async (email: string) => {
         const trimmed = email.trim();
         if (!trimmed) {
@@ -88,9 +113,10 @@ const VerifiedEmailSelect: React.FC<VerifiedEmailSelectProps> = ({
                 });
                 onChange(trimmed);
             } else {
+                const inboxLinks = result?.meta?.inbox_links;
                 showToast({
                     type: 'info',
-                    message: `Verification email sent to ${trimmed}`
+                    message: getVerificationToastMessage(trimmed, inboxLinks)
                 });
             }
             setSearch('');
@@ -126,7 +152,7 @@ const VerifiedEmailSelect: React.FC<VerifiedEmailSelectProps> = ({
                         <span className="truncate">{getDisplayLabel()}</span>
                     </Button>
                 </PopoverTrigger>
-                <PopoverContent align="start" className="p-0" side="bottom">
+                <PopoverContent align="start" className="w-[var(--radix-popover-trigger-width)] p-0" side="bottom">
                     <Command>
                         <CommandInput
                             placeholder="Search or add email address..."

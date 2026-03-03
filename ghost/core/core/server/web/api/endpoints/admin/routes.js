@@ -392,7 +392,6 @@ module.exports = function apiRoutes() {
     router.get('/verified-emails', mw.authAdminApi, http(api.verifiedEmails.browse));
     router.post('/verified-emails', mw.authAdminApi, http(api.verifiedEmails.add));
     router.put('/verified-emails/verify', mw.authAdminApi, http(api.verifiedEmails.verify));
-    router.del('/verified-emails/:id', mw.authAdminApi, http(api.verifiedEmails.destroy));
 
     router.get('/links', mw.authAdminApi, http(api.links.browse));
     router.put('/links/bulk', mw.authAdminApi, http(api.links.bulkEdit));

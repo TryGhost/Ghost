@@ -770,11 +770,6 @@
                     "name": "Edit verified emails",
                     "action_type": "edit",
                     "object_type": "verified_email"
-                },
-                {
-                    "name": "Delete verified emails",
-                    "action_type": "destroy",
-                    "object_type": "verified_email"
                 }
             ]
         },

@@ -1,51 +1,21 @@
 import NiceModal from '@ebay/nice-modal-react';
 import {Badge, Button} from '@tryghost/shade';
-import {ConfirmationModal, Modal, showToast} from '@tryghost/admin-x-design-system';
+import {Modal, showToast} from '@tryghost/admin-x-design-system';
 import {
     useAddVerifiedEmail,
-    useBrowseVerifiedEmails,
-    useDeleteVerifiedEmail
+    useBrowseVerifiedEmails
 } from '@tryghost/admin-x-framework/api/verified-emails';
 import {useState} from 'react';
 
 const VerifiedEmailsModal = NiceModal.create(() => {
     const modal = NiceModal.useModal();
-    const [deletingId, setDeletingId] = useState<string | null>(null);
     const [resendingEmail, setResendingEmail] = useState<string | null>(null);
 
     const {data: {verified_emails: verifiedEmails = []} = {}} = useBrowseVerifiedEmails();
-    const {mutateAsync: deleteVerifiedEmail} = useDeleteVerifiedEmail();
     const {mutateAsync: addVerifiedEmail} = useAddVerifiedEmail();
 
     const verified = verifiedEmails.filter(e => e.status === 'verified');
     const pending = verifiedEmails.filter(e => e.status === 'pending');
-
-    const handleDelete = (id: string, email: string) => {
-        NiceModal.show(ConfirmationModal, {
-            title: 'Remove verified email',
-            prompt: <>Are you sure you want to remove <strong>{email}</strong>? Any newsletters or settings using this address will need to be updated.</>,
-            okLabel: 'Remove',
-            okColor: 'red',
-            onOk: async (confirmModal) => {
-                setDeletingId(id);
-                try {
-                    await deleteVerifiedEmail(id);
-                    showToast({
-                        type: 'success',
-                        message: `${email} has been removed`
-                    });
-                } catch {
-                    showToast({
-                        type: 'error',
-                        message: `Failed to remove ${email}`
-                    });
-                } finally {
-                    setDeletingId(null);
-                    confirmModal?.remove();
-                }
-            }
-        });
-    };
 
     const handleResend = async (email: string) => {
         setResendingEmail(email);
@@ -67,7 +37,6 @@ const VerifiedEmailsModal = NiceModal.create(() => {
 
     const renderEmailRow = (emailRecord: {id: string; email: string; status: 'pending' | 'verified'}) => {
         const isPending = emailRecord.status === 'pending';
-        const isDeleting = deletingId === emailRecord.id;
         const isResending = resendingEmail === emailRecord.email;
 
         return (
@@ -82,8 +51,8 @@ const VerifiedEmailsModal = NiceModal.create(() => {
                         <Badge variant="outline">Pending</Badge>
                     )}
                 </div>
-                <div className="flex items-center gap-2">
-                    {isPending ? (
+                {isPending && (
+                    <div className="flex items-center gap-2">
                         <Button
                             disabled={isResending}
                             size="sm"
@@ -92,17 +61,8 @@ const VerifiedEmailsModal = NiceModal.create(() => {
                         >
                             {isResending ? 'Resending...' : 'Resend'}
                         </Button>
-                    ) : (
-                        <Button
-                            disabled={isDeleting}
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleDelete(emailRecord.id, emailRecord.email)}
-                        >
-                            {isDeleting ? 'Removing...' : 'Remove'}
-                        </Button>
-                    )}
-                </div>
+                    </div>
+                )}
             </div>
         );
     };
