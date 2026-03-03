@@ -47,14 +47,17 @@ const VerifiedEmailSelect: React.FC<VerifiedEmailSelectProps> = ({
     placeholder = 'Select email address...'
 }) => {
     const [open, setOpen] = useState(false);
-    const [addMode, setAddMode] = useState(false);
-    const [newEmail, setNewEmail] = useState('');
+    const [search, setSearch] = useState('');
 
     const {data: {verified_emails: verifiedEmails = []} = {}} = useBrowseVerifiedEmails();
     const {mutateAsync: addVerifiedEmail} = useAddVerifiedEmail();
 
     const verified = verifiedEmails.filter(e => e.status === 'verified');
     const pending = verifiedEmails.filter(e => e.status === 'pending');
+
+    const searchTrimmed = search.trim();
+    const exactMatchExists = verified.some(e => e.email.toLowerCase() === searchTrimmed.toLowerCase());
+    const showAddOption = searchTrimmed.length > 0 && !exactMatchExists;
 
     const getDisplayLabel = () => {
         if (specialOptions) {
@@ -69,29 +72,28 @@ const VerifiedEmailSelect: React.FC<VerifiedEmailSelectProps> = ({
         return placeholder;
     };
 
-    const handleAddEmail = async () => {
-        const email = newEmail.trim();
-        if (!email) {
+    const handleAddEmail = async (email: string) => {
+        const trimmed = email.trim();
+        if (!trimmed) {
             return;
         }
 
         try {
-            const result = await addVerifiedEmail({email, context});
+            const result = await addVerifiedEmail({email: trimmed, context});
             const addedEmail = result?.verified_emails?.[0];
             if (addedEmail?.status === 'verified') {
                 showToast({
                     type: 'success',
-                    message: `${email} is already verified`
+                    message: `${trimmed} is already verified`
                 });
-                onChange(email);
+                onChange(trimmed);
             } else {
                 showToast({
                     type: 'info',
-                    message: `Verification email sent to ${email}`
+                    message: `Verification email sent to ${trimmed}`
                 });
             }
-            setNewEmail('');
-            setAddMode(false);
+            setSearch('');
             setOpen(false);
         } catch {
             showToast({
@@ -112,8 +114,7 @@ const VerifiedEmailSelect: React.FC<VerifiedEmailSelectProps> = ({
             <Popover open={open} onOpenChange={(isOpen) => {
                 setOpen(isOpen);
                 if (!isOpen) {
-                    setAddMode(false);
-                    setNewEmail('');
+                    setSearch('');
                 }
             }}>
                 <PopoverTrigger asChild>
@@ -126,114 +127,93 @@ const VerifiedEmailSelect: React.FC<VerifiedEmailSelectProps> = ({
                     </Button>
                 </PopoverTrigger>
                 <PopoverContent align="start" className="p-0" side="bottom">
-                    <Command shouldFilter={!addMode}>
-                        {addMode ? (
-                            <>
-                                <CommandInput
-                                    placeholder="Enter email address..."
-                                    value={newEmail}
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter') {
-                                            e.preventDefault();
-                                            handleAddEmail();
-                                        }
-                                        if (e.key === 'Escape') {
-                                            e.preventDefault();
-                                            setAddMode(false);
-                                            setNewEmail('');
-                                        }
-                                    }}
-                                    onValueChange={setNewEmail}
-                                />
-                                <CommandList>
+                    <Command>
+                        <CommandInput
+                            placeholder="Search or add email address..."
+                            value={search}
+                            onValueChange={setSearch}
+                        />
+                        <CommandList>
+                            {!showAddOption && <CommandEmpty>No email addresses found.</CommandEmpty>}
+
+                            {specialOptions && specialOptions.length > 0 && (
+                                <>
                                     <CommandGroup>
-                                        <CommandItem
-                                            onSelect={handleAddEmail}
-                                        >
-                                            Send verification email
-                                        </CommandItem>
+                                        {specialOptions.map(option => (
+                                            <CommandItem
+                                                key={option.value}
+                                                value={option.value}
+                                                onSelect={() => {
+                                                    onChange(option.value);
+                                                    setOpen(false);
+                                                }}
+                                            >
+                                                <span>{option.label}</span>
+                                                {value === option.value && <CommandCheck />}
+                                            </CommandItem>
+                                        ))}
                                     </CommandGroup>
-                                </CommandList>
-                            </>
-                        ) : (
-                            <>
-                                <CommandInput placeholder="Search email addresses..." />
-                                <CommandList>
-                                    <CommandEmpty>No email addresses found.</CommandEmpty>
-
-                                    {specialOptions && specialOptions.length > 0 && (
-                                        <>
-                                            <CommandGroup>
-                                                {specialOptions.map(option => (
-                                                    <CommandItem
-                                                        key={option.value}
-                                                        value={option.value}
-                                                        onSelect={() => {
-                                                            onChange(option.value);
-                                                            setOpen(false);
-                                                        }}
-                                                    >
-                                                        <span>{option.label}</span>
-                                                        {value === option.value && <CommandCheck />}
-                                                    </CommandItem>
-                                                ))}
-                                            </CommandGroup>
-                                            <CommandSeparator />
-                                        </>
-                                    )}
-
-                                    {verified.length > 0 && (
-                                        <CommandGroup heading="Verified addresses">
-                                            {verified.map(email => (
-                                                <CommandItem
-                                                    key={email.id}
-                                                    value={email.email}
-                                                    onSelect={() => {
-                                                        onChange(email.email);
-                                                        setOpen(false);
-                                                    }}
-                                                >
-                                                    <span>{email.email}</span>
-                                                    {value === email.email && <CommandCheck />}
-                                                </CommandItem>
-                                            ))}
-                                        </CommandGroup>
-                                    )}
-
-                                    {pending.length > 0 && (
-                                        <CommandGroup heading="Pending verification">
-                                            {pending.map(email => (
-                                                <CommandItem
-                                                    key={email.id}
-                                                    className="opacity-50"
-                                                    value={email.email}
-                                                    disabled
-                                                >
-                                                    <span>{email.email}</span>
-                                                    <Badge className="ml-auto" variant="secondary">Pending</Badge>
-                                                </CommandItem>
-                                            ))}
-                                        </CommandGroup>
-                                    )}
-
                                     <CommandSeparator />
+                                </>
+                            )}
 
-                                    <CommandGroup>
+                            {verified.length > 0 && (
+                                <CommandGroup heading="Verified addresses">
+                                    {verified.map(email => (
                                         <CommandItem
+                                            key={email.id}
+                                            value={email.email}
                                             onSelect={() => {
-                                                setAddMode(true);
-                                                setNewEmail('');
+                                                onChange(email.email);
+                                                setOpen(false);
                                             }}
                                         >
-                                            Add new email...
+                                            <span>{email.email}</span>
+                                            {value === email.email && <CommandCheck />}
                                         </CommandItem>
-                                        <CommandItem onSelect={handleOpenManageModal}>
-                                            Manage verified emails...
+                                    ))}
+                                </CommandGroup>
+                            )}
+
+                            {pending.length > 0 && (
+                                <CommandGroup heading="Pending verification">
+                                    {pending.map(email => (
+                                        <CommandItem
+                                            key={email.id}
+                                            className="opacity-50"
+                                            value={email.email}
+                                            disabled
+                                        >
+                                            <span>{email.email}</span>
+                                            <Badge className="ml-auto" variant="secondary">Pending</Badge>
+                                        </CommandItem>
+                                    ))}
+                                </CommandGroup>
+                            )}
+
+                            {showAddOption && (
+                                <>
+                                    <CommandSeparator />
+                                    <CommandGroup>
+                                        <CommandItem
+                                            value={`add-${searchTrimmed}`}
+                                            forceMount
+                                            onSelect={() => handleAddEmail(searchTrimmed)}
+                                        >
+                                            Add {searchTrimmed}
                                         </CommandItem>
                                     </CommandGroup>
-                                </CommandList>
-                            </>
-                        )}
+                                </>
+                            )}
+
+                            <CommandSeparator />
+
+                            <CommandGroup>
+                                <CommandItem forceMount onSelect={handleOpenManageModal}>
+                                    Manage verified emails...
+                                </CommandItem>
+                            </CommandGroup>
+                        </CommandList>
                     </Command>
                 </PopoverContent>
             </Popover>

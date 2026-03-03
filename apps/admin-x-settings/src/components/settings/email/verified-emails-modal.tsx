@@ -1,5 +1,4 @@
 import NiceModal from '@ebay/nice-modal-react';
-import {useState} from 'react';
 import {Badge, Button} from '@tryghost/shade';
 import {ConfirmationModal, Modal, showToast} from '@tryghost/admin-x-design-system';
 import {
@@ -7,6 +6,7 @@ import {
     useBrowseVerifiedEmails,
     useDeleteVerifiedEmail
 } from '@tryghost/admin-x-framework/api/verified-emails';
+import {useState} from 'react';
 
 const VerifiedEmailsModal = NiceModal.create(() => {
     const modal = NiceModal.useModal();
