@@ -107,6 +107,9 @@ const controller = {
         }
     },
 
+    // @deprecated - Handles legacy MagicLink-based verification tokens.
+    // New tokens use PUT /verified-emails/ via the centralized EmailVerificationService.
+    // Can be removed once all legacy tokens have expired (24 hours after deploy).
     verifyPropertyUpdate: {
         headers: {
             cacheInvalidate: false

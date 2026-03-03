@@ -77,7 +77,7 @@ export default function mockNewsletters(server) {
         return collection;
     });
 
-    // verify email update
+    // @deprecated - Legacy verification endpoint. New tokens use PUT /verified-emails/.
     server.put('/newsletters/verifications/', function ({newsletters}, request) {
         const requestBody = JSON.parse(request.requestBody);
         const tokenData = JSON.parse(atob(requestBody.token));

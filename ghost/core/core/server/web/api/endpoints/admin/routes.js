@@ -87,7 +87,7 @@ module.exports = function apiRoutes() {
 
     router.get('/settings', mw.authAdminApi, http(api.settings.browse));
     router.put('/settings', mw.authAdminApi, http(api.settings.edit));
-    router.put('/settings/verifications/', mw.authAdminApi, http(api.settings.verifyKeyUpdate));
+    router.put('/settings/verifications/', mw.authAdminApi, http(api.settings.verifyKeyUpdate)); // @deprecated - legacy verification route, see PUT /verified-emails/
     router.del('/settings/stripe/connect', mw.authAdminApi, http(api.settings.disconnectStripeConnectIntegration));
 
     // ## Users
@@ -381,7 +381,7 @@ module.exports = function apiRoutes() {
     router.get('/newsletters', mw.authAdminApi, http(api.newsletters.browse));
     router.get('/newsletters/:id', mw.authAdminApi, http(api.newsletters.read));
     router.post('/newsletters', mw.authAdminApi, http(api.newsletters.add));
-    router.put('/newsletters/verifications/', mw.authAdminApi, http(api.newsletters.verifyPropertyUpdate));
+    router.put('/newsletters/verifications/', mw.authAdminApi, http(api.newsletters.verifyPropertyUpdate)); // @deprecated - legacy verification route, see PUT /verified-emails/
     router.put('/newsletters/:id', mw.authAdminApi, http(api.newsletters.edit));
 
     // Verified emails

@@ -42,18 +42,23 @@ class NewslettersService {
         /** @private */
         this.emailVerificationService = emailVerificationService;
 
-        /* email verification setup */
+        /**
+         * @deprecated Legacy email verification setup — only needed for verifyPropertyUpdate()
+         * which handles old MagicLink-based tokens. Once all legacy tokens have expired
+         * (24 hours after deploy of centralized EmailVerificationService), this MagicLink
+         * infrastructure (ghostMailer, magicLinkService) and verifyPropertyUpdate() can be removed.
+         */
 
         this.ghostMailer = new mail.GhostMailer();
 
         const {transporter, getSubject, getText, getHTML, getSigninURL} = {
             transporter: {
                 sendMail() {
-                    // noop - overridden in `sendEmailVerificationMagicLink`
+                    // noop - only used for token generation/validation, not sending
                 }
             },
             getSubject() {
-                // not used - overridden in `sendEmailVerificationMagicLink`
+                // not used - only needed for token generation/validation
                 return `Verify email address`;
             },
             getText(url, type, email) {
@@ -242,6 +247,10 @@ class NewslettersService {
 
     /**
      * @public
+     * @deprecated This method handles legacy MagicLink-based verification tokens.
+     * New verification tokens are handled by the centralized EmailVerificationService
+     * via the PUT /verified-emails/ endpoint. This method and its MagicLink infrastructure
+     * in the constructor can be removed once all legacy tokens have expired (24 hours after deploy).
      * @param {string} token - token that provides details of what to update
      * @returns {Promise<{object}>} Newsetter Model
      */
