@@ -1,6 +1,7 @@
 import {MULTISELECT_FIELDS} from './use-members-filter-state';
 import {getSettingValue, useBrowseSettings, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
-import {useCallback, useMemo} from 'react';
+import {useCallback, useEffect, useMemo, useRef} from 'react';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {z} from 'zod';
 import type {Filter} from '@tryghost/shade';
 
@@ -14,6 +15,17 @@ const memberViewSchema = z.object({
 });
 
 export type MemberView = z.infer<typeof memberViewSchema>;
+
+export type SharedViewsParseResult =
+    | {ok: true; views: MemberView[]}
+    | {ok: false; error: Error};
+
+const SHARED_VIEWS_INVALID_ERROR = 'Cannot modify saved views because shared_views is invalid';
+const VIEW_EXISTS_ERROR = 'A view with this name already exists';
+const VIEW_UPDATE_NOT_FOUND_ERROR = 'Saved view could not be found for update';
+const VIEW_UPDATE_AMBIGUOUS_ERROR = 'Multiple saved views matched update target';
+const VIEW_DELETE_NOT_FOUND_ERROR = 'Saved view could not be found for delete';
+const VIEW_DELETE_AMBIGUOUS_ERROR = 'Multiple saved views matched delete target';
 
 /**
  * Convert Filter[] (UI state) to a record for storage
@@ -61,24 +73,123 @@ function isFilterEqual(a: Record<string, string | null>, b: Record<string, strin
 }
 
 /**
- * Read all shared views from settings
+ * Parse shared views JSON from settings
  */
-function parseSharedViews(settingsData: {settings: Array<{key: string; value: string | boolean | null}>} | undefined): MemberView[] {
-    const json = getSettingValue<string>(settingsData?.settings ?? null, 'shared_views') ?? '[]';
+export function parseSharedViewsJSON(json: string): SharedViewsParseResult {
     try {
         const parsed: unknown = JSON.parse(json);
 
         if (!Array.isArray(parsed)) {
-            return [];
+            return {ok: false, error: new Error('shared_views is not an array')};
         }
 
-        return parsed.flatMap((item) => {
+        const views = parsed.flatMap((item) => {
             const result = memberViewSchema.safeParse(item);
             return result.success ? [result.data] : [];
         });
+
+        return {ok: true, views};
     } catch {
-        return [];
+        return {ok: false, error: new Error('shared_views JSON parse failed')};
     }
+}
+
+function getSharedViewsJSON(settingsData: {settings: Array<{key: string; value: string | boolean | null}>} | undefined): string {
+    return getSettingValue<string>(settingsData?.settings ?? null, 'shared_views') ?? '[]';
+}
+
+function normalizeViewName(name: string): string {
+    return name.trim().toLowerCase();
+}
+
+function findMatchingViewIndexes(views: MemberView[], target: MemberView): number[] {
+    return views.flatMap((view, index) => {
+        if (view.route !== target.route) {
+            return [];
+        }
+
+        if (normalizeViewName(view.name) !== normalizeViewName(target.name)) {
+            return [];
+        }
+
+        if (!isFilterEqual(view.filter, target.filter)) {
+            return [];
+        }
+
+        return [index];
+    });
+}
+
+export function buildViewsForSave(allViews: MemberView[], name: string, filters: Filter[], originalView?: MemberView): MemberView[] {
+    const normalizedName = normalizeViewName(name);
+    const trimmedName = name.trim();
+    const filterRecord = filtersToRecord(filters);
+
+    if (originalView) {
+        const matchingIndexes = findMatchingViewIndexes(allViews, originalView);
+
+        if (matchingIndexes.length === 0) {
+            throw new Error(VIEW_UPDATE_NOT_FOUND_ERROR);
+        }
+
+        if (matchingIndexes.length > 1) {
+            throw new Error(VIEW_UPDATE_AMBIGUOUS_ERROR);
+        }
+
+        const targetIndex = matchingIndexes[0];
+        const duplicate = allViews.find((view, index) => {
+            if (index === targetIndex || view.route !== 'members') {
+                return false;
+            }
+
+            return normalizeViewName(view.name) === normalizedName;
+        });
+
+        if (duplicate) {
+            throw new Error(VIEW_EXISTS_ERROR);
+        }
+
+        return allViews.map((view, index) => {
+            if (index !== targetIndex) {
+                return view;
+            }
+
+            return {
+                ...view,
+                name: trimmedName,
+                filter: filterRecord
+            };
+        });
+    }
+
+    const duplicate = allViews.find(view => view.route === 'members' &&
+        normalizeViewName(view.name) === normalizedName
+    );
+
+    if (duplicate) {
+        throw new Error(VIEW_EXISTS_ERROR);
+    }
+
+    return [...allViews, {
+        name: trimmedName,
+        route: 'members',
+        filter: filterRecord
+    }];
+}
+
+export function buildViewsForDelete(allViews: MemberView[], view: MemberView): MemberView[] {
+    const matchingIndexes = findMatchingViewIndexes(allViews, view);
+
+    if (matchingIndexes.length === 0) {
+        throw new Error(VIEW_DELETE_NOT_FOUND_ERROR);
+    }
+
+    if (matchingIndexes.length > 1) {
+        throw new Error(VIEW_DELETE_AMBIGUOUS_ERROR);
+    }
+
+    const targetIndex = matchingIndexes[0];
+    return allViews.filter((_, index) => index !== targetIndex);
 }
 
 /**
@@ -86,10 +197,28 @@ function parseSharedViews(settingsData: {settings: Array<{key: string; value: st
  */
 export function useSharedViews(route: string): MemberView[] {
     const {data: settingsData} = useBrowseSettings();
+    const handleError = useHandleError();
+    const sharedViewsJson = getSharedViewsJSON(settingsData);
+    const lastReportedInvalidPayload = useRef<string | null>(null);
+
+    const parsedSharedViews = useMemo(() => parseSharedViewsJSON(sharedViewsJson), [sharedViewsJson]);
+
+    useEffect(() => {
+        if (parsedSharedViews.ok || lastReportedInvalidPayload.current === sharedViewsJson) {
+            return;
+        }
+
+        lastReportedInvalidPayload.current = sharedViewsJson;
+        handleError(parsedSharedViews.error, {withToast: false});
+    }, [handleError, parsedSharedViews, sharedViewsJson]);
 
     return useMemo(() => {
-        return parseSharedViews(settingsData).filter(v => v.route === route);
-    }, [settingsData, route]);
+        if (!parsedSharedViews.ok) {
+            return [];
+        }
+
+        return parsedSharedViews.views.filter(v => v.route === route);
+    }, [parsedSharedViews, route]);
 }
 
 /**
@@ -105,42 +234,29 @@ export function useMemberViews() {
 export function useSaveMemberView() {
     const {data: settingsData} = useBrowseSettings();
     const {mutateAsync: editSettings} = useEditSettings();
+    const handleError = useHandleError();
 
     const save = useCallback(async (name: string, filters: Filter[], originalView?: MemberView) => {
-        const allViews = parseSharedViews(settingsData);
-        const filterRecord = filtersToRecord(filters);
+        const parsedSharedViews = parseSharedViewsJSON(getSharedViewsJSON(settingsData));
 
-        let updatedViews: MemberView[];
-
-        if (originalView) {
-            // Edit mode: find original view by name and update it
-            updatedViews = allViews.map(v => (v.route === 'members' &&
-                v.name.trim().toLowerCase() === originalView.name.trim().toLowerCase()
-                ? {...v, name: name.trim(), filter: filterRecord}
-                : v
-            ));
-        } else {
-            // Create mode: name is the identifier, no duplicates allowed
-            const duplicate = allViews.find(v => v.route === 'members' &&
-                v.name.trim().toLowerCase() === name.trim().toLowerCase()
-            );
-
-            if (duplicate) {
-                throw new Error('A view with this name already exists');
-            }
-
-            updatedViews = [...allViews, {
-                name: name.trim(),
-                route: 'members',
-                filter: filterRecord
-            }];
+        if (!parsedSharedViews.ok) {
+            const error = new Error(SHARED_VIEWS_INVALID_ERROR, {cause: parsedSharedViews.error});
+            handleError(error, {withToast: false});
+            throw error;
         }
 
-        await editSettings([{
-            key: 'shared_views',
-            value: JSON.stringify(updatedViews)
-        }]);
-    }, [settingsData, editSettings]);
+        const updatedViews = buildViewsForSave(parsedSharedViews.views, name, filters, originalView);
+
+        try {
+            await editSettings([{
+                key: 'shared_views',
+                value: JSON.stringify(updatedViews)
+            }]);
+        } catch (error) {
+            handleError(error, {withToast: false});
+            throw error;
+        }
+    }, [settingsData, editSettings, handleError]);
 
     return save;
 }
@@ -151,19 +267,29 @@ export function useSaveMemberView() {
 export function useDeleteMemberView() {
     const {data: settingsData} = useBrowseSettings();
     const {mutateAsync: editSettings} = useEditSettings();
+    const handleError = useHandleError();
 
     const deleteView = useCallback(async (view: MemberView) => {
-        const allViews = parseSharedViews(settingsData);
-        // Match by name only — name is the canonical identifier for a member view
-        const updatedViews = allViews.filter(v => !(v.route === 'members' &&
-            v.name.trim().toLowerCase() === view.name.trim().toLowerCase())
-        );
+        const parsedSharedViews = parseSharedViewsJSON(getSharedViewsJSON(settingsData));
 
-        await editSettings([{
-            key: 'shared_views',
-            value: JSON.stringify(updatedViews)
-        }]);
-    }, [settingsData, editSettings]);
+        if (!parsedSharedViews.ok) {
+            const error = new Error(SHARED_VIEWS_INVALID_ERROR, {cause: parsedSharedViews.error});
+            handleError(error, {withToast: false});
+            throw error;
+        }
+
+        const updatedViews = buildViewsForDelete(parsedSharedViews.views, view);
+
+        try {
+            await editSettings([{
+                key: 'shared_views',
+                value: JSON.stringify(updatedViews)
+            }]);
+        } catch (error) {
+            handleError(error, {withToast: false});
+            throw error;
+        }
+    }, [settingsData, editSettings, handleError]);
 
     return deleteView;
 }
