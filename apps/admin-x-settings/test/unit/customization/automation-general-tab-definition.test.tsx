@@ -3,6 +3,17 @@ import {fireEvent, render, screen} from '@testing-library/react';
 import {vi} from 'vitest';
 import type {AutomationCustomizationFormState} from '@src/components/settings/email/customization/types';
 
+vi.mock('@src/components/settings/email/verified-email-select', () => ({
+    default: ({title, onChange}: {title?: string; onChange: (value: string) => void}) => {
+        const nextValue = title === 'Reply-to email' ? 'reply@managed.example' : 'sender@managed.example';
+        return (
+            <button aria-label={title} type='button' onClick={() => onChange(nextValue)}>
+                {title}
+            </button>
+        );
+    }
+}));
+
 vi.mock('@src/components/settings/email/customization/fields/header-image-field', () => ({
     HeaderImageField: () => <div>Header image</div>
 }));
@@ -137,5 +148,56 @@ describe('buildGeneralTabDefinition', function () {
         expect(updateFormState).toHaveBeenCalledWith({sender_reply_to: 'reply@example.com'});
         expect(updateFormState).toHaveBeenCalledWith({show_header_title: true});
         expect(updateFormState).toHaveBeenCalledWith({footer_content: '<p>Footer</p>'});
+    });
+
+    it('renders verified email dropdowns for managed email and updates values', function () {
+        const definition = buildGeneralTabDefinition<unknown, AutomationCustomizationFormState>();
+        const updateFormState = vi.fn();
+
+        render(
+            <>{definition.render({
+                accentColor: '#f56500',
+                clearError: () => {},
+                commentsEnabled: true,
+                formState,
+                emailInfoContext: {
+                    showSenderEmailField: false,
+                    senderEmailPlaceholder: '',
+                    replyToPlaceholder: '',
+                    renderedReplyToValue: '',
+                    verifiedEmail: {
+                        sender: {
+                            context: {
+                                type: 'automated_email',
+                                id: 'automation-1',
+                                property: 'sender_email',
+                                source: 'email_customization'
+                            },
+                            placeholder: 'Sender email'
+                        },
+                        replyTo: {
+                            context: {
+                                type: 'automated_email',
+                                id: 'automation-1',
+                                property: 'sender_reply_to',
+                                source: 'email_customization'
+                            },
+                            placeholder: 'Reply-to email'
+                        }
+                    }
+                },
+                entity: {},
+                errors: {},
+                siteIcon: null,
+                siteTitle: 'Local Haunts',
+                updateFormState
+            })}</>
+        );
+
+        fireEvent.click(screen.getByRole('button', {name: 'Sender email address'}));
+        fireEvent.click(screen.getByRole('button', {name: 'Reply-to email'}));
+
+        expect(updateFormState).toHaveBeenCalledWith({sender_email: 'sender@managed.example'});
+        expect(updateFormState).toHaveBeenCalledWith({sender_reply_to: 'reply@managed.example'});
     });
 });

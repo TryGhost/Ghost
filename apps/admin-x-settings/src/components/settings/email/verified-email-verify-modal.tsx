@@ -2,25 +2,13 @@ import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
 import {APIError} from '@tryghost/admin-x-framework/errors';
 import {ConfirmationModal} from '@tryghost/admin-x-design-system';
+import {getRouteForContext} from './verified-email-verify-routes';
 import {showToast} from '@tryghost/admin-x-design-system';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useQueryClient} from '@tryghost/admin-x-framework';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 import {useVerifyVerifiedEmail} from '@tryghost/admin-x-framework/api/verified-emails';
 import type {RoutingModalProps} from '@tryghost/admin-x-framework/routing';
-
-/**
- * Get the route to navigate to after verification based on context
- */
-function getRouteForContext(context?: {type: string; id?: string; key?: string} | null): string {
-    if (context?.type === 'newsletter' && context.id) {
-        return `newsletters/${context.id}`;
-    }
-    if (context?.type === 'setting' && context.key === 'members_support_address') {
-        return 'portal/edit';
-    }
-    return '';
-}
 
 const VerifiedEmailVerifyModal: React.FC<RoutingModalProps> = ({searchParams}) => {
     const token = searchParams?.get('verifyEmail');

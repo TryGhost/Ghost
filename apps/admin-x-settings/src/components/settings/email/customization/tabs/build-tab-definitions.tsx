@@ -2,6 +2,7 @@ import AutomationContentFields from './content/automation-content-fields';
 import NewsletterFooterContentFields from './content/newsletter-footer-content-fields';
 import NewsletterHeaderContentFields from './content/newsletter-header-content-fields';
 import NewsletterTitleSectionContentFields from './content/newsletter-title-section-content-fields';
+import VerifiedEmailSelect from '../../verified-email-select';
 import {AutomationHeaderDesignFields} from './design/automation-header-design-fields';
 import {BodyDesignFields} from './design/body-design-fields';
 import {Button, Form, Toggle} from '@tryghost/admin-x-design-system';
@@ -16,116 +17,176 @@ import type {AutomationContentFormState, BaseEmailDesignFormState, EmailCustomiz
 export const buildGeneralTabDefinition = <TEntity, TFormState extends EmailCustomizationFormState & BaseEmailDesignFormState & AutomationContentFormState>(): TabDefinition<TEntity, TFormState> => ({
     id: 'generalSettings',
     title: 'General',
-    render: ({clearError, formState, emailInfoContext, errors, siteTitle, updateFormState}) => (
-        <>
-            <Form className='mt-6' gap='sm' margins='lg' title='Email info'>
-                <SenderNameField
-                    placeholder={siteTitle}
-                    value={formState.sender_name}
-                    onChange={(senderName) => {
-                        updateFormState({sender_name: senderName} as Partial<TFormState>);
-                    }}
-                />
-                {emailInfoContext?.showSenderEmailField && (
-                    <SenderEmailField
-                        clearError={() => clearError('sender_email')}
-                        error={errors.sender_email}
-                        placeholder={emailInfoContext.senderEmailPlaceholder}
-                        value={formState.sender_email}
-                        onChange={(senderEmail) => {
-                            updateFormState({sender_email: senderEmail} as Partial<TFormState>);
+    render: ({clearError, formState, emailInfoContext, errors, siteTitle, updateFormState}) => {
+        const senderVerifiedEmail = emailInfoContext?.verifiedEmail?.sender;
+        const replyToVerifiedEmail = emailInfoContext?.verifiedEmail?.replyTo;
+
+        return (
+            <>
+                <Form className='mt-6' gap='sm' margins='lg' title='Email info'>
+                    <SenderNameField
+                        placeholder={siteTitle}
+                        value={formState.sender_name}
+                        onChange={(senderName) => {
+                            updateFormState({sender_name: senderName} as Partial<TFormState>);
                         }}
                     />
-                )}
-                <ReplyToEmailField
-                    clearError={() => clearError('sender_reply_to')}
-                    error={errors.sender_reply_to}
-                    placeholder={emailInfoContext?.replyToPlaceholder || ''}
-                    renderedValue={emailInfoContext?.renderedReplyToValue || ''}
-                    onChange={(senderReplyTo) => {
-                        updateFormState({sender_reply_to: senderReplyTo} as Partial<TFormState>);
+                    {senderVerifiedEmail ? (
+                        <VerifiedEmailSelect
+                            context={senderVerifiedEmail.context}
+                            placeholder={senderVerifiedEmail.placeholder}
+                            title="Sender email address"
+                            value={formState.sender_email}
+                            onChange={(senderEmail) => {
+                                updateFormState({sender_email: senderEmail} as Partial<TFormState>);
+                                clearError('sender_email');
+                            }}
+                        />
+                    ) : emailInfoContext?.showSenderEmailField ? (
+                        <SenderEmailField
+                            clearError={() => clearError('sender_email')}
+                            error={errors.sender_email}
+                            placeholder={emailInfoContext.senderEmailPlaceholder}
+                            value={formState.sender_email}
+                            onChange={(senderEmail) => {
+                                updateFormState({sender_email: senderEmail} as Partial<TFormState>);
+                            }}
+                        />
+                    ) : null}
+                    {replyToVerifiedEmail ? (
+                        <VerifiedEmailSelect
+                            context={replyToVerifiedEmail.context}
+                            placeholder={replyToVerifiedEmail.placeholder}
+                            specialOptions={replyToVerifiedEmail.specialOptions}
+                            title="Reply-to email"
+                            value={formState.sender_reply_to}
+                            onChange={(senderReplyTo) => {
+                                updateFormState({sender_reply_to: senderReplyTo} as Partial<TFormState>);
+                                clearError('sender_reply_to');
+                            }}
+                        />
+                    ) : (
+                        <ReplyToEmailField
+                            clearError={() => clearError('sender_reply_to')}
+                            error={errors.sender_reply_to}
+                            placeholder={emailInfoContext?.replyToPlaceholder || ''}
+                            renderedValue={emailInfoContext?.renderedReplyToValue || ''}
+                            onChange={(senderReplyTo) => {
+                                updateFormState({sender_reply_to: senderReplyTo} as Partial<TFormState>);
+                            }}
+                        />
+                    )}
+                </Form>
+                <AutomationContentFields
+                    formState={formState}
+                    updateFormState={(fields) => {
+                        updateFormState(fields as Partial<TFormState>);
                     }}
                 />
-            </Form>
-            <AutomationContentFields
-                formState={formState}
-                updateFormState={(fields) => {
-                    updateFormState(fields as Partial<TFormState>);
-                }}
-            />
-        </>
-    )
+            </>
+        );
+    }
 });
 
 export const buildNewsletterGeneralTabDefinition = <TEntity, TFormState extends NewsletterCustomizationFormState>(): TabDefinition<TEntity, TFormState> => ({
     id: 'generalSettings',
     title: 'General',
-    render: ({clearError, formState, emailInfoContext, errors, generalStatusAction, siteTitle, updateFormState}) => (
-        <>
-            <NameDescriptionFields
-                clearNameError={() => clearError('name')}
-                description={formState.description}
-                name={formState.name}
-                nameError={errors.name}
-                onDescriptionChange={(description) => {
-                    updateFormState({description} as Partial<TFormState>);
-                }}
-                onNameChange={(name) => {
-                    updateFormState({name} as Partial<TFormState>);
-                }}
-            />
-            <Form className='mt-6' gap='sm' margins='lg' title='Email info'>
-                <SenderNameField
-                    placeholder={siteTitle}
-                    value={formState.sender_name}
-                    onChange={(senderName) => {
-                        updateFormState({sender_name: senderName} as Partial<TFormState>);
+    render: ({clearError, formState, emailInfoContext, errors, generalStatusAction, siteTitle, updateFormState}) => {
+        const senderVerifiedEmail = emailInfoContext?.verifiedEmail?.sender;
+        const replyToVerifiedEmail = emailInfoContext?.verifiedEmail?.replyTo;
+
+        return (
+            <>
+                <NameDescriptionFields
+                    clearNameError={() => clearError('name')}
+                    description={formState.description}
+                    name={formState.name}
+                    nameError={errors.name}
+                    onDescriptionChange={(description) => {
+                        updateFormState({description} as Partial<TFormState>);
+                    }}
+                    onNameChange={(name) => {
+                        updateFormState({name} as Partial<TFormState>);
                     }}
                 />
-                {emailInfoContext?.showSenderEmailField && (
-                    <SenderEmailField
-                        clearError={() => clearError('sender_email')}
-                        error={errors.sender_email}
-                        placeholder={emailInfoContext.senderEmailPlaceholder}
-                        value={formState.sender_email}
-                        onChange={(senderEmail) => {
-                            updateFormState({sender_email: senderEmail} as Partial<TFormState>);
+                <Form className='mt-6' gap='sm' margins='lg' title='Email info'>
+                    <SenderNameField
+                        placeholder={siteTitle}
+                        value={formState.sender_name}
+                        onChange={(senderName) => {
+                            updateFormState({sender_name: senderName} as Partial<TFormState>);
                         }}
                     />
-                )}
-                <ReplyToEmailField
-                    clearError={() => clearError('sender_reply_to')}
-                    error={errors.sender_reply_to}
-                    placeholder={emailInfoContext?.replyToPlaceholder || ''}
-                    renderedValue={emailInfoContext?.renderedReplyToValue || ''}
-                    onChange={(senderReplyTo) => {
-                        updateFormState({sender_reply_to: senderReplyTo} as Partial<TFormState>);
-                    }}
-                />
-            </Form>
-            <Form className='mt-6' gap='sm' margins='lg' title='Member settings'>
-                <Toggle
-                    checked={formState.subscribe_on_signup}
-                    direction='rtl'
-                    label='Subscribe new members on signup'
-                    labelStyle='value'
-                    onChange={(event) => {
-                        updateFormState({subscribe_on_signup: event.target.checked} as Partial<TFormState>);
-                    }}
-                />
-            </Form>
-            {generalStatusAction && (
-                <div className='mb-5 mt-10'>
-                    <Button
-                        color={generalStatusAction.color}
-                        label={generalStatusAction.label}
-                        link
-                        onClick={generalStatusAction.onClick}
+                    {senderVerifiedEmail ? (
+                        <VerifiedEmailSelect
+                            context={senderVerifiedEmail.context}
+                            placeholder={senderVerifiedEmail.placeholder}
+                            title="Sender email address"
+                            value={formState.sender_email}
+                            onChange={(senderEmail) => {
+                                updateFormState({sender_email: senderEmail} as Partial<TFormState>);
+                                clearError('sender_email');
+                            }}
+                        />
+                    ) : emailInfoContext?.showSenderEmailField ? (
+                        <SenderEmailField
+                            clearError={() => clearError('sender_email')}
+                            error={errors.sender_email}
+                            placeholder={emailInfoContext.senderEmailPlaceholder}
+                            value={formState.sender_email}
+                            onChange={(senderEmail) => {
+                                updateFormState({sender_email: senderEmail} as Partial<TFormState>);
+                            }}
+                        />
+                    ) : null}
+                    {replyToVerifiedEmail ? (
+                        <VerifiedEmailSelect
+                            context={replyToVerifiedEmail.context}
+                            placeholder={replyToVerifiedEmail.placeholder}
+                            specialOptions={replyToVerifiedEmail.specialOptions}
+                            title="Reply-to email"
+                            value={formState.sender_reply_to}
+                            onChange={(senderReplyTo) => {
+                                updateFormState({sender_reply_to: senderReplyTo} as Partial<TFormState>);
+                                clearError('sender_reply_to');
+                            }}
+                        />
+                    ) : (
+                        <ReplyToEmailField
+                            clearError={() => clearError('sender_reply_to')}
+                            error={errors.sender_reply_to}
+                            placeholder={emailInfoContext?.replyToPlaceholder || ''}
+                            renderedValue={emailInfoContext?.renderedReplyToValue || ''}
+                            onChange={(senderReplyTo) => {
+                                updateFormState({sender_reply_to: senderReplyTo} as Partial<TFormState>);
+                            }}
+                        />
+                    )}
+                </Form>
+                <Form className='mt-6' gap='sm' margins='lg' title='Member settings'>
+                    <Toggle
+                        checked={formState.subscribe_on_signup}
+                        direction='rtl'
+                        label='Subscribe new members on signup'
+                        labelStyle='value'
+                        onChange={(event) => {
+                            updateFormState({subscribe_on_signup: event.target.checked} as Partial<TFormState>);
+                        }}
                     />
-                </div>
-            )}
-        </>
-    )
+                </Form>
+                {generalStatusAction && (
+                    <div className='mb-5 mt-10'>
+                        <Button
+                            color={generalStatusAction.color}
+                            label={generalStatusAction.label}
+                            link
+                            onClick={generalStatusAction.onClick}
+                        />
+                    </div>
+                )}
+            </>
+        );
+    }
 });
 
 export const buildContentTabDefinition = <TEntity, TFormState extends EmailCustomizationFormState>(): TabDefinition<TEntity, TFormState> => ({

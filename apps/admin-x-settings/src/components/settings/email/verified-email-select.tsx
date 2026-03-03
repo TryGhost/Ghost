@@ -16,8 +16,8 @@ import {
     PopoverContent,
     PopoverTrigger
 } from '@tryghost/shade';
+import {type InboxLinks, type VerifiedEmailContext, useAddVerifiedEmail, useBrowseVerifiedEmails} from '@tryghost/admin-x-framework/api/verified-emails';
 import {showToast} from '@tryghost/admin-x-design-system';
-import {type InboxLinks, useAddVerifiedEmail, useBrowseVerifiedEmails} from '@tryghost/admin-x-framework/api/verified-emails';
 
 const PROVIDER_LABELS: Record<string, string> = {
     gmail: 'Open Gmail',
@@ -40,12 +40,7 @@ export interface VerifiedEmailSelectProps {
     value: string;
     onChange: (value: string) => void;
     specialOptions?: SpecialOption[];
-    context?: {
-        type: 'newsletter' | 'setting' | 'automated_email';
-        id?: string;
-        property?: string;
-        key?: string;
-    };
+    context?: VerifiedEmailContext;
     title?: string;
     placeholder?: string;
 }

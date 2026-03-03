@@ -6,6 +6,7 @@ import {type EmailTemplate, type EmailTemplatesResponseType, useEditEmailTemplat
 import {buildAutomationDesignTabDefinition, buildGeneralTabDefinition} from '../tabs/build-tab-definitions';
 import {getSenderFieldContext, normalizeAutomationSenderPayload, resolveAutomationSenderInfo, validateAutomationSenderFields} from '../sender/helpers';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {isManagedEmail} from '@tryghost/admin-x-framework/api/config';
 import {mapFontWeightForCategory} from '../design/helpers';
 import {useActiveNewsletterSenderDefaults} from '@tryghost/admin-x-framework/api/newsletters';
 import {useGlobalData} from '@src/components/providers/global-data-provider';
@@ -125,8 +126,9 @@ export const automatedEmailAdapter: EmailTypeAdapter<'automation', AutomatedEmai
             divider_color: formState.divider_color
         });
     },
-    useTabContextData: ({formState}) => {
+    useTabContextData: ({id, formState}) => {
         const {config, settings} = useGlobalData();
+        const useVerifiedEmailSelect = isManagedEmail(config);
         const [defaultEmailAddress, supportEmailAddress] = getSettingValues<string>(settings, ['default_email_address', 'support_email_address']);
         const {data: fallbackNewsletter} = useActiveNewsletterSenderDefaults();
         const {renderedReplyTo, renderedSenderEmail} = resolveAutomationSenderInfo({
@@ -141,14 +143,37 @@ export const automatedEmailAdapter: EmailTypeAdapter<'automation', AutomatedEmai
                 supportEmailAddress
             }
         });
+        const baseEmailInfoContext = getSenderFieldContext({
+            config,
+            defaultEmailAddress,
+            renderedReplyTo,
+            renderedSenderEmail
+        });
 
         return {
-            emailInfoContext: getSenderFieldContext({
-                config,
-                defaultEmailAddress,
-                renderedReplyTo,
-                renderedSenderEmail
-            })
+            emailInfoContext: useVerifiedEmailSelect ? {
+                ...baseEmailInfoContext,
+                verifiedEmail: {
+                    sender: {
+                        context: {
+                            type: 'automated_email',
+                            id,
+                            property: 'sender_email',
+                            source: 'email_customization'
+                        },
+                        placeholder: baseEmailInfoContext.senderEmailPlaceholder || 'Sender email'
+                    },
+                    replyTo: {
+                        context: {
+                            type: 'automated_email',
+                            id,
+                            property: 'sender_reply_to',
+                            source: 'email_customization'
+                        },
+                        placeholder: baseEmailInfoContext.replyToPlaceholder || 'Reply-to email'
+                    }
+                }
+            } : baseEmailInfoContext
         };
     },
     validateFormState: (formState, {config}) => {

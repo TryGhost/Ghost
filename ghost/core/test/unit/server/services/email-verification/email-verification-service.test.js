@@ -213,6 +213,27 @@ describe('EmailVerificationService', function () {
             }, {id: 'nl-1'});
         });
 
+        it('preserves source metadata in returned context while applying verification', async function () {
+            const saveStub = sandbox.stub().resolves();
+            const verifiedEmailObj = {
+                get: key => ({id: 've-1', email: 'test@example.com', status: 'pending'})[key],
+                save: saveStub
+            };
+
+            const context = {type: 'newsletter', id: 'nl-1', property: 'sender_email', source: 'email_customization'};
+            const token = await tokenProvider.create({email: 'test@example.com', context});
+
+            VerifiedEmailModel.findOne.resolves(verifiedEmailObj);
+            NewsletterModel.edit.resolves();
+
+            const result = await service.verify(token);
+
+            assert.deepEqual(result.context, context);
+            sinon.assert.calledOnceWithExactly(NewsletterModel.edit, {
+                sender_email: 'test@example.com'
+            }, {id: 'nl-1'});
+        });
+
         it('applies context to setting when provided', async function () {
             const saveStub = sandbox.stub().resolves();
             const verifiedEmailObj = {

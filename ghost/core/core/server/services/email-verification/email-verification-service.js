@@ -121,6 +121,7 @@ class EmailVerificationService {
      * @param {string} [context.id] - ID of the newsletter or automated_email
      * @param {string} [context.property] - property being verified (e.g. 'sender_email')
      * @param {string} [context.key] - settings key (e.g. 'members_support_address')
+     * @param {string} [context.source] - optional caller source hint (e.g. 'email_customization') passed through token->verify response
      * @returns {Promise<Object>} - the VerifiedEmail model
      */
     async add(email, context) {

@@ -14,6 +14,14 @@ export type InboxLinks = {
     provider: string;
 };
 
+export type VerifiedEmailContext = {
+    type: 'newsletter' | 'setting' | 'automated_email';
+    id?: string;
+    property?: string;
+    key?: string;
+    source?: 'email_customization';
+};
+
 export interface VerifiedEmailsResponseType {
     verified_emails: VerifiedEmail[];
 }
@@ -26,12 +34,7 @@ export interface AddVerifiedEmailResponseType extends VerifiedEmailsResponseType
 
 export interface VerifyVerifiedEmailResponseType extends VerifiedEmailsResponseType {
     meta?: {
-        context: {
-            type: string;
-            id?: string;
-            property?: string;
-            key?: string;
-        } | null;
+        context: VerifiedEmailContext | null;
     };
 }
 
@@ -42,7 +45,7 @@ export const useBrowseVerifiedEmails = createQuery<VerifiedEmailsResponseType>({
     path: '/verified-emails/'
 });
 
-export const useAddVerifiedEmail = createMutation<AddVerifiedEmailResponseType, {email: string; context?: {type: string; id?: string; property?: string; key?: string}}>({
+export const useAddVerifiedEmail = createMutation<AddVerifiedEmailResponseType, {email: string; context?: VerifiedEmailContext}>({
     method: 'POST',
     path: () => '/verified-emails/',
     body: ({email, context}) => ({verified_emails: [{email, context}]}),
@@ -63,4 +66,3 @@ export const useVerifyVerifiedEmail = createMutation<VerifyVerifiedEmailResponse
         update: newData => newData
     }
 });
-

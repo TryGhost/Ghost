@@ -3,6 +3,22 @@ import {fireEvent, render, screen} from '@testing-library/react';
 import {vi} from 'vitest';
 import type {NewsletterCustomizationFormState} from '@src/components/settings/email/customization/types';
 
+const verifiedEmailSelectCalls: Array<{title?: string; specialOptions?: Array<{value: string; label: string}>}> = [];
+
+vi.mock('@src/components/settings/email/verified-email-select', () => ({
+    default: ({title, specialOptions, onChange}: {title?: string; specialOptions?: Array<{value: string; label: string}>; onChange: (value: string) => void}) => {
+        verifiedEmailSelectCalls.push({title, specialOptions});
+
+        const nextValue = title === 'Reply-to email' ? 'support' : 'managed@example.com';
+
+        return (
+            <button aria-label={title} type='button' onClick={() => onChange(nextValue)}>
+                {title}
+            </button>
+        );
+    }
+}));
+
 const formState: NewsletterCustomizationFormState = {
     id: 'newsletter-1',
     name: 'Morning Edition',
@@ -42,6 +58,10 @@ const formState: NewsletterCustomizationFormState = {
 };
 
 describe('buildNewsletterGeneralTabDefinition', function () {
+    beforeEach(function () {
+        verifiedEmailSelectCalls.length = 0;
+    });
+
     it('renders member settings toggle', function () {
         const definition = buildNewsletterGeneralTabDefinition<unknown, NewsletterCustomizationFormState>();
 
@@ -69,6 +89,67 @@ describe('buildNewsletterGeneralTabDefinition', function () {
         expect(screen.getByText('Subscribe new members on signup')).toBeInTheDocument();
         expect(screen.getByText('Sender email address')).toBeInTheDocument();
         expect(screen.getByText('Reply-to email')).toBeInTheDocument();
+    });
+
+    it('renders verified email dropdowns for managed email and updates values', function () {
+        const definition = buildNewsletterGeneralTabDefinition<unknown, NewsletterCustomizationFormState>();
+        const updateFormState = vi.fn();
+
+        render(
+            <>{definition.render({
+                accentColor: '#f56500',
+                clearError: () => {},
+                commentsEnabled: true,
+                formState,
+                entity: {},
+                errors: {},
+                emailInfoContext: {
+                    showSenderEmailField: false,
+                    senderEmailPlaceholder: 'hello@example.com',
+                    replyToPlaceholder: 'hello@example.com',
+                    renderedReplyToValue: 'support@example.com',
+                    verifiedEmail: {
+                        sender: {
+                            context: {
+                                type: 'newsletter',
+                                id: 'newsletter-1',
+                                property: 'sender_email',
+                                source: 'email_customization'
+                            },
+                            placeholder: 'hello@example.com'
+                        },
+                        replyTo: {
+                            context: {
+                                type: 'newsletter',
+                                id: 'newsletter-1',
+                                property: 'sender_reply_to',
+                                source: 'email_customization'
+                            },
+                            placeholder: 'hello@example.com',
+                            specialOptions: [
+                                {value: 'newsletter', label: 'Newsletter address'},
+                                {value: 'support', label: 'Support address'}
+                            ]
+                        }
+                    }
+                },
+                siteIcon: null,
+                siteTitle: 'Local Haunts',
+                updateFormState
+            })}</>
+        );
+
+        fireEvent.click(screen.getByRole('button', {name: 'Sender email address'}));
+        fireEvent.click(screen.getByRole('button', {name: 'Reply-to email'}));
+
+        expect(updateFormState).toHaveBeenCalledWith({sender_email: 'managed@example.com'});
+        expect(updateFormState).toHaveBeenCalledWith({sender_reply_to: 'support'});
+
+        const replyToCall = verifiedEmailSelectCalls.find(call => call.title === 'Reply-to email');
+        expect(replyToCall?.specialOptions).toEqual([
+            {value: 'newsletter', label: 'Newsletter address'},
+            {value: 'support', label: 'Support address'}
+        ]);
     });
 
     it('renders status action row only when provided', function () {

@@ -8,6 +8,7 @@ import {type NewslettersEditResponseType, type NewslettersResponseType, useActiv
 import {buildDesignTabDefinition, buildNewsletterContentTabDefinition, buildNewsletterGeneralTabDefinition} from '../tabs/build-tab-definitions';
 import {getSenderFieldContext, normalizeNewsletterSenderPayload, resolveNewsletterSenderInfo, validateNewsletterSenderFields} from '../sender/helpers';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {isManagedEmail} from '@tryghost/admin-x-framework/api/config';
 import {mapFontWeightForCategory} from '../design/helpers';
 import {useGlobalData} from '@src/components/providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -197,11 +198,12 @@ export const newsletterAdapter: EmailTypeAdapter<'newsletter', Newsletter, Newsl
             });
         }
     },
-    useTabContextData: ({formState, entity, editEntity}) => {
+    useTabContextData: ({id, formState, entity, editEntity}) => {
         const handleError = useHandleError();
         const limiter = useLimiter();
         const {updateRoute} = useRouting();
         const {config, settings} = useGlobalData();
+        const useVerifiedEmailSelect = isManagedEmail(config);
         const [defaultEmailAddress, supportEmailAddress] = getSettingValues<string>(settings, ['default_email_address', 'support_email_address']);
         const {data: activeNewsletterCount} = useActiveNewslettersCount();
         const {renderedReplyTo, renderedSenderEmail} = resolveNewsletterSenderInfo({
@@ -215,12 +217,39 @@ export const newsletterAdapter: EmailTypeAdapter<'newsletter', Newsletter, Newsl
                 supportEmailAddress
             }
         });
-        const emailInfoContext = getSenderFieldContext({
+        const baseEmailInfoContext = getSenderFieldContext({
             config,
             defaultEmailAddress,
             renderedSenderEmail,
             renderedReplyTo
         });
+        const emailInfoContext = useVerifiedEmailSelect ? {
+            ...baseEmailInfoContext,
+            verifiedEmail: {
+                sender: {
+                    context: {
+                        type: 'newsletter',
+                        id,
+                        property: 'sender_email',
+                        source: 'email_customization'
+                    },
+                    placeholder: baseEmailInfoContext.senderEmailPlaceholder || 'Sender email'
+                },
+                replyTo: {
+                    context: {
+                        type: 'newsletter',
+                        id,
+                        property: 'sender_reply_to',
+                        source: 'email_customization'
+                    },
+                    placeholder: baseEmailInfoContext.replyToPlaceholder || 'Reply-to email',
+                    specialOptions: [
+                        {value: 'newsletter', label: 'Newsletter address'},
+                        {value: 'support', label: 'Support address'}
+                    ]
+                }
+            }
+        } : baseEmailInfoContext;
 
         if (!entity) {
             return {emailInfoContext};

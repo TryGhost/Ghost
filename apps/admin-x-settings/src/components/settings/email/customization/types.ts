@@ -17,6 +17,18 @@ export type EmailButtonStyle = 'fill' | 'outline';
 export type EmailButtonCorners = 'square' | 'rounded' | 'pill';
 export type EmailLinkStyle = 'underline' | 'regular' | 'bold';
 export type EmailImageCorners = 'square' | 'rounded';
+export type VerifiedEmailSpecialOption = {
+    value: string;
+    label: string;
+};
+
+export type VerifiedEmailContext = {
+    type: 'newsletter' | 'setting' | 'automated_email';
+    id?: string;
+    property?: string;
+    key?: string;
+    source?: 'email_customization';
+};
 
 export type EmailCustomizationFormState = {
     id: string;
@@ -149,6 +161,17 @@ export type TabDefinitionContext<TEntity, TFormState extends EmailCustomizationF
         senderEmailPlaceholder: string;
         replyToPlaceholder: string;
         renderedReplyToValue: string;
+        verifiedEmail?: {
+            sender?: {
+                context: VerifiedEmailContext;
+                placeholder: string;
+            };
+            replyTo?: {
+                context: VerifiedEmailContext;
+                placeholder: string;
+                specialOptions?: VerifiedEmailSpecialOption[];
+            };
+        };
     };
 };
 
