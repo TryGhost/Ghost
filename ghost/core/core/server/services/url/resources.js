@@ -5,6 +5,7 @@ const {URLResourceUpdatedEvent} = require('../../../shared/events');
 const Resource = require('./resource');
 const config = require('../../../shared/config');
 const models = require('../../models');
+const schema = require('../../data/schema');
 
 // This listens to all manner of model events to find new content that needs a URL...
 const events = require('../../lib/common/events');
@@ -180,9 +181,12 @@ class Resources {
      * @private
      */
     _prepareModelSync(model, resourceConfig) {
+        const include = resourceConfig.modelOptions.include;
         const exclude = resourceConfig.modelOptions.exclude;
         const withRelatedFields = resourceConfig.modelOptions.withRelatedFields;
-        const obj = _.omit(model.toJSON(), exclude);
+        const obj = include
+            ? _.pick(model.toJSON(), include)
+            : _.omit(model.toJSON(), exclude);
 
         if (withRelatedFields) {
             _.each(withRelatedFields, (fields, key) => {
@@ -318,7 +322,18 @@ class Resources {
         const resourceConfig = _.find(this.resourcesConfig, {type: type});
 
         // NOTE: check if any of the route-related fields were changed and only proceed if so
-        const ignoredProperties = [...resourceConfig.modelOptions.exclude, 'updated_at'];
+        const tableNames = {Post: 'posts', User: 'users', Tag: 'tags'};
+        const include = resourceConfig.modelOptions.include;
+        let ignoredProperties;
+        if (include) {
+            // With an include list, any field NOT in the list is irrelevant to routing
+            const allColumns = Object.keys(schema.tables[tableNames[resourceConfig.modelOptions.modelName]])
+                .filter(key => !key.startsWith('@@'));
+            ignoredProperties = allColumns.filter(col => !include.includes(col));
+            ignoredProperties.push('updated_at');
+        } else {
+            ignoredProperties = [...resourceConfig.modelOptions.exclude, 'updated_at'];
+        }
         if (!this._containsRoutingAffectingChanges(model, ignoredProperties)) {
             const cachedResource = this.getByIdAndType(type, model.id);
 

@@ -1,42 +1,31 @@
 /*
  * These are the default resources and filters.
  * They contain minimum filters for public accessibility of resources.
+ *
+ * Each `include` list enumerates the exact columns fetched from the database
+ * for that resource type.  Only fields needed for:
+ *  - URL generation (permalink patterns, NQL route-filter evaluation)
+ *  - sitemap XML (dates, images, canonical_url exclusion)
+ *  - runtime change detection (_containsRoutingAffectingChanges)
+ * are included.
  */
-
-// TODO: switch exclude lists to include lists to make this more explicit
 module.exports = [
     {
         type: 'posts',
         modelOptions: {
             modelName: 'Post',
             filter: 'status:published+type:post',
-            exclude: [
-                'title',
-                'mobiledoc',
-                'lexical',
-                'html',
-                'plaintext',
-                // @TODO: https://github.com/TryGhost/Ghost/issues/10335
-                // 'page',
-                'status',
-                'codeinjection_head',
-                'codeinjection_foot',
-                'meta_title',
-                'meta_description',
-                'custom_excerpt',
-                'og_image',
-                'og_title',
-                'og_description',
-                'twitter_image',
-                'twitter_title',
-                'twitter_description',
-                'custom_template',
-                'locale',
-                'newsletter_id',
-                'show_title_and_feature_image',
-                'email_recipient_filter',
-                'comment_id',
-                'tiers'
+            include: [
+                'id',
+                'slug',
+                'type',
+                'featured',
+                'visibility',
+                'published_at',
+                'created_at',
+                'updated_at',
+                'feature_image',
+                'canonical_url'
             ],
             withRelated: ['tags', 'authors'],
             withRelatedPrimary: {
@@ -58,39 +47,19 @@ module.exports = [
         type: 'pages',
         modelOptions: {
             modelName: 'Post',
-            exclude: [
-                'title',
-                'mobiledoc',
-                'lexical',
-                'html',
-                'plaintext',
-                // @TODO: https://github.com/TryGhost/Ghost/issues/10335
-                // 'page',
-                // 'status',
-                'codeinjection_head',
-                'codeinjection_foot',
-                'meta_title',
-                'meta_description',
-                'custom_excerpt',
-                'og_image',
-                'og_title',
-                'og_description',
-                'twitter_image',
-                'twitter_title',
-                'twitter_description',
-                'custom_template',
-                'locale',
-                'tags',
-                'authors',
-                'primary_tag',
-                'primary_author',
-                'newsletter_id',
-                'show_title_and_feature_image',
-                'email_recipient_filter',
-                'comment_id',
-                'tiers'
-            ],
-            filter: 'status:published+type:page'
+            filter: 'status:published+type:page',
+            include: [
+                'id',
+                'slug',
+                'type',
+                'featured',
+                'visibility',
+                'published_at',
+                'created_at',
+                'updated_at',
+                'feature_image',
+                'canonical_url'
+            ]
         },
         events: {
             add: 'page.published',
@@ -103,13 +72,17 @@ module.exports = [
         keep: ['id', 'slug'],
         modelOptions: {
             modelName: 'Tag',
-            exclude: [
-                'description',
-                'meta_title',
-                'meta_description',
-                'parent_id'
-            ],
             filter: 'visibility:public',
+            include: [
+                'id',
+                'name',
+                'slug',
+                'visibility',
+                'feature_image',
+                'canonical_url',
+                'created_at',
+                'updated_at'
+            ],
             shouldHavePosts: {
                 joinTo: 'tag_id',
                 joinTable: 'posts_tags'
@@ -125,20 +98,17 @@ module.exports = [
         type: 'authors',
         modelOptions: {
             modelName: 'User',
-            exclude: [
-                'bio',
-                'website',
-                'location',
-                'facebook',
-                'twitter',
-                'locale',
-                'accessibility',
-                'meta_title',
-                'meta_description',
-                'tour',
-                'last_seen'
-            ],
             filter: 'visibility:public',
+            include: [
+                'id',
+                'name',
+                'slug',
+                'visibility',
+                'profile_image',
+                'cover_image',
+                'created_at',
+                'updated_at'
+            ],
             shouldHavePosts: {
                 joinTo: 'author_id',
                 joinTable: 'posts_authors'

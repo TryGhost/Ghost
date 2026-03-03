@@ -19,6 +19,7 @@ module.exports = function (Bookshelf) {
             fetchAll: async function (options = {}) {
                 const {
                     modelName,
+                    include,
                     exclude,
                     filter,
                     shouldHavePosts,
@@ -73,8 +74,10 @@ module.exports = function (Bookshelf) {
                     query.limit(limit);
                 }
 
-                // exclude fields if provided
-                if (exclude) {
+                // select only the fields needed
+                if (include) {
+                    query.select(include);
+                } else if (exclude) {
                     const toSelect = Object
                         .keys(schema.tables[tableNames[modelName]])
                         .filter(key => !key.startsWith('@@') && !exclude.includes(key));
