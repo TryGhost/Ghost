@@ -127,7 +127,7 @@ const TransistorModal = NiceModal.create(() => {
                                 <div className='font-semibold'>How to use Transistor in Ghost</div>
                                 <div className='mt-1 text-sm text-grey-800 dark:text-grey-500'>Learn more about connecting Transistor with Ghost to offer members access to private podcasts in Portal or as an embed in posts and pages with a custom Transistor card.</div>
                             </div>
-                            <div className='order-1 hidden w-[200px] shrink-0 items-center justify-center overflow-hidden md:!visible md:order-2 md:!flex'>
+                            <div className='order-1 hidden w-[200px] shrink-0 items-center justify-center overflow-hidden md:visible! md:order-2 md:flex!'>
                                 <img alt="Bookmark Thumb" className='min-h-full min-w-full shrink-0' src={BookmarkThumb} />
                             </div>
                         </a>

@@ -96,7 +96,7 @@ const LookAndFeel: React.FC<{
                             ))}
                             <div className={clsx('relative w-[46px] border', currentIcon === uploadedIcon ? 'border-green' : 'border-transparent')}>
                                 <ImageUpload
-                                    deleteButtonClassName='invisible absolute -right-2 -top-2 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-[rgba(0,0,0,0.75)] text-white hover:bg-black group-hover:!visible'
+                                    deleteButtonClassName='invisible absolute -right-2 -top-2 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-[rgba(0,0,0,0.75)] text-white hover:bg-black group-hover:visible!'
                                     deleteButtonContent={<Icon colorClass='text-white' name='trash' size='sm' />}
                                     height='46px'
                                     id='test'

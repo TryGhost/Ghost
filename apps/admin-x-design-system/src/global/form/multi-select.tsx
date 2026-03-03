@@ -103,7 +103,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
         size === 'sm' ? 'min-h-[36px] py-1 text-sm' : 'min-h-[40px] py-2',
         fieldStyle === 'dropdown' ? 'cursor-pointer' : 'cursor-text',
         !clearBg && 'bg-grey-150 px-[10px] dark:bg-grey-900',
-        'outline-none',
+        'outline-hidden',
         error ? 'border-red' : 'hover:bg-grey-100 dark:hover:bg-grey-925',
         (title && !clearBg) && 'mt-2'
     );

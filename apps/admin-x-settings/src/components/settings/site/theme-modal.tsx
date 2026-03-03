@@ -213,7 +213,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
     };
 
     const left =
-    <div className='hidden md:!visible md:!block'>
+    <div className='hidden md:visible! md:block!'>
         <TabView
             border={false}
             selectedTab={currentTab}

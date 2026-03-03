@@ -16,7 +16,7 @@ const TableCell: React.FC<TableCellProps> = ({
     ...props
 }) => {
     const tableCellClasses = clsx(
-        padding ? '!py-3 !pl-0 !pr-6' : '',
+        padding ? 'py-3! pl-0! pr-6!' : '',
         (align === 'center' && 'text-center'),
         (align === 'right' && 'text-right'),
         (valign === 'top' && 'align-top'),

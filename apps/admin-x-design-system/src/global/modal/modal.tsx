@@ -223,7 +223,7 @@ const Modal = forwardRef<HTMLElement, ModalProps>(({
     if (stickyHeader) {
         headerClasses = clsx(
             headerClasses,
-            'sticky top-0 z-[300] -mb-4 bg-white !pb-4 dark:bg-black'
+            'sticky top-0 z-[300] -mb-4 bg-white pb-4! dark:bg-black'
         );
     }
 
@@ -355,7 +355,7 @@ const Modal = forwardRef<HTMLElement, ModalProps>(({
     // Set bottom padding for backdrop when the menu is on
     backdropClasses = clsx(
         backdropClasses,
-        'max-[800px]:!pb-20'
+        'max-[800px]:pb-20!'
     );
 
     const footerClasses = clsx(
@@ -443,7 +443,7 @@ const Modal = forwardRef<HTMLElement, ModalProps>(({
                 {header === false ? '' : (!topRightContent || topRightContent === 'close' ?
                     (<header className={headerClasses}>
                         {title && <Heading level={3}>{title}</Heading>}
-                        <div className={`${topRightContent !== 'close' && 'md:!invisible md:!hidden'} ${hideXOnMobile && 'hidden'} absolute right-6 top-6`}>
+                        <div className={`${topRightContent !== 'close' && 'md:invisible! md:hidden!'} ${hideXOnMobile && 'hidden'} absolute right-6 top-6`}>
                             <Button className='-m-2 cursor-pointer p-2 opacity-50 hover:opacity-100' icon='close' iconColorClass='text-black dark:text-white' size='sm' testId='close-modal' unstyled onClick={removeModal} />
                         </div>
                     </header>)

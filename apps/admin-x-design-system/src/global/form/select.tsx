@@ -159,7 +159,7 @@ const Select: React.FC<SelectProps> = ({
     const customClasses = {
         control: clsx(
             controlClasses?.control,
-            'h-9 min-h-[36px] w-full appearance-none rounded-lg border outline-none md:h-[38px] md:min-h-[38px] dark:text-white',
+            'h-9 min-h-[36px] w-full appearance-none rounded-lg border outline-hidden md:h-[38px] md:min-h-[38px] dark:text-white',
             size === 'xs' ? 'py-0 pr-2 text-xs' : 'py-1 pr-4',
             clearBg ? '' : 'bg-grey-150 px-3 dark:bg-grey-900',
             error ? 'border-red' : `border-transparent ${!clearBg && 'hover:bg-grey-100 dark:hover:bg-grey-925'}`,
