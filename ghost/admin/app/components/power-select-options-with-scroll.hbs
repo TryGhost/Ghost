@@ -1,6 +1,6 @@
 <ul role="listbox" {{did-insert this.addHandlers}} {{will-destroy this.removeHandlers}} ...attributes>
   {{! template-lint-disable no-unnecessary-concat }}
-  {{#if @select.loading}}
+  {{#if (and @select.loading (eq @options.length 0))}}
     {{#if @loadingMessage}}
       <li class="ember-power-select-option ember-power-select-option--loading-message" role="option">{{@loadingMessage}}</li>
     {{/if}}
