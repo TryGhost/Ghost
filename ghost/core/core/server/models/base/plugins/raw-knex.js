@@ -2,8 +2,6 @@ const _ = require('lodash');
 const debug = require('@tryghost/debug')('models:base:raw-knex');
 const plugins = require('@tryghost/bookshelf-plugins');
 
-const schema = require('../../../data/schema');
-
 /**
  * @param {import('bookshelf')} Bookshelf
  */
@@ -19,7 +17,7 @@ module.exports = function (Bookshelf) {
             fetchAll: async function (options = {}) {
                 const {
                     modelName,
-                    exclude,
+                    include,
                     filter,
                     shouldHavePosts,
                     withRelated,
@@ -73,13 +71,9 @@ module.exports = function (Bookshelf) {
                     query.limit(limit);
                 }
 
-                // exclude fields if provided
-                if (exclude) {
-                    const toSelect = Object
-                        .keys(schema.tables[tableNames[modelName]])
-                        .filter(key => !key.startsWith('@@') && !exclude.includes(key));
-
-                    query.select(toSelect);
+                // select only the fields needed
+                if (include) {
+                    query.select(include);
                 }
 
                 // @NOTE: We can't use the filter plugin, because we are not using bookshelf.

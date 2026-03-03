@@ -8,9 +8,15 @@ describe('Unit: services/url/Resources', function () {
             type: 'posts',
             modelOptions: {
                 modelName: 'Post',
-                exclude: [
-                    'title',
-                    'plaintext'
+                include: [
+                    'id',
+                    'slug',
+                    'type',
+                    'featured',
+                    'visibility',
+                    'published_at',
+                    'created_at',
+                    'updated_at'
                 ]
             }
         }]
