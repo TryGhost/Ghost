@@ -2,7 +2,6 @@ import React from "react"
 
 import {
     Button,
-    formatNumber,
     LucideIcon,
     SidebarGroup,
     SidebarGroupContent,
@@ -17,6 +16,7 @@ import { useMemberCount } from "./hooks/use-member-count";
 import { useNavigationExpanded } from "./hooks/use-navigation-preferences";
 import { NavCustomViews } from "./nav-custom-views";
 import { NavMemberViews } from "./nav-member-views";
+import { formatMemberCount, getMembersNavActiveRoutes } from "./nav-content.helpers";
 import { useMemberViews } from "@tryghost/posts/src/views/members/hooks/use-member-views";
 import { useEmberRouting } from "@/ember-bridge";
 import { useFeatureFlag } from "@/hooks/use-feature-flag";
@@ -154,13 +154,13 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                                 )}
                                 <NavMenuItem.Link
                                     to={membersForwardEnabled ? 'members-forward' : routing.getRouteUrl('members')}
-                                    isActive={routing.isRouteActive(['members', 'member', 'member.new'])}
+                                    isActive={routing.isRouteActive(getMembersNavActiveRoutes(membersForwardEnabled))}
                                 >
                                     <LucideIcon.Users className={membersForwardEnabled && hasMemberViews ? "opacity-0 sidebar:opacity-100 sidebar:group-hover/menu-item:opacity-0 pointer-events-none transition-all" : ""} />
                                     <NavMenuItem.Label>Members</NavMenuItem.Label>
                                 </NavMenuItem.Link>
                                 {memberCount != null && (
-                                    <SidebarMenuBadge>{(formatNumber as (value: number) => string)(memberCount)}</SidebarMenuBadge>
+                                    <SidebarMenuBadge>{formatMemberCount(memberCount)}</SidebarMenuBadge>
                                 )}
                             </NavMenuItem>
 
