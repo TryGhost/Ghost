@@ -12,20 +12,15 @@ export interface VerifiedEmailsResponseType {
     verified_emails: VerifiedEmail[];
 }
 
-export interface VerifiedEmailsVerifyResponseType {
-    email: string;
-    context?: {
-        type: string;
-        id?: string;
-        property?: string;
-        key?: string;
+export interface VerifyVerifiedEmailResponseType extends VerifiedEmailsResponseType {
+    meta?: {
+        context: {
+            type: string;
+            id?: string;
+            property?: string;
+            key?: string;
+        } | null;
     };
-}
-
-export interface VerifiedEmailsAddResponseType {
-    verified: boolean;
-    pending: boolean;
-    email: string;
 }
 
 const dataType = 'VerifiedEmailsResponseType';
@@ -35,10 +30,10 @@ export const useBrowseVerifiedEmails = createQuery<VerifiedEmailsResponseType>({
     path: '/verified-emails/'
 });
 
-export const useAddVerifiedEmail = createMutation<VerifiedEmailsAddResponseType, {email: string; context?: {type: string; id?: string; property?: string; key?: string}}>({
+export const useAddVerifiedEmail = createMutation<VerifiedEmailsResponseType, {email: string; context?: {type: string; id?: string; property?: string; key?: string}}>({
     method: 'POST',
     path: () => '/verified-emails/',
-    body: ({email, context}) => ({email, context}),
+    body: ({email, context}) => ({verified_emails: [{email, context}]}),
     updateQueries: {
         dataType,
         emberUpdateType: 'createOrUpdate',
@@ -46,10 +41,10 @@ export const useAddVerifiedEmail = createMutation<VerifiedEmailsAddResponseType,
     }
 });
 
-export const useVerifyVerifiedEmail = createMutation<VerifiedEmailsVerifyResponseType, {token: string}>({
+export const useVerifyVerifiedEmail = createMutation<VerifyVerifiedEmailResponseType, {token: string}>({
     method: 'PUT',
     path: () => '/verified-emails/verify/',
-    body: ({token}) => ({token}),
+    body: ({token}) => ({verified_emails: [{token}]}),
     updateQueries: {
         dataType,
         emberUpdateType: 'createOrUpdate',

@@ -34,6 +34,7 @@ export interface VerifiedEmailSelectProps {
         property?: string;
         key?: string;
     };
+    title?: string;
     placeholder?: string;
 }
 
@@ -42,6 +43,7 @@ const VerifiedEmailSelect: React.FC<VerifiedEmailSelectProps> = ({
     onChange,
     specialOptions,
     context,
+    title,
     placeholder = 'Select email address...'
 }) => {
     const [open, setOpen] = useState(false);
@@ -74,13 +76,23 @@ const VerifiedEmailSelect: React.FC<VerifiedEmailSelectProps> = ({
         }
 
         try {
-            await addVerifiedEmail({email, context});
-            showToast({
-                type: 'info',
-                message: `Verification email sent to ${email}`
-            });
+            const result = await addVerifiedEmail({email, context});
+            const addedEmail = result?.verified_emails?.[0];
+            if (addedEmail?.status === 'verified') {
+                showToast({
+                    type: 'success',
+                    message: `${email} is already verified`
+                });
+                onChange(email);
+            } else {
+                showToast({
+                    type: 'info',
+                    message: `Verification email sent to ${email}`
+                });
+            }
             setNewEmail('');
             setAddMode(false);
+            setOpen(false);
         } catch {
             showToast({
                 type: 'error',
@@ -95,134 +107,137 @@ const VerifiedEmailSelect: React.FC<VerifiedEmailSelectProps> = ({
     };
 
     return (
-        <Popover open={open} onOpenChange={(isOpen) => {
-            setOpen(isOpen);
-            if (!isOpen) {
-                setAddMode(false);
-                setNewEmail('');
-            }
-        }}>
-            <PopoverTrigger asChild>
-                <Button
-                    className="w-full justify-between"
-                    role="combobox"
-                    variant="dropdown"
-                >
-                    <span className="truncate">{getDisplayLabel()}</span>
-                </Button>
-            </PopoverTrigger>
-            <PopoverContent align="start" className="p-0" side="bottom">
-                <Command>
-                    {addMode ? (
-                        <>
-                            <CommandInput
-                                placeholder="Enter email address..."
-                                value={newEmail}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter') {
-                                        e.preventDefault();
-                                        handleAddEmail();
-                                    }
-                                    if (e.key === 'Escape') {
-                                        e.preventDefault();
-                                        setAddMode(false);
-                                        setNewEmail('');
-                                    }
-                                }}
-                                onValueChange={setNewEmail}
-                            />
-                            <CommandList>
-                                <CommandGroup>
-                                    <CommandItem
-                                        onSelect={handleAddEmail}
-                                    >
-                                        Send verification email
-                                    </CommandItem>
-                                </CommandGroup>
-                            </CommandList>
-                        </>
-                    ) : (
-                        <>
-                            <CommandInput placeholder="Search email addresses..." />
-                            <CommandList>
-                                <CommandEmpty>No email addresses found.</CommandEmpty>
+        <div>
+            {title && <span className="mb-1 inline-block text-xs font-semibold text-grey-900 dark:text-grey-300">{title}</span>}
+            <Popover open={open} onOpenChange={(isOpen) => {
+                setOpen(isOpen);
+                if (!isOpen) {
+                    setAddMode(false);
+                    setNewEmail('');
+                }
+            }}>
+                <PopoverTrigger asChild>
+                    <Button
+                        className="w-full justify-between"
+                        role="combobox"
+                        variant="dropdown"
+                    >
+                        <span className="truncate">{getDisplayLabel()}</span>
+                    </Button>
+                </PopoverTrigger>
+                <PopoverContent align="start" className="p-0" side="bottom">
+                    <Command shouldFilter={!addMode}>
+                        {addMode ? (
+                            <>
+                                <CommandInput
+                                    placeholder="Enter email address..."
+                                    value={newEmail}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            e.preventDefault();
+                                            handleAddEmail();
+                                        }
+                                        if (e.key === 'Escape') {
+                                            e.preventDefault();
+                                            setAddMode(false);
+                                            setNewEmail('');
+                                        }
+                                    }}
+                                    onValueChange={setNewEmail}
+                                />
+                                <CommandList>
+                                    <CommandGroup>
+                                        <CommandItem
+                                            onSelect={handleAddEmail}
+                                        >
+                                            Send verification email
+                                        </CommandItem>
+                                    </CommandGroup>
+                                </CommandList>
+                            </>
+                        ) : (
+                            <>
+                                <CommandInput placeholder="Search email addresses..." />
+                                <CommandList>
+                                    <CommandEmpty>No email addresses found.</CommandEmpty>
 
-                                {specialOptions && specialOptions.length > 0 && (
-                                    <>
-                                        <CommandGroup>
-                                            {specialOptions.map(option => (
+                                    {specialOptions && specialOptions.length > 0 && (
+                                        <>
+                                            <CommandGroup>
+                                                {specialOptions.map(option => (
+                                                    <CommandItem
+                                                        key={option.value}
+                                                        value={option.value}
+                                                        onSelect={() => {
+                                                            onChange(option.value);
+                                                            setOpen(false);
+                                                        }}
+                                                    >
+                                                        <span>{option.label}</span>
+                                                        {value === option.value && <CommandCheck />}
+                                                    </CommandItem>
+                                                ))}
+                                            </CommandGroup>
+                                            <CommandSeparator />
+                                        </>
+                                    )}
+
+                                    {verified.length > 0 && (
+                                        <CommandGroup heading="Verified addresses">
+                                            {verified.map(email => (
                                                 <CommandItem
-                                                    key={option.value}
-                                                    value={option.value}
+                                                    key={email.id}
+                                                    value={email.email}
                                                     onSelect={() => {
-                                                        onChange(option.value);
+                                                        onChange(email.email);
                                                         setOpen(false);
                                                     }}
                                                 >
-                                                    <span>{option.label}</span>
-                                                    {value === option.value && <CommandCheck />}
+                                                    <span>{email.email}</span>
+                                                    {value === email.email && <CommandCheck />}
                                                 </CommandItem>
                                             ))}
                                         </CommandGroup>
-                                        <CommandSeparator />
-                                    </>
-                                )}
+                                    )}
 
-                                {verified.length > 0 && (
-                                    <CommandGroup heading="Verified addresses">
-                                        {verified.map(email => (
-                                            <CommandItem
-                                                key={email.id}
-                                                value={email.email}
-                                                onSelect={() => {
-                                                    onChange(email.email);
-                                                    setOpen(false);
-                                                }}
-                                            >
-                                                <span>{email.email}</span>
-                                                {value === email.email && <CommandCheck />}
-                                            </CommandItem>
-                                        ))}
+                                    {pending.length > 0 && (
+                                        <CommandGroup heading="Pending verification">
+                                            {pending.map(email => (
+                                                <CommandItem
+                                                    key={email.id}
+                                                    className="opacity-50"
+                                                    value={email.email}
+                                                    disabled
+                                                >
+                                                    <span>{email.email}</span>
+                                                    <Badge className="ml-auto" variant="secondary">Pending</Badge>
+                                                </CommandItem>
+                                            ))}
+                                        </CommandGroup>
+                                    )}
+
+                                    <CommandSeparator />
+
+                                    <CommandGroup>
+                                        <CommandItem
+                                            onSelect={() => {
+                                                setAddMode(true);
+                                                setNewEmail('');
+                                            }}
+                                        >
+                                            Add new email...
+                                        </CommandItem>
+                                        <CommandItem onSelect={handleOpenManageModal}>
+                                            Manage verified emails...
+                                        </CommandItem>
                                     </CommandGroup>
-                                )}
-
-                                {pending.length > 0 && (
-                                    <CommandGroup heading="Pending verification">
-                                        {pending.map(email => (
-                                            <CommandItem
-                                                key={email.id}
-                                                className="opacity-50"
-                                                value={email.email}
-                                                disabled
-                                            >
-                                                <span>{email.email}</span>
-                                                <Badge className="ml-auto" variant="secondary">Pending</Badge>
-                                            </CommandItem>
-                                        ))}
-                                    </CommandGroup>
-                                )}
-
-                                <CommandSeparator />
-
-                                <CommandGroup>
-                                    <CommandItem
-                                        onSelect={() => {
-                                            setAddMode(true);
-                                            setNewEmail('');
-                                        }}
-                                    >
-                                        Add new email...
-                                    </CommandItem>
-                                    <CommandItem onSelect={handleOpenManageModal}>
-                                        Manage verified emails...
-                                    </CommandItem>
-                                </CommandGroup>
-                            </CommandList>
-                        </>
-                    )}
-                </Command>
-            </PopoverContent>
-        </Popover>
+                                </CommandList>
+                            </>
+                        )}
+                    </Command>
+                </PopoverContent>
+            </Popover>
+        </div>
     );
 };
 

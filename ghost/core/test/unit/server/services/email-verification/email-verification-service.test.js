@@ -134,59 +134,63 @@ describe('EmailVerificationService', function () {
     });
 
     describe('add', function () {
-        it('returns verified:true for an already verified email', async function () {
-            VerifiedEmailModel.findOne.resolves({
+        it('returns existing model for an already verified email', async function () {
+            const existingModel = {
                 get: key => ({id: '1', email: 'verified@example.com', status: 'verified'})[key]
-            });
+            };
+            VerifiedEmailModel.findOne.resolves(existingModel);
 
             const result = await service.add('verified@example.com');
 
-            assert.deepEqual(result, {verified: true, email: 'verified@example.com'});
+            assert.equal(result, existingModel);
             sinon.assert.notCalled(VerifiedEmailModel.add);
+            sinon.assert.notCalled(mockMailer.send);
         });
 
         it('sends verification email for a new email', async function () {
+            const newModel = {
+                get: key => ({id: '2', email: 'new@example.com', status: 'pending'})[key]
+            };
             VerifiedEmailModel.findOne.resolves(null);
-            VerifiedEmailModel.add.resolves();
+            VerifiedEmailModel.add.resolves(newModel);
 
             const result = await service.add('new@example.com');
 
-            assert.deepEqual(result, {pending: true, email: 'new@example.com'});
+            assert.equal(result, newModel);
             sinon.assert.calledOnceWithExactly(VerifiedEmailModel.add, {email: 'new@example.com', status: 'pending'});
             sinon.assert.calledOnce(mockMailer.send);
         });
 
         it('resends verification email for a pending email', async function () {
-            VerifiedEmailModel.findOne.resolves({
+            const pendingModel = {
                 get: key => ({id: '1', email: 'pending@example.com', status: 'pending'})[key]
-            });
+            };
+            VerifiedEmailModel.findOne.resolves(pendingModel);
 
             const result = await service.add('pending@example.com');
 
-            assert.deepEqual(result, {pending: true, email: 'pending@example.com'});
+            assert.equal(result, pendingModel);
             sinon.assert.notCalled(VerifiedEmailModel.add);
             sinon.assert.calledOnce(mockMailer.send);
         });
     });
 
     describe('verify', function () {
-        it('marks email as verified', async function () {
-            // Create a token through the service's internal flow
+        it('marks email as verified and returns model with context', async function () {
             const saveStub = sandbox.stub().resolves();
             const verifiedEmailObj = {
                 get: key => ({id: 've-1', email: 'test@example.com', status: 'pending'})[key],
                 save: saveStub
             };
 
-            // We need to create the token via the token provider directly with the data format
-            // that the service expects (email + optional context)
             const token = await tokenProvider.create({email: 'test@example.com'});
 
             VerifiedEmailModel.findOne.resolves(verifiedEmailObj);
 
             const result = await service.verify(token);
 
-            assert.equal(result.email, 'test@example.com');
+            assert.equal(result.verifiedEmail, verifiedEmailObj);
+            assert.equal(result.context, undefined);
             sinon.assert.calledOnceWithExactly(saveStub, {status: 'verified'}, {patch: true});
         });
 
@@ -205,7 +209,7 @@ describe('EmailVerificationService', function () {
 
             const result = await service.verify(token);
 
-            assert.equal(result.email, 'test@example.com');
+            assert.equal(result.verifiedEmail, verifiedEmailObj);
             assert.deepEqual(result.context, context);
             sinon.assert.calledOnceWithExactly(saveStub, {status: 'verified'}, {patch: true});
             sinon.assert.calledOnceWithExactly(NewsletterModel.edit, {
@@ -229,7 +233,7 @@ describe('EmailVerificationService', function () {
 
             const result = await service.verify(token);
 
-            assert.equal(result.email, 'support@example.com');
+            assert.equal(result.verifiedEmail, verifiedEmailObj);
             assert.deepEqual(result.context, context);
             sinon.assert.calledOnceWithExactly(saveStub, {status: 'verified'}, {patch: true});
             sinon.assert.calledOnceWithExactly(SettingsModel.edit, {key: 'members_support_address', value: 'support@example.com'});
@@ -250,7 +254,7 @@ describe('EmailVerificationService', function () {
 
             const result = await service.verify(token);
 
-            assert.equal(result.email, 'auto@example.com');
+            assert.equal(result.verifiedEmail, verifiedEmailObj);
             assert.deepEqual(result.context, context);
             sinon.assert.calledOnceWithExactly(saveStub, {status: 'verified'}, {patch: true});
             sinon.assert.calledOnceWithExactly(AutomatedEmailModel.edit, {

@@ -57,6 +57,7 @@ const ReplyToEmailField: React.FC<{
                     {value: 'newsletter', label: 'Newsletter address'},
                     {value: 'support', label: 'Support address'}
                 ]}
+                title="Reply-to email"
                 value={newsletter.sender_reply_to}
                 onChange={(value) => {
                     updateNewsletter({sender_reply_to: value});
@@ -225,6 +226,7 @@ const Sidebar: React.FC<{
                     property: 'sender_email'
                 }}
                 placeholder={defaultEmailAddress || 'Sender email'}
+                title="Sender email address"
                 value={newsletter.sender_email || ''}
                 onChange={(value) => {
                     updateNewsletter({sender_email: value});

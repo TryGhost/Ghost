@@ -1,5 +1,5 @@
 import NiceModal from '@ebay/nice-modal-react';
-import React, {useState} from 'react';
+import {useState} from 'react';
 import {Badge, Button} from '@tryghost/shade';
 import {ConfirmationModal, Modal, showToast} from '@tryghost/admin-x-design-system';
 import {
