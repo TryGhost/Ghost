@@ -14,7 +14,7 @@ describe('Models: bulk-filters', function () {
             const results = [...strategy];
 
             assert.equal(results.length, 1);
-            results[0].should.be.a.Function();
+            assert.equal(typeof results[0], 'function');
         });
     });
 
@@ -54,8 +54,8 @@ describe('Models: bulk-filters', function () {
 
             applyWhere(mockQb);
 
-            assert.equal(mockQb.whereIn.calledOnce, true);
-            assert.equal(mockQb.whereIn.calledWith('member_id', ids), true);
+            sinon.assert.calledOnce(mockQb.whereIn);
+            sinon.assert.calledWith(mockQb.whereIn, 'member_id', ids);
         });
 
         it('allows custom chunk size', function () {
@@ -80,8 +80,8 @@ describe('Models: bulk-filters', function () {
 
             applyWhere(mockQb);
 
-            assert.equal(mockQb.whereIn.calledOnce, true);
-            assert.equal(mockQb.whereIn.calledWith('id', ids), true);
+            sinon.assert.calledOnce(mockQb.whereIn);
+            sinon.assert.calledWith(mockQb.whereIn, 'id', ids);
         });
     });
 });

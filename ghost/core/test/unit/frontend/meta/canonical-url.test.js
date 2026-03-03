@@ -33,9 +33,9 @@ describe('getCanonicalUrl', function () {
 
         assert.equal(getCanonicalUrl(post), 'canonical url');
 
-        assert.equal(urlJoinStub.calledOnce, true);
-        assert.equal(urlForStub.calledOnce, true);
-        assert.equal(getUrlStub.calledOnce, true);
+        sinon.assert.calledOnce(urlJoinStub);
+        sinon.assert.calledOnce(urlForStub);
+        sinon.assert.calledOnce(getUrlStub);
     });
 
     it('should return canonical url field if present', function () {
@@ -46,7 +46,7 @@ describe('getCanonicalUrl', function () {
             post: post
         }), 'https://example.com/canonical');
 
-        assert.equal(getUrlStub.called, false);
+        sinon.assert.notCalled(getUrlStub);
     });
 
     it('should return home if empty secure data', function () {
@@ -55,8 +55,8 @@ describe('getCanonicalUrl', function () {
 
         assert.equal(getCanonicalUrl({secure: true}), 'canonical url');
 
-        assert.equal(urlJoinStub.calledOnce, true);
-        assert.equal(urlForStub.calledOnce, true);
-        assert.equal(getUrlStub.calledOnce, true);
+        sinon.assert.calledOnce(urlJoinStub);
+        sinon.assert.calledOnce(urlForStub);
+        sinon.assert.calledOnce(getUrlStub);
     });
 });

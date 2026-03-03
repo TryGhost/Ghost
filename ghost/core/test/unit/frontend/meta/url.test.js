@@ -34,9 +34,8 @@ describe('getUrl', function () {
             urlUtilsUrlForStub.withArgs({relativeUrl: '/p/' + post.uuid + '/'}, null, undefined).returns('relative');
             let url = getUrl(post);
 
-            assert.equal(urlServiceGetUrlByResourceIdStub.calledOnce, true);
-            assert.equal(urlUtilsUrlForStub.withArgs({relativeUrl: '/p/' + post.uuid + '/'}, null, undefined)
-                .calledOnce, true);
+            sinon.assert.calledOnce(urlServiceGetUrlByResourceIdStub);
+            sinon.assert.calledOnce(urlUtilsUrlForStub.withArgs({relativeUrl: '/p/' + post.uuid + '/'}, null, undefined));
 
             assert.equal(url, 'relative');
         });
@@ -47,9 +46,8 @@ describe('getUrl', function () {
             urlUtilsUrlForStub.withArgs({relativeUrl: '/p/' + post.uuid + '/'}, null, true).returns('absolute');
             let url = getUrl(post, true);
 
-            assert.equal(urlServiceGetUrlByResourceIdStub.calledOnce, true);
-            assert.equal(urlUtilsUrlForStub.withArgs({relativeUrl: '/p/' + post.uuid + '/'}, null, true)
-                .calledOnce, true);
+            sinon.assert.calledOnce(urlServiceGetUrlByResourceIdStub);
+            sinon.assert.calledOnce(urlUtilsUrlForStub.withArgs({relativeUrl: '/p/' + post.uuid + '/'}, null, true));
 
             assert.equal(url, 'absolute');
         });

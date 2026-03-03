@@ -1,4 +1,3 @@
-const should = require('should');
 const DomainEvents = require('@tryghost/domain-events');
 const {mobiledocToLexical} = require('@tryghost/kg-converters');
 const {agentProvider, fixtureManager, mockManager} = require('../../utils/e2e-framework');

@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-require('should');
 
 const packageJSON = require('../../../../../core/server/lib/package-json');
 
@@ -44,13 +43,20 @@ describe('package-json filter', function () {
         const result = packageJSON.filter({casper: casper});
         let package1;
 
-        result.should.be.an.Array().with.lengthOf(1);
+        assert(Array.isArray(result));
+        assert.equal(result.length, 1);
         package1 = result[0];
 
-        package1.should.be.an.Object().with.properties('name', 'package', 'active');
-        Object.keys(package1).should.be.an.Array().with.lengthOf(3);
+        assert(package1 && typeof package1 === 'object');
+        assert('name' in package1);
+        assert('package' in package1);
+        assert('active' in package1);
+        assert(Array.isArray(Object.keys(package1)));
+        assert.equal(Object.keys(package1).length, 3);
         assert.equal(package1.name, 'casper');
-        package1.package.should.be.an.Object().with.properties('name', 'version');
+        assert(package1.package && typeof package1.package === 'object');
+        assert('name' in package1.package);
+        assert('version' in package1.package);
         assert.equal(package1.active, false);
     });
 
@@ -59,20 +65,33 @@ describe('package-json filter', function () {
         let package1;
         let package2;
 
-        result.should.be.an.Array().with.lengthOf(2);
+        assert(Array.isArray(result));
+        assert.equal(result.length, 2);
         package1 = result[0];
         package2 = result[1];
 
-        package1.should.be.an.Object().with.properties('name', 'package', 'active');
-        Object.keys(package1).should.be.an.Array().with.lengthOf(3);
+        assert(package1 && typeof package1 === 'object');
+        assert('name' in package1);
+        assert('package' in package1);
+        assert('active' in package1);
+        assert(Array.isArray(Object.keys(package1)));
+        assert.equal(Object.keys(package1).length, 3);
         assert.equal(package1.name, 'casper');
-        package1.package.should.be.an.Object().with.properties('name', 'version');
+        assert(package1.package && typeof package1.package === 'object');
+        assert('name' in package1.package);
+        assert('version' in package1.package);
         assert.equal(package1.active, true);
 
-        package2.should.be.an.Object().with.properties('name', 'package', 'active');
-        Object.keys(package2).should.be.an.Array().with.lengthOf(3);
+        assert(package2 && typeof package2 === 'object');
+        assert('name' in package2);
+        assert('package' in package2);
+        assert('active' in package2);
+        assert(Array.isArray(Object.keys(package2)));
+        assert.equal(Object.keys(package2).length, 3);
         assert.equal(package2.name, 'simple');
-        package2.package.should.be.an.Object().with.properties('name', 'version');
+        assert(package2.package && typeof package2.package === 'object');
+        assert('name' in package2.package);
+        assert('version' in package2.package);
         assert.equal(package2.active, false);
     });
 
@@ -81,20 +100,33 @@ describe('package-json filter', function () {
         let package1;
         let package2;
 
-        result.should.be.an.Array().with.lengthOf(2);
+        assert(Array.isArray(result));
+        assert.equal(result.length, 2);
         package1 = result[0];
         package2 = result[1];
 
-        package1.should.be.an.Object().with.properties('name', 'package', 'active');
-        Object.keys(package1).should.be.an.Array().with.lengthOf(3);
+        assert(package1 && typeof package1 === 'object');
+        assert('name' in package1);
+        assert('package' in package1);
+        assert('active' in package1);
+        assert(Array.isArray(Object.keys(package1)));
+        assert.equal(Object.keys(package1).length, 3);
         assert.equal(package1.name, 'casper');
-        package1.package.should.be.an.Object().with.properties('name', 'version');
+        assert(package1.package && typeof package1.package === 'object');
+        assert('name' in package1.package);
+        assert('version' in package1.package);
         assert.equal(package1.active, true);
 
-        package2.should.be.an.Object().with.properties('name', 'package', 'active');
-        Object.keys(package2).should.be.an.Array().with.lengthOf(3);
+        assert(package2 && typeof package2 === 'object');
+        assert('name' in package2);
+        assert('package' in package2);
+        assert('active' in package2);
+        assert(Array.isArray(Object.keys(package2)));
+        assert.equal(Object.keys(package2).length, 3);
         assert.equal(package2.name, 'simple');
-        package2.package.should.be.an.Object().with.properties('name', 'version');
+        assert(package2.package && typeof package2.package === 'object');
+        assert('name' in package2.package);
+        assert('version' in package2.package);
         assert.equal(package2.active, true);
     });
 
@@ -103,18 +135,29 @@ describe('package-json filter', function () {
         let package1;
         let package2;
 
-        result.should.be.an.Array().with.lengthOf(2);
+        assert(Array.isArray(result));
+        assert.equal(result.length, 2);
         package1 = result[0];
         package2 = result[1];
 
-        package1.should.be.an.Object().with.properties('name', 'package', 'active');
-        Object.keys(package1).should.be.an.Array().with.lengthOf(3);
+        assert(package1 && typeof package1 === 'object');
+        assert('name' in package1);
+        assert('package' in package1);
+        assert('active' in package1);
+        assert(Array.isArray(Object.keys(package1)));
+        assert.equal(Object.keys(package1).length, 3);
         assert.equal(package1.name, 'casper');
-        package1.package.should.be.an.Object().with.properties('name', 'version');
+        assert(package1.package && typeof package1.package === 'object');
+        assert('name' in package1.package);
+        assert('version' in package1.package);
         assert.equal(package1.active, true);
 
-        package2.should.be.an.Object().with.properties('name', 'package', 'active');
-        Object.keys(package2).should.be.an.Array().with.lengthOf(3);
+        assert(package2 && typeof package2 === 'object');
+        assert('name' in package2);
+        assert('package' in package2);
+        assert('active' in package2);
+        assert(Array.isArray(Object.keys(package2)));
+        assert.equal(Object.keys(package2).length, 3);
         assert.equal(package2.name, 'missing');
         assert.equal(package2.package, false);
         assert.equal(package2.active, false);
@@ -124,6 +167,6 @@ describe('package-json filter', function () {
         const result = packageJSON.filter({
             '.git': {}, '.anything': {}, 'README.md': {}, _messages: {}
         });
-        result.should.be.an.Array().with.lengthOf(0);
+        assert.deepEqual(result, []);
     });
 });

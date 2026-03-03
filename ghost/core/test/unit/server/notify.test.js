@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const sinon = require('sinon');
 
 const configUtils = require('../../utils/config-utils');
@@ -41,10 +40,11 @@ describe('Notify', function () {
         it('it communicates with IPC correctly on success', function () {
             notify.notifyServerStarted();
 
-            assert.equal(process.send.calledOnce, true);
+            sinon.assert.calledOnce(process.send);
 
             let message = process.send.firstCall.args[0];
-            message.should.be.an.Object().with.properties('started', 'debug');
+            assert(message && typeof message === 'object');
+            assert('debug' in message);
             assert(!('error' in message));
             assert.equal(message.started, true);
         });
@@ -52,12 +52,12 @@ describe('Notify', function () {
         it('communicates with IPC correctly on failure', function () {
             notify.notifyServerStarted(new Error('something went wrong'));
 
-            assert.equal(process.send.calledOnce, true);
+            sinon.assert.calledOnce(process.send);
 
             let message = process.send.firstCall.args[0];
-            message.should.be.an.Object().with.properties('started', 'debug', 'error');
+            assert(message && typeof message === 'object');
+            assert('debug' in message);
             assert.equal(message.started, false);
-            message.error.should.be.an.Object().with.properties('message');
             assert.equal(message.error.message, 'something went wrong');
         });
 
@@ -66,11 +66,12 @@ describe('Notify', function () {
 
             notify.notifyServerStarted();
 
-            assert.equal(socketStub.calledOnce, true);
+            sinon.assert.calledOnce(socketStub);
             assert.equal(socketStub.firstCall.args[0], 'testing');
 
             let message = socketStub.firstCall.args[1];
-            message.should.be.an.Object().with.properties('started', 'debug');
+            assert(message && typeof message === 'object');
+            assert('debug' in message);
             assert(!('error' in message));
             assert.equal(message.started, true);
         });
@@ -80,13 +81,13 @@ describe('Notify', function () {
 
             notify.notifyServerStarted(new Error('something went wrong'));
 
-            assert.equal(socketStub.calledOnce, true);
+            sinon.assert.calledOnce(socketStub);
             assert.equal(socketStub.firstCall.args[0], 'testing');
 
             let message = socketStub.firstCall.args[1];
-            message.should.be.an.Object().with.properties('started', 'debug', 'error');
+            assert(message && typeof message === 'object');
+            assert('debug' in message);
             assert.equal(message.started, false);
-            message.error.should.be.an.Object().with.properties('message');
             assert.equal(message.error.message, 'something went wrong');
         });
 
@@ -97,8 +98,8 @@ describe('Notify', function () {
             notify.notifyServerStarted(new Error('something went wrong'));
             notify.notifyServerStarted();
 
-            assert.equal(process.send.calledOnce, true);
-            assert.equal(socketStub.calledOnce, true);
+            sinon.assert.calledOnce(process.send);
+            sinon.assert.calledOnce(socketStub);
         });
     });
 });

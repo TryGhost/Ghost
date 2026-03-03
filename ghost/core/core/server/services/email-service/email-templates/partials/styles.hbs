@@ -1793,7 +1793,7 @@ img.kg-cta-image {
     width: auto;
     width: 100%;
     margin: 0 auto 1.5em;
-    border-radius: 3px;
+    border-radius: 10px;
     {{#if backgroundIsDark}}
         background-color: #15212A;
         background-color: rgba(0, 0, 0, 0.15);
@@ -1811,16 +1811,17 @@ img.kg-cta-image {
     padding-right: 20px;
     padding-bottom: 4px;
     padding-top: 4px;
-    font-size: 16px;
+    font-size: 17px;
     font-weight: 600;
     line-height: 18px;
     text-decoration: none !important;
     color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}} !important;
 }
 .kg-transistor-description {
-    display: block;
-    font-size: 13px;
-    line-height: 1.35em;
+    display: inline-block;
+    max-width: 400px;
+    font-size: 14px;
+    line-height: 1.4em;
     text-decoration: none !important;
     {{#if backgroundIsDark}}
     color: #ffffff !important;

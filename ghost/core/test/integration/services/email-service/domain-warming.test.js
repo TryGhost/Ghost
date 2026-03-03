@@ -167,7 +167,7 @@ describe('Domain Warming Integration Tests', function () {
             assert.equal(customDomainCount, totalCount, 'All emails should use custom domain when total < warmup limit');
             assert.equal(fallbackDomainCount, 0, 'No emails should use fallback domain when total < warmup limit');
 
-            assert.ok(mockManager.getMailgunCreateMessageStub().called);
+            sinon.assert.called(mockManager.getMailgunCreateMessageStub());
         });
 
         it('increases custom domain limit on subsequent day', async function () {

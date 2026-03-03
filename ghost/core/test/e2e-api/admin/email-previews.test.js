@@ -161,7 +161,11 @@ describe('Email Preview API', function () {
         it('uses the posts newsletter by default', async function () {
             const defaultNewsletter = await models.Newsletter.getDefaultNewsletter();
             const selectedNewsletter = fixtureManager.get('newsletters', 0);
-            defaultNewsletter.id.should.not.eql(selectedNewsletter.id, 'Should use a non-default newsletter for this test');
+            assert.notEqual(
+                defaultNewsletter.id,
+                selectedNewsletter.id,
+                'Should use a non-default newsletter for this test'
+            );
 
             const post = testUtils.DataGenerator.forKnex.createPost({
                 id: ObjectId().toHexString(),
@@ -203,7 +207,11 @@ describe('Email Preview API', function () {
             const defaultNewsletter = await models.Newsletter.getDefaultNewsletter();
             const selectedNewsletter = fixtureManager.get('newsletters', 0);
 
-            selectedNewsletter.id.should.not.eql(defaultNewsletter.id, 'Should use a non-default newsletter for this test');
+            assert.notEqual(
+                selectedNewsletter.id,
+                defaultNewsletter.id,
+                'Should use a non-default newsletter for this test'
+            );
 
             const post = testUtils.DataGenerator.forKnex.createPost({
                 id: ObjectId().toHexString(),

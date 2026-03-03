@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const sinon = require('sinon');
 const security = require('@tryghost/security');
 const models = require('../../../../../core/server/models');
@@ -96,13 +95,13 @@ describe('Models: base', function () {
 
         it('too long', function () {
             Model.findOne.resolves(false);
-            const slug = new Array(500).join('a');
+            const slug = 'a'.repeat(500);
 
             securityStringSafeStub.withArgs(slug).returns(slug);
 
             return models.Base.Model.generateSlug(Model, slug, options)
                 .then((generatedSlug) => {
-                    generatedSlug.should.eql(new Array(186).join('a'));
+                    assert.equal(generatedSlug, 'a'.repeat(185));
                 });
         });
 
@@ -160,23 +159,23 @@ describe('Models: base', function () {
         it('expect date transformation', function () {
             const data = testUtils.DataGenerator.forKnex.createPost({updated_at: '2018-04-01 07:53:07'});
 
-            data.updated_at.should.be.a.String();
+            assert.equal(typeof data.updated_at, 'string');
 
             models.Base.Model.sanitizeData
                 .bind({prototype: {tableName: 'posts'}})(data);
 
-            data.updated_at.should.be.a.Date();
+            assert(data.updated_at instanceof Date);
         });
 
         it('date is JS date, ignore', function () {
             const data = testUtils.DataGenerator.forKnex.createPost({updated_at: new Date()});
 
-            data.updated_at.should.be.a.Date();
+            assert(data.updated_at instanceof Date);
 
             models.Base.Model.sanitizeData
                 .bind({prototype: {tableName: 'posts'}})(data);
 
-            data.updated_at.should.be.a.Date();
+            assert(data.updated_at instanceof Date);
         });
 
         it('expect date transformation for nested relations', function () {
@@ -187,7 +186,7 @@ describe('Models: base', function () {
                 }]
             });
 
-            data.authors[0].updated_at.should.be.a.String();
+            assert.equal(typeof data.authors[0].updated_at, 'string');
 
             models.Base.Model.sanitizeData
                 .bind({
@@ -199,7 +198,7 @@ describe('Models: base', function () {
                 })(data);
 
             assert.equal(data.authors[0].name, 'Thomas');
-            data.authors[0].updated_at.should.be.a.Date();
+            assert(data.authors[0].updated_at instanceof Date);
         });
     });
 

@@ -17,29 +17,31 @@ function frontendTemplate(node, document, options) {
     const figure = document.createElement('figure');
     figure.setAttribute('class', 'kg-card kg-transistor-card');
 
-    // Use {uuid} placeholder - content.js will substitute with member UUID at request time
-    const embedUrl = new URL(`https://partner.transistor.fm/ghost/embed/{uuid}`);
+    const placeholder = document.createElement('div');
+    placeholder.setAttribute('class', 'kg-transistor-placeholder');
 
-    if (node.accentColor) {
-        embedUrl.searchParams.set('color', node.accentColor.replace(/^#/, ''));
-    }
-    if (node.backgroundColor) {
-        embedUrl.searchParams.set('background', node.backgroundColor.replace(/^#/, ''));
-    }
+    const icon = document.createElement('div');
+    icon.setAttribute('class', 'kg-transistor-icon');
+    icon.innerHTML = `<svg viewBox="5 0.5 144 144" xmlns="http://www.w3.org/2000/svg"><g fill="currentColor"><path d="M77 120.3c-2.6 0-4.8-2.1-4.8-4.8V29.4c0-2.6 2.1-4.8 4.8-4.8s4.8 2.1 4.8 4.8v86.2c0 2.6-2.2 4.7-4.8 4.7z"/><path d="M57 77.3H34c-2.6 0-4.8-2.1-4.8-4.8 0-2.6 2.1-4.8 4.8-4.8h23c2.6 0 4.8 2.1 4.8 4.8 0 2.6-2.1 4.8-4.8 4.8z"/><path d="M120.1 77.3h-23c-2.6 0-4.8-2.1-4.8-4.8 0-2.6 2.1-4.8 4.8-4.8h23c2.6 0 4.8 2.1 4.8 4.8 0 2.6-2.2 4.8-4.8 4.8z"/><path d="M77 144.5c-39.7 0-72-32.3-72-72s32.3-72 72-72 72 32.3 72 72-32.3 72-72 72zM77 10c-34.4 0-62.4 28-62.4 62.4 0 34.4 28 62.4 62.4 62.4 34.4 0 62.4-28 62.4-62.4C139.4 38 111.4 10 77 10z"/></g></svg>`;
 
-    const iframe = document.createElement('iframe');
-    iframe.setAttribute('width', '100%');
-    iframe.setAttribute('height', '325');
-    iframe.setAttribute('title', 'Transistor podcasts');
-    iframe.setAttribute('frameborder', 'no');
-    iframe.setAttribute('scrolling', 'no');
-    iframe.setAttribute('seamless', '');
-    iframe.setAttribute('src', embedUrl.toString());
-    iframe.setAttribute('data-kg-transistor-embed', '');
+    const content = document.createElement('div');
+    content.setAttribute('class', 'kg-transistor-content');
 
-    figure.appendChild(iframe);
+    const title = document.createElement('div');
+    title.setAttribute('class', 'kg-transistor-title');
+    title.textContent = 'Members-only podcasts';
 
-    return renderWithVisibility({element: figure}, node.visibility, options);
+    const description = document.createElement('div');
+    description.setAttribute('class', 'kg-transistor-description');
+    description.textContent = 'Your Transistor podcasts will appear here. Members will see subscribe links based on their access level.';
+
+    content.appendChild(title);
+    content.appendChild(description);
+    placeholder.appendChild(icon);
+    placeholder.appendChild(content);
+    figure.appendChild(placeholder);
+
+    return renderWithVisibility({element: figure, type: 'inner'}, node.visibility, options);
 }
 
 function emailTemplate(node, document, options) {
@@ -53,23 +55,25 @@ function emailTemplate(node, document, options) {
     const cardHtml = html`
         <table class="kg-card kg-transistor-card" cellspacing="0" cellpadding="0" border="0" width="100%">
             <tr>
-                <td style="padding: 4px;">
-                    <table cellspacing="0" cellpadding="0" border="0" width="100%">
+                <td style="padding: 24px; text-align: center;">
+                    <table cellspacing="0" cellpadding="0" border="0" width="100%" style="text-align: center;">
                         <tr>
-                            <td valign="middle" width="56" style="padding-right: 14px;">
-                                <a href="${transistorUrl}" style="display: block; width: 52px; height: 52px; padding-top: 4px; padding-right: 4px; padding-bottom: 4px; padding-left: 4px; border-radius: 2px; background-color: ${accentColor}">
+                            <td style="text-align: center; padding-bottom: 12px;">
+                                <a href="${transistorUrl}" style="display: inline-block; width: 72px; height: 72px; padding-top: 4px; padding-right: 4px; padding-bottom: 4px; padding-left: 4px; border-radius: 8px; background-color: ${accentColor}">
                                     <img src="https://static.ghost.org/v6.0.0/images/transistor-logo-ondark.png"
-                                        width="36" height="36"
+                                        width="40" height="40"
                                         alt="Transistor"
-                                        style="width: 36px; height: 36px; padding: 8px;">
+                                        style="width: 40px; height: 40px; padding: 16px;">
                                 </a>
                             </td>
-                            <td valign="middle" style="vertical-align: middle;">
+                        </tr>
+                        <tr>
+                            <td style="text-align: center;">
                                 <a href="${transistorUrl}" class="kg-transistor-title">
                                     Listen to your podcasts
                                 </a>
                                 <a href="${transistorUrl}"  class="kg-transistor-description">
-                                    Get your personal podcast feed to subscribe and listen in your favorite podcast app.
+                                    Subscribe and listen to your personal podcast feed in your favorite app.
                                 </a>
                             </td>
                         </tr>

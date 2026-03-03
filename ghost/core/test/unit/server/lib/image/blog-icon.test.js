@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
-const should = require('should');
 const sinon = require('sinon');
 const path = require('path');
 const BlogIcon = require('../../../../../core/server/lib/image/blog-icon');
@@ -31,6 +30,19 @@ describe('lib/image: blog icon', function () {
                 }
             }});
             assert.deepEqual(blogIcon.getIconUrl(), [{relativeUrl: '/content/images/size/w256h256/2017/04/my-icon.png'}, undefined]);
+        });
+
+        it('custom uploaded CDN png blog icon', function () {
+            const blogIcon = new BlogIcon({config: {}, storageUtils: {}, urlUtils: {
+                urlFor: (key, boolean) => [key, boolean]
+            }, settingsCache: {
+                get: (key) => {
+                    if (key === 'icon') {
+                        return 'https://storage.ghost.is/c/6f/a3/site/content/images/2026/02/my-icon.png';
+                    }
+                }
+            }});
+            assert.deepEqual(blogIcon.getIconUrl(), [{relativeUrl: 'https://storage.ghost.is/c/6f/a3/site/content/images/size/w256h256/2026/02/my-icon.png'}, undefined]);
         });
 
         it('default ico blog icon', function () {
@@ -104,7 +116,7 @@ describe('lib/image: blog icon', function () {
             }});
 
             blogIcon.getIconPath();
-            assert.equal(stub.calledOnce, true);
+            sinon.assert.calledOnce(stub);
         });
 
         it('custom uploaded png blog icon', function () {
@@ -120,7 +132,7 @@ describe('lib/image: blog icon', function () {
             }});
 
             blogIcon.getIconPath();
-            assert.equal(stub.calledOnce, true);
+            sinon.assert.calledOnce(stub);
         });
 
         it('default ico blog icon', function () {
@@ -134,7 +146,7 @@ describe('lib/image: blog icon', function () {
             }, storageUtils: {}, urlUtils: {}, settingsCache: {
                 get: () => {}
             }});
-            blogIcon.getIconPath().should.eql(path.join(root, 'favicon.ico'));
+            assert.equal(blogIcon.getIconPath(), path.join(root, 'favicon.ico'));
         });
     });
 

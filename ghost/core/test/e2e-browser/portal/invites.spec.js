@@ -10,8 +10,7 @@ test.describe('Portal', () => {
         test('New staff member can signup using an invite link', async ({sharedPage}) => {
             // Navigate to settings
             await sharedPage.goto('/ghost');
-            await sharedPage.locator('[data-test-nav="settings"]').click();
-            await sharedPage.waitForLoadState('networkidle');
+            await sharedPage.getByRole('navigation').getByRole('link', {name: 'Settings'}).click();
 
             const testEmail = `test-${Date.now()}@gmail.com`;
 
@@ -51,7 +50,6 @@ test.describe('Portal', () => {
             await sharedPage.goto(inviteUrl);
 
             // Verify we're on the signup page
-            await sharedPage.waitForLoadState('networkidle');
             await expect(sharedPage.locator('text=Create your account.')).toBeVisible();
 
             //Signup using the invite Link
@@ -59,10 +57,10 @@ test.describe('Portal', () => {
             await sharedPage.getByPlaceholder('jamie@example.com').fill(testEmail);
             await sharedPage.getByPlaceholder('At least 10 characters').fill('test123456');
             await sharedPage.getByRole('button', {name: 'Create Account →'}).click();
-            await sharedPage.waitForLoadState('networkidle');
-            await expect(sharedPage).toHaveURL(/\/ghost\/#\/.*/);
+            await expect(sharedPage).toHaveURL(/\/ghost\/#\/.*/, {timeout: 30000});
 
-            await sharedPage.locator('[data-test-nav="arrow-down"]').click();
+            // Invited users are Contributors, which get a floating user menu instead of the sidebar
+            await sharedPage.getByRole('button', {name: 'Open user menu'}).click();
             await expect(sharedPage.locator(`text=${testEmail}`)).toBeVisible();
 
             await signOutCurrentUser(sharedPage);
@@ -74,8 +72,7 @@ test.describe('Portal', () => {
             test('New staff member can signup using an invite link with 2FA enabled', async ({sharedPage}) => {
                 // Navigate to settings
                 await sharedPage.goto('/ghost');
-                await sharedPage.locator('[data-test-nav="settings"]').click();
-                await sharedPage.waitForLoadState('networkidle');
+                await sharedPage.getByRole('navigation').getByRole('link', {name: 'Settings'}).click();
 
                 const testEmail = `test-${Date.now()}@gmail.com`;
 
@@ -108,8 +105,6 @@ test.describe('Portal', () => {
                 const encodedToken = security.url.encodeBase64(token);
                 const adminUrl = new URL(sharedPage.url()).origin + '/ghost';
                 const inviteUrl = `${adminUrl}/signup/${encodedToken}/`;
-                const context = await sharedPage.context();
-                await context.clearCookies();
 
                 await signOutCurrentUser(sharedPage);
 
@@ -117,7 +112,6 @@ test.describe('Portal', () => {
                 await sharedPage.goto(inviteUrl);
 
                 // Verify we're on the signup page
-                await sharedPage.waitForLoadState('networkidle');
                 await expect(sharedPage.locator('text=Create your account.')).toBeVisible();
 
                 //Signup using the invite Link
@@ -125,11 +119,10 @@ test.describe('Portal', () => {
                 await sharedPage.getByPlaceholder('jamie@example.com').fill(testEmail);
                 await sharedPage.getByPlaceholder('At least 10 characters').fill('test123456');
                 await sharedPage.getByRole('button', {name: 'Create Account →'}).click();
-                await sharedPage.waitForLoadState('networkidle');
+                await expect(sharedPage).toHaveURL(/\/ghost\/#\/.*/, {timeout: 30000});
 
-                await expect(sharedPage).toHaveURL(/\/ghost\/#\/.*/);
-
-                await sharedPage.locator('[data-test-nav="arrow-down"]').click();
+                // Invited users are Contributors, which get a floating user menu instead of the sidebar
+                await sharedPage.getByRole('button', {name: 'Open user menu'}).click();
                 await expect(sharedPage.locator(`text=${testEmail}`)).toBeVisible();
 
                 await signOutCurrentUser(sharedPage);

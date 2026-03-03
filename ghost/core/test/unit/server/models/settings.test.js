@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../utils/assertions');
-const should = require('should');
 const sinon = require('sinon');
 const mockDb = require('mock-knex');
 const models = require('../../../../core/server/models');
@@ -52,9 +51,9 @@ describe('Unit: models/settings', function () {
                 type: 'string'
             })
                 .then(() => {
-                    assert.equal(eventSpy.calledTwice, true);
-                    assert.equal(eventSpy.firstCall.calledWith('settings.added'), true);
-                    assert.equal(eventSpy.secondCall.calledWith('settings.description.added'), true);
+                    sinon.assert.calledTwice(eventSpy);
+                    sinon.assert.calledWith(eventSpy.firstCall, 'settings.added');
+                    sinon.assert.calledWith(eventSpy.secondCall, 'settings.description.added');
                 });
         });
 
@@ -76,9 +75,9 @@ describe('Unit: models/settings', function () {
                 value: 'edited value'
             })
                 .then(() => {
-                    assert.equal(eventSpy.calledTwice, true);
-                    assert.equal(eventSpy.firstCall.calledWith('settings.edited'), true);
-                    assert.equal(eventSpy.secondCall.calledWith('settings.description.edited'), true);
+                    sinon.assert.calledTwice(eventSpy);
+                    sinon.assert.calledWith(eventSpy.firstCall, 'settings.edited');
+                    sinon.assert.calledWith(eventSpy.secondCall, 'settings.description.edited');
                 });
         });
     });
@@ -166,7 +165,7 @@ describe('Unit: models/settings', function () {
                 error = err;
             } finally {
                 assertExists(error, `Setting Model should throw when saving invalid ${key}`);
-                should.ok(error instanceof errors.ValidationError, 'Setting Model should throw ValidationError');
+                assert(error instanceof errors.ValidationError, 'Setting Model should throw ValidationError');
             }
         }
 
@@ -181,17 +180,11 @@ describe('Unit: models/settings', function () {
 
             const setting = models.Settings.forge({key, value, type, group});
 
-            let error;
-            try {
-                await setting.save();
-                error = null;
-            } catch (err) {
-                error = err;
-            } finally {
-                tracker.uninstall();
-                mockDb.unmock(knex);
-                should.not.exist(error, `Setting Model should not throw when saving valid ${key}`);
-            }
+            // This should not reject.
+            await setting.save();
+
+            tracker.uninstall();
+            mockDb.unmock(knex);
         }
 
         it('throws when stripe_secret_key is invalid', async function () {

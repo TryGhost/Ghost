@@ -1,7 +1,6 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../utils/assertions');
 const _ = require('lodash');
-const should = require('should');
 const supertest = require('supertest');
 const config = require('../../../core/shared/config');
 const testUtils = require('../../utils');
@@ -262,7 +261,7 @@ describe('Integrations API', function () {
         const [updatedIntegration] = res2.body.integrations;
         const updatedAdminApiKey = updatedIntegration.api_keys.find(key => key.type === 'admin');
         assert.equal(updatedIntegration.id, createdIntegration.id);
-        updatedAdminApiKey.secret.should.not.eql(adminApiKey.secret);
+        assert.notEqual(updatedAdminApiKey.secret, adminApiKey.secret);
 
         const res3 = await request.get(localUtils.API.getApiQuery(`actions/?filter=resource_id:'${adminApiKey.id}'&include=actor`))
             .set('Origin', config.get('url'))
@@ -348,8 +347,8 @@ describe('Integrations API', function () {
         await request.del(localUtils.API.getApiQuery(`integrations/${createdIntegration.id}/`))
             .set('Origin', config.get('url'))
             .expect(204)
-            .expect((_res) => {
-                _res.body.should.be.empty();
+            .expect(({body}) => {
+                assert.deepEqual(body, {});
             });
 
         await request.get(localUtils.API.getApiQuery(`integrations/${createdIntegration.id}/`))

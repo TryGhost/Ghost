@@ -2,7 +2,6 @@ const assert = require('node:assert/strict');
 const {assertObjectMatches} = require('../../utils/assertions');
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyContentVersion, anyEtag, anyObjectId, anyLocationFor, anyErrorId, anyISODateTime} = matchers;
-const should = require('should');
 const models = require('../../../core/server/models');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
@@ -224,43 +223,6 @@ describe('Offers API', function () {
         trialOffer = body.offers[0];
     });
 
-    it('Can add a free months offer', async function () {
-        const newOffer = {
-            name: 'A month on us',
-            code: 'a-month-on-us',
-            cadence: 'month',
-            amount: 1,
-            duration: 'free_months',
-            type: 'free_months',
-            redemption_type: 'retention'
-        };
-
-        let createdOfferId = null;
-        try {
-            const {body} = await agent
-                .post(`offers/`)
-                .body({offers: [newOffer]})
-                .expectStatus(200)
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag,
-                    location: anyLocationFor('offers')
-                })
-                .matchBodySnapshot({
-                    offers: [{
-                        id: anyObjectId,
-                        created_at: anyISODateTime
-                    }]
-                });
-
-            createdOfferId = body.offers[0].id;
-        } finally {
-            if (createdOfferId) {
-                await models.Offer.destroy({id: createdOfferId});
-            }
-        }
-    });
-
     it('Can add a retention offer without a tier', async function () {
         const newOffer = {
             name: 'Stay With Us',
@@ -297,8 +259,8 @@ describe('Offers API', function () {
                 }]
             })
             .expect(({body}) => {
-                body.offers[0].redemption_type.should.eql('retention');
-                should(body.offers[0].tier).be.null();
+                assert.equal(body.offers[0].redemption_type, 'retention');
+                assert.equal(body.offers[0].tier, null);
             });
     });
 
@@ -646,7 +608,7 @@ describe('Offers API', function () {
                 })
             })
             .expect(({body}) => {
-                body.offers[0].should.match(updatedOffer);
+                assertObjectMatches(body.offers[0], updatedOffer);
             });
     });
 
@@ -809,7 +771,113 @@ describe('Offers API', function () {
                 })
             })
             .expect(({body}) => {
-                body.offers[0].tier.id.should.eql(defaultTier.id);
+                assert.equal(body.offers[0].tier.id, defaultTier.id);
             });
+    });
+
+    it('Keeps one active retention offer per cadence on create', async function () {
+        const suffix = Date.now().toString(16).slice(-6);
+
+        const firstOffer = {
+            name: `Yearly retention one ${suffix}`,
+            code: `yearly-retention-${suffix}-1`,
+            display_title: '',
+            display_description: '',
+            type: 'percent',
+            cadence: 'year',
+            amount: 20,
+            duration: 'once',
+            duration_in_months: null,
+            currency_restriction: false,
+            currency: null,
+            status: 'active',
+            redemption_type: 'retention',
+            tier: null
+        };
+
+        const secondOffer = {
+            ...firstOffer,
+            name: `Yearly retention two ${suffix}`,
+            code: `yearly-retention-${suffix}-2`,
+            amount: 25
+        };
+
+        const firstCreateResponse = await agent
+            .post('offers/')
+            .body({offers: [firstOffer]})
+            .expectStatus(200);
+        const firstOfferId = firstCreateResponse.body.offers[0].id;
+
+        const secondCreateResponse = await agent
+            .post('offers/')
+            .body({offers: [secondOffer]})
+            .expectStatus(200);
+        const secondOfferId = secondCreateResponse.body.offers[0].id;
+
+        const firstReadResponse = await agent
+            .get(`offers/${firstOfferId}/`)
+            .expectStatus(200);
+        const secondReadResponse = await agent
+            .get(`offers/${secondOfferId}/`)
+            .expectStatus(200);
+
+        assert.equal(firstReadResponse.body.offers[0].status, 'archived');
+        assert.equal(secondReadResponse.body.offers[0].status, 'active');
+    });
+
+    it('Keeps one active retention offer per cadence on activate', async function () {
+        const suffix = (Date.now() + 1).toString(16).slice(-6);
+
+        const activeOffer = {
+            name: `Yearly retention active ${suffix}`,
+            code: `yearly-retention-${suffix}-active`,
+            display_title: '',
+            display_description: '',
+            type: 'percent',
+            cadence: 'year',
+            amount: 20,
+            duration: 'once',
+            duration_in_months: null,
+            currency_restriction: false,
+            currency: null,
+            status: 'active',
+            redemption_type: 'retention',
+            tier: null
+        };
+
+        const archivedOffer = {
+            ...activeOffer,
+            name: `Yearly retention archived ${suffix}`,
+            code: `yearly-retention-${suffix}-archived`,
+            status: 'archived',
+            amount: 30
+        };
+
+        const activeCreateResponse = await agent
+            .post('offers/')
+            .body({offers: [activeOffer]})
+            .expectStatus(200);
+        const activeOfferId = activeCreateResponse.body.offers[0].id;
+
+        const archivedCreateResponse = await agent
+            .post('offers/')
+            .body({offers: [archivedOffer]})
+            .expectStatus(200);
+        const archivedOfferId = archivedCreateResponse.body.offers[0].id;
+
+        await agent
+            .put(`offers/${archivedOfferId}/`)
+            .body({offers: [{status: 'active'}]})
+            .expectStatus(200);
+
+        const activeReadResponse = await agent
+            .get(`offers/${activeOfferId}/`)
+            .expectStatus(200);
+        const archivedReadResponse = await agent
+            .get(`offers/${archivedOfferId}/`)
+            .expectStatus(200);
+
+        assert.equal(activeReadResponse.body.offers[0].status, 'archived');
+        assert.equal(archivedReadResponse.body.offers[0].status, 'active');
     });
 });

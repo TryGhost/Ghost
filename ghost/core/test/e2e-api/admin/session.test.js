@@ -131,7 +131,7 @@ describe('Sessions API', function () {
 
             const token = email.subject.match(/[0-9]{6}/)[0];
             await agent
-                .post('session/verify')
+                .put('session/verify')
                 .body({
                     token
                 })
@@ -139,7 +139,35 @@ describe('Sessions API', function () {
                 .expectEmptyBody();
         });
 
-        it('can login with 2FA code in session creation request', async function () {
+        it('rejects verification from a mismatched origin', async function () {
+            const owner = await fixtureManager.get('users', 0);
+            await agent
+                .post('session/')
+                .body({
+                    grant_type: 'password',
+                    username: owner.email,
+                    password: owner.password
+                })
+                .expectStatus(403);
+
+            const email = assert.sentEmail({
+                subject: /[0-9]{6} is your Ghost sign in verification code/
+            });
+
+            const token = email.subject.match(/[0-9]{6}/)[0];
+            await agent
+                .put('session/verify', {
+                    headers: {
+                        origin: 'https://attacker.example'
+                    }
+                })
+                .body({
+                    token
+                })
+                .expectStatus(400);
+        });
+
+        it('rejects a 2FA code when reused in a fresh session', async function () {
             const owner = await fixtureManager.get('users', 0);
 
             // First login to trigger 2FA and get a verification code
@@ -161,7 +189,7 @@ describe('Sessions API', function () {
             // Clear cookies to simulate fresh login attempt with token
             agent.clearCookies();
 
-            // Login with token included - should succeed in one request
+            // Login with token included from another session should still require verification
             await agent
                 .post('session/')
                 .body({
@@ -170,8 +198,15 @@ describe('Sessions API', function () {
                     password: owner.password,
                     token
                 })
-                .expectStatus(201)
-                .expectEmptyBody()
+                .expectStatus(403)
+                .matchBodySnapshot({
+                    errors: [{
+                        code: '2FA_NEW_DEVICE_DETECTED',
+                        id: anyUuid,
+                        message: 'User must verify session to login.',
+                        type: 'Needs2FAError'
+                    }]
+                })
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
                     etag: anyEtag,
@@ -180,10 +215,13 @@ describe('Sessions API', function () {
                     ]
                 });
 
-            // Verify we can access protected resources
             await agent
-                .get('/users/me/')
-                .expectStatus(200);
+                .put('session/verify')
+                .body({
+                    token
+                })
+                .expectStatus(401)
+                .expectEmptyBody();
         });
     });
 });

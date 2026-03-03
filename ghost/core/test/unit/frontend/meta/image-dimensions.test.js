@@ -1,7 +1,6 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../utils/assertions');
 const _ = require('lodash');
-const should = require('should');
 const sinon = require('sinon');
 const rewire = require('rewire');
 const getImageDimensions = rewire('../../../../core/frontend/meta/image-dimensions');
@@ -47,10 +46,10 @@ describe('getImageDimensions', function () {
 
         getImageDimensions(metaData).then(function (result) {
             assertExists(result);
-            assert.equal(sizeOfStub.calledWith(metaData.coverImage.url), true);
-            assert.equal(sizeOfStub.calledWith(metaData.authorImage.url), true);
-            assert.equal(sizeOfStub.calledWith(metaData.ogImage.url), true);
-            assert.equal(sizeOfStub.calledWith(metaData.site.logo.url), true);
+            sinon.assert.calledWith(sizeOfStub, metaData.coverImage.url);
+            sinon.assert.calledWith(sizeOfStub, metaData.authorImage.url);
+            sinon.assert.calledWith(sizeOfStub, metaData.ogImage.url);
+            sinon.assert.calledWith(sizeOfStub, metaData.site.logo.url);
             assert('dimensions' in result.coverImage);
             assert('url' in result.coverImage);
             assert.equal(result.coverImage.dimensions.width, 50);
@@ -100,10 +99,10 @@ describe('getImageDimensions', function () {
 
         getImageDimensions(metaData).then(function (result) {
             assertExists(result);
-            assert.equal(sizeOfStub.calledWith(metaData.coverImage.url), true);
-            assert.equal(sizeOfStub.calledWith(metaData.authorImage.url), true);
-            assert.equal(sizeOfStub.calledWith(metaData.ogImage.url), true);
-            assert.equal(sizeOfStub.calledWith(metaData.site.logo.url), true);
+            sinon.assert.calledWith(sizeOfStub, metaData.coverImage.url);
+            sinon.assert.calledWith(sizeOfStub, metaData.authorImage.url);
+            sinon.assert.calledWith(sizeOfStub, metaData.ogImage.url);
+            sinon.assert.calledWith(sizeOfStub, metaData.site.logo.url);
             assert(!('dimensions' in result.coverImage));
             assert('url' in result.coverImage);
             assert(!('dimensions' in result.authorImage));
@@ -146,10 +145,10 @@ describe('getImageDimensions', function () {
 
         getImageDimensions(metaData).then(function (result) {
             assertExists(result);
-            assert.equal(sizeOfStub.calledWith(metaData.coverImage.url), true);
-            assert.equal(sizeOfStub.calledWith(metaData.authorImage.url), true);
-            assert.equal(sizeOfStub.calledWith(metaData.ogImage.url), true);
-            assert.equal(sizeOfStub.calledWith(metaData.site.logo.url), true);
+            sinon.assert.calledWith(sizeOfStub, metaData.coverImage.url);
+            sinon.assert.calledWith(sizeOfStub, metaData.authorImage.url);
+            sinon.assert.calledWith(sizeOfStub, metaData.ogImage.url);
+            sinon.assert.calledWith(sizeOfStub, metaData.site.logo.url);
             assert('url' in result.coverImage);
             assert('dimensions' in result.coverImage);
             assert.equal(result.coverImage.dimensions.height, 480);
@@ -200,10 +199,10 @@ describe('getImageDimensions', function () {
 
         getImageDimensions(metaData).then(function (result) {
             assertExists(result);
-            assert.equal(sizeOfStub.calledWith(metaData.coverImage.url), true);
-            assert.equal(sizeOfStub.calledWith(metaData.authorImage.url), true);
-            assert.equal(sizeOfStub.calledWith(metaData.ogImage.url), true);
-            assert.equal(sizeOfStub.calledWith(metaData.site.logo.url), true);
+            sinon.assert.calledWith(sizeOfStub, metaData.coverImage.url);
+            sinon.assert.calledWith(sizeOfStub, metaData.authorImage.url);
+            sinon.assert.calledWith(sizeOfStub, metaData.ogImage.url);
+            sinon.assert.calledWith(sizeOfStub, metaData.site.logo.url);
             assert('dimensions' in result.coverImage);
             assert('url' in result.coverImage);
             assert.equal(result.coverImage.dimensions.height, 480);
@@ -260,11 +259,11 @@ describe('getImageDimensions', function () {
 
         getImageDimensions(metaData).then(function (result) {
             assertExists(result);
-            assert.equal(sizeOfStub.calledWith(originalMetaData.coverImage.url), true);
-            assert.equal(sizeOfStub.calledWith(originalMetaData.authorImage.url), true);
-            assert.equal(sizeOfStub.calledWith(originalMetaData.ogImage.url), true);
-            assert.equal(sizeOfStub.calledWith(originalMetaData.twitterImage), true);
-            assert.equal(sizeOfStub.calledWith(originalMetaData.site.logo.url), true);
+            sinon.assert.calledWith(sizeOfStub, originalMetaData.coverImage.url);
+            sinon.assert.calledWith(sizeOfStub, originalMetaData.authorImage.url);
+            sinon.assert.calledWith(sizeOfStub, originalMetaData.ogImage.url);
+            sinon.assert.calledWith(sizeOfStub, originalMetaData.twitterImage);
+            sinon.assert.calledWith(sizeOfStub, originalMetaData.site.logo.url);
             assert('url' in result.coverImage);
             assert.equal(result.coverImage.url, 'http://mysite.com/content/images/size/w1200/mypostcoverimage.jpg');
             assert('dimensions' in result.coverImage);
@@ -326,6 +325,49 @@ describe('getImageDimensions', function () {
             assert.equal(result.ogImage.url, 'http://anothersite.com/some/storage/super-facebook-image.jpg');
             assert('url' in result.site.logo);
             assert.equal(result.site.logo.url, 'http://anothersite.com/some/storage/logo.jpg');
+            done();
+        }).catch(done);
+    });
+
+    it('appends image size prefix to CDN-hosted content images', function (done) {
+        const originalMetaData = {
+            coverImage: {
+                url: 'https://storage.ghost.is/c/6f/a3/site/content/images/2026/02/cover.jpg'
+            },
+            authorImage: {
+                url: 'https://storage.ghost.is/c/6f/a3/site/content/images/2026/02/author.jpg'
+            },
+            ogImage: {
+                url: 'https://storage.ghost.is/c/6f/a3/site/content/images/2026/02/og.jpg'
+            },
+            twitterImage: 'https://storage.ghost.is/c/6f/a3/site/content/images/2026/02/twitter.jpg',
+            site: {
+                logo: {
+                    url: 'https://storage.ghost.is/c/6f/a3/site/content/images/2026/02/logo.jpg'
+                }
+            }
+        };
+
+        const metaData = _.cloneDeep(originalMetaData);
+
+        sizeOfStub.callsFake(() => ({
+            width: 2000,
+            height: 1200,
+            type: 'jpg'
+        }));
+
+        getImageDimensions.__set__('imageSizeCache', {
+            getCachedImageSizeFromUrl: sizeOfStub
+        });
+
+        getImageDimensions(metaData).then(function (result) {
+            assertExists(result);
+            assert.equal(result.coverImage.url, 'https://storage.ghost.is/c/6f/a3/site/content/images/size/w1200/2026/02/cover.jpg');
+            assert.equal(result.authorImage.url, 'https://storage.ghost.is/c/6f/a3/site/content/images/size/w1200/2026/02/author.jpg');
+            assert.equal(result.ogImage.url, 'https://storage.ghost.is/c/6f/a3/site/content/images/size/w1200/2026/02/og.jpg');
+            assert.equal(result.twitterImage, 'https://storage.ghost.is/c/6f/a3/site/content/images/size/w1200/2026/02/twitter.jpg');
+            // logo dimensions are computed but logo URL is not resized in this path
+            assert.equal(result.site.logo.url, originalMetaData.site.logo.url);
             done();
         }).catch(done);
     });

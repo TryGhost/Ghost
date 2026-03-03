@@ -69,7 +69,7 @@ describe('RecommendationService', function () {
         it('should update wellknown', async function () {
             const updateWellknown = sinon.stub(service.wellknownService, 'set').resolves();
             await service.init();
-            assert(updateWellknown.calledOnce);
+            sinon.assert.calledOnce(updateWellknown);
         });
 
         it('should update recommendations on boot', async function () {
@@ -92,7 +92,7 @@ describe('RecommendationService', function () {
                 const spy = sinon.spy(service, 'updateAllRecommendationsMetadata');
                 await service.init();
                 await clock.tick(1000 * 60 * 60 * 24);
-                assert(spy.calledOnce);
+                sinon.assert.calledOnce(spy);
             } finally {
                 process.env.NODE_ENV = saved;
             }
@@ -107,7 +107,7 @@ describe('RecommendationService', function () {
                 spy.rejects(new Error('test'));
                 await service.init();
                 clock.tick(1000 * 60 * 60 * 24);
-                assert(spy.calledOnce);
+                sinon.assert.calledOnce(spy);
             } finally {
                 process.env.NODE_ENV = saved;
             }
@@ -140,7 +140,7 @@ describe('RecommendationService', function () {
                 await new Promise((resolve) => {
                     setTimeout(() => resolve(true), 50);
                 });
-                assert(!!spy.calledOnce);
+                sinon.assert.calledOnce(spy);
             } finally {
                 process.env.NODE_ENV = saved;
             }
@@ -459,7 +459,7 @@ describe('RecommendationService', function () {
                 oneClickSubscribe: false
             }));
 
-            assert(updateRecommendationsEnabledSetting.calledOnce);
+            sinon.assert.calledOnce(updateRecommendationsEnabledSetting);
         });
     });
 

@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 
 const OfferRedemptionType = require('../../../../../../../core/server/services/offers/domain/models/offer-redemption-type');
 
@@ -13,20 +12,14 @@ describe('OfferRedemptionType', function () {
                 OfferRedemptionType.create('other');
                 assert.fail();
             } catch (err) {
-                should.ok(
-                    err instanceof OfferRedemptionType.InvalidOfferRedemptionType,
-                    'expected an InvalidOfferRedemptionType error'
-                );
+                assert(err instanceof OfferRedemptionType.InvalidOfferRedemptionType, 'expected an InvalidOfferRedemptionType error');
             }
 
             try {
                 OfferRedemptionType.create();
                 assert.fail();
             } catch (err) {
-                should.ok(
-                    err instanceof OfferRedemptionType.InvalidOfferRedemptionType,
-                    'expected an InvalidOfferRedemptionType error'
-                );
+                assert(err instanceof OfferRedemptionType.InvalidOfferRedemptionType, 'expected an InvalidOfferRedemptionType error');
             }
         });
     });

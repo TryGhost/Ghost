@@ -1,7 +1,6 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
 const sinon = require('sinon');
-const should = require('should');
 const rewire = require('rewire');
 const StripeAPI = rewire('../../../../../core/server/services/stripe/stripe-api');
 
@@ -376,7 +375,7 @@ describe('StripeAPI', function () {
         it('cancels a subscription trial', async function () {
             const result = await api.cancelSubscriptionTrial(mockSubscription.id);
 
-            assert.equal(mockStripe.subscriptions.update.callCount, 1);
+            sinon.assert.calledOnce(mockStripe.subscriptions.update);
 
             assert.equal(mockStripe.subscriptions.update.args[0][0], mockSubscription.id);
             assert.deepEqual(mockStripe.subscriptions.update.args[0][1], {trial_end: 'now'});
@@ -416,49 +415,9 @@ describe('StripeAPI', function () {
         it('adds a coupon to a subscription', async function () {
             const result = await api.addCouponToSubscription('sub_123', 'coupon_abc');
 
-            assert.equal(mockStripe.subscriptions.update.callCount, 1);
+            sinon.assert.calledOnce(mockStripe.subscriptions.update);
             assert.equal(mockStripe.subscriptions.update.args[0][0], 'sub_123');
             assert.deepEqual(mockStripe.subscriptions.update.args[0][1], {coupon: 'coupon_abc'});
-
-            assert.deepEqual(result, mockSubscription);
-        });
-    });
-
-    describe('updateSubscriptionTrialEnd', function () {
-        const mockSubscription = {
-            id: 'sub_456',
-            status: 'active',
-            trial_end: 1735689600
-        };
-
-        beforeEach(function () {
-            mockStripe = {
-                subscriptions: {
-                    update: sinon.stub().resolves(mockSubscription)
-                }
-            };
-            const mockStripeConstructor = sinon.stub().returns(mockStripe);
-            StripeAPI.__set__('Stripe', mockStripeConstructor);
-            api.configure({
-                secretKey: ''
-            });
-        });
-
-        afterEach(function () {
-            sinon.restore();
-        });
-
-        it('updates trial_end with proration_behavior', async function () {
-            const result = await api.updateSubscriptionTrialEnd('sub_456', 1735689600, {
-                prorationBehavior: 'none'
-            });
-
-            assert.equal(mockStripe.subscriptions.update.callCount, 1);
-            assert.equal(mockStripe.subscriptions.update.args[0][0], 'sub_456');
-            assert.deepEqual(mockStripe.subscriptions.update.args[0][1], {
-                trial_end: 1735689600,
-                proration_behavior: 'none'
-            });
 
             assert.deepEqual(result, mockSubscription);
         });

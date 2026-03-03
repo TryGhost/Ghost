@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
-const should = require('should');
 const sinon = require('sinon');
 const redirectGhostToAdmin = require('../../../../../core/frontend/web/middleware/redirect-ghost-to-admin');
 const {handleAdminRedirect} = require('../../../../../core/frontend/web/middleware/redirect-ghost-to-admin');
@@ -32,8 +31,8 @@ describe('Redirect Ghost To Admin', function () {
     const expectPathCallsRedirectToAdminWith = (inputPath, expectedAdminPath) => {
         req.path = inputPath;
         handleAdminRedirect(req, res);
-        assert.equal(redirectToAdminStub.calledOnce, true);
-        assert.equal(redirectToAdminStub.calledWith(301, res, expectedAdminPath), true);
+        sinon.assert.calledOnce(redirectToAdminStub);
+        sinon.assert.calledWith(redirectToAdminStub, 301, res, expectedAdminPath);
     };
 
     describe('handleAdminRedirect function', function () {

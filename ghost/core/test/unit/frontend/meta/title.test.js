@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const sinon = require('sinon');
 const getTitle = require('../../../../core/frontend/meta/title');
 const settingsCache = require('../../../../core/shared/settings-cache');

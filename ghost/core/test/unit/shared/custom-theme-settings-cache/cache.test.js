@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 
 const Cache = require('../../../../core/shared/custom-theme-settings-cache/custom-theme-settings-cache');
 
@@ -16,7 +15,6 @@ describe('Cache', function () {
 
             const getAll = cache.getAll();
 
-            getAll.should.have.size(2);
             assert.deepEqual(getAll, {
                 one: 1,
                 two: 2
@@ -43,8 +41,6 @@ describe('Cache', function () {
 
             const getAll = cache.getAll();
 
-            getAll.should.have.size(1);
-            getAll.should.not.have.keys('one', 'two');
             assert.deepEqual(getAll, {
                 three: 3
             });
@@ -108,7 +104,6 @@ describe('Cache', function () {
 
             const returned = cache.getAll();
 
-            returned.should.have.size(2);
             assert.deepEqual(returned, {
                 one: 1,
                 two: 2

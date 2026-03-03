@@ -2,7 +2,6 @@ const assert = require('node:assert/strict');
 const querystring = require('querystring');
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const nock = require('nock');
-const should = require('should');
 const models = require('../../../core/server/models');
 const urlService = require('../../../core/server/services/url');
 
@@ -405,9 +404,9 @@ describe('Create Stripe Checkout Session', function () {
                 .reply((uri, body) => {
                     if (uri === '/v1/checkout/sessions') {
                         const parsed = new URLSearchParams(body);
-                        should(parsed.get('metadata[attribution_url]')).eql(url);
+                        assert.equal(parsed.get('metadata[attribution_url]'), url);
                         assert.equal(parsed.get('metadata[attribution_type]'), 'post');
-                        should(parsed.get('metadata[attribution_id]')).eql(post.id);
+                        assert.equal(parsed.get('metadata[attribution_id]'), post.id);
 
                         return [200, {id: 'cs_123', url: 'https://site.com'}];
                     }

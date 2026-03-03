@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const supertest = require('supertest');
 const fs = require('fs-extra');
 const path = require('path');
@@ -62,7 +61,7 @@ describe('Redirects API', function () {
             .expect('Content-Type', /application\/json/)
             .expect(200)
             .expect((res) => {
-                res.body.should.be.empty();
+                assert.deepEqual(res.body, {});
             });
     });
 });
