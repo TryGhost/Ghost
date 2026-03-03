@@ -25,15 +25,18 @@ function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const url = site.data?.site.url;
 
 
+    const isAdmin = currentUser && hasAdminAccess(currentUser);
+
     // The network app has its own notification state, so we don't want to show
     // multiple indicators when you have navigated there.
-    const { data: networkNotificationCount = 0 } = useNotificationsCountForUser(currentUser?.slug || '', networkEnabled);
+    // Only fetch for admin users — the identities API requires admin permissions.
+    const { data: networkNotificationCount = 0 } = useNotificationsCountForUser(currentUser?.slug || '', networkEnabled && !!isAdmin);
     const isNetworkRouteActive = useIsActiveLink({ path: 'network', activeOnSubpath: true })
     const isActivitypubRouteActive = useIsActiveLink({ path: 'activitypub', activeOnSubpath: true });
     const showNetworkBadge = networkNotificationCount > 0 && !isNetworkRouteActive && !isActivitypubRouteActive;
 
     // Only show NavMain for admin users
-    if (!currentUser || !hasAdminAccess(currentUser)) {
+    if (!isAdmin) {
         return null;
     }
     return (
