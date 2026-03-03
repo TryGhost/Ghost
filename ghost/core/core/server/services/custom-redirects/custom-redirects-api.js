@@ -11,7 +11,38 @@ const messages = {
     yamlParse: 'Could not parse YAML: {context}.',
     yamlInvalid: 'YAML input is invalid. Check the contents of your YAML file.',
     redirectsHelp: 'https://ghost.org/docs/themes/routing/#redirects',
-    redirectsRegister: 'Could not register custom redirects.'
+    redirectsRegister: 'Could not register custom redirects.',
+    dangerousKeyError: 'The key "{key}" is not allowed in redirects configuration.'
+};
+
+const DANGEROUS_KEYS = ['__proto__', 'constructor', 'prototype'];
+
+/**
+ * Recursively checks an object for dangerous keys that could lead to prototype pollution
+ * @param {Object} obj - The object to check
+ * @param {String} path - The current path in the object (for error messages)
+ */
+const checkForDangerousKeys = (obj, objectPath = '') => {
+    if (!obj || typeof obj !== 'object') {
+        return;
+    }
+
+    if (Array.isArray(obj)) {
+        obj.forEach((item, index) => {
+            checkForDangerousKeys(item, `${objectPath}[${index}]`);
+        });
+        return;
+    }
+
+    for (const key of Object.keys(obj)) {
+        if (DANGEROUS_KEYS.includes(key)) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.dangerousKeyError, {key: objectPath ? `${objectPath}.${key}` : key}),
+                help: tpl(messages.redirectsHelp)
+            });
+        }
+        checkForDangerousKeys(obj[key], objectPath ? `${objectPath}.${key}` : key);
+    }
 };
 
 /**
@@ -63,6 +94,8 @@ const parseRedirectsFile = (content, ext) => {
             });
         }
 
+        checkForDangerousKeys(redirects);
+
         return redirects;
     }
 
@@ -84,6 +117,8 @@ const parseRedirectsFile = (content, ext) => {
                 help: tpl(messages.redirectsHelp)
             });
         }
+
+        checkForDangerousKeys(configYaml);
 
         /**
          * 302: Temporary redirects

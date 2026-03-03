@@ -10,7 +10,57 @@ const messages = {
     invalidResourceHelp: 'Please use: tag, user, post or page.',
     badDatError: 'Please wrap the data definition into a custom name.',
     badDataHelp: 'Example:\n data:\n  my-tag:\n    resource: tags\n    ...\n',
-    authorDeprecatedError: 'Please choose a different name. We recommend not using author.'
+    authorDeprecatedError: 'Please choose a different name. We recommend not using author.',
+    dangerousKeyError: 'The key "{key}" is not allowed in routes configuration.',
+    unknownTopLevelKeyError: 'Unknown top-level key "{key}". Only "routes", "collections", and "taxonomies" are allowed.'
+};
+
+const ALLOWED_TOP_LEVEL_KEYS = ['routes', 'collections', 'taxonomies'];
+const DANGEROUS_KEYS = ['__proto__', 'constructor', 'prototype'];
+
+/**
+ * Recursively checks an object for dangerous keys that could lead to prototype pollution
+ * @param {Object} obj - The object to check
+ * @param {String} path - The current path in the object (for error messages)
+ */
+_private.checkForDangerousKeys = function checkForDangerousKeys(obj, path = '') {
+    if (!obj || typeof obj !== 'object') {
+        return;
+    }
+
+    if (Array.isArray(obj)) {
+        obj.forEach((item, index) => {
+            _private.checkForDangerousKeys(item, `${path}[${index}]`);
+        });
+        return;
+    }
+
+    for (const key of Object.keys(obj)) {
+        if (DANGEROUS_KEYS.includes(key)) {
+            throw new errors.ValidationError({
+                message: tpl(messages.dangerousKeyError, {key: path ? `${path}.${key}` : key})
+            });
+        }
+        _private.checkForDangerousKeys(obj[key], path ? `${path}.${key}` : key);
+    }
+};
+
+/**
+ * Validates that only allowed top-level keys are present
+ * @param {Object} obj - The routes configuration object
+ */
+_private.validateTopLevelKeys = function validateTopLevelKeys(obj) {
+    if (!obj || typeof obj !== 'object') {
+        return;
+    }
+
+    for (const key of Object.keys(obj)) {
+        if (!ALLOWED_TOP_LEVEL_KEYS.includes(key)) {
+            throw new errors.ValidationError({
+                message: tpl(messages.unknownTopLevelKeyError, {key})
+            });
+        }
+    }
 };
 
 _private.validateTemplate = function validateTemplate(object) {
@@ -415,6 +465,12 @@ module.exports = function validate(object) {
     if (!object) {
         object = {};
     }
+
+    // Check for dangerous keys that could lead to prototype pollution attacks
+    _private.checkForDangerousKeys(object);
+
+    // Only allow known top-level keys to prevent unexpected behavior
+    _private.validateTopLevelKeys(object);
 
     if (!object.routes) {
         object.routes = {};

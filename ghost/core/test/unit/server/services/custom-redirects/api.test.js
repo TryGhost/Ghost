@@ -286,5 +286,100 @@ describe('UNIT: redirects CustomRedirectsAPI class', function () {
             sinon.assert.notCalled(fsUnlinkStub);
             sinon.assert.notCalled(fsMoveStub);
         });
+
+        it('rejects YAML with prototype pollution keys', async function () {
+            const incomingFilePath = path.join(__dirname, '/malicious/redirects.yaml');
+            const backupFilePath = path.join(basePath, 'backup.yaml');
+
+            const maliciousYaml = `
+                constructor:
+                    prototype:
+                        polluted: true
+            `;
+
+            fsPathExistsStub.withArgs(`${basePath}redirects.json`).resolves(false);
+            fsPathExistsStub.withArgs(`${basePath}redirects.yaml`).resolves(true);
+            fsReadFileStub.withArgs(incomingFilePath, 'utf-8').resolves(maliciousYaml);
+            fsPathExistsStub.withArgs(backupFilePath).resolves(false);
+
+            customRedirectsAPI = new CustomRedirectsAPI({
+                basePath,
+                redirectManager,
+                getBackupFilePath: () => backupFilePath,
+                validate: () => {}
+            });
+
+            await assert.rejects(async () => {
+                await customRedirectsAPI.setFromFilePath(incomingFilePath, '.yaml');
+            }, {
+                errorType: 'BadRequestError',
+                message: /not allowed/
+            });
+
+            sinon.assert.notCalled(fsMoveStub);
+        });
+
+        it('rejects JSON with prototype pollution keys', async function () {
+            const incomingFilePath = path.join(__dirname, '/malicious/redirects.json');
+            const backupFilePath = path.join(basePath, 'backup.json');
+
+            const maliciousJSON = JSON.stringify([{
+                from: '/test',
+                to: '/dest',
+                constructor: {prototype: {polluted: true}}
+            }]);
+
+            fsPathExistsStub.withArgs(`${basePath}redirects.json`).resolves(true);
+            fsPathExistsStub.withArgs(`${basePath}redirects.yaml`).resolves(false);
+            fsReadFileStub.withArgs(incomingFilePath, 'utf-8').resolves(maliciousJSON);
+            fsPathExistsStub.withArgs(backupFilePath).resolves(false);
+
+            customRedirectsAPI = new CustomRedirectsAPI({
+                basePath,
+                redirectManager,
+                getBackupFilePath: () => backupFilePath,
+                validate: () => {}
+            });
+
+            await assert.rejects(async () => {
+                await customRedirectsAPI.setFromFilePath(incomingFilePath, '.json');
+            }, {
+                errorType: 'BadRequestError',
+                message: /not allowed/
+            });
+
+            sinon.assert.notCalled(fsMoveStub);
+        });
+
+        it('rejects YAML with __proto__ key', async function () {
+            const incomingFilePath = path.join(__dirname, '/malicious/proto.yaml');
+            const backupFilePath = path.join(basePath, 'backup.yaml');
+
+            const maliciousYaml = `
+                __proto__:
+                    polluted: true
+            `;
+
+            fsPathExistsStub.withArgs(`${basePath}redirects.json`).resolves(false);
+            fsPathExistsStub.withArgs(`${basePath}redirects.yaml`).resolves(true);
+            fsReadFileStub.withArgs(incomingFilePath, 'utf-8').resolves(maliciousYaml);
+            fsPathExistsStub.withArgs(backupFilePath).resolves(false);
+
+            customRedirectsAPI = new CustomRedirectsAPI({
+                basePath,
+                redirectManager,
+                getBackupFilePath: () => backupFilePath,
+                validate: () => {}
+            });
+
+            await assert.rejects(async () => {
+                await customRedirectsAPI.setFromFilePath(incomingFilePath, '.yaml');
+            }, {
+                errorType: 'BadRequestError',
+                message: /not allowed/
+            });
+
+            sinon.assert.notCalled(fsMoveStub);
+        });
     });
 });

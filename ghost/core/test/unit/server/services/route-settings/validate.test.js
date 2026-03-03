@@ -9,6 +9,136 @@ describe('UNIT: services/settings/validate', function () {
         assert.deepEqual(object, {collections: {}, routes: {}, taxonomies: {}});
     });
 
+    describe('prototype pollution protection', function () {
+        it('throws error when __proto__ key is present at top level', function () {
+            // Use Object.defineProperty to create an object with __proto__ as a literal key
+            // (JavaScript object literals treat __proto__ specially)
+            const maliciousObj = Object.defineProperty({}, '__proto__', {
+                value: {polluted: true},
+                enumerable: true,
+                configurable: true
+            });
+
+            try {
+                validate(maliciousObj);
+            } catch (err) {
+                assert.equal((err instanceof errors.ValidationError), true);
+                assert.equal(err.message.includes('__proto__'), true);
+                return;
+            }
+
+            throw new Error('should fail');
+        });
+
+        it('throws error when constructor key is present at top level', function () {
+            try {
+                validate({
+                    constructor: {
+                        prototype: {
+                            polluted: true
+                        }
+                    }
+                });
+            } catch (err) {
+                assert.equal((err instanceof errors.ValidationError), true);
+                assert.equal(err.message.includes('constructor'), true);
+                return;
+            }
+
+            throw new Error('should fail');
+        });
+
+        it('throws error when prototype key is present at top level', function () {
+            try {
+                validate({
+                    prototype: {
+                        polluted: true
+                    }
+                });
+            } catch (err) {
+                assert.equal((err instanceof errors.ValidationError), true);
+                assert.equal(err.message.includes('prototype'), true);
+                return;
+            }
+
+            throw new Error('should fail');
+        });
+
+        it('throws error when dangerous keys are nested in routes', function () {
+            // Create route object with __proto__ as a literal key using Object.defineProperty
+            const routeObj = {};
+            Object.defineProperty(routeObj, '__proto__', {
+                value: {polluted: true},
+                enumerable: true,
+                configurable: true
+            });
+
+            try {
+                validate({
+                    routes: {
+                        '/test/': routeObj
+                    }
+                });
+            } catch (err) {
+                assert.equal((err instanceof errors.ValidationError), true);
+                assert.equal(err.message.includes('__proto__'), true);
+                return;
+            }
+
+            throw new Error('should fail');
+        });
+
+        it('throws error when dangerous keys are deeply nested', function () {
+            try {
+                validate({
+                    routes: {
+                        '/test/': {
+                            data: {
+                                nested: {
+                                    constructor: {prototype: {polluted: true}}
+                                }
+                            }
+                        }
+                    }
+                });
+            } catch (err) {
+                assert.equal((err instanceof errors.ValidationError), true);
+                assert.equal(err.message.includes('constructor'), true);
+                return;
+            }
+
+            throw new Error('should fail');
+        });
+    });
+
+    describe('unknown top-level keys protection', function () {
+        it('throws error when unknown top-level key is present', function () {
+            try {
+                validate({
+                    unknownKey: {
+                        someConfig: true
+                    }
+                });
+            } catch (err) {
+                assert.equal((err instanceof errors.ValidationError), true);
+                assert.equal(err.message.includes('unknownKey'), true);
+                return;
+            }
+
+            throw new Error('should fail');
+        });
+
+        it('allows valid top-level keys', function () {
+            const result = validate({
+                routes: {},
+                collections: {},
+                taxonomies: {}
+            });
+
+            assert.deepEqual(result, {routes: {}, collections: {}, taxonomies: {}});
+        });
+    });
+
     it('throws error when using :\w+ notiation in collection', function () {
         try {
             validate({

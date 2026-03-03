@@ -5,7 +5,38 @@ const errors = require('@tryghost/errors');
 const messages = {
     redirectsWrongFormat: 'Incorrect redirects file format.',
     invalidRedirectsFromRegex: 'Incorrect RegEx in redirects file.',
-    redirectsHelp: 'https://ghost.org/docs/themes/routing/#redirects'
+    redirectsHelp: 'https://ghost.org/docs/themes/routing/#redirects',
+    dangerousKeyError: 'The key "{key}" is not allowed in redirects configuration.'
+};
+
+const DANGEROUS_KEYS = ['__proto__', 'constructor', 'prototype'];
+
+/**
+ * Recursively checks an object for dangerous keys that could lead to prototype pollution
+ * @param {Object} obj - The object to check
+ * @param {String} path - The current path in the object (for error messages)
+ */
+const checkForDangerousKeys = (obj, path = '') => {
+    if (!obj || typeof obj !== 'object') {
+        return;
+    }
+
+    if (Array.isArray(obj)) {
+        obj.forEach((item, index) => {
+            checkForDangerousKeys(item, `${path}[${index}]`);
+        });
+        return;
+    }
+
+    for (const key of Object.keys(obj)) {
+        if (DANGEROUS_KEYS.includes(key)) {
+            throw new errors.ValidationError({
+                message: tpl(messages.dangerousKeyError, {key: path ? `${path}.${key}` : key}),
+                help: tpl(messages.redirectsHelp)
+            });
+        }
+        checkForDangerousKeys(obj[key], path ? `${path}.${key}` : key);
+    }
 };
 
 /**
@@ -22,6 +53,9 @@ const messages = {
  * @param {RedirectConfig[]} redirects
  */
 const validate = (redirects) => {
+    // Check for dangerous keys that could lead to prototype pollution attacks
+    checkForDangerousKeys(redirects);
+
     if (!_.isArray(redirects)) {
         throw new errors.ValidationError({
             message: tpl(messages.redirectsWrongFormat),

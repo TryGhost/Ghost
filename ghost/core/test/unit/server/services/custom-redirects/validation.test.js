@@ -46,4 +46,52 @@ describe('UNIT: custom redirects validation', function () {
             validate(/** @type {any} */ (config));
         }, {message: 'Incorrect redirects file format.'});
     });
+
+    describe('prototype pollution protection', function () {
+        it('throws error when __proto__ key is present in redirect object', function () {
+            // Use Object.defineProperty to create an object with __proto__ as a literal key
+            // (JavaScript object literals treat __proto__ specially)
+            const redirectObj = {
+                permanent: true,
+                from: '/test',
+                to: '/dest'
+            };
+            Object.defineProperty(redirectObj, '__proto__', {
+                value: {polluted: true},
+                enumerable: true,
+                configurable: true
+            });
+            const config = [redirectObj];
+
+            assert.throws(() => {
+                validate(config);
+            }, {message: /not allowed/});
+        });
+
+        it('throws error when constructor key is present in redirect object', function () {
+            const config = [{
+                permanent: true,
+                from: '/test',
+                to: '/dest',
+                constructor: {prototype: {polluted: true}}
+            }];
+
+            assert.throws(() => {
+                validate(config);
+            }, {message: /not allowed/});
+        });
+
+        it('throws error when prototype key is present', function () {
+            const config = [{
+                permanent: true,
+                from: '/test',
+                to: '/dest',
+                prototype: {polluted: true}
+            }];
+
+            assert.throws(() => {
+                validate(config);
+            }, {message: /not allowed/});
+        });
+    });
 });
