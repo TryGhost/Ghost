@@ -9,7 +9,7 @@ export default class LabelsManagerService extends Service {
     @service store;
 
     @tracked _labels = new TrackedArray();
-    _meta = null;
+    @tracked _meta = null;
 
     get labels() {
         return this.sortLabels(this._labels);
@@ -53,7 +53,7 @@ export default class LabelsManagerService extends Service {
 
     @task({drop: true})
     *loadMoreTask() {
-        if (this._meta?.pagination && this._meta.pagination.pages <= this._meta.pagination.page) {
+        if (this._meta?.pagination && parseInt(this._meta.pagination.pages, 10) <= parseInt(this._meta.pagination.page, 10)) {
             return;
         }
 
