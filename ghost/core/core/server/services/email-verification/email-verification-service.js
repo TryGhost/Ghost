@@ -128,31 +128,29 @@ class EmailVerificationService {
      * @param {string} [context.id] - ID of the newsletter or automated_email
      * @param {string} [context.property] - property being verified (e.g. 'sender_email')
      * @param {string} [context.key] - settings key (e.g. 'members_support_address')
-     * @returns {Promise<{verified?: boolean, pending?: boolean, email: string}>}
+     * @returns {Promise<Object>} - the VerifiedEmail model
      */
     async add(email, context) {
         const existing = await this.#VerifiedEmailModel.findOne({email});
 
         if (existing) {
-            if (existing.get('status') === 'verified') {
-                return {verified: true, email};
+            if (existing.get('status') === 'pending') {
+                // Resend verification email
+                await this.#sendVerificationEmail(email, context);
             }
-
-            // Status is 'pending' - resend verification email
-            await this.#sendVerificationEmail(email, context);
-            return {pending: true, email};
+            return existing;
         }
 
         // Create new row with status 'pending'
-        await this.#VerifiedEmailModel.add({email, status: 'pending'});
+        const model = await this.#VerifiedEmailModel.add({email, status: 'pending'});
         await this.#sendVerificationEmail(email, context);
-        return {pending: true, email};
+        return model;
     }
 
     /**
      * Verify a token and mark the email as verified
      * @param {string} token
-     * @returns {Promise<{email: string, context?: Object}>}
+     * @returns {Promise<{verifiedEmail: Object, context: Object|undefined}>}
      */
     async verify(token) {
         const data = await this.#magicLinkService.getDataFromToken(token);
@@ -174,7 +172,7 @@ class EmailVerificationService {
             await this.#applyVerification(email, verifiedEmailId, context);
         }
 
-        return {email, context};
+        return {verifiedEmail, context};
     }
 
     /**

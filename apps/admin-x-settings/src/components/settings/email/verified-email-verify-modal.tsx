@@ -2,21 +2,29 @@ import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
 import {APIError} from '@tryghost/admin-x-framework/errors';
 import {ConfirmationModal} from '@tryghost/admin-x-design-system';
+import {showToast} from '@tryghost/admin-x-design-system';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useQueryClient} from '@tryghost/admin-x-framework';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 import {useVerifyVerifiedEmail} from '@tryghost/admin-x-framework/api/verified-emails';
 import type {RoutingModalProps} from '@tryghost/admin-x-framework/routing';
 
-const PROPERTY_LABELS: Record<string, string> = {
-    sender_email: 'sender',
-    sender_reply_to: 'reply-to'
-};
+/**
+ * Get the route to navigate to after verification based on context
+ */
+function getRouteForContext(context?: {type: string; id?: string} | null): string {
+    if (context?.type === 'newsletter' && context.id) {
+        return `newsletters/${context.id}`;
+    }
+    return '';
+}
 
 const VerifiedEmailVerifyModal: React.FC<RoutingModalProps> = ({searchParams}) => {
     const token = searchParams?.get('verifyEmail');
     const {mutateAsync: verifyEmail} = useVerifyVerifiedEmail();
     const handleError = useHandleError();
     const {updateRoute} = useRouting();
+    const queryClient = useQueryClient();
     const [hasVerified, setHasVerified] = useState(false);
 
     useEffect(() => {
@@ -28,33 +36,39 @@ const VerifiedEmailVerifyModal: React.FC<RoutingModalProps> = ({searchParams}) =
 
         const verify = async () => {
             try {
-                const {email, context} = await verifyEmail({token});
+                const result = await verifyEmail({token});
+                const verifiedEmail = result?.verified_emails?.[0];
+                const email = verifiedEmail?.email || '';
+                const context = result?.meta?.context;
 
-                let title: string;
-                let prompt: React.ReactNode;
+                // The backend applies the verified email to the target (newsletter/setting/automated_email)
+                // via context stored in the token. Invalidate these caches so the UI picks up the changes.
+                queryClient.invalidateQueries(['NewslettersResponseType']);
+                queryClient.invalidateQueries(['SettingsResponseType']);
+                queryClient.invalidateQueries(['AutomatedEmailsResponseType']);
 
-                if (context?.type === 'newsletter' && context.property) {
-                    const propertyLabel = PROPERTY_LABELS[context.property] || context.property;
-                    title = 'Email address verified';
-                    prompt = <>Newsletter will now use <strong>{email}</strong> as the {propertyLabel} address.</>;
-                } else if (context?.type === 'setting') {
-                    title = 'Support email verified';
-                    prompt = <>Your support email address has been updated to <strong>{email}</strong>.</>;
+                const route = getRouteForContext(context);
+
+                if (route) {
+                    // Navigate to the target modal (e.g. newsletter) so the user
+                    // can see the verified email has been applied
+                    showToast({
+                        type: 'success',
+                        message: `${email} has been verified`
+                    });
+                    updateRoute(route);
                 } else {
-                    title = 'Email address verified';
-                    prompt = <>Email address <strong>{email}</strong> has been verified.</>;
+                    NiceModal.show(ConfirmationModal, {
+                        title: 'Email address verified',
+                        prompt: <>Email address <strong>{email}</strong> has been verified and is now available for use.</>,
+                        okLabel: 'Close',
+                        cancelLabel: '',
+                        onOk: (confirmModal) => {
+                            confirmModal?.remove();
+                            updateRoute('');
+                        }
+                    });
                 }
-
-                NiceModal.show(ConfirmationModal, {
-                    title,
-                    prompt,
-                    okLabel: 'Close',
-                    cancelLabel: '',
-                    onOk: (confirmModal) => {
-                        confirmModal?.remove();
-                        updateRoute('');
-                    }
-                });
             } catch (e) {
                 let prompt = 'There was an error verifying your email address. Please try again later.';
 
@@ -77,7 +91,7 @@ const VerifiedEmailVerifyModal: React.FC<RoutingModalProps> = ({searchParams}) =
         };
 
         verify();
-    }, [token, hasVerified, verifyEmail, handleError, updateRoute]);
+    }, [token, hasVerified, verifyEmail, handleError, updateRoute, queryClient]);
 
     return null;
 };

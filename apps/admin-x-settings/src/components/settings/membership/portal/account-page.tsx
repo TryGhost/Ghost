@@ -18,6 +18,7 @@ const AccountPage: React.FC<{
     const {siteData, settings, config} = useGlobalData();
     const hasTransistor = useFeatureFlag('transistor');
     const [membersSupportAddress, supportEmailAddress] = getSettingValues(settings, ['members_support_address', 'support_email_address']);
+    const [localMembersSupportAddress] = getSettingValues(localSettings, ['members_support_address']);
     const calculatedSupportAddress = supportEmailAddress?.toString() || fullEmailAddress(membersSupportAddress?.toString() || '', siteData!, config);
     const emailDomain = getEmailDomain(siteData!, config);
     const [value, setValue] = useState(calculatedSupportAddress);
@@ -55,7 +56,8 @@ const AccountPage: React.FC<{
                     specialOptions={[
                         {value: 'noreply', label: 'No reply'}
                     ]}
-                    value={membersSupportAddress?.toString() || 'noreply'}
+                    title="Support email address"
+                    value={localMembersSupportAddress?.toString() || 'noreply'}
                     onChange={(newValue) => {
                         updateSetting('members_support_address', newValue);
                     }}
