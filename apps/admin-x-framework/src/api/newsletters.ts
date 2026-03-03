@@ -1,5 +1,5 @@
 import {InfiniteData} from '@tanstack/react-query';
-import {Meta, createInfiniteQuery, createMutation} from '../utils/api/hooks';
+import {Meta, createInfiniteQuery, createMutation, createQuery, createQueryWithId} from '../utils/api/hooks';
 import {insertToQueryCache, updateQueryCache} from '../utils/api/update-queries';
 
 export type Newsletter = {
@@ -59,6 +59,50 @@ export interface NewslettersResponseType {
 
 const dataType = 'NewslettersResponseType';
 export const newslettersDataType = dataType;
+const activeNewslettersCountDataType = 'ActiveNewslettersCount';
+const activeNewsletterSenderDefaultsDataType = 'ActiveNewsletterSenderDefaults';
+
+export const useActiveNewslettersCount = createQuery<number | undefined>({
+    dataType: activeNewslettersCountDataType,
+    path: '/newsletters/',
+    defaultSearchParams: {
+        filter: 'status:active',
+        limit: '1',
+        fields: 'id'
+    },
+    returnData: (data) => {
+        const total = (data as NewslettersResponseType).meta?.pagination.total;
+
+        return typeof total === 'number' ? total : undefined;
+    }
+});
+
+export type ActiveNewsletterSenderDefaults = Pick<Newsletter, 'id' | 'sender_name' | 'sender_email' | 'sender_reply_to'>;
+
+export const useActiveNewsletterSenderDefaults = createQuery<ActiveNewsletterSenderDefaults | undefined>({
+    dataType: activeNewsletterSenderDefaultsDataType,
+    path: '/newsletters/',
+    defaultSearchParams: {
+        filter: 'status:active',
+        limit: '1',
+        fields: 'id,sender_name,sender_email,sender_reply_to'
+    },
+    returnData: (data) => {
+        const newsletters = (data as NewslettersResponseType).newsletters;
+        const [newsletter] = newsletters || [];
+
+        if (!newsletter) {
+            return;
+        }
+
+        return {
+            id: newsletter.id,
+            sender_name: newsletter.sender_name,
+            sender_email: newsletter.sender_email,
+            sender_reply_to: newsletter.sender_reply_to
+        };
+    }
+});
 
 export const useBrowseNewsletters = createInfiniteQuery<NewslettersResponseType & {isEnd: boolean}>({
     dataType,
@@ -79,6 +123,12 @@ export const useBrowseNewsletters = createInfiniteQuery<NewslettersResponseType 
             isEnd: meta ? meta.pagination.pages === meta.pagination.page : true
         };
     }
+});
+
+export const useReadNewsletter = createQueryWithId<NewslettersResponseType>({
+    dataType,
+    path: id => `/newsletters/${id}/`,
+    defaultSearchParams: {include: 'count.active_members,count.posts'}
 });
 
 export const useAddNewsletter = createMutation<NewslettersResponseType, Partial<Newsletter> & {opt_in_existing: boolean}>({
