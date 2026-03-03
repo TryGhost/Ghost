@@ -2,7 +2,7 @@
     @options={{this.options}}
     @selected={{this.selectedOptions}}
     @disabled={{or @disabled this.fetchOptionsTask.isRunning}}
-    @optionsComponent={{component "power-select/options"}}
+    @optionsComponent={{component "power-select-options-with-scroll" lastReached=(perform this.loadMoreLabelsTask)}}
     @allowCreation={{false}}
     @renderInPlace={{this.renderInPlace}}
     @onChange={{this.setSegment}}

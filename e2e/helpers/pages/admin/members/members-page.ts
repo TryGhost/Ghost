@@ -68,7 +68,7 @@ class SettingsSection extends BasePage {
     async addLabelToSelectedMembers(labelName: string): Promise<void> {
         await this.addLabelForSelectedMembersButton.click();
         await this.selectLabel.waitFor({state: 'visible'});
-        await this.selectLabel.selectOption({label: labelName});
+        await this.selectLabelOption(labelName);
 
         await this.confirmAddLabelButton.click();
         await this.labelAdded.waitFor({state: 'visible'});
@@ -76,7 +76,8 @@ class SettingsSection extends BasePage {
 
     async removeLabelFromSelectedMembers(labelName: string): Promise<void> {
         await this.removeLabelForSelectedMembersButton.click();
-        await this.selectLabel.selectOption({label: labelName});
+        await this.selectLabel.waitFor({state: 'visible'});
+        await this.selectLabelOption(labelName);
 
         await this.confirmRemoveLabelButton.click();
         await this.labelRemoved.waitFor({state: 'visible'});
@@ -84,6 +85,16 @@ class SettingsSection extends BasePage {
 
     getSuccessMessage(): Locator {
         return this.page.getByTestId('label-success-message');
+    }
+
+    private async selectLabelOption(labelName: string): Promise<void> {
+        await this.selectLabel.click();
+
+        const dropdown = this.page.locator('.ember-power-select-dropdown').last();
+        const searchInput = dropdown.locator('.ember-power-select-search input');
+        await searchInput.fill(labelName);
+
+        await dropdown.getByRole('option', {name: labelName, exact: true}).click();
     }
 }
 
