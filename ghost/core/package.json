@@ -253,7 +253,7 @@
     "mocha-slow-test-reporter": "0.1.2",
     "mock-knex": "TryGhost/mock-knex#68948e11b0ea4fe63456098dfdc169bea7f62009",
     "nock": "13.5.6",
-    "nodemon": "3.1.11",
+    "nodemon": "3.1.14",
     "papaparse": "5.3.2",
     "parse-prometheus-text-format": "1.1.1",
     "postcss": "8.5.6",
