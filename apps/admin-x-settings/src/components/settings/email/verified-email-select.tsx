@@ -194,7 +194,7 @@ const VerifiedEmailSelect: React.FC<VerifiedEmailSelectProps> = ({
                             {showAddOption && (
                                 <>
                                     <CommandSeparator />
-                                    <CommandGroup>
+                                    <CommandGroup forceMount>
                                         <CommandItem
                                             value={`add-${searchTrimmed}`}
                                             forceMount
@@ -208,7 +208,7 @@ const VerifiedEmailSelect: React.FC<VerifiedEmailSelectProps> = ({
 
                             <CommandSeparator />
 
-                            <CommandGroup>
+                            <CommandGroup forceMount>
                                 <CommandItem forceMount onSelect={handleOpenManageModal}>
                                     Manage verified emails...
                                 </CommandItem>
