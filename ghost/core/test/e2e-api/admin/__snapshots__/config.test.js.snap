@@ -30,6 +30,7 @@ Object {
       "themeTranslation": true,
       "transistor": true,
       "urlCache": true,
+      "welcomeEmailDesignCustomization": true,
       "welcomeEmailEditor": true,
     },
     "mail": "",
