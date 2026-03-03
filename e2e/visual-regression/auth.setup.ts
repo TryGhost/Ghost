@@ -1,4 +1,4 @@
-import {test as setup, expect} from '@playwright/test';
+import {expect, test as setup} from '@playwright/test';
 
 /**
  * Authenticates once against the running Ghost instance and saves

@@ -1,4 +1,4 @@
-import {test, expect} from '@playwright/test';
+import {expect, test} from '@playwright/test';
 
 /**
  * Visual regression baselines for Ghost Admin.
@@ -215,11 +215,11 @@ test.describe('settings sections', () => {
 
             // Scroll the section into view within the settings scroller
             const scrolled = await page.evaluate((testId) => {
-                const section = document.querySelector(`[data-testid="${testId}"]`);
-                if (!section) {
+                const sectionEl = document.querySelector(`[data-testid="${testId}"]`);
+                if (!sectionEl) {
                     return false;
                 }
-                section.scrollIntoView({block: 'start'});
+                sectionEl.scrollIntoView({block: 'start'});
                 return true;
             }, section.testId);
 
