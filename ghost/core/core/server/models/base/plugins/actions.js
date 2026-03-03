@@ -24,7 +24,7 @@ module.exports = function (Bookshelf) {
         }
 
         const insert = (action) => {
-            Bookshelf.model('Action')
+            return Bookshelf.model('Action')
                 .add(action, {autoRefresh: false})
                 .catch((err) => {
                     if (_.isArray(err)) {
@@ -46,7 +46,7 @@ module.exports = function (Bookshelf) {
                 insert(data);
             });
         } else {
-            insert(data);
+            return insert(data);
         }
     };
 
@@ -68,7 +68,7 @@ module.exports = function (Bookshelf) {
         }
 
         const data = model.getAction(event, options);
-        insertAction(data, options);
+        return insertAction(data, options);
     };
 
     Bookshelf.Model = Bookshelf.Model.extend({
