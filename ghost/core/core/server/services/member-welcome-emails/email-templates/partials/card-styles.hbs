@@ -44,6 +44,162 @@ figcaption a {
     text-align: center;
 }
 
+.kg-bookmark-card {
+    width: 100%;
+}
+
+.kg-bookmark-card a {
+    text-decoration: none;
+}
+
+.kg-card + .kg-bookmark-card {
+    margin-top: 0;
+}
+
+.kg-bookmark-container {
+    display: flex;
+    min-height: 148px;
+    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+    text-decoration: none;
+    border-radius: 3px;
+    {{#if backgroundIsDark}}
+        color: #ffffff;
+        background-color: #15212A;
+        background-color: rgba(0, 0, 0, 0.15);
+        border: 1px solid #343434;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+    {{else}}
+        color: #15212A;
+        background-color: #ffffff;
+        background-color: rgba(255, 255, 255, 0.25);
+        border: 1px solid #e0e7eb;
+        border: 1px solid rgba(0, 0, 0, 0.12);
+    {{/if}}
+}
+
+.kg-bookmark-content {
+    display: inline-block;
+    width: 100%;
+    padding: 20px;
+}
+
+.kg-bookmark-title {
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
+    font-size: 15px;
+    line-height: 1.5em;
+    font-weight: 600;
+}
+
+.kg-bookmark-description {
+    display: -webkit-box;
+    overflow-y: hidden;
+    margin-top: 12px;
+    max-height: 40px;
+    {{#if backgroundIsDark}}
+    color: #ffffff;
+    color: rgba(255, 255, 255, 0.6);
+    {{else}}
+    color: #15212a;
+    color: rgba(0, 0, 0, 0.6);
+    {{/if}}
+    font-size: 13px;
+    line-height: 1.5em;
+    font-weight: 400;
+
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.kg-bookmark-thumbnail {
+    min-width: 140px;
+    max-width: 180px;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    border-radius: 0 2px 2px 0;
+}
+
+.kg-bookmark-thumbnail img {
+    display: none;
+}
+
+.kg-bookmark-metadata {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-top: 14px;
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
+    font-size: 13px;
+    font-weight: 400;
+}
+
+.kg-bookmark-icon {
+    margin-right: 8px;
+    width: 22px;
+    height: 22px;
+}
+
+.kg-bookmark-icon[src$=".svg"] {
+    display: none;
+}
+
+.kg-bookmark-author {
+    line-height: 1.5em;
+}
+
+.kg-bookmark-publisher {
+    overflow: hidden;
+    max-width: 240px;
+    line-height: 1.5em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.kg-bookmark-publisher:before {
+    content: "•";
+    margin: 0 6px;
+}
+
+.kg-video-preview {
+    background-color: #1d1f21;
+    background-image: radial-gradient(circle at center, #5b5f66, #1d1f21);
+    display: block;
+    text-decoration: none !important;
+    {{#if hasRoundedImageCorners}}
+        border-radius: 6px;
+    {{/if}}
+}
+
+.kg-video-preview table {
+    background-size: cover;
+    min-height: 200px; /* for when images aren't loaded */
+    {{#if hasRoundedImageCorners}}
+        border-radius: 6px;
+    {{/if}}
+    overflow: hidden;
+}
+
+.kg-video-play-button {
+    height: 2em;
+    width: 3em;
+    margin: 0 auto;
+    border-radius: 10px;
+    padding: 1em 0.8em 0.6em 1em;
+    font-size: 1em; /* change this to resize */
+    background-color: rgba(0,0,0,0.85);
+}
+
+.kg-video-play-button div {
+    display: block;
+    width: 0;
+    height: 0;
+    margin: 0 auto;
+    line-height: 0px; /* fix for Yahoo Mail */
+    border-color: transparent transparent transparent white;
+    border-style: solid;
+    border-width: 0.8em 0 0.8em 1.5em;
+}
+
 .kg-callout-card {
     display: flex;
     margin: 0 0 1.5em 0;
@@ -158,4 +314,22 @@ table.btn-accent a {
     {{else}}
     color: {{accentContrastColor}};
     {{/if}}
+}
+
+@media only screen and (max-width: 620px) {
+    table.body .kg-bookmark-card {
+        width: 90vw;
+    }
+
+    table.body .kg-bookmark-thumbnail {
+        display: none !important;
+    }
+
+    table.body .kg-bookmark-metadata span {
+        font-size: 13px !important;
+    }
+
+    table.body .kg-embed-card {
+        max-width: 90vw !important;
+    }
 }
