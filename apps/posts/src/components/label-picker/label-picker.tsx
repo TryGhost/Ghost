@@ -1,6 +1,7 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {
     Badge,
+    Button,
     Command,
     CommandEmpty,
     CommandGroup,
@@ -89,33 +90,11 @@ const EditRow: React.FC<EditRowProps> = ({label, onSave, onCancel, onDelete, isD
         await onDelete(label.id);
     };
 
-    if (showDeleteConfirm) {
-        return (
-            <div className="flex items-center gap-1.5 px-2 py-1.5 text-sm" data-edit-row>
-                <span className="flex-1 truncate text-destructive">Delete this label?</span>
-                <button
-                    className="rounded px-1.5 py-0.5 text-xs font-medium text-destructive hover:bg-destructive/10"
-                    type="button"
-                    onClick={handleDelete}
-                >
-                    Delete
-                </button>
-                <button
-                    className="rounded px-1.5 py-0.5 text-xs font-medium text-muted-foreground hover:bg-secondary"
-                    type="button"
-                    onClick={() => setShowDeleteConfirm(false)}
-                >
-                    Cancel
-                </button>
-            </div>
-        );
-    }
-
     return (
-        <div className="relative flex items-center gap-1.5 px-2 py-1" data-edit-row>
+        <div className="flex flex-col gap-2 py-1.5" data-edit-row>
             <input
                 ref={inputRef}
-                className="h-7 flex-1 rounded border border-border bg-background px-2 text-sm outline-none focus:ring-1 focus:ring-ring"
+                className="h-7 w-full rounded border border-border bg-background px-2 text-sm outline-none focus:ring-1 focus:ring-ring"
                 type="text"
                 value={name}
                 onChange={(e) => {
@@ -124,31 +103,56 @@ const EditRow: React.FC<EditRowProps> = ({label, onSave, onCancel, onDelete, isD
                 }}
                 onKeyDown={handleKeyDown}
             />
-            <button
-                className="flex size-7 items-center justify-center rounded text-muted-foreground hover:bg-secondary hover:text-foreground"
-                title="Save"
-                type="button"
-                onClick={handleSave}
-            >
-                <LucideIcon.Check className="size-3.5" />
-            </button>
-            <button
-                className="flex size-7 items-center justify-center rounded text-muted-foreground hover:bg-secondary hover:text-foreground"
-                title="Cancel"
-                type="button"
-                onClick={onCancel}
-            >
-                <LucideIcon.X className="size-3.5" />
-            </button>
-            <button
-                className="flex size-7 items-center justify-center rounded text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-                title="Delete"
-                type="button"
-                onClick={() => setShowDeleteConfirm(true)}
-            >
-                <LucideIcon.Trash2 className="size-3.5" />
-            </button>
-            {error && <span className="absolute -bottom-5 left-2 text-xs text-destructive">{error}</span>}
+            {error && <span className="text-xs text-destructive">{error}</span>}
+            {showDeleteConfirm ? (
+                <div className="flex items-center gap-1 text-sm">
+                    <span className="flex-1 font-semibold">Delete label?</span>
+                    <Button
+                        className="h-6 px-2 text-xs"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setShowDeleteConfirm(false)}
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        className="h-6 px-2 text-xs"
+                        size="sm"
+                        variant="destructive"
+                        onClick={handleDelete}
+                    >
+                        Delete
+                    </Button>
+                </div>
+            ) : (
+                <div className="flex items-center">
+                    <Button
+                        className="h-6 gap-1 px-1.5 text-xs text-red hover:bg-red/5 hover:text-red"
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setShowDeleteConfirm(true)}
+                    >
+                        Delete
+                    </Button>
+                    <div className="ml-auto flex gap-1">
+                        <Button
+                            className="h-6 px-2 text-xs"
+                            size="sm"
+                            variant="outline"
+                            onClick={onCancel}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            className="h-6 px-2 text-xs"
+                            size="sm"
+                            onClick={handleSave}
+                        >
+                            Save
+                        </Button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
@@ -181,9 +185,9 @@ const LabelRow: React.FC<LabelRowProps> = ({label, isSelected, showEdit, onToggl
                 }}
             >
                 {isSelected && (
-                    <LucideIcon.Check className="absolute size-3 text-primary transition-opacity group-hover:opacity-0" />
+                    <LucideIcon.Check className="absolute size-3 text-primary transition-opacity duration-150 group-hover:opacity-0" />
                 )}
-                <LucideIcon.Pencil className="absolute size-3 opacity-0 transition-opacity group-hover:opacity-100" />
+                <LucideIcon.Pencil className="absolute size-3 translate-x-2 opacity-0 transition-all duration-150 ease-out group-hover:translate-x-0 group-hover:opacity-100" />
             </button>
         ) : (
             isSelected && <LucideIcon.Check className="size-4 shrink-0 text-primary" />
@@ -283,7 +287,7 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
                             disabled={isCreating}
                             onSelect={handleCreate}
                         >
-                            <LucideIcon.Plus className="mr-1 size-4" />
+                            <LucideIcon.Plus className="size-4" />
                             {isCreating ? 'Creating...' : `Create "${search.trim()}"`}
                         </CommandItem>
                     </CommandGroup>
