@@ -22,6 +22,7 @@ class VerificationTrigger {
      * @param {(content: {subject: string, message: string, amountTriggered: number}) => Promise<void>} deps.sendVerificationEmail Sends an email to the escalation address to confirm that customer needs to be verified
      * @param {any} deps.Settings Ghost Settings model
      * @param {any} deps.eventRepository For querying events
+     * @param {string} [deps.emailVerificationNeededMessage] Custom message shown when email verification is triggered
      */
     constructor({
         getApiTriggerThreshold,
@@ -31,7 +32,8 @@ class VerificationTrigger {
         isVerificationRequired,
         sendVerificationEmail,
         Settings,
-        eventRepository
+        eventRepository,
+        emailVerificationNeededMessage
     }) {
         this._getApiTriggerThreshold = getApiTriggerThreshold;
         this._getAdminTriggerThreshold = getAdminTriggerThreshold;
@@ -41,6 +43,7 @@ class VerificationTrigger {
         this._sendVerificationEmail = sendVerificationEmail;
         this._Settings = Settings;
         this._eventRepository = eventRepository;
+        this._emailVerificationNeededMessage = emailVerificationNeededMessage;
 
         this._handleMemberCreatedEvent = this._handleMemberCreatedEvent.bind(this);
 
@@ -205,7 +208,7 @@ class VerificationTrigger {
 
                 if (throwOnTrigger) {
                     throw new errors.HostLimitError({
-                        message: messages.emailVerificationNeeded,
+                        message: this._emailVerificationNeededMessage || messages.emailVerificationNeeded,
                         code: 'EMAIL_VERIFICATION_NEEDED'
                     });
                 }

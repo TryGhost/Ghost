@@ -419,7 +419,8 @@ export default class LexicalEditorController extends Controller {
     openUpgradeModal(hostLimitError = {}) {
         this.modals.open(PublishLimitModal, {
             message: hostLimitError.message,
-            details: hostLimitError.details
+            details: hostLimitError.details,
+            code: hostLimitError.code
         });
     }
 
