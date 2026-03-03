@@ -182,6 +182,7 @@ export interface BulkEditAction {
     meta?: {
         label?: {id: string};
     };
+    newsletter?: string | null;
 }
 
 export interface BulkOperationResponseType {
@@ -204,7 +205,8 @@ export const useBulkEditMembers = createMutation<
     body: ({action}) => ({
         bulk: {
             action: action.type,
-            meta: action.meta || {}
+            meta: action.meta || {},
+            newsletter: action.newsletter
         }
     }),
     searchParams: ({filter, all}) => {
