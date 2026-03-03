@@ -41,6 +41,10 @@ const Newsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
         setNewsletters(apiNewsletters || []);
     }, [apiNewsletters]);
 
+    // @deprecated - This handler processes legacy MagicLink-based verification tokens
+    // that were sent before the centralized EmailVerificationService was deployed.
+    // New verification tokens use the unified handler at #/settings/verified-emails/?verifyEmail=TOKEN.
+    // This can be removed once all legacy tokens have expired (24 hours after deploy).
     useEffect(() => {
         if (!verifyEmailToken || !window.location.href.includes('newsletters')) {
             return;
