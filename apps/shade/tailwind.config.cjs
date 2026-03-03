@@ -365,15 +365,15 @@ module.exports = {
             },
             fontSize: {
                 '2xs': '1.0rem',
-                base: '1.4rem',
-                xs: '1.2rem',
-                sm: '1.3rem',
+                base: ['1.4rem', '1.5'],
+                xs: ['1.2rem', '1.5'],
+                sm: ['1.3rem', '1.5'],
                 md: '1.4rem',
-                lg: '1.5rem',
-                xl: '1.7rem',
-                '2xl': '2.2rem',
-                '3xl': '2.8rem',
-                '4xl': '3.2rem',
+                lg: ['1.5rem', '1.5'],
+                xl: ['1.7rem', '1.5'],
+                '2xl': ['2.2rem', '1.5'],
+                '3xl': ['2.8rem', '1.5'],
+                '4xl': ['3.2rem', '1.5'],
                 '5xl': [
                     '4.0rem',
                     '1.15'
