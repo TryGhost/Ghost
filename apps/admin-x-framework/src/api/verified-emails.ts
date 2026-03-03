@@ -42,7 +42,7 @@ export const useAddVerifiedEmail = createMutation<VerifiedEmailsAddResponseType,
     updateQueries: {
         dataType,
         emberUpdateType: 'createOrUpdate',
-        update: (newData) => newData
+        update: newData => newData
     }
 });
 
@@ -53,16 +53,16 @@ export const useVerifyVerifiedEmail = createMutation<VerifiedEmailsVerifyRespons
     updateQueries: {
         dataType,
         emberUpdateType: 'createOrUpdate',
-        update: (newData) => newData
+        update: newData => newData
     }
 });
 
 export const useDeleteVerifiedEmail = createMutation<unknown, string>({
     method: 'DELETE',
-    path: (id) => `/verified-emails/${id}/`,
+    path: id => `/verified-emails/${id}/`,
     updateQueries: {
         dataType,
         emberUpdateType: 'delete',
-        update: (newData) => newData
+        update: newData => newData
     }
 });
