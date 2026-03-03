@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {
     Badge,
     Button,
@@ -7,7 +7,6 @@ import {
     CommandGroup,
     CommandItem,
     CommandList,
-    CommandSeparator,
     LucideIcon,
     Popover,
     PopoverAnchor,
@@ -48,7 +47,10 @@ const EditRow: React.FC<EditRowProps> = ({label, onSave, onCancel, onDelete, isD
     const [name, setName] = useState(label.name);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [error, setError] = useState('');
+    const [isSaving, setIsSaving] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
+    const isBusy = isSaving || isDeleting;
 
     useEffect(() => {
         inputRef.current?.focus();
@@ -72,8 +74,13 @@ const EditRow: React.FC<EditRowProps> = ({label, onSave, onCancel, onDelete, isD
             setError(validationError);
             return;
         }
-        await onSave(label.id, name.trim());
-        onCancel();
+        setIsSaving(true);
+        try {
+            await onSave(label.id, name.trim());
+            onCancel();
+        } catch {
+            setIsSaving(false);
+        }
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -82,19 +89,28 @@ const EditRow: React.FC<EditRowProps> = ({label, onSave, onCancel, onDelete, isD
             handleSave();
         } else if (e.key === 'Escape') {
             e.preventDefault();
-            onCancel();
+            if (!isBusy) {
+                onCancel();
+            }
         }
     };
 
     const handleDelete = async () => {
-        await onDelete(label.id);
+        setIsDeleting(true);
+        try {
+            await onDelete(label.id);
+        } catch {
+            setIsDeleting(false);
+            setShowDeleteConfirm(false);
+        }
     };
 
     return (
         <div className="flex flex-col gap-2 py-1.5" data-edit-row>
             <input
                 ref={inputRef}
-                className="h-7 w-full rounded border border-border bg-background px-2 text-sm outline-none focus:ring-1 focus:ring-ring"
+                className="h-7 w-full rounded border border-border bg-background px-2 text-sm outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
+                disabled={isBusy}
                 type="text"
                 value={name}
                 onChange={(e) => {
@@ -109,6 +125,7 @@ const EditRow: React.FC<EditRowProps> = ({label, onSave, onCancel, onDelete, isD
                     <span className="flex-1 font-semibold">Delete label?</span>
                     <Button
                         className="h-6 px-2 text-xs"
+                        disabled={isBusy}
                         size="sm"
                         variant="outline"
                         onClick={() => setShowDeleteConfirm(false)}
@@ -117,17 +134,19 @@ const EditRow: React.FC<EditRowProps> = ({label, onSave, onCancel, onDelete, isD
                     </Button>
                     <Button
                         className="h-6 px-2 text-xs"
+                        disabled={isBusy}
                         size="sm"
                         variant="destructive"
                         onClick={handleDelete}
                     >
-                        Delete
+                        {isDeleting ? 'Deleting...' : 'Delete'}
                     </Button>
                 </div>
             ) : (
                 <div className="flex items-center">
                     <Button
                         className="h-6 gap-1 px-1.5 text-xs text-red hover:bg-red/5 hover:text-red"
+                        disabled={isBusy}
                         size="sm"
                         variant="ghost"
                         onClick={() => setShowDeleteConfirm(true)}
@@ -137,6 +156,7 @@ const EditRow: React.FC<EditRowProps> = ({label, onSave, onCancel, onDelete, isD
                     <div className="ml-auto flex gap-1">
                         <Button
                             className="h-6 px-2 text-xs"
+                            disabled={isBusy}
                             size="sm"
                             variant="outline"
                             onClick={onCancel}
@@ -145,10 +165,11 @@ const EditRow: React.FC<EditRowProps> = ({label, onSave, onCancel, onDelete, isD
                         </Button>
                         <Button
                             className="h-6 px-2 text-xs"
+                            disabled={isBusy}
                             size="sm"
                             onClick={handleSave}
                         >
-                            Save
+                            {isSaving ? 'Saving...' : 'Save'}
                         </Button>
                     </div>
                 </div>
@@ -176,6 +197,7 @@ const LabelRow: React.FC<LabelRowProps> = ({label, isSelected, showEdit, onToggl
         <span className="flex-1 truncate">{label.name}</span>
         {showEdit ? (
             <button
+                aria-label={`Edit label ${label.name}`}
                 className="relative ml-1 flex size-5 shrink-0 items-center justify-center rounded text-muted-foreground hover:text-foreground"
                 type="button"
                 onClick={(e) => {
@@ -255,43 +277,44 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
 
     return (
         <>
-            <CommandEmpty>No labels found</CommandEmpty>
-            <CommandGroup>
-                {filteredLabels.map(label => (
-                    editingLabelId === label.id ? (
-                        <EditRow
-                            key={label.id}
-                            isDuplicateName={isDuplicateName}
-                            label={label}
-                            onCancel={() => setEditingLabelId(null)}
-                            onDelete={handleDelete}
-                            onSave={handleEdit}
-                        />
-                    ) : (
-                        <LabelRow
-                            key={label.id}
-                            isSelected={selectedSlugs.includes(label.slug)}
-                            label={label}
-                            showEdit={showEdit}
-                            onEditClick={() => setEditingLabelId(label.id)}
-                            onToggle={onToggle}
-                        />
-                    )
-                ))}
-            </CommandGroup>
+            {!showCreate && filteredLabels.length === 0 && (
+                <CommandEmpty>No labels found</CommandEmpty>
+            )}
+            {filteredLabels.length > 0 && (
+                <CommandGroup className="[&_[cmdk-group-heading]]:hidden">
+                    {filteredLabels.map(label => (
+                        editingLabelId === label.id ? (
+                            <EditRow
+                                key={label.id}
+                                isDuplicateName={isDuplicateName}
+                                label={label}
+                                onCancel={() => setEditingLabelId(null)}
+                                onDelete={handleDelete}
+                                onSave={handleEdit}
+                            />
+                        ) : (
+                            <LabelRow
+                                key={label.id}
+                                isSelected={selectedSlugs.includes(label.slug)}
+                                label={label}
+                                showEdit={showEdit}
+                                onEditClick={() => setEditingLabelId(label.id)}
+                                onToggle={onToggle}
+                            />
+                        )
+                    ))}
+                </CommandGroup>
+            )}
             {showCreate && (
-                <>
-                    <CommandSeparator />
-                    <CommandGroup>
-                        <CommandItem
-                            disabled={isCreating}
-                            onSelect={handleCreate}
-                        >
-                            <LucideIcon.Plus className="size-4" />
-                            {isCreating ? 'Creating...' : `Create "${search.trim()}"`}
-                        </CommandItem>
-                    </CommandGroup>
-                </>
+                <CommandGroup className="[&_[cmdk-group-heading]]:hidden">
+                    <CommandItem
+                        disabled={isCreating}
+                        onSelect={handleCreate}
+                    >
+                        <LucideIcon.Plus className="size-4" />
+                        {isCreating ? 'Creating...' : `Create "${search.trim()}"`}
+                    </CommandItem>
+                </CommandGroup>
             )}
         </>
     );
@@ -345,43 +368,21 @@ const LabelPicker: React.FC<LabelPickerProps> = ({
 
     // --- Inline mode (for filter cells): minimal trigger + popover ---
     if (inline) {
-        const triggerText = selectedLabels.length === 0
-            ? 'Select...'
-            : selectedLabels.length === 1
-                ? selectedLabels[0].name
-                : `${selectedLabels.length} labels`;
-
         return (
-            <Popover>
-                <PopoverTrigger asChild>
-                    <button
-                        className="flex size-full items-center truncate text-left text-sm"
-                        type="button"
-                    >
-                        {triggerText}
-                    </button>
-                </PopoverTrigger>
-                <PopoverContent align={align} className="w-64 p-0">
-                    {isLoading ? (
-                        <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
-                            Loading labels...
-                        </div>
-                    ) : (
-                        <InlineList
-                            canCreateFromSearch={canCreateFromSearch}
-                            isCreating={isCreating}
-                            isDuplicateName={isDuplicateName}
-                            labels={labels}
-                            selectedLabels={selectedLabels}
-                            selectedSlugs={selectedSlugs}
-                            onCreate={onCreate}
-                            onDelete={onDelete}
-                            onEdit={onEdit}
-                            onToggle={onToggle}
-                        />
-                    )}
-                </PopoverContent>
-            </Popover>
+            <InlinePopover
+                align={align}
+                canCreateFromSearch={canCreateFromSearch}
+                isCreating={isCreating}
+                isDuplicateName={isDuplicateName}
+                isLoading={isLoading}
+                labels={labels}
+                selectedLabels={selectedLabels}
+                selectedSlugs={selectedSlugs}
+                onCreate={onCreate}
+                onDelete={onDelete}
+                onEdit={onEdit}
+                onToggle={onToggle}
+            />
         );
     }
 
@@ -401,6 +402,99 @@ const LabelPicker: React.FC<LabelPickerProps> = ({
             onEdit={onEdit}
             onToggle={onToggle}
         />
+    );
+};
+
+// --- InlinePopover: trigger + popover aligned to parent container (for filter cells) ---
+
+interface InlinePopoverProps {
+    labels: Label[];
+    selectedLabels: Label[];
+    selectedSlugs: string[];
+    onToggle: (slug: string) => void;
+    isLoading?: boolean;
+    align?: 'start' | 'end';
+    canCreateFromSearch?: (inputValue: string) => boolean;
+    onCreate?: (name: string) => Promise<Label | undefined>;
+    isCreating?: boolean;
+    onEdit?: (id: string, name: string) => Promise<void>;
+    onDelete?: (id: string) => Promise<void>;
+    isDuplicateName?: (name: string, excludeId?: string) => boolean;
+}
+
+const InlinePopover: React.FC<InlinePopoverProps> = ({
+    labels,
+    selectedLabels,
+    selectedSlugs,
+    onToggle,
+    isLoading,
+    align = 'start',
+    canCreateFromSearch,
+    onCreate,
+    isCreating,
+    onEdit,
+    onDelete,
+    isDuplicateName
+}) => {
+    const triggerRef = useRef<HTMLButtonElement>(null);
+    const [alignOffset, setAlignOffset] = useState(0);
+
+    // Measure the offset between the trigger and its parent wrapper so
+    // the popover aligns with the outer container edge, not the padded inner
+    const updateAlignOffset = useCallback(() => {
+        const trigger = triggerRef.current;
+        const parent = trigger?.parentElement;
+        if (trigger && parent) {
+            const triggerRect = trigger.getBoundingClientRect();
+            const parentRect = parent.getBoundingClientRect();
+            setAlignOffset(Math.round(parentRect.left - triggerRect.left));
+        }
+    }, []);
+
+    const triggerText = selectedLabels.length === 0
+        ? 'Select...'
+        : selectedLabels.length === 1
+            ? selectedLabels[0].name
+            : `${selectedLabels.length} labels`;
+
+    return (
+        <Popover
+            onOpenChange={(open) => {
+                if (open) {
+                    updateAlignOffset();
+                }
+            }}
+        >
+            <PopoverTrigger asChild>
+                <button
+                    ref={triggerRef}
+                    className="flex size-full items-center truncate text-left text-sm"
+                    type="button"
+                >
+                    {triggerText}
+                </button>
+            </PopoverTrigger>
+            <PopoverContent align={align} alignOffset={alignOffset} className="w-64 p-0">
+                {isLoading ? (
+                    <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
+                        Loading labels...
+                    </div>
+                ) : (
+                    <InlineList
+                        canCreateFromSearch={canCreateFromSearch}
+                        isCreating={isCreating}
+                        isDuplicateName={isDuplicateName}
+                        labels={labels}
+                        selectedLabels={selectedLabels}
+                        selectedSlugs={selectedSlugs}
+                        onCreate={onCreate}
+                        onDelete={onDelete}
+                        onEdit={onEdit}
+                        onToggle={onToggle}
+                    />
+                )}
+            </PopoverContent>
+        </Popover>
     );
 };
 
@@ -498,7 +592,7 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverAnchor asChild>
                 <div
-                    className="flex min-h-10 w-full cursor-text flex-wrap items-center gap-1.5 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
+                    className="flex min-h-9 w-full cursor-text flex-wrap items-center gap-1.5 rounded-md border border-transparent bg-gray-150 px-3 py-1 text-sm transition-colors focus-within:border-green focus-within:bg-transparent focus-within:shadow-[0_0_0_2px_rgba(48,207,67,.25)] dark:bg-gray-900"
                     role="combobox"
                     onClick={() => {
                         inputRef.current?.focus();

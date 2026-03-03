@@ -164,8 +164,6 @@ export function useMembersFilterConfig({
             basicFields.push({
                 key: 'label',
                 label: 'Label',
-                // type: 'select' gives us the initial dropdown in the add-filter popover,
-                // customRenderer takes priority for the value cell once the filter row exists
                 type: 'select',
                 icon: <LucideIcon.Tag className="size-4" />,
                 options: labelsOptions.length > 0 ? labelsOptions : labels.map(l => ({
