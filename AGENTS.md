@@ -229,3 +229,97 @@ yarn nx reset                  # Reset Nx cache
 ### Test Issues
 - **E2E failures:** Check `e2e/CLAUDE.md` for debugging tips
 - **Docker issues:** `yarn docker:clean && yarn docker:build`
+
+## Postmark Integration (Fork-specific)
+
+This fork adds Postmark as a first-class bulk email provider alongside Mailgun. The integration is designed so both providers share the same interface and can be swapped at runtime via a database setting.
+
+### New Packages
+
+| Package | Path | Description |
+|---------|------|-------------|
+| `@tryghost/postmark-client` | `ghost/postmark-client/` | Wraps the `postmark` npm SDK. Mirrors `MailgunClient`'s interface for sending, event fetching, and suppression removal. |
+| `@tryghost/email-analytics-provider-postmark` | `ghost/email-analytics-provider-postmark/` | Implements the `EmailAnalyticsProvider` interface. Registered alongside the Mailgun provider so analytics are fetched from whichever provider is active. |
+
+### Configuration
+
+**Option 1 — Admin UI (stores in DB, recommended):**
+1. Ghost Admin → Settings → Email newsletter → Email provider
+2. Select **Postmark** from the dropdown
+3. Enter the Postmark **Server API Token**
+4. Save — stores `bulk_email_provider = 'postmark'` and `postmark_api_token` in the `settings` table
+
+**Option 2 — Config file (takes precedence over DB settings):**
+```json
+{
+  "bulkEmail": {
+    "postmark": {
+      "apiToken": "your-postmark-server-api-token",
+      "streamId": "broadcast"
+    }
+  }
+}
+```
+When using a config file, also set `bulk_email_provider = 'postmark'` via the Admin UI or API, because `email-service-wrapper.js` routes sends based on that DB setting.
+
+### Settings Added to DB (`default-settings.json`)
+
+| Key | Group | Default | Notes |
+|-----|-------|---------|-------|
+| `bulk_email_provider` | `email` | `'mailgun'` | `'mailgun'` or `'postmark'` |
+| `postmark_api_token` | `email` | `null` | Postmark Server API Token |
+| `postmark_stream_id` | — | `'broadcast'` | Read from settings but **not** in `default-settings.json`; config-file only |
+
+`postmark_api_token` is in the `EDITABLE_SETTINGS` allowlist in `ghost/core/core/server/api/endpoints/utils/serializers/input/settings.js` so it can be written via the Admin API.
+
+### Architecture: How Postmark Plugs In
+
+```
+email-service-wrapper.js :: getMailClient()
+    bulk_email_provider === 'postmark'  → new PostmarkClient(...)
+    else                               → new MailgunClient(...)
+        ↓
+BulkEmailProvider (shared interface)
+        ↓
+PostmarkClient.send() → postmark SDK → sendEmailBatch()
+
+--- Analytics ---
+email-analytics-service-wrapper.js registers BOTH providers:
+    [EmailAnalyticsProviderMailgun, EmailAnalyticsProviderPostmark]
+Each provider's fetchLatest() is called every cycle; PostmarkClient
+exits early with a warning if not configured.
+
+--- Suppression removal ---
+MailgunEmailSuppressionList is used polymorphically — PostmarkClient
+implements removeBounce/removeComplaint/removeUnsubscribe, which call
+Postmark's deleteSuppressions() API.
+```
+
+### Key Files to Know
+
+| File | What changed |
+|------|-------------|
+| `ghost/postmark-client/lib/PostmarkClient.js` | Core client: send, fetchEvents, normalizeEvent, removeSuppression |
+| `ghost/email-analytics-provider-postmark/lib/EmailAnalyticsProviderPostmark.js` | Analytics provider wrapper |
+| `ghost/core/core/server/services/email-service/email-service-wrapper.js` | `getMailClient()` branches on `bulk_email_provider` |
+| `ghost/core/core/server/services/email-analytics/email-analytics-service-wrapper.js` | Registers both analytics providers |
+| `ghost/core/core/server/services/email-service/BulkEmailProvider.js` | JSDoc + error-handling branch for Postmark (TODO: errors currently dropped) |
+| `ghost/core/core/server/services/public-config/config.js` | Exposes `postmarkIsConfigured` to frontend |
+| `ghost/core/core/server/data/schema/default-settings/default-settings.json` | `postmark_api_token` default setting |
+| `apps/admin-x-settings/src/components/settings/email/BulkEmail.tsx` | Unified provider-selector UI (Mailgun + Postmark) |
+| `ghost/admin/app/services/settings.js` | `bulkEmailIsConfigured` includes Postmark token check |
+
+### Known Issues / TODOs
+
+- `BulkEmailProvider.js` has an explicit `@TODO: handle postmark errors` — Postmark errors are currently silently dropped.
+- `postmark_stream_id` cannot be set via the Admin UI; config-file only.
+- `ghost/core/test/unit/server/services/email-service/bulk-email-provider.test.js` has **unresolved git merge conflict markers** and will not run.
+- `ghost/postmark-client/test/postmark-client.test.js` and `ghost/email-analytics-provider-postmark/test/provider-postmark.test.js` are **empty stubs**.
+- `EmailAnalyticsProviderPostmark` always fetches only the last 5 minutes of open events regardless of the `begin`/`end` options passed to it.
+
+### Testing Postmark Packages
+
+```bash
+cd ghost/postmark-client && yarn test
+cd ghost/email-analytics-provider-postmark && yarn test
+```
