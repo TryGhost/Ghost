@@ -52,7 +52,8 @@ export class EmbedNode extends BaseEmbedNode {
         queryParams: ['url'],
         matches: ['twitter', 'x'],
         priority: 3,
-        shortcut: '/twitter [url]'
+        shortcut: '/twitter [url]',
+        isHidden: ({config}) => config?.editorType === 'email'
     },
     {
         section: 'Embeds',
@@ -63,7 +64,8 @@ export class EmbedNode extends BaseEmbedNode {
         queryParams: ['url'],
         matches: ['vimeo'],
         priority: 4,
-        shortcut: '/vimeo [url]'
+        shortcut: '/vimeo [url]',
+        isHidden: ({config}) => config?.editorType === 'email'
     },
     {
         section: 'Embeds',
@@ -74,7 +76,8 @@ export class EmbedNode extends BaseEmbedNode {
         queryParams: ['url'],
         matches: ['codepen'],
         priority: 5,
-        shortcut: '/codepen [url]'
+        shortcut: '/codepen [url]',
+        isHidden: ({config}) => config?.editorType === 'email'
     },
     {
         section: 'Embeds',
@@ -85,7 +88,8 @@ export class EmbedNode extends BaseEmbedNode {
         queryParams: ['url'],
         matches: ['spotify'],
         priority: 6,
-        shortcut: '/spotify [url]'
+        shortcut: '/spotify [url]',
+        isHidden: ({config}) => config?.editorType === 'email'
     },
     {
         section: 'Embeds',
@@ -96,7 +100,8 @@ export class EmbedNode extends BaseEmbedNode {
         queryParams: ['url'],
         matches: ['soundcloud'],
         priority: 7,
-        shortcut: '/soundcloud [url]'
+        shortcut: '/soundcloud [url]',
+        isHidden: ({config}) => config?.editorType === 'email'
     }];
 
     getIcon() {

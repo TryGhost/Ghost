@@ -169,6 +169,32 @@ test.describe('Koenig Editor with email template nodes', async function () {
             await expect(page.locator('[data-kg-slash-menu]')).toBeVisible();
         });
 
+        test('only shows YouTube and Other embed options', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('/');
+            await expect(page.locator('[data-kg-slash-menu]')).toBeVisible();
+
+            // Should show YouTube and Other
+            await expect(page.locator('[data-kg-card-menu-item="YouTube"]')).toBeVisible();
+            await expect(page.locator('[data-kg-card-menu-item="Other..."]')).toBeVisible();
+
+            // Should NOT show other embed types
+            await expect(page.locator('[data-kg-card-menu-item="Vimeo"]')).toHaveCount(0);
+            await expect(page.locator('[data-kg-card-menu-item="SoundCloud"]')).toHaveCount(0);
+            await expect(page.locator('[data-kg-card-menu-item="Spotify"]')).toHaveCount(0);
+            await expect(page.locator('[data-kg-card-menu-item="CodePen"]')).toHaveCount(0);
+            await expect(page.locator('[data-kg-card-menu-item="X (formerly Twitter)"]')).toHaveCount(0);
+        });
+
+        test('can insert YouTube embed via slash menu', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('/youtube');
+            await expect(page.locator('[data-kg-card-menu-item="YouTube"][data-kg-cardmenu-selected="true"]')).toBeVisible();
+            await page.keyboard.press('Enter');
+
+            await expect(page.locator('[data-kg-card="embed"]')).toBeVisible();
+        });
+
         test('plus button is shown', async function () {
             await focusEditor(page);
             await expect(page.locator('[data-kg-plus-button]')).toBeVisible();

@@ -18,6 +18,7 @@ import DragDropPastePlugin from './plugins/DragDropPastePlugin';
 import DragDropReorderPlugin from './plugins/DragDropReorderPlugin';
 import EmEnDashPlugin from './plugins/EmEnDashPlugin';
 import EmailCtaPlugin from './plugins/EmailCtaPlugin';
+import EmbedPlugin from './plugins/EmbedPlugin';
 import EmojiPickerPlugin from './plugins/EmojiPickerPlugin';
 import ExternalControlPlugin from './plugins/ExternalControlPlugin';
 import FilePlugin from './plugins/FilePlugin';
@@ -85,7 +86,8 @@ export {
     CardMenuPlugin,
     DragDropPastePlugin,
     DragDropReorderPlugin,
-    EmailCtaPlugin, 
+    EmailCtaPlugin,
+    EmbedPlugin,
     EmEnDashPlugin,
     EmojiPickerPlugin,
     ExternalControlPlugin,

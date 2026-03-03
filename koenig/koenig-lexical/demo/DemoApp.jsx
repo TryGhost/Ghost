@@ -17,7 +17,7 @@ import {$getRoot, $isDecoratorNode} from 'lexical';
 import {
     BASIC_NODES, BASIC_TRANSFORMERS, BookmarkPlugin,
     ButtonPlugin, CalloutPlugin, CardMenuPlugin, EMAIL_EDITOR_NODES,
-    EMAIL_TRANSFORMERS, EmEnDashPlugin, EmailCtaPlugin, EmojiPickerPlugin, 
+    EMAIL_TRANSFORMERS, EmEnDashPlugin, EmailCtaPlugin, EmbedPlugin, EmojiPickerPlugin,
     HorizontalRulePlugin, HtmlPlugin, ImagePlugin,
     KoenigComposableEditor, KoenigComposer, KoenigEditor, KoenigSelectorPlugin, KoenigSnippetPlugin, ListPlugin, MINIMAL_NODES,
     MINIMAL_TRANSFORMERS, ReplacementStringsPlugin, RestrictContentPlugin, TKCountPlugin, WordCountPlugin
@@ -170,6 +170,7 @@ function DemoEditor({editorType, registerAPI, cursorDidExitAtTop, darkMode, setW
                 <ButtonPlugin />
                 <CalloutPlugin />
                 <CardMenuPlugin />
+                <EmbedPlugin />
                 <EmailCtaPlugin />
                 <EmEnDashPlugin />
                 <EmojiPickerPlugin />
@@ -339,6 +340,7 @@ function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
 
     const cardConfig = {
         ...defaultCardConfig,
+        editorType,
         snippets,
         createSnippet,
         deleteSnippet,
