@@ -96,12 +96,12 @@ module.exports = function apiRoutes() {
     router.get('/users/slug/:slug', mw.authAdminApi, http(api.users.read));
     // NOTE: We don't expose any email addresses via the public api.
     router.get('/users/email/:email', mw.authAdminApi, http(api.users.read));
-    router.get('/users/:id/token', mw.authAdminApi, http(api.users.readToken));
+    router.get('/users/:id/token', mw.authAdminApi, http(api.users.readStaffToken));
 
     router.put('/users/password', mw.authAdminApi, http(api.users.changePassword));
     router.put('/users/owner', mw.authAdminApi, http(api.users.transferOwnership));
     router.put('/users/:id', mw.authAdminApi, http(api.users.edit));
-    router.put('/users/:id/token', mw.authAdminApi, http(api.users.regenerateToken));
+    router.put('/users/:id/token', mw.authAdminApi, http(api.users.regenerateStaffToken));
     router.del('/users/:id', mw.authAdminApi, http(api.users.destroy));
 
     // ## Tags
