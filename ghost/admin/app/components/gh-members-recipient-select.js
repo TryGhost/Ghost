@@ -11,9 +11,10 @@ const BASE_FILTERS = ['status:free', 'status:-free'];
 export default class GhMembersRecipientSelect extends Component {
     @service membersUtils;
     @service store;
+    @service labelsManager;
 
     @tracked forceSpecificChecked = false;
-    @tracked specificOptions = [];
+    @tracked _tierOptions = [];
 
     constructor() {
         super(...arguments);
@@ -51,6 +52,25 @@ export default class GhMembersRecipientSelect extends Component {
 
     get isSpecificChecked() {
         return this.forceSpecificChecked || this.specificFilters.size > 0;
+    }
+
+    get specificOptions() {
+        const options = [...this._tierOptions];
+        const labels = this.labelsManager.labels;
+
+        if (labels.length > 0) {
+            options.unshift({
+                groupName: 'Labels',
+                options: labels.map(label => ({
+                    name: label.name,
+                    segment: `label:${label.slug}`,
+                    count: label.count?.members,
+                    class: 'segment-label'
+                }))
+            });
+        }
+
+        return options;
     }
 
     get selectedSpecificOptions() {
@@ -135,34 +155,21 @@ export default class GhMembersRecipientSelect extends Component {
         this.args.onChange?.(newFilter);
     }
 
+    @task({drop: true})
+    *loadMoreLabelsTask() {
+        yield this.labelsManager.loadMoreTask.perform();
+    }
+
     @task
     *fetchSpecificOptionsTask() {
-        const options = [];
-
-        // fetch all labels w̶i̶t̶h̶ c̶o̶u̶n̶t̶s̶
+        // fetch first page of labels (labels are last so infinite scroll works)
         // TODO: add `include: 'count.members` to query once API is fixed
-        const labels = yield this.store.query('label', {limit: 'all'});
+        yield this.labelsManager.loadMoreTask.perform();
 
-        if (labels.length > 0) {
-            const labelsGroup = {
-                groupName: 'Labels',
-                options: []
-            };
-
-            labels.forEach((label) => {
-                labelsGroup.options.push({
-                    name: label.name,
-                    segment: `label:${label.slug}`,
-                    count: label.count?.members,
-                    class: 'segment-label'
-                });
-            });
-
-            options.push(labelsGroup);
-        }
         // fetch all tiers w̶i̶t̶h̶ c̶o̶u̶n̶t̶s̶
         // TODO: add `include: 'count.members` to query once API supports
         const tiers = yield this.store.query('tier', {filter: 'type:paid', limit: 'all'});
+        const tierOptions = [];
 
         if (tiers.length > 1) {
             const activeTiersGroup = {
@@ -190,10 +197,10 @@ export default class GhMembersRecipientSelect extends Component {
                 }
             });
 
-            options.push(activeTiersGroup);
-            options.push(archivedTiersGroup);
+            tierOptions.push(activeTiersGroup);
+            tierOptions.push(archivedTiersGroup);
         }
 
-        this.specificOptions = options;
+        this._tierOptions = tierOptions;
     }
 }

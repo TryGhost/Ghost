@@ -7,8 +7,9 @@ import {tracked} from '@glimmer/tracking';
 export default class GhMembersSegmentSelect extends Component {
     @service store;
     @service feature;
+    @service labelsManager;
 
-    @tracked _options = [];
+    @tracked _baseOptions = [];
 
     get renderInPlace() {
         return this.args.renderInPlace === undefined ? false : this.args.renderInPlace;
@@ -17,6 +18,25 @@ export default class GhMembersSegmentSelect extends Component {
     constructor() {
         super(...arguments);
         this.fetchOptionsTask.perform();
+    }
+
+    get _options() {
+        const options = [...this._baseOptions];
+        const labels = this.labelsManager.labels;
+
+        if (labels.length > 0 && !this.args.hideLabels) {
+            options.push({
+                groupName: 'Labels',
+                options: labels.map(label => ({
+                    name: label.name,
+                    segment: `label:${label.slug}`,
+                    count: label.count?.members,
+                    class: 'segment-label'
+                }))
+            });
+        }
+
+        return options;
     }
 
     get options() {
@@ -55,6 +75,11 @@ export default class GhMembersSegmentSelect extends Component {
     setSegment(options) {
         const segment = options.mapBy('segment').join(',') || null;
         this.args.onChange?.(segment);
+    }
+
+    @task({drop: true})
+    *loadMoreLabelsTask() {
+        yield this.labelsManager.loadMoreTask.perform();
     }
 
     @task
@@ -111,28 +136,6 @@ export default class GhMembersSegmentSelect extends Component {
             }
         }
 
-        // fetch all labels w̶i̶t̶h̶ c̶o̶u̶n̶t̶s̶
-        // TODO: add `include: 'count.members` to query once API is fixed
-        const labels = yield this.store.query('label', {limit: 'all'});
-
-        if (labels.length > 0 && !this.args.hideLabels) {
-            const labelsGroup = {
-                groupName: 'Labels',
-                options: []
-            };
-
-            labels.forEach((label) => {
-                labelsGroup.options.push({
-                    name: label.name,
-                    segment: `label:${label.slug}`,
-                    count: label.count?.members,
-                    class: 'segment-label'
-                });
-            });
-
-            options.push(labelsGroup);
-        }
-
         const offers = yield this.store.findAll('offer');
 
         if (offers.length > 0) {
@@ -153,6 +156,10 @@ export default class GhMembersSegmentSelect extends Component {
             options.push(offersGroup);
         }
 
-        this._options = options;
+        this._baseOptions = options;
+
+        // fetch first page of labels (labels are last so infinite scroll works)
+        // TODO: add `include: 'count.members` to query once API is fixed
+        yield this.labelsManager.loadMoreTask.perform();
     }
 }

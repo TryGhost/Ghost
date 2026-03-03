@@ -55,7 +55,7 @@
             </div>
         </div>
     {{/if}}
-    {{#if this.specificOptions}}
+    {{#if this.specificOptions.length}}
         <div class="gh-publish-send-to-option">
             <div class="for-checkbox {{if @disabled "disabled"}}">
                 <label class="checkbox" for="send-email-to-specific">
@@ -88,7 +88,7 @@
             @selected={{this.selectedSpecificOptions}}
             @disabled={{@disabled}}
             @searchMessage="All labels selected"
-            @optionsComponent={{component "power-select/options"}}
+            @optionsComponent={{component "power-select-options-with-scroll" lastReached=(perform this.loadMoreLabelsTask)}}
             @allowCreation={{false}}
             @renderInPlace={{this.renderInPlace}}
             @onChange={{this.selectSpecificOptions}}

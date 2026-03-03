@@ -23,6 +23,7 @@ export default class MemberController extends Controller {
     @service modals;
     @service notifications;
     @service router;
+    @service labelsManager;
     @service store;
 
     queryParams = [
@@ -221,6 +222,7 @@ export default class MemberController extends Controller {
 
             yield member.save();
             member.updateLabels();
+            member.labels.forEach(label => this.labelsManager.addLabel(label));
             this.members.refreshData();
 
             this.setInitialRelationshipValues();

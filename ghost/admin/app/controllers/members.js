@@ -7,6 +7,7 @@ import fetch from 'fetch';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import moment from 'moment-timezone';
 import {A} from '@ember/array';
+import {TrackedArray} from 'tracked-built-ins';
 import {action} from '@ember/object';
 import {didCancel, task, timeout} from 'ember-concurrency';
 import {ghPluralize} from 'ghost-admin/helpers/gh-pluralize';
@@ -34,6 +35,7 @@ export default class MembersController extends Controller {
     @service membersStats;
     @service modals;
     @service router;
+    @service labelsManager;
     @service store;
     @service utils;
     @service settings;
@@ -63,7 +65,9 @@ export default class MembersController extends Controller {
     @tracked softFilters = A([]);
     @tracked isExporting = false;
 
-    @tracked _availableLabels = A([]);
+    @tracked _searchedLabels = new TrackedArray();
+    _searchedLabelsQuery = null;
+    _searchedLabelsMeta = null;
 
     @tracked parseFilterParamCounter = 0;
 
@@ -83,7 +87,6 @@ export default class MembersController extends Controller {
 
     constructor() {
         super(...arguments);
-        this._availableLabels = this.store.peekAll('label');
     }
 
     // Computed properties -----------------------------------------------------
@@ -144,15 +147,55 @@ export default class MembersController extends Controller {
     }
 
     get availableLabels() {
-        let labels = this._availableLabels
-            .filter(label => !label.isNew)
-            .filter(label => label.id !== null)
-            .sort((labelA, labelB) => labelA.name.localeCompare(labelB.name, undefined, {ignorePunctuation: true}));
-        let options = labels.toArray();
+        let options = [{name: 'All labels', slug: null}];
 
-        options.unshiftObject({name: 'All labels', slug: null});
+        options = options.concat(this.labelsManager.labels);
+
+        if (this.label && !options.findBy('slug', this.label)) {
+            const foundLabel = this.labelsManager.findBySlug(this.label);
+            if (foundLabel) {
+                options.push(foundLabel);
+            }
+        }
 
         return options;
+    }
+
+    @action
+    async loadInitialLabels() {
+        if (!this.labelsManager.hasLoaded) {
+            await this.labelsManager.loadMoreTask.perform();
+        }
+    }
+
+    @task({drop: true})
+    *loadMoreLabelsTask(isSearch = false) {
+        if (isSearch) {
+            if (this.searchLabelsTask.isRunning) {
+                return;
+            }
+
+            if (!this._searchedLabelsMeta || (this._searchedLabelsMeta.pagination.pages <= this._searchedLabelsMeta.pagination.page)) {
+                return;
+            }
+
+            const page = this._searchedLabelsMeta.pagination.page + 1;
+            const labels = yield this.labelsManager.searchLabelsTask.perform(this._searchedLabelsQuery, {page});
+            this._searchedLabels.push(...this.labelsManager.sortLabels(labels.toArray()));
+            this._searchedLabelsMeta = labels.meta;
+        } else {
+            yield this.labelsManager.loadMoreTask.perform();
+        }
+    }
+
+    @task
+    *searchLabelsTask(term) {
+        this._searchedLabelsQuery = term;
+        const labels = yield this.labelsManager.searchLabelsTask.perform(term);
+        this._searchedLabelsMeta = labels.meta;
+
+        this._searchedLabels = new TrackedArray(this.labelsManager.sortLabels(labels.toArray()));
+        return this._searchedLabels;
     }
 
     get selectedLabel() {
@@ -492,7 +535,8 @@ export default class MembersController extends Controller {
 
     @task({restartable: true})
     *fetchLabelsTask() {
-        yield this.store.query('label', {limit: 'all'});
+        this.labelsManager.reset();
+        yield this.labelsManager.loadMoreTask.perform();
     }
 
     @task({restartable: true})
