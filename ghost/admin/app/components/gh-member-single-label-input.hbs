@@ -5,9 +5,10 @@
     @search={{if this.useServerSideSearch (perform this.searchLabelsTask) null}}
     @searchField="name"
     @onChange={{this.updateLabel}}
-    @optionsComponent={{component "power-select-vertical-collection-options" lastReached=(perform this.loadMoreLabelsTask)}}
+    @optionsComponent={{component "power-select-options-with-scroll" lastReached=(perform this.loadMoreLabelsTask)}}
     @registerAPI={{this.registerPowerSelectAPI}}
     @searchPlaceholder="Search labels..."
+    @dropdownClass="gh-resource-select-dropdown"
     @renderInPlace={{true}}
     @triggerId={{@triggerId}}
     data-testid="label-select"
