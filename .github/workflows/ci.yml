@@ -907,110 +907,6 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-  job_docker_build:
-    name: Build & Push Docker Image
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-        with:
-          submodules: true
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Determine build strategy
-        id: strategy
-        run: |
-          IS_FORK_PR="false"
-          if [ "${{ github.event_name }}" = "pull_request" ] && [ "${{ github.event.pull_request.head.repo.full_name }}" != "${{ github.repository }}" ]; then
-            IS_FORK_PR="true"
-          fi
-          IMAGE_NAME="ghcr.io/${{ github.repository_owner }}/ghost-development"
-          if [ "$IS_FORK_PR" = "true" ]; then
-            IMAGE_NAME="ghcr.io/${{ github.event.pull_request.head.repo.owner.login }}/ghost-development"
-          fi
-          CACHE_KEY=$(echo $IMAGE_NAME | tr '[:upper:]' '[:lower:]')
-          echo "is-fork-pr=$IS_FORK_PR" >> $GITHUB_OUTPUT
-          echo "should-push=$( [ "$IS_FORK_PR" = "false" ] && echo "true" || echo "false" )" >> $GITHUB_OUTPUT
-          echo "should-load=$( [ "$IS_FORK_PR" = "true" ] && echo "true" || echo "false" )" >> $GITHUB_OUTPUT
-          echo "image-name=$IMAGE_NAME" >> $GITHUB_OUTPUT
-          echo "cache-key=$CACHE_KEY" >> $GITHUB_OUTPUT
-          echo "Build Strategy: "
-          echo "  Is fork PR: $IS_FORK_PR"
-          echo "  Should push: $( [ "$IS_FORK_PR" = "false" ] && echo "true" || echo "false" )"
-          echo "  Should load: $( [ "$IS_FORK_PR" = "true" ] && echo "true" || echo "false" )"
-          echo "  Image name: $IMAGE_NAME"
-          echo "  Cache key: $CACHE_KEY"
-
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: |
-            ${{ steps.strategy.outputs.image-name }}
-          tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=sha
-            type=raw,value=latest,enable={{is_default_branch}}
-          labels: |
-            org.opencontainers.image.title=Ghost Development
-            org.opencontainers.image.description=Ghost development build
-            org.opencontainers.image.vendor=TryGhost
-            maintainer=TryGhost
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v6
-        id: build
-        with:
-          context: .
-          file: Dockerfile
-          push: ${{ steps.strategy.outputs.should-push }}
-          load: ${{ steps.strategy.outputs.should-load }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          # On PRs: use both main cache and PR-specific cache
-          # On main: only use main cache
-          cache-from: |
-            type=registry,ref=${{ steps.strategy.outputs.cache-key }}:cache-main
-            ${{ github.event_name == 'pull_request' && format('type=registry,ref={0}:cache-pr-{1}', steps.strategy.outputs.cache-key, github.event.pull_request.number) || '' }}
-          # Only export cache if we can push (not on fork PRs)
-          cache-to: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref={0}:cache-{1},mode=max', steps.strategy.outputs.cache-key, github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main') || '' }}
-
-      - name: Save image as artifact (fork PR)
-        if: steps.strategy.outputs.is-fork-pr == 'true'
-        run: |
-          # Get the first tag from the multi-line tags output
-          IMAGE_TAG=$(echo "${{ steps.meta.outputs.tags }}" | head -n1)
-          echo "Saving image: $IMAGE_TAG"
-          docker save "$IMAGE_TAG" | gzip > docker-image.tar.gz
-          echo "Image saved as docker-image.tar.gz"
-          ls -lh docker-image.tar.gz
-
-      - name: Upload image artifact (fork PR)
-        if: steps.strategy.outputs.is-fork-pr == 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: docker-image
-          path: docker-image.tar.gz
-          retention-days: 1
-
-    outputs:
-      image-tags: ${{ steps.meta.outputs.tags }}
-      image-digest: ${{ steps.build.outputs.digest }}
-      is-fork: ${{ steps.strategy.outputs.is-fork-pr }}
-
   job_docker_build_production:
     name: Build & Push Production Docker Images
     needs: [job_setup]
@@ -1056,6 +952,16 @@ jobs:
           echo "is-fork-pr=$IS_FORK_PR" >> $GITHUB_OUTPUT
           echo "should-push=$( [ "$IS_FORK_PR" = "false" ] && echo "true" || echo "false" )" >> $GITHUB_OUTPUT
           echo "owner=$OWNER" >> $GITHUB_OUTPUT
+
+      - name: Upload admin artifact for CD
+        id: upload-admin
+        if: steps.strategy.outputs.is-fork-pr == 'false'
+        uses: actions/upload-artifact@v4
+        with:
+          name: admin-build-cd
+          path: apps/admin/dist
+          retention-days: 7
+          if-no-files-found: error
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -1120,7 +1026,7 @@ jobs:
           target: full
           build-args: NODE_VERSION=${{ env.NODE_VERSION }}
           push: ${{ steps.strategy.outputs.should-push }}
-          load: ${{ steps.strategy.outputs.should-push == 'false' }}
+          load: true
           tags: ${{ steps.meta-full.outputs.tags }}
           labels: ${{ steps.meta-full.outputs.labels }}
           cache-from: type=registry,ref=ghcr.io/${{ steps.strategy.outputs.owner }}/ghost:cache-main
@@ -1143,33 +1049,20 @@ jobs:
           path: docker-image-production.tar.gz
           retention-days: 1
 
-    outputs:
-      image-tags: ${{ steps.meta-full.outputs.tags }}
-      is-fork: ${{ steps.strategy.outputs.is-fork-pr }}
-
-  job_inspect_image:
-    name: Inspect Docker Image
-    needs: job_docker_build
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-        with:
-          sparse-checkout: |
-            .github/actions/load-docker-image
-
-      - name: Load Docker Image
-        id: load
-        uses: ./.github/actions/load-docker-image
-        with:
-          is-fork: ${{ needs.job_docker_build.outputs.is-fork }}
-          image-tags: ${{ needs.job_docker_build.outputs.image-tags }}
+      - name: Extract core image SHA tag
+        id: core-sha-tag
+        run: |
+          SHA_TAG=$(echo "${{ steps.meta-core.outputs.tags }}" | grep "sha-" | head -n1)
+          if [ -z "$SHA_TAG" ]; then
+            echo "::error::Could not extract SHA tag from core image metadata"
+            exit 1
+          fi
+          echo "tag=$SHA_TAG" >> $GITHUB_OUTPUT
 
       - name: Inspect image size and layers
         shell: bash
         run: |
-          IMAGE_TAG="${{ steps.load.outputs.image-tag }}"
+          IMAGE_TAG=$(echo "${{ steps.meta-full.outputs.tags }}" | head -n1)
           echo "Analyzing Docker image: $IMAGE_TAG"
 
           # Get the image size in bytes
@@ -1213,6 +1106,12 @@ jobs:
             done
 
           } >> $GITHUB_STEP_SUMMARY
+
+    outputs:
+      image-tags: ${{ steps.meta-full.outputs.tags }}
+      is-fork: ${{ steps.strategy.outputs.is-fork-pr }}
+      core-image-sha-tag: ${{ steps.core-sha-tag.outputs.tag }}
+      admin-artifact-id: ${{ steps.upload-admin.outputs.artifact-id }}
 
   job_e2e_tests:
     name: E2E Tests (${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
@@ -1261,27 +1160,28 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
-      - name: Build public app UMD bundles
-        run: yarn workspace @tryghost/e2e build:apps
-
-      - name: Build E2E image layer
+      - name: Prepare E2E CI job
         env:
           GHOST_E2E_BASE_IMAGE: ${{ steps.load.outputs.image-tag }}
-        run: yarn workspace @tryghost/e2e build:docker
+        run: bash ./e2e/scripts/prepare-ci-e2e-job.sh
 
-      - name: Pull images
+      - name: Run e2e tests in Playwright container
         env:
-          GHOST_E2E_IMAGE: ghost-e2e:local
-        run: docker compose -f e2e/compose.yml pull
-
-      - name: Setup Playwright
-        uses: ./.github/actions/setup-playwright
-
-      - name: Run e2e tests
-        env:
-          GHOST_E2E_IMAGE: ghost-e2e:local
           TEST_WORKERS_COUNT: 1
-        run: yarn test:e2e:all --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }} --retries=2
+          GHOST_E2E_MODE: build
+          GHOST_E2E_IMAGE: ghost-e2e:local
+          E2E_SHARD_INDEX: ${{ matrix.shardIndex }}
+          E2E_SHARD_TOTAL: ${{ matrix.shardTotal }}
+          E2E_RETRIES: 2
+        run: bash ./e2e/scripts/run-playwright-container.sh
+
+      - name: Dump E2E docker logs
+        if: failure()
+        run: bash ./e2e/scripts/dump-e2e-docker-logs.sh
+
+      - name: Stop E2E infra
+        if: always()
+        run: yarn workspace @tryghost/e2e infra:down
 
       - name: Upload blob report to GitHub Actions Artifacts
         if: failure()
@@ -1736,3 +1636,50 @@ jobs:
           inputs: '{"admin_build_artifact_id":"${{ steps.upload-artifacts.outputs.artifact-id }}", "admin_build_artifact_run_id":"${{ github.run_id }}"}'
           wait-for-completion-timeout: 25m
           wait-for-completion-interval: 30s
+
+  # --------------------------------------------------------------------------- #
+  # Trigger Pro CD — dispatch to Ghost-Moya cd.yml (runs on main + PRs)
+  # --------------------------------------------------------------------------- #
+  trigger_cd:
+    needs: [job_setup, job_docker_build_production]
+    name: Trigger Pro CD
+    runs-on: ubuntu-latest
+    if: |
+      always()
+      && needs.job_setup.result == 'success'
+      && needs.job_docker_build_production.result == 'success'
+      && needs.job_docker_build_production.outputs.is-fork != 'true'
+    steps:
+      - name: Determine dispatch parameters
+        id: params
+        run: |
+          # Force dry_run until cd.yml is validated and ready to replace the existing canary deploy
+          if [ "${{ needs.job_setup.outputs.is_main }}" = "true" ]; then
+            echo "dry_run=true" >> $GITHUB_OUTPUT
+            echo "pr_number=" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "dry_run=true" >> $GITHUB_OUTPUT
+            echo "pr_number=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
+          else
+            echo "skip=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          echo "skip=false" >> $GITHUB_OUTPUT
+
+      - name: Dispatch to Ghost-Moya cd.yml
+        if: steps.params.outputs.skip != 'true'
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.CANARY_DOCKER_BUILD }}
+          repository: TryGhost/Ghost-Moya
+          event-type: ghost-artifacts-ready
+          client-payload: >-
+            {
+              "environment": "staging",
+              "ref": "${{ github.sha }}",
+              "image_tag": "${{ needs.job_docker_build_production.outputs.core-image-sha-tag }}",
+              "dry_run": ${{ steps.params.outputs.dry_run }},
+              "pr_number": "${{ steps.params.outputs.pr_number }}",
+              "admin_artifact_id": "${{ needs.job_docker_build_production.outputs.admin-artifact-id }}",
+              "admin_artifact_run_id": "${{ github.run_id }}"
+            }

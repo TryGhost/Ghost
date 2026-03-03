@@ -31,8 +31,8 @@ describe('Redirect Ghost To Admin', function () {
     const expectPathCallsRedirectToAdminWith = (inputPath, expectedAdminPath) => {
         req.path = inputPath;
         handleAdminRedirect(req, res);
-        assert.equal(redirectToAdminStub.calledOnce, true);
-        assert.equal(redirectToAdminStub.calledWith(301, res, expectedAdminPath), true);
+        sinon.assert.calledOnce(redirectToAdminStub);
+        sinon.assert.calledWith(redirectToAdminStub, 301, res, expectedAdminPath);
     };
 
     describe('handleAdminRedirect function', function () {

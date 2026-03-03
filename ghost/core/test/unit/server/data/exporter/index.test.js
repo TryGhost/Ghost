@@ -47,10 +47,10 @@ describe('Exporter', function () {
 
                 assert.match(exportData.meta.version, /\d+.\d+.\d+/gi);
 
-                assert.equal(tablesStub.calledOnce, true);
-                assert.equal(db.knex.called, true);
+                sinon.assert.calledOnce(tablesStub);
+                sinon.assert.called(db.knex);
 
-                assert.equal(knexMock.callCount, expectedCallCount);
+                sinon.assert.callCount(knexMock, expectedCallCount);
                 sinon.assert.callCount(queryMock.select, expectedCallCount);
 
                 const expectedTables = new Set([
@@ -93,11 +93,11 @@ describe('Exporter', function () {
 
                 assert.match(exportData.meta.version, /\d+.\d+.\d+/gi);
 
-                assert.equal(tablesStub.calledOnce, true);
-                assert.equal(db.knex.called, true);
-                assert.equal(queryMock.select.called, true);
+                sinon.assert.calledOnce(tablesStub);
+                sinon.assert.called(db.knex);
+                sinon.assert.called(queryMock.select);
 
-                assert.equal(knexMock.callCount, expectedCallCount);
+                sinon.assert.callCount(knexMock, expectedCallCount);
                 sinon.assert.callCount(queryMock.select, expectedCallCount);
 
                 const expectedTables = new Set([
@@ -158,7 +158,7 @@ describe('Exporter', function () {
 
             exporter.fileName().then(function (result) {
                 assertExists(result);
-                assert.equal(settingsStub.calledOnce, true);
+                sinon.assert.calledOnce(settingsStub);
                 assert.match(result, /^testblog\.ghost\.[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}\.json$/);
 
                 done();
@@ -172,7 +172,7 @@ describe('Exporter', function () {
 
             exporter.fileName().then(function (result) {
                 assertExists(result);
-                assert.equal(settingsStub.calledOnce, true);
+                sinon.assert.calledOnce(settingsStub);
                 assert.match(result, /^ghost\.[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}\.json$/);
 
                 done();
@@ -187,8 +187,8 @@ describe('Exporter', function () {
 
             exporter.fileName().then(function (result) {
                 assertExists(result);
-                assert.equal(settingsStub.calledOnce, true);
-                assert.equal(loggingStub.calledOnce, true);
+                sinon.assert.calledOnce(settingsStub);
+                sinon.assert.calledOnce(loggingStub);
                 assert.match(result, /^ghost\.[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}\.json$/);
 
                 done();

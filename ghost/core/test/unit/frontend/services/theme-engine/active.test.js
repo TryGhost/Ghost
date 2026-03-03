@@ -63,8 +63,8 @@ describe('Themes', function () {
                 theme.mount(fakeBlogApp);
 
                 // Check the asset hash gets reset
-                assert.equal(configStub.calledOnce, true);
-                assert.equal(configStub.calledWith('assetHash', null), true);
+                sinon.assert.calledOnce(configStub);
+                sinon.assert.calledWith(configStub, 'assetHash', null);
 
                 // Check the file-based asset hash cache is cleared
                 sinon.assert.calledOnce(clearCacheSpy);
@@ -73,12 +73,12 @@ describe('Themes', function () {
                 assert.deepEqual(fakeBlogApp.cache, {});
 
                 // Check the views were set correctly
-                assert.equal(fakeBlogApp.set.calledOnce, true);
-                assert.equal(fakeBlogApp.set.calledWith('views', 'my/fake/theme/path'), true);
+                sinon.assert.calledOnce(fakeBlogApp.set);
+                sinon.assert.calledWith(fakeBlogApp.set, 'views', 'my/fake/theme/path');
 
                 // Check handlebars was configured correctly
-                assert.equal(engineStub.calledOnce, true);
-                assert.equal(engineStub.calledWith('my/fake/theme/path/partials'), true);
+                sinon.assert.calledOnce(engineStub);
+                sinon.assert.calledWith(engineStub, 'my/fake/theme/path/partials');
 
                 // Check the theme is now mounted
                 assert.equal(activeTheme.get().mounted, true);
@@ -100,8 +100,8 @@ describe('Themes', function () {
                 theme.mount(fakeBlogApp);
 
                 // Check the asset hash gets reset
-                assert.equal(configStub.calledOnce, true);
-                assert.equal(configStub.calledWith('assetHash', null), true);
+                sinon.assert.calledOnce(configStub);
+                sinon.assert.calledWith(configStub, 'assetHash', null);
 
                 // Check the file-based asset hash cache is cleared
                 sinon.assert.calledOnce(clearCacheSpy);
@@ -110,12 +110,12 @@ describe('Themes', function () {
                 assert.deepEqual(fakeBlogApp.cache, {});
 
                 // Check the views were set correctly
-                assert.equal(fakeBlogApp.set.calledOnce, true);
-                assert.equal(fakeBlogApp.set.calledWith('views', 'my/fake/theme/path'), true);
+                sinon.assert.calledOnce(fakeBlogApp.set);
+                sinon.assert.calledWith(fakeBlogApp.set, 'views', 'my/fake/theme/path');
 
                 // Check handlebars was configured correctly
-                assert.equal(engineStub.calledOnce, true);
-                assert.equal(engineStub.calledWith(), true);
+                sinon.assert.calledOnce(engineStub);
+                sinon.assert.calledWith(engineStub);
 
                 // Check the theme is now mounted
                 assert.equal(activeTheme.get().mounted, true);

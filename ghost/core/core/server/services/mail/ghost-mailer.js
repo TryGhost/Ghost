@@ -2,6 +2,7 @@
 // Handles sending email for Ghost
 const _ = require('lodash');
 const config = require('../../../shared/config');
+const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const settingsCache = require('../../../shared/settings-cache');
@@ -18,6 +19,7 @@ const messages = {
 };
 const EmailAddressParser = require('../email-address/email-address-parser');
 const DEFAULT_TAGS = ['ghost-email', 'transactional-email'];
+const MAX_MAILGUN_TAGS = 10;
 
 function getDomain() {
     const domain = urlUtils.urlFor('home', true).match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
@@ -62,11 +64,14 @@ function getFromAddress(requestedFromAddress, requestedReplyToAddress) {
 function createMessage(message) {
     const encoding = 'base64';
     const generateTextFromHTML = !message.forceTextContent;
+    const cleanMessage = {...message};
+    delete cleanMessage.tags;
+    delete cleanMessage.forceTextContent;
 
     const addresses = getFromAddress(message.from, message.replyTo);
 
     return {
-        ...message,
+        ...cleanMessage,
         ...addresses,
         generateTextFromHTML,
         encoding,
@@ -116,6 +121,7 @@ module.exports = class GhostMailer {
      * @param {string} [message.replyTo]
      * @param {string} [message.from] - sender email address
      * @param {string} [message.text] - text version of this message
+     * @param {string[]} [message.tags] - optional additional Mailgun tags
      * @param {boolean} [message.forceTextContent] - maps to generateTextFromHTML nodemailer option
      * which is: "if set to true uses HTML to generate plain text body part from the HTML if the text is not defined"
      * (ref: https://github.com/nodemailer/nodemailer/tree/da2f1d278f91b4262e940c0b37638e7027184b1d#e-mail-message-fields)
@@ -131,7 +137,7 @@ module.exports = class GhostMailer {
 
         const messageToSend = createMessage(message);
         if (this.state.usingMailgun) {
-            const tags = this.getTags();
+            const tags = this.getTags(message.tags);
             if (tags.length > 0) {
                 messageToSend['o:tag'] = tags;
             }
@@ -195,7 +201,12 @@ module.exports = class GhostMailer {
         return tpl(messages.messageSent);
     }
 
-    getTags() {
+    /**
+     * Builds the Mailgun tag list from defaults, site tag, and optional extra tags.
+     * @param {string[]} [additionalTags]
+     * @returns {string[]}
+     */
+    getTags(additionalTags = []) {
         const tagList = [...DEFAULT_TAGS];
 
         const siteId = config.get('hostSettings:siteId');
@@ -203,6 +214,25 @@ module.exports = class GhostMailer {
             tagList.push(`blog-${siteId}`);
         }
 
-        return tagList;
+        if (Array.isArray(additionalTags) && additionalTags.length > 0) {
+            const cleanedTags = additionalTags
+                .filter(tag => typeof tag === 'string')
+                .map(tag => tag.trim().toLowerCase())
+                .filter(tag => tag.length > 0);
+
+            tagList.push(...cleanedTags);
+        }
+
+        const uniqueTags = [...new Set(tagList)];
+
+        if (uniqueTags.length > MAX_MAILGUN_TAGS) {
+            const keptTags = uniqueTags.slice(0, MAX_MAILGUN_TAGS);
+
+            logging.warn(`[MAIL] Mailgun tag count exceeded ${MAX_MAILGUN_TAGS}; truncating tags from ${uniqueTags.length} to ${MAX_MAILGUN_TAGS}.`);
+
+            return keptTags;
+        }
+
+        return uniqueTags;
     }
 };

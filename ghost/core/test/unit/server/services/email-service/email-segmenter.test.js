@@ -36,7 +36,7 @@ describe('Email segmenter', function () {
                 }
             }, 'all', null
             );
-            assert.equal(listStub.calledOnce, true);
+            sinon.assert.calledOnce(listStub);
             sinon.assert.calledWith(listStub, {
                 filter: 'newsletters.id:\'newsletter-123\'+email_disabled:0'
             });
@@ -93,7 +93,7 @@ describe('Email segmenter', function () {
                 null
             );
 
-            assert.equal(listStub.calledOnce, true);
+            sinon.assert.calledOnce(listStub);
             sinon.assert.calledWith(listStub, {
                 filter: 'newsletters.id:\'newsletter-123\'+email_disabled:0+(labels:test)+status:-free'
             });
@@ -117,7 +117,7 @@ describe('Email segmenter', function () {
                 'status:free'
             );
 
-            assert.equal(listStub.calledOnce, true);
+            sinon.assert.calledOnce(listStub);
             sinon.assert.calledWith(listStub, {
                 filter: 'newsletters.id:\'newsletter-123\'+email_disabled:0+(labels:test)+(status:free)'
             });

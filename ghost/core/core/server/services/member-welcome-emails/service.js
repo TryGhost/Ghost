@@ -9,7 +9,7 @@ const mail = require('../mail');
 // @ts-expect-error type checker has trouble with the dynamic exporting in models
 const {AutomatedEmail, Newsletter} = require('../../models');
 const MemberWelcomeEmailRenderer = require('./member-welcome-email-renderer');
-const {MEMBER_WELCOME_EMAIL_LOG_KEY, MEMBER_WELCOME_EMAIL_SLUGS, MESSAGES} = require('./constants');
+const {MEMBER_WELCOME_EMAIL_LOG_KEY, MEMBER_WELCOME_EMAIL_TAG, MEMBER_WELCOME_EMAIL_SLUGS, MESSAGES} = require('./constants');
 
 class MemberWelcomeEmailService {
     #mailer;
@@ -157,6 +157,7 @@ class MemberWelcomeEmailService {
             html,
             text,
             forceTextContent: true,
+            tags: [MEMBER_WELCOME_EMAIL_TAG],
             ...senderOptions
         });
     }

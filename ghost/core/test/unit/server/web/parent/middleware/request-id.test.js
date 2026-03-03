@@ -33,7 +33,7 @@ describe('Request ID middleware', function () {
 
         assertExists(req.requestId);
         assert.equal(validator.isUUID(req.requestId), true);
-        assert.equal(res.set.calledOnce, false);
+        sinon.assert.notCalled(res.set);
     });
 
     it('keeps the request ID if X-Request-ID is present', function () {
@@ -44,7 +44,7 @@ describe('Request ID middleware', function () {
 
         assertExists(req.requestId);
         assert.equal(req.requestId, 'abcd');
-        assert.equal(res.set.calledOnce, true);
-        assert.equal(res.set.calledWith('X-Request-ID', 'abcd'), true);
+        sinon.assert.calledOnce(res.set);
+        sinon.assert.calledWith(res.set, 'X-Request-ID', 'abcd');
     });
 });

@@ -55,7 +55,7 @@ describe('Unit: services/url/Queue', function () {
         it('no subscribers', function (done) {
             queue.addListener('ended', function (event) {
                 assert.equal(event, 'nachos');
-                assert.equal(queueRunSpy.callCount, 1);
+                sinon.assert.calledOnce(queueRunSpy);
                 done();
             });
 
@@ -69,7 +69,7 @@ describe('Unit: services/url/Queue', function () {
 
             queue.addListener('ended', function (event) {
                 assert.equal(event, 'nachos');
-                assert.equal(queueRunSpy.callCount, 2);
+                sinon.assert.calledTwice(queueRunSpy);
                 assert.equal(notified, 1);
                 done();
             });
@@ -93,7 +93,7 @@ describe('Unit: services/url/Queue', function () {
                 assert.equal(event, 'nachos');
 
                 // 9 subscribers + start triggers run
-                assert.equal(queueRunSpy.callCount, 10);
+                sinon.assert.callCount(queueRunSpy, 10);
                 assert.equal(notified, 9);
                 assert.deepEqual(order, [0, 1, 2, 3, 4, 5, 6, 7, 8]);
                 done();
@@ -118,7 +118,7 @@ describe('Unit: services/url/Queue', function () {
 
             queue.addListener('ended', function (event) {
                 assert.equal(event, 'nachos');
-                assert.equal(queueRunSpy.callCount, 1);
+                sinon.assert.calledOnce(queueRunSpy);
                 assert.equal(notified, 0);
                 done();
             });
@@ -145,7 +145,7 @@ describe('Unit: services/url/Queue', function () {
                 event: 'nachos'
             });
 
-            assert.equal(logging.error.calledOnce, true);
+            sinon.assert.calledOnce(logging.error);
             assert.equal(queue.toNotify.nachos.notified.length, 0);
         });
     });

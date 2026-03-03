@@ -100,7 +100,6 @@ module.exports = function MembersAPI({
         stripeAPIService,
         tokenService,
         newslettersService,
-        labsService,
         productRepository,
         AutomatedEmail,
         Member,

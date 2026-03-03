@@ -103,15 +103,15 @@ describe('ExternalMediaInliner', function () {
             await inliner.inline(['https://img.stockfresh.com']);
 
             assert.ok(requestMock.isDone());
-            assert.ok(postModelStub.edit.calledOnce);
-            assert.ok(postModelStub.edit.calledWith({
+            sinon.assert.calledOnce(postModelStub.edit);
+            sinon.assert.calledWith(postModelStub.edit, {
                 mobiledoc: '{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"__GHOST_URL__/content/images/unique-image.jpg"}]]}'
             }, {
                 id: 'inlined-post-id',
                 context: {
                     internal: true
                 }
-            }));
+            });
         });
 
         it('inlines the image from post\'s mobiledoc containing html card', async function () {
@@ -152,7 +152,7 @@ describe('ExternalMediaInliner', function () {
             await inliner.inline(['https://bucketeer-e05bbc84-baa3-437e-9518-adb32be77984.s3.amazonaws.com']);
 
             assert.ok(requestMock.isDone());
-            assert.ok(postModelStub.edit.calledOnce);
+            sinon.assert.calledOnce(postModelStub.edit);
             assert.deepEqual(postModelStub.edit.args[0][0], {
                 mobiledoc: `{"version":"0.3.1","atoms":[],"cards":[["html",{"html":"<img src="__GHOST_URL__/content/images/unique-image.jpg" alt="Lorem ipsum">"}]],"markups":[],"sections":[[10,0],[1,"p",[]]],"ghostVersion":"4.0"}`
             });
@@ -201,15 +201,15 @@ describe('ExternalMediaInliner', function () {
             await inliner.inline(['https://img.stockfresh.com']);
 
             assert.ok(requestMock.isDone());
-            assert.ok(postModelStub.edit.calledOnce);
-            assert.ok(postModelStub.edit.calledWith({
+            sinon.assert.calledOnce(postModelStub.edit);
+            sinon.assert.calledWith(postModelStub.edit, {
                 lexical: '{"root":{"children":[{"type":"image","version":1,"src":"__GHOST_URL__/content/images/unique-image.jpg","width":1480,"height":486,"title":"","alt":"","caption":"","cardWidth":"regular","href":""}],"direction":null,"format":"","indent":0,"type":"root","version":1}}'
             }, {
                 id: 'inlined-post-id',
                 context: {
                     internal: true
                 }
-            }));
+            });
         });
 
         it('inlines the image from post\'s lexical containing html card', async function () {
@@ -250,7 +250,7 @@ describe('ExternalMediaInliner', function () {
             await inliner.inline(['https://img.stockfresh.com']);
 
             assert.ok(requestMock.isDone());
-            assert.ok(postModelStub.edit.calledOnce);
+            sinon.assert.calledOnce(postModelStub.edit);
             assert.deepEqual(postModelStub.edit.args[0][0], {
                 lexical: `{"root":{"children":[{"type":"html","version":1,"html":"<img src="__GHOST_URL__/content/images/unique-image.jpg" alt="Lorem ipsum">"}],"direction":null,"format":"","indent":0,"type":"root","version":1}}`
             });
@@ -303,7 +303,7 @@ describe('ExternalMediaInliner', function () {
             await inliner.inline(['https://example.com']);
 
             assert.ok(requestMock.isDone());
-            assert.ok(postModelStub.edit.calledOnce);
+            sinon.assert.calledOnce(postModelStub.edit);
             // NOTE: The file names all being the same as a limitation in how this is stubbed. In production, each image is unique
             assert.deepEqual(postModelStub.edit.args[0][0], {
                 lexical: `{"root":{"children":[{"type":"html","version":1,"html":"<img srcset="__GHOST_URL__/content/images/unique-image.jpg, __GHOST_URL__/content/images/unique-image.jpg 2x" src="__GHOST_URL__/content/images/unique-image.jpg" />"}],"direction":null,"format":"","indent":0,"type":"root","version":1}}`
@@ -355,8 +355,8 @@ describe('ExternalMediaInliner', function () {
             await inliner.inline(['https://img.stockfresh.com']);
 
             assert.ok(requestMock.isDone());
-            assert.ok(postModelStub.edit.calledOnce);
-            assert.ok(postModelStub.edit.calledWith({
+            sinon.assert.calledOnce(postModelStub.edit);
+            sinon.assert.calledWith(postModelStub.edit, {
                 mobiledoc: '{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"__GHOST_URL__/content/images/unique-image.jpg"}]]}',
                 lexical: '{"root":{"children":[{"type":"image","version":1,"src":"__GHOST_URL__/content/images/unique-image.jpg","width":1480,"height":486,"title":"","alt":"","caption":"","cardWidth":"regular","href":""}],"direction":null,"format":"","indent":0,"type":"root","version":1}}'
             }, {
@@ -364,7 +364,7 @@ describe('ExternalMediaInliner', function () {
                 context: {
                     internal: true
                 }
-            }));
+            });
         });
 
         it('logs an error when fetching an external media fails', async function () {
@@ -454,7 +454,7 @@ describe('ExternalMediaInliner', function () {
             await inliner.inline(['https://img.stockfresh.com']);
 
             assert.ok(requestMock.isDone());
-            assert.ok(logging.warn.calledOnce);
+            sinon.assert.calledOnce(logging.warn);
             assert.equal(logging.warn.args[0][0], 'No storage adapter found for file extension: .exe');
         });
 
@@ -495,7 +495,7 @@ describe('ExternalMediaInliner', function () {
             await inliner.inline(['https://img.stockfresh.com']);
 
             assert.ok(requestMock.isDone());
-            assert.ok(postModelStub.edit.calledOnce);
+            sinon.assert.calledOnce(postModelStub.edit);
             assert.equal(logging.error.args[0][0], 'Error inlining media for post: errored-post-id');
         });
 
@@ -537,7 +537,7 @@ describe('ExternalMediaInliner', function () {
             await inliner.inline(['https://img.stockfresh.com']);
 
             assert.ok(requestMock.isDone());
-            assert.ok(tagModelStub.edit.calledOnce);
+            sinon.assert.calledOnce(tagModelStub.edit);
             assert.equal(logging.error.args[0][0], 'Error inlining media for: errored-tag-id');
         });
 
@@ -576,15 +576,15 @@ describe('ExternalMediaInliner', function () {
             await inliner.inline(['https://img.stockfresh.com']);
 
             assert.ok(requestMock.isDone());
-            assert.ok(postModelMock.edit.calledOnce);
-            assert.ok(postModelMock.edit.calledWith({
+            sinon.assert.calledOnce(postModelMock.edit);
+            sinon.assert.calledWith(postModelMock.edit, {
                 feature_image: '__GHOST_URL__/content/images/unique-feature-image.jpg'
             }, {
                 id: 'inlined-post-id',
                 context: {
                     internal: true
                 }
-            }));
+            });
         });
 
         it('inlines og_image image in posts_meta table', async function () {
@@ -623,7 +623,7 @@ describe('ExternalMediaInliner', function () {
             await inliner.inline(['https://img.stockfresh.com']);
 
             assert.ok(requestMock.isDone());
-            assert.ok(postMetaModelStub.edit.calledOnce);
+            sinon.assert.calledOnce(postMetaModelStub.edit);
             assert.deepEqual(postMetaModelStub.edit.args[0][0], {
                 og_image: '__GHOST_URL__/content/images/unique-posts-meta-image.jpg'
             });
@@ -671,7 +671,7 @@ describe('ExternalMediaInliner', function () {
             await inliner.inline(['https://img.stockfresh.com']);
 
             assert.ok(requestMock.isDone());
-            assert.ok(tagModelStub.edit.calledOnce);
+            sinon.assert.calledOnce(tagModelStub.edit);
             assert.deepEqual(tagModelStub.edit.args[0][0], {
                 twitter_image: '__GHOST_URL__/content/images/unique-tag-twitter-image.jpg'
             });
@@ -719,7 +719,7 @@ describe('ExternalMediaInliner', function () {
             await inliner.inline(['https://img.stockfresh.com']);
 
             assert.ok(requestMock.isDone());
-            assert.ok(userModelStub.edit.calledOnce);
+            sinon.assert.calledOnce(userModelStub.edit);
             assert.deepEqual(userModelStub.edit.args[0][0], {
                 cover_image: '__GHOST_URL__/content/images/user-cover-image.jpg'
             });
@@ -1005,7 +1005,7 @@ describe('ExternalMediaInliner', function () {
                 const result = await inliner.getRemoteMedia('https://malicious-site.com/image.jpg');
 
                 assert.equal(result, null);
-                assert.ok(logging.error.called);
+                sinon.assert.called(logging.error);
                 assert.equal(logging.error.args[0][0], 'Error downloading remote media: https://malicious-site.com/image.jpg');
             } finally {
                 dnsStub.restore();

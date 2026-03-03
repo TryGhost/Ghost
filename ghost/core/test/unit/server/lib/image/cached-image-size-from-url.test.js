@@ -50,7 +50,7 @@ describe('lib/image: image size cache', function () {
         // second call to check if values get returned from cache
         await cachedImageSizeFromUrl.getCachedImageSizeFromUrl(url);
 
-        assert.equal(imageSizeSpy.calledOnce, true);
+        sinon.assert.calledOnce(imageSizeSpy);
         assert.equal(imageSizeSpy.calledTwice, false);
 
         assertExists(cacheStore.get(url));
@@ -80,7 +80,7 @@ describe('lib/image: image size cache', function () {
         // Transient errors should NOT be cached
         assert.equal(cacheStore.get(url), undefined);
         sinon.assert.calledOnce(loggingStub);
-        assert.equal(sizeOfStub.calledOnce, true);
+        sinon.assert.calledOnce(sizeOfStub);
 
         // Second call should retry the fetch since nothing was cached
         const result2 = await cachedImageSizeFromUrl.getCachedImageSizeFromUrl(url);
@@ -89,7 +89,7 @@ describe('lib/image: image size cache', function () {
 
         // Cache should still be empty after the second transient error
         assert.equal(cacheStore.get(url), undefined);
-        assert.equal(sizeOfStub.calledTwice, true);
+        sinon.assert.calledTwice(sizeOfStub);
     });
 
     it('should cache NotFoundError permanently and not refetch on subsequent calls', async function () {
@@ -115,7 +115,7 @@ describe('lib/image: image size cache', function () {
         // Second call should NOT refetch — 404 is permanent
         const secondResult = await cachedImageSizeFromUrl.getCachedImageSizeFromUrl(url);
         assert.equal(secondResult, null);
-        assert.equal(sizeOfStub.calledOnce, true);
+        sinon.assert.calledOnce(sizeOfStub);
     });
 
     it('should retry fetch when cache has a stale error entry (no dimensions)', async function () {
@@ -136,7 +136,7 @@ describe('lib/image: image size cache', function () {
 
         assert.equal(result.width, 500);
         assert.equal(result.height, 400);
-        assert.equal(sizeOfStub.calledOnce, true);
+        sinon.assert.calledOnce(sizeOfStub);
 
         // Verify cache was overwritten with valid dimensions
         const cached = cacheStore.get(url);

@@ -147,7 +147,7 @@ describe('Unit - services/routing/controllers/entry', function () {
 
             controllers.entry(req, res, async (err) => {
                 await configUtils.restore();
-                assert.equal(urlUtilsRedirectToAdminStub.called, false);
+                sinon.assert.notCalled(urlUtilsRedirectToAdminStub);
                 assert.equal(err, undefined);
                 done(err);
             });

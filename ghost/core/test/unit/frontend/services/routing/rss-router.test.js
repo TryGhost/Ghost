@@ -26,7 +26,7 @@ describe('UNIT - services/routing/RSSRouter', function () {
             assertExists(rssRouter.router);
             assert.equal(rssRouter.route.value, '/rss/');
 
-            assert.equal(rssRouter.mountRoute.callCount, 2);
+            sinon.assert.calledTwice(rssRouter.mountRoute);
 
             assert.equal(rssRouter.mountRoute.args[0][0], '/rss/');
             assert.equal(rssRouter.mountRoute.args[0][1], controllers.rss);
@@ -41,7 +41,7 @@ describe('UNIT - services/routing/RSSRouter', function () {
             assertExists(rssRouter.router);
             assert.equal(rssRouter.route.value, '/rss/');
 
-            assert.equal(rssRouter.mountRoute.callCount, 2);
+            sinon.assert.calledTwice(rssRouter.mountRoute);
 
             assert.equal(rssRouter.mountRoute.args[0][0], '/rss/');
             assert.equal(rssRouter.mountRoute.args[0][1], controllers.rss);

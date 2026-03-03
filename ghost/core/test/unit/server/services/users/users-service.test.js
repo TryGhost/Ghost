@@ -39,12 +39,12 @@ describe('Users service', function () {
                 context: {}
             });
 
-            assert.equal(mockOptions.auth.passwordreset.generateToken.calledOnce, true);
+            sinon.assert.calledOnce(mockOptions.auth.passwordreset.generateToken);
             assert.equal(mockOptions.auth.passwordreset.generateToken.args[0][0], 'test_email@example.com');
             assert.equal(mockOptions.auth.passwordreset.generateToken.args[0][1], 'fake_api_settings');
             assert.equal(mockOptions.auth.passwordreset.generateToken.args[0][2], 'fake_transaction');
 
-            assert.equal(mockOptions.auth.passwordreset.sendResetNotification.calledOnce, true);
+            sinon.assert.calledOnce(mockOptions.auth.passwordreset.sendResetNotification);
             assert.equal(mockOptions.auth.passwordreset.sendResetNotification.args[0][0], 'secret_fake_token');
             assert.equal(mockOptions.auth.passwordreset.sendResetNotification.args[0][1], 'fake_api_mail');
         });

@@ -29,6 +29,9 @@ export interface UseMembersFilterConfigOptions {
     onEmailResourceSearchChange?: (search: string) => void;
     emailResourceSearchValue?: string;
     emailResourceLoading?: boolean;
+    // Offers
+    offersOptions?: FilterOption[];
+    hasOffers?: boolean;
     // Feature/setting flags for resource filters
     membersTrackSources?: boolean;
     emailTrackOpens?: boolean;
@@ -116,6 +119,8 @@ export function useMembersFilterConfig({
     onTiersSearchChange,
     tiersSearchValue,
     tiersLoading = false,
+    offersOptions = [],
+    hasOffers = false,
     postResourceOptions = [],
     onPostResourceSearchChange,
     postResourceSearchValue,
@@ -163,13 +168,15 @@ export function useMembersFilterConfig({
             basicFields.push({
                 key: 'label',
                 label: 'Label',
-                type: 'select',
+                type: 'multiselect',
                 icon: <LucideIcon.Tag className="size-4" />,
                 options: labelsOptions.length > 0 ? labelsOptions : labels.map(l => ({
                     value: l.slug,
                     label: l.name
                 })),
-                operators: IS_IS_NOT_OPERATORS,
+                defaultOperator: 'is_any_of',
+                hideOperatorSelect: true,
+                autoCloseOnSelect: true,
                 searchable: true,
                 onSearchChange: onLabelsSearchChange,
                 searchValue: labelsSearchValue,
@@ -364,6 +371,21 @@ export function useMembersFilterConfig({
                 });
             }
 
+            if (hasOffers) {
+                subscriptionFields.push({
+                    key: 'offer_redemptions',
+                    label: 'Offer',
+                    type: 'multiselect',
+                    icon: <LucideIcon.Ticket className="size-4" />,
+                    options: offersOptions,
+                    defaultOperator: 'is_any_of',
+                    hideOperatorSelect: true,
+                    autoCloseOnSelect: true,
+                    searchable: true,
+                    className: 'w-64'
+                });
+            }
+
             groups.push({
                 group: 'Subscription',
                 fields: subscriptionFields
@@ -503,6 +525,8 @@ export function useMembersFilterConfig({
         onTiersSearchChange,
         tiersSearchValue,
         tiersLoading,
+        offersOptions,
+        hasOffers,
         postResourceOptions,
         onPostResourceSearchChange,
         postResourceSearchValue,

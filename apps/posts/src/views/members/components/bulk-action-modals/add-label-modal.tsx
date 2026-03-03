@@ -2,7 +2,6 @@ import {
     Button,
     Dialog,
     DialogContent,
-    DialogDescription,
     DialogFooter,
     DialogHeader,
     DialogTitle,
@@ -51,10 +50,9 @@ export function AddLabelModal({
         <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogContent className="gap-5">
                 <DialogHeader>
-                    <DialogTitle>Add label to members</DialogTitle>
-                    <DialogDescription>
-                        Add a label to {memberCount.toLocaleString()} {memberCount === 1 ? 'member' : 'members'}.
-                    </DialogDescription>
+                    <DialogTitle>
+                        Add label to {memberCount.toLocaleString()} {memberCount === 1 ? 'member' : 'members'}
+                    </DialogTitle>
                 </DialogHeader>
 
                 <div className="space-y-2">

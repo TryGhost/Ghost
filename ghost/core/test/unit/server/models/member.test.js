@@ -75,7 +75,7 @@ describe('Unit: models/member', function () {
                 id: '1'
             }]);
 
-            assert.equal(updatePivot.calledWith({expiry_at: new Date(expiry)}, {query: {where: {product_id: '1'}}}), true);
+            sinon.assert.calledWith(updatePivot, {expiry_at: new Date(expiry)}, {query: {where: {product_id: '1'}}});
         });
 
         it('calls updatePivot on member products to remove expiry', function () {
@@ -83,7 +83,7 @@ describe('Unit: models/member', function () {
                 id: '1'
             }]);
 
-            assert.equal(updatePivot.calledWith({expiry_at: null}, {query: {where: {product_id: '1'}}}), true);
+            sinon.assert.calledWith(updatePivot, {expiry_at: null}, {query: {where: {product_id: '1'}}});
         });
     });
 });

@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 import os from 'os';
-dotenv.config();
+dotenv.config({quiet: true});
 
 /*
  * 1/3 of the number of CPU cores seems to strike a good balance. Each worker

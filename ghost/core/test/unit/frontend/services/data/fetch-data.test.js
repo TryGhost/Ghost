@@ -65,7 +65,7 @@ describe('Unit - frontend/data/fetch-data', function () {
             assert('meta' in result);
             assert(!('data' in result));
 
-            assert.equal(browsePostsStub.calledOnce, true);
+            sinon.assert.calledOnce(browsePostsStub);
             assert(_.isPlainObject(browsePostsStub.firstCall.args[0]));
             assert('include' in browsePostsStub.firstCall.args[0]);
             assert(!('filter' in browsePostsStub.firstCall.args[0]));
@@ -84,7 +84,7 @@ describe('Unit - frontend/data/fetch-data', function () {
 
             assert.equal(result.posts.length, posts.length);
 
-            assert.equal(browsePostsStub.calledOnce, true);
+            sinon.assert.calledOnce(browsePostsStub);
             assert(_.isPlainObject(browsePostsStub.firstCall.args[0]));
             assert('include' in browsePostsStub.firstCall.args[0]);
             assert.equal(browsePostsStub.firstCall.args[0].limit, 10);
@@ -122,7 +122,7 @@ describe('Unit - frontend/data/fetch-data', function () {
             assert.equal(result.posts.length, posts.length);
             assert.equal(result.data.featured.length, posts.length);
 
-            assert.equal(browsePostsStub.calledTwice, true);
+            sinon.assert.calledTwice(browsePostsStub);
             assert.equal(browsePostsStub.firstCall.args[0].include, 'authors,tags,tiers');
             assert.equal(browsePostsStub.secondCall.args[0].filter, 'featured:true');
             assert.equal(browsePostsStub.secondCall.args[0].limit, 3);
@@ -158,7 +158,7 @@ describe('Unit - frontend/data/fetch-data', function () {
             assert.equal(result.posts.length, posts.length);
             assert.equal(result.data.featured.length, posts.length);
 
-            assert.equal(browsePostsStub.calledTwice, true);
+            sinon.assert.calledTwice(browsePostsStub);
             assert.equal(browsePostsStub.firstCall.args[0].include, 'authors,tags,tiers');
             assert.equal(browsePostsStub.firstCall.args[0].page, 2);
             assert.equal(browsePostsStub.secondCall.args[0].filter, 'featured:true');
@@ -196,7 +196,7 @@ describe('Unit - frontend/data/fetch-data', function () {
             assert.equal(result.posts.length, posts.length);
             assert.equal(result.data.tag.length, tags.length);
 
-            assert.equal(browsePostsStub.calledOnce, true);
+            sinon.assert.calledOnce(browsePostsStub);
             assert('include' in browsePostsStub.firstCall.args[0]);
             assert.equal(browsePostsStub.firstCall.args[0].filter, 'tags:testing');
             assert(!('slug' in browsePostsStub.firstCall.args[0]));

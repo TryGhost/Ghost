@@ -39,7 +39,7 @@ export const ButtonSelect: React.FC<{type: OfferType, checked: boolean, onClick:
                 <div className={`mt-0.5 flex size-4 items-center justify-center rounded-full ${checkboxClass}`}>
                     {checked ? <Icon className='w-[7px] stroke-[4]' name='check' size='custom' /> : null}
                 </div>
-                <div className='flex flex-col'>
+                <div className='-mt-px flex flex-col'>
                     <span>{type.title}</span>
                     <span className='text-sm'>{type.description}</span>
                 </div>
@@ -135,15 +135,10 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
     handleTrialAmountInput,
     amountOptions}) => {
     // const handleError = useHandleError();
-    const getFilteredDurationOptions = () => {
-        // Check if the selected tier's cadence is 'yearly'
-        if (selectedTier?.label?.includes('Yearly')) {
-            // Filter out 'repeating' from duration options
-            return durationOptions.filter(option => option.value !== 'repeating');
-        }
-        return durationOptions;
-    };
-    const filteredDurationOptions = getFilteredDurationOptions();
+    const isYearlyTier = overrides.cadence === 'year';
+    const filteredDurationOptions = isYearlyTier
+        ? durationOptions.filter(option => option.value !== 'repeating')
+        : durationOptions;
 
     const [nameLength, setNameLength] = useState(0);
     const nameLengthColor = nameLength > 40 ? 'text-red' : 'text-green';
@@ -254,13 +249,27 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                                 selectedOption={filteredDurationOptions.find(option => option.value === overrides.duration)}
                                 testId='duration-select-offers'
                                 title='Duration'
-                                onSelect={e => handleDurationChange(e?.value || '')}
+                                onSelect={(e) => {
+                                    clearError('durationInMonths');
+                                    handleDurationChange(e?.value || '');
+                                }}
                             />
 
                             {
-                                overrides.duration === 'repeating' && <TextField title='Duration in months' type='number' onChange={(e) => {
-                                    handleDurationInMonthsInput(e);
-                                }} />
+                                overrides.duration === 'repeating' && !isYearlyTier && <div className='-mt-4'>
+                                    <TextField
+                                        data-testid='duration-months-input'
+                                        error={Boolean(errors.durationInMonths)}
+                                        hint={errors.durationInMonths}
+                                        rightPlaceholder={`${overrides.durationInMonths === 1 ? 'month' : 'months'}`}
+                                        type='number'
+                                        value={overrides.durationInMonths === 0 ? '' : String(overrides.durationInMonths)}
+                                        onChange={(e) => {
+                                            handleDurationInMonthsInput(e);
+                                        }}
+                                        onKeyDown={() => clearError('durationInMonths')}
+                                    />
+                                </div>
                             }
                             </>
                         }
@@ -352,7 +361,7 @@ const AddOfferModal = () => {
             cadence: selectedTier?.dataset?.period || '',
             amount: 0,
             duration: 'once',
-            durationInMonths: 0,
+            durationInMonths: 1,
             currency: selectedTier?.dataset?.currency || 'USD',
             status: 'active',
             tierId: selectedTier?.dataset?.id || '',
@@ -361,6 +370,7 @@ const AddOfferModal = () => {
             percentAmount: 0
         },
         onSave: async () => {
+            const duration = formState.type === 'trial' ? 'trial' : formState.duration;
             const dataset = {
                 name: formState.name,
                 code: formState.code.value,
@@ -368,8 +378,8 @@ const AddOfferModal = () => {
                 display_description: formState.displayDescription,
                 cadence: formState.cadence,
                 amount: calculateAmount(formState) || 0,
-                duration: formState.type === 'trial' ? 'trial' : formState.duration,
-                duration_in_months: Number(formState.durationInMonths),
+                duration,
+                ...(duration === 'repeating' ? {duration_in_months: formState.durationInMonths} : {}),
                 currency: formState.currency,
                 status: formState.status,
                 redemption_type: 'signup' as const,
@@ -406,8 +416,8 @@ const AddOfferModal = () => {
                 newErrors.amount = 'Enter an amount greater than 0.';
             }
 
-            if (formState.type === 'percent' && (formState.percentAmount < 0 || formState.percentAmount > 100)) {
-                newErrors.amount = 'Amount must be between 0 and 100%.';
+            if (formState.type === 'percent' && (formState.percentAmount < 1 || formState.percentAmount > 100)) {
+                newErrors.amount = 'Enter an amount between 1 and 100%.';
             }
 
             if (formState.type === 'fixed' && formState.fixedAmount === 0 || formState.type === 'fixed' && formState.fixedAmount < 1) {
@@ -422,6 +432,10 @@ const AddOfferModal = () => {
                 newErrors.amount = 'Free trial must be at least 1 day.';
             }
 
+            if (formState.type !== 'trial' && formState.duration === 'repeating' && formState.durationInMonths < 1) {
+                newErrors.durationInMonths = 'Enter a duration greater than 0.';
+            }
+
             return newErrors;
         },
         savingDelay: 500
@@ -433,19 +447,32 @@ const AddOfferModal = () => {
     ];
 
     const handleTierChange = (tier: SelectOption) => {
+        const parsedTier = parseData(tier.value);
+        const isYearlyCadence = parsedTier.period === 'year';
+
         setSelectedTier({
             tier,
-            dataset: parseData(tier.value)
+            dataset: parsedTier
         });
         updateForm(state => ({
             ...state,
-            cadence: parseData(tier.value).period,
-            currency: parseData(tier.value).currency,
-            tierId: parseData(tier.value).id
+            cadence: parsedTier.period,
+            currency: parsedTier.currency,
+            tierId: parsedTier.id,
+            duration: isYearlyCadence && state.duration === 'repeating' ? 'once' : state.duration
         }));
+
+        if (isYearlyCadence) {
+            clearError('durationInMonths');
+        }
     };
 
     const handleTypeChange = (type: string) => {
+        if (type === 'trial') {
+            clearError('amount');
+            clearError('durationInMonths');
+        }
+
         updateForm(state => ({
             ...state,
             type: type
@@ -482,9 +509,11 @@ const AddOfferModal = () => {
 
     const handleDurationInMonthsInput = (e: React.ChangeEvent<HTMLInputElement>) => {
         const target = e.target as HTMLInputElement;
+        const nextValue = Number(target.value);
+
         updateForm(state => ({
             ...state,
-            durationInMonths: Number(target.value)
+            durationInMonths: Number.isNaN(nextValue) ? 0 : nextValue
         }));
     };
 

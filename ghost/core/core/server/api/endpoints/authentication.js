@@ -166,8 +166,23 @@ const controller = {
             const internalOptions = Object.assign(options, {context: {internal: true}});
 
             const doResetParams = await auth.passwordreset.doReset(internalOptions, tokenParts, api.settings);
+
+            if (!frame.original.session) {
+                throw new errors.InternalServerError({
+                    message: 'Could not initialize an admin session during password reset.'
+                });
+            }
+
+            const origin = auth.session.getOriginOfRequest(frame.original);
+            await auth.session.sessionService.assignVerifiedUserToSession({
+                session: frame.original.session,
+                user: doResetParams.user,
+                origin,
+                ip: frame.options.ip
+            });
+
             web.shared.middleware.api.spamPrevention.userLogin().reset(frame.options.ip, `${tokenParts.email}login`);
-            return doResetParams;
+            return {};
         }
     },
 

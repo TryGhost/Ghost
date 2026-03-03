@@ -904,7 +904,7 @@ describe('MailgunClient', function () {
 
             assert.equal(firstPageMock.isDone(), true);
             assert.equal(secondPageMock.isDone(), true);
-            assert.equal(batchHandler.callCount, 2); // one per page
+            sinon.assert.calledTwice(batchHandler); // one per page
         });
     });
 

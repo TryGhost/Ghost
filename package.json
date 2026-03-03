@@ -27,6 +27,7 @@
     "build:clean": "nx reset && rimraf -g 'ghost/*/build' && rimraf -g 'ghost/*/tsconfig.tsbuildinfo'",
     "clean:hard": "node ./.github/scripts/clean.js",
     "dev": "nx run ghost-monorepo:docker:dev",
+    "dev:mailgun": "DEV_COMPOSE_FILES='-f compose.dev.mailgun.yaml' nx run ghost-monorepo:docker:dev",
     "dev:lexical": "EDITOR_URL=http://localhost:2368/ghost/assets/koenig-lexical/ yarn dev",
     "dev:analytics": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml' nx run ghost-monorepo:docker:dev",
     "dev:storage": "DEV_COMPOSE_FILES='-f compose.dev.storage.yaml' nx run ghost-monorepo:docker:dev",
