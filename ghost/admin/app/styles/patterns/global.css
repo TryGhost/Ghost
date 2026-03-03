@@ -219,6 +219,9 @@
     --input-bg-color: var(--white);
     --input-border-color: var(--whitegrey-d1);
     --input-border: var(--input-border-color) 1px solid;
+
+    /* Z-index values */
+    --z-index-iframe-mobile: 801;
 }
 
 /* Colour classes
