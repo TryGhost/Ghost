@@ -1,28 +1,6 @@
 import { useLocation } from '@tryghost/admin-x-framework';
 import { NavMenuItem } from './nav-menu-item';
-import { useMemberViews, filterRecordToSearchParams, type MemberView } from '@tryghost/posts/src/views/members/hooks/use-member-views';
-
-/**
- * Check if the current URL search params match a view's filter
- */
-function isViewActive(currentSearch: string, viewFilter: Record<string, string | null>): boolean {
-    const currentParams = new URLSearchParams(currentSearch);
-    const viewParams = new URLSearchParams();
-
-    for (const [key, value] of Object.entries(viewFilter)) {
-        if (value != null) {
-            viewParams.set(key, value);
-        }
-    }
-
-    // A view is active if all of its filter params are present and equal in the current URL
-    for (const [key, value] of viewParams.entries()) {
-        if (currentParams.get(key) !== value) {
-            return false;
-        }
-    }
-    return true;
-}
+import { useMemberViews, filterRecordToSearchParams, isViewSearchActive, type MemberView } from '@tryghost/posts/src/views/members/hooks/use-member-views';
 
 function MemberViewItem({ view, isOnMembersForward, currentSearch }: {
     view: MemberView;
@@ -31,7 +9,7 @@ function MemberViewItem({ view, isOnMembersForward, currentSearch }: {
 }) {
     const searchString = filterRecordToSearchParams(view.filter).toString();
     const to = `members-forward?${searchString}`;
-    const active = isOnMembersForward && isViewActive(currentSearch, view.filter);
+    const active = isOnMembersForward && isViewSearchActive(currentSearch, view.filter);
 
     return (
         <NavMenuItem key={view.name}>
