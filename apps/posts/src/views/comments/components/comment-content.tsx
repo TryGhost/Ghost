@@ -20,6 +20,8 @@ function CommentContent({item}: {item: Comment}) {
     const [isClamped, setIsClamped] = useState(false);
     const [isExpanded, setIsExpanded] = useState(false);
 
+    const isDeleted = item.status === 'deleted';
+
     useEffect(() => {
         // Don't recalculate clamping while expanded, as the content won't be clamped
         // and we'd incorrectly hide the ExpandButton
@@ -39,6 +41,16 @@ function CommentContent({item}: {item: Comment}) {
         window.addEventListener('resize', checkIfClamped);
         return () => window.removeEventListener('resize', checkIfClamped);
     }, [item.html, isExpanded]);
+
+    if (isDeleted) {
+        return (
+            <div className="mt-1 flex flex-col gap-2">
+                <div className="flex max-w-full flex-col items-start opacity-50">
+                    <p className="text-base italic text-muted-foreground">[removed]</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className={`mt-1 flex flex-col gap-2`}>
