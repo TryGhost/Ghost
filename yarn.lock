@@ -30536,10 +30536,10 @@ sane@^4.0.0, sane@^4.1.0:
     minimist "^1.1.1"
     walker "~1.0.5"
 
-sanitize-html@2.17.0:
-  version "2.17.0"
-  resolved "https://registry.yarnpkg.com/sanitize-html/-/sanitize-html-2.17.0.tgz#a8f66420a6be981d8fe412e3397cc753782598e4"
-  integrity sha512-dLAADUSS8rBwhaevT12yCezvioCA+bmUTPH/u57xKPT8d++voeYE6HeluA/bPbQ15TwDBG2ii+QZIEmYx8VdxA==
+sanitize-html@2.17.1:
+  version "2.17.1"
+  resolved "https://registry.yarnpkg.com/sanitize-html/-/sanitize-html-2.17.1.tgz#3b8073f9b2bf5b47bed045e09a0e428b1fe38bf3"
+  integrity sha512-ehFCW+q1a4CSOWRAdX97BX/6/PDEkCqw7/0JXZAGQV57FQB3YOkTa/rrzHPeJ+Aghy4vZAFfWMYyfxIiB7F/gw==
   dependencies:
     deepmerge "^4.2.2"
     escape-string-regexp "^4.0.0"
