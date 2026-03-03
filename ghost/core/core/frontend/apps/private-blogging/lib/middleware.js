@@ -60,7 +60,8 @@ const privateBlogging = {
             name: 'ghost-private',
             maxAge: (30 * 24 * 60 * 60 * 1000), // 30 days in ms
             signed: false,
-            sameSite: 'none'
+            sameSite: urlUtils.isSSL(config.get('url')) ? 'none' : 'lax',
+            secure: urlUtils.isSSL(config.get('url'))
         })(req, res, next);
     },
 
