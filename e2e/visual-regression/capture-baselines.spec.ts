@@ -22,30 +22,91 @@ interface Screen {
     waitFor?: string;
     /** Extra time to wait after load (ms) — use sparingly */
     extraWait?: number;
+    /** If true, capture viewport-only screenshot instead of full page */
+    viewportOnly?: boolean;
 }
 
+// ---------------------------------------------------------------------------
+// Full-page screens
+// ---------------------------------------------------------------------------
 const SCREENS: Screen[] = [
-    // Core screens
+    // Core Ember pages (HIGH risk — CSS class collisions with .flex, .hidden, etc.)
     {name: 'dashboard', path: '/ghost/#/dashboard'},
     {name: 'posts-list', path: '/ghost/#/posts'},
     {name: 'pages-list', path: '/ghost/#/pages'},
     {name: 'tags-list', path: '/ghost/#/tags'},
+    {name: 'tags-new', path: '/ghost/#/tags/new', extraWait: 1000},
     {name: 'members-list', path: '/ghost/#/members'},
+    {name: 'members-activity', path: '/ghost/#/members-activity', extraWait: 1000},
 
     // Editor
     {name: 'editor-new-post', path: '/ghost/#/editor/post', extraWait: 2000},
 
-    // Settings
+    // Settings (full page — captures top portion)
     {name: 'settings', path: '/ghost/#/settings'},
 
-    // Stats / Analytics
-    {name: 'stats', path: '/ghost/#/stats', extraWait: 1000},
+    // Analytics / Stats pages (React)
+    {name: 'analytics-overview', path: '/ghost/#/stats', extraWait: 1500},
+    {name: 'analytics-web', path: '/ghost/#/stats/web', extraWait: 1500},
+    {name: 'analytics-growth', path: '/ghost/#/stats/growth', extraWait: 1500},
+    {name: 'analytics-newsletters', path: '/ghost/#/stats/newsletters', extraWait: 1500},
 
-    // ActivityPub
-    {name: 'activitypub', path: '/ghost/#/activitypub', extraWait: 1000}
+    // ActivityPub pages (React)
+    {name: 'activitypub-inbox', path: '/ghost/#/activitypub', extraWait: 1500},
+    {name: 'activitypub-feed', path: '/ghost/#/activitypub/feed', extraWait: 1500},
+    {name: 'activitypub-profile', path: '/ghost/#/activitypub/profile', extraWait: 1500},
+    {name: 'activitypub-notifications', path: '/ghost/#/activitypub/notifications', extraWait: 1500}
 ];
 
-/** CSS injected into every page to hide flaky dynamic content */
+// ---------------------------------------------------------------------------
+// Settings sections — scrolled into view individually
+// ---------------------------------------------------------------------------
+interface SettingsSection {
+    name: string;
+    /** The data-testid attribute on the section's TopLevelGroup */
+    testId: string;
+}
+
+const SETTINGS_SECTIONS: SettingsSection[] = [
+    // General
+    {name: 'settings-title-description', testId: 'title-and-description'},
+    {name: 'settings-timezone', testId: 'timezone'},
+    {name: 'settings-publication-language', testId: 'publication-language'},
+    {name: 'settings-staff', testId: 'users'},
+    {name: 'settings-social-accounts', testId: 'social-accounts'},
+
+    // Site
+    {name: 'settings-design', testId: 'design'},
+    {name: 'settings-theme', testId: 'theme'},
+    {name: 'settings-navigation', testId: 'navigation'},
+    {name: 'settings-announcement-bar', testId: 'announcement-bar'},
+
+    // Membership
+    {name: 'settings-portal', testId: 'portal'},
+    {name: 'settings-tiers', testId: 'tiers'},
+    {name: 'settings-analytics', testId: 'analytics'},
+
+    // Email newsletters
+    {name: 'settings-enable-newsletters', testId: 'enable-newsletters'},
+    {name: 'settings-newsletters', testId: 'newsletters'},
+    {name: 'settings-default-recipients', testId: 'default-recipients'},
+    {name: 'settings-mailgun', testId: 'mailgun'},
+
+    // Growth
+    {name: 'settings-recommendations', testId: 'recommendations'},
+    {name: 'settings-embed-signup-form', testId: 'embed-signup-form'},
+
+    // Advanced
+    {name: 'settings-integrations', testId: 'integrations'},
+    {name: 'settings-migration', testId: 'migrationtools'},
+    {name: 'settings-code-injection', testId: 'code-injection'},
+    {name: 'settings-labs', testId: 'labs'},
+    {name: 'settings-history', testId: 'history'}
+];
+
+// ---------------------------------------------------------------------------
+// CSS injected into every page to hide flaky dynamic content
+// ---------------------------------------------------------------------------
 const HIDE_DYNAMIC_CONTENT = `
     /* Timestamps and relative dates */
     [data-testid="timestamp"],
@@ -84,32 +145,97 @@ const HIDE_DYNAMIC_CONTENT = `
     .gh-loading-orb {
         display: none !important;
     }
+
+    /* Charts and graphs (data-dependent, flaky) */
+    .recharts-surface,
+    .recharts-wrapper,
+    canvas {
+        visibility: hidden !important;
+    }
+
+    /* Scrollbars (platform-dependent rendering) */
+    ::-webkit-scrollbar {
+        display: none !important;
+    }
+    * {
+        scrollbar-width: none !important;
+    }
+
+    /* Editor carets and cursors */
+    .koenig-cursor,
+    .ProseMirror .ProseMirror-cursor,
+    [data-lexical-editor] .cursor,
+    .kg-prose caret-color {
+        caret-color: transparent !important;
+    }
 `;
 
+// ---------------------------------------------------------------------------
+// Full-page screen tests
+// ---------------------------------------------------------------------------
 for (const screen of SCREENS) {
     test(`visual baseline: ${screen.name}`, async ({page}) => {
         await page.goto(screen.path);
         await page.waitForLoadState('load');
 
-        // Wait for specific element if configured
         if (screen.waitFor) {
             await page.waitForSelector(screen.waitFor, {timeout: 15_000});
         }
 
-        // Extra settle time for complex screens (charts, etc.)
         if (screen.extraWait) {
             await page.waitForTimeout(screen.extraWait);
         }
 
-        // Inject CSS to hide dynamic/flaky content
         await page.addStyleTag({content: HIDE_DYNAMIC_CONTENT});
-
-        // Small settle after style injection
         await page.waitForTimeout(500);
 
         await expect(page).toHaveScreenshot(`${screen.name}.png`, {
-            fullPage: true,
+            fullPage: !screen.viewportOnly,
             maxDiffPixelRatio: 0.001
         });
     });
 }
+
+// ---------------------------------------------------------------------------
+// Settings section tests — scroll to each section and capture viewport
+// ---------------------------------------------------------------------------
+test.describe('settings sections', () => {
+    for (const section of SETTINGS_SECTIONS) {
+        test(`visual baseline: ${section.name}`, async ({page}) => {
+            await page.goto('/ghost/#/settings');
+            await page.waitForLoadState('load');
+
+            // Wait for Settings React app to mount
+            await page.waitForSelector('[data-testid="title-and-description"]', {timeout: 15_000});
+
+            // Extra settle time for settings to fully render
+            await page.waitForTimeout(1500);
+
+            await page.addStyleTag({content: HIDE_DYNAMIC_CONTENT});
+
+            // Scroll the section into view within the settings scroller
+            const scrolled = await page.evaluate((testId) => {
+                const section = document.querySelector(`[data-testid="${testId}"]`);
+                if (!section) {
+                    return false;
+                }
+                section.scrollIntoView({block: 'start'});
+                return true;
+            }, section.testId);
+
+            if (!scrolled) {
+                // Section might not exist (conditional on config like Stripe)
+                test.skip();
+                return;
+            }
+
+            // Allow scroll + re-render to settle
+            await page.waitForTimeout(500);
+
+            await expect(page).toHaveScreenshot(`${section.name}.png`, {
+                fullPage: false,
+                maxDiffPixelRatio: 0.001
+            });
+        });
+    }
+});
