@@ -64,9 +64,9 @@ const features: Feature[] = [{
     description: 'Use the new React-based members list instead of the Ember implementation',
     flag: 'membersForward'
 }, {
-    title: 'Welcome Email Design Customization',
+    title: 'Welcome Emails Design Customization',
     description: 'Enable design customization options for welcome emails',
-    flag: 'welcomeEmailDesignCustomization'
+    flag: 'welcomeEmailsDesignCustomization'
 }];
 
 const AlphaFeatures: React.FC = () => {
