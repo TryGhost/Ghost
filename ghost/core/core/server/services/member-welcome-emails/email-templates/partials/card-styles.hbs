@@ -4,6 +4,15 @@ td.kg-card-spacing {
     padding: 0 0 1.5em 0;
 }
 
+/* Any card with altered visibility is wrapped in a div with the .kg-visibility-wrapper class */
+.kg-visibility-wrapper + * {
+    margin-top: 1.5em !important;
+}
+
+.kg-visibility-wrapper + hr {
+    margin-top: 3em !important;
+}
+
 figure {
     margin: 0 0 1.5em;
     padding: 0;
@@ -160,6 +169,21 @@ figcaption a {
     margin: 0 6px;
 }
 
+.kg-gallery-container {
+    margin-top: -20px;
+}
+
+.kg-gallery-image img {
+    width: 100% !important;
+    height: auto !important;
+    padding-top: 20px;
+    {{#if hasRoundedImageCorners}}
+    border-radius: 6px;
+    padding-top: 0 !important;
+    margin-top: 20px !important;
+    {{/if}}
+}
+
 .kg-video-preview {
     background-color: #1d1f21;
     background-image: radial-gradient(circle at center, #5b5f66, #1d1f21);
@@ -198,6 +222,33 @@ figcaption a {
     border-color: transparent transparent transparent white;
     border-style: solid;
     border-width: 0.8em 0 0.8em 1.5em;
+}
+
+.kg-nft-link {
+    display: block;
+    text-decoration: none !important;
+    color: #15212A !important;
+    font-family: inherit !important;
+    font-size: 14px;
+    line-height: 1.3em;
+    padding-top: 4px;
+    padding-right: 20px;
+    padding-left: 20px;
+    padding-bottom: 4px;
+}
+
+.kg-twitter-link {
+    display: block;
+    text-decoration: none !important;
+    color: #15212A !important;
+    font-family: inherit !important;
+    font-size: 15px;
+    padding: 8px;
+    line-height: 1.3em;
+}
+
+.kg-audio-thumbnail.placeholder {
+    background-color: {{accentColor}} !important;
 }
 
 .kg-callout-card {
