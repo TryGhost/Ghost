@@ -46,8 +46,13 @@ async function processOutbox() {
         await memberWelcomeEmailService.api.loadMemberWelcomeEmails();
     } catch (err) {
         const errorMessage = err?.message ?? 'Unknown error';
-        logging.error(`${OUTBOX_LOG_KEY} Service initialization failed: ${errorMessage}`);
-        return `${OUTBOX_LOG_KEY} Job aborted: Service initialization failed`;
+        logging.error({
+            system: {
+                event: 'outbox.init.failed'
+            },
+            err
+        }, `${OUTBOX_LOG_KEY} Service initialization failed: ${errorMessage}`);
+        return;
     }
 
     let totalProcessed = 0;
@@ -70,16 +75,28 @@ async function processOutbox() {
         totalProcessed += processed;
         totalFailed += failed;
 
-        logging.info(`${OUTBOX_LOG_KEY} Batch complete: ${processed} processed, ${failed} failed in ${(batchDurationMs / 1000).toFixed(2)}s (${batchRate} entries/sec)`);
+        logging.info({
+            system: {
+                event: 'outbox.batch.complete',
+                entries_processed: processed,
+                entries_failed: failed,
+                duration_ms: batchDurationMs
+            }
+        }, `${OUTBOX_LOG_KEY} Batch complete: ${processed} processed, ${failed} failed in ${(batchDurationMs / 1000).toFixed(2)}s (${batchRate} entries/sec)`);
     }
 
     const durationMs = Date.now() - jobStartMs;
 
-    if (totalProcessed + totalFailed === 0) {
-        return `${OUTBOX_LOG_KEY} ${MESSAGES.NO_ENTRIES}`;
-    }
-
-    return `${OUTBOX_LOG_KEY} Job complete: Processed ${totalProcessed} outbox entries, ${totalFailed} failed in ${(durationMs / 1000).toFixed(2)}s`;
+    logging.info({
+        system: {
+            event: 'outbox.job.complete',
+            entries_processed: totalProcessed,
+            entries_failed: totalFailed,
+            duration_ms: durationMs
+        }
+    }, totalProcessed + totalFailed === 0
+        ? `${OUTBOX_LOG_KEY} ${MESSAGES.NO_ENTRIES}`
+        : `${OUTBOX_LOG_KEY} Job complete: Processed ${totalProcessed} outbox entries, ${totalFailed} failed in ${(durationMs / 1000).toFixed(2)}s`);
 }
 
 module.exports = processOutbox;
