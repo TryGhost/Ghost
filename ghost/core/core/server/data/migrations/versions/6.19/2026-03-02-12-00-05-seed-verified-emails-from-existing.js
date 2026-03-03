@@ -12,12 +12,13 @@ module.exports = createTransactionalMigration(
             .whereNotNull('sender_email')
             .where('sender_email', '!=', '');
 
-        for (const row of newsletterSenderEmails) {
+        newsletterSenderEmails.reduce((map, row) => {
             const email = row.sender_email.toLowerCase().trim();
-            if (email && !emailsToInsert.has(email)) {
-                emailsToInsert.set(email, (new ObjectID()).toHexString());
+            if (email && !map.has(email)) {
+                map.set(email, (new ObjectID()).toHexString());
             }
-        }
+            return map;
+        }, emailsToInsert);
 
         // 2. Collect sender_reply_to values from newsletters
         //    Skip special alias values 'newsletter' and 'support' — these are not email addresses
@@ -27,12 +28,13 @@ module.exports = createTransactionalMigration(
             .where('sender_reply_to', '!=', '')
             .whereNotIn('sender_reply_to', ['newsletter', 'support']);
 
-        for (const row of newsletterReplyTos) {
+        newsletterReplyTos.reduce((map, row) => {
             const email = row.sender_reply_to.toLowerCase().trim();
-            if (email && !emailsToInsert.has(email)) {
-                emailsToInsert.set(email, (new ObjectID()).toHexString());
+            if (email && !map.has(email)) {
+                map.set(email, (new ObjectID()).toHexString());
             }
-        }
+            return map;
+        }, emailsToInsert);
 
         // 3. Collect members_support_address from settings
         //    Skip 'noreply' (special alias) and values without '@' (not real emails)
@@ -57,16 +59,13 @@ module.exports = createTransactionalMigration(
         logging.info(`Seeding ${emailsToInsert.size} verified email(s) from existing addresses`);
 
         const now = knex.raw('CURRENT_TIMESTAMP');
-        const rows = [];
-        for (const [email, id] of emailsToInsert) {
-            rows.push({
-                id,
-                email,
-                status: 'verified',
-                created_at: now,
-                updated_at: now
-            });
-        }
+        const rows = Array.from(emailsToInsert, ([email, id]) => ({
+            id,
+            email,
+            status: 'verified',
+            created_at: now,
+            updated_at: now
+        }));
 
         await knex.batchInsert('verified_emails', rows, 100);
 
@@ -76,7 +75,7 @@ module.exports = createTransactionalMigration(
             .whereNotNull('sender_email')
             .where('sender_email', '!=', '');
 
-        for (const newsletter of newslettersWithSenderEmail) {
+        await Promise.all(newslettersWithSenderEmail.map(async (newsletter) => {
             const email = newsletter.sender_email.toLowerCase().trim();
             const verifiedEmailId = emailsToInsert.get(email);
             if (verifiedEmailId) {
@@ -84,7 +83,7 @@ module.exports = createTransactionalMigration(
                     .where('id', newsletter.id)
                     .update({sender_email_verified_email_id: verifiedEmailId});
             }
-        }
+        }));
 
         logging.info(`Backfilled sender_email_verified_email_id for ${newslettersWithSenderEmail.length} newsletter(s)`);
 
@@ -95,7 +94,7 @@ module.exports = createTransactionalMigration(
             .where('sender_reply_to', '!=', '')
             .whereNotIn('sender_reply_to', ['newsletter', 'support']);
 
-        for (const newsletter of newslettersWithReplyTo) {
+        await Promise.all(newslettersWithReplyTo.map(async (newsletter) => {
             const email = newsletter.sender_reply_to.toLowerCase().trim();
             const verifiedEmailId = emailsToInsert.get(email);
             if (verifiedEmailId) {
@@ -103,7 +102,7 @@ module.exports = createTransactionalMigration(
                     .where('id', newsletter.id)
                     .update({sender_reply_to_verified_email_id: verifiedEmailId});
             }
-        }
+        }));
 
         logging.info(`Backfilled sender_reply_to_verified_email_id for ${newslettersWithReplyTo.length} newsletter(s)`);
     },
