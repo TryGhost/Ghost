@@ -2,7 +2,7 @@
     <header class="gh-publish-header">
         <h2>Publish</h2>
 
-        {{#if (not this.isComplete)}}
+        {{#unless this.isComplete}}
             <div class="gh-btn-group-right">
                 <button
                     type="button"
@@ -24,7 +24,7 @@
                     </button>
                 {{/unless}}
             </div>
-        {{/if}}
+        {{/unless}}
     </header>
 
     <div class="gh-publish-settings-container {{unless @data.skipAnimation "fade-in"}}">
