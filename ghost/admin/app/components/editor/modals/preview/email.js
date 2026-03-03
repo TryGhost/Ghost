@@ -8,13 +8,9 @@ import {task, timeout} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 const INJECTED_CSS = `
-html::-webkit-scrollbar {
-    display: none;
-    width: 0;
-    background: transparent
-}
-html {
-    scrollbar-width: none;
+html,
+body {
+    overflow-y: auto;
 }
 `;
 
@@ -77,6 +73,35 @@ export default class ModalPostPreviewEmailComponent extends Component {
             iframe.contentWindow.document.open();
             iframe.contentWindow.document.write(this.html);
             iframe.contentWindow.document.close();
+        }
+    }
+
+    @action
+    focusPreviewFrame(event) {
+        const iframe = event?.target;
+
+        if (!iframe) {
+            return;
+        }
+
+        try {
+            const body = iframe.contentDocument?.body;
+
+            if (body && !body.hasAttribute('tabindex')) {
+                body.setAttribute('tabindex', '-1');
+            }
+
+            try {
+                body?.focus({preventScroll: true});
+            } catch (focusError) {
+                body?.focus();
+            }
+        
+            if (!body) {
+                iframe.contentWindow?.focus();
+            }
+        } catch (error) {
+            iframe.contentWindow?.focus();
         }
     }
 
@@ -155,7 +180,7 @@ export default class ModalPostPreviewEmailComponent extends Component {
             subject = emailPreview.subject;
         }
 
-        // inject extra CSS into the html for disabling links and scrollbars etc
+        // inject extra CSS so the preview behaves consistently inside the iframe
         let domParser = new DOMParser();
         let htmlDoc = domParser.parseFromString(html, 'text/html');
         let stylesheet = htmlDoc.querySelector('style');
