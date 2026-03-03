@@ -66,7 +66,10 @@ const DropdownIndicator: React.FC<DropdownIndicatorProps<MultiSelectOption, true
     }
     return (
         <components.DropdownIndicator {...props}>
-            <div className={`absolute top-[14px] block size-2 rotate-45 border-[1px] border-l-0 border-t-0 border-grey-900 content-[''] dark:border-grey-400 ${clearBg ? 'right-0' : 'right-4'} `}></div>
+            <div
+                className={`absolute top-[14px] block size-2 border-[1px] border-l-0 border-t-0 border-grey-900 content-[''] dark:border-grey-400 ${clearBg ? 'right-0' : 'right-4'} `}
+                style={{transform: 'rotate(45deg)'}}
+            ></div>
         </components.DropdownIndicator>
     );
 };
