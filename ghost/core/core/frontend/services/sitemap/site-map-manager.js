@@ -1,5 +1,6 @@
 const DomainEvents = require('@tryghost/domain-events');
 const {URLResourceUpdatedEvent} = require('../../../shared/events');
+const urlUtils = require('../../../shared/url-utils');
 const IndexMapGenerator = require('./site-map-index-generator');
 const PagesMapGenerator = require('./page-map-generator');
 const PostsMapGenerator = require('./post-map-generator');
@@ -35,6 +36,17 @@ class SiteMapManager {
             this[event.data.resourceType].updateURL(event.data);
         });
 
+        // Bulk init: URL service emits all URLs at once after boot completes
+        events.on('url.init', ({urls}) => {
+            const allUrls = urls.urls;
+            for (const resourceId in allUrls) {
+                const entry = allUrls[resourceId];
+                const absoluteUrl = urlUtils.createUrl(entry.url, true);
+                this[entry.resource.config.type].addUrl(absoluteUrl, entry.resource.data);
+            }
+        });
+
+        // Runtime: individual URL additions/removals after boot
         events.on('url.added', (obj) => {
             this[obj.resource.config.type].addUrl(obj.url.absolute, obj.resource.data);
         });

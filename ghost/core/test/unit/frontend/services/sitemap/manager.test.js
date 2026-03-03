@@ -60,7 +60,7 @@ describe('Unit: sitemap/manager', function () {
 
         it('can create a SiteMapManager instance', function () {
             assertExists(manager);
-            assert.equal(Object.keys(eventsToRemember).length, 4);
+            assert.equal(Object.keys(eventsToRemember).length, 5);
             assertExists(eventsToRemember['url.added']);
             assertExists(eventsToRemember['url.removed']);
             assertExists(eventsToRemember['router.created']);

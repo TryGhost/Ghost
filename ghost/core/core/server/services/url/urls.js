@@ -1,10 +1,6 @@
 const debug = require('@tryghost/debug')('services:url:urls');
-const urlUtils = require('../../../shared/url-utils');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
-
-// This emits its own url added/removed events
-const events = require('../../lib/common/events');
 
 /**
  * @typedef {{url: string, generatorId: string, resource: import('./resource')}} Url
@@ -55,15 +51,6 @@ class Urls {
             generatorId: generatorId,
             resource: resource
         };
-
-        // @NOTE: Notify the whole system. Currently used for sitemaps service.
-        events.emit('url.added', {
-            url: {
-                relative: url,
-                absolute: urlUtils.createUrl(url, true)
-            },
-            resource: resource
-        });
     }
 
     /**
@@ -106,6 +93,7 @@ class Urls {
     /**
      * @description Remove url.
      * @param {string} id
+     * @returns {Url|undefined} the removed entry, or undefined if not found
      */
     removeResourceId(id) {
         if (!this.urls[id]) {
@@ -114,12 +102,9 @@ class Urls {
 
         debug('removeResourceId', this.urls[id].url, this.urls[id].generatorId);
 
-        events.emit('url.removed', {
-            url: this.urls[id].url,
-            resource: this.urls[id].resource
-        });
-
+        const removed = this.urls[id];
         delete this.urls[id];
+        return removed;
     }
 
     /**

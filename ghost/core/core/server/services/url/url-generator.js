@@ -1,6 +1,7 @@
 const nql = require('@tryghost/nql');
 const debug = require('@tryghost/debug')('services:url:generator');
 const localUtils = require('../../../shared/url-utils');
+const events = require('../../lib/common/events');
 
 // @TODO: merge with filter plugin
 const EXPANSIONS = [{
@@ -85,7 +86,15 @@ class UrlGenerator {
         const myResources = this.urls.getByGeneratorId(this.uid);
 
         myResources.forEach((object) => {
-            this.urls.removeResourceId(object.resource.data.id);
+            const removed = this.urls.removeResourceId(object.resource.data.id);
+
+            if (removed) {
+                events.emit('url.removed', {
+                    url: removed.url,
+                    resource: removed.resource
+                });
+            }
+
             object.resource.release();
             this._try(object.resource);
         });
@@ -125,8 +134,9 @@ class UrlGenerator {
 
         debug('_onInit', this.resourceType, resources.length);
 
+        // During init, don't emit per-resource events — url-service emits url.init in bulk
         for (const resource of resources) {
-            this._try(resource);
+            this._try(resource, false);
         }
     }
 
@@ -152,10 +162,11 @@ class UrlGenerator {
     /**
      * @description Try to own a resource and generate it's url if so.
      * @param {import('./resource')} resource - instance of the Resource class
+     * @param {boolean} [emit=true] - whether to emit url.added event (false during bulk init)
      * @returns {boolean}
      * @private
      */
-    _try(resource) {
+    _try(resource, emit = true) {
         /**
          * CASE: another url generator has taken this resource already.
          *
@@ -190,6 +201,17 @@ class UrlGenerator {
 
             resource.reserve();
             this._resourceListeners(resource);
+
+            if (emit) {
+                events.emit('url.added', {
+                    url: {
+                        relative: url,
+                        absolute: localUtils.createUrl(url, true)
+                    },
+                    resource: resource
+                });
+            }
+
             return true;
         } else {
             return false;
@@ -220,7 +242,14 @@ class UrlGenerator {
     _resourceListeners(resource) {
         const onUpdate = (updatedResource) => {
             // 1. remove old resource
-            this.urls.removeResourceId(updatedResource.data.id);
+            const removed = this.urls.removeResourceId(updatedResource.data.id);
+
+            if (removed) {
+                events.emit('url.removed', {
+                    url: removed.url,
+                    resource: removed.resource
+                });
+            }
 
             // 2. free resource, the url <-> resource connection no longer exists
             updatedResource.release();
@@ -239,7 +268,15 @@ class UrlGenerator {
         };
 
         const onRemoved = (removedResource) => {
-            this.urls.removeResourceId(removedResource.data.id);
+            const removed = this.urls.removeResourceId(removedResource.data.id);
+
+            if (removed) {
+                events.emit('url.removed', {
+                    url: removed.url,
+                    resource: removed.resource
+                });
+            }
+
             removedResource.release();
         };
 

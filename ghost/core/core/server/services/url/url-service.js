@@ -4,6 +4,7 @@ const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const metrics = require('@tryghost/metrics');
 const labs = require('../../../shared/labs');
+const events = require('../../lib/common/events');
 const UrlGenerator = require('./url-generator');
 const Queue = require('./queue');
 const Urls = require('./urls');
@@ -81,6 +82,9 @@ class UrlService {
     _onQueueEnded(event) {
         if (event === 'init') {
             this.finished = true;
+
+            // Notify the system once with all URLs (used by sitemap service)
+            events.emit('url.init', {urls: this.urls});
 
             const now = Date.now();
             logging.info(`URL Service ready in ${now - this.lastInitStartTime}ms`);

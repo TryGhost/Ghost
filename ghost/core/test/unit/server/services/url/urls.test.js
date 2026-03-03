@@ -1,14 +1,10 @@
 const assert = require('node:assert/strict');
-const {assertExists} = require('../../../../utils/assertions');
 const sinon = require('sinon');
-const events = require('../../../../../core/server/lib/common/events');
 const Urls = require('../../../../../core/server/services/url/urls');
-const config = require('../../../../../core/shared/config');
 const logging = require('@tryghost/logging');
 
 describe('Unit: services/url/Urls', function () {
     let urls;
-    let eventsToRemember;
 
     beforeEach(function () {
         urls = new Urls();
@@ -42,11 +38,6 @@ describe('Unit: services/url/Urls', function () {
             },
             generatorId: 2
         });
-
-        eventsToRemember = {};
-        sinon.stub(events, 'emit').callsFake(function (eventName, data) {
-            eventsToRemember[eventName] = data;
-        });
     });
 
     afterEach(function () {
@@ -65,12 +56,6 @@ describe('Unit: services/url/Urls', function () {
             generatorId: 1
         });
 
-        assertExists(eventsToRemember['url.added']);
-        assert.equal(eventsToRemember['url.added'].url.absolute, `${config.get('url')}/test/`);
-        assert.equal(eventsToRemember['url.added'].url.relative, '/test/');
-        assertExists(eventsToRemember['url.added'].resource);
-        assertExists(eventsToRemember['url.added'].resource.data);
-
         assert.equal(urls.getByResourceId('object-id-x').resource.data.slug, 'a');
 
         sinon.stub(logging, 'error');
@@ -86,14 +71,12 @@ describe('Unit: services/url/Urls', function () {
             generatorId: 1
         });
 
-        assertExists(eventsToRemember['url.added']);
-
         assert.equal(urls.getByResourceId('object-id-x').resource.data.slug, 'b');
     });
 
     it('fn: getByResourceId', function () {
         assert.equal(urls.getByResourceId('object-id-2').url, '/something/');
-        assertExists(urls.getByResourceId('object-id-2').generatorId);
+        assert.ok(urls.getByResourceId('object-id-2').generatorId);
         assert.equal(urls.getByResourceId('object-id-2').generatorId, 1);
     });
 
@@ -106,9 +89,11 @@ describe('Unit: services/url/Urls', function () {
     });
 
     it('fn: removeResourceId', function () {
-        urls.removeResourceId('object-id-2');
+        const removed = urls.removeResourceId('object-id-2');
+        assert.equal(removed.url, '/something/');
         assert.equal(urls.getByResourceId('object-id-2'), undefined);
 
-        urls.removeResourceId('does not exist');
+        const notFound = urls.removeResourceId('does not exist');
+        assert.equal(notFound, undefined);
     });
 });
