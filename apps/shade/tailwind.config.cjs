@@ -365,15 +365,15 @@ module.exports = {
             },
             fontSize: {
                 '2xs': '1.0rem',
-                base: ['1.4rem', '1.5'],
-                xs: ['1.2rem', '1.5'],
-                sm: ['1.3rem', '1.5'],
+                base: '1.4rem',
+                xs: '1.2rem',
+                sm: '1.3rem',
                 md: '1.4rem',
-                lg: ['1.5rem', '1.5'],
-                xl: ['1.7rem', '1.5'],
-                '2xl': ['2.2rem', '1.5'],
-                '3xl': ['2.8rem', '1.5'],
-                '4xl': ['3.2rem', '1.5'],
+                lg: '1.5rem',
+                xl: '1.7rem',
+                '2xl': '2.2rem',
+                '3xl': '2.8rem',
+                '4xl': '3.2rem',
                 '5xl': [
                     '4.0rem',
                     '1.15'
@@ -397,6 +397,11 @@ module.exports = {
                 inherit: 'inherit'
             },
             lineHeight: {
+                none: '1',
+                snug: '1.375',
+                normal: '1.5',
+                relaxed: '1.625',
+                loose: '2',
                 base: '1.5em',
                 tight: '1.35em',
                 tighter: '1.25em',
