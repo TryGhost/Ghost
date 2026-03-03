@@ -6,11 +6,9 @@ const urlUtils = require('../../../../../core/shared/url-utils.js');
 const {mockManager} = require('../../../../utils/e2e-framework');
 const emailAddress = require('../../../../../core/server/services/email-address');
 describe('UNIT > Settings BREAD Service:', function () {
-    let emailMockReceiver;
-
     beforeEach(function () {
         emailAddress.init();
-        emailMockReceiver = mockManager.mockMail();
+        mockManager.mockMail();
     });
 
     afterEach(function () {

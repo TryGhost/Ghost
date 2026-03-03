@@ -2,7 +2,6 @@ const _ = require('lodash');
 const tpl = require('@tryghost/tpl');
 const {NotFoundError, NoPermissionError, BadRequestError, IncorrectUsageError, ValidationError} = require('@tryghost/errors');
 const {obfuscatedSetting, isSecretSetting, hideValueIfSecret} = require('./settings-utils');
-const logging = require('@tryghost/logging');
 const verifyEmailTemplate = require('./emails/verify-email');
 const MagicLink = require('../lib/magic-link/magic-link');
 const sentry = require('../../../shared/sentry');
@@ -386,10 +385,8 @@ class SettingsBREADService {
             settings.meta = settings.meta || {};
             settings.meta.sent_email_verification = emailsToVerify.map(v => v.key);
         }
-
         return settings;
     }
-
 }
 
 module.exports = SettingsBREADService;
