@@ -32,13 +32,5 @@ module.exports = combineTransactionalMigrations(
     }, [
         'Administrator',
         'Admin Integration'
-    ]),
-    addPermissionWithRoles({
-        name: 'Delete verified emails',
-        action: 'destroy',
-        object: 'verified_email'
-    }, [
-        'Administrator',
-        'Admin Integration'
     ])
 );

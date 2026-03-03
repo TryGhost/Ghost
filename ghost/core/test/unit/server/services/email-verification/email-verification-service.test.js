@@ -36,22 +36,18 @@ describe('EmailVerificationService', function () {
             findOne: sandbox.stub(),
             findAll: sandbox.stub(),
             add: sandbox.stub(),
-            edit: sandbox.stub(),
-            destroy: sandbox.stub()
+            edit: sandbox.stub()
         };
 
         NewsletterModel = {
-            findAll: sandbox.stub(),
             edit: sandbox.stub()
         };
 
         SettingsModel = {
-            findOne: sandbox.stub(),
             edit: sandbox.stub()
         };
 
         AutomatedEmailModel = {
-            findAll: sandbox.stub(),
             edit: sandbox.stub()
         };
 
@@ -213,8 +209,7 @@ describe('EmailVerificationService', function () {
             assert.deepEqual(result.context, context);
             sinon.assert.calledOnceWithExactly(saveStub, {status: 'verified'}, {patch: true});
             sinon.assert.calledOnceWithExactly(NewsletterModel.edit, {
-                sender_email: 'test@example.com',
-                sender_email_verified_email_id: 've-1'
+                sender_email: 'test@example.com'
             }, {id: 'nl-1'});
         });
 
@@ -258,8 +253,7 @@ describe('EmailVerificationService', function () {
             assert.deepEqual(result.context, context);
             sinon.assert.calledOnceWithExactly(saveStub, {status: 'verified'}, {patch: true});
             sinon.assert.calledOnceWithExactly(AutomatedEmailModel.edit, {
-                sender_reply_to: 'auto@example.com',
-                sender_reply_to_verified_email_id: 've-1'
+                sender_reply_to: 'auto@example.com'
             }, {id: 'ae-1'});
         });
 
@@ -274,81 +268,4 @@ describe('EmailVerificationService', function () {
         });
     });
 
-    describe('destroy', function () {
-        it('deletes verified email when not in use', async function () {
-            const verifiedEmailObj = {
-                get: key => ({id: 've-1', email: 'test@example.com', status: 'verified'})[key]
-            };
-
-            VerifiedEmailModel.findOne.resolves(verifiedEmailObj);
-            VerifiedEmailModel.destroy.resolves();
-
-            // No usages: newsletters, automated_emails, and settings all return empty
-            NewsletterModel.findAll.resolves({models: []});
-            AutomatedEmailModel.findAll.resolves({models: []});
-            SettingsModel.findOne.resolves(null);
-
-            await service.destroy('ve-1');
-
-            sinon.assert.calledOnceWithExactly(VerifiedEmailModel.destroy, {id: 've-1'});
-        });
-
-        it('throws ValidationError when email is in use by a newsletter', async function () {
-            const verifiedEmailObj = {
-                get: key => ({id: 've-1', email: 'test@example.com', status: 'verified'})[key]
-            };
-
-            VerifiedEmailModel.findOne.resolves(verifiedEmailObj);
-
-            // First call for sender_email FK column returns a match
-            NewsletterModel.findAll.onFirstCall().resolves({
-                models: [{
-                    get: key => ({name: 'Weekly Newsletter'})[key]
-                }]
-            });
-            // Second call for sender_reply_to FK column returns empty
-            NewsletterModel.findAll.onSecondCall().resolves({models: []});
-
-            AutomatedEmailModel.findAll.resolves({models: []});
-            SettingsModel.findOne.resolves(null);
-
-            await assert.rejects(service.destroy('ve-1'), {
-                errorType: 'ValidationError'
-            });
-
-            sinon.assert.notCalled(VerifiedEmailModel.destroy);
-        });
-
-        it('throws ValidationError when email is in use by a setting', async function () {
-            const verifiedEmailObj = {
-                get: key => ({id: 've-1', email: 'test@example.com', status: 'verified'})[key]
-            };
-
-            VerifiedEmailModel.findOne.withArgs({id: 've-1'}).resolves(verifiedEmailObj);
-
-            NewsletterModel.findAll.resolves({models: []});
-            AutomatedEmailModel.findAll.resolves({models: []});
-
-            // Settings findOne is called for members_support_address
-            SettingsModel.findOne.resolves({
-                get: key => ({value: 'test@example.com'})[key]
-            });
-
-            await assert.rejects(service.destroy('ve-1'), {
-                errorType: 'ValidationError'
-            });
-
-            sinon.assert.notCalled(VerifiedEmailModel.destroy);
-        });
-
-        it('throws NotFoundError when verified email does not exist', async function () {
-            VerifiedEmailModel.findOne.resolves(null);
-
-            await assert.rejects(service.destroy('nonexistent-id'), {
-                errorType: 'NotFoundError'
-            });
-
-            sinon.assert.notCalled(VerifiedEmailModel.destroy);
-        });
-    });
 });
