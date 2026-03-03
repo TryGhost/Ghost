@@ -128,6 +128,21 @@ module.exports = function (Bookshelf) {
                     return objects;
                 }
 
+                // Build a subquery mirroring the main query's conditions (filter,
+                // shouldHavePosts, id) so relation queries use a subquery instead
+                // of materializing every post ID as a literal in WHERE IN.
+                function buildIdSubquery() {
+                    const sub = Bookshelf.knex(tableName).select('id');
+                    nql(filter).querySQL(sub);
+                    if (shouldHavePosts) {
+                        plugins.hasPosts.addHasPostsWhere(tableName, shouldHavePosts)(sub);
+                    }
+                    if (id) {
+                        sub.where({id});
+                    }
+                    return sub;
+                }
+
                 _.each(withRelated, (withRelatedKey) => {
                     const relation = relations[withRelatedKey];
 
@@ -153,7 +168,7 @@ module.exports = function (Bookshelf) {
                             relation.innerJoin.condition[2]
                         );
 
-                        relationQuery.whereIn(relation.whereIn, _.map(objects, 'id'));
+                        relationQuery.whereIn(relation.whereIn, buildIdSubquery());
                         relationQuery.orderBy(relation.orderBy);
 
                         const queryRelations = await relationQuery;
