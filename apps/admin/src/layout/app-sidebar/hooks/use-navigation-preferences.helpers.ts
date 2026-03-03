@@ -1,12 +1,12 @@
-import type {NavigationPreferences} from '@/hooks/user-preferences';
+import {DEFAULT_NAVIGATION_PREFERENCES, type NavigationPreferences} from '@/hooks/user-preferences';
 
 export function buildExpandedPayload(
     expanded: NavigationPreferences['expanded'] | undefined,
     expandedKey: keyof NavigationPreferences['expanded'],
     value: boolean
-): Partial<NavigationPreferences['expanded']> {
+): NavigationPreferences['expanded'] {
     return {
-        ...expanded,
+        ...(expanded ?? DEFAULT_NAVIGATION_PREFERENCES.expanded),
         [expandedKey]: value
     };
 }

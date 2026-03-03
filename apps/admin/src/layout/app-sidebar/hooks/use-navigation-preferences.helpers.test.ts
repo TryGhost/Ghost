@@ -11,7 +11,8 @@ describe('buildExpandedPayload', () => {
 
     it('creates minimal payload when current expanded state is undefined', () => {
         expect(buildExpandedPayload(undefined, 'posts', true)).toEqual({
-            posts: true
+            posts: true,
+            members: true
         });
     });
 });
