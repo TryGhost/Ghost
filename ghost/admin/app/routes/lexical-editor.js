@@ -3,35 +3,6 @@ import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 
-const POSTS_ANALYTICS_ROUTE = 'posts-x';
-const STATS_ANALYTICS_ROUTE = 'stats-x';
-
-/**
- * Checks whether a route name belongs to a route family.
- * @param {string|undefined|null} routeName - Current route name.
- * @param {string} routeFamily - Base route family name.
- * @returns {boolean}
- */
-function isInRouteFamily(routeName, routeFamily) {
-    return routeName === routeFamily || routeName?.startsWith(`${routeFamily}.`);
-}
-
-/**
- * Reads a dynamic segment from the previous route info in a transition.
- * @param {object|undefined} transition - Ember transition object.
- * @param {string} paramName - Dynamic segment name to resolve.
- * @returns {string|undefined}
- */
-function getTransitionParam(transition, paramName) {
-    let routeInfo = transition?.from;
-
-    if (!routeInfo) {
-        return undefined;
-    }
-
-    return routeInfo.params?.[paramName] ?? routeInfo.parent?.params?.[paramName];
-}
-
 /**
  * Builds a query string from transition query params, excluding empty values.
  * @param {Record<string, unknown>} [queryParams={}] - Query params from route info.
@@ -66,28 +37,24 @@ function buildQueryString(queryParams = {}) {
  * @returns {string|false} Analytics path when available, otherwise `false`.
  */
 function buildAnalyticsSourcePath(transition, model) {
-    let fromRouteName = transition?.from?.name;
+    let fromPath = transition?.from?.params?.path;
     let queryString = buildQueryString(transition?.from?.queryParams);
 
-    if (isInRouteFamily(fromRouteName, POSTS_ANALYTICS_ROUTE)) {
-        let postId = getTransitionParam(transition, 'post_id') || model?.id;
-
+    let postMatch = fromPath?.match(/^posts\/analytics\/([^/]+)(?:\/(.+))?$/);
+    if (postMatch) {
+        let postId = postMatch[1] || model?.id;
         if (!postId) {
             return false;
         }
-
-        let sub = getTransitionParam(transition, 'sub');
-        let basePath = sub
-            ? `/posts/analytics/${postId}/${sub}`
-            : `/posts/analytics/${postId}`;
-
+        let sub = postMatch[2];
+        let basePath = sub ? `/posts/analytics/${postId}/${sub}` : `/posts/analytics/${postId}`;
         return `${basePath}${queryString}`;
     }
 
-    if (isInRouteFamily(fromRouteName, STATS_ANALYTICS_ROUTE)) {
-        let sub = getTransitionParam(transition, 'sub');
+    let statsMatch = fromPath?.match(/^analytics(?:\/(.+))?$/);
+    if (statsMatch) {
+        let sub = statsMatch[1];
         let basePath = sub ? `/analytics/${sub}` : '/analytics';
-
         return `${basePath}${queryString}`;
     }
 
