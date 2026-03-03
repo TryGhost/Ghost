@@ -223,7 +223,7 @@ const Modal = forwardRef<HTMLElement, ModalProps>(({
     if (stickyHeader) {
         headerClasses = clsx(
             headerClasses,
-            'sticky top-0 z-[300] -mb-4 bg-white pb-4! dark:bg-black'
+            'pb-4! sticky top-0 z-[300] -mb-4 bg-white dark:bg-black'
         );
     }
 

@@ -28,7 +28,7 @@ const Radio: React.FC<RadioProps> = ({id, title, options, onSelect, error, hint,
                 {title && <Heading level={6}>{title}</Heading>}
                 {options.map(option => (
                     <label key={option.value} className={`flex cursor-pointer items-start ${title && '-mb-1 mt-1'}`} htmlFor={option.value}>
-                        <RadioPrimitive.Item className="relative float-left mt-[3px] size-4 min-w-[16px] appearance-none rounded-full border-2 border-solid border-grey-300 hover:cursor-pointer focus:shadow-none focus:outline-hidden focus:ring-0 data-[state=checked]:border-green data-[state=checked]:focus:border-green dark:border-grey-800 dark:text-white dark:data-[state=checked]:border-green dark:data-[state=checked]:focus:border-green" id={option.value} value={option.value}>
+                        <RadioPrimitive.Item className="focus:outline-hidden relative float-left mt-[3px] size-4 min-w-[16px] appearance-none rounded-full border-2 border-solid border-grey-300 hover:cursor-pointer focus:shadow-none focus:ring-0 data-[state=checked]:border-green data-[state=checked]:focus:border-green dark:border-grey-800 dark:text-white dark:data-[state=checked]:border-green dark:data-[state=checked]:focus:border-green" id={option.value} value={option.value}>
                             <RadioPrimitive.Indicator className="flex size-full items-center justify-center after:block after:size-[6px] after:rounded-full after:border-green after:bg-green after:content-[''] dark:after:border-green dark:after:bg-green" />
                         </RadioPrimitive.Item>
                         <div className={`ml-2 flex flex-col ${option.hint && 'mb-2'}`}>

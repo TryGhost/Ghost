@@ -89,7 +89,7 @@ function HeaderNav({className, children}: HeaderNavProps) {
     );
 }
 
-const headerVariants = cva(`sticky top-0 z-50 -mb-4 grid gap-x-4 bg-gradient-to-b from-background via-background/70 to-background/70 p-4 backdrop-blur-md [grid-template-areas:'above''title''meta''actions''nav'] sm:[grid-template-areas:'above_above''title_actions''meta_actions''nav_nav'] lg:-mb-8 lg:p-8 dark:bg-black`, {
+const headerVariants = cva(`via-background/70 to-background/70 sticky top-0 z-50 -mb-4 grid gap-x-4 bg-gradient-to-b from-background p-4 backdrop-blur-md [grid-template-areas:'above''title''meta''actions''nav'] sm:[grid-template-areas:'above_above''title_actions''meta_actions''nav_nav'] lg:-mb-8 lg:p-8 dark:bg-black`, {
     variants: {
         variant: {
             default: `lg:[grid-template-areas:'above_above''title_actions''meta_actions''nav_nav']`,

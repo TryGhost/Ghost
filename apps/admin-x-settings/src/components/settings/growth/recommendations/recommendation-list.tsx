@@ -43,7 +43,7 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
                 </div>
             </TableCell>
             <TableCell
-                className='hidden w-auto whitespace-nowrap text-left align-middle md:visible! md:table-cell!'
+                className='md:visible! md:table-cell! hidden w-auto whitespace-nowrap text-left align-middle'
             >
                 {count === 0 ? (
                     <span className="text-grey-500 dark:text-grey-900">-</span>

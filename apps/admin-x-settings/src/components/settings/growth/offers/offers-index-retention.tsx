@@ -328,7 +328,7 @@ export const OffersIndexModal: React.FC = () => {
             </colgroup>
             <thead>
                 <tr className='border-b border-b-grey-200 dark:border-grey-800'>
-                    <th className='p-0 pb-2.5 pl-0 text-left text-xs font-medium uppercase tracking-wide text-grey-700'>Name</th>
+                    <th className='p-0 pb-2.5 text-left text-xs font-medium uppercase tracking-wide text-grey-700'>Name</th>
                     <th className='p-0 pb-2.5 pl-5 text-left text-xs font-medium uppercase tracking-wide text-grey-700'>Terms</th>
                     <th className='p-0 pb-2.5 pl-5 text-left text-xs font-medium uppercase tracking-wide text-grey-700'>Price</th>
                     <th className='p-0 pb-2.5 pl-5 text-left text-xs font-medium uppercase tracking-wide text-grey-700'>Redemptions</th>

@@ -76,7 +76,7 @@ const NewsletterTableRows: React.FC<{
                             <TableCell className="font-medium">
                                 <div className='group/link inline-flex items-center gap-2'>
                                     {post.post_id ?
-                                        <Button className='h-auto whitespace-normal p-0 text-left hover:underline!' title="View post analytics" variant='link' onClick={() => {
+                                        <Button className='hover:underline! h-auto whitespace-normal p-0 text-left' title="View post analytics" variant='link' onClick={() => {
                                             navigate(`/posts/analytics/${post.post_id}/`, {crossApp: true});
                                         }}>
                                             {post.post_title}
@@ -97,7 +97,7 @@ const NewsletterTableRows: React.FC<{
                             {emailTrackOpensEnabled &&
                         <TableCell className='text-right font-mono text-sm'>
                             <span className="group-hover:hidden">{formatPercentage(post.open_rate)}</span>
-                            <span className="hidden group-hover:visible! group-hover:block!">{formatNumber(post.total_opens)}</span>
+                            <span className="group-hover:visible! group-hover:block! hidden">{formatNumber(post.total_opens)}</span>
                         </TableCell>
                             }
 
@@ -108,7 +108,7 @@ const NewsletterTableRows: React.FC<{
                             ) : (
                                 <>
                                     <span className="group-hover:hidden">{formatPercentage(post.click_rate)}</span>
-                                    <span className="hidden group-hover:visible! group-hover:block!">{formatNumber(post.total_clicks)}</span>
+                                    <span className="group-hover:visible! group-hover:block! hidden">{formatNumber(post.total_clicks)}</span>
                                 </>
                             )}
                         </TableCell>
@@ -118,7 +118,7 @@ const NewsletterTableRows: React.FC<{
                 </>
                 :
                 <TableRow className='border-none hover:bg-transparent'>
-                    <TableCell className='text-center group-hover:bg-transparent!' colSpan={5}>
+                    <TableCell className='group-hover:bg-transparent! text-center' colSpan={5}>
                         <EmptyIndicator
                             className='size-full py-20'
                             title={`No newsletters ${getPeriodText(range)}`}

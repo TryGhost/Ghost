@@ -18,7 +18,7 @@ interface postAnalyticsProps {}
 
 const FunnelArrow: React.FC = () => {
     return (
-        <div className='absolute -right-4 top-1/2 z-10 hidden size-8 -translate-y-1/2 items-center justify-center rounded-full border bg-background text-muted-foreground   md:visible! md:flex!'>
+        <div className='md:visible! md:flex! absolute -right-4 top-1/2 z-10 hidden size-8 -translate-y-1/2 items-center justify-center rounded-full border   bg-background text-muted-foreground'>
             <LucideIcon.ChevronRight className='ml-0.5' size={16} strokeWidth={1.5}/>
         </div>
     );
@@ -298,7 +298,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                             });
                                             navigate(`/members?${params.toString()}`, {crossApp: true});
                                         }}>
-                                            <div className='ml-0.5 size-[9px] rounded-full bg-chart-purple text-sm! opacity-50 lg:text-base'></div>
+                                            <div className='text-sm! ml-0.5 size-[9px] rounded-full bg-chart-purple opacity-50 lg:text-base'></div>
                                     Sent
                                         </KpiCardLabel>
                                         <KpiCardContent>
@@ -324,7 +324,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                 });
                                                 navigate(`/members?${params.toString()}`, {crossApp: true});
                                             }}>
-                                                <div className='ml-0.5 size-[9px] rounded-full bg-chart-blue text-sm! opacity-50 lg:text-base'></div>
+                                                <div className='text-sm! ml-0.5 size-[9px] rounded-full bg-chart-blue opacity-50 lg:text-base'></div>
                                                 Opened
                                             </KpiCardLabel>
                                             <KpiCardContent>
@@ -351,7 +351,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                 });
                                                 navigate(`/members?${params.toString()}`, {crossApp: true});
                                             }}>
-                                                <div className='ml-0.5 size-[9px] rounded-full bg-chart-teal text-sm! opacity-50 lg:text-base'></div>
+                                                <div className='text-sm! ml-0.5 size-[9px] rounded-full bg-chart-teal opacity-50 lg:text-base'></div>
                                                 Clicked
                                             </KpiCardLabel>
                                             <KpiCardContent>
@@ -377,7 +377,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                     </div>
 
                                     {emailTrackOpensEnabled &&
-                                        <div className={`group/block relative border-r-0 px-6 transition-all hover:bg-muted/25 ${emailTrackClicksEnabled && 'md:border-r'}`}>
+                                        <div className={`group/block hover:bg-muted/25 relative border-r-0 px-6 transition-all ${emailTrackClicksEnabled && 'md:border-r'}`}>
                                             <BlockTooltip
                                                 avgValue={formatPercentage(averageStats.openedRate)}
                                                 dataColor='var(--chart-blue)'
@@ -399,7 +399,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                     }
 
                                     {emailTrackClicksEnabled &&
-                                        <div className='group/block relative px-6 transition-all hover:bg-muted/25'>
+                                        <div className='group/block hover:bg-muted/25 relative px-6 transition-all'>
                                             <BlockTooltip
                                                 avgValue={formatPercentage(averageStats.clickedRate)}
                                                 dataColor='var(--chart-teal)'

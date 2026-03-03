@@ -234,7 +234,7 @@ const NewsletterKPIs: React.FC<{
 
     return (
         <Tabs defaultValue={initialTab} variant='kpis'>
-            <TabsList className={`-mx-6 hidden grid-cols-3 md:visible! md:grid! ${gridClass}`}>
+            <TabsList className={`md:visible! md:grid! -mx-6 hidden grid-cols-3 ${gridClass}`}>
                 <KpiTabTrigger className={`${!emailTrackOpensEnabled && !emailTrackClicksEnabled && 'cursor-auto after:hidden'}`} value="total-subscribers" onClick={() => {
                     handleTabChange('total-subscribers');
                 }}>

@@ -91,7 +91,7 @@ const TopPosts: React.FC<TopPostsProps> = ({
                         {
                             topPostsData?.stats?.map((post: TopPostViewsStats) => {
                                 return (
-                                    <div key={post.post_id} className='group relative flex w-full items-start justify-between gap-5 border-t border-border/50 py-4 before:absolute before:-inset-x-4 before:inset-y-0 before:z-0 before:hidden before:rounded-md before:bg-accent before:opacity-80 before:content-[""] first:border-border! hover:cursor-pointer hover:border-transparent hover:before:block md:items-center dark:before:bg-accent/50 [&+div]:hover:border-transparent'>
+                                    <div key={post.post_id} className='border-border/50 first:border-border! dark:before:bg-accent/50 group relative flex w-full items-start justify-between gap-5 border-t py-4 before:absolute before:-inset-x-4 before:inset-y-0 before:z-0 before:hidden before:rounded-md before:bg-accent before:opacity-80 before:content-[""] hover:cursor-pointer hover:border-transparent hover:before:block md:items-center [&+div]:hover:border-transparent'>
                                         <div className='z-10 flex min-w-[160px] grow items-start gap-4 md:items-center lg:min-w-[320px]' onClick={() => {
                                             navigate(getPostDestination({
                                                 postId: post.post_id,
@@ -103,11 +103,11 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                             }), {crossApp: true});
                                         }}>
                                             {post.feature_image ?
-                                                <div className='hidden aspect-[16/10] w-[80px] shrink-0 rounded-sm bg-cover bg-center sm:visible! sm:block! lg:w-[100px]' style={{
+                                                <div className='sm:visible! sm:block! hidden aspect-[16/10] w-[80px] shrink-0 rounded-sm bg-cover bg-center lg:w-[100px]' style={{
                                                     backgroundImage: `url(${post.feature_image})`
                                                 }}></div>
                                                 :
-                                                <FeatureImagePlaceholder className='hidden aspect-[16/10] w-[80px] shrink-0 group-hover:bg-muted-foreground/10 sm:visible! sm:flex! lg:w-[100px]' />
+                                                <FeatureImagePlaceholder className='group-hover:bg-muted-foreground/10 sm:visible! sm:flex! hidden aspect-[16/10] w-[80px] shrink-0 lg:w-[100px]' />
                                             }
                                             <div className='flex flex-col'>
                                                 <span className='line-clamp-2 text-lg font-semibold leading-[1.35em]'>{post.title}</span>

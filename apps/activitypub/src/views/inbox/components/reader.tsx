@@ -1023,7 +1023,7 @@ export const Reader: React.FC<ReaderProps> = ({
                             </div>}
                         </div>
                     </div>
-                    {!isLoadingContent && <div className='pointer-events-none visible! sticky bottom-0 hidden items-end justify-between px-10 pb-[42px] lg:flex!'>
+                    {!isLoadingContent && <div className='visible! lg:flex! pointer-events-none sticky bottom-0 hidden items-end justify-between px-10 pb-[42px]'>
                         <div className='pointer-events-auto text-gray-600'>
                             {getReadingTime(object.content ?? '')}
                         </div>

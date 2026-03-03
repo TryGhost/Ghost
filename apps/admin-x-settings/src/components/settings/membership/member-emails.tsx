@@ -43,7 +43,7 @@ const EmailPreview: React.FC<{
             data-testid={`${emailType}-welcome-email-preview`}
         >
             <button
-                className='flex w-full cursor-pointer items-center justify-between before:absolute before:inset-0 before:rounded-lg before:content-[""] focus-visible:outline-hidden focus-visible:before:ring-2 focus-visible:before:ring-green'
+                className='focus-visible:outline-hidden flex w-full cursor-pointer items-center justify-between before:absolute before:inset-0 before:rounded-lg before:content-[""] focus-visible:before:ring-2 focus-visible:before:ring-green'
                 type='button'
                 onClick={onEdit}
             >

@@ -216,7 +216,7 @@ const useFilterContext = () => useContext(FilterContext);
 // Reusable input variant component for consistent styling
 const filterInputVariants = cva(
     [
-        'relative flex shrink-0 items-center text-foreground outline-hidden transition',
+        'outline-hidden relative flex shrink-0 items-center text-foreground transition',
         'has-[[data-slot=filters-input]:focus-visible]:ring-ring/30',
         'has-[[data-slot=filters-input]:focus-visible]:border-ring',
         'has-[[data-slot=filters-input]:focus-visible]:outline-hidden',
@@ -297,7 +297,7 @@ const filterAddButtonVariants = cva(
     {
         variants: {
             variant: {
-                solid: 'border border-input hover:bg-secondary/60',
+                solid: 'hover:bg-secondary/60 border border-input',
                 outline: 'border border-border hover:bg-accent'
             },
             size: {
@@ -601,7 +601,7 @@ function FilterInput<T = unknown>({
                 <input
                     aria-describedby={!isValid && validationMessage ? `${field?.key || 'input'}-error` : undefined}
                     aria-invalid={!isValid}
-                    className="w-full outline-hidden"
+                    className="outline-hidden w-full"
                     data-slot="filters-input"
                     onBlur={handleBlur}
                     onChange={handleChange}

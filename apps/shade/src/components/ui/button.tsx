@@ -6,14 +6,14 @@ import {ChevronDown} from 'lucide-react';
 import {cn} from '@/lib/utils';
 
 const buttonVariants = cva(
-    'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm transition-colors focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:stroke-[1.5px]',
+    'focus-visible:outline-hidden inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm transition-colors focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:stroke-[1.5px]',
     {
         variants: {
             variant: {
-                default: 'bg-primary font-medium text-primary-foreground hover:bg-primary/90',
-                destructive: 'bg-destructive font-medium text-destructive-foreground hover:bg-destructive/90',
+                default: 'hover:bg-primary/90 bg-primary font-medium text-primary-foreground',
+                destructive: 'hover:bg-destructive/90 bg-destructive font-medium text-destructive-foreground',
                 outline: 'border border-input bg-background font-medium hover:bg-accent hover:text-accent-foreground',
-                secondary: 'bg-secondary font-medium text-secondary-foreground hover:bg-secondary/80 dark:bg-gray-925/70 dark:hover:bg-gray-900',
+                secondary: 'hover:bg-secondary/80 bg-secondary font-medium text-secondary-foreground dark:bg-gray-925/70 dark:hover:bg-gray-900',
                 ghost: 'font-medium hover:bg-accent hover:text-accent-foreground',
                 link: 'font-medium text-primary underline-offset-4 hover:underline',
                 dropdown: 'border border-input bg-background hover:bg-accent hover:text-accent-foreground'
@@ -44,7 +44,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         const content = variant === 'dropdown' ? (
             <>
                 {children}
-                <ChevronDown className="-ml-1! -mr-0.5! size-4 stroke-[2px]! opacity-50" strokeWidth={2} />
+                <ChevronDown className="-ml-1! -mr-0.5! stroke-[2px]! size-4 opacity-50" strokeWidth={2} />
             </>
         ) : children;
 

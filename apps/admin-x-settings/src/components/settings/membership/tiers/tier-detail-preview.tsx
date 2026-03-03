@@ -22,7 +22,7 @@ export const TrialDaysLabel: React.FC<{size?: 'sm' | 'md'; trialDays: number;}> 
 
     return (
         <span className={containerClassName}>
-            <span className="absolute inset-0 block rounded-full bg-ghostaccent opacity-20 dark:bg-pink"></span>
+            <span className="bg-ghostaccent absolute inset-0 block rounded-full opacity-20 dark:bg-pink"></span>
             <span className="dark:text-pink">{trialDays} days free</span>
         </span>
     );
@@ -33,7 +33,7 @@ const TierBenefits: React.FC<{benefits: string[]}> = ({benefits}) => {
         return (
             <div className="mt-4 w-full text-md leading-snug text-grey-900 opacity-30">
                 <div className="mb-2.5 flex items-start">
-                    <Icon className="mr-[10px] mt-[3px] h-3.5! w-3.5! min-w-[14px] overflow-visible stroke-[3px]!" name='check' />
+                    <Icon className="h-3.5! w-3.5! stroke-[3px]! mr-[10px] mt-[3px] min-w-[14px] overflow-visible" name='check' />
                     <div>Expert analysis</div>
                 </div>
             </div>
@@ -46,7 +46,7 @@ const TierBenefits: React.FC<{benefits: string[]}> = ({benefits}) => {
                     return (
                         <div key={benefit} className="mt-4 w-full text-md leading-snug text-grey-900">
                             <div className="mb-2.5 flex items-start">
-                                <Icon className="mr-[10px] mt-[3px] h-3.5! w-3.5! min-w-[14px] overflow-visible stroke-[3px]!" name='check' />
+                                <Icon className="h-3.5! w-3.5! stroke-[3px]! mr-[10px] mt-[3px] min-w-[14px] overflow-visible" name='check' />
                                 <div>{benefit}</div>
                             </div>
                         </div>
@@ -96,7 +96,7 @@ const TierDetailPreview: React.FC<TierDetailPreviewProps> = ({tier, isFreeTier})
             <div className='rounded-sm border border-grey-200 bg-white dark:border-transparent'>
                 <div className="flex-column relative flex min-h-[200px] w-full max-w-[420px] scale-90 items-start justify-stretch rounded bg-white p-4">
                     <div className="min-h-[56px] w-full">
-                        <h4 className={`-mt-1 mb-0 w-full break-words text-lg font-semibold leading-tight text-ghostaccent ${!name && 'opacity-30'}`}>{name || (isFreeTier ? 'Free' : 'Bronze')}</h4>
+                        <h4 className={`text-ghostaccent -mt-1 mb-0 w-full break-words text-lg font-semibold leading-tight ${!name && 'opacity-30'}`}>{name || (isFreeTier ? 'Free' : 'Bronze')}</h4>
                         <div className="mt-4 flex w-full flex-row flex-wrap items-end justify-between gap-x-1 gap-y-[10px]">
                             <div className={`flex flex-wrap text-black ${((showingYearly && tier?.yearly_price === undefined) || (!showingYearly && tier?.monthly_price === undefined)) && !isFreeTier ? 'opacity-30' : ''}`}>
                                 <span className="self-start text-[2.7rem] font-bold uppercase leading-[1.115]">{currencySymbol}</span>
