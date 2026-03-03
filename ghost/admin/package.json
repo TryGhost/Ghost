@@ -44,12 +44,13 @@
     "@sentry/ember": "7.120.3",
     "@sentry/integrations": "7.114.0",
     "@sentry/replay": "7.116.0",
+    "@tryghost/admin-x-framework": "0.0.0",
     "@tryghost/color-utils": "0.2.10",
     "@tryghost/ember-promise-modals": "2.0.1",
     "@tryghost/helpers": "1.1.97",
-    "@tryghost/kg-clean-basic-html": "4.2.15",
-    "@tryghost/kg-converters": "1.1.15",
-    "@tryghost/koenig-lexical": "1.7.16",
+    "@tryghost/kg-clean-basic-html": "4.2.18",
+    "@tryghost/kg-converters": "1.1.18",
+    "@tryghost/koenig-lexical": "1.7.17",
     "@tryghost/limit-service": "1.4.1",
     "@tryghost/members-csv": "2.0.3",
     "@tryghost/nql": "0.12.10",
@@ -186,6 +187,7 @@
           "build:dev",
           {
             "projects": [
+              "@tryghost/admin-x-framework",
               "@tryghost/admin-x-settings",
               "@tryghost/activitypub",
               "@tryghost/posts",
@@ -204,10 +206,21 @@
           "build",
           {
             "projects": [
+              "@tryghost/admin-x-framework",
               "@tryghost/admin-x-settings",
               "@tryghost/activitypub",
               "@tryghost/posts",
               "@tryghost/stats"
+            ],
+            "target": "build"
+          }
+        ]
+      },
+      "test": {
+        "dependsOn": [
+          {
+            "projects": [
+              "@tryghost/admin-x-framework"
             ],
             "target": "build"
           }

@@ -100,6 +100,7 @@ class OEmbedService {
 
     /**
      * @param {string} url
+     * @returns {Promise<never>}
      */
     async unknownProvider(url) {
         throw new errors.ValidationError({
