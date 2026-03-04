@@ -136,12 +136,14 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
                                 <koenig.BookmarkPlugin />
                                 <koenig.ButtonPlugin />
                                 <koenig.CalloutPlugin />
+                                <koenig.CallToActionPlugin />
                                 <koenig.CardMenuPlugin />
                                 <koenig.EmailCtaPlugin />
                                 <koenig.EmbedPlugin />
                                 <koenig.HtmlPlugin />
                                 <koenig.ImagePlugin />
                                 <koenig.KoenigSelectorPlugin />
+                                <koenig.ProductPlugin />
                             </>
                         )}
 
