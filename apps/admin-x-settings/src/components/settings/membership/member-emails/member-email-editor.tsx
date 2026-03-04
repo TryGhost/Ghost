@@ -52,7 +52,8 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
         '[&_.koenig-lexical-editor-input-placeholder]:font-inter [&_.koenig-lexical-editor-input-placeholder]:text-xl [&_.koenig-lexical-editor-input-placeholder]:tracking-tight',
         // Headings dark mode
         '[&_:is(h2,h3)]:dark:text-white',
-
+        // Inputs
+        '[&_.koenig-lexical_input]:text-[1.4rem]',
         // Content typography
         '[&_:is(p,blockquote,aside,ul,ol)]:font-inter [&_:is(p,blockquote,aside,ul,ol)]:text-xl [&_:is(p,blockquote,aside,ul,ol)]:tracking-tight',
         // Reset content typography inside card captions to match Koenig's caption styles
