@@ -30,6 +30,19 @@ export interface OfferType {
     description: string;
 }
 
+const MAX_DISPLAY_TEXT_LENGTH = 191;
+
+const getLengthHint = (length: number, maxLength: number, helperText?: string) => {
+    const lengthColor = length > maxLength ? 'text-red' : 'text-green';
+
+    return (
+        <div className='flex justify-between'>
+            <span>{helperText || ''}</span>
+            <strong><span className={lengthColor}>{length}</span> / {maxLength}</strong>
+        </div>
+    );
+};
+
 export const ButtonSelect: React.FC<{type: OfferType, checked: boolean, onClick: () => void}> = ({type, checked, onClick}) => {
     const checkboxClass = checked ? 'bg-black text-white dark:bg-white dark:text-black' : 'border border-grey-300 dark:border-grey-800';
 
@@ -142,6 +155,8 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
 
     const [nameLength, setNameLength] = useState(0);
     const nameLengthColor = nameLength > 40 ? 'text-red' : 'text-green';
+    const displayTitleHint = errors.displayTitle || getLengthHint(overrides.displayTitle.value.length, MAX_DISPLAY_TEXT_LENGTH);
+    const displayDescriptionHint = errors.displayDescription || getLengthHint(overrides.displayDescription.length, MAX_DISPLAY_TEXT_LENGTH);
 
     const {siteData} = useGlobalData();
     const [isCopied, setIsCopied] = useState(false);
@@ -173,7 +188,8 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                         />
                         <TextField
                             error={Boolean(errors.displayTitle)}
-                            hint={errors.displayTitle}
+                            hint={displayTitleHint}
+                            maxLength={MAX_DISPLAY_TEXT_LENGTH}
                             placeholder='Black Friday Special'
                             title='Display title'
                             value={overrides.displayTitle.value}
@@ -183,12 +199,16 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                             onKeyDown={() => clearError('displayTitle')}
                         />
                         <TextArea
+                            error={Boolean(errors.displayDescription)}
+                            hint={displayDescriptionHint}
+                            maxLength={MAX_DISPLAY_TEXT_LENGTH}
                             placeholder='Take advantage of this limited-time offer.'
                             title='Display description'
                             value={overrides.displayDescription}
                             onChange={(e) => {
                                 handleTextAreaInput(e);
                             }}
+                            onKeyDown={() => clearError('displayDescription')}
                         />
                     </div>
                 </section>
@@ -410,6 +430,14 @@ const AddOfferModal = () => {
 
             if (!formState.displayTitle.value && formState.displayTitle.value.length === 0) {
                 newErrors.displayTitle = 'Display title is required';
+            }
+
+            if (formState.displayTitle.value.length > MAX_DISPLAY_TEXT_LENGTH) {
+                newErrors.displayTitle = `Display title cannot be longer than ${MAX_DISPLAY_TEXT_LENGTH} characters.`;
+            }
+
+            if (formState.displayDescription.length > MAX_DISPLAY_TEXT_LENGTH) {
+                newErrors.displayDescription = `Display description cannot be longer than ${MAX_DISPLAY_TEXT_LENGTH} characters.`;
             }
 
             if (formState.type === 'percent' && formState.percentAmount === 0) {
