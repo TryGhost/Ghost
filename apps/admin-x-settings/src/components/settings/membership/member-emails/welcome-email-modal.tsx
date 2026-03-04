@@ -390,7 +390,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                             </div>
                         </div>
                     </EmailPreviewEmailHeader>
-                    <EmailPreviewBody className={errors.lexical ? 'border-red-500' : ''}>
+                    <EmailPreviewBody className={errors.lexical ? 'border border-red-500' : ''}>
                         <div
                             className='mx-auto w-full max-w-[600px] pb-8 pt-10 transition-[max-width,padding] duration-300 ease-out motion-reduce:transition-none'
                             onFocus={() => {
