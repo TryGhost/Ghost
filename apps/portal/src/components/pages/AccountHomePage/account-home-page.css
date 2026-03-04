@@ -87,10 +87,16 @@ footer.gh-portal-account-footer {
     left: 0;
     border-radius: 8px;
     opacity: 0.05;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.gh-portal-cancel-banner > * {
+    position: relative;
+    z-index: 1;
 }
 
 .gh-portal-cancel-banner p {
-    position: relative;
     max-width: 320px;
     margin: 0 auto 16px;
 }

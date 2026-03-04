@@ -1,5 +1,6 @@
 import AppContext from '../../../../app-context';
 import ActionButton from '../../../common/action-button';
+import Interpolate from '@doist/react-interpolate';
 import {getMemberSubscription} from '../../../../utils/helpers';
 import {getDateString} from '../../../../utils/date-time';
 import {useContext} from 'react';
@@ -24,7 +25,14 @@ const ContinueSubscriptionButton = () => {
     return (
         <div className='gh-portal-cancelcontinue-container'>
             <div className='gh-portal-cancel-banner'>
-                <p>{t('Your subscription has been canceled and will expire on {expiryDate}.', {expiryDate})}</p>
+                <p>
+                    <Interpolate
+                        string={t('Your subscription has been canceled and will expire on {expiryDate}.')}
+                        mapping={{
+                            expiryDate: <strong>{expiryDate}</strong>
+                        }}
+                    />
+                </p>
                 <ActionButton
                     onClick={() => {
                         doAction('continueSubscription', {
