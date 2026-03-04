@@ -155,6 +155,42 @@ export default class GhMembersRecipientSelect extends Component {
         this.args.onChange?.(newFilter);
     }
 
+    get useServerSideSearch() {
+        return !this.labelsManager.hasLoadedAll;
+    }
+
+    @task({restartable: true})
+    *searchSpecificOptionsTask(term) {
+        const results = [];
+        const selectedSegments = this.specificFilters;
+        const lowerTerm = term.toLowerCase();
+
+        // Client-side filter tiers
+        for (const group of this._tierOptions) {
+            for (const opt of group.options) {
+                if (opt.name.toLowerCase().includes(lowerTerm) && !selectedSegments.has(opt.segment)) {
+                    results.push(opt);
+                }
+            }
+        }
+
+        // Server-side search labels
+        const labels = yield this.labelsManager.searchLabelsTask.perform(term);
+        labels.forEach((label) => {
+            const segment = `label:${label.slug}`;
+            if (!selectedSegments.has(segment)) {
+                results.push({
+                    name: label.name,
+                    segment,
+                    count: label.count?.members,
+                    class: 'segment-label'
+                });
+            }
+        });
+
+        return results;
+    }
+
     @task({drop: true})
     *loadMoreLabelsTask() {
         yield this.labelsManager.loadMoreTask.perform();

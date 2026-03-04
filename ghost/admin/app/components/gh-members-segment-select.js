@@ -77,6 +77,48 @@ export default class GhMembersSegmentSelect extends Component {
         this.args.onChange?.(segment);
     }
 
+    get useServerSideSearch() {
+        return !this.labelsManager.hasLoadedAll;
+    }
+
+    @task({restartable: true})
+    *searchOptionsTask(term) {
+        const results = [];
+        const selectedSegments = new Set((this.args.segment || '').split(','));
+        const lowerTerm = term.toLowerCase();
+
+        // Client-side filter non-label options (statuses, tiers, offers)
+        for (const item of this._baseOptions) {
+            if (item.options) {
+                for (const opt of item.options) {
+                    if (opt.name.toLowerCase().includes(lowerTerm) && !selectedSegments.has(opt.segment)) {
+                        results.push(opt);
+                    }
+                }
+            } else if (item.name.toLowerCase().includes(lowerTerm) && !selectedSegments.has(item.segment)) {
+                results.push(item);
+            }
+        }
+
+        // Server-side search labels
+        if (!this.args.hideLabels) {
+            const labels = yield this.labelsManager.searchLabelsTask.perform(term);
+            labels.forEach((label) => {
+                const segment = `label:${label.slug}`;
+                if (!selectedSegments.has(segment)) {
+                    results.push({
+                        name: label.name,
+                        segment,
+                        count: label.count?.members,
+                        class: 'segment-label'
+                    });
+                }
+            });
+        }
+
+        return results;
+    }
+
     @task({drop: true})
     *loadMoreLabelsTask() {
         yield this.labelsManager.loadMoreTask.perform();

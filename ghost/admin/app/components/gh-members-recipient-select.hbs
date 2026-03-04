@@ -90,6 +90,7 @@
             @searchMessage="All labels selected"
             @optionsComponent={{component "power-select-options-with-scroll" lastReached=(perform this.loadMoreLabelsTask)}}
             @allowCreation={{false}}
+            @search={{if this.useServerSideSearch (perform this.searchSpecificOptionsTask) null}}
             @renderInPlace={{this.renderInPlace}}
             @onChange={{this.selectSpecificOptions}}
             as |option|

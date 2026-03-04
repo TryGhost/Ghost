@@ -4,6 +4,7 @@
     @disabled={{or @disabled this.fetchOptionsTask.isRunning}}
     @optionsComponent={{component "power-select-options-with-scroll" lastReached=(perform this.loadMoreLabelsTask)}}
     @allowCreation={{false}}
+    @search={{if this.useServerSideSearch (perform this.searchOptionsTask) null}}
     @renderInPlace={{this.renderInPlace}}
     @onChange={{this.setSegment}}
     @class="select-members"
