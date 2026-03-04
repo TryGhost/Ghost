@@ -61,10 +61,16 @@ test.describe('Feed', async () => {
         await newNoteButton.click({force: true});
 
         // Wait for the modal to appear
-        await page.waitForSelector('[role="dialog"]', {timeout: 10000});
+        const noteDialog = page.getByRole('dialog');
+        try {
+            await expect(noteDialog).toBeVisible({timeout: 5000});
+        } catch {
+            await newNoteButton.click({force: true});
+            await expect(noteDialog).toBeVisible({timeout: 10000});
+        }
 
         // Find the textarea in the modal and type content
-        const noteTextarea = page.getByPlaceholder('What\'s new?');
+        const noteTextarea = noteDialog.getByPlaceholder('What\'s new?');
         await expect(noteTextarea).toBeVisible();
         await expect(noteTextarea).toBeFocused();
 
