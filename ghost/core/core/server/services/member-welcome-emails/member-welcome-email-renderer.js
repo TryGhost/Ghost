@@ -138,7 +138,6 @@ class MemberWelcomeEmailRenderer {
             backgroundIsDark: false,
             hasRoundedImageCorners: false,
             sectionTitleColor: null,
-            dividerColor: '#e0e7eb',
             titleWeight: '700',
             hasOutlineButtons: false,
             buttonColor: accentColor,
