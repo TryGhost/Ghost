@@ -15,7 +15,7 @@ test.describe('Tips and donations', () => {
             ...globalDataRequests,
             browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe}
         }});
-        await page.goto('/');
+        await page.goto('/#/tips-and-donations');
 
         const section = page.getByTestId('tips-and-donations');
 

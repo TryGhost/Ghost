@@ -18,7 +18,7 @@ test.describe('Announcement Bar', async () => {
             response: '<html><head><style></style></head><body><div>post preview</div></body></html>'
         });
 
-        await page.goto('/');
+        await page.goto('/#/announcement-bar');
 
         const section = page.getByTestId('announcement-bar');
 
@@ -68,7 +68,7 @@ test.describe('Announcement Bar', async () => {
     //         response: '<html><head><style></style></head><body><div>homepage preview</div></body></html>'
     //     });
 
-    //     await page.goto('/');
+    //     await page.goto('/#/announcement-bar');
 
     //     const section = page.getByTestId('announcement-bar');
 
@@ -87,7 +87,7 @@ test.describe('Announcement Bar', async () => {
 
         // find label background color
 
-        await page.goto('/');
+        await page.goto('/#/announcement-bar');
 
         const section = page.getByTestId('announcement-bar');
 
@@ -133,7 +133,7 @@ test.describe('Announcement Bar', async () => {
 
         // find label background color
 
-        await page.goto('/');
+        await page.goto('/#/announcement-bar');
 
         const section = page.getByTestId('announcement-bar');
 

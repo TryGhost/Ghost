@@ -8,7 +8,7 @@ test.describe('Recommendations', async () => {
             browseRecommendations: {method: 'GET', path: '/recommendations/?include=count.clicks%2Ccount.subscribers&order=created_at+desc&limit=5', response: responseFixtures.recommendations}
         }});
 
-        await page.goto('/');
+        await page.goto('/#/recommendations');
 
         const section = page.getByTestId('recommendations');
         const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
@@ -29,7 +29,7 @@ test.describe('Recommendations', async () => {
             addRecommendation: {method: 'POST', path: '/recommendations/', response: {}}
         }});
 
-        await page.goto('/');
+        await page.goto('/#/recommendations');
 
         // Open add recommendation modal
         const section = page.getByTestId('recommendations');
@@ -82,7 +82,7 @@ test.describe('Recommendations', async () => {
             checkRecommendation: {method: 'POST', path: '/recommendations/check/', response: {recommendations: [{url: 'https://recommendation1.com', one_click_subscribe: true, id: 'exists'}], meta: {}}}
         }});
 
-        await page.goto('/');
+        await page.goto('/#/recommendations');
         const section = page.getByTestId('recommendations');
 
         // Open add recommendation modal
