@@ -19,7 +19,7 @@ function getExpressSessionMiddleware() {
             saveUninitialized: false,
             name: 'ghost-admin-api-session',
             cookie: {
-                maxAge: 6 * 30 * 24 * 60 * 60 * 1000, // 6 months in ms
+                maxAge: config.get('admin:sessionMaxAge'),
                 httpOnly: true,
                 path: urlUtils.getSubdir() + '/ghost',
                 sameSite: urlUtils.isSSL(config.get('url')) ? 'none' : 'lax',
