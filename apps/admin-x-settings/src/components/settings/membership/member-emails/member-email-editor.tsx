@@ -3,7 +3,7 @@ import useFeatureFlag from '../../../../hooks/use-feature-flag';
 import {KoenigEditorBase, type KoenigInstance, LoadingIndicator} from '@tryghost/admin-x-design-system';
 import {cn} from '@tryghost/shade';
 import {focusKoenigEditorOnBottomClick, useFramework} from '@tryghost/admin-x-framework';
-import {koenigFileUploadTypes, useKoenigFetchEmbed, useKoenigFileUpload} from '@tryghost/admin-x-framework/hooks';
+import {koenigFileUploadTypes, useKoenigFetchEmbed, useKoenigFileUpload, usePinturaConfig} from '@tryghost/admin-x-framework/hooks';
 import {useWelcomeEmailLinkSuggestions} from '../../../../hooks/use-welcome-email-link-suggestions';
 
 export interface MemberEmailsEditorProps {
@@ -29,11 +29,13 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
     const editorAPIRef = useRef<KoenigInstance | null>(null);
     const welcomeEmailEditorEnabled = useFeatureFlag('welcomeEmailEditor');
     const {unsplashConfig} = useFramework();
+    const pinturaConfig = usePinturaConfig();
     const {fetchAutocompleteLinks, searchLinks} = useWelcomeEmailLinkSuggestions();
     const fetchEmbed = useKoenigFetchEmbed();
 
     const cardConfig = useMemo(() => ({
         unsplash: unsplashConfig,
+        pinturaConfig,
         fetchEmbed,
         fetchAutocompleteLinks,
         searchLinks,
@@ -42,7 +44,7 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
             allowedWidths: ['regular']
         },
         visibilitySettings: 'none'
-    }), [unsplashConfig, fetchEmbed, fetchAutocompleteLinks, searchLinks]);
+    }), [unsplashConfig, pinturaConfig, fetchEmbed, fetchAutocompleteLinks, searchLinks]);
 
     const baseEditorStyles = cn(
         // Base typography
