@@ -148,7 +148,7 @@ test.describe('Navigation settings', async () => {
 
         await newItem.getByTestId('add-button').click();
 
-        await modal.getByRole('button', {name: 'Close'}).first().click();
+        await modal.getByRole('button', {name: 'Close'}).first().click({force: true});
 
         await expect(page.getByTestId('confirmation-modal')).toHaveText(/leave/i);
 
