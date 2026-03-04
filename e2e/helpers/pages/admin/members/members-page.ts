@@ -88,13 +88,19 @@ class SettingsSection extends BasePage {
     }
 
     private async selectLabelOption(labelName: string): Promise<void> {
+        await this.selectLabel.waitFor({state: 'visible'});
         await this.selectLabel.click();
 
         const dropdown = this.page.locator('.ember-power-select-dropdown').last();
+        await dropdown.waitFor({state: 'visible'});
+
         const searchInput = dropdown.locator('.ember-power-select-search input');
+        await searchInput.waitFor({state: 'visible'});
         await searchInput.fill(labelName);
 
-        await dropdown.getByRole('option', {name: labelName, exact: true}).click();
+        const option = dropdown.getByRole('option', {name: labelName, exact: true});
+        await option.waitFor({state: 'visible'});
+        await option.click();
     }
 }
 

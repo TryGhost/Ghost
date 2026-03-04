@@ -38,12 +38,15 @@ export default class GhMemberSingleLabelInput extends Component {
 
         const sorted = this.availableLabels;
         if (this.args.label) {
-            this._selectedLabel = sorted.find(l => l.id === this.args.label) || sorted[0];
+            const found = sorted.find(l => l.id === this.args.label);
+            if (found) {
+                this._selectedLabel = found;
+            }
         } else {
             this._selectedLabel = sorted[0];
-        }
-        if (this._selectedLabel) {
-            this.args.onChange(this._selectedLabel.id);
+            if (this._selectedLabel) {
+                this.args.onChange(this._selectedLabel.id);
+            }
         }
     }
 
