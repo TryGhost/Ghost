@@ -28,11 +28,11 @@ test.describe('Design settings', async () => {
 
         await page.goto('/#/settings/design');
 
-        const section = page.getByTestId('design');
+        const section = page.locator('[data-testid="design"]:visible').first();
 
         await section.locator('button:visible', {hasText: /^Customize$/}).click();
 
-        const modal = page.getByTestId('design-modal');
+        const modal = page.locator('[data-testid="design-modal"]:visible').first();
 
         // Homepage and post preview
 
@@ -63,13 +63,13 @@ test.describe('Design settings', async () => {
 
         await page.goto('/#/settings/design');
 
-        const section = page.getByTestId('design');
+        const section = page.locator('[data-testid="design"]:visible').first();
 
         // Brand setting
 
         await section.getByRole('button', {name: 'Customize'}).click();
 
-        const modal = page.getByTestId('design-modal');
+        const modal = page.locator('[data-testid="design-modal"]:visible').first();
 
         const accentColorPicker = modal.getByTestId('accent-color-picker');
         await accentColorPicker.getByRole('button').click();
@@ -118,11 +118,11 @@ test.describe('Design settings', async () => {
 
         await page.goto('/#/settings/design');
 
-        const section = page.getByTestId('design');
+        const section = page.locator('[data-testid="design"]:visible').first();
 
         await section.getByRole('button', {name: 'Customize'}).click();
 
-        const modal = page.getByTestId('design-modal');
+        const modal = page.locator('[data-testid="design-modal"]:visible').first();
 
         await expect(modal.frameLocator('[data-testid="theme-preview"] iframe[data-visible=true]').getByText('homepage preview')).toHaveCount(1);
 
@@ -175,11 +175,11 @@ test.describe('Design settings', async () => {
 
         await page.goto('/#/settings/design');
 
-        const section = page.getByTestId('design');
+        const section = page.locator('[data-testid="design"]:visible').first();
 
         await section.getByRole('button', {name: 'Customize'}).click();
 
-        const modal = page.getByTestId('design-modal');
+        const modal = page.locator('[data-testid="design-modal"]:visible').first();
 
         await modal.getByRole('tab', {name: 'Theme'}).click();
         await chooseOptionInSelect(modal.getByTestId('setting-select-navigation_layout'), 'Logo in the middle');
@@ -214,7 +214,7 @@ test.describe('Design settings', async () => {
 
         await page.goto('/#/settings/design');
 
-        const section = page.getByTestId('design');
+        const section = page.locator('[data-testid="design"]:visible').first();
 
         await section.getByRole('button', {name: 'Customize'}).click();
         const previewHeaders = await page.waitForRequest((request) => {
@@ -225,7 +225,7 @@ test.describe('Design settings', async () => {
         const expectedEncoded = new URLSearchParams([['custom', JSON.stringify({})]]).toString();
         expect(previewHeader).toContain(expectedEncoded);
 
-        const modal = page.getByTestId('design-modal');
+        const modal = page.locator('[data-testid="design-modal"]:visible').first();
 
         const designSettingTabs = modal.getByTestId('design-setting-tabs');
 
@@ -270,11 +270,11 @@ test.describe('Design settings', async () => {
 
         await page.goto('/#/settings/design');
 
-        const section = page.getByTestId('design');
+        const section = page.locator('[data-testid="design"]:visible').first();
 
         await section.getByRole('button', {name: 'Customize'}).click();
 
-        const modal = page.getByTestId('design-modal');
+        const modal = page.locator('[data-testid="design-modal"]:visible').first();
 
         await modal.getByRole('tab', {name: 'Theme'}).click();
 
@@ -320,11 +320,11 @@ test.describe('Design settings', async () => {
 
         await page.goto('/#/settings/design');
 
-        const section = page.getByTestId('design');
+        const section = page.locator('[data-testid="design"]:visible').first();
 
         await section.getByRole('button', {name: 'Customize'}).click();
 
-        const modal = page.getByTestId('design-modal');
+        const modal = page.locator('[data-testid="design-modal"]:visible').first();
 
         const designSettingTabs = modal.getByTestId('design-setting-tabs');
 
@@ -369,11 +369,11 @@ test.describe('Design settings', async () => {
 
         await page.goto('/#/settings/design');
 
-        const section = page.getByTestId('design');
+        const section = page.locator('[data-testid="design"]:visible').first();
 
         await section.getByRole('button', {name: 'Customize'}).click();
 
-        const modal = page.getByTestId('design-modal');
+        const modal = page.locator('[data-testid="design-modal"]:visible').first();
 
         // The fonts should be set to the values in the settings
         await expect(modal.getByTestId('heading-font-select')).toHaveText(/Cardo/);
@@ -462,11 +462,11 @@ test.describe('Design settings', async () => {
 
         await page.goto('/#/settings/theme');
 
-        const themeSection = page.getByTestId('theme');
+        const themeSection = page.locator('[data-testid="theme"]:visible').first();
 
         await themeSection.getByRole('button', {name: 'Change theme'}).click();
 
-        const modal = page.getByTestId('theme-modal');
+        const modal = page.locator('[data-testid="theme-modal"]:visible').first();
 
         await modal.getByRole('button', {name: /Headline/}).click();
 
@@ -482,11 +482,11 @@ test.describe('Design settings', async () => {
 
         await page.goto('/#/settings/design');
 
-        const designSection = page.getByTestId('design');
+        const designSection = page.locator('[data-testid="design"]:visible').first();
 
         await designSection.getByRole('button', {name: 'Customize'}).click();
 
-        const designModal = page.getByTestId('design-modal');
+        const designModal = page.locator('[data-testid="design-modal"]:visible').first();
 
         await designModal.getByRole('tab', {name: 'Theme'}).click();
 
@@ -562,11 +562,11 @@ test.describe('Design settings', async () => {
 
         await page.goto('/#/settings/theme');
 
-        const themeSection = page.getByTestId('theme');
+        const themeSection = page.locator('[data-testid="theme"]:visible').first();
 
         await themeSection.getByRole('button', {name: 'Change theme'}).click();
 
-        const modal = page.getByTestId('theme-modal');
+        const modal = page.locator('[data-testid="theme-modal"]:visible').first();
 
         await modal.getByRole('button', {name: /Casper/}).click();
 
@@ -576,11 +576,11 @@ test.describe('Design settings', async () => {
 
         await page.goto('/#/settings/design');
 
-        const designSection = page.getByTestId('design');
+        const designSection = page.locator('[data-testid="design"]:visible').first();
 
         await designSection.getByRole('button', {name: 'Customize'}).click();
 
-        const designModal = page.getByTestId('design-modal');
+        const designModal = page.locator('[data-testid="design-modal"]:visible').first();
 
         await designModal.getByRole('tab', {name: 'Theme'}).click();
 

@@ -10,7 +10,7 @@ test.describe('Recommendations', async () => {
 
         await page.goto('/#/settings/recommendations');
 
-        const section = page.getByTestId('recommendations');
+        const section = page.locator('[data-testid="recommendations"]:visible').first();
         const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
 
         await section.getByRole('tab', {name: 'Your Recommendations'}).click();
@@ -32,9 +32,9 @@ test.describe('Recommendations', async () => {
         await page.goto('/#/settings/recommendations');
 
         // Open add recommendation modal
-        const section = page.getByTestId('recommendations');
-        await section.locator('button:visible', {hasText: /^Add recommendation$/}).click();
-        const modal = page.getByTestId('add-recommendation-modal');
+        const section = page.locator('[data-testid="recommendations"]:visible').first();
+        await section.getByRole('button', {name: 'Add recommendation'}).click();
+        const modal = page.locator('[data-testid="add-recommendation-modal"]:visible').first();
 
         // Screen 1 - URL
         const url = modal.getByLabel('url');
@@ -83,11 +83,11 @@ test.describe('Recommendations', async () => {
         }});
 
         await page.goto('/#/settings/recommendations');
-        const section = page.getByTestId('recommendations');
+        const section = page.locator('[data-testid="recommendations"]:visible').first();
 
         // Open add recommendation modal
-        await section.locator('button:visible', {hasText: /^Add recommendation$/}).click();
-        const modal = page.getByTestId('add-recommendation-modal');
+        await section.getByRole('button', {name: 'Add recommendation'}).click();
+        const modal = page.locator('[data-testid="add-recommendation-modal"]:visible').first();
 
         // Add existing URL
         modal.getByLabel('url').fill('https://recommendation1.com');
@@ -106,7 +106,7 @@ test.describe('Recommendations', async () => {
         }});
 
         await page.goto('/#/settings/recommendations');
-        const section = page.getByTestId('recommendations');
+        const section = page.locator('[data-testid="recommendations"]:visible').first();
         const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
         await section.getByRole('tab', {name: 'Your Recommendations'}).click();
 
@@ -114,7 +114,7 @@ test.describe('Recommendations', async () => {
         const recommendation1 = activeTab.getByTestId('recommendation-list-item').first();
         await recommendation1.click();
 
-        const modal = page.getByTestId('edit-recommendation-modal');
+        const modal = page.locator('[data-testid="edit-recommendation-modal"]:visible').first();
         const title = modal.getByLabel('Title');
         const description = modal.getByLabel('Short description');
 
@@ -148,7 +148,7 @@ test.describe('Recommendations', async () => {
         }});
 
         await page.goto('/#/settings/recommendations');
-        const section = page.getByTestId('recommendations');
+        const section = page.locator('[data-testid="recommendations"]:visible').first();
         const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
         await section.getByRole('tab', {name: 'Your Recommendations'}).click();
 
@@ -157,7 +157,7 @@ test.describe('Recommendations', async () => {
         await recommendation1.click();
 
         // Click on delete
-        const modal = page.getByTestId('edit-recommendation-modal');
+        const modal = page.locator('[data-testid="edit-recommendation-modal"]:visible').first();
         await modal.getByRole('button', {name: 'Delete'}).click();
 
         // Confirm delete
@@ -178,7 +178,7 @@ test.describe('Recommendations', async () => {
 
         await page.goto('/#/settings/recommendations');
 
-        const section = page.getByTestId('recommendations');
+        const section = page.locator('[data-testid="recommendations"]:visible').first();
         const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
 
         await section.getByRole('tab', {name: 'Recommending you'}).click();

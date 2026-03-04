@@ -16,11 +16,11 @@ test.describe('Stripe settings', async () => {
 
         await page.goto('/#/settings/tiers');
 
-        const section = page.getByTestId('tiers');
+        const section = page.locator('[data-testid="tiers"]:visible').first();
 
-        await section.locator('button:visible', {hasText: /^Connect with Stripe$/}).click();
+        await section.getByRole('button', {name: 'Connect with Stripe'}).click();
 
-        const modal = page.getByTestId('stripe-modal');
+        const modal = page.locator('[data-testid="stripe-modal"]:visible').first();
         await modal.getByRole('button', {name: /I have a Stripe account/}).click();
 
         await expect(modal.locator('a', {hasText: 'Connect with Stripe'})).toHaveAttribute('href', '/ghost/api/admin/members/stripe_connect?mode=live');
@@ -64,11 +64,11 @@ test.describe('Stripe settings', async () => {
 
         await page.goto('/#/settings/tiers');
 
-        const section = page.getByTestId('tiers');
+        const section = page.locator('[data-testid="tiers"]:visible').first();
 
-        await section.locator('button:visible', {hasText: /^Connect with Stripe$/}).click();
+        await section.getByRole('button', {name: 'Connect with Stripe'}).click();
 
-        const modal = page.getByTestId('stripe-modal');
+        const modal = page.locator('[data-testid="stripe-modal"]:visible').first();
         await modal.getByLabel('Publishable key').fill('pk_test_123');
         await modal.getByLabel('Secure key').fill('sk_test_123');
         await modal.getByRole('button', {name: 'Save Stripe settings'}).click();

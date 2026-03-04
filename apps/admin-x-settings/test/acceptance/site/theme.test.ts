@@ -37,14 +37,14 @@ test.describe('Theme settings', async () => {
 
         await page.goto('/#/settings/theme');
 
-        const themeSection = page.getByTestId('theme');
+        const themeSection = page.locator('[data-testid="theme"]:visible').first();
 
         // Edition is the active theme
         await expect(themeSection).toHaveText(/edition/i);
 
         await themeSection.locator('button:visible', {hasText: /^Change theme$/}).click();
 
-        const modal = page.getByTestId('theme-modal');
+        const modal = page.locator('[data-testid="theme-modal"]:visible').first();
 
         // 1. Activate Casper (Edition is currently active)
         await modal.getByRole('button', {name: /Casper/}).click();
@@ -57,8 +57,8 @@ test.describe('Theme settings', async () => {
 
         // 2. Re-open themes list after activation
         await page.goto('/#/settings/theme');
-        await page.getByTestId('theme').getByRole('button', {name: 'Change theme'}).click();
-        const reopenedModal = page.getByTestId('theme-modal');
+        await page.locator('[data-testid="theme"]:visible').first().getByRole('button', {name: 'Change theme'}).click();
+        const reopenedModal = page.locator('[data-testid="theme-modal"]:visible').first();
 
         // 3. Try to update Edition (which is already installed, should trigger overwrite)
         await reopenedModal.getByRole('button', {name: /Edition/}).click();
@@ -106,11 +106,11 @@ test.describe('Theme settings', async () => {
 
         await page.goto('/#/settings/theme');
 
-        const themeSection = page.getByTestId('theme');
+        const themeSection = page.locator('[data-testid="theme"]:visible').first();
 
         await themeSection.locator('button:visible', {hasText: /^Change theme$/}).click();
 
-        const modal = page.getByTestId('theme-modal');
+        const modal = page.locator('[data-testid="theme-modal"]:visible').first();
 
         await modal.locator('button:visible', {hasText: /^Installed$/}).click();
 
@@ -167,11 +167,11 @@ test.describe('Theme settings', async () => {
 
         await page.goto('/#/settings/theme');
 
-        const themeSection = page.getByTestId('theme');
+        const themeSection = page.locator('[data-testid="theme"]:visible').first();
 
         await themeSection.getByRole('button', {name: 'Change theme'}).click();
 
-        const modal = page.getByTestId('theme-modal');
+        const modal = page.locator('[data-testid="theme-modal"]:visible').first();
 
         await modal.getByRole('button', {name: 'Upload theme'}).click();
 
@@ -214,11 +214,11 @@ test.describe('Theme settings', async () => {
 
         await page.goto('/#/settings/theme');
 
-        const themeSection = page.getByTestId('theme');
+        const themeSection = page.locator('[data-testid="theme"]:visible').first();
 
         await themeSection.getByRole('button', {name: 'Change theme'}).click();
 
-        const modal = page.getByTestId('theme-modal');
+        const modal = page.locator('[data-testid="theme-modal"]:visible').first();
 
         await modal.getByRole('button', {name: 'Upload theme'}).click();
 
@@ -250,11 +250,11 @@ test.describe('Theme settings', async () => {
 
         await page.goto('/#/settings/theme');
 
-        const themeSection = page.getByTestId('theme');
+        const themeSection = page.locator('[data-testid="theme"]:visible').first();
 
         await themeSection.getByRole('button', {name: 'Change theme'}).click();
 
-        const modal = page.getByTestId('theme-modal');
+        const modal = page.locator('[data-testid="theme-modal"]:visible').first();
 
         await modal.getByRole('button', {name: 'Upload theme'}).click();
 
@@ -326,7 +326,7 @@ test.describe('Theme settings', async () => {
 
         await page.goto('/#/settings/theme');
 
-        const themeSection = page.getByTestId('theme');
+        const themeSection = page.locator('[data-testid="theme"]:visible').first();
 
         // Wait for the theme section to be ready
         await expect(themeSection).toBeVisible();
@@ -379,7 +379,7 @@ test.describe('Theme settings', async () => {
 
         await page.goto('/#/settings/theme');
 
-        const themeSection = page.getByTestId('theme');
+        const themeSection = page.locator('[data-testid="theme"]:visible').first();
 
         await themeSection.getByRole('button', {name: 'Change theme'}).click();
 
@@ -650,10 +650,10 @@ test.describe('Theme settings', async () => {
 
         await page.goto('/#/settings/theme');
 
-        const themeSection = page.getByTestId('theme');
+        const themeSection = page.locator('[data-testid="theme"]:visible').first();
         await themeSection.getByRole('button', {name: 'Change theme'}).click();
 
-        const modal = page.getByTestId('theme-modal');
+        const modal = page.locator('[data-testid="theme-modal"]:visible').first();
 
         // Try to install a theme that's not in the allowlist
         await modal.getByRole('button', {name: /Headline/}).click();
@@ -695,10 +695,10 @@ test.describe('Theme settings', async () => {
 
         await page.goto('/#/settings/theme');
 
-        const themeSection = page.getByTestId('theme');
+        const themeSection = page.locator('[data-testid="theme"]:visible').first();
         await themeSection.getByRole('button', {name: 'Change theme'}).click();
 
-        const modal = page.getByTestId('theme-modal');
+        const modal = page.locator('[data-testid="theme-modal"]:visible').first();
 
         // Wait for modal to be ready
         await expect(modal).toBeVisible();
