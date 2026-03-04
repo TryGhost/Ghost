@@ -1,9 +1,10 @@
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useMemo, useRef} from 'react';
 import useFeatureFlag from '../../../../hooks/use-feature-flag';
 import {KoenigEditorBase, type KoenigInstance, LoadingIndicator} from '@tryghost/admin-x-design-system';
 import {cn} from '@tryghost/shade';
-import {koenigFileUploadTypes, useKoenigFileUpload} from '@tryghost/admin-x-framework/hooks';
-import {useFramework} from '@tryghost/admin-x-framework';
+import {focusKoenigEditorOnBottomClick, useFramework} from '@tryghost/admin-x-framework';
+import {koenigFileUploadTypes, useKoenigFetchEmbed, useKoenigFileUpload} from '@tryghost/admin-x-framework/hooks';
+import {useWelcomeEmailLinkSuggestions} from '../../../../hooks/use-welcome-email-link-suggestions';
 
 export interface MemberEmailsEditorProps {
     value?: string;
@@ -25,10 +26,22 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
     className,
     onChange
 }) => {
+    const editorAPIRef = useRef<KoenigInstance | null>(null);
     const welcomeEmailEditorEnabled = useFeatureFlag('welcomeEmailEditor');
     const {unsplashConfig} = useFramework();
+    const {fetchAutocompleteLinks, searchLinks} = useWelcomeEmailLinkSuggestions();
+    const fetchEmbed = useKoenigFetchEmbed();
 
-    const cardConfig = useMemo(() => ({unsplash: unsplashConfig}), [unsplashConfig]);
+    const cardConfig = useMemo(() => ({
+        unsplash: unsplashConfig,
+        fetchEmbed,
+        fetchAutocompleteLinks,
+        searchLinks,
+        editorType: 'email',
+        image: {
+            allowedWidths: ['regular']
+        }
+    }), [unsplashConfig, fetchEmbed, fetchAutocompleteLinks, searchLinks]);
 
     const baseEditorStyles = cn(
         // Base typography
@@ -57,6 +70,10 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
         '[&_.kg-inherit-styles]:!pt-[3px]'
     );
 
+    const registerEditorAPI = useCallback((API: KoenigInstance | null) => {
+        editorAPIRef.current = API;
+    }, []);
+
     // Koenig's onChange passes the Lexical state as a plain object,
     // but the API expects a JSON string
     const handleChange = useCallback((data: unknown) => {
@@ -75,8 +92,15 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
         }
     }, []);
 
+    const handleEditorMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
+        if (!editorAPIRef.current) {
+            return;
+        }
+        focusKoenigEditorOnBottomClick(editorAPIRef.current, event);
+    };
+
     return (
-        <div onKeyDown={handleKeyDown}>
+        <div className="h-full" onKeyDown={handleKeyDown} onMouseDown={handleEditorMouseDown}>
             <KoenigEditorBase
                 cardConfig={cardConfig}
                 className={cn(baseEditorStyles, className)}
@@ -87,6 +111,7 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
                 loadingFallback={<LoadingIndicator delay={200} size="lg" />}
                 nodes={welcomeEmailEditorEnabled ? 'EMAIL_EDITOR_NODES' : 'EMAIL_NODES'}
                 placeholder={placeholder}
+                registerAPI={registerEditorAPI}
                 singleParagraph={singleParagraph}
                 onChange={handleChange}
             >
@@ -104,6 +129,7 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
                                 <koenig.CalloutPlugin />
                                 <koenig.CardMenuPlugin />
                                 <koenig.EmailCtaPlugin />
+                                <koenig.EmbedPlugin />
                                 <koenig.HtmlPlugin />
                                 <koenig.ImagePlugin />
                                 <koenig.KoenigSelectorPlugin />

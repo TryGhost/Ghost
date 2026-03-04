@@ -187,6 +187,17 @@ describe('getInboxLinks', function () {
         assert(result?.android.includes('browser_fallback_url'));
     });
 
+    it('handles Feedbin emails', async function () {
+        const result = await getInboxLinks({
+            recipient: 'example@feedb.in',
+            sender: 'sender@example.com',
+            dnsResolver: resolverThatShouldNeverBeUsed
+        });
+        assert.equal(result?.provider, 'feedbin');
+        assert.equal(result?.desktop, 'https://feedbin.com/');
+        assert.equal(result?.android, 'https://feedbin.com/');
+    });
+
     describe('DNS lookups', function () {
         it('returns undefined if the MX resolution fails for any reason', async function () {
             const errors = [

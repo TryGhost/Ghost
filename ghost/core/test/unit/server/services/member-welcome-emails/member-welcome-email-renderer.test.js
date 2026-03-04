@@ -388,5 +388,241 @@ describe('MemberWelcomeEmailRenderer', function () {
             assert(result.html.includes('Gérer vos préférences'));
             assert(!result.html.includes('Manage your preferences'));
         });
+
+        it('applies shared Koenig card styles used by newsletters', async function () {
+            lexicalRenderStub.resolves(`
+                <table class="kg-card kg-button-card" border="0" cellpadding="0" cellspacing="0">
+                    <tbody>
+                        <tr>
+                            <td class="kg-card-spacing">
+                                <table class="btn" border="0" cellspacing="0" cellpadding="0" align="center">
+                                    <tbody>
+                                        <tr>
+                                            <td align="center">
+                                                <a href="https://example.com">Click me</a>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="kg-card kg-callout-card kg-callout-card-blue">
+                    <div class="kg-callout-emoji">💡</div>
+                    <div class="kg-callout-text">Shared styles</div>
+                </div>
+            `);
+            const renderer = new MemberWelcomeEmailRenderer({t: key => key});
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Welcome!',
+                member: {name: 'John', email: 'john@example.com'},
+                siteSettings: defaultSiteSettings
+            });
+
+            assert(result.html.includes('kg-callout-card'));
+            assert(result.html.includes('padding: 24px'));
+            assert(result.html.includes('table class="btn"'));
+            assert(result.html.includes('background-color: #ff0000'));
+        });
+
+        it('applies bookmark and YouTube embed card styles', async function () {
+            lexicalRenderStub.resolves(`
+                <figure class="kg-card kg-bookmark-card">
+                    <a class="kg-bookmark-container" href="https://example.com">
+                        <div class="kg-bookmark-content">
+                            <div class="kg-bookmark-title">Example title</div>
+                            <div class="kg-bookmark-description">Example description</div>
+                            <div class="kg-bookmark-metadata">
+                                <span class="kg-bookmark-author">Example author</span>
+                            </div>
+                        </div>
+                        <div class="kg-bookmark-thumbnail">
+                            <img src="https://example.com/thumb.jpg" alt="">
+                        </div>
+                    </a>
+                </figure>
+                <figure class="kg-card kg-embed-card kg-card-hascaption">
+                    <a class="kg-video-preview" href="https://youtube.com/watch?v=abc123" aria-label="Play video">
+                        <table cellpadding="0" cellspacing="0" border="0" width="100%" role="presentation">
+                            <tr>
+                                <td width="50%" align="center" valign="middle">
+                                    <div class="kg-video-play-button"><div></div></div>
+                                </td>
+                            </tr>
+                        </table>
+                    </a>
+                    <figcaption>Embed note</figcaption>
+                </figure>
+            `);
+            const renderer = new MemberWelcomeEmailRenderer({t: key => key});
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Welcome!',
+                member: {name: 'John', email: 'john@example.com'},
+                siteSettings: defaultSiteSettings
+            });
+
+            assert.match(result.html, /class="kg-bookmark-container"[^>]*style="[^"]*display: flex/);
+            assert.match(result.html, /class="kg-video-preview"[^>]*style="[^"]*background-color: #1d1f21/);
+            assert(result.html.includes('Embed note'));
+        });
+
+        it('does not inline margin 0 auto on button tables that would override alignment', async function () {
+            lexicalRenderStub.resolves(`
+                <table class="kg-card kg-button-card" border="0" cellpadding="0" cellspacing="0">
+                    <tbody>
+                        <tr>
+                            <td class="kg-card-spacing">
+                                <table class="btn" border="0" cellspacing="0" cellpadding="0" align="left">
+                                    <tbody>
+                                        <tr>
+                                            <td align="center">
+                                                <a href="https://example.com">Left</a>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            `);
+            const renderer = new MemberWelcomeEmailRenderer({t: key => key});
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Welcome!',
+                member: {name: 'John', email: 'john@example.com'},
+                siteSettings: defaultSiteSettings
+            });
+
+            assert.match(result.html, /<table[^>]*class="btn"[^>]*align="left"/);
+
+            const btnMatch = result.html.match(/<table[^>]*class="btn"[^>]*>/);
+            assert(btnMatch, 'should have a btn table');
+            assert(!btnMatch[0].includes('margin: 0 auto'), 'button should not have margin: 0 auto');
+        });
+
+        it('inlines figcaption styles for image card captions', async function () {
+            lexicalRenderStub.resolves(`
+                <figure class="kg-card kg-image-card kg-card-hascaption">
+                    <img src="https://example.com/photo.jpg" class="kg-image" alt="alt text" loading="lazy" width="600" height="400">
+                    <figcaption>A caption</figcaption>
+                </figure>
+            `);
+            const renderer = new MemberWelcomeEmailRenderer({t: key => key});
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Welcome!',
+                member: {name: 'John', email: 'john@example.com'},
+                siteSettings: defaultSiteSettings
+            });
+
+            // figcaption should have centered text and muted color inlined
+            assert(result.html.includes('A caption'));
+            const figcaptionMatch = result.html.match(/<figcaption[^>]*style="([^"]*)"[^>]*>/);
+            assert(figcaptionMatch, 'figcaption should have inline styles');
+            const figcaptionStyle = figcaptionMatch[1];
+            assert(figcaptionStyle.includes('text-align: center'), 'figcaption should be centered');
+            assert(figcaptionStyle.includes('font-size: 13px'), 'figcaption should have 13px font');
+        });
+
+        it('inlines figure margin and image max-width for image cards', async function () {
+            lexicalRenderStub.resolves(`
+                <figure class="kg-card kg-image-card">
+                    <img src="https://example.com/photo.jpg" class="kg-image" alt="alt text" loading="lazy" width="600" height="400">
+                </figure>
+            `);
+            const renderer = new MemberWelcomeEmailRenderer({t: key => key});
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Welcome!',
+                member: {name: 'John', email: 'john@example.com'},
+                siteSettings: defaultSiteSettings
+            });
+
+            // figure should have margin inlined
+            const figureMatch = result.html.match(/<figure[^>]*style="([^"]*)"[^>]*>/);
+            assert(figureMatch, 'figure should have inline styles');
+            assert(figureMatch[1].includes('margin: 0 0 1.5em'), 'figure should have bottom margin');
+
+            // img should have max-width
+            const imgMatch = result.html.match(/<img[^>]*style="([^"]*)"[^>]*>/);
+            assert(imgMatch, 'img should have inline styles');
+            assert(imgMatch[1].includes('max-width: 100%'), 'img should have max-width: 100%');
+        });
+
+        it('inlines width 100% on button card outer table', async function () {
+            lexicalRenderStub.resolves(`
+                <table class="kg-card kg-button-card" border="0" cellpadding="0" cellspacing="0">
+                    <tbody>
+                        <tr>
+                            <td class="kg-card-spacing">
+                                <table class="btn" border="0" cellspacing="0" cellpadding="0" align="center">
+                                    <tbody>
+                                        <tr>
+                                            <td align="center">
+                                                <a href="https://example.com">Click</a>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            `);
+            const renderer = new MemberWelcomeEmailRenderer({t: key => key});
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Welcome!',
+                member: {name: 'John', email: 'john@example.com'},
+                siteSettings: defaultSiteSettings
+            });
+
+            // The outer kg-button-card table should have width: 100% inlined
+            const buttonCardMatch = result.html.match(/<table[^>]*class="kg-card kg-button-card"[^>]*style="([^"]*)"[^>]*>/);
+            assert(buttonCardMatch, 'button card table should have inline styles');
+            assert(buttonCardMatch[1].includes('width: 100%'), 'button card table should have width: 100%');
+        });
+
+        it('preserves explicit right alignment values', async function () {
+            lexicalRenderStub.resolves(`
+                <table class="kg-card kg-button-card" border="0" cellpadding="0" cellspacing="0">
+                    <tbody>
+                        <tr>
+                            <td class="kg-card-spacing">
+                                <table class="btn" border="0" cellspacing="0" cellpadding="0" align="right">
+                                    <tbody>
+                                        <tr>
+                                            <td align="center">
+                                                <a href="https://example.com">Right</a>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            `);
+            const renderer = new MemberWelcomeEmailRenderer({t: key => key});
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Welcome!',
+                member: {name: 'John', email: 'john@example.com'},
+                siteSettings: defaultSiteSettings
+            });
+
+            assert.match(result.html, /<table[^>]*class="btn"[^>]*align="right"/);
+        });
     });
 });

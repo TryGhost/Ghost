@@ -13,7 +13,7 @@ import clsx from 'clsx';
 import getReadingTime from '../../utils/get-reading-time';
 import getUsername from '../../utils/get-username';
 import {handleProfileClick} from '../../utils/handle-profile-click';
-import {openLinksInNewTab, stripHtml} from '../../utils/content-formatters';
+import {openLinksInNewTab, sanitizeHtml, stripHtml} from '../../utils/content-formatters';
 import {renderTimestamp} from '../../utils/render-timestamp';
 import {useDeleteMutationForUser, useFollowMutationForUser, useUnfollowMutationForUser} from '../../hooks/use-activity-pub-queries';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
@@ -489,7 +489,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                                 <div className='ap-note-content line-clamp-[10] text-pretty leading-[1.4285714286] tracking-[-0.006em] text-gray-900 break-anywhere dark:text-gray-300 [&_p+p]:mt-3'>
                                                     {!isLoading ?
                                                         <div dangerouslySetInnerHTML={{
-                                                            __html: openLinksInNewTab(object.content || '') ?? ''
+                                                            __html: sanitizeHtml(openLinksInNewTab(object.content || '') ?? '')
                                                         }} ref={contentRef}
                                                         onClick={(e) => {
                                                             const target = e.target as HTMLElement;
@@ -569,7 +569,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                 <div className={`relative z-10 col-start-1 col-end-3 w-full gap-4`}>
                                     <div className='flex flex-col items-start'>
                                         {object.name && <H4 className='mb-1 leading-tight break-anywhere' data-test-activity-heading>{object.name}</H4>}
-                                        <div dangerouslySetInnerHTML={({__html: openLinksInNewTab(object.content || '') ?? ''})} ref={contentRef} className='ap-note-content-large text-pretty text-[1.6rem] tracking-[-0.011em] text-gray-900 break-anywhere dark:text-gray-300 [&_p+p]:mt-3'></div>
+                                        <div dangerouslySetInnerHTML={({__html: sanitizeHtml(openLinksInNewTab(object.content || '') ?? '')})} ref={contentRef} className='ap-note-content-large text-pretty text-[1.6rem] tracking-[-0.011em] text-gray-900 break-anywhere dark:text-gray-300 [&_p+p]:mt-3'></div>
                                         {renderFeedAttachment(object, openLightbox, brokenImages, handleImageError)}
                                         <div className='space-between ml-[-8px] mt-3 flex'>
                                             {showStats && <FeedItemStats
@@ -646,7 +646,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                 <div className='flex flex-col items-start'>
                                     {(object.type === 'Article') && renderFeedAttachment(object, onClick, brokenImages, handleImageError)}
                                     {object.name && <H4 className='mt-2.5 text-pretty leading-tight break-anywhere' data-test-activity-heading>{object.name}</H4>}
-                                    {(object.preview && object.type === 'Article') ? <div className='mt-1 line-clamp-3 leading-tight'>{object.preview.content}</div> : <div dangerouslySetInnerHTML={({__html: openLinksInNewTab(object.content || '') ?? ''})} ref={contentRef} className='ap-note-content text-pretty tracking-[-0.006em] text-gray-900 break-anywhere dark:text-gray-300 [&_p+p]:mt-3'></div>}
+                                    {(object.preview && object.type === 'Article') ? <div className='mt-1 line-clamp-3 leading-tight'>{object.preview.content}</div> : <div dangerouslySetInnerHTML={({__html: sanitizeHtml(openLinksInNewTab(object.content || '') ?? '')})} ref={contentRef} className='ap-note-content text-pretty tracking-[-0.006em] text-gray-900 break-anywhere dark:text-gray-300 [&_p+p]:mt-3'></div>}
                                     {(object.type === 'Note') && renderFeedAttachment(object, openLightbox, brokenImages, handleImageError)}
                                     {(object.type === 'Article') && <Button
                                         className='mt-3 w-full'
@@ -718,14 +718,14 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                     <H4 className='line-clamp-2 w-full max-w-[600px] text-pretty leading-tight break-anywhere' data-test-activity-heading>
                                         {isLoading ? <Skeleton className='w-full max-w-96' /> : (object.name ? object.name : (
                                             <span dangerouslySetInnerHTML={{
-                                                __html: stripHtml(object.content || '')
+                                                __html: sanitizeHtml(stripHtml(object.content || ''))
                                             }}></span>
                                         ))}
                                     </H4>
                                     <div className='ap-note-content line-clamp-2 w-full max-w-[600px] text-pretty text-base leading-normal text-gray-900 break-anywhere dark:text-gray-300 [&_p+p]:mt-3'>
                                         {!isLoading ?
                                             <div dangerouslySetInnerHTML={{
-                                                __html: stripHtml(object.preview?.content ?? object.content ?? '')
+                                                __html: sanitizeHtml(stripHtml(object.preview?.content ?? object.content ?? ''))
                                             }} />
                                             :
                                             <Skeleton count={2} />

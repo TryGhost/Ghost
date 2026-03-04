@@ -1,4 +1,10 @@
 {
     "Top left Button": "Oben Links.",
-    "Welcome, {name}": "Willkommen, {name}"
+    "Welcome, {name}": "Willkommen, {name}",
+    "This page is for paying subscribers only": "Diese Seite ist nur für bezahlte Abonnenten.",
+    "Already have an account?": "Hast du bereits ein Konto?",
+    "Page {page} of {totalPages}": "Seite {page} von {totalPages}",
+    "This site is private.": "Diese Seite ist privat.",
+    "Password": "Passwort",
+    "Access site": "Seite aufrufen"
 }
