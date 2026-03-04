@@ -500,6 +500,41 @@ describe('Posts API', function () {
             assert.equal(mobiledocRevisions.length, 0);
         });
 
+        it('Does not create a revision when editing a lexical post without save_revision within the revision interval', async function () {
+            const originalLexical = createLexical('Original text for interval test');
+            const updatedLexical = createLexical('First update for interval test');
+            const secondUpdateLexical = createLexical('Second update for interval test');
+
+            const {body: postBody} = await agent
+                .post('/posts/?formats=mobiledoc,lexical,html')
+                .body({posts: [{title: 'Lexical interval test', lexical: originalLexical}]})
+                .expectStatus(201);
+
+            const [postResponse] = postBody.posts;
+
+            // Force a second revision so we have multiple revisions to test ordering against
+            const {body: firstEditBody} = await agent
+                .put(`/posts/${postResponse.id}/?formats=mobiledoc,lexical,html&save_revision=true`)
+                .body({posts: [Object.assign({}, postResponse, {lexical: updatedLexical})]})
+                .expectStatus(200);
+
+            const revisionsBeforeTest = await models.PostRevision
+                .where('post_id', postResponse.id)
+                .fetchAll();
+            assert.equal(revisionsBeforeTest.length, 2);
+
+            // Edit again without save_revision — should NOT create a revision within the interval
+            await agent
+                .put(`/posts/${firstEditBody.posts[0].id}/?formats=mobiledoc,lexical,html`)
+                .body({posts: [Object.assign({}, firstEditBody.posts[0], {lexical: secondUpdateLexical})]})
+                .expectStatus(200);
+
+            const revisionsAfter = await models.PostRevision
+                .where('post_id', postResponse.id)
+                .fetchAll();
+            assert.equal(revisionsAfter.length, 2, 'No new revision should be created within the interval without save_revision');
+        });
+
         describe('Access', function () {
             describe('Visibility is set to tiers', function () {
                 it('Saves only paid tiers', async function () {

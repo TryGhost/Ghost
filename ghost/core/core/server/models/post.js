@@ -923,7 +923,7 @@ Post = ghostBookshelf.Model.extend({
                         columns: ['id', 'lexical', 'created_at', 'author_id', 'title', 'reason', 'post_status', 'created_at_ts', 'feature_image']
                     }, _.pick(options, 'transacting')));
 
-                const revisions = revisionModels.toJSON();
+                const revisions = revisionModels.toJSON().reverse();
 
                 const current = {
                     id: model.id,
