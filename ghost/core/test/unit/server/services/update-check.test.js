@@ -338,9 +338,9 @@ describe('Update Check', function () {
                 }]
             });
 
-            notificationsAPIAddStub.calledOnce.should.equal(true);
+            assert.equal(notificationsAPIAddStub.callCount, 1);
             const targetNotification = notificationsAPIAddStub.args[0][0].notifications[0];
-            targetNotification.custom.should.equal(0);
+            assert.equal(targetNotification.custom, 0);
         });
 
         it('should send an email for critical notification', async function () {
