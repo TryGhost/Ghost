@@ -62,7 +62,7 @@ interface EmailPreviewEmailHeaderProps {
 
 const EmailPreviewEmailHeader: React.FC<EmailPreviewEmailHeaderProps> = ({children, className}) => (
     <div className={cn(
-        'relative z-20 mx-auto w-full max-w-[780px] rounded-t-lg border border-b-0 border-gray-200 bg-white px-6 py-4 transition-[max-width,padding] duration-300 ease-out motion-reduce:transition-none dark:border-grey-900 dark:bg-grey-975',
+        'relative z-20 isolate mx-auto w-full max-w-[780px] rounded-t-lg border border-b-0 border-gray-200 bg-white px-6 py-4 transition-[max-width,padding] duration-300 ease-out motion-reduce:transition-none dark:border-grey-900 dark:bg-grey-975',
         className
     )}>
         {children}
@@ -342,56 +342,54 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                 }
                 title={modalTitle}
             >
-                <div className='flex grow flex-col items-center p-6 pt-0'>
-                    <div className='bg-gray-100 sticky top-0 z-10 w-full p-0 pt-6 dark:bg-[#151719]'>
-                        <EmailPreviewEmailHeader className='!border-x-0 !border-b !border-t-0'>
-                            <div className='flex flex-col gap-2'>
-                                <div className='flex items-center py-1'>
-                                    <div className='w-20 shrink-0 text-sm font-semibold'>From:</div>
-                                    <div className='min-w-0 grow pr-4 text-sm'>
-                                        <span className='flex gap-1 truncate whitespace-nowrap'>
-                                            <span>{resolvedSenderName}</span>
-                                            <span className='text-gray-500 dark:text-gray-400'>{`<${resolvedSenderEmail}>`}</span>
-                                        </span>
-                                    </div>
-                                    <div ref={dropdownRef} className='relative'>
-                                        <LegacyButton
-                                            className='border border-grey-200 font-semibold hover:border-grey-300 hover:!bg-white dark:border-grey-900 dark:hover:border-grey-800 dark:hover:!bg-grey-950'
-                                            color="clear"
-                                            icon='send'
-                                            label="Test"
-                                            onClick={() => setShowTestDropdown(!showTestDropdown)}
-                                        />
-                                        {showTestDropdown && (
-                                            <TestEmailDropdown automatedEmailId={automatedEmail.id} lexical={formState.lexical} subject={formState.subject} validateForm={validate} onClose={() => setShowTestDropdown(false)} />
-                                        )}
-                                    </div>
+                <div className='flex grow flex-col items-center p-6'>
+                    <EmailPreviewEmailHeader className='!border-x-0 !border-b !border-t-0'>
+                        <div className='flex flex-col gap-2'>
+                            <div className='flex items-center py-1'>
+                                <div className='w-20 shrink-0 text-sm font-semibold'>From:</div>
+                                <div className='min-w-0 grow pr-4 text-sm'>
+                                    <span className='flex gap-1 truncate whitespace-nowrap'>
+                                        <span>{resolvedSenderName}</span>
+                                        <span className='text-gray-500 dark:text-gray-400'>{`<${resolvedSenderEmail}>`}</span>
+                                    </span>
                                 </div>
-                                {hasDistinctReplyTo && (
-                                    <div className='flex items-center'>
-                                        <div className='w-20 shrink-0 text-sm font-semibold'>Reply-to:</div>
-                                        <div className='text-gray-500 dark:text-gray-400 grow text-sm'>
-                                            {resolvedReplyToEmail}
-                                        </div>
-                                    </div>
-                                )}
-                                <div className='flex items-center'>
-                                    <div className='w-20 shrink-0 text-sm font-semibold'>Subject:</div>
-                                    <div className='grow'>
-                                        <TextField
-                                            className='w-full'
-                                            error={Boolean(errors.subject)}
-                                            hint={errors.subject || ''}
-                                            maxLength={300}
-                                            placeholder={`Welcome to ${siteTitle}`}
-                                            value={formState.subject}
-                                            onChange={e => updateForm(state => ({...state, subject: e.target.value}))}
-                                        />
-                                    </div>
+                                <div ref={dropdownRef} className='relative'>
+                                    <LegacyButton
+                                        className='border border-grey-200 font-semibold hover:border-grey-300 hover:!bg-white dark:border-grey-900 dark:hover:border-grey-800 dark:hover:!bg-grey-950'
+                                        color="clear"
+                                        icon='send'
+                                        label="Test"
+                                        onClick={() => setShowTestDropdown(!showTestDropdown)}
+                                    />
+                                    {showTestDropdown && (
+                                        <TestEmailDropdown automatedEmailId={automatedEmail.id} lexical={formState.lexical} subject={formState.subject} validateForm={validate} onClose={() => setShowTestDropdown(false)} />
+                                    )}
                                 </div>
                             </div>
-                        </EmailPreviewEmailHeader>
-                    </div>
+                            {hasDistinctReplyTo && (
+                                <div className='flex items-center'>
+                                    <div className='w-20 shrink-0 text-sm font-semibold'>Reply-to:</div>
+                                    <div className='text-gray-500 dark:text-gray-400 grow text-sm'>
+                                        {resolvedReplyToEmail}
+                                    </div>
+                                </div>
+                            )}
+                            <div className='flex items-center'>
+                                <div className='w-20 shrink-0 text-sm font-semibold'>Subject:</div>
+                                <div className='grow'>
+                                    <TextField
+                                        className='w-full'
+                                        error={Boolean(errors.subject)}
+                                        hint={errors.subject || ''}
+                                        maxLength={300}
+                                        placeholder={`Welcome to ${siteTitle}`}
+                                        value={formState.subject}
+                                        onChange={e => updateForm(state => ({...state, subject: e.target.value}))}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </EmailPreviewEmailHeader>
                     <EmailPreviewBody className={errors.lexical ? 'border-red-500' : ''}>
                         <div
                             className='mx-auto w-full max-w-[600px] pb-8 pt-10 transition-[max-width,padding] duration-300 ease-out motion-reduce:transition-none'

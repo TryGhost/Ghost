@@ -56,6 +56,8 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
         '[&_.koenig-lexical_input]:text-[1.4rem]',
         // Plus icon
         '[&_[data-kg-plus-button]]:top-[-4px]',
+        // Settings panel
+        '[&_[data-kg-card-selected]]:isolate',
         // Content typography
         '[&_:is(p,blockquote,aside,ul,ol)]:font-inter [&_:is(p,blockquote,aside,ul,ol)]:text-xl [&_:is(p,blockquote,aside,ul,ol)]:tracking-tight',
         // Reset content typography inside card captions to match Koenig's caption styles
