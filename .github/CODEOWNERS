@@ -12,3 +12,7 @@
 
 # @tryghost/parse-email-address
 /ghost/parse-email-address/ @EvanHahn
+
+# Inbox Links
+ghost/core/core/server/lib/get-inbox-links.ts @EvanHahn
+ghost/core/test/unit/server/lib/get-inbox-links.test.ts @EvanHahn
