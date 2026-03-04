@@ -18,6 +18,7 @@ permissions:
   contents: write
 jobs:
   create-branch:
+    if: github.repository == 'TryGhost/Ghost'
     runs-on: ubuntu-latest
     steps:
       - run: echo "BASE_REF=main" >> $GITHUB_ENV

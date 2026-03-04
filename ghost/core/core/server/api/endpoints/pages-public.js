@@ -1,24 +1,13 @@
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
-const {mapQuery} = require('@tryghost/mongo-utils');
 const models = require('../../models');
+const {rejectPrivateFieldsTransformer} = require('./utils/public-endpoint-utils');
 
 const ALLOWED_INCLUDES = ['tags', 'authors', 'tiers'];
 
 const messages = {
     pageNotFound: 'Page not found.'
 };
-
-const rejectPrivateFieldsTransformer = input => mapQuery(input, function (value, key) {
-    let lowerCaseKey = key.toLowerCase();
-    if (lowerCaseKey.startsWith('authors.password') || lowerCaseKey.startsWith('authors.email')) {
-        return;
-    }
-
-    return {
-        [key]: value
-    };
-});
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {

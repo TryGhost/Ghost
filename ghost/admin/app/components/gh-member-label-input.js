@@ -18,7 +18,7 @@ export default class GhMemberLabelInput extends Component {
 
     get availableLabels() {
         const selectedLabels = this.selectedLabels;
-        return this.labelsManager.sortLabels(this.labelsManager._labels.filter(label => !selectedLabels.includes(label)));
+        return this.labelsManager.labels.filter(label => !selectedLabels.includes(label));
     }
 
     get useServerSideSearch() {
@@ -30,7 +30,7 @@ export default class GhMemberLabelInput extends Component {
             if (this.args.labels?.length && typeof this.args.labels[0] === 'string') {
                 return this.args.labels.map((d) => {
                     return this.labelsManager.findBySlug(d);
-                }).filter(Boolean) || [];
+                }).filter(Boolean);
             }
             return this.args.labels || [];
         }
@@ -39,8 +39,11 @@ export default class GhMemberLabelInput extends Component {
 
     @action
     addSearchedLabels(labels) {
-        const selectedLabels = this.selectedLabels;
-        const deduplicatedLabels = labels.filter(label => !selectedLabels.includes(label));
+        const existingIds = new Set([
+            ...this.selectedLabels.map(l => l.id),
+            ...this._searchedLabels.map(l => l.id)
+        ]);
+        const deduplicatedLabels = labels.filter(label => !existingIds.has(label.id));
         this._searchedLabels.push(...deduplicatedLabels);
     }
 
@@ -81,7 +84,7 @@ export default class GhMemberLabelInput extends Component {
         }
     }
 
-    @task
+    @task({restartable: true})
     *searchLabelsTask(term) {
         this._searchedLabelsQuery = term;
         const labels = yield this.labelsManager.searchLabelsTask.perform(term);
@@ -165,6 +168,6 @@ export default class GhMemberLabelInput extends Component {
             }
             return label.name.toLowerCase() === name.toLowerCase();
         };
-        return this._searchedLabels.find(withMatchingName) || this.labelsManager._labels.find(withMatchingName);
+        return this._searchedLabels.find(withMatchingName) || this.labelsManager.labels.find(withMatchingName);
     }
 }
