@@ -1,8 +1,8 @@
 name: 'Load Docker Image'
 description: 'Load Docker image from registry or artifact based on build source'
 inputs:
-  is-fork:
-    description: 'Whether this is a fork PR build'
+  use-artifact:
+    description: 'Whether to load the image from an artifact (true) or pull from GHCR (false)'
     required: true
   image-tags:
     description: 'Docker image tags (multi-line string)'
@@ -15,14 +15,14 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - name: Download image artifact (fork PR)
-      if: inputs.is-fork == 'true'
+    - name: Download image artifact (artifact)
+      if: inputs.use-artifact == 'true'
       uses: actions/download-artifact@v4
       with:
         name: ${{ inputs.artifact-name }}
 
-    - name: Load image from artifact (fork PR)
-      if: inputs.is-fork == 'true'
+    - name: Load image from artifact (artifact)
+      if: inputs.use-artifact == 'true'
       shell: bash
       run: |
         echo "Loading Docker image from artifact..."
@@ -31,7 +31,7 @@ runs:
         docker images
 
     - name: Log in to GitHub Container Registry
-      if: inputs.is-fork == 'false'
+      if: inputs.use-artifact == 'false'
       uses: docker/login-action@v3
       with:
         registry: ghcr.io
@@ -39,7 +39,7 @@ runs:
         password: ${{ github.token }}
 
     - name: Pull image from registry (main repo/branch)
-      if: inputs.is-fork == 'false'
+      if: inputs.use-artifact == 'false'
       shell: bash
       run: |
         IMAGE_TAG=$(echo "${{ inputs.image-tags }}" | head -n1)

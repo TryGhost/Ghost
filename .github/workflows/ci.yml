@@ -38,6 +38,7 @@ jobs:
       IS_SIX_PR: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref == '6.x' }}
       IS_FIVE: ${{ github.ref == 'refs/heads/5.x' }}
     permissions:
+      contents: read
       pull-requests: read
     steps:
       - name: Checkout current commit
@@ -62,7 +63,7 @@ jobs:
       - name: Get metadata (pull_request)
         if: github.event_name == 'pull_request'
         run: |
-          BASE_COMMIT=$(curl --location --request GET 'https://api.github.com/repos/TryGhost/Ghost/pulls/${{ github.event.pull_request.number }}' --header 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' | jq -r .base.sha)
+          BASE_COMMIT=$(curl --location --request GET 'https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}' --header 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' | jq -r .base.sha)
           echo "Setting BASE_COMMIT to $BASE_COMMIT"
           echo "BASE_COMMIT=$BASE_COMMIT" >> $GITHUB_ENV
 
@@ -943,19 +944,23 @@ jobs:
       - name: Determine push strategy
         id: strategy
         run: |
-          IS_FORK_PR="false"
-          if [ "${{ github.event_name }}" = "pull_request" ] && \
-             [ "${{ github.event.pull_request.head.repo.full_name }}" != "${{ github.repository }}" ]; then
-            IS_FORK_PR="true"
+          # Use artifact-based image transfer (instead of GHCR) for fork PRs
+          # and non-main repos (e.g. Ghost-Security)
+          USE_ARTIFACT="false"
+          if [ "${{ github.repository }}" != "TryGhost/Ghost" ]; then
+            USE_ARTIFACT="true"
+          elif [ "${{ github.event_name }}" = "pull_request" ] && \
+               [ "${{ github.event.pull_request.head.repo.full_name }}" != "${{ github.repository }}" ]; then
+            USE_ARTIFACT="true"
           fi
           OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-          echo "is-fork-pr=$IS_FORK_PR" >> $GITHUB_OUTPUT
-          echo "should-push=$( [ "$IS_FORK_PR" = "false" ] && echo "true" || echo "false" )" >> $GITHUB_OUTPUT
+          echo "use-artifact=$USE_ARTIFACT" >> $GITHUB_OUTPUT
+          echo "should-push=$( [ "$USE_ARTIFACT" = "false" ] && echo "true" || echo "false" )" >> $GITHUB_OUTPUT
           echo "owner=$OWNER" >> $GITHUB_OUTPUT
 
       - name: Upload admin artifact for CD
         id: upload-admin
-        if: steps.strategy.outputs.is-fork-pr == 'false'
+        if: steps.strategy.outputs.use-artifact == 'false'
         uses: actions/upload-artifact@v4
         with:
           name: admin-build-cd
@@ -1032,8 +1037,8 @@ jobs:
           cache-from: type=registry,ref=ghcr.io/${{ steps.strategy.outputs.owner }}/ghost:cache-main
           cache-to: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref=ghcr.io/{0}/ghost:cache-{1},mode=max', steps.strategy.outputs.owner, github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main') || '' }}
 
-      - name: Save full image as artifact (fork PR)
-        if: steps.strategy.outputs.is-fork-pr == 'true'
+      - name: Save full image as artifact (no GHCR push)
+        if: steps.strategy.outputs.use-artifact == 'true'
         run: |
           IMAGE_TAG=$(echo "${{ steps.meta-full.outputs.tags }}" | head -n1)
           echo "Saving image: $IMAGE_TAG"
@@ -1041,8 +1046,8 @@ jobs:
           echo "Image saved as docker-image-production.tar.gz"
           ls -lh docker-image-production.tar.gz
 
-      - name: Upload image artifact (fork PR)
-        if: steps.strategy.outputs.is-fork-pr == 'true'
+      - name: Upload image artifact (no GHCR push)
+        if: steps.strategy.outputs.use-artifact == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: docker-image-production
@@ -1109,7 +1114,7 @@ jobs:
 
     outputs:
       image-tags: ${{ steps.meta-full.outputs.tags }}
-      is-fork: ${{ steps.strategy.outputs.is-fork-pr }}
+      use-artifact: ${{ steps.strategy.outputs.use-artifact }}
       core-image-sha-tag: ${{ steps.core-sha-tag.outputs.tag }}
       admin-artifact-id: ${{ steps.upload-admin.outputs.artifact-id }}
 
@@ -1144,7 +1149,7 @@ jobs:
         uses: ./.github/actions/load-docker-image
         id: load
         with:
-          is-fork: ${{ needs.job_docker_build_production.outputs.is-fork }}
+          use-artifact: ${{ needs.job_docker_build_production.outputs.use-artifact }}
           image-tags: ${{ needs.job_docker_build_production.outputs.image-tags }}
           artifact-name: docker-image-production
 
@@ -1375,6 +1380,7 @@ jobs:
     runs-on: ubuntu-latest
     if: |
       always()
+      && github.repository == 'TryGhost/Ghost'
       && needs.job_setup.result == 'success'
       && needs.job_required_tests.result == 'success'
       && (
@@ -1429,7 +1435,7 @@ jobs:
     ]
     name: Publish ${{ matrix.package_name }}
     runs-on: ubuntu-latest
-    if: always() && needs.job_setup.result == 'success' && needs.job_lint.result == 'success' && needs.job_unit-tests.result == 'success' && (needs.job_setup.outputs.is_main == 'true' || needs.job_setup.outputs.is_five == 'true')
+    if: always() && github.repository == 'TryGhost/Ghost' && needs.job_setup.result == 'success' && needs.job_lint.result == 'success' && needs.job_unit-tests.result == 'success' && (needs.job_setup.outputs.is_main == 'true' || needs.job_setup.outputs.is_five == 'true')
     permissions:
       id-token: write
     strategy:
@@ -1561,7 +1567,7 @@ jobs:
       job_setup,
       job_tinybird-tests
     ]
-    if: always() && github.event_name == 'push' && needs.job_setup.outputs.changed_tinybird == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird-tests.result == 'success' && needs.job_setup.outputs.is_main == 'true'
+    if: always() && github.repository == 'TryGhost/Ghost' && github.event_name == 'push' && needs.job_setup.outputs.changed_tinybird == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird-tests.result == 'success' && needs.job_setup.outputs.is_main == 'true'
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -1581,7 +1587,7 @@ jobs:
       job_tinybird-tests,
       deploy_tinybird_staging
     ]
-    if: always() && github.event_name == 'push' && needs.job_setup.outputs.changed_tinybird == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird-tests.result == 'success' && needs.deploy_tinybird_staging.result == 'success' && needs.job_setup.outputs.is_main == 'true'
+    if: always() && github.repository == 'TryGhost/Ghost' && github.event_name == 'push' && needs.job_setup.outputs.changed_tinybird == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird-tests.result == 'success' && needs.deploy_tinybird_staging.result == 'success' && needs.job_setup.outputs.is_main == 'true'
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -1602,6 +1608,7 @@ jobs:
     runs-on: ubuntu-latest
     if: |
       always()
+      && github.repository == 'TryGhost/Ghost'
       && needs.job_setup.result == 'success'
       && needs.job_setup.outputs.is_main == 'true'
       && needs.job_required_tests.result == 'success'
@@ -1646,9 +1653,10 @@ jobs:
     runs-on: ubuntu-latest
     if: |
       always()
+      && github.repository == 'TryGhost/Ghost'
       && needs.job_setup.result == 'success'
       && needs.job_docker_build_production.result == 'success'
-      && needs.job_docker_build_production.outputs.is-fork != 'true'
+      && needs.job_docker_build_production.outputs.use-artifact != 'true'
     steps:
       - name: Determine dispatch parameters
         id: params
