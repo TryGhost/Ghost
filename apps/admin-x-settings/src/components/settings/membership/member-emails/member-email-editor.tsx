@@ -3,8 +3,7 @@ import useFeatureFlag from '../../../../hooks/use-feature-flag';
 import {KoenigEditorBase, type KoenigInstance, LoadingIndicator} from '@tryghost/admin-x-design-system';
 import {cn} from '@tryghost/shade';
 import {focusKoenigEditorOnBottomClick, useFramework} from '@tryghost/admin-x-framework';
-import {koenigFileUploadTypes, useKoenigFetchEmbed, useKoenigFileUpload} from '@tryghost/admin-x-framework/hooks';
-import {usePinturaConfig} from '@tryghost/admin-x-framework/hooks';
+import {koenigFileUploadTypes, useKoenigFetchEmbed, useKoenigFileUpload, usePinturaConfig} from '@tryghost/admin-x-framework/hooks';
 import {useWelcomeEmailLinkSuggestions} from '../../../../hooks/use-welcome-email-link-suggestions';
 
 export interface MemberEmailsEditorProps {
