@@ -101,6 +101,7 @@
     "noPropertyAccessFromIndexSignature": true,          /* Enforces using indexed accessors for keys declared using an indexed type. */
     "allowUnusedLabels": false,                          /* Disable error reporting for unused labels. */
     "allowUnreachableCode": false,                       /* Disable error reporting for unreachable code. */
+    "erasableSyntaxOnly": true,                          /* Require all TypeScript code to be erasable. */
 
     /* Completeness */
     // "skipDefaultLibCheck": true,                      /* Skip type checking .d.ts files that are included with TypeScript. */
