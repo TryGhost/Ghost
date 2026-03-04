@@ -5,7 +5,7 @@ import CloseButton from '../common/close-button';
 import BackButton from '../common/back-button';
 import {MultipleProductsPlansSection} from '../common/plans-section';
 import {getDateString} from '../../utils/date-time';
-import {addMonths, formatNumber, getAvailablePrices, getCurrencySymbol, getFilteredPrices, isFreeMonthsOffer, getMemberActivePrice, getMemberActiveProduct, getMemberSubscription, getOfferOffAmount, getPriceFromSubscription, getProductFromId, getProductFromPrice, getSubscriptionFromId, getUpdatedOfferPrice, getUpgradeProducts, hasMultipleProductsFeature, isComplimentaryMember, isPaidMember} from '../../utils/helpers';
+import {addMonths, formatNumber, getAvailablePrices, getCurrencySymbol, getFilteredPrices, isFreeMonthsOffer, getMemberActivePrice, getMemberActiveProduct, getMemberSubscription, getOfferOffAmount, getPriceFromSubscription, getProductFromPrice, getSubscriptionFromId, getUpdatedOfferPrice, getUpgradeProducts, hasMultipleProductsFeature, isComplimentaryMember, isPaidMember} from '../../utils/helpers';
 import Interpolate from '@doist/react-interpolate';
 import {t} from '../../utils/i18n';
 
@@ -309,18 +309,24 @@ function getRetentionOfferMessage(offer, originalPrice, currency, amountOff, sub
     return '';
 }
 
-const RetentionOfferSection = ({offer, product, price, onAcceptOffer, onDeclineOffer}) => {
-    const {brandColor, action, member} = useContext(AppContext);
+const RetentionOfferSection = ({subscription, offer, onAcceptOffer, onDeclineOffer}) => {
+    const {brandColor, action} = useContext(AppContext);
     const isAcceptingOffer = action === 'applyOffer:running';
-    const subscription = getMemberSubscription({member});
 
+    const price = getPriceFromSubscription({subscription});
     const originalPrice = formatNumber(price.amount / 100);
     const currency = getCurrencySymbol(price.currency);
     const discountedPrice = formatNumber(getUpdatedOfferPrice({offer, price}));
     const amountOff = getOfferOffAmount({offer});
 
     const cadenceLabel = offer.cadence === 'month' ? t('Monthly') : t('Yearly');
-    const productCadenceLabel = `${product.name} - ${cadenceLabel}`;
+
+    let productCadenceLabel = cadenceLabel;
+    const tier = subscription.tier;
+    if (tier && tier.name) {
+        productCadenceLabel = `${tier.name} - ${cadenceLabel}`;
+    }
+
     const displayDescription = offer.display_description || t('We\'d hate to see you leave. How about a special offer to stay?');
 
     const offerLabel = getRetentionOfferLabel(offer, amountOff);
@@ -429,7 +435,7 @@ const PlansContainer = ({
     pendingOffer, onPlanSelect, onPlanCheckout, onConfirm, onCancelSubscription,
     onAcceptRetentionOffer, onDeclineRetentionOffer
 }) => {
-    const {member, site} = useContext(AppContext);
+    const {member} = useContext(AppContext);
     // Plan upgrade flow for free member or complimentary member
     if (!isPaidMember({member}) || isComplimentaryMember({member})) {
         return (
@@ -451,18 +457,13 @@ const PlansContainer = ({
 
     // Retention offer flow - shown before cancellation confirmation
     if (confirmationType === 'offerRetention' && pendingOffer) {
-        const offerProduct = pendingOffer.tier
-            ? getProductFromId({site, productId: pendingOffer.tier.id})
-            : getMemberActiveProduct({member, site});
-        const offerPrice = pendingOffer.cadence === 'month' ? offerProduct?.monthlyPrice : offerProduct?.yearlyPrice;
+        const subscription = getMemberSubscription({member});
 
-        // Skip retention offer if product or price is invalid
-        if (offerProduct && offerPrice) {
+        if (subscription) {
             return (
                 <RetentionOfferSection
+                    subscription={subscription}
                     offer={pendingOffer}
-                    product={offerProduct}
-                    price={offerPrice}
                     onAcceptOffer={onAcceptRetentionOffer}
                     onDeclineOffer={onDeclineRetentionOffer}
                 />
