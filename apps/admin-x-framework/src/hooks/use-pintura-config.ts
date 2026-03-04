@@ -42,22 +42,21 @@ export function usePinturaConfig(): { jsUrl: string; cssUrl: string } | null {
         'pintura_js_url',
         'pintura_css_url'
     ]);
-    const configJsUrl = pinturaConfig?.js || parseOptionalString(fallbackJsUrl);
-    const configCssUrl = pinturaConfig?.css || parseOptionalString(fallbackCssUrl);
+    let configJsUrl: undefined | string;
+    let configCssUrl: undefined | string;
+    if (isEnabled) {
+        configJsUrl = pinturaConfig?.js || parseOptionalString(fallbackJsUrl);
+        configCssUrl = pinturaConfig?.css || parseOptionalString(fallbackCssUrl);
+    }
 
     return useMemo(() => {
-        if (!isEnabled) {
-            return null;
-        }
-
         if (!configJsUrl || !configCssUrl) {
             return null;
         }
-
         return {
             jsUrl: resolveUrl(configJsUrl),
             cssUrl: resolveUrl(configCssUrl)
         };
-    }, [isEnabled, configJsUrl, configCssUrl]);
+    }, [configJsUrl, configCssUrl]);
 }
 
