@@ -67,6 +67,10 @@ const features: Feature[] = [{
     title: 'Welcome Emails Design Customization',
     description: 'Enable design customization options for welcome emails',
     flag: 'welcomeEmailsDesignCustomization'
+}, {
+    title: 'Smarter Counts',
+    description: 'Use optimized COUNT queries for API pagination when safe',
+    flag: 'smarterCounts'
 }];
 
 const AlphaFeatures: React.FC = () => {
