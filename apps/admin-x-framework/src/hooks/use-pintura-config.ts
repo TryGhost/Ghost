@@ -4,13 +4,13 @@ import {getSettingValues, useBrowseSettings} from '../api/settings';
 import {getGhostPaths} from '../utils/helpers';
 
 const parseOptionalString = (value: unknown): undefined | string => {
-    switch (typeof value) {
-    case 'undefined':
-    case 'string':
-        return value;
-    default:
-        throw new TypeError('Expected value to be undefined or a string');
+    if (value === null || typeof value === 'undefined') {
+        return undefined;
     }
+    if (typeof value === 'string') {
+        return value;
+    }
+    throw new TypeError('Expected value to be null, undefined, or a string');
 };
 
 const resolveUrl = (url: string): string => {
@@ -59,4 +59,3 @@ export function usePinturaConfig(): { jsUrl: string; cssUrl: string } | null {
         };
     }, [configJsUrl, configCssUrl]);
 }
-

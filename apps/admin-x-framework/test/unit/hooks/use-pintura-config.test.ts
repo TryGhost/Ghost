@@ -65,6 +65,14 @@ describe('usePinturaConfig', () => {
         expect(result.current).toBeNull();
     });
 
+    it('returns null when pintura is enabled and url settings are null', () => {
+        mockGetSettingValues.mockReturnValue([true, null, null]);
+
+        const {result} = renderHook(() => usePinturaConfig());
+
+        expect(result.current).toBeNull();
+    });
+
     it('uses fallback setting urls when config urls are not set', () => {
         mockGetSettingValues.mockReturnValue([true, 'https://cdn.example.com/pintura.js', 'https://cdn.example.com/pintura.css']);
 
