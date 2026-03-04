@@ -177,7 +177,7 @@ test.describe('User profile', async () => {
         await modal.getByRole('button', {name: 'Save'}).click();
 
         await expect(modal.getByRole('button', {name: 'Saved'})).toBeVisible();
-        await modal.getByRole('button', {name: 'Close'}).click();
+        await modal.getByRole('button', {name: 'Close'}).first().click();
 
         await expect(listItem.getByText('New Admin')).toBeVisible();
         await expect(listItem.getByText('newadmin@test.com')).toBeVisible();
@@ -514,7 +514,7 @@ test.describe('User profile', async () => {
 
         await modal.getByLabel('Full name').fill('Updated');
 
-        await modal.getByRole('button', {name: 'Close'}).click();
+        await modal.getByRole('button', {name: 'Close'}).first().click();
 
         await expect(page.getByTestId('confirmation-modal')).toHaveText(/leave/i);
 
@@ -581,7 +581,7 @@ test.describe('User profile', async () => {
         await listItem.getByRole('button', {name: 'Edit'}).click();
 
         await expect(modal.getByTestId('api-keys')).toBeHidden();
-        await modal.getByRole('button', {name: 'Close'}).click();
+        await modal.getByRole('button', {name: 'Close'}).first().click();
 
         // Can see and regenerate your own staff token
 
