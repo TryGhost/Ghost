@@ -46,16 +46,24 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
 
     const baseEditorStyles = cn(
         // Base typography
-        'text-[1.6rem] leading-[1.6] tracking-[-0.01em]',
+        'text-[1.6rem] leading-[1.6] tracking-[-0.01em] pb-10',
         // Dark mode
         'dark:text-white dark:selection:bg-[rgba(88,101,116,0.99)]',
         // Placeholder styling
         '[&_.koenig-lexical-editor-input-placeholder]:font-inter [&_.koenig-lexical-editor-input-placeholder]:text-xl [&_.koenig-lexical-editor-input-placeholder]:tracking-tight',
         // Headings dark mode
         '[&_:is(h2,h3)]:dark:text-white',
-
+        // Inputs
+        '[&_.koenig-lexical_input]:text-[1.4rem]',
+        // Plus icon
+        '[&_[data-kg-plus-button]]:top-[-4px]',
+        // Settings panel
+        '[&_[data-kg-card-selected]]:isolate',
         // Content typography
         '[&_:is(p,blockquote,aside,ul,ol)]:font-inter [&_:is(p,blockquote,aside,ul,ol)]:text-xl [&_:is(p,blockquote,aside,ul,ol)]:tracking-tight',
+        // Reset content typography inside card captions to match Koenig's caption styles
+        '[&_figcaption_:is(p,blockquote,aside,ul,ol)]:text-[1.4rem] [&_figcaption_:is(p,blockquote,aside,ul,ol)]:tracking-[.025em]',
+        '[&_figcaption_p]:mb-0',
         '[&_:is(h1)]:text-[36px] [&_:is(h2)]:text-[32px] [&_:is(h3)]:text-[26px] [&_:is(h4)]:text-[21px] [&_:is(h5)]:text-[19px] [&_:is(h6)]:text-[19px] [&_:is(h1,h2,h3,h4,h5,h6)]:mb-[0.5em]',
         // Horizontal ruler
         '[&_:is(hr)]:pt-0',
