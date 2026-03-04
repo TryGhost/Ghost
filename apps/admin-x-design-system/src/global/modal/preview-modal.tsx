@@ -154,11 +154,11 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
             />;
         } else if (previewToolbarBreadcrumbs) {
             toolbarLeft = <Breadcrumbs
-                activeItemClassName='hidden md:block! md:visible!'
+                activeItemClassName='hidden md:!block md:!visible'
                 containerClassName='whitespace-nowrap'
-                itemClassName='hidden md:block! md:visible!'
+                itemClassName='hidden md:!block md:!visible'
                 items={previewToolbarBreadcrumbs}
-                separatorClassName='hidden md:block! md:visible!'
+                separatorClassName='hidden md:!block md:!visible'
                 backIcon
                 onBack={onBreadcrumbsBack}
             />;
@@ -276,7 +276,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
             hideXOnMobile
         >
             <div className='flex h-full grow'>
-                <div className={`[@media(min-width:801px)]:visible! [@media(min-width:801px)]:flex! relative hidden grow flex-col ${previewBgColor === 'grey' ? 'bg-grey-50' : 'bg-white dark:bg-black'}`}>
+                <div className={`[@media(min-width:801px)]:!visible [@media(min-width:801px)]:!flex relative hidden grow flex-col ${previewBgColor === 'grey' ? 'bg-grey-50' : 'bg-white dark:bg-black'}`}>
                     {preview}
                 </div>
                 {sidebar &&
