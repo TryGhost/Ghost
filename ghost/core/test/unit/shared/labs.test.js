@@ -31,6 +31,7 @@ describe('Labs Service', function () {
     it('respects the value in config over settings', function () {
         if (labs.WRITABLE_KEYS_ALLOWLIST.length === 0) {
             this.skip();
+            return;
         }
 
         const flag = labs.WRITABLE_KEYS_ALLOWLIST[0];
@@ -55,6 +56,7 @@ describe('Labs Service', function () {
     it('respects the value in config over GA keys', function () {
         if (labs.GA_KEYS.length === 0) {
             this.skip();
+            return;
         }
 
         const gaKey = labs.GA_KEYS[0];
@@ -85,6 +87,7 @@ describe('Labs Service', function () {
     it('returns other allowlisted flags along with members', function () {
         if (labs.WRITABLE_KEYS_ALLOWLIST.length === 0) {
             this.skip();
+            return;
         }
 
         const flag = labs.WRITABLE_KEYS_ALLOWLIST[0];
