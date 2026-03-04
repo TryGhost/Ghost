@@ -2,7 +2,7 @@
   {{! template-lint-disable no-unnecessary-concat }}
   {{#if (and @select.loading (eq @options.length 0))}}
     {{#if @loadingMessage}}
-      <li class="ember-power-select-option ember-power-select-option--loading-message" role="option">{{@loadingMessage}}</li>
+      <li class="ember-power-select-option ember-power-select-option--loading-message" role="option" aria-selected="false">{{@loadingMessage}}</li>
     {{/if}}
   {{/if}}
   {{#let

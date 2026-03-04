@@ -59,7 +59,7 @@ export default class GhMembersRecipientSelect extends Component {
         const labels = this.labelsManager.labels;
 
         if (labels.length > 0) {
-            options.unshift({
+            options.push({
                 groupName: 'Labels',
                 options: labels.map(label => ({
                     name: label.name,
