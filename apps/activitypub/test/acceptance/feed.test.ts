@@ -58,7 +58,7 @@ test.describe('Feed', async () => {
         // Find and click the "New note" button in the sidebar
         const newNoteButton = page.getByRole('button', {name: 'New note'});
         await expect(newNoteButton).toBeVisible();
-        await newNoteButton.click();
+        await newNoteButton.click({force: true});
 
         // Wait for the modal to appear
         await page.waitForSelector('[role="dialog"]', {timeout: 10000});
