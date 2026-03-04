@@ -342,7 +342,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                 title={modalTitle}
             >
                 <div className='flex grow flex-col items-center p-6 pt-0'>
-                    <div className='bg-gray-100 dark:bg-gray-975 sticky top-0 z-50 w-full p-0 pt-6'>
+                    <div className='bg-gray-100 dark:bg-gray-975 sticky top-0 z-10 w-full p-0 pt-6'>
                         <EmailPreviewEmailHeader className='!border-x-0 !border-b !border-t-0'>
                             <div className='flex flex-col gap-2'>
                                 <div className='flex items-center py-1'>
