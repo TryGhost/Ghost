@@ -62,7 +62,7 @@ interface EmailPreviewEmailHeaderProps {
 
 const EmailPreviewEmailHeader: React.FC<EmailPreviewEmailHeaderProps> = ({children, className}) => (
     <div className={cn(
-        'mx-auto w-full max-w-[780px] rounded-t-lg border border-b-0 border-gray-200 bg-white px-6 py-4 transition-[max-width,padding] duration-300 ease-out motion-reduce:transition-none dark:border-grey-900 dark:bg-grey-975',
+        'relative z-20 mx-auto w-full max-w-[780px] rounded-t-lg border border-b-0 border-gray-200 bg-white px-6 py-4 transition-[max-width,padding] duration-300 ease-out motion-reduce:transition-none dark:border-grey-900 dark:bg-grey-975',
         className
     )}>
         {children}
@@ -76,7 +76,7 @@ interface EmailPreviewBodyProps {
 
 const EmailPreviewBody: React.FC<EmailPreviewBodyProps> = ({children, className}) => (
     <div className={cn(
-        'mx-auto w-full h-[clamp(0px,calc(100dvh-320px),82vh)] overflow-y-auto rounded-b-lg border border-gray-200 bg-white shadow-sm transition-[max-width,height,padding] duration-300 ease-out motion-reduce:transition-none dark:border-grey-900 dark:bg-grey-975 dark:shadow-none grow max-w-[780px] px-6',
+        'flex mx-auto w-full h-[clamp(0px,calc(100dvh-320px),82vh)] overflow-y-auto rounded-b-lg border border-gray-200 bg-white shadow-sm transition-[max-width,height,padding] duration-300 ease-out motion-reduce:transition-none dark:border-grey-900 dark:bg-grey-975 dark:shadow-none grow max-w-[780px] px-6',
         className
     )}>
         {children}
@@ -291,7 +291,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                     </div>
                     <div className='flex grow flex-col bg-grey-50 p-8 dark:bg-grey-975'>
                         <div
-                            className={`mx-auto w-full max-w-[600px] grow rounded border bg-white p-8 shadow-sm dark:bg-grey-950/25 dark:shadow-none ${errors.lexical ? 'border-red' : 'border-grey-200 dark:border-grey-925'}`}
+                            className={`mx-auto flex w-full max-w-[600px] grow flex-col rounded border bg-white p-8 shadow-sm dark:bg-grey-950/25 dark:shadow-none ${errors.lexical ? 'border-red' : 'border-grey-200 dark:border-grey-925'}`}
                             onFocus={() => {
                                 hasEditorBeenFocused.current = true;
                             }}

@@ -278,7 +278,7 @@ function searchParamsToFilters(searchParams: URLSearchParams): Filter[] {
         const parsed = parseFilterValue(queryValue);
         if (parsed) {
             const values = MULTISELECT_FIELDS.has(field)
-                ? parsed.value.split(',')
+                ? (parsed.value ? parsed.value.split(',') : [])
                 : [parsed.value];
             filters.push({
                 id: field,
@@ -299,12 +299,21 @@ function filtersToSearchParams(filters: Filter[], search?: string): URLSearchPar
     const params = new URLSearchParams();
 
     for (const filter of filters) {
-        if (filter.values[0] !== undefined) {
-            const key = filter.field;
-            const serializedValue = MULTISELECT_FIELDS.has(key) && filter.values.length > 1
+        const key = filter.field;
+
+        // Multiselect fields (label, offer_redemptions) may have empty values
+        // when the filter row has just been added but no values selected yet.
+        // We still serialize them so the filter row persists in the URL.
+        if (MULTISELECT_FIELDS.has(key)) {
+            const serializedValue = filter.values.length > 0
                 ? filter.values.map(v => String(v)).join(',')
-                : String(filter.values[0]);
-            const value = `${filter.operator}:${serializedValue}`;
+                : '';
+            params.set(key, `${filter.operator}:${serializedValue}`);
+            continue;
+        }
+
+        if (filter.values[0] !== undefined) {
+            const value = `${filter.operator}:${String(filter.values[0])}`;
             params.set(key, value);
         }
     }

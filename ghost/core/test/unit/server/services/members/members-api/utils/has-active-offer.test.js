@@ -97,7 +97,7 @@ describe('hasActiveOffer', function () {
     });
 
     it('returns true for a forever offer (legacy data)', async function () {
-        const model = createSubscriptionModel({offerId: 'offer_123'});
+        const model = createSubscriptionModel({offerId: 'offer_123', startDate: new Date('2025-01-01')});
         const offersAPI = createOffersAPI({duration: 'forever'});
         const result = await hasActiveOffer(model, offersAPI);
 
