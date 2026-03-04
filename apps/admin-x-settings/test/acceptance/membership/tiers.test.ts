@@ -52,7 +52,7 @@ test.describe('Tier settings', async () => {
         }});
 
         await modal.getByRole('button', {name: 'Save'}).click();
-        await modal.getByTestId('close-modal').click();
+        await modal.getByRole('button', {name: 'Close'}).last().click();
 
         // await expect(section.getByTestId('tier-card').filter({hasText: /Plus/})).toHaveText(/Plus tier/);
         // await expect(section.getByTestId('tier-card').filter({hasText: /Plus/})).toHaveText(/\$8\/month/);
@@ -135,7 +135,7 @@ test.describe('Tier settings', async () => {
         // Save changes
 
         await modal.getByRole('button', {name: 'Save'}).click();
-        await modal.getByTestId('close-modal').click();
+        await modal.getByRole('button', {name: 'Close'}).last().click();
 
         await expect(section.getByTestId('tier-card').filter({hasText: /Supporter/})).toHaveText(/Supporter updated/);
         await expect(section.getByTestId('tier-card').filter({hasText: /Supporter/})).toHaveText(/Supporter description/);
@@ -190,7 +190,7 @@ test.describe('Tier settings', async () => {
         await modal.getByLabel('New benefit').fill('Second benefit');
 
         await modal.getByRole('button', {name: 'Save'}).click();
-        await modal.getByTestId('close-modal').click();
+        await modal.getByRole('button', {name: 'Close'}).last().click();
 
         await expect(section.getByTestId('tier-card').filter({hasText: /Free/})).toHaveText(/Free tier description/);
 

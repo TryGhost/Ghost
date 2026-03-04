@@ -31,7 +31,7 @@ test.describe('Stripe settings', async () => {
         await modal.getByRole('button', {name: 'Save Stripe settings'}).click();
 
         await expect(modal.getByText('You are connected with Stripe!')).toHaveCount(1);
-        await modal.getByTestId('close-modal').click();
+        await modal.getByRole('button', {name: 'Close'}).last().click();
 
         await expect(modal).toHaveCount(0);
 
