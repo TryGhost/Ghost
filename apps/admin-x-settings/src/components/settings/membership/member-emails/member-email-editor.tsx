@@ -1,6 +1,6 @@
 import React, {useCallback, useMemo, useRef} from 'react';
 import useFeatureFlag from '../../../../hooks/use-feature-flag';
-import usePinturaConfig from '../../../../hooks/use-pintura-config';
+import {usePinturaConfig} from '@tryghost/admin-x-framework/hooks';
 import {KoenigEditorBase, type KoenigInstance, LoadingIndicator} from '@tryghost/admin-x-design-system';
 import {cn} from '@tryghost/shade';
 import {focusKoenigEditorOnBottomClick, useFramework} from '@tryghost/admin-x-framework';

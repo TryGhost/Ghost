@@ -1,8 +1,7 @@
-import {type Config} from '@tryghost/admin-x-framework/api/config';
-import {type Setting, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
-import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
+import {useBrowseConfig} from '../api/config';
+import {getSettingValues, useBrowseSettings} from '../api/settings';
+import {getGhostPaths} from '../utils/helpers';
 import {useMemo} from 'react';
-import {useGlobalData} from '../components/providers/global-data-provider';
 
 /**
  * Returns a pinturaConfig object ({ jsUrl, cssUrl }) suitable for passing
@@ -12,7 +11,11 @@ import {useGlobalData} from '../components/providers/global-data-provider';
  * the URLs from settings and host config.
  */
 export default function usePinturaConfig(): { jsUrl: string; cssUrl: string } | null {
-    const {config, settings} = useGlobalData() as { config: Config; settings: Setting[] };
+    const {data: configData} = useBrowseConfig();
+    const {data: settingsData} = useBrowseSettings();
+
+    const config = configData?.config;
+    const settings = settingsData?.settings ?? null;
 
     const [pinturaEnabled] = getSettingValues<boolean>(settings, ['pintura']);
     const [pinturaJsUrl] = getSettingValues<string>(settings, ['pintura_js_url']);
