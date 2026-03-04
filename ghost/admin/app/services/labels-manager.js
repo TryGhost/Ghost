@@ -26,7 +26,7 @@ export default class LabelsManagerService extends Service {
     sortLabels(labels = []) {
         return labels
             .filter(label => label.get('id') !== null)
-            .sort((labelA, labelB) => (labelA.name || '').localeCompare((labelB.name || ''), undefined, {ignorePunctuation: true}));
+            .sort((labelA, labelB) => (labelA.name || '').localeCompare((labelB.name || '')));
     }
 
     findBySlug(slug) {
