@@ -27,6 +27,7 @@
     "Black Friday": "ब्लैक फ्राइडे",
     "Cancel anytime.": "कभी भी रद्द करें।",
     "Cancel subscription": "सदस्यता रद्द करें",
+    "Canceled": "",
     "Cancellation reason": "रद्द करने का कारण",
     "Change": "परिवर्तन",
     "Change plan": "योजना बदलें",
@@ -230,6 +231,7 @@
     "Your email has failed to resubscribe, please try again": "आपका ईमेल पुनः सदस्यता लेने में विफल रहा, कृपया पुनः प्रयास करें",
     "your inbox": "",
     "Your input helps shape what gets published.": "आपका इनपुट प्रकाशित होने वाली चीज़ों को आकार देने में मदद करता है।",
+    "Your subscription has been canceled and will expire on {expiryDate}.": "",
     "Your subscription will expire on {expiryDate}": "आपकी सदस्यता {expiryDate} को समाप्त हो जाएगी",
     "Your subscription will renew on {renewalDate}": "आपकी सदस्यता {renewalDate} को नवीनीकृत होगी",
     "Your subscription will start on {subscriptionStart}": "आपकी सदस्यता {subscriptionStart} को शुरू होगी"

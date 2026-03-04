@@ -27,6 +27,7 @@
     "Black Friday": "Black Friday",
     "Cancel anytime.": "Peruuta milloin vain",
     "Cancel subscription": "Peruuta tilaus",
+    "Canceled": "",
     "Cancellation reason": "Syy peruutukselle",
     "Change": "Vaihda",
     "Change plan": "Vaihda tilausta",
@@ -230,6 +231,7 @@
     "Your email has failed to resubscribe, please try again": "Tilauksen uusiminen epäonnistui sähköpostillesi. Yritäthän uudelleen.",
     "your inbox": "sähköpostilaatikkoosi",
     "Your input helps shape what gets published.": "Antamasi palautteen avulla muokataan julkaistavaa sisältöä",
+    "Your subscription has been canceled and will expire on {expiryDate}.": "",
     "Your subscription will expire on {expiryDate}": "Tilauksesi päättyy {expiryDate}",
     "Your subscription will renew on {renewalDate}": "Tilauksesi uusiutuu {renewalDate}",
     "Your subscription will start on {subscriptionStart}": "Tilauksesi alkaa {subscriptionStart}"

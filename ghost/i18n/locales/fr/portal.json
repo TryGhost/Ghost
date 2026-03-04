@@ -27,6 +27,7 @@
     "Black Friday": "Black Friday",
     "Cancel anytime.": "Annuler à tout moment.",
     "Cancel subscription": "Annuler l’abonnement",
+    "Canceled": "",
     "Cancellation reason": "Raison de l’annulation",
     "Change": "Changer",
     "Change plan": "Changez d'abonnement",
@@ -230,6 +231,7 @@
     "Your email has failed to resubscribe, please try again": "Votre e-mail n'a pas été pris en compte pour le réabonnement, veuillez réessayer",
     "your inbox": "votre boîte de réception",
     "Your input helps shape what gets published.": "Votre avis aide à améliorer ce qui est publié.",
+    "Your subscription has been canceled and will expire on {expiryDate}.": "",
     "Your subscription will expire on {expiryDate}": "Votre abonnement expirera le {expiryDate}",
     "Your subscription will renew on {renewalDate}": "Votre abonnement sera renouvelé le {renewalDate}",
     "Your subscription will start on {subscriptionStart}": "Votre abonnement débutera le {subscriptionStart}"

@@ -27,6 +27,7 @@
     "Black Friday": "Black Friday",
     "Cancel anytime.": "Cancel·la en qualsevol moment.",
     "Cancel subscription": "Cancel·la la subscripció",
+    "Canceled": "",
     "Cancellation reason": "Motiu de la cancel·lació",
     "Change": "Canvia",
     "Change plan": "Canvia pla",
@@ -230,6 +231,7 @@
     "Your email has failed to resubscribe, please try again": "La teva adreça de correu no s'ha pogut tornar a subscriure - torna-ho a intentar",
     "your inbox": "",
     "Your input helps shape what gets published.": "La teva opinió ajuda a definir què es publica.",
+    "Your subscription has been canceled and will expire on {expiryDate}.": "",
     "Your subscription will expire on {expiryDate}": "La teva subscripció caducarà el {expiryDate}",
     "Your subscription will renew on {renewalDate}": "La teva subscripció es renovarà el {renewalDate}",
     "Your subscription will start on {subscriptionStart}": "La teva subscripció començarà el {subscriptionStart}"

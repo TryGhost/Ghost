@@ -27,6 +27,7 @@
     "Black Friday": "Black Friday",
     "Cancel anytime.": "Batalkan kapan saja.",
     "Cancel subscription": "Batalkan langganan",
+    "Canceled": "",
     "Cancellation reason": "Alasan pembatalan",
     "Change": "Ubah",
     "Change plan": "Ubah paket",
@@ -230,6 +231,7 @@
     "Your email has failed to resubscribe, please try again": "Email Anda gagal berlangganan ulang, harap coba lagi",
     "your inbox": "",
     "Your input helps shape what gets published.": "Masukan Anda membantu membentuk apa yang dipublikasikan.",
+    "Your subscription has been canceled and will expire on {expiryDate}.": "",
     "Your subscription will expire on {expiryDate}": "Langganan Anda akan berakhir pada {expiryDate}",
     "Your subscription will renew on {renewalDate}": "Langganan Anda akan diperpanjang pada {renewalDate}",
     "Your subscription will start on {subscriptionStart}": "Langganan Anda akan dimulai pada {subscriptionStart}"

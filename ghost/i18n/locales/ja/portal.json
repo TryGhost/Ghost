@@ -27,6 +27,7 @@
     "Black Friday": "ブラックフライデー",
     "Cancel anytime.": "いつでもキャンセル可能",
     "Cancel subscription": "購読をキャンセル",
+    "Canceled": "",
     "Cancellation reason": "キャンセル理由",
     "Change": "変更",
     "Change plan": "プラン変更",
@@ -230,6 +231,7 @@
     "Your email has failed to resubscribe, please try again": "",
     "your inbox": "",
     "Your input helps shape what gets published.": "あなたの感想を今後の内容の参考にさせていただきます。",
+    "Your subscription has been canceled and will expire on {expiryDate}.": "",
     "Your subscription will expire on {expiryDate}": "あなたの購読は{expiryDate}に期限切れになります。",
     "Your subscription will renew on {renewalDate}": "あなたの購読は{renewalDate}に更新されます。",
     "Your subscription will start on {subscriptionStart}": "あなたの購読は{subscriptionStart}に開始されます。"

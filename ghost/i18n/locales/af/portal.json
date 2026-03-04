@@ -27,6 +27,7 @@
     "Black Friday": "Swart Vrydag",
     "Cancel anytime.": "Kanselleer enige tyd.",
     "Cancel subscription": "Kanselleer inskrywing",
+    "Canceled": "",
     "Cancellation reason": "Kansellasie rede",
     "Change": "Verander",
     "Change plan": "",
@@ -230,6 +231,7 @@
     "Your email has failed to resubscribe, please try again": "",
     "your inbox": "",
     "Your input helps shape what gets published.": "U insette help om te bepaal wat gepubliseer word.",
+    "Your subscription has been canceled and will expire on {expiryDate}.": "",
     "Your subscription will expire on {expiryDate}": "U intekening sal verval op {expiryDate}",
     "Your subscription will renew on {renewalDate}": "U intekening sal hernu op {renewalDate}",
     "Your subscription will start on {subscriptionStart}": "U intekening sal begin op {subscriptionStart}"

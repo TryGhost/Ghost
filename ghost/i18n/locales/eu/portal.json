@@ -27,6 +27,7 @@
     "Black Friday": "Ostiral Beltza",
     "Cancel anytime.": "Utzi nahi duzunean.",
     "Cancel subscription": "Utzi harpidetza",
+    "Canceled": "",
     "Cancellation reason": "Uztearen arrazoia",
     "Change": "Aldatu",
     "Change plan": "Aldatu plana",
@@ -230,6 +231,7 @@
     "Your email has failed to resubscribe, please try again": "Ezin izan da zure ePosta berriro harpidetu, saiatu berriro",
     "your inbox": "",
     "Your input helps shape what gets published.": "Zure ekarpenak argitaratzen denari forma ematen laguntzen digu.",
+    "Your subscription has been canceled and will expire on {expiryDate}.": "",
     "Your subscription will expire on {expiryDate}": "Zure harpidetza {expiryDate}(e)an iraungiko da",
     "Your subscription will renew on {renewalDate}": "Zure harpidetza {renewalDate}(e)an berrituko da",
     "Your subscription will start on {subscriptionStart}": "Zure harpidetza {subscriptionStart}(e)an hasiko da"

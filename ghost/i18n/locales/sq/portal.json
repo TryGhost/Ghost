@@ -27,6 +27,7 @@
     "Black Friday": "E premtja e zeze",
     "Cancel anytime.": "Anullo ne cdo kohe.",
     "Cancel subscription": "Anullo abonimin",
+    "Canceled": "",
     "Cancellation reason": "Arsyeja e anullimit",
     "Change": "Ndrysho",
     "Change plan": "",
@@ -230,6 +231,7 @@
     "Your email has failed to resubscribe, please try again": "",
     "your inbox": "",
     "Your input helps shape what gets published.": "Të dhënat tuaja ndihmojnë në formimin e asaj që publikohet.",
+    "Your subscription has been canceled and will expire on {expiryDate}.": "",
     "Your subscription will expire on {expiryDate}": "Abonimi juaj do te skadoje ne {expiryDate}",
     "Your subscription will renew on {renewalDate}": "Abonimi juaj to te rinovohet ne {renewalDate}",
     "Your subscription will start on {subscriptionStart}": "Abonimi juaj do te filloje ne {subscriptionStart}"

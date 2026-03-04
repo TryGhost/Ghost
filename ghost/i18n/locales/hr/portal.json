@@ -27,6 +27,7 @@
     "Black Friday": "Black Friday",
     "Cancel anytime.": "Otkažite pretplatu bilo kada.",
     "Cancel subscription": "Otkaži pretplatu",
+    "Canceled": "",
     "Cancellation reason": "Razlog za otkazivanje",
     "Change": "Izmjena",
     "Change plan": "Promijeni plan",
@@ -230,6 +231,7 @@
     "Your email has failed to resubscribe, please try again": "Ponovna pretplata nije uspjela, pokušajte ponovno",
     "your inbox": "",
     "Your input helps shape what gets published.": "Vaš doprinos pomaže u oblikovanju sadržaja kojeg objavljujemo.",
+    "Your subscription has been canceled and will expire on {expiryDate}.": "",
     "Your subscription will expire on {expiryDate}": "Vaša pretplata istječe {expiryDate}",
     "Your subscription will renew on {renewalDate}": "Vaša pretplata će se obnoviti {renewalDate}",
     "Your subscription will start on {subscriptionStart}": "Vaša pretplata će početi {subscriptionStart}"

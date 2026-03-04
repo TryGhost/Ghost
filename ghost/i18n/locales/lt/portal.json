@@ -27,6 +27,7 @@
     "Black Friday": "Juodasis penktadienis",
     "Cancel anytime.": "Atšaukite bet kuriuo metu.",
     "Cancel subscription": "Atšaukti prenumeratą",
+    "Canceled": "",
     "Cancellation reason": "Prenumeratos atšaukimo priežastis",
     "Change": "Pakeisti",
     "Change plan": "",
@@ -230,6 +231,7 @@
     "Your email has failed to resubscribe, please try again": "",
     "your inbox": "",
     "Your input helps shape what gets published.": "Jūsų indėlis padeda kurti tai, kas yra viešinama.",
+    "Your subscription has been canceled and will expire on {expiryDate}.": "",
     "Your subscription will expire on {expiryDate}": "Jūsų prenumerata baigsis {expiryDate}",
     "Your subscription will renew on {renewalDate}": "Jūsų prenumerata atsinaujins {renewalDate}",
     "Your subscription will start on {subscriptionStart}": "Jūsų prenumerata prasidės {subscriptionStart}"
