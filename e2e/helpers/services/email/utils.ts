@@ -28,6 +28,20 @@ export function extractMagicLink(emailMessageBody: string, expectedActionInUrl: 
     throw new Error('No magic link found in email');
 }
 
+export function extractVerifiedEmailLink(message: EmailMessageDetailed): string {
+    const text = message.Text || '';
+    // Verification links look like: http://localhost:30000/ghost/#/settings/verified-emails/?verifyEmail=TOKEN
+    const regex = /https?:\/\/[^\s]*#\/settings\/verified-emails\/\?verifyEmail=[^\s]+/gi;
+    const matches = text.match(regex);
+
+    if (!matches || matches.length === 0) {
+        throw new Error('No verified email link found in email');
+    }
+
+    debug(`Found verified email link: ${matches[0]}`);
+    return matches[0];
+}
+
 export function extractPasswordResetLink(message: EmailMessageDetailed): string {
     const html = message.HTML || '';
     const match = html.match(/href="([^"]*\/ghost\/reset\/[^"]+)"/);

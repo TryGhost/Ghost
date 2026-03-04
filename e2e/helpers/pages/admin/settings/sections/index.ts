@@ -5,3 +5,4 @@ export {DesignSection} from './design-section';
 export {MemberWelcomeEmailsSection} from './member-welcome-emails-section';
 export {IntegrationModal, INTEGRATIONS} from './integration-modal';
 export type {IntegrationConfig, IntegrationName} from './integration-modal';
+export {VerifiedEmailSection} from './verified-email-section';
