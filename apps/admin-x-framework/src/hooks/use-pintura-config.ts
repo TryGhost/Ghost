@@ -11,7 +11,7 @@ import {useMemo} from 'react';
  * and CSS loading — this hook only resolves the URLs from settings and host
  * config.
  */
-export default function usePinturaConfig(): { jsUrl: string; cssUrl: string } | null {
+export function usePinturaConfig(): { jsUrl: string; cssUrl: string } | null {
     const {data: configData} = useBrowseConfig();
     const {data: settingsData} = useBrowseSettings();
 
