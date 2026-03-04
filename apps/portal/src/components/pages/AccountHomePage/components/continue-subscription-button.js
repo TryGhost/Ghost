@@ -16,39 +16,31 @@ const ContinueSubscriptionButton = () => {
     if (!subscription.cancel_at_period_end) {
         return null;
     }
-    const label = subscription.cancel_at_period_end ? t('Continue subscription') : t('Cancel subscription');
+    const label = t('Continue subscription');
     const isRunning = ['cancelSubscription:running'].includes(action);
     const disabled = (isRunning) ? true : false;
-    const isPrimary = !!subscription.cancel_at_period_end;
-
-    const CancelNotice = () => {
-        if (!subscription.cancel_at_period_end) {
-            return null;
-        }
-        const currentPeriodEnd = subscription.current_period_end;
-        return (
-            <p className='gh-portal-text-center gh-portal-free-ctatext'>{t(`Your subscription will expire on {expiryDate}`, {expiryDate: getDateString(currentPeriodEnd)})}</p>
-        );
-    };
+    const expiryDate = getDateString(subscription.current_period_end);
 
     return (
         <div className='gh-portal-cancelcontinue-container'>
-            <CancelNotice />
-            <ActionButton
-                onClick={() => {
-                    doAction('continueSubscription', {
-                        subscriptionId: subscription.id
-                    });
-                }}
-                isRunning={isRunning}
-                disabled={disabled}
-                isPrimary={isPrimary}
-                brandColor={brandColor}
-                label={label}
-                style={{
-                    width: '100%'
-                }}
-            />
+            <div className='gh-portal-cancel-banner'>
+                <p>{t('Your subscription has been canceled and will expire on {expiryDate}.', {expiryDate})}</p>
+                <ActionButton
+                    onClick={() => {
+                        doAction('continueSubscription', {
+                            subscriptionId: subscription.id
+                        });
+                    }}
+                    isRunning={isRunning}
+                    disabled={disabled}
+                    isPrimary={true}
+                    brandColor={brandColor}
+                    label={label}
+                    style={{
+                        width: '100%'
+                    }}
+                />
+            </div>
         </div>
     );
 };
