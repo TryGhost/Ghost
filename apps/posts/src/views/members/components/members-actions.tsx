@@ -55,8 +55,8 @@ const MembersActions: React.FC<MembersActionsProps> = ({
     }, [nql]);
 
     const handleAddLabel = useCallback(async (labelIds: string[]) => {
-        for (const labelId of labelIds) {
-            try {
+        try {
+            for (const labelId of labelIds) {
                 await bulkEditAsync({
                     filter: nql || '',
                     all: !nql,
@@ -65,18 +65,19 @@ const MembersActions: React.FC<MembersActionsProps> = ({
                         meta: {label: {id: labelId}}
                     }
                 });
-            } catch {
-                // Swallow individual errors — the mutation may have
-                // succeeded at the API level even if onSuccess threw
             }
+            setShowAddLabelModal(false);
+            toast.success(labelIds.length > 1 ? 'Labels added successfully' : 'Label added successfully');
+        } catch {
+            toast.error('Failed to add label', {
+                description: 'There was a problem applying this label. Please try again.'
+            });
         }
-        setShowAddLabelModal(false);
-        toast.success(labelIds.length > 1 ? 'Labels added successfully' : 'Label added successfully');
     }, [bulkEditAsync, nql]);
 
     const handleRemoveLabel = useCallback(async (labelIds: string[]) => {
-        for (const labelId of labelIds) {
-            try {
+        try {
+            for (const labelId of labelIds) {
                 await bulkEditAsync({
                     filter: nql || '',
                     all: !nql,
@@ -85,13 +86,14 @@ const MembersActions: React.FC<MembersActionsProps> = ({
                         meta: {label: {id: labelId}}
                     }
                 });
-            } catch {
-                // Swallow individual errors — the mutation may have
-                // succeeded at the API level even if onSuccess threw
             }
+            setShowRemoveLabelModal(false);
+            toast.success(labelIds.length > 1 ? 'Labels removed successfully' : 'Label removed successfully');
+        } catch {
+            toast.error('Failed to remove label', {
+                description: 'There was a problem removing this label. Please try again.'
+            });
         }
-        setShowRemoveLabelModal(false);
-        toast.success(labelIds.length > 1 ? 'Labels removed successfully' : 'Label removed successfully');
     }, [bulkEditAsync, nql]);
 
     const handleUnsubscribe = useCallback(() => {

@@ -76,8 +76,9 @@ const EditRow: React.FC<EditRowProps> = ({label, onSave, onCancel, onDelete, isD
         setIsSaving(true);
         try {
             await onSave(label.id, name.trim());
-        } finally {
             onCancel();
+        } catch {
+            setIsSaving(false);
         }
     };
 
@@ -252,7 +253,10 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
 
     const handleCreate = async () => {
         if (onCreate) {
-            await onCreate(search.trim());
+            const newLabel = await onCreate(search.trim());
+            if (newLabel) {
+                onToggle(newLabel.slug);
+            }
             onSearchClear?.();
         }
     };
@@ -571,11 +575,21 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
     const inputRef = useRef<HTMLInputElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
 
-    const handleToggle = useCallback((slug: string) => {
-        onToggle(slug);
-        setOpen(false);
-        setSearch('');
-    }, [onToggle]);
+    // Close on click outside — no Radix Popover portal needed since this
+    // component lives inside a Dialog. Avoiding the portal keeps the dropdown
+    // in the Dialog's DOM subtree so Dialog scroll-lock doesn't block it.
+    useEffect(() => {
+        if (!open) {
+            return;
+        }
+        const handlePointerDown = (e: PointerEvent) => {
+            if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+                setOpen(false);
+            }
+        };
+        document.addEventListener('pointerdown', handlePointerDown);
+        return () => document.removeEventListener('pointerdown', handlePointerDown);
+    }, [open]);
 
     const handleInputKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Backspace' && !search && selectedSlugs.length > 0) {
@@ -586,20 +600,6 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
             inputRef.current?.blur();
         }
     };
-
-    // Close dropdown when clicking outside
-    useEffect(() => {
-        if (!open) {
-            return;
-        }
-        const handleClickOutside = (e: MouseEvent) => {
-            if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-                setOpen(false);
-            }
-        };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, [open]);
 
     return (
         <div ref={containerRef} className="relative">
@@ -647,7 +647,7 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
                                     onDelete={onDelete}
                                     onEdit={onEdit}
                                     onSearchClear={() => setSearch('')}
-                                    onToggle={handleToggle}
+                                    onToggle={onToggle}
                                 />
                             </CommandList>
                         </Command>
