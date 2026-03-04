@@ -1,5 +1,6 @@
 import React, {useCallback, useMemo, useRef} from 'react';
 import useFeatureFlag from '../../../../hooks/use-feature-flag';
+import usePinturaConfig from '../../../../hooks/use-pintura-config';
 import {KoenigEditorBase, type KoenigInstance, LoadingIndicator} from '@tryghost/admin-x-design-system';
 import {cn} from '@tryghost/shade';
 import {focusKoenigEditorOnBottomClick, useFramework} from '@tryghost/admin-x-framework';
@@ -29,11 +30,13 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
     const editorAPIRef = useRef<KoenigInstance | null>(null);
     const welcomeEmailEditorEnabled = useFeatureFlag('welcomeEmailEditor');
     const {unsplashConfig} = useFramework();
+    const pinturaConfig = usePinturaConfig();
     const {fetchAutocompleteLinks, searchLinks} = useWelcomeEmailLinkSuggestions();
     const fetchEmbed = useKoenigFetchEmbed();
 
     const cardConfig = useMemo(() => ({
         unsplash: unsplashConfig,
+        pinturaConfig,
         fetchEmbed,
         fetchAutocompleteLinks,
         searchLinks,
@@ -41,7 +44,7 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
         image: {
             allowedWidths: ['regular']
         }
-    }), [unsplashConfig, fetchEmbed, fetchAutocompleteLinks, searchLinks]);
+    }), [unsplashConfig, pinturaConfig, fetchEmbed, fetchAutocompleteLinks, searchLinks]);
 
     const baseEditorStyles = cn(
         // Base typography
