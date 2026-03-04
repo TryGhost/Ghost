@@ -1,4 +1,3 @@
-import React, {useCallback, useEffect, useMemo, useReducer, useRef} from 'react';
 import {CompleteStep, ErrorStep, InitStep, MappingStep, ProcessingStep} from './import-members/components';
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, cn} from '@tryghost/shade';
 import {Label} from '@tryghost/admin-x-framework/api/labels';
@@ -7,6 +6,7 @@ import {buildImportResponse} from './import-members/upload';
 import {createInitialImportState, importReducer} from './import-members/reducer';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {parseCSV} from './import-members/csv';
+import {useCallback, useEffect, useMemo, useReducer, useRef} from 'react';
 
 interface ImportMembersModalProps {
     open: boolean;

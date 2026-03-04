@@ -1,4 +1,3 @@
-import React from 'react';
 import {Banner, Button, DialogFooter, Dropzone, LucideIcon} from '@tryghost/shade';
 
 interface InitStepProps {

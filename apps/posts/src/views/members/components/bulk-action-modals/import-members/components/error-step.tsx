@@ -1,4 +1,3 @@
-import React from 'react';
 import {Button, DialogFooter, LucideIcon} from '@tryghost/shade';
 
 interface ErrorStepProps {

@@ -1,4 +1,3 @@
-import React from 'react';
 import {ImportMembersModal} from '@src/views/members/components/bulk-action-modals/import-members-modal';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {fireEvent, render, screen, waitFor} from '@testing-library/react';
