@@ -52,7 +52,7 @@ test.describe('Feed', async () => {
         await page.goto('#/notes');
 
         // Wait for the feed to load
-        const feedList = page.getByRole('list');
+        const feedList = page.getByTestId('feed-list');
         await expect(feedList).toBeVisible();
 
         // Find and click the "New note" button in the sidebar
