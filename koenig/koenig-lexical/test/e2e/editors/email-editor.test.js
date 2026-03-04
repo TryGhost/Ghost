@@ -157,7 +157,7 @@ test.describe('Koenig Editor with email template nodes', async function () {
             const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
 
             await focusEditor(page);
-            await page.keyboard.type('image! ');
+            await insertCard(page, {cardName: 'image'});
 
             const [fileChooser] = await Promise.all([
                 page.waitForEvent('filechooser'),
