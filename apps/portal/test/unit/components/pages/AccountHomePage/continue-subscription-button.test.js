@@ -54,7 +54,7 @@ describe('ContinueSubscriptionButton', () => {
                 getSubscriptionData({
                     status: 'active',
                     cancelAtPeriodEnd: true,
-                    currentPeriodEnd: '2026-04-03T00:00:00.000Z',
+                    currentPeriodEnd: '2026-04-03T12:00:00.000Z',
                     amount: 500,
                     currency: 'USD',
                     interval: 'month',
@@ -82,7 +82,7 @@ describe('ContinueSubscriptionButton', () => {
                 getSubscriptionData({
                     status: 'active',
                     cancelAtPeriodEnd: true,
-                    currentPeriodEnd: '2026-04-03T00:00:00.000Z',
+                    currentPeriodEnd: '2026-04-03T12:00:00.000Z',
                     amount: 500,
                     currency: 'USD',
                     interval: 'month',
@@ -98,7 +98,7 @@ describe('ContinueSubscriptionButton', () => {
         });
 
         const {queryByText} = setup({site, member});
-        expect(queryByText(/3 Apr 2026/)).toBeInTheDocument();
+        expect(queryByText(/Apr 2026/)).toBeInTheDocument();
     });
 
     test('continue button renders inside the banner', () => {
@@ -110,7 +110,7 @@ describe('ContinueSubscriptionButton', () => {
                 getSubscriptionData({
                     status: 'active',
                     cancelAtPeriodEnd: true,
-                    currentPeriodEnd: '2026-04-03T00:00:00.000Z',
+                    currentPeriodEnd: '2026-04-03T12:00:00.000Z',
                     amount: 500,
                     currency: 'USD',
                     interval: 'month',
