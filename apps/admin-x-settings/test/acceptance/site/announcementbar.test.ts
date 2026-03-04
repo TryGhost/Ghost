@@ -22,7 +22,7 @@ test.describe('Announcement Bar', async () => {
 
         const section = page.getByTestId('announcement-bar');
 
-        await section.getByRole('button', {name: 'Customize'}).click();
+        await section.locator('button:visible', {hasText: /^Customize$/}).click();
 
         await page.waitForSelector('[data-testid="announcement-bar-preview-iframe"]');
 

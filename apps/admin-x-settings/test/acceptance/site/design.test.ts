@@ -30,7 +30,7 @@ test.describe('Design settings', async () => {
 
         const section = page.getByTestId('design');
 
-        await section.getByRole('button', {name: 'Customize'}).click();
+        await section.locator('button:visible', {hasText: /^Customize$/}).click();
 
         const modal = page.getByTestId('design-modal');
 
@@ -38,7 +38,7 @@ test.describe('Design settings', async () => {
 
         await expect(modal.frameLocator('[data-testid="theme-preview"] iframe[data-visible=true]').getByText('homepage preview')).toHaveCount(1);
 
-        await modal.getByTestId('design-toolbar').getByRole('tab', {name: 'Post'}).click();
+        await modal.getByTestId('design-toolbar').locator('button:visible', {hasText: /^Post$/}).click();
 
         await expect(modal.frameLocator('[data-testid="theme-preview"] iframe[data-visible=true]').getByText('post preview')).toHaveCount(1);
 
@@ -480,7 +480,7 @@ test.describe('Design settings', async () => {
 
         expect(lastApiRequests.installTheme?.url).toMatch(/\?source=github&ref=TryGhost%2FHeadline/);
 
-        await modal.getByRole('button', {name: 'Change theme'}).click();
+        await modal.locator('button:visible', {hasText: /^Change theme$/}).click();
 
         await modal.getByRole('button', {name: 'Close'}).last().click();
 
@@ -576,7 +576,7 @@ test.describe('Design settings', async () => {
 
         await expect(page.locator('iframe[title="Theme preview"]')).toHaveAttribute('src', 'https://demo.ghost.io/');
 
-        await modal.getByRole('button', {name: 'Change theme'}).click();
+        await modal.locator('button:visible', {hasText: /^Change theme$/}).click();
 
         await modal.getByRole('button', {name: 'Close'}).last().click();
 

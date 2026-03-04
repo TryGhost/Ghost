@@ -33,7 +33,7 @@ test.describe('Recommendations', async () => {
 
         // Open add recommendation modal
         const section = page.getByTestId('recommendations');
-        await section.getByRole('button', {name: 'Add recommendation'}).click();
+        await section.locator('button:visible', {hasText: /^Add recommendation$/}).click();
         const modal = page.getByTestId('add-recommendation-modal');
 
         // Screen 1 - URL
@@ -86,7 +86,7 @@ test.describe('Recommendations', async () => {
         const section = page.getByTestId('recommendations');
 
         // Open add recommendation modal
-        await section.getByRole('button', {name: 'Add recommendation'}).click();
+        await section.locator('button:visible', {hasText: /^Add recommendation$/}).click();
         const modal = page.getByTestId('add-recommendation-modal');
 
         // Add existing URL

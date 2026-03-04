@@ -42,7 +42,7 @@ test.describe('Theme settings', async () => {
         // Edition is the active theme
         await expect(themeSection).toHaveText(/edition/i);
 
-        await themeSection.getByRole('button', {name: 'Change theme'}).click();
+        await themeSection.locator('button:visible', {hasText: /^Change theme$/}).click();
 
         const modal = page.getByTestId('theme-modal');
 
@@ -56,7 +56,7 @@ test.describe('Theme settings', async () => {
         await expect(page.getByTestId('toast-success')).toHaveText(/casper is now your active theme/);
 
         // 2. Go back to themes list
-        await modal.getByRole('button', {name: 'Change theme'}).click();
+        await modal.locator('button:visible', {hasText: /^Change theme$/}).click();
 
         // 3. Try to update Edition (which is already installed, should trigger overwrite)
         await modal.getByRole('button', {name: /Edition/}).click();
@@ -106,11 +106,11 @@ test.describe('Theme settings', async () => {
 
         const themeSection = page.getByTestId('theme');
 
-        await themeSection.getByRole('button', {name: 'Change theme'}).click();
+        await themeSection.locator('button:visible', {hasText: /^Change theme$/}).click();
 
         const modal = page.getByTestId('theme-modal');
 
-        await modal.getByRole('tab', {name: 'Installed'}).click();
+        await modal.locator('button:visible', {hasText: /^Installed$/}).click();
 
         await expect(modal.getByTestId('theme-list-item')).toHaveCount(2);
 

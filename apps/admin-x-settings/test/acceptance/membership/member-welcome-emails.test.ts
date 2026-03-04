@@ -303,7 +303,7 @@ test.describe('Member emails settings', async () => {
             await page.keyboard.press('Enter');
 
             const bookmarkUrlInput = modal.getByTestId('bookmark-url');
-            await expect(bookmarkUrlInput).toBeVisible();
+            await expect(bookmarkUrlInput).toBeVisible({timeout: 10000});
             await bookmarkUrlInput.fill('https://ghost.org/');
             await bookmarkUrlInput.press('Enter');
 

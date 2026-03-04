@@ -18,7 +18,7 @@ test.describe('Stripe settings', async () => {
 
         const section = page.getByTestId('tiers');
 
-        await section.getByRole('button', {name: 'Connect with Stripe'}).click();
+        await section.locator('button:visible', {hasText: /^Connect with Stripe$/}).click();
 
         const modal = page.getByTestId('stripe-modal');
         await modal.getByRole('button', {name: /I have a Stripe account/}).click();
@@ -66,7 +66,7 @@ test.describe('Stripe settings', async () => {
 
         const section = page.getByTestId('tiers');
 
-        await section.getByRole('button', {name: 'Connect with Stripe'}).click();
+        await section.locator('button:visible', {hasText: /^Connect with Stripe$/}).click();
 
         const modal = page.getByTestId('stripe-modal');
         await modal.getByLabel('Publishable key').fill('pk_test_123');

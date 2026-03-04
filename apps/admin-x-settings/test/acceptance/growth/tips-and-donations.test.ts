@@ -19,7 +19,7 @@ test.describe('Tips and donations', () => {
 
         const section = page.getByTestId('tips-and-donations');
 
-        await expect(page.locator('[data-setting-nav-item] #tips-and-donations')).toBeVisible();
+        await expect(page.locator('[data-setting-nav-item] #tips-and-donations:visible')).toBeVisible();
         await expect(section).toBeVisible();
 
         const suggestedAmountInput = section.getByRole('textbox', {name: 'Suggested amount'});

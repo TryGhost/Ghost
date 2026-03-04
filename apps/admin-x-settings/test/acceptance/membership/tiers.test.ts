@@ -127,7 +127,7 @@ test.describe('Tier settings', async () => {
         await expect(preview).toContainText('$10.01/month');
         await expect(preview).toContainText('New benefit');
 
-        await preview.getByRole('button', {name: 'Yearly'}).click();
+        await preview.locator('button:visible', {hasText: /^Yearly$/}).click();
         await expect(preview).not.toContainText('$10.01/month');
         await expect(preview).toContainText('$100/year');
         await expect(preview).toContainText('17% discount');
@@ -236,7 +236,7 @@ test.describe('Tier settings', async () => {
         const section = page.getByTestId('tiers');
 
         // Click on "Connect with Stripe" button
-        await section.getByRole('button', {name: 'Connect with Stripe'}).click();
+        await section.locator('button:visible', {hasText: /^Connect with Stripe$/}).click();
 
         // Wait for limit modal to appear (limit check happens in useEffect)
         await page.waitForSelector('[data-testid="limit-modal"]', {timeout: 10000});
@@ -284,7 +284,7 @@ test.describe('Tier settings', async () => {
         const section = page.getByTestId('tiers');
 
         // Click on Stripe button (different text, as it's already connected)
-        await section.getByRole('button', {name: 'Connected to Stripe'}).click();
+        await section.locator('button:visible', {hasText: /^Connected to Stripe$/}).click();
 
         // Limit modal should not be visible
         await expect(page.getByTestId('limit-modal')).not.toBeVisible();
