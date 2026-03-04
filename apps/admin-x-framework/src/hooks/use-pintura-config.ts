@@ -1,7 +1,7 @@
-import {type JSONValue, useBrowseConfig} from '../api/config';
+import {useMemo} from 'react';
+import {useBrowseConfig} from '../api/config';
 import {getSettingValues, useBrowseSettings} from '../api/settings';
 import {getGhostPaths} from '../utils/helpers';
-import {useMemo} from 'react';
 
 const parseOptionalString = (value: unknown): undefined | string => {
     switch (typeof value) {
@@ -11,24 +11,6 @@ const parseOptionalString = (value: unknown): undefined | string => {
     default:
         throw new TypeError('Expected value to be undefined or a string');
     }
-};
-
-const parsePinturaConfig = (pinturaConfig: undefined | JSONValue): {
-    js: undefined | string,
-    css: undefined | string
-} => {
-    if (pinturaConfig === undefined) {
-        return {js: undefined, css: undefined};
-    }
-
-    if (pinturaConfig && typeof pinturaConfig === 'object' && !Array.isArray(pinturaConfig) && !(pinturaConfig instanceof Date)) {
-        return {
-            js: parseOptionalString(pinturaConfig.js),
-            css: parseOptionalString(pinturaConfig.css)
-        };
-    }
-
-    throw new TypeError('Pintura config is of an unexpected type');
 };
 
 const resolveUrl = (url: string): string => {
@@ -52,7 +34,7 @@ export function usePinturaConfig(): { jsUrl: string; cssUrl: string } | null {
     const {data: settingsData} = useBrowseSettings();
 
     const config = configData?.config;
-    const pinturaConfig = parsePinturaConfig(config?.pintura);
+    const pinturaConfig = config?.hostSettings?.pintura;
     const settings = settingsData?.settings ?? null;
 
     const [isEnabled, fallbackJsUrl, fallbackCssUrl] = getSettingValues<unknown>(settings, [

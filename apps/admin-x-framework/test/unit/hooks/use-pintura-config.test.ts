@@ -80,9 +80,11 @@ describe('usePinturaConfig', () => {
         mockUseBrowseConfig.mockReturnValue({
             data: {
                 config: {
-                    pintura: {
-                        js: 'https://config.example.com/pintura.js',
-                        css: 'https://config.example.com/pintura.css'
+                    hostSettings: {
+                        pintura: {
+                            js: 'https://config.example.com/pintura.js',
+                            css: 'https://config.example.com/pintura.css'
+                        }
                     }
                 }
             }
@@ -101,9 +103,11 @@ describe('usePinturaConfig', () => {
         mockUseBrowseConfig.mockReturnValue({
             data: {
                 config: {
-                    pintura: {
-                        js: '/pintura/pintura-umd.js',
-                        css: '/pintura/pintura.css'
+                    hostSettings: {
+                        pintura: {
+                            js: '/pintura/pintura-umd.js',
+                            css: '/pintura/pintura.css'
+                        }
                     }
                 }
             }
