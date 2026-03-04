@@ -9,3 +9,6 @@
 # Tinybird Analytics
 # Tinybird data pipelines and services require review from designated owners
 **/tinybird/ @9larsons @cmraible @evanhahn @troyciesco
+
+# @tryghost/parse-email-address
+/ghost/parse-email-address/ @EvanHahn
