@@ -18,7 +18,7 @@ const ContinueSubscriptionButton = () => {
         return null;
     }
     const label = t('Continue subscription');
-    const isRunning = ['cancelSubscription:running'].includes(action);
+    const isRunning = ['continueSubscription:running'].includes(action);
     const disabled = (isRunning) ? true : false;
     const expiryDate = getDateString(subscription.current_period_end);
 
