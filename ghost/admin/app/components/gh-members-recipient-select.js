@@ -1,5 +1,4 @@
 import Component from '@glimmer/component';
-import flattenGroupedOptions from 'ghost-admin/utils/flatten-grouped-options';
 import {action} from '@ember/object';
 import {isBlank} from '@ember/utils';
 import {inject as service} from '@ember/service';
@@ -54,28 +53,16 @@ export default class GhMembersRecipientSelect extends Component {
         return this.forceSpecificChecked || this.specificFilters.size > 0;
     }
 
-    get specificOptions() {
-        const options = [...this._tierOptions];
-        const labels = this.labelsManager.labels;
-
-        if (labels.length > 0) {
-            options.push({
-                groupName: 'Labels',
-                options: labels.map(label => ({
-                    name: label.name,
-                    segment: `label:${label.slug}`,
-                    count: label.count?.members,
-                    class: 'segment-label'
-                }))
-            });
-        }
-
-        return options;
+    get hasSpecificOptions() {
+        return this._tierOptions.length > 0 || this.labelsManager.labels.length > 0;
     }
 
-    get selectedSpecificOptions() {
-        return flattenGroupedOptions(this.specificOptions)
-            .filter(o => this.specificFilters.has(o.segment));
+    get nonLabelOptions() {
+        return this._tierOptions;
+    }
+
+    get selectedSpecificSegments() {
+        return Array.from(this.specificFilters);
     }
 
     @action
@@ -155,51 +142,9 @@ export default class GhMembersRecipientSelect extends Component {
         this.args.onChange?.(newFilter);
     }
 
-    get useServerSideSearch() {
-        return !this.labelsManager.hasLoadedAll;
-    }
-
-    @task({restartable: true})
-    *searchSpecificOptionsTask(term) {
-        const results = [];
-        const selectedSegments = this.specificFilters;
-        const lowerTerm = term.toLowerCase();
-
-        // Client-side filter tiers
-        for (const group of this._tierOptions) {
-            for (const opt of group.options) {
-                if (opt.name.toLowerCase().includes(lowerTerm) && !selectedSegments.has(opt.segment)) {
-                    results.push(opt);
-                }
-            }
-        }
-
-        // Server-side search labels
-        const labels = yield this.labelsManager.searchLabelsTask.perform(term);
-        labels.forEach((label) => {
-            const segment = `label:${label.slug}`;
-            if (!selectedSegments.has(segment)) {
-                results.push({
-                    name: label.name,
-                    segment,
-                    count: label.count?.members,
-                    class: 'segment-label'
-                });
-            }
-        });
-
-        return results;
-    }
-
-    @task({drop: true})
-    *loadMoreLabelsTask() {
-        yield this.labelsManager.loadMoreTask.perform();
-    }
-
     @task
     *fetchSpecificOptionsTask() {
-        // fetch first page of labels (labels are last so infinite scroll works)
-        // TODO: add `include: 'count.members` to query once API is fixed
+        // fetch first page of labels for "Specific people" checkbox visibility
         yield this.labelsManager.loadMoreTask.perform();
 
         // fetch all tiers w̶i̶t̶h̶ c̶o̶u̶n̶t̶s̶

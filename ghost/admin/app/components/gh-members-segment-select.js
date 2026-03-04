@@ -7,7 +7,6 @@ import {tracked} from '@glimmer/tracking';
 export default class GhMembersSegmentSelect extends Component {
     @service store;
     @service feature;
-    @service labelsManager;
 
     @tracked _baseOptions = [];
 
@@ -20,108 +19,29 @@ export default class GhMembersSegmentSelect extends Component {
         this.fetchOptionsTask.perform();
     }
 
-    get _options() {
-        const options = [...this._baseOptions];
-        const labels = this.labelsManager.labels;
-
-        if (labels.length > 0 && !this.args.hideLabels) {
-            options.push({
-                groupName: 'Labels',
-                options: labels.map(label => ({
-                    name: label.name,
-                    segment: `label:${label.slug}`,
-                    count: label.count?.members,
-                    class: 'segment-label'
-                }))
-            });
-        }
-
-        return options;
-    }
-
-    get options() {
+    get nonLabelOptions() {
         if (this.args.hideOptionsWhenAllSelected) {
-            const selectedSegments = this.selectedOptions.mapBy('segment');
-            if (selectedSegments.includes('status:free') && selectedSegments.includes('status:-free')) {
-                return this._options.filter(option => !option.groupName);
+            const segments = (this.args.segment || '').split(',');
+            if (segments.includes('status:free') && segments.includes('status:-free')) {
+                return this._baseOptions.filter(option => !option.groupName);
             }
         }
 
-        return this._options;
+        return this._baseOptions;
     }
 
-    get flatOptions() {
-        const options = [];
-
-        function getOptions(option) {
-            if (option.options) {
-                return option.options.forEach(getOptions);
-            }
-
-            options.push(option);
-        }
-
-        this._options.forEach(getOptions);
-
-        return options;
+    get selectedSegments() {
+        return (this.args.segment || '').split(',').filter(Boolean);
     }
 
-    get selectedOptions() {
-        const segments = (this.args.segment || '').split(',');
-        return this.flatOptions.filter(option => segments.includes(option.segment));
+    get hideLabelsComputed() {
+        return !!this.args.hideLabels;
     }
 
     @action
     setSegment(options) {
         const segment = options.mapBy('segment').join(',') || null;
         this.args.onChange?.(segment);
-    }
-
-    get useServerSideSearch() {
-        return !this.labelsManager.hasLoadedAll;
-    }
-
-    @task({restartable: true})
-    *searchOptionsTask(term) {
-        const results = [];
-        const selectedSegments = new Set((this.args.segment || '').split(','));
-        const lowerTerm = term.toLowerCase();
-
-        // Client-side filter non-label options (statuses, tiers, offers)
-        for (const item of this._baseOptions) {
-            if (item.options) {
-                for (const opt of item.options) {
-                    if (opt.name.toLowerCase().includes(lowerTerm) && !selectedSegments.has(opt.segment)) {
-                        results.push(opt);
-                    }
-                }
-            } else if (item.name.toLowerCase().includes(lowerTerm) && !selectedSegments.has(item.segment)) {
-                results.push(item);
-            }
-        }
-
-        // Server-side search labels
-        if (!this.args.hideLabels) {
-            const labels = yield this.labelsManager.searchLabelsTask.perform(term);
-            labels.forEach((label) => {
-                const segment = `label:${label.slug}`;
-                if (!selectedSegments.has(segment)) {
-                    results.push({
-                        name: label.name,
-                        segment,
-                        count: label.count?.members,
-                        class: 'segment-label'
-                    });
-                }
-            });
-        }
-
-        return results;
-    }
-
-    @task({drop: true})
-    *loadMoreLabelsTask() {
-        yield this.labelsManager.loadMoreTask.perform();
     }
 
     @task
@@ -199,9 +119,5 @@ export default class GhMembersSegmentSelect extends Component {
         }
 
         this._baseOptions = options;
-
-        // fetch first page of labels (labels are last so infinite scroll works)
-        // TODO: add `include: 'count.members` to query once API is fixed
-        yield this.labelsManager.loadMoreTask.perform();
     }
 }
