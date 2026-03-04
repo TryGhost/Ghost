@@ -4,11 +4,12 @@ import {getGhostPaths} from '../utils/helpers';
 import {useMemo} from 'react';
 
 /**
- * Returns a pinturaConfig object ({ jsUrl, cssUrl }) suitable for passing
- * to Koenig's cardConfig, or null when Pintura is not enabled / configured.
+ * Returns the URLs for Pintura, or `null` when Pintura is not
+ * enabled/configured.
  *
- * Koenig handles its own script and CSS loading — this hook only resolves
- * the URLs from settings and host config.
+ * Suitable for passing to Koenig's `cardConfig`. Koenig handles its own script
+ * and CSS loading — this hook only resolves the URLs from settings and host
+ * config.
  */
 export default function usePinturaConfig(): { jsUrl: string; cssUrl: string } | null {
     const {data: configData} = useBrowseConfig();
