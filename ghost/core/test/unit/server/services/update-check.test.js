@@ -303,6 +303,46 @@ describe('Update Check', function () {
             });
         });
 
+        it('preserves custom flag value from update check response', async function () {
+            const notificationsAPIAddStub = sinon.stub().resolves();
+            const usersBrowseStub = sinon.stub().resolves({
+                users: [{
+                    roles: [{
+                        name: 'Owner'
+                    }]
+                }]
+            });
+
+            const updateCheckService = new UpdateCheckService({
+                api: {
+                    users: {
+                        browse: usersBrowseStub
+                    },
+                    notifications: {
+                        add: notificationsAPIAddStub
+                    }
+                },
+                config: {
+                    siteUrl: 'https://localhost:2368/test'
+                },
+                request: requestStub
+            });
+
+            await updateCheckService.createCustomNotification({
+                custom: 0,
+                messages: [{
+                    id: crypto.randomUUID(),
+                    content: '<p>hello</p>',
+                    dismissible: true,
+                    top: true
+                }]
+            });
+
+            notificationsAPIAddStub.calledOnce.should.equal(true);
+            const targetNotification = notificationsAPIAddStub.args[0][0].notifications[0];
+            targetNotification.custom.should.equal(0);
+        });
+
         it('should send an email for critical notification', async function () {
             const notification = {
                 id: 1,
