@@ -1,7 +1,43 @@
-import {useBrowseConfig} from '../api/config';
+import {type JSONValue, useBrowseConfig} from '../api/config';
 import {getSettingValues, useBrowseSettings} from '../api/settings';
 import {getGhostPaths} from '../utils/helpers';
 import {useMemo} from 'react';
+
+const parseOptionalString = (value: unknown): undefined | string => {
+    switch (typeof value) {
+    case 'undefined':
+    case 'string':
+        return value;
+    default:
+        throw new TypeError('Expected value to be undefined or a string');
+    }
+};
+
+const parsePinturaConfig = (pinturaConfig: undefined | JSONValue): {
+    js: undefined | string,
+    css: undefined | string
+} => {
+    if (pinturaConfig === undefined) {
+        return {js: undefined, css: undefined};
+    }
+
+    if (pinturaConfig && typeof pinturaConfig === 'object' && !Array.isArray(pinturaConfig) && !(pinturaConfig instanceof Date)) {
+        return {
+            js: parseOptionalString(pinturaConfig.js),
+            css: parseOptionalString(pinturaConfig.css)
+        };
+    }
+
+    throw new TypeError('Pintura config is of an unexpected type');
+};
+
+const resolveUrl = (url: string): string => {
+    if (url.startsWith('/')) {
+        const {adminRoot} = getGhostPaths();
+        return window.location.origin + adminRoot.replace(/\/$/, '') + url;
+    }
+    return url;
+};
 
 /**
  * Returns the URLs for Pintura, or `null` when Pintura is not
@@ -16,39 +52,30 @@ export function usePinturaConfig(): { jsUrl: string; cssUrl: string } | null {
     const {data: settingsData} = useBrowseSettings();
 
     const config = configData?.config;
+    const pinturaConfig = parsePinturaConfig(config?.pintura);
     const settings = settingsData?.settings ?? null;
 
-    const [pinturaEnabled] = getSettingValues<boolean>(settings, ['pintura']);
-    const [pinturaJsUrl] = getSettingValues<string>(settings, ['pintura_js_url']);
-    const [pinturaCssUrl] = getSettingValues<string>(settings, ['pintura_css_url']);
-
-    const hostPintura = config?.pintura as { js?: string; css?: string } | undefined;
+    const [isEnabled, fallbackJsUrl, fallbackCssUrl] = getSettingValues<unknown>(settings, [
+        'pintura',
+        'pintura_js_url',
+        'pintura_css_url'
+    ]);
+    const configJsUrl = pinturaConfig?.js || parseOptionalString(fallbackJsUrl);
+    const configCssUrl = pinturaConfig?.css || parseOptionalString(fallbackCssUrl);
 
     return useMemo(() => {
-        if (!pinturaEnabled) {
+        if (!isEnabled) {
             return null;
         }
 
-        const jsUrl = resolveUrl(hostPintura?.js || pinturaJsUrl);
-        const cssUrl = resolveUrl(hostPintura?.css || pinturaCssUrl);
-
-        if (!jsUrl || !cssUrl) {
+        if (!configJsUrl || !configCssUrl) {
             return null;
         }
 
-        return {jsUrl, cssUrl};
-    }, [pinturaEnabled, pinturaJsUrl, pinturaCssUrl, hostPintura?.js, hostPintura?.css]);
+        return {
+            jsUrl: resolveUrl(configJsUrl),
+            cssUrl: resolveUrl(configCssUrl)
+        };
+    }, [isEnabled, configJsUrl, configCssUrl]);
 }
 
-function resolveUrl(url: string | null | undefined): string | null {
-    if (!url) {
-        return null;
-    }
-
-    if (url.startsWith('/')) {
-        const {adminRoot} = getGhostPaths();
-        return window.location.origin + adminRoot.replace(/\/$/, '') + url;
-    }
-
-    return url;
-}
