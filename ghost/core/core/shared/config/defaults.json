@@ -6,7 +6,8 @@
         "shutdownTimeout": 60000
     },
     "admin": {
-        "redirects": true
+        "redirects": true,
+        "sessionMaxAge": 15552000000
     },
     "updateCheck": {
         "url": "https://updates.ghost.org",
