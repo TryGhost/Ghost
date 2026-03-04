@@ -139,7 +139,7 @@ test.describe('Custom integrations', async () => {
 
         await modal.getByLabel('Description').fill('Test description');
 
-        await modal.getByRole('button', {name: 'Close'}).first().click({force: true});
+        await modal.getByRole('button', {name: 'Close'}).last().click({force: true});
 
         await expect(page.getByTestId('confirmation-modal')).toHaveText(/leave/i);
 
@@ -190,7 +190,7 @@ test.describe('Custom integrations', async () => {
 
         await modal.getByLabel('Description').fill('Test description');
         await modal.getByRole('button', {name: 'Save'}).click();
-        await modal.getByRole('button', {name: 'Close'}).first().click({force: true});
+        await modal.getByRole('button', {name: 'Close'}).last().click({force: true});
 
         await expect(integrationsSection).toHaveText(/Test description/);
 

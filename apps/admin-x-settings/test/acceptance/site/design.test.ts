@@ -76,7 +76,7 @@ test.describe('Design settings', async () => {
         await accentColorPicker.getByRole('textbox').fill('#cd5786');
         // set timeout of 1000ms to wait for the debounce
         await page.waitForTimeout(1000);
-        await modal.getByRole('button', {name: 'Close'}).first().click({force: true});
+        await modal.getByRole('button', {name: 'Close'}).last().click({force: true});
 
         await expect(page.getByTestId('confirmation-modal')).toHaveText(/leave/i);
 
@@ -92,7 +92,7 @@ test.describe('Design settings', async () => {
 
         await modal.getByLabel('Email signup text').fill('test');
 
-        await modal.getByRole('button', {name: 'Close'}).first().click({force: true});
+        await modal.getByRole('button', {name: 'Close'}).last().click({force: true});
 
         await expect(page.getByTestId('confirmation-modal')).toHaveText(/leave/i);
 
@@ -482,7 +482,7 @@ test.describe('Design settings', async () => {
 
         await modal.getByRole('button', {name: 'Change theme'}).click();
 
-        await modal.getByRole('button', {name: 'Close'}).first().click({force: true});
+        await modal.getByRole('button', {name: 'Close'}).last().click({force: true});
 
         const designSection = page.getByTestId('design');
 
@@ -578,7 +578,7 @@ test.describe('Design settings', async () => {
 
         await modal.getByRole('button', {name: 'Change theme'}).click();
 
-        await modal.getByRole('button', {name: 'Close'}).first().click({force: true});
+        await modal.getByRole('button', {name: 'Close'}).last().click({force: true});
 
         const designSection = page.getByTestId('design');
 

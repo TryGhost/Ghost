@@ -50,7 +50,7 @@ test.describe('First Promoter integration', async () => {
         const fpToggle = fpModal.getByRole('switch');
         await fpToggle.click();
 
-        await fpModal.getByRole('button', {name: 'Close'}).first().click({force: true});
+        await fpModal.getByRole('button', {name: 'Close'}).last().click({force: true});
 
         await expect(page.getByTestId('confirmation-modal')).toHaveText(/leave/i);
 
