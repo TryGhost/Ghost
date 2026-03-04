@@ -128,7 +128,7 @@
             <GhLoadingSpinner />
         </div>
     {{else}}
-        <section class="view-container {{if (or (not this.members) (lt this.members.length 6)) "members-list-container-stretch"}}">
+        <section class="view-container members-list-container {{if (or (not this.members) (lt this.members.length 6)) "members-list-container-stretch"}}">
             {{#if this.members}}
                 <div class="gh-list-scrolling {{if (lt this.members.length 6) "gh-list-with-helpsection"}}" data-test-table="members">
                     <table class="gh-list">
