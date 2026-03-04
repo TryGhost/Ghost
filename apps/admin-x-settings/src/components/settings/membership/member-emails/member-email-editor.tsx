@@ -41,7 +41,7 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
         image: {
             allowedWidths: ['regular']
         },
-        visibilitySettings: 'none',
+        visibilitySettings: 'none'
     }), [unsplashConfig, fetchEmbed, fetchAutocompleteLinks, searchLinks]);
 
     const baseEditorStyles = cn(
