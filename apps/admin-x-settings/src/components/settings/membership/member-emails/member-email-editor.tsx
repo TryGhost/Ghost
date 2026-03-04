@@ -69,6 +69,8 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
         '[&_:is(hr)]:pt-0',
         // Paragraph spacing & bold
         '[&_p]:mb-4 [&_strong]:font-semibold',
+        // Keep settings panel copy compact
+        '[&_[data-kg-settings-panel]_p]:!mb-0',
         // Nested-editor (callout, etc.) fixes: align placeholder with text
         // 1. Override placeholder font/size/line-height to match the <p> styles
         '[&_.not-kg-prose>div]:!font-inter [&_.not-kg-prose>div]:!tracking-tight [&_.not-kg-prose>div]:!text-xl [&_.not-kg-prose>div]:!leading-[1.6]',
