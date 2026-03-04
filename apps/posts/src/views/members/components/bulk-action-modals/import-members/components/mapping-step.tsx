@@ -1,4 +1,3 @@
-import React from 'react';
 import {Button, DialogFooter, LoadingIndicator, LucideIcon, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, cn} from '@tryghost/shade';
 import {FIELD_MAPPINGS, MembersFieldMapping} from '../mapping';
 

@@ -1,4 +1,3 @@
-import React from 'react';
 import {Button, DialogFooter} from '@tryghost/shade';
 import {ImportResponse} from '../state';
 
