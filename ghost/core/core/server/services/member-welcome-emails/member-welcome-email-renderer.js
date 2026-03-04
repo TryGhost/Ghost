@@ -128,6 +128,7 @@ class MemberWelcomeEmailRenderer {
             siteUrl: siteSettings.url,
             accentColor,
             accentContrastColor,
+            dividerColor: '#e0e7eb',
             backgroundIsDark: false,
             hasRoundedImageCorners: false,
             sectionTitleColor: null,
