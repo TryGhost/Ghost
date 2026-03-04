@@ -24,13 +24,15 @@ const ReplyToEmailField: React.FC<{
     clearError: (field: string) => void;
 }> = ({newsletter, updateNewsletter, errors, clearError}) => {
     const {settings, config} = useGlobalData();
-    const [defaultEmailAddress, supportEmailAddress] = getSettingValues<string>(settings, ['default_email_address', 'support_email_address']);
+    const [defaultEmailAddress, supportEmailAddress, siteWideSenderEmail, siteWideSenderReplyTo] = getSettingValues<string>(settings, ['default_email_address', 'support_email_address', 'email_default_sender_email', 'email_default_sender_reply_to']);
+
+    const effectiveDefaultEmail = siteWideSenderEmail || defaultEmailAddress;
 
     // When editing the senderReplyTo, we use a state, so we don't cause jumps when the 'rendering' method decides to change the value
     // Because 'newsletter' 'support' or an empty value can be mapped to a default value, we don't want those changes to happen when entering text
-    const [senderReplyTo, setSenderReplyTo] = useState(renderReplyToEmail(newsletter, config, supportEmailAddress, defaultEmailAddress) || '');
+    const [senderReplyTo, setSenderReplyTo] = useState(renderReplyToEmail(newsletter, config, supportEmailAddress, effectiveDefaultEmail) || siteWideSenderReplyTo || '');
 
-    let newsletterAddress = renderSenderEmail(newsletter, config, defaultEmailAddress);
+    let newsletterAddress = renderSenderEmail(newsletter, config, effectiveDefaultEmail);
 
     const onChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         setSenderReplyTo(e.target.value);
@@ -39,7 +41,7 @@ const ReplyToEmailField: React.FC<{
 
     const onBlur = () => {
         // Update the senderReplyTo to the rendered value again
-        const rendered = renderReplyToEmail(newsletter, config, supportEmailAddress, defaultEmailAddress) || '';
+        const rendered = renderReplyToEmail(newsletter, config, supportEmailAddress, effectiveDefaultEmail) || siteWideSenderReplyTo || '';
         setSenderReplyTo(rendered);
     };
 
@@ -52,11 +54,8 @@ const ReplyToEmailField: React.FC<{
                     id: newsletter.id,
                     property: 'sender_reply_to'
                 }}
-                placeholder={newsletterAddress || 'Reply-to email'}
-                specialOptions={[
-                    {value: 'newsletter', label: 'Newsletter address'},
-                    {value: 'support', label: 'Support address'}
-                ]}
+                placeholder={siteWideSenderReplyTo || newsletterAddress || 'Reply-to email'}
+                sendingDomain={sendingDomain(config)}
                 title="Reply-to email"
                 value={newsletter.sender_reply_to}
                 onChange={(value) => {
@@ -95,11 +94,13 @@ const Sidebar: React.FC<{
     const {mutateAsync: editNewsletter} = useEditNewsletter();
     const limiter = useLimiter();
     const {settings, config, siteData} = useGlobalData();
-    const [icon, defaultEmailAddress] = getSettingValues<string>(settings, ['icon', 'default_email_address']);
+    const [icon, defaultEmailAddress, siteWideSenderName, siteWideSenderEmail] = getSettingValues<string>(settings, ['icon', 'default_email_address', 'email_default_sender_name', 'email_default_sender_email']);
     const {mutateAsync: uploadImage} = useUploadImage();
     const [selectedTab, setSelectedTab] = useState('generalSettings');
     const {localSettings} = useSettingGroup();
     const [siteTitle] = getSettingValues(localSettings, ['title']) as string[];
+    const senderNamePlaceholder = siteWideSenderName || siteTitle || '';
+    const senderEmailPlaceholder = siteWideSenderEmail || defaultEmailAddress || '';
     const handleError = useHandleError();
     const {data: {newsletters: apiNewsletters} = {}} = useBrowseNewsletters();
     const commentsEnabled = ['all', 'paid'].includes(getSettingValue(settings, 'comments_enabled') || '');
@@ -225,7 +226,8 @@ const Sidebar: React.FC<{
                     id: newsletter.id,
                     property: 'sender_email'
                 }}
-                placeholder={defaultEmailAddress || 'Sender email'}
+                placeholder={senderEmailPlaceholder || 'Sender email'}
+                sendingDomain={sendingDomain(config)}
                 title="Sender email address"
                 value={newsletter.sender_email || ''}
                 onChange={(value) => {
@@ -284,7 +286,7 @@ const Sidebar: React.FC<{
                     <TextArea maxLength={2000} rows={2} title="Description" value={newsletter.description || ''} onChange={e => updateNewsletter({description: e.target.value})} />
                 </Form>
                 <Form className='mt-6' gap='sm' margins='lg' title='Email info'>
-                    <TextField maxLength={191} placeholder={siteTitle} title="Sender name" value={newsletter.sender_name || ''} onChange={e => updateNewsletter({sender_name: e.target.value})} />
+                    <TextField maxLength={191} placeholder={senderNamePlaceholder} title="Sender name" value={newsletter.sender_name || ''} onChange={e => updateNewsletter({sender_name: e.target.value})} />
                     {renderSenderEmailField()}
                     <ReplyToEmailField clearError={clearError} errors={errors} newsletter={newsletter} updateNewsletter={updateNewsletter} validate={validate} />
                 </Form>
@@ -428,7 +430,7 @@ const Sidebar: React.FC<{
                             label={
                                 <div className='flex flex-col gap-0.5'>
                                     <span className='text-sm md:text-base'>Promote independent publishing</span>
-                                    <span className='text-[11px] leading-tight text-grey-700 md:text-xs md:leading-tight'>Show you&apos;re a part of the indie publishing movement with a small badge in the footer</span>
+                                    <span className='text-grey-700 text-[11px] leading-tight md:text-xs md:leading-tight'>Show you&apos;re a part of the indie publishing movement with a small badge in the footer</span>
                                 </div>
                             }
                             labelStyle='value'

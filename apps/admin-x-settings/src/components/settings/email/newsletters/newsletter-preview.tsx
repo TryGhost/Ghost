@@ -8,7 +8,7 @@ import {useGlobalData} from '../../../providers/global-data-provider';
 
 const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => {
     const {currentUser, settings, siteData, config} = useGlobalData();
-    const [title, icon, commentsEnabled, supportEmailAddress, defaultEmailAddress] = getSettingValues<string>(settings, ['title', 'icon', 'comments_enabled', 'support_email_address', 'default_email_address']);
+    const [title, icon, commentsEnabled, supportEmailAddress, defaultEmailAddress, siteWideSenderName, siteWideSenderEmail, siteWideSenderReplyTo] = getSettingValues<string>(settings, ['title', 'icon', 'comments_enabled', 'support_email_address', 'default_email_address', 'email_default_sender_name', 'email_default_sender_email', 'email_default_sender_reply_to']);
 
     let headerTitle: string | null = null;
     if (newsletter.show_header_title) {
@@ -197,9 +197,9 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
         headerTitle={headerTitle}
         imageCorners={newsletter.image_corners || 'square'}
         linkStyle={newsletter.link_style || 'underline'}
-        senderEmail={renderSenderEmail(newsletter, config, defaultEmailAddress)}
-        senderName={newsletter.sender_name || title}
-        senderReplyTo={renderReplyToEmail(newsletter, config, supportEmailAddress, defaultEmailAddress)}
+        senderEmail={renderSenderEmail(newsletter, config, siteWideSenderEmail || defaultEmailAddress)}
+        senderName={newsletter.sender_name || siteWideSenderName || title}
+        senderReplyTo={renderReplyToEmail(newsletter, config, supportEmailAddress, siteWideSenderEmail || defaultEmailAddress) || siteWideSenderReplyTo}
         showBadge={newsletter.show_badge}
         showCommentCta={showCommentCta}
         showExcerpt={newsletter.show_excerpt}
