@@ -45,7 +45,7 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
 
     const baseEditorStyles = cn(
         // Base typography
-        'text-[1.6rem] leading-[1.6] tracking-[-0.01em]',
+        'text-[1.6rem] leading-[1.6] tracking-[-0.01em] pb-10',
         // Dark mode
         'dark:text-white dark:selection:bg-[rgba(88,101,116,0.99)]',
         // Placeholder styling
