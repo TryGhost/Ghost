@@ -1,4 +1,6 @@
-import {FilterFieldConfig, FilterFieldGroup, FilterOption, LucideIcon} from '@tryghost/shade';
+import LabelFilterRenderer from '@src/components/label-picker/label-filter-renderer';
+import React from 'react';
+import {CustomRendererProps, FilterFieldConfig, FilterFieldGroup, FilterOption, LucideIcon} from '@tryghost/shade';
 import {Label} from '@tryghost/admin-x-framework/api/labels';
 import {Newsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {Tier} from '@tryghost/admin-x-framework/api/tiers';
@@ -13,9 +15,6 @@ export interface UseMembersFilterConfigOptions {
     emailAnalyticsEnabled?: boolean;
     labelsOptions?: FilterOption[];
     tiersOptions?: FilterOption[];
-    onLabelsSearchChange?: (search: string) => void;
-    labelsSearchValue?: string;
-    labelsLoading?: boolean;
     onTiersSearchChange?: (search: string) => void;
     tiersSearchValue?: string;
     tiersLoading?: boolean;
@@ -113,9 +112,6 @@ export function useMembersFilterConfig({
     emailAnalyticsEnabled = false,
     labelsOptions = [],
     tiersOptions = [],
-    onLabelsSearchChange,
-    labelsSearchValue,
-    labelsLoading = false,
     onTiersSearchChange,
     tiersSearchValue,
     tiersLoading = false,
@@ -168,19 +164,16 @@ export function useMembersFilterConfig({
             basicFields.push({
                 key: 'label',
                 label: 'Label',
-                type: 'multiselect',
+                type: 'select',
                 icon: <LucideIcon.Tag className="size-4" />,
                 options: labelsOptions.length > 0 ? labelsOptions : labels.map(l => ({
                     value: l.slug,
                     label: l.name
                 })),
+                customRenderer: props => React.createElement(LabelFilterRenderer, props as CustomRendererProps<string>),
                 defaultOperator: 'is_any_of',
                 hideOperatorSelect: true,
-                autoCloseOnSelect: true,
                 searchable: true,
-                onSearchChange: onLabelsSearchChange,
-                searchValue: labelsSearchValue,
-                isLoading: labelsLoading,
                 className: 'w-64'
             });
         }
@@ -519,9 +512,6 @@ export function useMembersFilterConfig({
         emailAnalyticsEnabled,
         labelsOptions,
         tiersOptions,
-        onLabelsSearchChange,
-        labelsSearchValue,
-        labelsLoading,
         onTiersSearchChange,
         tiersSearchValue,
         tiersLoading,
