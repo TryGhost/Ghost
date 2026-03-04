@@ -1,6 +1,7 @@
 import {AsideNode} from '../nodes/AsideNode';
 import {BookmarkNode} from '../nodes/BookmarkNode';
 import {ButtonNode} from '../nodes/ButtonNode';
+import {CallToActionNode} from '../nodes/CallToActionNode';
 import {CalloutNode} from '../nodes/CalloutNode';
 import {EmailCtaNode} from '../nodes/EmailCtaNode';
 import {EmbedNode} from '../nodes/EmbedNode';
@@ -18,6 +19,7 @@ import {HtmlNode} from '../nodes/HtmlNode';
 import {ImageNode} from '../nodes/ImageNode';
 import {LinkNode} from '@lexical/link';
 import {ListItemNode, ListNode} from '@lexical/list';
+import {ProductNode} from '../nodes/ProductNode';
 
 /**
  * Node set for the email editor. Slimmed down version of the default nodes exempting those that aren't meant for email.
@@ -44,7 +46,9 @@ const EMAIL_EDITOR_NODES = [
     HtmlNode,
     ButtonNode,
     BookmarkNode,
+    CallToActionNode,
     EmailCtaNode,
+    ProductNode,
     EmbedNode
 ];
 

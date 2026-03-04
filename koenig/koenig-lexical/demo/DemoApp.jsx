@@ -16,11 +16,11 @@ import minimalContent from './content/minimal-content.json';
 import {$getRoot, $isDecoratorNode} from 'lexical';
 import {
     BASIC_NODES, BASIC_TRANSFORMERS, BookmarkPlugin,
-    ButtonPlugin, CalloutPlugin, CardMenuPlugin, EMAIL_EDITOR_NODES,
+    ButtonPlugin, CallToActionPlugin, CalloutPlugin, CardMenuPlugin, EMAIL_EDITOR_NODES,
     EMAIL_TRANSFORMERS, EmEnDashPlugin, EmailCtaPlugin, EmbedPlugin, EmojiPickerPlugin,
     HorizontalRulePlugin, HtmlPlugin, ImagePlugin,
     KoenigComposableEditor, KoenigComposer, KoenigEditor, KoenigSelectorPlugin, KoenigSnippetPlugin, ListPlugin, MINIMAL_NODES,
-    MINIMAL_TRANSFORMERS, ReplacementStringsPlugin, RestrictContentPlugin, TKCountPlugin, WordCountPlugin
+    MINIMAL_TRANSFORMERS, ProductPlugin, ReplacementStringsPlugin, RestrictContentPlugin, TKCountPlugin, WordCountPlugin
 } from '../src';
 import {VISIBILITY_SETTINGS} from '../src/utils/visibility';
 import {defaultHeaders as defaultUnsplashHeaders} from './utils/unsplashConfig';
@@ -170,6 +170,7 @@ function DemoEditor({editorType, registerAPI, cursorDidExitAtTop, darkMode, setW
                 <BookmarkPlugin />
                 <ButtonPlugin />
                 <CalloutPlugin />
+                <CallToActionPlugin />
                 <CardMenuPlugin />
                 <EmbedPlugin />
                 <EmailCtaPlugin />
@@ -181,6 +182,7 @@ function DemoEditor({editorType, registerAPI, cursorDidExitAtTop, darkMode, setW
                 <KoenigSelectorPlugin />
                 <KoenigSnippetPlugin />
                 <ListPlugin />
+                <ProductPlugin />
                 <ReplacementStringsPlugin />
                 <WordCountPlugin onChange={setWordCount} />
             </KoenigComposableEditor>

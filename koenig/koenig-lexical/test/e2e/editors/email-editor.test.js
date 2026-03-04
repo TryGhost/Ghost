@@ -223,6 +223,20 @@ test.describe('Koenig Editor with email template nodes', async function () {
             await expect(page.locator('[data-kg-card="embed"]')).toBeVisible();
         });
 
+        test('can insert call to action card via slash menu', async function () {
+            await focusEditor(page);
+            await insertCard(page, {cardName: 'call-to-action'});
+
+            await expect(page.locator('[data-kg-card="call-to-action"]')).toBeVisible();
+        });
+
+        test('can insert product card via slash menu', async function () {
+            await focusEditor(page);
+            await insertCard(page, {cardName: 'product'});
+
+            await expect(page.locator('[data-kg-card="product"]')).toBeVisible();
+        });
+
         test('plus button is shown', async function () {
             await focusEditor(page);
             await expect(page.locator('[data-kg-plus-button]')).toBeVisible();
