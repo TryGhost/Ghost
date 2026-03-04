@@ -17,6 +17,28 @@ module.exports = function getConfigProperties() {
         enableDeveloperExperiments: config.get('enableDeveloperExperiments') || false,
         stripeDirect: config.get('stripeDirect'),
         mailgunIsConfigured: !!(config.get('bulkEmail') && config.get('bulkEmail').mailgun),
+        emailProvider: (() => {
+            const adaptersConfig = config.get('adapters:email');
+            if (adaptersConfig && adaptersConfig.active) {
+                const activeProvider = adaptersConfig.active;
+                const providerConfig = adaptersConfig[activeProvider];
+                return {
+                    active: activeProvider,
+                    isConfigured: !!(providerConfig && Object.keys(providerConfig).length > 0)
+                };
+            }
+            // Fallback to legacy Mailgun configuration
+            if (config.get('bulkEmail') && config.get('bulkEmail').mailgun) {
+                return {
+                    active: 'mailgun',
+                    isConfigured: true
+                };
+            }
+            return {
+                active: null,
+                isConfigured: false
+            };
+        })(),
         emailAnalytics: config.get('emailAnalytics:enabled'),
         hostSettings: config.get('hostSettings'),
         tenor: config.get('tenor'),
