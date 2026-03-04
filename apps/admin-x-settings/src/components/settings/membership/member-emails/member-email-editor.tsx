@@ -4,6 +4,7 @@ import {KoenigEditorBase, type KoenigInstance, LoadingIndicator} from '@tryghost
 import {cn} from '@tryghost/shade';
 import {focusKoenigEditorOnBottomClick, useFramework} from '@tryghost/admin-x-framework';
 import {koenigFileUploadTypes, useKoenigFetchEmbed, useKoenigFileUpload, usePinturaConfig} from '@tryghost/admin-x-framework/hooks';
+import {useGlobalData} from '../../../providers/global-data-provider';
 import {useWelcomeEmailLinkSuggestions} from '../../../../hooks/use-welcome-email-link-suggestions';
 
 export interface MemberEmailsEditorProps {
@@ -30,12 +31,15 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
     const welcomeEmailEditorEnabled = useFeatureFlag('welcomeEmailEditor');
     const {unsplashConfig} = useFramework();
     const pinturaConfig = usePinturaConfig();
+    const {config} = useGlobalData();
     const {fetchAutocompleteLinks, searchLinks} = useWelcomeEmailLinkSuggestions();
     const fetchEmbed = useKoenigFetchEmbed();
+    const tenorConfig = config.tenor?.googleApiKey ? config.tenor : null;
 
     const cardConfig = useMemo(() => ({
         unsplash: unsplashConfig,
         pinturaConfig,
+        tenor: tenorConfig,
         fetchEmbed,
         fetchAutocompleteLinks,
         searchLinks,
@@ -44,7 +48,7 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
             allowedWidths: ['regular']
         },
         visibilitySettings: 'none'
-    }), [unsplashConfig, pinturaConfig, fetchEmbed, fetchAutocompleteLinks, searchLinks]);
+    }), [unsplashConfig, pinturaConfig, tenorConfig, fetchEmbed, fetchAutocompleteLinks, searchLinks]);
 
     const baseEditorStyles = cn(
         // Base typography
