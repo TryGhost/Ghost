@@ -78,7 +78,7 @@ export function RemoveLabelModal({
 
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
-            <DialogContent className="gap-5">
+            <DialogContent className="gap-5" onOpenAutoFocus={e => e.preventDefault()}>
                 <DialogHeader>
                     <DialogTitle>
                         Remove label from {memberCount.toLocaleString()} {memberCount === 1 ? 'member' : 'members'}

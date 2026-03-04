@@ -1,5 +1,6 @@
-import {Label, useBrowseLabels, useCreateLabel, useDeleteLabel, useEditLabel} from '@tryghost/admin-x-framework/api/labels';
+import {Label, LabelsResponseType, useBrowseLabels, useCreateLabel, useDeleteLabel, useEditLabel} from '@tryghost/admin-x-framework/api/labels';
 import {useCallback, useMemo, useRef} from 'react';
+import {useQueryClient} from '@tanstack/react-query';
 
 export interface UseLabelPickerOptions {
     selectedSlugs: string[];
@@ -23,6 +24,7 @@ export function useLabelPicker({
     selectedSlugs,
     onSelectionChange
 }: UseLabelPickerOptions): UseLabelPickerResult {
+    const queryClient = useQueryClient();
     const {data: labelsData, isLoading} = useBrowseLabels({searchParams: {limit: '100'}});
     const labels = useMemo(() => labelsData?.labels || [], [labelsData]);
 
@@ -62,10 +64,28 @@ export function useLabelPicker({
         if (!trimmed || isDuplicateName(trimmed)) {
             return undefined;
         }
-        const result = await createLabelMutation({name: trimmed});
-        const newLabel = result?.labels?.[0];
-        return newLabel;
-    }, [createLabelMutation, isDuplicateName]);
+        try {
+            const result = await createLabelMutation({name: trimmed});
+            const newLabel = result?.labels?.[0];
+            if (newLabel) {
+                onSelectionChange([...selectedSlugsRef.current, newLabel.slug]);
+            }
+            return newLabel;
+        } catch {
+            // mutateAsync may reject even though the API call succeeded
+            // (React Query v4 behavior when onSuccess throws).
+            // The cache was already updated by afterMutate, so look up the label by name.
+            const cachedQueries = queryClient.getQueriesData<LabelsResponseType>(['LabelsResponseType']);
+            for (const [, data] of cachedQueries) {
+                const cachedLabel = data?.labels.find(l => l.name.toLowerCase() === trimmed.toLowerCase());
+                if (cachedLabel) {
+                    onSelectionChange([...selectedSlugsRef.current, cachedLabel.slug]);
+                    return cachedLabel;
+                }
+            }
+            return undefined;
+        }
+    }, [createLabelMutation, isDuplicateName, onSelectionChange, queryClient]);
 
     const editLabel = useCallback(async (id: string, name: string) => {
         const trimmed = name.trim();

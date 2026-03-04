@@ -50,7 +50,7 @@ export function AddLabelModal({
 
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
-            <DialogContent className="gap-5">
+            <DialogContent className="gap-5" onOpenAutoFocus={e => e.preventDefault()}>
                 <DialogHeader>
                     <DialogTitle>
                         Add label to {memberCount.toLocaleString()} {memberCount === 1 ? 'member' : 'members'}

@@ -9,7 +9,6 @@ import {
     CommandList,
     LucideIcon,
     Popover,
-    PopoverAnchor,
     PopoverContent,
     PopoverTrigger
 } from '@tryghost/shade';
@@ -77,9 +76,8 @@ const EditRow: React.FC<EditRowProps> = ({label, onSave, onCancel, onDelete, isD
         setIsSaving(true);
         try {
             await onSave(label.id, name.trim());
+        } finally {
             onCancel();
-        } catch {
-            setIsSaving(false);
         }
     };
 
@@ -254,10 +252,7 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
 
     const handleCreate = async () => {
         if (onCreate) {
-            const newLabel = await onCreate(search.trim());
-            if (newLabel) {
-                onToggle(newLabel.slug);
-            }
+            await onCreate(search.trim());
             onSearchClear?.();
         }
     };
@@ -389,7 +384,6 @@ const LabelPicker: React.FC<LabelPickerProps> = ({
     // --- Default mode (for modals): combobox-like input with chips + dropdown ---
     return (
         <ComboboxPicker
-            align={align}
             canCreateFromSearch={canCreateFromSearch}
             isCreating={isCreating}
             isDuplicateName={isDuplicateName}
@@ -532,7 +526,7 @@ const InlineList: React.FC<InlineListProps> = ({selectedLabels, ...rest}) => {
                     onChange={e => setSearch(e.target.value)}
                 />
             </div>
-            <CommandList>
+            <CommandList className="max-h-64 overflow-y-auto">
                 <LabelListItems
                     {...rest}
                     search={search}
@@ -551,7 +545,6 @@ interface ComboboxPickerProps {
     selectedSlugs: string[];
     onToggle: (slug: string) => void;
     isLoading?: boolean;
-    align?: 'start' | 'end';
     canCreateFromSearch?: (inputValue: string) => boolean;
     onCreate?: (name: string) => Promise<Label | undefined>;
     isCreating?: boolean;
@@ -566,7 +559,6 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
     selectedSlugs,
     onToggle,
     isLoading,
-    align = 'start',
     canCreateFromSearch,
     onCreate,
     isCreating,
@@ -577,6 +569,13 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState('');
     const inputRef = useRef<HTMLInputElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    const handleToggle = useCallback((slug: string) => {
+        onToggle(slug);
+        setOpen(false);
+        setSearch('');
+    }, [onToggle]);
 
     const handleInputKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Backspace' && !search && selectedSlugs.length > 0) {
@@ -588,66 +587,74 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
         }
     };
 
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        if (!open) {
+            return;
+        }
+        const handleClickOutside = (e: MouseEvent) => {
+            if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+                setOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [open]);
+
     return (
-        <Popover open={open} onOpenChange={setOpen}>
-            <PopoverAnchor asChild>
-                <div
-                    className="flex min-h-9 w-full cursor-text flex-wrap items-center gap-1.5 rounded-md border border-transparent bg-gray-150 px-3 py-1 text-sm transition-colors focus-within:border-green focus-within:bg-transparent focus-within:shadow-[0_0_0_2px_rgba(48,207,67,.25)] dark:bg-gray-900"
-                    role="combobox"
-                    onClick={() => {
-                        inputRef.current?.focus();
-                        setOpen(true);
-                    }}
-                >
-                    <SelectedPills labels={selectedLabels} onToggle={onToggle} />
-                    <input
-                        ref={inputRef}
-                        className="min-w-[80px] flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-                        placeholder={selectedLabels.length === 0 ? 'Search labels...' : ''}
-                        value={search}
-                        onChange={(e) => {
-                            setSearch(e.target.value);
-                            if (!open) {
-                                setOpen(true);
-                            }
-                        }}
-                        onFocus={() => setOpen(true)}
-                        onKeyDown={handleInputKeyDown}
-                    />
-                </div>
-            </PopoverAnchor>
-            <PopoverContent
-                align={align}
-                className="w-[var(--radix-popover-trigger-width)] p-0"
-                onOpenAutoFocus={(e) => {
-                    e.preventDefault();
+        <div ref={containerRef} className="relative">
+            <div
+                className="flex min-h-9 w-full cursor-text flex-wrap items-center gap-1.5 rounded-md border border-transparent bg-gray-150 px-3 py-1 text-sm transition-colors focus-within:border-green focus-within:bg-transparent focus-within:shadow-[0_0_0_2px_rgba(48,207,67,.25)] dark:bg-gray-900"
+                role="combobox"
+                onClick={() => {
+                    inputRef.current?.focus();
+                    setOpen(true);
                 }}
             >
-                {isLoading ? (
-                    <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
-                        Loading labels...
-                    </div>
-                ) : (
-                    <Command shouldFilter={false}>
-                        <CommandList>
-                            <LabelListItems
-                                canCreateFromSearch={canCreateFromSearch}
-                                isCreating={isCreating}
-                                isDuplicateName={isDuplicateName}
-                                labels={labels}
-                                search={search}
-                                selectedSlugs={selectedSlugs}
-                                onCreate={onCreate}
-                                onDelete={onDelete}
-                                onEdit={onEdit}
-                                onSearchClear={() => setSearch('')}
-                                onToggle={onToggle}
-                            />
-                        </CommandList>
-                    </Command>
-                )}
-            </PopoverContent>
-        </Popover>
+                <SelectedPills labels={selectedLabels} onToggle={onToggle} />
+                <input
+                    ref={inputRef}
+                    className="min-w-[80px] flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                    placeholder={selectedLabels.length === 0 ? 'Search labels...' : ''}
+                    value={search}
+                    onChange={(e) => {
+                        setSearch(e.target.value);
+                        if (!open) {
+                            setOpen(true);
+                        }
+                    }}
+                    onFocus={() => setOpen(true)}
+                    onKeyDown={handleInputKeyDown}
+                />
+            </div>
+            {open && (
+                <div className="absolute left-0 top-full z-50 mt-1 w-full rounded-md border bg-white shadow-md dark:bg-gray-950">
+                    {isLoading ? (
+                        <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
+                            Loading labels...
+                        </div>
+                    ) : (
+                        <Command shouldFilter={false}>
+                            <CommandList className="max-h-64 overflow-y-auto">
+                                <LabelListItems
+                                    canCreateFromSearch={canCreateFromSearch}
+                                    isCreating={isCreating}
+                                    isDuplicateName={isDuplicateName}
+                                    labels={labels}
+                                    search={search}
+                                    selectedSlugs={selectedSlugs}
+                                    onCreate={onCreate}
+                                    onDelete={onDelete}
+                                    onEdit={onEdit}
+                                    onSearchClear={() => setSearch('')}
+                                    onToggle={handleToggle}
+                                />
+                            </CommandList>
+                        </Command>
+                    )}
+                </div>
+            )}
+        </div>
     );
 };
 
