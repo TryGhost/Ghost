@@ -96,7 +96,7 @@ const EmailSettingRow: React.FC<{
     );
 };
 
-const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
+export const WelcomeEmailsContent: React.FC = () => {
     const {settings, config} = useGlobalData();
     const [siteTitle] = getSettingValues<string>(settings, ['title']);
 
@@ -197,6 +197,42 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const paidEmailForDisplay = paidWelcomeEmail || getDefaultEmail('paid');
 
     return (
+        <SettingGroupContent className="!gap-y-0" columns={1}>
+            <Separator />
+            <EmailSettingRow
+                description='Sent to new free members right after they join your site.'
+                title='Free members'
+            />
+            <EmailPreview
+                automatedEmail={freeEmailForDisplay}
+                emailType='free'
+                enabled={freeWelcomeEmailEnabled}
+                isInitialLoading={isLoading}
+                onEdit={() => handleEditClick('free')}
+                onToggle={() => handleToggle('free')}
+            />
+            {checkStripeEnabled(settings, config) && (
+                <div className='mt-4'>
+                    <EmailSettingRow
+                        description='Sent to new paid members right after they start their subscription.'
+                        title='Paid members'
+                    />
+                    <EmailPreview
+                        automatedEmail={paidEmailForDisplay}
+                        emailType='paid'
+                        enabled={paidWelcomeEmailEnabled}
+                        isInitialLoading={isLoading}
+                        onEdit={() => handleEditClick('paid')}
+                        onToggle={() => handleToggle('paid')}
+                    />
+                </div>
+            )}
+        </SettingGroupContent>
+    );
+};
+
+const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
+    return (
         <TopLevelGroup
             description="Create and manage automated emails for your members"
             keywords={keywords}
@@ -204,37 +240,7 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
             testId='memberemails'
             title='Welcome emails'
         >
-            <SettingGroupContent className="!gap-y-0" columns={1}>
-                <Separator />
-                <EmailSettingRow
-                    description='Sent to new free members right after they join your site.'
-                    title='Free members'
-                />
-                <EmailPreview
-                    automatedEmail={freeEmailForDisplay}
-                    emailType='free'
-                    enabled={freeWelcomeEmailEnabled}
-                    isInitialLoading={isLoading}
-                    onEdit={() => handleEditClick('free')}
-                    onToggle={() => handleToggle('free')}
-                />
-                {checkStripeEnabled(settings, config) && (
-                    <div className='mt-4'>
-                        <EmailSettingRow
-                            description='Sent to new paid members right after they start their subscription.'
-                            title='Paid members'
-                        />
-                        <EmailPreview
-                            automatedEmail={paidEmailForDisplay}
-                            emailType='paid'
-                            enabled={paidWelcomeEmailEnabled}
-                            isInitialLoading={isLoading}
-                            onEdit={() => handleEditClick('paid')}
-                            onToggle={() => handleToggle('paid')}
-                        />
-                    </div>
-                )}
-            </SettingGroupContent>
+            <WelcomeEmailsContent />
         </TopLevelGroup>
     );
 };

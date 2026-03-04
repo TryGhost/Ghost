@@ -1,21 +1,15 @@
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
-import {NewsletterBtn} from './customization/newsletter-btn';
 import {CustomizationTrigger} from './customization/trigger';
+import {WelcomeEmailsContent} from '../membership/member-emails';
 import {useBrowseAutomatedEmails} from '@tryghost/admin-x-framework/api/automated-emails';
-import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
 import {withErrorBoundary} from '@tryghost/admin-x-design-system';
 
 const AutomatedEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {data: {automated_emails: automatedEmails} = {}} = useBrowseAutomatedEmails({
         searchParams: {limit: '1'}
     });
-    const {data: {newsletters: activeNewsletters} = {}} = useBrowseNewsletters({
-        searchParams: {filter: 'status:active', limit: '1'}
-    });
-
     const automationId = automatedEmails?.[0]?.id;
-    const newsletterId = activeNewsletters?.[0]?.id;
 
     const buttons = automationId ? (
         <CustomizationTrigger id={automationId} type='automation' />
@@ -30,7 +24,8 @@ const AutomatedEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
             testId='automated-emails'
             title='Automated emails'
         >
-            {newsletterId && <NewsletterBtn id={newsletterId} />}
+            <WelcomeEmailsContent />
+            {/* {newsletterId && <NewsletterBtn id={newsletterId} />} */}
         </TopLevelGroup>
     );
 };
