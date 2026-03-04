@@ -4,82 +4,81 @@ import {
     DialogContent,
     DialogFooter,
     DialogHeader,
-    DialogTitle,
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue
+    DialogTitle
 } from '@tryghost/shade';
-import {Label} from '@tryghost/admin-x-framework/api/labels';
-import {useState} from 'react';
+import {LabelPicker} from '@src/components/label-picker';
+import {useCallback, useState} from 'react';
+import {useLabelPicker} from '@src/hooks/use-label-picker';
 
 interface AddLabelModalProps {
     open: boolean;
-    labels: Label[];
     memberCount: number;
     onOpenChange: (open: boolean) => void;
-    onConfirm: (labelId: string) => void;
+    onConfirm: (labelIds: string[]) => void;
     isLoading?: boolean;
 }
 
 export function AddLabelModal({
     open,
-    labels,
     memberCount,
     onOpenChange,
     onConfirm,
     isLoading = false
 }: AddLabelModalProps) {
-    const [selectedLabelId, setSelectedLabelId] = useState<string>('');
+    const [selectedSlugs, setSelectedSlugs] = useState<string[]>([]);
 
-    const handleOpenChange = (isOpen: boolean) => {
+    const picker = useLabelPicker({
+        selectedSlugs,
+        onSelectionChange: setSelectedSlugs
+    });
+
+    const handleOpenChange = useCallback((isOpen: boolean) => {
         if (!isOpen) {
-            setSelectedLabelId('');
+            setSelectedSlugs([]);
         }
         onOpenChange(isOpen);
-    };
+    }, [onOpenChange]);
 
     const handleConfirm = () => {
-        if (selectedLabelId) {
-            onConfirm(selectedLabelId);
+        const labelIds = picker.labels
+            .filter(l => selectedSlugs.includes(l.slug))
+            .map(l => l.id);
+        if (labelIds.length > 0) {
+            onConfirm(labelIds);
         }
     };
 
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
-            <DialogContent className="gap-5">
+            <DialogContent className="gap-5" onOpenAutoFocus={e => e.preventDefault()}>
                 <DialogHeader>
                     <DialogTitle>
                         Add label to {memberCount.toLocaleString()} {memberCount === 1 ? 'member' : 'members'}
                     </DialogTitle>
                 </DialogHeader>
 
-                <div className="space-y-2">
-                    <label className="text-sm font-medium">Select label</label>
-                    <Select value={selectedLabelId} onValueChange={setSelectedLabelId}>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Select a label..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {labels.map(label => (
-                                <SelectItem key={label.id} value={label.id}>
-                                    {label.name}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
+                <LabelPicker
+                    canCreateFromSearch={picker.canCreateFromSearch}
+                    isCreating={picker.isCreating}
+                    isDuplicateName={picker.isDuplicateName}
+                    isLoading={picker.isLoading}
+                    labels={picker.labels}
+                    selectedSlugs={picker.selectedSlugs}
+                    onCreate={picker.createLabel}
+                    onDelete={picker.deleteLabel}
+                    onEdit={picker.editLabel}
+                    onToggle={picker.toggleLabel}
+                />
 
                 <DialogFooter>
                     <Button variant="outline" onClick={() => handleOpenChange(false)}>
                         Cancel
                     </Button>
                     <Button
-                        disabled={!selectedLabelId || isLoading}
+                        disabled={selectedSlugs.length === 0 || isLoading}
                         onClick={handleConfirm}
                     >
-                        {isLoading ? 'Adding...' : 'Add label'}
+                        {isLoading ? 'Adding...' : selectedSlugs.length > 1 ? `Add ${selectedSlugs.length} labels` : 'Add label'}
                     </Button>
                 </DialogFooter>
             </DialogContent>

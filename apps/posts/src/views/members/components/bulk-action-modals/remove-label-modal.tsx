@@ -4,82 +4,106 @@ import {
     DialogContent,
     DialogFooter,
     DialogHeader,
-    DialogTitle,
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue
+    DialogTitle
 } from '@tryghost/shade';
-import {Label} from '@tryghost/admin-x-framework/api/labels';
-import {useState} from 'react';
+import {LabelPicker} from '@src/components/label-picker';
+import {useBrowseMembers} from '@tryghost/admin-x-framework/api/members';
+import {useCallback, useMemo, useState} from 'react';
+import {useLabelPicker} from '@src/hooks/use-label-picker';
 
 interface RemoveLabelModalProps {
     open: boolean;
-    labels: Label[];
     memberCount: number;
+    nql?: string;
     onOpenChange: (open: boolean) => void;
-    onConfirm: (labelId: string) => void;
+    onConfirm: (labelIds: string[]) => void;
     isLoading?: boolean;
 }
 
 export function RemoveLabelModal({
     open,
-    labels,
     memberCount,
+    nql,
     onOpenChange,
     onConfirm,
     isLoading = false
 }: RemoveLabelModalProps) {
-    const [selectedLabelId, setSelectedLabelId] = useState<string>('');
+    const [selectedSlugs, setSelectedSlugs] = useState<string[]>([]);
 
-    const handleOpenChange = (isOpen: boolean) => {
+    // Fetch members matching the current filter to find which labels they have
+    const {data: membersData, isLoading: isMembersLoading} = useBrowseMembers({
+        searchParams: {
+            ...(nql ? {filter: nql} : {}),
+            include: 'labels',
+            limit: 'all',
+            fields: 'id'
+        },
+        enabled: open
+    });
+
+    // Extract unique label slugs from the filtered members
+    const memberLabelSlugs = useMemo(() => {
+        const slugs = new Set<string>();
+        for (const member of membersData?.members || []) {
+            for (const label of member.labels || []) {
+                slugs.add(label.slug);
+            }
+        }
+        return slugs;
+    }, [membersData]);
+
+    const picker = useLabelPicker({
+        selectedSlugs,
+        onSelectionChange: setSelectedSlugs
+    });
+
+    // Filter labels to only those assigned to the filtered members
+    const availableLabels = useMemo(() => picker.labels.filter(l => memberLabelSlugs.has(l.slug)), [picker.labels, memberLabelSlugs]);
+
+    const handleOpenChange = useCallback((isOpen: boolean) => {
         if (!isOpen) {
-            setSelectedLabelId('');
+            setSelectedSlugs([]);
         }
         onOpenChange(isOpen);
-    };
+    }, [onOpenChange]);
 
     const handleConfirm = () => {
-        if (selectedLabelId) {
-            onConfirm(selectedLabelId);
+        const labelIds = picker.labels
+            .filter(l => selectedSlugs.includes(l.slug))
+            .map(l => l.id);
+        if (labelIds.length > 0) {
+            onConfirm(labelIds);
         }
     };
 
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
-            <DialogContent className="gap-5">
+            <DialogContent className="gap-5" onOpenAutoFocus={e => e.preventDefault()}>
                 <DialogHeader>
                     <DialogTitle>
                         Remove label from {memberCount.toLocaleString()} {memberCount === 1 ? 'member' : 'members'}
                     </DialogTitle>
                 </DialogHeader>
 
-                <div className="space-y-2">
-                    <label className="text-sm font-medium">Select label</label>
-                    <Select value={selectedLabelId} onValueChange={setSelectedLabelId}>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Select a label..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {labels.map(label => (
-                                <SelectItem key={label.id} value={label.id}>
-                                    {label.name}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
+                <LabelPicker
+                    isDuplicateName={picker.isDuplicateName}
+                    isLoading={picker.isLoading || isMembersLoading}
+                    labels={availableLabels}
+                    selectedSlugs={picker.selectedSlugs}
+                    onDelete={picker.deleteLabel}
+                    onEdit={picker.editLabel}
+                    onToggle={picker.toggleLabel}
+                />
 
                 <DialogFooter>
                     <Button variant="outline" onClick={() => handleOpenChange(false)}>
                         Cancel
                     </Button>
                     <Button
-                        disabled={!selectedLabelId || isLoading}
+                        disabled={selectedSlugs.length === 0 || isLoading}
                         onClick={handleConfirm}
                     >
-                        {isLoading ? 'Removing...' : 'Remove label'}
+                        {isLoading ? 'Removing...' : selectedSlugs.length > 1 ? `Remove ${selectedSlugs.length} labels` : 'Remove label'}
                     </Button>
                 </DialogFooter>
             </DialogContent>
