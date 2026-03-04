@@ -80,11 +80,10 @@ function MembersListItemStatus({status, tiers}: {status: Member['status']; tiers
 }
 
 function MembersListItemOpenRate({emailOpenRate}: {emailOpenRate: number | null | undefined}) {
+    const isKnown = emailOpenRate !== null && emailOpenRate !== undefined;
     return (
-        <div className="hidden text-sm text-muted-foreground lg:block">
-            {emailOpenRate !== null && emailOpenRate !== undefined
-                ? `${Math.round(emailOpenRate)}%`
-                : 'N/A'}
+        <div className={`hidden text-sm lg:block ${isKnown ? 'text-foreground' : 'text-muted-foreground'}`}>
+            {isKnown ? `${Math.round(emailOpenRate)}%` : 'N/A'}
         </div>
     );
 }
