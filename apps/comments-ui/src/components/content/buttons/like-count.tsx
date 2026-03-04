@@ -1,4 +1,5 @@
 import {ReactComponent as LikeIcon} from '../../../images/icons/like.svg';
+import {formatNumber} from '../../../utils/helpers';
 
 type Props = {
     count: number;
@@ -18,7 +19,7 @@ const LikeCount: React.FC<Props> = ({count, liked}) => {
                     liked ? 'fill-black stroke-black dark:fill-white dark:stroke-white' : 'stroke-black/50 dark:stroke-white/60'
                 }`}
             />
-            {count}
+            {formatNumber(count)}
         </span>
     );
 };
