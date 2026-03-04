@@ -14,7 +14,7 @@ test.describe('Stripe settings', async () => {
             ])}
         }});
 
-        await page.goto('/#/tiers');
+        await page.goto('/#/settings/tiers');
 
         const section = page.getByTestId('tiers');
 
@@ -62,7 +62,7 @@ test.describe('Stripe settings', async () => {
             ])}
         }});
 
-        await page.goto('/#/tiers');
+        await page.goto('/#/settings/tiers');
 
         const section = page.getByTestId('tiers');
 
