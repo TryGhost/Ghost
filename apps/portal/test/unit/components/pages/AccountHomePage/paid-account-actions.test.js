@@ -460,4 +460,60 @@ describe('PaidAccountActions', () => {
             expect(queryByText('$45.00/year — Forever')).toBeInTheDocument();
         });
     });
+
+    describe('Canceled badge', () => {
+        test('displays CANCELED badge when cancel_at_period_end is true', () => {
+            const products = getProductsData({numOfProducts: 1});
+            const site = getSiteData({products, portalProducts: products.map(p => p.id)});
+            const member = getMemberData({
+                paid: true,
+                subscriptions: [
+                    getSubscriptionData({
+                        status: 'active',
+                        cancelAtPeriodEnd: true,
+                        amount: 500,
+                        currency: 'USD',
+                        interval: 'month',
+                        nextPayment: getNextPaymentData({
+                            originalAmount: 500,
+                            amount: 500,
+                            interval: 'month',
+                            currency: 'USD',
+                            discount: null
+                        })
+                    })
+                ]
+            });
+
+            const {queryByText} = setup({site, member});
+            expect(queryByText('Canceled')).toBeInTheDocument();
+        });
+
+        test('does not display CANCELED badge when subscription is active', () => {
+            const products = getProductsData({numOfProducts: 1});
+            const site = getSiteData({products, portalProducts: products.map(p => p.id)});
+            const member = getMemberData({
+                paid: true,
+                subscriptions: [
+                    getSubscriptionData({
+                        status: 'active',
+                        cancelAtPeriodEnd: false,
+                        amount: 500,
+                        currency: 'USD',
+                        interval: 'month',
+                        nextPayment: getNextPaymentData({
+                            originalAmount: 500,
+                            amount: 500,
+                            interval: 'month',
+                            currency: 'USD',
+                            discount: null
+                        })
+                    })
+                ]
+            });
+
+            const {queryByText} = setup({site, member});
+            expect(queryByText('Canceled')).not.toBeInTheDocument();
+        });
+    });
 });
