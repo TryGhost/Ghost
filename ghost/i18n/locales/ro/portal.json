@@ -33,6 +33,7 @@
     "Black Friday": "Black Friday",
     "Cancel anytime.": "Anulează oricând",
     "Cancel subscription": "Anulează abonamentul",
+    "Canceled": "",
     "Cancellation reason": "Motivul anulării",
     "Change": "Schimbă",
     "Change plan": "Modifică planul",
@@ -158,6 +159,7 @@
     "Re-enable emails": "Activează din nou emailurile",
     "Recommendations": "Recomandări",
     "Renews at {price}.": "Se reînnoiește la {price}.",
+    "Resume subscription": "",
     "Retry": "Reîncearcă",
     "Save": "Salvează",
     "Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.": "",
@@ -245,6 +247,7 @@
     "Your email has failed to resubscribe, please try again": "",
     "your inbox": "",
     "Your input helps shape what gets published.": "Contribuția ta ajută la conturarea a ceea ce se publică.",
+    "Your subscription has been canceled and will expire on {expiryDate}.": "",
     "Your subscription will expire on {expiryDate}": "Abonamentul tău va expira pe {expiryDate}",
     "Your subscription will renew on {renewalDate}": "Abonamentul tău se va reînnoi pe {renewalDate}",
     "Your subscription will start on {subscriptionStart}": "Abonamentul tău va începe pe {subscriptionStart}"

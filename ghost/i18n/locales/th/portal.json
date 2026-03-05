@@ -33,6 +33,7 @@
     "Black Friday": "แบล็คฟรายเดย์",
     "Cancel anytime.": "ยกเลิกได้ตลอดเวลา",
     "Cancel subscription": "ยกเลิกการรับสมัครข้อมูล",
+    "Canceled": "",
     "Cancellation reason": "เหตุผลการยกเลิก",
     "Change": "เปลี่ยน",
     "Change plan": "",
@@ -158,6 +159,7 @@
     "Re-enable emails": "เปิดใช้งานอีเมลนี้อีกครั้ง",
     "Recommendations": "รายการแนะนำ",
     "Renews at {price}.": "ต่ออายุที่ {price}",
+    "Resume subscription": "",
     "Retry": "ลองอีกครั้ง",
     "Save": "บันทึก",
     "Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.": "",
@@ -245,6 +247,7 @@
     "Your email has failed to resubscribe, please try again": "",
     "your inbox": "",
     "Your input helps shape what gets published.": "ข้อมูลของคุณ จะช่วยกำหนดสิ่งที่จะได้รับการเผยแพร่ในอนาคต",
+    "Your subscription has been canceled and will expire on {expiryDate}.": "",
     "Your subscription will expire on {expiryDate}": "การรับสมัครข้อมูลของคุณจะหมดอายุในวันที่ {expiryDate}",
     "Your subscription will renew on {renewalDate}": "การรับสมัครข้อมูลของคุณจะต่ออายุในวันที่ {renewalDate}",
     "Your subscription will start on {subscriptionStart}": "การรับสมัครข้อมูลของคุณจะเริ่มในวันที่ {subscriptionStart}"

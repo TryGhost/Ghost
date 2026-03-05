@@ -164,7 +164,12 @@ const PaidAccountActions = () => {
             <>
                 <section>
                     <div className='gh-portal-list-detail'>
-                        <h3>{planLabel}</h3>
+                        <h3>
+                            {planLabel}
+                            {subscription?.cancel_at_period_end && (
+                                <span className="gh-portal-canceled-badge">{t('Canceled')}</span>
+                            )}
+                        </h3>
                         <PlanLabel price={price} isComplimentary={isComplimentary} subscription={subscription} />
                     </div>
                     <PlanUpdateButton isPaid={isPaid} />

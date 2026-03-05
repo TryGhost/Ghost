@@ -33,6 +33,7 @@
     "Black Friday": "Ijumaa ya punguzo (Black Friday)",
     "Cancel anytime.": "Ghairi wakati wowote.",
     "Cancel subscription": "Ghairi usajili",
+    "Canceled": "",
     "Cancellation reason": "Sababu ya kughairi",
     "Change": "Badilisha",
     "Change plan": "",
@@ -158,6 +159,7 @@
     "Re-enable emails": "Washa tena barua pepe",
     "Recommendations": "Mapendekezo",
     "Renews at {price}.": "Inajirudia kwa bei ya {price}.",
+    "Resume subscription": "",
     "Retry": "Jaribu tena",
     "Save": "Hifadhi",
     "Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.": "",
@@ -245,6 +247,7 @@
     "Your email has failed to resubscribe, please try again": "",
     "your inbox": "",
     "Your input helps shape what gets published.": "Maoni yako yanasaidia kuunda yaliyochapishwa.",
+    "Your subscription has been canceled and will expire on {expiryDate}.": "",
     "Your subscription will expire on {expiryDate}": "Usajili wako utaisha tarehe {expiryDate}",
     "Your subscription will renew on {renewalDate}": "Usajili wako utaongezwa tarehe {renewalDate}",
     "Your subscription will start on {subscriptionStart}": "Usajili wako utaanza tarehe {subscriptionStart}"
