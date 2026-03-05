@@ -4,6 +4,7 @@ import MembersFilters from './components/members-filters';
 import MembersHeader from './components/members-header';
 import MembersLayout from './components/members-layout';
 import MembersList from './components/members-list';
+import {buildMembersQueryParams} from './hooks/member-query';
 import React, {useMemo} from 'react';
 import {Button, EmptyIndicator, Header, LoadingIndicator, LucideIcon, cn} from '@tryghost/shade';
 import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
@@ -21,7 +22,7 @@ const BULK_DELETE_RESTRICTED_FILTERS = [
 ];
 
 const Members: React.FC = () => {
-    const {filters, nql, setFilters, isFiltered, clearFilters} = useMembersFilterState();
+    const {filters, nql, search, setFilters, isFiltered, clearFilters} = useMembersFilterState();
     const {data: configData} = useBrowseConfig();
 
     // Check if email analytics is enabled
@@ -34,16 +35,11 @@ const Members: React.FC = () => {
 
     // Build search params for the API query, merging with defaults so we don't lose include/limit/order
     const searchParams = useMemo((): Record<string, string> | undefined => {
-        if (!nql) {
-            return undefined;
-        }
-        return {
-            include: 'labels,tiers',
-            limit: '50',
-            order: 'created_at desc',
-            filter: nql
-        };
-    }, [nql]);
+        return buildMembersQueryParams({
+            filter: nql,
+            search
+        });
+    }, [nql, search]);
 
     const {
         data,
