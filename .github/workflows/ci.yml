@@ -1371,62 +1371,6 @@ jobs:
         run: |
           echo "One of the dependent jobs have failed or been cancelled. You may need to re-run it." && exit 1
 
-  canary:
-    needs: [
-      job_setup,
-      job_required_tests
-    ]
-    name: Canary
-    runs-on: ubuntu-latest
-    if: |
-      always()
-      && github.repository == 'TryGhost/Ghost'
-      && needs.job_setup.result == 'success'
-      && needs.job_required_tests.result == 'success'
-      && (
-        needs.job_setup.outputs.is_main == 'true'
-        || needs.job_setup.outputs.is_six == 'true'
-        || (
-          github.event_name == 'pull_request'
-          && (
-            needs.job_setup.outputs.member_is_in_org == 'true'
-            || github.event.pull_request.user.login == 'renovate[bot]'
-          )
-          && contains(github.event.pull_request.labels.*.name, 'deploy-to-staging')
-        )
-      )
-    steps:
-      - name: Output needs (for debugging)
-        run: echo "${{ toJson(needs) }}"
-
-      - name: Compute branch name (push)
-        if: github.event_name == 'push'
-        run: echo "branch_name=${{ github.ref_name }}" >> $GITHUB_ENV
-
-      - name: Compute branch name (pull_request)
-        if: github.event_name == 'pull_request'
-        run: echo "branch_name=${{ github.ref }}" >> $GITHUB_ENV
-
-      - name: Set deployment parameters
-        run: |
-          if [[ "${{ needs.job_setup.outputs.is_main }}" == "true" ]]; then
-            echo "deploy_version=canary" >> $GITHUB_ENV
-          else
-            echo "deploy_version=six" >> $GITHUB_ENV
-          fi
-
-      - name: Invoke build
-        uses: aurelien-baudet/workflow-dispatch@v4
-        with:
-          token: ${{ secrets.CANARY_DOCKER_BUILD }}
-          workflow: .github/workflows/deploy.yml
-          ref: 'refs/heads/main' # this is the ref of Ghost-Moya
-          repo: TryGhost/Ghost-Moya
-          # env.branch_name is the branch of Ghost itself
-          inputs: '{"version":"${{ env.deploy_version }}","environment":"staging","version_extra":"${{ env.branch_name }}"}'
-          wait-for-completion-timeout: 25m
-          wait-for-completion-interval: 30s
-
   publish_packages:
     needs: [
       job_setup,
@@ -1661,12 +1605,22 @@ jobs:
       - name: Determine dispatch parameters
         id: params
         run: |
-          # Force dry_run until cd.yml is validated and ready to replace the existing canary deploy
           if [ "${{ needs.job_setup.outputs.is_main }}" = "true" ]; then
-            echo "dry_run=true" >> $GITHUB_OUTPUT
+            echo "dry_run=false" >> $GITHUB_OUTPUT
+            echo "should_rollout=true" >> $GITHUB_OUTPUT
             echo "pr_number=" >> $GITHUB_OUTPUT
           elif [ "${{ github.event_name }}" = "pull_request" ]; then
-            echo "dry_run=true" >> $GITHUB_OUTPUT
+            DEPLOY_LABEL="${{ contains(github.event.pull_request.labels.*.name, 'deploy-to-staging') }}"
+            IS_ORG_MEMBER="${{ needs.job_setup.outputs.member_is_in_org }}"
+            IS_RENOVATE="${{ github.event.pull_request.user.login == 'renovate[bot]' }}"
+
+            if [ "$DEPLOY_LABEL" = "true" ] && ([ "$IS_ORG_MEMBER" = "true" ] || [ "$IS_RENOVATE" = "true" ]); then
+              echo "dry_run=false" >> $GITHUB_OUTPUT
+              echo "should_rollout=true" >> $GITHUB_OUTPUT
+            else
+              echo "dry_run=true" >> $GITHUB_OUTPUT
+              echo "should_rollout=false" >> $GITHUB_OUTPUT
+            fi
             echo "pr_number=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
           else
             echo "skip=true" >> $GITHUB_OUTPUT
@@ -1687,6 +1641,7 @@ jobs:
               "ref": "${{ github.sha }}",
               "image_tag": "${{ needs.job_docker_build_production.outputs.core-image-sha-tag }}",
               "dry_run": ${{ steps.params.outputs.dry_run }},
+              "should_rollout": ${{ steps.params.outputs.should_rollout }},
               "pr_number": "${{ steps.params.outputs.pr_number }}",
               "admin_artifact_id": "${{ needs.job_docker_build_production.outputs.admin-artifact-id }}",
               "admin_artifact_run_id": "${{ github.run_id }}"

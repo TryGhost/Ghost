@@ -74,6 +74,12 @@ export default class LabelsManagerService extends Service {
     *searchLabelsTask(term, {page = 1} = {}) {
         yield timeout(250);
         const safeTerm = term.replace(/'/g, `\\'`);
-        return yield this.store.query('label', {filter: `name:~'${safeTerm}'`, limit: PAGE_SIZE, page, order: 'name asc'});
+        const labels = yield this.store.query('label', {filter: `name:~'${safeTerm}'`, limit: PAGE_SIZE, page, order: 'name asc'});
+
+        // Register search results so they can be resolved by findBySlug/selectedOptions
+        // even if they weren't in the initially paginated set
+        labels.forEach(label => this.addLabel(label));
+
+        return labels;
     }
 }
