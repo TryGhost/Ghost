@@ -33,6 +33,7 @@
     "Black Friday": "جمعه سیاه",
     "Cancel anytime.": "در هر زمان قابل لغو است.",
     "Cancel subscription": "لغو اشتراک",
+    "Canceled": "",
     "Cancellation reason": "دلیل لغو اشتراکتان چیست؟",
     "Change": "تغییر",
     "Change plan": "",
@@ -158,6 +159,7 @@
     "Re-enable emails": "فعال\u200cسازی ایمیل\u200cها",
     "Recommendations": "پیشنهادات",
     "Renews at {price}.": "با قیمت {price} تمدید خواهد شد.",
+    "Resume subscription": "",
     "Retry": "تلاش دوباره",
     "Save": "ذخیره",
     "Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.": "",
@@ -245,6 +247,7 @@
     "Your email has failed to resubscribe, please try again": "",
     "your inbox": "",
     "Your input helps shape what gets published.": "تلاش شما به آنچه که منتشر می\u200cشود، شکل می\u200cدهد.",
+    "Your subscription has been canceled and will expire on {expiryDate}.": "",
     "Your subscription will expire on {expiryDate}": "اشتراک شما در تاریخ {expiryDate} منقضی می\u200cشود",
     "Your subscription will renew on {renewalDate}": "اشتراک شما در تاریخ {renewalDate} تمدید می\u200cشود",
     "Your subscription will start on {subscriptionStart}": "اشتراک شما از تاریخ {subscriptionStart} شروع می\u200cشود"

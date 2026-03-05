@@ -30,6 +30,8 @@ export interface OfferType {
     description: string;
 }
 
+const MAX_DISPLAY_TEXT_LENGTH = 191;
+
 export const ButtonSelect: React.FC<{type: OfferType, checked: boolean, onClick: () => void}> = ({type, checked, onClick}) => {
     const checkboxClass = checked ? 'bg-black text-white dark:bg-white dark:text-black' : 'border border-grey-300 dark:border-grey-800';
 
@@ -174,6 +176,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                         <TextField
                             error={Boolean(errors.displayTitle)}
                             hint={errors.displayTitle}
+                            maxLength={MAX_DISPLAY_TEXT_LENGTH}
                             placeholder='Black Friday Special'
                             title='Display title'
                             value={overrides.displayTitle.value}
@@ -183,6 +186,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                             onKeyDown={() => clearError('displayTitle')}
                         />
                         <TextArea
+                            maxLength={MAX_DISPLAY_TEXT_LENGTH}
                             placeholder='Take advantage of this limited-time offer.'
                             title='Display description'
                             value={overrides.displayDescription}
@@ -432,8 +436,8 @@ const AddOfferModal = () => {
                 newErrors.amount = 'Free trial must be at least 1 day.';
             }
 
-            if (formState.type !== 'trial' && formState.duration === 'repeating' && formState.durationInMonths < 1) {
-                newErrors.durationInMonths = 'Enter a duration greater than 0.';
+            if (formState.type !== 'trial' && formState.duration === 'repeating' && (!Number.isInteger(formState.durationInMonths) || formState.durationInMonths < 1)) {
+                newErrors.durationInMonths = 'Enter a whole number of months (1 or more).';
             }
 
             return newErrors;

@@ -65,6 +65,59 @@ footer.gh-portal-account-footer {
     margin: 24px 0 32px;
 }
 
+.gh-portal-cancel-banner {
+    position: relative;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+    text-align: center;
+    font-size: 1.4rem;
+    line-height: 1.5;
+    color: var(--grey1);
+}
+
+.gh-portal-cancel-banner::before {
+    position: absolute;
+    content: "";
+    display: block;
+    background: var(--brandcolor);
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    border-radius: 8px;
+    opacity: 0.05;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.gh-portal-cancel-banner > * {
+    position: relative;
+    z-index: 1;
+}
+
+.gh-portal-cancel-banner p {
+    max-width: 320px;
+    margin: 0 auto 16px;
+}
+
+.gh-portal-canceled-badge {
+    display: inline-block;
+    margin-inline-start: 6px;
+    padding: 6px 8px;
+    font-size: 1.1rem;
+    line-height: 1em;
+    font-weight: 600;
+    letter-spacing: 0.05px;
+    text-transform: uppercase;
+    color: var(--grey6);
+    background: color-mix(in srgb, var(--grey12) 60%, transparent);
+    border-radius: 32px;
+    vertical-align: middle;
+    position: relative;
+    top: -1px;
+}
+
 .gh-portal-list-detail .gh-portal-email-notice {
     display: flex;
     align-items: center;

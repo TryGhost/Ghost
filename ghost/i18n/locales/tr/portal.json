@@ -33,6 +33,7 @@
     "Black Friday": "Muhteşem Cuma",
     "Cancel anytime.": "İstediğiniz zaman iptal edin.",
     "Cancel subscription": "Aboneliği iptal et",
+    "Canceled": "",
     "Cancellation reason": "İptal sebebi",
     "Change": "Değiştir",
     "Change plan": "Plan değiştir",
@@ -158,6 +159,7 @@
     "Re-enable emails": "E-postaları yeniden etkinleştir",
     "Recommendations": "Tavsiyeler",
     "Renews at {price}.": "{price} karşılığında yenilenir.",
+    "Resume subscription": "",
     "Retry": "Tekrar dene",
     "Save": "Kaydet",
     "Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.": "",
@@ -245,6 +247,7 @@
     "Your email has failed to resubscribe, please try again": "E-postanız yeniden abone olmayı başaramadı, lütfen tekrar deneyin",
     "your inbox": "gelen kutunuz",
     "Your input helps shape what gets published.": "Yorumun yayımlanan içeriklerin şekillenmesine yardımcı olur.",
+    "Your subscription has been canceled and will expire on {expiryDate}.": "",
     "Your subscription will expire on {expiryDate}": "Aboneliğiniz {expiryDate} tarihinde sona erecek",
     "Your subscription will renew on {renewalDate}": "Aboneliğiniz {renewalDate} tarihinde yenilenecek",
     "Your subscription will start on {subscriptionStart}": "Aboneliğiniz {subscriptionStart} tarihinde başlayacak"
