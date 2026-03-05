@@ -369,7 +369,7 @@ const AlignedAxisTick: React.FC<AlignedAxisTickProps> = ({x, y, payload, index, 
         <g transform={`translate(${x},${y})`}>
             <text
                 dy={16}
-                fill="var(--gray-500)"
+                fill="var(--muted-foreground)"
                 textAnchor={textAnchor}
                 x={0}
                 y={-12}
