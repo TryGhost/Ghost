@@ -1,6 +1,7 @@
 import React from 'react';
 
 import AdvancedSettings from './settings/advanced/advanced-settings';
+import EmailIdentitySettings from './settings/email/email-identity-settings';
 import EmailSettings from './settings/email/email-settings';
 import GeneralSettings from './settings/general/general-settings';
 import GrowthSettings from './settings/growth/growth-settings';
@@ -14,6 +15,7 @@ const Settings: React.FC = () => {
                 <GeneralSettings />
                 <SiteSettings />
                 <MembershipSettings />
+                <EmailIdentitySettings />
                 <EmailSettings />
                 <GrowthSettings />
                 <AdvancedSettings />

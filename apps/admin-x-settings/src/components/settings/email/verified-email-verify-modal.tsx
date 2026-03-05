@@ -1,5 +1,5 @@
 import NiceModal from '@ebay/nice-modal-react';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef} from 'react';
 import {APIError} from '@tryghost/admin-x-framework/errors';
 import {ConfirmationModal} from '@tryghost/admin-x-design-system';
 import {getRouteForContext} from './verified-email-verify-routes';
@@ -16,14 +16,14 @@ const VerifiedEmailVerifyModal: React.FC<RoutingModalProps> = ({searchParams}) =
     const handleError = useHandleError();
     const {updateRoute} = useRouting();
     const queryClient = useQueryClient();
-    const [hasVerified, setHasVerified] = useState(false);
+    const hasVerifiedRef = useRef(false);
 
     useEffect(() => {
-        if (!token || hasVerified) {
+        if (!token || hasVerifiedRef.current) {
             return;
         }
 
-        setHasVerified(true);
+        hasVerifiedRef.current = true;
 
         const verify = async () => {
             try {
@@ -46,7 +46,8 @@ const VerifiedEmailVerifyModal: React.FC<RoutingModalProps> = ({searchParams}) =
                     // can see the verified email has been applied
                     showToast({
                         type: 'success',
-                        message: `${email} has been verified`
+                        message: `${email} has been verified`,
+                        options: {id: `verified-email-${token}`}
                     });
                     updateRoute(route);
                 } else {
@@ -83,7 +84,7 @@ const VerifiedEmailVerifyModal: React.FC<RoutingModalProps> = ({searchParams}) =
         };
 
         verify();
-    }, [token, hasVerified, verifyEmail, handleError, updateRoute, queryClient]);
+    }, [token, verifyEmail, handleError, updateRoute, queryClient]);
 
     return null;
 };

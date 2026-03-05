@@ -228,19 +228,19 @@ export const newsletterAdapter: EmailTypeAdapter<'newsletter', Newsletter, Newsl
             verifiedEmail: {
                 sender: {
                     context: {
-                        type: 'newsletter',
+                        type: 'newsletter' as const,
                         id,
                         property: 'sender_email',
-                        source: 'email_customization'
+                        source: 'email_customization' as const
                     },
                     placeholder: baseEmailInfoContext.senderEmailPlaceholder || 'Sender email'
                 },
                 replyTo: {
                     context: {
-                        type: 'newsletter',
+                        type: 'newsletter' as const,
                         id,
                         property: 'sender_reply_to',
-                        source: 'email_customization'
+                        source: 'email_customization' as const
                     },
                     placeholder: baseEmailInfoContext.replyToPlaceholder || 'Reply-to email',
                     specialOptions: [

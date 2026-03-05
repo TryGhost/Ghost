@@ -22,7 +22,7 @@ const AutomatedEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
             keywords={keywords}
             navid='automated-emails'
             testId='automated-emails'
-            title='Automated emails'
+            title='Welcome emails'
         >
             <WelcomeEmailsContent />
             {/* {newsletterId && <NewsletterBtn id={newsletterId} />} */}

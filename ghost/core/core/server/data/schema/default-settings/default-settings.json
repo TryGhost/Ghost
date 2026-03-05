@@ -433,6 +433,18 @@
             },
             "type": "boolean",
             "flags": "RO"
+        },
+        "email_default_sender_name": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "email_default_sender_email": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "email_default_sender_reply_to": {
+            "defaultValue": null,
+            "type": "string"
         }
     },
     "firstpromoter": {

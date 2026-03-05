@@ -3,12 +3,14 @@ import Portal from './portal';
 import React from 'react';
 import SearchableSection from '../../searchable-section';
 import SpamFilters from '../advanced/spam-filters';
+import SupportAddress from './support-address';
 import Tiers from './tiers';
 import TipsAndDonations from '../growth/tips-and-donations';
 import {checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../providers/global-data-provider';
 
 export const searchKeywords = {
+    supportAddress: ['membership', 'support', 'email', 'address', 'support email address', 'support address', 'member', 'billing'],
     access: ['membership', 'default', 'access', 'subscription', 'post', 'membership', 'comments', 'commenting', 'signup', 'sign up', 'spam', 'filters', 'prevention', 'prevent', 'block', 'domains', 'email'],
     tiers: ['membership', 'tiers', 'payment', 'paid', 'stripe'],
     portal: ['membership', 'portal', 'signup', 'sign up', 'signin', 'sign in', 'login', 'account', 'membership', 'support', 'email', 'address', 'support email address', 'support address'],
@@ -22,6 +24,7 @@ const MembershipSettings: React.FC = () => {
 
     return (
         <SearchableSection keywords={Object.values(searchKeywords).flat()} title='Membership'>
+            <SupportAddress keywords={searchKeywords.supportAddress} />
             <Access keywords={searchKeywords.access} />
             <SpamFilters keywords={searchKeywords.access} />
             <Tiers keywords={searchKeywords.tiers} />

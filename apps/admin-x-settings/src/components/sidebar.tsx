@@ -6,6 +6,7 @@ import {Button, Icon, SettingNavItem, type SettingNavItemProps, SettingNavSectio
 import {checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 
 import {searchKeywords as advancedSearchKeywords} from './settings/advanced/advanced-settings';
+import {searchKeywords as emailIdentitySearchKeywords} from './settings/email/email-identity-settings';
 import {searchKeywords as emailSearchKeywords} from './settings/email/email-settings';
 import {searchKeywords as generalSearchKeywords} from './settings/general/general-settings';
 import {searchKeywords as growthSearchKeywords} from './settings/growth/growth-settings';
@@ -76,6 +77,7 @@ const Sidebar: React.FC = () => {
         if (!checkVisible(Object.values(generalSearchKeywords).flat()) &&
             !checkVisible(Object.values(siteSearchKeywords).flat()) &&
             !checkVisible(Object.values(membershipSearchKeywords).flat()) &&
+            !checkVisible(Object.values(emailIdentitySearchKeywords).flat()) &&
             !checkVisible(Object.values(growthSearchKeywords).flat()) &&
             !checkVisible(Object.values(emailSearchKeywords).flat()) &&
             !checkVisible(Object.values(advancedSearchKeywords).flat())) {
@@ -185,12 +187,19 @@ const Sidebar: React.FC = () => {
                 </SettingNavSection>
 
                 {/* Membership settings */}
-                <SettingNavSection isVisible={checkVisible([...Object.values(membershipSearchKeywords).flat(), ...emailSearchKeywords.newslettersNavMenu])} title="Membership">
+                <SettingNavSection isVisible={checkVisible(Object.values(membershipSearchKeywords).flat())} title="Membership">
+                    <NavItem icon='email' keywords={membershipSearchKeywords.supportAddress} navid='support-address' title="Support address" onClick={handleSectionClick} />
                     <NavItem icon='key' keywords={membershipSearchKeywords.access} navid={['members', 'spam-filters']} title="Access" onClick={handleSectionClick} />
                     <NavItem icon='bills' keywords={membershipSearchKeywords.tiers} navid='tiers' title="Tiers" onClick={handleSectionClick} />
                     <NavItem icon='portal' keywords={membershipSearchKeywords.portal} navid='portal' title="Signup portal" onClick={handleSectionClick} />
                     {hasTipsAndDonations && hasStripeEnabled && <NavItem icon='piggybank' keywords={membershipSearchKeywords.tips} navid='tips-and-donations' title="Tips & donations" onClick={handleSectionClick} />}
+                </SettingNavSection>
+
+                {/* Email settings */}
+                <SettingNavSection isVisible={checkVisible([...Object.values(emailIdentitySearchKeywords).flat(), ...emailSearchKeywords.newslettersNavMenu])} title="Email">
+                    <NavItem icon='email' keywords={emailIdentitySearchKeywords.emails} navid='emails' title="Email settings" onClick={handleSectionClick} />
                     <NavItem icon='email' keywords={emailSearchKeywords.newslettersNavMenu} navid={['enable-newsletters', 'default-recipients', 'newsletters', 'mailgun']} title="Newsletters" onClick={handleSectionClick} />
+                    <NavItem icon='mailplus' keywords={emailSearchKeywords.automatedEmails} navid='automated-emails' title="Welcome emails" onClick={handleSectionClick} />
                 </SettingNavSection>
 
                 {/* Growth */}

@@ -1,6 +1,6 @@
 import './verified-emails-modal'; // Side-effect import to register the modal with NiceModal
 import NiceModal from '@ebay/nice-modal-react';
-import React, {useState} from 'react';
+import React, {useRef, useState} from 'react';
 import {
     Badge,
     Button,
@@ -43,6 +43,8 @@ export interface VerifiedEmailSelectProps {
     context?: VerifiedEmailContext;
     title?: string;
     placeholder?: string;
+    /** When set, emails ending with @sendingDomain are directly selectable without verification */
+    sendingDomain?: string;
 }
 
 const VerifiedEmailSelect: React.FC<VerifiedEmailSelectProps> = ({
@@ -51,10 +53,12 @@ const VerifiedEmailSelect: React.FC<VerifiedEmailSelectProps> = ({
     specialOptions,
     context,
     title,
-    placeholder = 'Select email address...'
+    placeholder = 'Select email address...',
+    sendingDomain
 }) => {
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState('');
+    const addingRef = useRef(false);
 
     const {data: {verified_emails: verifiedEmails = []} = {}} = useBrowseVerifiedEmails();
     const {mutateAsync: addVerifiedEmail} = useAddVerifiedEmail();
@@ -64,7 +68,9 @@ const VerifiedEmailSelect: React.FC<VerifiedEmailSelectProps> = ({
 
     const searchTrimmed = search.trim();
     const exactMatchExists = verified.some(e => e.email.toLowerCase() === searchTrimmed.toLowerCase());
-    const showAddOption = searchTrimmed.length > 0 && !exactMatchExists;
+    const isOnSendingDomain = sendingDomain && searchTrimmed.includes('@') && searchTrimmed.toLowerCase().endsWith(`@${sendingDomain.toLowerCase()}`);
+    const showUseOption = searchTrimmed.length > 0 && !exactMatchExists && isOnSendingDomain;
+    const showAddOption = searchTrimmed.length > 0 && !exactMatchExists && !isOnSendingDomain;
 
     const getDisplayLabel = () => {
         if (specialOptions) {
@@ -94,24 +100,27 @@ const VerifiedEmailSelect: React.FC<VerifiedEmailSelectProps> = ({
 
     const handleAddEmail = async (email: string) => {
         const trimmed = email.trim();
-        if (!trimmed) {
+        if (!trimmed || addingRef.current) {
             return;
         }
 
+        addingRef.current = true;
         try {
             const result = await addVerifiedEmail({email: trimmed, context});
             const addedEmail = result?.verified_emails?.[0];
             if (addedEmail?.status === 'verified') {
                 showToast({
                     type: 'success',
-                    message: `${trimmed} is already verified`
+                    message: `${trimmed} is already verified`,
+                    options: {id: `add-verified-email-${trimmed}`}
                 });
                 onChange(trimmed);
             } else {
                 const inboxLinks = result?.meta?.inbox_links;
                 showToast({
                     type: 'info',
-                    message: getVerificationToastMessage(trimmed, inboxLinks)
+                    message: getVerificationToastMessage(trimmed, inboxLinks),
+                    options: {id: `add-verified-email-${trimmed}`}
                 });
             }
             setSearch('');
@@ -119,8 +128,11 @@ const VerifiedEmailSelect: React.FC<VerifiedEmailSelectProps> = ({
         } catch {
             showToast({
                 type: 'error',
-                message: 'Failed to send verification email'
+                message: 'Failed to send verification email',
+                options: {id: `add-verified-email-error`}
             });
+        } finally {
+            addingRef.current = false;
         }
     };
 
@@ -129,9 +141,11 @@ const VerifiedEmailSelect: React.FC<VerifiedEmailSelectProps> = ({
         NiceModal.show('verified-emails-modal');
     };
 
+    const testId = context?.property || context?.key || title?.toLowerCase().replace(/\s+/g, '-');
+
     return (
-        <div>
-            {title && <span className="mb-1 inline-block text-xs font-semibold text-grey-900 dark:text-grey-300">{title}</span>}
+        <div data-testid={testId ? `verified-email-select-${testId}` : undefined}>
+            {title && <span className="text-grey-900 dark:text-grey-300 mb-1 inline-block text-xs font-semibold">{title}</span>}
             <Popover open={open} onOpenChange={(isOpen) => {
                 setOpen(isOpen);
                 if (!isOpen) {
@@ -155,7 +169,7 @@ const VerifiedEmailSelect: React.FC<VerifiedEmailSelectProps> = ({
                             onValueChange={setSearch}
                         />
                         <CommandList>
-                            {!showAddOption && <CommandEmpty>No email addresses found.</CommandEmpty>}
+                            {!showAddOption && !showUseOption && <CommandEmpty>No email addresses found.</CommandEmpty>}
 
                             {specialOptions && specialOptions.length > 0 && (
                                 <>
@@ -210,6 +224,25 @@ const VerifiedEmailSelect: React.FC<VerifiedEmailSelectProps> = ({
                                         </CommandItem>
                                     ))}
                                 </CommandGroup>
+                            )}
+
+                            {showUseOption && (
+                                <>
+                                    <CommandSeparator />
+                                    <CommandGroup forceMount>
+                                        <CommandItem
+                                            value={`use-${searchTrimmed}`}
+                                            forceMount
+                                            onSelect={() => {
+                                                onChange(searchTrimmed);
+                                                setSearch('');
+                                                setOpen(false);
+                                            }}
+                                        >
+                                            Use {searchTrimmed}
+                                        </CommandItem>
+                                    </CommandGroup>
+                                </>
                             )}
 
                             {showAddOption && (

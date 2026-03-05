@@ -17,6 +17,8 @@ export interface GhostConfig {
     hostSettings__billing__enabled?: string;
     hostSettings__billing__url?: string;
     hostSettings__forceUpgrade?: string;
+    hostSettings__managedEmail__enabled?: string;
+    hostSettings__managedEmail__sendingDomain?: string;
 }
 
 export interface GhostInstanceFixture {
