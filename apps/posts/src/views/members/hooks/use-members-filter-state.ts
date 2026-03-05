@@ -401,9 +401,21 @@ export function useMembersFilterState(): UseFilterStateReturn {
     const setSearch = useCallback((newSearch: string, options: SetFiltersOptions = {}) => {
         const newParams = filtersToSearchParams(filters, newSearch || undefined);
 
+        // Preserve legacy filter params when using fallback NQL
+        if (legacyFilterState.fallbackNql) {
+            const legacyFilter = searchParams.get('filter');
+            const legacyFilterParamValue = searchParams.get('filterParam');
+            if (legacyFilter) {
+                newParams.set('filter', legacyFilter);
+            }
+            if (legacyFilterParamValue) {
+                newParams.set('filterParam', legacyFilterParamValue);
+            }
+        }
+
         const replace = options.replace ?? true;
         setSearchParams(newParams, {replace});
-    }, [filters, setSearchParams]);
+    }, [filters, searchParams, legacyFilterState.fallbackNql, setSearchParams]);
 
     // Clear all filter params from URL
     const clearFilters = useCallback(({replace = true}: SetFiltersOptions = {}) => {

@@ -287,6 +287,32 @@ function parseNode(node: LegacyNode, context: {nextId: number}): {filters: Filte
     }
 
     if (isLegacyNodeArray(node.$and)) {
+        // Try to extract subscribed pattern (subscribed + email_disabled) from compound $and
+        const subscribedIndex = node.$and.findIndex(n => Object.keys(n).length === 1 && Object.prototype.hasOwnProperty.call(n, 'subscribed'));
+        const emailDisabledIndex = node.$and.findIndex(n => Object.keys(n).length === 1 && Object.prototype.hasOwnProperty.call(n, 'email_disabled'));
+
+        if (subscribedIndex !== -1 && emailDisabledIndex !== -1) {
+            const subscribedNode = node.$and[subscribedIndex];
+            const emailDisabledNode = node.$and[emailDisabledIndex];
+            const subscribedPattern = parseSubscribedFilter({$and: [subscribedNode, emailDisabledNode]});
+
+            if (subscribedPattern) {
+                const filters: Filter[] = [subscribedPattern];
+                let isComplete = true;
+
+                for (let i = 0; i < node.$and.length; i++) {
+                    if (i === subscribedIndex || i === emailDisabledIndex) {
+                        continue;
+                    }
+                    const parsed = parseNode(node.$and[i], context);
+                    filters.push(...parsed.filters);
+                    isComplete = isComplete && parsed.isComplete;
+                }
+
+                return {filters, isComplete};
+            }
+        }
+
         const filters: Filter[] = [];
         let isComplete = true;
 
