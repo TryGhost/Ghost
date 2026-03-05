@@ -436,8 +436,8 @@ const AddOfferModal = () => {
                 newErrors.amount = 'Free trial must be at least 1 day.';
             }
 
-            if (formState.type !== 'trial' && formState.duration === 'repeating' && formState.durationInMonths < 1) {
-                newErrors.durationInMonths = 'Enter a duration greater than 0.';
+            if (formState.type !== 'trial' && formState.duration === 'repeating' && (!Number.isInteger(formState.durationInMonths) || formState.durationInMonths < 1)) {
+                newErrors.durationInMonths = 'Enter a whole number of months (1 or more).';
             }
 
             return newErrors;

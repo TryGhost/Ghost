@@ -102,12 +102,16 @@ test.describe('Offers', () => {
         const modal = page.getByTestId('offers-modal');
         await modal.getByRole('button', {name: 'New offer'}).click();
         const addModal = page.getByTestId('add-offer-modal');
+        await addModal.getByText('First-payment', {exact: true}).first().click();
+        await page.getByTestId('select-option').filter({hasText: 'Multiple-months'}).click();
+        await addModal.getByTestId('duration-months-input').fill('0');
         await addModal.getByRole('button', {name: 'Publish'}).click();
         const sidebar = addModal.getByTestId('add-offer-sidebar');
         await expect(sidebar).toContainText(/Name is required/);
         await expect(sidebar).toContainText(/Code is required/);
         await expect(sidebar).toContainText(/Enter an amount between 1 and 100%./);
         await expect(sidebar).toContainText(/Display title is required/);
+        await expect(sidebar).toContainText(/Enter a whole number of months \(1 or more\)./);
     });
 
     test('Errors if the offer code is already taken', async ({page}) => {
