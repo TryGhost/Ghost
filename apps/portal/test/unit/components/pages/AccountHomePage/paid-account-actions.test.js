@@ -330,9 +330,10 @@ describe('PaidAccountActions', () => {
             expect(queryByText('$0.00/month — Ends 1 Feb 2099')).toBeInTheDocument();
         });
 
-        test('displays "Next payment" for once duration offers', () => {
+        test('displays discounted price with "Ends {date}" for once offers', () => {
             const products = getProductsData({numOfProducts: 1});
             const site = getSiteData({products, portalProducts: products.map(p => p.id)});
+            const currentPeriodEnd = new Date('2099-03-01T12:00:00.000Z');
 
             const member = getMemberData({
                 paid: true,
@@ -347,6 +348,7 @@ describe('PaidAccountActions', () => {
                             amount: 20,
                             duration: 'once'
                         },
+                        currentPeriodEnd: currentPeriodEnd.toISOString(),
 
                         nextPayment: getNextPaymentData({
                             originalAmount: 500,
@@ -370,8 +372,8 @@ describe('PaidAccountActions', () => {
             expect(queryByText('$5.00/month')).toBeInTheDocument();
             // Should have the offer label
             expect(queryByTestId('offer-label')).toBeInTheDocument();
-            // Should show the discounted price (without interval) with "Next payment"
-            expect(queryByText('$4.00 — Next payment')).toBeInTheDocument();
+            // Should show the discounted price with end date from current period end
+            expect(queryByText('$4.00/month — Ends 1 Mar 2099')).toBeInTheDocument();
         });
 
         test('displays fixed amount discount correctly', () => {
