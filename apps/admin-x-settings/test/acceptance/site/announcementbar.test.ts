@@ -20,12 +20,12 @@ test.describe('Announcement Bar', async () => {
 
         await page.goto('/#/settings/announcement-bar');
 
-        const section = page.locator('[data-testid="announcement-bar"]:visible').first();
+        const section = page.getByTestId('announcement-bar');
 
-        await section.locator('button:visible', {hasText: /^Customize$/}).click();
-        const modal = page.locator('[data-testid="announcement-bar-modal"]:visible').first();
+        await section.getByRole('button', {name: 'Customize'}).click();
+        const modal = page.getByTestId('announcement-bar-modal');
         await expect(modal).toBeVisible();
-        await expect(modal.locator('[data-testid="announcement-bar-preview-iframe"]:visible')).toBeVisible();
+        await expect(modal.getByTestId('announcement-bar-preview-iframe')).toBeVisible();
 
         const checkTextInIframes = async (iframesHandles: ElementHandle[], textToSearch: string) => {
             let textExists = false;
@@ -42,14 +42,14 @@ test.describe('Announcement Bar', async () => {
             return textExists;
         };
 
-        const iframesHandleHome = await modal.locator('[data-testid="announcement-bar-preview-iframe"]:visible > iframe').elementHandles();
+        const iframesHandleHome = await modal.getByTestId('announcement-bar-preview-iframe').locator('iframe').elementHandles();
         const textExistsInHomeIframes = await checkTextInIframes(iframesHandleHome, 'homepage preview');
         expect(textExistsInHomeIframes).toBeTruthy();
 
         await modal.getByTestId('design-toolbar').getByRole('tab', {name: 'Post'}).click();
-        await expect(modal.locator('[data-testid="announcement-bar-preview-iframe"]:visible')).toBeVisible();
+        await expect(modal.getByTestId('announcement-bar-preview-iframe')).toBeVisible();
 
-        const iframesHandlePost = await modal.locator('[data-testid="announcement-bar-preview-iframe"]:visible > iframe').elementHandles();
+        const iframesHandlePost = await modal.getByTestId('announcement-bar-preview-iframe').locator('iframe').elementHandles();
         const textExistsInPostIframes = await checkTextInIframes(iframesHandlePost, 'post preview');
         expect(textExistsInPostIframes).toBeTruthy();
     });
@@ -69,11 +69,11 @@ test.describe('Announcement Bar', async () => {
 
     //     await page.goto('/#/settings/announcement-bar');
 
-    //     const section = page.locator('[data-testid="announcement-bar"]:visible').first();
+    //     const section = page.getByTestId('announcement-bar');
 
     //     await section.getByRole('button', {name: 'Customize'}).click();
 
-    //     const modal = page.locator('[data-testid="announcement-bar-modal"]:visible').first();
+    //     const modal = page.getByTestId('announcement-bar-modal');
 
     //     await expect(modal.frameLocator('[data-testid="announcement-bar-preview"]').getByText('homepage preview')).toHaveCount(1);
     // });
@@ -88,7 +88,7 @@ test.describe('Announcement Bar', async () => {
 
         await page.goto('/#/settings/announcement-bar');
 
-        const section = page.locator('[data-testid="announcement-bar"]:visible').first();
+        const section = page.getByTestId('announcement-bar');
 
         await section.getByRole('button', {name: 'Customize'}).click();
 
@@ -96,7 +96,7 @@ test.describe('Announcement Bar', async () => {
 
         await expect(labelElement).toHaveCount(1);
 
-        const modal = page.locator('[data-testid="announcement-bar-modal"]:visible').first();
+        const modal = page.getByTestId('announcement-bar-modal');
 
         // Check the titles of the buttons.
         // Get the parent div of the label
@@ -134,7 +134,7 @@ test.describe('Announcement Bar', async () => {
 
         await page.goto('/#/settings/announcement-bar');
 
-        const section = page.locator('[data-testid="announcement-bar"]:visible').first();
+        const section = page.getByTestId('announcement-bar');
 
         await section.getByRole('button', {name: 'Customize'}).click();
 
@@ -142,7 +142,7 @@ test.describe('Announcement Bar', async () => {
 
         await expect(labelElement).toHaveCount(1);
 
-        const modal = page.locator('[data-testid="announcement-bar-modal"]:visible').first();
+        const modal = page.getByTestId('announcement-bar-modal');
 
         // get checkbox input with value of free_members
 

@@ -12,11 +12,11 @@ test.describe('Tier settings', async () => {
 
         await page.goto('/#/settings/tiers');
 
-        const section = page.locator('[data-testid="tiers"]:visible').first();
+        const section = page.getByTestId('tiers');
 
         await section.getByRole('button', {name: 'Add tier'}).click();
 
-        const modal = page.locator('[data-testid="tier-detail-modal"]:visible').first();
+        const modal = page.getByTestId('tier-detail-modal');
 
         await modal.getByRole('button', {name: 'Save'}).click();
 
@@ -90,11 +90,11 @@ test.describe('Tier settings', async () => {
 
         await page.goto('/#/settings/tiers');
 
-        const section = page.locator('[data-testid="tiers"]:visible').first();
+        const section = page.getByTestId('tiers');
 
         await section.getByTestId('tier-card').filter({hasText: /Supporter/}).click();
 
-        const modal = page.locator('[data-testid="tier-detail-modal"]:visible').first();
+        const modal = page.getByTestId('tier-detail-modal');
 
         const preview = await modal.getByTestId('tier-preview');
 
@@ -177,11 +177,11 @@ test.describe('Tier settings', async () => {
 
         await page.goto('/#/settings/tiers');
 
-        const section = page.locator('[data-testid="tiers"]:visible').first();
+        const section = page.getByTestId('tiers');
 
         await section.getByTestId('tier-card').filter({hasText: /Free/}).click();
 
-        const modal = page.locator('[data-testid="tier-detail-modal"]:visible').first();
+        const modal = page.getByTestId('tier-detail-modal');
 
         await modal.getByLabel('Description').fill('Free tier description');
         await modal.getByLabel('Welcome page').fill('welcome-page');
@@ -233,7 +233,7 @@ test.describe('Tier settings', async () => {
 
         await page.goto('/#/settings/tiers');
 
-        const section = page.locator('[data-testid="tiers"]:visible').first();
+        const section = page.getByTestId('tiers');
 
         // Click on "Connect with Stripe" button
         await section.getByRole('button', {name: 'Connect with Stripe'}).click();
@@ -281,7 +281,7 @@ test.describe('Tier settings', async () => {
 
         await page.goto('/#/settings/tiers');
 
-        const section = page.locator('[data-testid="tiers"]:visible').first();
+        const section = page.getByTestId('tiers');
 
         // Click on Stripe button (different text, as it's already connected)
         await section.getByRole('button', {name: 'Connected to Stripe'}).click();
