@@ -54,4 +54,22 @@ describe('useMembersFilterState (legacy URL support)', () => {
         expect(result.current.nql).toEqual('signup:\'post_1\'+conversion:-\'post_1\'');
         expect(result.current.isFiltered).toBe(true);
     });
+
+    it('preserves additional clauses for mixed subscribed expressions', () => {
+        const wrapper = createWrapper('/members-forward?filter=%28subscribed%3Afalse%2Bemail_disabled%3A0%2Blabel%3A%5Bvip%5D%29');
+        const {result} = renderHook(() => useMembersFilterState(), {wrapper});
+
+        expect(result.current.nql).toContain('subscribed:false+email_disabled:0');
+        expect(result.current.nql).toContain('label:[vip]');
+        expect(result.current.isFiltered).toBe(true);
+    });
+
+    it('falls back to raw nql for newsletter expressions without email_disabled', () => {
+        const wrapper = createWrapper('/members-forward?filter=newsletters.slug%3Aweekly');
+        const {result} = renderHook(() => useMembersFilterState(), {wrapper});
+
+        expect(result.current.filters).toHaveLength(0);
+        expect(result.current.nql).toEqual('newsletters.slug:weekly');
+        expect(result.current.isFiltered).toBe(true);
+    });
 });

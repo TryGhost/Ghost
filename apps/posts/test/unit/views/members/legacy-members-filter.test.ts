@@ -55,6 +55,26 @@ describe('legacy-members-filter', () => {
         });
     });
 
+    it('keeps additional clauses for subscribed expressions with extra clauses', () => {
+        const translated = translateLegacyMembersFilter('(subscribed:false+email_disabled:0+label:[vip])');
+
+        expect(translated.isComplete).toBe(true);
+        expect(translated.filters.some(filter => filter.field === 'label' && filter.values.includes('vip'))).toBe(true);
+    });
+
+    it('falls back for newsletter expressions without email_disabled clause', () => {
+        const translated = translateLegacyMembersFilter('newsletters.slug:weekly');
+
+        expect(translated.isComplete).toBe(false);
+        expect(translated.filters).toHaveLength(0);
+    });
+
+    it('falls back for newsletter expressions with extra clauses', () => {
+        const translated = translateLegacyMembersFilter('(newsletters.slug:weekly+email_disabled:0+label:[vip])');
+
+        expect(translated.isComplete).toBe(false);
+    });
+
     it('unescapes regex values for contains operators', () => {
         const translated = translateLegacyMembersFilter('name:~\'test+test\'');
 

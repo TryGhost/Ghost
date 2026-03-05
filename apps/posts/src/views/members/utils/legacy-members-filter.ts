@@ -58,6 +58,36 @@ function getComparatorNode(nodes: LegacyNode[], key: string): unknown {
     return match?.[key];
 }
 
+function getExactComparatorValues(nodes: LegacyNode[], keys: string[]): Record<string, unknown> | null {
+    if (nodes.length !== keys.length) {
+        return null;
+    }
+
+    const keySet = new Set(keys);
+    const values: Record<string, unknown> = {};
+
+    for (const node of nodes) {
+        const nodeKeys = Object.keys(node);
+
+        if (nodeKeys.length !== 1) {
+            return null;
+        }
+
+        const [nodeKey] = nodeKeys;
+        if (!keySet.has(nodeKey) || Object.prototype.hasOwnProperty.call(values, nodeKey)) {
+            return null;
+        }
+
+        values[nodeKey] = node[nodeKey];
+    }
+
+    if (!keys.every(key => Object.prototype.hasOwnProperty.call(values, key))) {
+        return null;
+    }
+
+    return values;
+}
+
 function unescapeRegexSource(value: string): string {
     // Keep parity with Ember filter parsing which unescapes regex-derived values.
     return value.replace(/\\/g, '');
@@ -154,8 +184,9 @@ function parseSubscribedFilter(node: LegacyNode): Filter | null {
     }
 
     if (isLegacyNodeArray(node.$and)) {
-        const subscribed = getComparatorNode(node.$and, 'subscribed');
-        const emailDisabled = getComparatorNode(node.$and, 'email_disabled');
+        const values = getExactComparatorValues(node.$and, ['subscribed', 'email_disabled']);
+        const subscribed = values?.subscribed;
+        const emailDisabled = values?.email_disabled;
 
         if (typeof subscribed === 'boolean' && isFalseLike(emailDisabled)) {
             return {
@@ -168,8 +199,9 @@ function parseSubscribedFilter(node: LegacyNode): Filter | null {
     }
 
     if (isLegacyNodeArray(node.$or)) {
-        const subscribed = getComparatorNode(node.$or, 'subscribed');
-        const emailDisabled = getComparatorNode(node.$or, 'email_disabled');
+        const values = getExactComparatorValues(node.$or, ['subscribed', 'email_disabled']);
+        const subscribed = values?.subscribed;
+        const emailDisabled = values?.email_disabled;
 
         if (typeof subscribed === 'boolean' && isTrueLike(emailDisabled)) {
             return {
@@ -186,8 +218,9 @@ function parseSubscribedFilter(node: LegacyNode): Filter | null {
 
 function parseNewsletterFilter(node: LegacyNode): Filter | null {
     if (isLegacyNodeArray(node.$and)) {
-        const slugNode = getComparatorNode(node.$and, 'newsletters.slug');
-        const emailDisabled = getComparatorNode(node.$and, 'email_disabled');
+        const values = getExactComparatorValues(node.$and, ['newsletters.slug', 'email_disabled']);
+        const slugNode = values?.['newsletters.slug'];
+        const emailDisabled = values?.email_disabled;
 
         if (typeof slugNode === 'string' && isFalseLike(emailDisabled)) {
             return {
@@ -200,32 +233,11 @@ function parseNewsletterFilter(node: LegacyNode): Filter | null {
     }
 
     if (isLegacyNodeArray(node.$or)) {
-        const slugNode = getComparatorNode(node.$or, 'newsletters.slug');
-        const emailDisabled = getComparatorNode(node.$or, 'email_disabled');
+        const values = getExactComparatorValues(node.$or, ['newsletters.slug', 'email_disabled']);
+        const slugNode = values?.['newsletters.slug'];
+        const emailDisabled = values?.email_disabled;
 
         if (isObject(slugNode) && typeof slugNode.$ne === 'string' && isTrueLike(emailDisabled)) {
-            return {
-                id: `newsletters.${slugNode.$ne}`,
-                field: `newsletters.${slugNode.$ne}`,
-                operator: 'is',
-                values: ['unsubscribed']
-            };
-        }
-    }
-
-    if (Object.keys(node).length === 1 && Object.prototype.hasOwnProperty.call(node, 'newsletters.slug')) {
-        const slugNode = node['newsletters.slug'];
-
-        if (typeof slugNode === 'string') {
-            return {
-                id: `newsletters.${slugNode}`,
-                field: `newsletters.${slugNode}`,
-                operator: 'is',
-                values: ['subscribed']
-            };
-        }
-
-        if (isObject(slugNode) && typeof slugNode.$ne === 'string') {
             return {
                 id: `newsletters.${slugNode.$ne}`,
                 field: `newsletters.${slugNode.$ne}`,

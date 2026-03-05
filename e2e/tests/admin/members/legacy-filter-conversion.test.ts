@@ -158,6 +158,34 @@ test.describe('Ghost Admin - Members Legacy Filter Conversion', () => {
         expect(await membersFilterRequest).toBe('(newsletters.slug:weekly+email_disabled:0)');
     });
 
+    test('mixed subscribed expression with extra clauses preserves all clauses', async ({page}) => {
+        await memberFactory.create({
+            name: 'Mixed Subscribed Seed',
+            email: 'mixed-subscribed-seed@example.com'
+        });
+
+        const membersPage = new MembersPage(page);
+        const membersFilterRequest = waitForMembersBrowseFilter(page);
+        await membersPage.goto(buildLegacyMembersUrl('filter', '(subscribed:false+email_disabled:0+label:[dog])'));
+
+        const requestFilter = await membersFilterRequest;
+        expect(requestFilter).toContain('subscribed:false+email_disabled:0');
+        expect(requestFilter).toContain('label:[dog]');
+    });
+
+    test('newsletter expression without email_disabled falls back to raw nql', async ({page}) => {
+        await memberFactory.create({
+            name: 'Newsletter Raw Fallback Seed',
+            email: 'newsletter-raw-fallback-seed@example.com'
+        });
+
+        const membersPage = new MembersPage(page);
+        const membersFilterRequest = waitForMembersBrowseFilter(page);
+        await membersPage.goto(buildLegacyMembersUrl('filter', 'newsletters.slug:weekly'));
+
+        expect(await membersFilterRequest).toBe('newsletters.slug:weekly');
+    });
+
     test('legacy date expression keeps raw nql fallback and removes single wrapper group', async ({page}) => {
         await memberFactory.create({
             name: 'Date Fallback Seed',
