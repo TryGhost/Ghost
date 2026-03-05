@@ -222,7 +222,7 @@ function ContributorUserMenu() {
                 </UserMenuHeader>
                 <DropdownMenuSeparator />
                 <UserMenuItem>
-                    <Link to="/">
+                    <Link to="/posts">
                         <LucideIcon.FileText />
                         <UserMenuItem.Label>Posts</UserMenuItem.Label>
                     </Link>
