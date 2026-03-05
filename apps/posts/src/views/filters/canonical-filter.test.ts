@@ -11,4 +11,14 @@ describe('canonicalizeFilter', () => {
 
         expect(canonical).toBe("label:[vip,early]+name:~'alex'+status:paid");
     });
+
+    it('removes duplicate clauses during canonicalization', () => {
+        const canonical = canonicalizeFilter([
+            "status:paid",
+            "status:paid",
+            "name:~'alex'"
+        ]);
+
+        expect(canonical).toBe("name:~'alex'+status:paid");
+    });
 });
