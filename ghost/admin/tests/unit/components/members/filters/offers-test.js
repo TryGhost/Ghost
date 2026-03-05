@@ -20,17 +20,14 @@ describe('Unit: Component: members/filters/offers', function () {
             expect(value.text).to.equal('Monthly Retention, Welcome discount, Yearly Retention');
         });
 
-        it('renders fallback sub.offer with the same retention label rules', function () {
+        it('returns empty text when offer_redemptions is missing', function () {
             const member = {
-                subscriptions: [
-                    {offer: {name: 'Monthly v2', redemption_type: 'retention', cadence: 'month'}},
-                    {offer: {name: 'Signup offer', redemption_type: 'signup', cadence: 'month'}}
-                ]
+                subscriptions: [{}]
             };
 
             const value = OFFERS_FILTER.getColumnValue(member);
 
-            expect(value.text).to.equal('Monthly Retention, Signup offer');
+            expect(value.text).to.equal('');
         });
     });
 });

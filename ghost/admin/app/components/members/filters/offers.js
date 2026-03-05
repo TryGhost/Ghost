@@ -28,11 +28,8 @@ export const OFFERS_FILTER = {
     getColumnValue: (member) => {
         return {
             class: 'gh-members-list-labels',
-            // TODO: remove sub.offer fallback once offer_redemptions is available on all environments
             text: (member.subscriptions ?? [])
-                .flatMap(sub => (sub.offer_redemptions
-                    ? sub.offer_redemptions.map(getOfferNameForColumn).filter(Boolean)
-                    : [getOfferNameForColumn(sub.offer)].filter(Boolean)))
+                .flatMap(sub => (sub.offer_redemptions ?? []).map(getOfferNameForColumn).filter(Boolean))
                 .join(', ')
         };
     }
