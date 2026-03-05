@@ -1,5 +1,5 @@
 import React, {useCallback, useState} from 'react';
-import {AddLabelModal, DeleteModal, RemoveLabelModal, UnsubscribeModal} from './bulk-action-modals';
+import {AddLabelModal, DeleteModal, ImportMembersModal, RemoveLabelModal, UnsubscribeModal} from './bulk-action-modals';
 import {
     Button,
     DropdownMenu,
@@ -11,6 +11,7 @@ import {
 } from '@tryghost/shade';
 import {blobDownloadFromEndpoint} from '@tryghost/admin-x-framework/helpers';
 import {toast} from 'sonner';
+import {useBrowseLabels} from '@tryghost/admin-x-framework/api/labels';
 import {useBulkDeleteMembers, useBulkEditMembers} from '@tryghost/admin-x-framework/api/members';
 
 interface MembersActionsProps {
@@ -18,6 +19,7 @@ interface MembersActionsProps {
     memberCount: number;
     nql?: string;
     canBulkDelete: boolean;
+    onImportComplete?: () => void;
 }
 
 async function exportMembers(filter?: string): Promise<void> {
@@ -33,11 +35,16 @@ const MembersActions: React.FC<MembersActionsProps> = ({
     isFiltered,
     memberCount,
     nql,
-    canBulkDelete
+    canBulkDelete,
+    onImportComplete
 }) => {
+    const {data: labelsData} = useBrowseLabels({});
+    const labels = labelsData?.labels || [];
+
     const {mutateAsync: bulkEditAsync, isLoading: isBulkEditing} = useBulkEditMembers();
     const {mutate: bulkDelete, isLoading: isBulkDeleting} = useBulkDeleteMembers();
 
+    const [showImportModal, setShowImportModal] = useState(false);
     const [showAddLabelModal, setShowAddLabelModal] = useState(false);
     const [showRemoveLabelModal, setShowRemoveLabelModal] = useState(false);
     const [showUnsubscribeModal, setShowUnsubscribeModal] = useState(false);
@@ -151,6 +158,12 @@ const MembersActions: React.FC<MembersActionsProps> = ({
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
+                    {/* Import */}
+                    <DropdownMenuItem onClick={() => setShowImportModal(true)}>
+                        <LucideIcon.Upload className="mr-2 size-4" />
+                        Import members
+                    </DropdownMenuItem>
+
                     {/* Export */}
                     <DropdownMenuItem onClick={handleExport}>
                         <LucideIcon.Download className="mr-2 size-4" />
@@ -192,6 +205,12 @@ const MembersActions: React.FC<MembersActionsProps> = ({
             </Button>
 
             {/* Modals */}
+            <ImportMembersModal
+                labels={labels}
+                open={showImportModal}
+                onComplete={onImportComplete}
+                onOpenChange={setShowImportModal}
+            />
             <AddLabelModal
                 isLoading={isBulkEditing}
                 memberCount={memberCount}
