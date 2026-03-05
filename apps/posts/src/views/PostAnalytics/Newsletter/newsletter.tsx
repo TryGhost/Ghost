@@ -298,7 +298,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                             });
                                             navigate(`/members?${params.toString()}`, {crossApp: true});
                                         }}>
-                                            <div className='text-sm! ml-0.5 size-[9px] rounded-full bg-chart-purple opacity-50 lg:text-base'></div>
+                                            <div className='ml-0.5 size-[9px] rounded-full bg-chart-purple opacity-50'></div>
                                     Sent
                                         </KpiCardLabel>
                                         <KpiCardContent>
@@ -324,7 +324,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                 });
                                                 navigate(`/members?${params.toString()}`, {crossApp: true});
                                             }}>
-                                                <div className='text-sm! ml-0.5 size-[9px] rounded-full bg-chart-blue opacity-50 lg:text-base'></div>
+                                                <div className='ml-0.5 size-[9px] rounded-full bg-chart-blue opacity-50'></div>
                                                 Opened
                                             </KpiCardLabel>
                                             <KpiCardContent>
@@ -351,7 +351,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                 });
                                                 navigate(`/members?${params.toString()}`, {crossApp: true});
                                             }}>
-                                                <div className='text-sm! ml-0.5 size-[9px] rounded-full bg-chart-teal opacity-50 lg:text-base'></div>
+                                                <div className='ml-0.5 size-[9px] rounded-full bg-chart-teal opacity-50'></div>
                                                 Clicked
                                             </KpiCardLabel>
                                             <KpiCardContent>
