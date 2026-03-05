@@ -1606,22 +1606,20 @@ jobs:
         id: params
         run: |
           if [ "${{ needs.job_setup.outputs.is_main }}" = "true" ]; then
-            echo "dry_run=false" >> $GITHUB_OUTPUT
-            echo "should_rollout=true" >> $GITHUB_OUTPUT
             echo "pr_number=" >> $GITHUB_OUTPUT
+            echo "deploy=" >> $GITHUB_OUTPUT
           elif [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "pr_number=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
+
             DEPLOY_LABEL="${{ contains(github.event.pull_request.labels.*.name, 'deploy-to-staging') }}"
             IS_ORG_MEMBER="${{ needs.job_setup.outputs.member_is_in_org }}"
             IS_RENOVATE="${{ github.event.pull_request.user.login == 'renovate[bot]' }}"
 
             if [ "$DEPLOY_LABEL" = "true" ] && ([ "$IS_ORG_MEMBER" = "true" ] || [ "$IS_RENOVATE" = "true" ]); then
-              echo "dry_run=false" >> $GITHUB_OUTPUT
-              echo "should_rollout=true" >> $GITHUB_OUTPUT
+              echo "deploy=true" >> $GITHUB_OUTPUT
             else
-              echo "dry_run=true" >> $GITHUB_OUTPUT
-              echo "should_rollout=false" >> $GITHUB_OUTPUT
+              echo "deploy=" >> $GITHUB_OUTPUT
             fi
-            echo "pr_number=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
           else
             echo "skip=true" >> $GITHUB_OUTPUT
             exit 0
@@ -1637,12 +1635,9 @@ jobs:
           event-type: ghost-artifacts-ready
           client-payload: >-
             {
-              "environment": "staging",
               "ref": "${{ github.sha }}",
-              "image_tag": "${{ needs.job_docker_build_production.outputs.core-image-sha-tag }}",
-              "dry_run": ${{ steps.params.outputs.dry_run }},
-              "should_rollout": ${{ steps.params.outputs.should_rollout }},
               "pr_number": "${{ steps.params.outputs.pr_number }}",
+              "deploy": "${{ steps.params.outputs.deploy }}",
               "admin_artifact_id": "${{ needs.job_docker_build_production.outputs.admin-artifact-id }}",
               "admin_artifact_run_id": "${{ github.run_id }}"
             }
