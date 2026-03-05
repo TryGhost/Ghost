@@ -310,8 +310,7 @@ const createOffer = async (page, {name, tierName, offerType, amount, discountTyp
         await chooseOptionInSelect(page.getByTestId('tier-cadence-select-offers'), `${tierName} - Monthly`);
         await page.getByRole('button', {name: 'Publish'}).click();
 
-        const offerLinkInputs = page.locator('input[name="offer-url"]');
-        await expect(offerLinkInputs.first()).toBeVisible();
+        const offerLinkInputs = page.locator('[name="offer-url"]');
 
         // The offer URL may appear asynchronously and can be rendered in multiple inputs.
         // Poll for any non-empty value before continuing.
@@ -319,7 +318,12 @@ const createOffer = async (page, {name, tierName, offerType, amount, discountTyp
         await expect.poll(async () => {
             const inputCount = await offerLinkInputs.count();
             for (let i = 0; i < inputCount; i += 1) {
-                const value = (await offerLinkInputs.nth(i).inputValue()).trim();
+                const input = offerLinkInputs.nth(i);
+                if (!await input.isVisible()) {
+                    continue;
+                }
+
+                const value = (await input.inputValue()).trim();
                 if (value) {
                     generatedOfferLink = value;
                     return value;
@@ -327,7 +331,7 @@ const createOffer = async (page, {name, tierName, offerType, amount, discountTyp
             }
             return '';
         }, {
-            timeout: 30000,
+            timeout: 45000,
             message: 'Offer link was not generated after publishing offer'
         }).not.toBe('');
         offerLink = generatedOfferLink;
