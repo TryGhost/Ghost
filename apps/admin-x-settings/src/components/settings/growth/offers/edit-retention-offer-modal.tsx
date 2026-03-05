@@ -171,17 +171,6 @@ const getTermsSignature = (terms: RetentionOfferTerms | null): string => {
     return `${terms.type}:${terms.amount}:${terms.duration}:${terms.durationInMonths}`;
 };
 
-const getLengthHint = (length: number, maxLength: number, helperText?: string) => {
-    const lengthColor = length > maxLength ? 'text-red' : 'text-green';
-
-    return (
-        <div className='flex justify-between'>
-            <span>{helperText || ''}</span>
-            <strong><span className={lengthColor}>{length}</span> / {maxLength}</strong>
-        </div>
-    );
-};
-
 const isValidMonthDuration = (value: number): boolean => {
     return Number.isInteger(value) && value > 0;
 };
@@ -209,9 +198,6 @@ const RetentionOfferSidebar: React.FC<{
     const availableDurationOptions = cadence === 'yearly'
         ? durationOptions.filter(option => option.value !== 'repeating')
         : durationOptions;
-    const displayTitleHint = errors.displayTitle || getLengthHint(formState.displayTitle.length, MAX_DISPLAY_TEXT_LENGTH);
-    const displayDescriptionHint = errors.displayDescription || getLengthHint(formState.displayDescription.length, MAX_DISPLAY_TEXT_LENGTH);
-
     return (
         <div className='flex grow flex-col pt-2'>
             <Form className='grow'>
@@ -256,8 +242,6 @@ const RetentionOfferSidebar: React.FC<{
                             <h2 className='mb-4 text-lg'>General</h2>
                             <div className='flex flex-col gap-6'>
                                 <TextField
-                                    error={Boolean(errors.displayTitle)}
-                                    hint={displayTitleHint}
                                     maxLength={MAX_DISPLAY_TEXT_LENGTH}
                                     placeholder='Before you go'
                                     title='Display title'
@@ -265,11 +249,8 @@ const RetentionOfferSidebar: React.FC<{
                                     onChange={(e) => {
                                         updateForm(state => ({...state, displayTitle: e.target.value}));
                                     }}
-                                    onKeyDown={() => clearError('displayTitle')}
                                 />
                                 <TextArea
-                                    error={Boolean(errors.displayDescription)}
-                                    hint={displayDescriptionHint}
                                     maxLength={MAX_DISPLAY_TEXT_LENGTH}
                                     placeholder='We&#39;d hate to see you leave. How about a special offer to stay?'
                                     title='Display description'
@@ -277,7 +258,6 @@ const RetentionOfferSidebar: React.FC<{
                                     onChange={(e) => {
                                         updateForm(state => ({...state, displayDescription: e.target.value}));
                                     }}
-                                    onKeyDown={() => clearError('displayDescription')}
                                 />
                             </div>
                         </section>
@@ -557,14 +537,6 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
 
             if (!formState.enabled) {
                 return newErrors;
-            }
-
-            if (formState.displayTitle.length > MAX_DISPLAY_TEXT_LENGTH) {
-                newErrors.displayTitle = `Display title cannot be longer than ${MAX_DISPLAY_TEXT_LENGTH} characters.`;
-            }
-
-            if (formState.displayDescription.length > MAX_DISPLAY_TEXT_LENGTH) {
-                newErrors.displayDescription = `Display description cannot be longer than ${MAX_DISPLAY_TEXT_LENGTH} characters.`;
             }
 
             if (formState.type === 'percent') {

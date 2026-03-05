@@ -170,14 +170,6 @@ test.describe('Offers', () => {
         await expect(sidebar).toContainText(/Code is required/);
         await expect(sidebar).toContainText(/Enter an amount between 1 and 100%./);
         await expect(sidebar).toContainText(/Display title is required/);
-        const tooLongDisplayTitle = 't'.repeat(192);
-        const tooLongDisplayDescription = 'd'.repeat(192);
-
-        await sidebar.getByLabel('Display title').fill(tooLongDisplayTitle);
-        await expect(sidebar.getByLabel('Display title')).toHaveValue('t'.repeat(191));
-
-        await sidebar.getByLabel('Display description').fill(tooLongDisplayDescription);
-        await expect(sidebar.getByLabel('Display description')).toHaveValue('d'.repeat(191));
     });
 
     test('Can view active offers', async ({page}) => {
@@ -314,9 +306,6 @@ test.describe('Offers', () => {
             redemption_type: 'retention',
             tier: null
         };
-        const tooLongDisplayTitle = 't'.repeat(192);
-        const tooLongDisplayDescription = 'd'.repeat(192);
-
         const createRetentionOffer = (overrides: Partial<RetentionOffer> = {}) => {
             return {
                 ...defaultRetentionOffer,
@@ -531,11 +520,7 @@ test.describe('Offers', () => {
 
         test('Shows validation errors for invalid retention values on save', async ({page}) => {
             await mockApi({page, requests: getRetentionRequests({
-                retentionOffers: [createRetentionOffer({
-                    id: 'retention-month-active',
-                    display_title: tooLongDisplayTitle,
-                    display_description: tooLongDisplayDescription
-                })]
+                retentionOffers: [createRetentionOffer({id: 'retention-month-active'})]
             })});
 
             const {retentionModal} = await openRetentionModal(page, 'Monthly retention');
@@ -545,8 +530,6 @@ test.describe('Offers', () => {
             await retentionModal.getByLabel('Amount off').fill('0');
             await saveButton.click();
             await expect(retentionModal.getByText('Enter an amount between 1 and 100%.')).toBeVisible();
-            await expect(retentionModal.getByText('Display title cannot be longer than 191 characters.')).toBeVisible();
-            await expect(retentionModal.getByText('Display description cannot be longer than 191 characters.')).toBeVisible();
             await expect(saveButton).toBeEnabled();
 
             await retentionModal.getByLabel('Amount off').fill('150');
