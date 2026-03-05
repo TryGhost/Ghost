@@ -56,10 +56,6 @@ const features: Feature[] = [{
     description: 'Enable retention offers for canceling members',
     flag: 'retentionOffers'
 }, {
-    title: 'Welcome Email Editor',
-    description: 'Enable the new welcome email editor experience',
-    flag: 'welcomeEmailEditor'
-}, {
     title: 'Members Forward',
     description: 'Use the new React-based members list instead of the Ember implementation',
     flag: 'membersForward'
