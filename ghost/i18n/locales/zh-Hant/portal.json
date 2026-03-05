@@ -33,6 +33,7 @@
     "Black Friday": "黑色星期五促銷",
     "Cancel anytime.": "隨時取消",
     "Cancel subscription": "取消訂閱",
+    "Canceled": "",
     "Cancellation reason": "取消原因",
     "Change": "變更",
     "Change plan": "變更方案",
@@ -158,6 +159,7 @@
     "Re-enable emails": "重新啟用電子郵件",
     "Recommendations": "所有推薦",
     "Renews at {price}.": "以 {price} 的價格續費。",
+    "Resume subscription": "",
     "Retry": "重試",
     "Save": "儲存",
     "Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.": "",
@@ -245,6 +247,7 @@
     "Your email has failed to resubscribe, please try again": "您的電子郵件重新訂閱失敗，請再試一次",
     "your inbox": "您的收件匣",
     "Your input helps shape what gets published.": "您的建議將使我們變得更好。",
+    "Your subscription has been canceled and will expire on {expiryDate}.": "",
     "Your subscription will expire on {expiryDate}": "您的訂閱將於 {expiryDate} 到期",
     "Your subscription will renew on {renewalDate}": "您的訂閱將於 {renewalDate} 自動續訂",
     "Your subscription will start on {subscriptionStart}": "您的訂閱將於 {subscriptionStart} 開始"

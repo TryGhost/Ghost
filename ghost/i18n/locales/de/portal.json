@@ -33,6 +33,7 @@
     "Black Friday": "Black Friday",
     "Cancel anytime.": "Jederzeit kündbar.",
     "Cancel subscription": "Abonnement kündigen",
+    "Canceled": "",
     "Cancellation reason": "Kündigungsgrund",
     "Change": "Ändern",
     "Change plan": "Tarif ändern",
@@ -158,6 +159,7 @@
     "Re-enable emails": "E-Mails wieder aktivieren",
     "Recommendations": "Empfehlungen",
     "Renews at {price}.": "Wird zum Preis von {price} verlängert.",
+    "Resume subscription": "",
     "Retry": "Nochmals versuchen",
     "Save": "Speichern",
     "Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.": "",
@@ -245,6 +247,7 @@
     "Your email has failed to resubscribe, please try again": "Deine E-Mailadresse konnte nicht angemeldet werden. Bitte versuche es noch einmal.",
     "your inbox": "Dein Posteingang",
     "Your input helps shape what gets published.": "Dein Beitrag trägt dazu bei, was veröffentlicht wird.",
+    "Your subscription has been canceled and will expire on {expiryDate}.": "",
     "Your subscription will expire on {expiryDate}": "Dein Abonnement wird am {expiryDate} ablaufen.",
     "Your subscription will renew on {renewalDate}": "Dein Abonnement wird am {renewalDate} erneuert.",
     "Your subscription will start on {subscriptionStart}": "Dein Abonnement started am {subscriptionStart}."

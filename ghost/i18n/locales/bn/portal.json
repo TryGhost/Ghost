@@ -33,6 +33,7 @@
     "Black Friday": "ঈদ-উল-ফিতর",
     "Cancel anytime.": "যে কোনো সময় বাতিল করুন।",
     "Cancel subscription": "সাবস্ক্রিপশন বাতিল করুন",
+    "Canceled": "",
     "Cancellation reason": "বাতিলের কারণ",
     "Change": "পরিবর্তন",
     "Change plan": "",
@@ -158,6 +159,7 @@
     "Re-enable emails": "ইমেলগুলি পুনরায় সক্রিয় করুন",
     "Recommendations": "প্রস্তাবনা",
     "Renews at {price}.": "{price} এ নবায়ন হবে।",
+    "Resume subscription": "",
     "Retry": "আবার চেষ্টা করুন",
     "Save": "সংরক্ষণ করুন",
     "Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.": "",
@@ -245,6 +247,7 @@
     "Your email has failed to resubscribe, please try again": "",
     "your inbox": "",
     "Your input helps shape what gets published.": "আপনার ইনপুট প্রকাশিত হওয়ার বিষয়টি নির্ধারণ করতে সহায়তা করে।",
+    "Your subscription has been canceled and will expire on {expiryDate}.": "",
     "Your subscription will expire on {expiryDate}": "আপনার সাবস্ক্রিপশনের মেয়াদ {expiryDate} এ শেষ হবে",
     "Your subscription will renew on {renewalDate}": "আপনার সাবস্ক্রিপশন {renewalDate} এ নবায়ন হবে",
     "Your subscription will start on {subscriptionStart}": "আপনার সাবস্ক্রিপশন {subscriptionStart} থেকে শুরু হবে"
