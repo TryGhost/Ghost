@@ -1,8 +1,8 @@
 import RSVP from 'rsvp';
 import Service, {inject as service} from '@ember/service';
-import assetBase from 'ghost-admin/utils/asset-base';
 import classic from 'ember-classic-decorator';
 import config from 'ghost-admin/config/environment';
+import {prefixAssetUrl} from 'ghost-admin/utils/asset-base';
 
 @classic
 export default class LazyLoaderService extends Service {
@@ -35,7 +35,7 @@ export default class LazyLoaderService extends Service {
             let script = document.createElement('script');
             script.type = 'text/javascript';
             script.async = true;
-            script.src = `${assetBase()}${url}`;
+            script.src = prefixAssetUrl(url);
 
             let el = document.getElementsByTagName('script')[0];
             el.parentNode.insertBefore(script, el);
@@ -63,7 +63,7 @@ export default class LazyLoaderService extends Service {
             let link = document.createElement('link');
             link.id = `${key}-styles`;
             link.rel = alternate ? 'alternate stylesheet' : 'stylesheet';
-            link.href = `${assetBase()}${url}`;
+            link.href = prefixAssetUrl(url);
             link.onload = () => {
                 link.onload = null;
                 if (alternate) {

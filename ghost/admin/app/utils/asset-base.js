@@ -4,7 +4,7 @@ let _assetBase = null;
 
 /**
  * Resolve the asset base URL from script elements in the given document root.
- * Exported for direct testing — callers should use the default export instead.
+ * Exported for direct testing — callers should use prefixAssetUrl() instead.
  *
  * @param {Document} doc  The document to search for script tags
  * @returns {string} Absolute URL with trailing slash
@@ -40,11 +40,25 @@ export function resolveAssetBase(doc) {
  *   CDN:   "https://assets.ghost.io/admin-forward/"
  *   Local: "http://localhost:2368/ghost/"
  */
-export default function assetBase() {
+function assetBase() {
     if (_assetBase !== null) {
         return _assetBase;
     }
 
     _assetBase = resolveAssetBase(document);
     return _assetBase;
+}
+
+/**
+ * Prefix a URL with the asset base, but only if it isn't already absolute.
+ *
+ * broccoli-asset-rev rewrites string literals in the compiled JS at build time,
+ * prepending the CDN origin + fingerprint hash. If the URL is already absolute
+ * we must return it as-is to avoid double-prefixing.
+ */
+export function prefixAssetUrl(url) {
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+        return url;
+    }
+    return `${assetBase()}${url}`;
 }
