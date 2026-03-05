@@ -252,63 +252,58 @@ const createOffer = async (page, {name, tierName, offerType, amount, discountTyp
     let offerName;
     let offerLink;
     await test.step('Create an offer', async () => {
-        await page.goto('/ghost');
-        await page.getByRole('navigation').getByRole('link', {name: 'Settings'}).click();
+        // Go directly to the Offers route to avoid relying on persisted Settings sidebar state
+        await page.goto('/ghost/#/settings/offers');
 
         // Keep offer names unique & <= 40 characters
         offerName = `${name} (${new ObjectID().toHexString().slice(0, 40 - name.length - 3)})`;
-        // Verify that the Tier is fully loaded before proceeding
-        await page.getByTestId('tiers').getByText('No active tiers found').waitFor({state: 'hidden'});
-        await page.getByTestId('offers').getByRole('button', {name: 'Manage tiers'}).waitFor({state: 'hidden'});
 
-        // only one of these buttons is ever available - either 'Add offer' or 'Manage offers'
-        const hasExistingOffers = await page.getByTestId('offers').getByRole('button', {name: 'Manage offers'}).isVisible();
-        const isCTA = await page.getByTestId('offers').getByRole('button', {name: 'Add offer'}).isVisible();
+        const offersSection = page.getByTestId('offers');
+        await offersSection.waitFor({state: 'visible'});
 
-        // Archive other offers to keep the list tidy
-        // We only need 1 offer to be active at a time
-        // Either the list of active offers loads, or the CTA when no offers exist
-        if (hasExistingOffers && !isCTA) {
-            await page.getByTestId('offers').getByRole('button', {name: 'Manage offers'}).click();
+        const addOfferButton = offersSection.getByRole('button', {name: 'Add offer'});
+        const manageOffersButton = offersSection.getByRole('button', {name: 'Manage offers'});
 
-            // Selector for the elements with data-testid 'offer-item'
-            // const offerItemsSelector = '[data-testid="offer-item"]';
-            await page.getByTestId('offer-item').nth(0).click();
-            await page.getByRole('button', {name: 'Archive offer'}).click();
+        if (await manageOffersButton.isVisible()) {
+            await manageOffersButton.click();
 
-            const confirmModal = await page.getByTestId('confirmation-modal');
-            await confirmModal.getByRole('button', {name: 'Archive'}).click();
-            await confirmModal.waitFor({state: 'hidden'});
+            const firstOfferItem = page.getByTestId('offer-item').first();
+            if (await firstOfferItem.isVisible()) {
+                // Keep list tidy to avoid selecting stale offers in downstream checks
+                await firstOfferItem.click();
+                await page.getByRole('button', {name: 'Archive offer'}).click();
 
-            // Still in the offers modal after archiving — click "New offer" directly
-            await page.getByText('New offer').click();
-        } else if (await page.getByTestId('offers').getByRole('button', {name: 'Add offer'}).isVisible()) {
-            await page.getByTestId('offers').getByRole('button', {name: 'Add offer'}).click();
+                const confirmModal = page.getByTestId('confirmation-modal');
+                await confirmModal.getByRole('button', {name: 'Archive'}).click();
+                await confirmModal.waitFor({state: 'hidden'});
+            }
+
+            await page.getByRole('button', {name: 'New offer'}).click();
         } else {
-            await page.getByTestId('offers').getByRole('button', {name: 'Manage offers'}).click();
-            await page.getByText('New offer').click();
+            await addOfferButton.click();
         }
 
-        await page.getByLabel('Offer name').fill(offerName);
+        const addOfferModal = page.getByTestId('add-offer-modal');
+        await addOfferModal.waitFor({state: 'visible'});
+        await addOfferModal.getByLabel('Offer name').fill(offerName);
 
         if (offerType === 'freeTrial') {
-            // await page.getByRole('button', {name: 'Free trial Give free access for a limited time.'}).click();
-            await page.getByText('Give free access for a limited time').click();
-            await page.getByLabel('Trial duration').fill(`${amount}`);
+            await addOfferModal.getByText('Give free access for a limited time').click();
+            await addOfferModal.getByLabel('Trial duration').fill(`${amount}`);
         } else if (offerType === 'discount') {
-            await page.getByLabel('Amount off').fill(`${amount}`);
+            await addOfferModal.getByLabel('Amount off').fill(`${amount}`);
             if (discountType === 'multiple-months') {
-                await chooseOptionInSelect(page.getByTestId('duration-select-offers'), `Multiple-months`);
-                const durationInput = page.getByTestId('duration-months-input');
+                await chooseOptionInSelect(addOfferModal.getByTestId('duration-select-offers'), `Multiple-months`);
+                const durationInput = addOfferModal.getByTestId('duration-months-input');
                 await durationInput.fill(discountDuration.toString());
             }
 
             if (discountType === 'forever') {
-                await chooseOptionInSelect(page.getByTestId('duration-select-offers'), `Forever`);
+                await chooseOptionInSelect(addOfferModal.getByTestId('duration-select-offers'), `Forever`);
             }
         }
 
-        await chooseOptionInSelect(page.getByTestId('tier-cadence-select-offers'), `${tierName} - Monthly`);
+        await chooseOptionInSelect(addOfferModal.getByTestId('tier-cadence-select-offers'), `${tierName} - Monthly`);
 
         const createOfferResponsePromise = page.waitForResponse((response) => {
             return response.request().method() === 'POST' &&
@@ -317,7 +312,7 @@ const createOffer = async (page, {name, tierName, offerType, amount, discountTyp
                 response.status() < 300;
         }, {timeout: 30000});
 
-        await page.getByRole('button', {name: 'Publish'}).click();
+        await addOfferModal.getByRole('button', {name: 'Publish'}).click();
 
         let createdOfferCode = '';
         let createdOfferId = '';
