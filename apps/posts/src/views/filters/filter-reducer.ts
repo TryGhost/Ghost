@@ -10,9 +10,14 @@ export interface FilterState {
     search?: string;
 }
 
-export type FilterAction = {
-    type: 'clearPredicates';
-};
+export type FilterAction =
+    {
+        type: 'clearPredicates';
+    }
+    | {
+        type: 'addPredicate';
+        predicate: FilterPredicate;
+    };
 
 export function filterReducer(state: FilterState, action: FilterAction): FilterState {
     switch (action.type) {
@@ -20,6 +25,11 @@ export function filterReducer(state: FilterState, action: FilterAction): FilterS
         return {
             ...state,
             predicates: []
+        };
+    case 'addPredicate':
+        return {
+            ...state,
+            predicates: [...state.predicates, action.predicate]
         };
     }
 }
