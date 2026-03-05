@@ -195,39 +195,43 @@ const MembersActions: React.FC<MembersActionsProps> = ({
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                    {/* Export */}
-                    <DropdownMenuItem onClick={handleExport}>
-                        <LucideIcon.Download className="mr-2 size-4" />
-                        {isFiltered
-                            ? `Export ${memberCount.toLocaleString()} members`
-                            : 'Export all members'}
-                    </DropdownMenuItem>
+                    {memberCount > 0 && (
+                        <>
+                            {/* Export */}
+                            <DropdownMenuItem onClick={handleExport}>
+                                <LucideIcon.Download className="mr-2 size-4" />
+                                {isFiltered
+                                    ? `Export ${memberCount.toLocaleString()} members`
+                                    : 'Export all members'}
+                            </DropdownMenuItem>
 
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => setShowAddLabelModal(true)}>
-                        <LucideIcon.Tags className="mr-2 size-4" />
-                            Add label to {memberCount.toLocaleString()} {memberCount === 1 ? 'member' : 'members'}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setShowRemoveLabelModal(true)}>
-                        <LucideIcon.Tag className="mr-2 size-4" />
-                            Remove label from {memberCount.toLocaleString()} {memberCount === 1 ? 'member' : 'members'}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                        disabled={isLoadingNewsletters}
-                        onClick={() => setShowUnsubscribeModal(true)}
-                    >
-                        <LucideIcon.MailX className="mr-2 size-4" />
-                            Unsubscribe {memberCount.toLocaleString()} {memberCount === 1 ? 'member' : 'members'}
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                        className="text-destructive focus:text-destructive"
-                        disabled={!canBulkDelete}
-                        onClick={() => setShowDeleteModal(true)}
-                    >
-                        <LucideIcon.Trash2 className="mr-2 size-4" />
-                            Delete {memberCount.toLocaleString()} {memberCount === 1 ? 'member' : 'members'}
-                    </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => setShowAddLabelModal(true)}>
+                                <LucideIcon.Tags className="mr-2 size-4" />
+                                    Add label to {memberCount.toLocaleString()} {memberCount === 1 ? 'member' : 'members'}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setShowRemoveLabelModal(true)}>
+                                <LucideIcon.Tag className="mr-2 size-4" />
+                                    Remove label from {memberCount.toLocaleString()} {memberCount === 1 ? 'member' : 'members'}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                disabled={isLoadingNewsletters}
+                                onClick={() => setShowUnsubscribeModal(true)}
+                            >
+                                <LucideIcon.MailX className="mr-2 size-4" />
+                                    Unsubscribe {memberCount.toLocaleString()} {memberCount === 1 ? 'member' : 'members'}
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                                className="text-destructive focus:text-destructive"
+                                disabled={!canBulkDelete}
+                                onClick={() => setShowDeleteModal(true)}
+                            >
+                                <LucideIcon.Trash2 className="mr-2 size-4" />
+                                    Delete {memberCount.toLocaleString()} {memberCount === 1 ? 'member' : 'members'}
+                            </DropdownMenuItem>
+                        </>
+                    )}
                 </DropdownMenuContent>
             </DropdownMenu>
 
