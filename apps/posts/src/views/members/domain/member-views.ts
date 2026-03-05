@@ -1,4 +1,4 @@
-import {MULTISELECT_FIELDS} from '../hooks/use-members-filter-state';
+import {MEMBER_FILTER_FIELDS, MULTISELECT_FIELDS, type MemberFilterField} from '../hooks/use-members-filter-state';
 import {z} from 'zod';
 import type {Filter} from '@tryghost/shade';
 
@@ -68,20 +68,69 @@ export function isFilterEqual(a: Record<string, string | null>, b: Record<string
     return aKeys.every((key, i) => key === bKeys[i] && a[key] === b[key]);
 }
 
-/**
- * A view is active when all of its params are present in current search params.
- */
-export function isViewSearchActive(currentSearch: string, viewFilter: Record<string, string | null>): boolean {
-    const currentParams = new URLSearchParams(currentSearch);
-    const viewParams = filterRecordToSearchParams(viewFilter);
+function isMemberFilterParam(key: string): boolean {
+    return key.startsWith('newsletters.') || MEMBER_FILTER_FIELDS.includes(key as MemberFilterField);
+}
 
-    for (const [key, value] of viewParams.entries()) {
-        if (currentParams.get(key) !== value) {
-            return false;
-        }
+function normalizeFilterParamValue(key: string, value: string): string {
+    if (!MULTISELECT_FIELDS.has(key)) {
+        return value;
     }
 
-    return true;
+    const colonIndex = value.indexOf(':');
+    if (colonIndex <= 0) {
+        return value;
+    }
+
+    const operator = value.slice(0, colonIndex);
+    const serializedValues = value
+        .slice(colonIndex + 1)
+        .split(',')
+        .filter(Boolean)
+        .sort()
+        .join(',');
+
+    return `${operator}:${serializedValues}`;
+}
+
+function searchParamsToComparableFilterRecord(search: string): Record<string, string> {
+    const params = new URLSearchParams(search);
+    const record: Record<string, string> = {};
+
+    for (const [key, value] of params.entries()) {
+        if (!isMemberFilterParam(key) || !value) {
+            continue;
+        }
+
+        record[key] = normalizeFilterParamValue(key, value);
+    }
+
+    return record;
+}
+
+function filterRecordToComparableFilterRecord(filter: Record<string, string | null>): Record<string, string> {
+    const record: Record<string, string> = {};
+
+    for (const [key, value] of Object.entries(filter)) {
+        if (!isMemberFilterParam(key) || value === null || value === undefined) {
+            continue;
+        }
+
+        record[key] = normalizeFilterParamValue(key, value);
+    }
+
+    return record;
+}
+
+/**
+ * A view is active when current URL filter params exactly match the view's filter params.
+ * Non-filter params (eg. `page`, `search`) are ignored.
+ */
+export function isViewSearchActive(currentSearch: string, viewFilter: Record<string, string | null>): boolean {
+    const currentFilter = searchParamsToComparableFilterRecord(currentSearch);
+    const viewComparableFilter = filterRecordToComparableFilterRecord(viewFilter);
+
+    return isFilterEqual(currentFilter, viewComparableFilter);
 }
 
 /**

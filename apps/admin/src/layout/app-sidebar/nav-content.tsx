@@ -10,14 +10,15 @@ import {
 } from "@tryghost/shade"
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
 import { canManageMembers, canManageTags } from "@tryghost/admin-x-framework/api/users";
+import { useLocation } from "@tryghost/admin-x-framework";
 import { NavMenuItem } from "./nav-menu-item";
 import NavSubMenu from "./nav-sub-menu";
 import { useMemberCount } from "./hooks/use-member-count";
 import { useNavigationExpanded } from "./hooks/use-navigation-preferences";
 import { NavCustomViews } from "./nav-custom-views";
 import { NavMemberViews } from "./nav-member-views";
-import { formatMemberCount, getMembersNavActiveRoutes } from "./nav-content.helpers";
-import { useMemberViews } from "@tryghost/posts/src/views/members/hooks/use-member-views";
+import { formatMemberCount, getMembersNavActiveRoutes, isMembersNavActive } from "./nav-content.helpers";
+import { isViewSearchActive, useMemberViews } from "@tryghost/posts/src/views/members/hooks/use-member-views";
 import { useEmberRouting } from "@/ember-bridge";
 import { useFeatureFlag } from "@/hooks/use-feature-flag";
 
@@ -27,6 +28,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const [membersExpanded, setMembersExpanded] = useNavigationExpanded('members');
     const memberViews = useMemberViews();
     const hasMemberViews = memberViews.length > 0;
+    const location = useLocation();
     const memberCount = useMemberCount();
     const routing = useEmberRouting();
     const commentModerationEnabled = useFeatureFlag('commentModeration');
@@ -34,6 +36,16 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
 
     const showTags = currentUser && canManageTags(currentUser);
     const showMembers = currentUser && canManageMembers(currentUser);
+    const isOnMembersForward = location.pathname === '/members-forward';
+    const hasActiveMemberView = isOnMembersForward && memberViews.some(view =>
+        isViewSearchActive(location.search, view.filter)
+    );
+    const membersNavActive = isMembersNavActive({
+        membersForwardEnabled,
+        isOnMembersForward,
+        hasActiveMemberView,
+        isLegacyMembersRouteActive: routing.isRouteActive(getMembersNavActiveRoutes(membersForwardEnabled))
+    });
 
     return (
         <SidebarGroup {...props}>
@@ -154,7 +166,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                                 )}
                                 <NavMenuItem.Link
                                     to={membersForwardEnabled ? 'members-forward' : routing.getRouteUrl('members')}
-                                    isActive={routing.isRouteActive(getMembersNavActiveRoutes(membersForwardEnabled))}
+                                    isActive={membersNavActive}
                                 >
                                     <LucideIcon.Users className={membersForwardEnabled && hasMemberViews ? "opacity-0 sidebar:opacity-100 sidebar:group-hover/menu-item:opacity-0 pointer-events-none transition-all" : ""} />
                                     <NavMenuItem.Label>Members</NavMenuItem.Label>

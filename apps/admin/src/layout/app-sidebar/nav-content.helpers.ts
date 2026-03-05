@@ -10,6 +10,28 @@ export function getMembersNavActiveRoutes(membersForwardEnabled: boolean): strin
     return ['members', 'member', 'member.new'];
 }
 
+export function isMembersNavActive({
+    membersForwardEnabled,
+    isOnMembersForward,
+    hasActiveMemberView,
+    isLegacyMembersRouteActive
+}: {
+    membersForwardEnabled: boolean;
+    isOnMembersForward: boolean;
+    hasActiveMemberView: boolean;
+    isLegacyMembersRouteActive: boolean;
+}): boolean {
+    if (!membersForwardEnabled) {
+        return isLegacyMembersRouteActive;
+    }
+
+    if (isOnMembersForward) {
+        return !hasActiveMemberView;
+    }
+
+    return isLegacyMembersRouteActive;
+}
+
 export function formatMemberCount(value: number): string {
     return formatNumberSafe(value);
 }
