@@ -128,7 +128,7 @@ describe('ContinueSubscriptionButton', () => {
         const {container, queryByText} = setup({site, member});
         const banner = container.querySelector('.gh-portal-cancel-banner');
         expect(banner).toBeInTheDocument();
-        const button = queryByText('Continue subscription');
+        const button = queryByText('Resume subscription');
         expect(button).toBeInTheDocument();
         // Button should be inside the banner
         expect(banner.contains(button)).toBe(true);
