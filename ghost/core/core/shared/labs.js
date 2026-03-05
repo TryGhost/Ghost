@@ -50,7 +50,8 @@ const PRIVATE_FEATURES = [
     'retentionOffers',
     'welcomeEmailEditor',
     'membersForward',
-    'welcomeEmailsDesignCustomization'
+    'welcomeEmailsDesignCustomization',
+    'smarterCounts'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

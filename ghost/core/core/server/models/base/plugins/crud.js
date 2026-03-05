@@ -144,6 +144,11 @@ module.exports = function (Bookshelf) {
                 options.useBasicCount = unfilteredOptions.useBasicCount;
             }
 
+            const labs = require('../../../../shared/labs');
+            if (labs.isSet('smarterCounts')) {
+                options.useSmartCount = true;
+            }
+
             const response = await itemCollection.fetchPage(options);
             // Attributes are being filtered here, so they are not leaked into calling layer
             // where models are serialized to json and do not do more filtering.
