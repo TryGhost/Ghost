@@ -174,6 +174,8 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                             onKeyDown={() => clearError('name')}
                         />
                         <TextField
+                            error={Boolean(errors.displayTitle)}
+                            hint={errors.displayTitle}
                             maxLength={MAX_DISPLAY_TEXT_LENGTH}
                             placeholder='Black Friday Special'
                             title='Display title'
@@ -181,6 +183,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                             onChange={(e) => {
                                 handleDisplayTitleInput(e);
                             }}
+                            onKeyDown={() => clearError('displayTitle')}
                         />
                         <TextArea
                             maxLength={MAX_DISPLAY_TEXT_LENGTH}
