@@ -5,7 +5,7 @@ import CloseButton from '../common/close-button';
 import BackButton from '../common/back-button';
 import {MultipleProductsPlansSection} from '../common/plans-section';
 import {getDateString} from '../../utils/date-time';
-import {addMonths, formatNumber, getAvailablePrices, getCurrencySymbol, getFilteredPrices, isFreeMonthsOffer, getMemberActivePrice, getMemberActiveProduct, getMemberSubscription, getOfferOffAmount, getPriceFromSubscription, getProductFromId, getProductFromPrice, getSubscriptionFromId, getUpdatedOfferPrice, getUpgradeProducts, hasMultipleProductsFeature, isComplimentaryMember, isPaidMember} from '../../utils/helpers';
+import {addMonths, formatNumber, getAvailablePrices, getCurrencySymbol, getFilteredPrices, isFreeMonthsOffer, getMemberActivePrice, getMemberActiveProduct, getMemberSubscription, getOfferOffAmount, getPriceFromSubscription, getProductFromPrice, getSubscriptionFromId, getUpdatedOfferPrice, getUpgradeProducts, hasMultipleProductsFeature, isComplimentaryMember, isPaidMember} from '../../utils/helpers';
 import Interpolate from '@doist/react-interpolate';
 import {t} from '../../utils/i18n';
 
@@ -13,6 +13,10 @@ export const AccountPlanPageStyles = `
     .account-plan.full-size .gh-portal-main-title {
         font-size: 3.2rem;
         margin-top: 44px;
+    }
+
+    .account-plan:not(.full-size) .gh-portal-detail-header {
+        padding-inline: 60px;
     }
 
     .gh-portal-accountplans-main {
@@ -52,11 +56,15 @@ export const AccountPlanPageStyles = `
         display: flex;
         align-items: center;
         gap: 6px;
-        margin-top: 20px;
+        margin-top: 16px;
     }
 
     .gh-portal-retention-offer-price .gh-portal-offer-oldprice {
         margin: 4px 0 0;
+    }
+
+    .gh-portal-retention-offer .gh-portal-offer-details > .footnote:first-child {
+        margin-top: 12px;
     }
 `;
 
@@ -309,18 +317,24 @@ function getRetentionOfferMessage(offer, originalPrice, currency, amountOff, sub
     return '';
 }
 
-const RetentionOfferSection = ({offer, product, price, onAcceptOffer, onDeclineOffer}) => {
-    const {brandColor, action, member} = useContext(AppContext);
+const RetentionOfferSection = ({subscription, offer, onAcceptOffer, onDeclineOffer}) => {
+    const {brandColor, action} = useContext(AppContext);
     const isAcceptingOffer = action === 'applyOffer:running';
-    const subscription = getMemberSubscription({member});
 
+    const price = getPriceFromSubscription({subscription});
     const originalPrice = formatNumber(price.amount / 100);
     const currency = getCurrencySymbol(price.currency);
     const discountedPrice = formatNumber(getUpdatedOfferPrice({offer, price}));
     const amountOff = getOfferOffAmount({offer});
 
     const cadenceLabel = offer.cadence === 'month' ? t('Monthly') : t('Yearly');
-    const productCadenceLabel = `${product.name} - ${cadenceLabel}`;
+
+    let productCadenceLabel = cadenceLabel;
+    const tier = subscription.tier;
+    if (tier && tier.name) {
+        productCadenceLabel = `${tier.name} - ${cadenceLabel}`;
+    }
+
     const displayDescription = offer.display_description || t('We\'d hate to see you leave. How about a special offer to stay?');
 
     const offerLabel = getRetentionOfferLabel(offer, amountOff);
@@ -339,19 +353,17 @@ const RetentionOfferSection = ({offer, product, price, onAcceptOffer, onDeclineO
                 </div>
 
                 <div className="gh-portal-offer-details">
-                    <div className="gh-portal-retention-offer-price">
-                        {!isFreeMonthsOffer(offer) && (
-                            <>
-                                <div className="gh-portal-product-price">
-                                    <span className="currency-sign">{currency}</span>
-                                    <span className="amount">{discountedPrice}</span>
-                                </div>
-                                <div className="gh-portal-offer-oldprice">
-                                    {currency}{originalPrice}
-                                </div>
-                            </>
-                        )}
-                    </div>
+                    {!isFreeMonthsOffer(offer) && (
+                        <div className="gh-portal-retention-offer-price">
+                            <div className="gh-portal-product-price">
+                                <span className="currency-sign">{currency}</span>
+                                <span className="amount">{discountedPrice}</span>
+                            </div>
+                            <div className="gh-portal-offer-oldprice">
+                                {currency}{originalPrice}
+                            </div>
+                        </div>
+                    )}
                     <p className="footnote">
                         {offerMessage}
                     </p>
@@ -368,7 +380,7 @@ const RetentionOfferSection = ({offer, product, price, onAcceptOffer, onDeclineO
                     style={{
                         width: '100%',
                         height: '40px',
-                        marginTop: '28px'
+                        marginTop: '20px'
                     }}
                 />
             </div>
@@ -429,7 +441,7 @@ const PlansContainer = ({
     pendingOffer, onPlanSelect, onPlanCheckout, onConfirm, onCancelSubscription,
     onAcceptRetentionOffer, onDeclineRetentionOffer
 }) => {
-    const {member, site} = useContext(AppContext);
+    const {member} = useContext(AppContext);
     // Plan upgrade flow for free member or complimentary member
     if (!isPaidMember({member}) || isComplimentaryMember({member})) {
         return (
@@ -451,18 +463,13 @@ const PlansContainer = ({
 
     // Retention offer flow - shown before cancellation confirmation
     if (confirmationType === 'offerRetention' && pendingOffer) {
-        const offerProduct = pendingOffer.tier
-            ? getProductFromId({site, productId: pendingOffer.tier.id})
-            : getMemberActiveProduct({member, site});
-        const offerPrice = pendingOffer.cadence === 'month' ? offerProduct?.monthlyPrice : offerProduct?.yearlyPrice;
+        const subscription = getMemberSubscription({member});
 
-        // Skip retention offer if product or price is invalid
-        if (offerProduct && offerPrice) {
+        if (subscription) {
             return (
                 <RetentionOfferSection
+                    subscription={subscription}
                     offer={pendingOffer}
-                    product={offerProduct}
-                    price={offerPrice}
                     onAcceptOffer={onAcceptRetentionOffer}
                     onDeclineOffer={onDeclineRetentionOffer}
                 />
