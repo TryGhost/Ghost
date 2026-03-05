@@ -1,6 +1,6 @@
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
-import {resolveAssetBase} from 'ghost-admin/utils/asset-base';
+import {prefixAssetUrl, resolveAssetBase} from 'ghost-admin/utils/asset-base';
 
 /**
  * Create a minimal document fragment containing a <script> tag with the
@@ -89,6 +89,41 @@ describe('Unit: Util: asset-base', function () {
             // This is the exact pattern used by fetchKoenigLexical and importComponent —
             // a relative path is NOT valid input for new URL(), so the base must be absolute.
             expect(() => new URL(`${base}assets/koenig-lexical/koenig-lexical.umd.js`)).to.not.throw();
+        });
+    });
+
+    describe('prefixAssetUrl', function () {
+        it('prefixes a relative URL with the asset base', function () {
+            const result = prefixAssetUrl('assets/ghost-dark.css');
+
+            expect(result).to.match(/^https?:\/\//);
+            expect(result).to.include('assets/ghost-dark.css');
+        });
+
+        it('returns an absolute http URL unchanged (no double-prefixing)', function () {
+            const absoluteUrl = 'http://cdn.example.com/admin-forward/assets/ghost-dark-abc123.css';
+            const result = prefixAssetUrl(absoluteUrl);
+
+            expect(result).to.equal(absoluteUrl);
+        });
+
+        it('returns an absolute https URL unchanged (no double-prefixing)', function () {
+            const absoluteUrl = 'https://assets.ghost.io/admin-forward/assets/ghost-dark-9695bb0264af063aa642b1e451293d1a.css';
+            const result = prefixAssetUrl(absoluteUrl);
+
+            expect(result).to.equal(absoluteUrl);
+        });
+
+        it('handles URLs rewritten by broccoli-asset-rev with CDN prepend', function () {
+            // broccoli-asset-rev rewrites string literals in compiled JS,
+            // turning 'assets/ghost-dark.css' into
+            // 'https://cdn.example.com/admin-forward/assets/ghost-dark-{hash}.css'.
+            // prefixAssetUrl must not add another prefix on top.
+            const rewrittenUrl = 'https://cdn.example.com/admin-forward/assets/ghost-dark-a1b2c3d4.css';
+            const result = prefixAssetUrl(rewrittenUrl);
+
+            expect(result).to.equal(rewrittenUrl);
+            expect(result).to.not.include('https://cdn.example.com/admin-forward/https://');
         });
     });
 });
