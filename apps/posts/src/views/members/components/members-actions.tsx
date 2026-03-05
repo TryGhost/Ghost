@@ -11,6 +11,7 @@ import {
 } from '@tryghost/shade';
 import {blobDownloadFromEndpoint} from '@tryghost/admin-x-framework/helpers';
 import {toast} from 'sonner';
+import {useBrowseLabels} from '@tryghost/admin-x-framework/api/labels';
 import {useBulkDeleteMembers, useBulkEditMembers} from '@tryghost/admin-x-framework/api/members';
 
 interface MembersActionsProps {
@@ -37,6 +38,9 @@ const MembersActions: React.FC<MembersActionsProps> = ({
     canBulkDelete,
     onImportComplete
 }) => {
+    const {data: labelsData} = useBrowseLabels({});
+    const labels = labelsData?.labels || [];
+
     const {mutateAsync: bulkEditAsync, isLoading: isBulkEditing} = useBulkEditMembers();
     const {mutate: bulkDelete, isLoading: isBulkDeleting} = useBulkDeleteMembers();
 
