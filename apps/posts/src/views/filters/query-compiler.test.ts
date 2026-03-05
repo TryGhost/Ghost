@@ -29,4 +29,16 @@ describe('compileSurfaceQuery', () => {
             filter: "name:~'alex'+status:paid"
         });
     });
+
+    it('ignores search on comments queries', () => {
+        const query = compileSurfaceQuery({
+            surface: 'comments',
+            filter: 'status:published',
+            search: 'alex'
+        });
+
+        expect(query).toEqual({
+            filter: 'status:published'
+        });
+    });
 });
