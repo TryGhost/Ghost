@@ -159,6 +159,7 @@
     "Re-enable emails": "重新启用电子邮件",
     "Recommendations": "推荐",
     "Renews at {price}.": "以{price}的价格续费。",
+    "Resume subscription": "",
     "Retry": "重试",
     "Save": "保存",
     "Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.": "",

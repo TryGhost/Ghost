@@ -159,6 +159,7 @@
     "Re-enable emails": "E-postaları yeniden etkinleştir",
     "Recommendations": "Tavsiyeler",
     "Renews at {price}.": "{price} karşılığında yenilenir.",
+    "Resume subscription": "",
     "Retry": "Tekrar dene",
     "Save": "Kaydet",
     "Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.": "",

@@ -159,6 +159,7 @@
     "Re-enable emails": "Luba e-kirjad uuesti",
     "Recommendations": "Soovitused",
     "Renews at {price}.": "Uueneb hinnaga {price}.",
+    "Resume subscription": "",
     "Retry": "Proovi uuesti",
     "Save": "Salvesta",
     "Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.": "",

@@ -159,6 +159,7 @@
     "Re-enable emails": "เปิดใช้งานอีเมลนี้อีกครั้ง",
     "Recommendations": "รายการแนะนำ",
     "Renews at {price}.": "ต่ออายุที่ {price}",
+    "Resume subscription": "",
     "Retry": "ลองอีกครั้ง",
     "Save": "บันทึก",
     "Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.": "",

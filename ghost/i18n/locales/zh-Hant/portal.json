@@ -159,6 +159,7 @@
     "Re-enable emails": "重新啟用電子郵件",
     "Recommendations": "所有推薦",
     "Renews at {price}.": "以 {price} 的價格續費。",
+    "Resume subscription": "",
     "Retry": "重試",
     "Save": "儲存",
     "Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.": "",

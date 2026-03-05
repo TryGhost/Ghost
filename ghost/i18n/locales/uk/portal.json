@@ -159,6 +159,7 @@
     "Re-enable emails": "Знову включити пошту",
     "Recommendations": "Рекомендації",
     "Renews at {price}.": "Поновлення за {price}.",
+    "Resume subscription": "",
     "Retry": "Повтори спробу",
     "Save": "Зберегти",
     "Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.": "",

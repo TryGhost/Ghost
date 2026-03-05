@@ -222,6 +222,7 @@
     "Report": "Button to report a comment",
     "Report comment": "Used in the context menu",
     "Report this comment?": "Title of the modal to report a comment",
+    "Resume subscription": "Button in the canceled subscription banner on the Portal account page to resume a canceled subscription",
     "Retry": "When something goes wrong, this link allows people to re-attempt the same action",
     "Save": "A button to save",
     "Save {amountOff} on your next billing cycle. Then {currency}{originalPrice}/{cadence}.": "",

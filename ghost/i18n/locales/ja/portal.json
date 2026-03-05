@@ -159,6 +159,7 @@
     "Re-enable emails": "メールを再有効化する",
     "Recommendations": "おすすめ",
     "Renews at {price}.": "{price}で更新されます。",
+    "Resume subscription": "",
     "Retry": "再試行",
     "Save": "保存",
     "Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.": "",

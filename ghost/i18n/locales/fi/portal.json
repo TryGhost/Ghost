@@ -159,6 +159,7 @@
     "Re-enable emails": "Hyväksy sähköpostit uudelleen",
     "Recommendations": "Suositukset",
     "Renews at {price}.": "Tilaus uusiutuu hinnalla {price}.",
+    "Resume subscription": "",
     "Retry": "Kokeile uudestaan",
     "Save": "Tallenna",
     "Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.": "",

@@ -159,6 +159,7 @@
     "Re-enable emails": "ইমেলগুলি পুনরায় সক্রিয় করুন",
     "Recommendations": "প্রস্তাবনা",
     "Renews at {price}.": "{price} এ নবায়ন হবে।",
+    "Resume subscription": "",
     "Retry": "আবার চেষ্টা করুন",
     "Save": "সংরক্ষণ করুন",
     "Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.": "",

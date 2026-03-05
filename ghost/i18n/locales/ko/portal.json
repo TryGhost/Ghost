@@ -159,6 +159,7 @@
     "Re-enable emails": "이메일 재활성화",
     "Recommendations": "추천",
     "Renews at {price}.": "{price}에 갱신돼요.",
+    "Resume subscription": "",
     "Retry": "다시 시도",
     "Save": "저장",
     "Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.": "",

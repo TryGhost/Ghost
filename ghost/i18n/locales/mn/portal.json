@@ -159,6 +159,7 @@
     "Re-enable emails": "Имэйлийг дахин идэвхжүүлэх",
     "Recommendations": "Санал болгох",
     "Renews at {price}.": "{price}-д шинэчлэгдэнэ.",
+    "Resume subscription": "",
     "Retry": "Дахин оролдох",
     "Save": "Хадгалах",
     "Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.": "",

@@ -159,6 +159,7 @@
     "Re-enable emails": "Поново омогућите email-ове",
     "Recommendations": "Препоруке",
     "Renews at {price}.": "Обнавља се по цени од {price}.",
+    "Resume subscription": "",
     "Retry": "Покушајте поново",
     "Save": "Сачувајте",
     "Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.": "",

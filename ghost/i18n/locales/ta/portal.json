@@ -159,6 +159,7 @@
     "Re-enable emails": "மின்னஞ்சல்களை மீண்டும் இயக்கு",
     "Recommendations": "பரிந்துரைகள்",
     "Renews at {price}.": "{price}க்கு புதுப்பிக்கப்படுகிறது.",
+    "Resume subscription": "",
     "Retry": "மீண்டும் முயற்சி",
     "Save": "சேமி",
     "Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.": "",

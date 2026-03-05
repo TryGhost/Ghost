@@ -159,6 +159,7 @@
     "Re-enable emails": "Подписаться повторно",
     "Recommendations": "Рекомендации",
     "Renews at {price}.": "Продление за {price}.",
+    "Resume subscription": "",
     "Retry": "Повторить попытку",
     "Save": "Сохранить",
     "Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.": "",

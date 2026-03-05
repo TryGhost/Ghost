@@ -159,6 +159,7 @@
     "Re-enable emails": "E-Mails wieder aktivieren",
     "Recommendations": "Empfehlungen",
     "Renews at {price}.": "Wird verlängert zum Preis von {price}.",
+    "Resume subscription": "",
     "Retry": "Erneut versuchen",
     "Save": "Speichern",
     "Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.": "",
