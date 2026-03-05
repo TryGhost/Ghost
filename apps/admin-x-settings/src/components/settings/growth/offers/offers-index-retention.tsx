@@ -87,7 +87,7 @@ const OffersFilterPopover: React.FC<{
         <Popover
             position='end'
             trigger={
-                <Button className='flex cursor-pointer items-center justify-center rounded p-1 hover:bg-grey-100 dark:hover:bg-grey-800 dark:[&_svg]:hover:text-white' label={<LucideIcon.ListFilter className='text-grey-700 dark:text-grey-500' size={16} strokeWidth={1.5} />} unstyled={true} />
+                <Button aria-label="Filter options" className='p-1 hover:text-black dark:hover:text-white' label={<LucideIcon.ListFilter size={16} strokeWidth={1.5} />} unstyled={true} />
             }
         >
             <div className='flex min-w-[200px] flex-col p-1 normal-case'>
@@ -155,8 +155,8 @@ const RetentionOfferRow: React.FC<{
         : undefined;
 
     return (
-        <tr className='group relative scale-100 border-b border-b-grey-200 dark:border-grey-800' data-testid='retention-offer-item'>
-            <td className='p-0'>
+        <tr className='group relative border-b border-b-grey-200 dark:border-grey-800' data-testid='retention-offer-item'>
+            <td className='sticky left-0 z-10 bg-white p-0 dark:bg-black'>
                 <button className='block w-full cursor-pointer p-5 pl-0 text-left' type="button" onClick={onClick}>
                     <span className='font-semibold'>{offer.name}</span><br />
                     <span className='text-sm text-grey-700'>{offer.description}</span>
@@ -318,17 +318,17 @@ export const OffersIndexModal: React.FC = () => {
     ];
 
     const listLayoutOutput = <div className='overflow-x-auto'>
-        <table className='m-0 w-full table-fixed'>
+        <table className='m-0 min-w-[900px]'>
             <colgroup>
-                <col />
+                <col className='w-[25%]' />
                 <col className='w-[200px]' />
                 <col className='w-[200px]' />
                 <col className='w-[200px]' />
-                <col className='w-[200px]' />
+                <col className='w-[220px]' />
             </colgroup>
             <thead>
                 <tr className='border-b border-b-grey-200 dark:border-grey-800'>
-                    <th className='p-0 pb-2.5 pl-0 text-left text-xs font-medium uppercase tracking-wide text-grey-700'>Name</th>
+                    <th className='sticky left-0 z-10 bg-white p-0 pb-2.5 text-left text-xs font-medium uppercase tracking-wide text-grey-700 dark:bg-black'>Name</th>
                     <th className='p-0 pb-2.5 pl-5 text-left text-xs font-medium uppercase tracking-wide text-grey-700'>Terms</th>
                     <th className='p-0 pb-2.5 pl-5 text-left text-xs font-medium uppercase tracking-wide text-grey-700'>Price</th>
                     <th className='p-0 pb-2.5 pl-5 text-left text-xs font-medium uppercase tracking-wide text-grey-700'>Redemptions</th>
@@ -367,8 +367,8 @@ export const OffersIndexModal: React.FC = () => {
                     const {discountOffer, originalPriceWithCurrency, updatedPriceWithCurrency} = getOfferDiscount(offer.type, offer.amount, offer.cadence, offer.currency || 'USD', offerTier);
 
                     return (
-                        <tr key={offer.id} className={`group relative scale-100 border-b border-b-grey-200 dark:border-grey-800 ${archived ? 'opacity-60' : ''}`} data-testid="offer-item">
-                            <td className='p-0'><a className='block cursor-pointer p-5 pl-0' onClick={() => handleOfferEdit(offer.id)}><span className='font-semibold'>{offer?.name}</span><br /><span className='text-sm text-grey-700'>{offerTier.name} {getOfferCadence(offer.cadence)}</span></a></td>
+                        <tr key={offer.id} className={`group relative border-b border-b-grey-200 dark:border-grey-800 ${archived ? 'opacity-60' : ''}`} data-testid="offer-item">
+                            <td className='sticky left-0 z-10 bg-white p-0 dark:bg-black'><a className='block cursor-pointer p-5 pl-0' onClick={() => handleOfferEdit(offer.id)}><span className='font-semibold'>{offer?.name}</span><br /><span className='text-sm text-grey-700'>{offerTier.name} {getOfferCadence(offer.cadence)}</span></a></td>
                             <td className='whitespace-nowrap p-0 text-sm'><a className='block cursor-pointer p-5' onClick={() => handleOfferEdit(offer.id)}><span className='text-[1.3rem] font-medium uppercase'>{discountOffer}</span><br /><span className='text-grey-700'>{offer.type !== 'trial' ? getOfferDuration(offer.duration) : 'Trial period'}</span></a></td>
                             <td className='whitespace-nowrap p-0 text-sm'><a className='block cursor-pointer p-5' onClick={() => handleOfferEdit(offer.id)}><span className='font-medium'>{updatedPriceWithCurrency}</span> {offer.type !== 'trial' ? <span className='relative text-xs text-grey-700 before:absolute before:-inset-x-0.5 before:top-1/2 before:rotate-[-20deg] before:border-t before:content-[""]'>{originalPriceWithCurrency}</span> : null}</a></td>
                             <td className='whitespace-nowrap p-0 text-sm'><a className={`block cursor-pointer p-5 ${offer.redemption_count === 0 ? '' : 'hover:underline'}`} href={offer.redemption_count > 0 && offer.id ? createRedemptionFilterUrl(offer.id) : undefined} onClick={offer.redemption_count === 0 && offer.id ? () => handleOfferEdit(offer.id) : undefined}>{offer.redemption_count}</a></td>
