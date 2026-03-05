@@ -167,4 +167,3 @@ remove|ember-template-lint|require-valid-alt-text|4|12|4|12|8369d1b06deac93e8c8e
 remove|ember-template-lint|no-action|1|71|1|71|2e6351f546807d88cc8eb9dbe8baa149468b5cb9|1746489600000|||app/components/gh-view-title.hbs
 remove|ember-template-lint|no-invalid-role|1|0|1|0|3e651d38e0110e1be20e5082075db1b879b59a36|1746489600000|||app/components/gh-view-title.hbs
 add|ember-template-lint|no-yield-only|1|0|1|0|a5fa6e8c1e0f03fb31b5cd17770e4368d44932e4|1771200000000|||app/components/gh-view-title.hbs
-add|ember-template-lint|require-mandatory-role-attributes|5|6|5|6|eebcf58749b98cfb1e9d462bb4f3e497474df6cb|1772409600000|||app/components/power-select-options-with-scroll.hbs

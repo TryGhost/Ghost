@@ -7,6 +7,7 @@ const errors = require('@tryghost/errors');
 const {textColorForBackgroundColor} = require('@tryghost/color-utils');
 const {MESSAGES} = require('./constants');
 const {wrapReplacementStrings} = require('../koenig/render-utils/replacement-strings');
+const linkReplacer = require('../lib/link-replacer');
 
 const REPLACEMENT_REGEX = /%%\{(\w+?)(?:,? *"(.*?)")?\}%%/g;
 const UNMATCHED_TOKEN_REGEX = /%%\{.*?\}%%/g;
@@ -116,18 +117,24 @@ class MemberWelcomeEmailRenderer {
         const contentWithReplacements = this.#applyReplacements({definitions, text: content, escapeHtml: true});
         const subjectWithReplacements = this.#applyReplacements({definitions, text: subject, escapeHtml: false});
 
+        // Resolve relative links (e.g. #/portal/signup) to absolute URLs using the site URL
+        const contentWithAbsoluteLinks = await linkReplacer.replace(contentWithReplacements, (url) => {
+            return url;
+        }, {base: siteSettings.url});
+
         const managePreferencesUrl = new URL('#/portal/account/newsletters', siteSettings.url).href;
         const year = new Date().getFullYear();
         const accentColor = siteSettings.accentColor || '#15212A';
         const accentContrastColor = textColorForBackgroundColor(accentColor).hex();
 
         const html = this.#wrapperTemplate({
-            content: contentWithReplacements,
+            content: contentWithAbsoluteLinks,
             subject: subjectWithReplacements,
             siteTitle: siteSettings.title,
             siteUrl: siteSettings.url,
             accentColor,
             accentContrastColor,
+            dividerColor: '#e0e7eb',
             backgroundIsDark: false,
             hasRoundedImageCorners: false,
             sectionTitleColor: null,

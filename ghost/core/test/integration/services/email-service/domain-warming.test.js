@@ -76,16 +76,16 @@ describe('Domain Warming Integration Tests', function () {
     }
 
     // Helper: Set fake time to specific day
-    // Uses a fixed base date to ensure consistent day progression
+    // Uses fixed 24-hour increments from a normalized base to avoid DST drift
+    const MILLISECONDS_IN_DAY = 24 * 60 * 60 * 1000;
     const baseDate = new Date();
-    baseDate.setHours(12, 0, 0, 0);
+    baseDate.setUTCHours(12, 0, 0, 0);
 
     function setDay(daysFromNow = 0) {
         if (clock) {
             clock.restore();
         }
-        const time = new Date(baseDate.getTime());
-        time.setDate(time.getDate() + daysFromNow);
+        const time = new Date(baseDate.getTime() + (daysFromNow * MILLISECONDS_IN_DAY));
         clock = sinon.useFakeTimers({
             now: time.getTime(),
             shouldAdvanceTime: true
