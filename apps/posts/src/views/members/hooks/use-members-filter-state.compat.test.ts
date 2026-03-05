@@ -184,4 +184,88 @@ describe('members nql compatibility', () => {
 
         expect(buildMemberNqlFilter(filters)).toBe('(feedback.post_id:\'post_123\'+feedback.score:1)');
     });
+
+    it('serializes signup resource filters with quoted IDs like Ember', () => {
+        const filters: Filter[] = [
+            {
+                id: 'signup-1',
+                field: 'signup',
+                operator: 'is',
+                values: ['65f2c3a1']
+            }
+        ];
+
+        expect(buildMemberNqlFilter(filters)).toBe('signup:\'65f2c3a1\'');
+    });
+
+    it('serializes numeric email_open_rate filters as raw numbers like Ember', () => {
+        const filters: Filter[] = [
+            {
+                id: 'open-rate-1',
+                field: 'email_open_rate',
+                operator: 'is-greater',
+                values: [0.5]
+            }
+        ];
+
+        expect(buildMemberNqlFilter(filters)).toBe('email_open_rate:>0.5');
+    });
+
+    it('serializes subscriptions.status with Ember negation mapping', () => {
+        const filters: Filter[] = [
+            {
+                id: 'sub-status-1',
+                field: 'subscriptions.status',
+                operator: 'is-not',
+                values: ['active']
+            }
+        ];
+
+        expect(buildMemberNqlFilter(filters)).toBe('subscriptions.status:-active');
+    });
+
+    it('serializes tier_id arrays with Ember bracket syntax', () => {
+        const filters: Filter[] = [
+            {
+                id: 'tier-1',
+                field: 'tier_id',
+                operator: 'is',
+                values: ['tier_basic', 'tier_pro']
+            }
+        ];
+
+        expect(buildMemberNqlFilter(filters)).toBe('tier_id:[tier_basic,tier_pro]');
+    });
+
+    it('serializes subscribed=email-disabled with Ember special-case expression', () => {
+        const filters: Filter[] = [
+            {
+                id: 'subscribed-3',
+                field: 'subscribed',
+                operator: 'is',
+                values: ['email-disabled']
+            }
+        ];
+
+        expect(buildMemberNqlFilter(filters)).toBe('(email_disabled:1)');
+    });
+
+    it('joins multiple predicates in insertion order like Ember', () => {
+        const filters: Filter[] = [
+            {
+                id: 'subscribed-4',
+                field: 'subscribed',
+                operator: 'is',
+                values: ['subscribed']
+            },
+            {
+                id: 'status-2',
+                field: 'status',
+                operator: 'is',
+                values: ['paid']
+            }
+        ];
+
+        expect(buildMemberNqlFilter(filters)).toBe('(subscribed:true+email_disabled:0)+status:paid');
+    });
 });
