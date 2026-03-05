@@ -264,4 +264,58 @@ describe('oembed-service', function () {
             assert.equal(saveRaw.firstCall.args[1], 'thumbnail/sample.png');
         });
     });
+
+    describe('metascraper inherits externalRequest hooks', function () {
+        it('should apply externalRequest beforeRequest hooks to metascraper favicon fetches', async function () {
+            // metascraper-logo-favicon probes {origin}/favicon.ico via reachable-url.
+            // gotOpts must carry externalRequest's hooks so those probes are validated.
+            nock('http://169.254.169.254')
+                .get('/favicon.ico')
+                .reply(200, 'secret', {'content-type': 'image/png'});
+
+            const beforeRequestHook = sinon.stub().callsFake(async function blockPrivateIPs(options) {
+                if (options.url.hostname === '169.254.169.254') {
+                    throw new Error('URL resolves to a non-permitted private IP block');
+                }
+            });
+
+            const externalRequest = got.extend({
+                retry: {limit: 0, calculateDelay: () => 0},
+                timeout: 5000,
+                hooks: {
+                    init: [],
+                    beforeRequest: [beforeRequestHook],
+                    beforeRedirect: []
+                }
+            });
+
+            externalRequest.head = sinon.stub().rejects(new Error('blocked'));
+
+            const service = new OembedService({
+                config: {
+                    get: sinon.stub().returns('testing'),
+                    getContentPath: sinon.stub().returns('/tmp/content/images')
+                },
+                externalRequest,
+                storage: {
+                    getStorage: sinon.stub().returns({
+                        getSanitizedFileName: sinon.stub().returns('favicon'),
+                        generateUnique: sinon.stub().resolves('/tmp/content/images/icon/favicon.png'),
+                        saveRaw: sinon.stub().resolves('/content/images/icon/favicon.png')
+                    })
+                }
+            });
+
+            const html = `<html><head><title>Test Page</title></head><body></body></html>`;
+
+            await service.fetchBookmarkData('http://169.254.169.254/page', html, 'mention');
+
+            // The hook must have been called by metascraper's favicon probe,
+            // proving gotOpts inherited the externalRequest hooks
+            const faviconCall = beforeRequestHook.getCalls().find(
+                call => call.args[0].url.pathname === '/favicon.ico'
+            );
+            assert.ok(faviconCall, 'beforeRequest hook should have been called for the favicon fetch');
+        });
+    });
 });
