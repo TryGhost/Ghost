@@ -76,7 +76,7 @@ const SlackModal = NiceModal.create(() => {
                     />
                     <div className='flex w-full flex-col gap-2 md:flex-row md:items-center'>
                         <TextField
-                            containerClassName='flex-grow'
+                            containerClassName='grow'
                             hint='The username to display messages from'
                             title='Username'
                             value={slackUsername}

@@ -431,7 +431,7 @@ export const LongList: Story = {
 
 export const CustomStyling: Story = {
     render: () => (
-        <Command className="w-[500px] rounded-xl border-2 border-primary bg-gradient-to-b from-background to-secondary/20 shadow-xl">
+        <Command className="to-secondary/20 w-[500px] rounded-xl border-2 border-primary bg-gradient-to-b from-background shadow-xl">
             <CommandInput
                 className="text-base"
                 placeholder="Type a command or search..."
@@ -442,14 +442,14 @@ export const CustomStyling: Story = {
                     <CommandItem className="py-3">
                         <Calendar className="mr-3 size-5" />
                         <span className="font-medium">Calendar</span>
-                        <CommandShortcut className="rounded bg-primary/10 px-2 py-1 text-xs">
+                        <CommandShortcut className="bg-primary/10 rounded px-2 py-1 text-xs">
                             ⌘C
                         </CommandShortcut>
                     </CommandItem>
                     <CommandItem className="py-3">
                         <Settings className="mr-3 size-5" />
                         <span className="font-medium">Settings</span>
-                        <CommandShortcut className="rounded bg-primary/10 px-2 py-1 text-xs">
+                        <CommandShortcut className="bg-primary/10 rounded px-2 py-1 text-xs">
                             ⌘S
                         </CommandShortcut>
                     </CommandItem>

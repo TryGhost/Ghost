@@ -79,12 +79,12 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
         '[&_[data-kg-settings-panel]_p]:!mb-0',
         // Nested-editor (callout, etc.) fixes: align placeholder with text
         // 1. Override placeholder font/size/line-height to match the <p> styles
-        '[&_.not-kg-prose>div]:!font-inter [&_.not-kg-prose>div]:!tracking-tight [&_.not-kg-prose>div]:!text-xl [&_.not-kg-prose>div]:!leading-[1.6]',
+        '[&_.not-kg-prose>div]:font-inter! [&_.not-kg-prose>div]:tracking-tight! [&_.not-kg-prose>div]:text-xl! [&_.not-kg-prose>div]:leading-[1.6]!',
         // 2. Remove paragraph bottom-margin inside nested editors so the
         //    placeholder translate-y lines up with the cursor
-        '[&_.kg-inherit-styles_p]:!mb-0',
+        '[&_.kg-inherit-styles_p]:mb-0!',
         // 3. Nudge nested editor text down to vertically align with the emoji
-        '[&_.kg-inherit-styles]:!pt-[3px]'
+        '[&_.kg-inherit-styles]:pt-[3px]!'
     );
 
     const registerEditorAPI = useCallback((API: KoenigInstance | null) => {

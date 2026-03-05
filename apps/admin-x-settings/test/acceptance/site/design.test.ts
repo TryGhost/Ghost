@@ -26,7 +26,7 @@ test.describe('Design settings', async () => {
             response: '<html><head><style></style></head><body><div>post preview</div></body></html>'
         });
 
-        await page.goto('/');
+        await page.goto('/#/settings/design');
 
         const section = page.getByTestId('design');
 
@@ -61,7 +61,7 @@ test.describe('Design settings', async () => {
             browseLatestPost: {method: 'GET', path: /^\/posts\/.+limit=1/, response: responseFixtures.latestPost}
         }});
 
-        await page.goto('/');
+        await page.goto('/#/settings/design');
 
         const section = page.getByTestId('design');
 
@@ -76,7 +76,7 @@ test.describe('Design settings', async () => {
         await accentColorPicker.getByRole('textbox').fill('#cd5786');
         // set timeout of 1000ms to wait for the debounce
         await page.waitForTimeout(1000);
-        await modal.getByRole('button', {name: 'Close'}).click();
+        await modal.getByRole('button', {name: 'Close'}).last().click();
 
         await expect(page.getByTestId('confirmation-modal')).toHaveText(/leave/i);
 
@@ -92,7 +92,7 @@ test.describe('Design settings', async () => {
 
         await modal.getByLabel('Email signup text').fill('test');
 
-        await modal.getByRole('button', {name: 'Close'}).click();
+        await modal.getByRole('button', {name: 'Close'}).last().click();
 
         await expect(page.getByTestId('confirmation-modal')).toHaveText(/leave/i);
 
@@ -116,7 +116,7 @@ test.describe('Design settings', async () => {
             response: '<html><head><style></style></head><body><div>homepage preview</div></body></html>'
         });
 
-        await page.goto('/');
+        await page.goto('/#/settings/design');
 
         const section = page.getByTestId('design');
 
@@ -173,7 +173,7 @@ test.describe('Design settings', async () => {
             response: '<html><head><style></style></head><body><div>homepage preview</div></body></html>'
         });
 
-        await page.goto('/');
+        await page.goto('/#/settings/design');
 
         const section = page.getByTestId('design');
 
@@ -212,7 +212,7 @@ test.describe('Design settings', async () => {
             response: '<html><head><style></style></head><body><div>homepage preview</div></body></html>'
         });
 
-        await page.goto('/');
+        await page.goto('/#/settings/design');
 
         const section = page.getByTestId('design');
 
@@ -268,7 +268,7 @@ test.describe('Design settings', async () => {
             response: '<html><head><style></style></head><body><div>homepage preview</div></body></html>'
         });
 
-        await page.goto('/');
+        await page.goto('/#/settings/design');
 
         const section = page.getByTestId('design');
 
@@ -318,7 +318,7 @@ test.describe('Design settings', async () => {
             response: '<html><head><style></style></head><body><div>homepage preview</div></body></html>'
         });
 
-        await page.goto('/');
+        await page.goto('/#/settings/design');
 
         const section = page.getByTestId('design');
 
@@ -367,7 +367,7 @@ test.describe('Design settings', async () => {
             response: '<html><head><style></style></head><body><div>homepage preview</div></body></html>'
         });
 
-        await page.goto('/');
+        await page.goto('/#/settings/design');
 
         const section = page.getByTestId('design');
 
@@ -460,7 +460,7 @@ test.describe('Design settings', async () => {
             }
         }});
 
-        await page.goto('/');
+        await page.goto('/#/settings/theme');
 
         const themeSection = page.getByTestId('theme');
 
@@ -480,9 +480,7 @@ test.describe('Design settings', async () => {
 
         expect(lastApiRequests.installTheme?.url).toMatch(/\?source=github&ref=TryGhost%2FHeadline/);
 
-        await modal.getByRole('button', {name: 'Change theme'}).click();
-
-        await modal.getByRole('button', {name: 'Close'}).click();
+        await page.goto('/#/settings/design');
 
         const designSection = page.getByTestId('design');
 
@@ -562,7 +560,7 @@ test.describe('Design settings', async () => {
             }
         }});
 
-        await page.goto('/');
+        await page.goto('/#/settings/theme');
 
         const themeSection = page.getByTestId('theme');
 
@@ -576,9 +574,7 @@ test.describe('Design settings', async () => {
 
         await expect(page.locator('iframe[title="Theme preview"]')).toHaveAttribute('src', 'https://demo.ghost.io/');
 
-        await modal.getByRole('button', {name: 'Change theme'}).click();
-
-        await modal.getByRole('button', {name: 'Close'}).click();
+        await page.goto('/#/settings/design');
 
         const designSection = page.getByTestId('design');
 

@@ -135,20 +135,20 @@ const NewSubscribersCadence: React.FC<NewSubscribersCadenceProps> = ({isLoading,
             // Map cadence values to display labels and colors
             let label = cadence;
             let fillGradient = 'url(#gradientPurple)';
-            let solidColor = 'hsl(var(--chart-purple))';
+            let solidColor = 'var(--chart-purple)';
 
             if (cadence === 'month') {
                 label = 'Monthly';
                 fillGradient = 'url(#gradientPurple)';
-                solidColor = 'hsl(var(--chart-purple))';
+                solidColor = 'var(--chart-purple)';
             } else if (cadence === 'year') {
                 label = 'Annual';
                 fillGradient = 'url(#gradientTeal)';
-                solidColor = 'hsl(var(--chart-teal))';
+                solidColor = 'var(--chart-teal)';
             } else if (cadence === 'complimentary') {
                 label = 'Complimentary';
                 fillGradient = 'url(#gradientBlue)';
-                solidColor = 'hsl(var(--chart-blue))';
+                solidColor = 'var(--chart-blue)';
             }
 
             return {
@@ -189,16 +189,16 @@ const NewSubscribersCadence: React.FC<NewSubscribersCadenceProps> = ({isLoading,
 
         // Color palette for tiers (10 distinct colors)
         const tierColors = [
-            {gradient: 'url(#gradientPurple)', solid: 'hsl(var(--chart-purple))'},
-            {gradient: 'url(#gradientTeal)', solid: 'hsl(var(--chart-teal))'},
-            {gradient: 'url(#gradientBlue)', solid: 'hsl(var(--chart-blue))'},
-            {gradient: 'url(#gradientRose)', solid: 'hsl(var(--chart-rose))'},
-            {gradient: 'url(#gradientOrange)', solid: 'hsl(var(--chart-orange))'},
-            {gradient: 'url(#gradientGreen)', solid: 'hsl(var(--chart-green))'},
-            {gradient: 'url(#gradientAmber)', solid: 'hsl(var(--chart-amber))'},
-            {gradient: 'url(#gradientYellow)', solid: 'hsl(var(--chart-yellow))'},
-            {gradient: 'url(#gradientDarkblue)', solid: 'hsl(var(--chart-darkblue))'},
-            {gradient: 'url(#gradientGray)', solid: 'hsl(var(--chart-darkgray))'}
+            {gradient: 'url(#gradientPurple)', solid: 'var(--chart-purple)'},
+            {gradient: 'url(#gradientTeal)', solid: 'var(--chart-teal)'},
+            {gradient: 'url(#gradientBlue)', solid: 'var(--chart-blue)'},
+            {gradient: 'url(#gradientRose)', solid: 'var(--chart-rose)'},
+            {gradient: 'url(#gradientOrange)', solid: 'var(--chart-orange)'},
+            {gradient: 'url(#gradientGreen)', solid: 'var(--chart-green)'},
+            {gradient: 'url(#gradientAmber)', solid: 'var(--chart-amber)'},
+            {gradient: 'url(#gradientYellow)', solid: 'var(--chart-yellow)'},
+            {gradient: 'url(#gradientDarkblue)', solid: 'var(--chart-darkblue)'},
+            {gradient: 'url(#gradientGray)', solid: 'var(--chart-darkgray)'}
         ];
 
         // Create chart data for ALL available tiers, including those with 0 signups
@@ -309,44 +309,44 @@ const NewSubscribersCadence: React.FC<NewSubscribersCadenceProps> = ({isLoading,
                             <Recharts.PieChart>
                                 <defs>
                                     <linearGradient id="gradientPurple" x1="0" x2="0" y1="0" y2="1">
-                                        <stop offset="0%" stopColor="hsl(var(--chart-purple))" stopOpacity={0.8} />
-                                        <stop offset="100%" stopColor="hsl(var(--chart-purple))" stopOpacity={0.6} />
+                                        <stop offset="0%" stopColor="var(--chart-purple)" stopOpacity={0.8} />
+                                        <stop offset="100%" stopColor="var(--chart-purple)" stopOpacity={0.6} />
                                     </linearGradient>
                                     <linearGradient id="gradientTeal" x1="0" x2="0" y1="0" y2="1">
-                                        <stop offset="0%" stopColor="hsl(var(--chart-teal))" stopOpacity={0.8} />
-                                        <stop offset="100%" stopColor="hsl(var(--chart-teal))" stopOpacity={0.6} />
+                                        <stop offset="0%" stopColor="var(--chart-teal)" stopOpacity={0.8} />
+                                        <stop offset="100%" stopColor="var(--chart-teal)" stopOpacity={0.6} />
                                     </linearGradient>
                                     <linearGradient id="gradientRose" x1="0" x2="0" y1="0" y2="1">
-                                        <stop offset="0%" stopColor="hsl(var(--chart-rose))" stopOpacity={0.8} />
-                                        <stop offset="100%" stopColor="hsl(var(--chart-rose))" stopOpacity={0.6} />
+                                        <stop offset="0%" stopColor="var(--chart-rose)" stopOpacity={0.8} />
+                                        <stop offset="100%" stopColor="var(--chart-rose)" stopOpacity={0.6} />
                                     </linearGradient>
                                     <linearGradient id="gradientBlue" x1="0" x2="0" y1="0" y2="1">
-                                        <stop offset="0%" stopColor="hsl(var(--chart-blue))" stopOpacity={0.8} />
-                                        <stop offset="100%" stopColor="hsl(var(--chart-blue))" stopOpacity={0.6} />
+                                        <stop offset="0%" stopColor="var(--chart-blue)" stopOpacity={0.8} />
+                                        <stop offset="100%" stopColor="var(--chart-blue)" stopOpacity={0.6} />
                                     </linearGradient>
                                     <linearGradient id="gradientOrange" x1="0" x2="0" y1="0" y2="1">
-                                        <stop offset="0%" stopColor="hsl(var(--chart-orange))" stopOpacity={0.8} />
-                                        <stop offset="100%" stopColor="hsl(var(--chart-orange))" stopOpacity={0.6} />
+                                        <stop offset="0%" stopColor="var(--chart-orange)" stopOpacity={0.8} />
+                                        <stop offset="100%" stopColor="var(--chart-orange)" stopOpacity={0.6} />
                                     </linearGradient>
                                     <linearGradient id="gradientGreen" x1="0" x2="0" y1="0" y2="1">
-                                        <stop offset="0%" stopColor="hsl(var(--chart-green))" stopOpacity={0.8} />
-                                        <stop offset="100%" stopColor="hsl(var(--chart-green))" stopOpacity={0.6} />
+                                        <stop offset="0%" stopColor="var(--chart-green)" stopOpacity={0.8} />
+                                        <stop offset="100%" stopColor="var(--chart-green)" stopOpacity={0.6} />
                                     </linearGradient>
                                     <linearGradient id="gradientAmber" x1="0" x2="0" y1="0" y2="1">
-                                        <stop offset="0%" stopColor="hsl(var(--chart-amber))" stopOpacity={0.8} />
-                                        <stop offset="100%" stopColor="hsl(var(--chart-amber))" stopOpacity={0.6} />
+                                        <stop offset="0%" stopColor="var(--chart-amber)" stopOpacity={0.8} />
+                                        <stop offset="100%" stopColor="var(--chart-amber)" stopOpacity={0.6} />
                                     </linearGradient>
                                     <linearGradient id="gradientYellow" x1="0" x2="0" y1="0" y2="1">
-                                        <stop offset="0%" stopColor="hsl(var(--chart-yellow))" stopOpacity={0.8} />
-                                        <stop offset="100%" stopColor="hsl(var(--chart-yellow))" stopOpacity={0.6} />
+                                        <stop offset="0%" stopColor="var(--chart-yellow)" stopOpacity={0.8} />
+                                        <stop offset="100%" stopColor="var(--chart-yellow)" stopOpacity={0.6} />
                                     </linearGradient>
                                     <linearGradient id="gradientDarkblue" x1="0" x2="0" y1="0" y2="1">
-                                        <stop offset="0%" stopColor="hsl(var(--chart-darkblue))" stopOpacity={0.8} />
-                                        <stop offset="100%" stopColor="hsl(var(--chart-darkblue))" stopOpacity={0.6} />
+                                        <stop offset="0%" stopColor="var(--chart-darkblue)" stopOpacity={0.8} />
+                                        <stop offset="100%" stopColor="var(--chart-darkblue)" stopOpacity={0.6} />
                                     </linearGradient>
                                     <linearGradient id="gradientGray" x1="0" x2="0" y1="0" y2="1">
-                                        <stop offset="0%" stopColor="hsl(var(--chart-darkgray))" stopOpacity={0.8} />
-                                        <stop offset="100%" stopColor="hsl(var(--chart-darkgray))" stopOpacity={0.6} />
+                                        <stop offset="0%" stopColor="var(--chart-darkgray)" stopOpacity={0.8} />
+                                        <stop offset="100%" stopColor="var(--chart-darkgray)" stopOpacity={0.6} />
                                     </linearGradient>
                                 </defs>
                                 <ChartTooltip

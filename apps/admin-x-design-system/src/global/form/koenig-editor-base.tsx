@@ -194,7 +194,7 @@ const KoenigEditorBase: React.FC<KoenigEditorBaseInternalProps> = ({
 }) => {
     const {fetchKoenigLexical, darkMode} = useDesignSystem();
     const editorResource = useMemo(() => loadKoenig(fetchKoenigLexical), [fetchKoenigLexical]);
-    const inheritClasses = inheritFontStyles ? '[&_*]:!font-inherit [&_*]:!text-inherit' : '';
+    const inheritClasses = inheritFontStyles ? '[&_*]:font-inherit! [&_*]:text-inherit!' : '';
 
     return (
         <div className={className || 'w-full'}>

@@ -130,7 +130,7 @@ const ProfileCard: React.FC<ProfileCardProps> = memo(({
                     </div>
                 }
                 {avatarImageSrc &&
-                    <div className='absolute bottom-0 left-1/2 -mb-8 -translate-x-1/2 rounded-full border-8 [&>div]:!size-16 [&_img]:!size-16' style={{borderColor: cardBackgroundColor}}>
+                    <div className='[&>div]:size-16! [&_img]:size-16! absolute bottom-0 left-1/2 -mb-8 -translate-x-1/2 rounded-full border-8' style={{borderColor: cardBackgroundColor}}>
                         <APAvatar
                             author={
                                 {

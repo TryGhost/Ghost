@@ -21,7 +21,7 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({
     tocItems,
     iframeElement,
     modalRef,
-    className = '!visible absolute inset-y-0 right-7 z-40 hidden lg:!block',
+    className = 'visible! absolute inset-y-0 right-7 z-40 hidden lg:block!',
     onOpenChange
 }) => {
     const [activeHeadingId, setActiveHeadingId] = useState<string | null>(null);

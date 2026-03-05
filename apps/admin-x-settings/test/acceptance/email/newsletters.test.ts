@@ -317,7 +317,7 @@ test.describe('Newsletter settings', async () => {
         const archivedNewsletterModal = page.getByTestId('newsletter-modal');
         await archivedNewsletterModal.getByRole('button', {name: 'Reactivate newsletter'}).click();
         await page.getByTestId('confirmation-modal').getByRole('button', {name: 'Reactivate'}).click();
-        await archivedNewsletterModal.getByRole('button', {name: 'Close'}).click();
+        await archivedNewsletterModal.getByRole('button', {name: 'Close'}).last().click();
 
         await section.getByRole('tab', {name: 'Active'}).click();
 
@@ -352,7 +352,7 @@ test.describe('Newsletter settings', async () => {
         const activeNewsletterModal = page.getByTestId('newsletter-modal');
         await activeNewsletterModal.getByRole('button', {name: 'Archive newsletter'}).click();
         await page.getByTestId('confirmation-modal').getByRole('button', {name: 'Archive'}).click();
-        await activeNewsletterModal.getByRole('button', {name: 'Close'}).click();
+        await activeNewsletterModal.getByRole('button', {name: 'Close'}).last().click();
 
         await section.getByRole('tab', {name: 'Archived'}).click();
 
@@ -426,7 +426,7 @@ test.describe('Newsletter settings', async () => {
 
         await modal.getByPlaceholder('Weekly Roundup').fill('New title');
 
-        await modal.getByRole('button', {name: 'Close'}).click();
+        await modal.getByRole('button', {name: 'Close'}).last().click();
 
         await expect(page.getByTestId('confirmation-modal')).toHaveText(/leave/i);
 
