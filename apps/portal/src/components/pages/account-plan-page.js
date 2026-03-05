@@ -52,11 +52,15 @@ export const AccountPlanPageStyles = `
         display: flex;
         align-items: center;
         gap: 6px;
-        margin-top: 20px;
+        margin-top: 16px;
     }
 
     .gh-portal-retention-offer-price .gh-portal-offer-oldprice {
         margin: 4px 0 0;
+    }
+
+    .gh-portal-retention-offer .gh-portal-offer-details > .footnote:first-child {
+        margin-top: 12px;
     }
 `;
 
@@ -345,19 +349,17 @@ const RetentionOfferSection = ({subscription, offer, onAcceptOffer, onDeclineOff
                 </div>
 
                 <div className="gh-portal-offer-details">
-                    <div className="gh-portal-retention-offer-price">
-                        {!isFreeMonthsOffer(offer) && (
-                            <>
-                                <div className="gh-portal-product-price">
-                                    <span className="currency-sign">{currency}</span>
-                                    <span className="amount">{discountedPrice}</span>
-                                </div>
-                                <div className="gh-portal-offer-oldprice">
-                                    {currency}{originalPrice}
-                                </div>
-                            </>
-                        )}
-                    </div>
+                    {!isFreeMonthsOffer(offer) && (
+                        <div className="gh-portal-retention-offer-price">
+                            <div className="gh-portal-product-price">
+                                <span className="currency-sign">{currency}</span>
+                                <span className="amount">{discountedPrice}</span>
+                            </div>
+                            <div className="gh-portal-offer-oldprice">
+                                {currency}{originalPrice}
+                            </div>
+                        </div>
+                    )}
                     <p className="footnote">
                         {offerMessage}
                     </p>
@@ -374,7 +376,7 @@ const RetentionOfferSection = ({subscription, offer, onAcceptOffer, onDeclineOff
                     style={{
                         width: '100%',
                         height: '40px',
-                        marginTop: '28px'
+                        marginTop: '20px'
                     }}
                 />
             </div>
