@@ -157,6 +157,17 @@ const getIdentityToken = async function getIdentityToken(req, res) {
     }
 };
 
+const getEntitlementToken = async function getEntitlementToken(req, res) {
+    try {
+        const token = await membersService.ssr.getEntitlementTokenForMemberFromSession(req, res);
+        res.writeHead(200);
+        res.end(token);
+    } catch (err) {
+        res.writeHead(204);
+        res.end();
+    }
+};
+
 const createIntegrityToken = async function createIntegrityToken(req, res) {
     try {
         const token = membersService.requestIntegrityTokenProvider.create();
@@ -429,6 +440,7 @@ module.exports = {
     authMemberByUuid,
     createSessionFromMagicLink,
     getIdentityToken,
+    getEntitlementToken,
     getMemberNewsletters,
     getMemberData,
     updateMemberData,

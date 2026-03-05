@@ -73,7 +73,8 @@ module.exports = function setupMembersApp() {
     // Manage session
     membersApp.get('/api/session', middleware.getIdentityToken);
     membersApp.delete('/api/session', bodyParser.json({limit: '5mb'}), middleware.deleteSession);
-
+    
+    membersApp.get('/api/entitlements', middleware.getEntitlementToken);
     membersApp.get('/api/integrity-token', middleware.createIntegrityToken);
 
     membersApp.post(

@@ -3,6 +3,7 @@ const {assertExists} = require('../utils/assertions');
 const sinon = require('sinon');
 const supertest = require('supertest');
 const moment = require('moment');
+const jwt = require('jsonwebtoken');
 const testUtils = require('../utils');
 const configUtils = require('../utils/config-utils');
 const config = require('../../core/shared/config');
@@ -111,6 +112,27 @@ describe('Front-end members behavior', function () {
         it('should return no content for invalid token passed in session', async function () {
             await request.get('/members/api/session')
                 .expect(204);
+        });
+
+        it('should return no content for invalid token passed in entitlements', async function () {
+            await request.get('/members/api/entitlements')
+                .expect(204);
+        });
+
+        it('returns an entitlement token for a valid member session', async function () {
+            const member = await loginAsMember('member1@test.com');
+
+            const res = await request.get('/members/api/entitlements')
+                .expect(200);
+
+            const decodedToken = jwt.decode(res.text);
+
+            assert.equal(decodedToken.sub, 'member1@test.com');
+            assert.equal(decodedToken.scope, 'members:entitlements:read');
+            assert.equal(decodedToken.member_uuid, member.get('uuid'));
+            assert.equal(decodedToken.paid, member.get('status') !== 'free');
+            assert(Array.isArray(decodedToken.active_tier_ids));
+            assert.equal(decodedToken.exp - decodedToken.iat, 300);
         });
 
         it('should return no content when removing member sessions', async function () {

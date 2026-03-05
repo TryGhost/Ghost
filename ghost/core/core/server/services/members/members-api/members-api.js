@@ -316,6 +316,25 @@ module.exports = function MembersAPI({
         return tokenService.encodeIdentityToken({sub: member.email});
     }
 
+    async function getMemberEntitlementToken(transientId) {
+        const member = await getMemberIdentityDataFromTransientId(transientId);
+        if (!member) {
+            return null;
+        }
+
+        const activeTierIds = [...new Set((member.subscriptions || [])
+            .filter(sub => users.isActiveSubscriptionStatus(sub.status))
+            .map(sub => sub?.tier?.id)
+            .filter(Boolean))];
+
+        return tokenService.encodeEntitlementToken({
+            sub: member.email,
+            memberUuid: member.uuid,
+            paid: member.status !== 'free',
+            activeTierIds
+        });
+    }
+
     async function setMemberGeolocationFromIp(email, ip) {
         if (!email || !ip) {
             throw new errors.IncorrectUsageError({
@@ -416,6 +435,7 @@ module.exports = function MembersAPI({
         middleware,
         getMemberDataFromMagicLinkToken,
         getMemberIdentityToken,
+        getMemberEntitlementToken,
         getMemberIdentityDataFromTransientId,
         getMemberIdentityData,
         cycleTransientId,

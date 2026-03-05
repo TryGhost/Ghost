@@ -206,6 +206,11 @@ class MembersSSR {
         return api.getMemberIdentityToken(transientId);
     }
 
+    async _getMemberEntitlementToken(transientId) {
+        const api = await this._getMembersApi();
+        return api.getMemberEntitlementToken(transientId);
+    }
+
     /**
      * @method _setMemberGeolocationFromIp
      * @param {string} email
@@ -318,6 +323,18 @@ class MembersSSR {
             await this.deleteSession(req, res);
             throw new BadRequestError({
                 message: 'Invalid session, could not get identity token'
+            });
+        }
+        return token;
+    }
+
+    async getEntitlementTokenForMemberFromSession(req, res) {
+        const transientId = this._getSessionCookies(req, res);
+        const token = await this._getMemberEntitlementToken(transientId);
+        if (!token) {
+            await this.deleteSession(req, res);
+            throw new BadRequestError({
+                message: 'Invalid session, could not get entitlement token'
             });
         }
         return token;
