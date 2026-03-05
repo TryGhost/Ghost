@@ -14,4 +14,19 @@ describe('compileSurfaceQuery', () => {
             search: 'alex'
         });
     });
+
+    it('returns canonicalized filter output', () => {
+        const query = compileSurfaceQuery({
+            surface: 'members',
+            filterClauses: [
+                "status:paid",
+                "name:~'alex'",
+                "status:paid"
+            ]
+        });
+
+        expect(query).toEqual({
+            filter: "name:~'alex'+status:paid"
+        });
+    });
 });
