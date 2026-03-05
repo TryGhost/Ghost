@@ -1,6 +1,7 @@
 const DataGenerator = require('../../utils/fixtures/data-generator');
 const {expect, test} = require('@playwright/test');
 const ObjectID = require('bson-objectid').default;
+const offersService = require('../../../core/server/services/offers');
 const Stripe = require('stripe').Stripe;
 
 /**
@@ -308,7 +309,38 @@ const createOffer = async (page, {name, tierName, offerType, amount, discountTyp
         }
 
         await chooseOptionInSelect(page.getByTestId('tier-cadence-select-offers'), `${tierName} - Monthly`);
+
+        const createOfferResponsePromise = page.waitForResponse((response) => {
+            return response.request().method() === 'POST' &&
+                response.url().includes('/ghost/api/admin/offers/') &&
+                response.status() >= 200 &&
+                response.status() < 300;
+        }, {timeout: 30000});
+
         await page.getByRole('button', {name: 'Publish'}).click();
+
+        let createdOfferCode = '';
+        let createdOfferId = '';
+        try {
+            const createOfferResponse = await createOfferResponsePromise;
+            const createOfferPayload = await createOfferResponse.json();
+            const createdOffer = createOfferPayload?.offers?.[0];
+            createdOfferCode = createdOffer?.code?.trim() || '';
+            createdOfferId = createdOffer?.id || '';
+        } catch (error) {
+            // Fallback to UI retrieval below
+        }
+
+        if (!createdOfferCode && createdOfferId) {
+            const offer = await offersService.api.getOffer({id: createdOfferId});
+            createdOfferCode = offer?.code || '';
+        }
+
+        if (createdOfferCode) {
+            const siteOrigin = new URL(page.url()).origin;
+            offerLink = `${siteOrigin}/${createdOfferCode}`;
+            return;
+        }
 
         const offerLinkInputs = page.locator('[name="offer-url"]');
 
