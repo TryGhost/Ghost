@@ -87,7 +87,7 @@ const OffersFilterPopover: React.FC<{
         <Popover
             position='end'
             trigger={
-                <Button className='p-1 hover:text-black dark:hover:text-white' label={<LucideIcon.ListFilter size={16} strokeWidth={1.5} />} unstyled={true} />
+                <Button aria-label="Filter options" className='p-1 hover:text-black dark:hover:text-white' label={<LucideIcon.ListFilter size={16} strokeWidth={1.5} />} unstyled={true} />
             }
         >
             <div className='flex min-w-[200px] flex-col p-1 normal-case'>
