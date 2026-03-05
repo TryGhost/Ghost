@@ -156,9 +156,7 @@ describe('Integration: Component: gh-members-segment-select', function () {
 
         // Search for the label that's NOT in the initial paginated set
         await typeInSearch('Unique Outlier');
-        await waitUntil(() => server.pretender.handledRequests.some(r =>
-            r.url.includes('/labels') && r.queryParams.filter && r.queryParams.filter.includes('Unique Outlier')
-        ));
+        await waitUntil(() => server.pretender.handledRequests.some(r => r.url.includes('/labels') && r.queryParams.filter && r.queryParams.filter.includes('Unique Outlier')));
         await waitUntil(() => findAll('.ember-power-select-option').length > 0);
 
         // Select the search result

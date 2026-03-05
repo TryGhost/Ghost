@@ -180,9 +180,7 @@ describe('Integration: Component: gh-members-recipient-select', function () {
         await timeout(100);
 
         await typeInSearch('Outlier Label');
-        await waitUntil(() => server.pretender.handledRequests.some(r =>
-            r.url.includes('/labels') && r.queryParams.filter && r.queryParams.filter.includes('Outlier Label')
-        ));
+        await waitUntil(() => server.pretender.handledRequests.some(r => r.url.includes('/labels') && r.queryParams.filter && r.queryParams.filter.includes('Outlier Label')));
         await waitUntil(() => findAll('.ember-power-select-option').length > 0);
 
         // Select the search result
