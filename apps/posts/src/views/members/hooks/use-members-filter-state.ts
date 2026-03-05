@@ -2,6 +2,7 @@ import {useCallback, useMemo} from 'react';
 import {useSearchParams} from '@tryghost/admin-x-framework';
 import type {Filter} from '@tryghost/shade';
 import {parsePredicateParams, serializePredicateParams} from '@src/views/filters/url-predicate-params';
+import moment from 'moment-timezone';
 
 /**
  * Member filter field keys - single source of truth for filter definitions
@@ -49,6 +50,21 @@ function escapeNqlString(value: string): string {
     return '\'' + value.replace(/'/g, '\\\'') + '\'';
 }
 
+function formatDateFilterValue(value: string, relation: string, timezone: string): string {
+    const trimmedValue = value.trim();
+    const localDate = moment.tz(trimmedValue, 'YYYY-MM-DD', true, timezone);
+
+    if (!localDate.isValid()) {
+        return trimmedValue;
+    }
+
+    const boundaryDate = (relation === '>' || relation === '<=')
+        ? localDate.set({hour: 23, minute: 59, second: 59})
+        : localDate.set({hour: 0, minute: 0, second: 0});
+
+    return boundaryDate.utc().format('YYYY-MM-DD HH:mm:ss');
+}
+
 /**
  * Map UI operator names to NQL operators
  */
@@ -82,8 +98,9 @@ function getFilterRelationOperator(relation: string): string {
 /**
  * Build NQL filter string from filter array
  */
-export function buildMemberNqlFilter(filters: Filter[]): string | undefined {
+export function buildMemberNqlFilter(filters: Filter[], options: {timezone?: string} = {}): string | undefined {
     const parts: string[] = [];
+    const timezone = options.timezone ?? 'Etc/UTC';
 
     for (const filter of filters) {
         if (!filter.values[0] && filter.values[0] !== 0) {
@@ -177,7 +194,7 @@ export function buildMemberNqlFilter(filters: Filter[]): string | undefined {
         case 'created_at':
         case 'subscriptions.start_date':
         case 'subscriptions.current_period_end': {
-            const dateValue = String(value);
+            const dateValue = formatDateFilterValue(String(value), relationStr, timezone);
             parts.push(`${field}:${relationStr}'${dateValue}'`);
             break;
         }
