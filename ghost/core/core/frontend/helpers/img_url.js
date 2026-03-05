@@ -46,7 +46,12 @@ module.exports = function imgUrl(requestedImageUrl, options) {
     const isInternalImage = detectInternalImage(requestedImageUrl);
     const sizeOptions = getImageSizeOptions(options);
 
+    console.log('[IMAGE-CDN-TEST] img_url helper', {requestedImageUrl, isInternalImage, requestedSize: sizeOptions.requestedSize});
+    logging.info('[IMAGE-CDN-TEST] img_url helper', {requestedImageUrl, isInternalImage, requestedSize: sizeOptions.requestedSize});
+
     if (!isInternalImage) {
+        console.log('[IMAGE-CDN-TEST] img_url -> external image, returned as-is', {requestedImageUrl});
+        logging.info('[IMAGE-CDN-TEST] img_url -> external image, returned as-is', {requestedImageUrl});
         // Detect Unsplash width and format
         const isUnsplashImage = detectUnsplashImage(requestedImageUrl);
         if (isUnsplashImage) {
@@ -77,11 +82,12 @@ module.exports = function imgUrl(requestedImageUrl, options) {
     // CASE: only make paths relative if we didn't get a request for an absolute url
     const maybeEnsureRelativePath = !absoluteUrlRequested ? ensureRelativePath : _.identity;
 
-    return maybeEnsureRelativePath(
-        getImageUrl(
-            applyImageSizes(requestedImageUrl)
-        )
-    );
+    const withSize = applyImageSizes(requestedImageUrl);
+    const finalUrl = maybeEnsureRelativePath(getImageUrl(withSize));
+    console.log('[IMAGE-CDN-TEST] img_url -> internal image, transformed', {original: requestedImageUrl, withSize, finalUrl});
+    logging.info('[IMAGE-CDN-TEST] img_url -> internal image, transformed', {original: requestedImageUrl, withSize, finalUrl});
+
+    return finalUrl;
 };
 
 function getAbsoluteOption(options) {

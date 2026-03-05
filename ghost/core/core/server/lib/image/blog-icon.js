@@ -1,4 +1,5 @@
 const sizeOf = require('image-size');
+const logging = require('@tryghost/logging');
 const _ = require('lodash');
 const path = require('path');
 const errors = require('@tryghost/errors');
@@ -110,6 +111,8 @@ class BlogIcon {
      */
     getIconUrl({absolute = false, fallbackToDefault = true} = {}) {
         const blogIcon = this.settingsCache.get('icon');
+        console.log('[IMAGE-CDN-TEST] BlogIcon.getIconUrl', {blogIcon, absolute, fallbackToDefault});
+        logging.info('[IMAGE-CDN-TEST] BlogIcon.getIconUrl', {blogIcon, absolute, fallbackToDefault});
 
         if (blogIcon) {
             // Resize + format icon to one of the supported file extensions
@@ -117,21 +120,33 @@ class BlogIcon {
             const destintationExt = this.getIconExt(blogIcon);
 
             if (sourceExt === 'ico') {
+                const result = this.urlUtils.urlFor({relativeUrl: blogIcon}, absolute ? true : undefined);
+                console.log('[IMAGE-CDN-TEST] BlogIcon.getIconUrl -> .ico, no resize', {result});
+                logging.info('[IMAGE-CDN-TEST] BlogIcon.getIconUrl -> .ico, no resize', {result});
                 // Resize not supported (prevent a redirect)
-                return this.urlUtils.urlFor({relativeUrl: blogIcon}, absolute ? true : undefined);
+                return result;
             }
 
             if (sourceExt !== destintationExt) {
                 const formattedIcon = blogIcon.replace(/\/content\/images\//, `/content/images/size/w256h256/format/${this.getIconExt(blogIcon)}/`);
-                return this.urlUtils.urlFor({relativeUrl: formattedIcon}, absolute ? true : undefined);
+                const result = this.urlUtils.urlFor({relativeUrl: formattedIcon}, absolute ? true : undefined);
+                console.log('[IMAGE-CDN-TEST] BlogIcon.getIconUrl -> format change', {sourceExt, destintationExt, formattedIcon, result});
+                logging.info('[IMAGE-CDN-TEST] BlogIcon.getIconUrl -> format change', {sourceExt, destintationExt, formattedIcon, result});
+                return result;
             }
 
             const sizedIcon = blogIcon.replace(/\/content\/images\//, '/content/images/size/w256h256/');
-            return this.urlUtils.urlFor({relativeUrl: sizedIcon}, absolute ? true : undefined);
+            const result = this.urlUtils.urlFor({relativeUrl: sizedIcon}, absolute ? true : undefined);
+            console.log('[IMAGE-CDN-TEST] BlogIcon.getIconUrl -> sized', {sizedIcon, result});
+            logging.info('[IMAGE-CDN-TEST] BlogIcon.getIconUrl -> sized', {sizedIcon, result});
+            return result;
         }
 
         if (fallbackToDefault) {
-            return this.urlUtils.urlFor({relativeUrl: '/favicon.ico'}, absolute ? true : undefined);
+            const result = this.urlUtils.urlFor({relativeUrl: '/favicon.ico'}, absolute ? true : undefined);
+            console.log('[IMAGE-CDN-TEST] BlogIcon.getIconUrl -> fallback default favicon', {result});
+            logging.info('[IMAGE-CDN-TEST] BlogIcon.getIconUrl -> fallback default favicon', {result});
+            return result;
         }
 
         return null;

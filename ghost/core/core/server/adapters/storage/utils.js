@@ -1,4 +1,5 @@
 const config = require('../../../shared/config');
+const logging = require('@tryghost/logging');
 const urlUtils = require('../../../shared/url-utils');
 /**
  * @TODO: move `events.js` to here - e.g. storageUtils.getStorage
@@ -46,7 +47,10 @@ exports.getLocalImagesStoragePath = function getLocalImagesStoragePath(imagePath
 exports.isLocalImage = function isLocalImage(imagePath) {
     const localImagePath = this.getLocalImagesStoragePath(imagePath);
 
-    if (localImagePath !== imagePath) {
+    const result = localImagePath !== imagePath;
+    console.log('[IMAGE-CDN-TEST] storageUtils.isLocalImage', {imagePath, result});
+    logging.info('[IMAGE-CDN-TEST] storageUtils.isLocalImage', {imagePath, result});
+    if (result) {
         return true;
     } else {
         return false;
@@ -60,9 +64,14 @@ exports.isLocalImage = function isLocalImage(imagePath) {
  */
 exports.isInternalImage = function isInternalImage(imagePath) {
     if (this.isLocalImage(imagePath)) {
+        console.log('[IMAGE-CDN-TEST] storageUtils.isInternalImage -> isLocal=true', {imagePath});
+        logging.info('[IMAGE-CDN-TEST] storageUtils.isInternalImage -> isLocal=true', {imagePath});
         return true;
     }
 
     const imageBaseUrl = (config.get('urls:image') || '').replace(/\/+$/, '');
-    return !!(imageBaseUrl && imagePath.startsWith(imageBaseUrl + '/'));
+    const result = !!(imageBaseUrl && imagePath.startsWith(imageBaseUrl + '/'));
+    console.log('[IMAGE-CDN-TEST] storageUtils.isInternalImage', {imagePath, imageBaseUrl, result});
+    logging.info('[IMAGE-CDN-TEST] storageUtils.isInternalImage', {imagePath, imageBaseUrl, result});
+    return result;
 };

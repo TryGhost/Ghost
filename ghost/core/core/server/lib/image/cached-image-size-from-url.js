@@ -48,6 +48,9 @@ class CachedImageSizeFromUrl {
             return null;
         }
 
+        console.log('[IMAGE-CDN-TEST] getCachedImageSizeFromUrl called', {url});
+        logging.info('[IMAGE-CDN-TEST] getCachedImageSizeFromUrl called', {url});
+
         const cachedImageSize = await this.cache.get(url);
 
         // Check for cachedImageSize.width to handle legacy cache entries
@@ -55,29 +58,42 @@ class CachedImageSizeFromUrl {
         // These stale entries fall through to trigger a re-fetch and self-heal.
         if (cachedImageSize && cachedImageSize.width) {
             debug('Read image from cache:', url);
+            console.log('[IMAGE-CDN-TEST] getCachedImageSizeFromUrl -> CACHE_HIT', {url, width: cachedImageSize.width, height: cachedImageSize.height});
+            logging.info('[IMAGE-CDN-TEST] getCachedImageSizeFromUrl -> CACHE_HIT', {url, width: cachedImageSize.width, height: cachedImageSize.height});
             return {...cachedImageSize};
         }
 
         // 404s are cached permanently — don't retry
         if (cachedImageSize && cachedImageSize.notFound) {
             debug('Read image from cache (not found):', url);
+            console.log('[IMAGE-CDN-TEST] getCachedImageSizeFromUrl -> CACHE_HIT_NOT_FOUND (404 cached)', {url});
+            logging.info('[IMAGE-CDN-TEST] getCachedImageSizeFromUrl -> CACHE_HIT_NOT_FOUND (404 cached)', {url});
             return null;
         }
+
+        console.log('[IMAGE-CDN-TEST] getCachedImageSizeFromUrl -> CACHE_MISS, fetching', {url});
+        logging.info('[IMAGE-CDN-TEST] getCachedImageSizeFromUrl -> CACHE_MISS, fetching', {url});
 
         try {
             const res = await this.getImageSizeFromUrl(url);
             await this.cache.set(url, {...res});
 
             debug('Cached image:', url);
+            console.log('[IMAGE-CDN-TEST] getCachedImageSizeFromUrl -> FETCHED_AND_CACHED', {url, width: res?.width, height: res?.height});
+            logging.info('[IMAGE-CDN-TEST] getCachedImageSizeFromUrl -> FETCHED_AND_CACHED', {url, width: res?.width, height: res?.height});
 
             return res;
         } catch (err) {
             if (err instanceof errors.NotFoundError) {
                 debug('Cached image (not found):', url);
+                console.log('[IMAGE-CDN-TEST] getCachedImageSizeFromUrl -> NOT_FOUND_CACHED_PERMANENTLY', {url});
+                logging.info('[IMAGE-CDN-TEST] getCachedImageSizeFromUrl -> NOT_FOUND_CACHED_PERMANENTLY', {url});
                 // Cache 404s with a marker
                 await this.cache.set(url, {url, notFound: true});
             } else {
                 debug('Image fetch error (not cached):', url);
+                console.log('[IMAGE-CDN-TEST] getCachedImageSizeFromUrl -> TRANSIENT_ERROR_NOT_CACHED', {url, errorMessage: err.message});
+                logging.info('[IMAGE-CDN-TEST] getCachedImageSizeFromUrl -> TRANSIENT_ERROR_NOT_CACHED', {url, errorMessage: err.message});
                 logging.error(err);
             }
 

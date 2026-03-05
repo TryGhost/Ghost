@@ -19,6 +19,7 @@ function schemaImageObject(metaDataVal) {
         imageObject.height = metaDataVal.dimensions.height;
     }
 
+    console.log('[IMAGE-CDN-TEST] schemaImageObject', {url: metaDataVal.url, hasDimensions: !!metaDataVal.dimensions, width: imageObject.width, height: imageObject.height});
     return imageObject;
 }
 

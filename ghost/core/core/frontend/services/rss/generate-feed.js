@@ -1,4 +1,5 @@
 const downsize = require('downsize');
+const logging = require('@tryghost/logging');
 const RSS = require('rss');
 const urlUtils = require('../../../shared/url-utils');
 const {routerManager} = require('../routing');
@@ -35,6 +36,8 @@ const generateItem = function generateItem(post) {
 
     if (post.feature_image) {
         const imageUrl = urlUtils.urlFor('image', {image: post.feature_image}, true);
+        console.log('[IMAGE-CDN-TEST] RSS feed -> feature image', {postId: post.id, originalUrl: post.feature_image, resolvedUrl: imageUrl});
+        logging.info('[IMAGE-CDN-TEST] RSS feed -> feature image', {postId: post.id, originalUrl: post.feature_image, resolvedUrl: imageUrl});
 
         // Add a media content tag
         item.custom_elements.push({
@@ -75,7 +78,7 @@ const generateFeed = function generateFeed(baseUrl, data) {
         generator: 'Ghost ' + data.safeVersion,
         feed_url: urlUtils.urlFor({relativeUrl: baseUrl}, true),
         site_url: urlUtils.urlFor('home', true),
-        image_url: urlUtils.urlFor({relativeUrl: 'favicon.png'}, true),
+        image_url: (() => { const u = urlUtils.urlFor({relativeUrl: 'favicon.png'}, true); console.log('[IMAGE-CDN-TEST] RSS feed -> feed icon', {imageUrl: u}); logging.info('[IMAGE-CDN-TEST] RSS feed -> feed icon', {imageUrl: u}); return u; })(),
         ttl: '60',
         custom_namespaces: {
             content: 'http://purl.org/rss/1.0/modules/content/',

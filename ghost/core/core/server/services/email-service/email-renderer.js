@@ -1144,7 +1144,11 @@ class EmailRenderer {
 
         const hasOutlineButtons = newsletter.get('button_style') === 'outline';
 
+        console.log('[IMAGE-CDN-TEST] email -> newsletter header image', {headerImage: newsletter.get('header_image')});
+        logging.info('[IMAGE-CDN-TEST] email -> newsletter header image', {headerImage: newsletter.get('header_image')});
         const {href: headerImage, width: headerImageWidth} = await this.limitImageWidth(newsletter.get('header_image'));
+        console.log('[IMAGE-CDN-TEST] email -> post feature image', {featureImage: post.get('feature_image')});
+        logging.info('[IMAGE-CDN-TEST] email -> post feature image', {featureImage: post.get('feature_image')});
         const {href: postFeatureImage, width: postFeatureImageWidth, height: postFeatureImageHeight} = await this.limitImageWidth(post.get('feature_image'));
 
         const timezone = this.#settingsCache.get('timezone');
@@ -1202,6 +1206,8 @@ class EmailRenderer {
 
             for (const latestPost of data) {
                 // Please also adjust email-latest-posts-image if you make changes to the image width (100 x 2 = 200 -> should be in email-latest-posts-image)
+                console.log('[IMAGE-CDN-TEST] email -> latest post feature image', {featureImage: latestPost.get('feature_image'), postId: latestPost.id});
+                logging.info('[IMAGE-CDN-TEST] email -> latest post feature image', {featureImage: latestPost.get('feature_image'), postId: latestPost.id});
                 const {href: featureImage, width: featureImageWidth, height: featureImageHeight} = await this.limitImageWidth(latestPost.get('feature_image'), 100, 100);
                 const {href: featureImageMobile, width: featureImageMobileWidth, height: featureImageMobileHeight} = await this.limitImageWidth(latestPost.get('feature_image'), 600, 480);
 
@@ -1376,7 +1382,11 @@ class EmailRenderer {
      * @returns {Promise<{href: string, width: number, height: number | null}>}
      */
     async limitImageWidth(href, visibleWidth = 600, visibleHeight = null) {
+        console.log('[IMAGE-CDN-TEST] limitImageWidth called', {href, visibleWidth, visibleHeight});
+        logging.info('[IMAGE-CDN-TEST] limitImageWidth called', {href, visibleWidth, visibleHeight});
         if (!href) {
+            console.log('[IMAGE-CDN-TEST] limitImageWidth -> no href, returning empty');
+            logging.info('[IMAGE-CDN-TEST] limitImageWidth -> no href, returning empty');
             return {
                 href,
                 width: 0,
@@ -1424,16 +1434,26 @@ class EmailRenderer {
                     size.height = visibleHeight;
                 }
 
-                if (this.#storageUtils.isInternalImage(href)) {
+                const isInternal = this.#storageUtils.isInternalImage(href);
+                const alreadyHasSize = !CONTENT_IMAGES_PATH_WITHOUT_SIZE_REGEX.test(href);
+                console.log('[IMAGE-CDN-TEST] limitImageWidth -> dimension check', {href, isInternal, alreadyHasSize, sizeWidth: size.width, sizeHeight: size.height});
+                logging.info('[IMAGE-CDN-TEST] limitImageWidth -> dimension check', {href, isInternal, alreadyHasSize, sizeWidth: size.width, sizeHeight: size.height});
+
+                if (isInternal) {
                     const sizePath = 'size/w' + (visibleWidth * 2) + (visibleHeight ? 'h' + (visibleHeight * 2) : '') + '/';
+                    const rewrittenHref = href.replace(CONTENT_IMAGES_PATH_WITHOUT_SIZE_REGEX, '/content/images/' + sizePath);
+                    console.log('[IMAGE-CDN-TEST] limitImageWidth -> REWRITTEN', {original: href, rewritten: rewrittenHref, wasAlreadySized: alreadyHasSize});
+                    logging.info('[IMAGE-CDN-TEST] limitImageWidth -> REWRITTEN', {original: href, rewritten: rewrittenHref, wasAlreadySized: alreadyHasSize});
                     // we can safely request a 1200px image - Ghost will serve the original if it's smaller
                     return {
-                        href: href.replace(CONTENT_IMAGES_PATH_WITHOUT_SIZE_REGEX, '/content/images/' + sizePath),
+                        href: rewrittenHref,
                         width: size.width,
                         height: size.height
                     };
                 }
 
+                console.log('[IMAGE-CDN-TEST] limitImageWidth -> NOT internal, returning as-is', {href});
+                logging.info('[IMAGE-CDN-TEST] limitImageWidth -> NOT internal, returning as-is', {href});
                 return {
                     href,
                     width: size.width,

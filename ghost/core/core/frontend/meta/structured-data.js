@@ -44,6 +44,8 @@ function getStructuredData(metaData) {
         structuredData['og:image:height'] = metaData.coverImage.dimensions.height;
     }
 
+    console.log('[IMAGE-CDN-TEST] structuredData', {'og:image': structuredData['og:image'], 'og:image:width': structuredData['og:image:width'], 'og:image:height': structuredData['og:image:height'], 'twitter:image': structuredData['twitter:image']});
+
     // return structured data removing null or undefined keys
     return Object.keys(structuredData).reduce(function (data, key) {
         const content = structuredData[key];

@@ -5,18 +5,23 @@ const {isUnsplashImage} = require('./is-unsplash-image');
 // default content sizes: [600, 1000, 1600, 2400]
 
 const getSrcsetAttribute = function ({src, width, options}) {
+    console.log('[IMAGE-CDN-TEST] getSrcsetAttribute called', {src, width, siteUrl: options.siteUrl, imageBaseUrl: options.imageBaseUrl});
     if (!options.imageOptimization || options.imageOptimization.srcsets === false || !width || !options.imageOptimization.contentImageSizes) {
         return;
     }
 
-    if (isContentImage(src, options.siteUrl, options.imageBaseUrl) && options.canTransformImage && !options.canTransformImage(src)) {
+    const _isContent = isContentImage(src, options.siteUrl, options.imageBaseUrl);
+    const _canTransform = options.canTransformImage ? options.canTransformImage(src) : false;
+    console.log('[IMAGE-CDN-TEST] getSrcsetAttribute -> checks', {src, isContent: _isContent, canTransform: _canTransform});
+
+    if (_isContent && options.canTransformImage && !_canTransform) {
         return;
     }
 
     const srcsetWidths = getAvailableImageWidths({width}, options.imageOptimization.contentImageSizes);
 
     // apply srcset if this is a local or CDN image that matches Ghost's image url structure
-    if (isContentImage(src, options.siteUrl, options.imageBaseUrl)) {
+    if (_isContent) {
         const [, imagesPath, filename] = src.match(/(.*\/content\/images)\/(.*)/);
         const srcs = [];
 
@@ -31,6 +36,7 @@ const getSrcsetAttribute = function ({src, width, options}) {
         });
 
         if (srcs.length) {
+            console.log('[IMAGE-CDN-TEST] getSrcsetAttribute -> srcset built', {src, srcsetEntries: srcs.length, firstEntry: srcs[0]});
             return srcs.join(', ');
         }
     }

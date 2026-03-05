@@ -9,7 +9,10 @@ const isLocalContentImage = function (url, siteUrl = '') {
 };
 
 const isContentImage = function (url, siteUrl = '', imageBaseUrl = '') {
-    return isLocalContentImage(url, siteUrl) || Boolean(imageBaseUrl && matchesContentImagePath(url, imageBaseUrl));
+    const isLocal = isLocalContentImage(url, siteUrl);
+    const isCdn = Boolean(imageBaseUrl && matchesContentImagePath(url, imageBaseUrl));
+    console.log('[IMAGE-CDN-TEST] isContentImage (koenig)', {url, siteUrl, imageBaseUrl, isLocal, isCdn, result: isLocal || isCdn});
+    return isLocal || isCdn;
 };
 
 module.exports = {

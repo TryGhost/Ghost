@@ -13,7 +13,9 @@ module.exports.detectInternalImage = function detectInternalImage(requestedImage
     //       detect if the imagePath is external, or internal.
     const isRelativeInternalImage = !isAbsoluteImage && url.resolve(siteUrl, requestedImageUrl).startsWith(siteUrl);
 
-    return isAbsoluteInternalImage || isRelativeInternalImage;
+    const result = isAbsoluteInternalImage || isRelativeInternalImage;
+    console.log('[IMAGE-CDN-TEST] detectInternalImage', {requestedImageUrl, siteUrl, isAbsoluteInternalImage, isRelativeInternalImage, result});
+    return result;
 };
 
 module.exports.detectUnsplashImage = function detectUnsplashImage(requestedImageUrl) {
@@ -97,7 +99,9 @@ module.exports.getImageWithSize = function getImageWithSize(imagePath, sizeOptio
         return imgBlogUrl;
     }
 
-    return [imgBlogUrl, urlUtils.STATIC_IMAGE_URL_PREFIX, `/size/${sizeDirectoryName}`, formatPrefix, imageName].join('');
+    const result = [imgBlogUrl, urlUtils.STATIC_IMAGE_URL_PREFIX, `/size/${sizeDirectoryName}`, formatPrefix, imageName].join('');
+    console.log('[IMAGE-CDN-TEST] getImageWithSize', {imagePath, requestedSize, width, height, imgBlogUrl, imageName, result});
+    return result;
 };
 
 function prefixIfPresent(prefix, string) {

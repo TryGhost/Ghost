@@ -156,6 +156,8 @@ class BaseSiteMapGenerator {
         // Grab the image url
         imageUrl = urlUtils.urlFor('image', {image: image}, true);
 
+        console.log('[IMAGE-CDN-TEST] sitemap -> createImageNode', {image, imageUrl, isValid: this.validateImageUrl(imageUrl)});
+
         // Verify the url structure
         if (!this.validateImageUrl(imageUrl)) {
             return;

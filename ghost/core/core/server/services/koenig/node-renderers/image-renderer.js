@@ -96,7 +96,10 @@ function renderImageNode(node, options = {}) {
         img.setAttribute('width', imageDimensions.width);
         img.setAttribute('height', imageDimensions.height);
 
-        if (isContentImage(node.src, options.siteUrl, options.imageBaseUrl) && options.canTransformImage?.(node.src)) {
+        const _isContentImg = isContentImage(node.src, options.siteUrl, options.imageBaseUrl);
+        const _canTransform = options.canTransformImage?.(node.src);
+        console.log('[IMAGE-CDN-TEST] image-renderer -> isContentImage check', {src: node.src, siteUrl: options.siteUrl, imageBaseUrl: options.imageBaseUrl, isContent: _isContentImg, canTransform: _canTransform});
+        if (_isContentImg && _canTransform) {
             // find available image size next up from 2x600 so we can use it for the "retina" src
             const availableImageWidths = getAvailableImageWidths(node, options.imageOptimization.contentImageSizes);
             const srcWidth = availableImageWidths.find(width => width >= 1200);
@@ -105,7 +108,9 @@ function renderImageNode(node, options = {}) {
                 // do nothing, width is smaller than retina or matches the original node src
             } else {
                 const [, imagesPath, filename] = node.src.match(/(.*\/content\/images)\/(.*)/);
-                img.setAttribute('src', `${imagesPath}/size/w${srcWidth}/${filename}`);
+                const newSrc = `${imagesPath}/size/w${srcWidth}/${filename}`;
+                console.log('[IMAGE-CDN-TEST] image-renderer -> src rewritten', {original: node.src, newSrc});
+                img.setAttribute('src', newSrc);
             }
         }
     }

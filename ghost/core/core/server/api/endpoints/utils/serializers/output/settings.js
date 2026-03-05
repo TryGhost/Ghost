@@ -39,7 +39,9 @@ function serializeSettings(models, apiConfig, frame) {
         // Change the returned icon location to use a resized version, to prevent serving giant icon files
         const icon = filteredSettings.icon;
         if (icon) {
+            const originalIcon = filteredSettings.icon;
             filteredSettings.icon = filteredSettings.icon.replace(/\/content\/images\//, '/content/images/size/w256h256/');
+            console.log('[IMAGE-CDN-TEST] settings serializer (content API) -> icon rewritten', {original: originalIcon, rewritten: filteredSettings.icon});
         }
     } else {
         filteredSettings = _.values(settingsFilter(models, frame.options.group));
@@ -48,7 +50,9 @@ function serializeSettings(models, apiConfig, frame) {
         // in admin
         const icon = filteredSettings.find(setting => setting.key === 'icon');
         if (icon && icon.value) {
+            const originalIcon = icon.value;
             icon.value = icon.value.replace(/\/content\/images\//, '/content/images/size/w256h256/');
+            console.log('[IMAGE-CDN-TEST] settings serializer (admin API) -> icon rewritten', {original: originalIcon, rewritten: icon.value});
         }
     }
 

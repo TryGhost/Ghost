@@ -1,5 +1,6 @@
 /* eslint-disable ghost/ghost-custom/max-api-complexity */
 const path = require('path');
+const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const imageTransform = require('@tryghost/image-transform');
 
@@ -74,10 +75,15 @@ const controller = {
                     name: imageTransform.generateOriginalImageName(processedImageName)
                 }, processedImageDir);
 
+                console.log('[IMAGE-CDN-TEST] image upload -> stored (processed)', {url: processedImageUrl});
+                logging.info('[IMAGE-CDN-TEST] image upload -> stored (processed)', {url: processedImageUrl});
                 return processedImageUrl;
             }
 
-            return store.save(frame.file);
+            const savedUrl = await store.save(frame.file);
+            console.log('[IMAGE-CDN-TEST] image upload -> stored (direct)', {url: savedUrl});
+            logging.info('[IMAGE-CDN-TEST] image upload -> stored (direct)', {url: savedUrl});
+            return savedUrl;
         }
     }
 };

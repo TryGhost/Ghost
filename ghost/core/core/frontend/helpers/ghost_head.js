@@ -232,6 +232,8 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
     const referrerPolicy = config.get('referrerPolicy') ? config.get('referrerPolicy') : 'no-referrer-when-downgrade';
     const favicon = blogIcon.getIconUrl();
     const iconType = blogIcon.getIconType(favicon);
+    console.log('[IMAGE-CDN-TEST] ghost_head favicon', {favicon, iconType, hasIcon: !!settingsCache.get('icon')});
+    logging.info('[IMAGE-CDN-TEST] ghost_head favicon', {favicon, iconType, hasIcon: !!settingsCache.get('icon')});
 
     debug('preparation complete, begin fetch');
 

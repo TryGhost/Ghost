@@ -80,10 +80,12 @@ module.exports = {
             serializePosts = require('../api/endpoints/utils/serializers/output/posts').all;
         }
 
+        const _imageBaseUrl = config.get('urls:image') || '';
+        console.log('[IMAGE-CDN-TEST] lexical render options', {siteUrl: config.get('url'), imageBaseUrl: _imageBaseUrl});
         const options = Object.assign({
             siteUuid: settingsCache.get('site_uuid'),
             siteUrl: config.get('url'),
-            imageBaseUrl: config.get('urls:image') || '',
+            imageBaseUrl: _imageBaseUrl,
             imageOptimization: config.get('imageOptimization'),
             canTransformImage(storagePath) {
                 const imageTransform = require('@tryghost/image-transform');

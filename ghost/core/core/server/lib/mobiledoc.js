@@ -30,9 +30,11 @@ module.exports = {
             const CardFactory = require('@tryghost/kg-card-factory');
             const defaultCards = require('@tryghost/kg-default-cards');
 
+            const _mobImageBaseUrl = config.get('urls:image') || '';
+            console.log('[IMAGE-CDN-TEST] mobiledoc config', {siteUrl: config.get('url'), imageBaseUrl: _mobImageBaseUrl});
             cardFactory = new CardFactory({
                 siteUrl: config.get('url'),
-                imageBaseUrl: config.get('urls:image') || '',
+                imageBaseUrl: _mobImageBaseUrl,
                 imageOptimization: config.get('imageOptimization'),
                 canTransformImage(storagePath) {
                     const imageTransform = require('@tryghost/image-transform');

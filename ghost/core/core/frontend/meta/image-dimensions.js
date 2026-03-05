@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const logging = require('@tryghost/logging');
 const {getImageWithSize} = require('../utils/images');
 const config = require('../../shared/config');
 const imageSizeCache = require('../../server/lib/image').cachedImageSizeFromUrl;
@@ -12,6 +13,9 @@ const imageSizeCache = require('../../server/lib/image').cachedImageSizeFromUrl;
  */
 async function getImageDimensions(metaData) {
     const MAX_SOCIAL_IMG_WIDTH = config.get('imageOptimization:internalImageSizes:social-image:width') || 1200;
+
+    console.log('[IMAGE-CDN-TEST] getImageDimensions called', {coverImage: metaData.coverImage.url, authorImage: metaData.authorImage.url, ogImage: metaData.ogImage.url, twitterImage: metaData.twitterImage, logo: metaData.site.logo.url});
+    logging.info('[IMAGE-CDN-TEST] getImageDimensions called', {coverImage: metaData.coverImage.url, authorImage: metaData.authorImage.url, ogImage: metaData.ogImage.url, twitterImage: metaData.twitterImage, logo: metaData.site.logo.url});
 
     const fetch = {
         coverImage: imageSizeCache.getCachedImageSizeFromUrl(metaData.coverImage.url),
@@ -35,6 +39,9 @@ async function getImageDimensions(metaData) {
         twitterImage,
         logo
     };
+
+    console.log('[IMAGE-CDN-TEST] getImageDimensions results', JSON.stringify({coverImage, authorImage, ogImage, twitterImage, logo}));
+    logging.info('[IMAGE-CDN-TEST] getImageDimensions results', JSON.stringify({coverImage, authorImage, ogImage, twitterImage, logo}));
 
     _.forEach(imageObj, function (key, value) {
         if (_.has(key, 'width') && _.has(key, 'height')) {
@@ -61,6 +68,8 @@ async function getImageDimensions(metaData) {
                 }
             } else {
                 if (key.width > MAX_SOCIAL_IMG_WIDTH) {
+                    console.log('[IMAGE-CDN-TEST] getImageDimensions -> social-image resize triggered', {field: value, originalWidth: key.width});
+                    logging.info('[IMAGE-CDN-TEST] getImageDimensions -> social-image resize triggered', {field: value, originalWidth: key.width});
                     const ratio = key.height / key.width;
                     key.width = MAX_SOCIAL_IMG_WIDTH;
                     key.height = Math.round(MAX_SOCIAL_IMG_WIDTH * ratio);
@@ -72,9 +81,13 @@ async function getImageDimensions(metaData) {
 
                     if (typeof metaData[value] === 'string') {
                         const url = getImageWithSize(metaData[value], sizeOptions);
+                        console.log('[IMAGE-CDN-TEST] getImageDimensions -> social-image resized URL', {field: value, newUrl: url});
+                        logging.info('[IMAGE-CDN-TEST] getImageDimensions -> social-image resized URL', {field: value, newUrl: url});
                         metaData[value] = url;
                     } else {
                         const url = getImageWithSize(metaData[value].url, sizeOptions);
+                        console.log('[IMAGE-CDN-TEST] getImageDimensions -> social-image resized URL', {field: value, newUrl: url});
+                        logging.info('[IMAGE-CDN-TEST] getImageDimensions -> social-image resized URL', {field: value, newUrl: url});
                         _.assign(metaData[value], {url});
                     }
                 }

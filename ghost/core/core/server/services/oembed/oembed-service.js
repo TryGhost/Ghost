@@ -149,6 +149,8 @@ class OEmbedService {
      * @returns {Promise<String>} - URL where the image is stored
      */
     async processImageFromUrl(imageUrl, imageType) {
+        console.log('[IMAGE-CDN-TEST] oEmbed -> processImageFromUrl', {imageUrl, imageType});
+        logging.info('[IMAGE-CDN-TEST] oEmbed -> processImageFromUrl', {imageUrl, imageType});
         // Fetch image buffer from the URL
         const imageBuffer = await this.fetchImageBuffer(imageUrl);
         const store = this.storage.getStorage('images');
@@ -170,6 +172,8 @@ class OEmbedService {
 
         const imageStoredUrl = await store.saveRaw(imageBuffer, targetPath);
 
+        console.log('[IMAGE-CDN-TEST] oEmbed -> processImageFromUrl STORED', {imageUrl, imageType, storedUrl: imageStoredUrl});
+        logging.info('[IMAGE-CDN-TEST] oEmbed -> processImageFromUrl STORED', {imageUrl, imageType, storedUrl: imageStoredUrl});
         return imageStoredUrl;
     }
 
@@ -336,17 +340,29 @@ class OEmbedService {
                 }
             }
         } else {
+            console.log('[IMAGE-CDN-TEST] oEmbed -> bookmark processing icon', {originalIcon: metadata.icon});
+            logging.info('[IMAGE-CDN-TEST] oEmbed -> bookmark processing icon', {originalIcon: metadata.icon});
             await this.processImageFromUrl(metadata.icon, 'icon')
                 .then((processedImageUrl) => {
+                    console.log('[IMAGE-CDN-TEST] oEmbed -> bookmark icon result', {originalIcon: metadata.icon, processedIcon: processedImageUrl});
+                    logging.info('[IMAGE-CDN-TEST] oEmbed -> bookmark icon result', {originalIcon: metadata.icon, processedIcon: processedImageUrl});
                     metadata.icon = processedImageUrl;
                 }).catch((err) => {
+                    console.log('[IMAGE-CDN-TEST] oEmbed -> bookmark icon FAILED, using fallback', {originalIcon: metadata.icon, error: err.message});
+                    logging.info('[IMAGE-CDN-TEST] oEmbed -> bookmark icon FAILED, using fallback', {originalIcon: metadata.icon, error: err.message});
                     metadata.icon = 'https://static.ghost.org/v5.0.0/images/link-icon.svg';
                     logging.error(err);
                 });
+            console.log('[IMAGE-CDN-TEST] oEmbed -> bookmark processing thumbnail', {originalThumbnail: metadata.thumbnail});
+            logging.info('[IMAGE-CDN-TEST] oEmbed -> bookmark processing thumbnail', {originalThumbnail: metadata.thumbnail});
             await this.processImageFromUrl(metadata.thumbnail, 'thumbnail')
                 .then((processedImageUrl) => {
+                    console.log('[IMAGE-CDN-TEST] oEmbed -> bookmark thumbnail result', {originalThumbnail: metadata.thumbnail, processedThumbnail: processedImageUrl});
+                    logging.info('[IMAGE-CDN-TEST] oEmbed -> bookmark thumbnail result', {originalThumbnail: metadata.thumbnail, processedThumbnail: processedImageUrl});
                     metadata.thumbnail = processedImageUrl;
                 }).catch((err) => {
+                    console.log('[IMAGE-CDN-TEST] oEmbed -> bookmark thumbnail FAILED', {originalThumbnail: metadata.thumbnail, error: err.message});
+                    logging.info('[IMAGE-CDN-TEST] oEmbed -> bookmark thumbnail FAILED', {originalThumbnail: metadata.thumbnail, error: err.message});
                     logging.error(err);
                 });
         }
