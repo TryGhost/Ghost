@@ -1,5 +1,4 @@
 import Component from '@glimmer/component';
-import flattenGroupedOptions from 'ghost-admin/utils/flatten-grouped-options';
 import {action} from '@ember/object';
 import {isBlank} from '@ember/utils';
 import {inject as service} from '@ember/service';
@@ -54,28 +53,16 @@ export default class GhMembersRecipientSelect extends Component {
         return this.forceSpecificChecked || this.specificFilters.size > 0;
     }
 
-    get specificOptions() {
-        const options = [...this._tierOptions];
-        const labels = this.labelsManager.labels;
-
-        if (labels.length > 0) {
-            options.push({
-                groupName: 'Labels',
-                options: labels.map(label => ({
-                    name: label.name,
-                    segment: `label:${label.slug}`,
-                    count: label.count?.members,
-                    class: 'segment-label'
-                }))
-            });
-        }
-
-        return options;
+    get hasSpecificOptions() {
+        return this._tierOptions.length > 0 || this.labelsManager.labels.length > 0;
     }
 
-    get selectedSpecificOptions() {
-        return flattenGroupedOptions(this.specificOptions)
-            .filter(o => this.specificFilters.has(o.segment));
+    get nonLabelOptions() {
+        return this._tierOptions;
+    }
+
+    get selectedSpecificSegments() {
+        return Array.from(this.specificFilters);
     }
 
     @action
@@ -155,15 +142,9 @@ export default class GhMembersRecipientSelect extends Component {
         this.args.onChange?.(newFilter);
     }
 
-    @task({drop: true})
-    *loadMoreLabelsTask() {
-        yield this.labelsManager.loadMoreTask.perform();
-    }
-
     @task
     *fetchSpecificOptionsTask() {
-        // fetch first page of labels (labels are last so infinite scroll works)
-        // TODO: add `include: 'count.members` to query once API is fixed
+        // fetch first page of labels for "Specific people" checkbox visibility
         yield this.labelsManager.loadMoreTask.perform();
 
         // fetch all tiers w̶i̶t̶h̶ c̶o̶u̶n̶t̶s̶

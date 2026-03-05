@@ -81,6 +81,22 @@ describe('Integration: Service: labels-manager', function () {
         });
     });
 
+    it('registers search results so they are findable by slug', async function () {
+        const store = this.owner.lookup('service:store');
+        const labelsManager = this.owner.lookup('service:labels-manager');
+        const searchedLabel = buildLabel({id: '99', slug: 'searched', name: 'Searched'});
+
+        const results = buildCollection([searchedLabel], {page: 1, pages: 1});
+        sinon.stub(store, 'query').resolves(results);
+
+        expect(labelsManager.findBySlug('searched')).to.be.undefined;
+
+        await labelsManager.searchLabelsTask.perform('Searched');
+
+        expect(labelsManager.findBySlug('searched')).to.equal(searchedLabel);
+        expect(labelsManager._labels.map(l => l.slug)).to.include('searched');
+    });
+
     it('falls back to store labels when findBySlug cache is empty', function () {
         const store = this.owner.lookup('service:store');
         const labelsManager = this.owner.lookup('service:labels-manager');
