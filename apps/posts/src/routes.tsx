@@ -15,6 +15,10 @@ export const routes: RouteObject[] = [
         errorElement: <ErrorPage onBackToDashboard={() => {}} />, // @TODO: add back to dashboard click handle
         children: [
             {
+                path: 'posts/calendar',
+                lazy: lazyComponent(() => import('@views/ContentCalendar/content-calendar'))
+            },
+            {
                 // Post Analytics
                 path: 'posts/analytics/:postId',
                 lazy: async () => {

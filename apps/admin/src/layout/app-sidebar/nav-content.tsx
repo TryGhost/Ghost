@@ -16,15 +16,20 @@ import NavSubMenu from "./nav-sub-menu";
 import { useMemberCount } from "./hooks/use-member-count";
 import { useNavigationExpanded } from "./hooks/use-navigation-preferences";
 import { NavCustomViews } from "./nav-custom-views";
+import { useIsActiveLink } from "./use-is-active-link";
 import { useEmberRouting } from "@/ember-bridge";
 import { useFeatureFlag } from "@/hooks/use-feature-flag";
 
+/**
+ * Main admin sidebar navigation content including posts, calendar, and resource links.
+ */
 function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const { data: currentUser } = useCurrentUser();
     const [postsExpanded, setPostsExpanded] = useNavigationExpanded('posts');
     const memberCount = useMemberCount();
     const routing = useEmberRouting();
     const commentModerationEnabled = useFeatureFlag('commentModeration');
+    const isCalendarRouteActive = useIsActiveLink({path: '/posts/calendar'});
     const membersForwardEnabled = useFeatureFlag('membersForward');
 
     const showTags = currentUser && canManageTags(currentUser);
@@ -88,6 +93,16 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                                 isActive={routing.isRouteActive('posts', {type: 'scheduled'})}
                             >
                                 <NavMenuItem.Label>Scheduled</NavMenuItem.Label>
+                            </NavMenuItem.Link>
+                        </NavMenuItem>
+
+                        <NavMenuItem>
+                            <NavMenuItem.Link
+                                className="pl-9"
+                                to="posts/calendar"
+                                isActive={isCalendarRouteActive}
+                            >
+                                <NavMenuItem.Label>Calendar</NavMenuItem.Label>
                             </NavMenuItem.Link>
                         </NavMenuItem>
 
