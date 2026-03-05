@@ -120,4 +120,39 @@ describe('Dropzone Component', () => {
             assert.equal(onDropAccepted.mock.calls.length, 0, 'Accepted callback should not run while disabled');
         });
     });
+
+    it('suppresses pointer and hover styles when disabled', () => {
+        render(
+            <Dropzone disabled>
+                <span>Upload CSV</span>
+            </Dropzone>
+        );
+
+        const dropTarget = screen.getByRole('button', {name: /upload csv/i});
+        const classes = dropTarget.className.split(/\s+/);
+
+        assert.ok(
+            classes.includes('pointer-events-none'),
+            'Disabled dropzone should apply pointer-events-none directly'
+        );
+        assert.ok(
+            !classes.includes('hover:border-grey-400'),
+            'Disabled dropzone should not include hover border classes'
+        );
+    });
+
+    it('disables pointer events on content to keep drag interactions on the dropzone root', () => {
+        render(
+            <Dropzone>
+                <span>Upload CSV</span>
+            </Dropzone>
+        );
+
+        const dropTarget = screen.getByRole('button', {name: /upload csv/i});
+
+        assert.ok(
+            dropTarget.className.includes('[&>*:not(input)]:pointer-events-none'),
+            'Dropzone should disable pointer events on its content'
+        );
+    });
 });
