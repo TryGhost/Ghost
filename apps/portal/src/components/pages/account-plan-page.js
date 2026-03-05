@@ -15,6 +15,10 @@ export const AccountPlanPageStyles = `
         margin-top: 44px;
     }
 
+    .account-plan:not(.full-size) .gh-portal-detail-header {
+        padding-inline: 60px;
+    }
+
     .gh-portal-accountplans-main {
         margin-top: 24px;
         margin-bottom: 0;
