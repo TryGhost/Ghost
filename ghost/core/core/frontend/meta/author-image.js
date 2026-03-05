@@ -12,7 +12,7 @@ function getAuthorImage(data, absolute) {
         result = urlUtils.urlFor('image', {image: contextObject.primary_author.profile_image}, absolute);
     }
     console.log('[IMAGE-CDN-TEST] getAuthorImage', {context, profileImage: contextObject?.primary_author?.profile_image, result});
-    logging.info('[IMAGE-CDN-TEST] getAuthorImage', {context, profileImage: contextObject?.primary_author?.profile_image, result});
+    logging.info('[IMAGE-CDN-TEST] getAuthorImage ' + JSON.stringify({context, profileImage: contextObject?.primary_author?.profile_image, result}));
     return result;
 }
 

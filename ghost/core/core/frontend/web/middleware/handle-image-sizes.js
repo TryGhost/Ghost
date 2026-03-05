@@ -27,7 +27,7 @@ module.exports = function handleImageSizes(req, res, next) {
     }
 
     console.log('[IMAGE-CDN-TEST] handle-image-sizes middleware HIT', {url: req.url, originalUrl: req.originalUrl});
-    logging.info('[IMAGE-CDN-TEST] handle-image-sizes middleware HIT', {url: req.url, originalUrl: req.originalUrl});
+    logging.info('[IMAGE-CDN-TEST] handle-image-sizes middleware HIT ' + JSON.stringify({url: req.url, originalUrl: req.originalUrl}));
 
     const requestedDimension = req.url.match(SIZE_PATH_REGEX)[1];
 
@@ -83,7 +83,7 @@ module.exports = function handleImageSizes(req, res, next) {
     // CASE: unknown dimension
     if (!imageDimensionConfig || (!imageDimensionConfig.width && !imageDimensionConfig.height)) {
         console.log('[IMAGE-CDN-TEST] handle-image-sizes -> UNKNOWN_DIMENSION, redirecting', {requestedDimension});
-        logging.info('[IMAGE-CDN-TEST] handle-image-sizes -> UNKNOWN_DIMENSION, redirecting', {requestedDimension});
+        logging.info('[IMAGE-CDN-TEST] handle-image-sizes -> UNKNOWN_DIMENSION, redirecting ' + JSON.stringify({requestedDimension}));
         return redirectToOriginal();
     }
 
@@ -118,16 +118,16 @@ module.exports = function handleImageSizes(req, res, next) {
     }
 
     console.log('[IMAGE-CDN-TEST] handle-image-sizes -> checking storage exists', {url: req.url, requestedDimension, imagePath, format});
-    logging.info('[IMAGE-CDN-TEST] handle-image-sizes -> checking storage exists', {url: req.url, requestedDimension, imagePath, format});
+    logging.info('[IMAGE-CDN-TEST] handle-image-sizes -> checking storage exists ' + JSON.stringify({url: req.url, requestedDimension, imagePath, format}));
     storageInstance.exists(req.url).then((exists) => {
         if (exists) {
             console.log('[IMAGE-CDN-TEST] handle-image-sizes -> ALREADY_EXISTS, serving cached', {url: req.url});
-            logging.info('[IMAGE-CDN-TEST] handle-image-sizes -> ALREADY_EXISTS, serving cached', {url: req.url});
+            logging.info('[IMAGE-CDN-TEST] handle-image-sizes -> ALREADY_EXISTS, serving cached ' + JSON.stringify({url: req.url}));
             return;
         }
 
         console.log('[IMAGE-CDN-TEST] handle-image-sizes -> CACHE_MISS, resizing', {url: req.url, imagePath});
-        logging.info('[IMAGE-CDN-TEST] handle-image-sizes -> CACHE_MISS, resizing', {url: req.url, imagePath});
+        logging.info('[IMAGE-CDN-TEST] handle-image-sizes -> CACHE_MISS, resizing ' + JSON.stringify({url: req.url, imagePath}));
         return imageSize.getOriginalImagePath(imagePath)
             .then((storagePath) => {
                 return storageInstance.read({path: storagePath});
@@ -145,7 +145,7 @@ module.exports = function handleImageSizes(req, res, next) {
             })
             .then((resizedImageBuffer) => {
                 console.log('[IMAGE-CDN-TEST] handle-image-sizes -> RESIZED_AND_SAVED', {url: req.url});
-                logging.info('[IMAGE-CDN-TEST] handle-image-sizes -> RESIZED_AND_SAVED', {url: req.url});
+                logging.info('[IMAGE-CDN-TEST] handle-image-sizes -> RESIZED_AND_SAVED ' + JSON.stringify({url: req.url}));
                 return storageInstance.saveRaw(resizedImageBuffer, req.url);
             });
     }).then(() => {
@@ -157,7 +157,7 @@ module.exports = function handleImageSizes(req, res, next) {
         next();
     }).catch(function (err) {
         console.log('[IMAGE-CDN-TEST] handle-image-sizes -> ERROR', {url: req.url, code: err.code, errorType: err.errorType, message: err.message});
-        logging.info('[IMAGE-CDN-TEST] handle-image-sizes -> ERROR', {url: req.url, code: err.code, errorType: err.errorType, message: err.message});
+        logging.info('[IMAGE-CDN-TEST] handle-image-sizes -> ERROR ' + JSON.stringify({url: req.url, code: err.code, errorType: err.errorType, message: err.message}));
         if (err.code === 'SHARP_INSTALLATION' || err.code === 'IMAGE_PROCESSING' || err.errorType === 'NoContentError') {
             return redirectToOriginal();
         }

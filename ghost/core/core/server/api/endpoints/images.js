@@ -76,13 +76,13 @@ const controller = {
                 }, processedImageDir);
 
                 console.log('[IMAGE-CDN-TEST] image upload -> stored (processed)', {url: processedImageUrl});
-                logging.info('[IMAGE-CDN-TEST] image upload -> stored (processed)', {url: processedImageUrl});
+                logging.info('[IMAGE-CDN-TEST] image upload -> stored (processed) ' + JSON.stringify({url: processedImageUrl}));
                 return processedImageUrl;
             }
 
             const savedUrl = await store.save(frame.file);
             console.log('[IMAGE-CDN-TEST] image upload -> stored (direct)', {url: savedUrl});
-            logging.info('[IMAGE-CDN-TEST] image upload -> stored (direct)', {url: savedUrl});
+            logging.info('[IMAGE-CDN-TEST] image upload -> stored (direct) ' + JSON.stringify({url: savedUrl}));
             return savedUrl;
         }
     }

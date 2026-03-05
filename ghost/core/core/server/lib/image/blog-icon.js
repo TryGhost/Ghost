@@ -112,7 +112,7 @@ class BlogIcon {
     getIconUrl({absolute = false, fallbackToDefault = true} = {}) {
         const blogIcon = this.settingsCache.get('icon');
         console.log('[IMAGE-CDN-TEST] BlogIcon.getIconUrl', {blogIcon, absolute, fallbackToDefault});
-        logging.info('[IMAGE-CDN-TEST] BlogIcon.getIconUrl', {blogIcon, absolute, fallbackToDefault});
+        logging.info('[IMAGE-CDN-TEST] BlogIcon.getIconUrl ' + JSON.stringify({blogIcon, absolute, fallbackToDefault}));
 
         if (blogIcon) {
             // Resize + format icon to one of the supported file extensions
@@ -122,7 +122,7 @@ class BlogIcon {
             if (sourceExt === 'ico') {
                 const result = this.urlUtils.urlFor({relativeUrl: blogIcon}, absolute ? true : undefined);
                 console.log('[IMAGE-CDN-TEST] BlogIcon.getIconUrl -> .ico, no resize', {result});
-                logging.info('[IMAGE-CDN-TEST] BlogIcon.getIconUrl -> .ico, no resize', {result});
+                logging.info('[IMAGE-CDN-TEST] BlogIcon.getIconUrl -> .ico, no resize ' + JSON.stringify({result}));
                 // Resize not supported (prevent a redirect)
                 return result;
             }
@@ -131,21 +131,21 @@ class BlogIcon {
                 const formattedIcon = blogIcon.replace(/\/content\/images\//, `/content/images/size/w256h256/format/${this.getIconExt(blogIcon)}/`);
                 const result = this.urlUtils.urlFor({relativeUrl: formattedIcon}, absolute ? true : undefined);
                 console.log('[IMAGE-CDN-TEST] BlogIcon.getIconUrl -> format change', {sourceExt, destintationExt, formattedIcon, result});
-                logging.info('[IMAGE-CDN-TEST] BlogIcon.getIconUrl -> format change', {sourceExt, destintationExt, formattedIcon, result});
+                logging.info('[IMAGE-CDN-TEST] BlogIcon.getIconUrl -> format change ' + JSON.stringify({sourceExt, destintationExt, formattedIcon, result}));
                 return result;
             }
 
             const sizedIcon = blogIcon.replace(/\/content\/images\//, '/content/images/size/w256h256/');
             const result = this.urlUtils.urlFor({relativeUrl: sizedIcon}, absolute ? true : undefined);
             console.log('[IMAGE-CDN-TEST] BlogIcon.getIconUrl -> sized', {sizedIcon, result});
-            logging.info('[IMAGE-CDN-TEST] BlogIcon.getIconUrl -> sized', {sizedIcon, result});
+            logging.info('[IMAGE-CDN-TEST] BlogIcon.getIconUrl -> sized ' + JSON.stringify({sizedIcon, result}));
             return result;
         }
 
         if (fallbackToDefault) {
             const result = this.urlUtils.urlFor({relativeUrl: '/favicon.ico'}, absolute ? true : undefined);
             console.log('[IMAGE-CDN-TEST] BlogIcon.getIconUrl -> fallback default favicon', {result});
-            logging.info('[IMAGE-CDN-TEST] BlogIcon.getIconUrl -> fallback default favicon', {result});
+            logging.info('[IMAGE-CDN-TEST] BlogIcon.getIconUrl -> fallback default favicon ' + JSON.stringify({result}));
             return result;
         }
 

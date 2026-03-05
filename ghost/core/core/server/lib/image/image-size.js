@@ -75,7 +75,7 @@ class ImageSize {
     // returns promise which resolves dimensions
     _probeImageSizeFromUrl(imageUrl) {
         console.log('[IMAGE-CDN-TEST] _probeImageSizeFromUrl called', {imageUrl});
-        logging.info('[IMAGE-CDN-TEST] _probeImageSizeFromUrl called', {imageUrl});
+        logging.info('[IMAGE-CDN-TEST] _probeImageSizeFromUrl called ' + JSON.stringify({imageUrl}));
         // probe-image-size uses `request` npm module which doesn't have our `got`
         // override with custom URL validation so it needs duplicating here
         if (_.isEmpty(imageUrl) || !this.validator.isURL(imageUrl)) {
@@ -104,7 +104,7 @@ class ImageSize {
     // returns promise which resolves dimensions
     _fetchImageSizeFromUrl(imageUrl) {
         console.log('[IMAGE-CDN-TEST] _fetchImageSizeFromUrl called (full download)', {imageUrl});
-        logging.info('[IMAGE-CDN-TEST] _fetchImageSizeFromUrl called (full download)', {imageUrl});
+        logging.info('[IMAGE-CDN-TEST] _fetchImageSizeFromUrl called (full download) ' + JSON.stringify({imageUrl}));
         return this.request(imageUrl, this.REQUEST_OPTIONS).then((response) => {
             return this._imageSizeFromBuffer(response.body);
         });
@@ -165,11 +165,11 @@ class ImageSize {
     getImageSizeFromUrl(imagePath) {
         const isLocal = this.storageUtils.isLocalImage(imagePath);
         console.log('[IMAGE-CDN-TEST] getImageSizeFromUrl called', {imagePath, isLocal});
-        logging.info('[IMAGE-CDN-TEST] getImageSizeFromUrl called', {imagePath, isLocal});
+        logging.info('[IMAGE-CDN-TEST] getImageSizeFromUrl called ' + JSON.stringify({imagePath, isLocal}));
 
         if (isLocal) {
             console.log('[IMAGE-CDN-TEST] getImageSizeFromUrl -> LOCAL path, delegating to getImageSizeFromStoragePath', {imagePath});
-            logging.info('[IMAGE-CDN-TEST] getImageSizeFromUrl -> LOCAL path, delegating to getImageSizeFromStoragePath', {imagePath});
+            logging.info('[IMAGE-CDN-TEST] getImageSizeFromUrl -> LOCAL path, delegating to getImageSizeFromStoragePath ' + JSON.stringify({imagePath}));
             return this.getImageSizeFromStoragePath(imagePath);
         }
 
@@ -178,17 +178,17 @@ class ImageSize {
             const originalPath = imagePath;
             imagePath = this.urlUtils.urlJoin(this.urlUtils.urlFor('home', true), this.urlUtils.getSubdir(), '/', imagePath);
             console.log('[IMAGE-CDN-TEST] getImageSizeFromUrl -> legacy /assets path rewritten', {original: originalPath, rewritten: imagePath});
-            logging.info('[IMAGE-CDN-TEST] getImageSizeFromUrl -> legacy /assets path rewritten', {original: originalPath, rewritten: imagePath});
+            logging.info('[IMAGE-CDN-TEST] getImageSizeFromUrl -> legacy /assets path rewritten ' + JSON.stringify({original: originalPath, rewritten: imagePath}));
         }
 
         debug('requested imagePath:', imagePath);
         console.log('[IMAGE-CDN-TEST] getImageSizeFromUrl -> REMOTE, fetching dimensions via HTTP', {imagePath});
-        logging.info('[IMAGE-CDN-TEST] getImageSizeFromUrl -> REMOTE, fetching dimensions via HTTP', {imagePath});
+        logging.info('[IMAGE-CDN-TEST] getImageSizeFromUrl -> REMOTE, fetching dimensions via HTTP ' + JSON.stringify({imagePath}));
 
         return this._imageSizeFromUrl(imagePath).then((dimensions) => {
             debug('Image fetched (URL):', imagePath);
             console.log('[IMAGE-CDN-TEST] getImageSizeFromUrl -> SUCCESS', {url: imagePath, width: dimensions.width, height: dimensions.height});
-            logging.info('[IMAGE-CDN-TEST] getImageSizeFromUrl -> SUCCESS', {url: imagePath, width: dimensions.width, height: dimensions.height});
+            logging.info('[IMAGE-CDN-TEST] getImageSizeFromUrl -> SUCCESS ' + JSON.stringify({url: imagePath, width: dimensions.width, height: dimensions.height}));
 
             return {
                 url: imagePath,
@@ -198,7 +198,7 @@ class ImageSize {
         }).catch((err) => {
             if (err.code === 'URL_MISSING_INVALID') {
                 console.log('[IMAGE-CDN-TEST] getImageSizeFromUrl -> ERROR URL_MISSING_INVALID', {imagePath, code: err.code});
-                logging.info('[IMAGE-CDN-TEST] getImageSizeFromUrl -> ERROR URL_MISSING_INVALID', {imagePath, code: err.code});
+                logging.info('[IMAGE-CDN-TEST] getImageSizeFromUrl -> ERROR URL_MISSING_INVALID ' + JSON.stringify({imagePath, code: err.code}));
                 return Promise.reject(new errors.InternalServerError({
                     message: err.message,
                     code: 'IMAGE_SIZE_URL',
@@ -207,7 +207,7 @@ class ImageSize {
                 }));
             } else if (err.code === 'ETIMEDOUT' || err.code === 'ESOCKETTIMEDOUT' || err.code === 'ECONNRESET' || err.statusCode === 408) {
                 console.log('[IMAGE-CDN-TEST] getImageSizeFromUrl -> ERROR TIMEOUT', {imagePath, code: err.code});
-                logging.info('[IMAGE-CDN-TEST] getImageSizeFromUrl -> ERROR TIMEOUT', {imagePath, code: err.code});
+                logging.info('[IMAGE-CDN-TEST] getImageSizeFromUrl -> ERROR TIMEOUT ' + JSON.stringify({imagePath, code: err.code}));
                 return Promise.reject(new errors.InternalServerError({
                     message: 'Request timed out.',
                     code: 'IMAGE_SIZE_URL',
@@ -216,7 +216,7 @@ class ImageSize {
                 }));
             } else if (err.code === 'ENOENT' || err.code === 'ENOTFOUND' || err.statusCode === 404) {
                 console.log('[IMAGE-CDN-TEST] getImageSizeFromUrl -> ERROR NOT_FOUND', {imagePath, code: err.code, statusCode: err.statusCode});
-                logging.info('[IMAGE-CDN-TEST] getImageSizeFromUrl -> ERROR NOT_FOUND', {imagePath, code: err.code, statusCode: err.statusCode});
+                logging.info('[IMAGE-CDN-TEST] getImageSizeFromUrl -> ERROR NOT_FOUND ' + JSON.stringify({imagePath, code: err.code, statusCode: err.statusCode}));
                 return Promise.reject(new errors.NotFoundError({
                     message: 'Image not found.',
                     code: 'IMAGE_SIZE_URL',
@@ -225,7 +225,7 @@ class ImageSize {
                 }));
             } else {
                 console.log('[IMAGE-CDN-TEST] getImageSizeFromUrl -> ERROR UNKNOWN', {imagePath, code: err.code, message: err.message});
-                logging.info('[IMAGE-CDN-TEST] getImageSizeFromUrl -> ERROR UNKNOWN', {imagePath, code: err.code, message: err.message});
+                logging.info('[IMAGE-CDN-TEST] getImageSizeFromUrl -> ERROR UNKNOWN ' + JSON.stringify({imagePath, code: err.code, message: err.message}));
                 if (errors.utils.isGhostError(err)) {
                     return Promise.reject(err);
                 }
@@ -267,7 +267,7 @@ class ImageSize {
         filePath = this.storageUtils.getLocalImagesStoragePath(imagePath);
 
         console.log('[IMAGE-CDN-TEST] getImageSizeFromStoragePath called', {imagePath, filePath});
-        logging.info('[IMAGE-CDN-TEST] getImageSizeFromStoragePath called', {imagePath, filePath});
+        logging.info('[IMAGE-CDN-TEST] getImageSizeFromStoragePath called ' + JSON.stringify({imagePath, filePath}));
 
         return this.storage.getStorage('images')
             .read({path: filePath})
@@ -277,7 +277,7 @@ class ImageSize {
             })
             .then((dimensions) => {
                 console.log('[IMAGE-CDN-TEST] getImageSizeFromStoragePath -> SUCCESS', {imagePath, filePath, width: dimensions.width, height: dimensions.height});
-                logging.info('[IMAGE-CDN-TEST] getImageSizeFromStoragePath -> SUCCESS', {imagePath, filePath, width: dimensions.width, height: dimensions.height});
+                logging.info('[IMAGE-CDN-TEST] getImageSizeFromStoragePath -> SUCCESS ' + JSON.stringify({imagePath, filePath, width: dimensions.width, height: dimensions.height}));
                 return {
                     url: imagePath,
                     width: dimensions.width,
@@ -286,7 +286,7 @@ class ImageSize {
             })
             .catch((err) => {
                 console.log('[IMAGE-CDN-TEST] getImageSizeFromStoragePath -> ERROR', {imagePath, filePath, code: err.code, message: err.message});
-                logging.info('[IMAGE-CDN-TEST] getImageSizeFromStoragePath -> ERROR', {imagePath, filePath, code: err.code, message: err.message});
+                logging.info('[IMAGE-CDN-TEST] getImageSizeFromStoragePath -> ERROR ' + JSON.stringify({imagePath, filePath, code: err.code, message: err.message}));
                 if (err.code === 'ENOENT') {
                     return Promise.reject(new errors.NotFoundError({
                         message: err.message,

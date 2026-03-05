@@ -233,7 +233,7 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
     const favicon = blogIcon.getIconUrl();
     const iconType = blogIcon.getIconType(favicon);
     console.log('[IMAGE-CDN-TEST] ghost_head favicon', {favicon, iconType, hasIcon: !!settingsCache.get('icon')});
-    logging.info('[IMAGE-CDN-TEST] ghost_head favicon', {favicon, iconType, hasIcon: !!settingsCache.get('icon')});
+    logging.info('[IMAGE-CDN-TEST] ghost_head favicon ' + JSON.stringify({favicon, iconType, hasIcon: !!settingsCache.get('icon')}));
 
     debug('preparation complete, begin fetch');
 

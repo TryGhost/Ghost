@@ -46,7 +46,7 @@ function getTwitterImage(data) {
     }
 
     console.log('[IMAGE-CDN-TEST] getTwitterImage', {context, source, result});
-    logging.info('[IMAGE-CDN-TEST] getTwitterImage', {context, source, result});
+    logging.info('[IMAGE-CDN-TEST] getTwitterImage ' + JSON.stringify({context, source, result}));
     return result;
 }
 

@@ -46,7 +46,7 @@ function getOgImage(data) {
     }
 
     console.log('[IMAGE-CDN-TEST] getOgImage', {context, source, result});
-    logging.info('[IMAGE-CDN-TEST] getOgImage', {context, source, result});
+    logging.info('[IMAGE-CDN-TEST] getOgImage ' + JSON.stringify({context, source, result}));
     return result;
 }
 

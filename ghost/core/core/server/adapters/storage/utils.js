@@ -49,7 +49,7 @@ exports.isLocalImage = function isLocalImage(imagePath) {
 
     const result = localImagePath !== imagePath;
     console.log('[IMAGE-CDN-TEST] storageUtils.isLocalImage', {imagePath, result});
-    logging.info('[IMAGE-CDN-TEST] storageUtils.isLocalImage', {imagePath, result});
+    logging.info('[IMAGE-CDN-TEST] storageUtils.isLocalImage ' + JSON.stringify({imagePath, result}));
     if (result) {
         return true;
     } else {
@@ -65,13 +65,13 @@ exports.isLocalImage = function isLocalImage(imagePath) {
 exports.isInternalImage = function isInternalImage(imagePath) {
     if (this.isLocalImage(imagePath)) {
         console.log('[IMAGE-CDN-TEST] storageUtils.isInternalImage -> isLocal=true', {imagePath});
-        logging.info('[IMAGE-CDN-TEST] storageUtils.isInternalImage -> isLocal=true', {imagePath});
+        logging.info('[IMAGE-CDN-TEST] storageUtils.isInternalImage -> isLocal=true ' + JSON.stringify({imagePath}));
         return true;
     }
 
     const imageBaseUrl = (config.get('urls:image') || '').replace(/\/+$/, '');
     const result = !!(imageBaseUrl && imagePath.startsWith(imageBaseUrl + '/'));
     console.log('[IMAGE-CDN-TEST] storageUtils.isInternalImage', {imagePath, imageBaseUrl, result});
-    logging.info('[IMAGE-CDN-TEST] storageUtils.isInternalImage', {imagePath, imageBaseUrl, result});
+    logging.info('[IMAGE-CDN-TEST] storageUtils.isInternalImage ' + JSON.stringify({imagePath, imageBaseUrl, result}));
     return result;
 };

@@ -47,11 +47,11 @@ module.exports = function imgUrl(requestedImageUrl, options) {
     const sizeOptions = getImageSizeOptions(options);
 
     console.log('[IMAGE-CDN-TEST] img_url helper', {requestedImageUrl, isInternalImage, requestedSize: sizeOptions.requestedSize});
-    logging.info('[IMAGE-CDN-TEST] img_url helper', {requestedImageUrl, isInternalImage, requestedSize: sizeOptions.requestedSize});
+    logging.info('[IMAGE-CDN-TEST] img_url helper ' + JSON.stringify({requestedImageUrl, isInternalImage, requestedSize: sizeOptions.requestedSize}));
 
     if (!isInternalImage) {
         console.log('[IMAGE-CDN-TEST] img_url -> external image, returned as-is', {requestedImageUrl});
-        logging.info('[IMAGE-CDN-TEST] img_url -> external image, returned as-is', {requestedImageUrl});
+        logging.info('[IMAGE-CDN-TEST] img_url -> external image, returned as-is ' + JSON.stringify({requestedImageUrl}));
         // Detect Unsplash width and format
         const isUnsplashImage = detectUnsplashImage(requestedImageUrl);
         if (isUnsplashImage) {
@@ -85,7 +85,7 @@ module.exports = function imgUrl(requestedImageUrl, options) {
     const withSize = applyImageSizes(requestedImageUrl);
     const finalUrl = maybeEnsureRelativePath(getImageUrl(withSize));
     console.log('[IMAGE-CDN-TEST] img_url -> internal image, transformed', {original: requestedImageUrl, withSize, finalUrl});
-    logging.info('[IMAGE-CDN-TEST] img_url -> internal image, transformed', {original: requestedImageUrl, withSize, finalUrl});
+    logging.info('[IMAGE-CDN-TEST] img_url -> internal image, transformed ' + JSON.stringify({original: requestedImageUrl, withSize, finalUrl}));
 
     return finalUrl;
 };

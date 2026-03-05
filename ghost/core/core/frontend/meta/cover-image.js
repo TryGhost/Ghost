@@ -18,7 +18,7 @@ function getCoverImage(data) {
         }
     }
     console.log('[IMAGE-CDN-TEST] getCoverImage', {context, coverImage: contextObject?.cover_image, featureImage: contextObject?.feature_image, result});
-    logging.info('[IMAGE-CDN-TEST] getCoverImage', {context, coverImage: contextObject?.cover_image, featureImage: contextObject?.feature_image, result});
+    logging.info('[IMAGE-CDN-TEST] getCoverImage ' + JSON.stringify({context, coverImage: contextObject?.cover_image, featureImage: contextObject?.feature_image, result}));
     return result;
 }
 
