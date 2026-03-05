@@ -150,4 +150,49 @@ describe('Integration: Component: gh-members-recipient-select', function () {
         // Wait for server-side search request
         await waitUntil(() => server.pretender.handledRequests.some(r => r.url.includes('/labels') && r.queryParams.filter && r.queryParams.filter.includes('name:~')));
     });
+
+    it('selected search result from outside paginated set resolves as token', async function () {
+        // Fill page 1 with 100 labels, then add one that won't be in the initial load
+        server.createList('label', 100);
+        server.create('label', {name: 'Outlier Label', slug: 'outlier-label'});
+        server.create('tier', {name: 'Basic', slug: 'basic', type: 'paid', active: true});
+
+        let lastFilter;
+        this.set('filter', 'status:free');
+        this.set('onChange', (filter) => {
+            lastFilter = filter;
+            this.set('filter', filter);
+        });
+
+        await render(hbs`<GhMembersRecipientSelect
+            @filter={{this.filter}}
+            @newsletter={{this.newsletter}}
+            @onChange={{this.onChange}}
+        />`);
+        await timeout(100);
+
+        // Check specific
+        await click('[data-test-checkbox="specific-members"]');
+        await timeout(100);
+
+        // Open dropdown and search for the label outside the paginated set
+        await clickTrigger('[data-test-select="specific-members"]');
+        await timeout(100);
+
+        await typeInSearch('Outlier Label');
+        await waitUntil(() => server.pretender.handledRequests.some(r =>
+            r.url.includes('/labels') && r.queryParams.filter && r.queryParams.filter.includes('Outlier Label')
+        ));
+        await waitUntil(() => findAll('.ember-power-select-option').length > 0);
+
+        // Select the search result
+        await selectChoose('[data-test-select="specific-members"] .ember-power-select-trigger', 'Outlier Label');
+
+        expect(lastFilter).to.include('label:outlier-label');
+
+        // The label should appear as a selected token, proving it was registered
+        // with labelsManager via addLabel so selectedOptions resolves it
+        let tokens = findAll('.ember-power-select-multiple-option');
+        expect(tokens.some(t => t.textContent.includes('Outlier Label'))).to.be.true;
+    });
 });

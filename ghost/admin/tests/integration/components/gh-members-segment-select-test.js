@@ -138,6 +138,41 @@ describe('Integration: Component: gh-members-segment-select', function () {
         await waitUntil(() => server.pretender.handledRequests.some(r => r.url.includes('/labels') && r.queryParams.filter && r.queryParams.filter.includes('name:~') && r.queryParams.filter.includes('Label 50')));
     });
 
+    it('selected search result from outside paginated set resolves as token', async function () {
+        // Create 100 labels to fill page 1, then one extra that won't be loaded initially
+        server.createList('label', 100);
+        server.create('label', {name: 'Unique Outlier', slug: 'unique-outlier'});
+
+        let lastSegment;
+        this.set('segment', null);
+        this.set('onChange', (segment) => {
+            lastSegment = segment;
+            this.set('segment', segment);
+        });
+
+        await render(hbs`<GhMembersSegmentSelect @segment={{this.segment}} @onChange={{this.onChange}} />`);
+        await clickTrigger();
+        await waitUntil(() => findAll('.ember-power-select-option').length > 0);
+
+        // Search for the label that's NOT in the initial paginated set
+        await typeInSearch('Unique Outlier');
+        await waitUntil(() => server.pretender.handledRequests.some(r =>
+            r.url.includes('/labels') && r.queryParams.filter && r.queryParams.filter.includes('Unique Outlier')
+        ));
+        await waitUntil(() => findAll('.ember-power-select-option').length > 0);
+
+        // Select the search result
+        await selectChoose('.ember-power-select-trigger', 'Unique Outlier');
+
+        expect(lastSegment).to.include('label:unique-outlier');
+
+        // The label should appear as a selected token — this proves it was
+        // registered with labelsManager via addLabel so selectedOptions resolves it
+        let tokens = findAll('.ember-power-select-multiple-option');
+        expect(tokens.length).to.equal(1);
+        expect(tokens[0].textContent).to.include('Unique Outlier');
+    });
+
     it('respects hideLabels', async function () {
         server.create('label', {name: 'Hidden', slug: 'hidden'});
         server.create('tier', {name: 'Visible', slug: 'visible', type: 'paid', active: true});

@@ -73,10 +73,6 @@ export default class GhSegmentTokenInput extends Component {
         if (!this.args.hideLabels) {
             const labels = yield this.labelsManager.searchLabelsTask.perform(term);
             labels.forEach((label) => {
-                // Register with labelsManager so selectedOptions can resolve
-                // labels found via search that aren't in the paginated set
-                this.labelsManager.addLabel(label);
-
                 const segment = `label:${label.slug}`;
                 if (!selectedSegments.has(segment)) {
                     results.push({
