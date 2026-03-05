@@ -155,7 +155,7 @@ const RetentionOfferRow: React.FC<{
         : undefined;
 
     return (
-        <tr className='group relative scale-100 border-b border-b-grey-200 dark:border-grey-800' data-testid='retention-offer-item'>
+        <tr className='group relative border-b border-b-grey-200 dark:border-grey-800' data-testid='retention-offer-item'>
             <td className='sticky left-0 z-10 bg-white p-0 dark:bg-black'>
                 <button className='block w-full cursor-pointer p-5 pl-0 text-left' type="button" onClick={onClick}>
                     <span className='font-semibold'>{offer.name}</span><br />
@@ -367,7 +367,7 @@ export const OffersIndexModal: React.FC = () => {
                     const {discountOffer, originalPriceWithCurrency, updatedPriceWithCurrency} = getOfferDiscount(offer.type, offer.amount, offer.cadence, offer.currency || 'USD', offerTier);
 
                     return (
-                        <tr key={offer.id} className={`group relative scale-100 border-b border-b-grey-200 dark:border-grey-800 ${archived ? 'opacity-60' : ''}`} data-testid="offer-item">
+                        <tr key={offer.id} className={`group relative border-b border-b-grey-200 dark:border-grey-800 ${archived ? 'opacity-60' : ''}`} data-testid="offer-item">
                             <td className='sticky left-0 z-10 bg-white p-0 dark:bg-black'><a className='block cursor-pointer p-5 pl-0' onClick={() => handleOfferEdit(offer.id)}><span className='font-semibold'>{offer?.name}</span><br /><span className='text-sm text-grey-700'>{offerTier.name} {getOfferCadence(offer.cadence)}</span></a></td>
                             <td className='whitespace-nowrap p-0 text-sm'><a className='block cursor-pointer p-5' onClick={() => handleOfferEdit(offer.id)}><span className='text-[1.3rem] font-medium uppercase'>{discountOffer}</span><br /><span className='text-grey-700'>{offer.type !== 'trial' ? getOfferDuration(offer.duration) : 'Trial period'}</span></a></td>
                             <td className='whitespace-nowrap p-0 text-sm'><a className='block cursor-pointer p-5' onClick={() => handleOfferEdit(offer.id)}><span className='font-medium'>{updatedPriceWithCurrency}</span> {offer.type !== 'trial' ? <span className='relative text-xs text-grey-700 before:absolute before:-inset-x-0.5 before:top-1/2 before:rotate-[-20deg] before:border-t before:content-[""]'>{originalPriceWithCurrency}</span> : null}</a></td>
