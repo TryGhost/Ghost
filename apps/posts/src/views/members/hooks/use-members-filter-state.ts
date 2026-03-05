@@ -1,6 +1,7 @@
 import {useCallback, useMemo} from 'react';
 import {useSearchParams} from '@tryghost/admin-x-framework';
 import type {Filter} from '@tryghost/shade';
+import {parsePredicateParams, serializePredicateParams} from '@src/views/filters/url-predicate-params';
 
 /**
  * Member filter field keys - single source of truth for filter definitions
@@ -233,96 +234,48 @@ export function buildMemberNqlFilter(filters: Filter[]): string | undefined {
 }
 
 /**
- * Parse a filter value from URL format: "operator:value"
- * e.g., "is:paid", "contains:hello"
- */
-function parseFilterValue(queryValue: string): {operator: string; value: string} | null {
-    if (!queryValue) {
-        return null;
-    }
-
-    const colonIndex = queryValue.indexOf(':');
-    if (colonIndex <= 0) {
-        return null;
-    }
-
-    return {
-        operator: queryValue.substring(0, colonIndex),
-        value: queryValue.substring(colonIndex + 1)
-    };
-}
-
-/**
  * Parse URL search params into Filter objects
  */
-function searchParamsToFilters(searchParams: URLSearchParams): Filter[] {
-    const filters: Filter[] = [];
-
-    for (const [field, queryValue] of searchParams.entries()) {
-        // Skip non-filter params
-        if (field === 'search') {
-            continue;
-        }
-
-        // Handle newsletter filters which have dynamic keys (e.g., newsletters.weekly-digest)
+export function searchParamsToFilters(searchParams: URLSearchParams): Filter[] {
+    return parsePredicateParams({
+        params: searchParams,
+        multiselectFields: MULTISELECT_FIELDS,
+        ignoredFields: new Set(['search'])
+    }).filter(({field}) => {
         const isNewsletterFilter = field.startsWith('newsletters.');
-
-        if (!isNewsletterFilter && !MEMBER_FILTER_FIELDS.includes(field as MemberFilterField)) {
-            continue;
-        }
-
-        if (!queryValue) {
-            continue;
-        }
-
-        const parsed = parseFilterValue(queryValue);
-        if (parsed) {
-            const values = MULTISELECT_FIELDS.has(field)
-                ? (parsed.value ? parsed.value.split(',') : [])
-                : [parsed.value];
-            filters.push({
-                id: field,
-                field: field,
-                operator: parsed.operator,
-                values
-            });
-        }
-    }
-
-    return filters;
+        return isNewsletterFilter || MEMBER_FILTER_FIELDS.includes(field as MemberFilterField);
+    }).map(predicate => ({
+        id: predicate.id,
+        field: predicate.field,
+        operator: predicate.operator,
+        values: predicate.values
+    }));
 }
 
 /**
  * Serialize filters to URL search params format
  */
-function filtersToSearchParams(filters: Filter[], search?: string): URLSearchParams {
-    const params = new URLSearchParams();
+export function filtersToSearchParams(filters: Filter[], search?: string): URLSearchParams {
+    const predicates = filters
+        .filter((filter) => {
+            if (MULTISELECT_FIELDS.has(filter.field)) {
+                return true;
+            }
 
-    for (const filter of filters) {
-        const key = filter.field;
+            return filter.values[0] !== undefined;
+        })
+        .map((filter, index) => ({
+            id: filter.id || `${filter.field}-${index + 1}`,
+            field: filter.field,
+            operator: filter.operator,
+            values: filter.values.map(value => String(value))
+        }));
 
-        // Multiselect fields (label, offer_redemptions) may have empty values
-        // when the filter row has just been added but no values selected yet.
-        // We still serialize them so the filter row persists in the URL.
-        if (MULTISELECT_FIELDS.has(key)) {
-            const serializedValue = filter.values.length > 0
-                ? filter.values.map(v => String(v)).join(',')
-                : '';
-            params.set(key, `${filter.operator}:${serializedValue}`);
-            continue;
-        }
-
-        if (filter.values[0] !== undefined) {
-            const value = `${filter.operator}:${String(filter.values[0])}`;
-            params.set(key, value);
-        }
-    }
-
-    if (search) {
-        params.set('search', search);
-    }
-
-    return params;
+    return serializePredicateParams({
+        predicates,
+        multiselectFields: MULTISELECT_FIELDS,
+        search
+    });
 }
 
 type SetFiltersAction = Filter[] | ((prevFilters: Filter[]) => Filter[]);
