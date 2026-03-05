@@ -241,7 +241,8 @@ describe('PaidAccountActions', () => {
             const products = getProductsData({numOfProducts: 1});
             const site = getSiteData({products, portalProducts: products.map(p => p.id)});
 
-            const endDate = new Date('2099-01-01T12:00:00.000Z');
+            const currentPeriodEnd = new Date('2099-04-03T12:00:00.000Z');
+            const discountEnd = new Date('2099-05-05T12:00:00.000Z');
 
             const member = getMemberData({
                 paid: true,
@@ -255,8 +256,9 @@ describe('PaidAccountActions', () => {
                             type: 'percent',
                             amount: 20,
                             duration: 'repeating',
-                            duration_in_months: 6
+                            duration_in_months: 2
                         },
+                        currentPeriodEnd: currentPeriodEnd.toISOString(),
                         nextPayment: getNextPaymentData({
                             originalAmount: 500,
                             amount: 400,
@@ -264,9 +266,10 @@ describe('PaidAccountActions', () => {
                             currency: 'USD',
                             discount: getDiscountData({
                                 duration: 'repeating',
+                                durationInMonths: 2,
                                 type: 'percent',
                                 amount: 20,
-                                end: endDate.toISOString()
+                                end: discountEnd.toISOString()
                             })
                         })
                     })
@@ -282,7 +285,8 @@ describe('PaidAccountActions', () => {
             // Should show the discounted price with end date
             expect(queryByText(/\$4\.00\/month/)).toBeInTheDocument();
             expect(queryByText(/Ends/)).toBeInTheDocument();
-            expect(queryByText(/1 Jan 2099/)).toBeInTheDocument();
+            expect(queryByText('$4.00/month — Ends 3 May 2099')).toBeInTheDocument();
+            expect(queryByText('$4.00/month — Ends 5 May 2099')).not.toBeInTheDocument();
         });
 
         test('displays $0.00/month - Ends {date} for free months offers', () => {
@@ -290,6 +294,7 @@ describe('PaidAccountActions', () => {
             const site = getSiteData({products, portalProducts: products.map(p => p.id)});
 
             const discountEnd = new Date('2099-02-01T12:00:00.000Z');
+            const currentPeriodEnd = new Date('2099-01-03T12:00:00.000Z');
 
             const member = getMemberData({
                 paid: true,
@@ -306,6 +311,7 @@ describe('PaidAccountActions', () => {
                             duration_in_months: 1,
                             redemption_type: 'retention'
                         },
+                        currentPeriodEnd: currentPeriodEnd.toISOString(),
                         nextPayment: getNextPaymentData({
                             originalAmount: 500,
                             amount: 0,
@@ -313,6 +319,7 @@ describe('PaidAccountActions', () => {
                             currency: 'USD',
                             discount: getDiscountData({
                                 duration: 'repeating',
+                                durationInMonths: 1,
                                 type: 'percent',
                                 amount: 100,
                                 end: discountEnd.toISOString()
@@ -327,7 +334,8 @@ describe('PaidAccountActions', () => {
             expect(queryByText('$5.00/month')).toBeInTheDocument();
             expect(queryByText('$5.00/month')).toHaveClass('gh-portal-account-old-price');
             expect(queryByTestId('offer-label')).toBeInTheDocument();
-            expect(queryByText('$0.00/month — Ends 1 Feb 2099')).toBeInTheDocument();
+            expect(queryByText('$0.00/month — Ends 3 Jan 2099')).toBeInTheDocument();
+            expect(queryByText('$0.00/month — Ends 1 Feb 2099')).not.toBeInTheDocument();
         });
 
         test('displays discounted price with "Ends {date}" for once offers', () => {
