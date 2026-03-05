@@ -26,8 +26,8 @@
         <LinkTo @route="members">Add members</LinkTo>
         to start sending newsletters!
     </p>
-{{else if (not @publishOptions.mailgunIsConfigured)}}
-    <p class="gh-box gh-content-box" data-test-publish-type-error="no-mailgun">
-        Set up <a href="https://ghost.org/docs/newsletters/#bulk-email-configuration" target="_blank" rel="noreferrer noopener">Mailgun</a> to start sending newsletters!
+{{else if (not @publishOptions.bulkEmailIsConfigured)}}
+    <p class="gh-box gh-content-box" data-test-publish-type-error="no-bulk-email">
+        Set up a <a href="https://ghost.org/docs/newsletters/#bulk-email-configuration" target="_blank" rel="noreferrer noopener">bulk email provider</a> to start sending newsletters!
     </p>
 {{/if}}
