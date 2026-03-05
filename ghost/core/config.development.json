@@ -1,3 +1,9 @@
 {
-    "enableDeveloperExperiments": true
+    "enableDeveloperExperiments": true,
+    "campaigns": {
+        "delayUnit": "minutes"
+    },
+    "outbox": {
+        "cronSchedule": "*/5 * * * * *"
+    }
 }

@@ -1,5 +1,5 @@
 import {Meta, createMutation, createQuery} from '../utils/api/hooks';
-import {insertToQueryCache, updateQueryCache} from '../utils/api/update-queries';
+import {deleteFromQueryCache, insertToQueryCache, updateQueryCache} from '../utils/api/update-queries';
 
 export type AutomatedEmail = {
     id: string;
@@ -11,6 +11,10 @@ export type AutomatedEmail = {
     sender_name: string | null;
     sender_email: string | null;
     sender_reply_to: string | null;
+    campaign_type: string | null;
+    delay_days: number | null;
+    sort_order: number;
+    version: number;
     created_at: string;
     updated_at: string | null;
 }
@@ -47,6 +51,38 @@ export const useEditAutomatedEmail = createMutation<AutomatedEmailsResponseType,
         emberUpdateType: 'createOrUpdate',
         update: updateQueryCache('automated_emails')
     }
+});
+
+export const useDeleteAutomatedEmail = createMutation<unknown, string>({
+    method: 'DELETE',
+    path: id => `/automated_emails/${id}/`,
+    updateQueries: {
+        dataType,
+        emberUpdateType: 'delete',
+        update: deleteFromQueryCache('automated_emails')
+    }
+});
+
+export type CampaignActivityEntry = {
+    id: string;
+    member_email: string;
+    member_name: string | null;
+    step_order: number | null;
+    sent_at: string;
+    step_name: string;
+    subject: string;
+    campaign_type: string;
+    enrollment_status: string | null;
+}
+
+export interface CampaignActivityResponseType {
+    meta?: Meta;
+    activity: CampaignActivityEntry[];
+}
+
+export const useBrowseCampaignActivity = createQuery<CampaignActivityResponseType>({
+    dataType: 'CampaignActivityResponseType',
+    path: '/automated_emails/activity/'
 });
 
 export const useSendTestWelcomeEmail = createMutation<unknown, {id: string; email: string; subject: string; lexical: string}>({

@@ -1,16 +1,20 @@
 const logging = require('@tryghost/logging');
 const db = require('../../../../data/db');
 const MemberCreatedEvent = require('../../../../../shared/events/member-created-event');
+const CampaignEnrollmentEvent = require('../../../../../shared/events/campaign-enrollment-event');
 const {OUTBOX_STATUSES} = require('../../../../models/outbox');
 const {MESSAGES, MAX_ENTRIES_PER_JOB, BATCH_SIZE, OUTBOX_LOG_KEY} = require('./constants');
 const processEntries = require('./process-entries');
 const memberWelcomeEmailService = require('../../../member-welcome-emails/service');
+const campaignService = require('../../../campaigns');
+
+const SUPPORTED_EVENT_TYPES = [MemberCreatedEvent.name, CampaignEnrollmentEvent.name];
 
 async function fetchPendingEntries({batchSize, jobStartISO}) {
     let entries = [];
     await db.knex.transaction(async (trx) => {
         const query = trx('outbox')
-            .where('event_type', MemberCreatedEvent.name)
+            .whereIn('event_type', SUPPORTED_EVENT_TYPES)
             .where('status', OUTBOX_STATUSES.PENDING)
             .where(function () {
                 this.whereNull('last_retry_at')
@@ -71,6 +75,19 @@ async function processOutbox() {
         totalFailed += failed;
 
         logging.info(`${OUTBOX_LOG_KEY} Batch complete: ${processed} processed, ${failed} failed in ${(batchDurationMs / 1000).toFixed(2)}s (${batchRate} entries/sec)`);
+    }
+
+    // Process due campaign enrollments (drip campaign progression)
+    try {
+        const campaignResults = await campaignService.processDueEnrollments();
+        totalProcessed += campaignResults.processed;
+        totalFailed += campaignResults.failed;
+
+        if (campaignResults.processed > 0 || campaignResults.failed > 0) {
+            logging.info(`${OUTBOX_LOG_KEY} Campaign enrollments: ${campaignResults.processed} processed, ${campaignResults.failed} failed`);
+        }
+    } catch (err) {
+        logging.error({err}, `${OUTBOX_LOG_KEY} Failed to process campaign enrollments`);
     }
 
     const durationMs = Date.now() - jobStartMs;

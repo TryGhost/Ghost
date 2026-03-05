@@ -3,14 +3,14 @@ const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const DomainEvents = require('@tryghost/domain-events');
-const {SubscriptionActivatedEvent, MemberCreatedEvent, SubscriptionCreatedEvent, MemberSubscribeEvent, SubscriptionCancelledEvent, OfferRedemptionEvent} = require('../../../../../shared/events');
+const {SubscriptionActivatedEvent, MemberCreatedEvent, SubscriptionCreatedEvent, MemberSubscribeEvent, SubscriptionCancelledEvent, OfferRedemptionEvent, CampaignEnrollmentEvent} = require('../../../../../shared/events');
 const ObjectId = require('bson-objectid').default;
 const {NotFoundError} = require('@tryghost/errors');
 const validator = require('@tryghost/validator');
 const crypto = require('crypto');
 const hasActiveOffer = require('../utils/has-active-offer');
 const StartOutboxProcessingEvent = require('../../../outbox/events/start-outbox-processing-event');
-const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../member-welcome-emails/constants');
+const campaignService = require('../../../campaigns');
 const messages = {
     noStripeConnection: 'Cannot {action} without a Stripe Connection',
     moreThanOneProduct: 'A member cannot have more than one Product',
@@ -356,15 +356,15 @@ module.exports = class MemberRepository {
         let member;
 
         const isFreeSignup = !stripeCustomer;
-        const shouldCheckFreeWelcomeEmail = WELCOME_EMAIL_SOURCES.includes(source) && isFreeSignup;
-        let isFreeWelcomeEmailActive = false;
+        const shouldEnrollInCampaign = WELCOME_EMAIL_SOURCES.includes(source) && isFreeSignup;
+        let hasActiveCampaign = false;
 
-        if (shouldCheckFreeWelcomeEmail) {
-            const freeWelcomeEmail = this._AutomatedEmail ? await this._AutomatedEmail.findOne({slug: MEMBER_WELCOME_EMAIL_SLUGS.free}) : null;
-            isFreeWelcomeEmailActive = freeWelcomeEmail && freeWelcomeEmail.get('lexical') && freeWelcomeEmail.get('status') === 'active';
+        if (shouldEnrollInCampaign && this._AutomatedEmail) {
+            const activeStep = await this._AutomatedEmail.findOne({campaign_type: 'free_signup', status: 'active'});
+            hasActiveCampaign = !!activeStep;
         }
 
-        if (isFreeWelcomeEmailActive && isFreeSignup) {
+        if (hasActiveCampaign && isFreeSignup) {
             const runMemberCreation = async (transacting) => {
                 const newMember = await this._Member.add({
                     ...memberData,
@@ -387,6 +387,33 @@ module.exports = class MemberRepository {
                         status: 'free'
                     })
                 }, {transacting});
+
+                // Enroll in free_signup drip campaign
+                try {
+                    const enrollResult = await campaignService.enrollMember({
+                        memberId: newMember.id,
+                        campaignType: 'free_signup',
+                        transacting
+                    });
+
+                    if (enrollResult) {
+                        await this._Outbox.add({
+                            id: ObjectId().toHexString(),
+                            event_type: CampaignEnrollmentEvent.name,
+                            payload: JSON.stringify({
+                                memberId: newMember.id,
+                                memberEmail: newMember.get('email'),
+                                memberName: newMember.get('name'),
+                                memberUuid: newMember.get('uuid'),
+                                campaignType: 'free_signup',
+                                enrollmentId: enrollResult.enrollmentId,
+                                source
+                            })
+                        }, {transacting});
+                    }
+                } catch (err) {
+                    logging.error({err}, `Failed to enroll member ${newMember.id} in free_signup campaign`);
+                }
 
                 return newMember;
             };
@@ -460,7 +487,7 @@ module.exports = class MemberRepository {
                         subscription,
                         offerId,
                         attribution
-                    }, {batch_id: options.batch_id});
+                    }, {batch_id: options.batch_id, isNewMemberCreation: true});
                 } catch (err) {
                     if (err.code !== 'ER_DUP_ENTRY' && err.code !== 'SQLITE_CONSTRAINT') {
                         throw err;
@@ -1466,16 +1493,16 @@ module.exports = class MemberRepository {
 
             const context = options?.context || {};
             const source = this._resolveContextSource(context);
-            const shouldSendPaidWelcomeEmail = WELCOME_EMAIL_SOURCES.includes(source);
-            let isPaidWelcomeEmailActive = false;
-            if (shouldSendPaidWelcomeEmail && this._AutomatedEmail) {
-                const paidWelcomeEmail = await this._AutomatedEmail.findOne({slug: MEMBER_WELCOME_EMAIL_SLUGS.paid}, options);
-                isPaidWelcomeEmailActive = paidWelcomeEmail && paidWelcomeEmail.get('lexical') && paidWelcomeEmail.get('status') === 'active';
+            const shouldEnrollPaidCampaign = WELCOME_EMAIL_SOURCES.includes(source);
+            let hasPaidCampaign = false;
+            if (shouldEnrollPaidCampaign && this._AutomatedEmail) {
+                const activeStep = await this._AutomatedEmail.findOne({campaign_type: 'paid_signup', status: 'active'}, options);
+                hasPaidCampaign = !!activeStep;
             }
-            // Send paid welcome email if:
-            // 1. The paid welcome email is active
+            // Send paid campaign emails if:
+            // 1. The paid campaign has active steps
             // 2. The member status changed to 'paid'
-            if (updatedMember.get('status') === 'paid' && isPaidWelcomeEmailActive) {
+            if (updatedMember.get('status') === 'paid' && hasPaidCampaign) {
                 await this._Outbox.add({
                     id: ObjectId().toHexString(),
                     event_type: MemberCreatedEvent.name,
@@ -1490,6 +1517,72 @@ module.exports = class MemberRepository {
                     })
                 }, options);
                 this.dispatchEvent(StartOutboxProcessingEvent.create({memberId: memberModel.id}), options);
+            }
+
+            // Handle drip campaign enrollment on status change to paid
+            const previousStatus = updatedMember._previousAttributes.status;
+            if (previousStatus === 'free' && updatedMember.get('status') === 'paid') {
+                const isDirectPaidSignup = !!options.isNewMemberCreation;
+                try {
+                    if (isDirectPaidSignup) {
+                        // Direct paid signup — enroll in paid_signup campaign
+                        const enrollResult = await campaignService.enrollMember({
+                            memberId: memberModel.id,
+                            campaignType: 'paid_signup',
+                            transacting: options.transacting
+                        });
+
+                        if (enrollResult) {
+                            await this._Outbox.add({
+                                id: ObjectId().toHexString(),
+                                event_type: CampaignEnrollmentEvent.name,
+                                payload: JSON.stringify({
+                                    memberId: memberModel.id,
+                                    memberEmail: memberModel.get('email'),
+                                    memberName: memberModel.get('name'),
+                                    memberUuid: memberModel.get('uuid'),
+                                    campaignType: 'paid_signup',
+                                    enrollmentId: enrollResult.enrollmentId,
+                                    source
+                                })
+                            }, options);
+                            this.dispatchEvent(StartOutboxProcessingEvent.create({memberId: memberModel.id}), options);
+                        }
+                    } else {
+                        // Free→paid conversion — exit free campaign, enroll in paid_conversion
+                        await campaignService.exitCampaign({
+                            memberId: memberModel.id,
+                            campaignType: 'free_signup',
+                            exitReason: 'converted',
+                            transacting: options.transacting
+                        });
+
+                        const enrollResult = await campaignService.enrollMember({
+                            memberId: memberModel.id,
+                            campaignType: 'paid_conversion',
+                            transacting: options.transacting
+                        });
+
+                        if (enrollResult) {
+                            await this._Outbox.add({
+                                id: ObjectId().toHexString(),
+                                event_type: CampaignEnrollmentEvent.name,
+                                payload: JSON.stringify({
+                                    memberId: memberModel.id,
+                                    memberEmail: memberModel.get('email'),
+                                    memberName: memberModel.get('name'),
+                                    memberUuid: memberModel.get('uuid'),
+                                    campaignType: 'paid_conversion',
+                                    enrollmentId: enrollResult.enrollmentId,
+                                    source
+                                })
+                            }, options);
+                            this.dispatchEvent(StartOutboxProcessingEvent.create({memberId: memberModel.id}), options);
+                        }
+                    }
+                } catch (err) {
+                    logging.error({err}, `Failed to handle campaign enrollment for member ${memberModel.id} on status change to paid`);
+                }
             }
         }
     }

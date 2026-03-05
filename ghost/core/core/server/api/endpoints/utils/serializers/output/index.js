@@ -151,5 +151,9 @@ module.exports = {
 
     get featurebase() {
         return require('./featurebase');
+    },
+
+    get automated_emails() {
+        return require('./automated-emails');
     }
 };

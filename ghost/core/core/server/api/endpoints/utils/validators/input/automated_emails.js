@@ -6,17 +6,15 @@ const {ValidationError} = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 
 const ALLOWED_STATUSES = ['inactive', 'active'];
-const ALLOWED_NAMES = ['Welcome Email (Free)', 'Welcome Email (Paid)'];
-const ALLOWED_SLUGS = ['member-welcome-email-free', 'member-welcome-email-paid'];
 
 const messages = {
     invalidStatus: `Status must be one of: ${ALLOWED_STATUSES.join(', ')}`,
     invalidLexical: 'Lexical must be a valid JSON string',
-    invalidSlug: `Slug must be one of: ${ALLOWED_SLUGS.join(', ')}`,
-    invalidName: `Name must be one of: ${ALLOWED_NAMES.join(', ')}`,
     invalidEmailReceived: 'The server did not receive a valid email',
     subjectRequired: 'Subject is required',
-    lexicalRequired: 'Email content is required'
+    lexicalRequired: 'Email content is required',
+    nameRequired: 'Name is required',
+    slugRequired: 'Slug is required'
 };
 
 const validateAutomatedEmail = async function (frame) {
@@ -26,10 +24,17 @@ const validateAutomatedEmail = async function (frame) {
 
     const data = frame.data.automated_emails[0];
 
-    if (!data.name || !ALLOWED_NAMES.includes(data.name)) {
+    if (!data.name || typeof data.name !== 'string' || !data.name.trim()) {
         return Promise.reject(new ValidationError({
-            message: tpl(messages.invalidName),
+            message: tpl(messages.nameRequired),
             property: 'name'
+        }));
+    }
+
+    if (!data.slug || typeof data.slug !== 'string' || !data.slug.trim()) {
+        return Promise.reject(new ValidationError({
+            message: tpl(messages.slugRequired),
+            property: 'slug'
         }));
     }
 
@@ -37,13 +42,6 @@ const validateAutomatedEmail = async function (frame) {
         return Promise.reject(new ValidationError({
             message: tpl(messages.invalidStatus),
             property: 'status'
-        }));
-    }
-
-    if (data.slug && !ALLOWED_SLUGS.includes(data.slug)) {
-        return Promise.reject(new ValidationError({
-            message: tpl(messages.invalidSlug),
-            property: 'slug'
         }));
     }
 

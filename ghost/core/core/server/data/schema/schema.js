@@ -1152,11 +1152,37 @@ module.exports = {
         sender_name: {type: 'string', maxlength: 191, nullable: true},
         sender_email: {type: 'string', maxlength: 191, nullable: true, validations: {isEmail: true}},
         sender_reply_to: {type: 'string', maxlength: 191, nullable: true, validations: {isEmail: true}},
+        campaign_type: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'free_signup', validations: {isIn: [['free_signup', 'paid_signup', 'paid_conversion']]}},
+        delay_days: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
+        sort_order: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
+        version: {type: 'integer', nullable: false, unsigned: true, defaultTo: 1},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
         '@@INDEXES@@': [
             ['slug'],
-            ['status']
+            ['status'],
+            ['campaign_type', 'sort_order']
+        ]
+    },
+    campaign_enrollments: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', cascadeDelete: true},
+        campaign_type: {type: 'string', maxlength: 50, nullable: false, validations: {isIn: [['free_signup', 'paid_signup', 'paid_conversion']]}},
+        status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'active', validations: {isIn: [['active', 'exited', 'completed']]}},
+        current_step: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
+        exit_reason: {type: 'string', maxlength: 50, nullable: true, validations: {isIn: [['converted', 'unsubscribed', 'admin', 'campaign_disabled']]}},
+        enrolled_campaign_version: {type: 'integer', nullable: false, unsigned: true, defaultTo: 1},
+        next_email_at: {type: 'dateTime', nullable: true},
+        enrolled_at: {type: 'dateTime', nullable: false},
+        exited_at: {type: 'dateTime', nullable: true},
+        created_at: {type: 'dateTime', nullable: false},
+        updated_at: {type: 'dateTime', nullable: true},
+        '@@UNIQUE_CONSTRAINTS@@': [
+            ['member_id', 'campaign_type']
+        ],
+        '@@INDEXES@@': [
+            ['status', 'next_email_at'],
+            ['campaign_type', 'status']
         ]
     },
     automated_email_recipients: {
@@ -1166,7 +1192,12 @@ module.exports = {
         member_uuid: {type: 'string', maxlength: 36, nullable: false},
         member_email: {type: 'string', maxlength: 191, nullable: false},
         member_name: {type: 'string', maxlength: 191, nullable: true},
+        enrollment_id: {type: 'string', maxlength: 24, nullable: true, references: 'campaign_enrollments.id', cascadeDelete: true},
+        step_order: {type: 'integer', nullable: true, unsigned: true},
         created_at: {type: 'dateTime', nullable: false},
-        updated_at: {type: 'dateTime', nullable: true}
+        updated_at: {type: 'dateTime', nullable: true},
+        '@@INDEXES@@': [
+            ['enrollment_id', 'step_order']
+        ]
     }
 };

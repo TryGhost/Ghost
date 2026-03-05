@@ -2,10 +2,13 @@ const logging = require('@tryghost/logging');
 const {MAX_RETRIES, OUTBOX_LOG_KEY} = require('./constants');
 const {OUTBOX_STATUSES} = require('../../../../models/outbox');
 const MemberCreatedEvent = require('../../../../../shared/events/member-created-event');
+const CampaignEnrollmentEvent = require('../../../../../shared/events/campaign-enrollment-event');
 const memberCreatedHandler = require('../../handlers/member-created');
+const campaignEnrollmentHandler = require('../../handlers/campaign-enrollment');
 
 const EVENT_HANDLERS = {
-    [MemberCreatedEvent.name]: memberCreatedHandler
+    [MemberCreatedEvent.name]: memberCreatedHandler,
+    [CampaignEnrollmentEvent.name]: campaignEnrollmentHandler
 };
 
 async function deleteProcessedEntry({db, entryId}) {

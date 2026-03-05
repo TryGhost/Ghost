@@ -173,6 +173,57 @@ class MemberWelcomeEmailService {
         return Boolean(row && row.get('lexical') && row.get('status') === 'active');
     }
 
+    /**
+     * Send a campaign step email. Reuses the same renderer/mailer as welcome emails.
+     * @param {object} params
+     * @param {object} params.member - {name, email}
+     * @param {object} params.step - automated_emails row with lexical, subject, sender_*, status
+     */
+    async sendCampaignStep({member, step}) {
+        if (!member.email) {
+            throw new errors.IncorrectUsageError({
+                message: MESSAGES.MISSING_RECIPIENT_EMAIL
+            });
+        }
+
+        if (step.status !== 'active') {
+            throw new errors.IncorrectUsageError({
+                message: `Campaign step "${step.name}" is inactive`
+            });
+        }
+
+        if (!step.lexical) {
+            throw new errors.IncorrectUsageError({
+                message: MESSAGES.NO_MEMBER_WELCOME_EMAIL
+            });
+        }
+
+        const name = member?.name ? `${member.name} at ` : '';
+        logging.info(`${MEMBER_WELCOME_EMAIL_LOG_KEY} Sending campaign step "${step.name}" to ${name}${member.email}`);
+
+        const {html, text, subject} = await this.#renderer.render({
+            lexical: step.lexical,
+            subject: step.subject,
+            member: {
+                name: member.name,
+                email: member.email
+            },
+            siteSettings: this.#getSiteSettings()
+        });
+
+        const senderOptions = await this.#getSenderOptions();
+
+        await this.#mailer.send({
+            to: member.email,
+            subject,
+            html,
+            text,
+            forceTextContent: true,
+            tags: [MEMBER_WELCOME_EMAIL_TAG],
+            ...senderOptions
+        });
+    }
+
     async sendTestEmail({email, subject, lexical, automatedEmailId}) {
         // Still validate the automated email exists (for permission purposes)
         const automatedEmail = await AutomatedEmail.findOne({id: automatedEmailId});

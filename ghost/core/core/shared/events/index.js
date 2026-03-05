@@ -1,4 +1,5 @@
 module.exports = {
+    CampaignEnrollmentEvent: require('./campaign-enrollment-event'),
     MemberCommentEvent: require('./member-comment-event'),
     MemberCreatedEvent: require('./member-created-event'),
     MemberEntryViewEvent: require('./member-entry-view-event'),

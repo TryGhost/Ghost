@@ -1,5 +1,6 @@
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
+const db = require('../../data/db');
 const models = require('../../models');
 const memberWelcomeEmailService = require('../../services/member-welcome-emails/service');
 
@@ -108,8 +109,75 @@ const controller = {
             }
         },
         permissions: true,
-        query(frame) {
+        async query(frame) {
+            // Delete recipient records first to avoid FK constraint violation
+            await db.knex('automated_email_recipients')
+                .where('automated_email_id', frame.options.id)
+                .del();
+
             return models.AutomatedEmail.destroy({...frame.options, require: true});
+        }
+    },
+
+    browseActivity: {
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'limit',
+            'page',
+            'campaign_type'
+        ],
+        permissions: {
+            method: 'browse'
+        },
+        async query(frame) {
+            const limit = frame.options.limit || 50;
+            const page = frame.options.page || 1;
+            const offset = (page - 1) * limit;
+
+            let query = db.knex('automated_email_recipients as r')
+                .join('automated_emails as e', 'r.automated_email_id', 'e.id')
+                .leftJoin('campaign_enrollments as ce', 'r.enrollment_id', 'ce.id')
+                .select(
+                    'r.id',
+                    'r.member_email',
+                    'r.member_name',
+                    'r.step_order',
+                    'r.created_at as sent_at',
+                    'e.name as step_name',
+                    'e.subject',
+                    'e.campaign_type',
+                    'ce.status as enrollment_status'
+                )
+                .orderBy('r.created_at', 'desc');
+
+            if (frame.options.campaign_type) {
+                query = query.where('e.campaign_type', frame.options.campaign_type);
+            }
+
+            const countQuery = db.knex('automated_email_recipients as r')
+                .join('automated_emails as e', 'r.automated_email_id', 'e.id');
+
+            if (frame.options.campaign_type) {
+                countQuery.where('e.campaign_type', frame.options.campaign_type);
+            }
+
+            const [{count}] = await countQuery.count('r.id as count');
+
+            const rows = await query.limit(limit).offset(offset);
+
+            return {
+                activity: rows,
+                meta: {
+                    pagination: {
+                        page,
+                        limit,
+                        pages: Math.ceil(count / limit),
+                        total: count
+                    }
+                }
+            };
         }
     },
 
