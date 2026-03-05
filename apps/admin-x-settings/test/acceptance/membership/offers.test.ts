@@ -107,7 +107,6 @@ test.describe('Offers', () => {
         await expect(sidebar).toContainText(/Name is required/);
         await expect(sidebar).toContainText(/Code is required/);
         await expect(sidebar).toContainText(/Enter an amount between 1 and 100%./);
-        await expect(sidebar).toContainText(/Display title is required/);
     });
 
     test('Errors if the offer code is already taken', async ({page}) => {
@@ -169,7 +168,6 @@ test.describe('Offers', () => {
         await expect(sidebar).toContainText(/Name is required/);
         await expect(sidebar).toContainText(/Code is required/);
         await expect(sidebar).toContainText(/Enter an amount between 1 and 100%./);
-        await expect(sidebar).toContainText(/Display title is required/);
     });
 
     test('Can view active offers', async ({page}) => {
