@@ -123,8 +123,7 @@ class PostsService {
             await this.models.Post.bulkEdit(updateResult.editIds, 'posts_meta', {
                 data: {email_only: false},
                 column: 'post_id',
-                transacting: options.transacting,
-                throwErrors: true
+                transacting: options.transacting
             });
             DomainEvents.dispatch(PostsBulkUnscheduledEvent.create(updateResult.editIds));
 
@@ -290,16 +289,14 @@ class PostsService {
         for (const table of postTablesToDelete) {
             await this.models.Post.bulkDestroy(deleteIds, table, {
                 column: 'post_id',
-                transacting: options.transacting,
-                throwErrors: true
+                transacting: options.transacting
             });
         }
 
         for (const table of emailTablesToDelete) {
             await this.models.Post.bulkDestroy(deleteEmailIds, table, {
                 column: 'email_id',
-                transacting: options.transacting,
-                throwErrors: true
+                transacting: options.transacting
             });
         }
 
@@ -307,14 +304,13 @@ class PostsService {
             await this.models.Post.bulkEdit(deleteEmailIds, table, {
                 data: {email_id: null},
                 column: 'email_id',
-                transacting: options.transacting,
-                throwErrors: true
+                transacting: options.transacting
             });
         }
 
         // Posts and emails
-        await this.models.Post.bulkDestroy(deleteEmailIds, 'emails', {transacting: options.transacting, throwErrors: true});
-        const result = await this.models.Post.bulkDestroy(deleteIds, 'posts', {...options, throwErrors: true});
+        await this.models.Post.bulkDestroy(deleteEmailIds, 'emails', {transacting: options.transacting});
+        const result = await this.models.Post.bulkDestroy(deleteIds, 'posts', options);
 
         result.deleteIds = deleteIds;
 
@@ -359,8 +355,7 @@ class PostsService {
 
         const result = await this.models.Post.bulkEdit(editIds, 'posts', {
             ...options,
-            data,
-            throwErrors: true
+            data
         });
 
         // Update tiers
@@ -368,8 +363,7 @@ class PostsService {
             // First delete all
             await this.models.Post.bulkDestroy(editIds, 'posts_products', {
                 column: 'post_id',
-                transacting: options.transacting,
-                throwErrors: true
+                transacting: options.transacting
             });
 
             // Then add again
@@ -387,8 +381,7 @@ class PostsService {
                 }
             }
             await this.models.Post.bulkAdd(toInsert, 'posts_products', {
-                transacting: options.transacting,
-                throwErrors: true
+                transacting: options.transacting
             });
         }
 
