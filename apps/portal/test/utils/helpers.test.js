@@ -765,6 +765,11 @@ describe('Helpers - ', () => {
             expect(result).toEqual(new Date(Date.UTC(2026, 1, 1)));
         });
 
+        it('preserves UTC time when adding months', () => {
+            const result = addMonths('2099-04-03T18:30:45.123Z', 1);
+            expect(result).toEqual(new Date('2099-05-03T18:30:45.123Z'));
+        });
+
         it('accepts a date string', () => {
             const result = addMonths('2024-03-15T00:00:00.000Z', 2);
             expect(result).toEqual(new Date(Date.UTC(2024, 4, 15)));
@@ -782,6 +787,16 @@ describe('Helpers - ', () => {
 
         it('returns null for undefined', () => {
             expect(addMonths(undefined, 1)).toBeNull();
+        });
+
+        it('returns the original date when month count is less than 1', () => {
+            const date = '2024-03-15T00:00:00.000Z';
+            expect(addMonths(date, 0)).toEqual(new Date(date));
+        });
+
+        it('returns the original date when month count is not an integer', () => {
+            const date = '2024-03-15T00:00:00.000Z';
+            expect(addMonths(date, 1.5)).toEqual(new Date(date));
         });
     });
 
