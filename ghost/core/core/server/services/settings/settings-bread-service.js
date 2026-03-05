@@ -2,7 +2,6 @@ const _ = require('lodash');
 const tpl = require('@tryghost/tpl');
 const {NotFoundError, NoPermissionError, BadRequestError, IncorrectUsageError, ValidationError} = require('@tryghost/errors');
 const {obfuscatedSetting, isSecretSetting, hideValueIfSecret} = require('./settings-utils');
-const logging = require('@tryghost/logging');
 const verifyEmailTemplate = require('./emails/verify-email');
 const MagicLink = require('../lib/magic-link/magic-link');
 const sentry = require('../../../shared/sentry');
@@ -26,26 +25,33 @@ class SettingsBREADService {
      * @param {Object} options.labsService - labs service instance
      * @param {Object} options.limitsService - limits service instance
      * @param {{service: Object}} options.emailAddressService
+     * @param {Object} options.emailVerificationService
      */
-    constructor({SettingsModel, settingsCache, labsService, limitsService, mail, singleUseTokenProvider, urlUtils, emailAddressService}) {
+    constructor({SettingsModel, settingsCache, labsService, limitsService, mail, singleUseTokenProvider, urlUtils, emailAddressService, emailVerificationService}) {
         this.SettingsModel = SettingsModel;
         this.settingsCache = settingsCache;
         this.labs = labsService;
         this.limitsService = limitsService;
         this.emailAddressService = emailAddressService;
+        this.emailVerificationService = emailVerificationService;
 
-        /* email verification setup */
+        /**
+         * @deprecated Legacy email verification setup — only needed for verifyKeyUpdate()
+         * which handles old MagicLink-based tokens. Once all legacy tokens have expired
+         * (24 hours after deploy of centralized EmailVerificationService), this MagicLink
+         * infrastructure (ghostMailer, magicLinkService) and verifyKeyUpdate() can be removed.
+         */
 
         this.ghostMailer = new mail.GhostMailer();
 
         const {transporter, getSubject, getText, getHTML, getSigninURL} = {
             transporter: {
                 sendMail() {
-                    // noop - overridden in `sendEmailVerificationMagicLink`
+                    // noop - only used for token generation/validation, not sending
                 }
             },
             getSubject() {
-                // not used - overridden in `sendEmailVerificationMagicLink`
+                // not used - only needed for token generation/validation
                 return `Verify email address`;
             },
             getText(url, type, email) {
@@ -237,6 +243,12 @@ class SettingsBREADService {
         return this.respondWithEmailVerification(modelArray, emailsToVerify);
     }
 
+    /**
+     * @deprecated This method handles legacy MagicLink-based verification tokens.
+     * New verification tokens are handled by the centralized EmailVerificationService
+     * via the PUT /verified-emails/ endpoint. This method and its MagicLink infrastructure
+     * in the constructor can be removed once all legacy tokens have expired (24 hours after deploy).
+     */
     async verifyKeyUpdate(token) {
         const data = await this.magicLinkService.getDataFromToken(token);
         const {key, value} = data;
@@ -325,7 +337,14 @@ class SettingsBREADService {
                     }
 
                     if (validated.verificationEmailRequired) {
-                        emailsToVerify.push({email, key});
+                        // Check if already verified in centralized service
+                        const isVerified = await this.emailVerificationService.check(email);
+                        if (isVerified) {
+                            // Already verified — allow the save
+                            filteredSettings.push(setting);
+                        } else {
+                            emailsToVerify.push({email, key});
+                        }
                     } else {
                         filteredSettings.push(setting);
                     }
@@ -348,8 +367,6 @@ class SettingsBREADService {
             return false;
         }
 
-        // TODO: check for known/verified email
-
         return true;
     }
 
@@ -359,39 +376,16 @@ class SettingsBREADService {
     async respondWithEmailVerification(settings, emailsToVerify) {
         if (emailsToVerify.length > 0) {
             for (const {email, key} of emailsToVerify) {
-                await this.sendEmailVerificationMagicLink({email, key});
+                await this.emailVerificationService.add(email, {
+                    type: 'setting',
+                    key
+                });
             }
 
             settings.meta = settings.meta || {};
             settings.meta.sent_email_verification = emailsToVerify.map(v => v.key);
         }
-
         return settings;
-    }
-
-    /**
-     * @private
-     */
-    async sendEmailVerificationMagicLink({email, key}) {
-        const fromEmail = this.emailAddressService.service.defaultFromAddress;
-        const {ghostMailer} = this;
-
-        this.magicLinkService.transporter = {
-            sendMail(message) {
-                if (process.env.NODE_ENV !== 'production') {
-                    logging.warn(message.text);
-                }
-                let msg = Object.assign({
-                    from: fromEmail,
-                    subject: 'Verify email address',
-                    forceTextContent: true
-                }, message);
-
-                return ghostMailer.send(msg);
-            }
-        };
-
-        return this.magicLinkService.sendMagicLink({email, tokenData: {key, value: email}});
     }
 }
 

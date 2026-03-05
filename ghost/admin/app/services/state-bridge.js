@@ -19,7 +19,8 @@ const emberDataTypeMapping = {
     ThemesResponseType: {type: 'theme'},
     TiersResponseType: {type: 'tier'},
     UsersResponseType: {type: 'user'},
-    CustomThemeSettingsResponseType: null // custom theme settings no longer exist in Admin
+    CustomThemeSettingsResponseType: null, // custom theme settings no longer exist in Admin
+    VerifiedEmailsResponseType: null // verified emails only exist in React admin
 };
 
 export default class StateBridgeService extends Service.extend(Evented) {

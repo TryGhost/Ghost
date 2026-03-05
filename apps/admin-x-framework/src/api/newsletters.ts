@@ -114,6 +114,12 @@ export const useEditNewsletter = createMutation<NewslettersEditResponseType, New
     }
 });
 
+/**
+ * @deprecated This hook handles legacy MagicLink-based verification tokens via PUT /newsletters/verifications/.
+ * New verification tokens are handled by the centralized EmailVerificationService
+ * via PUT /verified-emails/. See api/verified-emails.ts for the new hook.
+ * This can be removed once all legacy tokens have expired (24 hours after deploy).
+ */
 export const useVerifyNewsletterEmail = createMutation<NewslettersVerifyResponseType, {token: string}>({
     method: 'PUT',
     path: () => '/newsletters/verifications/',

@@ -6,11 +6,9 @@ const urlUtils = require('../../../../../core/shared/url-utils.js');
 const {mockManager} = require('../../../../utils/e2e-framework');
 const emailAddress = require('../../../../../core/server/services/email-address');
 describe('UNIT > Settings BREAD Service:', function () {
-    let emailMockReceiver;
-
     beforeEach(function () {
         emailAddress.init();
-        emailMockReceiver = mockManager.mockMail();
+        mockManager.mockMail();
     });
 
     afterEach(function () {
@@ -159,6 +157,7 @@ describe('UNIT > Settings BREAD Service:', function () {
         });
 
         it('setting members_support_address triggers email verification', async function () {
+            const addStub = sinon.stub().resolves({pending: true, email: 'support@example.com'});
             const defaultSettingsManager = new SettingsBreadService({
                 SettingsModel: {
                     async edit(changes) {
@@ -198,6 +197,10 @@ describe('UNIT > Settings BREAD Service:', function () {
                         },
                         defaultFromAddress: 'noreply@example.com'
                     }
+                },
+                emailVerificationService: {
+                    check: sinon.stub().resolves(false),
+                    add: addStub
                 }
             });
 
@@ -211,9 +214,9 @@ describe('UNIT > Settings BREAD Service:', function () {
             assert.equal(settings.length, 0);
             assert.deepEqual(settings.meta.sent_email_verification, ['members_support_address']);
 
-            emailMockReceiver.matchHTMLSnapshot();
-            emailMockReceiver.matchPlaintextSnapshot();
-            emailMockReceiver.matchMetadataSnapshot();
+            // Verify emailVerificationService.add was called with correct args
+            assert.equal(addStub.calledOnce, true);
+            assert.deepEqual(addStub.firstCall.args, ['support@example.com', {type: 'setting', key: 'members_support_address'}]);
         });
     });
 

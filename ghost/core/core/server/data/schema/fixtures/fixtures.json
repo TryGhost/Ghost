@@ -740,6 +740,26 @@
                     "name": "Delete recommendations",
                     "action_type": "destroy",
                     "object_type": "recommendation"
+                },
+                {
+                    "name": "Browse verified emails",
+                    "action_type": "browse",
+                    "object_type": "verified_email"
+                },
+                {
+                    "name": "Read verified emails",
+                    "action_type": "read",
+                    "object_type": "verified_email"
+                },
+                {
+                    "name": "Add verified emails",
+                    "action_type": "add",
+                    "object_type": "verified_email"
+                },
+                {
+                    "name": "Edit verified emails",
+                    "action_type": "edit",
+                    "object_type": "verified_email"
                 }
             ]
         },
@@ -907,7 +927,8 @@
                     "mention": "browse",
                     "collection": "all",
                     "recommendation": "all",
-                    "identity": "read"
+                    "identity": "read",
+                    "verified_email": "all"
                 },
                 "DB Backup Integration": {
                     "db": "all",
@@ -953,7 +974,8 @@
                     "mention": "browse",
                     "collection": "all",
                     "recommendation": "all",
-                    "member_signin_url": "read"
+                    "member_signin_url": "read",
+                    "verified_email": "all"
                 },
                 "Super Editor": {
                     "notification": "all",

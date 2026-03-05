@@ -12,6 +12,8 @@ import {type Tier, useBrowseTiers, useEditTier} from '@tryghost/admin-x-framewor
 import {fullEmailAddress} from '@tryghost/admin-x-framework/api/site';
 import {useGlobalData} from '../../../providers/global-data-provider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
+// @deprecated - Legacy verification hook, used only for backward compat with old MagicLink tokens.
+// Can be removed once all legacy tokens have expired (24 hours after deploy).
 import {verifyEmailToken} from '@tryghost/admin-x-framework/api/email-verification';
 
 const Sidebar: React.FC<{
@@ -75,6 +77,10 @@ const PortalModal: React.FC = () => {
 
     const verifyEmail = getParam('verifyEmail');
 
+    // @deprecated - This handler processes legacy MagicLink-based verification tokens
+    // that were sent before the centralized EmailVerificationService was deployed.
+    // New verification tokens use the unified handler at #/settings/verified-emails/?verifyEmail=TOKEN.
+    // This can be removed once all legacy tokens have expired (24 hours after deploy).
     useEffect(() => {
         const checkToken = async ({token}: {token: string}) => {
             try {

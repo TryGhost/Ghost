@@ -38,6 +38,7 @@ export const modalPaths: {[key: string]: ModalName} = {
     'offers/edit/retention/:id': 'OffersContainerModal',
     'offers/new': 'OffersContainerModal',
     'explore/testimonial': 'TestimonialsModal',
+    'verified-emails': 'VerifiedEmailVerifyModal',
     about: 'AboutModal'
 };
 

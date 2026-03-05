@@ -1,20 +1,19 @@
-const NewslettersService = require('./newsletters-service.js');
+const EmailVerificationService = require('./email-verification-service');
 const SingleUseTokenProvider = require('../members/single-use-token-provider');
 const mail = require('../mail');
 const models = require('../../models');
 const urlUtils = require('../../../shared/url-utils');
-const limitService = require('../limits');
-const labs = require('../../../shared/labs');
 const emailAddressService = require('../email-address');
-const emailVerificationService = require('../email-verification');
 
 const MAGIC_LINK_TOKEN_VALIDITY = 24 * 60 * 60 * 1000;
 const MAGIC_LINK_TOKEN_VALIDITY_AFTER_USAGE = 10 * 60 * 1000;
 const MAGIC_LINK_TOKEN_MAX_USAGE_COUNT = 7;
 
-module.exports = new NewslettersService({
+module.exports = new EmailVerificationService({
+    VerifiedEmailModel: models.VerifiedEmail,
     NewsletterModel: models.Newsletter,
-    MemberModel: models.Member,
+    SettingsModel: models.Settings,
+    AutomatedEmailModel: models.AutomatedEmail,
     mail,
     singleUseTokenProvider: new SingleUseTokenProvider({
         SingleUseTokenModel: models.SingleUseToken,
@@ -23,8 +22,5 @@ module.exports = new NewslettersService({
         maxUsageCount: MAGIC_LINK_TOKEN_MAX_USAGE_COUNT
     }),
     urlUtils,
-    limitService,
-    labs,
-    emailAddressService: emailAddressService,
-    emailVerificationService
+    emailAddressService
 });
