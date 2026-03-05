@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const debug = require('@tryghost/debug')('models:base:raw-knex');
 const plugins = require('@tryghost/bookshelf-plugins');
 
@@ -19,51 +18,54 @@ module.exports = function (Bookshelf) {
             fetchAll: async function (options = {}) {
                 const {
                     modelName,
-                    exclude,
+                    include,
                     filter,
                     shouldHavePosts,
                     withRelated,
                     withRelatedFields,
+                    withRelatedPrimary,
                     id,
                     offset,
                     limit
                 } = options;
 
-                const bookshelfPrototype = Bookshelf.registry.models[modelName].prototype;
                 const tableNames = {
                     Post: 'posts',
                     User: 'users',
                     Tag: 'tags'
                 };
 
+                const tableName = tableNames[modelName];
+                const tableDef = schema.tables[tableName];
+                const booleanColumns = [];
+                for (const key in tableDef) {
+                    if (!key.startsWith('@@') && tableDef[key].type === 'boolean') {
+                        booleanColumns.push(key);
+                    }
+                }
+
                 const relations = {
                     tags: {
                         targetTable: 'tags',
                         name: 'tags',
-                        innerJoin: {
-                            relation: 'posts_tags',
-                            condition: ['posts_tags.tag_id', '=', 'tags.id']
-                        },
-                        select: ['posts_tags.post_id as post_id', 'tags.visibility'],
-                        whereIn: 'posts_tags.post_id',
-                        whereInKey: 'post_id',
+                        pivotTable: 'posts_tags',
+                        pivotFk: 'tag_id',
+                        pivotParentId: 'post_id',
+                        extraFields: ['visibility'],
                         orderBy: 'sort_order'
                     },
                     authors: {
                         targetTable: 'users',
                         name: 'authors',
-                        innerJoin: {
-                            relation: 'posts_authors',
-                            condition: ['posts_authors.author_id', '=', 'users.id']
-                        },
-                        select: ['posts_authors.post_id as post_id'],
-                        whereIn: 'posts_authors.post_id',
-                        whereInKey: 'post_id',
+                        pivotTable: 'posts_authors',
+                        pivotFk: 'author_id',
+                        pivotParentId: 'post_id',
+                        extraFields: [],
                         orderBy: 'sort_order'
                     }
                 };
 
-                let query = Bookshelf.knex(tableNames[modelName]);
+                let query = Bookshelf.knex(tableName);
 
                 if (offset) {
                     query.offset(offset);
@@ -73,13 +75,9 @@ module.exports = function (Bookshelf) {
                     query.limit(limit);
                 }
 
-                // exclude fields if provided
-                if (exclude) {
-                    const toSelect = Object
-                        .keys(schema.tables[tableNames[modelName]])
-                        .filter(key => !key.startsWith('@@') && !exclude.includes(key));
-
-                    query.select(toSelect);
+                // select only the fields needed
+                if (include) {
+                    query.select(include);
                 }
 
                 // @NOTE: We can't use the filter plugin, because we are not using bookshelf.
@@ -88,14 +86,84 @@ module.exports = function (Bookshelf) {
                 nql(filter).querySQL(query);
 
                 if (shouldHavePosts) {
-                    plugins.hasPosts.addHasPostsWhere(tableNames[modelName], shouldHavePosts)(query);
+                    plugins.hasPosts.addHasPostsWhere(tableName, shouldHavePosts)(query);
                 }
 
                 if (id) {
                     query.where({id});
                 }
 
-                let objects = await query;
+                if (!withRelated) {
+                    let objects = await query;
+                    debug('fetched', modelName, filter);
+
+                    if (!objects.length) {
+                        debug('No more entries found');
+                        return [];
+                    }
+
+                    for (const object of objects) {
+                        for (const col of booleanColumns) {
+                            if (col in object) {
+                                object[col] = !!object[col];
+                            }
+                        }
+                    }
+                    return objects;
+                }
+
+                // Build a subquery mirroring the main query's conditions (filter,
+                // shouldHavePosts, id) so relation queries use a subquery instead
+                // of materializing every post ID as a literal in WHERE IN.
+                function buildIdSubquery() {
+                    const sub = Bookshelf.knex(tableName).select('id');
+                    nql(filter).querySQL(sub);
+                    if (shouldHavePosts) {
+                        plugins.hasPosts.addHasPostsWhere(tableName, shouldHavePosts)(sub);
+                    }
+                    if (id) {
+                        sub.where({id});
+                    }
+                    return sub;
+                }
+
+                // Prepare relation queries BEFORE awaiting the main query so
+                // all queries can run in parallel on separate connections.
+                const relationMeta = [];
+                const relationPromises = [];
+
+                for (const withRelatedKey of withRelated) {
+                    const relation = relations[withRelatedKey];
+
+                    const keepFields = (withRelatedFields[withRelatedKey] || [])
+                        .map(f => f.replace(/^\w+\./, ''));
+
+                    // Query 1: Pivot table only — small rows, no JOIN
+                    const pivotQuery = Bookshelf.knex(relation.pivotTable)
+                        .select(relation.pivotParentId, relation.pivotFk)
+                        .whereIn(relation.pivotParentId, buildIdSubquery())
+                        .orderBy(relation.orderBy);
+
+                    // Query 2: All rows from the target table — tiny
+                    const lookupSelectFields = ['id', ...keepFields, ...relation.extraFields];
+                    const lookupQuery = Bookshelf.knex(relation.targetTable)
+                        .select([...new Set(lookupSelectFields)]);
+
+                    relationMeta.push({
+                        name: relation.name,
+                        fkCol: relation.pivotFk,
+                        parentIdCol: relation.pivotParentId
+                    });
+
+                    relationPromises.push(pivotQuery, lookupQuery);
+                }
+
+                // Fire main query + all relation queries in parallel.
+                // Relation queries use subqueries so they don't depend on
+                // the main query results — they can overlap on the wire.
+                const [objects, ...relationResults] = await Promise.all([
+                    query, ...relationPromises
+                ]);
 
                 debug('fetched', modelName, filter);
 
@@ -104,99 +172,68 @@ module.exports = function (Bookshelf) {
                     return [];
                 }
 
-                let props = {};
+                // Process relation results (pairs of [pivotRows, lookupRows])
+                const relationsToAttach = Object.create(null);
+                for (let i = 0; i < relationMeta.length; i++) {
+                    const meta = relationMeta[i];
+                    const pivotRows = relationResults[i * 2];
+                    const lookupRows = relationResults[i * 2 + 1];
 
-                if (!withRelated) {
-                    return _.map(objects, (object) => {
-                        object = bookshelfPrototype.toJSON.bind({
-                            attributes: object,
-                            related: function (key) {
-                                return object[key];
-                            },
-                            serialize: bookshelfPrototype.serialize,
-                            formatsToJSON: bookshelfPrototype.formatsToJSON
-                        })();
+                    debug('fetched withRelated', meta.name);
 
-                        object = bookshelfPrototype.fixBools(object);
-                        object = bookshelfPrototype.fixDatesWhenFetch(object);
-                        return object;
-                    });
+                    // Build lookup map: target id → target data
+                    const lookupMap = Object.create(null);
+                    for (const row of lookupRows) {
+                        lookupMap[row.id] = row;
+                    }
+
+                    // Join in JS: iterate pivot rows, look up target data.
+                    // Push lookup row references directly — the lookup query
+                    // already SELECTs only the needed fields, so no per-row
+                    // field picking is required. Posts sharing the same tag/author
+                    // reference the same object, avoiding 750k allocations.
+                    const grouped = Object.create(null);
+                    for (const pivotRow of pivotRows) {
+                        const parentId = pivotRow[meta.parentIdCol];
+                        const targetData = lookupMap[pivotRow[meta.fkCol]];
+                        if (!targetData) {
+                            continue;
+                        }
+                        if (!grouped[parentId]) {
+                            grouped[parentId] = [];
+                        }
+                        grouped[parentId].push(targetData);
+                    }
+                    relationsToAttach[meta.name] = grouped;
                 }
-
-                _.each(withRelated, (withRelatedKey) => {
-                    const relation = relations[withRelatedKey];
-
-                    props[relation.name] = (async () => {
-                        debug('fetch withRelated', relation.name);
-
-                        let relationQuery = Bookshelf.knex(relation.targetTable);
-
-                        // default fields to select
-                        _.each(relation.select, (fieldToSelect) => {
-                            relationQuery.select(fieldToSelect);
-                        });
-
-                        // custom fields to select
-                        _.each(withRelatedFields[withRelatedKey], (toSelect) => {
-                            relationQuery.select(toSelect);
-                        });
-
-                        relationQuery.innerJoin(
-                            relation.innerJoin.relation,
-                            relation.innerJoin.condition[0],
-                            relation.innerJoin.condition[1],
-                            relation.innerJoin.condition[2]
-                        );
-
-                        relationQuery.whereIn(relation.whereIn, _.map(objects, 'id'));
-                        relationQuery.orderBy(relation.orderBy);
-
-                        const queryRelations = await relationQuery;
-                        debug('fetched withRelated', relation.name);
-
-                        // arr => obj[post_id] = [...] (faster access)
-                        return queryRelations.reduce((obj, item) => {
-                            if (!obj[item[relation.whereInKey]]) {
-                                obj[item[relation.whereInKey]] = [];
-                            }
-
-                            obj[item[relation.whereInKey]].push(_.omit(item, relation.select));
-                            return obj;
-                        }, {});
-                    })();
-                });
 
                 debug('attaching relations to', modelName);
 
-                const relationsToAttachArray = await Promise.all(Object.values(props));
-                const relationsToAttach = _.zipObject(_.keys(props), relationsToAttachArray);
-
-                objects = _.map(objects, (object) => {
+                for (const object of objects) {
                     for (const relation in relationsToAttach) {
-                        if (!relationsToAttach[relation][object.id]) {
-                            object[relation] = [];
-                            continue;
-                        }
-
-                        object[relation] = relationsToAttach[relation][object.id];
+                        object[relation] = relationsToAttach[relation][object.id] || [];
                     }
 
-                    object = bookshelfPrototype.toJSON.bind({
-                        attributes: object,
-                        _originalOptions: {
-                            withRelated: Object.keys(relationsToAttach)
-                        },
-                        related: function (key) {
-                            return object[key];
-                        },
-                        serialize: bookshelfPrototype.serialize,
-                        formatsToJSON: bookshelfPrototype.formatsToJSON
-                    })();
+                    // Compute primary_tag / primary_author virtual properties
+                    // that Bookshelf's toJSON used to produce automatically.
+                    if (withRelatedPrimary) {
+                        for (const primaryKey in withRelatedPrimary) {
+                            const relationKey = withRelatedPrimary[primaryKey];
+                            const items = object[relationKey];
+                            if (items && items.length && items[0].visibility !== 'internal') {
+                                object[primaryKey] = items[0];
+                            } else {
+                                object[primaryKey] = null;
+                            }
+                        }
+                    }
 
-                    object = bookshelfPrototype.fixBools(object);
-                    object = bookshelfPrototype.fixDatesWhenFetch(object);
-                    return object;
-                });
+                    for (const col of booleanColumns) {
+                        if (col in object) {
+                            object[col] = !!object[col];
+                        }
+                    }
+                }
 
                 debug('attached relations to', modelName);
                 return objects;
