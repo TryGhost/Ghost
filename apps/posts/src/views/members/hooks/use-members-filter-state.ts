@@ -65,6 +65,25 @@ function formatDateFilterValue(value: string, relation: string, timezone: string
     return boundaryDate.utc().format('YYYY-MM-DD HH:mm:ss');
 }
 
+function normalizeNewsletterSubscriptionValue(value: string): 'true' | 'false' | string {
+    if (value === 'subscribed') {
+        return 'true';
+    }
+
+    if (value === 'unsubscribed') {
+        return 'false';
+    }
+
+    return value;
+}
+
+function isSubscribedNewsletterFilter(operator: string, value: string): boolean {
+    const normalizedValue = normalizeNewsletterSubscriptionValue(value);
+    const isInverseOperator = operator === 'is-not' || operator === 'is_not';
+
+    return (operator === 'is' && normalizedValue === 'true') || (isInverseOperator && normalizedValue === 'false');
+}
+
 /**
  * Map UI operator names to NQL operators
  */
@@ -78,6 +97,7 @@ function getFilterRelationOperator(relation: string): string {
         'is-or-greater': '>=',
         contains: '~',
         'does-not-contain': '-~',
+        not_contains: '-~',
         'starts-with': '~^',
         'ends-with': '~$',
         // Shade filter operators (mapped to our internal names)
@@ -116,7 +136,8 @@ export function buildMemberNqlFilter(filters: Filter[], options: {timezone?: str
         if (field.startsWith('newsletters.')) {
             const slug = field.replace('newsletters.', '');
             const subscriptionStatus = String(value);
-            if (subscriptionStatus === 'subscribed') {
+
+            if (isSubscribedNewsletterFilter(operator, subscriptionStatus)) {
                 parts.push(`(newsletters.slug:${slug}+email_disabled:0)`);
             } else {
                 parts.push(`(newsletters.slug:-${slug},email_disabled:1)`);
@@ -181,7 +202,8 @@ export function buildMemberNqlFilter(filters: Filter[], options: {timezone?: str
         case 'newsletters': {
             // Value format: "slug:subscribed" or "slug:unsubscribed"
             const [slug, subscriptionStatus] = String(value).split(':');
-            if (subscriptionStatus === 'subscribed' || (operator === 'is' && subscriptionStatus !== 'unsubscribed')) {
+
+            if (isSubscribedNewsletterFilter(operator, subscriptionStatus)) {
                 parts.push(`(newsletters.slug:${slug}+email_disabled:0)`);
             } else {
                 parts.push(`(newsletters.slug:-${slug},email_disabled:1)`);
