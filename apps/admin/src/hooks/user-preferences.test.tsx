@@ -270,7 +270,7 @@ describe("useUserPreferences", () => {
             await waitForQuerySettled(result);
 
             expect(result.current.data).toEqual({
-                expanded: { posts: false },
+                expanded: { posts: false, members: true },
                 menu: { visible: true },
             });
         });
@@ -353,7 +353,7 @@ describe("useEditUserPreferences", () => {
             await waitFor(() => {
                 expect(query.current.data).toEqual({
                     navigation: {
-                        expanded: { posts: true },
+                        expanded: { posts: true, members: true },
                         menu: { visible: true }, // Preserved
                     },
                     nightShift: true, // Preserved

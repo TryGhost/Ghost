@@ -6,6 +6,8 @@ import MembersLayout from './components/members-layout';
 import MembersList from './components/members-list';
 import React, {useMemo} from 'react';
 import {Button, EmptyIndicator, Header, LoadingIndicator, LucideIcon, cn} from '@tryghost/shade';
+
+import {useActiveMemberView, useMemberViews} from './hooks/use-member-views';
 import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {useBrowseMembersInfinite} from '@tryghost/admin-x-framework/api/members';
 import {useMembersFilterState} from './hooks/use-members-filter-state';
@@ -23,6 +25,8 @@ const BULK_DELETE_RESTRICTED_FILTERS = [
 const Members: React.FC = () => {
     const {filters, nql, setFilters, isFiltered, clearFilters} = useMembersFilterState();
     const {data: configData} = useBrowseConfig();
+    const savedViews = useMemberViews();
+    const activeView = useActiveMemberView(savedViews, filters);
 
     // Check if email analytics is enabled
     const emailAnalyticsEnabled = configData?.config?.emailAnalytics === true;
@@ -65,10 +69,12 @@ const Members: React.FC = () => {
     const hasFilters = filters.length > 0;
 
     // Position filters: inline with actions when no filters, full width row below when filters active
+    // The header grid has 5 rows (mobile), 4 rows (sm), 3 rows (lg inline-nav)
+    // We need responsive row-start to place items after all named rows at each breakpoint
     const filtersClassName = cn(
         'flex flex-row',
         !hasFilters && 'items-center gap-2',
-        hasFilters && 'col-span-full row-start-4 pt-5'
+        hasFilters && 'col-span-full row-start-6 pt-5 sm:row-start-5 lg:row-start-4'
     );
 
     return (
@@ -84,6 +90,7 @@ const Members: React.FC = () => {
                         {!hasFilters && (
                             <MembersFilters
                                 filters={filters}
+                                savedViews={savedViews}
                                 onFiltersChange={setFilters}
                             />
                         )}
@@ -100,7 +107,9 @@ const Members: React.FC = () => {
                 {hasFilters && (
                     <div className={filtersClassName}>
                         <MembersFilters
+                            activeView={activeView}
                             filters={filters}
+                            savedViews={savedViews}
                             onFiltersChange={setFilters}
                         />
                     </div>
