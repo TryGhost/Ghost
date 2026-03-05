@@ -90,7 +90,7 @@ const ThemePreview: React.FC<{
             />
             {hasVariants(selectedTheme) ?
                 <>
-                    <span className='md:!visible md:!block hidden'>–</span>
+                    <span className='hidden md:!visible md:!block'>–</span>
                     <Select
                         border={false}
                         containerClassName='text-sm font-bold'
