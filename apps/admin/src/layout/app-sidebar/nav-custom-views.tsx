@@ -1,17 +1,6 @@
-import { useMemo } from 'react';
-import { z } from 'zod';
-import { useBrowseSettings, getSettingValue } from '@tryghost/admin-x-framework/api/settings';
 import { NavMenuItem } from './nav-menu-item';
 import { useEmberRouting } from '@/ember-bridge';
-
-const customViewSchema = z.object({
-    name: z.string(),
-    route: z.string(),
-    color: z.string(),
-    icon: z.string().optional(),
-    filter: z.record(z.string(), z.string().nullable())
-});
-const customViewsArraySchema = z.array(customViewSchema);
+import { useSharedViews } from '@tryghost/posts/src/views/members/hooks/use-member-views';
 
 function getColorHex(color: string): string {
     const colorMap: Record<string, string> = {
@@ -33,27 +22,8 @@ interface NavCustomViewsProps {
 }
 
 export function NavCustomViews({ route = 'posts' }: NavCustomViewsProps) {
-    const { data: settingsData } = useBrowseSettings();
+    const customViews = useSharedViews(route);
     const routing = useEmberRouting();
-
-    const customViews = useMemo(() => {
-        const sharedViewsJson = getSettingValue<string>(settingsData?.settings, 'shared_views') ?? '[]';
-
-        try {
-            const parsed: unknown = JSON.parse(sharedViewsJson);
-            const result = customViewsArraySchema.safeParse(parsed);
-
-            if (!result.success) {
-                console.error('Failed to validate shared_views setting:', result.error);
-                return [];
-            }
-
-            return result.data.filter(view => view.route === route);
-        } catch (e) {
-            console.error('Failed to parse shared_views setting:', e);
-            return [];
-        }
-    }, [settingsData, route]);
 
     if (customViews.length === 0) {
         return null;
@@ -75,8 +45,8 @@ export function NavCustomViews({ route = 'posts' }: NavCustomViewsProps) {
                             <NavMenuItem.Label className="grow">{view.name}</NavMenuItem.Label>
                             <span
                                 className="size-2 rounded-full shrink-0 mx-0.5"
-                                style={{backgroundColor: getColorHex(view.color)}}
-                                data-color={view.color}
+                                style={{backgroundColor: getColorHex(view.color ?? 'midgrey')}}
+                                data-color={view.color ?? 'midgrey'}
                                 aria-hidden="true"
                             />
                         </NavMenuItem.Link>
@@ -86,4 +56,3 @@ export function NavCustomViews({ route = 'posts' }: NavCustomViewsProps) {
         </>
     );
 }
-

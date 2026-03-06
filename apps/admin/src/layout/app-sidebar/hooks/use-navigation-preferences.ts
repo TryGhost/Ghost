@@ -1,5 +1,6 @@
 import { useEditUserPreferences, useUserPreferences, type NavigationPreferences } from "@/hooks/user-preferences";
 import { useMutation, type UseMutationResult, type UseQueryResult } from "@tanstack/react-query";
+import {buildExpandedPayload} from "./use-navigation-preferences.helpers";
 
 
 export const useNavigationPreferences = (): UseQueryResult<NavigationPreferences> => {
@@ -28,9 +29,7 @@ export const useNavigationExpanded = (expandedKey: keyof NavigationPreferences['
 
     const setExpanded = async (value: boolean) => {
         return editNavigationPreferences({
-            expanded: {
-                [expandedKey]: value
-            },
+            expanded: buildExpandedPayload(navigationPreferences?.expanded, expandedKey, value),
         });
     };
 
