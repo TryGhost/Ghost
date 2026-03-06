@@ -14,7 +14,7 @@ describe('Outbox Service', function () {
     beforeEach(function () {
         service = rewire('../../../../../core/server/services/outbox/index.js');
 
-        processOutboxStub = sinon.stub().resolves();
+        processOutboxStub = sinon.stub().resolves('Processed');
         jobsStub = {scheduleOutboxJob: sinon.stub()};
         logCapture = captureLoggerOutput();
 
