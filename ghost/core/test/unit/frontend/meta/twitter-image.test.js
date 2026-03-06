@@ -183,4 +183,50 @@ describe('getTwitterImage', function () {
 
         assert.equal(getTwitterImage({context: ['tag', 'paged'], tag}), null);
     });
+
+    describe('CDN image URLs', function () {
+        it('returns CDN twitter_image for home context', function () {
+            localSettingsCache.twitter_image = 'https://storage.ghost.is/c/6f/a3/site/content/images/2026/02/twitter.jpg';
+
+            const result = getTwitterImage({context: ['home'], home: {}});
+            assert(result.includes('storage.ghost.is'));
+            assert(result.endsWith('/content/images/2026/02/twitter.jpg'));
+        });
+
+        it('returns CDN twitter_image for post context', function () {
+            const post = {
+                twitter_image: 'https://storage.ghost.is/c/6f/a3/site/content/images/2026/02/post-twitter.jpg',
+                feature_image: '/content/images/post-feature.jpg'
+            };
+
+            const result = getTwitterImage({context: ['post'], post});
+            assert(result.includes('storage.ghost.is'));
+            assert(result.endsWith('post-twitter.jpg'));
+        });
+
+        it('falls back to CDN feature_image when post twitter_image is empty', function () {
+            const post = {
+                twitter_image: '',
+                feature_image: 'https://storage.ghost.is/c/6f/a3/site/content/images/2026/02/feature.jpg'
+            };
+
+            const result = getTwitterImage({context: ['post'], post});
+            assert(result.includes('storage.ghost.is'));
+            assert(result.endsWith('feature.jpg'));
+        });
+
+        it('falls back to CDN cover_image for settings', function () {
+            localSettingsCache.twitter_image = '';
+            localSettingsCache.cover_image = 'https://storage.ghost.is/c/6f/a3/site/content/images/2026/02/cover.jpg';
+
+            const post = {
+                twitter_image: '',
+                feature_image: ''
+            };
+
+            const result = getTwitterImage({context: ['post'], post});
+            assert(result.includes('storage.ghost.is'));
+            assert(result.endsWith('cover.jpg'));
+        });
+    });
 });
