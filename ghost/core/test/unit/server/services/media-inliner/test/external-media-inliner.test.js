@@ -990,6 +990,89 @@ describe('ExternalMediaInliner', function () {
         });
     });
 
+    describe('CDN storage adapter', function () {
+        it('storeMediaLocally returns CDN URL from saveRaw', async function () {
+            const inliner = new ExternalMediaInliner({
+                getMediaStorage: sinon.stub().withArgs('.jpg').returns({
+                    storagePath: '/content/images',
+                    getTargetDir: () => '/content/images',
+                    getUniqueFileName: () => '/content/images/photo.jpg',
+                    saveRaw: () => 'https://storage.ghost.is/c/6f/a3/site/content/images/photo.jpg'
+                })
+            });
+
+            sinon.stub(path, 'relative')
+                .withArgs('/content/images', '/content/images/photo.jpg')
+                .returns('photo.jpg');
+
+            const result = await inliner.storeMediaLocally({
+                fileBuffer: Buffer.from('img-bytes'),
+                filename: 'photo.jpg',
+                extension: '.jpg'
+            });
+
+            assert.equal(result, 'https://storage.ghost.is/c/6f/a3/site/content/images/photo.jpg');
+        });
+
+        it('inlineContent prefixes __GHOST_URL__ to saveRaw result', async function () {
+            const imageURL = 'https://external.com/files/photo.jpg';
+            const requestMock = nock('https://external.com')
+                .get('/files/photo.jpg')
+                .reply(200, GIF1x1);
+
+            sinon.stub(path, 'relative')
+                .withArgs('/content/images', '/content/images/unique-photo.jpg')
+                .returns('unique-photo.jpg');
+
+            const inliner = new ExternalMediaInliner({
+                PostModel: postModelStub,
+                PostMetaModel: postMetaModelStub,
+                TagModel: tagModelStub,
+                UserModel: userModelStub,
+                getMediaStorage: sinon.stub().withArgs('.gif').returns({
+                    storagePath: '/content/images',
+                    getTargetDir: () => '/content/images',
+                    getUniqueFileName: () => '/content/images/unique-photo.jpg',
+                    saveRaw: () => '/content/images/unique-photo.jpg'
+                })
+            });
+
+            const content = `{"cards":[["image",{"src":"${imageURL}"}]]}`;
+            const result = await inliner.inlineContent(content, ['https://external.com']);
+
+            assert.ok(requestMock.isDone());
+            assert.equal(result, '{"cards":[["image",{"src":"__GHOST_URL__/content/images/unique-photo.jpg"}]]}');
+        });
+
+        it('inlineFields stores external feature_image and returns __GHOST_URL__ path', async function () {
+            const imageURL = 'https://external.com/files/feature.jpg';
+            nock('https://external.com')
+                .get('/files/feature.jpg')
+                .reply(200, GIF1x1);
+
+            sinon.stub(path, 'relative')
+                .withArgs('/content/images', '/content/images/unique-feature.jpg')
+                .returns('unique-feature.jpg');
+
+            const inliner = new ExternalMediaInliner({
+                getMediaStorage: sinon.stub().withArgs('.gif').returns({
+                    storagePath: '/content/images',
+                    getTargetDir: () => '/content/images',
+                    getUniqueFileName: () => '/content/images/unique-feature.jpg',
+                    saveRaw: () => '/content/images/unique-feature.jpg'
+                })
+            });
+
+            const resourceStub = {
+                get: sinon.stub().withArgs('feature_image').returns(imageURL)
+            };
+
+            const updatedFields = await inliner.inlineFields(resourceStub, ['feature_image'], ['https://external.com']);
+
+            assert.equal(updatedFields.feature_image, '__GHOST_URL__/content/images/unique-feature.jpg');
+        });
+    });
+
     describe('SSRF protection', function () {
         it('getRemoteMedia returns null when URL resolves to a private IP', async function () {
             // Restore any existing stub before creating a new one

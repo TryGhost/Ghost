@@ -81,4 +81,83 @@ describe('ContentFileImporter', function () {
         assert.equal(storageApi.save.args[0][0].name, 'best-memes.pdf');
         assert.equal(storageApi.save.args[0][0].newPath, '/content/files/best-memes.pdf');
     });
+
+    describe('CDN storage', function () {
+        it('returns CDN URLs from store.save in the stored field', async function () {
+            const images = [
+                {
+                    name: 'photo.png',
+                    path: '/tmp/photo.png',
+                    originalPath: 'images/photo.png',
+                    targetDir: '/test/content/images',
+                    newPath: '/content/images/photo.png'
+                }
+            ];
+            const storageApi = {
+                save: sinon.stub().resolves('https://storage.ghost.is/c/6f/a3/site/content/images/photo.png')
+            };
+            const imageImporter = new ContentFileImporter({
+                type: 'images',
+                store: storageApi
+            });
+
+            const result = await imageImporter.doImport(images);
+
+            sinon.assert.calledOnce(storageApi.save);
+            assert.equal(result[0].originalPath, 'images/photo.png');
+            assert.equal(result[0].newPath, '/content/images/photo.png');
+            assert.equal(result[0].stored, 'https://storage.ghost.is/c/6f/a3/site/content/images/photo.png');
+        });
+
+        it('stores multiple images to CDN and returns all CDN URLs', async function () {
+            const images = [
+                {
+                    name: 'photo1.png',
+                    path: '/tmp/photo1.png',
+                    originalPath: 'images/photo1.png',
+                    targetDir: '/test/content/images',
+                    newPath: '/content/images/photo1.png'
+                },
+                {
+                    name: 'photo2.jpg',
+                    path: '/tmp/photo2.jpg',
+                    originalPath: 'images/photo2.jpg',
+                    targetDir: '/test/content/images',
+                    newPath: '/content/images/photo2.jpg'
+                }
+            ];
+            const storageApi = {
+                save: sinon.stub()
+                    .onFirstCall().resolves('https://storage.ghost.is/c/6f/a3/site/content/images/photo1.png')
+                    .onSecondCall().resolves('https://storage.ghost.is/c/6f/a3/site/content/images/photo2.jpg')
+            };
+            const imageImporter = new ContentFileImporter({
+                type: 'images',
+                store: storageApi
+            });
+
+            const result = await imageImporter.doImport(images);
+
+            sinon.assert.calledTwice(storageApi.save);
+            assert.equal(result[0].stored, 'https://storage.ghost.is/c/6f/a3/site/content/images/photo1.png');
+            assert.equal(result[1].stored, 'https://storage.ghost.is/c/6f/a3/site/content/images/photo2.jpg');
+        });
+
+        it('preProcess replaces paths in post content regardless of storage backend', function () {
+            const importData = _.cloneDeep(require('../../../../../utils/fixtures/import/import-data-1.json'));
+            const imageImporter = new ContentFileImporter({
+                type: 'images',
+                store: {}
+            });
+
+            const outputData = imageImporter.preProcess(importData);
+            const post = outputData.data.data.posts[0];
+
+            assert.ok(post.markdown.includes('/content/images/my-image.png'));
+            assert.ok(post.html.includes('/content/images/my-image.png'));
+            assert.equal(post.feature_image, '/content/images/my-image.png');
+            assert.ok(!post.markdown.includes('https://'));
+            assert.ok(!post.html.includes('https://'));
+        });
+    });
 });
