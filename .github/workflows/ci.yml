@@ -376,11 +376,8 @@ jobs:
     - name: Setup Playwright
       uses: ./.github/actions/setup-playwright
 
-    - name: Build TS packages
-      run: yarn nx run-many -t build --exclude=ghost-admin
-
     - name: Build Admin
-      run: yarn nx run ghost-admin:build:dev
+      run: yarn nx run @tryghost/admin:build:dev
 
     - name: Run Playwright tests locally
       run: yarn test:browser

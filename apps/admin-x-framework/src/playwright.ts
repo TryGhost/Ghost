@@ -1,4 +1,5 @@
-import {defineConfig, devices, PlaywrightTestConfig} from '@playwright/test';
+import {defineConfig, devices} from '@playwright/test';
+import type {PlaywrightTestConfig} from '@playwright/test';
 
 export const E2E_PORT = 5173;
 

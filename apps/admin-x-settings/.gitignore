@@ -1,6 +1,5 @@
-es
-types/generated
 dist
+dist-ssr
+types/generated
 playwright-report
 test-results
-storybook-static

@@ -32,7 +32,9 @@ import UnsplashModal from '../../settings/advanced/integrations/unsplash-modal';
 import UserDetailModal from '../../settings/general/user-detail-modal';
 import ZapierModal from '../../settings/advanced/integrations/zapier-modal';
 
-const modals = {
+export type ModalComponent<Props = any> = React.FC<NiceModalHocProps & RoutingModalProps & Props>;
+
+const modals: Record<string, ModalComponent<any>> = {
     AddIntegrationModal,
     AddNewsletterModal,
     AddRecommendationModal,
@@ -62,10 +64,8 @@ const modals = {
     // EditOfferModal,
     AboutModal,
     OfferSuccess
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-} satisfies {[key: string]: ModalComponent<any>};
+};
 
 export default modals;
 
 export type ModalName = keyof typeof modals;
-export type ModalComponent<Props = object> = React.FC<NiceModalHocProps & RoutingModalProps & Props>;

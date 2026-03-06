@@ -2,6 +2,7 @@ import { resolve } from "path";
 import { defineConfig } from "vitest/config";
 import tsconfigPaths from "vite-tsconfig-paths";
 import react from "@vitejs/plugin-react-swc";
+import type {PluginOption} from "vite";
 
 import { emberAssetsPlugin } from "./vite-ember-assets";
 import { ghostBackendProxyPlugin } from "./vite-backend-proxy";
@@ -41,7 +42,15 @@ function getBase(command: 'build' | 'serve'): string {
 // https://vite.dev/config/
 export default defineConfig(({ command }) => ({
     base: getBase(command),
-    plugins: [react(), emberAssetsPlugin(), ghostBackendProxyPlugin(), deepLinksPlugin(), tsconfigPaths()],
+    plugins: [
+        react(),
+        emberAssetsPlugin(),
+        ghostBackendProxyPlugin(),
+        deepLinksPlugin(),
+        // `vite-tsconfig-paths` resolves from the workspace root in CI and can carry
+        // a different Vite type instance than this package's local Vite version.
+        tsconfigPaths({root: resolve(__dirname, '..')}) as unknown as PluginOption
+    ],
     define: {
         "process.env.DEBUG": false, // Shim env var utilized by the @tryghost/nql package
     },

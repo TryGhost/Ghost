@@ -43,8 +43,11 @@
     "test:browser:admin": "NODE_ENV=testing-browser  playwright test test/e2e-browser --project=admin",
     "test:browser:portal": "NODE_ENV=testing-browser playwright test test/e2e-browser --project=portal",
     "test:browser:setup": "npx playwright install",
+    "pretest:ci:e2e": "yarn workspace @tryghost/parse-email-address build",
     "test:ci:e2e": "c8 -c ./.c8rc.e2e.json -o coverage-e2e yarn test:e2e -b",
+    "pretest:ci:legacy": "yarn workspace @tryghost/parse-email-address build",
     "test:ci:legacy": "yarn test:legacy -b",
+    "pretest:ci:integration": "yarn workspace @tryghost/parse-email-address build",
     "test:ci:integration": "c8 -c ./.c8rc.e2e.json -o coverage-integration --lines 52 --functions 47 --branches 73 --statements 52 yarn test:integration -b",
     "test:unit:slow": "yarn test:unit --reporter=mocha-slow-test-reporter",
     "test:int:slow": "yarn test:integration --reporter=mocha-slow-test-reporter",
@@ -331,19 +334,37 @@
       "test:browser": {
         "dependsOn": [
           "build:assets",
-          "@tryghost/admin:build"
+          "@tryghost/admin:build",
+          {
+            "projects": [
+              "@tryghost/parse-email-address"
+            ],
+            "target": "build"
+          }
         ]
       },
       "test:browser:admin": {
         "dependsOn": [
           "build:assets",
-          "@tryghost/admin:build"
+          "@tryghost/admin:build",
+          {
+            "projects": [
+              "@tryghost/parse-email-address"
+            ],
+            "target": "build"
+          }
         ]
       },
       "test:browser:portal": {
         "dependsOn": [
           "build:assets",
-          "@tryghost/admin:build"
+          "@tryghost/admin:build",
+          {
+            "projects": [
+              "@tryghost/parse-email-address"
+            ],
+            "target": "build"
+          }
         ]
       }
     }

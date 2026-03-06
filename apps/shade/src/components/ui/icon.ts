@@ -22,7 +22,12 @@ interface IconProps extends
         className?: string;
 }
 
-const iconModules = import.meta.glob<{ReactComponent: React.FC<IconProps> }>(
+type IconModule = {
+    ReactComponent?: React.FC<IconProps>;
+    default?: string;
+};
+
+const iconModules = import.meta.glob<IconModule>(
     '../../assets/icons/*.svg',
     {eager: true}
 );
@@ -34,10 +39,23 @@ const Icon = Object.entries(iconModules).reduce((acc, [path, module]) => {
     const IconComponent = (props: IconProps) => {
         const {size, className, ...rest} = props;
         const iconClassName = cn(iconVariants({size, className}));
-        return React.createElement(module.ReactComponent, {
-            ...rest,
-            className: iconClassName
-        });
+        if (module.ReactComponent) {
+            return React.createElement(module.ReactComponent, {
+                ...rest,
+                className: iconClassName
+            });
+        }
+
+        if (module.default) {
+            return React.createElement('img', {
+                alt: '',
+                'aria-hidden': 'true',
+                className: iconClassName,
+                src: module.default
+            });
+        }
+
+        return null;
     };
 
     IconComponent.displayName = `Icon.${iconName}`;

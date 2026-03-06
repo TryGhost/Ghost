@@ -1,7 +1,10 @@
 import react from '@vitejs/plugin-react';
-import {PluginOption, UserConfig, mergeConfig} from 'vite';
+import {resolve} from 'path';
+import {mergeConfig} from 'vite';
+import type {PluginOption, UserConfig} from 'vite';
 import cssInjectedByJsPlugin from 'vite-plugin-css-injected-by-js';
 import svgr from 'vite-plugin-svgr';
+import tsconfigPaths from 'vite-tsconfig-paths';
 import {defineConfig} from 'vitest/config';
 
 const externalPlugin = ({externals}: { externals: Record<string, string> }): PluginOption => {
@@ -34,6 +37,9 @@ export default function adminXViteConfig({packageName, entry, overrides}: {packa
     const defaultConfig = defineConfig({
         logLevel: process.env.CI ? 'info' : 'warn',
         plugins: [
+            tsconfigPaths({
+                root: resolve(process.cwd(), '..')
+            }) as unknown as PluginOption,
             svgr(),
             react(),
             externalPlugin({
@@ -83,5 +89,5 @@ export default function adminXViteConfig({packageName, entry, overrides}: {packa
         }
     });
 
-    return mergeConfig(defaultConfig, overrides || {});
+    return mergeConfig(defaultConfig as UserConfig, overrides || {});
 };

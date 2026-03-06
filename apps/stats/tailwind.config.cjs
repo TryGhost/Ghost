@@ -2,5 +2,10 @@ const shadePreset = require('@tryghost/shade/tailwind.cjs');
 
 module.exports = {
     presets: [shadePreset('.shade-stats')],
-    content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}', '../../node_modules/@tryghost/shade/es/**/*.{js,ts,jsx,tsx}']
+    content: [
+        './index.html',
+        './src/**/*.{js,ts,jsx,tsx}',
+        '../../node_modules/@tryghost/shade/src/**/*.{js,ts,jsx,tsx}',
+        '../../node_modules/@tryghost/shade/es/**/*.{js,ts,jsx,tsx}'
+    ]
 };

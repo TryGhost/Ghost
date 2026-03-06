@@ -11,7 +11,14 @@
         "allowImportingTsExtensions": true,
         "resolveJsonModule": true,
         "isolatedModules": true,
-        "noEmit": true,
+        "noEmit": false,
+        "composite": true,
+        "declaration": true,
+        "declarationMap": true,
+        "declarationDir": "./types/generated",
+        "emitDeclarationOnly": true,
+        "tsBuildInfoFile": "./types/generated/tsconfig.tsbuildinfo",
+        "rootDir": "./src",
         "jsx": "react-jsx",
 
         /* Linting */
@@ -31,5 +38,10 @@
             "@views/*": ["views/*"]
         }
     },
-    "include": ["src", "test"]
+    "include": ["src"],
+    "exclude": ["src/**/*.stories.tsx", "src/**/*.test.ts", "src/**/*.test.tsx"],
+    "references": [
+        { "path": "../admin-x-framework/tsconfig.json" },
+        { "path": "../shade/tsconfig.json" }
+    ]
 }

@@ -299,11 +299,12 @@ const Newsletters: React.FC = () => {
         if (!subscriberStatsData?.stats?.[0]?.values || subscriberStatsData.stats[0].values.length === 0) {
             // When there's no data, create zero points for each day spanning the range
             const {startDate, endDate} = getRangeDates(range);
+            const endDateValue = endDate.toDate();
 
             const dailyData = [];
-            const currentDate = new Date(startDate);
+            const currentDate = startDate.toDate();
 
-            while (currentDate <= endDate) {
+            while (currentDate <= endDateValue) {
                 dailyData.push({
                     date: currentDate.toISOString().split('T')[0],
                     value: 0
