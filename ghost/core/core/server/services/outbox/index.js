@@ -36,8 +36,13 @@ class OutboxServiceWrapper {
         try {
             const statusMessage = await processOutbox();
             logging.info(statusMessage);
-        } catch (e) {
-            logging.error(e, `${OUTBOX_LOG_KEY}: Error while processing outbox`);
+        } catch (err) {
+            logging.error({
+                system: {
+                    event: 'outbox.processing.error'
+                },
+                err
+            }, `${OUTBOX_LOG_KEY}: Error while processing outbox`);
         } finally {
             this.processing = false;
         }
