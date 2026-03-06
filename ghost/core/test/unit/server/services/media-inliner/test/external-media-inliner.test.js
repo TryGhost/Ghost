@@ -1014,8 +1014,9 @@ describe('ExternalMediaInliner', function () {
             assert.equal(result, 'https://storage.ghost.is/c/6f/a3/site/content/images/photo.jpg');
         });
 
-        it('inlineContent prefixes __GHOST_URL__ to saveRaw result', async function () {
+        it('inlineContent uses CDN URL directly without __GHOST_URL__ prefix', async function () {
             const imageURL = 'https://external.com/files/photo.jpg';
+            const cdnURL = 'https://storage.ghost.is/c/6f/a3/site/content/images/unique-photo.jpg';
             const requestMock = nock('https://external.com')
                 .get('/files/photo.jpg')
                 .reply(200, GIF1x1);
@@ -1033,7 +1034,7 @@ describe('ExternalMediaInliner', function () {
                     storagePath: '/content/images',
                     getTargetDir: () => '/content/images',
                     getUniqueFileName: () => '/content/images/unique-photo.jpg',
-                    saveRaw: () => '/content/images/unique-photo.jpg'
+                    saveRaw: () => cdnURL
                 })
             });
 
@@ -1041,11 +1042,12 @@ describe('ExternalMediaInliner', function () {
             const result = await inliner.inlineContent(content, ['https://external.com']);
 
             assert.ok(requestMock.isDone());
-            assert.equal(result, '{"cards":[["image",{"src":"__GHOST_URL__/content/images/unique-photo.jpg"}]]}');
+            assert.equal(result, `{"cards":[["image",{"src":"${cdnURL}"}]]}`);
         });
 
-        it('inlineFields stores external feature_image and returns __GHOST_URL__ path', async function () {
+        it('inlineFields stores external feature_image and returns CDN URL directly', async function () {
             const imageURL = 'https://external.com/files/feature.jpg';
+            const cdnURL = 'https://storage.ghost.is/c/6f/a3/site/content/images/unique-feature.jpg';
             nock('https://external.com')
                 .get('/files/feature.jpg')
                 .reply(200, GIF1x1);
@@ -1059,7 +1061,7 @@ describe('ExternalMediaInliner', function () {
                     storagePath: '/content/images',
                     getTargetDir: () => '/content/images',
                     getUniqueFileName: () => '/content/images/unique-feature.jpg',
-                    saveRaw: () => '/content/images/unique-feature.jpg'
+                    saveRaw: () => cdnURL
                 })
             });
 
@@ -1069,7 +1071,7 @@ describe('ExternalMediaInliner', function () {
 
             const updatedFields = await inliner.inlineFields(resourceStub, ['feature_image'], ['https://external.com']);
 
-            assert.equal(updatedFields.feature_image, '__GHOST_URL__/content/images/unique-feature.jpg');
+            assert.equal(updatedFields.feature_image, cdnURL);
         });
     });
 

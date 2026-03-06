@@ -191,7 +191,10 @@ class ExternalMediaInliner {
                     const filePath = await this.storeMediaLocally(media);
 
                     if (filePath) {
-                        const inlinedSrc = `__GHOST_URL__${filePath}`;
+                        // CDN storage adapters return full URLs, local storage returns paths
+                        const inlinedSrc = filePath.startsWith('http://') || filePath.startsWith('https://')
+                            ? filePath
+                            : `__GHOST_URL__${filePath}`;
 
                         // NOTE: does not account for duplicate images in content
                         //       in those cases would be processed twice
@@ -231,7 +234,10 @@ class ExternalMediaInliner {
                         const filePath = await this.storeMediaLocally(media);
 
                         if (filePath) {
-                            const inlinedSrc = `__GHOST_URL__${filePath}`;
+                            // CDN storage adapters return full URLs, local storage returns paths
+                            const inlinedSrc = filePath.startsWith('http://') || filePath.startsWith('https://')
+                                ? filePath
+                                : `__GHOST_URL__${filePath}`;
 
                             updatedFields[field] = inlinedSrc;
                             logging.info(`Added media to inline: ${src} -> ${inlinedSrc}`);
