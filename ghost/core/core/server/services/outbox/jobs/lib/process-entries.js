@@ -54,33 +54,33 @@ async function processEntry({db, entry}) {
     }
 
     let payload;
-    let payloadParsed = false;
     try {
         payload = JSON.parse(entry.payload);
-        payloadParsed = true;
+    } catch (err) {
+        const errorMessage = err?.message ?? 'Unknown error';
+        await updateFailedEntry({db, entryId: entry.id, retryCount: entry.retry_count, errorMessage});
+        logging.error({
+            system: {
+                event: 'outbox.entry.payload_parse_failed',
+                entry_id: entry.id
+            },
+            err
+        }, `${handler.LOG_KEY} Failed to parse payload for entry ${entry.id}`);
+        return {success: false};
+    }
+
+    try {
         await handler.handle({payload});
     } catch (err) {
         const errorMessage = err?.message ?? 'Unknown error';
         await updateFailedEntry({db, entryId: entry.id, retryCount: entry.retry_count, errorMessage});
-
-        if (!payloadParsed) {
-            logging.error({
-                system: {
-                    event: 'outbox.entry.payload_parse_failed',
-                    entry_id: entry.id
-                },
-                err
-            }, `${handler.LOG_KEY} Failed to parse payload for entry ${entry.id}`);
-        } else {
-            logging.error({
-                system: {
-                    event: 'outbox.entry.send_failed',
-                    entry_id: entry.id
-                },
-                err
-            }, `${handler.LOG_KEY} Failed to send to ${handler.getLogInfo(payload)}`);
-        }
-
+        logging.error({
+            system: {
+                event: 'outbox.entry.send_failed',
+                entry_id: entry.id
+            },
+            err
+        }, `${handler.LOG_KEY} Failed to send to ${handler.getLogInfo(payload)}`);
         return {success: false};
     }
 
