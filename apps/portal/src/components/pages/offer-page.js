@@ -469,7 +469,7 @@ export default class OfferPage extends React.Component {
         const benefitsUI = benefits.map((benefit, idx) => {
             return (
                 <div className="gh-portal-product-benefit" key={`${benefit.name}-${idx}`}>
-                    <CheckmarkIcon className='gh-portal-benefit-checkmark' />
+                    <CheckmarkIcon className='gh-portal-benefit-checkmark' aria-hidden='true' />
                     <div className="gh-portal-benefit-title">{benefit.name}</div>
                 </div>
             );
