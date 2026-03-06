@@ -145,15 +145,15 @@ jobs:
         run: echo "hash=lockfile-${{ hashFiles('yarn.lock') }}" >> "$GITHUB_ENV"
 
       - name: Compute dependency cache key
-        run: echo "cachekey=dep-cache-${{ hashFiles('yarn.lock') }}-${{ env.HEAD_COMMIT }}" >> "$GITHUB_ENV"
+        run: echo "cachekey=dep-cache-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('yarn.lock') }}-${{ env.HEAD_COMMIT }}" >> "$GITHUB_ENV"
 
       - name: Compute dependency cache restore key
         run: |
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           echo "DEPENDENCY_CACHE_RESTORE_KEYS<<$EOF" >> "$GITHUB_ENV"
-          echo "dep-cache-${{ env.hash }}-${{ github.sha }}" >> "$GITHUB_ENV"
-          echo "dep-cache-${{ env.hash }}" >> "$GITHUB_ENV"
-          echo "dep-cache" >> "$GITHUB_ENV"
+          echo "dep-cache-${{ runner.os }}-${{ runner.arch }}-${{ env.hash }}-${{ github.sha }}" >> "$GITHUB_ENV"
+          echo "dep-cache-${{ runner.os }}-${{ runner.arch }}-${{ env.hash }}" >> "$GITHUB_ENV"
+          echo "dep-cache-${{ runner.os }}-${{ runner.arch }}" >> "$GITHUB_ENV"
           echo "$EOF" >> "$GITHUB_ENV"
 
       - name: Nx cache
@@ -356,9 +356,22 @@ jobs:
 
     - name: Install Stripe-CLI
       run: |
+        set -euo pipefail
         export VERSION=1.13.5
-        wget "https://github.com/stripe/stripe-cli/releases/download/v$VERSION/stripe_${VERSION}_linux_x86_64.tar.gz"
-        tar -zxvf "stripe_${VERSION}_linux_x86_64.tar.gz"
+        case "${{ runner.arch }}" in
+          X64)
+            ARCH="x86_64"
+            ;;
+          ARM64)
+            ARCH="arm64"
+            ;;
+          *)
+            echo "Unsupported runner architecture: ${{ runner.arch }}"
+            exit 1
+            ;;
+        esac
+        wget -O stripe.tar.gz "https://github.com/stripe/stripe-cli/releases/download/v$VERSION/stripe_${VERSION}_linux_${ARCH}.tar.gz"
+        tar -xzf stripe.tar.gz
         mv stripe /usr/local/bin
         stripe -v
 

@@ -20,7 +20,7 @@ runs:
       id: playwright-cache
       with:
         path: ~/.cache/ms-playwright
-        key: ${{ runner.os }}-Playwright-${{steps.playwright-version.outputs.version}}
+        key: ${{ runner.os }}-${{ runner.arch }}-Playwright-${{steps.playwright-version.outputs.version}}
 
     - name: Install Playwright browser if not cached
       if: steps.playwright-cache.outputs.cache-hit != 'true'
