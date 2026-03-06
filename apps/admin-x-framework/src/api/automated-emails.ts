@@ -1,4 +1,4 @@
-import {Meta, createMutation, createQuery} from '../utils/api/hooks';
+import {Meta, createMutation, createQuery, createQueryWithId} from '../utils/api/hooks';
 import {insertToQueryCache, updateQueryCache} from '../utils/api/update-queries';
 
 export type AutomatedEmail = {
@@ -25,6 +25,11 @@ const dataType = 'AutomatedEmailsResponseType';
 export const useBrowseAutomatedEmails = createQuery<AutomatedEmailsResponseType>({
     dataType,
     path: '/automated_emails/'
+});
+
+export const useReadAutomatedEmail = createQueryWithId<AutomatedEmailsResponseType>({
+    dataType,
+    path: id => `/automated_emails/${id}/`
 });
 
 export const useAddAutomatedEmail = createMutation<AutomatedEmailsResponseType, Partial<AutomatedEmail>>({

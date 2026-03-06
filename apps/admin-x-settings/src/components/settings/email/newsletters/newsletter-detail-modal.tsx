@@ -6,7 +6,7 @@ import validator from 'validator';
 import {Button, ButtonGroup, ColorPickerField, ConfirmationModal, Form, Heading, Hint, HtmlField, Icon, ImageUpload, LimitModal, PreviewModalContent, Select, type SelectOption, Separator, type Tab, TabView, TextArea, TextField, Toggle, ToggleGroup, showToast} from '@tryghost/admin-x-design-system';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {HostLimitError, useLimiter} from '../../../../hooks/use-limiter';
-import {type Newsletter, useBrowseNewsletters, useEditNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
+import {type Newsletter, useBrowseNewsletters, useEditNewsletter, useReadNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {getSettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
@@ -60,12 +60,11 @@ const ReplyToEmailField: React.FC<{
 
 const Sidebar: React.FC<{
     newsletter: Newsletter;
-    onlyOne: boolean;
     updateNewsletter: (fields: Partial<Newsletter>) => void;
     validate: () => void;
     errors: ErrorMessages;
     clearError: (field: string) => void;
-}> = ({newsletter, onlyOne, updateNewsletter, validate, errors, clearError}) => {
+}> = ({newsletter, updateNewsletter, validate, errors, clearError}) => {
     const {updateRoute} = useRouting();
     const {mutateAsync: editNewsletter} = useEditNewsletter();
     const limiter = useLimiter();
@@ -76,16 +75,14 @@ const Sidebar: React.FC<{
     const {localSettings} = useSettingGroup();
     const [siteTitle] = getSettingValues(localSettings, ['title']) as string[];
     const handleError = useHandleError();
-    const {data: {newsletters: apiNewsletters} = {}} = useBrowseNewsletters();
+    const {data: {meta: activeNewslettersMeta} = {}} = useBrowseNewsletters({
+        searchParams: {filter: 'status:active', limit: '1'}
+    });
     const commentsEnabled = ['all', 'paid'].includes(getSettingValue(settings, 'comments_enabled') || '');
 
     let newsletterAddress = renderSenderEmail(newsletter, config, defaultEmailAddress);
-    const [newsletters, setNewsletters] = useState<Newsletter[]>(apiNewsletters || []);
-    const activeNewsletters = newsletters.filter(n => n.status === 'active');
-
-    useEffect(() => {
-        setNewsletters(apiNewsletters || []);
-    }, [apiNewsletters]);
+    const activeNewsletterCount = activeNewslettersMeta?.pagination.total;
+    const isArchiveDisabled = activeNewsletterCount === undefined || activeNewsletterCount <= 1;
 
     const fontOptions: SelectOption[] = [
         {value: 'serif', label: 'Elegant serif', className: 'font-serif'},
@@ -276,7 +273,7 @@ const Sidebar: React.FC<{
                     />
                 </Form>
                 <div className='mb-5 mt-10'>
-                    {newsletter.status === 'active' ? (!onlyOne && <Button color='red' disabled={activeNewsletters.length === 1} label='Archive newsletter' link onClick={confirmStatusChange}/>) : <Button color='green' label='Reactivate newsletter' link onClick={confirmStatusChange} />}
+                    {newsletter.status === 'active' ? <Button color='red' disabled={isArchiveDisabled} label='Archive newsletter' link onClick={confirmStatusChange}/> : <Button color='green' label='Reactivate newsletter' link onClick={confirmStatusChange} />}
                 </div>
             </>
         },
@@ -769,7 +766,7 @@ const Sidebar: React.FC<{
     );
 };
 
-const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: boolean;}> = ({newsletter, onlyOne}) => {
+const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter}> = ({newsletter}) => {
     const {config} = useGlobalData();
     const {mutateAsync: editNewsletter} = useEditNewsletter();
     const {updateRoute} = useRouting();
@@ -828,7 +825,7 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
     }, [setFormState, newsletter]);
 
     const preview = <NewsletterPreview newsletter={formState} />;
-    const sidebar = <Sidebar clearError={clearError} errors={errors} newsletter={formState} onlyOne={onlyOne} updateNewsletter={updateNewsletter} validate={validate} />;
+    const sidebar = <Sidebar clearError={clearError} errors={errors} newsletter={formState} updateNewsletter={updateNewsletter} validate={validate} />;
 
     return <PreviewModalContent
         afterClose={() => updateRoute('newsletters')}
@@ -852,17 +849,13 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
 };
 
 const NewsletterDetailModal: React.FC<RoutingModalProps> = ({params}) => {
-    const {data: {newsletters, isEnd} = {}, fetchNextPage} = useBrowseNewsletters();
-    const newsletter = newsletters?.find(({id}) => id === params?.id);
-
-    useEffect(() => {
-        if (!newsletter && !isEnd) {
-            fetchNextPage();
-        }
-    }, [fetchNextPage, isEnd, newsletter]);
+    const {data} = useReadNewsletter(params?.id || '', {
+        enabled: Boolean(params?.id)
+    });
+    const newsletter = data?.newsletters[0];
 
     if (newsletter) {
-        return <NewsletterDetailModalContent newsletter={newsletter} onlyOne={newsletters!.length === 1} />;
+        return <NewsletterDetailModalContent newsletter={newsletter} />;
     } else {
         return null;
     }
