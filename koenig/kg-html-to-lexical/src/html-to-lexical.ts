@@ -1,4 +1,5 @@
-import {$createParagraphNode, $getRoot, CreateEditorArgs, SerializedParagraphNode, type SerializedEditorState} from 'lexical';
+/* c8 ignore start -- V8 creates phantom branches for ESM imports */
+import {$createParagraphNode, $getRoot} from 'lexical';
 import {createHeadlessEditor} from '@lexical/headless';
 import {$generateNodesFromDOM} from '@lexical/html';
 import {$insertGeneratedNodes} from '@lexical/clipboard';
@@ -8,6 +9,8 @@ import {LinkNode} from '@lexical/link';
 import {DEFAULT_NODES, DEFAULT_CONFIG} from '@tryghost/kg-default-nodes';
 import {JSDOM} from 'jsdom';
 import {registerDefaultTransforms} from '@tryghost/kg-default-transforms';
+import type {CreateEditorArgs, SerializedEditorState, SerializedParagraphNode} from 'lexical';
+/* c8 ignore stop */
 
 const EMPTY_PARAGRAPH: SerializedParagraphNode = {
     children: [],
@@ -45,6 +48,7 @@ const defaultNodes = [
     ...DEFAULT_NODES
 ];
 
+/* c8 ignore next -- V8 creates a phantom branch for the export */
 export function htmlToLexical(html: string, options?: htmlToLexicalOptions): SerializedEditorState {
     if (!html) {
         return BLANK_DOCUMENT;
@@ -56,7 +60,7 @@ export function htmlToLexical(html: string, options?: htmlToLexicalOptions): Ser
     };
     const editorConfig = Object.assign({}, defaultEditorConfig, options?.editorConfig);
 
-    const dom = new JSDOM(`<body>${html?.trim()}</body>`);
+    const dom = new JSDOM(`<body>${html.trim()}</body>`);
     const editor = createHeadlessEditor(editorConfig);
 
     registerDefaultTransforms(editor);

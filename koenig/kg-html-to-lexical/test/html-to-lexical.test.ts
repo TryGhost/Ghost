@@ -1,20 +1,30 @@
 import assert from 'assert/strict';
-const converter = require('../');
+import * as converter from '../src/index.js';
+import type {SerializedEditorState, SerializedElementNode} from 'lexical';
 
-const editorConfig = {
-    onError(e: Error) {
-        throw e;
+const options = {
+    editorConfig: {
+        onError(e: Error) {
+            throw e;
+        }
     }
 };
 
-interface LexicalNode {
-    type: string;
+// Serialized Lexical JSON nodes have varying shapes depending on node type.
+// Extend SerializedElementNode with recursive children and an index signature
+// for type-specific properties (tag, listType, url, src, text) from subclasses.
+interface NodeJSON extends SerializedElementNode<NodeJSON> {
+    [key: string]: unknown;
+}
+
+function htmlToLexical(html: string, opts?: typeof options): SerializedEditorState<NodeJSON> {
+    return converter.htmlToLexical(html, opts) as SerializedEditorState<NodeJSON>;
 }
 
 describe('HTMLtoLexical', function () {
     describe('Minimal examples', function () {
         it('can convert empty document', function () {
-            const lexical = converter.htmlToLexical('', editorConfig);
+            const lexical = htmlToLexical('', options);
 
             assert.deepEqual(lexical, {
                 root: {
@@ -36,7 +46,7 @@ describe('HTMLtoLexical', function () {
         });
 
         it('can convert null document', function () {
-            const lexical = converter.htmlToLexical(null, editorConfig);
+            const lexical = htmlToLexical(null as unknown as string, options);
 
             assert.deepEqual(lexical, {
                 root: {
@@ -57,8 +67,42 @@ describe('HTMLtoLexical', function () {
             });
         });
 
+        it('can convert without options', function () {
+            const lexical = htmlToLexical('<p>Hello World</p>');
+
+            assert.deepEqual(lexical, {
+                root: {
+                    children: [
+                        {
+                            children: [
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: 'Hello World',
+                                    type: 'extended-text',
+                                    version: 1
+                                }
+                            ],
+                            direction: null,
+                            format: '',
+                            indent: 0,
+                            type: 'paragraph',
+                            version: 1
+                        }
+                    ],
+                    direction: null,
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            });
+        });
+
         it('can convert <p>Hello World</p>', function () {
-            const lexical = converter.htmlToLexical('<p>Hello World</p>', editorConfig);
+            const lexical = htmlToLexical('<p>Hello World</p>', options);
 
             assert.deepEqual(lexical, {
                 root: {
@@ -92,7 +136,7 @@ describe('HTMLtoLexical', function () {
         });
 
         it('can convert <p>Hello</p><p>World</p>', function () {
-            const lexical = converter.htmlToLexical('<p>Hello</p><p>World</p>', editorConfig);
+            const lexical = htmlToLexical('<p>Hello</p><p>World</p>', options);
 
             assert.deepEqual(lexical, {
                 root: {
@@ -194,43 +238,43 @@ describe('HTMLtoLexical', function () {
         };
 
         it('can convert <div><p>Hello</p><p>World</p></div>', function () {
-            const lexical = converter.htmlToLexical('<div><p>Hello</p><p>World</p></div>', editorConfig);
+            const lexical = htmlToLexical('<div><p>Hello</p><p>World</p></div>', options);
             assert.deepEqual(lexical, helloWorldDoc);
         });
 
         it('can convert <div><div><p>Hello</p><p>World</p></div></div>', function () {
-            const lexical = converter.htmlToLexical('<div><div><p>Hello</p><p>World</p></div></div>', editorConfig);
+            const lexical = htmlToLexical('<div><div><p>Hello</p><p>World</p></div></div>', options);
             assert.deepEqual(lexical, helloWorldDoc);
         });
 
         it('can convert <div><section><p>Hello</p></section><div><p>World</p></div></div>', function () {
-            const lexical = converter.htmlToLexical('<div><section><p>Hello</p></section><div><p>World</p></div></div>', editorConfig);
+            const lexical = htmlToLexical('<div><section><p>Hello</p></section><div><p>World</p></div></div>', options);
             assert.deepEqual(lexical, helloWorldDoc);
         });
 
         it('can convert <div><p>Hello</p><div><p>World</p></div></div>', function () {
-            const lexical = converter.htmlToLexical('<div><p>Hello</p><div><p>World</p></div></div>', editorConfig);
+            const lexical = htmlToLexical('<div><p>Hello</p><div><p>World</p></div></div>', options);
             assert.deepEqual(lexical, helloWorldDoc);
         });
 
         it('can convert with whitespace', function () {
-            const lexical = converter.htmlToLexical(`
+            const lexical = htmlToLexical(`
                 <div>
                     <p>Hello</p>
                     <div>
                         <p>World</p>
                     </div>
                 </div>
-            `, editorConfig);
+            `, options);
 
             assert.deepEqual(lexical, helloWorldDoc);
         });
 
         it('avoids invalid nesting of image nodes', function () {
-            const lexical = converter.htmlToLexical(`
+            const lexical = htmlToLexical(`
                 <p>Hello</p>
                 <p><img src="https://world.com" width="100" height="100"></p>
-            `, editorConfig);
+            `, options);
 
             assert.deepEqual(lexical, {
                 root: {
@@ -277,10 +321,10 @@ describe('HTMLtoLexical', function () {
 
         it('avoids invalid nesting of header nodes', function () {
             // Google Docs uses spans for headings
-            const lexical = converter.htmlToLexical(`
+            const lexical = htmlToLexical(`
                 <h1><span style="font-size: 26pt">Hello</span></h1>
                 <p><span style="font-size: 26pt">World</span></p>
-            `, editorConfig);
+            `, options);
 
             assert.deepEqual(lexical, {
                 root: {
@@ -336,7 +380,7 @@ describe('HTMLtoLexical', function () {
 
     describe('HTML nodes', function () {
         it('can convert headings', function () {
-            const lexical = converter.htmlToLexical('<h1>Hello World</h1>', editorConfig);
+            const lexical = htmlToLexical('<h1>Hello World</h1>', options);
 
             assert.ok(lexical.root);
             assert.equal(lexical.root.children.length, 1);
@@ -347,7 +391,7 @@ describe('HTMLtoLexical', function () {
         });
 
         it('can convert links', function () {
-            const lexical = converter.htmlToLexical('<a href="https://example.com">Hello World</a>', editorConfig);
+            const lexical = htmlToLexical('<a href="https://example.com">Hello World</a>', options);
 
             assert.ok(lexical.root);
             assert.equal(lexical.root.children.length, 1);
@@ -360,7 +404,7 @@ describe('HTMLtoLexical', function () {
         });
 
         it('can convert lists', function () {
-            const lexical = converter.htmlToLexical('<ul><li>Hello</li><li>World</li></ul>', editorConfig);
+            const lexical = htmlToLexical('<ul><li>Hello</li><li>World</li></ul>', options);
 
             assert.ok(lexical.root);
             assert.equal(lexical.root.children.length, 1);
@@ -376,7 +420,7 @@ describe('HTMLtoLexical', function () {
         });
 
         it('can convert list items with nested paragraph', function () {
-            const lexical = converter.htmlToLexical('<ul><li><p>Hello</p></li><li><p>World</p></li></ul>', editorConfig);
+            const lexical = htmlToLexical('<ul><li><p>Hello</p></li><li><p>World</p></li></ul>', options);
 
             assert.ok(lexical.root);
             assert.equal(lexical.root.children.length, 1);
@@ -392,7 +436,7 @@ describe('HTMLtoLexical', function () {
         });
 
         it('can convert blockquotes', function () {
-            const lexical = converter.htmlToLexical('<blockquote>Hello World</blockquote>', editorConfig);
+            const lexical = htmlToLexical('<blockquote>Hello World</blockquote>', options);
 
             assert.ok(lexical.root);
             assert.equal(lexical.root.children.length, 1);
@@ -402,7 +446,7 @@ describe('HTMLtoLexical', function () {
         });
 
         it('can convert blockquote with nested paragraph', function () {
-            const lexical = converter.htmlToLexical('<blockquote><p>Hello World</p></blockquote>', editorConfig);
+            const lexical = htmlToLexical('<blockquote><p>Hello World</p></blockquote>', options);
 
             assert.ok(lexical.root);
             assert.equal(lexical.root.children.length, 1);
@@ -412,7 +456,7 @@ describe('HTMLtoLexical', function () {
         });
 
         it('can convert blockquote with nested paragraphs (paragraphs separated by line breaks)', function () {
-            const lexical = converter.htmlToLexical('<blockquote><p>Hello</p><p>World</p></blockquote>', editorConfig);
+            const lexical = htmlToLexical('<blockquote><p>Hello</p><p>World</p></blockquote>', options);
 
             assert.ok(lexical.root);
             assert.equal(lexical.root.children.length, 1);
@@ -428,7 +472,7 @@ describe('HTMLtoLexical', function () {
     describe('Custom nodes', function () {
         it('can convert <hr> into a card', function () {
             // $insertNodes() doesn't work with just decorators, uses $appendNodes() instead
-            const lexical = converter.htmlToLexical('<hr>', editorConfig);
+            const lexical = htmlToLexical('<hr>', options);
 
             assert.ok(lexical.root);
             assert.equal(lexical.root.children.length, 1);
@@ -437,7 +481,7 @@ describe('HTMLtoLexical', function () {
 
         it('can convert multiple <hr> into cards', function () {
             // $insertNodes() doesn't work with just decorators, uses $appendNodes() instead
-            const lexical = converter.htmlToLexical('<hr><hr>', editorConfig);
+            const lexical = htmlToLexical('<hr><hr>', options);
 
             assert.ok(lexical.root);
             assert.equal(lexical.root.children.length, 2);
@@ -447,7 +491,7 @@ describe('HTMLtoLexical', function () {
 
         it('can convert <p>Hello World</p><hr> into cards', function () {
             // ensure decorators still get inserted OK after other nodes
-            const lexical = converter.htmlToLexical('<p>Hello World</p><hr>', editorConfig);
+            const lexical = htmlToLexical('<p>Hello World</p><hr>', options);
 
             assert.ok(lexical.root);
             assert.equal(lexical.root.children.length, 2);
@@ -459,7 +503,7 @@ describe('HTMLtoLexical', function () {
 
         it('can convert <hr><p>Hello World</p> into cards', function () {
             // ensure decorators still get inserted OK before other nodes
-            const lexical = converter.htmlToLexical('<hr><p>Hello World</p>', editorConfig);
+            const lexical = htmlToLexical('<hr><p>Hello World</p>', options);
 
             assert.ok(lexical.root);
             assert.equal(lexical.root.children.length, 2);
@@ -470,7 +514,7 @@ describe('HTMLtoLexical', function () {
         });
 
         it('can convert <img> into card', function () {
-            const lexical = converter.htmlToLexical('<img src="https://example.com">', editorConfig);
+            const lexical = htmlToLexical('<img src="https://example.com">', options);
 
             assert.ok(lexical.root);
             assert.equal(lexical.root.children.length, 1);
@@ -479,7 +523,7 @@ describe('HTMLtoLexical', function () {
         });
 
         it('can convert alternative quote styles', function () {
-            const lexical = converter.htmlToLexical('<blockquote class="kg-blockquote-alt">Hello World</blockquote>', editorConfig);
+            const lexical = htmlToLexical('<blockquote class="kg-blockquote-alt">Hello World</blockquote>', options);
 
             assert.ok(lexical.root);
             assert.equal(lexical.root.children.length, 1);
@@ -491,7 +535,7 @@ describe('HTMLtoLexical', function () {
 
     describe('Unknown elements', function () {
         it('handles aside elements', function () {
-            const lexical = converter.htmlToLexical('<aside>Hello World</aside>', editorConfig);
+            const lexical = htmlToLexical('<aside>Hello World</aside>', options);
 
             assert.ok(lexical.root);
             assert.equal(lexical.root.children.length, 1);
@@ -503,7 +547,7 @@ describe('HTMLtoLexical', function () {
 
     describe('HTML oddities', function () {
         it('handles plain text', function () {
-            const lexical = converter.htmlToLexical('Hello World', editorConfig);
+            const lexical = htmlToLexical('Hello World', options);
 
             assert.ok(lexical.root);
             assert.equal(lexical.root.children.length, 1);
@@ -513,7 +557,7 @@ describe('HTMLtoLexical', function () {
         });
 
         it('handles text with no wrapper element', function () {
-            const lexical = converter.htmlToLexical('<p>Paragraph</p>\nPlain text 1\n<h2>Title</h2>\nPlain text 2', editorConfig);
+            const lexical = htmlToLexical('<p>Paragraph</p>\nPlain text 1\n<h2>Title</h2>\nPlain text 2', options);
 
             assert.ok(lexical.root);
             assert.equal(lexical.root.children.length, 4);
@@ -536,7 +580,7 @@ describe('HTMLtoLexical', function () {
                     </li>
                 </ul>
             `;
-            const lexical = converter.htmlToLexical(html, editorConfig);
+            const lexical = htmlToLexical(html, options);
             assert.ok(lexical.root);
             assert.equal(lexical.root.children.length, 2);
             assert.equal(lexical.root.children[0].type, 'extended-heading');
@@ -554,7 +598,7 @@ describe('HTMLtoLexical', function () {
                     </li>
                 </ul>
             `;
-            const lexical = converter.htmlToLexical(html, editorConfig);
+            const lexical = htmlToLexical(html, options);
             assert.ok(lexical.root);
             assert.equal(lexical.root.children.length, 2);
             assert.equal(lexical.root.children[0].type, 'extended-heading');
@@ -576,7 +620,7 @@ describe('HTMLtoLexical', function () {
                     </li>
                 </ul>
             `;
-            const lexical = converter.htmlToLexical(html, editorConfig);
+            const lexical = htmlToLexical(html, options);
             assert.ok(lexical.root);
             assert.equal(lexical.root.children.length, 3);
             // empty list item is left after extracting invalid children
@@ -1128,8 +1172,8 @@ describe('HTMLtoLexical', function () {
             </div>
             `;
 
-            const lexical = converter.htmlToLexical(html, editorConfig);
-            const outputNodeTypes = lexical.root.children.map((child: LexicalNode) => child.type);
+            const lexical = htmlToLexical(html, options);
+            const outputNodeTypes = lexical.root.children.map((child: NodeJSON) => child.type);
             assert.equal(outputNodeTypes.length, 16);
             assert.deepEqual(outputNodeTypes, [
                 'image',
@@ -1156,7 +1200,7 @@ describe('HTMLtoLexical', function () {
         it('inside top-level text', function () {
             const html = `Before <br> After`;
 
-            const lexical = converter.htmlToLexical(html, editorConfig);
+            const lexical = htmlToLexical(html, options);
             assert.deepEqual(lexical, {
                 root: {
                     children: [
@@ -1204,7 +1248,7 @@ describe('HTMLtoLexical', function () {
         it('after div', function () {
             const html = `<p>Before <div></div> test <br> After break</p>`;
 
-            const lexical = converter.htmlToLexical(html, editorConfig);
+            const lexical = htmlToLexical(html, options);
             assert.deepEqual(lexical, {
                 root: {
                     children: [

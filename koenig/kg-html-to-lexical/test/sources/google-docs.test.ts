@@ -1,9 +1,11 @@
 import assert from 'assert/strict';
-const converter = require('../../');
+import * as converter from '../../src/index.js';
 
-const editorConfig = {
-    onError(e: Error) {
-        throw e;
+const options = {
+    editorConfig: {
+        onError(e: Error) {
+            throw e;
+        }
     }
 };
 
@@ -16,7 +18,7 @@ const wrapperMap = {
 
 // This function does not suppose to do anything, it's only used as a trigger
 // for auto-formatting and syntax highlighting in vscode.
-export function html(strings: TemplateStringsArray, ...params: any[]) {
+export function html(strings: TemplateStringsArray, ...params: unknown[]) {
     let output = '';
     for (let i = 0; i < strings.length; i++) {
         output += strings[i];
@@ -36,7 +38,7 @@ function googleHtml(input: string, type: keyof typeof wrapperMap): string {
 describe('HTMLtoLexical: Google Docs', function () {
     it('can convert plain text', function () {
         const input = googleHtml('<span style="font-size: 11pt; font-family: Arial, sans-serif; color: #000000; background-color: transparent; font-weight: 400; font-style: normal; font-variant: normal; text-decoration: none; vertical-align: baseline; white-space: pre; white-space: pre-wrap;">Plain</span>', 'normal');
-        const lexical = converter.htmlToLexical(input, editorConfig);
+        const lexical = converter.htmlToLexical(input, options);
 
         assert.deepEqual(lexical, {
             root: {
@@ -71,7 +73,7 @@ describe('HTMLtoLexical: Google Docs', function () {
 
     it('can convert bold', function () {
         const input = googleHtml('<span style="font-size: 11pt; font-family: Arial, sans-serif; color: #000000; background-color: transparent; font-weight: 700; font-style: normal; font-variant: normal; text-decoration: none; vertical-align: baseline; white-space: pre; white-space: pre-wrap;">Bold</span>', 'normal');
-        const lexical = converter.htmlToLexical(input, editorConfig);
+        const lexical = converter.htmlToLexical(input, options);
 
         assert.deepEqual(lexical, {
             root: {
@@ -106,7 +108,7 @@ describe('HTMLtoLexical: Google Docs', function () {
 
     it('can convert italic', function () {
         const input = googleHtml('<span style="font-size: 11pt; font-family: Arial, sans-serif; color: #000000; background-color: transparent; font-weight: 400; font-style: italic; font-variant: normal; text-decoration: none; vertical-align: baseline; white-space: pre; white-space: pre-wrap;">Italic</span>', 'normal');
-        const lexical = converter.htmlToLexical(input, editorConfig);
+        const lexical = converter.htmlToLexical(input, options);
 
         assert.deepEqual(lexical, {
             root: {
@@ -141,7 +143,7 @@ describe('HTMLtoLexical: Google Docs', function () {
 
     it('can convert bold+italic', function () {
         const input = googleHtml('<span style="font-size: 11pt; font-family: Arial, sans-serif; color: #000000; background-color: transparent; font-weight: 700; font-style: italic; font-variant: normal; text-decoration: none; vertical-align: baseline; white-space: pre; white-space: pre-wrap;">Bold+Italic</span>', 'normal');
-        const lexical = converter.htmlToLexical(input, editorConfig);
+        const lexical = converter.htmlToLexical(input, options);
 
         assert.deepEqual(lexical, {
             root: {
@@ -176,7 +178,7 @@ describe('HTMLtoLexical: Google Docs', function () {
 
     it('can convert underline', function () {
         const input = googleHtml('<span style="font-size: 11pt; font-family: Arial, sans-serif; color: #000000; background-color: transparent; font-weight: 400; font-style: normal; font-variant: normal; text-decoration: underline; -webkit-text-decoration-skip: none; text-decoration-skip-ink: none; vertical-align: baseline; white-space: pre; white-space: pre-wrap;">Underline</span>', 'normal');
-        const lexical = converter.htmlToLexical(input, editorConfig);
+        const lexical = converter.htmlToLexical(input, options);
 
         assert.deepEqual(lexical, {
             root: {
@@ -211,7 +213,7 @@ describe('HTMLtoLexical: Google Docs', function () {
 
     it('can convert italic+underline', function () {
         const input = googleHtml('<span style="font-size: 11pt; font-family: Arial, sans-serif; color: #000000; background-color: transparent; font-weight: 400; font-style: italic; font-variant: normal; text-decoration: underline; -webkit-text-decoration-skip: none; text-decoration-skip-ink: none; vertical-align: baseline; white-space: pre; white-space: pre-wrap;">Italic+Underline</span>', 'normal');
-        const lexical = converter.htmlToLexical(input, editorConfig);
+        const lexical = converter.htmlToLexical(input, options);
 
         assert.deepEqual(lexical, {
             root: {
@@ -268,7 +270,7 @@ describe('HTMLtoLexical: Google Docs', function () {
             </b>
         `;
 
-        const lexical = converter.htmlToLexical(input, editorConfig);
+        const lexical = converter.htmlToLexical(input, options);
 
         assert.deepEqual(lexical, {
             root: {

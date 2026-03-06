@@ -4,17 +4,25 @@
   "repository": "https://github.com/TryGhost/Koenig/tree/main/packages/kg-html-to-lexical",
   "author": "Ghost Foundation",
   "license": "MIT",
-  "main": "build/index.js",
-  "types": "build/index.d.ts",
+  "main": "build/cjs/index.js",
+  "module": "build/esm/index.js",
+  "types": "build/esm/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./build/esm/index.d.ts",
+      "import": "./build/esm/index.js",
+      "require": "./build/cjs/index.js"
+    }
+  },
   "scripts": {
     "dev": "tsc --watch --preserveWatchOutput --sourceMap",
-    "build": "tsc",
-    "prepare": "tsc",
-    "pretest": "tsc",
-    "test:unit": "NODE_ENV=testing c8 --src build --all --check-coverage --100 --reporter text --reporter cobertura mocha -r ts-node/register './test/**/*.test.ts'",
+    "build": "tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json",
+    "prepare": "tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json",
+    "pretest": "tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json && tsc -p tsconfig.test.json",
+    "test:unit": "NODE_ENV=testing c8 --src src --all --check-coverage --100 --reporter text --reporter cobertura tsx node_modules/.bin/mocha './test/**/*.test.ts'",
     "test": "yarn test:types && yarn test:unit",
     "test:types": "tsc --noEmit",
-    "lint": "eslint . --cache"
+    "lint": "eslint"
   },
   "files": [
     "build",
@@ -25,13 +33,15 @@
     "access": "public"
   },
   "devDependencies": {
+    "@eslint/js": "9.39.4",
     "@types/jsdom": "28.0.0",
     "@types/mocha": "10.0.10",
     "c8": "11.0.0",
     "mocha": "11.7.5",
     "sinon": "21.0.2",
-    "ts-node": "10.9.2",
-    "typescript": "5.9.3"
+    "tsx": "4.19.4",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.56.1"
   },
   "dependencies": {
     "@lexical/clipboard": "0.13.1",
