@@ -34,8 +34,7 @@ class OutboxServiceWrapper {
         this.processing = true;
 
         try {
-            const statusMessage = await processOutbox();
-            logging.info(statusMessage);
+            await processOutbox();
         } catch (e) {
             logging.error({
                 system: {
