@@ -56,37 +56,36 @@ async function processEntry({db, entry}) {
     let payload;
     try {
         payload = JSON.parse(entry.payload);
-    } catch (err) {
-        const errorMessage = err?.message ?? 'Unknown error';
-        await updateFailedEntry({db, entryId: entry.id, retryCount: entry.retry_count, errorMessage});
-        logging.error({
-            system: {
-                event: 'outbox.entry.payload_parse_failed',
-                entry_id: entry.id
-            },
-            err
-        }, `${handler.LOG_KEY} Failed to parse payload for entry ${entry.id}`);
-        return {success: false};
-    }
-
-    try {
         await handler.handle({payload});
     } catch (err) {
         const errorMessage = err?.message ?? 'Unknown error';
         await updateFailedEntry({db, entryId: entry.id, retryCount: entry.retry_count, errorMessage});
-        logging.error({
-            system: {
-                event: 'outbox.entry.send_failed',
-                entry_id: entry.id
-            },
-            err
-        }, `${handler.LOG_KEY} Failed to send to ${handler.getLogInfo(payload)}`);
+
+        if (!payload) {
+            logging.error({
+                system: {
+                    event: 'outbox.entry.payload_parse_failed',
+                    entry_id: entry.id
+                },
+                err
+            }, `${handler.LOG_KEY} Failed to parse payload for entry ${entry.id}: ${errorMessage}`);
+        } else {
+            logging.error({
+                system: {
+                    event: 'outbox.entry.send_failed',
+                    entry_id: entry.id
+                },
+                err
+            }, `${handler.LOG_KEY} Failed to send to ${handler.getLogInfo(payload)}: ${errorMessage}`);
+        }
+
         return {success: false};
     }
 
     try {
         await deleteProcessedEntry({db, entryId: entry.id});
     } catch (err) {
+        const cleanupError = err?.message ?? 'Unknown error';
         await markEntryCompleted({db, entryId: entry.id});
         logging.error({
             system: {
@@ -94,7 +93,7 @@ async function processEntry({db, entry}) {
                 entry_id: entry.id
             },
             err
-        }, `${handler.LOG_KEY} Sent to ${handler.getLogInfo(payload)} but failed to delete outbox entry ${entry.id}`);
+        }, `${handler.LOG_KEY} Sent to ${handler.getLogInfo(payload)} but failed to delete outbox entry ${entry.id}: ${cleanupError}`);
     }
 
     return {success: true};
