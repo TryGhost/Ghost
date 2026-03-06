@@ -182,4 +182,105 @@ describe('lib/image: image size cache', function () {
 
         assert.equal(result, null);
     });
+
+    it('should fetch and cache CDN image dimensions', async function () {
+        const url = 'https://storage.ghost.is/c/6f/a3/site/content/images/2026/02/photo.jpg';
+
+        sizeOfStub.resolves({
+            width: 1600,
+            height: 900,
+            type: 'jpg'
+        });
+
+        const cacheStore = new InMemoryCache();
+        const cachedImageSizeFromUrl = new CachedImageSizeFromUrl({
+            getImageSizeFromUrl: sizeOfStub,
+            cache: cacheStore
+        });
+
+        const result = await cachedImageSizeFromUrl.getCachedImageSizeFromUrl(url);
+
+        assert.equal(result.width, 1600);
+        assert.equal(result.height, 900);
+        assertExists(cacheStore.get(url));
+        assert.equal(cacheStore.get(url).width, 1600);
+
+        const secondResult = await cachedImageSizeFromUrl.getCachedImageSizeFromUrl(url);
+        assert.equal(secondResult.width, 1600);
+        sinon.assert.calledOnce(sizeOfStub);
+    });
+
+    it('should cache CDN image 404 permanently', async function () {
+        const url = 'https://storage.ghost.is/c/6f/a3/site/content/images/2026/02/missing.jpg';
+
+        sizeOfStub.rejects(new errors.NotFoundError('image not found'));
+
+        const cacheStore = new InMemoryCache();
+        const cachedImageSizeFromUrl = new CachedImageSizeFromUrl({
+            getImageSizeFromUrl: sizeOfStub,
+            cache: cacheStore
+        });
+
+        const result = await cachedImageSizeFromUrl.getCachedImageSizeFromUrl(url);
+        assert.equal(result, null);
+
+        const cached = cacheStore.get(url);
+        assertExists(cached);
+        assert.equal(cached.notFound, true);
+
+        const secondResult = await cachedImageSizeFromUrl.getCachedImageSizeFromUrl(url);
+        assert.equal(secondResult, null);
+        sinon.assert.calledOnce(sizeOfStub);
+    });
+
+    it('should not cache CDN transient errors, allowing retry', async function () {
+        const url = 'https://storage.ghost.is/c/6f/a3/site/content/images/2026/02/flaky.jpg';
+
+        sizeOfStub.rejects('timeout');
+
+        const cacheStore = new InMemoryCache();
+        const cachedImageSizeFromUrl = new CachedImageSizeFromUrl({
+            getImageSizeFromUrl: sizeOfStub,
+            cache: cacheStore
+        });
+
+        const loggingStub = sinon.stub(logging, 'error');
+        const result = await cachedImageSizeFromUrl.getCachedImageSizeFromUrl(url);
+
+        assert.equal(result, null);
+        assert.equal(cacheStore.get(url), undefined);
+
+        sizeOfStub.resolves({width: 800, height: 600, type: 'jpg'});
+        const secondResult = await cachedImageSizeFromUrl.getCachedImageSizeFromUrl(url);
+
+        assert.equal(secondResult.width, 800);
+        assert.equal(secondResult.height, 600);
+        sinon.assert.calledTwice(sizeOfStub);
+        loggingStub.restore();
+    });
+
+    it('should use full CDN URL as cache key', async function () {
+        const cdnUrl = 'https://storage.ghost.is/c/6f/a3/site/content/images/2026/02/photo.jpg';
+        const localUrl = 'http://mysite.com/content/images/2026/02/photo.jpg';
+
+        sizeOfStub.callsFake((url) => {
+            if (url === cdnUrl) {
+                return Promise.resolve({width: 1600, height: 900, type: 'jpg'});
+            }
+            return Promise.resolve({width: 800, height: 600, type: 'jpg'});
+        });
+
+        const cacheStore = new InMemoryCache();
+        const cachedImageSizeFromUrl = new CachedImageSizeFromUrl({
+            getImageSizeFromUrl: sizeOfStub,
+            cache: cacheStore
+        });
+
+        const cdnResult = await cachedImageSizeFromUrl.getCachedImageSizeFromUrl(cdnUrl);
+        const localResult = await cachedImageSizeFromUrl.getCachedImageSizeFromUrl(localUrl);
+
+        assert.equal(cdnResult.width, 1600);
+        assert.equal(localResult.width, 800);
+        sinon.assert.calledTwice(sizeOfStub);
+    });
 });
