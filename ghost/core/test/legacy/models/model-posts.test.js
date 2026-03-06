@@ -1,7 +1,6 @@
 const assert = require('node:assert/strict');
-const {assertExists} = require('../../utils/assertions');
+const {assertExists, assertObjectMatches} = require('../../utils/assertions');
 const errors = require('@tryghost/errors');
-const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../utils');
 const moment = require('moment');
@@ -773,7 +772,7 @@ describe('Post Model', function () {
                     assert(publishedPost.get('published_at') instanceof Date);
                     assert.equal(publishedPost.get('published_by'), testUtils.DataGenerator.Content.users[0].id);
                     assert(publishedPost.get('updated_at') instanceof Date);
-                    publishedPost.get('updated_at').should.not.equal(createdPostUpdatedDate);
+                    assert.notEqual(publishedPost.get('updated_at'), createdPostUpdatedDate);
 
                     assert.equal(Object.keys(eventsTriggered).length, 4);
                     assertExists(eventsTriggered['post.published']);
@@ -814,7 +813,7 @@ describe('Post Model', function () {
                     assert.equal(createdPost.get('html'), newPostDB.html);
                     assert.equal(createdPost.has('plaintext'), true);
                     assert.match(createdPost.get('plaintext'), /^testing/);
-                    // createdPost.get('slug').should.equal(newPostDB.slug + '-3');
+                    // assert.equal(createdPost.get('slug'), newPostDB.slug + '-3');
                     assert.equal((!!createdPost.get('featured')), false);
                     assert.equal((!!createdPost.get('page')), false);
 
@@ -842,7 +841,7 @@ describe('Post Model', function () {
                     assert(publishedPost.get('published_at') instanceof Date);
                     assert.equal(publishedPost.get('published_by'), testUtils.DataGenerator.Content.users[0].id);
                     assert(publishedPost.get('updated_at') instanceof Date);
-                    publishedPost.get('updated_at').should.not.equal(createdPostUpdatedDate);
+                    assert.notEqual(publishedPost.get('updated_at'), createdPostUpdatedDate);
 
                     assert.equal(Object.keys(eventsTriggered).length, 4);
                     assertExists(eventsTriggered['post.published']);
@@ -901,9 +900,9 @@ describe('Post Model', function () {
                     }]
                 }, _.merge({withRelated: ['authors']}, context)).then(function (newPost) {
                     assertExists(newPost);
-                    newPost.toJSON().primary_author.id.should.eql(testUtils.DataGenerator.forKnex.users[0].id);
+                    assert.equal(newPost.toJSON().primary_author.id, testUtils.DataGenerator.forKnex.users[0].id);
                     assert.equal(newPost.toJSON().authors.length, 1);
-                    newPost.toJSON().authors[0].id.should.eql(testUtils.DataGenerator.forKnex.users[0].id);
+                    assert.equal(newPost.toJSON().authors[0].id, testUtils.DataGenerator.forKnex.users[0].id);
                     done();
                 }).catch(done);
             });
@@ -1105,9 +1104,9 @@ describe('Post Model', function () {
                         }, context);
                     }).then(function (updatedSecondPost) {
                     // Should have updated from original
-                        updatedSecondPost.get('slug').should.not.equal(secondPost.slug);
+                        assert.notEqual(updatedSecondPost.get('slug'), secondPost.slug);
                         // Should not have a conflicted slug from the first
-                        updatedSecondPost.get('slug').should.not.equal(firstPost.slug);
+                        assert.notEqual(updatedSecondPost.get('slug'), firstPost.slug);
 
                         assert.equal(Object.keys(eventsTriggered).length, 3);
                         assertExists(eventsTriggered['post.edited']);
@@ -1118,9 +1117,9 @@ describe('Post Model', function () {
                         });
                     }).then(function (foundPost) {
                     // Should have updated from original
-                        foundPost.get('slug').should.not.equal(secondPost.slug);
+                        assert.notEqual(foundPost.get('slug'), secondPost.slug);
                         // Should not have a conflicted slug from the first
-                        foundPost.get('slug').should.not.equal(firstPost.slug);
+                        assert.notEqual(foundPost.get('slug'), firstPost.slug);
 
                         done();
                     }).catch(done);
@@ -1505,7 +1504,7 @@ describe('Post Model', function () {
                     // Double check we can't find any related tags
                     return ghostBookshelf.knex.select().table('posts_tags').where('post_id', firstItemData.id);
                 }).then(function (postsTags) {
-                    postsTags.should.be.empty();
+                    assert.deepEqual(postsTags, []);
 
                     done();
                 }).catch(done);
@@ -1545,7 +1544,7 @@ describe('Post Model', function () {
                     // Double check we can't find any related tags
                     return ghostBookshelf.knex.select().table('posts_tags').where('post_id', firstItemData.id);
                 }).then(function (postsTags) {
-                    postsTags.should.be.empty();
+                    assert.deepEqual(postsTags, []);
 
                     done();
                 }).catch(done);
@@ -1584,7 +1583,7 @@ describe('Post Model', function () {
                     // Double check we can't find any related tags
                     return ghostBookshelf.knex.select().table('posts_tags').where('post_id', firstItemData.id);
                 }).then(function (postsTags) {
-                    postsTags.should.be.empty();
+                    assert.deepEqual(postsTags, []);
 
                     done();
                 }).catch(done);
@@ -1620,7 +1619,7 @@ describe('Post Model', function () {
                     // Double check we can't find any related tags
                     return ghostBookshelf.knex.select().table('posts_tags').where('post_id', firstItemData.id);
                 }).then(function (postsTags) {
-                    postsTags.should.be.empty();
+                    assert.deepEqual(postsTags, []);
 
                     done();
                 }).catch(done);
@@ -2011,7 +2010,8 @@ describe('Post Model', function () {
         it('should create the test data correctly', function (done) {
             // creates a test tag
             assertExists(tagJSON);
-            tagJSON.should.be.an.Array().with.lengthOf(3);
+            assert(Array.isArray(tagJSON));
+            assert.equal(tagJSON.length, 3);
 
             assert.equal(tagJSON[0].name, 'existing tag a');
             assert.equal(tagJSON[1].name, 'existing-tag-b');
@@ -2020,8 +2020,8 @@ describe('Post Model', function () {
             // creates a test post with an array of tags in the correct order
             assertExists(postJSON);
             assert.equal(postJSON.title, 'HTML Ipsum');
-            assertExists(postJSON.tags);
-            postJSON.tags.should.be.an.Array().and.have.lengthOf(3);
+            assert(Array.isArray(postJSON.tags));
+            assert.equal(postJSON.tags.length, 3);
 
             assert.equal(postJSON.tags[0].name, 'tag1');
             assert.equal(postJSON.tags[1].name, 'tag2');
@@ -2041,9 +2041,9 @@ describe('Post Model', function () {
                 updatedPost = updatedPost.toJSON({withRelated: ['tags']});
 
                 assert.equal(updatedPost.tags.length, 1);
-                updatedPost.tags[0].name.should.eql(postJSON.tags[0].name);
+                assert.equal(updatedPost.tags[0].name, postJSON.tags[0].name);
                 assert.equal(updatedPost.tags[0].slug, 'eins');
-                updatedPost.tags[0].id.should.eql(postJSON.tags[0].id);
+                assert.equal(updatedPost.tags[0].id, postJSON.tags[0].id);
             });
         });
 
@@ -2072,19 +2072,19 @@ describe('Post Model', function () {
                     updatedPost = updatedPost.toJSON({withRelated: ['tags']});
 
                     assert.equal(updatedPost.tags.length, 1);
-                    updatedPost.tags[0].should.have.properties({
+                    assertObjectMatches(updatedPost.tags[0], {
                         name: postJSON.tags[0].name,
                         slug: postJSON.tags[0].slug,
                         id: postJSON.tags[0].id
                     });
 
                     updatedAtFormat = moment(updatedPost.tags[0].updated_at).format('YYYY-MM-DD HH:mm:ss');
-                    updatedAtFormat.should.eql(moment(postJSON.tags[0].updated_at).format('YYYY-MM-DD HH:mm:ss'));
-                    updatedAtFormat.should.not.eql(moment(newJSON.tags[0].updated_at).format('YYYY-MM-DD HH:mm:ss'));
+                    assert.equal(updatedAtFormat, moment(postJSON.tags[0].updated_at).format('YYYY-MM-DD HH:mm:ss'));
+                    assert.notEqual(updatedAtFormat, moment(newJSON.tags[0].updated_at).format('YYYY-MM-DD HH:mm:ss'));
 
                     createdAtFormat = moment(updatedPost.tags[0].created_at).format('YYYY-MM-DD HH:mm:ss');
-                    createdAtFormat.should.eql(moment(postJSON.tags[0].created_at).format('YYYY-MM-DD HH:mm:ss'));
-                    createdAtFormat.should.not.eql(moment(newJSON.tags[0].created_at).format('YYYY-MM-DD HH:mm:ss'));
+                    assert.equal(createdAtFormat, moment(postJSON.tags[0].created_at).format('YYYY-MM-DD HH:mm:ss'));
+                    assert.notEqual(createdAtFormat, moment(newJSON.tags[0].created_at).format('YYYY-MM-DD HH:mm:ss'));
                 });
         });
 
@@ -2102,16 +2102,16 @@ describe('Post Model', function () {
                 updatedPost = updatedPost.toJSON({withRelated: ['tags']});
 
                 assert.equal(updatedPost.tags.length, 3);
-                updatedPost.tags[0].should.have.properties({
+                assertObjectMatches(updatedPost.tags[0], {
                     name: 'tag4'
                 });
 
-                updatedPost.tags[1].should.have.properties({
+                assertObjectMatches(updatedPost.tags[1], {
                     name: 'tag3',
                     id: postJSON.tags[2].id
                 });
 
-                updatedPost.tags[2].should.have.properties({
+                assertObjectMatches(updatedPost.tags[2], {
                     name: 'tag1',
                     id: postJSON.tags[0].id
                 });
@@ -2133,9 +2133,9 @@ describe('Post Model', function () {
 
                 assert.equal(updatedPost.tags.length, 3);
 
-                updatedPost.tags[0].should.have.properties({name: 'C', slug: 'c'});
-                updatedPost.tags[1].should.have.properties({name: 'C++', slug: 'c-2'});
-                updatedPost.tags[2].should.have.properties({name: 'C#', slug: 'c-3'});
+                assertObjectMatches(updatedPost.tags[0], {name: 'C', slug: 'c'});
+                assertObjectMatches(updatedPost.tags[1], {name: 'C++', slug: 'c-2'});
+                assertObjectMatches(updatedPost.tags[2], {name: 'C#', slug: 'c-3'});
             });
         });
 
@@ -2161,7 +2161,7 @@ describe('Post Model', function () {
     //    new models.Post().fetch().then(function (model) {
     //        return model.set({'title': "</title></head><body><script>alert('blogtitle');</script>"}).save();
     //    }).then(function (saved) {
-    //        saved.get('title').should.eql("&lt;/title&gt;&lt;/head>&lt;body&gt;[removed]alert&#40;'blogtitle'&#41;;[removed]");
+    //        assert.equal(saved.get('title'), "&lt;/title&gt;&lt;/head>&lt;body&gt;[removed]alert&#40;'blogtitle'&#41;;[removed]");
     //        done();
     //    }).catch(done);
     // });

@@ -408,8 +408,6 @@ class StaffServiceEmails {
                 offAmount = `${this.getFormattedAmount({currency: offer.currency, amount})} off`;
             } else if (offer.type === 'trial') {
                 offAmount = `${offer.amount} days free`;
-            } else if (offer.type === 'free_months') {
-                offAmount = `${offer.amount === 1 ? '1 month' : `${offer.amount} months`} free`;
             }
 
             return {

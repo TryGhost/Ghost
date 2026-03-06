@@ -33,7 +33,7 @@ describe('Admin API Middleware', function () {
                 const tokenPermissionCheck = middleware.authAdminApi[middleware.authAdminApi.length - 1];
                 tokenPermissionCheck(req, res, next);
 
-                assert.equal(next.calledOnce, true);
+                sinon.assert.calledOnce(next);
                 assert.equal(next.firstCall.args.length, 0);
             });
         });
@@ -54,7 +54,7 @@ describe('Admin API Middleware', function () {
                 const tokenPermissionCheck = middleware.authAdminApi[middleware.authAdminApi.length - 1];
                 tokenPermissionCheck(req, res, next);
 
-                assert.equal(next.calledOnce, true);
+                sinon.assert.calledOnce(next);
                 assert.equal(next.firstCall.args.length, 0);
             });
 
@@ -65,7 +65,7 @@ describe('Admin API Middleware', function () {
                 const tokenPermissionCheck = middleware.authAdminApi[middleware.authAdminApi.length - 1];
                 tokenPermissionCheck(req, res, next);
 
-                assert.equal(next.calledOnce, true);
+                sinon.assert.calledOnce(next);
                 const error = next.firstCall.args[0];
                 assert.equal(error instanceof errors.NoPermissionError, true);
                 assert.equal(error.message, 'Staff tokens are not allowed to access this endpoint');
@@ -78,7 +78,7 @@ describe('Admin API Middleware', function () {
                 const tokenPermissionCheck = middleware.authAdminApi[middleware.authAdminApi.length - 1];
                 tokenPermissionCheck(req, res, next);
 
-                assert.equal(next.calledOnce, true);
+                sinon.assert.calledOnce(next);
                 const error = next.firstCall.args[0];
                 assert.equal(error instanceof errors.NoPermissionError, true);
                 assert.equal(error.message, 'Staff tokens are not allowed to access this endpoint');
@@ -91,7 +91,7 @@ describe('Admin API Middleware', function () {
                 const tokenPermissionCheck = middleware.authAdminApi[middleware.authAdminApi.length - 1];
                 tokenPermissionCheck(req, res, next);
 
-                assert.equal(next.calledOnce, true);
+                sinon.assert.calledOnce(next);
                 assert.equal(next.firstCall.args.length, 0);
             });
 
@@ -102,7 +102,7 @@ describe('Admin API Middleware', function () {
                 const tokenPermissionCheck = middleware.authAdminApi[middleware.authAdminApi.length - 1];
                 tokenPermissionCheck(req, res, next);
 
-                assert.equal(next.calledOnce, true);
+                sinon.assert.calledOnce(next);
                 assert.equal(next.firstCall.args.length, 0);
             });
 
@@ -113,7 +113,7 @@ describe('Admin API Middleware', function () {
                 const notImplemented = middleware.authAdminApi[middleware.authAdminApi.length - 1];
                 notImplemented(req, res, next);
 
-                assert.equal(next.calledOnce, true);
+                sinon.assert.calledOnce(next);
                 assert.equal(next.firstCall.args.length, 0);
             });
 
@@ -124,7 +124,7 @@ describe('Admin API Middleware', function () {
                 const tokenPermissionCheck = middleware.authAdminApi[middleware.authAdminApi.length - 1];
                 tokenPermissionCheck(req, res, next);
 
-                assert.equal(next.calledOnce, true);
+                sinon.assert.calledOnce(next);
                 const error = next.firstCall.args[0];
                 assert.equal(error instanceof errors.NoPermissionError, true);
                 assert.equal(error.message, 'Staff tokens are not allowed to access this endpoint');
@@ -137,7 +137,7 @@ describe('Admin API Middleware', function () {
                 const tokenPermissionCheck = middleware.authAdminApi[middleware.authAdminApi.length - 1];
                 tokenPermissionCheck(req, res, next);
 
-                assert.equal(next.calledOnce, true);
+                sinon.assert.calledOnce(next);
                 const error = next.firstCall.args[0];
                 assert.equal(error instanceof errors.NoPermissionError, true);
                 assert.equal(error.message, 'Staff tokens are not allowed to access this endpoint');
@@ -160,7 +160,7 @@ describe('Admin API Middleware', function () {
                 const notImplemented = middleware.authAdminApi[middleware.authAdminApi.length - 1];
                 notImplemented(req, res, next);
 
-                assert.equal(next.calledOnce, true);
+                sinon.assert.calledOnce(next);
                 assert.equal(next.firstCall.args.length, 0);
             });
 
@@ -171,7 +171,7 @@ describe('Admin API Middleware', function () {
                 const tokenPermissionCheck = middleware.authAdminApi[middleware.authAdminApi.length - 1];
                 tokenPermissionCheck(req, res, next);
 
-                assert.equal(next.calledOnce, true);
+                sinon.assert.calledOnce(next);
                 const error = next.firstCall.args[0];
                 assert.equal(error instanceof errors.NoPermissionError, true);
                 assert.equal(error.statusCode, 403);
@@ -184,7 +184,7 @@ describe('Admin API Middleware', function () {
                 const tokenPermissionCheck = middleware.authAdminApi[middleware.authAdminApi.length - 1];
                 tokenPermissionCheck(req, res, next);
 
-                assert.equal(next.calledOnce, true);
+                sinon.assert.calledOnce(next);
                 assert.equal(next.firstCall.args.length, 0);
             });
 
@@ -195,7 +195,7 @@ describe('Admin API Middleware', function () {
                 const tokenPermissionCheck = middleware.authAdminApi[middleware.authAdminApi.length - 1];
                 tokenPermissionCheck(req, res, next);
 
-                assert.equal(next.calledOnce, true);
+                sinon.assert.calledOnce(next);
                 const error = next.firstCall.args[0];
                 assert.equal(error instanceof errors.NoPermissionError, true);
                 assert.equal(error.statusCode, 403);
@@ -217,7 +217,7 @@ describe('Admin API Middleware', function () {
                 const tokenPermissionCheck = middleware.authAdminApi[middleware.authAdminApi.length - 1];
                 tokenPermissionCheck(req, res, next);
 
-                assert.equal(next.calledOnce, true);
+                sinon.assert.calledOnce(next);
                 assert.equal(next.firstCall.args.length, 0);
 
                 process.env.NODE_ENV = originalEnv;
@@ -237,7 +237,7 @@ describe('Admin API Middleware', function () {
                 const tokenPermissionCheck = middleware.authAdminApi[middleware.authAdminApi.length - 1];
                 tokenPermissionCheck(req, res, next);
 
-                assert.equal(next.calledOnce, true);
+                sinon.assert.calledOnce(next);
                 const error = next.firstCall.args[0];
                 assert.equal(error instanceof errors.NoPermissionError, true);
 

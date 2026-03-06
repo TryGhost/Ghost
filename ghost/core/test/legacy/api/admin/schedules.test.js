@@ -1,7 +1,6 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../utils/assertions');
 const _ = require('lodash');
-const should = require('should');
 const supertest = require('supertest');
 const sinon = require('sinon');
 const moment = require('moment-timezone');
@@ -110,7 +109,7 @@ describe('Schedules API', function () {
             assertExists(res.headers['x-cache-invalidate']);
             const jsonResponse = res.body;
             assertExists(jsonResponse);
-            jsonResponse.posts[0].id.should.eql(resources[0].id);
+            assert.equal(jsonResponse.posts[0].id, resources[0].id);
             assert.equal(jsonResponse.posts[0].status, 'published');
         });
 
@@ -124,7 +123,7 @@ describe('Schedules API', function () {
             assertExists(res.headers['x-cache-invalidate']);
             const jsonResponse = res.body;
             assertExists(jsonResponse);
-            jsonResponse.pages[0].id.should.eql(resources[4].id);
+            assert.equal(jsonResponse.pages[0].id, resources[4].id);
             assert.equal(jsonResponse.pages[0].status, 'published');
         });
 

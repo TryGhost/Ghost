@@ -10,6 +10,8 @@ const emberDataTypeMapping = {
     CommentsResponseType: null, // comments only exist in React admin
     IntegrationsResponseType: {type: 'integration'},
     InvitesResponseType: {type: 'invite'},
+    LabelsResponseType: null, // labels only exist in React admin
+    MembersResponseType: null, // members only exist in React admin
     OffersResponseType: {type: 'offer'},
     NewslettersResponseType: {type: 'newsletter'},
     RecommendationResponseType: {type: 'recommendation'},

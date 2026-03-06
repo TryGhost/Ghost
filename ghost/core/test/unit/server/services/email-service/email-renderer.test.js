@@ -1,6 +1,5 @@
-require('should');
 const EmailRenderer = require('../../../../../core/server/services/email-service/email-renderer');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
 const cheerio = require('cheerio');
 const {createModel, createModelClass} = require('./utils');
@@ -413,7 +412,7 @@ describe('Email renderer', function () {
             });
 
             // Verify crypto.randomUUID was never called since uniqueid wasn't used
-            assert.equal(randomUUIDSpy.callCount, 0);
+            sinon.assert.notCalled(randomUUIDSpy);
 
             randomUUIDSpy.restore();
         });
@@ -1399,20 +1398,11 @@ describe('Email renderer', function () {
             // Unsubscribe button included
             assert(response.plaintext.includes('Unsubscribe [%%{unsubscribe_url}%%]'));
             assert(response.html.includes('Unsubscribe'));
-            assert.equal(response.replacements.length, 4);
-            response.replacements.should.match([
-                {
-                    id: 'uuid'
-                },
-                {
-                    id: 'key'
-                },
-                {
-                    id: 'unsubscribe_url'
-                },
-                {
-                    id: 'list_unsubscribe'
-                }
+            assert.deepEqual(response.replacements.map(r => r.id), [
+                'uuid',
+                'key',
+                'unsubscribe_url',
+                'list_unsubscribe'
             ]);
 
             assert(response.plaintext.includes('http://example.com'));
@@ -1765,11 +1755,11 @@ describe('Email renderer', function () {
             // Check uuid in replacements
             assert.equal(response.replacements.length, 4);
             assert.equal(response.replacements[0].id, 'uuid');
-            response.replacements[0].token.should.eql(/%%\{uuid\}%%/g);
+            assert.deepEqual(response.replacements[0].token, /%%\{uuid\}%%/g);
             assert.equal(response.replacements[1].id, 'key');
-            response.replacements[1].token.should.eql(/%%\{key\}%%/g);
+            assert.deepEqual(response.replacements[1].token, /%%\{key\}%%/g);
             assert.equal(response.replacements[2].id, 'unsubscribe_url');
-            response.replacements[2].token.should.eql(/%%\{unsubscribe_url\}%%/g);
+            assert.deepEqual(response.replacements[2].token, /%%\{unsubscribe_url\}%%/g);
             assert.equal(response.replacements[3].id, 'list_unsubscribe');
         });
 
@@ -1875,11 +1865,11 @@ describe('Email renderer', function () {
             // Check uuid in replacements
             assert.equal(response.replacements.length, 4);
             assert.equal(response.replacements[0].id, 'uuid');
-            response.replacements[0].token.should.eql(/%%\{uuid\}%%/g);
+            assert.deepEqual(response.replacements[0].token, /%%\{uuid\}%%/g);
             assert.equal(response.replacements[1].id, 'key');
-            response.replacements[1].token.should.eql(/%%\{key\}%%/g);
+            assert.deepEqual(response.replacements[1].token, /%%\{key\}%%/g);
             assert.equal(response.replacements[2].id, 'unsubscribe_url');
-            response.replacements[2].token.should.eql(/%%\{unsubscribe_url\}%%/g);
+            assert.deepEqual(response.replacements[2].token, /%%\{unsubscribe_url\}%%/g);
             assert.equal(response.replacements[3].id, 'list_unsubscribe');
         });
 
@@ -1907,7 +1897,7 @@ describe('Email renderer', function () {
             );
 
             // Verify tracking was called for the Transistor link
-            assert.equal(addTrackingToUrlStub.called, true);
+            sinon.assert.called(addTrackingToUrlStub);
             const transistorCall = addTrackingToUrlStub.getCalls().find(
                 call => call.args[0].href.includes('transistor.fm')
             );
@@ -2007,20 +1997,11 @@ describe('Email renderer', function () {
 
             assert(response.html.includes('Unsubscribe'));
             assert(response.html.includes('http://example.com'));
-            assert.equal(response.replacements.length, 4);
-            response.replacements.should.match([
-                {
-                    id: 'uuid'
-                },
-                {
-                    id: 'key'
-                },
-                {
-                    id: 'unsubscribe_url'
-                },
-                {
-                    id: 'list_unsubscribe'
-                }
+            assert.deepEqual(response.replacements.map(r => r.id), [
+                'uuid',
+                'key',
+                'unsubscribe_url',
+                'list_unsubscribe'
             ]);
             assert(!response.html.includes('members only section'));
             assert(response.html.includes('some text for both'));
@@ -2989,6 +2970,7 @@ describe('Email renderer', function () {
 
     describe('limitImageWidth', function () {
         it('Limits width of local images', async function () {
+            const isLocal = url => url === 'http://your-blog.com/content/images/2017/01/02/example.png';
             const emailRenderer = new EmailRenderer({
                 imageSize: {
                     getCachedImageSizeFromUrl() {
@@ -2999,9 +2981,8 @@ describe('Email renderer', function () {
                     }
                 },
                 storageUtils: {
-                    isLocalImage(url) {
-                        return url === 'http://your-blog.com/content/images/2017/01/02/example.png';
-                    }
+                    isLocalImage: isLocal,
+                    isInternalImage: isLocal
                 }
             });
             const response = await emailRenderer.limitImageWidth('http://your-blog.com/content/images/2017/01/02/example.png');
@@ -3011,6 +2992,7 @@ describe('Email renderer', function () {
         });
 
         it('Limits width and height of local images', async function () {
+            const isLocal = url => url === 'http://your-blog.com/content/images/2017/01/02/example.png';
             const emailRenderer = new EmailRenderer({
                 imageSize: {
                     getCachedImageSizeFromUrl() {
@@ -3021,9 +3003,8 @@ describe('Email renderer', function () {
                     }
                 },
                 storageUtils: {
-                    isLocalImage(url) {
-                        return url === 'http://your-blog.com/content/images/2017/01/02/example.png';
-                    }
+                    isLocalImage: isLocal,
+                    isInternalImage: isLocal
                 }
             });
             const response = await emailRenderer.limitImageWidth('http://your-blog.com/content/images/2017/01/02/example.png', 600, 600);
@@ -3032,7 +3013,85 @@ describe('Email renderer', function () {
             assert.equal(response.href, 'http://your-blog.com/content/images/size/w1200h1200/2017/01/02/example.png');
         });
 
+        it('Limits width of CDN content images', async function () {
+            const emailRenderer = new EmailRenderer({
+                imageSize: {
+                    getCachedImageSizeFromUrl() {
+                        return {
+                            width: 2000,
+                            height: 1000
+                        };
+                    }
+                },
+                storageUtils: {
+                    isLocalImage() {
+                        return false;
+                    },
+                    isInternalImage(url) {
+                        return url.startsWith('https://storage.ghost.is/c/6f/a3/test/content/images/');
+                    }
+                }
+            });
+            const response = await emailRenderer.limitImageWidth('https://storage.ghost.is/c/6f/a3/test/content/images/2026/02/example.png');
+            assert.equal(response.width, 600);
+            assert.equal(response.height, 300);
+            assert.equal(response.href, 'https://storage.ghost.is/c/6f/a3/test/content/images/size/w1200/2026/02/example.png');
+        });
+
+        it('Does not rewrite external content/images URLs', async function () {
+            const emailRenderer = new EmailRenderer({
+                imageSize: {
+                    getCachedImageSizeFromUrl() {
+                        return {
+                            width: 2000,
+                            height: 1000
+                        };
+                    }
+                },
+                storageUtils: {
+                    isLocalImage() {
+                        return false;
+                    },
+                    isInternalImage() {
+                        return false;
+                    }
+                }
+            });
+
+            const response = await emailRenderer.limitImageWidth('https://example.com/content/images/example.png');
+            assert.equal(response.width, 600);
+            assert.equal(response.height, 300);
+            assert.equal(response.href, 'https://example.com/content/images/example.png');
+        });
+
+        it('Does not double-rewrite already-sized CDN image URLs', async function () {
+            const emailRenderer = new EmailRenderer({
+                imageSize: {
+                    getCachedImageSizeFromUrl() {
+                        return {
+                            width: 2000,
+                            height: 1000
+                        };
+                    }
+                },
+                storageUtils: {
+                    isLocalImage() {
+                        return false;
+                    },
+                    isInternalImage(url) {
+                        return url.startsWith('https://storage.ghost.is/c/6f/a3/test/content/images/');
+                    }
+                }
+            });
+
+            const response = await emailRenderer.limitImageWidth('https://storage.ghost.is/c/6f/a3/test/content/images/size/w600/2026/02/example.png');
+            assert.equal(response.width, 600);
+            assert.equal(response.height, 300);
+            assert.equal(response.href, 'https://storage.ghost.is/c/6f/a3/test/content/images/size/w600/2026/02/example.png');
+        });
+
         it('Returns default dimensions when getCachedImageSizeFromUrl returns null', async function () {
+            const isLocal = url => url === 'http://your-blog.com/content/images/2017/01/02/example.png';
             const emailRenderer = new EmailRenderer({
                 imageSize: {
                     getCachedImageSizeFromUrl() {
@@ -3040,9 +3099,8 @@ describe('Email renderer', function () {
                     }
                 },
                 storageUtils: {
-                    isLocalImage(url) {
-                        return url === 'http://your-blog.com/content/images/2017/01/02/example.png';
-                    }
+                    isLocalImage: isLocal,
+                    isInternalImage: isLocal
                 }
             });
             const response = await emailRenderer.limitImageWidth('http://your-blog.com/content/images/2017/01/02/example.png');
@@ -3061,8 +3119,11 @@ describe('Email renderer', function () {
                     }
                 },
                 storageUtils: {
-                    isLocalImage(url) {
-                        return url === 'http://your-blog.com/content/images/2017/01/02/example.png';
+                    isLocalImage() {
+                        return false;
+                    },
+                    isInternalImage() {
+                        return false;
                     }
                 }
             });
@@ -3083,8 +3144,11 @@ describe('Email renderer', function () {
                     }
                 },
                 storageUtils: {
-                    isLocalImage(url) {
-                        return url === 'http://your-blog.com/content/images/2017/01/02/example.png';
+                    isLocalImage() {
+                        return false;
+                    },
+                    isInternalImage() {
+                        return false;
                     }
                 }
             });
@@ -3104,8 +3168,11 @@ describe('Email renderer', function () {
                     }
                 },
                 storageUtils: {
-                    isLocalImage(url) {
-                        return url === 'http://your-blog.com/content/images/2017/01/02/example.png';
+                    isLocalImage() {
+                        return false;
+                    },
+                    isInternalImage() {
+                        return false;
                     }
                 }
             });
@@ -3129,6 +3196,9 @@ describe('Email renderer', function () {
                 imageSize: cachedImageSize,
                 storageUtils: {
                     isLocalImage() {
+                        return false;
+                    },
+                    isInternalImage() {
                         return false;
                     }
                 }
@@ -3154,6 +3224,9 @@ describe('Email renderer', function () {
                 imageSize: cachedImageSize,
                 storageUtils: {
                     isLocalImage() {
+                        return false;
+                    },
+                    isInternalImage() {
                         return false;
                     }
                 }
@@ -3187,6 +3260,9 @@ describe('Email renderer', function () {
                 storageUtils: {
                     isLocalImage() {
                         return false;
+                    },
+                    isInternalImage() {
+                        return false;
                     }
                 }
             });
@@ -3215,6 +3291,9 @@ describe('Email renderer', function () {
                 imageSize: cachedImageSize,
                 storageUtils: {
                     isLocalImage() {
+                        return false;
+                    },
+                    isInternalImage() {
                         return false;
                     }
                 }

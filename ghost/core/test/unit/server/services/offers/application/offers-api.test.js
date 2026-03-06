@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const ObjectID = require('bson-objectid').default;
 const OffersAPI = require('../../../../../../core/server/services/offers/application/offers-api');
 
@@ -15,6 +15,7 @@ function createMockRepository(overrides = {}) {
             return cb(mockTransaction);
         }),
         getByStripeCouponId: sinon.stub().resolves(null),
+        getRedeemedOfferIdsForSubscriptions: sinon.stub().resolves([]),
         existsByCode: sinon.stub().resolves(false),
         existsByName: sinon.stub().resolves(false),
         save: sinon.stub().resolves(),
@@ -160,7 +161,7 @@ describe('OffersAPI', function () {
             });
 
             // Verify getAll was called with status:active filter
-            assert(repository.getAll.calledOnce);
+            sinon.assert.calledOnce(repository.getAll);
             assert.equal(repository.getAll.firstCall.args[0].filter, 'status:active');
 
             // Only active offer returned
@@ -296,6 +297,44 @@ describe('OffersAPI', function () {
         });
     });
 
+    describe('#getRedeemedOfferIdsForSubscriptions', function () {
+        it('returns redemptions for multiple subscriptions', async function () {
+            const redemptions = [
+                {subscription_id: 'sub_1', offer_id: 'offer-a'},
+                {subscription_id: 'sub_2', offer_id: 'offer-b'},
+                {subscription_id: 'sub_2', offer_id: 'offer-c'}
+            ];
+            const repository = createMockRepository({
+                getRedeemedOfferIdsForSubscriptions: sinon.stub().resolves(redemptions)
+            });
+
+            const api = new OffersAPI(/** @type {OfferBookshelfRepository} */ (/** @type {unknown} */ (repository)));
+
+            const result = await api.getRedeemedOfferIdsForSubscriptions({
+                subscriptionIds: ['sub_1', 'sub_2']
+            });
+
+            assert.deepEqual(result, redemptions);
+            sinon.assert.calledOnce(repository.getRedeemedOfferIdsForSubscriptions);
+        });
+
+        it('returns empty array for empty input', async function () {
+            const repository = createMockRepository({
+                getRedeemedOfferIdsForSubscriptions: sinon.stub().resolves([])
+            });
+
+            const api = new OffersAPI(/** @type {OfferBookshelfRepository} */ (/** @type {unknown} */ (repository)));
+
+            const result = await api.getRedeemedOfferIdsForSubscriptions({
+                subscriptionIds: []
+            });
+
+            assert.deepEqual(result, []);
+            // Should short-circuit without hitting the repository
+            sinon.assert.notCalled(repository.getRedeemedOfferIdsForSubscriptions);
+        });
+    });
+
     describe('#ensureOfferForStripeCoupon', function () {
         it('returns existing offer if found by stripe coupon id', async function () {
             const existingOffer = createMockOffer('existing-offer-id');
@@ -310,7 +349,7 @@ describe('OffersAPI', function () {
             const result = await api.ensureOfferForStripeCoupon(coupon, 'month', tier);
 
             assert.equal(result.id, 'existing-offer-id');
-            assert.equal(repository.save.called, false);
+            sinon.assert.notCalled(repository.save);
         });
 
         it('creates new offer if none exists for stripe coupon id', async function () {
@@ -327,7 +366,7 @@ describe('OffersAPI', function () {
 
             const result = await api.ensureOfferForStripeCoupon(coupon, 'month', tier);
 
-            assert.equal(repository.save.calledOnce, true);
+            sinon.assert.calledOnce(repository.save);
             assert.ok(result.id);
             assert.equal(result.code, coupon.id);
         });
@@ -357,8 +396,8 @@ describe('OffersAPI', function () {
             const result = await api.ensureOfferForStripeCoupon(coupon, 'month', tier);
 
             assert.equal(result.id, 'race-winner-offer-id');
-            assert.equal(getByStripeCouponIdStub.calledTwice, true);
-            assert.equal(repository.save.calledOnce, true);
+            sinon.assert.calledTwice(getByStripeCouponIdStub);
+            sinon.assert.calledOnce(repository.save);
         });
 
         it('handles race condition with SQLITE_CONSTRAINT by returning existing offer', async function () {
@@ -385,7 +424,7 @@ describe('OffersAPI', function () {
             const result = await api.ensureOfferForStripeCoupon(coupon, 'month', tier);
 
             assert.equal(result.id, 'race-winner-offer-id');
-            assert.equal(getByStripeCouponIdStub.calledTwice, true);
+            sinon.assert.calledTwice(getByStripeCouponIdStub);
         });
 
         it('throws readable error when duplicate entry occurs but offer not found', async function () {
@@ -420,7 +459,7 @@ describe('OffersAPI', function () {
                 assert.match(err.message, /coupon_missing/);
 
                 // Should have checked twice for the offer
-                assert.equal(getByStripeCouponIdStub.calledTwice, true);
+                sinon.assert.calledTwice(getByStripeCouponIdStub);
             }
         });
 
@@ -445,7 +484,7 @@ describe('OffersAPI', function () {
             }
 
             // Should not retry lookup on non-duplicate errors
-            assert.equal(repository.getByStripeCouponId.calledOnce, true);
+            sinon.assert.calledOnce(repository.getByStripeCouponId);
         });
 
         it('reuses existing transaction if provided in options', async function () {
@@ -463,7 +502,7 @@ describe('OffersAPI', function () {
             await api.ensureOfferForStripeCoupon(coupon, 'month', tier, {transacting: existingTransaction});
 
             // Should not create a new transaction
-            assert.equal(repository.createTransaction.called, false);
+            sinon.assert.notCalled(repository.createTransaction);
             // Should use the provided transaction
             const callOptions = repository.getByStripeCouponId.firstCall.args[1];
             assert.equal(callOptions.transacting, existingTransaction);
@@ -483,7 +522,7 @@ describe('OffersAPI', function () {
             await api.ensureOfferForStripeCoupon(coupon, 'month', tier);
 
             // Should create a new transaction
-            assert.equal(repository.createTransaction.calledOnce, true);
+            sinon.assert.calledOnce(repository.createTransaction);
         });
     });
 });

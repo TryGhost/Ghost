@@ -1,5 +1,4 @@
-const assert = require('assert/strict');
-require('should');
+const assert = require('node:assert/strict');
 const ObjectId = require('bson-objectid').default;
 const {
     agentProvider,
@@ -1338,12 +1337,14 @@ describe(`Admin Comments API`, function () {
             await dbFns.addComment({
                 post_id: fixtureManager.get('posts', 0).id,
                 member_id: fixtureManager.get('members', 0).id,
-                html: '<p>Comment on post 1</p>'
+                html: '<p>Comment on post 1</p>',
+                created_at: new Date('2025-01-01T00:00:00.000Z')
             });
             await dbFns.addComment({
                 post_id: fixtureManager.get('posts', 1).id,
                 member_id: fixtureManager.get('members', 0).id,
-                html: '<p>Comment on post 2</p>'
+                html: '<p>Comment on post 2</p>',
+                created_at: new Date('2024-01-01T00:00:00.000Z')
             });
 
             await adminApi.get('/comments/')
@@ -1675,14 +1676,16 @@ describe(`Admin Comments API`, function () {
                 html: '<p>Reported comment</p>'
             });
 
-            // Add reports from different members
+            // Add reports from different members with explicit timestamps to ensure deterministic ordering
             await models.CommentReport.add({
                 comment_id: comment.id,
-                member_id: fixtureManager.get('members', 1).id
+                member_id: fixtureManager.get('members', 1).id,
+                created_at: new Date('2023-06-01')
             });
             await models.CommentReport.add({
                 comment_id: comment.id,
-                member_id: fixtureManager.get('members', 2).id
+                member_id: fixtureManager.get('members', 2).id,
+                created_at: new Date('2023-01-01')
             });
 
             await adminApi.get(`/comments/${comment.id}/reports/`)
@@ -1798,14 +1801,16 @@ describe(`Admin Comments API`, function () {
                 html: '<p>Liked comment</p>'
             });
 
-            // Add likes from different members
+            // Add likes from different members with explicit timestamps to ensure deterministic ordering
             await models.CommentLike.add({
                 comment_id: comment.id,
-                member_id: fixtureManager.get('members', 1).id
+                member_id: fixtureManager.get('members', 1).id,
+                created_at: new Date('2023-06-01')
             });
             await models.CommentLike.add({
                 comment_id: comment.id,
-                member_id: fixtureManager.get('members', 2).id
+                member_id: fixtureManager.get('members', 2).id,
+                created_at: new Date('2023-01-01')
             });
 
             await adminApi.get(`/comments/${comment.id}/likes/`)

@@ -52,13 +52,17 @@ const features: Feature[] = [{
     description: 'Enable Transistor podcast integration',
     flag: 'transistor'
 }, {
-    title: 'Inbox Links',
-    description: 'Enable mail app links on signup/signin',
-    flag: 'inboxlinks'
-}, {
     title: 'Retention Offers',
     description: 'Enable retention offers for canceling members',
     flag: 'retentionOffers'
+}, {
+    title: 'Members Forward',
+    description: 'Use the new React-based members list instead of the Ember implementation',
+    flag: 'membersForward'
+}, {
+    title: 'Welcome Emails Design Customization',
+    description: 'Enable design customization options for welcome emails',
+    flag: 'welcomeEmailsDesignCustomization'
 }];
 
 const AlphaFeatures: React.FC = () => {

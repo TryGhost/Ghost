@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const serializers = require('../../../../../../../core/server/api/endpoints/utils/serializers');
 
 describe('Unit: endpoints/utils/serializers/input/members', function () {

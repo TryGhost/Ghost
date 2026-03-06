@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 
 const SubscriptionEventService = require('../../../../../../../core/server/services/stripe/services/webhook/subscription-event-service');
 
@@ -110,6 +110,6 @@ describe('SubscriptionEventService', function () {
 
         await service.handleSubscriptionEvent(subscription);
 
-        assert(memberRepository.linkSubscription.calledWith({id: 'member_123', subscription}));
+        sinon.assert.calledWith(memberRepository.linkSubscription, {id: 'member_123', subscription});
     });
 });

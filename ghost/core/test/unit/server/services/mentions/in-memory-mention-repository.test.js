@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const ObjectID = require('bson-objectid').default;
 const InMemoryMentionRepository = require('../../../../../core/server/services/mentions/in-memory-mention-repository');
 const Mention = require('../../../../../core/server/services/mentions/mention');

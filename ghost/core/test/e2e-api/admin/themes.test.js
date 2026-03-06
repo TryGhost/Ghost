@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../utils/assertions');
-const should = require('should');
 const sinon = require('sinon');
 const path = require('path');
 const fs = require('fs');
@@ -56,32 +55,44 @@ describe('Themes API', function () {
 
         localUtils.API.checkResponse(jsonResponse.themes[0], 'theme');
         assert.equal(jsonResponse.themes[0].name, 'broken-theme');
-        jsonResponse.themes[0].package.should.be.an.Object().with.properties('name', 'version');
+        assert(jsonResponse.themes[0].package && typeof jsonResponse.themes[0].package === 'object');
+        assert('name' in jsonResponse.themes[0].package);
+        assert('version' in jsonResponse.themes[0].package);
         assert.equal(jsonResponse.themes[0].active, false);
 
         localUtils.API.checkResponse(jsonResponse.themes[1], 'theme');
         assert.equal(jsonResponse.themes[1].name, 'casper');
-        jsonResponse.themes[1].package.should.be.an.Object().with.properties('name', 'version');
+        assert(jsonResponse.themes[1].package && typeof jsonResponse.themes[1].package === 'object');
+        assert('name' in jsonResponse.themes[1].package);
+        assert('version' in jsonResponse.themes[1].package);
         assert.equal(jsonResponse.themes[1].active, false);
 
         localUtils.API.checkResponse(jsonResponse.themes[2], 'theme');
         assert.equal(jsonResponse.themes[2].name, 'locale-theme');
-        jsonResponse.themes[2].package.should.be.an.Object().with.properties('name', 'version');
+        assert(jsonResponse.themes[2].package && typeof jsonResponse.themes[2].package === 'object');
+        assert('name' in jsonResponse.themes[2].package);
+        assert('version' in jsonResponse.themes[2].package);
         assert.equal(jsonResponse.themes[2].active, false);
 
         localUtils.API.checkResponse(jsonResponse.themes[3], 'theme');
         assert.equal(jsonResponse.themes[3].name, 'members-test-theme');
-        jsonResponse.themes[3].package.should.be.an.Object().with.properties('name', 'version');
+        assert(jsonResponse.themes[3].package && typeof jsonResponse.themes[3].package === 'object');
+        assert('name' in jsonResponse.themes[3].package);
+        assert('version' in jsonResponse.themes[3].package);
         assert.equal(jsonResponse.themes[3].active, false);
 
         localUtils.API.checkResponse(jsonResponse.themes[4], 'theme', 'templates');
         assert.equal(jsonResponse.themes[4].name, 'source');
-        jsonResponse.themes[4].package.should.be.an.Object().with.properties('name', 'version');
+        assert(jsonResponse.themes[4].package && typeof jsonResponse.themes[4].package === 'object');
+        assert('name' in jsonResponse.themes[4].package);
+        assert('version' in jsonResponse.themes[4].package);
         assert.equal(jsonResponse.themes[4].active, true);
 
         localUtils.API.checkResponse(jsonResponse.themes[5], 'theme');
         assert.equal(jsonResponse.themes[5].name, 'test-theme');
-        jsonResponse.themes[5].package.should.be.an.Object().with.properties('name', 'version');
+        assert(jsonResponse.themes[5].package && typeof jsonResponse.themes[5].package === 'object');
+        assert('name' in jsonResponse.themes[5].package);
+        assert('version' in jsonResponse.themes[5].package);
         assert.equal(jsonResponse.themes[5].active, false);
 
         localUtils.API.checkResponse(jsonResponse.themes[6], 'theme');
@@ -173,8 +184,8 @@ describe('Themes API', function () {
             .del(localUtils.API.getApiQuery('themes/valid'))
             .set('Origin', config.get('url'))
             .expect(204)
-            .expect((_res) => {
-                _res.body.should.be.empty();
+            .expect((res) => {
+                assert.deepEqual(res.body, {});
             });
 
         // ensure tmp theme folder contains one theme again now
@@ -184,8 +195,6 @@ describe('Themes API', function () {
                 tmpFolderContents.splice(i, 1);
             }
         }
-        tmpFolderContents.should.be.an.Array().with.lengthOf(12);
-
         assert.deepEqual(tmpFolderContents, [
             'broken-theme',
             'casper',
@@ -234,7 +243,7 @@ describe('Themes API', function () {
         localUtils.API.checkResponse(jsonResponse.themes[0], 'theme', ['warnings']);
         assert.equal(jsonResponse.themes[0].name, 'warnings');
         assert.equal(jsonResponse.themes[0].active, false);
-        jsonResponse.themes[0].warnings.should.be.an.Array();
+        assert(Array.isArray(jsonResponse.themes[0].warnings));
 
         // Delete the theme to clean up after the test
         await ownerRequest
@@ -285,7 +294,7 @@ describe('Themes API', function () {
         assertExists(testTheme2);
         localUtils.API.checkResponse(testTheme2, 'theme', ['warnings', 'templates']);
         assert.equal(testTheme2.active, true);
-        testTheme2.warnings.should.be.an.Array();
+        assert(Array.isArray(testTheme2.warnings));
 
         // Result should be the same
         const activeThemeResult = await ownerRequest
@@ -293,7 +302,7 @@ describe('Themes API', function () {
             .set('Origin', config.get('url'))
             .expect(200);
 
-        res2.body.should.eql(activeThemeResult.body);
+        assert.deepEqual(res2.body, activeThemeResult.body);
     });
 
     it('Can download and install a theme from GitHub', async function () {
@@ -323,7 +332,7 @@ describe('Themes API', function () {
         localUtils.API.checkResponse(jsonResponse.themes[0], 'theme', ['warnings']);
         assert.equal(jsonResponse.themes[0].name, 'test');
         assert.equal(jsonResponse.themes[0].active, false);
-        jsonResponse.themes[0].warnings.should.be.an.Array();
+        assert(Array.isArray(jsonResponse.themes[0].warnings));
 
         // Delete the theme to clean up after the test
         await ownerRequest
@@ -366,7 +375,7 @@ describe('Themes API', function () {
         localUtils.API.checkResponse(jsonResponse.themes[0], 'theme', ['warnings']);
         assert.equal(jsonResponse.themes[0].name, 'starter');
         assert.equal(jsonResponse.themes[0].active, false);
-        jsonResponse.themes[0].warnings.should.be.an.Array();
+        assert(Array.isArray(jsonResponse.themes[0].warnings));
 
         // Delete the theme to clean up after the test
         await ownerRequest

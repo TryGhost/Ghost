@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const supertest = require('supertest');
 const testUtils = require('../../../utils');
 const localUtils = require('./utils');
@@ -114,7 +113,8 @@ describe('api/endpoints/content/pages', function () {
             .then((res) => {
                 const jsonResponse = res.body;
 
-                jsonResponse.pages.should.be.an.Array().with.lengthOf(1);
+                assert(Array.isArray(jsonResponse.pages));
+                assert.equal(jsonResponse.pages.length, 1);
                 assert.equal(jsonResponse.pages[0].slug, 'static-page-test');
             });
     });

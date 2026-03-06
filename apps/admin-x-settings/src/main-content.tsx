@@ -9,12 +9,14 @@ import {toast} from 'react-hot-toast';
 import {useGlobalData} from './components/providers/global-data-provider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
+const EMPTY_KEYWORDS: string[] = [];
+
 const Page: React.FC<{children: ReactNode}> = ({children}) => {
     return <>
         <div className='fixed right-0 top-2 z-50 flex justify-end bg-transparent p-8 tablet:fixed tablet:top-0 tablet:px-8' id="done-button-container">
             <ExitSettingsButton />
         </div>
-        <div className="w-full tablet:fixed tablet:left-0 tablet:top-0 tablet:flex tablet:h-full dark:bg-grey-975" id="admin-x-settings-content">
+        <div className="fixed left-0 top-0 flex h-full w-full dark:bg-grey-975" id="admin-x-settings-content">
             {children}
         </div>
     </>;
@@ -65,9 +67,11 @@ const MainContent: React.FC = () => {
     if (isEditorUser(currentUser)) {
         return (
             <Page>
-                <div className='mx-auto w-full max-w-5xl overflow-y-auto px-[5vmin] tablet:mt-16 xl:mt-10' id="admin-x-settings-scroller">
-                    <Heading className='mb-[5vmin]'>Settings</Heading>
-                    <Users highlight={false} keywords={[]} />
+                <div className='flex-1 overflow-y-auto bg-white dark:bg-grey-975' id="admin-x-settings-scroller">
+                    <div className='mx-auto max-w-5xl px-[5vmin] tablet:mt-16 xl:mt-10'>
+                        <Heading className='mb-[5vmin]'>Settings</Heading>
+                        <Users highlight={false} keywords={EMPTY_KEYWORDS} />
+                    </div>
                 </div>
             </Page>
         );

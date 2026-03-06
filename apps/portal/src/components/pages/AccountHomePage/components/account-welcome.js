@@ -45,6 +45,7 @@ const AccountWelcome = () => {
                 </div>
             );
         }
+
         return (
             <div className='gh-portal-section'>
                 <p className='gh-portal-text-center gh-portal-free-ctatext'>{t(`Your subscription will renew on {renewalDate}`, {renewalDate: getDateString(currentPeriodEnd)})}</p>

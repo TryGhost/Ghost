@@ -143,6 +143,7 @@ export function getDiscountData({
     start = '2025-01-01T00:00:00.000Z',
     end = null,
     duration = 'forever',
+    durationInMonths = null,
     type = 'percent',
     amount = 20
 } = {}) {
@@ -151,6 +152,7 @@ export function getDiscountData({
         start,
         end,
         duration,
+        ...(duration === 'repeating' ? {duration_in_months: durationInMonths ?? 1} : {}),
         type,
         amount
     };

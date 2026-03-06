@@ -3,6 +3,7 @@ const hbs = require('../engine');
 const urlUtils = require('../../../../shared/url-utils');
 const customThemeSettingsCache = require('../../../../shared/custom-theme-settings-cache');
 const preview = require('../preview');
+const config = require('../../../../shared/config');
 
 function updateLocalTemplateOptions(req, res, next) {
     const localTemplateOptions = hbs.getLocalTemplateOptions(res.locals);
@@ -37,11 +38,14 @@ function updateLocalTemplateOptions(req, res, next) {
         status: req.member.status
     } : null;
 
+    const enableDeduplication = config.get('optimization:getHelper:deduplication');
+
     hbs.updateLocalTemplateOptions(res.locals, _.merge({}, localTemplateOptions, {
         data: {
             member: member,
             site: siteData,
-            custom: customData
+            custom: customData,
+            ...(enableDeduplication && {_queryCache: new Map()})
         }
     }));
 

@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
-const should = require('should');
 const sinon = require('sinon');
 const express = require('../../../../../core/shared/express')._express;
 const events = require('../../../../../core/server/lib/common/events');
@@ -48,27 +47,27 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             assert.deepEqual(collectionRouter.templates, []);
             assert.equal(collectionRouter.getPermalinks().getValue(), '/:slug/');
 
-            assert.equal(routerCreatedSpy.calledOnce, true);
-            assert.equal(routerCreatedSpy.calledWith(collectionRouter), true);
+            sinon.assert.calledOnce(routerCreatedSpy);
+            sinon.assert.calledWith(routerCreatedSpy, collectionRouter);
 
-            assert.equal(mountRouteSpy.callCount, 3);
-            assert.equal(express.Router.param.callCount, 2);
+            sinon.assert.calledThrice(mountRouteSpy);
+            sinon.assert.calledTwice(express.Router.param);
 
             // parent route
             assert.equal(mountRouteSpy.args[0][0], '/');
-            mountRouteSpy.args[0][1].should.eql(controllers.collection);
+            assert.equal(mountRouteSpy.args[0][1], controllers.collection);
 
             // pagination feature
             assert.equal(mountRouteSpy.args[1][0], '/page/:page(\\d+)');
-            mountRouteSpy.args[1][1].should.eql(controllers.collection);
+            assert.equal(mountRouteSpy.args[1][1], controllers.collection);
 
             // permalinks
             assert.equal(mountRouteSpy.args[2][0], '/:slug/:options(edit)?/');
-            mountRouteSpy.args[2][1].should.eql(controllers.entry);
+            assert.equal(mountRouteSpy.args[2][1], controllers.entry);
 
-            assert.equal(mountRouterSpy.callCount, 1);
+            sinon.assert.calledOnce(mountRouterSpy);
             assert.equal(mountRouterSpy.args[0][0], '/');
-            mountRouterSpy.args[0][1].should.eql(collectionRouter.rssRouter.router());
+            assert.equal(mountRouterSpy.args[0][1], collectionRouter.rssRouter.router());
         });
 
         it('router name', function () {
@@ -95,26 +94,26 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             assert.deepEqual(collectionRouter.templates, []);
             assert.equal(collectionRouter.getPermalinks().getValue(), '/blog/:year/:slug/');
 
-            assert.equal(routerCreatedSpy.calledOnce, true);
-            assert.equal(routerCreatedSpy.calledWith(collectionRouter), true);
+            sinon.assert.calledOnce(routerCreatedSpy);
+            sinon.assert.calledWith(routerCreatedSpy, collectionRouter);
 
-            assert.equal(mountRouteSpy.callCount, 3);
+            sinon.assert.calledThrice(mountRouteSpy);
 
             // parent route
             assert.equal(mountRouteSpy.args[0][0], '/blog/');
-            mountRouteSpy.args[0][1].should.eql(controllers.collection);
+            assert.equal(mountRouteSpy.args[0][1], controllers.collection);
 
             // pagination feature
             assert.equal(mountRouteSpy.args[1][0], '/blog/page/:page(\\d+)');
-            mountRouteSpy.args[1][1].should.eql(controllers.collection);
+            assert.equal(mountRouteSpy.args[1][1], controllers.collection);
 
             // permalinks
             assert.equal(mountRouteSpy.args[2][0], '/blog/:year/:slug/:options(edit)?/');
-            mountRouteSpy.args[2][1].should.eql(controllers.entry);
+            assert.equal(mountRouteSpy.args[2][1], controllers.entry);
 
-            assert.equal(mountRouterSpy.callCount, 1);
+            sinon.assert.calledOnce(mountRouterSpy);
             assert.equal(mountRouterSpy.args[0][0], '/blog/');
-            mountRouterSpy.args[0][1].should.eql(collectionRouter.rssRouter.router());
+            assert.equal(mountRouterSpy.args[0][1], collectionRouter.rssRouter.router());
         });
 
         it('with custom filter', function () {
@@ -137,7 +136,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
 
             collectionRouter._prepareEntriesContext(req, res, next);
 
-            assert.equal(next.calledOnce, true);
+            sinon.assert.calledOnce(next);
             assert.deepEqual(res.routerOptions, {
                 type: 'collection',
                 filter: undefined,
@@ -165,7 +164,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
 
             collectionRouter._prepareEntriesContext(req, res, next);
 
-            assert.equal(next.calledOnce, true);
+            sinon.assert.calledOnce(next);
             assert.deepEqual(res.routerOptions, {
                 type: 'collection',
                 filter: undefined,

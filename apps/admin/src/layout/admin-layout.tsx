@@ -23,7 +23,9 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     if (isContributor) {
         return (
             <div className="relative h-full bg-background">
-                <main className="h-full overflow-auto">{children}</main>
+                <main className="flex h-full flex-col overflow-y-auto">
+                    <div className="flex-1">{children}</div>
+                </main>
                 <div className="fixed bottom-3.5 left-3.5 lg:bottom-8 lg:left-8 z-20">
                     <ContributorUserMenu />
                 </div>
@@ -34,7 +36,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     return (
         <SidebarProvider open={!!currentUser && sidebarVisible}>
             <AppSidebar />
-            <SidebarInset className="bg-background overflow-y-scroll max-h-[calc(100%-var(--mobile-navbar-height))] sidebar:max-h-full">
+            <SidebarInset className={`bg-background overflow-y-auto sidebar:max-h-full ${sidebarVisible ? 'max-h-[calc(100%-var(--mobile-navbar-height))]' : 'max-h-full'}`}>
                 <main className="flex-1">{children}</main>
                 <MobileNavBar />
             </SidebarInset>

@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../utils/assertions');
-const should = require('should');
 const getPaginatedUrl = require('../../../../core/frontend/meta/paginated-url');
 const configUtils = require('../../../utils/config-utils');
 

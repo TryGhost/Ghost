@@ -159,7 +159,15 @@ function compareSemver(a, b) {
 }
 
 function getChangedFiles(baseSha, compareSha) {
-    return runGit(['diff', '--name-only', baseSha, compareSha, '--', ...MONITORED_APP_PATHS])
+    let mergeBaseSha;
+
+    try {
+        mergeBaseSha = runGit(['merge-base', baseSha, compareSha]);
+    } catch (error) {
+        throw new Error(`Unable to determine merge-base for ${baseSha} and ${compareSha}. Ensure the base branch history is available in the checkout.\n${error.message}`);
+    }
+
+    return runGit(['diff', '--name-only', mergeBaseSha, compareSha, '--', ...MONITORED_APP_PATHS])
         .split('\n')
         .map(file => file.trim())
         .filter(Boolean);

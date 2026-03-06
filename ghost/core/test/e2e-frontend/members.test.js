@@ -1,9 +1,9 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const {assertExists} = require('../utils/assertions');
-const should = require('should');
 const sinon = require('sinon');
 const supertest = require('supertest');
 const moment = require('moment');
+const jwt = require('jsonwebtoken');
 const testUtils = require('../utils');
 const configUtils = require('../utils/config-utils');
 const config = require('../../core/shared/config');
@@ -112,6 +112,27 @@ describe('Front-end members behavior', function () {
         it('should return no content for invalid token passed in session', async function () {
             await request.get('/members/api/session')
                 .expect(204);
+        });
+
+        it('should return no content for invalid token passed in entitlements', async function () {
+            await request.get('/members/api/entitlements')
+                .expect(204);
+        });
+
+        it('returns an entitlement token for a valid member session', async function () {
+            const member = await loginAsMember('member1@test.com');
+
+            const res = await request.get('/members/api/entitlements')
+                .expect(200);
+
+            const decodedToken = jwt.decode(res.text);
+
+            assert.equal(decodedToken.sub, 'member1@test.com');
+            assert.equal(decodedToken.scope, 'members:entitlements:read');
+            assert.equal(decodedToken.member_uuid, member.get('uuid'));
+            assert.equal(decodedToken.paid, member.get('status') !== 'free');
+            assert(Array.isArray(decodedToken.active_tier_ids));
+            assert.equal(decodedToken.exp - decodedToken.iat, 300);
         });
 
         it('should return no content when removing member sessions', async function () {
@@ -232,19 +253,19 @@ describe('Front-end members behavior', function () {
                 const getJsonResponse = getRes.body;
 
                 assertExists(getJsonResponse);
-                getJsonResponse.should.have.properties(['email', 'uuid', 'status', 'name', 'newsletters']);
+                assert('email' in getJsonResponse);
+                assert('uuid' in getJsonResponse);
+                assert('status' in getJsonResponse);
+                assert('name' in getJsonResponse);
+                assert('newsletters' in getJsonResponse);
                 assert(!('id' in getJsonResponse));
                 assert.equal(getJsonResponse.newsletters.length, 1);
 
                 // NOTE: these should be snapshots not code
-                assert.equal(Object.keys(getJsonResponse.newsletters[0]).length, 5);
-                getJsonResponse.newsletters[0].should.have.properties([
-                    'id',
-                    'uuid',
-                    'name',
-                    'description',
-                    'sort_order'
-                ]);
+                assert.deepEqual(
+                    new Set(Object.keys(getJsonResponse.newsletters[0])),
+                    new Set(['id', 'uuid', 'name', 'description', 'sort_order'])
+                );
 
                 // Can update newsletter subscription
                 const originalNewsletters = getJsonResponse.newsletters;
@@ -259,7 +280,11 @@ describe('Front-end members behavior', function () {
                 const jsonResponse = res.body;
 
                 assertExists(jsonResponse);
-                jsonResponse.should.have.properties(['email', 'uuid', 'status', 'name', 'newsletters']);
+                assert('email' in jsonResponse);
+                assert('uuid' in jsonResponse);
+                assert('status' in jsonResponse);
+                assert('name' in jsonResponse);
+                assert('newsletters' in jsonResponse);
                 assert(!('id' in jsonResponse));
                 assert.equal(jsonResponse.newsletters.length, 0);
 
@@ -271,18 +296,18 @@ describe('Front-end members behavior', function () {
 
                 const restoreJsonResponse = resRestored.body;
                 assertExists(restoreJsonResponse);
-                restoreJsonResponse.should.have.properties(['email', 'uuid', 'status', 'name', 'newsletters']);
+                assert('email' in restoreJsonResponse);
+                assert('uuid' in restoreJsonResponse);
+                assert('status' in restoreJsonResponse);
+                assert('name' in restoreJsonResponse);
+                assert('newsletters' in restoreJsonResponse);
                 assert(!('id' in restoreJsonResponse));
                 assert.equal(restoreJsonResponse.newsletters.length, 1);
                 // @NOTE: this seems like too much exposed information, needs a review
-                assert.equal(Object.keys(restoreJsonResponse.newsletters[0]).length, 5);
-                restoreJsonResponse.newsletters[0].should.have.properties([
-                    'id',
-                    'uuid',
-                    'name',
-                    'description',
-                    'sort_order'
-                ]);
+                assert.deepEqual(
+                    new Set(Object.keys(restoreJsonResponse.newsletters[0])),
+                    new Set(['id', 'uuid', 'name', 'description', 'sort_order'])
+                );
 
                 assert.equal(restoreJsonResponse.newsletters[0].name, originalNewsletterName);
             });
@@ -875,37 +900,34 @@ describe('Front-end members behavior', function () {
                 assertExists(memberData);
 
                 // @NOTE: this should be a snapshot test not code
-                memberData.should.have.properties([
-                    'uuid',
-                    'email',
-                    'name',
-                    'firstname',
-                    'expertise',
-                    'avatar_image',
-                    'subscribed',
-                    'subscriptions',
-                    'paid',
-                    'created_at',
-                    'enable_comment_notifications',
-                    'can_comment',
-                    'commenting',
-                    'newsletters',
-                    'email_suppression',
-                    'unsubscribe_url'
-                ]);
-                assert.equal(Object.keys(memberData).length, 16);
-                assert(!('id' in memberData));
+                assert.deepEqual(
+                    new Set(Object.keys(memberData)),
+                    new Set([
+                        'uuid',
+                        'email',
+                        'name',
+                        'firstname',
+                        'expertise',
+                        'avatar_image',
+                        'subscribed',
+                        'subscriptions',
+                        'paid',
+                        'created_at',
+                        'enable_comment_notifications',
+                        'can_comment',
+                        'commenting',
+                        'newsletters',
+                        'email_suppression',
+                        'unsubscribe_url'
+                    ])
+                );
                 assert.equal(memberData.newsletters.length, 1);
 
                 // @NOTE: this should be a snapshot test not code
-                assert.equal(Object.keys(memberData.newsletters[0]).length, 5);
-                memberData.newsletters[0].should.have.properties([
-                    'id',
-                    'uuid',
-                    'name',
-                    'description',
-                    'sort_order'
-                ]);
+                assert.deepEqual(
+                    new Set(Object.keys(memberData.newsletters[0])),
+                    new Set(['id', 'uuid', 'name', 'description', 'sort_order'])
+                );
             });
 
             it('can read public post content', async function () {

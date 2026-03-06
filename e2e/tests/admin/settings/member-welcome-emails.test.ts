@@ -15,8 +15,6 @@ interface AutomatedEmailsResponse {
 }
 
 test.describe('Ghost Admin - Member Welcome Emails', () => {
-    test.use({labs: {welcomeEmails: true}});
-
     test('can enable free welcome emails', async ({page}) => {
         const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);
 
@@ -109,7 +107,7 @@ test.describe('Ghost Admin - Member Welcome Emails', () => {
 });
 
 test.describe('Ghost Admin - Paid Member Welcome Emails', () => {
-    test.use({labs: {welcomeEmails: true}, stripeConnected: true});
+    test.use({stripeConnected: true});
 
     test('can enable paid welcome emails', async ({page}) => {
         const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);

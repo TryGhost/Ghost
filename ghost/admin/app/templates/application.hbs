@@ -33,11 +33,7 @@
         <GhAlerts />
     </RenderInWormhole>
 
-    <div class="gh-viewport {{if this.ui.showMobileMenu 'mobile-menu-expanded'}}">
-        {{#if this.showNavMenu}}
-            <GhNavMenu />
-        {{/if}}
-
+    <div class="gh-viewport">
         <main class="gh-main {{this.ui.mainClass}}">
             {{outlet}}
 
@@ -48,11 +44,6 @@
             <GhExploreModal />
         </main>
 
-        <GhContentCover />
-
-        {{#if this.showMobileNavMenu}}
-            <GhMobileNavBar />
-        {{/if}}
     </div>
 
     {{#if this.showScriptExtension}}

@@ -1,7 +1,6 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../utils/assertions');
 const errors = require('@tryghost/errors');
-const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../utils');
 const config = require('../../../core/shared/config');
@@ -37,8 +36,8 @@ describe('User Model', function run() {
 
             UserModel.add(userData, context).then(function (createdUser) {
                 assertExists(createdUser);
-                createdUser.attributes.password.should.not.equal(userData.password, 'password was hashed');
-                createdUser.attributes.email.should.eql(userData.email, 'email address correct');
+                assert.notEqual(createdUser.attributes.password, userData.password, 'password was hashed');
+                assert.equal(createdUser.attributes.email, userData.email, 'email address correct');
 
                 done();
             }).catch(done);
@@ -85,7 +84,7 @@ describe('User Model', function run() {
 
             UserModel.add(userData, context).then(function (createdUser) {
                 assertExists(createdUser);
-                createdUser.attributes.email.should.eql(userData.email, 'email address correct');
+                assert.equal(createdUser.attributes.email, userData.email, 'email address correct');
                 done();
             }).catch(done);
         });
@@ -127,19 +126,19 @@ describe('User Model', function run() {
                 // Test same case
                 return UserModel.getByEmail(email).then(function (user) {
                     assertExists(user);
-                    user.attributes.email.should.eql(email);
+                    assert.equal(user.attributes.email, email);
                 });
             }).then(function () {
                 // Test entered in lowercase
                 return UserModel.getByEmail(email.toLowerCase()).then(function (user) {
                     assertExists(user);
-                    user.attributes.email.should.eql(email);
+                    assert.equal(user.attributes.email, email);
                 });
             }).then(function () {
                 // Test entered in uppercase
                 return UserModel.getByEmail(email.toUpperCase()).then(function (user) {
                     assertExists(user);
-                    user.attributes.email.should.eql(email);
+                    assert.equal(user.attributes.email, email);
                 });
             }).then(function () {
                 // Test incorrect email address - swapped capital O for number 0
@@ -244,8 +243,8 @@ describe('User Model', function run() {
                 return UserModel.add(userData, _.extend({}, context, {withRelated: ['roles']}));
             }).then(function (createdUser) {
                 assertExists(createdUser);
-                createdUser.get('password').should.not.equal(userData.password, 'password was hashed');
-                createdUser.get('email').should.eql(userData.email, 'email address correct');
+                assert.notEqual(createdUser.get('password'), userData.password, 'password was hashed');
+                assert.equal(createdUser.get('email'), userData.email, 'email address correct');
                 assert.equal(createdUser.related('roles').toJSON()[0].name, 'Administrator', 'role set correctly');
 
                 assert.equal(Object.keys(eventsTriggered).length, 2);
@@ -454,12 +453,12 @@ describe('User Model', function run() {
 
             UserModel.setup(userData, {id: DataGenerator.Content.users[0].id})
                 .then(function (user) {
-                    user.get('name').should.eql(userData.name);
-                    user.get('email').should.eql(userData.email);
+                    assert.equal(user.get('name'), userData.name);
+                    assert.equal(user.get('email'), userData.email);
                     assert.equal(user.get('slug'), 'max');
 
                     // naive check that password was hashed
-                    user.get('password').should.not.eql(userData.password);
+                    assert.notEqual(user.get('password'), userData.password);
                     done();
                 })
                 .catch(done);

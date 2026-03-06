@@ -1,5 +1,5 @@
 const {agentProvider, fixtureManager} = require('../../utils/e2e-framework');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const supertest = require('supertest');
 
 describe('Admin API', function () {

@@ -1211,12 +1211,13 @@ Object {
 
 exports[`Admin Comments API Hide Can hide comments 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "446",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -1254,12 +1255,13 @@ Object {
 
 exports[`Admin Comments API Hide Can hide comments 4: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "421",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -1297,12 +1299,13 @@ Object {
 
 exports[`Admin Comments API Hide Can hide replies 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "462",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -1340,21 +1343,24 @@ Object {
 
 exports[`Admin Comments API Hide Can hide replies 4: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "439",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
 
 exports[`Admin Comments API Logged in member gets own likes via admin api can get comment liked status by impersonating member via admin browse route 1: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Origin",
   "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6e1/",
   "x-powered-by": "Express",
 }
@@ -1362,9 +1368,11 @@ Object {
 
 exports[`Admin Comments API Logged in member gets own likes via admin api can get comment liked status by impersonating member via admin get by comment id read route 1: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Origin",
   "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6e1/",
   "x-powered-by": "Express",
 }
@@ -1372,9 +1380,11 @@ Object {
 
 exports[`Admin Comments API Logged in member gets own likes via admin api can get comment liked status by impersonating member via admin get by comment replies route 1: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Origin",
   "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6e1/",
   "x-powered-by": "Express",
 }

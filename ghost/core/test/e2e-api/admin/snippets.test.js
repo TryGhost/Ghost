@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-require('should');
 const sinon = require('sinon');
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyContentVersion, anyEtag, anyLocationFor, anyObjectId, anyISODateTime, anyErrorId} = matchers;

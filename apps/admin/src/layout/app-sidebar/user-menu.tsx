@@ -11,6 +11,7 @@ import {
     Switch
 } from "@tryghost/shade"
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
+import { getGhostPaths } from "@tryghost/admin-x-framework/helpers";
 import { useUserPreferences, useEditUserPreferences } from "@/hooks/user-preferences";
 import { useWhatsNew } from "@/whats-new/hooks/use-whats-new";
 import { useUpgradeStatus } from "./hooks/use-upgrade-status";
@@ -65,10 +66,11 @@ function UserMenuDarkMode() {
 
 function UserMenuSignOut() {
     const handleSignOut = () => {
-        fetch("/ghost/api/admin/session", {
+        const {apiRoot, adminRoot} = getGhostPaths();
+        fetch(`${apiRoot}/session`, {
             method: "DELETE",
         }).then(() => {
-            window.location.href = "/ghost";
+            window.location.href = adminRoot;
         }).catch((error) => {
             console.error(error);
         });
@@ -220,7 +222,7 @@ function ContributorUserMenu() {
                 </UserMenuHeader>
                 <DropdownMenuSeparator />
                 <UserMenuItem>
-                    <Link to="/">
+                    <Link to="/posts">
                         <LucideIcon.FileText />
                         <UserMenuItem.Label>Posts</UserMenuItem.Label>
                     </Link>
