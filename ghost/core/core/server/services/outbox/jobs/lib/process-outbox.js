@@ -52,7 +52,7 @@ async function processOutbox() {
             },
             err
         }, `${OUTBOX_LOG_KEY} Service initialization failed: ${errorMessage}`);
-        return;
+        return `${OUTBOX_LOG_KEY} Job aborted: Service initialization failed`;
     }
 
     let totalProcessed = 0;
@@ -87,16 +87,11 @@ async function processOutbox() {
 
     const durationMs = Date.now() - jobStartMs;
 
-    logging.info({
-        system: {
-            event: 'outbox.job.complete',
-            entries_processed: totalProcessed,
-            entries_failed: totalFailed,
-            duration_ms: durationMs
-        }
-    }, totalProcessed + totalFailed === 0
-        ? `${OUTBOX_LOG_KEY} ${MESSAGES.NO_ENTRIES}`
-        : `${OUTBOX_LOG_KEY} Job complete: Processed ${totalProcessed} outbox entries, ${totalFailed} failed in ${(durationMs / 1000).toFixed(2)}s`);
+    if (totalProcessed + totalFailed === 0) {
+        return `${OUTBOX_LOG_KEY} ${MESSAGES.NO_ENTRIES}`;
+    }
+
+    return `${OUTBOX_LOG_KEY} Job complete: Processed ${totalProcessed} outbox entries, ${totalFailed} failed in ${(durationMs / 1000).toFixed(2)}s`;
 }
 
 module.exports = processOutbox;
