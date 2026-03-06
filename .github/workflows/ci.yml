@@ -29,7 +29,7 @@ concurrency:
 jobs:
   job_setup:
     name: Setup
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     timeout-minutes: 15
     env:
       IS_MAIN: ${{ github.ref == 'refs/heads/main' }}
@@ -217,7 +217,7 @@ jobs:
 
   job_app_version_bump_check:
     name: Check app version bump
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     needs: [job_setup]
     if: github.event_name == 'pull_request'
     steps:
@@ -237,7 +237,7 @@ jobs:
         run: node .github/scripts/check-app-version-bump.js
 
   job_lint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_any_code == 'true'
     name: Lint
@@ -271,7 +271,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   job_i18n:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     needs: [job_setup]
     name: i18n
     if: |
@@ -295,7 +295,7 @@ jobs:
         run: yarn nx run @tryghost/i18n:test
 
   job_admin-tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_admin == 'true'
     name: Admin tests - Chrome
@@ -339,7 +339,7 @@ jobs:
     name: Browser tests
     timeout-minutes: 60
     runs-on:
-      labels: ubuntu-latest
+      labels: ubuntu-24.04-arm
     needs: [job_setup]
     # Skip on forked PRs - Stripe secrets are not available
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
@@ -410,7 +410,7 @@ jobs:
 
 
   job_unit-tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_any_code == 'true'
     strategy:
@@ -469,7 +469,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   job_acceptance-tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_core == 'true'
     services:
@@ -557,7 +557,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   job_legacy-tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_core == 'true'
     services:
@@ -630,7 +630,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   job_admin_x_settings:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_admin_x_settings == 'true'
     name: Admin-X Settings tests
@@ -670,7 +670,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   job_activitypub:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_activitypub == 'true'
     name: ActivityPub tests
@@ -710,7 +710,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   job_comments_ui:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_comments_ui == 'true'
     name: Comments-UI tests
@@ -750,7 +750,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   job_signup_form:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_signup_form == 'true'
     name: Signup-form tests
@@ -791,7 +791,7 @@ jobs:
 
   job_tinybird-tests:
     name: Tinybird Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_tinybird == 'true'
     defaults:
@@ -824,7 +824,7 @@ jobs:
     name: Ghost-CLI tests
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_core == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v6
         with:
@@ -911,7 +911,7 @@ jobs:
   job_docker_build_production:
     name: Build & Push Production Docker Images
     needs: [job_setup]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     permissions:
       contents: read
       packages: write
@@ -1120,7 +1120,7 @@ jobs:
 
   job_e2e_tests:
     name: E2E Tests (${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     needs: [job_docker_build_production, job_setup]
     strategy:
       fail-fast: true
@@ -1215,7 +1215,7 @@ jobs:
     name: Merge Reports
     if: always()
     needs: [job_e2e_tests, job_setup]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     strategy:
       fail-fast: false
     steps:
@@ -1302,7 +1302,7 @@ jobs:
       job_acceptance-tests,
       job_unit-tests
     ]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v6
 
@@ -1361,7 +1361,7 @@ jobs:
         job_e2e_tests
       ]
     if: always()
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     steps:
       - name: Output needs
         run: echo "${{ toJson(needs) }}"
@@ -1378,7 +1378,7 @@ jobs:
       job_unit-tests
     ]
     name: Publish ${{ matrix.package_name }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     if: always() && github.repository == 'TryGhost/Ghost' && needs.job_setup.result == 'success' && needs.job_lint.result == 'success' && needs.job_unit-tests.result == 'success' && (needs.job_setup.outputs.is_main == 'true' || needs.job_setup.outputs.is_five == 'true')
     permissions:
       id-token: write
@@ -1506,7 +1506,7 @@ jobs:
 
   deploy_tinybird_staging:
     name: Deploy Tinybird - Staging
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     needs: [
       job_setup,
       job_tinybird-tests
@@ -1525,7 +1525,7 @@ jobs:
 
   deploy_tinybird_production:
     name: Deploy Tinybird - Production
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     needs: [
       job_setup,
       job_tinybird-tests,
@@ -1549,7 +1549,7 @@ jobs:
       job_required_tests
     ]
     name: Deploy Admin
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     if: |
       always()
       && github.repository == 'TryGhost/Ghost'
@@ -1594,7 +1594,7 @@ jobs:
   trigger_cd:
     needs: [job_setup, job_docker_build_production]
     name: Trigger Pro CD
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     if: |
       always()
       && github.repository == 'TryGhost/Ghost'

@@ -19,7 +19,7 @@ permissions:
 jobs:
   create-branch:
     if: github.repository == 'TryGhost/Ghost'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     steps:
       - run: echo "BASE_REF=main" >> $GITHUB_ENV
         if: inputs.base-ref == 'latest'

@@ -234,7 +234,7 @@ jobs:
 
   agent:
     needs: activation
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     permissions:
       contents: read
     concurrency:
@@ -1107,7 +1107,7 @@ jobs:
   update_cache_memory:
     needs: agent
     if: always() && needs.agent.outputs.detection_success == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     permissions: {}
     env:
       GH_AW_WORKFLOW_ID_SANITIZED: lineartriage

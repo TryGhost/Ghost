@@ -6,7 +6,7 @@ on:
 jobs:
   stale:
     if: github.repository_owner == 'TryGhost'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/stale@v9
         with:

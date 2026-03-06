@@ -18,7 +18,7 @@ on:
 jobs:
   cleanup:
     name: Delete old test accounts
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     if: github.repository == 'TryGhost/Ghost'
     steps:
       - name: Cleanup old Stripe Connect test accounts

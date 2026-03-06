@@ -7,7 +7,7 @@ on:
       - 'ghost/core/core/server/data/migrations/versions/**'
 jobs:
   createComment:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     if: github.repository_owner == 'TryGhost'
     name: Add migration review requirements
     steps:
