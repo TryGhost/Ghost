@@ -1,3 +1,4 @@
+import {normalizeLegacyMembersFilter, translateLegacyMembersFilter} from '../utils/legacy-members-filter';
 import {useCallback, useMemo} from 'react';
 import {useSearchParams} from '@tryghost/admin-x-framework';
 import type {Filter} from '@tryghost/shade';
@@ -349,10 +350,46 @@ interface UseFilterStateReturn {
 export function useMembersFilterState(): UseFilterStateReturn {
     const [searchParams, setSearchParams] = useSearchParams();
 
-    // Parse filters from URL
-    const filters = useMemo(() => {
+    // Parse canonical filters from URL
+    const canonicalFilters = useMemo(() => {
         return searchParamsToFilters(searchParams);
     }, [searchParams]);
+
+    // Parse legacy filter params from old Ember bookmarkable URLs
+    const legacyFilterParam = useMemo(() => {
+        return searchParams.get('filter') ?? searchParams.get('filterParam') ?? undefined;
+    }, [searchParams]);
+
+    const legacyFilterState = useMemo(() => {
+        if (!legacyFilterParam || canonicalFilters.length > 0) {
+            return {
+                filters: [] as Filter[],
+                fallbackNql: undefined as string | undefined
+            };
+        }
+
+        const translated = translateLegacyMembersFilter(legacyFilterParam);
+
+        if (translated.isComplete) {
+            return {
+                filters: translated.filters,
+                fallbackNql: undefined as string | undefined
+            };
+        }
+
+        return {
+            filters: [] as Filter[],
+            fallbackNql: normalizeLegacyMembersFilter(legacyFilterParam)
+        };
+    }, [canonicalFilters.length, legacyFilterParam]);
+
+    const filters = useMemo(() => {
+        if (canonicalFilters.length > 0) {
+            return canonicalFilters;
+        }
+
+        return legacyFilterState.filters;
+    }, [canonicalFilters, legacyFilterState.filters]);
 
     // Get search from URL
     const search = useMemo(() => {
@@ -382,9 +419,11 @@ export function useMembersFilterState(): UseFilterStateReturn {
         setSearchParams(new URLSearchParams(), {replace});
     }, [setSearchParams]);
 
-    const nql = useMemo(() => buildMemberNqlFilter(filters), [filters]);
+    const nql = useMemo(() => {
+        return legacyFilterState.fallbackNql ?? buildMemberNqlFilter(filters);
+    }, [filters, legacyFilterState.fallbackNql]);
 
-    const isFiltered = filters.length > 0 || search.length > 0;
+    const isFiltered = filters.length > 0 || search.length > 0 || !!legacyFilterState.fallbackNql;
 
     return {filters, nql, search, setFilters, setSearch, clearFilters, isFiltered};
 }

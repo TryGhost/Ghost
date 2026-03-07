@@ -40,6 +40,7 @@
     },
     "dependencies": {
         "@tryghost/admin-x-framework": "0.0.0",
+        "@tryghost/nql-lang": "0.6.4",
         "@tryghost/shade": "0.0.0",
         "i18n-iso-countries": "7.14.0",
         "moment": "2.24.0",
