@@ -99,7 +99,7 @@ export class DragDropContainer {
                 ghostElement.style.zIndex = constants.GHOST_ZINDEX;
                 ghostElement.style.willChange = 'transform';
             } else {
-                // eslint-disable-next-line
+
                 console.warn('No <img> element found in draggable');
                 return;
             }
@@ -109,7 +109,7 @@ export class DragDropContainer {
             return ghostElement;
         }
 
-        // eslint-disable-next-line
+
         console.warn(`No default createGhostElement handler for type "${draggableInfo.type}"`);
     }
 

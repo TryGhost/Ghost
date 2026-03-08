@@ -15,7 +15,7 @@ export function getDOMRangeRect(
 
     if (nativeSelection.anchorNode === rootElement) {
         let inner = rootElement;
-        while (inner.firstElementChild != null) { // eslint-disable-line eqeqeq
+        while (inner.firstElementChild != null) {
             inner = inner.firstElementChild;
         }
         rect = inner.getBoundingClientRect();

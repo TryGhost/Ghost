@@ -16,7 +16,7 @@ export const KoenigSelectorPlugin = () => {
 
     React.useEffect(() => {
         if (!editor.hasNodes([ImageNode])){
-            console.error('ImagePlugin: ImageNode not registered'); // eslint-disable-line no-console
+            console.error('ImagePlugin: ImageNode not registered');
             return;
         }
         return mergeRegister(

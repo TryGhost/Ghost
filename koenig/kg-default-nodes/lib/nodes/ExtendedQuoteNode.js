@@ -1,4 +1,3 @@
-/* eslint-disable ghost/filenames/match-exported-class */
 import {QuoteNode} from '@lexical/rich-text';
 import {$createLineBreakNode, $isParagraphNode} from 'lexical';
 

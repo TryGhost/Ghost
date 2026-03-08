@@ -126,6 +126,5 @@ export function registerDenestTransform<T extends ElementNode>(editor: LexicalEd
         });
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
     return () => {};
 }

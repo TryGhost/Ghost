@@ -1,4 +1,3 @@
-import * as React from 'react';
 import EmailCtaCardIcon from '../assets/icons/kg-card-type-email-cta.svg?react';
 import EmailIndicatorIcon from '../assets/icons/kg-indicator-email.svg?react';
 import cleanBasicHtml from '@tryghost/kg-clean-basic-html';

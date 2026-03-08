@@ -1,5 +1,4 @@
 import PropTypes from 'prop-types';
-import React from 'react';
 
 export function ProgressBar({style, fullWidth, bgStyle}) {
     return (

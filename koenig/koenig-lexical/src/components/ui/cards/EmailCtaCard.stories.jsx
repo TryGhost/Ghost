@@ -1,5 +1,4 @@
 import EmailIndicatorIcon from '../../../assets/icons/kg-indicator-email.svg?react';
-import React from 'react';
 import populateEditor from '../../../utils/storybook/populate-storybook-editor.js';
 import {BASIC_NODES} from '../../../index.js';
 import {CardWrapper} from './../CardWrapper';

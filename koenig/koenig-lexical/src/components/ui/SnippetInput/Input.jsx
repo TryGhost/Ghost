@@ -1,5 +1,4 @@
 import CloseIcon from '../../../assets/icons/kg-close.svg?react';
-import React from 'react';
 
 export const Input = ({value, onChange, onClear, onKeyDown}) => {
     return (

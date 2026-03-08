@@ -1,6 +1,5 @@
 import KoenigCardWrapper from '../components/KoenigCardWrapper';
 import MINIMAL_NODES from './MinimalNodes';
-import React from 'react';
 import SignupCardIcon from '../assets/icons/kg-card-type-signup.svg?react';
 import SignupNodeComponent from './SignupNodeComponent';
 import cleanBasicHtml from '@tryghost/kg-clean-basic-html';

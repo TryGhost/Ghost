@@ -31,7 +31,6 @@ import PlusIcon from '../assets/icons/plus.svg?react';
 import PreviewCardIcon from '../assets/icons/kg-card-type-preview.svg?react';
 import ProductCardIcon from '../assets/icons/kg-card-type-product.svg?react';
 import QuoteIcon from '../assets/icons/kg-quote.svg?react';
-import React, {useState} from 'react';
 import ReplaceIcon from '../assets/icons/kg-replace.svg?react';
 import SnippetCardIcon from '../assets/icons/kg-card-type-snippet.svg?react';
 import SnippetIcon from '../assets/icons/kg-snippet.svg?react';
@@ -43,6 +42,7 @@ import UnsplashCardIcon from '../assets/icons/kg-card-type-unsplash.svg?react';
 import VideoCardIcon from '../assets/icons/kg-card-type-video.svg?react';
 import VimeoCardIcon from '../assets/icons/kg-card-type-vimeo.svg?react';
 import YoutubeCardIcon from '../assets/icons/kg-card-type-youtube.svg?react';
+import {useState} from 'react';
 
 const DesignSandbox = () => {
     return (

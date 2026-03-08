@@ -6,7 +6,6 @@ import HtmlPlugin from './HtmlPlugin';
 import ImagePlugin from '../plugins/ImagePlugin';
 import KoenigSelectorPlugin from './KoenigSelectorPlugin.jsx';
 import MarkdownPlugin from '../plugins/MarkdownPlugin';
-import React from 'react';
 import {AudioPlugin} from '../plugins/AudioPlugin';
 import {BookmarkPlugin} from '../plugins/BookmarkPlugin';
 import {ButtonPlugin} from '../plugins/ButtonPlugin';

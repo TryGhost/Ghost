@@ -290,7 +290,7 @@ export class DragDropHandler {
             };
             this.ghostInfo = ghostInfo;
         } else {
-            // eslint-disable-next-line
+
             console.warn('container.createGhostElement did not return an element', this.draggableInfo, { ghostElement });
             this._resetDrag();
             return;

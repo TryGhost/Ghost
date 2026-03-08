@@ -1,4 +1,3 @@
-/* eslint-disable ghost/filenames/match-exported-class */
 import {$applyNodeReplacement, TextNode} from 'lexical';
 
 // Represents the search query string inside an AtLinkNode. Used in place of a

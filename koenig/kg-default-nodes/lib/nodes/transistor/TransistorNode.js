@@ -1,4 +1,3 @@
-// eslint-disable-next-line ghost/filenames/match-exported-class
 import cloneDeep from 'lodash/cloneDeep';
 import {generateDecoratorNode} from '../../generate-decorator-node';
 import {renderTransistorNode} from './transistor-renderer';

@@ -14,9 +14,7 @@
     "test": "yarn test:unit && yarn test:types",
     "test:unit": "NODE_ENV=testing c8 --lib --check-coverage --reporter text --reporter cobertura mocha './test/**/*.test.js'",
     "test:types": "tsc --noEmit",
-    "lint": "yarn lint:code && yarn lint:test",
-    "lint:code": "eslint *.js lib/ --ext .ts --cache",
-    "lint:test": "eslint -c test/.eslintrc.js test/ --ext .js --cache",
+    "lint": "eslint . --cache",
     "posttest": "yarn lint"
   },
   "files": [

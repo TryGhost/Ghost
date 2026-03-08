@@ -97,7 +97,7 @@ export function GalleryNodeComponent({nodeKey, captionEditor, captionEditorIniti
             const image = uploadedImages.find(i => i.fileName === result.fileName);
 
             if (!image) {
-                console.error('Uploaded image not found in images array. Filename:', result.fileName); // eslint-disable-line no-console
+                console.error('Uploaded image not found in images array. Filename:', result.fileName);
                 return;
             }
 

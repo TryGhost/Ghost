@@ -14,7 +14,7 @@ export const BookmarkPlugin = () => {
 
     React.useEffect(() => {
         if (!editor.hasNodes([BookmarkNode])){
-            console.error('BookmarkPlugin: BookmarkNode not registered'); // eslint-disable-line no-console
+            console.error('BookmarkPlugin: BookmarkNode not registered');
             return;
         }
         return mergeRegister(

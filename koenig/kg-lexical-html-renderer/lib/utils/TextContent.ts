@@ -36,7 +36,6 @@ export default class TextContent {
 
     constructor(exportChildren: ExportChildren, options: RendererOptions) {
         if (ensureDomProperty(options) === false) {
-            // eslint-disable-next-line ghost/ghost-custom/no-native-error
             throw new Error('TextContent requires a dom property in the options argument');
         }
         this.exportChildren = exportChildren;

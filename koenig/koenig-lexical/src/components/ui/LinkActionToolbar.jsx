@@ -1,4 +1,3 @@
-import React from 'react';
 import {$createRangeSelection, $getSelection, $setSelection} from 'lexical';
 import {LinkInput} from './LinkInput.jsx';
 import {TOGGLE_LINK_COMMAND} from '@lexical/link';

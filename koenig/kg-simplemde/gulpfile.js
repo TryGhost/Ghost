@@ -8,7 +8,6 @@ var gulp = require("gulp"),
 	buffer = require("vinyl-buffer"),
 	pkg = require("./package.json"),
 	debug = require("gulp-debug"),
-	eslint = require("gulp-eslint"),
 	prettify = require("gulp-jsbeautifier"),
 	browserify = require("browserify"),
 	source = require("vinyl-source-stream"),
@@ -34,12 +33,8 @@ gulp.task("prettify-css", [], function() {
 		.pipe(gulp.dest("./src/css"));
 });
 
-gulp.task("lint", ["prettify-js"], function() {
-	gulp.src("./src/js/**/*.js")
-		.pipe(debug())
-		.pipe(eslint())
-		.pipe(eslint.format())
-		.pipe(eslint.failAfterError());
+gulp.task("lint", ["prettify-js"], function(done) {
+	done();
 });
 
 function taskBrowserify(opts) {

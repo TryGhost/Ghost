@@ -1,6 +1,5 @@
 import CodePenIcon from '../assets/icons/kg-card-type-codepen.svg?react';
 import EmbedCardIcon from '../assets/icons/kg-card-type-other.svg?react';
-import React from 'react';
 import SoundCloudIcon from '../assets/icons/kg-card-type-soundcloud.svg?react';
 import SpotifyIcon from '../assets/icons/kg-card-type-spotify.svg?react';
 import VimeoIcon from '../assets/icons/kg-card-type-vimeo.svg?react';

@@ -1,4 +1,3 @@
-/* eslint-disable ghost/filenames/match-exported-class */
 import {TextNode} from 'lexical';
 
 // This is used in places where we need an extra cursor position at the

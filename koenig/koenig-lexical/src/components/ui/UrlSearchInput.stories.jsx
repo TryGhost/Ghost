@@ -1,5 +1,3 @@
-import React from 'react';
-
 import {UrlSearchInput} from './UrlSearchInput';
 
 const story = {

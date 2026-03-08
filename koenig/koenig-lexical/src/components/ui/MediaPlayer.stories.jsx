@@ -1,5 +1,3 @@
-import React from 'react';
-
 import {MediaPlayer} from './MediaPlayer';
 
 const story = {

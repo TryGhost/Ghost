@@ -10,7 +10,7 @@ export const HtmlPlugin = () => {
 
     React.useEffect(() => {
         if (!editor.hasNodes([HtmlNode])){
-            console.error('HtmlPlugin: HtmlNode not registered'); // eslint-disable-line no-console
+            console.error('HtmlPlugin: HtmlNode not registered');
             return;
         }
         return mergeRegister(

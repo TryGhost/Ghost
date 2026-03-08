@@ -1,4 +1,3 @@
-/* eslint-disable ghost/filenames/match-exported-class */
 import {$applyNodeReplacement, TextNode} from 'lexical';
 
 export class TKNode extends TextNode {

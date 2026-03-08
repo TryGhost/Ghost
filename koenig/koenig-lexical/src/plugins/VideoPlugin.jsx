@@ -11,7 +11,7 @@ export const VideoPlugin = () => {
 
     React.useEffect(() => {
         if (!editor.hasNodes([VideoNode])){
-            console.error('VideoPlugin: VideoNode not registered'); // eslint-disable-line no-console
+            console.error('VideoPlugin: VideoNode not registered');
             return;
         }
         return mergeRegister(

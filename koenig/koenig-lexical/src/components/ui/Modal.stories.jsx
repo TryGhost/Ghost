@@ -1,5 +1,5 @@
-import React, {useState} from 'react';
 import {Modal} from './Modal';
+import {useState} from 'react';
 
 const story = {
     title: 'Generic/Modal',

@@ -1,4 +1,3 @@
-import React from 'react';
 import pluralize from 'pluralize';
 import {ProgressBar} from '../../ProgressBar';
 

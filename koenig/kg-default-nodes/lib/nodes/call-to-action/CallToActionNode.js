@@ -1,4 +1,3 @@
-// eslint-disable-next-line ghost/filenames/match-exported-class
 import {generateDecoratorNode} from '../../generate-decorator-node';
 import {renderCallToActionNode} from './calltoaction-renderer';
 import {parseCallToActionNode} from './calltoaction-parser';

@@ -11,7 +11,7 @@ export const AudioPlugin = () => {
 
     React.useEffect(() => {
         if (!editor.hasNodes([AudioNode])){
-            console.error('AudioPlugin: AudioNode not registered'); // eslint-disable-line no-console
+            console.error('AudioPlugin: AudioNode not registered');
             return;
         }
         return mergeRegister(

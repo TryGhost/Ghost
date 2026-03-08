@@ -1,6 +1,5 @@
 import EmailCardIcon from '../assets/icons/kg-card-type-email.svg?react';
 import EmailIndicatorIcon from '../assets/icons/kg-indicator-email.svg?react';
-import React from 'react';
 import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 import {$canShowPlaceholderCurry} from '@lexical/text';
 import {$generateHtmlFromNodes} from '@lexical/html';

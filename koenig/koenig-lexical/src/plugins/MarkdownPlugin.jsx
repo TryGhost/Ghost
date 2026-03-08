@@ -10,7 +10,7 @@ export const MarkdownPlugin = () => {
 
     React.useEffect(() => {
         if (!editor.hasNodes([MarkdownNode])){
-            console.error('MarkdownPlugin: MarkdownNode not registered'); // eslint-disable-line no-console
+            console.error('MarkdownPlugin: MarkdownNode not registered');
             return;
         }
         return mergeRegister(

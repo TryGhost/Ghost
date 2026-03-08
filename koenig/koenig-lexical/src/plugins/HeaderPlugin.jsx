@@ -10,7 +10,7 @@ export const HeaderPlugin = () => {
 
     React.useEffect(() => {
         if (!editor.hasNodes([HeaderNode])){
-            console.error('HeaderPlugin: HeaderNode not registered'); // eslint-disable-line no-console
+            console.error('HeaderPlugin: HeaderNode not registered');
             return;
         }
         return mergeRegister(

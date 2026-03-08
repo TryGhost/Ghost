@@ -1,4 +1,3 @@
-/* eslint-disable ghost/filenames/match-exported-class */
 import {$createParagraphNode, $getRoot, CreateEditorArgs, SerializedParagraphNode, type SerializedEditorState} from 'lexical';
 import {createHeadlessEditor} from '@lexical/headless';
 import {$generateNodesFromDOM} from '@lexical/html';

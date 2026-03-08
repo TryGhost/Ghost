@@ -2,7 +2,6 @@ import CenterAlignIcon from '../../../assets/icons/kg-align-center.svg?react';
 import KoenigNestedEditor from '../../KoenigNestedEditor';
 import LeftAlignIcon from '../../../assets/icons/kg-align-left.svg?react';
 import PropTypes from 'prop-types';
-import React from 'react';
 import ReplacementStringsPlugin from '../../../plugins/ReplacementStringsPlugin';
 import {Button} from '../Button';
 import {ButtonGroupSetting, DropdownSetting, InputSetting, InputUrlSetting, SettingsPanel, ToggleSetting} from '../SettingsPanel';

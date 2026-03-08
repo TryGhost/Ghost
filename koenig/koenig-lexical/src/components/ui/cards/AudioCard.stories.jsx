@@ -1,4 +1,3 @@
-import React from 'react';
 import {AudioCard} from './AudioCard';
 import {CardWrapper} from './../CardWrapper';
 

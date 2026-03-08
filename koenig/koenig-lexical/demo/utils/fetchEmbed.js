@@ -1,5 +1,5 @@
 export async function fetchEmbed(url, {type}) {
-    console.log('fetchEmbed', {url, type}); // eslint-disable-line no-console
+    console.log('fetchEmbed', {url, type});
     let urlObject = new URL(url);
     if (!urlObject) {
         throw new Error('No URL specified.');

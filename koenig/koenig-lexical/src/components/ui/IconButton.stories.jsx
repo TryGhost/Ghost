@@ -1,5 +1,3 @@
-import React from 'react';
-
 import DeleteIcon from '../../assets/icons/kg-trash.svg?react';
 import {IconButton} from './IconButton';
 

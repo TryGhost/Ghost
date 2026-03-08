@@ -1,4 +1,3 @@
-import React from 'react';
 import {useKoenigSelectedCardContext} from '../../context/KoenigSelectedCardContext';
 
 export function ActionToolbar({isVisible, children, ...props}) {

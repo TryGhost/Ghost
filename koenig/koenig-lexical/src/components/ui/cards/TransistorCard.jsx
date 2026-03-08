@@ -1,5 +1,4 @@
 import PropTypes from 'prop-types';
-import React from 'react';
 import TransistorIcon from '../../../assets/icons/kg-card-type-transistor.svg?react';
 // TODO: Re-enable when design tab is implemented
 // import {useState} from 'react';

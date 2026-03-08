@@ -1,4 +1,3 @@
-/* eslint-disable ghost/filenames/match-exported-class */
 import {$isTextNode, TextNode} from 'lexical';
 
 // Since the TextNode is foundational to all Lexical packages, including the

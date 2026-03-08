@@ -1,4 +1,3 @@
-/* eslint-disable ghost/filenames/match-exported-class */
 import {HeadingNode} from '@lexical/rich-text';
 
 // Since the HeadingNode is foundational to Lexical rich-text, only using a

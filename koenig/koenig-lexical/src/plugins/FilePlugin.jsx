@@ -10,7 +10,7 @@ export const FilePlugin = () => {
 
     React.useEffect(() => {
         if (!editor.hasNodes([FileNode])){
-            console.error('FilePlugin: FileNode not registered'); // eslint-disable-line no-console
+            console.error('FilePlugin: FileNode not registered');
             return;
         }
         return mergeRegister(

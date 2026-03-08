@@ -8,7 +8,6 @@ import KoenigNestedEditor from '../../../../KoenigNestedEditor';
 import LayoutSplitIcon from '../../../../../assets/icons/kg-layout-split.svg?react';
 import LeftAlignIcon from '../../../../../assets/icons/kg-align-left.svg?react';
 import PropTypes from 'prop-types';
-import React, {useEffect, useState} from 'react';
 import ShrinkIcon from '../../../../../assets/icons/kg-shrink.svg?react';
 import clsx from 'clsx';
 import trackEvent from '../../../../../utils/analytics';
@@ -22,6 +21,7 @@ import {ReadOnlyOverlay} from '../../../ReadOnlyOverlay';
 import {Tooltip} from '../../../Tooltip';
 import {getAccentColor} from '../../../../../utils/getAccentColor';
 import {isEditorEmpty} from '../../../../../utils/isEditorEmpty';
+import {useEffect, useState} from 'react';
 // Header Card Version 2
 export function HeaderCard({alignment,
     buttonEnabled,
@@ -375,7 +375,7 @@ export function HeaderCard({alignment,
                         selectedName={layout}
                         onClick={handleLayout}
                     />
-                                        
+
                     {
                         layout === 'split' && (
                             <ToggleSetting

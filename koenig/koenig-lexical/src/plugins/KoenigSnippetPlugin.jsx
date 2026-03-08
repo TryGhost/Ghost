@@ -36,7 +36,7 @@ export const KoenigSnippetPlugin = () => {
                                 const paragraph = $createParagraphNode();
                                 lastNode.getTopLevelElementOrThrow().insertAfter(paragraph);
                             } catch (e) {
-                                console.log(e);  // eslint-disable-line
+                                console.log(e);
                             }
                         }
                     });

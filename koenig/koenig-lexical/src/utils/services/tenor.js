@@ -153,7 +153,7 @@ export function useTenor({config}) {
                 if (error && error.startsWith('API key not valid')) {
                     setError(ERROR_TYPE.INVALID_API_KEY);
                 }
-                console.error(e); // eslint-disable-line
+                console.error(e);
             })
             .finally(() => {
                 setLoading(false);

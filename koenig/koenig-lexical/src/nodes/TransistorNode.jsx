@@ -1,5 +1,4 @@
 import KoenigCardWrapper from '../components/KoenigCardWrapper';
-import React from 'react';
 import TransistorIcon from '../assets/icons/kg-card-type-transistor.svg?react';
 import {TransistorNode as BaseTransistorNode} from '@tryghost/kg-default-nodes';
 import {TransistorNodeComponent} from './TransistorNodeComponent';

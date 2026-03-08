@@ -1,6 +1,5 @@
 import KoenigNestedEditor from '../../../../KoenigNestedEditor';
 import PropTypes from 'prop-types';
-import React from 'react';
 import clsx from 'clsx';
 import {BackgroundImagePicker} from '../../../BackgroundImagePicker';
 import {Button} from '../../../Button';

@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, {useState} from 'react';
+import {useState} from 'react';
 
 const TabView = ({tabs, defaultTab, tabContent}) => {
     const [activeTab, setActiveTab] = useState(defaultTab || tabs[0].id);

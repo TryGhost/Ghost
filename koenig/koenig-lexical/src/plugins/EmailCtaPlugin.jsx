@@ -10,7 +10,7 @@ export const EmailCtaPlugin = () => {
 
     React.useEffect(() => {
         if (!editor.hasNodes([EmailCtaNode])){
-            console.error('EmailPlugin: EmailCtaNode not registered'); // eslint-disable-line no-console
+            console.error('EmailPlugin: EmailCtaNode not registered');
             return;
         }
         return mergeRegister(

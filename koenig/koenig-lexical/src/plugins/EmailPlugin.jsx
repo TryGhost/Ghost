@@ -10,7 +10,7 @@ export const EmailPlugin = () => {
 
     React.useEffect(() => {
         if (!editor.hasNodes([EmailNode])){
-            console.error('EmailPlugin: EmailNode not registered'); // eslint-disable-line no-console
+            console.error('EmailPlugin: EmailNode not registered');
             return;
         }
         return mergeRegister(

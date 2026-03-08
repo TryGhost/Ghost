@@ -97,7 +97,7 @@ export const useSearchLinks = (query, searchLinks, {noResultOptions} = {}) => {
             !query && setIsSearching(false);
         };
 
-        fetchDefaultOptions().catch(console.error); // eslint-disable-line no-console
+        fetchDefaultOptions().catch(console.error);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 

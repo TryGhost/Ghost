@@ -125,7 +125,7 @@ export const CardMenu = ({menu = new Map(), insert = () => {}, selectedItemIndex
     for (const [sectionLabel, items] of menu) {
         const CardMenuItems = [];
 
-        items.forEach((item) => { // eslint-disable-line no-loop-func
+        items.forEach((item) => {
             const isSelected = itemIndex === selectedItemIndex;
             const onClick = (event) => {
                 event.preventDefault();

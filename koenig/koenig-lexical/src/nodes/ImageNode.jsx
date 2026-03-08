@@ -1,6 +1,5 @@
 import GIFIcon from '../assets/icons/kg-card-type-gif.svg?react';
 import ImageCardIcon from '../assets/icons/kg-card-type-image.svg?react';
-import React from 'react';
 import UnsplashIcon from '../assets/icons/kg-card-type-unsplash.svg?react';
 import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 import {$generateHtmlFromNodes} from '@lexical/html';

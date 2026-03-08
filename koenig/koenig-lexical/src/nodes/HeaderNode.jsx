@@ -3,7 +3,6 @@ import HeaderNodeComponent from './header/v2/HeaderNodeComponent';
 import HeaderNodeComponentV1 from './header/v1/HeaderNodeComponent';
 import KoenigCardWrapper from '../components/KoenigCardWrapper';
 import MINIMAL_NODES from './MinimalNodes';
-import React from 'react';
 import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 import {$canShowPlaceholderCurry} from '@lexical/text';
 import {$generateHtmlFromNodes} from '@lexical/html';

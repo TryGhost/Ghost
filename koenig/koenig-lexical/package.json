@@ -41,7 +41,7 @@
     "coverage": "vitest run --coverage",
     "lint": "yarn run lint:js && yarn run lint:css",
     "lint:css": "stylelint \"src/**/*.css\"",
-    "lint:js": "eslint --ext .js,.cjs,.jsx --cache demo src test",
+    "lint:js": "eslint --cache demo src test",
     "prepare": "NODE_ENV=production yarn build",
     "storybook": "NODE_OPTIONS=--openssl-legacy-provider storybook dev -p 6006 -h 127.0.0.1",
     "build-storybook": "storybook build"
@@ -102,8 +102,6 @@
     "dompurify": "^3.3.0",
     "dotenv": "^17.3.1",
     "emoji-mart": "^5.5.2",
-    "eslint-config-react-app": "7.0.1",
-    "eslint-plugin-jest": "29.15.0",
     "eslint-plugin-react": "7.37.5",
     "eslint-plugin-storybook": "^10.2.13",
     "eslint-plugin-tailwindcss": "3.18.2",

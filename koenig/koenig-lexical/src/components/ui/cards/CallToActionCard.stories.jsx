@@ -1,4 +1,3 @@
-import React from 'react';
 import VisibilityIndicatorIcon from '../../../assets/icons/kg-indicator-visibility.svg?react';
 import populateEditor from '../../../utils/storybook/populate-storybook-editor.js';
 import {BASIC_NODES} from '../../../index.js';
@@ -63,11 +62,11 @@ const Template = ({display, value, ...args}) => {
     // Sponsor label editor setup
     let sponsorLabelHtmlEditor = null;
     let sponsorLabelHtmlEditorInitialState = null;
-    
+
     if (args.hasSponsorLabel) {
         sponsorLabelHtmlEditor = createEditor({nodes: BASIC_NODES});
         sponsorLabelHtmlEditorInitialState = populateEditor({
-            editor: sponsorLabelHtmlEditor, 
+            editor: sponsorLabelHtmlEditor,
             initialHtml: 'Sponsored'
         });
     }
@@ -75,7 +74,7 @@ const Template = ({display, value, ...args}) => {
     return (
         <div className="kg-prose">
             <div className="mx-auto my-8 min-w-[initial] max-w-[740px]">
-                <CardWrapper                        
+                <CardWrapper
                     IndicatorIcon={VisibilityIndicatorIcon}
                     indicatorPosition={{
                         top: '1.2rem'
@@ -83,9 +82,9 @@ const Template = ({display, value, ...args}) => {
                     {...(args.color === '' && {wrapperStyle: 'wide'})}
                     {...display}
                     {...args}>
-                    <CallToActionCard 
-                        {...display} 
-                        {...args} 
+                    <CallToActionCard
+                        {...display}
+                        {...args}
                         htmlEditor={htmlEditor}
                         sponsorLabelHtmlEditor={sponsorLabelHtmlEditor}
                         sponsorLabelHtmlEditorInitialState={sponsorLabelHtmlEditorInitialState}

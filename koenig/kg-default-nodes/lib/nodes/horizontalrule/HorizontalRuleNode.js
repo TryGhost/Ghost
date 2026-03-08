@@ -1,4 +1,3 @@
-/* eslint-disable ghost/filenames/match-exported-class */
 import {generateDecoratorNode} from '../../generate-decorator-node';
 import {renderHorizontalRuleNode} from './horizontalrule-renderer';
 import {parseHorizontalRuleNode} from './horizontalrule-parser';

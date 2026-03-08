@@ -1,4 +1,3 @@
-import React from 'react';
 import VideoCardIcon from '../assets/icons/kg-card-type-video.svg?react';
 import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 import {$generateHtmlFromNodes} from '@lexical/html';

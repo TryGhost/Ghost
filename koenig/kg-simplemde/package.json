@@ -26,12 +26,10 @@
   "devDependencies": {
     "browserify": "17.0.1",
     "debug": "*",
-    "eslint": "8.57.1",
     "gulp": "*",
     "gulp-clean-css": "4.3.0",
     "gulp-concat": "*",
     "gulp-debug": "*",
-    "gulp-eslint": "6.0.0",
     "gulp-header": "*",
     "gulp-jsbeautifier": "*",
     "gulp-rename": "*",

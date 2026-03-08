@@ -1,4 +1,3 @@
-/* eslint-disable ghost/filenames/match-exported-class */
 import {$applyNodeReplacement, ElementNode} from 'lexical';
 import linkSVG from './kg-link.svg';
 // Container element for a link search query. Temporary node used only inside

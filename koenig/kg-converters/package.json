@@ -15,9 +15,7 @@
     "test:unit": "NODE_ENV=testing c8 --all --src lib/ --exclude lib/kg-converters.js --check-coverage --reporter text --reporter cobertura mocha './test/**/*.test.js'",
     "test": "yarn test:unit",
     "posttest": "yarn lint",
-    "lint": "yarn lint:code && yarn lint:test",
-    "lint:code": "eslint *.js lib/ --ext .js --cache",
-    "lint:test": "eslint -c test/.eslintrc.js test/ --ext .js --cache"
+    "lint": "eslint . --cache"
   },
   "files": [
     "LICENSE",

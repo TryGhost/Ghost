@@ -108,7 +108,7 @@ export function EmbedNodeComponent({nodeKey, url, html, createdWithUrl, embedTyp
         });
         setLoading(false);
         // We only do this for init
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+
     };
 
     React.useEffect(() => {

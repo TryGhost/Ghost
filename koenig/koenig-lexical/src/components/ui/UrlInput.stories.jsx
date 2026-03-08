@@ -1,5 +1,3 @@
-import React from 'react';
-
 import {UrlInput} from './UrlInput';
 
 const story = {

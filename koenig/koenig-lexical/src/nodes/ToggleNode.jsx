@@ -1,4 +1,3 @@
-import React from 'react';
 import ToggleCardIcon from '../assets/icons/kg-card-type-toggle.svg?react';
 import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 import {$canShowPlaceholderCurry} from '@lexical/text';

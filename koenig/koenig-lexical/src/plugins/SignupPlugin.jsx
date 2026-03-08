@@ -10,7 +10,7 @@ export const SignupPlugin = () => {
 
     React.useEffect(() => {
         if (!editor.hasNodes([SignupNode])){
-            console.error('SignupPlugin: SignupNode not registered'); // eslint-disable-line no-console
+            console.error('SignupPlugin: SignupNode not registered');
             return;
         }
         return mergeRegister(

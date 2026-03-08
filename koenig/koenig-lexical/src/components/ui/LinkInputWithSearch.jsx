@@ -22,7 +22,7 @@ export function LinkInputWithSearch({href, update, cancel}) {
 
     React.useEffect(() => {
         trackEvent('Link dropdown: Opened', {context: 'text'});
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+
     }, []);
 
     // update the internal href when the prop changes

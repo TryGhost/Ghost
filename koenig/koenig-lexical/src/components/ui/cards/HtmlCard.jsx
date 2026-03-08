@@ -1,7 +1,6 @@
 import '@tryghost/kg-simplemde/dist/simplemde.min.css';
 import HtmlEditor from './HtmlCard/HtmlEditor';
 import PropTypes from 'prop-types';
-import React from 'react';
 import {sanitizeHtml} from '../../../utils/sanitize-html';
 
 export function HtmlCard({html, updateHtml, isEditing, darkMode}) {

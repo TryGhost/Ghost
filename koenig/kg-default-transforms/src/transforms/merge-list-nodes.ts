@@ -15,6 +15,5 @@ export function registerMergeListNodesTransform(editor: LexicalEditor) {
         return editor.registerNodeTransform(ListNode, mergeListNodesTransform);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
     return () => {};
 }

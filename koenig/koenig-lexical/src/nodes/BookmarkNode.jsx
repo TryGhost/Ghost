@@ -1,5 +1,4 @@
 import BookmarkCardIcon from '../assets/icons/kg-card-type-bookmark.svg?react';
-import React from 'react';
 import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 import {$generateHtmlFromNodes} from '@lexical/html';
 import {BookmarkNode as BaseBookmarkNode} from '@tryghost/kg-default-nodes';

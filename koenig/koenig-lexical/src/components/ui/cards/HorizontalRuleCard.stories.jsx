@@ -1,4 +1,3 @@
-import React from 'react';
 import {CardWrapper} from './../CardWrapper';
 import {HorizontalRuleCard} from './HorizontalRuleCard';
 
@@ -23,7 +22,7 @@ const story = {
                 },
                 defaultValue: displayOptions.Default
             }
-        } 
+        }
     },
     parameters: {
         status: {

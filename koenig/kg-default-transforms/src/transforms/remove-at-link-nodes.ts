@@ -27,6 +27,5 @@ export function registerRemoveAtLinkNodesTransform(editor: LexicalEditor) {
         return editor.registerNodeTransform(AtLinkNode, removeAtLinkNodesTransform);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
     return () => {};
 }

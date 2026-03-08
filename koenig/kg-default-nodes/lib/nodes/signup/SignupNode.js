@@ -1,4 +1,3 @@
-/* eslint-disable ghost/filenames/match-exported-class */
 import {signupParser} from './signup-parser';
 import {renderSignupCardToDOM} from './signup-renderer';
 import {generateDecoratorNode} from '../../generate-decorator-node';

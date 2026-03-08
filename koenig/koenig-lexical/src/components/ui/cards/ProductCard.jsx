@@ -1,6 +1,5 @@
 import KoenigNestedEditor from '../../KoenigNestedEditor';
 import PropTypes from 'prop-types';
-import React from 'react';
 import {Button} from '../Button';
 import {InputSetting, InputUrlSetting, SettingsPanel, ToggleSetting} from '../SettingsPanel';
 import {ProductCardImage} from './ProductCard/ProductCardImage';
@@ -130,7 +129,7 @@ export function ProductCard({
                     )}
                 </SettingsPanel>
             )}
-            
+
             {!isEditing && <ReadOnlyOverlay />}
         </>
     );

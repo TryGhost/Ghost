@@ -14,9 +14,7 @@
     "test:unit": "NODE_ENV=testing c8 --src build --all --check-coverage --100 --reporter text --reporter cobertura mocha -r ts-node/register './test/**/*.test.ts'",
     "test": "yarn test:types && yarn test:unit",
     "test:types": "tsc --noEmit",
-    "lint:code": "eslint src/ --ext .ts --cache",
-    "lint": "yarn lint:code && yarn lint:test",
-    "lint:test": "eslint -c test/.eslintrc.js test/ --ext .ts --cache"
+    "lint": "eslint . --cache"
   },
   "files": [
     "build"

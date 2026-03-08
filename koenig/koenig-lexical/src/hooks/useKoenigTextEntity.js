@@ -75,7 +75,7 @@ function registerExtendedTextEntity(editor, getMatch, targetNode, createNode, no
             }
         }
 
-        // eslint-disable-next-line no-constant-condition
+
         while (true) {
             match = getMatch(text);
             let nextText = match === null ? '' : text.slice(match.end);

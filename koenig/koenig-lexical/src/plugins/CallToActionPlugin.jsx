@@ -10,7 +10,7 @@ export const CallToActionPlugin = () => {
 
     React.useEffect(() => {
         if (!editor.hasNodes([CallToActionNode])){
-            console.error('CallToActionPlugin: CallToActionNode not registered'); // eslint-disable-line no-console
+            console.error('CallToActionPlugin: CallToActionNode not registered');
             return;
         }
         return mergeRegister(

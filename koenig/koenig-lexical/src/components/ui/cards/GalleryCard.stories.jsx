@@ -1,5 +1,4 @@
 import CardContext from '../../../context/CardContext';
-import React from 'react';
 import populateEditor from '../../../utils/storybook/populate-storybook-editor';
 import {CardWrapper} from './../CardWrapper';
 import {GalleryCard} from './GalleryCard';

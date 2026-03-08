@@ -3,7 +3,6 @@ import ImgRegularIcon from '../../../assets/icons/kg-img-regular.svg?react';
 import ImgWideIcon from '../../../assets/icons/kg-img-wide.svg?react';
 import PlayIcon from '../../../assets/icons/kg-play.svg?react';
 import PropTypes from 'prop-types';
-import React from 'react';
 import {ButtonGroupSetting, MediaUploadSetting, SettingsPanel, ToggleSetting} from '../SettingsPanel';
 import {CardCaptionEditor} from '../CardCaptionEditor';
 import {MediaPlaceholder} from '../MediaPlaceholder';

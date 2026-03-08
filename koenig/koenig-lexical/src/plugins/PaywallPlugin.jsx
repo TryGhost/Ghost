@@ -9,7 +9,7 @@ export const PaywallPlugin = () => {
 
     useEffect(() => {
         if (!editor.hasNodes([])) {
-            console.error('PaywallPlugin: PaywallNode not registered'); // eslint-disable-line no-console
+            console.error('PaywallPlugin: PaywallNode not registered');
             return;
         }
         return editor.registerCommand(

@@ -1,4 +1,3 @@
-import React from 'react';
 import {CardWrapper} from './../CardWrapper';
 import {PaywallCard} from './PaywallCard';
 

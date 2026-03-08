@@ -1,5 +1,4 @@
 import ProductCardIcon from '../assets/icons/kg-card-type-product.svg?react';
-import React from 'react';
 import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 import {$generateHtmlFromNodes} from '@lexical/html';
 import {BASIC_NODES, KoenigCardWrapper, MINIMAL_NODES} from '../index.js';

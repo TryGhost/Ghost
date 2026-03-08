@@ -35,7 +35,7 @@ import {useSearchLinks} from '../hooks/useSearchLinks';
 
 function $removeAtLink(node, {focus = false} = {}) {
     if (!$isAtLinkNode(node)) {
-        // eslint-disable-next-line no-console
+
         console.warn('$removeAtLink called on a non-at-link node', node);
         return;
     }

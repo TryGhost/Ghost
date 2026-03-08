@@ -1,5 +1,3 @@
-import React from 'react';
-
 import {SubscribeForm} from './SubscribeForm';
 
 const story = {

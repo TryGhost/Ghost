@@ -1,6 +1,5 @@
 import PlayIcon from '../../assets/icons/kg-play.svg?react';
 import PropTypes from 'prop-types';
-import React from 'react';
 import UnmuteIcon from '../../assets/icons/kg-unmute.svg?react';
 
 export function MediaPlayer({type, duration, theme, ...args}) {

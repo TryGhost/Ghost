@@ -10,7 +10,7 @@ export const EmbedPlugin = () => {
 
     React.useEffect(() => {
         if (!editor.hasNodes([EmbedNode])){
-            console.error('EmbedPlugin: EmbedNode not registered'); // eslint-disable-line no-console
+            console.error('EmbedPlugin: EmbedNode not registered');
             return;
         }
         return mergeRegister(

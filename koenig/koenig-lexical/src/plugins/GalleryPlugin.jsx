@@ -10,7 +10,7 @@ export const GalleryPlugin = () => {
 
     React.useEffect(() => {
         if (!editor.hasNodes([GalleryNode])) {
-            console.error('GalleryPlugin: GalleryNode not registered'); // eslint-disable-line no-console
+            console.error('GalleryPlugin: GalleryNode not registered');
             return;
         }
         return mergeRegister(

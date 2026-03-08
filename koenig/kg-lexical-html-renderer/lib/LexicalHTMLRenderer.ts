@@ -7,7 +7,7 @@ import $convertToHtmlString from './convert-to-html-string';
 import getDynamicDataNodes from './get-dynamic-data-nodes';
 
 // TODO: Using import causes circular definitions for kg-default-nodes
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+
 const {registerRemoveAtLinkNodesTransform} = require('@tryghost/kg-default-transforms');
 
 interface RenderOptions {
@@ -29,7 +29,6 @@ export default class LexicalHTMLRenderer {
 
     constructor({dom, nodes, onError}: {dom?: import('jsdom').JSDOM, nodes?: Klass<LexicalNode>[], onError?: () => void} = {}) {
         if (!dom) {
-            // eslint-disable-next-line @typescript-eslint/no-var-requires
             const jsdom = require('jsdom');
             const {JSDOM} = jsdom;
 

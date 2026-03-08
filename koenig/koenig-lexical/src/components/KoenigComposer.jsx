@@ -14,7 +14,7 @@ import {WebsocketProvider} from 'y-websocket';
 // or throw them as needed. If you don't throw them, Lexical will
 // try to recover gracefully without losing user data.
 function defaultOnError(error) {
-    console.error(error); // eslint-disable-line
+    console.error(error);
 }
 
 const defaultConfig = {
@@ -73,7 +73,7 @@ const KoenigComposer = ({
 
     if (!fileUploader.useFileUpload) {
         fileUploader.useFileUpload = function () {
-            console.error('<KoenigComposer> requires a `fileUploader` prop object to be passed containing a `useFileUpload` custom hook'); // eslint-disable-line no-console
+            console.error('<KoenigComposer> requires a `fileUploader` prop object to be passed containing a `useFileUpload` custom hook');
             return;
         };
     }
@@ -97,7 +97,7 @@ const KoenigComposer = ({
 
         if (multiplayerDebug) {
             provider.on('status', (event) => {
-                // eslint-disable-next-line no-console
+
                 console.log(event.status, `id: ${multiplayerDocId}/${id}`); // logs "connected" or "disconnected"
             });
         }

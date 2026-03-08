@@ -1,8 +1,8 @@
 import EyedropperIcon from '../../assets/icons/kg-eyedropper.svg?react';
 import ImgBgIcon from '../../assets/icons/kg-img-bg.svg?react';
-import React, {Fragment, useCallback, useEffect, useRef, useState} from 'react';
 import clsx from 'clsx';
 import {Button} from './Button';
+import {Fragment, useCallback, useEffect, useRef, useState} from 'react';
 import {HexColorInput, HexColorPicker} from 'react-colorful';
 import {Tooltip} from './Tooltip';
 import {getAccentColor} from '../../utils/getAccentColor';

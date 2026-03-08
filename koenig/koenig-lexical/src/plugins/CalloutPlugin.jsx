@@ -10,7 +10,7 @@ export const CalloutPlugin = () => {
 
     React.useEffect(() => {
         if (!editor.hasNodes([CalloutNode])){
-            console.error('CalloutPlugin: CalloutNode not registered'); // eslint-disable-line no-console
+            console.error('CalloutPlugin: CalloutNode not registered');
             return;
         }
         return mergeRegister(

@@ -4,7 +4,6 @@ import GalleryPlaceholderIcon from '../../assets/icons/kg-gallery-placeholder.sv
 import ImgPlaceholderIcon from '../../assets/icons/kg-img-placeholder.svg?react';
 import ProductPlaceholderIcon from '../../assets/icons/kg-product-placeholder.svg?react';
 import PropTypes from 'prop-types';
-import React from 'react';
 import VideoPlaceholderIcon from '../../assets/icons/kg-video-placeholder.svg?react';
 import clsx from 'clsx';
 

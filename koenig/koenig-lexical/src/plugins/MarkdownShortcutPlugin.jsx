@@ -22,7 +22,7 @@ export const HR = {
         const line = $createHorizontalRuleNode();
 
         // TODO: Get rid of isImport flag
-        if (isImport || parentNode.getNextSibling() != null) { // eslint-disable-line
+        if (isImport || parentNode.getNextSibling() != null) {
             parentNode.replace(line);
         } else {
             parentNode.insertBefore(line);

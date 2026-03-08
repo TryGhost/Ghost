@@ -15,7 +15,7 @@ const buildDOM = function (html) {
 };
 
 describe('parser-plugins: button card', function () {
-    let builder, parser, plugins;
+    let builder; let parser; let plugins;
 
     before(function () {
         plugins = createParserPlugins({

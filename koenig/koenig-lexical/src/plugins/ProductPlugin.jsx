@@ -10,7 +10,7 @@ export const ProductPlugin = () => {
 
     React.useEffect(() => {
         if (!editor.hasNodes([ProductNode])){
-            console.error('ProductPlugin: ProductNode not registered'); // eslint-disable-line no-console
+            console.error('ProductPlugin: ProductNode not registered');
             return;
         }
         return mergeRegister(

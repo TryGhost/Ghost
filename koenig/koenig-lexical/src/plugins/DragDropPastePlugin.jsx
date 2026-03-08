@@ -38,7 +38,7 @@ function mediaFileReader(files, acceptableMimeTypes) {
             if (nodeType) {
                 fileReader.readAsDataURL(file);
             } else {
-                console.error('unsupported file type'); // eslint-disable-line no-console
+                console.error('unsupported file type');
                 handleNextFile();
             }
         };
@@ -150,7 +150,7 @@ function DragDropPastePlugin() {
                     editor.focus();
                     return await handleFileUpload(files);
                 } catch (error) {
-                    console.error(error); // eslint-disable-line no-console
+                    console.error(error);
                 }
             },
             COMMAND_PRIORITY_LOW

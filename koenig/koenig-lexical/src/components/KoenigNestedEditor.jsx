@@ -1,5 +1,4 @@
 import KoenigNestedEditorPlugin from '../plugins/KoenigNestedEditorPlugin.jsx';
-import React from 'react';
 import {BASIC_NODES, BASIC_TRANSFORMERS, KoenigComposableEditor, KoenigNestedComposer, MINIMAL_NODES, MINIMAL_TRANSFORMERS, RestrictContentPlugin} from '../index.js';
 import {EmojiPickerPlugin} from '../plugins/EmojiPickerPlugin.jsx';
 

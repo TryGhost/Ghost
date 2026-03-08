@@ -1,5 +1,4 @@
 import CodeBlockIcon from '../assets/icons/kg-card-type-gen-embed.svg?react';
-import React from 'react';
 import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 import {$generateHtmlFromNodes} from '@lexical/html';
 import {CodeBlockNode as BaseCodeBlockNode} from '@tryghost/kg-default-nodes';

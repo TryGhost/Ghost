@@ -1,4 +1,3 @@
-/* eslint-disable ghost/filenames/match-exported-class */
 import {generateDecoratorNode} from '../../generate-decorator-node';
 import {parseGalleryNode} from './gallery-parser';
 import {renderGalleryNode} from './gallery-renderer';

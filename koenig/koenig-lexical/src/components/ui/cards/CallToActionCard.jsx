@@ -4,7 +4,6 @@ import KoenigNestedEditor from '../../KoenigNestedEditor.jsx';
 import LeftAlignIcon from '../../../assets/icons/kg-align-left.svg?react';
 import MinimalLayoutIcon from '../../../assets/icons/kg-layout-minimal.svg?react';
 import PropTypes from 'prop-types';
-import React, {useState} from 'react';
 import ReplacementStringsPlugin from '../../../plugins/ReplacementStringsPlugin.jsx';
 import clsx from 'clsx';
 import defaultTheme from '../../../themes/default.js';
@@ -16,6 +15,7 @@ import {RestrictContentPlugin} from '../../../index.js';
 import {VisibilitySettings} from '../VisibilitySettings.jsx';
 import {getAccentColor} from '../../../utils/getAccentColor.js';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
+import {useState} from 'react';
 
 const getTheme = () => ({
     ...defaultTheme,
@@ -303,7 +303,7 @@ export function CallToActionCard({
 
     return (
         <>
-            <div 
+            <div
                 className={clsx(
                     'w-full rounded-lg border',
                     CALLTOACTION_COLORS[color],
@@ -312,11 +312,11 @@ export function CallToActionCard({
                         'pb-3': color === 'none' && hasSponsorLabel,
                         'pt-1': color === 'none' && !hasSponsorLabel && !showDividers && !imageSrc
                     }
-                )} 
+                )}
                 data-cta-layout={layout}
                 style={{
-                    '--cta-link-color': linkColor === 'accent' 
-                        ? getAccentColor() 
+                    '--cta-link-color': linkColor === 'accent'
+                        ? getAccentColor()
                         : 'var(--cta-link-color-text)'
                 }}
             >
@@ -370,7 +370,7 @@ export function CallToActionCard({
                         </div>
                     )}
                     <div className={clsx(
-                        'flex w-full flex-col gap-6', 
+                        'flex w-full flex-col gap-6',
                         layout === 'immersive' && alignment === 'center' ? 'items-center' : ''
                     )}>
                         {/* HTML content */}

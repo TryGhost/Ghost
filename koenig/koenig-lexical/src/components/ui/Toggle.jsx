@@ -1,5 +1,4 @@
 import PropTypes from 'prop-types';
-import React from 'react';
 
 export function Toggle({isChecked, onChange, dataTestId}) {
     return (

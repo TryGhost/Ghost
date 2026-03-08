@@ -10,7 +10,7 @@ export const ButtonPlugin = () => {
 
     React.useEffect(() => {
         if (!editor.hasNodes([ButtonNode])){
-            console.error('ButtonPlugin: ButtonNode not registered'); // eslint-disable-line no-console
+            console.error('ButtonPlugin: ButtonNode not registered');
             return;
         }
         return mergeRegister(

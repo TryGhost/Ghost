@@ -1,6 +1,5 @@
 import DeleteIcon from '../../../assets/icons/kg-trash.svg?react';
 import PropTypes from 'prop-types';
-import React from 'react';
 import {CardCaptionEditor} from '../CardCaptionEditor';
 import {IconButton} from '../IconButton';
 import {MediaPlaceholder} from '../MediaPlaceholder';

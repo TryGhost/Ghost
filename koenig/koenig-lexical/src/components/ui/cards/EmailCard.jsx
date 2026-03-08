@@ -1,6 +1,5 @@
 import KoenigNestedEditor from '../../KoenigNestedEditor';
 import PropTypes from 'prop-types';
-import React from 'react';
 import ReplacementStringsPlugin from '../../../plugins/ReplacementStringsPlugin';
 import {CardVisibilityMessage} from '../CardVisibilityMessage.jsx';
 import {ReadOnlyOverlay} from '../ReadOnlyOverlay';

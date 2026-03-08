@@ -1,4 +1,3 @@
-import React from 'react';
 import {ButtonCard} from './ButtonCard';
 import {CardWrapper} from './../CardWrapper';
 

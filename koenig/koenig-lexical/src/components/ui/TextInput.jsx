@@ -1,5 +1,3 @@
-import React from 'react';
-
 export function TextInput({value, onChange, ...args}) {
     const handleOnChange = (e) => {
         onChange(e);

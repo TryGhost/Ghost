@@ -1,8 +1,8 @@
 import MarkdownHelpDialog from './MarkdownHelpDialog';
 import MarkdownImageUploader from './MarkdownImageUploader';
-import React, {useLayoutEffect, useRef, useState} from 'react';
 import SimpleMDE from '@tryghost/kg-simplemde';
 import UnsplashModal from '../../file-selectors/UnsplashModal';
+import {useLayoutEffect, useRef, useState} from 'react';
 
 import ctrlOrCmd from '../../../../utils/ctrlOrCmd';
 import useMarkdownImageUploader from './useMarkdownImageUploader';

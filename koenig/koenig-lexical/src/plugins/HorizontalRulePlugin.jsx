@@ -15,7 +15,7 @@ export const HorizontalRulePlugin = () => {
 
     useEffect(() => {
         if (!editor.hasNodes([])) {
-            console.error('HorizontalRulePlugin: HorizontalRuleNode not registered'); // eslint-disable-line no-console
+            console.error('HorizontalRulePlugin: HorizontalRuleNode not registered');
             return;
         }
         return editor.registerCommand(

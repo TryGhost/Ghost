@@ -1,6 +1,5 @@
 import FileUploadIcon from '../../assets/icons/kg-upload-fill.svg?react';
 import PropTypes from 'prop-types';
-import React from 'react';
 import TrashIcon from '../../assets/icons/kg-trash.svg?react';
 import {ProgressBar} from './ProgressBar';
 

@@ -1,4 +1,3 @@
-import React from 'react';
 import UnsplashImage from './UnsplashImage';
 import UnsplashSelector from './UnsplashSelector';
 import UnsplashZoomed from './UnsplashZoomed';

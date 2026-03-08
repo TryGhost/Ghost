@@ -1,6 +1,3 @@
-/* eslint-disable react/jsx-key */
-import React from 'react';
-
 import {LinkToolbar} from './LinkToolbar';
 
 const story = {

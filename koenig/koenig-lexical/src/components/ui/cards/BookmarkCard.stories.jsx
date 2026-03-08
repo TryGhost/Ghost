@@ -1,4 +1,3 @@
-import React from 'react';
 import populateEditor from '../../../utils/storybook/populate-storybook-editor';
 import {BookmarkCard} from './BookmarkCard';
 import {CardWrapper} from './../CardWrapper';

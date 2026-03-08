@@ -240,7 +240,7 @@ export default function useSettingsPanelReposition({positionToRef} = {}, cardWid
         try {
             setPosition(getInitialPosition(ref.current));
         } catch (e) {
-            console.error(e); // eslint-disable-line no-console
+            console.error(e);
         }
     }, [getInitialPosition, setPosition, ref]);
 

@@ -10,7 +10,7 @@ export const TogglePlugin = () => {
 
     React.useEffect(() => {
         if (!editor.hasNodes([ToggleNode])){
-            console.error('TogglePlugin: ToggleNode not registered'); // eslint-disable-line no-console
+            console.error('TogglePlugin: ToggleNode not registered');
             return;
         }
         return mergeRegister(
