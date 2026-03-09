@@ -5,7 +5,7 @@ import {type ErrorMessages, useForm} from '@tryghost/admin-x-framework/hooks';
 import {Form, PreviewModalContent, Select, type SelectOption, TextArea, TextField, Toggle, showToast} from '@tryghost/admin-x-design-system';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {type Offer, useAddOffer, useBrowseOffers, useEditOffer, useInvalidateOffers} from '@tryghost/admin-x-framework/api/offers';
-import {createOfferRedemptionsFilterUrl, formatOfferTimestamp} from './offer-helpers';
+import {createOfferRedemptionsFilterUrl, formatOfferTimestamp, generateRetentionOfferName} from './offer-helpers';
 import {getOfferPortalPreviewUrl, type offerPortalPreviewUrlTypes} from '../../../../utils/get-offers-portal-preview-url';
 import {getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {useEffect, useMemo, useState} from 'react';
@@ -35,6 +35,8 @@ const durationOptions: SelectOption[] = [
 ];
 
 const MAX_DISPLAY_TEXT_LENGTH = 191;
+const MAX_RETENTION_OFFER_MONTHS = 99;
+const RETENTION_MONTHS_ERROR_MESSAGE = `Enter a whole number of months between 1 and ${MAX_RETENTION_OFFER_MONTHS}.`;
 
 type RetentionOfferTerms = {
     type: 'percent';
@@ -172,7 +174,7 @@ const getTermsSignature = (terms: RetentionOfferTerms | null): string => {
 };
 
 const isValidMonthDuration = (value: number): boolean => {
-    return Number.isInteger(value) && value > 0;
+    return Number.isInteger(value) && value > 0 && value <= MAX_RETENTION_OFFER_MONTHS;
 };
 
 const hasFormChangesFromDefault = (formState: RetentionOfferFormState, defaultState: RetentionOfferFormState): boolean => {
@@ -198,6 +200,7 @@ const RetentionOfferSidebar: React.FC<{
     const availableDurationOptions = cadence === 'yearly'
         ? durationOptions.filter(option => option.value !== 'repeating')
         : durationOptions;
+
     return (
         <div className='flex grow flex-col pt-2'>
             <Form className='grow'>
@@ -451,27 +454,11 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
             const shouldCreateInactiveDraft = !formState.enabled && !editableRetentionOffer && hasFormChangesFromDefault(formState, defaultState);
 
             const createRetentionOffer = async (status: 'active' | 'archived') => {
-                const hash = crypto.getRandomValues(new Uint16Array(1))[0].toString(16).padStart(4, '0');
-
-                let offerDesc: string;
-                const isFreeMonths = formTerms.amount === 100 && formTerms.duration === 'repeating';
-                if (isFreeMonths) {
-                    const monthText = formTerms.durationInMonths === 1 ? 'free month' : 'free months';
-                    offerDesc = `${formTerms.durationInMonths} ${monthText}`;
-                } else {
-                    let durationText: string;
-                    if (formTerms.duration === 'once') {
-                        durationText = 'next payment';
-                    } else if (formTerms.duration === 'repeating') {
-                        durationText = `for ${formTerms.durationInMonths} ${formTerms.durationInMonths === 1 ? 'month' : 'months'}`;
-                    } else {
-                        durationText = 'forever';
-                    }
-                    offerDesc = `${formTerms.amount}% off ${durationText}`;
-                }
+                const hash = crypto.getRandomValues(new Uint32Array(1))[0].toString(16).padStart(8, '0');
+                const offerName = generateRetentionOfferName(formTerms, hash);
 
                 await addOffer({
-                    name: `Retention ${offerDesc} (${hash})`,
+                    name: offerName,
                     code: hash,
                     display_title: displayTitle,
                     display_description: displayDescription,
@@ -545,13 +532,13 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
                 }
 
                 if (formState.duration === 'repeating' && !isValidMonthDuration(formState.durationInMonths)) {
-                    newErrors.durationInMonths = 'Enter a whole number of months (1 or more).';
+                    newErrors.durationInMonths = RETENTION_MONTHS_ERROR_MESSAGE;
                 }
             }
 
             if (formState.type === 'free_months') {
                 if (!isValidMonthDuration(formState.freeMonths)) {
-                    newErrors.amount = 'Enter a whole number of free months (1 or more).';
+                    newErrors.amount = RETENTION_MONTHS_ERROR_MESSAGE;
                 }
             }
 
