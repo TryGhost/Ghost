@@ -1054,16 +1054,6 @@ jobs:
           path: docker-image-production.tar.gz
           retention-days: 1
 
-      - name: Extract core image SHA tag
-        id: core-sha-tag
-        run: |
-          SHA_TAG=$(echo "${{ steps.meta-core.outputs.tags }}" | grep "sha-" | head -n1)
-          if [ -z "$SHA_TAG" ]; then
-            echo "::error::Could not extract SHA tag from core image metadata"
-            exit 1
-          fi
-          echo "tag=$SHA_TAG" >> $GITHUB_OUTPUT
-
       - name: Inspect image size and layers
         shell: bash
         run: |
@@ -1115,7 +1105,6 @@ jobs:
     outputs:
       image-tags: ${{ steps.meta-full.outputs.tags }}
       use-artifact: ${{ steps.strategy.outputs.use-artifact }}
-      core-image-sha-tag: ${{ steps.core-sha-tag.outputs.tag }}
       admin-artifact-id: ${{ steps.upload-admin.outputs.artifact-id }}
 
   job_e2e_tests:

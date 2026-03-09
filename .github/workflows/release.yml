@@ -133,18 +133,7 @@ jobs:
           labels: ${{ steps.meta-full.outputs.labels }}
           cache-from: type=registry,ref=ghcr.io/tryghost/ghost:cache-main
 
-      - name: Extract core image SHA tag
-        id: core-sha-tag
-        run: |
-          SHA_TAG=$(echo "${{ steps.meta-core.outputs.tags }}" | grep "sha-" | head -n1)
-          if [ -z "$SHA_TAG" ]; then
-            echo "::error::Could not extract SHA tag from core image metadata"
-            exit 1
-          fi
-          echo "tag=$SHA_TAG" >> $GITHUB_OUTPUT
-
     outputs:
-      core-image-sha-tag: ${{ steps.core-sha-tag.outputs.tag }}
       admin-artifact-id: ${{ steps.upload-admin.outputs.artifact-id }}
 
   trigger_cd:
