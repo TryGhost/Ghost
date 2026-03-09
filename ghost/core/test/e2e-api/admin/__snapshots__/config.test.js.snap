@@ -22,6 +22,7 @@ Object {
       "lexicalIndicators": true,
       "members": true,
       "membersForward": true,
+      "pictureImageFormats": true,
       "retentionOffers": true,
       "stripeAutomaticTax": true,
       "superEditors": true,

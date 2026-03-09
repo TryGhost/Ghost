@@ -24,7 +24,8 @@ const GA_FEATURES = [
     'customFonts',
     'explore',
     'commentModeration',
-    'featurebaseFeedback'
+    'featurebaseFeedback',
+    'welcomeEmailEditor'
 ];
 
 // These features are considered publicly available and can be enabled/disabled by users
@@ -48,9 +49,9 @@ const PRIVATE_FEATURES = [
     'indexnow',
     'transistor',
     'retentionOffers',
-    'welcomeEmailEditor',
     'membersForward',
-    'welcomeEmailsDesignCustomization'
+    'welcomeEmailsDesignCustomization',
+    'pictureImageFormats'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

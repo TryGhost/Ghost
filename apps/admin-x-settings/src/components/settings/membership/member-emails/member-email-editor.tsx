@@ -84,7 +84,9 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
         //    placeholder translate-y lines up with the cursor
         '[&_.kg-inherit-styles_p]:mb-0!',
         // 3. Nudge nested editor text down to vertically align with the emoji
-        '[&_.kg-inherit-styles]:pt-[3px]!'
+        '[&_.kg-inherit-styles]:pt-[3px]!',
+        // CTA card: keep sponsor label at its intended 12.5px size
+        '[&_.koenig-lexical-cta-label_p]:!text-[12.5px]'
     );
 
     const registerEditorAPI = useCallback((API: KoenigInstance | null) => {
