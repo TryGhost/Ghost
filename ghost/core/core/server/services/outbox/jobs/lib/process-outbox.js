@@ -45,7 +45,6 @@ async function processOutbox() {
     try {
         await memberWelcomeEmailService.api.loadMemberWelcomeEmails();
     } catch (err) {
-        const errorMessage = err?.message ?? 'Unknown error';
         logging.error({
             system: {
                 event: 'outbox.init.failed'

@@ -85,7 +85,6 @@ async function processEntry({db, entry}) {
     try {
         await deleteProcessedEntry({db, entryId: entry.id});
     } catch (err) {
-        const cleanupError = err?.message ?? 'Unknown error';
         await markEntryCompleted({db, entryId: entry.id});
         logging.error({
             system: {
