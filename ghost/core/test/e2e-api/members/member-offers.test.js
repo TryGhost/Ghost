@@ -135,8 +135,6 @@ describe('Members API - Member Offers', function () {
 
                 assert.equal(body.offers.length, 1);
                 assert.equal(body.offers[0].id, offer.id);
-                assert.equal(body.offers[0].name, 'Test Retention Offer');
-                assert.equal(body.offers[0].code, 'test-retention');
                 assert.equal(body.offers[0].display_title, '20% off for 3 months');
                 assert.equal(body.offers[0].display_description, 'Stay with us!');
                 assert.equal(body.offers[0].type, 'percent');
@@ -145,6 +143,14 @@ describe('Members API - Member Offers', function () {
                 assert.equal(body.offers[0].duration_in_months, 3);
                 assert.equal(body.offers[0].cadence, cadence);
                 assert.equal(body.offers[0].redemption_type, 'retention');
+
+                // Ensure only public facing fields are returned
+                assert.equal(body.offers[0].name, undefined);
+                assert.equal(body.offers[0].code, undefined);
+                assert.equal(body.offers[0].currency_restriction, undefined);
+                assert.equal(body.offers[0].redemption_count, undefined);
+                assert.equal(body.offers[0].created_at, undefined);
+                assert.equal(body.offers[0].last_redeemed, undefined);
             } finally {
                 // Clean up
                 await models.Offer.destroy({id: offer.id});
