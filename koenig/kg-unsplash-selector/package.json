@@ -41,7 +41,7 @@
     "autoprefixer": "10.4.27",
     "concurrently": "9.2.1",
     "eslint": "9.37.0",
-    "typescript-eslint": "8.33.1",
+    "typescript-eslint": "8.56.1",
     "eslint-plugin-react-hooks": "4.6.2",
     "eslint-plugin-react-refresh": "0.5.2",
     "eslint-plugin-tailwindcss": "3.18.2",
