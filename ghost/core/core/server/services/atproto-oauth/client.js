@@ -118,7 +118,7 @@ async function authorize(handle) {
     }
 
     const url = await oauthClient.authorize(handle, {
-        scope: 'atproto transition:generic'
+        scope: 'atproto'
     });
 
     logging.info(`AT Proto OAuth: generated auth URL for ${handle}`);

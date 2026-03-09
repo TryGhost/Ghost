@@ -88,6 +88,7 @@ async function callback(req, res, next) {
                 email: syntheticEmail,
                 name: displayName,
                 status: 'free',
+                email_disabled: false,
                 atproto_did: did,
                 bluesky_handle: handle,
                 bluesky_avatar_url: avatarUrl

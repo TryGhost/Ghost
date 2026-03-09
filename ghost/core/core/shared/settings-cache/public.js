@@ -55,5 +55,6 @@ module.exports = {
     transistor_portal_description: 'transistor_portal_description',
     transistor_portal_button_text: 'transistor_portal_button_text',
     transistor_portal_url_template: 'transistor_portal_url_template',
-    site_uuid: 'site_uuid'
+    site_uuid: 'site_uuid',
+    atproto_oauth_enabled: 'atproto_oauth_enabled'
 };

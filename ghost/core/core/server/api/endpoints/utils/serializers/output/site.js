@@ -19,7 +19,8 @@ module.exports = {
                 'allow_external_signup',
                 'sentry_dsn',
                 'sentry_env',
-                'site_uuid'
+                'site_uuid',
+                'atproto_oauth_enabled'
             ])
         };
     }
