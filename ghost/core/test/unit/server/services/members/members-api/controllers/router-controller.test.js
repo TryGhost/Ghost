@@ -1395,7 +1395,7 @@ describe('RouterController', function () {
 
                 await assert.rejects(
                     routerController.verifyOTC(req, res),
-                    {code: 'INVALID_OTC_REF'}
+                    {code: 'INVALID_OTC'}
                 );
             });
 
