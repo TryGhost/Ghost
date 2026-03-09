@@ -262,7 +262,15 @@ class OEmbedService {
      * @param {string} url
      * @param {string} html
      *
-     * @returns {Promise<Object>}
+     * @returns {Promise<{
+     *     version: '1.0',
+     *     type: 'bookmark',
+     *     url: string,
+     *     metadata: Omit<import('metascraper').Metadata, 'image'|'logo'> & {
+     *         thumbnail?: string,
+     *         icon?: string
+     *     }
+     * }>}
      */
     async fetchBookmarkData(url, html, type) {
         const got = require('got');
