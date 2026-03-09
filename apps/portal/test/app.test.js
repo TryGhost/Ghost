@@ -80,6 +80,40 @@ describe('App', function () {
         });
     });
 
+    test('reloads page when popup closes with reloadOnPopupClose flag', () => {
+        const app = new App({siteUrl: 'http://example.com'});
+
+        window.location.reload = vi.fn();
+
+        app.state = {...app.state, showPopup: false, reloadOnPopupClose: true};
+        app.componentDidUpdate({}, {showPopup: true});
+
+        expect(window.location.reload).toHaveBeenCalledTimes(1);
+    });
+
+    test('does not reload when popup closes without reloadOnPopupClose flag', () => {
+        const app = new App({siteUrl: 'http://example.com'});
+
+        window.location.reload = vi.fn();
+
+        app.state = {...app.state, showPopup: false};
+        app.componentDidUpdate({}, {showPopup: true});
+
+        expect(window.location.reload).not.toHaveBeenCalled();
+    });
+
+    test('does not reload when reloadOnPopupClose is false', () => {
+        const app = new App({siteUrl: 'http://example.com'});
+
+        window.location.reload = vi.fn();
+
+        // Set reloadOnPopupClose to false explicitly and close the popup
+        app.state = {...app.state, showPopup: false, reloadOnPopupClose: false};
+        app.componentDidUpdate({}, {showPopup: true});
+
+        expect(window.location.reload).not.toHaveBeenCalled();
+    });
+
     test('parses retention offer preview query data into account cancellation flow', () => {
         const app = new App({siteUrl: 'http://example.com'});
         const previewData = app.fetchOfferQueryStrData('redemption_type=retention&display_title=Before%2520you%2520go&display_description=Please%2520stay&type=percent&amount=100&duration=repeating&duration_in_months=2&cadence=month&tier_id=product_123&enabled=false');

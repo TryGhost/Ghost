@@ -21,6 +21,7 @@ function togglePopup({state}) {
 function openPopup({data}) {
     return {
         showPopup: true,
+        reloadOnPopupClose: false,
         page: data.page,
         ...(data.pageQuery ? {pageQuery: data.pageQuery} : {}),
         ...(data.pageData ? {pageData: data.pageData} : {})
@@ -268,7 +269,8 @@ async function cancelSubscription({data, state, api}) {
         return {
             action,
             page: 'accountHome',
-            member: member
+            member: member,
+            reloadOnPopupClose: true
         };
     } catch (e) {
         return {
@@ -292,7 +294,8 @@ async function continueSubscription({data, state, api}) {
         return {
             action,
             page: 'accountHome',
-            member: member
+            member: member,
+            reloadOnPopupClose: true
         };
     } catch (e) {
         return {
@@ -319,6 +322,7 @@ async function applyOffer({data, state, api}) {
             page: 'accountHome',
             member: member,
             offers: [],
+            reloadOnPopupClose: true,
             popupNotification: createPopupNotification({
                 type: 'applyOffer:success', autoHide: true, closeable: true, state, status: 'success',
                 message: 'Offer applied successfully!'
