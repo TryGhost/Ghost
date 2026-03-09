@@ -95,6 +95,9 @@ export default class App extends React.Component {
                     } else {
                         window.document.body.style.marginRight = this.bodyMargin;
                     }
+                    if (this.state.reloadOnPopupClose) {
+                        window.location.reload();
+                    }
                 }
             } catch (e) {
                 /** Ignore any errors for scroll handling */
