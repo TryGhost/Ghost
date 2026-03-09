@@ -172,7 +172,7 @@ export function UnsubscribeModal({
                                     })}
                                     <input
                                         ref={inputRef}
-                                        className="min-w-[80px] flex-1 bg-transparent py-1 text-sm outline-none placeholder:text-muted-foreground"
+                                        className="min-w-[80px] flex-1 bg-transparent py-1 text-sm outline-hidden placeholder:text-muted-foreground"
                                         id="newsletter-search"
                                         placeholder={selectedIds.length === 0 ? 'Search newsletters...' : ''}
                                         value={search}
