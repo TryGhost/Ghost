@@ -28,7 +28,7 @@ describe('{{cancel_link}} helper', function () {
     const defaultLinkClass = /class="gh-subscription-cancel"/;
     const defaultErrorElementClass = /class="gh-error gh-error-subscription-cancel"/;
     const defaultCancelLinkText = /Cancel subscription/;
-    const defaultContinueLinkText = /Continue subscription/;
+    const defaultContinueLinkText = /Resume subscription/;
 
     it('should throw if subscription data is incorrect', function () {
         const runHelper = function (data) {
