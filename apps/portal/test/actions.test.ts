@@ -88,6 +88,45 @@ describe('startSigninOTCFromCustomForm action', () => {
     });
 });
 
+describe('continueSubscription action', () => {
+    test('returns reloadOnPopupClose on success', async () => {
+        const mockApi = {
+            member: {
+                updateSubscription: vi.fn(() => Promise.resolve()),
+                sessionData: vi.fn(() => Promise.resolve({name: 'Test', email: 'test@example.com'}))
+            }
+        };
+
+        const result = await ActionHandler({
+            action: 'continueSubscription',
+            data: {subscriptionId: 'sub_123'},
+            state: {},
+            api: mockApi
+        });
+
+        expect(result.reloadOnPopupClose).toBe(true);
+        expect(result.action).toBe('continueSubscription:success');
+    });
+
+    test('does not return reloadOnPopupClose on failure', async () => {
+        const mockApi = {
+            member: {
+                updateSubscription: vi.fn(() => Promise.reject(new Error('API error')))
+            }
+        };
+
+        const result = await ActionHandler({
+            action: 'continueSubscription',
+            data: {subscriptionId: 'sub_123'},
+            state: {},
+            api: mockApi
+        });
+
+        expect(result.reloadOnPopupClose).toBeUndefined();
+        expect(result.action).toBe('continueSubscription:failed');
+    });
+});
+
 describe('cancelSubscription action', () => {
     test('returns reloadOnPopupClose on success', async () => {
         const mockApi = {

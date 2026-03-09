@@ -294,7 +294,8 @@ async function continueSubscription({data, state, api}) {
         return {
             action,
             page: 'accountHome',
-            member: member
+            member: member,
+            reloadOnPopupClose: true
         };
     } catch (e) {
         return {
