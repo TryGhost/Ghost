@@ -689,8 +689,8 @@ test.describe('Offers', () => {
             });
 
             const createdOffer = (lastApiRequests.addOffer?.body as {offers: Array<{name: string; code: string}>})?.offers?.[0];
-            expect(createdOffer?.name).toMatch(/^Retention 35% off forever \([a-f0-9]{4}\)$/);
-            expect(createdOffer?.code).toMatch(/^[a-f0-9]{4}$/);
+            expect(createdOffer?.name).toMatch(/^Retention 35% off forever \([a-f0-9]{8}\)$/);
+            expect(createdOffer?.code).toMatch(/^[a-f0-9]{8}$/);
         });
 
         test('Edits existing retention offer when only display fields change', async ({page}) => {

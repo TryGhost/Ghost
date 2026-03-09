@@ -451,7 +451,7 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
             const shouldCreateInactiveDraft = !formState.enabled && !editableRetentionOffer && hasFormChangesFromDefault(formState, defaultState);
 
             const createRetentionOffer = async (status: 'active' | 'archived') => {
-                const hash = crypto.getRandomValues(new Uint16Array(1))[0].toString(16).padStart(4, '0');
+                const hash = crypto.getRandomValues(new Uint32Array(1))[0].toString(16).padStart(8, '0');
 
                 let offerDesc: string;
                 const isFreeMonths = formTerms.amount === 100 && formTerms.duration === 'repeating';
