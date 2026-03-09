@@ -51,7 +51,7 @@ async function processOutbox() {
                 event: 'outbox.init.failed'
             },
             err
-        }, `${OUTBOX_LOG_KEY} Service initialization failed: ${errorMessage}`);
+        }, `${OUTBOX_LOG_KEY} Service initialization failed.`);
         return `${OUTBOX_LOG_KEY} Job aborted: Service initialization failed`;
     }
 

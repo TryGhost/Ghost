@@ -68,7 +68,7 @@ async function processEntry({db, entry}) {
                     entry_id: entry.id
                 },
                 err
-            }, `${handler.LOG_KEY} Failed to parse payload for entry ${entry.id}: ${errorMessage}`);
+            }, `${handler.LOG_KEY} Failed to parse payload for entry ${entry.id}.`);
         } else {
             logging.error({
                 system: {
@@ -76,7 +76,7 @@ async function processEntry({db, entry}) {
                     entry_id: entry.id
                 },
                 err
-            }, `${handler.LOG_KEY} Failed to send to ${handler.getLogInfo(payload)}: ${errorMessage}`);
+            }, `${handler.LOG_KEY} Failed to send to ${handler.getLogInfo(payload)}.`);
         }
 
         return {success: false};
@@ -93,7 +93,7 @@ async function processEntry({db, entry}) {
                 entry_id: entry.id
             },
             err
-        }, `${handler.LOG_KEY} Sent to ${handler.getLogInfo(payload)} but failed to delete outbox entry ${entry.id}: ${cleanupError}`);
+        }, `${handler.LOG_KEY} Sent to ${handler.getLogInfo(payload)} but failed to delete outbox entry ${entry.id}.`);
     }
 
     return {success: true};
