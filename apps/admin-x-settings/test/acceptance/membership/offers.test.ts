@@ -546,12 +546,18 @@ test.describe('Offers', () => {
 
             await retentionModal.getByTestId('duration-months-input').fill('1.5');
             await saveButton.click();
-            await expect(retentionModal.getByText('Enter a whole number of months (1 or more).')).toBeVisible();
+            await expect(retentionModal.getByText('Enter a whole number of months between 1 and 99.')).toBeVisible();
+
+            await retentionModal.getByTestId('duration-months-input').fill('1000');
+            await expect(retentionModal.getByText('Enter a whole number of months between 1 and 99.')).toBeVisible();
 
             await retentionModal.getByRole('button', {name: /Free month\(s\)/}).click();
             await retentionModal.getByLabel('Free months').fill('0');
             await saveButton.click();
-            await expect(retentionModal.getByText('Enter a whole number of free months (1 or more).')).toBeVisible();
+            await expect(retentionModal.getByText('Enter a whole number of months between 1 and 99.')).toBeVisible();
+
+            await retentionModal.getByLabel('Free months').fill('1000');
+            await expect(retentionModal.getByText('Enter a whole number of months between 1 and 99.')).toBeVisible();
             await expect(saveButton).toBeEnabled();
         });
 
@@ -689,8 +695,8 @@ test.describe('Offers', () => {
             });
 
             const createdOffer = (lastApiRequests.addOffer?.body as {offers: Array<{name: string; code: string}>})?.offers?.[0];
-            expect(createdOffer?.name).toMatch(/^Retention 35% off forever \([a-f0-9]{4}\)$/);
-            expect(createdOffer?.code).toMatch(/^[a-f0-9]{4}$/);
+            expect(createdOffer?.name).toMatch(/^Retention 35% off forever \([a-f0-9]{8}\)$/);
+            expect(createdOffer?.code).toMatch(/^[a-f0-9]{8}$/);
         });
 
         test('Edits existing retention offer when only display fields change', async ({page}) => {
