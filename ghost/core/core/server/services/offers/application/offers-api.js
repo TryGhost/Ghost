@@ -180,7 +180,7 @@ class OffersAPI {
      * @param {string} options.tierId
      * @param {'month'|'year'} options.cadence
      * @param {'signup'|'retention'} [options.redemptionType]
-     * @returns {Promise<OfferMapper.OfferDTO[]>}
+     * @returns {Promise<OfferMapper.PublicOfferDTO[]>}
      */
     async listOffersAvailableToSubscription({subscriptionId, tierId, cadence, redemptionType}) {
         debug(`listOffersAvailableToSubscription: subscriptionId=${subscriptionId}, tierId=${tierId}, cadence=${cadence}, redemptionType=${redemptionType}`);
@@ -246,7 +246,7 @@ class OffersAPI {
             }
 
             debug(`listOffersAvailableToSubscription: returning ${available.length} available offers`);
-            return available.map(OfferMapper.toDTO);
+            return available.map(OfferMapper.toPublicDTO);
         });
     }
 
