@@ -91,34 +91,47 @@ Source of truth: branch-only commits vs `origin/main`, especially:
 
 For each batch of incoming commits, run these checks and patch the diff before pushing:
 
-1. Find old important prefix usage:
+1. Preflight gate: check Tailwind classname ordering before making any migration edits.
+```bash
+NX_DAEMON=false yarn nx run @tryghost/posts:lint
+NX_DAEMON=false yarn nx run @tryghost/admin:lint
+```
+- If lint fails with `tailwindcss/classnames-order`, run eslint `--fix` on touched files first, then continue with the migration updates.
+
+2. Find old important prefix usage:
 ```bash
 rg -n "(^|\\s)![a-zA-Z\\[]" apps/admin apps/shade apps/posts apps/stats apps/activitypub apps/admin-x-settings apps/admin-x-design-system
 ```
 
-2. Find outdated outline utility:
+3. Find outdated outline utility:
 ```bash
 rg -n "outline-none" apps/admin apps/shade apps/posts apps/stats apps/activitypub apps/admin-x-settings apps/admin-x-design-system
 ```
 
-3. Find old CSS var bracket syntax:
+4. Find old CSS var bracket syntax:
 ```bash
 rg -n "[a-z-]+-\\[--[^\\]]+\\]" apps/shade apps/posts apps/stats apps/activitypub apps/admin-x-settings apps/admin-x-design-system
 ```
 
-4. Find potentially double-wrapped color vars:
+5. Find potentially double-wrapped color vars:
 ```bash
 rg -n "hsl\\(var\\(--" apps/shade apps/posts apps/stats apps/activitypub apps/admin-x-settings apps/admin-x-design-system
 ```
 
-5. Prevent duplicate Shade CSS imports in embedded apps:
+6. Prevent duplicate Shade CSS imports in embedded apps:
 ```bash
 rg -n "@import \"@tryghost/shade/styles.css\"" apps/activitypub/src/styles apps/posts/src/styles apps/stats/src/styles
 ```
 
-6. Ensure admin entry keeps complete `@source` coverage:
+7. Ensure admin entry keeps complete `@source` coverage:
 ```bash
 rg -n "^@source " apps/admin/src/index.css
+```
+
+8. Post-update gate: rerun lint before pushing to catch ordering regressions introduced by class rewrites.
+```bash
+NX_DAEMON=false yarn nx run @tryghost/posts:lint
+NX_DAEMON=false yarn nx run @tryghost/admin:lint
 ```
 
 ## 5. Notes
