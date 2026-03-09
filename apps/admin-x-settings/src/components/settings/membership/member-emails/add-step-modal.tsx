@@ -1,7 +1,6 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
-import {Form, Modal, TextField} from '@tryghost/admin-x-design-system';
-import {showToast} from '@tryghost/admin-x-design-system';
+import {Modal, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {useAddAutomatedEmail} from '@tryghost/admin-x-framework/api/automated-emails';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 
@@ -22,7 +21,7 @@ const AddStepModal: React.FC<AddStepModalProps> = ({campaignType, nextSortOrder}
         initialState: {
             name: '',
             subject: '',
-            delay_days: '0'
+            delay_days: nextSortOrder === 0 ? '0' : '1'
         },
         onSave: async (state) => {
             await addAutomatedEmail({
@@ -31,7 +30,7 @@ const AddStepModal: React.FC<AddStepModalProps> = ({campaignType, nextSortOrder}
                 slug: `campaign-step-${campaignType}-${nextSortOrder}`,
                 lexical: EMPTY_LEXICAL,
                 campaign_type: campaignType,
-                delay_days: parseInt(state.delay_days) || 1,
+                delay_days: parseInt(state.delay_days) || 0,
                 sort_order: nextSortOrder,
                 version: 1,
                 status: 'active'
@@ -42,18 +41,25 @@ const AddStepModal: React.FC<AddStepModalProps> = ({campaignType, nextSortOrder}
         onValidate: (state) => {
             const newErrors: Record<string, string> = {};
             if (!state.name?.trim()) {
-                newErrors.name = 'A name is required';
+                newErrors.name = 'Required';
             }
             if (!state.subject?.trim()) {
-                newErrors.subject = 'A subject is required';
+                newErrors.subject = 'Required';
             }
             const days = parseInt(state.delay_days);
             if (isNaN(days) || days < 0) {
-                newErrors.delay_days = 'Delay must be 0 or more days';
+                newErrors.delay_days = 'Must be 0 or more';
             }
             return newErrors;
         }
     });
+
+    const delayDays = parseInt(formState.delay_days) || 0;
+    const delayHint = errors.delay_days || (
+        delayDays === 0
+            ? 'Sent immediately after previous step'
+            : `Sent ${delayDays} ${delayDays === 1 ? 'day' : 'days'} after previous step`
+    );
 
     return (
         <Modal
@@ -68,37 +74,35 @@ const AddStepModal: React.FC<AddStepModalProps> = ({campaignType, nextSortOrder}
                 }
             }}
         >
-            <div className='mt-5'>
-                <Form marginBottom={false} marginTop={false}>
-                    <TextField
-                        autoFocus={true}
-                        error={Boolean(errors.name)}
-                        hint={errors.name}
-                        placeholder='e.g. Getting started guide'
-                        title='Email name'
-                        value={formState.name}
-                        onChange={e => updateForm(state => ({...state, name: e.target.value}))}
-                        onKeyDown={() => clearError('name')}
-                    />
-                    <TextField
-                        error={Boolean(errors.subject)}
-                        hint={errors.subject}
-                        placeholder='e.g. Here are some tips to get started'
-                        title='Email subject'
-                        value={formState.subject}
-                        onChange={e => updateForm(state => ({...state, subject: e.target.value}))}
-                        onKeyDown={() => clearError('subject')}
-                    />
-                    <TextField
-                        error={Boolean(errors.delay_days)}
-                        hint={errors.delay_days || 'Number of days after the previous step (0 for immediate)'}
-                        title='Delay (days)'
-                        type='number'
-                        value={formState.delay_days}
-                        onChange={e => updateForm(state => ({...state, delay_days: e.target.value}))}
-                        onKeyDown={() => clearError('delay_days')}
-                    />
-                </Form>
+            <div className='mt-4 space-y-4'>
+                <TextField
+                    error={Boolean(errors.name)}
+                    hint={errors.name}
+                    placeholder='e.g. Getting started guide'
+                    title='Name'
+                    value={formState.name}
+                    autoFocus
+                    onChange={e => updateForm(state => ({...state, name: e.target.value}))}
+                    onKeyDown={() => clearError('name')}
+                />
+                <TextField
+                    error={Boolean(errors.subject)}
+                    hint={errors.subject}
+                    placeholder='e.g. Here are some tips to get started'
+                    title='Subject line'
+                    value={formState.subject}
+                    onChange={e => updateForm(state => ({...state, subject: e.target.value}))}
+                    onKeyDown={() => clearError('subject')}
+                />
+                <TextField
+                    error={Boolean(errors.delay_days)}
+                    hint={delayHint}
+                    title='Delay (days)'
+                    type='number'
+                    value={formState.delay_days}
+                    onChange={e => updateForm(state => ({...state, delay_days: e.target.value}))}
+                    onKeyDown={() => clearError('delay_days')}
+                />
             </div>
         </Modal>
     );

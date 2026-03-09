@@ -132,24 +132,14 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
     const emailTypeLabel = emailType === 'paid' ? 'Paid' : 'Free';
     const modalTitle = `${emailTypeLabel} members welcome email`;
 
-    const isCampaignStep = automatedEmail?.campaign_type != null;
-
     const {formState, saveState, updateForm, setFormState, handleSave, okProps, errors, validate} = useForm({
         initialState: {
             subject: automatedEmail?.subject || 'Welcome',
-            lexical: automatedEmail?.lexical || EMPTY_LEXICAL,
-            delay_days: String(automatedEmail?.delay_days ?? 0)
+            lexical: automatedEmail?.lexical || EMPTY_LEXICAL
         },
         savingDelay: 500,
         onSave: async (state) => {
-            const updates: Partial<AutomatedEmail> = {
-                subject: state.subject,
-                lexical: state.lexical
-            };
-            if (isCampaignStep) {
-                updates.delay_days = parseInt(state.delay_days) || 0;
-            }
-            await editAutomatedEmail({...automatedEmail, ...updates});
+            await editAutomatedEmail({...automatedEmail, subject: state.subject, lexical: state.lexical});
         },
         onSaveError: handleError,
         onValidate: (state) => {
@@ -301,21 +291,6 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                                 />
                             </div>
                         </div>
-                        {isCampaignStep && (
-                            <div className='flex items-center'>
-                                <div className='w-20 shrink-0 font-semibold'>Delay:</div>
-                                <div className='flex items-center gap-2'>
-                                    <div className='w-16'>
-                                        <TextField
-                                            type='number'
-                                            value={formState.delay_days}
-                                            onChange={e => updateForm(state => ({...state, delay_days: e.target.value}))}
-                                        />
-                                    </div>
-                                    <span className='text-sm text-grey-700 dark:text-grey-500'>days after previous step</span>
-                                </div>
-                            </div>
-                        )}
                     </div>
                     <div className='flex grow flex-col bg-grey-50 p-8 dark:bg-grey-975'>
                         <div
@@ -416,20 +391,6 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                                     />
                                 </div>
                             </div>
-                            {isCampaignStep && (
-                                <div className='flex items-center'>
-                                    <div className='w-20 shrink-0 text-sm font-semibold'>Delay:</div>
-                                    <div className='flex items-center gap-2'>
-                                        <TextField
-                                            className='w-20'
-                                            type='number'
-                                            value={formState.delay_days}
-                                            onChange={e => updateForm(state => ({...state, delay_days: e.target.value}))}
-                                        />
-                                        <span className='text-sm text-grey-700 dark:text-grey-500'>days after previous step (0 = immediate)</span>
-                                    </div>
-                                </div>
-                            )}
                         </div>
                     </EmailPreviewEmailHeader>
                     <EmailPreviewBody className={errors.lexical ? 'border border-red-500' : ''}>
