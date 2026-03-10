@@ -20,7 +20,7 @@
   "contributors": "https://github.com/TryGhost/Ghost/graphs/contributors",
   "license": "MIT",
   "scripts": {
-    "archive": "npm pack",
+    "archive": "yarn pack:standalone && tar -czf ghost-$(node -p \"require('./package.json').version\").tgz package && rm -rf package",
     "pack:standalone": "rm -rf package ghost-*.tgz && npm pack && tar -xzf ghost-*.tgz && cp ../../yarn.lock package/ && rm ghost-*.tgz",
     "dev": "nodemon index.js",
     "build:assets": "yarn build:assets:css && yarn build:assets:js",
