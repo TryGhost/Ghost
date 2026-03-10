@@ -1,4 +1,5 @@
 import NiceModal from '@ebay/nice-modal-react';
+import React from 'react';
 import {Modal} from '@tryghost/admin-x-design-system';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
@@ -11,7 +12,6 @@ const WelcomeEmailDesignModal: React.FC = () => {
                 updateRoute('memberemails');
             }}
             cancelLabel='Close'
-            footer={false}
             size='md'
             testId='welcome-email-design-modal'
             title='Welcome email design'
