@@ -31,6 +31,24 @@ describe('Dropzone Component', () => {
         assert.equal(trigger.getAttribute('tabindex'), '0', 'Drop target should be tabbable');
     });
 
+    it('opens the file dialog when activated with the keyboard', async () => {
+        const clickSpy = vi.spyOn(HTMLInputElement.prototype, 'click').mockImplementation(() => {});
+
+        render(
+            <Dropzone>
+                <span>Upload CSV</span>
+            </Dropzone>
+        );
+
+        const dropTarget = screen.getByRole('button', {name: /upload csv/i});
+
+        fireEvent.keyDown(dropTarget, {key: 'Enter', code: 'Enter', keyCode: 13, charCode: 13});
+
+        await waitFor(() => {
+            assert.equal(clickSpy.mock.calls.length, 1, 'Keyboard activation should open the file dialog');
+        });
+    });
+
     it('calls onDropAccepted for accepted files', async () => {
         const onDropAccepted = vi.fn();
         render(

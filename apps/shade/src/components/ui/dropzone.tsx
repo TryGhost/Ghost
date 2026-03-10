@@ -35,6 +35,7 @@ export const Dropzone = React.forwardRef<HTMLDivElement, DropzoneProps>(({
     const {
         getRootProps,
         getInputProps,
+        rootRef,
         isDragActive,
         isDragAccept,
         isDragReject,
@@ -54,23 +55,37 @@ export const Dropzone = React.forwardRef<HTMLDivElement, DropzoneProps>(({
         ? children({isDragActive, isDragAccept, isDragReject, isFocused, isFileDialogActive, open})
         : children;
 
+    const setRootRefs = (element: HTMLDivElement | null) => {
+        (rootRef as React.MutableRefObject<HTMLDivElement | null>).current = element;
+
+        if (typeof ref === 'function') {
+            ref(element);
+        } else if (ref) {
+            ref.current = element;
+        }
+    };
+
+    const dropzoneRootProps = getRootProps({
+        ...props,
+        role: 'button',
+        tabIndex: disabled ? -1 : 0,
+        'aria-disabled': disabled,
+        className: cn(
+            'flex cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed p-10 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 [&>*:not(input)]:pointer-events-none',
+            disabled && 'cursor-not-allowed opacity-60 pointer-events-none',
+            isDragAccept && 'border-green-500 bg-green-50 dark:bg-green-950/20',
+            isDragReject && 'border-red-500 bg-red-50 dark:bg-red-950/20',
+            !isDragAccept && !isDragReject && (disabled ? 'border-grey-300' : 'border-grey-300 hover:border-grey-400'),
+            className
+        )
+    }) as React.HTMLAttributes<HTMLDivElement> & {ref?: React.Ref<HTMLDivElement>};
+
+    const {ref: _dropzoneRef, ...rootProps} = dropzoneRootProps;
+
     return (
         <div
-            {...getRootProps({
-                ...props,
-                ref,
-                role: 'button',
-                tabIndex: disabled ? -1 : 0,
-                'aria-disabled': disabled,
-                className: cn(
-                    'flex cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed p-10 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 [&>*:not(input)]:pointer-events-none',
-                    disabled && 'cursor-not-allowed opacity-60 pointer-events-none',
-                    isDragAccept && 'border-green-500 bg-green-50 dark:bg-green-950/20',
-                    isDragReject && 'border-red-500 bg-red-50 dark:bg-red-950/20',
-                    !isDragAccept && !isDragReject && (disabled ? 'border-grey-300' : 'border-grey-300 hover:border-grey-400'),
-                    className
-                )
-            })}
+            ref={setRootRefs}
+            {...rootProps}
         >
             <input {...getInputProps()} />
             {content}
