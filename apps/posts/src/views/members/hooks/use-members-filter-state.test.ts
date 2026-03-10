@@ -17,4 +17,40 @@ describe('use-members-filter-state URL helpers', () => {
             {field: 'status', operator: 'is_not', values: ['free']}
         ]);
     });
+
+    it('parses legacy ember filter query params for subscribed filters', () => {
+        const params = new URLSearchParams({
+            filter: '(subscribed:true+email_disabled:0)'
+        });
+
+        const parsed = searchParamsToFilters(params);
+
+        expect(parsed.map(({field, operator, values}) => ({field, operator, values}))).toEqual([
+            {field: 'subscribed', operator: 'is', values: ['subscribed']}
+        ]);
+    });
+
+    it('parses legacy ember filter query params for scalar field filters', () => {
+        const params = new URLSearchParams({
+            filter: 'status:paid'
+        });
+
+        const parsed = searchParamsToFilters(params);
+
+        expect(parsed.map(({field, operator, values}) => ({field, operator, values}))).toEqual([
+            {field: 'status', operator: 'is', values: ['paid']}
+        ]);
+    });
+
+    it('parses legacy ember filter query params for negated scalar field filters', () => {
+        const params = new URLSearchParams({
+            filter: 'status:-free'
+        });
+
+        const parsed = searchParamsToFilters(params);
+
+        expect(parsed.map(({field, operator, values}) => ({field, operator, values}))).toEqual([
+            {field: 'status', operator: 'is-not', values: ['free']}
+        ]);
+    });
 });

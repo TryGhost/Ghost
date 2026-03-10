@@ -3,6 +3,7 @@ import {useSearchParams} from '@tryghost/admin-x-framework';
 import type {Filter} from '@tryghost/shade';
 import {parsePredicateParams, serializePredicateParams} from '@src/views/filters/url-predicate-params';
 import moment from 'moment-timezone';
+import nql from '@tryghost/nql-lang';
 
 /**
  * Member filter field keys - single source of truth for filter definitions
@@ -272,11 +273,102 @@ export function buildMemberNqlFilter(filters: Filter[], options: {timezone?: str
     return parts.length ? parts.join('+') : undefined;
 }
 
+function parseLegacySubscribedFilter(filterNode: Record<string, unknown>): Filter | undefined {
+    const comparator = ('$and' in filterNode && Array.isArray(filterNode.$and))
+        ? filterNode.$and
+        : (('$or' in filterNode && Array.isArray(filterNode.$or)) ? filterNode.$or : undefined);
+
+    if (!comparator || comparator.length !== 2) {
+        if ('email_disabled' in filterNode) {
+            return {
+                id: 'subscribed-legacy',
+                field: 'subscribed',
+                operator: 'is',
+                values: [filterNode.email_disabled ? 'email-disabled' : 'unsubscribed']
+            };
+        }
+
+        return undefined;
+    }
+
+    const [subscriptionNode, emailDisabledNode] = comparator as Array<Record<string, unknown>>;
+
+    if (!('subscribed' in subscriptionNode) || !('email_disabled' in emailDisabledNode)) {
+        return undefined;
+    }
+
+    const usedOr = '$or' in filterNode;
+    const subscribed = subscriptionNode.subscribed;
+
+    if (typeof subscribed !== 'boolean') {
+        return undefined;
+    }
+
+    return {
+        id: 'subscribed-legacy',
+        field: 'subscribed',
+        operator: usedOr ? 'is-not' : 'is',
+        values: [subscribed ? 'subscribed' : 'unsubscribed']
+    };
+}
+
+function parseLegacySimpleFilter(filterNode: Record<string, unknown>): Filter | undefined {
+    const entries = Object.entries(filterNode);
+
+    if (entries.length !== 1) {
+        return undefined;
+    }
+
+    const [field, rawValue] = entries[0];
+    const isNewsletterField = field.startsWith('newsletters.');
+
+    if (!isNewsletterField && !MEMBER_FILTER_FIELDS.includes(field as MemberFilterField)) {
+        return undefined;
+    }
+
+    if (typeof rawValue === 'string' || typeof rawValue === 'number' || typeof rawValue === 'boolean') {
+        return {
+            id: `${field}-legacy`,
+            field,
+            operator: 'is',
+            values: [String(rawValue)]
+        };
+    }
+
+    if (rawValue && typeof rawValue === 'object' && '$ne' in rawValue) {
+        return {
+            id: `${field}-legacy`,
+            field,
+            operator: 'is-not',
+            values: [String(rawValue.$ne)]
+        };
+    }
+
+    return undefined;
+}
+
+function parseLegacyFilterParam(filterParam: string): Filter[] {
+    try {
+        const parsedFilter = nql.parse(filterParam) as Record<string, unknown>;
+        const subscribedFilter = parseLegacySubscribedFilter(parsedFilter);
+
+        if (subscribedFilter) {
+            return [subscribedFilter];
+        }
+
+        const simpleFilter = parseLegacySimpleFilter(parsedFilter);
+
+        return simpleFilter ? [simpleFilter] : [];
+    } catch {
+        return [];
+    }
+}
+
 /**
  * Parse URL search params into Filter objects
  */
 export function searchParamsToFilters(searchParams: URLSearchParams): Filter[] {
-    return parsePredicateParams({
+    const predicateFilters = parsePredicateParams({
         params: searchParams,
         multiselectFields: MULTISELECT_FIELDS,
         ignoredFields: new Set(['search'])
@@ -289,6 +381,11 @@ export function searchParamsToFilters(searchParams: URLSearchParams): Filter[] {
         operator: predicate.operator,
         values: predicate.values
     }));
+
+    const legacyFilters = searchParams.getAll('filter')
+        .flatMap(filterParam => parseLegacyFilterParam(filterParam));
+
+    return legacyFilters.length > 0 ? legacyFilters : predicateFilters;
 }
 
 /**
