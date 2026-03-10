@@ -8,9 +8,10 @@ const getDiscountWindow = require('./get-discount-window');
  *
  * @param {object} subscriptionModel - Bookshelf model for members_stripe_customers_subscriptions
  * @param {object} offersAPI - OffersAPI instance with getOffer()
+ * @param {object} [options] - Optional query options such as transacting
  * @returns {Promise<boolean>}
  */
-module.exports = async function hasActiveOffer(subscriptionModel, offersAPI) {
+module.exports = async function hasActiveOffer(subscriptionModel, offersAPI, options = {}) {
     const subscriptionData = {
         discount_start: subscriptionModel.get('discount_start'),
         discount_end: subscriptionModel.get('discount_end'),
@@ -32,7 +33,7 @@ module.exports = async function hasActiveOffer(subscriptionModel, offersAPI) {
 
     // Look up the offer to determine if it's still active based on duration
     try {
-        const offer = await offersAPI.getOffer({id: offerId});
+        const offer = await offersAPI.getOffer({id: offerId}, options);
         if (!offer) {
             return false;
         }
