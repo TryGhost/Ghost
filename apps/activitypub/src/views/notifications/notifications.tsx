@@ -490,7 +490,7 @@ const Notifications: React.FC = () => {
                             </div>
                             <div ref={loadMoreRef} className='h-1'></div>
                             {isFetchingNextPage && (
-                                <div className='-mt-4 mb-8 flex flex-col items-center justify-center space-y-4 text-center'>
+                                <div className='-mt-4 mb-8 flex flex-col items-center justify-center gap-4 text-center'>
                                     <LoadingIndicator size='md' />
                                 </div>
                             )}

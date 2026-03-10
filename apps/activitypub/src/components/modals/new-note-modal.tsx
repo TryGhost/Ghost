@@ -385,7 +385,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
                 }
                 <DialogFooter className={`${isSticky ? 'sticky' : 'static'} bottom-0 flex-row bg-background py-6 dark:bg-[#101114]`}>
                     <Button className='min-w-0! mr-auto w-[34px]' variant='outline' onClick={() => imageInputRef.current?.click()}><LucideIcon.Image /></Button>
-                    <div className='flex items-center space-x-3'>
+                    <div className='flex items-center gap-3'>
                         <div className={`text-sm ${content.length >= MAX_CONTENT_LENGTH ? 'text-red-500' : content.length >= MAX_CONTENT_LENGTH * 0.9 ? 'text-yellow-600' : 'text-gray-500'}`}>
                             {content.length}/{MAX_CONTENT_LENGTH}
                         </div>
