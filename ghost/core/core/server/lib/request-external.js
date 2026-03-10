@@ -4,6 +4,7 @@
  */
 
 const got = /** @type {Got} */ (/** @type {unknown} */ (require('got')));
+const dns = require('dns');
 const net = require('net');
 const dnsPromises = require('dns').promises;
 const errors = require('@tryghost/errors');
@@ -210,8 +211,65 @@ async function disableRetries(options) {
     options.timeout = 5000;
 }
 
+/**
+ * Install a custom dnsLookup on the request options that validates the resolved
+ * IP at connection time. This eliminates the DNS rebinding / TOCTOU gap between
+ * the beforeRequest DNS check and the actual TCP connection: the IP validated
+ * here is the same one Node's http module will connect to.
+ */
+function installSafeDnsLookup(options) {
+    if (config.get('env') === 'development') {
+        return;
+    }
+
+    const siteUrl = new URL(config.get('url'));
+    if (options.url.host === siteUrl.host) {
+        return;
+    }
+
+    const requestHref = options.url.href;
+    // Use 'lookup' (the native http.request option) rather than 'dnsLookup'
+    // (got's public API property which doesn't flow to the native request).
+    options.lookup = (hostname, dnsOpts, callback) => {
+        if (typeof dnsOpts === 'function') {
+            callback = dnsOpts;
+            dnsOpts = {};
+        }
+        dns.lookup(hostname, dnsOpts, (err, addressOrResult, family) => {
+            if (err) {
+                return callback(err, addressOrResult, family);
+            }
+            // When all:true, result is an array of {address, family} objects
+            if (dnsOpts && dnsOpts.all) {
+                const results = /** @type {{address: string, family: number}[]} */ (addressOrResult);
+                for (const entry of results) {
+                    if (isPrivateIp(entry.address)) {
+                        return callback(new errors.InternalServerError({
+                            message: 'URL resolves to a non-permitted private IP block',
+                            code: 'URL_PRIVATE_INVALID',
+                            context: requestHref
+                        }));
+                    }
+                }
+                return callback(null, results);
+            }
+            if (isPrivateIp(/** @type {string} */ (addressOrResult))) {
+                return callback(new errors.InternalServerError({
+                    message: 'URL resolves to a non-permitted private IP block',
+                    code: 'URL_PRIVATE_INVALID',
+                    context: requestHref
+                }));
+            }
+            callback(null, addressOrResult, family);
+        });
+    };
+}
+
 // same as our normal request lib but if any request in a redirect chain resolves
 // to a private IP address it will be blocked before the request is made.
+// The beforeRequest hooks provide a first-pass DNS check with clear error messages.
+// installSafeDnsLookup provides the authoritative gate at the connection layer,
+// preventing DNS rebinding attacks where the IP changes between check and connect.
 /** @type {ExtendOptions} */
 const gotOpts = {
     headers: {
@@ -220,11 +278,12 @@ const gotOpts = {
     timeout: 10000, // default is no timeout
     hooks: {
         init: process.env.NODE_ENV?.startsWith('test') ? [disableRetries] : [],
-        beforeRequest: [errorIfInvalidUrl, errorIfHostnameResolvesToPrivateIp],
-        beforeRedirect: [errorIfHostnameResolvesToPrivateIp]
+        beforeRequest: [errorIfInvalidUrl, errorIfHostnameResolvesToPrivateIp, installSafeDnsLookup],
+        beforeRedirect: [errorIfHostnameResolvesToPrivateIp, installSafeDnsLookup]
     }
 };
 
 const externalRequest = got.extend(gotOpts);
 externalRequest.isPrivateIp = isPrivateIp;
+externalRequest._installSafeDnsLookup = installSafeDnsLookup;
 module.exports = externalRequest;
