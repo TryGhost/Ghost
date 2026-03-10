@@ -10,6 +10,7 @@ import {useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
 import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {useMembersFilterConfig} from '../hooks/use-members-filter-config';
 import {useResourceSearch} from '../hooks/use-resource-search';
+import {buildMemberFilterUiState, restoreMemberFiltersFromUi} from './member-filter-ui';
 
 /**
  * Build a map of synthetic retention IDs to their underlying real offer IDs.
@@ -144,12 +145,21 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
         });
     }, [filters, retentionMap]);
 
+    const filterUiState = useMemo(() => {
+        return buildMemberFilterUiState({
+            fieldGroups: filterFields,
+            filters: displayFilters
+        });
+    }, [displayFilters, filterFields]);
+
     const handleFiltersChange = useCallback((newFilters: Filter[]) => {
+        const restoredFilters = restoreMemberFiltersFromUi(newFilters, filterUiState.fieldKeyMap);
+
         if (retentionMap.size === 0) {
-            onFiltersChange(newFilters);
+            onFiltersChange(restoredFilters);
             return;
         }
-        const expanded = newFilters.map((filter) => {
+        const expanded = restoredFilters.map((filter) => {
             if (filter.field !== 'offer_redemptions') {
                 return filter;
             }
@@ -165,7 +175,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
             return {...filter, values: [...new Set(values)]};
         });
         onFiltersChange(expanded);
-    }, [onFiltersChange, retentionMap]);
+    }, [filterUiState.fieldKeyMap, onFiltersChange, retentionMap]);
 
     // Resource search hooks for post/page and email pickers
     const postSearch = useResourceSearch('post');
@@ -217,8 +227,8 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
             clearButtonClassName="font-normal text-muted-foreground"
             clearButtonIcon={<LucideIcon.X />}
             clearButtonText="Clear"
-            fields={filterFields}
-            filters={displayFilters}
+            fields={filterUiState.displayGroups}
+            filters={filterUiState.displayFilters}
             keyboardShortcut="f"
             popoverAlign={hasFilters ? 'start' : 'end'}
             showClearButton={hasFilters}
