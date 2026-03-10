@@ -335,15 +335,8 @@ describe('Domain Warming Integration Tests', function () {
                 assert.ok(csdCount > 0, `Day ${day}: Should send via custom domain`);
                 assert.ok(csdCount <= totalCount, `Day ${day}: CSD count should not exceed total`);
 
-                // Fake timer resets can land slightly before the original day-0 send timestamp,
-                // making warmup day calculation off by one near boundaries.
                 const expectedLimit = Math.min(totalCount, getExpectedLimit(day));
-                const previousDayExpectedLimit = Math.min(totalCount, getExpectedLimit(Math.max(day - 1, 0)));
-
-                assert.ok(
-                    csdCount === expectedLimit || csdCount === previousDayExpectedLimit,
-                    `Day ${day}: Should match time-based warmup limit (current or previous day boundary)`
-                );
+                assert.equal(csdCount, expectedLimit, `Day ${day}: Should match time-based warmup limit`);
 
                 if (previousCsdCount > 0) {
                     assert.ok(csdCount >= previousCsdCount, `Day ${day}: Should not decrease from previous day`);
