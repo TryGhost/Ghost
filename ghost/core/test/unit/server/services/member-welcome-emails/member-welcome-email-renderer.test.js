@@ -486,6 +486,71 @@ describe('MemberWelcomeEmailRenderer', function () {
             assert(result.html.includes('Embed note'));
         });
 
+        it('applies call-to-action and product card styles', async function () {
+            lexicalRenderStub.resolves(`
+                <table class="kg-card kg-cta-card kg-cta-bg-none kg-cta-immersive kg-cta-link-accent" border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                        <td class="kg-cta-sponsor-label"><p><a href="https://example.com/sponsor">Sponsor</a></p></td>
+                    </tr>
+                    <tr>
+                        <td class="kg-cta-content">
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%" class="kg-cta-content-wrapper">
+                                <tr>
+                                    <td class="kg-cta-text"><p>CTA body with <a href="https://example.com/cta">link</a></p></td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+                <table class="kg-product-card" cellspacing="0" cellpadding="0" border="0">
+                    <tr>
+                        <td class="kg-product-card-container">
+                            <table cellspacing="0" cellpadding="0" border="0">
+                                <tr>
+                                    <td class="kg-product-image" align="center">
+                                        <img src="https://example.com/product.jpg" border="0"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td valign="top">
+                                        <h4 class="kg-product-title">Product title</h4>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="kg-product-description-wrapper"><p>Product description</p></td>
+                                </tr>
+                                <tr>
+                                    <td class="kg-product-button-wrapper">
+                                        <table class="btn" border="0" cellspacing="0" cellpadding="0">
+                                            <tr>
+                                                <td align="center"><a href="https://example.com/buy">Buy now</a></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            `);
+            const renderer = new MemberWelcomeEmailRenderer({t: key => key});
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Welcome!',
+                member: {name: 'John', email: 'john@example.com'},
+                siteSettings: defaultSiteSettings
+            });
+
+            assert.match(result.html, /class="kg-card kg-cta-card kg-cta-bg-none kg-cta-immersive kg-cta-link-accent"[^>]*style="[^"]*border-bottom: 1px solid #e0e7eb/);
+            assert.match(result.html, /class="kg-cta-sponsor-label"[^>]*style="[^"]*border-bottom: 1px solid #e0e7eb/);
+            assert.match(result.html, /class="kg-product-card"[^>]*style="[^"]*background-color: rgba\(255, 255, 255, 0.25\)/);
+
+            const productButtonTableMatch = result.html.match(/class="kg-product-button-wrapper"[\s\S]*?<table[^>]*class="btn"[^>]*style="([^"]*)"/);
+            assert(productButtonTableMatch, 'product button table should have inline styles');
+            assert(productButtonTableMatch[1].includes('width: 100%'), 'product button table should have width: 100%');
+        });
+
         it('does not inline margin 0 auto on button tables that would override alignment', async function () {
             lexicalRenderStub.resolves(`
                 <table class="kg-card kg-button-card" border="0" cellpadding="0" cellspacing="0">

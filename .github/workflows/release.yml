@@ -1,0 +1,156 @@
+name: Release CI
+run-name: "Release CI — ${{ github.ref_name }}"
+
+on:
+  push:
+    tags: ['v[0-9]*']
+
+env:
+  FORCE_COLOR: 1
+  HEAD_COMMIT: ${{ github.sha }}
+  CACHED_DEPENDENCY_PATHS: |
+    ${{ github.workspace }}/node_modules
+    ${{ github.workspace }}/apps/*/node_modules
+    ${{ github.workspace }}/ghost/*/node_modules
+    ${{ github.workspace }}/e2e/node_modules
+    ~/.cache/ms-playwright/
+  NX_REJECT_UNKNOWN_LOCAL_CACHE: 0
+  NODE_VERSION: 22.18.0
+
+jobs:
+  build:
+    name: Build & Push Release Images
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - uses: actions/setup-node@v4
+        env:
+          FORCE_COLOR: 0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Restore caches
+        uses: ./.github/actions/restore-cache
+        env:
+          DEPENDENCY_CACHE_KEY: dep-cache-${{ hashFiles('yarn.lock') }}-${{ github.sha }}
+
+      - name: Verify tag matches package.json
+        run: |
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          if [ "$PKG_VERSION" != "$TAG_VERSION" ]; then
+            echo "::error::Tag ${GITHUB_REF_NAME} doesn't match package.json version ${PKG_VERSION}"
+            exit 1
+          fi
+
+      - name: Build server and admin assets
+        run: yarn build:production
+
+      - name: Pack standalone distribution
+        run: yarn workspace ghost pack:standalone
+
+      - name: Prepare Docker build context
+        run: mv ghost/core/package/ /tmp/ghost-production/
+
+      - name: Upload admin artifact for CD
+        id: upload-admin
+        uses: actions/upload-artifact@v4
+        with:
+          name: admin-build-cd
+          path: apps/admin/dist
+          retention-days: 7
+          if-no-files-found: error
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker meta (core)
+        id: meta-core
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/tryghost/ghost-core
+          tags: |
+            type=semver,pattern=v{{version}}
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha
+          labels: |
+            org.opencontainers.image.title=Ghost Core
+            org.opencontainers.image.description=Ghost production build (server only, no admin)
+            org.opencontainers.image.vendor=TryGhost
+
+      - name: Docker meta (full)
+        id: meta-full
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/tryghost/ghost
+          tags: |
+            type=semver,pattern=v{{version}}
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha
+            type=raw,value=latest
+          labels: |
+            org.opencontainers.image.title=Ghost
+            org.opencontainers.image.description=Ghost production build (server + admin)
+            org.opencontainers.image.vendor=TryGhost
+
+      - name: Build & push core image
+        uses: docker/build-push-action@v6
+        with:
+          context: /tmp/ghost-production
+          file: Dockerfile.production
+          target: core
+          build-args: NODE_VERSION=${{ env.NODE_VERSION }}
+          push: true
+          tags: ${{ steps.meta-core.outputs.tags }}
+          labels: ${{ steps.meta-core.outputs.labels }}
+          cache-from: type=registry,ref=ghcr.io/tryghost/ghost-core:cache-main
+
+      - name: Build & push full image
+        uses: docker/build-push-action@v6
+        with:
+          context: /tmp/ghost-production
+          file: Dockerfile.production
+          target: full
+          build-args: NODE_VERSION=${{ env.NODE_VERSION }}
+          push: true
+          tags: ${{ steps.meta-full.outputs.tags }}
+          labels: ${{ steps.meta-full.outputs.labels }}
+          cache-from: type=registry,ref=ghcr.io/tryghost/ghost:cache-main
+
+    outputs:
+      admin-artifact-id: ${{ steps.upload-admin.outputs.artifact-id }}
+
+  trigger_cd:
+    needs: [build]
+    name: Trigger Pro CD
+    runs-on: ubuntu-latest
+    if: github.repository == 'TryGhost/Ghost'
+    steps:
+      - name: Dispatch to Ghost-Moya cd.yml
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.CANARY_DOCKER_BUILD }}
+          repository: TryGhost/Ghost-Moya
+          event-type: ghost-artifacts-ready
+          client-payload: >-
+            {
+              "ref": "${{ github.ref_name }}",
+              "admin_artifact_id": "${{ needs.build.outputs.admin-artifact-id }}",
+              "admin_artifact_run_id": "${{ github.run_id }}"
+            }

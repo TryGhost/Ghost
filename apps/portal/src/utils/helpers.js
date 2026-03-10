@@ -941,13 +941,29 @@ export function addMonths(date, numberOfMonths = 1) {
         return null;
     }
 
+    if (!Number.isInteger(numberOfMonths) || numberOfMonths < 1) {
+        return originalDate;
+    }
+
     const originalDay = originalDate.getUTCDate();
+    const originalHours = originalDate.getUTCHours();
+    const originalMinutes = originalDate.getUTCMinutes();
+    const originalSeconds = originalDate.getUTCSeconds();
+    const originalMilliseconds = originalDate.getUTCMilliseconds();
     let targetMonth = originalDate.getUTCMonth() + numberOfMonths;
     let targetYear = originalDate.getUTCFullYear() + Math.floor(targetMonth / 12);
     targetMonth = targetMonth % 12;
     const daysInTargetMonth = new Date(Date.UTC(targetYear, targetMonth + 1, 0)).getUTCDate();
 
-    return new Date(Date.UTC(targetYear, targetMonth, Math.min(originalDay, daysInTargetMonth)));
+    return new Date(Date.UTC(
+        targetYear,
+        targetMonth,
+        Math.min(originalDay, daysInTargetMonth),
+        originalHours,
+        originalMinutes,
+        originalSeconds,
+        originalMilliseconds
+    ));
 }
 
 // Check if member is a recent member, i.e. created in last 24 hours

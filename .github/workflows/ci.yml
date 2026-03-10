@@ -944,23 +944,39 @@ jobs:
       - name: Determine push strategy
         id: strategy
         run: |
-          # Use artifact-based image transfer (instead of GHCR) for fork PRs
-          # and non-main repos (e.g. Ghost-Security)
+          # Same-org repos (e.g. TryGhost/Ghost, TryGhost/Ghost-Security) push to GHCR.
+          # External forks and cross-repo PRs use artifact-based image transfer instead.
           USE_ARTIFACT="false"
-          if [ "${{ github.repository }}" != "TryGhost/Ghost" ]; then
+          if [ "${{ github.repository_owner }}" != "TryGhost" ]; then
+            # External fork — no GHCR push
             USE_ARTIFACT="true"
           elif [ "${{ github.event_name }}" = "pull_request" ] && \
                [ "${{ github.event.pull_request.head.repo.full_name }}" != "${{ github.repository }}" ]; then
+            # Cross-repo PR (fork PR into this repo) — no GHCR push
             USE_ARTIFACT="true"
           fi
+
           OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+
+          # Derive GHCR image names from repository name so each repo gets its own namespace
+          # TryGhost/Ghost → ghost-core / ghost, TryGhost/Ghost-Security → ghost-security-core / ghost-security
+          REPO_NAME=$(echo "${{ github.event.repository.name }}" | tr '[:upper:]' '[:lower:]')
+          if [ "$REPO_NAME" = "ghost" ]; then
+            IMAGE_CORE_NAME="ghcr.io/${OWNER}/ghost-core"
+            IMAGE_FULL_NAME="ghcr.io/${OWNER}/ghost"
+          else
+            IMAGE_CORE_NAME="ghcr.io/${OWNER}/${REPO_NAME}-core"
+            IMAGE_FULL_NAME="ghcr.io/${OWNER}/${REPO_NAME}"
+          fi
+
           echo "use-artifact=$USE_ARTIFACT" >> $GITHUB_OUTPUT
           echo "should-push=$( [ "$USE_ARTIFACT" = "false" ] && echo "true" || echo "false" )" >> $GITHUB_OUTPUT
           echo "owner=$OWNER" >> $GITHUB_OUTPUT
+          echo "image-core-name=$IMAGE_CORE_NAME" >> $GITHUB_OUTPUT
+          echo "image-full-name=$IMAGE_FULL_NAME" >> $GITHUB_OUTPUT
 
       - name: Upload admin artifact for CD
         id: upload-admin
-        if: steps.strategy.outputs.use-artifact == 'false'
         uses: actions/upload-artifact@v4
         with:
           name: admin-build-cd
@@ -983,7 +999,7 @@ jobs:
         id: meta-core
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ steps.strategy.outputs.owner }}/ghost-core
+          images: ${{ steps.strategy.outputs.image-core-name }}
           tags: |
             type=ref,event=branch
             type=ref,event=pr
@@ -998,7 +1014,7 @@ jobs:
         id: meta-full
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ steps.strategy.outputs.owner }}/ghost
+          images: ${{ steps.strategy.outputs.image-full-name }}
           tags: |
             type=ref,event=branch
             type=ref,event=pr
@@ -1020,8 +1036,8 @@ jobs:
           load: ${{ steps.strategy.outputs.should-push == 'false' }}
           tags: ${{ steps.meta-core.outputs.tags }}
           labels: ${{ steps.meta-core.outputs.labels }}
-          cache-from: type=registry,ref=ghcr.io/${{ steps.strategy.outputs.owner }}/ghost-core:cache-main
-          cache-to: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref=ghcr.io/{0}/ghost-core:cache-{1},mode=max', steps.strategy.outputs.owner, github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main') || '' }}
+          cache-from: type=registry,ref=${{ steps.strategy.outputs.image-core-name }}:cache-main
+          cache-to: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref={0}:cache-{1},mode=max', steps.strategy.outputs.image-core-name, github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main') || '' }}
 
       - name: Build & push full image
         uses: docker/build-push-action@v6
@@ -1034,11 +1050,10 @@ jobs:
           load: true
           tags: ${{ steps.meta-full.outputs.tags }}
           labels: ${{ steps.meta-full.outputs.labels }}
-          cache-from: type=registry,ref=ghcr.io/${{ steps.strategy.outputs.owner }}/ghost:cache-main
-          cache-to: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref=ghcr.io/{0}/ghost:cache-{1},mode=max', steps.strategy.outputs.owner, github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main') || '' }}
+          cache-from: type=registry,ref=${{ steps.strategy.outputs.image-full-name }}:cache-main
+          cache-to: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref={0}:cache-{1},mode=max', steps.strategy.outputs.image-full-name, github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main') || '' }}
 
-      - name: Save full image as artifact (no GHCR push)
-        if: steps.strategy.outputs.use-artifact == 'true'
+      - name: Save full image as artifact
         run: |
           IMAGE_TAG=$(echo "${{ steps.meta-full.outputs.tags }}" | head -n1)
           echo "Saving image: $IMAGE_TAG"
@@ -1046,23 +1061,12 @@ jobs:
           echo "Image saved as docker-image-production.tar.gz"
           ls -lh docker-image-production.tar.gz
 
-      - name: Upload image artifact (no GHCR push)
-        if: steps.strategy.outputs.use-artifact == 'true'
+      - name: Upload image artifact
         uses: actions/upload-artifact@v4
         with:
           name: docker-image-production
           path: docker-image-production.tar.gz
           retention-days: 1
-
-      - name: Extract core image SHA tag
-        id: core-sha-tag
-        run: |
-          SHA_TAG=$(echo "${{ steps.meta-core.outputs.tags }}" | grep "sha-" | head -n1)
-          if [ -z "$SHA_TAG" ]; then
-            echo "::error::Could not extract SHA tag from core image metadata"
-            exit 1
-          fi
-          echo "tag=$SHA_TAG" >> $GITHUB_OUTPUT
 
       - name: Inspect image size and layers
         shell: bash
@@ -1115,7 +1119,6 @@ jobs:
     outputs:
       image-tags: ${{ steps.meta-full.outputs.tags }}
       use-artifact: ${{ steps.strategy.outputs.use-artifact }}
-      core-image-sha-tag: ${{ steps.core-sha-tag.outputs.tag }}
       admin-artifact-id: ${{ steps.upload-admin.outputs.artifact-id }}
 
   job_e2e_tests:
@@ -1371,62 +1374,6 @@ jobs:
         run: |
           echo "One of the dependent jobs have failed or been cancelled. You may need to re-run it." && exit 1
 
-  canary:
-    needs: [
-      job_setup,
-      job_required_tests
-    ]
-    name: Canary
-    runs-on: ubuntu-latest
-    if: |
-      always()
-      && github.repository == 'TryGhost/Ghost'
-      && needs.job_setup.result == 'success'
-      && needs.job_required_tests.result == 'success'
-      && (
-        needs.job_setup.outputs.is_main == 'true'
-        || needs.job_setup.outputs.is_six == 'true'
-        || (
-          github.event_name == 'pull_request'
-          && (
-            needs.job_setup.outputs.member_is_in_org == 'true'
-            || github.event.pull_request.user.login == 'renovate[bot]'
-          )
-          && contains(github.event.pull_request.labels.*.name, 'deploy-to-staging')
-        )
-      )
-    steps:
-      - name: Output needs (for debugging)
-        run: echo "${{ toJson(needs) }}"
-
-      - name: Compute branch name (push)
-        if: github.event_name == 'push'
-        run: echo "branch_name=${{ github.ref_name }}" >> $GITHUB_ENV
-
-      - name: Compute branch name (pull_request)
-        if: github.event_name == 'pull_request'
-        run: echo "branch_name=${{ github.ref }}" >> $GITHUB_ENV
-
-      - name: Set deployment parameters
-        run: |
-          if [[ "${{ needs.job_setup.outputs.is_main }}" == "true" ]]; then
-            echo "deploy_version=canary" >> $GITHUB_ENV
-          else
-            echo "deploy_version=six" >> $GITHUB_ENV
-          fi
-
-      - name: Invoke build
-        uses: aurelien-baudet/workflow-dispatch@v4
-        with:
-          token: ${{ secrets.CANARY_DOCKER_BUILD }}
-          workflow: .github/workflows/deploy.yml
-          ref: 'refs/heads/main' # this is the ref of Ghost-Moya
-          repo: TryGhost/Ghost-Moya
-          # env.branch_name is the branch of Ghost itself
-          inputs: '{"version":"${{ env.deploy_version }}","environment":"staging","version_extra":"${{ env.branch_name }}"}'
-          wait-for-completion-timeout: 25m
-          wait-for-completion-interval: 30s
-
   publish_packages:
     needs: [
       job_setup,
@@ -1599,51 +1546,6 @@ jobs:
           workspace: 'Production'
           slack-webhook: ${{ secrets.ANALYTICS_SLACK_WEBHOOK_URL }}
 
-  deploy_admin:
-    needs: [
-      job_setup,
-      job_required_tests
-    ]
-    name: Deploy Admin
-    runs-on: ubuntu-latest
-    if: |
-      always()
-      && github.repository == 'TryGhost/Ghost'
-      && needs.job_setup.result == 'success'
-      && needs.job_setup.outputs.is_main == 'true'
-      && needs.job_required_tests.result == 'success'
-    steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v4
-        env:
-          FORCE_COLOR: 0
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-      - name: Restore caches
-        uses: ./.github/actions/restore-cache
-        env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
-      - name: Build Admin
-        env:
-          GHOST_CDN_URL: https://assets.ghost.io/admin-forward/
-        run: yarn nx run admin:build
-      - name: Upload build artifact
-        id: upload-artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: admin-build
-          path: apps/admin/dist
-      - name: Deploy Admin
-        uses: aurelien-baudet/workflow-dispatch@v4
-        with:
-          token: ${{ secrets.CANARY_DOCKER_BUILD }}
-          workflow: .github/workflows/deploy-admin.yml
-          ref: 'refs/heads/main' # this is the ref of Ghost-Moya
-          repo: TryGhost/Ghost-Moya
-          inputs: '{"admin_build_artifact_id":"${{ steps.upload-artifacts.outputs.artifact-id }}", "admin_build_artifact_run_id":"${{ github.run_id }}"}'
-          wait-for-completion-timeout: 25m
-          wait-for-completion-interval: 30s
-
   # --------------------------------------------------------------------------- #
   # Trigger Pro CD — dispatch to Ghost-Moya cd.yml (runs on main + PRs)
   # --------------------------------------------------------------------------- #
@@ -1653,7 +1555,7 @@ jobs:
     runs-on: ubuntu-latest
     if: |
       always()
-      && github.repository == 'TryGhost/Ghost'
+      && github.repository_owner == 'TryGhost'
       && needs.job_setup.result == 'success'
       && needs.job_docker_build_production.result == 'success'
       && needs.job_docker_build_production.outputs.use-artifact != 'true'
@@ -1661,13 +1563,21 @@ jobs:
       - name: Determine dispatch parameters
         id: params
         run: |
-          # Force dry_run until cd.yml is validated and ready to replace the existing canary deploy
           if [ "${{ needs.job_setup.outputs.is_main }}" = "true" ]; then
-            echo "dry_run=true" >> $GITHUB_OUTPUT
             echo "pr_number=" >> $GITHUB_OUTPUT
+            echo "deploy=" >> $GITHUB_OUTPUT
           elif [ "${{ github.event_name }}" = "pull_request" ]; then
-            echo "dry_run=true" >> $GITHUB_OUTPUT
             echo "pr_number=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
+
+            DEPLOY_LABEL="${{ contains(github.event.pull_request.labels.*.name, 'deploy-to-staging') }}"
+            IS_ORG_MEMBER="${{ needs.job_setup.outputs.member_is_in_org }}"
+            IS_RENOVATE="${{ github.event.pull_request.user.login == 'renovate[bot]' }}"
+
+            if [ "$DEPLOY_LABEL" = "true" ] && ([ "$IS_ORG_MEMBER" = "true" ] || [ "$IS_RENOVATE" = "true" ]); then
+              echo "deploy=true" >> $GITHUB_OUTPUT
+            else
+              echo "deploy=" >> $GITHUB_OUTPUT
+            fi
           else
             echo "skip=true" >> $GITHUB_OUTPUT
             exit 0
@@ -1683,11 +1593,10 @@ jobs:
           event-type: ghost-artifacts-ready
           client-payload: >-
             {
-              "environment": "staging",
               "ref": "${{ github.sha }}",
-              "image_tag": "${{ needs.job_docker_build_production.outputs.core-image-sha-tag }}",
-              "dry_run": ${{ steps.params.outputs.dry_run }},
+              "source_repo": "${{ github.repository }}",
               "pr_number": "${{ steps.params.outputs.pr_number }}",
+              "deploy": "${{ steps.params.outputs.deploy }}",
               "admin_artifact_id": "${{ needs.job_docker_build_production.outputs.admin-artifact-id }}",
               "admin_artifact_run_id": "${{ github.run_id }}"
             }

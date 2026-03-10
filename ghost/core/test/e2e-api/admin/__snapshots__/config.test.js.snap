@@ -10,7 +10,6 @@ Object {
     "environment": StringMatching /\\^testing/,
     "labs": Object {
       "additionalPaymentMethods": true,
-      "announcementBar": true,
       "commentModeration": true,
       "customFonts": true,
       "editorExcerpt": true,
@@ -23,6 +22,7 @@ Object {
       "lexicalIndicators": true,
       "members": true,
       "membersForward": true,
+      "pictureImageFormats": true,
       "retentionOffers": true,
       "stripeAutomaticTax": true,
       "superEditors": true,
