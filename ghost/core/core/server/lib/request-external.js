@@ -139,6 +139,23 @@ function isPrivateIp(addr) {
         if (/^fe[89ab][0-9a-f]:/i.test(normalized6)) {
             return true;
         }
+        // Re-check for IPv4-mapped IPv6 after normalization
+        // Handles expanded forms like 0:0:0:0:0:ffff:127.0.0.1 which normalize to ::ffff:...
+        const v4DottedNorm = normalized6.match(/^::ffff:(\d[\d.]+)$/i);
+        if (v4DottedNorm) {
+            const normV4 = normalizeIPv4(v4DottedNorm[1]);
+            if (normV4) {
+                return isPrivateIPv4(normV4);
+            }
+            return true;
+        }
+        const v4HexNorm = normalized6.match(/^::ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})$/i);
+        if (v4HexNorm) {
+            const hi = parseInt(v4HexNorm[1], 16);
+            const lo = parseInt(v4HexNorm[2], 16);
+            const mapped = ((hi >> 8) & 0xff) + '.' + (hi & 0xff) + '.' + ((lo >> 8) & 0xff) + '.' + (lo & 0xff);
+            return isPrivateIPv4(mapped);
+        }
         return false;
     }
 
