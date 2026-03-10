@@ -101,6 +101,46 @@ describe('api/endpoints/content/posts', function () {
         }
     });
 
+    it('can not filter posts by authors.password.x (3-segment bypass)', async function () {
+        const hashedPassword = '$2a$10$FxFlCsNBgXw42cBj0l1GFu39jffibqTqyAGBz7uCLwetYAdBYJEe6';
+        const userId = '644fd18ca1f0b764b0279b2d';
+
+        await testUtils.knex('users').insert({
+            id: userId,
+            slug: 'brute-force-password-test-user',
+            name: 'Brute Force Password Test User',
+            email: 'bruteforcepasswordtestuseremail@example.com',
+            password: hashedPassword,
+            status: 'active',
+            created_at: '2019-01-01 00:00:00'
+        });
+
+        const {id: postId} = await testUtils.knex('posts').first('id').where('slug', 'welcome');
+
+        await testUtils.knex('posts_authors').insert({
+            id: '644fd18ca1f0b764b0279b2f',
+            post_id: postId,
+            author_id: userId
+        });
+
+        try {
+            const res = await request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&filter=authors.password.x:'${hashedPassword}'`))
+                .set('Origin', testUtils.API.getURL())
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.public)
+                .expect(200);
+
+            const data = JSON.parse(res.text);
+
+            if (data.posts.length === 1) {
+                throw new Error('3-segment key bypass should not return filtered results');
+            }
+        } finally {
+            await testUtils.knex('posts_authors').where('id', '644fd18ca1f0b764b0279b2f').del();
+            await testUtils.knex('users').where('id', userId).del();
+        }
+    });
+
     it('browse posts', function (done) {
         request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}`))
             .set('Origin', testUtils.API.getURL())
