@@ -1,7 +1,8 @@
 const getDiscountWindow = require('./get-discount-window');
 
 /**
- * Determines if a subscription currently has an active offer.
+ * Determines if a subscription has an offer that still affects the next payment,
+ * or an active trial.
  * Uses discount_start/discount_end (synced from Stripe) when available,
  * falls back to offer duration lookup for legacy data (pre-6.16).
  *
@@ -13,15 +14,9 @@ module.exports = async function hasActiveOffer(subscriptionModel, offersAPI) {
     const subscriptionData = {
         discount_start: subscriptionModel.get('discount_start'),
         discount_end: subscriptionModel.get('discount_end'),
-        start_date: subscriptionModel.get('start_date')
+        start_date: subscriptionModel.get('start_date'),
+        current_period_end: subscriptionModel.get('current_period_end')
     };
-
-    // Check for active Stripe discount (post-6.16 data)
-    // discount_start takes precedence over trial and legacy fallback
-    const discountWindow = getDiscountWindow(subscriptionData, null);
-    if (discountWindow) {
-        return !discountWindow.end || new Date(discountWindow.end) > new Date();
-    }
 
     // Check for active trial (trial offers)
     const trialEndAt = subscriptionModel.get('trial_end_at');
@@ -42,9 +37,9 @@ module.exports = async function hasActiveOffer(subscriptionModel, offersAPI) {
             return false;
         }
 
-        const legacyWindow = getDiscountWindow(subscriptionData, offer);
-        if (legacyWindow) {
-            return !legacyWindow.end || new Date(legacyWindow.end) > new Date();
+        const discountWindow = getDiscountWindow(subscriptionData, offer);
+        if (discountWindow) {
+            return !discountWindow.end || new Date(discountWindow.end) > new Date();
         }
 
         return false;
