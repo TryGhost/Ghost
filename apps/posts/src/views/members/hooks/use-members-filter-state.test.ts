@@ -66,6 +66,24 @@ describe('use-members-filter-state URL helpers', () => {
         ]);
     });
 
+    it('preserves legacy ember negative offer filters through React URL roundtrip', () => {
+        const legacyParams = new URLSearchParams({
+            filter: 'offer_redemptions:-[offer_basic,offer_pro]'
+        });
+
+        const parsed = searchParamsToFilters(legacyParams);
+        const roundtripParams = filtersToSearchParams(parsed);
+        const roundtripParsed = searchParamsToFilters(roundtripParams);
+
+        expect(parsed.map(({field, operator, values}) => ({field, operator, values}))).toEqual([
+            {field: 'offer_redemptions', operator: 'is-not', values: ['offer_basic', 'offer_pro']}
+        ]);
+
+        expect(roundtripParsed.map(({field, operator, values}) => ({field, operator, values}))).toEqual([
+            {field: 'offer_redemptions', operator: 'is-not', values: ['offer_basic', 'offer_pro']}
+        ]);
+    });
+
     it('parses legacy ember filter query params for text contains filters', () => {
         const params = new URLSearchParams({
             filter: 'name:~\'hello\''
@@ -124,6 +142,24 @@ describe('use-members-filter-state URL helpers', () => {
         expect(parsed.map(({field, operator, values}) => ({field, operator, values}))).toEqual([
             {field: 'status', operator: 'is', values: ['paid']},
             {field: 'label', operator: 'is_any_of', values: ['vip']}
+        ]);
+    });
+
+    it('preserves legacy ember multi-tier filters through React URL roundtrip', () => {
+        const legacyParams = new URLSearchParams({
+            filter: 'tier_id:[tier_basic,tier_pro]'
+        });
+
+        const parsed = searchParamsToFilters(legacyParams);
+        const roundtripParams = filtersToSearchParams(parsed);
+        const roundtripParsed = searchParamsToFilters(roundtripParams);
+
+        expect(parsed.map(({field, operator, values}) => ({field, operator, values}))).toEqual([
+            {field: 'tier_id', operator: 'is', values: ['tier_basic', 'tier_pro']}
+        ]);
+
+        expect(roundtripParsed.map(({field, operator, values}) => ({field, operator, values}))).toEqual([
+            {field: 'tier_id', operator: 'is', values: ['tier_basic', 'tier_pro']}
         ]);
     });
 

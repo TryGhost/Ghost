@@ -283,7 +283,7 @@ export function useMembersFilterConfig({
                 subscriptionFields.push({
                     key: 'tier_id',
                     label: 'Membership tier',
-                    type: 'select',
+                    type: 'multiselect',
                     icon: <LucideIcon.CreditCard className="size-4" />,
                     options: tiersOptions.length > 0 ? tiersOptions : tiers.map(t => ({
                         value: t.id,
@@ -294,6 +294,7 @@ export function useMembersFilterConfig({
                     onSearchChange: onTiersSearchChange,
                     searchValue: tiersSearchValue,
                     isLoading: tiersLoading,
+                    autoCloseOnSelect: true,
                     className: 'w-64'
                 });
             }
@@ -374,8 +375,8 @@ export function useMembersFilterConfig({
                     type: 'multiselect',
                     icon: <LucideIcon.Ticket className="size-4" />,
                     options: offersOptions,
-                    defaultOperator: 'is_any_of',
-                    hideOperatorSelect: true,
+                    operators: IS_IS_NOT_OPERATORS,
+                    defaultOperator: 'is',
                     autoCloseOnSelect: true,
                     searchable: true,
                     className: 'w-64'

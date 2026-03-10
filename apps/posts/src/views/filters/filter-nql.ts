@@ -226,7 +226,7 @@ function parseLegacySimpleFilter(filterNode: Record<string, unknown>, idSuffix: 
         return {
             id: `${field}-legacy-${idSuffix}`,
             field,
-            operator: 'is_any_of',
+            operator: field === 'label' ? 'is_any_of' : 'is',
             values: rawValue.$in.map(value => String(value))
         };
     }
@@ -235,7 +235,7 @@ function parseLegacySimpleFilter(filterNode: Record<string, unknown>, idSuffix: 
         return {
             id: `${field}-legacy-${idSuffix}`,
             field,
-            operator: 'is_not_any_of',
+            operator: field === 'label' ? 'is_not_any_of' : 'is-not',
             values: rawValue.$nin.map(value => String(value))
         };
     }

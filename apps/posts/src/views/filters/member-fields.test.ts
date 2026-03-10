@@ -15,6 +15,14 @@ describe('createMemberPredicate', () => {
         expect(predicate.values).toEqual(['vip', 'internal']);
     });
 
+    it('supports ember-compatible match operators for offer_redemptions', () => {
+        const predicate = createMemberPredicate('offer_redemptions', 'is-not', ['offer_basic', 'offer_pro']);
+
+        expect(predicate.field).toBe('offer_redemptions');
+        expect(predicate.operator).toBe('is-not');
+        expect(predicate.values).toEqual(['offer_basic', 'offer_pro']);
+    });
+
     it('types multi-value and single-value fields differently', () => {
         const labelPredicate = createMemberPredicate('label', 'is_any_of', ['vip', 'internal']);
         const statusPredicate = createMemberPredicate('status', 'is', ['paid']);

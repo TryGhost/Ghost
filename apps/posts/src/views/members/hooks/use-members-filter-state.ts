@@ -19,7 +19,7 @@ export const MEMBER_FILTER_FIELDS = [...MEMBER_STATIC_FIELDS, 'newsletters'] as 
 export type MemberFilterField = typeof MEMBER_FILTER_FIELDS[number];
 
 // Fields that support multiselect (comma-separated values in URL)
-const MULTISELECT_FIELDS = new Set<string>(['label', 'offer_redemptions']);
+const MULTISELECT_FIELDS = new Set<string>(['label', 'offer_redemptions', 'tier_id']);
 
 /**
  * Parse URL search params into Filter objects

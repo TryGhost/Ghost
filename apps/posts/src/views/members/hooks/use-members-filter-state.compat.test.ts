@@ -250,6 +250,19 @@ describe('members nql compatibility', () => {
         expect(buildMemberNqlFilter(filters)).toBe('tier_id:[tier_basic,tier_pro]');
     });
 
+    it('serializes offer_redemptions is-not arrays with Ember bracket negation', () => {
+        const filters: Filter[] = [
+            {
+                id: 'offer-1',
+                field: 'offer_redemptions',
+                operator: 'is-not',
+                values: ['offer_basic', 'offer_pro']
+            }
+        ];
+
+        expect(buildMemberNqlFilter(filters)).toBe('offer_redemptions:-[offer_basic,offer_pro]');
+    });
+
     it('serializes subscribed=email-disabled with Ember special-case expression', () => {
         const filters: Filter[] = [
             {

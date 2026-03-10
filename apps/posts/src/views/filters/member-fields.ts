@@ -14,7 +14,7 @@ const MEMBER_STATIC_FIELD_OPERATORS = {
     'subscriptions.start_date': ['is-less', 'is-or-less', 'is-greater', 'is-or-greater', 'before', 'after'],
     'subscriptions.current_period_end': ['is-less', 'is-or-less', 'is-greater', 'is-or-greater', 'before', 'after'],
     conversion: ['is', 'is-not', 'is_not'],
-    offer_redemptions: ['is_any_of'],
+    offer_redemptions: ['is', 'is-not', 'is_not', 'is_any_of'],
     email_count: ['is', 'is-greater', 'is-less', 'greater_than', 'less_than', 'equals', 'not_equals'],
     email_opened_count: ['is', 'is-greater', 'is-less', 'greater_than', 'less_than', 'equals', 'not_equals'],
     email_open_rate: ['is', 'is-greater', 'is-less', 'greater_than', 'less_than', 'equals', 'not_equals'],
