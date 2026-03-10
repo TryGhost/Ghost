@@ -6,6 +6,7 @@ import {canonicalizeFilter} from '@src/views/filters/canonical-filter';
 import {deriveFilterFlags} from '@src/views/filters/filter-flags';
 import {parsePredicateParams, serializePredicateParams} from '@src/views/filters/url-predicate-params';
 import {getSiteTimezone} from '@src/utils/get-site-timezone';
+import {deriveMemberFilterMetadata, MemberFilterColumnMetadata} from './member-filter-metadata';
 import moment from 'moment-timezone';
 import nql from '@tryghost/nql-lang';
 
@@ -557,6 +558,8 @@ interface UseFilterStateReturn {
     hasFilters: boolean;
     hasSearch: boolean;
     hasFilterOrSearch: boolean;
+    activeFields: string[];
+    activeColumns: MemberFilterColumnMetadata[];
 }
 
 /**
@@ -619,5 +622,9 @@ export function useMembersFilterState(): UseFilterStateReturn {
         });
     }, [filters, search]);
 
-    return {filters, nql, search, setFilters, setSearch, clearFilters, hasFilters, hasSearch, hasFilterOrSearch};
+    const {activeFields, activeColumns} = useMemo(() => {
+        return deriveMemberFilterMetadata(filters);
+    }, [filters]);
+
+    return {filters, nql, search, setFilters, setSearch, clearFilters, hasFilters, hasSearch, hasFilterOrSearch, activeFields, activeColumns};
 }

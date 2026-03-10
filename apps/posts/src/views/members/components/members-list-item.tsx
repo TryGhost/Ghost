@@ -2,6 +2,9 @@ import moment from 'moment-timezone';
 
 import {Member} from '@tryghost/admin-x-framework/api/members';
 import {MemberAvatar} from '@components/member-avatar';
+import {getMemberDynamicColumnDisplay} from './members-table-columns';
+import type {MemberFilterColumnMetadata} from '../hooks/member-filter-metadata';
+import type {CSSProperties} from 'react';
 
 // --- Helpers ---
 
@@ -109,22 +112,41 @@ function MembersListItemCreated({createdAt}: {createdAt: string}) {
     );
 }
 
+function MembersListItemDynamicColumn({item, column}: {item: Member; column: MemberFilterColumnMetadata}) {
+    const display = getMemberDynamicColumnDisplay(item, column);
+
+    return (
+        <div className="hidden lg:block">
+            <div className={`text-sm ${display.muted ? 'text-muted-foreground' : ''}`}>
+                {display.primary}
+            </div>
+            {display.secondary && (
+                <div className="text-xs text-muted-foreground">
+                    {display.secondary}
+                </div>
+            )}
+        </div>
+    );
+}
+
 // --- Main component ---
 
 interface MembersListItemProps {
     item: Member;
-    gridCols: string;
+    gridStyle?: CSSProperties;
     showEmailOpenRate: boolean;
+    activeColumns?: MemberFilterColumnMetadata[];
     onClick: (memberId: string) => void;
 }
 
-function MembersListItem({item, gridCols, showEmailOpenRate, onClick, ...props}: MembersListItemProps & Omit<React.HTMLAttributes<HTMLDivElement>, 'onClick'>) {
+function MembersListItem({item, gridStyle, showEmailOpenRate, activeColumns = [], onClick, ...props}: MembersListItemProps & Omit<React.HTMLAttributes<HTMLDivElement>, 'onClick'>) {
     return (
         <div
             {...props}
-            className={`grid w-full cursor-pointer grid-cols-[minmax(0,1fr)_7rem] items-center gap-2 border-b px-4 py-3 hover:bg-muted/50 lg:gap-4 ${gridCols}`}
+            className="grid w-full cursor-pointer grid-cols-[minmax(0,1fr)_7rem] items-center gap-2 border-b px-4 py-3 hover:bg-muted/50 lg:gap-4 lg:[grid-template-columns:var(--members-grid-cols)]"
             data-testid="members-list-item"
             onClick={() => onClick(item.id)}
+            style={gridStyle}
         >
             <MembersListItemName item={item} />
             <MembersListItemStatus status={item.status} tiers={item.tiers} />
@@ -133,6 +155,9 @@ function MembersListItem({item, gridCols, showEmailOpenRate, onClick, ...props}:
             )}
             <MembersListItemLocation geolocation={item.geolocation} />
             <MembersListItemCreated createdAt={item.created_at} />
+            {activeColumns.map(column => (
+                <MembersListItemDynamicColumn key={column.key} column={column} item={item} />
+            ))}
         </div>
     );
 }

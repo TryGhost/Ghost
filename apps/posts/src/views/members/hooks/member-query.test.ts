@@ -16,4 +16,25 @@ describe('buildMembersQueryParams', () => {
             search: 'alex'
         });
     });
+
+    it('adds subscription includes when active filters require subscription columns', () => {
+        const params = buildMembersQueryParams({
+            filter: 'subscriptions.status:active',
+            filters: [
+                {
+                    id: 'subscriptions-status-1',
+                    field: 'subscriptions.status',
+                    operator: 'is',
+                    values: ['active']
+                }
+            ]
+        });
+
+        expect(params).toEqual({
+            include: 'labels,tiers,subscriptions',
+            limit: '50',
+            order: 'created_at desc',
+            filter: 'subscriptions.status:active'
+        });
+    });
 });

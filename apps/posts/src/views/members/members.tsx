@@ -22,7 +22,7 @@ const BULK_DELETE_RESTRICTED_FILTERS = [
 ];
 
 const Members: React.FC = () => {
-    const {filters, nql, search, setFilters, hasFilters, hasFilterOrSearch, clearFilters} = useMembersFilterState();
+    const {filters, nql, search, setFilters, hasFilters, hasFilterOrSearch, clearFilters, activeColumns} = useMembersFilterState();
     const {data: configData} = useBrowseConfig();
 
     // Check if email analytics is enabled
@@ -37,9 +37,10 @@ const Members: React.FC = () => {
     const searchParams = useMemo((): Record<string, string> | undefined => {
         return buildMembersQueryParams({
             filter: nql,
-            search
+            search,
+            filters
         });
-    }, [nql, search]);
+    }, [filters, nql, search]);
 
     const {
         data,
@@ -146,6 +147,7 @@ const Members: React.FC = () => {
                         isFetchingNextPage={isFetchingNextPage}
                         isLoading={isFetching && !isFetchingNextPage}
                         items={data.members}
+                        activeColumns={activeColumns}
                         showEmailOpenRate={emailAnalyticsEnabled}
                         totalItems={totalMembers}
                     />

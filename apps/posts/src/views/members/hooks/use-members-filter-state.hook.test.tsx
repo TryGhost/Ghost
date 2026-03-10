@@ -53,4 +53,24 @@ describe('useMembersFilterState', () => {
         expect(result.current.hasSearch).toBe(true);
         expect(result.current.hasFilterOrSearch).toBe(true);
     });
+
+    it('exposes active field metadata for table adaptation', () => {
+        mockUseSearchParams.mockReturnValue([
+            new URLSearchParams({
+                'subscriptions.status': 'is:active'
+            }),
+            vi.fn()
+        ]);
+
+        const {result} = renderHook(() => useMembersFilterState());
+
+        expect(result.current.activeFields).toEqual(['subscriptions.status']);
+        expect(result.current.activeColumns).toEqual([
+            {
+                key: 'subscriptions.status',
+                label: 'Stripe subscription status',
+                include: 'subscriptions'
+            }
+        ]);
+    });
 });
