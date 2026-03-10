@@ -1,4 +1,5 @@
 import type {Filter} from '@tryghost/shade';
+import {COMMENT_FIELDS, isCommentField, isCommentOperatorForField} from '@src/views/filters/comment-fields';
 import {serializeCommentFilters} from '@src/views/filters/comment-nql';
 import {parsePredicateParams, serializePredicateParams} from '@src/views/filters/url-predicate-params';
 import {UrlFilterStateOptions, useUrlFilterState} from '@src/views/filters/use-url-filter-state';
@@ -6,7 +7,7 @@ import {UrlFilterStateOptions, useUrlFilterState} from '@src/views/filters/use-u
 /**
  * Comment filter field keys - single source of truth for filter definitions
  */
-export const COMMENT_FILTER_FIELDS = ['id', 'status', 'created_at', 'body', 'post', 'author', 'reported'] as const;
+export const COMMENT_FILTER_FIELDS = COMMENT_FIELDS;
 
 export type CommentFilterField = typeof COMMENT_FILTER_FIELDS[number];
 
@@ -21,7 +22,7 @@ export function searchParamsToFilters(searchParams: URLSearchParams): Filter[] {
     return parsePredicateParams({
         params: searchParams,
         multiselectFields: new Set()
-    }).filter(({field}) => COMMENT_FILTER_FIELDS.includes(field as CommentFilterField)).map(predicate => ({
+    }).filter(({field, operator}) => isCommentField(field) && isCommentOperatorForField(field, operator)).map(predicate => ({
         id: predicate.id,
         field: predicate.field,
         operator: predicate.operator,
@@ -35,7 +36,7 @@ export function searchParamsToFilters(searchParams: URLSearchParams): Filter[] {
 export function filtersToSearchParams(filters: Filter[]): URLSearchParams {
     return serializePredicateParams({
         predicates: filters
-            .filter(filter => COMMENT_FILTER_FIELDS.includes(filter.field as CommentFilterField) && filter.values[0] !== undefined)
+            .filter(filter => isCommentField(filter.field) && filter.values[0] !== undefined)
             .map((filter, index) => ({
                 id: filter.id || `${filter.field}-${index + 1}`,
                 field: filter.field,

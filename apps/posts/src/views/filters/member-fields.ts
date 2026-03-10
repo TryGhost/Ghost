@@ -1,13 +1,46 @@
-export const MEMBER_FIELD_OPERATORS = {
-    label: ['is_any_of', 'is_none_of'],
-    status: ['is', 'is_not'],
-    name: ['contains', 'not_contains'],
-    email: ['contains', 'not_contains']
+const MEMBER_STATIC_FIELD_OPERATORS = {
+    name: ['is', 'contains', 'does-not-contain', 'starts-with', 'ends-with', 'not_contains'],
+    email: ['is', 'contains', 'does-not-contain', 'starts-with', 'ends-with', 'not_contains'],
+    label: ['is_any_of', 'is_none_of', 'is_not_any_of', 'is-not', 'is_not'],
+    subscribed: ['is', 'is-not', 'is_not', 'is_any_of'],
+    newsletters: ['is', 'is-not', 'is_not'],
+    last_seen_at: ['is-less', 'is-or-less', 'is-greater', 'is-or-greater', 'before', 'after'],
+    created_at: ['is-less', 'is-or-less', 'is-greater', 'is-or-greater', 'before', 'after'],
+    signup: ['is', 'is-not', 'is_not'],
+    tier_id: ['is', 'is-not', 'is_not'],
+    status: ['is', 'is-not', 'is_not'],
+    'subscriptions.plan_interval': ['is', 'is-not', 'is_not'],
+    'subscriptions.status': ['is', 'is-not', 'is_not'],
+    'subscriptions.start_date': ['is-less', 'is-or-less', 'is-greater', 'is-or-greater', 'before', 'after'],
+    'subscriptions.current_period_end': ['is-less', 'is-or-less', 'is-greater', 'is-or-greater', 'before', 'after'],
+    conversion: ['is', 'is-not', 'is_not'],
+    offer_redemptions: ['is_any_of'],
+    email_count: ['is', 'is-greater', 'is-less', 'greater_than', 'less_than', 'equals', 'not_equals'],
+    email_opened_count: ['is', 'is-greater', 'is-less', 'greater_than', 'less_than', 'equals', 'not_equals'],
+    email_open_rate: ['is', 'is-greater', 'is-less', 'greater_than', 'less_than', 'equals', 'not_equals'],
+    'emails.post_id': ['is', 'is-not', 'is_not'],
+    'opened_emails.post_id': ['is', 'is-not', 'is_not'],
+    'clicked_links.post_id': ['is', 'is-not', 'is_not'],
+    newsletter_feedback: ['1', '0']
 } as const;
 
-export type MemberField = keyof typeof MEMBER_FIELD_OPERATORS;
+const NEWSLETTER_FIELD_OPERATORS = ['is', 'is-not', 'is_not'] as const;
 
-export type MemberOperator<TField extends MemberField> = (typeof MEMBER_FIELD_OPERATORS)[TField][number];
+export const MEMBER_STATIC_FIELDS = Object.keys(MEMBER_STATIC_FIELD_OPERATORS) as Array<keyof typeof MEMBER_STATIC_FIELD_OPERATORS>;
+
+type StaticMemberField = keyof typeof MEMBER_STATIC_FIELD_OPERATORS;
+type NewsletterMemberField = `newsletters.${string}`;
+
+export type MemberField = StaticMemberField | NewsletterMemberField;
+
+type NewsletterMemberOperator = typeof NEWSLETTER_FIELD_OPERATORS[number];
+
+export type MemberOperator<TField extends MemberField> =
+    TField extends NewsletterMemberField
+        ? NewsletterMemberOperator
+        : TField extends StaticMemberField
+            ? (typeof MEMBER_STATIC_FIELD_OPERATORS)[TField][number]
+            : never;
 
 export interface MemberPredicate<TField extends MemberField = MemberField> {
     id: string;
@@ -18,11 +51,40 @@ export interface MemberPredicate<TField extends MemberField = MemberField> {
 
 let predicateIdCounter = 0;
 
+function getMemberFieldOperators(field: string): readonly string[] | undefined {
+    if (field.startsWith('newsletters.')) {
+        return NEWSLETTER_FIELD_OPERATORS;
+    }
+
+    if (field in MEMBER_STATIC_FIELD_OPERATORS) {
+        return MEMBER_STATIC_FIELD_OPERATORS[field as StaticMemberField];
+    }
+
+    return undefined;
+}
+
+export function isMemberField(field: string): field is MemberField {
+    return getMemberFieldOperators(field) !== undefined;
+}
+
+export function isMemberOperatorForField<TField extends MemberField>(
+    field: TField,
+    operator: string
+): operator is MemberOperator<TField> {
+    const operators = getMemberFieldOperators(field);
+
+    return operators?.includes(operator) ?? false;
+}
+
 export function createMemberPredicate<TField extends MemberField>(
     field: TField,
     operator: MemberOperator<TField>,
     values: string[]
 ): MemberPredicate<TField> {
+    if (!isMemberOperatorForField(field, operator)) {
+        throw new Error(`Invalid operator "${operator}" for member field "${field}"`);
+    }
+
     if (values.length === 0) {
         throw new Error('Member predicate requires at least one value');
     }

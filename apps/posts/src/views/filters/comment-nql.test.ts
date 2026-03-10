@@ -11,4 +11,13 @@ describe('serializeCommentFilters', () => {
 
         expect(serializeCommentFilters(filters)).toBe('member_id:member_1+status:published');
     });
+
+    it('drops invalid comment field and operator combinations before serializing', () => {
+        const filters: Filter[] = [
+            {id: 'status-1', field: 'status', operator: 'contains', values: ['published']},
+            {id: 'author-1', field: 'author', operator: 'is', values: ['member_1']}
+        ];
+
+        expect(serializeCommentFilters(filters)).toBe('member_id:member_1');
+    });
 });

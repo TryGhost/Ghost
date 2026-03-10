@@ -90,6 +90,19 @@ describe('use-members-filter-state URL helpers', () => {
         ]);
     });
 
+    it('drops query param predicates with operators that are invalid for the field', () => {
+        const params = new URLSearchParams({
+            status: 'contains:paid',
+            name: 'contains:alex'
+        });
+
+        const parsed = searchParamsToFilters(params);
+
+        expect(parsed.map(({field, operator, values}) => ({field, operator, values}))).toEqual([
+            {field: 'name', operator: 'contains', values: ['alex']}
+        ]);
+    });
+
     it('clears picker predicates without clearing search params', () => {
         const params = new URLSearchParams({
             status: 'is:paid',

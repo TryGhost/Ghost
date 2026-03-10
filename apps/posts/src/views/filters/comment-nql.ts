@@ -1,10 +1,15 @@
 import {canonicalizeFilter} from './canonical-filter';
+import {isCommentField, isCommentOperatorForField} from './comment-fields';
 import type {Filter} from '@tryghost/shade';
 
 export function serializeCommentFilters(filters: Filter[]): string | undefined {
     const parts: string[] = [];
 
     for (const filter of filters) {
+        if (!isCommentField(filter.field) || !isCommentOperatorForField(filter.field, filter.operator)) {
+            continue;
+        }
+
         if (!filter.values[0]) {
             continue;
         }

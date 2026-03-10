@@ -1,7 +1,9 @@
 import {canonicalizeFilter} from './canonical-filter';
+import {isMemberField, isMemberOperatorForField} from './member-fields';
 import type {MemberPredicate} from './member-fields';
 import type {Filter} from '@tryghost/shade';
 import moment from 'moment-timezone';
+import nql from '@tryghost/nql-lang';
 
 function escapeNqlString(value: string): string {
     return '\'' + value.replace(/'/g, '\\\'') + '\'';
@@ -69,11 +71,217 @@ function getFilterRelationOperator(relation: string): string {
     return relationMap[relation] ?? '';
 }
 
+function parseLegacySubscribedFilter(filterNode: Record<string, unknown>): Filter | undefined {
+    const comparator = ('$and' in filterNode && Array.isArray(filterNode.$and))
+        ? filterNode.$and
+        : (('$or' in filterNode && Array.isArray(filterNode.$or)) ? filterNode.$or : undefined);
+
+    if (!comparator || comparator.length !== 2) {
+        if ('email_disabled' in filterNode) {
+            return {
+                id: 'subscribed-legacy',
+                field: 'subscribed',
+                operator: 'is',
+                values: [filterNode.email_disabled ? 'email-disabled' : 'unsubscribed']
+            };
+        }
+
+        return undefined;
+    }
+
+    const [subscriptionNode, emailDisabledNode] = comparator as Array<Record<string, unknown>>;
+
+    if (!('subscribed' in subscriptionNode) || !('email_disabled' in emailDisabledNode)) {
+        return undefined;
+    }
+
+    const usedOr = '$or' in filterNode;
+    const subscribed = subscriptionNode.subscribed;
+
+    if (typeof subscribed !== 'boolean') {
+        return undefined;
+    }
+
+    return {
+        id: 'subscribed-legacy',
+        field: 'subscribed',
+        operator: usedOr ? 'is-not' : 'is',
+        values: [subscribed ? 'subscribed' : 'unsubscribed']
+    };
+}
+
+function parseLegacyNewsletterFilter(filterNode: Record<string, unknown>): Filter | undefined {
+    const comparator = ('$and' in filterNode && Array.isArray(filterNode.$and))
+        ? filterNode.$and
+        : (('$or' in filterNode && Array.isArray(filterNode.$or)) ? filterNode.$or : undefined);
+
+    if (!comparator || comparator.length !== 2) {
+        return undefined;
+    }
+
+    const [newsletterNode, emailDisabledNode] = comparator as Array<Record<string, unknown>>;
+
+    if (!('newsletters.slug' in newsletterNode) || !('email_disabled' in emailDisabledNode)) {
+        return undefined;
+    }
+
+    const usedOr = '$or' in filterNode;
+    const rawSlug = newsletterNode['newsletters.slug'];
+
+    if (typeof rawSlug !== 'string') {
+        return undefined;
+    }
+
+    return {
+        id: `newsletters.${rawSlug}-legacy`,
+        field: `newsletters.${rawSlug}`,
+        operator: usedOr ? 'is-not' : 'is',
+        values: [usedOr ? 'unsubscribed' : 'subscribed']
+    };
+}
+
+function parseLegacySimpleFilter(filterNode: Record<string, unknown>): Filter | undefined {
+    const entries = Object.entries(filterNode);
+
+    if (entries.length !== 1) {
+        return undefined;
+    }
+
+    const [field, rawValue] = entries[0];
+
+    if (!isMemberField(field)) {
+        return undefined;
+    }
+
+    if (typeof rawValue === 'string' || typeof rawValue === 'number' || typeof rawValue === 'boolean') {
+        return {
+            id: `${field}-legacy`,
+            field,
+            operator: 'is',
+            values: [String(rawValue)]
+        };
+    }
+
+    if (rawValue && typeof rawValue === 'object' && '$ne' in rawValue) {
+        return {
+            id: `${field}-legacy`,
+            field,
+            operator: 'is-not',
+            values: [String(rawValue.$ne)]
+        };
+    }
+
+    const dateOperators = [
+        ['$lt', 'is-less'],
+        ['$lte', 'is-or-less'],
+        ['$gt', 'is-greater'],
+        ['$gte', 'is-or-greater']
+    ] as const;
+
+    if (rawValue && typeof rawValue === 'object') {
+        for (const [legacyOperator, operator] of dateOperators) {
+            if (legacyOperator in rawValue) {
+                return {
+                    id: `${field}-legacy`,
+                    field,
+                    operator,
+                    values: [String(rawValue[legacyOperator]).split(' ')[0]]
+                };
+            }
+        }
+    }
+
+    if (rawValue && typeof rawValue === 'object' && '$in' in rawValue && Array.isArray(rawValue.$in)) {
+        return {
+            id: `${field}-legacy`,
+            field,
+            operator: 'is_any_of',
+            values: rawValue.$in.map(value => String(value))
+        };
+    }
+
+    if (rawValue && typeof rawValue === 'object' && '$nin' in rawValue && Array.isArray(rawValue.$nin)) {
+        return {
+            id: `${field}-legacy`,
+            field,
+            operator: 'is_not_any_of',
+            values: rawValue.$nin.map(value => String(value))
+        };
+    }
+
+    if (rawValue && typeof rawValue === 'object' && '$regex' in rawValue && rawValue.$regex instanceof RegExp) {
+        const source = rawValue.$regex.source;
+
+        if (source.startsWith('^')) {
+            return {
+                id: `${field}-legacy`,
+                field,
+                operator: 'starts-with',
+                values: [source.slice(1)]
+            };
+        }
+
+        if (source.endsWith('$')) {
+            return {
+                id: `${field}-legacy`,
+                field,
+                operator: 'ends-with',
+                values: [source.slice(0, -1)]
+            };
+        }
+
+        return {
+            id: `${field}-legacy`,
+            field,
+            operator: 'contains',
+            values: [source]
+        };
+    }
+
+    if (rawValue && typeof rawValue === 'object' && '$not' in rawValue && rawValue.$not instanceof RegExp) {
+        return {
+            id: `${field}-legacy`,
+            field,
+            operator: 'does-not-contain',
+            values: [rawValue.$not.source]
+        };
+    }
+
+    return undefined;
+}
+
+export function parseMemberNqlFilterParam(filterParam: string): Filter[] {
+    try {
+        const parsedFilter = nql.parse(filterParam) as Record<string, unknown>;
+        const newsletterFilter = parseLegacyNewsletterFilter(parsedFilter);
+
+        if (newsletterFilter) {
+            return [newsletterFilter];
+        }
+
+        const subscribedFilter = parseLegacySubscribedFilter(parsedFilter);
+
+        if (subscribedFilter) {
+            return [subscribedFilter];
+        }
+
+        const simpleFilter = parseLegacySimpleFilter(parsedFilter);
+
+        return simpleFilter ? [simpleFilter] : [];
+    } catch {
+        return [];
+    }
+}
+
 export function buildMemberNqlFilter(filters: Filter[], options: {timezone?: string} = {}): string | undefined {
     const parts: string[] = [];
     const timezone = options.timezone ?? 'Etc/UTC';
 
     for (const filter of filters) {
+        if (!isMemberField(filter.field) || !isMemberOperatorForField(filter.field, filter.operator)) {
+            continue;
+        }
+
         if (!filter.values[0] && filter.values[0] !== 0) {
             continue;
         }

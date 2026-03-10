@@ -44,4 +44,84 @@ describe('filterReducer', () => {
 
         expect(nextState.predicates).toEqual([firstPredicate, secondPredicate]);
     });
+
+    it('removes one predicate by id without disturbing duplicates', () => {
+        const firstPredicate = {
+            id: 'status-1',
+            field: 'status',
+            operator: 'is',
+            values: ['paid']
+        };
+
+        const secondPredicate = {
+            id: 'status-2',
+            field: 'status',
+            operator: 'is_not',
+            values: ['free']
+        };
+
+        const nextState = filterReducer({
+            predicates: [firstPredicate, secondPredicate]
+        }, {
+            type: 'removePredicate',
+            predicateId: 'status-1'
+        });
+
+        expect(nextState.predicates).toEqual([secondPredicate]);
+    });
+
+    it('replaces one predicate by id without disturbing others', () => {
+        const firstPredicate = {
+            id: 'status-1',
+            field: 'status',
+            operator: 'is',
+            values: ['paid']
+        };
+
+        const secondPredicate = {
+            id: 'email-1',
+            field: 'email',
+            operator: 'contains',
+            values: ['alex@example.com']
+        };
+
+        const updatedPredicate = {
+            id: 'status-1',
+            field: 'status',
+            operator: 'is_not',
+            values: ['free']
+        };
+
+        const nextState = filterReducer({
+            predicates: [firstPredicate, secondPredicate]
+        }, {
+            type: 'replacePredicate',
+            predicateId: 'status-1',
+            predicate: updatedPredicate
+        });
+
+        expect(nextState.predicates).toEqual([updatedPredicate, secondPredicate]);
+    });
+
+    it('updates search without touching predicates', () => {
+        const predicate = {
+            id: 'status-1',
+            field: 'status',
+            operator: 'is',
+            values: ['paid']
+        };
+
+        const nextState = filterReducer({
+            predicates: [predicate],
+            search: 'alex'
+        }, {
+            type: 'setSearch',
+            search: 'jamie'
+        });
+
+        expect(nextState).toEqual({
+            predicates: [predicate],
+            search: 'jamie'
+        });
+    });
 });

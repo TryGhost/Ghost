@@ -26,4 +26,17 @@ describe('comments useFilterState URL helpers', () => {
 
         expect(buildNqlFilter(filters)).toBe('member_id:member_1+status:published');
     });
+
+    it('drops query param predicates with operators that are invalid for the field', () => {
+        const params = new URLSearchParams({
+            status: 'contains:published',
+            body: 'contains:hello'
+        });
+
+        const parsed = searchParamsToFilters(params);
+
+        expect(parsed.map(({field, operator, values}) => ({field, operator, values}))).toEqual([
+            {field: 'body', operator: 'contains', values: ['hello']}
+        ]);
+    });
 });
