@@ -12,7 +12,7 @@ import {
 import {blobDownloadFromEndpoint} from '@tryghost/admin-x-framework/helpers';
 import {toast} from 'sonner';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
-import {useBulkDeleteMembers, useBulkEditMembers} from '@tryghost/admin-x-framework/api/members';
+import {BulkEditAction, useBulkDeleteMembers, useBulkEditMembers} from '@tryghost/admin-x-framework/api/members';
 
 interface MembersActionsProps {
     hasFilterOrSearch: boolean;
@@ -61,6 +61,23 @@ const MembersActions: React.FC<MembersActionsProps> = ({
     const [showUnsubscribeModal, setShowUnsubscribeModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
 
+    const bulkSelection = useCallback(() => ({
+        ...(nql ? {filter: nql} : {}),
+        ...(search ? {search} : {}),
+        all: !nql && !search
+    }), [nql, search]);
+
+    const buildBulkEditPayload = useCallback((action: BulkEditAction): Parameters<typeof bulkEditAsync>[0] => {
+        return {
+            ...(bulkSelection() as Omit<Parameters<typeof bulkEditAsync>[0], 'action'>),
+            action
+        };
+    }, [bulkEditAsync, bulkSelection]);
+
+    const buildBulkDeletePayload = useCallback((): Parameters<typeof bulkDelete>[0] => {
+        return bulkSelection() as Parameters<typeof bulkDelete>[0];
+    }, [bulkDelete, bulkSelection]);
+
     const handleExport = useCallback(async () => {
         try {
             await exportMembers({filter: nql, search});
@@ -75,15 +92,10 @@ const MembersActions: React.FC<MembersActionsProps> = ({
     const handleAddLabel = useCallback(async (labelIds: string[]) => {
         try {
             for (const labelId of labelIds) {
-                await bulkEditAsync({
-                    filter: nql,
-                    search,
-                    all: !nql && !search,
-                    action: {
-                        type: 'addLabel',
-                        meta: {label: {id: labelId}}
-                    }
-                });
+                await bulkEditAsync(buildBulkEditPayload({
+                    type: 'addLabel',
+                    meta: {label: {id: labelId}}
+                }));
             }
             setShowAddLabelModal(false);
             toast.success(labelIds.length > 1 ? 'Labels added successfully' : 'Label added successfully');
@@ -97,15 +109,10 @@ const MembersActions: React.FC<MembersActionsProps> = ({
     const handleRemoveLabel = useCallback(async (labelIds: string[]) => {
         try {
             for (const labelId of labelIds) {
-                await bulkEditAsync({
-                    filter: nql,
-                    search,
-                    all: !nql && !search,
-                    action: {
-                        type: 'removeLabel',
-                        meta: {label: {id: labelId}}
-                    }
-                });
+                await bulkEditAsync(buildBulkEditPayload({
+                    type: 'removeLabel',
+                    meta: {label: {id: labelId}}
+                }));
             }
             setShowRemoveLabelModal(false);
             toast.success(labelIds.length > 1 ? 'Labels removed successfully' : 'Label removed successfully');
@@ -117,18 +124,9 @@ const MembersActions: React.FC<MembersActionsProps> = ({
     }, [bulkEditAsync, nql, search]);
 
     const handleUnsubscribe = useCallback(async (newsletterIds: string[] | null) => {
-        const baseParams = {
-            filter: nql,
-            search,
-            all: !nql && !search
-        };
-
         if (newsletterIds === null) {
             try {
-                await bulkEditAsync({
-                    ...baseParams,
-                    action: {type: 'unsubscribe'}
-                });
+                await bulkEditAsync(buildBulkEditPayload({type: 'unsubscribe'}));
                 setShowUnsubscribeModal(false);
                 toast.success('Members unsubscribed successfully');
             } catch {
@@ -142,10 +140,10 @@ const MembersActions: React.FC<MembersActionsProps> = ({
         setIsUnsubscribing(true);
         try {
             const results = await Promise.allSettled(
-                newsletterIds.map(id => bulkEditAsync({
-                    ...baseParams,
-                    action: {type: 'unsubscribe', newsletter: id}
-                }))
+                newsletterIds.map(id => bulkEditAsync(buildBulkEditPayload({
+                    type: 'unsubscribe',
+                    newsletter: id
+                })))
             );
             const succeeded = results.filter(r => r.status === 'fulfilled').length;
             const total = results.length;
@@ -169,14 +167,10 @@ const MembersActions: React.FC<MembersActionsProps> = ({
         } finally {
             setIsUnsubscribing(false);
         }
-    }, [bulkEditAsync, nql, search]);
+    }, [buildBulkEditPayload, bulkEditAsync]);
 
     const handleDelete = useCallback(() => {
-        bulkDelete({
-            filter: nql,
-            search,
-            all: !nql && !search
-        }, {
+        bulkDelete(buildBulkDeletePayload(), {
             onSuccess: () => {
                 setShowDeleteModal(false);
                 toast.success('Members deleted successfully');
@@ -187,7 +181,7 @@ const MembersActions: React.FC<MembersActionsProps> = ({
                 });
             }
         });
-    }, [bulkDelete, nql, search]);
+    }, [buildBulkDeletePayload, bulkDelete]);
 
     const handleExportBackup = useCallback(async () => {
         try {

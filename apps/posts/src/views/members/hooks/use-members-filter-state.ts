@@ -69,17 +69,6 @@ export function filtersToSearchParams(filters: Filter[], search?: string): URLSe
     });
 }
 
-export function buildClearedFilterParams(searchParams: URLSearchParams): URLSearchParams {
-    const clearedParams = new URLSearchParams();
-    const search = searchParams.get('search');
-
-    if (search?.trim()) {
-        clearedParams.set('search', search);
-    }
-
-    return clearedParams;
-}
-
 interface UseFilterStateReturn {
     filters: Filter[];
     nql: string | undefined;

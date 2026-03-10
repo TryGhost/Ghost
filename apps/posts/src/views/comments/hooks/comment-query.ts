@@ -8,5 +8,5 @@ export function buildCommentsQueryParams({filter}: BuildCommentsQueryParamsInput
     return compileSurfaceQuery({
         surface: 'comments',
         filter
-    });
+    }) as Record<string, string>;
 }

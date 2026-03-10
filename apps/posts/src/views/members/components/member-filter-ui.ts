@@ -12,8 +12,12 @@ function buildRowFieldKey(fieldKey: string, filterId: string): string {
     return `${fieldKey}__row__${filterId}`;
 }
 
+function getFieldKey(field: FilterFieldConfig): string | undefined {
+    return typeof field.key === 'string' && field.key.length > 0 ? field.key : undefined;
+}
+
 function isDuplicateCapableField(field: FilterFieldConfig): boolean {
-    return DUPLICATE_CAPABLE_FIELD_TYPES.has(field.type);
+    return typeof field.type === 'string' && DUPLICATE_CAPABLE_FIELD_TYPES.has(field.type);
 }
 
 function cloneFieldWithKey(field: FilterFieldConfig, key: string): FilterFieldConfig {
@@ -29,23 +33,29 @@ export function buildMemberFilterUiState({fieldGroups, filters}: {fieldGroups: F
 
     const displayGroups = fieldGroups.map((group) => {
         const fields = group.fields.flatMap((field) => {
-            const matchingFilters = filters.filter(filter => filter.field === field.key);
+            const fieldKey = getFieldKey(field);
+
+            if (!fieldKey) {
+                return [field];
+            }
+
+            const matchingFilters = filters.filter(filter => filter.field === fieldKey);
 
             if (matchingFilters.length === 0) {
-                fieldKeyMap.set(field.key, field.key);
+                fieldKeyMap.set(fieldKey, fieldKey);
                 return [field];
             }
 
             const activeFields = matchingFilters.map((filter) => {
-                const rowFieldKey = buildRowFieldKey(field.key, filter.id || `${field.key}-row`);
+                const rowFieldKey = buildRowFieldKey(fieldKey, filter.id || `${fieldKey}-row`);
                 displayFieldKeysByFilterId.set(filter.id || rowFieldKey, rowFieldKey);
-                fieldKeyMap.set(rowFieldKey, field.key);
+                fieldKeyMap.set(rowFieldKey, fieldKey);
 
                 return cloneFieldWithKey(field, rowFieldKey);
             });
 
             if (isDuplicateCapableField(field)) {
-                fieldKeyMap.set(field.key, field.key);
+                fieldKeyMap.set(fieldKey, fieldKey);
                 return [...activeFields, field];
             }
 

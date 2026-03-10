@@ -1,7 +1,64 @@
 import {describe, expect, it} from 'vitest';
-import {filterReducer} from '@src/views/filters/filter-reducer';
+import {derivePredicateActions, filterReducer} from '@src/views/filters/filter-reducer';
 
 describe('filterReducer', () => {
+    it('derives an add action when the next payload appends a predicate', () => {
+        const currentPredicates = [
+            {id: 'status-1', field: 'status', operator: 'is', values: ['paid']}
+        ];
+
+        const nextPredicates = [
+            {id: 'status-1', field: 'status', operator: 'is', values: ['paid']},
+            {id: 'status-2', field: 'status', operator: 'is_not', values: ['free']}
+        ];
+
+        expect(derivePredicateActions(currentPredicates, nextPredicates)).toEqual([
+            {
+                type: 'addPredicate',
+                predicate: {id: 'status-2', field: 'status', operator: 'is_not', values: ['free']}
+            }
+        ]);
+    });
+
+    it('falls back to setPredicates when the next payload only changes order', () => {
+        const currentPredicates = [
+            {id: 'status-1', field: 'status', operator: 'is', values: ['paid']},
+            {id: 'email-1', field: 'email', operator: 'contains', values: ['alex@example.com']}
+        ];
+
+        const nextPredicates = [
+            {id: 'email-1', field: 'email', operator: 'contains', values: ['alex@example.com']},
+            {id: 'status-1', field: 'status', operator: 'is', values: ['paid']}
+        ];
+
+        expect(derivePredicateActions(currentPredicates, nextPredicates)).toEqual([
+            {
+                type: 'setPredicates',
+                predicates: nextPredicates
+            }
+        ]);
+    });
+
+    it('falls back to setPredicates when removals and reordering happen together', () => {
+        const currentPredicates = [
+            {id: 'status-1', field: 'status', operator: 'is', values: ['paid']},
+            {id: 'email-1', field: 'email', operator: 'contains', values: ['alex@example.com']},
+            {id: 'label-1', field: 'label', operator: 'is_any_of', values: ['vip']}
+        ];
+
+        const nextPredicates = [
+            {id: 'label-1', field: 'label', operator: 'is_any_of', values: ['vip']},
+            {id: 'email-1', field: 'email', operator: 'contains', values: ['alex@example.com']}
+        ];
+
+        expect(derivePredicateActions(currentPredicates, nextPredicates)).toEqual([
+            {
+                type: 'setPredicates',
+                predicates: nextPredicates
+            }
+        ]);
+    });
+
     it('clears predicates without clearing search', () => {
         const state = {
             predicates: [

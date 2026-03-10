@@ -31,11 +31,44 @@ export const MEMBER_STATIC_FIELDS = Object.keys(MEMBER_STATIC_FIELD_OPERATORS) a
 type StaticMemberField = keyof typeof MEMBER_STATIC_FIELD_OPERATORS;
 type NewsletterMemberField = `newsletters.${string}`;
 type MemberMultiValueField = 'label' | 'offer_redemptions' | 'tier_id';
+type MemberDateField = 'last_seen_at' | 'created_at' | 'subscriptions.start_date' | 'subscriptions.current_period_end';
+type MemberNumberField = 'email_count' | 'email_opened_count' | 'email_open_rate';
+type MemberStatusField = 'status';
+type MemberSubscribedField = 'subscribed';
+type MemberNewsletterAggregateField = 'newsletters';
+type MemberPlanIntervalField = 'subscriptions.plan_interval';
+type MemberSubscriptionStatusField = 'subscriptions.status';
+
+type DateValue = `${number}-${number}-${number}`;
+type MemberNumberValue = number;
+type MemberStatusValue = 'paid' | 'free' | 'comped';
+type MemberSubscribedValue = 'subscribed' | 'unsubscribed' | 'email-disabled';
+type MemberNewsletterAggregateValue = `${string}:${'subscribed' | 'unsubscribed'}`;
+type MemberNewsletterValue = 'subscribed' | 'unsubscribed';
+type MemberPlanIntervalValue = 'month' | 'year';
+type MemberSubscriptionStatusValue =
+    | 'active'
+    | 'trialing'
+    | 'canceled'
+    | 'unpaid'
+    | 'past_due'
+    | 'incomplete'
+    | 'incomplete_expired';
 
 export type MemberField = StaticMemberField | NewsletterMemberField;
 
 type NewsletterMemberOperator = typeof NEWSLETTER_FIELD_OPERATORS[number];
-type MemberPredicateValues<TField extends MemberField> = TField extends MemberMultiValueField ? [string, ...string[]] : [string];
+type MemberPredicateValues<TField extends MemberField> =
+    TField extends MemberMultiValueField ? [string, ...string[]]
+        : TField extends MemberDateField ? [DateValue]
+            : TField extends MemberNumberField ? [MemberNumberValue]
+                : TField extends MemberStatusField ? [MemberStatusValue]
+                    : TField extends MemberSubscribedField ? [MemberSubscribedValue]
+                        : TField extends MemberNewsletterAggregateField ? [MemberNewsletterAggregateValue]
+                            : TField extends NewsletterMemberField ? [MemberNewsletterValue]
+                                : TField extends MemberPlanIntervalField ? [MemberPlanIntervalValue]
+                                    : TField extends MemberSubscriptionStatusField ? [MemberSubscriptionStatusValue]
+                                        : [string];
 
 export type MemberOperator<TField extends MemberField> =
     TField extends NewsletterMemberField

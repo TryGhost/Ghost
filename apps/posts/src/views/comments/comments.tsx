@@ -11,7 +11,7 @@ import {useFilterState} from './hooks/use-filter-state';
 import {useKnownFilterValues} from './hooks/use-known-filter-values';
 
 const Comments: React.FC = () => {
-    const {filters, nql, setFilters, clearFilters, isSingleIdFilter} = useFilterState();
+    const {filters, nql, setFilters, clearFilters, hasFilters, isSingleIdFilter} = useFilterState();
     const handleAddFilter = useCallback((field: string, value: string, operator: string = 'is') => {
         setFilters((prevFilters) => {
             // Remove any existing filter for the same field
@@ -70,11 +70,24 @@ const Comments: React.FC = () => {
                     </div>
                 ) : !data?.comments.length ? (
                     <div className="flex h-full items-center justify-center">
-                        <EmptyIndicator
-                            title="No comments yet"
-                        >
-                            <LucideIcon.MessageSquare />
-                        </EmptyIndicator>
+                        {hasFilters ? (
+                            <div className="flex flex-col items-center gap-6">
+                                <EmptyIndicator
+                                    title="No comments match the current filter"
+                                >
+                                    <LucideIcon.MessageSquare />
+                                </EmptyIndicator>
+                                <Button variant="outline" onClick={() => clearFilters({replace: false})}>
+                                    Show all comments
+                                </Button>
+                            </div>
+                        ) : (
+                            <EmptyIndicator
+                                title="No comments yet"
+                            >
+                                <LucideIcon.MessageSquare />
+                            </EmptyIndicator>
+                        )}
                     </div>
                 ) : (
                     <>

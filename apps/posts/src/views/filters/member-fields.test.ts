@@ -18,9 +18,11 @@ describe('createMemberPredicate', () => {
     it('types multi-value and single-value fields differently', () => {
         const labelPredicate = createMemberPredicate('label', 'is_any_of', ['vip', 'internal']);
         const statusPredicate = createMemberPredicate('status', 'is', ['paid']);
+        const openRatePredicate = createMemberPredicate('email_open_rate', 'is', [42]);
 
         expectTypeOf(labelPredicate.values).toEqualTypeOf<[string, ...string[]]>();
-        expectTypeOf(statusPredicate.values).toEqualTypeOf<[string]>();
+        expectTypeOf(statusPredicate.values).toEqualTypeOf<['paid' | 'free' | 'comped']>();
+        expectTypeOf(openRatePredicate.values).toEqualTypeOf<[number]>();
     });
 
     it('rejects invalid field and operator combinations at runtime', () => {
@@ -35,6 +37,6 @@ describe('createMemberPredicate', () => {
     });
 
     it('rejects empty predicate values', () => {
-        expect(() => createMemberPredicate('label', 'is_none_of', [])).toThrow('Member predicate requires at least one value');
+        expect(() => createMemberPredicate('label', 'is_none_of', [] as never)).toThrow('Member predicate requires at least one value');
     });
 });

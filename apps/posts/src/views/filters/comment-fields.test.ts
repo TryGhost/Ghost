@@ -13,7 +13,7 @@ describe('createCommentPredicate', () => {
         const predicate = createCommentPredicate('status', 'is', ['published']);
 
         expect(predicate.values).toEqual(['published']);
-        expectTypeOf(predicate.values).toEqualTypeOf<[string]>();
+        expectTypeOf(predicate.values).toEqualTypeOf<['published' | 'hidden']>();
     });
 
     it('rejects invalid field and operator combinations at runtime', () => {

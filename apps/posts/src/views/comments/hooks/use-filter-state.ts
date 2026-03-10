@@ -1,5 +1,6 @@
 import type {Filter} from '@tryghost/shade';
 import {COMMENT_FIELDS, isCommentField, isCommentOperatorForField} from '@src/views/filters/comment-fields';
+import {deriveFilterFlags} from '@src/views/filters/filter-flags';
 import {serializeCommentFilters} from '@src/views/filters/filter-nql';
 import {parsePredicateParams, serializePredicateParams} from '@src/views/filters/url-predicate-params';
 import {UrlFilterStateOptions, useUrlFilterState} from '@src/views/filters/use-url-filter-state';
@@ -54,6 +55,7 @@ interface UseFilterStateReturn {
     clearFilters: (options?: UrlFilterStateOptions) => void;
     /** True when the only active filter is a single comment ID (used for deep linking) */
     isSingleIdFilter: boolean;
+    hasFilters: boolean;
 }
 
 /**
@@ -62,14 +64,15 @@ interface UseFilterStateReturn {
  * URL format: ?status=is:published&author=is:member-id&body=contains:search+term
  */
 export function useFilterState(): UseFilterStateReturn {
-    const {filters, nql, setFilters, clearFilters, isSingleIdFilter} = useUrlFilterState({
+    const {filters, nql, setFilters, clearFilters, isSingleIdFilter, hasFilters} = useUrlFilterState({
         parseFilters: searchParamsToFilters,
         serializeFilters: (newFilters) => filtersToSearchParams(newFilters),
         buildNql: buildNqlFilter,
         deriveState: ({filters: currentFilters}) => ({
+            ...deriveFilterFlags({predicates: currentFilters}),
             isSingleIdFilter: currentFilters.length === 1 && currentFilters[0].field === 'id'
         })
     });
 
-    return {filters, nql, setFilters, clearFilters, isSingleIdFilter};
+    return {filters, nql, setFilters, clearFilters, isSingleIdFilter, hasFilters};
 }

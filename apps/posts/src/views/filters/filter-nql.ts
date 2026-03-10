@@ -201,13 +201,15 @@ function parseLegacySimpleFilter(filterNode: Record<string, unknown>): Filter | 
     ] as const;
 
     if (rawValue && typeof rawValue === 'object') {
+        const rawValueRecord = rawValue as Record<string, unknown>;
+
         for (const [legacyOperator, operator] of dateOperators) {
-            if (legacyOperator in rawValue) {
+            if (legacyOperator in rawValueRecord) {
                 return {
                     id: `${field}-legacy`,
                     field,
                     operator,
-                    values: [String(rawValue[legacyOperator]).split(' ')[0]]
+                    values: [String(rawValueRecord[legacyOperator]).split(' ')[0]]
                 };
             }
         }

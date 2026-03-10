@@ -1,6 +1,6 @@
 import {useCallback, useMemo} from 'react';
 import {useSearchParams} from '@tryghost/admin-x-framework';
-import {filterReducer} from './filter-reducer';
+import {derivePredicateActions, filterReducer, type FilterState} from './filter-reducer';
 import type {Filter} from '@tryghost/shade';
 
 type SetFiltersAction = Filter[] | ((prevFilters: Filter[]) => Filter[]);
@@ -41,17 +41,17 @@ export function useUrlFilterState<TDerived extends object = Record<string, never
         return searchParams.get('search') ?? '';
     }, [searchParams]);
 
-    const state = useMemo(() => ({
+    const state = useMemo<FilterState<Filter>>(() => ({
         predicates: filters,
         search
     }), [filters, search]);
 
     const setFilters = useCallback((action: SetFiltersAction, options: UrlFilterStateOptions = {}) => {
         const newFilters = typeof action === 'function' ? action(filters) : action;
-        const nextState = filterReducer(state, {
-            type: 'setPredicates',
-            predicates: newFilters
-        });
+        const predicateActions = derivePredicateActions(state.predicates, newFilters);
+        const nextState = predicateActions.reduce<FilterState<Filter>>((currentState, predicateAction) => {
+            return filterReducer(currentState, predicateAction);
+        }, state);
         const newParams = serializeFilters(nextState.predicates, nextState.search || undefined);
 
         const replace = options.replace ?? true;

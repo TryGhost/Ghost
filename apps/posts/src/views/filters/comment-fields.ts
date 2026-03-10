@@ -11,6 +11,17 @@ const COMMENT_FIELD_OPERATORS = {
 export const COMMENT_FIELDS = Object.keys(COMMENT_FIELD_OPERATORS) as Array<keyof typeof COMMENT_FIELD_OPERATORS>;
 
 export type CommentField = keyof typeof COMMENT_FIELD_OPERATORS;
+type CommentDateField = 'created_at';
+type CommentStatusField = 'status';
+type CommentReportedField = 'reported';
+type CommentDateValue = `${number}-${number}-${number}`;
+type CommentStatusValue = 'published' | 'hidden';
+type CommentReportedValue = 'true' | 'false';
+type CommentPredicateValues<TField extends CommentField> =
+    TField extends CommentDateField ? [CommentDateValue]
+        : TField extends CommentStatusField ? [CommentStatusValue]
+            : TField extends CommentReportedField ? [CommentReportedValue]
+                : [string];
 
 export type CommentOperator<TField extends CommentField> = (typeof COMMENT_FIELD_OPERATORS)[TField][number];
 
@@ -18,7 +29,7 @@ export interface CommentPredicate<TField extends CommentField = CommentField> {
     id: string;
     field: TField;
     operator: CommentOperator<TField>;
-    values: [string];
+    values: CommentPredicateValues<TField>;
 }
 
 let predicateIdCounter = 0;
@@ -31,13 +42,13 @@ export function isCommentOperatorForField<TField extends CommentField>(
     field: TField,
     operator: string
 ): operator is CommentOperator<TField> {
-    return COMMENT_FIELD_OPERATORS[field].includes(operator as CommentOperator<TField>);
+    return COMMENT_FIELD_OPERATORS[field].includes(operator as never);
 }
 
 export function createCommentPredicate<TField extends CommentField>(
     field: TField,
     operator: CommentOperator<TField>,
-    values: [string]
+    values: CommentPredicateValues<TField>
 ): CommentPredicate<TField> {
     if (!isCommentOperatorForField(field, operator)) {
         throw new Error(`Invalid operator "${operator}" for comment field "${field}"`);

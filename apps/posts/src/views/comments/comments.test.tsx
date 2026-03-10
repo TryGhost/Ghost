@@ -47,6 +47,7 @@ describe('Comments', () => {
             nql: 'id:\'comment_1\'',
             setFilters: vi.fn(),
             clearFilters,
+            hasFilters: true,
             isSingleIdFilter: true
         });
 
@@ -78,5 +79,47 @@ describe('Comments', () => {
         fireEvent.click(screen.getByRole('button', {name: 'Show all comments'}));
         expect(clearFilters).toHaveBeenCalledWith({replace: false});
         expect(screen.getByText('Comments list')).toBeInTheDocument();
+    });
+
+    it('shows the filtered empty state and clear action for non-id filters', () => {
+        const clearFilters = vi.fn();
+
+        mockUseFilterState.mockReturnValue({
+            filters: [{id: 'status-1', field: 'status', operator: 'is', values: ['published']}],
+            nql: 'status:published',
+            setFilters: vi.fn(),
+            clearFilters,
+            hasFilters: true,
+            isSingleIdFilter: false
+        });
+
+        mockUseBrowseComments.mockReturnValue({
+            data: {
+                comments: [],
+                meta: {
+                    pagination: {
+                        total: 0
+                    }
+                }
+            },
+            isError: false,
+            isFetching: false,
+            isFetchingNextPage: false,
+            isRefetching: false,
+            fetchNextPage: vi.fn(),
+            hasNextPage: false
+        });
+
+        mockUseKnownFilterValues.mockReturnValue({
+            knownPosts: [],
+            knownMembers: []
+        });
+
+        render(<Comments />);
+
+        expect(screen.getByText('Comments filters')).toBeInTheDocument();
+        expect(screen.getByText('No comments match the current filter')).toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', {name: 'Show all comments'}));
+        expect(clearFilters).toHaveBeenCalledWith({replace: false});
     });
 });

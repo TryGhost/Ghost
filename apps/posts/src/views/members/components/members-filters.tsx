@@ -112,6 +112,37 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
         return buildOfferOptions(offers, retentionOffersEnabled, retentionMap);
     }, [offers, retentionOffersEnabled, retentionMap]);
 
+    // Resource search hooks for post/page and email pickers
+    const postSearch = useResourceSearch('post');
+    const emailSearch = useResourceSearch('email');
+
+    // Get filter configuration
+    const filterFields = useMembersFilterConfig({
+        labels,
+        tiers: activePaidTiers,
+        newsletters: newsletters.filter(n => n.status === 'active'),
+        hasMultipleTiers,
+        paidMembersEnabled,
+        emailAnalyticsEnabled,
+        labelsOptions: labels.map(l => ({value: l.slug, label: l.name})),
+        tiersOptions: activePaidTiers.map(t => ({value: t.id, label: t.name})),
+        offersOptions,
+        hasOffers: offers.length > 0,
+        postResourceOptions: postSearch.options,
+        onPostResourceSearchChange: postSearch.onSearchChange,
+        postResourceSearchValue: postSearch.searchValue,
+        postResourceLoading: postSearch.isLoading,
+        emailResourceOptions: emailSearch.options,
+        onEmailResourceSearchChange: emailSearch.onSearchChange,
+        emailResourceSearchValue: emailSearch.searchValue,
+        emailResourceLoading: emailSearch.isLoading,
+        membersTrackSources,
+        emailTrackOpens,
+        emailTrackClicks,
+        audienceFeedbackEnabled,
+        siteTimezone
+    });
+
     // When retention grouping is active, translate between synthetic IDs (for display)
     // and real offer IDs (stored in URL / sent to API)
     const displayFilters = useMemo(() => {
@@ -176,37 +207,6 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
         });
         onFiltersChange(expanded);
     }, [filterUiState.fieldKeyMap, onFiltersChange, retentionMap]);
-
-    // Resource search hooks for post/page and email pickers
-    const postSearch = useResourceSearch('post');
-    const emailSearch = useResourceSearch('email');
-
-    // Get filter configuration
-    const filterFields = useMembersFilterConfig({
-        labels,
-        tiers: activePaidTiers,
-        newsletters: newsletters.filter(n => n.status === 'active'),
-        hasMultipleTiers,
-        paidMembersEnabled,
-        emailAnalyticsEnabled,
-        labelsOptions: labels.map(l => ({value: l.slug, label: l.name})),
-        tiersOptions: activePaidTiers.map(t => ({value: t.id, label: t.name})),
-        offersOptions,
-        hasOffers: offers.length > 0,
-        postResourceOptions: postSearch.options,
-        onPostResourceSearchChange: postSearch.onSearchChange,
-        postResourceSearchValue: postSearch.searchValue,
-        postResourceLoading: postSearch.isLoading,
-        emailResourceOptions: emailSearch.options,
-        onEmailResourceSearchChange: emailSearch.onSearchChange,
-        emailResourceSearchValue: emailSearch.searchValue,
-        emailResourceLoading: emailSearch.isLoading,
-        membersTrackSources,
-        emailTrackOpens,
-        emailTrackClicks,
-        audienceFeedbackEnabled,
-        siteTimezone
-    });
 
     const hasFilters = filters.length > 0;
 
