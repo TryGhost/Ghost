@@ -63,12 +63,12 @@ module.exports = function getDiscountWindow(subscription, offer) {
                 return null;
             }
 
-            // A discount ending before the next renewal won't affect the next payment
-            if (discountEnd < currentPeriodEnd) {
+            // A discount ending at, or before, the current billing period end won't affect the next payment
+            if (discountEnd <= currentPeriodEnd) {
                 return null;
             }
 
-            // Return the last next payment with a discount
+            // Match the end date with the last discounted payment
             return {
                 start: subscription.discount_start,
                 end: getLastDiscountedPayment(currentPeriodEnd, discountEnd)
@@ -95,10 +95,15 @@ module.exports = function getDiscountWindow(subscription, offer) {
     }
 
     if (offer.duration === 'repeating' && offer.duration_in_months > 0) {
-        const end = new Date(subscription.start_date);
-        end.setUTCMonth(end.getUTCMonth() + offer.duration_in_months);
+        const end = getAnchoredBillingDate(new Date(subscription.start_date), offer.duration_in_months - 1);
+        const currentPeriodEnd = new Date(subscription.current_period_end);
 
-        if (new Date() >= end) {
+        if (end <= new Date()) {
+            return null;
+        }
+
+        // A discount ending before the end of the current billing period won't affect the next payment
+        if (end < currentPeriodEnd) {
             return null;
         }
 

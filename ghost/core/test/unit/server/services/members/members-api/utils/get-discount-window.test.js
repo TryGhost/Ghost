@@ -111,7 +111,7 @@ describe('getDiscountWindow', function () {
             assert.equal(result, null);
         });
 
-        it('returns window when discount_end matches the next billing date', function () {
+        it('returns null when discount_end matches the next billing date', function () {
             const discountStart = new Date('2025-05-01T00:00:00.000Z');
             const discountEnd = new Date('2025-06-15T00:00:00.000Z');
             const subscription = createSubscription({
@@ -122,7 +122,7 @@ describe('getDiscountWindow', function () {
 
             const result = getDiscountWindow(subscription, createOffer({duration: 'repeating', duration_in_months: 1}));
 
-            assert.deepEqual(result, {start: discountStart, end: discountEnd});
+            assert.equal(result, null);
         });
 
         it('discount_start takes precedence over legacy offer data', function () {
@@ -164,6 +164,21 @@ describe('getDiscountWindow', function () {
             const result = getDiscountWindow(subscription, {duration: 'forever'});
 
             assert.deepEqual(result, {start: startDate, end: null});
+        });
+
+        it('returns the last discounted billing date for legacy repeating offers', function () {
+            const startDate = new Date('2025-04-01T00:00:00.000Z');
+            const subscription = createSubscription({
+                start_date: startDate,
+                current_period_end: new Date('2025-06-01T00:00:00.000Z')
+            });
+
+            const result = getDiscountWindow(subscription, {duration: 'repeating', duration_in_months: 3});
+
+            assert.deepEqual(result, {
+                start: startDate,
+                end: new Date('2025-06-01T00:00:00.000Z')
+            });
         });
 
         it('returns window for repeating offer still within duration', function () {

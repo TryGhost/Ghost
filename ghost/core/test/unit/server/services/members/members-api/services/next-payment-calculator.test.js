@@ -276,6 +276,27 @@ describe('NextPaymentCalculator', function () {
             });
         });
 
+        it('returns original amount when a one-month Stripe signup discount ends on the next billing date', function () {
+            const nextPaymentCalculator = new NextPaymentCalculator();
+            const offer = createOffer({type: 'percent', amount: 10, duration: 'repeating', duration_in_months: 1});
+            const subscription = createSubscription({
+                start_date: new Date('2025-05-01T00:00:00.000Z'),
+                discount_start: new Date('2025-05-01T00:00:00.000Z'),
+                discount_end: new Date('2025-06-01T00:00:00.000Z'),
+                current_period_end: new Date('2025-06-01T00:00:00.000Z')
+            }, offer);
+
+            const result = nextPaymentCalculator.calculate(subscription);
+
+            assert.deepEqual(result, {
+                original_amount: 500,
+                amount: 500,
+                interval: 'month',
+                currency: 'USD',
+                discount: null
+            });
+        });
+
         // Backportability tests - for signup offers without discount_start/discount_end
         describe('backportability for signup offers', function () {
             it('once signup offer does not apply to the next payment (already been applied to first payment)', function () {
@@ -291,6 +312,23 @@ describe('NextPaymentCalculator', function () {
 
                 assert.equal(result.original_amount, 500);
                 assert.equal(result.amount, 500); // No discount
+                assert.equal(result.discount, null);
+            });
+
+            it('repeating signup offer with a duration of one month does not apply to the next payment', function () {
+                const nextPaymentCalculator = new NextPaymentCalculator();
+                const offer = createOffer({type: 'percent', amount: 10, duration: 'repeating', duration_in_months: 1});
+                const subscription = createSubscription({
+                    start_date: new Date('2025-05-01T00:00:00.000Z'),
+                    discount_start: null,
+                    discount_end: null,
+                    current_period_end: new Date('2025-06-01T00:00:00.000Z')
+                }, offer);
+
+                const result = nextPaymentCalculator.calculate(subscription);
+
+                assert.equal(result.original_amount, 500);
+                assert.equal(result.amount, 500);
                 assert.equal(result.discount, null);
             });
 
@@ -312,22 +350,23 @@ describe('NextPaymentCalculator', function () {
                 assert.equal(result.discount.end, null);
             });
 
-            it('repeating offer applies if current date is before subscription start_date + duration_in_months', function () {
+            it('repeating signup offer returns the last discounted billing date', function () {
                 const nextPaymentCalculator = new NextPaymentCalculator();
-                const offer = createOffer({type: 'percent', amount: 20, duration: 'repeating', duration_in_months: 888});
+                const offer = createOffer({type: 'percent', amount: 20, duration: 'repeating', duration_in_months: 3});
                 const subscription = createSubscription({
-                    start_date: new Date('2025-01-01T00:00:00.000Z'),
+                    start_date: new Date('2025-04-01T00:00:00.000Z'),
                     discount_start: null,
-                    discount_end: null
+                    discount_end: null,
+                    current_period_end: new Date('2025-06-01T00:00:00.000Z')
                 }, offer);
 
                 const result = nextPaymentCalculator.calculate(subscription);
 
                 assert.equal(result.amount, 400); // Discount still active
                 assert.notEqual(result.discount, null);
-                assert.equal(result.discount.start, '2025-01-01T00:00:00.000Z');
-                assert.equal(result.discount.end, '2099-01-01T00:00:00.000Z'); // start_date + 888 months
-                assert.equal(result.discount.duration_in_months, 888);
+                assert.equal(result.discount.start, '2025-04-01T00:00:00.000Z');
+                assert.equal(result.discount.end, '2025-06-01T00:00:00.000Z');
+                assert.equal(result.discount.duration_in_months, 3);
             });
 
             it('repeating offer is inactive when start_date + duration_in_months is in the past', function () {
