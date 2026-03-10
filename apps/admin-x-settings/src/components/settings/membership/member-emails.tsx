@@ -21,6 +21,7 @@ const EmailPreviewRow: React.FC<{
     icon: 'user-add' | 'bills',
     title: string,
     enabled: boolean,
+    isBusy: boolean,
     isInitialLoading: boolean,
     onEdit: () => void,
     onToggle: () => void
@@ -30,13 +31,14 @@ const EmailPreviewRow: React.FC<{
     icon,
     title,
     enabled,
+    isBusy,
     isInitialLoading,
     onEdit,
     onToggle
 }) => {
     return (
         <TableRow
-            action={<div className='flex items-center gap-7'>
+            action={<div className={`flex items-center gap-7 ${isBusy && !isInitialLoading ? 'pointer-events-none' : ''}`}>
                 {isInitialLoading ? (
                     <div className="h-4 w-7 rounded-full bg-grey-300 dark:bg-grey-800" />
                 ) : (
@@ -81,6 +83,7 @@ const MemberEmailsTable: React.FC<{
     paidEmailForDisplay: AutomatedEmail,
     freeWelcomeEmailEnabled: boolean,
     paidWelcomeEmailEnabled: boolean,
+    isBusy: boolean,
     isLoading: boolean,
     onFreeEdit: () => void,
     onFreeToggle: () => void,
@@ -93,6 +96,7 @@ const MemberEmailsTable: React.FC<{
     paidEmailForDisplay,
     freeWelcomeEmailEnabled,
     paidWelcomeEmailEnabled,
+    isBusy,
     isLoading,
     onFreeEdit,
     onFreeToggle,
@@ -106,6 +110,7 @@ const MemberEmailsTable: React.FC<{
                 emailType='free'
                 enabled={freeWelcomeEmailEnabled}
                 icon='user-add'
+                isBusy={isBusy}
                 isInitialLoading={isLoading}
                 title='Free members welcome email'
                 onEdit={onFreeEdit}
@@ -117,6 +122,7 @@ const MemberEmailsTable: React.FC<{
                     emailType='paid'
                     enabled={paidWelcomeEmailEnabled}
                     icon='bills'
+                    isBusy={isBusy}
                     isInitialLoading={isLoading}
                     title='Paid members welcome email'
                     onEdit={onPaidEdit}
@@ -238,6 +244,7 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 config={config}
                 freeEmailForDisplay={freeEmailForDisplay}
                 freeWelcomeEmailEnabled={freeWelcomeEmailEnabled}
+                isBusy={isBusy}
                 isLoading={isLoading}
                 paidEmailForDisplay={paidEmailForDisplay}
                 paidWelcomeEmailEnabled={paidWelcomeEmailEnabled}
