@@ -94,7 +94,7 @@ test.describe('Social account settings', async () => {
         await testUrlValidation(
             facebookInput,
             'http://github.com/username',
-            '',
+            'http://github.com/username',
             'The URL must be in a format like https://www.facebook.com/yourPage'
         );
 
@@ -109,7 +109,7 @@ test.describe('Social account settings', async () => {
         await testUrlValidation(
             facebookInput,
             'http://github.com/pages/username',
-            '',
+            'http://github.com/pages/username',
             'The URL must be in a format like https://www.facebook.com/yourPage'
         );
 
@@ -136,7 +136,7 @@ test.describe('Social account settings', async () => {
         await testUrlValidation(
             twitterInput,
             '*(&*(%%))',
-            '',
+            '*(&*(%%))',
             'The URL must be in a format like https://x.com/yourUsername'
         );
 
