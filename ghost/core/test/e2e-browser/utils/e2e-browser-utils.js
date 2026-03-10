@@ -1,7 +1,6 @@
 const DataGenerator = require('../../utils/fixtures/data-generator');
 const {expect, test} = require('@playwright/test');
 const ObjectID = require('bson-objectid').default;
-const offersService = require('../../../core/server/services/offers');
 const Stripe = require('stripe').Stripe;
 
 /**
@@ -315,20 +314,13 @@ const createOffer = async (page, {name, tierName, offerType, amount, discountTyp
         await addOfferModal.getByRole('button', {name: 'Publish'}).click();
 
         let createdOfferCode = '';
-        let createdOfferId = '';
         try {
             const createOfferResponse = await createOfferResponsePromise;
             const createOfferPayload = await createOfferResponse.json();
             const createdOffer = createOfferPayload?.offers?.[0];
             createdOfferCode = createdOffer?.code?.trim() || '';
-            createdOfferId = createdOffer?.id || '';
         } catch (error) {
             // Fallback to UI retrieval below
-        }
-
-        if (!createdOfferCode && createdOfferId) {
-            const offer = await offersService.api.getOffer({id: createdOfferId});
-            createdOfferCode = offer?.code || '';
         }
 
         if (createdOfferCode) {
