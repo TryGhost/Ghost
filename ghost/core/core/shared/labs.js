@@ -25,7 +25,8 @@ const GA_FEATURES = [
     'explore',
     'commentModeration',
     'featurebaseFeedback',
-    'welcomeEmailEditor'
+    'welcomeEmailEditor',
+    'retentionOffers'
 ];
 
 // These features are considered publicly available and can be enabled/disabled by users
@@ -48,7 +49,6 @@ const PRIVATE_FEATURES = [
     'themeTranslation',
     'indexnow',
     'transistor',
-    'retentionOffers',
     'membersForward',
     'welcomeEmailsDesignCustomization',
     'pictureImageFormats'

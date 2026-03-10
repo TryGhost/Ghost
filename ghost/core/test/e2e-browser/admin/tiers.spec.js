@@ -32,7 +32,9 @@ test.describe('Admin', () => {
 
             await sharedPage.goto('/ghost/');
             await sharedPage.goto('/ghost/#/settings/offers');
-            await expect(sharedPage.getByTestId('offers')).toContainText(offerName);
+            await sharedPage.getByTestId('offers').getByRole('button', {name: 'Manage tiers'}).waitFor({state: 'hidden'});
+            await sharedPage.getByTestId('offers').getByRole('button', {name: 'Manage offers'}).click();
+            await expect(sharedPage.getByTestId('offers-modal')).toContainText(offerName);
         });
 
         test('Can create additional Tier', async ({sharedPage}) => {

@@ -260,33 +260,23 @@ const createOffer = async (page, {name, tierName, offerType, amount, discountTyp
         await page.getByTestId('tiers').getByText('No active tiers found').waitFor({state: 'hidden'});
         await page.getByTestId('offers').getByRole('button', {name: 'Manage tiers'}).waitFor({state: 'hidden'});
 
-        // only one of these buttons is ever available - either 'Add offer' or 'Manage offers'
-        const hasExistingOffers = await page.getByTestId('offers').getByRole('button', {name: 'Manage offers'}).isVisible();
-        const isCTA = await page.getByTestId('offers').getByRole('button', {name: 'Add offer'}).isVisible();
+        await page.getByTestId('offers').getByRole('button', {name: 'Manage offers'}).click();
 
-        // Archive other offers to keep the list tidy
-        // We only need 1 offer to be active at a time
-        // Either the list of active offers loads, or the CTA when no offers exist
-        if (hasExistingOffers && !isCTA) {
-            await page.getByTestId('offers').getByRole('button', {name: 'Manage offers'}).click();
+        // Wait for the modal to fully load (retention offers are always present)
+        await page.getByTestId('retention-offer-item').first().waitFor();
 
-            // Selector for the elements with data-testid 'offer-item'
-            // const offerItemsSelector = '[data-testid="offer-item"]';
+        // Archive all existing signup offers to keep the list tidy
+        while (await page.getByTestId('offer-item').count() > 0) {
             await page.getByTestId('offer-item').nth(0).click();
             await page.getByRole('button', {name: 'Archive offer'}).click();
 
             const confirmModal = await page.getByTestId('confirmation-modal');
             await confirmModal.getByRole('button', {name: 'Archive'}).click();
             await confirmModal.waitFor({state: 'hidden'});
-
-            // Still in the offers modal after archiving — click "New offer" directly
-            await page.getByText('New offer').click();
-        } else if (await page.getByTestId('offers').getByRole('button', {name: 'Add offer'}).isVisible()) {
-            await page.getByTestId('offers').getByRole('button', {name: 'Add offer'}).click();
-        } else {
-            await page.getByTestId('offers').getByRole('button', {name: 'Manage offers'}).click();
-            await page.getByText('New offer').click();
         }
+
+        // Click "New offer" to open the creation form
+        await page.getByText('New offer').click();
 
         await page.getByLabel('Offer name').fill(offerName);
 

@@ -31,7 +31,10 @@ test.describe('Portal', () => {
             // check that offer was added in the offer list screen
             await sharedPage.goto('/ghost');
             await sharedPage.getByRole('navigation').getByRole('link', {name: 'Settings'}).click();
-            await expect(await sharedPage.getByTestId('offers')).toContainText(offerName);
+            await sharedPage.getByTestId('offers').getByRole('button', {name: 'Manage tiers'}).waitFor({state: 'hidden'});
+            await sharedPage.getByTestId('offers').getByRole('button', {name: 'Manage offers'}).click();
+            await expect(sharedPage.getByTestId('offers-modal')).toContainText(offerName);
+            await sharedPage.getByTestId('offers-modal').getByRole('button', {name: 'Close'}).click();
 
             await sharedPage.goto(offerLink);
 
@@ -79,9 +82,10 @@ test.describe('Portal', () => {
 
             // // Ensure the offer redemption count was bumped
             await sharedPage.goto('/ghost/#/settings/offers');
-            // await sharedPage.locator('.gh-nav a[href="#/offers/"]').click();
-            const locator = await sharedPage.locator(`[data-test-offer="${offerName}"]`);
-            await expect(locator).toContainText('1 redemption');
+            await sharedPage.getByTestId('offers').getByRole('button', {name: 'Manage tiers'}).waitFor({state: 'hidden'});
+            await sharedPage.getByTestId('offers').getByRole('button', {name: 'Manage offers'}).click();
+            const offerRow = sharedPage.getByTestId('offer-item').filter({hasText: offerName});
+            await expect(offerRow).toContainText('1');
         });
 
         test('Creates and uses a one-time discount Offer', async ({sharedPage}) => {
@@ -108,9 +112,10 @@ test.describe('Portal', () => {
             // check that offer was added in the offer list screen
             await sharedPage.goto('/ghost');
             await sharedPage.getByRole('navigation').getByRole('link', {name: 'Settings'}).click();
-            await expect(sharedPage.getByTestId('offers')).toContainText(offerName);
-            // open offer details page
-            // await sharedPage.locator(`[data-test-offer="${offerName}"] a`).first().click();
+            await sharedPage.getByTestId('offers').getByRole('button', {name: 'Manage tiers'}).waitFor({state: 'hidden'});
+            await sharedPage.getByTestId('offers').getByRole('button', {name: 'Manage offers'}).click();
+            await expect(sharedPage.getByTestId('offers-modal')).toContainText(offerName);
+            await sharedPage.getByTestId('offers-modal').getByRole('button', {name: 'Close'}).click();
 
             // fetch offer url from portal settings and open it
             await sharedPage.goto(offerLink);
@@ -185,7 +190,10 @@ test.describe('Portal', () => {
 
             await sharedPage.goto('/ghost');
             await sharedPage.getByRole('navigation').getByRole('link', {name: 'Settings'}).click();
-            await expect(await sharedPage.getByTestId('offers')).toContainText(offerName);
+            await sharedPage.getByTestId('offers').getByRole('button', {name: 'Manage tiers'}).waitFor({state: 'hidden'});
+            await sharedPage.getByTestId('offers').getByRole('button', {name: 'Manage offers'}).click();
+            await expect(sharedPage.getByTestId('offers-modal')).toContainText(offerName);
+            await sharedPage.getByTestId('offers-modal').getByRole('button', {name: 'Close'}).click();
 
             await sharedPage.goto(offerLink);
 
@@ -260,7 +268,10 @@ test.describe('Portal', () => {
             // check that offer was added in the offer list screen
             await sharedPage.goto('/ghost');
             await sharedPage.getByRole('navigation').getByRole('link', {name: 'Settings'}).click();
-            await expect(sharedPage.getByTestId('offers')).toContainText(offerName);
+            await sharedPage.getByTestId('offers').getByRole('button', {name: 'Manage tiers'}).waitFor({state: 'hidden'});
+            await sharedPage.getByTestId('offers').getByRole('button', {name: 'Manage offers'}).click();
+            await expect(sharedPage.getByTestId('offers-modal')).toContainText(offerName);
+            await sharedPage.getByTestId('offers-modal').getByRole('button', {name: 'Close'}).click();
 
             await sharedPage.goto(offerLink);
 
