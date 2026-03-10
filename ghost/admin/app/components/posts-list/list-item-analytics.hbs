@@ -9,8 +9,12 @@
     {{!-- Title column --}}
     {{#if (and this.session.user.isContributor @post.isPublished)}}
         <a href={{@post.url}} class="permalink gh-list-data gh-post-list-title gh-post-with-feature-image" target="_blank" rel="noopener noreferrer">
-            <div class="gh-post-list-feature-image">
-                <div class="gh-post-list-feature-image-placeholder"></div>
+            <div class="gh-post-list-feature-image" style={{html-safe (concat "background-image: url(" @post.featureImage ");")}}>
+                {{#unless @post.featureImage}}
+                    <div class="gh-post-list-feature-image-placeholder">
+                        {{svg-jar "post-feature-image-placeholder"}}
+                    </div>
+                {{/unless}}
             </div>
             <div>
                 <h3 class="gh-content-entry-title">
