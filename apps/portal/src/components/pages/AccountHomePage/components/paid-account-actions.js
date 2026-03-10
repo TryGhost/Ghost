@@ -1,5 +1,5 @@
 import AppContext from '../../../../app-context';
-import {addMonths, getCompExpiry, getMemberSubscription, getMemberTierName, hasMultipleProductsFeature, hasOnlyFreePlan, isComplimentaryMember, isPaidMember, subscriptionHasFreeTrial} from '../../../../utils/helpers';
+import {getCompExpiry, getMemberSubscription, getMemberTierName, hasMultipleProductsFeature, hasOnlyFreePlan, isComplimentaryMember, isPaidMember, subscriptionHasFreeTrial} from '../../../../utils/helpers';
 import {getDateString} from '../../../../utils/date-time';
 import {ReactComponent as LoaderIcon} from '../../../../images/icons/loader.svg';
 import {ReactComponent as OfferTagIcon} from '../../../../images/icons/offer-tag.svg';
@@ -234,12 +234,8 @@ function getOfferLabel({nextPayment, currentPeriodEnd}) {
     let durationLabel = '';
     if (discount.duration === 'forever') {
         durationLabel = t('Forever');
-    } else if (discount.duration === 'repeating' && currentPeriodEnd) {
-        // Stripe discount dates are anchored to redemption time, not billing cycle, so we can't use discount.end here
-        const offerEndDate = addMonths(currentPeriodEnd, discount.duration_in_months - 1);
-        if (offerEndDate) {
-            durationLabel = t('Ends {offerEndDate}', {offerEndDate: getDateString(offerEndDate)});
-        }
+    } else if (discount.duration === 'repeating' && discount.end) {
+        durationLabel = t('Ends {offerEndDate}', {offerEndDate: getDateString(discount.end)});
     } else if (discount.duration === 'once' && currentPeriodEnd) {
         // By design, "once" offers don't have a discount end in Stripe. They expire at the end of the current billing period.
         durationLabel = t('Ends {offerEndDate}', {offerEndDate: getDateString(currentPeriodEnd)});

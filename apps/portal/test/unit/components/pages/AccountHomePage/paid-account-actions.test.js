@@ -242,7 +242,7 @@ describe('PaidAccountActions', () => {
             const site = getSiteData({products, portalProducts: products.map(p => p.id)});
 
             const currentPeriodEnd = new Date('2099-04-03T12:00:00.000Z');
-            const discountEnd = new Date('2099-05-05T12:00:00.000Z');
+            const discountEnd = new Date('2099-05-03T12:00:00.000Z');
 
             const member = getMemberData({
                 paid: true,
@@ -286,14 +286,13 @@ describe('PaidAccountActions', () => {
             expect(queryByText(/\$4\.00\/month/)).toBeInTheDocument();
             expect(queryByText(/Ends/)).toBeInTheDocument();
             expect(queryByText('$4.00/month — Ends 3 May 2099')).toBeInTheDocument();
-            expect(queryByText('$4.00/month — Ends 5 May 2099')).not.toBeInTheDocument();
         });
 
         test('displays $0.00/month - Ends {date} for free months offers', () => {
             const products = getProductsData({numOfProducts: 1});
             const site = getSiteData({products, portalProducts: products.map(p => p.id)});
 
-            const discountEnd = new Date('2099-02-01T12:00:00.000Z');
+            const discountEnd = new Date('2099-01-03T12:00:00.000Z');
             const currentPeriodEnd = new Date('2099-01-03T12:00:00.000Z');
 
             const member = getMemberData({
@@ -335,7 +334,6 @@ describe('PaidAccountActions', () => {
             expect(queryByText('$5.00/month')).toHaveClass('gh-portal-account-old-price');
             expect(queryByTestId('offer-label')).toBeInTheDocument();
             expect(queryByText('$0.00/month — Ends 3 Jan 2099')).toBeInTheDocument();
-            expect(queryByText('$0.00/month — Ends 1 Feb 2099')).not.toBeInTheDocument();
         });
 
         test('displays discounted price with "Ends {date}" for once offers', () => {
