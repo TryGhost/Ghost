@@ -77,23 +77,15 @@ const handleNavigation = (basePath: string, currentRoute: string | undefined, lo
         return {pathName: pathName || ''};
     }
 
-    const [, currentModalName] = Object.entries(modalPaths).find(([modalPath]) => matchRoute(currentRoute || '', modalPath)) || [];
-
-    const closeCurrentModal = (currentModalName && pathName !== currentRoute) ?
-        loadModals().then(({default: modals}) => {
-            NiceModal.remove(modals[currentModalName] as ModalComponent);
-        }) :
-        undefined;
-
     const searchParams = url.searchParams;
 
     if (pathName && modalPaths && loadModals) {
+        const [, currentModalName] = Object.entries(modalPaths).find(([modalPath]) => matchRoute(currentRoute || '', modalPath)) || [];
         const [path, modalName] = Object.entries(modalPaths).find(([modalPath]) => matchRoute(pathName, modalPath)) || [];
 
         return {
             pathName,
             changingModal: modalName && modalName !== currentModalName,
-            closingModal: (currentModalName && modalName !== currentModalName) ? closeCurrentModal : undefined,
             modal: (path && modalName) ? // we should consider adding '&& modalName !== currentModalName' here, but this breaks tests
                 loadModals().then(({default: modals}) => {
                     NiceModal.show(modals[modalName] as ModalComponent, {pathName, params: matchRoute(pathName, path), searchParams});
@@ -101,7 +93,7 @@ const handleNavigation = (basePath: string, currentRoute: string | undefined, lo
                 undefined
         };
     }
-    return {pathName: '', closingModal: closeCurrentModal};
+    return {pathName: ''};
 };
 
 const matchRoute = (pathname: string, routeDefinition: string) => {
@@ -155,15 +147,11 @@ export const RoutingProvider: React.FC<RoutingProviderProps> = ({basePath, modal
     useEffect(() => {
         const handleHashChange = () => {
             setRoute((currentRoute) => {
-                const {pathName, modal, changingModal, closingModal} = handleNavigation(basePath, currentRoute, modals?.load, modals?.paths);
+                const {pathName, modal, changingModal} = handleNavigation(basePath, currentRoute, modals?.load, modals?.paths);
 
                 if (modal && changingModal) {
                     setLoadingModal(true);
                     modal.then(() => setLoadingModal(false));
-                }
-
-                if (closingModal) {
-                    closingModal.catch(() => {});
                 }
 
                 return pathName;
