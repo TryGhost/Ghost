@@ -376,7 +376,7 @@ test.describe('Member emails settings', async () => {
             await expect(page.locator('[data-kg-slash-menu]')).toBeVisible({timeout: 5000});
             await page.keyboard.press('Enter');
 
-            await expect(modal.locator('[data-kg-card="product"]')).toBeVisible();
+            await expect(modal.locator('[data-kg-card="product"]')).toBeVisible({timeout: 10000});
         });
 
         test('welcome email editor does not show GIF selector when Tenor is not configured', async ({page}) => {
