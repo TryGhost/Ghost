@@ -56,7 +56,9 @@
     "tb": "tb local start && cd ghost/core/core/server/data/tinybird && tb dev",
     "tb:install": "curl https://tinybird.co | sh",
     "data:analytics:generate": "node ghost/core/core/server/data/tinybird/scripts/docker-analytics-manager.js generate",
-    "data:analytics:clear": "node ghost/core/core/server/data/tinybird/scripts/docker-analytics-manager.js clear"
+    "data:analytics:clear": "node ghost/core/core/server/data/tinybird/scripts/docker-analytics-manager.js clear",
+    "release": "node scripts/release.js",
+    "test:release": "node --test 'scripts/test/*.js'"
   },
   "resolutions": {
     "@tryghost/errors": "^1.3.7",
@@ -80,6 +82,7 @@
     "lint-staged": "15.5.2",
     "nx": "22.0.4",
     "rimraf": "5.0.10",
+    "semver": "7.7.3",
     "typescript": "5.8.3"
   },
   "dependencies": {},
