@@ -24,7 +24,6 @@
     "lib"
   ],
   "devDependencies": {
-    "mocha": "11.7.5",
     "sinon": "21.0.2"
   },
   "dependencies": {
