@@ -8,7 +8,7 @@ describe('serializeMemberPredicates', () => {
             createMemberPredicate('label', 'is_none_of', ['vip', 'internal'])
         ];
 
-        expect(serializeMemberPredicates(predicates)).toBe('label:-[vip,internal]');
+        expect(serializeMemberPredicates(predicates)).toBe('label:-[internal,vip]');
     });
 
     it('drops invalid member field and operator combinations before serializing', () => {
@@ -24,5 +24,13 @@ describe('serializeMemberPredicates', () => {
         expect(parseMemberNqlFilterParam('status:-free')).toEqual([
             {id: 'status-legacy', field: 'status', operator: 'is-not', values: ['free']}
         ]);
+    });
+
+    it('serializes multivalue member filters with canonical sorted value order', () => {
+        const predicates = [
+            createMemberPredicate('label', 'is_any_of', ['vip', 'early'])
+        ];
+
+        expect(serializeMemberPredicates(predicates)).toBe('label:[early,vip]');
     });
 });

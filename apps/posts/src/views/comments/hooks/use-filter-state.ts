@@ -65,7 +65,6 @@ export function useFilterState(): UseFilterStateReturn {
     const {filters, nql, setFilters, clearFilters, isSingleIdFilter} = useUrlFilterState({
         parseFilters: searchParamsToFilters,
         serializeFilters: (newFilters) => filtersToSearchParams(newFilters),
-        clearSearchParams: () => new URLSearchParams(),
         buildNql: buildNqlFilter,
         deriveState: ({filters: currentFilters}) => ({
             isSingleIdFilter: currentFilters.length === 1 && currentFilters[0].field === 'id'

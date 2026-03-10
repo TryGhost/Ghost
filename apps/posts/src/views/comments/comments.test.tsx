@@ -1,5 +1,5 @@
 import {describe, expect, it, vi} from 'vitest';
-import {render, screen} from '@testing-library/react';
+import {fireEvent, render, screen} from '@testing-library/react';
 import Comments from './comments';
 
 const mockUseFilterState = vi.fn();
@@ -40,11 +40,13 @@ vi.mock('./components/comments-list', () => ({
 
 describe('Comments', () => {
     it('hides the filter picker and shows the clear action for a single id filter', () => {
+        const clearFilters = vi.fn();
+
         mockUseFilterState.mockReturnValue({
             filters: [{id: 'id-1', field: 'id', operator: 'is', values: ['comment_1']}],
             nql: 'id:\'comment_1\'',
             setFilters: vi.fn(),
-            clearFilters: vi.fn(),
+            clearFilters,
             isSingleIdFilter: true
         });
 
@@ -73,7 +75,8 @@ describe('Comments', () => {
         render(<Comments />);
 
         expect(screen.queryByText('Comments filters')).not.toBeInTheDocument();
-        expect(screen.getByRole('button', {name: 'Show all comments'})).toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', {name: 'Show all comments'}));
+        expect(clearFilters).toHaveBeenCalledWith({replace: false});
         expect(screen.getByText('Comments list')).toBeInTheDocument();
     });
 });

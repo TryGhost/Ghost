@@ -104,7 +104,7 @@ describe('members nql compatibility', () => {
             }
         ];
 
-        expect(buildMemberNqlFilter(filters)).toBe('label:-[vip,internal]');
+        expect(buildMemberNqlFilter(filters)).toBe('label:-[internal,vip]');
     });
 
     it('serializes label is_not_any_of with ember-compatible exclusion syntax', () => {
@@ -117,7 +117,7 @@ describe('members nql compatibility', () => {
             }
         ];
 
-        expect(buildMemberNqlFilter(filters)).toBe('label:-[vip,internal]');
+        expect(buildMemberNqlFilter(filters)).toBe('label:-[internal,vip]');
     });
 
     it('serializes subscriptions.start_date is-greater with ember day-end boundary', () => {

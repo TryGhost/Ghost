@@ -1,5 +1,6 @@
 import {useCallback, useMemo} from 'react';
 import {useSearchParams} from '@tryghost/admin-x-framework';
+import {filterReducer} from './filter-reducer';
 import type {Filter} from '@tryghost/shade';
 
 type SetFiltersAction = Filter[] | ((prevFilters: Filter[]) => Filter[]);
@@ -11,7 +12,6 @@ export interface UrlFilterStateOptions {
 interface UseUrlFilterStateConfig<TDerived> {
     parseFilters: (searchParams: URLSearchParams) => Filter[];
     serializeFilters: (filters: Filter[], search?: string) => URLSearchParams;
-    clearSearchParams: (searchParams: URLSearchParams) => URLSearchParams;
     buildNql: (filters: Filter[]) => string | undefined;
     deriveState?: (params: {filters: Filter[]; search: string}) => TDerived;
 }
@@ -28,7 +28,6 @@ interface BaseUrlFilterState {
 export function useUrlFilterState<TDerived extends object = Record<string, never>>({
     parseFilters,
     serializeFilters,
-    clearSearchParams,
     buildNql,
     deriveState
 }: UseUrlFilterStateConfig<TDerived>): BaseUrlFilterState & TDerived {
@@ -42,25 +41,42 @@ export function useUrlFilterState<TDerived extends object = Record<string, never
         return searchParams.get('search') ?? '';
     }, [searchParams]);
 
+    const state = useMemo(() => ({
+        predicates: filters,
+        search
+    }), [filters, search]);
+
     const setFilters = useCallback((action: SetFiltersAction, options: UrlFilterStateOptions = {}) => {
         const newFilters = typeof action === 'function' ? action(filters) : action;
-        const currentSearch = searchParams.get('search') ?? undefined;
-        const newParams = serializeFilters(newFilters, currentSearch);
+        const nextState = filterReducer(state, {
+            type: 'setPredicates',
+            predicates: newFilters
+        });
+        const newParams = serializeFilters(nextState.predicates, nextState.search || undefined);
 
         const replace = options.replace ?? true;
         setSearchParams(newParams, {replace});
-    }, [filters, searchParams, serializeFilters, setSearchParams]);
+    }, [filters, serializeFilters, setSearchParams, state]);
 
     const setSearch = useCallback((newSearch: string, options: UrlFilterStateOptions = {}) => {
-        const newParams = serializeFilters(filters, newSearch || undefined);
+        const nextState = filterReducer(state, {
+            type: 'setSearch',
+            search: newSearch
+        });
+        const newParams = serializeFilters(nextState.predicates, nextState.search || undefined);
 
         const replace = options.replace ?? true;
         setSearchParams(newParams, {replace});
-    }, [filters, serializeFilters, setSearchParams]);
+    }, [serializeFilters, setSearchParams, state]);
 
     const clearFilters = useCallback(({replace = true}: UrlFilterStateOptions = {}) => {
-        setSearchParams(clearSearchParams(searchParams), {replace});
-    }, [clearSearchParams, searchParams, setSearchParams]);
+        const nextState = filterReducer(state, {
+            type: 'clearPredicates'
+        });
+        const newParams = serializeFilters(nextState.predicates, nextState.search || undefined);
+
+        setSearchParams(newParams, {replace});
+    }, [serializeFilters, setSearchParams, state]);
 
     const nql = useMemo(() => buildNql(filters), [buildNql, filters]);
 

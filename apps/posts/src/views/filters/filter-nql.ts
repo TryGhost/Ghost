@@ -24,6 +24,13 @@ function escapeNqlString(value: string): string {
     return '\'' + value.replace(/'/g, '\\\'') + '\'';
 }
 
+function normalizeClauseValues(values: Array<string | number>): string {
+    return [...values]
+        .map(value => String(value))
+        .sort((a, b) => a.localeCompare(b))
+        .join(',');
+}
+
 function formatDateFilterValue(value: string, relation: string, timezone: string): string {
     const trimmedValue = value.trim();
     const localDate = moment.tz(trimmedValue, 'YYYY-MM-DD', true, timezone);
@@ -327,7 +334,7 @@ export function buildMemberNqlFilter(filters: Filter[], options: {timezone?: str
         case 'tier_id':
         case 'offer_redemptions': {
             if (Array.isArray(filter.values) && filter.values.length > 0) {
-                const filterValue = '[' + filter.values.join(',') + ']';
+                const filterValue = '[' + normalizeClauseValues(filter.values as Array<string | number>) + ']';
                 return `${field}:${relationStr}${filterValue}`;
             }
 

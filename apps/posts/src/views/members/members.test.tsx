@@ -1,5 +1,5 @@
 import {describe, expect, it, vi} from 'vitest';
-import {render, screen} from '@testing-library/react';
+import {render, screen, fireEvent} from '@testing-library/react';
 import Members from './members';
 
 const mockUseMembersFilterState = vi.fn();
@@ -44,6 +44,8 @@ vi.mock('./components/members-list', () => ({
 
 describe('Members', () => {
     it('shows the filtered empty state and clear action when search is active without picker filters', () => {
+        const clearFilters = vi.fn();
+
         mockUseMembersFilterState.mockReturnValue({
             filters: [],
             nql: undefined,
@@ -51,7 +53,7 @@ describe('Members', () => {
             setFilters: vi.fn(),
             hasFilters: false,
             hasFilterOrSearch: true,
-            clearFilters: vi.fn(),
+            clearFilters,
             activeColumns: []
         });
 
@@ -83,7 +85,8 @@ describe('Members', () => {
         render(<Members />);
 
         expect(screen.getByText('No members match the current filter')).toBeInTheDocument();
-        expect(screen.getByRole('button', {name: 'Show all members'})).toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', {name: 'Show all members'}));
+        expect(clearFilters).toHaveBeenCalledWith({replace: false});
         expect(screen.getByText('Members filters')).toBeInTheDocument();
     });
 

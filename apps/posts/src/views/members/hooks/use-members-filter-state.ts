@@ -121,7 +121,6 @@ export function useMembersFilterState(): UseFilterStateReturn {
     } = useUrlFilterState({
         parseFilters: searchParamsToFilters,
         serializeFilters: filtersToSearchParams,
-        clearSearchParams: buildClearedFilterParams,
         buildNql: currentFilters => buildMemberNqlFilter(currentFilters, {timezone: siteTimezone}),
         deriveState: ({filters: currentFilters, search: currentSearch}) => {
             const flags = deriveFilterFlags({
