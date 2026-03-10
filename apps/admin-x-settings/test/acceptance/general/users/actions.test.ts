@@ -190,7 +190,7 @@ test.describe('User actions', async () => {
         await expect(page.getByTestId('popover-content').getByRole('button', {name: 'Make owner'})).toHaveCount(0);
         await modal.getByRole('button', {name: 'Actions'}).click();
 
-        await modal.getByRole('button', {name: 'Close'}).last().click();
+        await modal.getByRole('button', {name: 'Close'}).click();
 
         // Can transfer to an administrator
 
