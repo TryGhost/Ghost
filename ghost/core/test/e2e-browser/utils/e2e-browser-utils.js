@@ -308,12 +308,54 @@ const createOffer = async (page, {name, tierName, offerType, amount, discountTyp
         }
 
         await chooseOptionInSelect(page.getByTestId('tier-cadence-select-offers'), `${tierName} - Monthly`);
+        const createOfferResponsePromise = page.waitForResponse((response) => {
+            return response.request().method() === 'POST' &&
+                response.url().includes('/ghost/api/admin/offers/') &&
+                response.status() >= 200 &&
+                response.status() < 300;
+        }, {timeout: 30000});
+
         await page.getByRole('button', {name: 'Publish'}).click();
 
-        const offerLinkInput = await page.locator('input[name="offer-url"]');
-        // sometimes offer link is not generated, and if so the rest of the test will fail
-        await expect(offerLinkInput).not.toBeEmpty();
-        offerLink = await offerLinkInput.inputValue();
+        let createdOfferCode = '';
+        try {
+            const createOfferResponse = await createOfferResponsePromise;
+            const createOfferPayload = await createOfferResponse.json();
+            const createdOffer = createOfferPayload?.offers?.[0];
+            createdOfferCode = createdOffer?.code?.trim() || '';
+        } catch (error) {
+            // fallback to UI-based link retrieval below
+        }
+
+        if (createdOfferCode) {
+            const siteOrigin = new URL(page.url()).origin;
+            offerLink = `${siteOrigin}/${createdOfferCode}`;
+            return;
+        }
+
+        const offerLinkInputs = page.locator('[name="offer-url"]');
+        let generatedOfferLink = '';
+        await expect.poll(async () => {
+            const inputCount = await offerLinkInputs.count();
+            for (let i = 0; i < inputCount; i += 1) {
+                const input = offerLinkInputs.nth(i);
+                if (!await input.isVisible()) {
+                    continue;
+                }
+
+                const value = (await input.inputValue()).trim();
+                if (value) {
+                    generatedOfferLink = value;
+                    return value;
+                }
+            }
+            return '';
+        }, {
+            timeout: 45000,
+            message: 'Offer link was not generated after publishing offer'
+        }).not.toBe('');
+
+        offerLink = generatedOfferLink;
     });
 
     return {offerName, offerLink};
