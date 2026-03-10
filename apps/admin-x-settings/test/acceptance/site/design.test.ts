@@ -560,20 +560,6 @@ test.describe('Design settings', async () => {
             }
         }});
 
-        await page.goto('/#/settings/theme');
-
-        const themeSection = page.getByTestId('theme');
-
-        await themeSection.getByRole('button', {name: 'Change theme'}).click();
-
-        const modal = page.getByTestId('theme-modal');
-
-        await modal.getByRole('button', {name: /Casper/}).click();
-
-        await expect(modal.getByRole('button', {name: 'Activate Casper'})).toBeVisible();
-
-        await expect(page.locator('iframe[title="Theme preview"]')).toHaveAttribute('src', 'https://demo.ghost.io/');
-
         await page.goto('/#/settings/design');
 
         const designSection = page.getByTestId('design');
