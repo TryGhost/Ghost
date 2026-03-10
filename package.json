@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/domain-events",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "publishConfig": {
     "access": "public"
   },
@@ -21,7 +21,7 @@
     "lib"
   ],
   "devDependencies": {
-    "@tryghost/logging": "^4.0.0"
+    "@tryghost/logging": "^4.0.1"
   },
   "repository": {
     "type": "git",
