@@ -1,7 +1,7 @@
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
-const {rejectPrivateFieldsTransformer} = require('./utils/public-endpoint-utils');
+const {rejectContentApiRestrictedFieldsTransformer} = require('./utils/api-filter-utils');
 
 const ALLOWED_INCLUDES = ['tags', 'authors', 'tiers'];
 
@@ -42,7 +42,7 @@ const controller = {
         query(frame) {
             const options = {
                 ...frame.options,
-                mongoTransformer: rejectPrivateFieldsTransformer
+                mongoTransformer: rejectContentApiRestrictedFieldsTransformer
             };
             return models.Post.findPage(options);
         }
@@ -78,7 +78,7 @@ const controller = {
         async query(frame) {
             const options = {
                 ...frame.options,
-                mongoTransformer: rejectPrivateFieldsTransformer
+                mongoTransformer: rejectContentApiRestrictedFieldsTransformer
             };
             const model = await models.Post.findOne(frame.data, options);
             if (!model) {
