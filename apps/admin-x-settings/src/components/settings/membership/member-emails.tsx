@@ -3,11 +3,13 @@ import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
 import WelcomeEmailModal from './member-emails/welcome-email-modal';
-import {Separator, SettingGroupContent, Toggle, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import useFeatureFlag from '../../../hooks/use-feature-flag';
+import {Button, Separator, SettingGroupContent, Toggle, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useAddAutomatedEmail, useBrowseAutomatedEmails, useEditAutomatedEmail} from '@tryghost/admin-x-framework/api/automated-emails';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 import {useWelcomeEmailSenderDetails} from '../../../hooks/use-welcome-email-sender-details';
 import type {AutomatedEmail} from '@tryghost/admin-x-framework/api/automated-emails';
 
@@ -99,6 +101,8 @@ const EmailSettingRow: React.FC<{
 const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {settings, config} = useGlobalData();
     const [siteTitle] = getSettingValues<string>(settings, ['title']);
+    const {updateRoute} = useRouting();
+    const welcomeEmailsDesignCustomization = useFeatureFlag('welcomeEmailsDesignCustomization');
 
     const {data: automatedEmailsData, isLoading} = useBrowseAutomatedEmails();
     const {mutateAsync: addAutomatedEmail, isLoading: isAddingAutomatedEmail} = useAddAutomatedEmail();
@@ -198,6 +202,7 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     return (
         <TopLevelGroup
+            customButtons={welcomeEmailsDesignCustomization ? <Button className='mt-[-5px]' color='clear' label='Customize' size='sm' onClick={() => updateRoute('welcome-emails/design')} /> : undefined}
             description="Create and manage automated emails for your members"
             keywords={keywords}
             navid='memberemails'
