@@ -250,19 +250,19 @@ describe('members nql compatibility', () => {
         expect(buildMemberNqlFilter(filters)).toBe('(email_disabled:1)');
     });
 
-    it('joins multiple predicates in insertion order like Ember', () => {
+    it('serializes multiple predicates using canonical sorted order', () => {
         const filters: Filter[] = [
-            {
-                id: 'subscribed-4',
-                field: 'subscribed',
-                operator: 'is',
-                values: ['subscribed']
-            },
             {
                 id: 'status-2',
                 field: 'status',
                 operator: 'is',
                 values: ['paid']
+            },
+            {
+                id: 'subscribed-4',
+                field: 'subscribed',
+                operator: 'is',
+                values: ['subscribed']
             }
         ];
 

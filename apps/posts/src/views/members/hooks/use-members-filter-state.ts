@@ -1,6 +1,7 @@
 import {useCallback, useMemo} from 'react';
 import {useSearchParams} from '@tryghost/admin-x-framework';
 import type {Filter} from '@tryghost/shade';
+import {canonicalizeFilter} from '@src/views/filters/canonical-filter';
 import {parsePredicateParams, serializePredicateParams} from '@src/views/filters/url-predicate-params';
 import moment from 'moment-timezone';
 import nql from '@tryghost/nql-lang';
@@ -270,7 +271,7 @@ export function buildMemberNqlFilter(filters: Filter[], options: {timezone?: str
         }
     }
 
-    return parts.length ? parts.join('+') : undefined;
+    return canonicalizeFilter(parts);
 }
 
 function parseLegacySubscribedFilter(filterNode: Record<string, unknown>): Filter | undefined {
@@ -312,6 +313,36 @@ function parseLegacySubscribedFilter(filterNode: Record<string, unknown>): Filte
     };
 }
 
+function parseLegacyNewsletterFilter(filterNode: Record<string, unknown>): Filter | undefined {
+    const comparator = ('$and' in filterNode && Array.isArray(filterNode.$and))
+        ? filterNode.$and
+        : (('$or' in filterNode && Array.isArray(filterNode.$or)) ? filterNode.$or : undefined);
+
+    if (!comparator || comparator.length !== 2) {
+        return undefined;
+    }
+
+    const [newsletterNode, emailDisabledNode] = comparator as Array<Record<string, unknown>>;
+
+    if (!('newsletters.slug' in newsletterNode) || !('email_disabled' in emailDisabledNode)) {
+        return undefined;
+    }
+
+    const usedOr = '$or' in filterNode;
+    const rawSlug = newsletterNode['newsletters.slug'];
+
+    if (typeof rawSlug !== 'string') {
+        return undefined;
+    }
+
+    return {
+        id: `newsletters.${rawSlug}-legacy`,
+        field: `newsletters.${rawSlug}`,
+        operator: usedOr ? 'is-not' : 'is',
+        values: [usedOr ? 'unsubscribed' : 'subscribed']
+    };
+}
+
 function parseLegacySimpleFilter(filterNode: Record<string, unknown>): Filter | undefined {
     const entries = Object.entries(filterNode);
 
@@ -344,12 +375,74 @@ function parseLegacySimpleFilter(filterNode: Record<string, unknown>): Filter | 
         };
     }
 
+    if (rawValue && typeof rawValue === 'object' && '$in' in rawValue && Array.isArray(rawValue.$in)) {
+        return {
+            id: `${field}-legacy`,
+            field,
+            operator: 'is',
+            values: rawValue.$in.map(value => String(value))
+        };
+    }
+
+    if (rawValue && typeof rawValue === 'object' && '$nin' in rawValue && Array.isArray(rawValue.$nin)) {
+        return {
+            id: `${field}-legacy`,
+            field,
+            operator: 'is-not',
+            values: rawValue.$nin.map(value => String(value))
+        };
+    }
+
+    if (rawValue && typeof rawValue === 'object' && '$regex' in rawValue && rawValue.$regex instanceof RegExp) {
+        const source = rawValue.$regex.source;
+
+        if (source.startsWith('^')) {
+            return {
+                id: `${field}-legacy`,
+                field,
+                operator: 'starts-with',
+                values: [source.slice(1)]
+            };
+        }
+
+        if (source.endsWith('$')) {
+            return {
+                id: `${field}-legacy`,
+                field,
+                operator: 'ends-with',
+                values: [source.slice(0, -1)]
+            };
+        }
+
+        return {
+            id: `${field}-legacy`,
+            field,
+            operator: 'contains',
+            values: [source]
+        };
+    }
+
+    if (rawValue && typeof rawValue === 'object' && '$not' in rawValue && rawValue.$not instanceof RegExp) {
+        return {
+            id: `${field}-legacy`,
+            field,
+            operator: 'does-not-contain',
+            values: [rawValue.$not.source]
+        };
+    }
+
     return undefined;
 }
 
 function parseLegacyFilterParam(filterParam: string): Filter[] {
     try {
         const parsedFilter = nql.parse(filterParam) as Record<string, unknown>;
+        const newsletterFilter = parseLegacyNewsletterFilter(parsedFilter);
+
+        if (newsletterFilter) {
+            return [newsletterFilter];
+        }
+
         const subscribedFilter = parseLegacySubscribedFilter(parsedFilter);
 
         if (subscribedFilter) {

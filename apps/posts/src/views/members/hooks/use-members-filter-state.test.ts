@@ -53,4 +53,40 @@ describe('use-members-filter-state URL helpers', () => {
             {field: 'status', operator: 'is-not', values: ['free']}
         ]);
     });
+
+    it('parses legacy ember filter query params for array filters', () => {
+        const params = new URLSearchParams({
+            filter: 'label:-[vip,internal]'
+        });
+
+        const parsed = searchParamsToFilters(params);
+
+        expect(parsed.map(({field, operator, values}) => ({field, operator, values}))).toEqual([
+            {field: 'label', operator: 'is-not', values: ['vip', 'internal']}
+        ]);
+    });
+
+    it('parses legacy ember filter query params for text contains filters', () => {
+        const params = new URLSearchParams({
+            filter: 'name:~\'hello\''
+        });
+
+        const parsed = searchParamsToFilters(params);
+
+        expect(parsed.map(({field, operator, values}) => ({field, operator, values}))).toEqual([
+            {field: 'name', operator: 'contains', values: ['hello']}
+        ]);
+    });
+
+    it('parses legacy ember filter query params for specific newsletter filters', () => {
+        const params = new URLSearchParams({
+            filter: '(newsletters.slug:test-newsletter+email_disabled:0)'
+        });
+
+        const parsed = searchParamsToFilters(params);
+
+        expect(parsed.map(({field, operator, values}) => ({field, operator, values}))).toEqual([
+            {field: 'newsletters.test-newsletter', operator: 'is', values: ['subscribed']}
+        ]);
+    });
 });
