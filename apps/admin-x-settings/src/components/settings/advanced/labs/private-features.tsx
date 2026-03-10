@@ -52,10 +52,6 @@ const features: Feature[] = [{
     description: 'Enable Transistor podcast integration',
     flag: 'transistor'
 }, {
-    title: 'Retention Offers',
-    description: 'Enable retention offers for canceling members',
-    flag: 'retentionOffers'
-}, {
     title: 'Members Forward',
     description: 'Use the new React-based members list instead of the Ember implementation',
     flag: 'membersForward'
