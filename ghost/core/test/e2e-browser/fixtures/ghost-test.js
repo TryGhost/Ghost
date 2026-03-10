@@ -1,4 +1,9 @@
 // express-test.js
+// Playwright 1.58+ registers require() hooks for .md files via pirates.js.
+// This causes gscan's require-dir to try loading README.md as JavaScript,
+// crashing theme validation. Remove the .md handler before anything runs.
+delete require('module')._extensions['.md'];
+
 const base = require('@playwright/test');
 const {spawn} = require('child_process');
 const {setupGhost, setupMailgun, setupStripe, getStripeAccountId, generateStripeIntegrationToken} = require('../utils/e2e-browser-utils');
