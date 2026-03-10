@@ -507,6 +507,17 @@ export function filtersToSearchParams(filters: Filter[], search?: string): URLSe
     });
 }
 
+export function buildClearedFilterParams(searchParams: URLSearchParams): URLSearchParams {
+    const clearedParams = new URLSearchParams();
+    const search = searchParams.get('search');
+
+    if (search?.trim()) {
+        clearedParams.set('search', search);
+    }
+
+    return clearedParams;
+}
+
 type SetFiltersAction = Filter[] | ((prevFilters: Filter[]) => Filter[]);
 
 interface SetFiltersOptions {
@@ -561,8 +572,8 @@ export function useMembersFilterState(): UseFilterStateReturn {
 
     // Clear all filter params from URL
     const clearFilters = useCallback(({replace = true}: SetFiltersOptions = {}) => {
-        setSearchParams(new URLSearchParams(), {replace});
-    }, [setSearchParams]);
+        setSearchParams(buildClearedFilterParams(searchParams), {replace});
+    }, [searchParams, setSearchParams]);
 
     const nql = useMemo(() => buildMemberNqlFilter(filters), [filters]);
 

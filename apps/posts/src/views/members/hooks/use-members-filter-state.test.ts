@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {filtersToSearchParams, searchParamsToFilters} from '@src/views/members/hooks/use-members-filter-state';
+import {buildClearedFilterParams, filtersToSearchParams, searchParamsToFilters} from '@src/views/members/hooks/use-members-filter-state';
 import type {Filter} from '@tryghost/shade';
 
 describe('use-members-filter-state URL helpers', () => {
@@ -88,5 +88,14 @@ describe('use-members-filter-state URL helpers', () => {
         expect(parsed.map(({field, operator, values}) => ({field, operator, values}))).toEqual([
             {field: 'newsletters.test-newsletter', operator: 'is', values: ['subscribed']}
         ]);
+    });
+
+    it('clears picker predicates without clearing search params', () => {
+        const params = new URLSearchParams({
+            status: 'is:paid',
+            search: 'alex'
+        });
+
+        expect(buildClearedFilterParams(params).toString()).toBe('search=alex');
     });
 });
