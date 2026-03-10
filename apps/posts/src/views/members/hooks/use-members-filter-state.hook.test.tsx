@@ -38,4 +38,19 @@ describe('useMembersFilterState', () => {
 
         expect(result.current.nql).toBe('created_at:>=\'2022-02-22 05:00:00\'');
     });
+
+    it('derives filter flags separately from search state', () => {
+        mockUseSearchParams.mockReturnValue([
+            new URLSearchParams({
+                search: 'alex'
+            }),
+            vi.fn()
+        ]);
+
+        const {result} = renderHook(() => useMembersFilterState());
+
+        expect(result.current.hasFilters).toBe(false);
+        expect(result.current.hasSearch).toBe(true);
+        expect(result.current.hasFilterOrSearch).toBe(true);
+    });
 });

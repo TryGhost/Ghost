@@ -22,7 +22,7 @@ const BULK_DELETE_RESTRICTED_FILTERS = [
 ];
 
 const Members: React.FC = () => {
-    const {filters, nql, search, setFilters, isFiltered, clearFilters} = useMembersFilterState();
+    const {filters, nql, search, setFilters, hasFilters, hasFilterOrSearch, clearFilters} = useMembersFilterState();
     const {data: configData} = useBrowseConfig();
 
     // Check if email analytics is enabled
@@ -58,8 +58,6 @@ const Members: React.FC = () => {
     const shouldShowLoading = isFetching && !isFetchingNextPage && !isRefetching;
 
     const totalMembers = data?.meta?.pagination?.total ?? 0;
-    const hasFilters = filters.length > 0;
-
     // Position filters: inline with actions when no filters, full width row below when filters active
     const filtersClassName = cn(
         'flex flex-row',
@@ -85,9 +83,10 @@ const Members: React.FC = () => {
                         )}
                         <MembersActions
                             canBulkDelete={canBulkDelete}
-                            isFiltered={isFiltered}
+                            hasFilterOrSearch={hasFilterOrSearch}
                             memberCount={totalMembers}
                             nql={nql}
+                            search={search}
                         />
                     </Header.ActionGroup>
                 </Header.Actions>
@@ -121,7 +120,7 @@ const Members: React.FC = () => {
                     </div>
                 ) : !data?.members.length ? (
                     <div className="flex h-full flex-col items-center justify-center">
-                        {isFiltered ? (
+                        {hasFilterOrSearch ? (
                             <>
                                 <EmptyIndicator title="No members match the current filter">
                                     <LucideIcon.Users />

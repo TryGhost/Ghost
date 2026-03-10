@@ -15,25 +15,36 @@ import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters'
 import {useBulkDeleteMembers, useBulkEditMembers} from '@tryghost/admin-x-framework/api/members';
 
 interface MembersActionsProps {
-    isFiltered: boolean;
+    hasFilterOrSearch: boolean;
     memberCount: number;
     nql?: string;
+    search?: string;
     canBulkDelete: boolean;
 }
 
-async function exportMembers(filter?: string): Promise<void> {
+export function buildMembersExportPath({filter, search}: {filter?: string; search?: string}): string {
     const params = new URLSearchParams({limit: 'all'});
+
     if (filter) {
         params.set('filter', filter);
     }
+    if (search) {
+        params.set('search', search);
+    }
+
+    return `/members/upload/?${params}`;
+}
+
+async function exportMembers({filter, search}: {filter?: string; search?: string}): Promise<void> {
     const datetime = new Date().toJSON().substring(0, 10);
-    await blobDownloadFromEndpoint(`/members/upload/?${params}`, `members.${datetime}.csv`);
+    await blobDownloadFromEndpoint(buildMembersExportPath({filter, search}), `members.${datetime}.csv`);
 }
 
 const MembersActions: React.FC<MembersActionsProps> = ({
-    isFiltered,
+    hasFilterOrSearch,
     memberCount,
     nql,
+    search,
     canBulkDelete
 }) => {
     const {data: newslettersData, isLoading: isLoadingNewsletters} = useBrowseNewsletters({
@@ -52,21 +63,22 @@ const MembersActions: React.FC<MembersActionsProps> = ({
 
     const handleExport = useCallback(async () => {
         try {
-            await exportMembers(nql);
+            await exportMembers({filter: nql, search});
         } catch (e) {
             toast.error('Export failed', {
                 description: 'There was a problem downloading your member data. Please check your connection and try again.'
             });
             throw e;
         }
-    }, [nql]);
+    }, [nql, search]);
 
     const handleAddLabel = useCallback(async (labelIds: string[]) => {
         try {
             for (const labelId of labelIds) {
                 await bulkEditAsync({
-                    filter: nql || '',
-                    all: !nql,
+                    filter: nql,
+                    search,
+                    all: !nql && !search,
                     action: {
                         type: 'addLabel',
                         meta: {label: {id: labelId}}
@@ -80,14 +92,15 @@ const MembersActions: React.FC<MembersActionsProps> = ({
                 description: 'There was a problem applying this label. Please try again.'
             });
         }
-    }, [bulkEditAsync, nql]);
+    }, [bulkEditAsync, nql, search]);
 
     const handleRemoveLabel = useCallback(async (labelIds: string[]) => {
         try {
             for (const labelId of labelIds) {
                 await bulkEditAsync({
-                    filter: nql || '',
-                    all: !nql,
+                    filter: nql,
+                    search,
+                    all: !nql && !search,
                     action: {
                         type: 'removeLabel',
                         meta: {label: {id: labelId}}
@@ -101,12 +114,13 @@ const MembersActions: React.FC<MembersActionsProps> = ({
                 description: 'There was a problem removing this label. Please try again.'
             });
         }
-    }, [bulkEditAsync, nql]);
+    }, [bulkEditAsync, nql, search]);
 
     const handleUnsubscribe = useCallback(async (newsletterIds: string[] | null) => {
         const baseParams = {
-            filter: nql || '',
-            all: !nql
+            filter: nql,
+            search,
+            all: !nql && !search
         };
 
         if (newsletterIds === null) {
@@ -155,12 +169,13 @@ const MembersActions: React.FC<MembersActionsProps> = ({
         } finally {
             setIsUnsubscribing(false);
         }
-    }, [bulkEditAsync, nql]);
+    }, [bulkEditAsync, nql, search]);
 
     const handleDelete = useCallback(() => {
         bulkDelete({
-            filter: nql || '',
-            all: !nql
+            filter: nql,
+            search,
+            all: !nql && !search
         }, {
             onSuccess: () => {
                 setShowDeleteModal(false);
@@ -172,18 +187,18 @@ const MembersActions: React.FC<MembersActionsProps> = ({
                 });
             }
         });
-    }, [bulkDelete, nql]);
+    }, [bulkDelete, nql, search]);
 
     const handleExportBackup = useCallback(async () => {
         try {
-            await exportMembers(nql);
+            await exportMembers({filter: nql, search});
         } catch (e) {
             toast.error('Export failed', {
                 description: 'There was a problem downloading your backup. Please check your connection and try again.'
             });
             throw e;
         }
-    }, [nql]);
+    }, [nql, search]);
 
     return (
         <>
@@ -200,7 +215,7 @@ const MembersActions: React.FC<MembersActionsProps> = ({
                             {/* Export */}
                             <DropdownMenuItem onClick={handleExport}>
                                 <LucideIcon.Download className="mr-2 size-4" />
-                                {isFiltered
+                                {hasFilterOrSearch
                                     ? `Export ${memberCount.toLocaleString()} members`
                                     : 'Export all members'}
                             </DropdownMenuItem>

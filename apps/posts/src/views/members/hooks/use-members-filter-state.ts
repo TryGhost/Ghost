@@ -3,6 +3,7 @@ import {useSearchParams} from '@tryghost/admin-x-framework';
 import {useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import type {Filter} from '@tryghost/shade';
 import {canonicalizeFilter} from '@src/views/filters/canonical-filter';
+import {deriveFilterFlags} from '@src/views/filters/filter-flags';
 import {parsePredicateParams, serializePredicateParams} from '@src/views/filters/url-predicate-params';
 import {getSiteTimezone} from '@src/utils/get-site-timezone';
 import moment from 'moment-timezone';
@@ -553,7 +554,9 @@ interface UseFilterStateReturn {
     setFilters: (action: SetFiltersAction, options?: SetFiltersOptions) => void;
     setSearch: (search: string, options?: SetFiltersOptions) => void;
     clearFilters: (options?: SetFiltersOptions) => void;
-    isFiltered: boolean;
+    hasFilters: boolean;
+    hasSearch: boolean;
+    hasFilterOrSearch: boolean;
 }
 
 /**
@@ -604,7 +607,17 @@ export function useMembersFilterState(): UseFilterStateReturn {
 
     const nql = useMemo(() => buildMemberNqlFilter(filters, {timezone: siteTimezone}), [filters, siteTimezone]);
 
-    const isFiltered = filters.length > 0 || search.length > 0;
+    const {hasFilters, hasSearch, hasFilterOrSearch} = useMemo(() => {
+        return deriveFilterFlags({
+            predicates: filters.map(filter => ({
+                id: filter.id || `${filter.field}-${filter.operator}`,
+                field: filter.field,
+                operator: filter.operator,
+                values: filter.values
+            })),
+            search
+        });
+    }, [filters, search]);
 
-    return {filters, nql, search, setFilters, setSearch, clearFilters, isFiltered};
+    return {filters, nql, search, setFilters, setSearch, clearFilters, hasFilters, hasSearch, hasFilterOrSearch};
 }

@@ -196,9 +196,37 @@ export interface BulkOperationResponseType {
     };
 }
 
+export interface BulkMemberSearchParamsInput {
+    filter?: string;
+    search?: string;
+    all?: boolean;
+}
+
+export function buildBulkMemberSearchParams({filter, search, all}: BulkMemberSearchParamsInput): Record<string, string> {
+    if (all) {
+        return {all: 'true'};
+    }
+
+    const params: Record<string, string> = {};
+
+    if (filter?.trim()) {
+        params.filter = filter;
+    }
+
+    if (search?.trim()) {
+        params.search = search;
+    }
+
+    if (Object.keys(params).length === 0) {
+        throw new Error('Bulk member actions require a filter, search, or all flag');
+    }
+
+    return params;
+}
+
 export const useBulkEditMembers = createMutation<
     BulkOperationResponseType,
-    {filter: string; all?: boolean; action: BulkEditAction}
+    {filter?: string; search?: string; all?: boolean; action: BulkEditAction}
 >({
     method: 'PUT',
     path: () => '/members/bulk/',
@@ -209,38 +237,16 @@ export const useBulkEditMembers = createMutation<
             newsletter: action.newsletter
         }
     }),
-    searchParams: ({filter, all}) => {
-        if (!all && !filter) {
-            throw new Error('Bulk edit requires either a filter or all flag');
-        }
-        const params: Record<string, string> = {};
-        if (all) {
-            params.all = 'true';
-        } else {
-            params.filter = filter;
-        }
-        return params;
-    },
+    searchParams: buildBulkMemberSearchParams,
     invalidateQueries: {dataType}
 });
 
 export const useBulkDeleteMembers = createMutation<
     BulkOperationResponseType,
-    {filter: string; all?: boolean}
+    {filter?: string; search?: string; all?: boolean}
 >({
     method: 'DELETE',
     path: () => '/members/',
-    searchParams: ({filter, all}) => {
-        if (!all && !filter) {
-            throw new Error('Bulk delete requires either a filter or all flag');
-        }
-        const params: Record<string, string> = {};
-        if (all) {
-            params.all = 'true';
-        } else {
-            params.filter = filter;
-        }
-        return params;
-    },
+    searchParams: buildBulkMemberSearchParams,
     invalidateQueries: {dataType}
 });
