@@ -166,6 +166,19 @@ describe('External Request', function () {
             assert.equal(isPrivateIp('::ffff:a9fe:1'), true); // 169.254.0.1
         });
 
+        it('detects expanded IPv4-mapped IPv6 addresses as private (dotted notation)', function () {
+            assert.equal(isPrivateIp('0:0:0:0:0:ffff:127.0.0.1'), true);
+            assert.equal(isPrivateIp('0:0:0:0:0:ffff:10.0.0.1'), true);
+            assert.equal(isPrivateIp('0:0:0:0:0:ffff:192.168.0.1'), true);
+            assert.equal(isPrivateIp('0:0:0:0:0:ffff:169.254.169.254'), true);
+            assert.equal(isPrivateIp('0000:0000:0000:0000:0000:ffff:127.0.0.1'), true);
+        });
+
+        it('allows public expanded IPv4-mapped IPv6 addresses', function () {
+            assert.equal(isPrivateIp('0:0:0:0:0:ffff:8.8.8.8'), false);
+            assert.equal(isPrivateIp('0000:0000:0000:0000:0000:ffff:8.8.8.8'), false);
+        });
+
         it('allows public IPv4-mapped IPv6 addresses (dotted notation)', function () {
             assert.equal(isPrivateIp('::ffff:8.8.8.8'), false);
         });
