@@ -3,6 +3,7 @@ import CommentsFilters from './components/comments-filters';
 import CommentsHeader from './components/comments-header';
 import CommentsLayout from './components/comments-layout';
 import CommentsList from './components/comments-list';
+import {buildCommentsQueryParams} from './hooks/comment-query';
 import React, {useCallback} from 'react';
 import {Button, EmptyIndicator, LoadingIndicator, LucideIcon, createFilter} from '@tryghost/shade';
 import {useBrowseComments} from '@tryghost/admin-x-framework/api/comments';
@@ -29,7 +30,7 @@ const Comments: React.FC = () => {
         fetchNextPage,
         hasNextPage
     } = useBrowseComments({
-        searchParams: nql ? {filter: nql} : {},
+        searchParams: buildCommentsQueryParams({filter: nql}),
         keepPreviousData: true
     });
 

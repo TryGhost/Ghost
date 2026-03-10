@@ -1,6 +1,8 @@
 import {useCallback, useMemo} from 'react';
 import {useSearchParams} from '@tryghost/admin-x-framework';
 import type {Filter} from '@tryghost/shade';
+import {serializeCommentFilters} from '@src/views/filters/comment-nql';
+import {parsePredicateParams, serializePredicateParams} from '@src/views/filters/url-predicate-params';
 
 /**
  * Comment filter field keys - single source of truth for filter definitions
@@ -10,147 +12,39 @@ export const COMMENT_FILTER_FIELDS = ['id', 'status', 'created_at', 'body', 'pos
 export type CommentFilterField = typeof COMMENT_FILTER_FIELDS[number];
 
 export function buildNqlFilter(filters: Filter[]): string | undefined {
-    const parts: string[] = [];
-
-    for (const filter of filters) {
-        if (!filter.values[0]) {
-            continue;
-        }
-
-        switch (filter.field) {
-        case 'id':
-            parts.push(`id:'${filter.values[0]}'`);
-            break;
-
-        case 'status':
-            parts.push(`status:${filter.values[0]}`);
-            break;
-
-        case 'created_at':
-            if (filter.operator === 'before' && filter.values[0]) {
-                parts.push(`created_at:<'${filter.values[0]}'`);
-            } else if (filter.operator === 'after' && filter.values[0]) {
-                parts.push(`created_at:>'${filter.values[0]}'`);
-            } else if (filter.operator === 'is' && filter.values[0]) {
-                // Match all items from the selected day in the user's timezone
-                const dateValue = String(filter.values[0]); // Format: YYYY-MM-DD
-
-                // Create Date objects in user's local timezone, then convert to UTC
-                const startOfDay = new Date(dateValue + 'T00:00:00').toISOString();
-                const endOfDay = new Date(dateValue + 'T23:59:59.999').toISOString();
-
-                parts.push(`created_at:>='${startOfDay}'+created_at:<='${endOfDay}'`);
-            }
-            break;
-
-        case 'body':
-            const value = filter.values[0] as string;
-            // Escape single quotes in the value
-            const escapedValue = value.replace(/'/g, '\\\'');
-
-            if (filter.operator === 'contains') {
-                parts.push(`html:~'${escapedValue}'`);
-            } else if (filter.operator === 'not_contains') {
-                parts.push(`html:-~'${escapedValue}'`);
-            }
-            break;
-
-        case 'post':
-            if (filter.operator === 'is_not') {
-                parts.push(`post_id:-${filter.values[0]}`);
-            } else {
-                // Default to 'is' operator
-                parts.push(`post_id:${filter.values[0]}`);
-            }
-            break;
-
-        case 'author':
-            if (filter.operator === 'is_not') {
-                parts.push(`member_id:-${filter.values[0]}`);
-            } else {
-                // Default to 'is' operator
-                parts.push(`member_id:${filter.values[0]}`);
-            }
-            break;
-
-        case 'reported':
-            if (filter.values[0] === 'true') {
-                parts.push('count.reports:>0');
-            } else if (filter.values[0] === 'false') {
-                parts.push('count.reports:0');
-            }
-            break;
-        }
-    }
-
-    return parts.length ? parts.join('+') : undefined;
+    return serializeCommentFilters(filters);
 }
-/**
- * Parse a filter value from URL format: "operator:value"
- * e.g., "is:published", "contains:hello"
- */
-function parseFilterValue(queryValue: string): {operator: string; value: string} | null {
-    if (!queryValue) {
-        return null;
-    }
-
-    const colonIndex = queryValue.indexOf(':');
-    if (colonIndex <= 0) {
-        return null; // Invalid format, must have operator:value
-    }
-
-    return {
-        operator: queryValue.substring(0, colonIndex),
-        value: queryValue.substring(colonIndex + 1)
-    };
-}
-
 /**
  * Parse URL search params into Filter objects
  * Preserves the order of filters as they appear in the URL
  */
-function searchParamsToFilters(searchParams: URLSearchParams): Filter[] {
-    const filters: Filter[] = [];
-
-    // Iterate over URL params in order to preserve filter order
-    for (const [field, queryValue] of searchParams.entries()) {
-        // Only process valid filter fields
-        if (!COMMENT_FILTER_FIELDS.includes(field as CommentFilterField)) {
-            continue;
-        }
-
-        if (!queryValue) {
-            continue;
-        }
-
-        const parsed = parseFilterValue(queryValue);
-        if (parsed) {
-            filters.push({
-                id: field,
-                field,
-                operator: parsed.operator,
-                values: [parsed.value]
-            });
-        }
-    }
-
-    return filters;
+export function searchParamsToFilters(searchParams: URLSearchParams): Filter[] {
+    return parsePredicateParams({
+        params: searchParams,
+        multiselectFields: new Set()
+    }).filter(({field}) => COMMENT_FILTER_FIELDS.includes(field as CommentFilterField)).map(predicate => ({
+        id: predicate.id,
+        field: predicate.field,
+        operator: predicate.operator,
+        values: predicate.values
+    }));
 }
 
 /**
  * Serialize filters to URL search params format
  */
-function filtersToSearchParams(filters: Filter[]): URLSearchParams {
-    const params = new URLSearchParams();
-
-    for (const filter of filters) {
-        if (COMMENT_FILTER_FIELDS.includes(filter.field as CommentFilterField) && filter.values[0] !== undefined) {
-            const value = `${filter.operator}:${String(filter.values[0])}`;
-            params.set(filter.field, value);
-        }
-    }
-
-    return params;
+export function filtersToSearchParams(filters: Filter[]): URLSearchParams {
+    return serializePredicateParams({
+        predicates: filters
+            .filter(filter => COMMENT_FILTER_FIELDS.includes(filter.field as CommentFilterField) && filter.values[0] !== undefined)
+            .map((filter, index) => ({
+                id: filter.id || `${filter.field}-${index + 1}`,
+                field: filter.field,
+                operator: filter.operator,
+                values: filter.values.map(value => String(value))
+            })),
+        multiselectFields: new Set()
+    });
 }
 
 type SetFiltersAction = Filter[] | ((prevFilters: Filter[]) => Filter[]);
