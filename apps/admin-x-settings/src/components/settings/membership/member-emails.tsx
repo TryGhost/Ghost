@@ -2,7 +2,7 @@ import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
 import WelcomeEmailModal from './member-emails/welcome-email-modal';
-import {Button, Icon, Table, TableRow, Toggle, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {Icon, Table, TableRow, Toggle, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useAddAutomatedEmail, useBrowseAutomatedEmails, useEditAutomatedEmail} from '@tryghost/admin-x-framework/api/automated-emails';
 import {useGlobalData} from '../../providers/global-data-provider';
@@ -232,18 +232,8 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
     // Get email to display (existing or default for preview)
     const freeEmailForDisplay = freeWelcomeEmail || getDefaultEmail('free');
     const paidEmailForDisplay = paidWelcomeEmail || getDefaultEmail('paid');
-    const customizeButton = (
-        <Button
-            className='mt-[-5px]'
-            color='clear'
-            label='Customize'
-            size='sm'
-            onClick={() => {}}
-        />
-    );
     return (
         <TopLevelGroup
-            customButtons={customizeButton}
             description="Create and manage automated emails for your members"
             keywords={keywords}
             navid='memberemails'
