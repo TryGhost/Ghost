@@ -3,10 +3,11 @@ const {assertExists} = require('../../../utils/assertions');
 const sinon = require('sinon');
 const nock = require('nock');
 const externalRequest = require('../../../../core/server/lib/request-external');
-const {isPrivateIp} = externalRequest;
+const {isPrivateIp, _installSafeDnsLookup: installSafeDnsLookup} = externalRequest;
 const configUtils = require('../../../utils/config-utils');
 
 // for sinon stubs
+const dns = require('dns');
 const dnsPromises = require('dns').promises;
 
 describe('External Request', function () {
@@ -164,6 +165,19 @@ describe('External Request', function () {
             assert.equal(isPrivateIp('::ffff:a00:1'), true); // 10.0.0.1
             assert.equal(isPrivateIp('::ffff:c0a8:1'), true); // 192.168.0.1
             assert.equal(isPrivateIp('::ffff:a9fe:1'), true); // 169.254.0.1
+        });
+
+        it('detects expanded IPv4-mapped IPv6 addresses as private (dotted notation)', function () {
+            assert.equal(isPrivateIp('0:0:0:0:0:ffff:127.0.0.1'), true);
+            assert.equal(isPrivateIp('0:0:0:0:0:ffff:10.0.0.1'), true);
+            assert.equal(isPrivateIp('0:0:0:0:0:ffff:192.168.0.1'), true);
+            assert.equal(isPrivateIp('0:0:0:0:0:ffff:169.254.169.254'), true);
+            assert.equal(isPrivateIp('0000:0000:0000:0000:0000:ffff:127.0.0.1'), true);
+        });
+
+        it('allows public expanded IPv4-mapped IPv6 addresses', function () {
+            assert.equal(isPrivateIp('0:0:0:0:0:ffff:8.8.8.8'), false);
+            assert.equal(isPrivateIp('0000:0000:0000:0000:0000:ffff:8.8.8.8'), false);
         });
 
         it('allows public IPv4-mapped IPv6 addresses (dotted notation)', function () {
@@ -508,6 +522,247 @@ describe('External Request', function () {
                 assert.equal(requestMock.isDone(), true);
                 assertExists(err);
                 assert.equal(err.response.statusMessage, `Internal Server Error`);
+            });
+        });
+    });
+
+    describe('DNS rebinding protection (installSafeDnsLookup)', function () {
+        beforeEach(function () {
+            // Restore any existing stubs from global disableNetwork()
+            dns.lookup.restore?.();
+        });
+
+        afterEach(async function () {
+            await configUtils.restore();
+            sinon.restore();
+        });
+
+        it('installs a lookup function on request options', async function () {
+            const options = {
+                url: new URL('http://attacker.com/endpoint')
+            };
+
+            await installSafeDnsLookup(options);
+
+            assert.equal(typeof options.lookup, 'function');
+        });
+
+        it('does not install lookup for the configured site URL', async function () {
+            configUtils.set('url', 'http://example.com');
+
+            const options = {
+                url: new URL('http://example.com/endpoint')
+            };
+
+            await installSafeDnsLookup(options);
+
+            assert.equal(options.lookup, undefined);
+        });
+
+        it('does not install lookup for the configured site URL with port', async function () {
+            configUtils.set('url', 'http://example.com:2368');
+
+            const options = {
+                url: new URL('http://example.com:2368/endpoint')
+            };
+
+            await installSafeDnsLookup(options);
+
+            assert.equal(options.lookup, undefined);
+        });
+
+        it('installs lookup when port does not match site URL', async function () {
+            configUtils.set('url', 'http://example.com:2368');
+
+            const options = {
+                url: new URL('http://example.com:9999/endpoint')
+            };
+
+            await installSafeDnsLookup(options);
+
+            assert.equal(typeof options.lookup, 'function');
+        });
+
+        it('dnsLookup allows public IPs', async function () {
+            sinon.stub(dns, 'lookup').callsFake((hostname, opts, cb) => {
+                if (typeof opts === 'function') {
+                    cb = opts;
+                    opts = {};
+                }
+                if (opts && opts.all) {
+                    return cb(null, [{address: '8.8.8.8', family: 4}]);
+                }
+                cb(null, '8.8.8.8', 4);
+            });
+
+            const options = {
+                url: new URL('http://attacker.com/endpoint')
+            };
+
+            await installSafeDnsLookup(options);
+
+            await new Promise((resolve, reject) => {
+                options.lookup('attacker.com', {}, (err, address, family) => {
+                    if (err) {
+                        return reject(err);
+                    }
+                    assert.equal(address, '8.8.8.8');
+                    assert.equal(family, 4);
+                    resolve();
+                });
+            });
+        });
+
+        it('dnsLookup blocks private IPs', async function () {
+            sinon.stub(dns, 'lookup').callsFake((hostname, opts, cb) => {
+                if (typeof opts === 'function') {
+                    cb = opts;
+                    opts = {};
+                }
+                if (opts && opts.all) {
+                    return cb(null, [{address: '169.254.169.254', family: 4}]);
+                }
+                cb(null, '169.254.169.254', 4);
+            });
+
+            const options = {
+                url: new URL('http://attacker.com/endpoint')
+            };
+
+            await installSafeDnsLookup(options);
+
+            await new Promise((resolve, reject) => {
+                options.lookup('attacker.com', {}, (err) => {
+                    if (err) {
+                        assert.equal(err.message, 'URL resolves to a non-permitted private IP block');
+                        assert.equal(err.code, 'URL_PRIVATE_INVALID');
+                        return resolve();
+                    }
+                    reject(new Error('Should have blocked private IP'));
+                });
+            });
+        });
+
+        it('dnsLookup blocks loopback IPs', async function () {
+            sinon.stub(dns, 'lookup').callsFake((hostname, opts, cb) => {
+                if (typeof opts === 'function') {
+                    cb = opts;
+                    opts = {};
+                }
+                if (opts && opts.all) {
+                    return cb(null, [{address: '127.0.0.1', family: 4}]);
+                }
+                cb(null, '127.0.0.1', 4);
+            });
+
+            const options = {
+                url: new URL('http://attacker.com/endpoint')
+            };
+
+            await installSafeDnsLookup(options);
+
+            await new Promise((resolve, reject) => {
+                options.lookup('attacker.com', {}, (err) => {
+                    if (err) {
+                        assert.equal(err.message, 'URL resolves to a non-permitted private IP block');
+                        return resolve();
+                    }
+                    reject(new Error('Should have blocked loopback IP'));
+                });
+            });
+        });
+
+        it('dnsLookup blocks private IPs in array mode (all: true)', async function () {
+            sinon.stub(dns, 'lookup').callsFake((hostname, opts, cb) => {
+                if (typeof opts === 'function') {
+                    cb = opts;
+                    opts = {};
+                }
+                if (opts && opts.all) {
+                    return cb(null, [
+                        {address: '8.8.8.8', family: 4},
+                        {address: '127.0.0.1', family: 4}
+                    ]);
+                }
+                cb(null, '8.8.8.8', 4);
+            });
+
+            const options = {
+                url: new URL('http://attacker.com/endpoint')
+            };
+
+            await installSafeDnsLookup(options);
+
+            await new Promise((resolve, reject) => {
+                options.lookup('attacker.com', {all: true}, (err) => {
+                    if (err) {
+                        assert.equal(err.message, 'URL resolves to a non-permitted private IP block');
+                        assert.equal(err.code, 'URL_PRIVATE_INVALID');
+                        return resolve();
+                    }
+                    reject(new Error('Should have blocked private IP in array'));
+                });
+            });
+        });
+
+        it('dnsLookup allows public IPs in array mode (all: true)', async function () {
+            sinon.stub(dns, 'lookup').callsFake((hostname, opts, cb) => {
+                if (typeof opts === 'function') {
+                    cb = opts;
+                    opts = {};
+                }
+                if (opts && opts.all) {
+                    return cb(null, [
+                        {address: '8.8.8.8', family: 4},
+                        {address: '1.1.1.1', family: 4}
+                    ]);
+                }
+                cb(null, '8.8.8.8', 4);
+            });
+
+            const options = {
+                url: new URL('http://attacker.com/endpoint')
+            };
+
+            await installSafeDnsLookup(options);
+
+            await new Promise((resolve, reject) => {
+                options.lookup('attacker.com', {all: true}, (err, results) => {
+                    if (err) {
+                        return reject(err);
+                    }
+                    assert.equal(results.length, 2);
+                    assert.equal(results[0].address, '8.8.8.8');
+                    assert.equal(results[1].address, '1.1.1.1');
+                    resolve();
+                });
+            });
+        });
+
+        it('dnsLookup passes through DNS errors', async function () {
+            const dnsError = new Error('ENOTFOUND');
+            sinon.stub(dns, 'lookup').callsFake((hostname, opts, cb) => {
+                if (typeof opts === 'function') {
+                    cb = opts;
+                    opts = {};
+                }
+                cb(dnsError, null, null);
+            });
+
+            const options = {
+                url: new URL('http://attacker.com/endpoint')
+            };
+
+            await installSafeDnsLookup(options);
+
+            await new Promise((resolve, reject) => {
+                options.lookup('attacker.com', {}, (err) => {
+                    if (err) {
+                        assert.equal(err.message, 'ENOTFOUND');
+                        return resolve();
+                    }
+                    reject(new Error('Should have passed through DNS error'));
+                });
             });
         });
     });

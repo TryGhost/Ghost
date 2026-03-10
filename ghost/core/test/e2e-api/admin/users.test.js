@@ -98,6 +98,36 @@ describe('User API', function () {
                 assert.equal(body.users[0].slug, 'smith-wellingsworth');
             });
     });
+    it('Can not filter users by password', async function () {
+        const hashedPassword = '$2a$10$FxFlCsNBgXw42cBj0l1GFu39jffibqTqyAGBz7uCLwetYAdBYJEe6';
+        const userId = '644fd18ca1f0b764b0279b2d';
+
+        await db.knex('users').insert({
+            id: userId,
+            slug: 'brute-force-password-test-user',
+            name: 'Brute Force Password Test User',
+            email: 'bruteforcepasswordtestuseremail@example.com',
+            password: hashedPassword,
+            status: 'active',
+            created_at: '2019-01-01 00:00:00'
+        });
+
+        try {
+            await agent.get(`users/?filter=password:'${encodeURIComponent(hashedPassword)}'`)
+                .expectStatus(200)
+                .expect(({body}) => {
+                    assert.notEqual(body.users.length, 1,
+                        'Should not be able to filter users by password');
+                    if (body.users.length === 1) {
+                        assert.notEqual(body.users[0].id, userId,
+                            'Should not be able to filter users by password');
+                    }
+                });
+        } finally {
+            await db.knex('users').where('id', userId).del();
+        }
+    });
+
     it('Can retrieve a user by id', async function () {
         const userId = fixtureManager.get('users', 0).id;
         await agent.get(`users/${userId}/?include=roles,roles.permissions,count.posts`)
