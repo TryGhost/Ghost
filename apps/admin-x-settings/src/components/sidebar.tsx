@@ -86,6 +86,8 @@ const Sidebar: React.FC = () => {
     }, [checkVisible, setNoResult, filter]);
 
     useEffect(() => {
+        const searchInput = searchInputRef.current;
+
         const handleKeyDown = (event: KeyboardEvent) => {
             if (event.key === 'Escape' && filter) {
                 // Blur the field
@@ -97,11 +99,11 @@ const Sidebar: React.FC = () => {
         };
 
         // Add the event listener to the searchInputRef field
-        searchInputRef.current?.addEventListener('keydown', handleKeyDown);
+        searchInput?.addEventListener('keydown', handleKeyDown);
 
         // Clean up the event listener when the component unmounts
         return () => {
-            searchInputRef.current?.removeEventListener('keydown', handleKeyDown);
+            searchInput?.removeEventListener('keydown', handleKeyDown);
         };
     }, [filter]);
 

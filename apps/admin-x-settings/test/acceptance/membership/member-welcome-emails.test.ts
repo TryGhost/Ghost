@@ -547,7 +547,7 @@ test.describe('Member emails settings', async () => {
             await expect(modal).not.toContainText('default@example.com');
         });
 
-        test('preview card uses newsletter sender name when automated sender name is empty', async ({page}) => {
+        test('preview card title stays stable when automated sender name is empty', async ({page}) => {
             const emptyAutomatedSenderFixture = {
                 automated_emails: [{
                     ...automatedEmailsFixture.automated_emails[0],
@@ -576,8 +576,8 @@ test.describe('Member emails settings', async () => {
             const section = page.getByTestId('memberemails');
             await expect(section).toBeVisible({timeout: 10000});
 
-            const cardSenderName = section.locator('[data-testid="free-welcome-email-preview"] .font-semibold').first();
-            await expect(cardSenderName).toHaveText('Newsletter Sender');
+            const cardTitle = section.getByTestId('free-welcome-email-preview').getByText('Free members welcome email');
+            await expect(cardTitle).toHaveText('Free members welcome email');
         });
     });
 
