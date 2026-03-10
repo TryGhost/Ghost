@@ -98,4 +98,16 @@ describe('use-members-filter-state URL helpers', () => {
 
         expect(buildClearedFilterParams(params).toString()).toBe('search=alex');
     });
+
+    it('parses legacy ember filter query params for date filters', () => {
+        const params = new URLSearchParams({
+            filter: 'created_at:<=\'2022-02-01 23:59:59\''
+        });
+
+        const parsed = searchParamsToFilters(params);
+
+        expect(parsed.map(({field, operator, values}) => ({field, operator, values}))).toEqual([
+            {field: 'created_at', operator: 'is-or-less', values: ['2022-02-01']}
+        ]);
+    });
 });

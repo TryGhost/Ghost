@@ -375,6 +375,26 @@ function parseLegacySimpleFilter(filterNode: Record<string, unknown>): Filter | 
         };
     }
 
+    const dateOperators = [
+        ['$lt', 'is-less'],
+        ['$lte', 'is-or-less'],
+        ['$gt', 'is-greater'],
+        ['$gte', 'is-or-greater']
+    ] as const;
+
+    if (rawValue && typeof rawValue === 'object') {
+        for (const [legacyOperator, operator] of dateOperators) {
+            if (legacyOperator in rawValue) {
+                return {
+                    id: `${field}-legacy`,
+                    field,
+                    operator,
+                    values: [String(rawValue[legacyOperator]).split(' ')[0]]
+                };
+            }
+        }
+    }
+
     if (rawValue && typeof rawValue === 'object' && '$in' in rawValue && Array.isArray(rawValue.$in)) {
         return {
             id: `${field}-legacy`,
