@@ -58,7 +58,7 @@ const BasicInputs: React.FC<UserDetailProps> = ({errors, clearError, user, setUs
                 onKeyDown={() => clearError('location')} />
             <TextArea
                 error={!!errors?.bio}
-                hint={errors?.bio || <>Recommended: 250 characters. You&lsquo;ve used <span className='font-bold'>{user.bio?.length || 0}</span></>}
+                hint={errors?.bio || <>Recommended: 2000 characters. You&lsquo;ve used <span className='font-bold'>{user.bio?.length || 0}</span></>}
                 maxLength={65535}
                 title="Bio"
                 value={user.bio || ''}

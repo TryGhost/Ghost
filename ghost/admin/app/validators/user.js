@@ -31,7 +31,7 @@ const userValidator = BaseValidator.extend(PasswordValidatorMixin, {
         let bio = model.bio;
 
         if (this.isActive(model)) {
-            if (!validator.isLength(bio || '', {max: 250})) {
+            if (!validator.isLength(bio || '', {max: 2000})) {
                 model.errors.add('bio', 'Bio is too long');
                 this.invalidate();
             }

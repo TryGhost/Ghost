@@ -389,7 +389,7 @@ describe('Importer', function () {
                     assert.equal(response.length, 6);
                     // NOTE: a duplicated tag.slug is a warning
                     assert.equal(response[0].errorType, 'ValidationError');
-                    assert.equal(response[0].message, 'Value in [users.bio] exceeds maximum length of 250 characters.');
+                    assert.equal(response[0].message, 'Value in [users.bio] exceeds maximum length of 2000 characters.');
 
                     assert.equal(response[1].errorType, 'ValidationError');
                     assert.equal(response[1].message, 'Validation (isEmail) failed for email');
