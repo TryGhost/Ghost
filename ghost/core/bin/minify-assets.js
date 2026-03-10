@@ -75,6 +75,13 @@ const filesToMinify = [
         options: {
             bundle: false
         }
+    },
+    {
+        src: 'core/frontend/public/private.js',
+        dest: 'core/frontend/public/private.min.js',
+        options: {
+            bundle: false
+        }
     }
 ];
 
@@ -109,7 +116,7 @@ const filesToMinify = [
             const bundleStatus = buildConfig.bundle ? 'bundled + minified' : 'minified';
             logging.debug(`✓ ${file.src} → ${file.dest} (${bundleStatus})`);
         } catch (error) {
-            console.error(`✗ Error processing ${file.src}:`, error);
+            logging.error(`✗ Error processing ${file.src}:`, error);
             process.exit(1);
         }
     }
