@@ -1,8 +1,10 @@
 import {useCallback, useMemo} from 'react';
 import {useSearchParams} from '@tryghost/admin-x-framework';
+import {useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import type {Filter} from '@tryghost/shade';
 import {canonicalizeFilter} from '@src/views/filters/canonical-filter';
 import {parsePredicateParams, serializePredicateParams} from '@src/views/filters/url-predicate-params';
+import {getSiteTimezone} from '@src/utils/get-site-timezone';
 import moment from 'moment-timezone';
 import nql from '@tryghost/nql-lang';
 
@@ -561,6 +563,7 @@ interface UseFilterStateReturn {
  */
 export function useMembersFilterState(): UseFilterStateReturn {
     const [searchParams, setSearchParams] = useSearchParams();
+    const {data: settingsData} = useBrowseSettings({});
 
     // Parse filters from URL
     const filters = useMemo(() => {
@@ -595,7 +598,11 @@ export function useMembersFilterState(): UseFilterStateReturn {
         setSearchParams(buildClearedFilterParams(searchParams), {replace});
     }, [searchParams, setSearchParams]);
 
-    const nql = useMemo(() => buildMemberNqlFilter(filters), [filters]);
+    const siteTimezone = useMemo(() => {
+        return getSiteTimezone(settingsData?.settings ?? []);
+    }, [settingsData?.settings]);
+
+    const nql = useMemo(() => buildMemberNqlFilter(filters, {timezone: siteTimezone}), [filters, siteTimezone]);
 
     const isFiltered = filters.length > 0 || search.length > 0;
 
