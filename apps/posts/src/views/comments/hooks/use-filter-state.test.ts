@@ -1,6 +1,7 @@
 import {describe, expect, it} from 'vitest';
 import type {CommentPredicate} from '@src/views/filters/comment-fields';
-import {buildNqlFilter, filtersToSearchParams, searchParamsToFilters} from '@src/views/comments/hooks/use-filter-state';
+import type {Filter} from '@tryghost/shade';
+import {buildNqlFilter, coerceCommentFilters, filtersToSearchParams, searchParamsToFilters} from '@src/views/comments/hooks/use-filter-state';
 
 describe('comments useFilterState URL helpers', () => {
     it('preserves duplicate field predicates through URL roundtrip', () => {
@@ -37,6 +38,19 @@ describe('comments useFilterState URL helpers', () => {
 
         expect(parsed.map(({field, operator, values}) => ({field, operator, values}))).toEqual([
             {field: 'body', operator: 'contains', values: ['hello']}
+        ]);
+    });
+
+    it('coerces UI filters into valid comment predicates and drops invalid combinations', () => {
+        const filters: Filter[] = [
+            {id: 'status-1', field: 'status', operator: 'is', values: ['published']},
+            {id: 'status-2', field: 'status', operator: 'contains', values: ['published']},
+            {id: 'body-1', field: 'body', operator: 'contains', values: ['hello']}
+        ];
+
+        expect(coerceCommentFilters(filters)).toEqual([
+            {id: 'status-1', field: 'status', operator: 'is', values: ['published']},
+            {id: 'body-1', field: 'body', operator: 'contains', values: ['hello']}
         ]);
     });
 });

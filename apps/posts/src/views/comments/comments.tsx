@@ -8,8 +8,8 @@ import React, {useCallback} from 'react';
 import type {Filter} from '@tryghost/shade';
 import {Button, EmptyIndicator, LoadingIndicator, LucideIcon} from '@tryghost/shade';
 import {useBrowseComments} from '@tryghost/admin-x-framework/api/comments';
-import {CommentOperator, CommentPredicate, CommentQuickFilterField, upsertCommentFieldPredicate} from '@src/views/filters/comment-fields';
-import {useFilterState} from './hooks/use-filter-state';
+import {CommentOperator, CommentQuickFilterField, upsertCommentFieldPredicate} from '@src/views/filters/comment-fields';
+import {coerceCommentFilters, useFilterState} from './hooks/use-filter-state';
 import {useKnownFilterValues} from './hooks/use-known-filter-values';
 
 const Comments: React.FC = () => {
@@ -25,7 +25,7 @@ const Comments: React.FC = () => {
     }, [setFilters]);
 
     const handleFiltersChange = useCallback((nextFilters: Filter[]) => {
-        setFilters(nextFilters as CommentPredicate[]);
+        setFilters(coerceCommentFilters(nextFilters));
     }, [setFilters]);
 
     const {

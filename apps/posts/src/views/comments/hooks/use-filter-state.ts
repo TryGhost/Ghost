@@ -1,3 +1,4 @@
+import type {Filter} from '@tryghost/shade';
 import {COMMENT_FIELDS, CommentPredicate, isCommentField, isCommentOperatorForField} from '@src/views/filters/comment-fields';
 import {deriveFilterFlags} from '@src/views/filters/filter-flags';
 import {serializeCommentFilters} from '@src/views/filters/filter-nql';
@@ -13,6 +14,12 @@ export type CommentFilterField = typeof COMMENT_FILTER_FIELDS[number];
 
 export function buildNqlFilter(filters: CommentPredicate[]): string | undefined {
     return serializeCommentFilters(filters);
+}
+
+export function coerceCommentFilters(filters: Filter[]): CommentPredicate[] {
+    return filters.filter((filter): filter is CommentPredicate => {
+        return isCommentField(filter.field) && isCommentOperatorForField(filter.field, filter.operator);
+    });
 }
 /**
  * Parse URL search params into Filter objects
