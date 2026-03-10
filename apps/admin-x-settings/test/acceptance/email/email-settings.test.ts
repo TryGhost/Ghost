@@ -16,7 +16,7 @@ test.describe('Email settings', async () => {
 
         await page.goto('/');
 
-        const sectionIds = ['enable-newsletters', 'mailgun', 'default-recipients', 'newsletters', 'memberemails'];
+        const sectionIds = ['enable-newsletters', 'default-recipients', 'newsletters', 'mailgun'];
 
         for (const sectionId of sectionIds) {
             await expect(page.getByTestId(sectionId)).toBeVisible();
@@ -41,7 +41,7 @@ test.describe('Email settings', async () => {
         expect(isInOrder).toBe(true);
     });
 
-    test('Keeps welcome emails visible when newsletter sending is disabled', async ({page}) => {
+    test('Keeps welcome emails visible in membership when newsletter sending is disabled', async ({page}) => {
         await mockApi({page, requests: {
             ...globalDataRequests,
             ...emailRequests,
