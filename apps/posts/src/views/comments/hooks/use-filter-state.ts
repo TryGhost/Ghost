@@ -1,8 +1,7 @@
-import {useCallback, useMemo} from 'react';
-import {useSearchParams} from '@tryghost/admin-x-framework';
 import type {Filter} from '@tryghost/shade';
 import {serializeCommentFilters} from '@src/views/filters/comment-nql';
 import {parsePredicateParams, serializePredicateParams} from '@src/views/filters/url-predicate-params';
+import {UrlFilterStateOptions, useUrlFilterState} from '@src/views/filters/use-url-filter-state';
 
 /**
  * Comment filter field keys - single source of truth for filter definitions
@@ -47,23 +46,11 @@ export function filtersToSearchParams(filters: Filter[]): URLSearchParams {
     });
 }
 
-type SetFiltersAction = Filter[] | ((prevFilters: Filter[]) => Filter[]);
-
-interface SetFiltersOptions {
-    /** Whether to replace the current history entry (default: true) */
-    replace?: boolean;
-}
-
-interface ClearFiltersOptions {
-    /** Whether to replace the current history entry (default: true) */
-    replace?: boolean;
-}
-
 interface UseFilterStateReturn {
     filters: Filter[];
     nql: string | undefined;
-    setFilters: (action: SetFiltersAction, options?: SetFiltersOptions) => void;
-    clearFilters: (options?: ClearFiltersOptions) => void;
+    setFilters: (action: Filter[] | ((prevFilters: Filter[]) => Filter[]), options?: UrlFilterStateOptions) => void;
+    clearFilters: (options?: UrlFilterStateOptions) => void;
     /** True when the only active filter is a single comment ID (used for deep linking) */
     isSingleIdFilter: boolean;
 }
@@ -74,34 +61,15 @@ interface UseFilterStateReturn {
  * URL format: ?status=is:published&author=is:member-id&body=contains:search+term
  */
 export function useFilterState(): UseFilterStateReturn {
-    const [searchParams, setSearchParams] = useSearchParams();
-
-    // Parse filters from URL
-    const filters = useMemo(() => {
-        return searchParamsToFilters(searchParams);
-    }, [searchParams]);
-
-    // Update URL when filters change
-    const setFilters = useCallback((action: SetFiltersAction, options: SetFiltersOptions = {}) => {
-        const newFilters = typeof action === 'function' ? action(filters) : action;
-        const newParams = filtersToSearchParams(newFilters);
-
-        // Update URL - replace by default, but allow pushing to history
-        const replace = options.replace ?? true;
-        setSearchParams(newParams, {replace});
-    }, [filters, setSearchParams]);
-
-    // Clear all filter params from URL
-    const clearFilters = useCallback(({replace = true}: {replace?: boolean} = {}) => {
-        setSearchParams(new URLSearchParams(), {replace});
-    }, [setSearchParams]);
-
-    const nql = useMemo(() => buildNqlFilter(filters), [filters]);
-
-    // Check if the only active filter is a single comment ID (used for deep linking)
-    const isSingleIdFilter = useMemo(() => {
-        return filters.length === 1 && filters[0].field === 'id';
-    }, [filters]);
+    const {filters, nql, setFilters, clearFilters, isSingleIdFilter} = useUrlFilterState({
+        parseFilters: searchParamsToFilters,
+        serializeFilters: (newFilters) => filtersToSearchParams(newFilters),
+        clearSearchParams: () => new URLSearchParams(),
+        buildNql: buildNqlFilter,
+        deriveState: ({filters: currentFilters}) => ({
+            isSingleIdFilter: currentFilters.length === 1 && currentFilters[0].field === 'id'
+        })
+    });
 
     return {filters, nql, setFilters, clearFilters, isSingleIdFilter};
 }

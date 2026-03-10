@@ -1,10 +1,10 @@
-import {useCallback, useMemo} from 'react';
-import {useSearchParams} from '@tryghost/admin-x-framework';
+import {useMemo} from 'react';
 import {useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import type {Filter} from '@tryghost/shade';
 import {canonicalizeFilter} from '@src/views/filters/canonical-filter';
 import {deriveFilterFlags} from '@src/views/filters/filter-flags';
 import {parsePredicateParams, serializePredicateParams} from '@src/views/filters/url-predicate-params';
+import {UrlFilterStateOptions, useUrlFilterState} from '@src/views/filters/use-url-filter-state';
 import {getSiteTimezone} from '@src/utils/get-site-timezone';
 import {deriveMemberFilterMetadata, MemberFilterColumnMetadata} from './member-filter-metadata';
 import moment from 'moment-timezone';
@@ -542,19 +542,13 @@ export function buildClearedFilterParams(searchParams: URLSearchParams): URLSear
     return clearedParams;
 }
 
-type SetFiltersAction = Filter[] | ((prevFilters: Filter[]) => Filter[]);
-
-interface SetFiltersOptions {
-    replace?: boolean;
-}
-
 interface UseFilterStateReturn {
     filters: Filter[];
     nql: string | undefined;
     search: string;
-    setFilters: (action: SetFiltersAction, options?: SetFiltersOptions) => void;
-    setSearch: (search: string, options?: SetFiltersOptions) => void;
-    clearFilters: (options?: SetFiltersOptions) => void;
+    setFilters: (action: Filter[] | ((prevFilters: Filter[]) => Filter[]), options?: UrlFilterStateOptions) => void;
+    setSearch: (search: string, options?: UrlFilterStateOptions) => void;
+    clearFilters: (options?: UrlFilterStateOptions) => void;
     hasFilters: boolean;
     hasSearch: boolean;
     hasFilterOrSearch: boolean;
@@ -568,63 +562,48 @@ interface UseFilterStateReturn {
  * URL format: ?status=is:paid&label=is:vip&search=john
  */
 export function useMembersFilterState(): UseFilterStateReturn {
-    const [searchParams, setSearchParams] = useSearchParams();
     const {data: settingsData} = useBrowseSettings({});
-
-    // Parse filters from URL
-    const filters = useMemo(() => {
-        return searchParamsToFilters(searchParams);
-    }, [searchParams]);
-
-    // Get search from URL
-    const search = useMemo(() => {
-        return searchParams.get('search') ?? '';
-    }, [searchParams]);
-
-    // Update URL when filters change
-    const setFilters = useCallback((action: SetFiltersAction, options: SetFiltersOptions = {}) => {
-        const newFilters = typeof action === 'function' ? action(filters) : action;
-        const currentSearch = searchParams.get('search') ?? undefined;
-        const newParams = filtersToSearchParams(newFilters, currentSearch);
-
-        const replace = options.replace ?? true;
-        setSearchParams(newParams, {replace});
-    }, [filters, searchParams, setSearchParams]);
-
-    // Update URL when search changes
-    const setSearch = useCallback((newSearch: string, options: SetFiltersOptions = {}) => {
-        const newParams = filtersToSearchParams(filters, newSearch || undefined);
-
-        const replace = options.replace ?? true;
-        setSearchParams(newParams, {replace});
-    }, [filters, setSearchParams]);
-
-    // Clear all filter params from URL
-    const clearFilters = useCallback(({replace = true}: SetFiltersOptions = {}) => {
-        setSearchParams(buildClearedFilterParams(searchParams), {replace});
-    }, [searchParams, setSearchParams]);
 
     const siteTimezone = useMemo(() => {
         return getSiteTimezone(settingsData?.settings ?? []);
     }, [settingsData?.settings]);
 
-    const nql = useMemo(() => buildMemberNqlFilter(filters, {timezone: siteTimezone}), [filters, siteTimezone]);
+    const {
+        filters,
+        nql,
+        search,
+        setFilters,
+        setSearch,
+        clearFilters,
+        hasFilters,
+        hasSearch,
+        hasFilterOrSearch,
+        activeFields,
+        activeColumns
+    } = useUrlFilterState({
+        parseFilters: searchParamsToFilters,
+        serializeFilters: filtersToSearchParams,
+        clearSearchParams: buildClearedFilterParams,
+        buildNql: currentFilters => buildMemberNqlFilter(currentFilters, {timezone: siteTimezone}),
+        deriveState: ({filters: currentFilters, search: currentSearch}) => {
+            const flags = deriveFilterFlags({
+                predicates: currentFilters.map(filter => ({
+                    id: filter.id || `${filter.field}-${filter.operator}`,
+                    field: filter.field,
+                    operator: filter.operator,
+                    values: filter.values
+                })),
+                search: currentSearch
+            });
+            const metadata = deriveMemberFilterMetadata(currentFilters);
 
-    const {hasFilters, hasSearch, hasFilterOrSearch} = useMemo(() => {
-        return deriveFilterFlags({
-            predicates: filters.map(filter => ({
-                id: filter.id || `${filter.field}-${filter.operator}`,
-                field: filter.field,
-                operator: filter.operator,
-                values: filter.values
-            })),
-            search
-        });
-    }, [filters, search]);
-
-    const {activeFields, activeColumns} = useMemo(() => {
-        return deriveMemberFilterMetadata(filters);
-    }, [filters]);
+            return {
+                ...flags,
+                activeFields: metadata.activeFields,
+                activeColumns: metadata.activeColumns
+            };
+        }
+    });
 
     return {filters, nql, search, setFilters, setSearch, clearFilters, hasFilters, hasSearch, hasFilterOrSearch, activeFields, activeColumns};
 }
