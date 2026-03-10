@@ -123,7 +123,12 @@ class MemberWelcomeEmailService {
         }
 
         const name = member?.name ? `${member.name} at ` : '';
-        logging.info(`${MEMBER_WELCOME_EMAIL_LOG_KEY} Sending welcome email to ${name}${member.email}`);
+        logging.info({
+            system: {
+                event: 'member_welcome_email.sending',
+                member_status: memberStatus
+            }
+        }, `${MEMBER_WELCOME_EMAIL_LOG_KEY} Sending welcome email to ${name}${member.email}`);
 
         const memberWelcomeEmail = this.#memberWelcomeEmails[memberStatus];
 

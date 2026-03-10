@@ -93,4 +93,27 @@ describe('member-created handler', function () {
         });
         sinon.assert.notCalled(AutomatedEmailRecipientStub.add);
     });
+
+    it('logs warning when no automated email found for slug', async function () {
+        AutomatedEmailStub.findOne.resolves(null);
+
+        await handler.handle({
+            payload: {
+                memberId: 'member123',
+                uuid: 'uuid-123',
+                email: 'test@example.com',
+                name: 'Test Member',
+                status: 'free'
+            }
+        });
+
+        sinon.assert.calledOnce(memberWelcomeEmailServiceStub.api.send);
+        const warningLog = findByEvent(logCapture.output, 'outbox.member_created.no_automated_email');
+        assert.ok(warningLog);
+        assert.deepEqual(warningLog.system, {
+            event: 'outbox.member_created.no_automated_email',
+            slug: 'member-welcome-email-free'
+        });
+        sinon.assert.notCalled(AutomatedEmailRecipientStub.add);
+    });
 });
