@@ -93,7 +93,7 @@ function getFilterRelationOperator(relation: string): string {
     return relationMap[relation] ?? '';
 }
 
-function parseLegacySubscribedFilter(filterNode: Record<string, unknown>): Filter | undefined {
+function parseLegacySubscribedFilter(filterNode: Record<string, unknown>, idSuffix: string): Filter | undefined {
     const comparator = ('$and' in filterNode && Array.isArray(filterNode.$and))
         ? filterNode.$and
         : (('$or' in filterNode && Array.isArray(filterNode.$or)) ? filterNode.$or : undefined);
@@ -101,7 +101,7 @@ function parseLegacySubscribedFilter(filterNode: Record<string, unknown>): Filte
     if (!comparator || comparator.length !== 2) {
         if ('email_disabled' in filterNode) {
             return {
-                id: 'subscribed-legacy',
+                id: `subscribed-legacy-${idSuffix}`,
                 field: 'subscribed',
                 operator: 'is',
                 values: [filterNode.email_disabled ? 'email-disabled' : 'unsubscribed']
@@ -125,14 +125,14 @@ function parseLegacySubscribedFilter(filterNode: Record<string, unknown>): Filte
     }
 
     return {
-        id: 'subscribed-legacy',
+        id: `subscribed-legacy-${idSuffix}`,
         field: 'subscribed',
         operator: usedOr ? 'is-not' : 'is',
         values: [subscribed ? 'subscribed' : 'unsubscribed']
     };
 }
 
-function parseLegacyNewsletterFilter(filterNode: Record<string, unknown>): Filter | undefined {
+function parseLegacyNewsletterFilter(filterNode: Record<string, unknown>, idSuffix: string): Filter | undefined {
     const comparator = ('$and' in filterNode && Array.isArray(filterNode.$and))
         ? filterNode.$and
         : (('$or' in filterNode && Array.isArray(filterNode.$or)) ? filterNode.$or : undefined);
@@ -155,14 +155,14 @@ function parseLegacyNewsletterFilter(filterNode: Record<string, unknown>): Filte
     }
 
     return {
-        id: `newsletters.${rawSlug}-legacy`,
+        id: `newsletters.${rawSlug}-legacy-${idSuffix}`,
         field: `newsletters.${rawSlug}`,
         operator: usedOr ? 'is-not' : 'is',
         values: [usedOr ? 'unsubscribed' : 'subscribed']
     };
 }
 
-function parseLegacySimpleFilter(filterNode: Record<string, unknown>): Filter | undefined {
+function parseLegacySimpleFilter(filterNode: Record<string, unknown>, idSuffix: string): Filter | undefined {
     const entries = Object.entries(filterNode);
 
     if (entries.length !== 1) {
@@ -177,7 +177,7 @@ function parseLegacySimpleFilter(filterNode: Record<string, unknown>): Filter | 
 
     if (typeof rawValue === 'string' || typeof rawValue === 'number' || typeof rawValue === 'boolean') {
         return {
-            id: `${field}-legacy`,
+            id: `${field}-legacy-${idSuffix}`,
             field,
             operator: 'is',
             values: [String(rawValue)]
@@ -186,7 +186,7 @@ function parseLegacySimpleFilter(filterNode: Record<string, unknown>): Filter | 
 
     if (rawValue && typeof rawValue === 'object' && '$ne' in rawValue) {
         return {
-            id: `${field}-legacy`,
+            id: `${field}-legacy-${idSuffix}`,
             field,
             operator: 'is-not',
             values: [String(rawValue.$ne)]
@@ -206,7 +206,7 @@ function parseLegacySimpleFilter(filterNode: Record<string, unknown>): Filter | 
         for (const [legacyOperator, operator] of dateOperators) {
             if (legacyOperator in rawValueRecord) {
                 return {
-                    id: `${field}-legacy`,
+                    id: `${field}-legacy-${idSuffix}`,
                     field,
                     operator,
                     values: [String(rawValueRecord[legacyOperator]).split(' ')[0]]
@@ -217,7 +217,7 @@ function parseLegacySimpleFilter(filterNode: Record<string, unknown>): Filter | 
 
     if (rawValue && typeof rawValue === 'object' && '$in' in rawValue && Array.isArray(rawValue.$in)) {
         return {
-            id: `${field}-legacy`,
+            id: `${field}-legacy-${idSuffix}`,
             field,
             operator: 'is_any_of',
             values: rawValue.$in.map(value => String(value))
@@ -226,7 +226,7 @@ function parseLegacySimpleFilter(filterNode: Record<string, unknown>): Filter | 
 
     if (rawValue && typeof rawValue === 'object' && '$nin' in rawValue && Array.isArray(rawValue.$nin)) {
         return {
-            id: `${field}-legacy`,
+            id: `${field}-legacy-${idSuffix}`,
             field,
             operator: 'is_not_any_of',
             values: rawValue.$nin.map(value => String(value))
@@ -238,7 +238,7 @@ function parseLegacySimpleFilter(filterNode: Record<string, unknown>): Filter | 
 
         if (source.startsWith('^')) {
             return {
-                id: `${field}-legacy`,
+                id: `${field}-legacy-${idSuffix}`,
                 field,
                 operator: 'starts-with',
                 values: [source.slice(1)]
@@ -247,7 +247,7 @@ function parseLegacySimpleFilter(filterNode: Record<string, unknown>): Filter | 
 
         if (source.endsWith('$')) {
             return {
-                id: `${field}-legacy`,
+                id: `${field}-legacy-${idSuffix}`,
                 field,
                 operator: 'ends-with',
                 values: [source.slice(0, -1)]
@@ -255,7 +255,7 @@ function parseLegacySimpleFilter(filterNode: Record<string, unknown>): Filter | 
         }
 
         return {
-            id: `${field}-legacy`,
+            id: `${field}-legacy-${idSuffix}`,
             field,
             operator: 'contains',
             values: [source]
@@ -264,7 +264,7 @@ function parseLegacySimpleFilter(filterNode: Record<string, unknown>): Filter | 
 
     if (rawValue && typeof rawValue === 'object' && '$not' in rawValue && rawValue.$not instanceof RegExp) {
         return {
-            id: `${field}-legacy`,
+            id: `${field}-legacy-${idSuffix}`,
             field,
             operator: 'does-not-contain',
             values: [rawValue.$not.source]
@@ -274,24 +274,42 @@ function parseLegacySimpleFilter(filterNode: Record<string, unknown>): Filter | 
     return undefined;
 }
 
+function parseLegacyMemberFilterNode(filterNode: Record<string, unknown>, idSuffix: string): Filter[] {
+    const newsletterFilter = parseLegacyNewsletterFilter(filterNode, idSuffix);
+
+    if (newsletterFilter) {
+        return [newsletterFilter];
+    }
+
+    const subscribedFilter = parseLegacySubscribedFilter(filterNode, idSuffix);
+
+    if (subscribedFilter) {
+        return [subscribedFilter];
+    }
+
+    const simpleFilter = parseLegacySimpleFilter(filterNode, idSuffix);
+
+    if (simpleFilter) {
+        return [simpleFilter];
+    }
+
+    if ('$and' in filterNode && Array.isArray(filterNode.$and)) {
+        return filterNode.$and.flatMap((childNode, index) => {
+            if (!childNode || typeof childNode !== 'object' || Array.isArray(childNode)) {
+                return [];
+            }
+
+            return parseLegacyMemberFilterNode(childNode as Record<string, unknown>, `${idSuffix}-${index + 1}`);
+        });
+    }
+
+    return [];
+}
+
 export function parseMemberNqlFilterParam(filterParam: string): Filter[] {
     try {
         const parsedFilter = nql.parse(filterParam) as Record<string, unknown>;
-        const newsletterFilter = parseLegacyNewsletterFilter(parsedFilter);
-
-        if (newsletterFilter) {
-            return [newsletterFilter];
-        }
-
-        const subscribedFilter = parseLegacySubscribedFilter(parsedFilter);
-
-        if (subscribedFilter) {
-            return [subscribedFilter];
-        }
-
-        const simpleFilter = parseLegacySimpleFilter(parsedFilter);
-
-        return simpleFilter ? [simpleFilter] : [];
+        return parseLegacyMemberFilterNode(parsedFilter, '1');
     } catch {
         return [];
     }

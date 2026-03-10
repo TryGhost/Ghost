@@ -17,7 +17,7 @@ type CommentReportedField = 'reported';
 type CommentDateValue = `${number}-${number}-${number}`;
 type CommentStatusValue = 'published' | 'hidden';
 type CommentReportedValue = 'true' | 'false';
-type CommentPredicateValues<TField extends CommentField> =
+export type CommentPredicateValues<TField extends CommentField> =
     TField extends CommentDateField ? [CommentDateValue]
         : TField extends CommentStatusField ? [CommentStatusValue]
             : TField extends CommentReportedField ? [CommentReportedValue]
@@ -31,6 +31,8 @@ export interface CommentPredicate<TField extends CommentField = CommentField> {
     operator: CommentOperator<TField>;
     values: CommentPredicateValues<TField>;
 }
+
+export type CommentQuickFilterField = 'author' | 'post';
 
 let predicateIdCounter = 0;
 
@@ -62,4 +64,18 @@ export function createCommentPredicate<TField extends CommentField>(
         operator,
         values
     };
+}
+
+export function upsertCommentFieldPredicate<TField extends CommentField>(
+    predicates: CommentPredicate[],
+    field: TField,
+    operator: CommentOperator<TField>,
+    values: CommentPredicateValues<TField>
+): CommentPredicate[] {
+    const nextPredicate = createCommentPredicate(field, operator, values);
+
+    return [
+        ...predicates.filter(predicate => predicate.field !== field),
+        nextPredicate
+    ];
 }

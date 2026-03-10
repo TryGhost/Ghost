@@ -1,5 +1,5 @@
 import {describe, expect, expectTypeOf, it} from 'vitest';
-import {createCommentPredicate, isCommentField, isCommentOperatorForField} from '@src/views/filters/comment-fields';
+import {createCommentPredicate, isCommentField, isCommentOperatorForField, upsertCommentFieldPredicate} from '@src/views/filters/comment-fields';
 
 describe('createCommentPredicate', () => {
     it('recognizes supported comment fields and operators', () => {
@@ -18,5 +18,19 @@ describe('createCommentPredicate', () => {
 
     it('rejects invalid field and operator combinations at runtime', () => {
         expect(() => createCommentPredicate('status', 'contains' as never, ['published'])).toThrow('Invalid operator "contains" for comment field "status"');
+    });
+
+    it('upserts a quick filter by field while preserving other predicates', () => {
+        const predicates = [
+            createCommentPredicate('author', 'is', ['member-1']),
+            createCommentPredicate('status', 'is', ['published'])
+        ];
+
+        const nextPredicates = upsertCommentFieldPredicate(predicates, 'author', 'is', ['member-2']);
+
+        expect(nextPredicates.map(({field, operator, values}) => ({field, operator, values}))).toEqual([
+            {field: 'status', operator: 'is', values: ['published']},
+            {field: 'author', operator: 'is', values: ['member-2']}
+        ]);
     });
 });

@@ -5,20 +5,27 @@ import CommentsLayout from './components/comments-layout';
 import CommentsList from './components/comments-list';
 import {buildCommentsQueryParams} from './hooks/comment-query';
 import React, {useCallback} from 'react';
-import {Button, EmptyIndicator, LoadingIndicator, LucideIcon, createFilter} from '@tryghost/shade';
+import type {Filter} from '@tryghost/shade';
+import {Button, EmptyIndicator, LoadingIndicator, LucideIcon} from '@tryghost/shade';
 import {useBrowseComments} from '@tryghost/admin-x-framework/api/comments';
+import {CommentOperator, CommentPredicate, CommentQuickFilterField, upsertCommentFieldPredicate} from '@src/views/filters/comment-fields';
 import {useFilterState} from './hooks/use-filter-state';
 import {useKnownFilterValues} from './hooks/use-known-filter-values';
 
 const Comments: React.FC = () => {
     const {filters, nql, setFilters, clearFilters, hasFilters, isSingleIdFilter} = useFilterState();
-    const handleAddFilter = useCallback((field: string, value: string, operator: string = 'is') => {
+    const handleAddFilter = useCallback((
+        field: CommentQuickFilterField,
+        value: string,
+        operator: CommentOperator<CommentQuickFilterField> = 'is'
+    ) => {
         setFilters((prevFilters) => {
-            // Remove any existing filter for the same field
-            const filtered = prevFilters.filter(f => f.field !== field);
-            // Add the new filter
-            return [...filtered, createFilter(field, operator, [value])];
+            return upsertCommentFieldPredicate(prevFilters, field, operator, [value]);
         }, {replace: false});
+    }, [setFilters]);
+
+    const handleFiltersChange = useCallback((nextFilters: Filter[]) => {
+        setFilters(nextFilters as CommentPredicate[]);
     }, [setFilters]);
 
     const {
@@ -47,7 +54,7 @@ const Comments: React.FC = () => {
                         filters={filters}
                         knownMembers={knownMembers}
                         knownPosts={knownPosts}
-                        onFiltersChange={setFilters}
+                        onFiltersChange={handleFiltersChange}
                     />
                 )}
             </CommentsHeader>

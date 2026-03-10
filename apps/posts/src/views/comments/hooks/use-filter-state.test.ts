@@ -1,10 +1,10 @@
 import {describe, expect, it} from 'vitest';
+import type {CommentPredicate} from '@src/views/filters/comment-fields';
 import {buildNqlFilter, filtersToSearchParams, searchParamsToFilters} from '@src/views/comments/hooks/use-filter-state';
-import type {Filter} from '@tryghost/shade';
 
 describe('comments useFilterState URL helpers', () => {
     it('preserves duplicate field predicates through URL roundtrip', () => {
-        const filters: Filter[] = [
+        const filters: CommentPredicate[] = [
             {id: 'status-1', field: 'status', operator: 'is', values: ['published']},
             {id: 'status-2', field: 'status', operator: 'is', values: ['hidden']}
         ];
@@ -19,7 +19,7 @@ describe('comments useFilterState URL helpers', () => {
     });
 
     it('serializes comments NQL using canonical sorted order', () => {
-        const filters: Filter[] = [
+        const filters: CommentPredicate[] = [
             {id: 'status-1', field: 'status', operator: 'is', values: ['published']},
             {id: 'author-1', field: 'author', operator: 'is', values: ['member_1']}
         ];

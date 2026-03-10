@@ -90,6 +90,32 @@ describe('use-members-filter-state URL helpers', () => {
         ]);
     });
 
+    it('parses legacy ember filter query params for compound filters', () => {
+        const params = new URLSearchParams({
+            filter: 'status:paid+label:[vip]'
+        });
+
+        const parsed = searchParamsToFilters(params);
+
+        expect(parsed.map(({field, operator, values}) => ({field, operator, values}))).toEqual([
+            {field: 'status', operator: 'is', values: ['paid']},
+            {field: 'label', operator: 'is_any_of', values: ['vip']}
+        ]);
+    });
+
+    it('parses legacy ember filter query params for nested subscribed compounds', () => {
+        const params = new URLSearchParams({
+            filter: '(subscribed:true+email_disabled:0)+status:paid'
+        });
+
+        const parsed = searchParamsToFilters(params);
+
+        expect(parsed.map(({field, operator, values}) => ({field, operator, values}))).toEqual([
+            {field: 'subscribed', operator: 'is', values: ['subscribed']},
+            {field: 'status', operator: 'is', values: ['paid']}
+        ]);
+    });
+
     it('drops query param predicates with operators that are invalid for the field', () => {
         const params = new URLSearchParams({
             status: 'contains:paid',

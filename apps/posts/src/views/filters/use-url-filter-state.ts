@@ -3,34 +3,34 @@ import {useSearchParams} from '@tryghost/admin-x-framework';
 import {derivePredicateActions, filterReducer, type FilterState} from './filter-reducer';
 import type {Filter} from '@tryghost/shade';
 
-type SetFiltersAction = Filter[] | ((prevFilters: Filter[]) => Filter[]);
+type SetFiltersAction<TPredicate extends Filter> = TPredicate[] | ((prevFilters: TPredicate[]) => TPredicate[]);
 
 export interface UrlFilterStateOptions {
     replace?: boolean;
 }
 
-interface UseUrlFilterStateConfig<TDerived> {
-    parseFilters: (searchParams: URLSearchParams) => Filter[];
-    serializeFilters: (filters: Filter[], search?: string) => URLSearchParams;
-    buildNql: (filters: Filter[]) => string | undefined;
-    deriveState?: (params: {filters: Filter[]; search: string}) => TDerived;
+interface UseUrlFilterStateConfig<TPredicate extends Filter, TDerived> {
+    parseFilters: (searchParams: URLSearchParams) => TPredicate[];
+    serializeFilters: (filters: TPredicate[], search?: string) => URLSearchParams;
+    buildNql: (filters: TPredicate[]) => string | undefined;
+    deriveState?: (params: {filters: TPredicate[]; search: string}) => TDerived;
 }
 
-interface BaseUrlFilterState {
-    filters: Filter[];
+interface BaseUrlFilterState<TPredicate extends Filter> {
+    filters: TPredicate[];
     nql: string | undefined;
     search: string;
-    setFilters: (action: SetFiltersAction, options?: UrlFilterStateOptions) => void;
+    setFilters: (action: SetFiltersAction<TPredicate>, options?: UrlFilterStateOptions) => void;
     setSearch: (search: string, options?: UrlFilterStateOptions) => void;
     clearFilters: (options?: UrlFilterStateOptions) => void;
 }
 
-export function useUrlFilterState<TDerived extends object = Record<string, never>>({
+export function useUrlFilterState<TPredicate extends Filter = Filter, TDerived extends object = Record<string, never>>({
     parseFilters,
     serializeFilters,
     buildNql,
     deriveState
-}: UseUrlFilterStateConfig<TDerived>): BaseUrlFilterState & TDerived {
+}: UseUrlFilterStateConfig<TPredicate, TDerived>): BaseUrlFilterState<TPredicate> & TDerived {
     const [searchParams, setSearchParams] = useSearchParams();
 
     const filters = useMemo(() => {
@@ -41,15 +41,15 @@ export function useUrlFilterState<TDerived extends object = Record<string, never
         return searchParams.get('search') ?? '';
     }, [searchParams]);
 
-    const state = useMemo<FilterState<Filter>>(() => ({
+    const state = useMemo<FilterState<TPredicate>>(() => ({
         predicates: filters,
         search
     }), [filters, search]);
 
-    const setFilters = useCallback((action: SetFiltersAction, options: UrlFilterStateOptions = {}) => {
+    const setFilters = useCallback((action: SetFiltersAction<TPredicate>, options: UrlFilterStateOptions = {}) => {
         const newFilters = typeof action === 'function' ? action(filters) : action;
         const predicateActions = derivePredicateActions(state.predicates, newFilters);
-        const nextState = predicateActions.reduce<FilterState<Filter>>((currentState, predicateAction) => {
+        const nextState = predicateActions.reduce<FilterState<TPredicate>>((currentState, predicateAction) => {
             return filterReducer(currentState, predicateAction);
         }, state);
         const newParams = serializeFilters(nextState.predicates, nextState.search || undefined);

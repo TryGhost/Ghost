@@ -1,5 +1,4 @@
-import type {Filter} from '@tryghost/shade';
-import {COMMENT_FIELDS, isCommentField, isCommentOperatorForField} from '@src/views/filters/comment-fields';
+import {COMMENT_FIELDS, CommentPredicate, isCommentField, isCommentOperatorForField} from '@src/views/filters/comment-fields';
 import {deriveFilterFlags} from '@src/views/filters/filter-flags';
 import {serializeCommentFilters} from '@src/views/filters/filter-nql';
 import {parsePredicateParams, serializePredicateParams} from '@src/views/filters/url-predicate-params';
@@ -12,14 +11,14 @@ export const COMMENT_FILTER_FIELDS = COMMENT_FIELDS;
 
 export type CommentFilterField = typeof COMMENT_FILTER_FIELDS[number];
 
-export function buildNqlFilter(filters: Filter[]): string | undefined {
+export function buildNqlFilter(filters: CommentPredicate[]): string | undefined {
     return serializeCommentFilters(filters);
 }
 /**
  * Parse URL search params into Filter objects
  * Preserves the order of filters as they appear in the URL
  */
-export function searchParamsToFilters(searchParams: URLSearchParams): Filter[] {
+export function searchParamsToFilters(searchParams: URLSearchParams): CommentPredicate[] {
     return parsePredicateParams({
         params: searchParams,
         multiselectFields: new Set()
@@ -28,13 +27,13 @@ export function searchParamsToFilters(searchParams: URLSearchParams): Filter[] {
         field: predicate.field,
         operator: predicate.operator,
         values: predicate.values
-    }));
+    })) as CommentPredicate[];
 }
 
 /**
  * Serialize filters to URL search params format
  */
-export function filtersToSearchParams(filters: Filter[]): URLSearchParams {
+export function filtersToSearchParams(filters: CommentPredicate[]): URLSearchParams {
     return serializePredicateParams({
         predicates: filters
             .filter(filter => isCommentField(filter.field) && filter.values[0] !== undefined)
@@ -49,9 +48,9 @@ export function filtersToSearchParams(filters: Filter[]): URLSearchParams {
 }
 
 interface UseFilterStateReturn {
-    filters: Filter[];
+    filters: CommentPredicate[];
     nql: string | undefined;
-    setFilters: (action: Filter[] | ((prevFilters: Filter[]) => Filter[]), options?: UrlFilterStateOptions) => void;
+    setFilters: (action: CommentPredicate[] | ((prevFilters: CommentPredicate[]) => CommentPredicate[]), options?: UrlFilterStateOptions) => void;
     clearFilters: (options?: UrlFilterStateOptions) => void;
     /** True when the only active filter is a single comment ID (used for deep linking) */
     isSingleIdFilter: boolean;
@@ -64,7 +63,12 @@ interface UseFilterStateReturn {
  * URL format: ?status=is:published&author=is:member-id&body=contains:search+term
  */
 export function useFilterState(): UseFilterStateReturn {
-    const {filters, nql, setFilters, clearFilters, isSingleIdFilter, hasFilters} = useUrlFilterState({
+    const {filters, nql, setFilters, clearFilters, isSingleIdFilter, hasFilters} = useUrlFilterState<CommentPredicate, {
+        isSingleIdFilter: boolean;
+        hasFilters: boolean;
+        hasSearch: boolean;
+        hasFilterOrSearch: boolean;
+    }>({
         parseFilters: searchParamsToFilters,
         serializeFilters: (newFilters) => filtersToSearchParams(newFilters),
         buildNql: buildNqlFilter,

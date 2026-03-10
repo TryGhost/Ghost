@@ -6,6 +6,7 @@ import {CommentAvatar} from './comment-avatar';
 import {CommentHeader} from './comment-header';
 import {CommentMenu} from './comment-menu';
 import {CommentMetrics, buildThreadLink} from './comment-metrics';
+import {CommentOperator, CommentQuickFilterField} from '@src/views/filters/comment-fields';
 import {Link, useSearchParams} from '@tryghost/admin-x-framework';
 import {forwardRef, useEffect, useRef, useState} from 'react';
 import {useInfiniteVirtualScroll} from '@components/virtual-table/use-infinite-virtual-scroll';
@@ -50,7 +51,7 @@ function CommentsList({
     hasNextPage?: boolean;
     isFetchingNextPage?: boolean;
     fetchNextPage: () => void;
-    onAddFilter: (field: string, value: string, operator?: string) => void;
+    onAddFilter: (field: CommentQuickFilterField, value: string, operator?: CommentOperator<CommentQuickFilterField>) => void;
     isLoading?: boolean;
 }) {
     const parentRef = useRef<HTMLDivElement>(null);

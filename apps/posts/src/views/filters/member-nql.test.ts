@@ -22,7 +22,7 @@ describe('serializeMemberPredicates', () => {
 
     it('parses legacy ember member filter nql directly in the domain layer', () => {
         expect(parseMemberNqlFilterParam('status:-free')).toEqual([
-            {id: 'status-legacy', field: 'status', operator: 'is-not', values: ['free']}
+            {id: 'status-legacy-1', field: 'status', operator: 'is-not', values: ['free']}
         ]);
     });
 
