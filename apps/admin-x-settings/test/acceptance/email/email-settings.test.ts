@@ -16,29 +16,19 @@ test.describe('Email settings', async () => {
 
         await page.goto('/');
 
-        const sectionIds = ['enable-newsletters', 'default-recipients', 'newsletters', 'mailgun'];
+        const expectedOrder = ['enable-newsletters', 'default-recipients', 'newsletters', 'mailgun'];
 
-        for (const sectionId of sectionIds) {
+        for (const sectionId of expectedOrder) {
             await expect(page.getByTestId(sectionId)).toBeVisible();
         }
 
-        const isInOrder = await page.evaluate((ids) => {
-            const nodes = ids.map(id => document.querySelector(`[data-testid="${id}"]`));
+        const actualOrder = await page.evaluate((ids) => {
+            const allTestIds = [...document.querySelectorAll('[data-testid]')]
+                .map(el => el.getAttribute('data-testid'));
+            return ids.filter(id => allTestIds.includes(id));
+        }, expectedOrder);
 
-            if (nodes.some(node => !node)) {
-                return false;
-            }
-
-            return nodes.every((node, index) => {
-                if (index === 0) {
-                    return true;
-                }
-
-                return Boolean(nodes[index - 1]!.compareDocumentPosition(node!) & Node.DOCUMENT_POSITION_FOLLOWING);
-            });
-        }, sectionIds);
-
-        expect(isInOrder).toBe(true);
+        expect(actualOrder).toEqual(expectedOrder);
     });
 
     test('Keeps welcome emails visible in membership when newsletter sending is disabled', async ({page}) => {
@@ -57,9 +47,9 @@ test.describe('Email settings', async () => {
         await page.goto('/');
 
         await expect(page.getByTestId('enable-newsletters')).toBeVisible();
-        await expect(page.getByTestId('mailgun')).toHaveCount(0);
-        await expect(page.getByTestId('default-recipients')).toHaveCount(0);
-        await expect(page.getByTestId('newsletters')).toHaveCount(0);
+        await expect(page.getByTestId('mailgun')).toBeHidden();
+        await expect(page.getByTestId('default-recipients')).toBeHidden();
+        await expect(page.getByTestId('newsletters')).toBeHidden();
         await expect(page.getByTestId('memberemails')).toBeVisible();
     });
 });

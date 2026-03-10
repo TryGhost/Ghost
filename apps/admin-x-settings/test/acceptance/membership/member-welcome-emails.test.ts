@@ -576,7 +576,7 @@ test.describe('Member emails settings', async () => {
             const section = page.getByTestId('memberemails');
             await expect(section).toBeVisible({timeout: 10000});
 
-            const cardTitle = section.getByTestId('free-welcome-email-preview').getByText('Free members welcome email');
+            const cardTitle = section.getByTestId('free-welcome-email-title');
             await expect(cardTitle).toHaveText('Free members welcome email');
         });
     });
