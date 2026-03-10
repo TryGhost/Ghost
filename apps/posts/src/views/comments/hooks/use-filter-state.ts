@@ -1,6 +1,6 @@
 import type {Filter} from '@tryghost/shade';
 import {COMMENT_FIELDS, isCommentField, isCommentOperatorForField} from '@src/views/filters/comment-fields';
-import {serializeCommentFilters} from '@src/views/filters/comment-nql';
+import {serializeCommentFilters} from '@src/views/filters/filter-nql';
 import {parsePredicateParams, serializePredicateParams} from '@src/views/filters/url-predicate-params';
 import {UrlFilterStateOptions, useUrlFilterState} from '@src/views/filters/use-url-filter-state';
 

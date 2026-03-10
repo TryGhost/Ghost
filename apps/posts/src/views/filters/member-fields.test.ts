@@ -1,4 +1,4 @@
-import {describe, expect, it} from 'vitest';
+import {describe, expect, expectTypeOf, it} from 'vitest';
 import {createMemberPredicate, isMemberField, isMemberOperatorForField} from '@src/views/filters/member-fields';
 
 describe('createMemberPredicate', () => {
@@ -13,6 +13,14 @@ describe('createMemberPredicate', () => {
         expect(predicate.field).toBe('label');
         expect(predicate.operator).toBe('is_none_of');
         expect(predicate.values).toEqual(['vip', 'internal']);
+    });
+
+    it('types multi-value and single-value fields differently', () => {
+        const labelPredicate = createMemberPredicate('label', 'is_any_of', ['vip', 'internal']);
+        const statusPredicate = createMemberPredicate('status', 'is', ['paid']);
+
+        expectTypeOf(labelPredicate.values).toEqualTypeOf<[string, ...string[]]>();
+        expectTypeOf(statusPredicate.values).toEqualTypeOf<[string]>();
     });
 
     it('rejects invalid field and operator combinations at runtime', () => {

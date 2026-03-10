@@ -67,21 +67,21 @@ Project: Member management and segmentation
 
 ## Technical Architecture
 
-- [ ] [BER-3414-R009] Implement one shared filter domain module used by both surfaces.
+- [x] [BER-3414-R009] Implement one shared filter domain module used by both surfaces.
   - Intent: Establish one source of truth for parsing, state updates, and query compilation.
   - Acceptance criteria:
     - Members and Comments import the same core state/reducer/parser/serializer/compiler modules.
     - Surface-specific behavior is configured via typed field definitions, not copied logic.
     - No parallel per-surface filter parsing or NQL serialization implementations remain for active filter usage.
 
-- [ ] [BER-3414-R010] Use typed field definitions and reducer-driven state.
+- [x] [BER-3414-R010] Use typed field definitions and reducer-driven state.
   - Intent: Guarantee valid field/operator/value combinations at compile time.
   - Acceptance criteria:
     - Operator values are typed per field and cannot be arbitrary strings.
     - Value shape is typed per field (single, multi, date, etc.).
     - Reducer actions are typed and validated by tests.
 
-- [ ] [BER-3414-R011] Centralize all NQL conversion in one module.
+- [x] [BER-3414-R011] Centralize all NQL conversion in one module.
   - Intent: Avoid duplicated conversion code and drift between surfaces.
   - Acceptance criteria:
     - No per-surface ad hoc NQL string building remains.
@@ -142,7 +142,7 @@ Project: Member management and segmentation
 
 ## Testing And Verification
 
-- [ ] [BER-3414-R019] Add domain-level tests for parser, serializer, canonicalization, and reducer transitions.
+- [x] [BER-3414-R019] Add domain-level tests for parser, serializer, canonicalization, and reducer transitions.
   - Intent: Lock correctness for core logic independent of UI.
   - Acceptance criteria:
     - Round-trip tests cover valid and invalid filter input.
@@ -156,7 +156,7 @@ Project: Member management and segmentation
     - Members tests cover legacy Ember `?filter=<nql>` URL parsing.
     - Comments tests confirm filter-only behavior remains correct through the shared abstraction.
 
-- [ ] [BER-3414-R021] Add integration tests for UI semantics and empty state behavior.
+- [x] [BER-3414-R021] Add integration tests for UI semantics and empty state behavior.
   - Intent: Guarantee user-visible behavior stays consistent with product rules.
   - Acceptance criteria:
     - Filter button behavior follows `hasFilters` only.

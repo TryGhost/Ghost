@@ -30,10 +30,12 @@ export const MEMBER_STATIC_FIELDS = Object.keys(MEMBER_STATIC_FIELD_OPERATORS) a
 
 type StaticMemberField = keyof typeof MEMBER_STATIC_FIELD_OPERATORS;
 type NewsletterMemberField = `newsletters.${string}`;
+type MemberMultiValueField = 'label' | 'offer_redemptions' | 'tier_id';
 
 export type MemberField = StaticMemberField | NewsletterMemberField;
 
 type NewsletterMemberOperator = typeof NEWSLETTER_FIELD_OPERATORS[number];
+type MemberPredicateValues<TField extends MemberField> = TField extends MemberMultiValueField ? [string, ...string[]] : [string];
 
 export type MemberOperator<TField extends MemberField> =
     TField extends NewsletterMemberField
@@ -46,7 +48,7 @@ export interface MemberPredicate<TField extends MemberField = MemberField> {
     id: string;
     field: TField;
     operator: MemberOperator<TField>;
-    values: string[];
+    values: MemberPredicateValues<TField>;
 }
 
 let predicateIdCounter = 0;
@@ -79,7 +81,7 @@ export function isMemberOperatorForField<TField extends MemberField>(
 export function createMemberPredicate<TField extends MemberField>(
     field: TField,
     operator: MemberOperator<TField>,
-    values: string[]
+    values: MemberPredicateValues<TField>
 ): MemberPredicate<TField> {
     if (!isMemberOperatorForField(field, operator)) {
         throw new Error(`Invalid operator "${operator}" for member field "${field}"`);

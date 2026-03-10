@@ -18,8 +18,10 @@ export interface CommentPredicate<TField extends CommentField = CommentField> {
     id: string;
     field: TField;
     operator: CommentOperator<TField>;
-    values: string[];
+    values: [string];
 }
+
+let predicateIdCounter = 0;
 
 export function isCommentField(field: string): field is CommentField {
     return field in COMMENT_FIELD_OPERATORS;
@@ -30,4 +32,23 @@ export function isCommentOperatorForField<TField extends CommentField>(
     operator: string
 ): operator is CommentOperator<TField> {
     return COMMENT_FIELD_OPERATORS[field].includes(operator as CommentOperator<TField>);
+}
+
+export function createCommentPredicate<TField extends CommentField>(
+    field: TField,
+    operator: CommentOperator<TField>,
+    values: [string]
+): CommentPredicate<TField> {
+    if (!isCommentOperatorForField(field, operator)) {
+        throw new Error(`Invalid operator "${operator}" for comment field "${field}"`);
+    }
+
+    predicateIdCounter += 1;
+
+    return {
+        id: `${field}-${predicateIdCounter}`,
+        field,
+        operator,
+        values
+    };
 }
