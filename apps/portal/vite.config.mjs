@@ -85,7 +85,22 @@ export default defineConfig((config) => {
             setupFiles: './test/setup-tests.js',
             testTimeout: 10000,
             coverage: {
-                reporter: ['cobertura', 'text-summary', 'html']
+                reporter: ['cobertura', 'text-summary', 'html'],
+                include: ['src/**/*.{js,jsx,ts,tsx}'],
+                exclude: [
+                    'src/**/*.d.ts',
+                    'src/**/*.stories.{js,jsx,ts,tsx}',
+                    'src/**/*.css',
+                    'src/**/*.svg',
+                    'src/images/**'
+                ],
+                // Phase 1 baseline lock: prevent regressions before strict 100% enforcement.
+                thresholds: {
+                    statements: 70.3,
+                    branches: 77,
+                    functions: 72.23,
+                    lines: 70.3
+                }
             }
         }
     };

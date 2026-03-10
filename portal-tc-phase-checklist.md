@@ -23,26 +23,26 @@
 
 ## Phase 1: Baseline and Scope Lock (PR A+B)
 
-- Status:
-- Owner:
-- Branch / PR:
-- Planned start:
+- Status: `In progress`
+- Owner: `Codex + @peterzimon`
+- Branch / PR: `DES-1304/portal-test-coverage`
+- Planned start: `2026-03-09`
 - Planned end:
 - Actual end:
 
 ### Implementation checklist
 
-- [ ] Add coverage `include` to `src/**/*.{js,jsx,ts,tsx}` in `apps/portal/vite.config.mjs`
-- [ ] Add coverage `exclude` for non-executable assets
-- [ ] Keep `text-summary`, `html`, and `cobertura` reporters enabled
-- [ ] Capture baseline coverage snapshot
-- [ ] Add non-regression thresholds (temporary baseline lock)
+- [x] Add coverage `include` to `src/**/*.{js,jsx,ts,tsx}` in `apps/portal/vite.config.mjs`
+- [x] Add coverage `exclude` for non-executable assets
+- [x] Keep `text-summary`, `html`, and `cobertura` reporters enabled
+- [x] Capture baseline coverage snapshot
+- [x] Add non-regression thresholds (temporary baseline lock)
 
 ### Testable exit criteria
 
-- [ ] `cd apps/portal && yarn test:ci` passes with scoped coverage config
-- [ ] Coverage report output is stable and includes file-level details
-- [ ] CI fails on coverage regression vs baseline
+- [x] `cd apps/portal && yarn test:ci` passes with scoped coverage config
+- [x] Coverage report output is stable and includes file-level details
+- [x] CI fails on coverage regression vs baseline
 
 ### Direction validation gate
 
@@ -50,7 +50,7 @@
 - [ ] Temporary threshold strategy approved
 - Approval date:
 - Approved by:
-- Notes:
+- Notes: Baseline snapshot recorded in `portal-tc-phase1-baseline.md`.
 
 ---
 
@@ -310,4 +310,3 @@
 - Rationale:
 - Approved by:
 - Approval date:
-
