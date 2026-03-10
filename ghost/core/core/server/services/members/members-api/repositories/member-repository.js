@@ -1725,7 +1725,7 @@ module.exports = class MemberRepository {
         }
 
         // Check subscription doesn't already have an active offer
-        if (await hasActiveOffer(subscriptionModel, this._offersAPI)) {
+        if (await hasActiveOffer(subscriptionModel, this._offersAPI, options)) {
             throw new errors.BadRequestError({
                 message: tpl(messages.subscriptionHasOffer)
             });
