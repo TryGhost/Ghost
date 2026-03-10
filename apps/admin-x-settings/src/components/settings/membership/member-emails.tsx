@@ -50,6 +50,7 @@ const EmailPreviewRow: React.FC<{
                 </button>
             </div>}
             hideActions={false}
+            testId={`${emailType}-welcome-email-row`}
         >
             <div className='w-full'>
                 <button
