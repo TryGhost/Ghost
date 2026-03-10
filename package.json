@@ -21,8 +21,7 @@
     "lib"
   ],
   "devDependencies": {
-    "@tryghost/logging": "^4.0.0",
-    "mocha": "11.7.5"
+    "@tryghost/logging": "^4.0.0"
   },
   "repository": {
     "type": "git",
