@@ -140,7 +140,7 @@ module.exports = {
                     size = await getUnsplashSize(payload.src);
                 } else if (isRelativeImagePath || storageUtils.isLocalImage(payload.src)) {
                     size = await imageSize.getOriginalImageSizeFromStorageUrl(payload.src);
-                } else {
+                } else if (storageUtils.isInternalImage(payload.src)) {
                     size = await imageSize.getImageSizeFromUrl(payload.src);
                 }
 

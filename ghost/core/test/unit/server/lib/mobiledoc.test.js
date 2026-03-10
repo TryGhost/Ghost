@@ -8,7 +8,6 @@ const mobiledocLib = require('../../../../core/server/lib/mobiledoc');
 const storage = require('../../../../core/server/adapters/storage');
 const urlUtils = require('../../../../core/shared/url-utils');
 const mockUtils = require('../../../utils/mocks');
-const logging = require('@tryghost/logging');
 
 describe('lib/mobiledoc', function () {
     afterEach(async function () {
@@ -290,7 +289,6 @@ describe('lib/mobiledoc', function () {
 
     describe('populateImageSizes', function () {
         let originalStoragePath;
-        let loggingStub;
 
         beforeEach(function () {
             originalStoragePath = storage.getStorage().storagePath;
@@ -311,12 +309,6 @@ describe('lib/mobiledoc', function () {
                 ]
             };
 
-            loggingStub = sinon.stub(logging, 'error');
-
-            nock('http://example.com/')
-                .get('/external.jpg')
-                .query(true)
-                .reply(404, 'Image not found');
             const unsplashMock = nock('https://images.unsplash.com/')
                 .get('/favicon_too_large')
                 .query(true)
@@ -328,12 +320,16 @@ describe('lib/mobiledoc', function () {
             const transformed = JSON.parse(transformedMobiledoc);
 
             assert.equal(unsplashMock.isDone(), true);
-            sinon.assert.calledOnce(loggingStub);
 
             assert.equal(transformed.cards.length, 4);
+            // external image should not be fetched (no sizing attempted)
+            assert.equal(transformed.cards[1][1].width, undefined);
         });
 
-        it('fetches non-local image sizes from URL', async function () {
+        it('fetches non-local image sizes from URL when urls:image is configured', async function () {
+            configUtils.set('urls:image', 'https://storage.ghost.is/c/6f/a3/test/content/images');
+            mobiledocLib.reload();
+
             let mobiledoc = {
                 cards: [
                     ['image', {src: 'https://storage.ghost.is/c/6f/a3/test/content/images/2026/02/ghost-logo.png'}]
@@ -354,6 +350,20 @@ describe('lib/mobiledoc', function () {
             assert.equal(transformed.cards.length, 1);
             assert.equal(transformed.cards[0][1].width, 800);
             assert.equal(transformed.cards[0][1].height, 257);
+        });
+
+        it('skips sizing for arbitrary external URLs', async function () {
+            let mobiledoc = {
+                cards: [
+                    ['image', {src: 'http://169.254.169.254/latest/meta-data/'}]
+                ]
+            };
+
+            const transformedMobiledoc = await mobiledocLib.populateImageSizes(JSON.stringify(mobiledoc));
+            const transformed = JSON.parse(transformedMobiledoc);
+
+            assert.equal(transformed.cards[0][1].width, undefined);
+            assert.equal(transformed.cards[0][1].height, undefined);
         });
 
         // images can be stored with and without subdir when a subdir is configured
