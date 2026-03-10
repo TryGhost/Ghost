@@ -220,14 +220,27 @@ The `ghostInstance` fixture provides:
 - `baseUrl`: The URL of the Ghost instance
 - `database`: Database name for this test
 - `port`: Port number the instance is running on
+- `resolvedIsolation`: `'per-file' | 'per-test'`
+- `resetEnvironment()`: force a full environment recycle in per-file mode
 
 ```typescript
-test('example with fixtures', async ({page, ghostInstance}) => {
+test('example with fixtures', async ({page, ghostInstance, resolvedIsolation, resetEnvironment}) => {
     // page is already authenticated
     // ghostInstance provides instance details if needed
+    // resolvedIsolation shows active mode for this test
     console.log('Testing on:', ghostInstance.baseUrl);
+
+    if (resolvedIsolation === 'per-file') {
+        await resetEnvironment();
+    }
 });
 ```
+
+Isolation rules:
+- Default is per-file isolation.
+- Root-level `test.describe.configure({mode: 'parallel'})` switches the file to per-test isolation.
+- Nested mode toggles are not supported.
+- `test.describe.parallel(...)` and `test.describe.serial(...)` are not supported for e2e tests.
 
 ## Data Factories
 

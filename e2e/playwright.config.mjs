@@ -24,7 +24,7 @@ const config = {
     retries: 0, // Retries open the door to flaky tests. If the test needs retries, it's not a good test or the app is broken.
     maxFailures: process.argv.includes('--ui') ? 0 : 1,
     workers: parseInt(process.env.TEST_WORKERS_COUNT, 10) || getWorkerCount(),
-    fullyParallel: true,
+    fullyParallel: false,
     reporter: process.env.CI ? [['list', {printSteps: true}], ['blob']] : [['list', {printSteps: true}], ['html']],
     use: {
         // Base URL will be set dynamically per test via fixture

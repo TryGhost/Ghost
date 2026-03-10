@@ -284,6 +284,7 @@ export class GhostManager {
             Image: image,
             Env: await this.buildEnv(database, extraConfig),
             ExposedPorts: {[`${TEST_ENVIRONMENT.ghost.port}/tcp`]: {}},
+            Cmd: mode === 'dev' ? ['node', '--import=tsx', 'index.js'] : undefined,
             Healthcheck: {
                 // Same health check as compose.dev.yaml - Ghost is ready when it responds
                 Test: ['CMD', 'node', '-e', `fetch('http://localhost:${TEST_ENVIRONMENT.ghost.port}',{redirect:'manual'}).then(r=>process.exit(r.status<500?0:1)).catch(()=>process.exit(1))`],

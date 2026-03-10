@@ -3,6 +3,8 @@ import {expect, test} from '@/helpers/playwright';
 import {MemberFactory, createMemberFactory} from '@/data-factory';
 import {MembersPage} from '@/helpers/pages';
 
+test.describe.configure({mode: 'parallel'});
+
 test.describe('Ghost Admin - Member Export', () => {
     let memberFactory: MemberFactory;
 

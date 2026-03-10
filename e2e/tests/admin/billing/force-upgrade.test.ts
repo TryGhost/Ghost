@@ -30,6 +30,8 @@ const FORCE_UPGRADE_BMA_HTML = `
 </html>
 `;
 
+test.describe.configure({mode: 'parallel'});
+
 test.describe('Ghost Admin - Force Upgrade Mode', () => {
     test.use({
         config: {
