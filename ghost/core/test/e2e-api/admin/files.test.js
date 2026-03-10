@@ -59,6 +59,24 @@ describe('Files API', function () {
         assert.equal(fileArg.type, 'application/pdf', 'save() should receive the correct content type for PDF files');
     });
 
+    it('Derives content type from file extension, ignoring client-provided MIME type', async function () {
+        const store = storage.getStorage('files');
+        const saveSpy = sinon.spy(store, 'save');
+
+        const res = await request.post(localUtils.API.getApiQuery('files/upload'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .attach('file', path.join(__dirname, '/../../utils/fixtures/files/test.pdf'), {contentType: 'text/html'})
+            .expect(201);
+
+        assert.match(new URL(res.body.files[0].url).pathname, /\/content\/files\/\d+\/\d+\/test(-\d+)?\.pdf/);
+        files.push(new URL(res.body.files[0].url).pathname);
+
+        assert.ok(saveSpy.calledOnce, 'save() should have been called once');
+        const fileArg = saveSpy.firstCall.args[0];
+        assert.equal(fileArg.type, 'application/pdf', 'save() should use extension-derived type, not client-provided text/html');
+    });
+
     it('Passes the content type to the storage adapter when uploading a JSON file', async function () {
         const store = storage.getStorage('files');
         const saveSpy = sinon.spy(store, 'save');
