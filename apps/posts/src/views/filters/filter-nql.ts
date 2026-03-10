@@ -100,11 +100,13 @@ function parseLegacySubscribedFilter(filterNode: Record<string, unknown>, idSuff
 
     if (!comparator || comparator.length !== 2) {
         if ('email_disabled' in filterNode) {
+            const emailDisabled = filterNode.email_disabled;
+
             return {
                 id: `subscribed-legacy-${idSuffix}`,
                 field: 'subscribed',
-                operator: 'is',
-                values: [filterNode.email_disabled ? 'email-disabled' : 'unsubscribed']
+                operator: emailDisabled ? 'is' : 'is-not',
+                values: ['email-disabled']
             };
         }
 
@@ -149,14 +151,19 @@ function parseLegacyNewsletterFilter(filterNode: Record<string, unknown>, idSuff
 
     const usedOr = '$or' in filterNode;
     const rawSlug = newsletterNode['newsletters.slug'];
+    const slug = typeof rawSlug === 'string'
+        ? rawSlug
+        : (rawSlug && typeof rawSlug === 'object' && '$ne' in rawSlug && typeof rawSlug.$ne === 'string'
+            ? rawSlug.$ne
+            : undefined);
 
-    if (typeof rawSlug !== 'string') {
+    if (!slug) {
         return undefined;
     }
 
     return {
-        id: `newsletters.${rawSlug}-legacy-${idSuffix}`,
-        field: `newsletters.${rawSlug}`,
+        id: `newsletters.${slug}-legacy-${idSuffix}`,
+        field: `newsletters.${slug}`,
         operator: usedOr ? 'is-not' : 'is',
         values: [usedOr ? 'unsubscribed' : 'subscribed']
     };

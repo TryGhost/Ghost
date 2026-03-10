@@ -22,7 +22,7 @@ const BULK_DELETE_RESTRICTED_FILTERS = [
 ];
 
 const Members: React.FC = () => {
-    const {filters, nql, search, setFilters, hasFilters, hasFilterOrSearch, clearFilters, activeColumns} = useMembersFilterState();
+    const {filters, nql, search, setFilters, hasFilters, hasFilterOrSearch, resetFiltersAndSearch, activeColumns} = useMembersFilterState();
     const {data: configData} = useBrowseConfig();
 
     // Check if email analytics is enabled
@@ -129,7 +129,7 @@ const Members: React.FC = () => {
                                 <Button
                                     className="mt-4"
                                     variant="outline"
-                                    onClick={() => clearFilters({replace: false})}
+                                    onClick={() => resetFiltersAndSearch({replace: false})}
                                 >
                                     Show all members
                                 </Button>

@@ -10,6 +10,40 @@ vi.mock('@tryghost/admin-x-framework', () => ({
 }));
 
 describe('useUrlFilterState', () => {
+    it('resets predicates and search through shared reducer semantics', () => {
+        mockUseSearchParams.mockReturnValue([
+            new URLSearchParams({
+                status: 'is:paid',
+                search: 'alex'
+            }),
+            mockSetSearchParams
+        ]);
+
+        const {result} = renderHook(() => useUrlFilterState({
+            parseFilters: () => [{id: 'status-1', field: 'status', operator: 'is', values: ['paid']}],
+            serializeFilters: (filters, search) => {
+                const params = new URLSearchParams();
+
+                for (const filter of filters) {
+                    params.append(filter.field, `${filter.operator}:${filter.values[0]}`);
+                }
+
+                if (search) {
+                    params.set('search', search);
+                }
+
+                return params;
+            },
+            buildNql: () => undefined
+        }));
+
+        act(() => {
+            result.current.resetState({replace: false});
+        });
+
+        expect(mockSetSearchParams).toHaveBeenCalledWith(new URLSearchParams(), {replace: false});
+    });
+
     it('clears predicates through shared reducer semantics while preserving search', () => {
         mockUseSearchParams.mockReturnValue([
             new URLSearchParams({

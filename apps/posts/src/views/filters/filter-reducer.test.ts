@@ -75,6 +75,22 @@ describe('filterReducer', () => {
         });
     });
 
+    it('resets predicates and search together', () => {
+        const state = {
+            predicates: [
+                {id: 'status-1', field: 'status', operator: 'is', values: ['paid']}
+            ],
+            search: 'alex'
+        };
+
+        const nextState = filterReducer(state, {type: 'resetState'});
+
+        expect(nextState).toEqual({
+            predicates: [],
+            search: ''
+        });
+    });
+
     it('allows multiple predicates with the same field', () => {
         const firstPredicate = {
             id: 'status-1',

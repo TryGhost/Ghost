@@ -90,6 +90,30 @@ describe('use-members-filter-state URL helpers', () => {
         ]);
     });
 
+    it('parses legacy ember unsubscribed specific newsletter filters', () => {
+        const params = new URLSearchParams({
+            filter: '(newsletters.slug:-test-newsletter,email_disabled:1)'
+        });
+
+        const parsed = searchParamsToFilters(params);
+
+        expect(parsed.map(({field, operator, values}) => ({field, operator, values}))).toEqual([
+            {field: 'newsletters.test-newsletter', operator: 'is-not', values: ['unsubscribed']}
+        ]);
+    });
+
+    it('parses legacy ember email_disabled:0 filters as is-not email-disabled', () => {
+        const params = new URLSearchParams({
+            filter: '(email_disabled:0)'
+        });
+
+        const parsed = searchParamsToFilters(params);
+
+        expect(parsed.map(({field, operator, values}) => ({field, operator, values}))).toEqual([
+            {field: 'subscribed', operator: 'is-not', values: ['email-disabled']}
+        ]);
+    });
+
     it('parses legacy ember filter query params for compound filters', () => {
         const params = new URLSearchParams({
             filter: 'status:paid+label:[vip]'

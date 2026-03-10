@@ -23,6 +23,7 @@ interface BaseUrlFilterState<TPredicate extends Filter> {
     setFilters: (action: SetFiltersAction<TPredicate>, options?: UrlFilterStateOptions) => void;
     setSearch: (search: string, options?: UrlFilterStateOptions) => void;
     clearFilters: (options?: UrlFilterStateOptions) => void;
+    resetState: (options?: UrlFilterStateOptions) => void;
 }
 
 export function useUrlFilterState<TPredicate extends Filter = Filter, TDerived extends object = Record<string, never>>({
@@ -78,6 +79,15 @@ export function useUrlFilterState<TPredicate extends Filter = Filter, TDerived e
         setSearchParams(newParams, {replace});
     }, [serializeFilters, setSearchParams, state]);
 
+    const resetState = useCallback(({replace = true}: UrlFilterStateOptions = {}) => {
+        const nextState = filterReducer(state, {
+            type: 'resetState'
+        });
+        const newParams = serializeFilters(nextState.predicates, nextState.search || undefined);
+
+        setSearchParams(newParams, {replace});
+    }, [serializeFilters, setSearchParams, state]);
+
     const nql = useMemo(() => buildNql(filters), [buildNql, filters]);
 
     const derivedState = useMemo(() => {
@@ -91,6 +101,7 @@ export function useUrlFilterState<TPredicate extends Filter = Filter, TDerived e
         setFilters,
         setSearch,
         clearFilters,
+        resetState,
         ...derivedState
     };
 }

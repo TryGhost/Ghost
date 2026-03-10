@@ -36,6 +36,9 @@ export type FilterAction<TPredicate extends FilterPredicate = FilterPredicate> =
         type: 'clearPredicates';
     }
     | {
+        type: 'resetState';
+    }
+    | {
         type: 'setSearch';
         search: string;
     };
@@ -70,6 +73,8 @@ function applyPredicateActions<TPredicate extends FilterPredicate>(
         case 'removePredicate':
             return predicates.filter(predicate => predicate.id !== action.predicateId);
         case 'clearPredicates':
+            return [];
+        case 'resetState':
             return [];
         case 'setSearch':
             return predicates;
@@ -158,6 +163,11 @@ export function filterReducer<TPredicate extends FilterPredicate>(
         return {
             ...state,
             predicates: []
+        };
+    case 'resetState':
+        return {
+            predicates: [],
+            search: ''
         };
     case 'setSearch':
         return {

@@ -76,6 +76,7 @@ interface UseFilterStateReturn {
     setFilters: (action: Filter[] | ((prevFilters: Filter[]) => Filter[]), options?: UrlFilterStateOptions) => void;
     setSearch: (search: string, options?: UrlFilterStateOptions) => void;
     clearFilters: (options?: UrlFilterStateOptions) => void;
+    resetFiltersAndSearch: (options?: UrlFilterStateOptions) => void;
     hasFilters: boolean;
     hasSearch: boolean;
     hasFilterOrSearch: boolean;
@@ -102,6 +103,7 @@ export function useMembersFilterState(): UseFilterStateReturn {
         setFilters,
         setSearch,
         clearFilters,
+        resetState,
         hasFilters,
         hasSearch,
         hasFilterOrSearch,
@@ -131,5 +133,18 @@ export function useMembersFilterState(): UseFilterStateReturn {
         }
     });
 
-    return {filters, nql, search, setFilters, setSearch, clearFilters, hasFilters, hasSearch, hasFilterOrSearch, activeFields, activeColumns};
+    return {
+        filters,
+        nql,
+        search,
+        setFilters,
+        setSearch,
+        clearFilters,
+        resetFiltersAndSearch: resetState,
+        hasFilters,
+        hasSearch,
+        hasFilterOrSearch,
+        activeFields,
+        activeColumns
+    };
 }

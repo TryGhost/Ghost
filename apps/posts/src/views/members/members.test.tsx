@@ -44,7 +44,7 @@ vi.mock('./components/members-list', () => ({
 
 describe('Members', () => {
     it('shows the filtered empty state and clear action when search is active without picker filters', () => {
-        const clearFilters = vi.fn();
+        const resetFiltersAndSearch = vi.fn();
 
         mockUseMembersFilterState.mockReturnValue({
             filters: [],
@@ -53,7 +53,8 @@ describe('Members', () => {
             setFilters: vi.fn(),
             hasFilters: false,
             hasFilterOrSearch: true,
-            clearFilters,
+            clearFilters: vi.fn(),
+            resetFiltersAndSearch,
             activeColumns: []
         });
 
@@ -86,7 +87,7 @@ describe('Members', () => {
 
         expect(screen.getByText('No members match the current filter')).toBeInTheDocument();
         fireEvent.click(screen.getByRole('button', {name: 'Show all members'}));
-        expect(clearFilters).toHaveBeenCalledWith({replace: false});
+        expect(resetFiltersAndSearch).toHaveBeenCalledWith({replace: false});
         expect(screen.getByText('Members filters')).toBeInTheDocument();
     });
 
@@ -99,6 +100,7 @@ describe('Members', () => {
             hasFilters: false,
             hasFilterOrSearch: false,
             clearFilters: vi.fn(),
+            resetFiltersAndSearch: vi.fn(),
             activeColumns: []
         });
 
