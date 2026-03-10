@@ -432,7 +432,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                 reposted
                             </div>
                         </div>}
-                        <div className={`border-1 flex flex-col gap-2.5`} data-test-activity>
+                        <div className={`flex flex-col gap-2.5`} data-test-activity>
                             <div className='flex items-center justify-between'>
                                 <ProfilePreviewHoverCard actor={author} isCurrentUser={isAuthorCurrentUser}>
                                     <div className='flex min-w-0 grow items-center gap-3'>
@@ -605,7 +605,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
             <>
                 {object && (
                     <div className={`group/article relative ${isCompact ? 'pb-6' : isChainContinuation ? 'pb-5' : 'py-5'} ${!isPending ? 'cursor-pointer' : 'pointer-events-none'}`} data-layout='reply' data-object-id={object.id} onClick={onClick}>
-                        <div className={`border-1 flex flex-col gap-2.5 border-b-gray-200`} data-test-activity>
+                        <div className={`flex flex-col gap-2.5 border-b-gray-200`} data-test-activity>
                             <div className='flex items-center justify-between'>
                                 <ProfilePreviewHoverCard actor={author} isCurrentUser={isAuthorCurrentUser}>
                                     <div className='flex min-w-0 grow items-center gap-3'>
