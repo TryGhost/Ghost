@@ -24,7 +24,7 @@ PRESERVE_ENV=true yarn test                     # Debug failed tests (keeps cont
 
 ## Dev Environment Mode (Recommended)
 
-When `GHOST_E2E_MODE` is unset, e2e tests auto-select `dev` only if the local admin dev server is reachable. Otherwise they fall back to `build`.
+When `GHOST_E2E_MODE` is unset, the e2e shell entrypoints auto-select `dev` only if the local admin dev server is reachable. Otherwise they fall back to `build`.
 
 When `yarn dev` is running, e2e tests use dev mode:
 

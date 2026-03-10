@@ -21,7 +21,7 @@ yarn test
 
 ### Dev Environment Mode (Recommended for Development)
 
-If `GHOST_E2E_MODE` is unset, the host runner auto-selects:
+If `GHOST_E2E_MODE` is unset, the e2e shell entrypoints auto-select:
 - `dev` when the local admin dev server is reachable on `http://127.0.0.1:5174`
 - `build` otherwise
 

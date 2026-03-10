@@ -3,25 +3,11 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-LOCAL_ADMIN_DEV_SERVER_URL="${LOCAL_ADMIN_DEV_SERVER_URL:-http://127.0.0.1:5174}"
-
-detect_mode() {
-  if [[ -n "${GHOST_E2E_MODE:-}" ]]; then
-    printf '%s' "$GHOST_E2E_MODE"
-    return
-  fi
-
-  if curl --silent --fail --max-time 1 "$LOCAL_ADMIN_DEV_SERVER_URL" >/dev/null 2>&1; then
-    printf 'dev'
-    return
-  fi
-
-  printf 'build'
-}
+source "$SCRIPT_DIR/resolve-e2e-mode.sh"
 
 cd "$REPO_ROOT"
 
-GHOST_E2E_MODE="$(detect_mode)"
+GHOST_E2E_MODE="$(resolve_e2e_mode)"
 export GHOST_E2E_MODE
 
 if [[ "$GHOST_E2E_MODE" == "dev" ]]; then
