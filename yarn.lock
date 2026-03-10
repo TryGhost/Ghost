@@ -26399,10 +26399,10 @@ mysql2@3.14.1:
     seq-queue "^0.0.5"
     sqlstring "^2.3.2"
 
-mysql2@3.18.0:
-  version "3.18.0"
-  resolved "https://registry.yarnpkg.com/mysql2/-/mysql2-3.18.0.tgz#d2299b4256db973a4d87a876b598bde3936012b9"
-  integrity sha512-3rupyOFks7Vq0jcjBpmg1gtgfGuCcmgrRJPEfpGzzrB/ydutupbjKkoDJGsGkrJRU6j44o2tb0McduL03/v/dQ==
+mysql2@3.18.1:
+  version "3.18.1"
+  resolved "https://registry.yarnpkg.com/mysql2/-/mysql2-3.18.1.tgz#4f2f0050848c798b0191d18067b48ccce083611e"
+  integrity sha512-Mz3yJ+YqppZUFr6Q9tP0g9v3RTWGfLQ/J4RlnQ6CNrWz436+FDtFDICecsbWYwjupgfPpj8ZtNVMsCX79VKpLg==
   dependencies:
     aws-ssl-profiles "^1.1.2"
     denque "^2.1.0"

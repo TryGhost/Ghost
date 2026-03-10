@@ -88,6 +88,123 @@ describe('startSigninOTCFromCustomForm action', () => {
     });
 });
 
+describe('continueSubscription action', () => {
+    test('returns reloadOnPopupClose on success', async () => {
+        const mockApi = {
+            member: {
+                updateSubscription: vi.fn(() => Promise.resolve()),
+                sessionData: vi.fn(() => Promise.resolve({name: 'Test', email: 'test@example.com'}))
+            }
+        };
+
+        const result = await ActionHandler({
+            action: 'continueSubscription',
+            data: {subscriptionId: 'sub_123'},
+            state: {},
+            api: mockApi
+        });
+
+        expect(result.reloadOnPopupClose).toBe(true);
+        expect(result.action).toBe('continueSubscription:success');
+    });
+
+    test('does not return reloadOnPopupClose on failure', async () => {
+        const mockApi = {
+            member: {
+                updateSubscription: vi.fn(() => Promise.reject(new Error('API error')))
+            }
+        };
+
+        const result = await ActionHandler({
+            action: 'continueSubscription',
+            data: {subscriptionId: 'sub_123'},
+            state: {},
+            api: mockApi
+        });
+
+        expect(result.reloadOnPopupClose).toBeUndefined();
+        expect(result.action).toBe('continueSubscription:failed');
+    });
+});
+
+describe('cancelSubscription action', () => {
+    test('returns reloadOnPopupClose on success', async () => {
+        const mockApi = {
+            member: {
+                updateSubscription: vi.fn(() => Promise.resolve()),
+                sessionData: vi.fn(() => Promise.resolve({name: 'Test', email: 'test@example.com'}))
+            }
+        };
+
+        const result = await ActionHandler({
+            action: 'cancelSubscription',
+            data: {subscriptionId: 'sub_123', cancellationReason: 'Too expensive'},
+            state: {},
+            api: mockApi
+        });
+
+        expect(result.reloadOnPopupClose).toBe(true);
+        expect(result.action).toBe('cancelSubscription:success');
+    });
+
+    test('does not return reloadOnPopupClose on failure', async () => {
+        const mockApi = {
+            member: {
+                updateSubscription: vi.fn(() => Promise.reject(new Error('API error')))
+            }
+        };
+
+        const result = await ActionHandler({
+            action: 'cancelSubscription',
+            data: {subscriptionId: 'sub_123'},
+            state: {},
+            api: mockApi
+        });
+
+        expect(result.reloadOnPopupClose).toBeUndefined();
+        expect(result.action).toBe('cancelSubscription:failed');
+    });
+});
+
+describe('applyOffer action', () => {
+    test('returns reloadOnPopupClose on success', async () => {
+        const mockApi = {
+            member: {
+                applyOffer: vi.fn(() => Promise.resolve()),
+                sessionData: vi.fn(() => Promise.resolve({name: 'Test', email: 'test@example.com'}))
+            }
+        };
+
+        const result = await ActionHandler({
+            action: 'applyOffer',
+            data: {offerId: 'offer_123', subscriptionId: 'sub_123'},
+            state: {},
+            api: mockApi
+        });
+
+        expect(result.reloadOnPopupClose).toBe(true);
+        expect(result.action).toBe('applyOffer:success');
+    });
+
+    test('does not return reloadOnPopupClose on failure', async () => {
+        const mockApi = {
+            member: {
+                applyOffer: vi.fn(() => Promise.reject(new Error('API error')))
+            }
+        };
+
+        const result = await ActionHandler({
+            action: 'applyOffer',
+            data: {offerId: 'offer_123', subscriptionId: 'sub_123'},
+            state: {},
+            api: mockApi
+        });
+
+        expect(result.reloadOnPopupClose).toBeUndefined();
+        expect(result.action).toBe('applyOffer:failed');
+    });
+});
+
 describe('verifyOTC action', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let originalLocation: any;

@@ -1620,7 +1620,7 @@ describe('RouterController', function () {
         });
 
         it('returns offers when subscription has an expired discount', async function () {
-            const mockOffer = {id: 'retention_offer', name: 'Stay with us'};
+            const mockOffer = {id: 'retention_offer'};
             mockOffersAPI.listOffersAvailableToSubscription.resolves([mockOffer]);
 
             const pastDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
@@ -1641,7 +1641,7 @@ describe('RouterController', function () {
         });
 
         it('returns offers when subscription has expired once offer (legacy data, no discount_start)', async function () {
-            const mockOffer = {id: 'retention_offer', name: 'Stay with us'};
+            const mockOffer = {id: 'retention_offer'};
             mockOffersAPI.listOffersAvailableToSubscription.resolves([mockOffer]);
             mockOffersAPI.getOffer.resolves({duration: 'once'});
 
@@ -1693,7 +1693,7 @@ describe('RouterController', function () {
         });
 
         it('returns offers when subscription trial has ended', async function () {
-            const mockOffer = {id: 'offer_123', name: 'Test Offer'};
+            const mockOffer = {id: 'offer_123'};
             mockOffersAPI.listOffersAvailableToSubscription.resolves([mockOffer]);
 
             const pastDate = new Date();
@@ -1712,7 +1712,7 @@ describe('RouterController', function () {
         });
 
         it('returns offers when subscription has no trial period', async function () {
-            const mockOffer = {id: 'offer_123', name: 'Test Offer'};
+            const mockOffer = {id: 'offer_123'};
             mockOffersAPI.listOffersAvailableToSubscription.resolves([mockOffer]);
 
             const routerController = createRouterController({
