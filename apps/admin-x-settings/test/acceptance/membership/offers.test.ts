@@ -62,9 +62,9 @@ test.describe('Offers', () => {
         const modal = page.getByTestId('offers-modal');
         await modal.getByRole('button', {name: 'New offer'}).click();
         const addModal = page.getByTestId('add-offer-modal');
-        expect(addModal).toBeVisible();
+        await expect(addModal).toBeVisible();
         const sidebar = addModal.getByTestId('add-offer-sidebar');
-        expect(sidebar).toBeVisible();
+        await expect(sidebar).toBeVisible();
         await sidebar.getByPlaceholder(/^Black Friday$/).fill('Coffee Tuesdays');
         await sidebar.getByLabel('Amount off').fill('5');
 
@@ -135,9 +135,9 @@ test.describe('Offers', () => {
         const modal = page.getByTestId('offers-modal');
         await modal.getByRole('button', {name: 'New offer'}).click();
         const addModal = page.getByTestId('add-offer-modal');
-        expect(addModal).toBeVisible();
+        await expect(addModal).toBeVisible();
         const sidebar = addModal.getByTestId('add-offer-sidebar');
-        expect(sidebar).toBeVisible();
+        await expect(sidebar).toBeVisible();
         await sidebar.getByPlaceholder(/^Black Friday$/).fill('Coffee Tuesdays');
         await sidebar.getByLabel('Amount off').fill('10');
         await addModal.getByRole('button', {name: 'Publish'}).click();
