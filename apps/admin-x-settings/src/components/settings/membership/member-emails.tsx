@@ -244,11 +244,11 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
     return (
         <TopLevelGroup
             customButtons={customizeButton}
-            description="Manage automated emails that are sent to your members"
+            description="Create and manage automated emails for your members"
             keywords={keywords}
             navid='memberemails'
             testId='memberemails'
-            title='Automated emails'
+            title='Welcome emails'
         >
             <MemberEmailsTable
                 config={config}
