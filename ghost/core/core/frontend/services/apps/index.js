@@ -10,18 +10,19 @@ const messages = {
     appWillNotBeLoadedHelp: 'Check with the app creator, or read the app documentation for more details on app requirements'
 };
 
-module.exports = {
-    init: function () {
-        debug('init begin');
-        const appsToLoad = config.get('apps:internal');
-        const appPromises = appsToLoad.map(appName => loader.activateAppByName(appName));
-        return Promise.all(appPromises)
-            .catch(function (err) {
-                logging.error(new errors.InternalServerError({
-                    err: err,
-                    context: tpl(messages.appWillNotBeLoadedError),
-                    help: tpl(messages.appWillNotBeLoadedHelp)
-                }));
-            });
+async function init() {
+    debug('init begin');
+    const appsToLoad = config.get('apps:internal');
+
+    try {
+        await Promise.all(appsToLoad.map(appName => loader.activateAppByName(appName)));
+    } catch (err) {
+        logging.error(new errors.InternalServerError({
+            err: err,
+            context: tpl(messages.appWillNotBeLoadedError),
+            help: tpl(messages.appWillNotBeLoadedHelp)
+        }));
     }
-};
+}
+
+exports.init = init;
