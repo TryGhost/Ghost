@@ -22,7 +22,7 @@ const EmailSettings: React.FC = () => {
     const [newslettersEnabled] = getSettingValues(settings, ['editor_default_email_recipients']) as [string];
 
     return (
-        <SearchableSection keywords={Object.values(searchKeywords).flat()} title='Email newsletter'>
+        <SearchableSection keywords={Object.values(searchKeywords).flat()} title='Email'>
             <EnableNewsletters keywords={searchKeywords.enableNewsletters} />
             {newslettersEnabled !== 'disabled' && (
                 <>
