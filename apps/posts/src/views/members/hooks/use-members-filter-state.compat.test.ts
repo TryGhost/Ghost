@@ -107,6 +107,19 @@ describe('members nql compatibility', () => {
         expect(buildMemberNqlFilter(filters)).toBe('label:-[vip,internal]');
     });
 
+    it('serializes label is_not_any_of with ember-compatible exclusion syntax', () => {
+        const filters: Filter[] = [
+            {
+                id: 'label-2',
+                field: 'label',
+                operator: 'is_not_any_of',
+                values: ['vip', 'internal']
+            }
+        ];
+
+        expect(buildMemberNqlFilter(filters)).toBe('label:-[vip,internal]');
+    });
+
     it('serializes subscriptions.start_date is-greater with ember day-end boundary', () => {
         const filters: Filter[] = [
             {

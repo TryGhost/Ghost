@@ -62,7 +62,7 @@ describe('use-members-filter-state URL helpers', () => {
         const parsed = searchParamsToFilters(params);
 
         expect(parsed.map(({field, operator, values}) => ({field, operator, values}))).toEqual([
-            {field: 'label', operator: 'is-not', values: ['vip', 'internal']}
+            {field: 'label', operator: 'is_not_any_of', values: ['vip', 'internal']}
         ]);
     });
 

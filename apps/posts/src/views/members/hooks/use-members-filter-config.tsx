@@ -170,9 +170,12 @@ export function useMembersFilterConfig({
                     value: l.slug,
                     label: l.name
                 })),
+                operators: [
+                    {value: 'is_any_of', label: 'is any of'},
+                    {value: 'is_not_any_of', label: 'is none of'}
+                ],
                 customRenderer: props => React.createElement(LabelFilterRenderer, props as CustomRendererProps<string>),
                 defaultOperator: 'is_any_of',
-                hideOperatorSelect: true,
                 searchable: true,
                 className: 'w-64'
             });
