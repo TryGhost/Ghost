@@ -9,8 +9,9 @@ Project: Member management and segmentation
 - [ ] [BER-3414-R001] Confirm in-scope surfaces are only Members list filters and Comments moderation filters.
   - Intent: Replace scattered filter logic with one shared implementation for the two active admin surfaces.
   - Acceptance criteria:
-    - Members list and Comments moderation both consume the new abstraction.
-    - No remaining active filter logic forks for these two surfaces.
+    - All Members list filter usage consumes the new abstraction.
+    - All Comments moderation filter usage consumes the new abstraction.
+    - No remaining active filter logic forks remain within either surface.
 
 - [ ] [BER-3414-R002] Confirm out-of-scope work is excluded from this delivery.
   - Intent: Keep delivery focused and reduce churn.
@@ -31,13 +32,15 @@ Project: Member management and segmentation
   - Intent: Preserve compatibility with existing backend parsing and saved/linked URLs.
   - Acceptance criteria:
     - Generated `filter` strings use existing Ember/NQL syntax.
+    - Existing Ember-style `?filter=<nql>` links are parsed directly by the new implementation.
     - Existing Ember-compatible filter URLs continue to work without translation on the backend.
 
 - [ ] [BER-3414-R005] Make `filter` serialization canonical, sorted, and stable.
   - Intent: Enable safe string equality checks for active state, caching, and query keys.
   - Acceptance criteria:
     - Equivalent predicate sets always produce identical serialized `filter` output.
-    - Predicate ordering and value ordering rules are deterministic.
+    - Predicate ordering and value ordering rules are deterministic and sorted by canonical rules.
+    - Original insertion order is not treated as semantically meaningful and is not relied on by the implementation.
     - Canonicalization behavior is covered by unit tests.
 
 - [x] [BER-3414-R006] Preserve backend query channel reality: members `search` remains separate from NQL `filter`.
@@ -67,8 +70,9 @@ Project: Member management and segmentation
 - [ ] [BER-3414-R009] Implement one shared filter domain module used by both surfaces.
   - Intent: Establish one source of truth for parsing, state updates, and query compilation.
   - Acceptance criteria:
-    - Members and Comments import the same core state/reducer/compiler modules.
+    - Members and Comments import the same core state/reducer/parser/serializer/compiler modules.
     - Surface-specific behavior is configured via typed field definitions, not copied logic.
+    - No parallel per-surface filter parsing or NQL serialization implementations remain for active filter usage.
 
 - [ ] [BER-3414-R010] Use typed field definitions and reducer-driven state.
   - Intent: Guarantee valid field/operator/value combinations at compile time.
@@ -82,6 +86,7 @@ Project: Member management and segmentation
   - Acceptance criteria:
     - No per-surface ad hoc NQL string building remains.
     - Parse and serialize logic for NQL lives in one place.
+    - Legacy Ember `filter` query param parsing and canonical serialization both flow through that same central implementation.
     - Query compilation APIs are explicit about UI state input and query output.
 
 - [ ] [BER-3414-R012] Use explicit naming for UI/query conversions.
@@ -125,12 +130,14 @@ Project: Member management and segmentation
   - Intent: Strong guarantees with minimal ongoing maintenance complexity.
   - Acceptance criteria:
     - Test suite validates parse/serialize behavior against Ember-compatible expectations.
+    - Test suite covers direct parsing of legacy Ember-style `?filter=<nql>` URLs.
     - No backend translation layer is required for old/new filter dialect mapping.
 
 - [ ] [BER-3414-R018] Keep migration strategy minimal and bold (no long-lived dual abstractions).
   - Intent: Move directly to target architecture without maintaining parallel systems.
   - Acceptance criteria:
     - New abstraction replaces existing Members/Comments filter hooks as source of truth.
+    - No long-lived parallel parser/serializer paths remain for active filter usage.
     - Any temporary compatibility adapter is narrow, short-lived, and removal-scoped.
 
 ## Testing And Verification
@@ -146,7 +153,8 @@ Project: Member management and segmentation
   - Intent: Reflect true backend contract and avoid regressions.
   - Acceptance criteria:
     - Members tests cover `filter`-only, `search`-only, and `filter+search`.
-    - Comments tests confirm filter-only behavior remains correct.
+    - Members tests cover legacy Ember `?filter=<nql>` URL parsing.
+    - Comments tests confirm filter-only behavior remains correct through the shared abstraction.
 
 - [ ] [BER-3414-R021] Add integration tests for UI semantics and empty state behavior.
   - Intent: Guarantee user-visible behavior stays consistent with product rules.
@@ -161,7 +169,7 @@ Project: Member management and segmentation
   - Intent: Sequence work so BER-3346, BER-3357, BER-3355, BER-3356, and BER-3412 can proceed cleanly.
   - Acceptance criteria:
     - BER-3346 (saved filters) can persist canonical serialized query state.
-    - BER-3357 (existing member URLs) remains compatible with Ember-style filter syntax and members search param usage.
+    - BER-3357 (existing member URLs) remains compatible with direct parsing of Ember-style `filter` syntax and members search param usage.
     - BER-3355 (integration tests) has stable contracts to test against.
     - BER-3356 (dynamic columns) can consume active field metadata.
     - BER-3412 (search debounce) can target the dedicated members search channel without touching predicate logic.
