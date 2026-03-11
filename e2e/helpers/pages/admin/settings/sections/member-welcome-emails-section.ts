@@ -18,10 +18,10 @@ export class MemberWelcomeEmailsSection extends BasePage {
     constructor(page: Page) {
         super(page, '/ghost/#/settings/memberemails');
         this.section = page.getByTestId('memberemails');
-        this.freeWelcomeEmailToggle = this.section.getByTestId('free-welcome-email-preview').getByRole('switch');
-        this.paidWelcomeEmailToggle = this.section.getByTestId('paid-welcome-email-preview').getByRole('switch');
-        this.freeWelcomeEmailEditButton = this.section.getByTestId('free-welcome-email-preview').getByRole('button');
-        this.paidWelcomeEmailEditButton = this.section.getByTestId('paid-welcome-email-preview').getByRole('button');
+        this.freeWelcomeEmailToggle = this.section.getByTestId('free-welcome-email-row').getByRole('switch');
+        this.paidWelcomeEmailToggle = this.section.getByTestId('paid-welcome-email-row').getByRole('switch');
+        this.freeWelcomeEmailEditButton = this.section.getByTestId('free-welcome-email-row').getByRole('button', {name: 'Edit'});
+        this.paidWelcomeEmailEditButton = this.section.getByTestId('paid-welcome-email-row').getByRole('button', {name: 'Edit'});
 
         // Modal locators
         this.welcomeEmailModal = page.getByTestId('welcome-email-modal');
@@ -70,12 +70,12 @@ export class MemberWelcomeEmailsSection extends BasePage {
     }
 
     private async waitForFreeToggle(checked: boolean): Promise<void> {
-        const toggle = this.section.getByTestId('free-welcome-email-preview').getByRole('switch', {checked});
+        const toggle = this.section.getByTestId('free-welcome-email-row').getByRole('switch', {checked});
         await toggle.waitFor({state: 'visible'});
     }
 
     private async waitForPaidToggle(checked: boolean): Promise<void> {
-        const toggle = this.section.getByTestId('paid-welcome-email-preview').getByRole('switch', {checked});
+        const toggle = this.section.getByTestId('paid-welcome-email-row').getByRole('switch', {checked});
         await toggle.waitFor({state: 'visible'});
     }
 
@@ -93,6 +93,7 @@ export class MemberWelcomeEmailsSection extends BasePage {
     }
 
     private async openWelcomeEmailModal(editButton: Locator): Promise<void> {
+        await this.freeWelcomeEmailToggle.waitFor({state: 'visible'});
         await editButton.waitFor({state: 'visible'});
         await editButton.click();
         await this.welcomeEmailModal.waitFor({state: 'visible'});
