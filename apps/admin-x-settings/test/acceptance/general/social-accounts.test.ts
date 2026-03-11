@@ -98,6 +98,14 @@ test.describe('Social account settings', async () => {
             'The URL must be in a format like https://www.facebook.com/yourPage'
         );
 
+        // Reset to a valid URL so the setting is non-null before the next invalid test,
+        // otherwise the useEffect that clears the field won't fire (setting is already null)
+        await testUrlValidation(
+            facebookInput,
+            'facebook.com/valid',
+            'https://www.facebook.com/valid'
+        );
+
         await testUrlValidation(
             facebookInput,
             'http://github.com/pages/username',
@@ -132,10 +140,17 @@ test.describe('Social account settings', async () => {
             'The URL must be in a format like https://x.com/yourUsername'
         );
 
+        // Reset to a valid URL so the setting is non-null before the next invalid test
+        await testUrlValidation(
+            twitterInput,
+            'testuser',
+            'https://x.com/testuser'
+        );
+
         await testUrlValidation(
             twitterInput,
             'thisusernamehasmorethan15characters',
-            'thisusernamehasmorethan15characters',
+            '',
             'Your Username is not a valid Twitter Username'
         );
     });
