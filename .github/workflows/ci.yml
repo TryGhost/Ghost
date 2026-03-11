@@ -934,7 +934,14 @@ jobs:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
       - name: Build server and admin assets
-        run: yarn build:production
+        run: |
+          PKG_VERSION=$(node -p "require('./ghost/core/package.json').version")
+          SHORT_SHA="${GITHUB_SHA:0:7}"
+          if [ "${{ github.ref_type }}" != "tag" ]; then
+            export GHOST_BUILD_VERSION="${PKG_VERSION}+${SHORT_SHA}"
+            echo "GHOST_BUILD_VERSION=${GHOST_BUILD_VERSION}" >> $GITHUB_ENV
+          fi
+          yarn build:production
 
       - name: Pack standalone distribution
         run: yarn workspace ghost pack:standalone
@@ -1032,7 +1039,9 @@ jobs:
           context: /tmp/ghost-production
           file: Dockerfile.production
           target: core
-          build-args: NODE_VERSION=${{ env.NODE_VERSION }}
+          build-args: |
+            NODE_VERSION=${{ env.NODE_VERSION }}
+            GHOST_BUILD_VERSION=${{ env.GHOST_BUILD_VERSION }}
           push: ${{ steps.strategy.outputs.should-push }}
           load: ${{ steps.strategy.outputs.should-push == 'false' }}
           tags: ${{ steps.meta-core.outputs.tags }}
@@ -1046,7 +1055,9 @@ jobs:
           context: /tmp/ghost-production
           file: Dockerfile.production
           target: full
-          build-args: NODE_VERSION=${{ env.NODE_VERSION }}
+          build-args: |
+            NODE_VERSION=${{ env.NODE_VERSION }}
+            GHOST_BUILD_VERSION=${{ env.GHOST_BUILD_VERSION }}
           push: ${{ steps.strategy.outputs.should-push }}
           load: true
           tags: ${{ steps.meta-full.outputs.tags }}

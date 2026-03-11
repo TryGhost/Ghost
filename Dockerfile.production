@@ -12,7 +12,9 @@ ARG NODE_VERSION=22.18.0
 # ---- Core: server + production deps ----
 FROM node:$NODE_VERSION-bookworm-slim AS core
 
+ARG GHOST_BUILD_VERSION=""
 ENV NODE_ENV=production
+ENV GHOST_BUILD_VERSION=${GHOST_BUILD_VERSION}
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends libjemalloc2 && \
