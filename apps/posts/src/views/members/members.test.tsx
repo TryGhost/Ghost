@@ -42,11 +42,42 @@ vi.mock('./components/members-list', () => ({
     default: () => <div>Members list</div>
 }));
 
+const buildMembersBrowseResult = (total = 0) => ({
+    data: {
+        members: [],
+        meta: {
+            pagination: {
+                total
+            }
+        }
+    },
+    isError: false,
+    isFetching: false,
+    isFetchingNextPage: false,
+    isRefetching: false,
+    fetchNextPage: vi.fn(),
+    hasNextPage: false
+});
+
+const renderMembersPage = (filterState: Record<string, unknown>) => {
+    mockUseMembersFilterState.mockReturnValue(filterState);
+    mockUseBrowseConfig.mockReturnValue({
+        data: {
+            config: {
+                emailAnalytics: false
+            }
+        }
+    });
+    mockUseBrowseMembersInfinite.mockReturnValue(buildMembersBrowseResult());
+
+    render(<Members />);
+};
+
 describe('Members', () => {
     it('shows the filtered empty state and clear action when search is active without picker filters', () => {
         const resetFiltersAndSearch = vi.fn();
 
-        mockUseMembersFilterState.mockReturnValue({
+        renderMembersPage({
             filters: [],
             nql: undefined,
             search: 'alex',
@@ -58,33 +89,6 @@ describe('Members', () => {
             activeColumns: []
         });
 
-        mockUseBrowseConfig.mockReturnValue({
-            data: {
-                config: {
-                    emailAnalytics: false
-                }
-            }
-        });
-
-        mockUseBrowseMembersInfinite.mockReturnValue({
-            data: {
-                members: [],
-                meta: {
-                    pagination: {
-                        total: 0
-                    }
-                }
-            },
-            isError: false,
-            isFetching: false,
-            isFetchingNextPage: false,
-            isRefetching: false,
-            fetchNextPage: vi.fn(),
-            hasNextPage: false
-        });
-
-        render(<Members />);
-
         expect(screen.getByText('No members match the current filter')).toBeInTheDocument();
         fireEvent.click(screen.getByRole('button', {name: 'Show all members'}));
         expect(resetFiltersAndSearch).toHaveBeenCalledWith({replace: false});
@@ -92,7 +96,7 @@ describe('Members', () => {
     });
 
     it('shows the plain empty state without a clear action when no filters or search are active', () => {
-        mockUseMembersFilterState.mockReturnValue({
+        renderMembersPage({
             filters: [],
             nql: undefined,
             search: '',
@@ -103,33 +107,6 @@ describe('Members', () => {
             resetFiltersAndSearch: vi.fn(),
             activeColumns: []
         });
-
-        mockUseBrowseConfig.mockReturnValue({
-            data: {
-                config: {
-                    emailAnalytics: false
-                }
-            }
-        });
-
-        mockUseBrowseMembersInfinite.mockReturnValue({
-            data: {
-                members: [],
-                meta: {
-                    pagination: {
-                        total: 0
-                    }
-                }
-            },
-            isError: false,
-            isFetching: false,
-            isFetchingNextPage: false,
-            isRefetching: false,
-            fetchNextPage: vi.fn(),
-            hasNextPage: false
-        });
-
-        render(<Members />);
 
         expect(screen.getByText('No members yet')).toBeInTheDocument();
         expect(screen.queryByRole('button', {name: 'Show all members'})).not.toBeInTheDocument();
