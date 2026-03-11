@@ -5,7 +5,7 @@ import {Button, ConfirmationModal, Form, PreviewModalContent, TextArea, TextFiel
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {type Offer, useBrowseOffersById, useEditOffer} from '@tryghost/admin-x-framework/api/offers';
-import {createRedemptionFilterUrl} from './offers-index';
+import {createOfferRedemptionFilterUrl} from './offer-helpers';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {getOfferPortalPreviewUrl, type offerPortalPreviewUrlTypes} from '../../../../utils/get-offers-portal-preview-url';
 import {useEffect, useState} from 'react';
@@ -122,7 +122,7 @@ const Sidebar: React.FC<{
                                             null
                                         }
                                     </div>
-                                    {offer?.redemption_count > 0 ? <a className='font-semibold text-green' href={createRedemptionFilterUrl(offer?.id)}>See members →</a> : null}
+                                    {offer?.redemption_count > 0 ? <a className='font-semibold text-green' href={createOfferRedemptionFilterUrl(offer?.id)}>See members →</a> : null}
                                 </div>
                             </div>
                         </section>
@@ -257,13 +257,7 @@ const EditOfferModal: React.FC<{id: string}> = ({id}) => {
     />;
 
     const goBack = () => {
-        if (sessionStorage.getItem('editOfferPageSource') === 'offers') {
-            sessionStorage.removeItem('editOfferPageSource');
-            updateRoute('offers');
-        } else {
-            sessionStorage.removeItem('editOfferPageSource');
-            updateRoute('offers/edit');
-        }
+        updateRoute('offers/edit');
     };
 
     return offerById ? <PreviewModalContent
