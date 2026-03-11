@@ -248,7 +248,7 @@
     "Your email has failed to resubscribe, please try again": "Ihre E-Mail-Adresse konnte nicht angemeldet werden. Bitte versuchen Sie es erneut",
     "your inbox": "Ihre Inbox",
     "Your input helps shape what gets published.": "Ihr Beitrag kann unsere Berichterstattung beeinflussen und mitprägen.",
-    "Your subscription has been canceled and will expire on {expiryDate}.": "Ihr Abo wurde gekündigt und läuft aus am: {expiryDate}.",
+    "Your subscription has been canceled and will expire on {expiryDate}.": "Ihr Abo wurde gekündigt und läuft am {expiryDate} aus.",
     "Your subscription will expire on {expiryDate}": "Ihr Abo endet am {expiryDate}.",
     "Your subscription will renew on {renewalDate}": "Ihr Abo wird am {renewalDate} erneuert.",
     "Your subscription will start on {subscriptionStart}": "Ihr Abo startet am {subscriptionStart}."
