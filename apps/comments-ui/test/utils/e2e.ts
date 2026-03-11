@@ -203,7 +203,6 @@ export async function selectText(locator: Locator, pattern: string | RegExp): Pr
                 const selection = document.getSelection();
                 selection?.removeAllRanges();
                 selection?.addRange(range);
-                document.dispatchEvent(new Event('selectionchange'));
             }
         },
         {pattern}
