@@ -49,6 +49,7 @@ const PRIVATE_FEATURES = [
     'themeTranslation',
     'indexnow',
     'transistor',
+    'verificationFlow',
     'membersForward',
     'welcomeEmailsDesignCustomization',
     'pictureImageFormats'
