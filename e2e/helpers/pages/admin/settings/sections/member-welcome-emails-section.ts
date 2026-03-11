@@ -94,13 +94,12 @@ export class MemberWelcomeEmailsSection extends BasePage {
         await this.modalSavedButton.waitFor({state: 'visible'});
     }
 
-    async waitForWelcomeEmailEditor(): Promise<void> {
+    private async waitForWelcomeEmailEditor(): Promise<void> {
         await this.modalEditor.waitFor({state: 'visible'});
         await this.modalLexicalEditor.waitFor({state: 'visible'});
     }
 
     async replaceWelcomeEmailContent(content: string): Promise<void> {
-        await this.waitForWelcomeEmailEditor();
         await this.modalLexicalEditor.click();
         await this.page.keyboard.press('ControlOrMeta+a');
         await this.page.keyboard.press('Backspace');
@@ -112,5 +111,6 @@ export class MemberWelcomeEmailsSection extends BasePage {
         await editButton.waitFor({state: 'visible'});
         await editButton.click();
         await this.welcomeEmailModal.waitFor({state: 'visible'});
+        await this.waitForWelcomeEmailEditor();
     }
 }

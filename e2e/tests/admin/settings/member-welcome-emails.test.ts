@@ -5,7 +5,6 @@ interface AutomatedEmail {
     slug: string;
     status: string;
     subject?: string;
-    lexical?: string;
     sender_name?: string | null;
     sender_email?: string | null;
     sender_reply_to?: string | null;
@@ -86,28 +85,6 @@ test.describe('Ghost Admin - Member Welcome Emails', () => {
         expect(freeWelcomeEmail?.subject).toBe('Custom Welcome Subject');
     });
 
-    test('can edit free welcome email content in the editor', async ({page}) => {
-        const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);
-        const updatedContent = 'Welcome from the e2e editor test';
-
-        await welcomeEmailsSection.goto();
-        await welcomeEmailsSection.enableFreeWelcomeEmail();
-        await welcomeEmailsSection.openFreeWelcomeEmailModal();
-        await welcomeEmailsSection.waitForWelcomeEmailEditor();
-        await expect(welcomeEmailsSection.modalLexicalEditor).toBeVisible();
-
-        await welcomeEmailsSection.replaceWelcomeEmailContent(updatedContent);
-        await welcomeEmailsSection.saveWelcomeEmail();
-
-        const response = await page.request.get('/ghost/api/admin/automated_emails/');
-        expect(response.ok()).toBe(true);
-
-        const data = await response.json() as AutomatedEmailsResponse;
-        const freeWelcomeEmail = data.automated_emails.find(email => email.slug === 'member-welcome-email-free');
-        expect(freeWelcomeEmail).toBeDefined();
-        expect(freeWelcomeEmail?.lexical).toContain(updatedContent);
-    });
-
     test('edited welcome email content persists after page reload', async ({page}) => {
         const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);
         const updatedContent = 'Persisted editor content';
@@ -122,7 +99,6 @@ test.describe('Ghost Admin - Member Welcome Emails', () => {
         await welcomeEmailsSection.section.waitFor({state: 'visible'});
 
         await welcomeEmailsSection.openFreeWelcomeEmailModal();
-        await welcomeEmailsSection.waitForWelcomeEmailEditor();
         await expect(welcomeEmailsSection.modalLexicalEditor).toContainText(updatedContent);
     });
 
