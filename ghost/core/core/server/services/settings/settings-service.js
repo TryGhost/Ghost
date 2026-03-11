@@ -78,7 +78,7 @@ module.exports = {
         SettingsCache.init(events, settingsCollection, this.getCalculatedFields(), cacheStore, settingsOverrides);
 
         // Validate site_uuid matches config
-        await this.validateSiteUuid();
+        this.validateSiteUuid();
     },
 
     /**
@@ -158,7 +158,7 @@ module.exports = {
      * The configured site_uuid is only used once when the site_uuid setting is set in a migration
      * Exits with an error if they differ
      */
-    async validateSiteUuid() {
+    validateSiteUuid() {
         const configSiteUuid = config.get('site_uuid');
         const settingSiteUuid = SettingsCache.get('site_uuid');
 
