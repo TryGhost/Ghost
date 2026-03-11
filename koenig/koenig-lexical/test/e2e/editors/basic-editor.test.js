@@ -65,16 +65,6 @@ test.describe('Koening Editor with basic nodes', async function () {
         `);
     });
 
-    test('ignores image card shortcut', async function () {
-        await focusEditor(page);
-
-        await page.keyboard.type('image! ');
-
-        await assertHTML(page, html`
-            <p dir="ltr"><span data-lexical-text="true">image! </span></p>
-        `);
-    });
-
     test('ignores slash menu on blank paragraph', async function () {
         await focusEditor(page);
         await expect(await page.locator('[data-kg-slash-menu]')).toHaveCount(0);

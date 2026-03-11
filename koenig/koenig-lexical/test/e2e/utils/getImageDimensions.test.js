@@ -1,7 +1,7 @@
 import path from 'path';
 import {expect, test} from '@playwright/test';
 import {fileURLToPath} from 'url';
-import {focusEditor, initialize} from '../../utils/e2e';
+import {focusEditor, initialize, insertCard} from '../../utils/e2e';
 import {getImageDimensions} from '../../../src/utils/getImageDimensions';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -25,11 +25,9 @@ test.describe('Image card', async () => {
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
 
         await focusEditor(page);
-        await page.keyboard.type('image! ');
-
         const [fileChooser] = await Promise.all([
             page.waitForEvent('filechooser'),
-            await page.click('button[name="placeholder-button"]')
+            insertCard(page, {cardName: 'image'})
         ]);
         await fileChooser.setFiles([filePath]);
 

@@ -121,8 +121,7 @@ test.describe('Image card', async () => {
     });
 
     test('renders image card node', async function () {
-        await focusEditor(page);
-        await page.keyboard.type('image! ');
+        await insertEmptyImageCard(page);
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
@@ -140,15 +139,14 @@ test.describe('Image card', async () => {
                     </figure>
                 </div>
             </div>
-            <div contenteditable="false" data-lexical-cursor="true"></div>
+            <p><br /></p>
         `);
     });
 
     test('can upload an image', async function () {
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
 
-        await focusEditor(page);
-        await page.keyboard.type('image! ');
+        await insertEmptyImageCard(page);
 
         const [fileChooser] = await Promise.all([
             page.waitForEvent('filechooser'),
@@ -269,8 +267,7 @@ test.describe('Image card', async () => {
     test('can toggle to alt text', async function () {
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
 
-        await focusEditor(page);
-        await page.keyboard.type('image! ');
+        await insertEmptyImageCard(page);
 
         const [fileChooser] = await Promise.all([
             page.waitForEvent('filechooser'),
@@ -299,14 +296,14 @@ test.describe('Image card', async () => {
                     <div data-kg-card-toolbar="image"></div>
                 </div>
             </div>
+            <p><br /></p>
         `, {ignoreCardToolbarContents: true});
     });
 
     test('renders caption if present', async function () {
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
 
-        await focusEditor(page);
-        await page.keyboard.type('image! ');
+        await insertEmptyImageCard(page);
 
         const [fileChooser] = await Promise.all([
             page.waitForEvent('filechooser'),
@@ -329,8 +326,7 @@ test.describe('Image card', async () => {
     test.skip('can paste html to caption', async function () {
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
 
-        await focusEditor(page);
-        await page.keyboard.type('image! ');
+        await insertEmptyImageCard(page);
 
         const [fileChooser] = await Promise.all([
             page.waitForEvent('filechooser'),
@@ -373,8 +369,7 @@ test.describe('Image card', async () => {
     test('renders image card toolbar', async function () {
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
 
-        await focusEditor(page);
-        await page.keyboard.type('image! ');
+        await insertEmptyImageCard(page);
 
         const [fileChooser] = await Promise.all([
             page.waitForEvent('filechooser'),
@@ -389,8 +384,7 @@ test.describe('Image card', async () => {
     test('image card toolbar has Regular button', async function () {
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
 
-        await focusEditor(page);
-        await page.keyboard.type('image! ');
+        await insertEmptyImageCard(page);
 
         const [fileChooser] = await Promise.all([
             page.waitForEvent('filechooser'),
@@ -405,8 +399,7 @@ test.describe('Image card', async () => {
     test('image card toolbar has Wide button', async function () {
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
 
-        await focusEditor(page);
-        await page.keyboard.type('image! ');
+        await insertEmptyImageCard(page);
 
         const [fileChooser] = await Promise.all([
             page.waitForEvent('filechooser'),
@@ -421,8 +414,7 @@ test.describe('Image card', async () => {
     test('image card toolbar has Full button', async function () {
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
 
-        await focusEditor(page);
-        await page.keyboard.type('image! ');
+        await insertEmptyImageCard(page);
 
         const [fileChooser] = await Promise.all([
             page.waitForEvent('filechooser'),
@@ -437,8 +429,7 @@ test.describe('Image card', async () => {
     test('image card toolbar has Link button', async function () {
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
 
-        await focusEditor(page);
-        await page.keyboard.type('image! ');
+        await insertEmptyImageCard(page);
 
         const [fileChooser] = await Promise.all([
             page.waitForEvent('filechooser'),
@@ -453,8 +444,7 @@ test.describe('Image card', async () => {
     test('image card toolbar has Replace button', async function () {
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
 
-        await focusEditor(page);
-        await page.keyboard.type('image! ');
+        await insertEmptyImageCard(page);
 
         const [fileChooser] = await Promise.all([
             page.waitForEvent('filechooser'),
@@ -469,8 +459,7 @@ test.describe('Image card', async () => {
     test('image card toolbar has Snippet button', async function () {
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
 
-        await focusEditor(page);
-        await page.keyboard.type('image! ');
+        await insertEmptyImageCard(page);
 
         const [fileChooser] = await Promise.all([
             page.waitForEvent('filechooser'),
@@ -485,8 +474,7 @@ test.describe('Image card', async () => {
     test('toolbar can toggle image sizes', async function () {
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
 
-        await focusEditor(page);
-        await page.keyboard.type('image! ');
+        await insertEmptyImageCard(page);
 
         const [fileChooser] = await Promise.all([
             page.waitForEvent('filechooser'),
@@ -517,8 +505,7 @@ test.describe('Image card', async () => {
     test('toolbar does not disappear on click', async function () {
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
 
-        await focusEditor(page);
-        await page.keyboard.type('image! ');
+        await insertEmptyImageCard(page);
 
         const [fileChooser] = await Promise.all([
             page.waitForEvent('filechooser'),
@@ -551,8 +538,7 @@ test.describe('Image card', async () => {
     });
 
     test('can handle drag over & leave', async function () {
-        await focusEditor(page);
-        await page.keyboard.type('image! ');
+        await insertEmptyImageCard(page);
 
         const imageCard = await page.locator('[data-kg-card="image"]');
         expect(imageCard).not.toBeNull();
@@ -570,8 +556,7 @@ test.describe('Image card', async () => {
     });
 
     test('can handle image drop on empty card', async function () {
-        await focusEditor(page);
-        await page.keyboard.type('image! ');
+        await insertEmptyImageCard(page);
 
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
         const dataTransfer = await createDataTransfer(page, [{filePath, fileName: 'large-image.png', fileType: 'image/png'}]);
@@ -597,7 +582,7 @@ test.describe('Image card', async () => {
                     </figure>
                 </div>
             </div>
-            <div contenteditable="false" data-lexical-cursor="true"></div>
+            <p><br /></p>
         `);
     });
 
@@ -920,7 +905,8 @@ test.describe('Image card', async () => {
         await enterUntilScrolled(page);
         await insertImage(page);
 
-        const paragraphCount = await page.locator('[data-kg="editor"] > div > p').count();
+        const rootParagraphs = page.locator('.koenig-lexical > [data-kg="editor"] > div > p');
+        const paragraphCount = await rootParagraphs.count();
 
         await expectUnchangedScrollPosition(page, async () => {
             await page.keyboard.type('Captiontest--Captiontest');
@@ -954,13 +940,13 @@ test.describe('Image card', async () => {
             await expect(page.locator('[data-kg-card="image"]')).toHaveAttribute('data-kg-card-selected', 'false');
 
             // Check total paragraph count increased
-            await expect(page.locator('[data-kg="editor"] > div > p')).toHaveCount(paragraphCount + 1);
+            await expect(rootParagraphs).toHaveCount(paragraphCount + 1);
 
             // Add some text
             await page.keyboard.type('last one');
 
             // Check contains text
-            await expect(page.locator('[data-kg="editor"] > div > p:last-child').nth(1)).toHaveText('last one');
+            await expect(rootParagraphs.filter({hasText: 'last one'})).toHaveCount(1);
         });
     });
 
@@ -1006,7 +992,8 @@ test.describe('Image card', async () => {
         await enterUntilScrolled(page);
         await insertImage(page);
 
-        const paragraphCount = await page.locator('[data-kg="editor"] > div > p').count();
+        const rootParagraphs = page.locator('.koenig-lexical > [data-kg="editor"] > div > p');
+        const paragraphCount = await rootParagraphs.count();
 
         await expectUnchangedScrollPosition(page, async () => {
             await page.keyboard.type('Captiontest--Captiontest');
@@ -1036,13 +1023,13 @@ test.describe('Image card', async () => {
             await expect(page.locator('[data-kg-card="image"]')).toHaveAttribute('data-kg-card-selected', 'false');
 
             // Check total paragraph count increased
-            await expect(page.locator('[data-kg="editor"] > div > p')).toHaveCount(paragraphCount + 1);
+            await expect(rootParagraphs).toHaveCount(paragraphCount + 1);
 
             // Add some text
             await page.keyboard.type('last one');
 
             // Check contains text
-            await expect(page.locator('[data-kg="editor"] > div > p:last-child').nth(1)).toHaveText('last one');
+            await expect(rootParagraphs.filter({hasText: 'last one'})).toHaveCount(1);
 
             // Caption still ok?
             await expect(captionEditor).toHaveText('Captiontest-**-Captiontest');
@@ -1178,16 +1165,50 @@ test.describe('Image card', async () => {
 async function insertImage(page, image = 'large-image.png') {
     const filePath = path.relative(process.cwd(), __dirname + `/../fixtures/${image}`);
 
-    await focusEditor(page);
-    await page.keyboard.type('image! ');
-
+    await insertEmptyImageCard(page);
     const [fileChooser] = await Promise.all([
         page.waitForEvent('filechooser'),
-        await page.click('button[name="placeholder-button"]')
+        page.click('button[name="placeholder-button"]')
     ]);
     await fileChooser.setFiles([filePath]);
 
     await expect(await page.getByTestId('image-card-populated')).toBeVisible();
+}
+
+async function insertEmptyImageCard(page) {
+    await page.evaluate(() => {
+        const serializedState = JSON.stringify({
+            root: {
+                children: [{
+                    type: 'image',
+                    version: 1,
+                    src: '',
+                    width: null,
+                    height: null,
+                    title: '',
+                    alt: '',
+                    caption: '',
+                    cardWidth: 'regular',
+                    href: ''
+                }, {
+                    children: [],
+                    direction: null,
+                    format: '',
+                    indent: 0,
+                    type: 'paragraph',
+                    version: 1
+                }],
+                direction: null,
+                format: '',
+                indent: 0,
+                type: 'root',
+                version: 1
+            }
+        });
+        const editor = window.lexicalEditor;
+        const editorState = editor.parseEditorState(serializedState);
+        editor.setEditorState(editorState);
+    });
 }
 
 function tenorTestData() {

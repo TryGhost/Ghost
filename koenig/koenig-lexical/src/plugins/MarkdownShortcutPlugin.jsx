@@ -1,6 +1,5 @@
 import {$createCodeBlockNode, $isCodeBlockNode, CodeBlockNode} from '../nodes/CodeBlockNode';
 import {$createHorizontalRuleNode, $isHorizontalRuleNode, HorizontalRuleNode} from '../nodes/HorizontalRuleNode';
-import {$createImageNode, $isImageNode, ImageNode} from '../nodes/ImageNode';
 import {$createNodeSelection, $setSelection} from 'lexical';
 import {
     HEADING,
@@ -62,29 +61,6 @@ export const CODE_BLOCK = {
     type: 'element'
 };
 
-// render imageNode when writing image!
-// regex that detects exactly the string 'image!'
-
-export const IMAGE = {
-    dependencies: [ImageNode],
-    export: (node) => {
-        if (!$isImageNode(node)){
-            return null;
-        } else {
-            const {src, alt} = node.dataset;
-            return `![${alt}](${src})`;
-        }
-    },
-    regExp: /^image! $/,
-    replace: (parentNode, match, text) => {
-        const alt = '';
-        const src = '';
-        const imageNode = $createImageNode({altText: alt, src});
-        parentNode.replace(imageNode);
-    },
-    type: 'element'
-};
-
 // custom text format transformers
 export const SUBSCRIPT = {
     format: ['subscript'],
@@ -104,8 +80,7 @@ export const ELEMENT_TRANSFORMERS = [
     UNORDERED_LIST,
     ORDERED_LIST,
     HR,
-    CODE_BLOCK,
-    IMAGE
+    CODE_BLOCK
 ];
 
 export const CUSTOM_TEXT_FORMAT_TRANSFORMERS = [
