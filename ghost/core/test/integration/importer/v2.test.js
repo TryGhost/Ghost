@@ -366,13 +366,13 @@ describe('Importer', function () {
             exportData.data.posts[0].title = null;
 
             exportData.data.posts[1] = testUtils.DataGenerator.forKnex.createPost({slug: 'post2'});
-            exportData.data.posts[1].title = new Array(600).join('a');
+            exportData.data.posts[1].title = 'a'.repeat(256);
 
             exportData.data.tags[0] = testUtils.DataGenerator.forKnex.createTag({slug: 'tag2'});
-            exportData.data.tags[0].meta_title = new Array(305).join('a');
+            exportData.data.tags[0].meta_title = 'a'.repeat(301);
 
             exportData.data.users[0] = testUtils.DataGenerator.forKnex.createUser();
-            exportData.data.users[0].bio = new Array(300).join('a');
+            exportData.data.users[0].bio = 'a'.repeat(2001);
 
             exportData.data.users[1] = testUtils.DataGenerator.forKnex.createUser({
                 email: 'thisisareallylongemailaddressIamhappytobeusingacharactercounterbutIhavealongwaytogoyetImeanserioulsywhohasemailaddressthislongthereisnowaythiswillpassvalidationsonghost100andisarealedgecase'

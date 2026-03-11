@@ -44,13 +44,13 @@ test.describe('User profile', async () => {
         await modal.getByRole('button', {name: 'Save'}).click();
         await expect(modal).toContainText('Enter a valid email address');
 
-        // Test location validation
-        await modal.getByLabel('Location').fill(new Array(195).join('a'));
+        // Test location validation, limited to 150 characters
+        await modal.getByLabel('Location').fill('a'.repeat(151));
         await modal.getByRole('button', {name: 'Save'}).click();
         await expect(modal).toContainText('Location is too long');
 
-        // Test bio validation
-        await modal.getByLabel('Bio').fill(new Array(2005).join('a'));
+        // Test bio validation, limited to 2000 characters
+        await modal.getByLabel('Bio').fill('a'.repeat(2001));
         await modal.getByRole('button', {name: 'Save'}).click();
         await expect(modal).toContainText('Bio is too long');
     });
