@@ -6,6 +6,10 @@ import {Newsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {Tier} from '@tryghost/admin-x-framework/api/tiers';
 import {useMemo} from 'react';
 
+type MemberFilterFieldConfig = FilterFieldConfig & {
+    allowDuplicate?: boolean;
+};
+
 export interface UseMembersFilterConfigOptions {
     labels?: Label[];
     tiers?: Tier[];
@@ -136,7 +140,7 @@ export function useMembersFilterConfig({
         const today = new Date(new Date().toLocaleString('en-US', {timeZone: siteTimezone})).toISOString().split('T')[0];
 
         // ===== BASIC FILTERS =====
-        const basicFields: FilterFieldConfig[] = [];
+        const basicFields: MemberFilterFieldConfig[] = [];
 
         basicFields.push({
             key: 'name',
@@ -224,6 +228,7 @@ export function useMembersFilterConfig({
                 icon: <LucideIcon.UserPlus className="size-4" />,
                 options: postResourceOptions,
                 operators: IS_IS_NOT_OPERATORS,
+                allowDuplicate: true,
                 searchable: true,
                 onSearchChange: onPostResourceSearchChange,
                 searchValue: postResourceSearchValue,
@@ -240,7 +245,7 @@ export function useMembersFilterConfig({
 
         // ===== NEWSLETTER FILTERS (if multiple newsletters) =====
         if (newsletters.length > 1) {
-            const newsletterFields: FilterFieldConfig[] = [];
+            const newsletterFields: MemberFilterFieldConfig[] = [];
 
             // When multiple newsletters, the subscribed filter moves to this group
             newsletterFields.push({
@@ -277,7 +282,7 @@ export function useMembersFilterConfig({
 
         // ===== SUBSCRIPTION FILTERS (if paid members enabled) =====
         if (paidMembersEnabled) {
-            const subscriptionFields: FilterFieldConfig[] = [];
+            const subscriptionFields: MemberFilterFieldConfig[] = [];
 
             if (hasMultipleTiers) {
                 subscriptionFields.push({
@@ -359,6 +364,7 @@ export function useMembersFilterConfig({
                     icon: <LucideIcon.ArrowRightLeft className="size-4" />,
                     options: postResourceOptions,
                     operators: IS_IS_NOT_OPERATORS,
+                    allowDuplicate: true,
                     searchable: true,
                     onSearchChange: onPostResourceSearchChange,
                     searchValue: postResourceSearchValue,
@@ -391,7 +397,7 @@ export function useMembersFilterConfig({
 
         // ===== EMAIL FILTERS (if email analytics enabled) =====
         if (emailAnalyticsEnabled) {
-            const emailFields: FilterFieldConfig[] = [];
+            const emailFields: MemberFilterFieldConfig[] = [];
 
             emailFields.push({
                 key: 'email_count',
@@ -440,6 +446,7 @@ export function useMembersFilterConfig({
                 icon: <LucideIcon.Send className="size-4" />,
                 options: emailResourceOptions,
                 operators: IS_IS_NOT_OPERATORS,
+                allowDuplicate: true,
                 searchable: true,
                 onSearchChange: onEmailResourceSearchChange,
                 searchValue: emailResourceSearchValue,
@@ -456,6 +463,7 @@ export function useMembersFilterConfig({
                     icon: <LucideIcon.MailOpen className="size-4" />,
                     options: emailResourceOptions,
                     operators: IS_IS_NOT_OPERATORS,
+                    allowDuplicate: true,
                     searchable: true,
                     onSearchChange: onEmailResourceSearchChange,
                     searchValue: emailResourceSearchValue,
@@ -473,6 +481,7 @@ export function useMembersFilterConfig({
                     icon: <LucideIcon.MousePointerClick className="size-4" />,
                     options: emailResourceOptions,
                     operators: IS_IS_NOT_OPERATORS,
+                    allowDuplicate: true,
                     searchable: true,
                     onSearchChange: onEmailResourceSearchChange,
                     searchValue: emailResourceSearchValue,

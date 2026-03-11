@@ -3,7 +3,7 @@ import {useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import type {Filter} from '@tryghost/shade';
 import {deriveFilterFlags} from '@src/views/filters/filter-flags';
 import {buildMemberNqlFilter, parseMemberNqlFilterParam} from '@src/views/filters/filter-nql';
-import {isMemberField, isMemberOperatorForField, MEMBER_STATIC_FIELDS} from '@src/views/filters/member-fields';
+import {isMemberField, isMemberOperatorForField, MEMBER_STATIC_FIELDS, type MemberPredicate} from '@src/views/filters/member-fields';
 import {parsePredicateParams, serializePredicateParams} from '@src/views/filters/url-predicate-params';
 import {UrlFilterStateOptions, useUrlFilterState} from '@src/views/filters/use-url-filter-state';
 import {getSiteTimezone} from '@src/utils/get-site-timezone';
@@ -24,13 +24,21 @@ const MULTISELECT_FIELDS = new Set<string>(['label', 'offer_redemptions', 'tier_
 /**
  * Parse URL search params into Filter objects
  */
-export function searchParamsToFilters(searchParams: URLSearchParams): Filter[] {
+export function coerceMemberFilters(filters: Filter[]): MemberPredicate[] {
+    return filters.filter((filter): filter is MemberPredicate => {
+        return isMemberField(filter.field) && isMemberOperatorForField(filter.field, filter.operator);
+    });
+}
+
+/**
+ * Parse URL search params into member predicates
+ */
+export function searchParamsToFilters(searchParams: URLSearchParams): MemberPredicate[] {
     const predicateFilters = parsePredicateParams({
         params: searchParams,
         multiselectFields: MULTISELECT_FIELDS,
         ignoredFields: new Set(['search'])
-    }).filter(({field, operator}) => isMemberField(field) && isMemberOperatorForField(field, operator))
-        .map(predicate => ({
+    }).map(predicate => ({
             id: predicate.id,
             field: predicate.field,
             operator: predicate.operator,
@@ -40,14 +48,14 @@ export function searchParamsToFilters(searchParams: URLSearchParams): Filter[] {
     const legacyFilters = searchParams.getAll('filter')
         .flatMap(filterParam => parseMemberNqlFilterParam(filterParam));
 
-    return legacyFilters.length > 0 ? legacyFilters : predicateFilters;
+    return legacyFilters.length > 0 ? legacyFilters : coerceMemberFilters(predicateFilters);
 }
 
 /**
  * Serialize filters to URL search params format
  */
-export function filtersToSearchParams(filters: Filter[], search?: string): URLSearchParams {
-    const predicates = filters
+export function filtersToSearchParams(filters: MemberPredicate[], search?: string): URLSearchParams {
+    const predicates = coerceMemberFilters(filters)
         .filter((filter) => {
             if (MULTISELECT_FIELDS.has(filter.field)) {
                 return true;
@@ -70,10 +78,10 @@ export function filtersToSearchParams(filters: Filter[], search?: string): URLSe
 }
 
 interface UseFilterStateReturn {
-    filters: Filter[];
+    filters: MemberPredicate[];
     nql: string | undefined;
     search: string;
-    setFilters: (action: Filter[] | ((prevFilters: Filter[]) => Filter[]), options?: UrlFilterStateOptions) => void;
+    setFilters: (action: MemberPredicate[] | ((prevFilters: MemberPredicate[]) => MemberPredicate[]), options?: UrlFilterStateOptions) => void;
     setSearch: (search: string, options?: UrlFilterStateOptions) => void;
     clearFilters: (options?: UrlFilterStateOptions) => void;
     resetFiltersAndSearch: (options?: UrlFilterStateOptions) => void;
@@ -109,7 +117,13 @@ export function useMembersFilterState(): UseFilterStateReturn {
         hasFilterOrSearch,
         activeFields,
         activeColumns
-    } = useUrlFilterState({
+    } = useUrlFilterState<MemberPredicate, {
+        hasFilters: boolean;
+        hasSearch: boolean;
+        hasFilterOrSearch: boolean;
+        activeFields: string[];
+        activeColumns: MemberFilterColumnMetadata[];
+    }>({
         parseFilters: searchParamsToFilters,
         serializeFilters: filtersToSearchParams,
         buildNql: currentFilters => buildMemberNqlFilter(currentFilters, {timezone: siteTimezone}),

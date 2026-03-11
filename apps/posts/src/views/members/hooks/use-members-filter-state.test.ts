@@ -1,10 +1,10 @@
 import {describe, expect, it} from 'vitest';
 import {filtersToSearchParams, searchParamsToFilters} from '@src/views/members/hooks/use-members-filter-state';
-import type {Filter} from '@tryghost/shade';
+import type {MemberPredicate} from '@src/views/filters/member-fields';
 
 describe('use-members-filter-state URL helpers', () => {
     it('preserves duplicate field predicates through URL roundtrip', () => {
-        const filters: Filter[] = [
+        const filters: MemberPredicate[] = [
             {id: 'status-1', field: 'status', operator: 'is', values: ['paid']},
             {id: 'status-2', field: 'status', operator: 'is_not', values: ['free']}
         ];

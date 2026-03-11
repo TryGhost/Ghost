@@ -2,6 +2,10 @@ import type {Filter, FilterFieldConfig, FilterFieldGroup} from '@tryghost/shade'
 
 const DUPLICATE_CAPABLE_FIELD_TYPES = new Set(['text', 'date', 'number']);
 
+type MemberFilterUiField = FilterFieldConfig & {
+    allowDuplicate?: boolean;
+};
+
 export interface MemberFilterUiState {
     displayGroups: FilterFieldGroup[];
     displayFilters: Filter[];
@@ -17,6 +21,12 @@ function getFieldKey(field: FilterFieldConfig): string | undefined {
 }
 
 function isDuplicateCapableField(field: FilterFieldConfig): boolean {
+    const memberField = field as MemberFilterUiField;
+
+    if (memberField.allowDuplicate) {
+        return true;
+    }
+
     return typeof field.type === 'string' && DUPLICATE_CAPABLE_FIELD_TYPES.has(field.type);
 }
 

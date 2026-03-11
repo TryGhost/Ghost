@@ -1,6 +1,7 @@
-import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {beforeEach, describe, expect, expectTypeOf, it, vi} from 'vitest';
 import {renderHook} from '@testing-library/react';
 import {useMembersFilterState} from '@src/views/members/hooks/use-members-filter-state';
+import type {MemberPredicate} from '@src/views/filters/member-fields';
 
 const mockUseSearchParams = vi.fn();
 const mockUseBrowseSettings = vi.fn();
@@ -36,6 +37,7 @@ describe('useMembersFilterState', () => {
     it('uses the site timezone when building member NQL', () => {
         const {result} = renderHook(() => useMembersFilterState());
 
+        expectTypeOf(result.current.filters).toEqualTypeOf<MemberPredicate[]>();
         expect(result.current.nql).toBe('created_at:>=\'2022-02-22 05:00:00\'');
     });
 
@@ -72,5 +74,29 @@ describe('useMembersFilterState', () => {
                 include: 'subscriptions'
             }
         ]);
+    });
+
+    it('does not write invalid member predicates back into the URL state', () => {
+        const setSearchParams = vi.fn();
+
+        mockUseSearchParams.mockReturnValue([
+            new URLSearchParams(),
+            setSearchParams
+        ]);
+
+        const {result} = renderHook(() => useMembersFilterState());
+
+        result.current.setFilters([
+            {
+                id: 'status-1',
+                field: 'status',
+                operator: 'contains',
+                values: ['paid']
+            }
+        ] as never);
+
+        expect(setSearchParams).toHaveBeenCalledTimes(1);
+        expect(setSearchParams.mock.calls[0][0].toString()).toBe('');
+        expect(setSearchParams.mock.calls[0][1]).toEqual({replace: true});
     });
 });

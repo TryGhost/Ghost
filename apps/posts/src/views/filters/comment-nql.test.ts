@@ -20,4 +20,14 @@ describe('serializeCommentFilters', () => {
 
         expect(serializeCommentFilters(filters)).toBe('member_id:member_1');
     });
+
+    it('serializes exact comment dates using explicit timezone boundaries instead of browser-local dates', () => {
+        const filters: Filter[] = [
+            {id: 'created-at-1', field: 'created_at', operator: 'is', values: ['2024-01-01']}
+        ];
+
+        expect(serializeCommentFilters(filters, {timezone: 'America/New_York'})).toBe(
+            'created_at:>=\'2024-01-01T05:00:00.000Z\'+created_at:<=\'2024-01-02T04:59:59.999Z\''
+        );
+    });
 });

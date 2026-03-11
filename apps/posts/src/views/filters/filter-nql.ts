@@ -46,6 +46,19 @@ function formatDateFilterValue(value: string, relation: string, timezone: string
     return boundaryDate.utc().format('YYYY-MM-DD HH:mm:ss');
 }
 
+function formatCommentDateRange(value: string, timezone: string): {startOfDay: string; endOfDay: string} | undefined {
+    const localDate = moment.tz(value.trim(), 'YYYY-MM-DD', true, timezone);
+
+    if (!localDate.isValid()) {
+        return undefined;
+    }
+
+    return {
+        startOfDay: localDate.clone().startOf('day').utc().toISOString(),
+        endOfDay: localDate.clone().endOf('day').utc().toISOString()
+    };
+}
+
 function normalizeNewsletterSubscriptionValue(value: string): 'true' | 'false' | string {
     if (value === 'subscribed') {
         return 'true';
@@ -93,7 +106,7 @@ function getFilterRelationOperator(relation: string): string {
     return relationMap[relation] ?? '';
 }
 
-function parseLegacySubscribedFilter(filterNode: Record<string, unknown>, idSuffix: string): Filter | undefined {
+function parseLegacySubscribedFilter(filterNode: Record<string, unknown>, idSuffix: string): MemberPredicate | undefined {
     const comparator = ('$and' in filterNode && Array.isArray(filterNode.$and))
         ? filterNode.$and
         : (('$or' in filterNode && Array.isArray(filterNode.$or)) ? filterNode.$or : undefined);
@@ -134,7 +147,7 @@ function parseLegacySubscribedFilter(filterNode: Record<string, unknown>, idSuff
     };
 }
 
-function parseLegacyNewsletterFilter(filterNode: Record<string, unknown>, idSuffix: string): Filter | undefined {
+function parseLegacyNewsletterFilter(filterNode: Record<string, unknown>, idSuffix: string): MemberPredicate | undefined {
     const comparator = ('$and' in filterNode && Array.isArray(filterNode.$and))
         ? filterNode.$and
         : (('$or' in filterNode && Array.isArray(filterNode.$or)) ? filterNode.$or : undefined);
@@ -169,7 +182,7 @@ function parseLegacyNewsletterFilter(filterNode: Record<string, unknown>, idSuff
     };
 }
 
-function parseLegacySimpleFilter(filterNode: Record<string, unknown>, idSuffix: string): Filter | undefined {
+function parseLegacySimpleFilter(filterNode: Record<string, unknown>, idSuffix: string): MemberPredicate | undefined {
     const entries = Object.entries(filterNode);
 
     if (entries.length !== 1) {
@@ -223,20 +236,32 @@ function parseLegacySimpleFilter(filterNode: Record<string, unknown>, idSuffix: 
     }
 
     if (rawValue && typeof rawValue === 'object' && '$in' in rawValue && Array.isArray(rawValue.$in)) {
+        const values = rawValue.$in.map(value => String(value));
+
+        if (values.length === 0) {
+            return undefined;
+        }
+
         return {
             id: `${field}-legacy-${idSuffix}`,
             field,
             operator: field === 'label' ? 'is_any_of' : 'is',
-            values: rawValue.$in.map(value => String(value))
+            values: values as [string, ...string[]]
         };
     }
 
     if (rawValue && typeof rawValue === 'object' && '$nin' in rawValue && Array.isArray(rawValue.$nin)) {
+        const values = rawValue.$nin.map(value => String(value));
+
+        if (values.length === 0) {
+            return undefined;
+        }
+
         return {
             id: `${field}-legacy-${idSuffix}`,
             field,
             operator: field === 'label' ? 'is_not_any_of' : 'is-not',
-            values: rawValue.$nin.map(value => String(value))
+            values: values as [string, ...string[]]
         };
     }
 
@@ -281,7 +306,7 @@ function parseLegacySimpleFilter(filterNode: Record<string, unknown>, idSuffix: 
     return undefined;
 }
 
-function parseLegacyMemberFilterNode(filterNode: Record<string, unknown>, idSuffix: string): Filter[] {
+function parseLegacyMemberFilterNode(filterNode: Record<string, unknown>, idSuffix: string): MemberPredicate[] {
     const newsletterFilter = parseLegacyNewsletterFilter(filterNode, idSuffix);
 
     if (newsletterFilter) {
@@ -313,7 +338,7 @@ function parseLegacyMemberFilterNode(filterNode: Record<string, unknown>, idSuff
     return [];
 }
 
-export function parseMemberNqlFilterParam(filterParam: string): Filter[] {
+export function parseMemberNqlFilterParam(filterParam: string): MemberPredicate[] {
     try {
         const parsedFilter = nql.parse(filterParam) as Record<string, unknown>;
         return parseLegacyMemberFilterNode(parsedFilter, '1');
@@ -446,7 +471,9 @@ export function serializeMemberPredicates(predicates: MemberPredicate[]): string
     return buildMemberNqlFilter(predicates as unknown as Filter[]);
 }
 
-export function serializeCommentFilters(filters: Filter[]): string | undefined {
+export function serializeCommentFilters(filters: Filter[], options: {timezone?: string} = {}): string | undefined {
+    const timezone = options.timezone ?? 'Etc/UTC';
+
     return serializeFiltersToNql(filters, (filter) => {
         if (!isCommentField(filter.field) || !isCommentOperatorForField(filter.field, filter.operator)) {
             return undefined;
@@ -474,10 +501,13 @@ export function serializeCommentFilters(filters: Filter[]): string | undefined {
 
             if (filter.operator === 'is') {
                 const dateValue = String(filter.values[0]);
-                const startOfDay = new Date(dateValue + 'T00:00:00').toISOString();
-                const endOfDay = new Date(dateValue + 'T23:59:59.999').toISOString();
+                const range = formatCommentDateRange(dateValue, timezone);
 
-                return `created_at:>='${startOfDay}'+created_at:<='${endOfDay}'`;
+                if (!range) {
+                    return undefined;
+                }
+
+                return `created_at:>='${range.startOfDay}'+created_at:<='${range.endOfDay}'`;
             }
 
             return undefined;

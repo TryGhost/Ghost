@@ -61,4 +61,29 @@ describe('useMembersFilterConfig', () => {
         ]);
         expect(offerField?.hideOperatorSelect).not.toBe(true);
     });
+
+    it('marks resource select filters as repeatable when multi-select is not the right model', () => {
+        const {result} = renderHook(() => useMembersFilterConfig({
+            membersTrackSources: true,
+            paidMembersEnabled: true,
+            emailAnalyticsEnabled: true,
+            emailTrackOpens: true,
+            emailTrackClicks: true,
+            postResourceOptions: [
+                {value: 'post_1', label: 'Post 1'}
+            ],
+            emailResourceOptions: [
+                {value: 'email_1', label: 'Email 1'}
+            ]
+        }));
+
+        const fields = result.current.flatMap(group => group.fields);
+        const repeatableKeys = ['signup', 'conversion', 'emails.post_id', 'opened_emails.post_id', 'clicked_links.post_id'];
+
+        for (const key of repeatableKeys) {
+            const field = fields.find(currentField => currentField.key === key) as typeof fields[number] & {allowDuplicate?: boolean};
+
+            expect(field?.allowDuplicate).toBe(true);
+        }
+    });
 });

@@ -140,4 +140,54 @@ describe('member-filter-ui', () => {
         ]);
         expect(restoreMemberFiltersFromUi(uiState.displayFilters, uiState.fieldKeyMap)).toEqual(filters);
     });
+
+    it('keeps explicitly repeatable select fields addable while preserving active rows', () => {
+        const fieldGroups: FilterFieldGroup[] = [
+            {
+                group: 'Basic',
+                fields: [
+                    {
+                        key: 'conversion',
+                        label: 'Subscription started on post/page',
+                        type: 'select',
+                        options: [],
+                        allowDuplicate: true
+                    } as FilterFieldGroup['fields'][number] & {allowDuplicate: boolean}
+                ]
+            }
+        ];
+
+        const filters: Filter[] = [
+            {
+                id: 'conversion-1',
+                field: 'conversion',
+                operator: 'is',
+                values: ['post_1']
+            }
+        ];
+
+        const uiState = buildMemberFilterUiState({fieldGroups, filters});
+
+        expect(uiState.displayGroups[0].fields.map(field => field.key)).toEqual([
+            'conversion__row__conversion-1',
+            'conversion'
+        ]);
+        expect(restoreMemberFiltersFromUi([
+            ...uiState.displayFilters,
+            {
+                id: 'conversion-2',
+                field: 'conversion',
+                operator: 'is-not',
+                values: ['post_2']
+            }
+        ], uiState.fieldKeyMap)).toEqual([
+            filters[0],
+            {
+                id: 'conversion-2',
+                field: 'conversion',
+                operator: 'is-not',
+                values: ['post_2']
+            }
+        ]);
+    });
 });

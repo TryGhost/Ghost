@@ -1,9 +1,11 @@
 import type {Filter} from '@tryghost/shade';
+import {useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {COMMENT_FIELDS, CommentPredicate, isCommentField, isCommentOperatorForField} from '@src/views/filters/comment-fields';
 import {deriveFilterFlags} from '@src/views/filters/filter-flags';
 import {serializeCommentFilters} from '@src/views/filters/filter-nql';
 import {parsePredicateParams, serializePredicateParams} from '@src/views/filters/url-predicate-params';
 import {UrlFilterStateOptions, useUrlFilterState} from '@src/views/filters/use-url-filter-state';
+import {getSiteTimezone} from '@src/utils/get-site-timezone';
 
 /**
  * Comment filter field keys - single source of truth for filter definitions
@@ -12,8 +14,8 @@ export const COMMENT_FILTER_FIELDS = COMMENT_FIELDS;
 
 export type CommentFilterField = typeof COMMENT_FILTER_FIELDS[number];
 
-export function buildNqlFilter(filters: CommentPredicate[]): string | undefined {
-    return serializeCommentFilters(filters);
+export function buildNqlFilter(filters: CommentPredicate[], options: {timezone?: string} = {}): string | undefined {
+    return serializeCommentFilters(filters, options);
 }
 
 export function coerceCommentFilters(filters: Filter[]): CommentPredicate[] {
@@ -70,6 +72,9 @@ interface UseFilterStateReturn {
  * URL format: ?status=is:published&author=is:member-id&body=contains:search+term
  */
 export function useFilterState(): UseFilterStateReturn {
+    const {data: settingsData} = useBrowseSettings({});
+    const siteTimezone = getSiteTimezone(settingsData?.settings ?? []);
+
     const {filters, nql, setFilters, clearFilters, isSingleIdFilter, hasFilters} = useUrlFilterState<CommentPredicate, {
         isSingleIdFilter: boolean;
         hasFilters: boolean;
@@ -78,7 +83,7 @@ export function useFilterState(): UseFilterStateReturn {
     }>({
         parseFilters: searchParamsToFilters,
         serializeFilters: (newFilters) => filtersToSearchParams(newFilters),
-        buildNql: buildNqlFilter,
+        buildNql: currentFilters => buildNqlFilter(currentFilters, {timezone: siteTimezone}),
         deriveState: ({filters: currentFilters}) => ({
             ...deriveFilterFlags({predicates: currentFilters}),
             isSingleIdFilter: currentFilters.length === 1 && currentFilters[0].field === 'id'
