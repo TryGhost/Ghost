@@ -322,9 +322,11 @@ const RetentionOfferSection = ({subscription, offer, onAcceptOffer, onDeclineOff
     const isAcceptingOffer = action === 'applyOffer:running';
 
     const price = getPriceFromSubscription({subscription});
-    const originalPrice = formatNumber(price.amount / 100);
+    const originalAmount = price.amount / 100;
+    const originalPrice = formatNumber(originalAmount % 1 !== 0 ? Number(Math.round(originalAmount * 100) / 100).toFixed(2) : originalAmount);
     const currency = getCurrencySymbol(price.currency);
-    const discountedPrice = formatNumber(getUpdatedOfferPrice({offer, price}));
+    const updatedAmount = getUpdatedOfferPrice({offer, price});
+    const discountedPrice = formatNumber(updatedAmount % 1 !== 0 ? Number(Math.round(updatedAmount * 100) / 100).toFixed(2) : updatedAmount);
     const amountOff = getOfferOffAmount({offer});
 
     const cadenceLabel = offer.cadence === 'month' ? t('Monthly') : t('Yearly');
