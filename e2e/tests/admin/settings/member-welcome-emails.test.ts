@@ -123,6 +123,25 @@ test.describe('Ghost Admin - Member Welcome Emails', () => {
     });
 });
 
+test.describe('Ghost Admin - Welcome Email Customize Button', () => {
+    test.use({labs: {welcomeEmailsDesignCustomization: true}});
+
+    test('customize button opens modal when labs flag is enabled', async ({page}) => {
+        const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);
+
+        await welcomeEmailsSection.goto();
+
+        await expect(welcomeEmailsSection.customizeButton).toBeVisible();
+        await welcomeEmailsSection.customizeButton.click();
+
+        await expect(welcomeEmailsSection.customizeModal).toBeVisible();
+
+        await welcomeEmailsSection.customizeModal.getByRole('button', {name: 'Close'}).click();
+
+        await expect(welcomeEmailsSection.customizeModal).toBeHidden();
+    });
+});
+
 test.describe('Ghost Admin - Paid Member Welcome Emails', () => {
     test.use({stripeConnected: true});
 
