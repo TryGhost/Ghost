@@ -107,6 +107,40 @@ const AUDIENCE_FEEDBACK_OPERATORS = [
     {value: '0', label: 'Less like this'}
 ];
 
+function createEmailResourceField({
+    key,
+    label,
+    icon,
+    emailResourceOptions,
+    onEmailResourceSearchChange,
+    emailResourceSearchValue,
+    emailResourceLoading
+}: {
+    key: string;
+    label: string;
+    icon: React.ReactNode;
+    emailResourceOptions: FilterOption[];
+    onEmailResourceSearchChange?: (search: string) => void;
+    emailResourceSearchValue?: string;
+    emailResourceLoading: boolean;
+}): MemberFilterFieldConfig {
+    return {
+        key,
+        label,
+        type: 'select',
+        icon,
+        options: emailResourceOptions,
+        operators: IS_IS_NOT_OPERATORS,
+        allowDuplicate: true,
+        searchable: true,
+        onSearchChange: onEmailResourceSearchChange,
+        searchValue: emailResourceSearchValue,
+        isLoading: emailResourceLoading,
+        placeholder: 'Select an email...',
+        className: 'w-64'
+    };
+}
+
 export function useMembersFilterConfig({
     labels = [],
     tiers = [],
@@ -439,56 +473,38 @@ export function useMembersFilterConfig({
                 });
             }
 
-            emailFields.push({
+            emailFields.push(createEmailResourceField({
                 key: 'emails.post_id',
                 label: 'Sent email',
-                type: 'select',
                 icon: <LucideIcon.Send className="size-4" />,
-                options: emailResourceOptions,
-                operators: IS_IS_NOT_OPERATORS,
-                allowDuplicate: true,
-                searchable: true,
-                onSearchChange: onEmailResourceSearchChange,
-                searchValue: emailResourceSearchValue,
-                isLoading: emailResourceLoading,
-                placeholder: 'Select an email...',
-                className: 'w-64'
-            });
+                emailResourceOptions,
+                onEmailResourceSearchChange,
+                emailResourceSearchValue,
+                emailResourceLoading
+            }));
 
             if (emailTrackOpens) {
-                emailFields.push({
+                emailFields.push(createEmailResourceField({
                     key: 'opened_emails.post_id',
                     label: 'Opened email',
-                    type: 'select',
                     icon: <LucideIcon.MailOpen className="size-4" />,
-                    options: emailResourceOptions,
-                    operators: IS_IS_NOT_OPERATORS,
-                    allowDuplicate: true,
-                    searchable: true,
-                    onSearchChange: onEmailResourceSearchChange,
-                    searchValue: emailResourceSearchValue,
-                    isLoading: emailResourceLoading,
-                    placeholder: 'Select an email...',
-                    className: 'w-64'
-                });
+                    emailResourceOptions,
+                    onEmailResourceSearchChange,
+                    emailResourceSearchValue,
+                    emailResourceLoading
+                }));
             }
 
             if (emailTrackClicks) {
-                emailFields.push({
+                emailFields.push(createEmailResourceField({
                     key: 'clicked_links.post_id',
                     label: 'Clicked email',
-                    type: 'select',
                     icon: <LucideIcon.MousePointerClick className="size-4" />,
-                    options: emailResourceOptions,
-                    operators: IS_IS_NOT_OPERATORS,
-                    allowDuplicate: true,
-                    searchable: true,
-                    onSearchChange: onEmailResourceSearchChange,
-                    searchValue: emailResourceSearchValue,
-                    isLoading: emailResourceLoading,
-                    placeholder: 'Select an email...',
-                    className: 'w-64'
-                });
+                    emailResourceOptions,
+                    onEmailResourceSearchChange,
+                    emailResourceSearchValue,
+                    emailResourceLoading
+                }));
             }
 
             if (audienceFeedbackEnabled) {

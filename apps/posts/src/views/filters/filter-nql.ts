@@ -123,10 +123,32 @@ function getFilterRelationOperator(relation: string): string {
     return relationMap[relation] ?? '';
 }
 
+function getLegacyLogicalComparator(filterNode: Record<string, unknown>): {
+    comparator?: Array<Record<string, unknown>>;
+    usedOr: boolean;
+} {
+    if ('$and' in filterNode && Array.isArray(filterNode.$and)) {
+        return {
+            comparator: filterNode.$and as Array<Record<string, unknown>>,
+            usedOr: false
+        };
+    }
+
+    if ('$or' in filterNode && Array.isArray(filterNode.$or)) {
+        return {
+            comparator: filterNode.$or as Array<Record<string, unknown>>,
+            usedOr: true
+        };
+    }
+
+    return {
+        comparator: undefined,
+        usedOr: false
+    };
+}
+
 function parseLegacySubscribedFilter(filterNode: Record<string, unknown>, idSuffix: string): MemberPredicate | undefined {
-    const comparator = ('$and' in filterNode && Array.isArray(filterNode.$and))
-        ? filterNode.$and
-        : (('$or' in filterNode && Array.isArray(filterNode.$or)) ? filterNode.$or : undefined);
+    const {comparator, usedOr} = getLegacyLogicalComparator(filterNode);
 
     if (!comparator || comparator.length !== 2) {
         if ('email_disabled' in filterNode) {
@@ -149,7 +171,6 @@ function parseLegacySubscribedFilter(filterNode: Record<string, unknown>, idSuff
         return undefined;
     }
 
-    const usedOr = '$or' in filterNode;
     const subscribed = subscriptionNode.subscribed;
 
     if (typeof subscribed !== 'boolean') {
@@ -165,9 +186,7 @@ function parseLegacySubscribedFilter(filterNode: Record<string, unknown>, idSuff
 }
 
 function parseLegacyNewsletterFilter(filterNode: Record<string, unknown>, idSuffix: string): MemberPredicate | undefined {
-    const comparator = ('$and' in filterNode && Array.isArray(filterNode.$and))
-        ? filterNode.$and
-        : (('$or' in filterNode && Array.isArray(filterNode.$or)) ? filterNode.$or : undefined);
+    const {comparator, usedOr} = getLegacyLogicalComparator(filterNode);
 
     if (!comparator || comparator.length !== 2) {
         return undefined;
@@ -179,7 +198,6 @@ function parseLegacyNewsletterFilter(filterNode: Record<string, unknown>, idSuff
         return undefined;
     }
 
-    const usedOr = '$or' in filterNode;
     const rawSlug = newsletterNode['newsletters.slug'];
     const slug = typeof rawSlug === 'string'
         ? rawSlug
