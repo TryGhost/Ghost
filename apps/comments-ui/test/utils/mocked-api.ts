@@ -218,7 +218,7 @@ export class MockedApi {
             comments: comments.map((comment) => {
                 return {
                     ...comment,
-                    replies: comment.replies ? comment.replies?.slice(0, 3) : [],
+                    replies: comment.replies ? comment.replies : [],
                     count: {
                         ...comment.count,
                         replies: comment.replies ? comment.replies?.length : 0

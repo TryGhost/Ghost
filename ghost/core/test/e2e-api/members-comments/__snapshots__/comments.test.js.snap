@@ -1479,7 +1479,7 @@ Object {
 }
 `;
 
-exports[`Comments API when commenting enabled for all when authenticated Limits returned replies to 3 1: [body] 1`] = `
+exports[`Comments API when commenting enabled for all when authenticated Returns all replies when reading a single comment 1: [body] 1`] = `
 Object {
   "comments": Array [
     Object {
@@ -1570,6 +1570,50 @@ Object {
           "parent_id": Nullable<StringMatching>,
           "status": "published",
         },
+        Object {
+          "count": Object {
+            "direct_replies": 0,
+            "likes": Any<Number>,
+          },
+          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "edited_at": null,
+          "html": "<p>This is a reply</p>",
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "in_reply_to_id": null,
+          "in_reply_to_snippet": null,
+          "liked": Any<Boolean>,
+          "member": Object {
+            "avatar_image": null,
+            "expertise": null,
+            "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+            "name": null,
+            "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+          },
+          "parent_id": Nullable<StringMatching>,
+          "status": "published",
+        },
+        Object {
+          "count": Object {
+            "direct_replies": 0,
+            "likes": Any<Number>,
+          },
+          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "edited_at": null,
+          "html": "<p>This is a reply</p>",
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "in_reply_to_id": null,
+          "in_reply_to_snippet": null,
+          "liked": Any<Boolean>,
+          "member": Object {
+            "avatar_image": null,
+            "expertise": null,
+            "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+            "name": null,
+            "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+          },
+          "parent_id": Nullable<StringMatching>,
+          "status": "published",
+        },
       ],
       "status": "published",
     },
@@ -1577,12 +1621,12 @@ Object {
 }
 `;
 
-exports[`Comments API when commenting enabled for all when authenticated Limits returned replies to 3 2: [headers] 1`] = `
+exports[`Comments API when commenting enabled for all when authenticated Returns all replies when reading a single comment 2: [headers] 1`] = `
 Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1714",
+  "content-length": "2560",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
