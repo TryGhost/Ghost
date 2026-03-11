@@ -116,11 +116,11 @@ const forPost = (attrs, frame) => {
         attrs.html = attrs.html.replace(/%7Buuid%7D/gi, member.uuid);
     }
 
-    // In preview mode, replace Transistor iframe with a static placeholder since
-    // the embed requires a real member UUID to function
+    // In preview mode, replace Transistor iframe (and its accompanying script + noscript)
+    // with a static placeholder since the embed requires a real member UUID to function
     if (frame.isPreview && attrs.html && attrs.html.includes('data-kg-transistor-embed')) {
         attrs.html = attrs.html.replace(
-            /<figure class="kg-card kg-transistor-card">[\s\S]*?<iframe[^>]*data-kg-transistor-embed[^>]*>[\s\S]*?<\/figure>/g,
+            /<iframe[^>]*data-kg-transistor-embed[^>]*><\/iframe><script>[\s\S]*?<\/script>(?:<noscript>[\s\S]*?<\/noscript>)?/g,
             _buildTransistorPlaceholder()
         );
     }
