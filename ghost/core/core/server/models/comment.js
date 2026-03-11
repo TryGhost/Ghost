@@ -52,9 +52,7 @@ const Comment = ghostBookshelf.Model.extend({
 
     replies() {
         return this.hasMany('Comment', 'parent_id', 'id')
-            .query('orderBy', 'created_at', 'ASC')
-            // Note: this limit is not working
-            .query('limit', 3);
+            .query('orderBy', 'created_at', 'ASC');
     },
 
     // Called by our filtered-collection bookshelf plugin
@@ -210,7 +208,6 @@ const Comment = ghostBookshelf.Model.extend({
                     options.withRelated = [
                         // Relations
                         'member', 'in_reply_to', 'count.replies', 'count.direct_replies', 'count.likes', 'count.liked',
-                        // Replies (limited to 3)
                         'replies', 'replies.member', 'replies.in_reply_to',
                         'replies.count.direct_replies', 'replies.count.likes', 'replies.count.liked'
                     ];
@@ -232,21 +229,43 @@ const Comment = ghostBookshelf.Model.extend({
     async findPage(options) {
         const {withRelated} = this.defaultRelations('findPage', options);
 
-        const relationsToLoadIndividually = [
-            'replies',
-            'replies.member',
-            'replies.in_reply_to',
-            'replies.count.direct_replies',
-            'replies.count.likes',
-            'replies.count.liked'
-        ].filter(relation => (withRelated.includes(relation) || withRelated.some(r => typeof r === 'object' && r[relation])));
-
-        this.applyRepliesWithRelatedOption(relationsToLoadIndividually, options.isAdmin);
-
-        const result = await ghostBookshelf.Model.findPage.call(this, options);
-        for (const model of result.data) {
-            await model.load(relationsToLoadIndividually, _.omit(options, 'withRelated'));
+        // Identify reply-related relations to load separately in batch
+        const replyRelationKeys = [
+            'replies', 'replies.member', 'replies.in_reply_to',
+            'replies.count.direct_replies', 'replies.count.likes', 'replies.count.liked'
+        ];
+        if (options.isAdmin) {
+            replyRelationKeys.push('replies.count.reports');
         }
+
+        // Remove reply relations from options.withRelated to avoid double-loading
+        // and collect them for batch loading via Collection.load()
+        const relationsToLoadInBatch = [];
+        const isReplyRelation = (rel) => {
+            const name = typeof rel === 'string' ? rel : Object.keys(rel)[0];
+            return replyRelationKeys.includes(name);
+        };
+        options.withRelated = withRelated.filter((rel) => {
+            if (isReplyRelation(rel)) {
+                relationsToLoadInBatch.push(rel);
+                return false;
+            }
+            return true;
+        });
+
+        // Apply status filtering on the batch relations
+        this.applyRepliesWithRelatedOption(relationsToLoadInBatch, options.isAdmin);
+
+        // Base findPage WITHOUT reply relations
+        const result = await ghostBookshelf.Model.findPage.call(this, options);
+
+        // Batch-load reply relations for ALL comments at once using Collection.load()
+        // instead of the previous N+1 per-model model.load() loop
+        if (result.data.length > 0 && relationsToLoadInBatch.length > 0) {
+            const collection = ghostBookshelf.Collection.forge(result.data, {model: this});
+            await collection.load(relationsToLoadInBatch, _.omit(options, 'withRelated'));
+        }
+
         return result;
     },
 

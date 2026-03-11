@@ -277,7 +277,7 @@ test.describe('Comment Permalinks', async () => {
             replies: [] as any[]
         };
 
-        // Add 5 replies - only first 3 will be shown initially
+        // Add 5 replies - all returned by API but only first 3 shown in UI
         // Use hex IDs because parseCommentIdFromHash only accepts [a-f0-9]+
         const replyIds = ['aaa0000000000000000001', 'aaa0000000000000000002', 'aaa0000000000000000003', 'aaa0000000000000000004', 'aaa0000000000000000005'];
         for (let i = 0; i < 5; i++) {
@@ -386,6 +386,62 @@ test.describe('Comment Permalinks', async () => {
         await expect(targetElement).toBeVisible();
     });
 
+    test('loads reply via server fetch when permalink target is not in partial API response', async ({page}) => {
+        const mockedApi = new MockedApi({});
+        mockedApi.setMember({});
+
+        const parentId = 'aaa0000000000000000000';
+        const parentComment = {
+            id: parentId,
+            html: '<p>Parent comment</p>',
+            replies: [] as any[]
+        };
+
+        // Add 5 replies to the parent
+        const replyIds = [
+            'bbb0000000000000000001',
+            'bbb0000000000000000002',
+            'bbb0000000000000000003',
+            'bbb0000000000000000004',
+            'bbb0000000000000000005'
+        ];
+        for (let i = 0; i < 5; i++) {
+            parentComment.replies.push(mockedApi.buildReply({
+                id: replyIds[i],
+                html: `<p>Reply ${i + 1}</p>`,
+                parent_id: parentId
+            }));
+        }
+
+        mockedApi.addComment(parentComment);
+
+        // Override browseComments to only return 3 replies (simulating old API LIMIT 3)
+        // while count.replies stays at 5
+        const originalBrowse = mockedApi.browseComments.bind(mockedApi);
+        mockedApi.browseComments = function (options) {
+            const result = originalBrowse(options);
+            result.comments = result.comments.map((c) => {
+                if (c.replies.length > 3) {
+                    return {...c, replies: c.replies.slice(0, 3)};
+                }
+                return c;
+            });
+            return result;
+        };
+
+        // Permalink to reply 5 — not in the initial 3 returned by browseComments
+        const targetReplyId = replyIds[4];
+        const commentsFrame = await setupPermalinkTest(page, mockedApi, `#ghost-comments-${targetReplyId}`);
+
+        await expect(commentsFrame.getByText('Parent comment')).toBeVisible();
+
+        // Reply 5 must be loaded via server fetch and visible
+        await expect(commentsFrame.getByText('Reply 5')).toBeVisible();
+
+        const targetElement = commentsFrame.locator(`[id="${targetReplyId}"]`);
+        await expect(targetElement).toBeVisible();
+    });
+
     test('admin auth does not overwrite paginated comments loaded for permalink', async ({page}) => {
         const mockedApi = new MockedApi({});
         mockedApi.setMember({id: '1', uuid: '12345'});
@@ -462,10 +518,10 @@ test.describe('Comment Permalinks', async () => {
         const admin = MOCKED_SITE_URL + '/ghost/';
         await mockAdminAuthFrame({page, admin});
 
-        // Create a parent with 5 replies — browse API returns only the first 3.
-        // The target (reply 5) is loaded by loadRepliesForComment during
-        // initSetup permalink flow. initAdminAuth then re-fetches admin page 1,
-        // which must NOT overwrite the expanded replies.
+        // Create a parent with 5 replies — all returned by API but only first 3
+        // shown in UI. The target (reply 5) is auto-expanded by the Replies
+        // component. initAdminAuth then re-fetches admin page 1, which must
+        // NOT overwrite the replies.
         const parentId = 'aaa0000000000000parent';
         const parentComment = {
             id: parentId,
