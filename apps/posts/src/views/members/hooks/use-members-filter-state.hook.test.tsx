@@ -20,7 +20,7 @@ describe('useMembersFilterState', () => {
 
         mockUseSearchParams.mockReturnValue([
             new URLSearchParams({
-                filter: 'created_at:>=\'2022-02-22 05:00:00\''
+                filter: 'created_at:>=\'2022-02-21 23:00:00\''
             }),
             vi.fn()
         ]);
@@ -28,7 +28,7 @@ describe('useMembersFilterState', () => {
         mockUseBrowseSettings.mockReturnValue({
             data: {
                 settings: [
-                    {key: 'timezone', value: 'America/New_York'}
+                    {key: 'timezone', value: 'Europe/Stockholm'}
                 ]
             }
         });
@@ -38,7 +38,31 @@ describe('useMembersFilterState', () => {
         const {result} = renderHook(() => useMembersFilterState());
 
         expectTypeOf(result.current.filters).toEqualTypeOf<MemberPredicate[]>();
-        expect(result.current.nql).toBe('created_at:>=\'2022-02-22 05:00:00\'');
+        expect(result.current.nql).toBe('created_at:>=\'2022-02-21 23:00:00\'');
+    });
+
+    it('uses the site timezone when writing member date filters back into the URL', () => {
+        const setSearchParams = vi.fn();
+
+        mockUseSearchParams.mockReturnValue([
+            new URLSearchParams(),
+            setSearchParams
+        ]);
+
+        const {result} = renderHook(() => useMembersFilterState());
+
+        result.current.setFilters([
+            {
+                id: 'created-at-1',
+                field: 'created_at',
+                operator: 'is-or-greater',
+                values: ['2022-02-22']
+            }
+        ]);
+
+        expect(setSearchParams).toHaveBeenCalledTimes(1);
+        expect(setSearchParams.mock.calls[0][0].toString()).toBe('filter=created_at%3A%3E%3D%272022-02-21+23%3A00%3A00%27');
+        expect(setSearchParams.mock.calls[0][1]).toEqual({replace: true});
     });
 
     it('derives filter flags separately from search state', () => {

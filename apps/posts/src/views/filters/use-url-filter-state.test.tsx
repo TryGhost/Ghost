@@ -10,10 +10,27 @@ vi.mock('@tryghost/admin-x-framework', () => ({
 }));
 
 describe('useUrlFilterState', () => {
+    const serializeFilters = (filters: Array<{field: string; operator: string; values: unknown[]}>, search?: string) => {
+        const params = new URLSearchParams();
+        const filter = filters
+            .map(currentFilter => `${currentFilter.field}:${currentFilter.operator}:${currentFilter.values[0]}`)
+            .join('+');
+
+        if (filter) {
+            params.set('filter', filter);
+        }
+
+        if (search) {
+            params.set('search', search);
+        }
+
+        return params;
+    };
+
     it('resets predicates and search through shared reducer semantics', () => {
         mockUseSearchParams.mockReturnValue([
             new URLSearchParams({
-                status: 'is:paid',
+                filter: 'status:is:paid',
                 search: 'alex'
             }),
             mockSetSearchParams
@@ -21,19 +38,7 @@ describe('useUrlFilterState', () => {
 
         const {result} = renderHook(() => useUrlFilterState({
             parseFilters: () => [{id: 'status-1', field: 'status', operator: 'is', values: ['paid']}],
-            serializeFilters: (filters, search) => {
-                const params = new URLSearchParams();
-
-                for (const filter of filters) {
-                    params.append(filter.field, `${filter.operator}:${filter.values[0]}`);
-                }
-
-                if (search) {
-                    params.set('search', search);
-                }
-
-                return params;
-            },
+            serializeFilters,
             buildNql: () => undefined
         }));
 
@@ -47,7 +52,7 @@ describe('useUrlFilterState', () => {
     it('clears predicates through shared reducer semantics while preserving search', () => {
         mockUseSearchParams.mockReturnValue([
             new URLSearchParams({
-                status: 'is:paid',
+                filter: 'status:is:paid',
                 search: 'alex'
             }),
             mockSetSearchParams
@@ -55,19 +60,7 @@ describe('useUrlFilterState', () => {
 
         const {result} = renderHook(() => useUrlFilterState({
             parseFilters: () => [{id: 'status-1', field: 'status', operator: 'is', values: ['paid']}],
-            serializeFilters: (filters, search) => {
-                const params = new URLSearchParams();
-
-                for (const filter of filters) {
-                    params.append(filter.field, `${filter.operator}:${filter.values[0]}`);
-                }
-
-                if (search) {
-                    params.set('search', search);
-                }
-
-                return params;
-            },
+            serializeFilters,
             buildNql: () => undefined
         }));
 
@@ -81,7 +74,7 @@ describe('useUrlFilterState', () => {
     it('updates search through shared reducer semantics while preserving predicates', () => {
         mockUseSearchParams.mockReturnValue([
             new URLSearchParams({
-                status: 'is:paid',
+                filter: 'status:is:paid',
                 search: 'alex'
             }),
             mockSetSearchParams
@@ -89,19 +82,7 @@ describe('useUrlFilterState', () => {
 
         const {result} = renderHook(() => useUrlFilterState({
             parseFilters: () => [{id: 'status-1', field: 'status', operator: 'is', values: ['paid']}],
-            serializeFilters: (filters, search) => {
-                const params = new URLSearchParams();
-
-                for (const filter of filters) {
-                    params.append(filter.field, `${filter.operator}:${filter.values[0]}`);
-                }
-
-                if (search) {
-                    params.set('search', search);
-                }
-
-                return params;
-            },
+            serializeFilters,
             buildNql: () => undefined
         }));
 
@@ -109,13 +90,13 @@ describe('useUrlFilterState', () => {
             result.current.setSearch('jamie');
         });
 
-        expect(mockSetSearchParams).toHaveBeenCalledWith(new URLSearchParams('status=is%3Apaid&search=jamie'), {replace: true});
+        expect(mockSetSearchParams).toHaveBeenCalledWith(new URLSearchParams('filter=status%3Ais%3Apaid&search=jamie'), {replace: true});
     });
 
     it('sets predicates through shared reducer semantics while preserving search', () => {
         mockUseSearchParams.mockReturnValue([
             new URLSearchParams({
-                status: 'is:paid',
+                filter: 'status:is:paid',
                 search: 'alex'
             }),
             mockSetSearchParams
@@ -123,19 +104,7 @@ describe('useUrlFilterState', () => {
 
         const {result} = renderHook(() => useUrlFilterState({
             parseFilters: () => [{id: 'status-1', field: 'status', operator: 'is', values: ['paid']}],
-            serializeFilters: (filters, search) => {
-                const params = new URLSearchParams();
-
-                for (const filter of filters) {
-                    params.append(filter.field, `${filter.operator}:${filter.values[0]}`);
-                }
-
-                if (search) {
-                    params.set('search', search);
-                }
-
-                return params;
-            },
+            serializeFilters,
             buildNql: () => undefined
         }));
 
@@ -146,14 +115,13 @@ describe('useUrlFilterState', () => {
             ]);
         });
 
-        expect(mockSetSearchParams).toHaveBeenCalledWith(new URLSearchParams('status=is%3Apaid&status=is_not%3Afree&search=alex'), {replace: true});
+        expect(mockSetSearchParams).toHaveBeenCalledWith(new URLSearchParams('filter=status%3Ais%3Apaid%2Bstatus%3Ais_not%3Afree&search=alex'), {replace: true});
     });
 
     it('preserves the next predicate order when the payload reorders rows', () => {
         mockUseSearchParams.mockReturnValue([
             new URLSearchParams({
-                status: 'is:paid',
-                email: 'contains:alex@example.com',
+                filter: 'status:is:paid+email:contains:alex@example.com',
                 search: 'alex'
             }),
             mockSetSearchParams
@@ -164,19 +132,7 @@ describe('useUrlFilterState', () => {
                 {id: 'status-1', field: 'status', operator: 'is', values: ['paid']},
                 {id: 'email-1', field: 'email', operator: 'contains', values: ['alex@example.com']}
             ],
-            serializeFilters: (filters, search) => {
-                const params = new URLSearchParams();
-
-                for (const filter of filters) {
-                    params.append(filter.field, `${filter.operator}:${filter.values[0]}`);
-                }
-
-                if (search) {
-                    params.set('search', search);
-                }
-
-                return params;
-            },
+            serializeFilters,
             buildNql: () => undefined
         }));
 
@@ -187,6 +143,6 @@ describe('useUrlFilterState', () => {
             ]);
         });
 
-        expect(mockSetSearchParams).toHaveBeenCalledWith(new URLSearchParams('email=contains%3Aalex%40example.com&status=is%3Apaid&search=alex'), {replace: true});
+        expect(mockSetSearchParams).toHaveBeenCalledWith(new URLSearchParams('filter=email%3Acontains%3Aalex%40example.com%2Bstatus%3Ais%3Apaid&search=alex'), {replace: true});
     });
 });

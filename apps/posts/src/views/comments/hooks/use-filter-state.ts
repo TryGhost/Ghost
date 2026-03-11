@@ -25,16 +25,16 @@ export function coerceCommentFilters(filters: Filter[]): CommentPredicate[] {
 /**
  * Parse Ember-style filter NQL from URL search params into comment predicates.
  */
-export function searchParamsToFilters(searchParams: URLSearchParams): CommentPredicate[] {
-    return parseCommentNqlFilterParam(searchParams.get('filter') ?? '');
+export function searchParamsToFilters(searchParams: URLSearchParams, options: {timezone?: string} = {}): CommentPredicate[] {
+    return parseCommentNqlFilterParam(searchParams.get('filter') ?? '', options);
 }
 
 /**
  * Serialize comment predicates into Ember-style filter NQL URL search params.
  */
-export function filtersToSearchParams(filters: CommentPredicate[]): URLSearchParams {
+export function filtersToSearchParams(filters: CommentPredicate[], options: {timezone?: string} = {}): URLSearchParams {
     const params = new URLSearchParams();
-    const filter = serializeCommentFilters(filters);
+    const filter = serializeCommentFilters(filters, options);
 
     if (filter) {
         params.set('filter', filter);
@@ -69,7 +69,7 @@ export function useFilterState(): UseFilterStateReturn {
         hasFilterOrSearch: boolean;
     }>({
         parseFilters: searchParams => parseCommentNqlFilterParam(searchParams.get('filter') ?? '', {timezone: siteTimezone}),
-        serializeFilters: (newFilters) => filtersToSearchParams(newFilters),
+        serializeFilters: newFilters => filtersToSearchParams(newFilters, {timezone: siteTimezone}),
         buildNql: currentFilters => buildNqlFilter(currentFilters, {timezone: siteTimezone}),
         deriveState: ({filters: currentFilters}) => ({
             ...deriveFilterFlags({predicates: currentFilters}),

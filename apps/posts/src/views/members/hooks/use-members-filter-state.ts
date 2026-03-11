@@ -29,9 +29,9 @@ export function coerceMemberFilters(filters: Filter[]): MemberPredicate[] {
 /**
  * Parse Ember-style filter NQL from URL search params into member predicates.
  */
-export function searchParamsToFilters(searchParams: URLSearchParams): MemberPredicate[] {
+export function searchParamsToFilters(searchParams: URLSearchParams, options: {timezone?: string} = {}): MemberPredicate[] {
     const legacyFilters = searchParams.getAll('filter')
-        .flatMap(filterParam => parseMemberNqlFilterParam(filterParam));
+        .flatMap(filterParam => parseMemberNqlFilterParam(filterParam, options));
 
     return legacyFilters;
 }
@@ -39,9 +39,9 @@ export function searchParamsToFilters(searchParams: URLSearchParams): MemberPred
 /**
  * Serialize member predicates into Ember-style filter NQL URL search params.
  */
-export function filtersToSearchParams(filters: MemberPredicate[], search?: string): URLSearchParams {
+export function filtersToSearchParams(filters: MemberPredicate[], search?: string, options: {timezone?: string} = {}): URLSearchParams {
     const params = new URLSearchParams();
-    const filter = buildMemberNqlFilter(coerceMemberFilters(filters));
+    const filter = buildMemberNqlFilter(coerceMemberFilters(filters), options);
 
     if (filter) {
         params.set('filter', filter);
@@ -101,8 +101,8 @@ export function useMembersFilterState(): UseFilterStateReturn {
         activeFields: string[];
         activeColumns: MemberFilterColumnMetadata[];
     }>({
-        parseFilters: searchParamsToFilters,
-        serializeFilters: filtersToSearchParams,
+        parseFilters: searchParams => searchParamsToFilters(searchParams, {timezone: siteTimezone}),
+        serializeFilters: (newFilters, currentSearch) => filtersToSearchParams(newFilters, currentSearch, {timezone: siteTimezone}),
         buildNql: currentFilters => buildMemberNqlFilter(currentFilters, {timezone: siteTimezone}),
         deriveState: ({filters: currentFilters, search: currentSearch}) => {
             const flags = deriveFilterFlags({

@@ -52,6 +52,17 @@ function formatDateFilterValue(value: string, relation: string, timezone: string
     return boundaryDate.utc().format('YYYY-MM-DD HH:mm:ss');
 }
 
+function parseDateFilterValue(value: string, timezone: string): string {
+    const trimmedValue = value.trim();
+    const utcDate = moment.utc(trimmedValue, ['YYYY-MM-DD HH:mm:ss', moment.ISO_8601], true);
+
+    if (!utcDate.isValid()) {
+        return trimmedValue.split(' ')[0];
+    }
+
+    return utcDate.tz(timezone).format('YYYY-MM-DD');
+}
+
 function formatCommentDateRange(value: string, timezone: string): {startOfDay: string; endOfDay: string} | undefined {
     const localDate = moment.tz(value.trim(), 'YYYY-MM-DD', true, timezone);
 
@@ -188,7 +199,7 @@ function parseLegacyNewsletterFilter(filterNode: Record<string, unknown>, idSuff
     };
 }
 
-function parseLegacySimpleFilter(filterNode: Record<string, unknown>, idSuffix: string): MemberPredicate | undefined {
+function parseLegacySimpleFilter(filterNode: Record<string, unknown>, idSuffix: string, timezone: string): MemberPredicate | undefined {
     const entries = Object.entries(filterNode);
 
     if (entries.length !== 1) {
@@ -235,7 +246,7 @@ function parseLegacySimpleFilter(filterNode: Record<string, unknown>, idSuffix: 
                     id: `${field}-legacy-${idSuffix}`,
                     field,
                     operator,
-                    values: [String(rawValueRecord[legacyOperator]).split(' ')[0]]
+                    values: [parseDateFilterValue(String(rawValueRecord[legacyOperator]), timezone)]
                 };
             }
         }
@@ -312,7 +323,7 @@ function parseLegacySimpleFilter(filterNode: Record<string, unknown>, idSuffix: 
     return undefined;
 }
 
-function parseLegacyMemberFilterNode(filterNode: Record<string, unknown>, idSuffix: string): MemberPredicate[] {
+function parseLegacyMemberFilterNode(filterNode: Record<string, unknown>, idSuffix: string, timezone: string): MemberPredicate[] {
     const newsletterFilter = parseLegacyNewsletterFilter(filterNode, idSuffix);
 
     if (newsletterFilter) {
@@ -325,7 +336,7 @@ function parseLegacyMemberFilterNode(filterNode: Record<string, unknown>, idSuff
         return [subscribedFilter];
     }
 
-    const simpleFilter = parseLegacySimpleFilter(filterNode, idSuffix);
+    const simpleFilter = parseLegacySimpleFilter(filterNode, idSuffix, timezone);
 
     if (simpleFilter) {
         return [simpleFilter];
@@ -337,17 +348,19 @@ function parseLegacyMemberFilterNode(filterNode: Record<string, unknown>, idSuff
                 return [];
             }
 
-            return parseLegacyMemberFilterNode(childNode as Record<string, unknown>, `${idSuffix}-${index + 1}`);
+            return parseLegacyMemberFilterNode(childNode as Record<string, unknown>, `${idSuffix}-${index + 1}`, timezone);
         });
     }
 
     return [];
 }
 
-export function parseMemberNqlFilterParam(filterParam: string): MemberPredicate[] {
+export function parseMemberNqlFilterParam(filterParam: string, options: {timezone?: string} = {}): MemberPredicate[] {
+    const timezone = options.timezone ?? 'Etc/UTC';
+
     try {
         const parsedFilter = nql.parse(filterParam) as Record<string, unknown>;
-        return parseLegacyMemberFilterNode(parsedFilter, '1');
+        return parseLegacyMemberFilterNode(parsedFilter, '1', timezone);
     } catch {
         return [];
     }
