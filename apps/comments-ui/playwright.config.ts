@@ -31,8 +31,9 @@ export default defineConfig({
             slowMo: parseInt(process.env.PLAYWRIGHT_SLOWMO ?? '') || 0,
             // force GPU hardware acceleration
             // (even in headless mode)
-            args: ['--use-gl=egl', `--ip-address-space-overrides=127.0.0.1:${E2E_PORT}=public`]
-        }
+            args: ['--use-gl=egl']
+        },
+        permissions: ['local-network-access']
     },
 
     /* Configure projects for major browsers */
