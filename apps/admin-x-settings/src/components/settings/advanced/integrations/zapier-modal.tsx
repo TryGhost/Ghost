@@ -1,6 +1,7 @@
 import APIKeys from './api-keys';
 import IntegrationHeader from './integration-header';
 import NiceModal from '@ebay/nice-modal-react';
+import ZapierLogo from '../../../../assets/images/zapier-logo.svg';
 import {Button, ConfirmationModal, Icon, List, ListItem, Modal} from '@tryghost/admin-x-design-system';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {useBrowseIntegrations} from '@tryghost/admin-x-framework/api/integrations';
@@ -75,7 +76,7 @@ const ZapierModal = NiceModal.create(() => {
                         href='https://zapier.com/apps/ghost/integrations?utm_medium=partner_api&utm_source=widget&utm_campaign=Widget'
                         rel='noopener noreferrer'
                         target='_blank'>
-                        View more Ghost integrations powered by <span><Icon className='relative top-[-2px] inline-block' name='zapier-logo' size={24} /></span>
+                        View more Ghost integrations powered by <span><img alt='Zapier' className='relative top-[-2px] inline-block' src={ZapierLogo} /></span>
                     </a>
                     <Button color='black' label='Close' onClick={() => {
                         modal.remove();
