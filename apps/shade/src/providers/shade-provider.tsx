@@ -50,9 +50,9 @@ const ToasterPortal = () => {
                     position='bottom-left'
                     toastOptions={{
                         classNames: {
-                            title: '!mt-[-1px] !text-md !font-semibold !leading-tighter !tracking-[0.1px]',
-                            description: '!text-gray-900 dark:!text-gray-300 !text-sm !mt-px',
-                            icon: '!ml-0'
+                            title: 'mt-[-1px]! text-md! font-semibold! leading-tighter! tracking-[0.1px]!',
+                            description: 'text-gray-900! dark:text-gray-300! text-sm! mt-px!',
+                            icon: 'ml-0!'
                         },
                         style: {
                             alignItems: 'flex-start',

@@ -57,7 +57,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
     const shouldGoToEditor = postDestination.startsWith('/editor/');
 
     return (
-        <Card className='group/card bg-gradient-to-tr from-muted/40 to-muted/0 to-50%' data-testid='latest-post'>
+        <Card className='group/card from-muted/40 to-muted/0 bg-gradient-to-tr to-50%' data-testid='latest-post'>
             <CardHeader>
                 <CardTitle className='flex items-baseline justify-between font-medium leading-snug text-muted-foreground'>
                     Latest post performance
@@ -152,12 +152,12 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                         {shouldGoToEditor ? (
                                             <>
                                                 <LucideIcon.Pen />
-                                                <span className='hidden md:!visible md:!block'>Edit post</span>
+                                                <span className='md:visible! md:block! hidden'>Edit post</span>
                                             </>
                                         ) : (
                                             <>
                                                 <LucideIcon.ChartNoAxesColumn />
-                                                <span className='hidden md:!visible md:!block'>
+                                                <span className='md:visible! md:block! hidden'>
                                                     {!latestPostStats.email_only ? 'Analytics' : 'Post analytics'}
                                                 </span>
                                             </>
@@ -176,7 +176,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                     }}>
                                         <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
                                             <LucideIcon.Globe size={16} strokeWidth={1.25} />
-                                            <span className='hidden md:!visible md:!block'>
+                                            <span className='md:visible! md:block! hidden'>
                                                 Visitors
                                             </span>
                                         </div>
@@ -200,7 +200,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                     }}>
                                         <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
                                             <LucideIcon.UserPlus size={16} strokeWidth={1.25} />
-                                            <span className='hidden md:!visible md:!block'>Members</span>
+                                            <span className='md:visible! md:block! hidden'>Members</span>
                                         </div>
                                         <span className='text-[2.2rem] font-semibold leading-none tracking-tighter'>
                                             {latestPostStats.member_delta ?
@@ -222,7 +222,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                             }}>
                                                 <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
                                                     <LucideIcon.MailOpen size={16} strokeWidth={1.25} />
-                                                    <span className='hidden whitespace-nowrap md:!visible md:!block'>Opens</span>
+                                                    <span className='md:visible! md:block! hidden whitespace-nowrap'>Opens</span>
                                                 </div>
                                                 <span className='text-[2.2rem] font-semibold leading-none tracking-tighter'>
                                                     {latestPostStats.email.email_count ?
@@ -238,7 +238,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                             }}>
                                                 <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
                                                     <LucideIcon.MousePointerClick size={16} strokeWidth={1.25} />
-                                                    <span className='hidden whitespace-nowrap md:!visible md:!block'>Clicks</span>
+                                                    <span className='md:visible! md:block! hidden whitespace-nowrap'>Clicks</span>
                                                 </div>
                                                 <span className='text-[2.2rem] font-semibold leading-none tracking-tighter'>
                                                     {latestPostStats.email.email_count && latestPostStats.count?.clicks ?

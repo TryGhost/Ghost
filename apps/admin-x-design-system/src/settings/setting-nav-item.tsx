@@ -28,7 +28,7 @@ const SettingNavItem = forwardRef<HTMLLIElement, SettingNavItemProps>(function S
 
     return (
         <li ref={ref} {...props}><a className={classNames} id={navid} onClick={onClick}>
-            {icon && <Icon className='mr-[7px] h-[16px] w-[16px]' name={icon} size='custom' />}
+            {icon && <Icon className='mr-[7px] size-[16px]' name={icon} size='custom' />}
             {title}
         </a></li>
     );

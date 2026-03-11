@@ -165,15 +165,15 @@ const NewsletterKPIs: React.FC<{
 
     const tabConfig = useMemo(() => ({
         'total-subscribers': {
-            color: 'hsl(var(--chart-darkblue))',
+            color: 'var(--chart-darkblue)',
             datakey: 'value'
         },
         'avg-open-rate': {
-            color: 'hsl(var(--chart-blue))',
+            color: 'var(--chart-blue)',
             datakey: 'open_rate'
         },
         'avg-click-rate': {
-            color: 'hsl(var(--chart-teal))',
+            color: 'var(--chart-teal)',
             datakey: 'click_rate'
         }
     }), []);
@@ -234,7 +234,7 @@ const NewsletterKPIs: React.FC<{
 
     return (
         <Tabs defaultValue={initialTab} variant='kpis'>
-            <TabsList className={`-mx-6 hidden grid-cols-3 md:!visible md:!grid ${gridClass}`}>
+            <TabsList className={`md:visible! md:grid! -mx-6 hidden grid-cols-3 ${gridClass}`}>
                 <KpiTabTrigger className={`${!emailTrackOpensEnabled && !emailTrackClicksEnabled && 'cursor-auto after:hidden'}`} value="total-subscribers" onClick={() => {
                     handleTabChange('total-subscribers');
                 }}>
@@ -336,7 +336,7 @@ const NewsletterKPIs: React.FC<{
                                 <>
                                     <ChartContainer className='aspect-auto h-[200px] w-full md:h-[220px] xl:h-[320px]' config={barChartConfig}>
                                         <Recharts.BarChart
-                                            className={isHoveringClickable ? '!cursor-pointer' : ''}
+                                            className={isHoveringClickable ? 'cursor-pointer!' : ''}
                                             data={avgsData}
                                             margin={{
                                                 top: 20
@@ -357,12 +357,12 @@ const NewsletterKPIs: React.FC<{
                                                     <stop offset="100%" stopColor={tabConfig[currentTab].color} stopOpacity={0.6} />
                                                 </linearGradient>
                                             </defs>
-                                            <Recharts.CartesianGrid horizontal={true} stroke="hsl(var(--border))" vertical={false} />
+                                            <Recharts.CartesianGrid horizontal={true} stroke="var(--border)" vertical={false} />
                                             <Recharts.XAxis
-                                                axisLine={{stroke: 'hsl(var(--border))', strokeWidth: 1}}
+                                                axisLine={{stroke: 'var(--border)', strokeWidth: 1}}
                                                 dataKey="post_id"
                                                 interval={0}
-                                                stroke="hsl(var(--border))"
+                                                stroke="var(--border)"
                                                 tickFormatter={() => ('')}
                                                 tickLine={false}
                                                 tickMargin={10}
@@ -382,7 +382,7 @@ const NewsletterKPIs: React.FC<{
                                                 position={{y: 10}}
                                             />
                                             {showAvgLine &&
-                                                <Recharts.ReferenceLine label={{value: `${formatPercentage(avgValue)}`, position: 'left', offset: 8, fill: 'hsl(var(--muted-foreground))'}} opacity={0.5} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" y={avgValue} />
+                                                <Recharts.ReferenceLine label={{value: `${formatPercentage(avgValue)}`, position: 'left', offset: 8, fill: 'var(--muted-foreground)'}} opacity={0.5} stroke="var(--muted-foreground)" strokeDasharray="4 4" y={avgValue} />
                                             }
                                             <Recharts.Bar
                                                 activeBar={{fillOpacity: 1}}

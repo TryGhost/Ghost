@@ -204,7 +204,7 @@ const Connected: React.FC<{onClose?: () => void}> = ({onClose}) => {
                             <span>by Kym Ellis</span>
                         </div>
                     </div>
-                    <div className='order-1 hidden w-[200px] shrink-0 items-center justify-center overflow-hidden md:!visible md:order-2 md:!flex'>
+                    <div className='md:visible! md:flex! order-1 hidden w-[200px] shrink-0 items-center justify-center overflow-hidden md:order-2'>
                         <img alt="Bookmark Thumb" className='min-h-full min-w-full shrink-0' src={BookmarkThumb} />
                     </div>
                 </a>

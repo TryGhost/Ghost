@@ -388,7 +388,7 @@ export const ExampleDetailScreen: Story = {
                 type='page'
             >
                 <div className='grid grid-cols-3 border-b border-grey-200 pb-5 tablet:grid-cols-4'>
-                    <div className='col-span-3 -ml-5 mb-5 hidden h-full gap-4 px-5 tablet:col-span-1 tablet:mb-0 tablet:!flex tablet:flex-col tablet:gap-0'>
+                    <div className='tablet:flex! col-span-3 -ml-5 mb-5 hidden h-full gap-4 px-5 tablet:col-span-1 tablet:mb-0 tablet:flex-col tablet:gap-0'>
                         <span>Last seen on <strong>22 June 2023</strong></span>
                         <span className='tablet:mt-2'>Created on <strong>27 Jan 2021</strong></span>
                     </div>

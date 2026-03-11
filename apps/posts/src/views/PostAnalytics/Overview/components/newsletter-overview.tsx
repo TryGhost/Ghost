@@ -44,8 +44,8 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
 
     // "Clicked" Chart
     const commonChartData: NewsletterRadialChartData[] = [
-        {datatype: 'Clicked', value: stats.clickedRate, fill: 'url(#gradientTeal)', color: 'hsl(var(--chart-teal))'},
-        {datatype: 'Opened', value: stats.openedRate, fill: 'url(#gradientBlue)', color: 'hsl(var(--chart-blue))'}
+        {datatype: 'Clicked', value: stats.clickedRate, fill: 'url(#gradientTeal)', color: 'var(--chart-teal)'},
+        {datatype: 'Opened', value: stats.openedRate, fill: 'url(#gradientBlue)', color: 'var(--chart-blue)'}
     ];
 
     const commonChartConfig = {
@@ -87,7 +87,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
                         <div className='grid grid-cols-2 gap-6'>
                             <KpiCardHeader className='group relative flex grow flex-row items-start justify-between gap-5 border-none px-0 pt-0'>
                                 <div className='flex grow flex-col gap-1.5 border-none pb-0'>
-                                    <KpiCardHeaderLabel color='hsl(var(--chart-blue))'>
+                                    <KpiCardHeaderLabel color='var(--chart-blue)'>
                                     Open rate
                                     </KpiCardHeaderLabel>
                                     <KpiCardHeaderValue
@@ -100,7 +100,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
                             </KpiCardHeader>
                             <KpiCardHeader className='group relative flex grow flex-row items-start justify-between gap-5 border-none px-0 pt-0'>
                                 <div className='flex grow flex-col gap-1.5 border-none pb-0'>
-                                    <KpiCardHeaderLabel color='hsl(var(--chart-teal))'>
+                                    <KpiCardHeaderLabel color='var(--chart-teal)'>
                                     Click rate
                                     </KpiCardHeaderLabel>
                                     <KpiCardHeaderValue

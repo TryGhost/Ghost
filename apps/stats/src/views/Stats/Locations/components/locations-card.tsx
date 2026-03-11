@@ -128,7 +128,7 @@ const LocationsCard: React.FC<LocationsCardProps> = ({data, isLoading, range, on
 
         if (currentData) {
             const opacity = opacityByValue[currentData.relativeValue] || '';
-            return cn('fill-[hsl(var(--chart-blue))]', opacity);
+            return cn('fill-[var(--chart-blue)]', opacity);
         }
 
         return 'fill-gray-300 dark:fill-gray-900/75';
@@ -226,7 +226,7 @@ const LocationsCard: React.FC<LocationsCardProps> = ({data, isLoading, range, on
                                                 return (
                                                     <DataListRow
                                                         key={row.location || 'unknown'}
-                                                        className={isClickable ? 'cursor-pointer transition-colors hover:bg-accent/50' : ''}
+                                                        className={isClickable ? 'hover:bg-accent/50 cursor-pointer transition-colors' : ''}
                                                         data-testid={`location-row-${row.location || 'unknown'}`}
                                                         onClick={isClickable ? () => handleRowClick(row.location) : undefined}
                                                     >

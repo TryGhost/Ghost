@@ -60,7 +60,7 @@ const SortMenu: React.FC<SortMenuProps> = ({
     };
 
     if (!trigger) {
-        trigger = <Button className='flex-row-reverse' icon={`${localDirection === 'asc' ? 'arrow-up' : 'arrow-down'}`} iconColorClass='!w-3 !h-3 !mr-0 ml-1.5' label={`${localItems.find(item => item.selected)?.label}`} {...triggerButtonProps} />;
+        trigger = <Button className='flex-row-reverse' icon={`${localDirection === 'asc' ? 'arrow-up' : 'arrow-down'}`} iconColorClass='w-3! h-3! mr-0! ml-1.5' label={`${localItems.find(item => item.selected)?.label}`} {...triggerButtonProps} />;
     }
 
     return (

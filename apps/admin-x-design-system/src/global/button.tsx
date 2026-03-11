@@ -77,14 +77,14 @@ const Button: React.FC<ButtonProps> = React.forwardRef(({
             break;
         case 'light-grey':
             className = clsx(
-                link ? 'text-grey-800 hover:text-green-400 dark:text-white' : `bg-grey-200 text-black dark:bg-grey-900 dark:text-white ${!disabled && 'hover:!bg-grey-300 dark:hover:!bg-grey-800'}`,
+                link ? 'text-grey-800 hover:text-green-400 dark:text-white' : `bg-grey-200 text-black dark:bg-grey-900 dark:text-white ${!disabled && 'hover:bg-grey-300! dark:hover:bg-grey-800!'}`,
                 className
             );
             loadingIndicatorColor = 'dark';
             break;
         case 'grey':
             className = clsx(
-                link ? 'text-black hover:text-grey-800 dark:text-white' : `bg-grey-100 text-black dark:bg-grey-900 dark:text-white ${!disabled && 'hover:!bg-grey-300 dark:hover:!bg-grey-800'}`,
+                link ? 'text-black hover:text-grey-800 dark:text-white' : `bg-grey-100 text-black dark:bg-grey-900 dark:text-white ${!disabled && 'hover:bg-grey-300! dark:hover:bg-grey-800!'}`,
                 className
             );
             loadingIndicatorColor = 'dark';
@@ -114,7 +114,7 @@ const Button: React.FC<ButtonProps> = React.forwardRef(({
             break;
         case 'outline':
             className = clsx(
-                link ? 'text-black hover:text-grey-800 dark:text-white' : `border border-grey-300 bg-transparent text-black dark:border-grey-800 dark:text-white ${!disabled && 'hover:!border-black dark:hover:!border-white'}`,
+                link ? 'text-black hover:text-grey-800 dark:text-white' : `border border-grey-300 bg-transparent text-black dark:border-grey-800 dark:text-white ${!disabled && 'hover:border-black! dark:hover:border-white!'}`,
                 className
             );
             loadingIndicatorColor = 'dark';

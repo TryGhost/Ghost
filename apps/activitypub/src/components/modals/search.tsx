@@ -206,7 +206,7 @@ const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
                     onKeyDown={handleKeyDown}
                 />
                 {showLoading && (
-                    <LoadingIndicator className='!absolute right-0 mr-0.5 shrink-0' size='sm' />
+                    <LoadingIndicator className='absolute! right-0 mr-0.5 shrink-0' size='sm' />
                 )}
             </div>
             <div className='h-full'>

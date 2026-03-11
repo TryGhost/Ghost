@@ -31,7 +31,7 @@ export const KpiCardValue: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ch
 
 export const KpiCardMoreButton: React.FC<React.ComponentProps<typeof Button>> = ({children, className, ...props}) => {
     return (
-        <Button className={cn('absolute right-4 top-4 z-50 hidden translate-x-10 text-black dark:text-white/80 dark:hover:text-white opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100 md:!visible md:!block', className)} size='sm' variant='outline' {...props}>
+        <Button className={cn('absolute right-4 top-4 z-50 hidden translate-x-10 text-black dark:text-white/80 dark:hover:text-white opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100 md:visible! md:block!', className)} size='sm' variant='outline' {...props}>
             {children}
         </Button>
     );

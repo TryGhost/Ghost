@@ -107,9 +107,9 @@ const TestimonialsModal = NiceModal.create(() => {
             topRightContent='close'
             width={920}
         >
-            <Form className='!mb-0'>
+            <Form className='mb-0!'>
                 <div className='flex items-stretch'>
-                    <div className='hidden w-full flex-col justify-between bg-gradient-to-tl from-grey-100/50 to-grey-100/80 p-8 dark:from-grey-900/40 dark:to-grey-900/60 [@media(min-width:905px)]:!visible [@media(min-width:905px)]:!flex'>
+                    <div className='[@media(min-width:905px)]:visible! [@media(min-width:905px)]:flex! hidden w-full flex-col justify-between bg-gradient-to-tl from-grey-100/50 to-grey-100/80 p-8 dark:from-grey-900/40 dark:to-grey-900/60'>
                         <div className='pr-6'>
                             <div className='relative rounded-xl bg-white px-3 py-2.5 italic text-grey-700 shadow-lg before:absolute before:-bottom-1.5 before:left-5 before:block before:size-3 before:rotate-45 before:bg-white dark:bg-black dark:text-grey-300 before:dark:bg-black'>
                                 Moving to Ghost has proven to be one of the best business decisions we’ve made as an independent media outlet.
@@ -140,7 +140,7 @@ const TestimonialsModal = NiceModal.create(() => {
                             </div>
                         </div>
 
-                        <div className='mt-8 hidden pr-6 [@media(min-width:940px)]:!visible [@media(min-width:940px)]:!block'>
+                        <div className='[@media(min-width:940px)]:visible! [@media(min-width:940px)]:block! mt-8 hidden pr-6'>
                             <div className='relative rounded-xl bg-white px-3 py-2.5 italic text-grey-700 shadow-lg before:absolute before:-bottom-1.5 before:left-5 before:block before:size-3 before:rotate-45 before:bg-white dark:bg-black dark:text-grey-300 before:dark:bg-black'>
                                 You should be using Ghost because it’s absolutely amazing and I love it. It’s what I’ve been using for all my sites since 2016.
                             </div>
@@ -207,7 +207,7 @@ const TestimonialsModal = NiceModal.create(() => {
                                     />
                                 </div>
                                 <Button
-                                    className='!h-[38px] rounded-lg'
+                                    className='h-[38px]! rounded-lg'
                                     color="black"
                                     disabled={saveState === 'saving'}
                                     label="Send testimonial"

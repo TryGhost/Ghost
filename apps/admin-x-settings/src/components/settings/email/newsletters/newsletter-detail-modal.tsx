@@ -292,7 +292,7 @@ const Sidebar: React.FC<{
                         </div>
                         <div className='flex-column flex gap-1'>
                             <ImageUpload
-                                deleteButtonClassName='!top-1 !right-1'
+                                deleteButtonClassName='top-1! right-1!'
                                 height={newsletter.header_image ? '66px' : '64px'}
                                 id='logo'
                                 imageURL={newsletter.header_image || undefined}

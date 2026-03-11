@@ -1,4 +1,97 @@
+@source "../../shade/src/**/*.{ts,tsx}";
+@source "../../posts/src/**/*.{ts,tsx}";
+@source "../../stats/src/**/*.{ts,tsx}";
+@source "../../activitypub/src/**/*.{ts,tsx}";
+@source "../../admin-x-settings/src/**/*.{ts,tsx}";
+@source "../../admin-x-design-system/src/**/*.{ts,tsx}";
+@source "../../../node_modules/@tryghost/kg-unsplash-selector/dist/**/*.js";
+
 @import "@tryghost/shade/styles.css";
+
+/* Legacy utility compatibility (Spirit/Tachyons-style percentages). */
+.w-100 {
+    width: 100%;
+}
+
+.h-100 {
+    height: 100%;
+}
+
+/* Keep admin-x heading line-height consistent with pre-migration settings render. */
+.admin-x-base h1,
+.admin-x-base h2,
+.admin-x-base h3,
+.admin-x-base h4,
+.admin-x-base h5 {
+    line-height: 1.25em;
+}
+
+/* ActivityPub onboarding animations previously defined in admin tailwind config */
+@keyframes lineExpand {
+    0% {
+        transform: scaleX(0);
+        transform-origin: right;
+    }
+
+    100% {
+        transform: scaleX(1);
+        transform-origin: right;
+    }
+}
+
+@keyframes scale {
+    0% {
+        transform: scale(0.8);
+    }
+
+    70% {
+        transform: scale(1.1);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.animate-onboarding-handle-bg {
+    opacity: 1;
+    animation: fadeIn 0.2s ease-in 0.5s forwards;
+}
+
+.animate-onboarding-handle-line {
+    animation: lineExpand 0.2s ease-in-out 0.7s forwards;
+}
+
+.before\:animate-onboarding-handle-bg::before {
+    opacity: 1;
+    animation: fadeIn 0.2s ease-in 0.5s forwards;
+}
+
+.after\:animate-onboarding-handle-line::after {
+    animation: lineExpand 0.2s ease-in-out 0.7s forwards;
+    transform: scaleX(1) !important;
+    transform-origin: right;
+}
+
+.animate-onboarding-handle-label {
+    opacity: 1;
+    animation: fadeIn 0.2s ease-in 1.2s forwards;
+}
+
+.animate-onboarding-next-button {
+    opacity: 1;
+    animation: fadeIn 0.2s ease-in 2s forwards;
+}
+
+.animate-onboarding-followers {
+    opacity: 1;
+    transform: scale(1);
+    animation: fadeIn 0.2s ease-in 0.5s forwards, scale 0.3s ease-in 0.5s forwards;
+}
+
+.break-anywhere {
+    overflow-wrap: anywhere;
+}
 
 /* Base layout - grid structure for alerts and main content */
 body.react-admin {

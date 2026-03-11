@@ -113,7 +113,7 @@ const ActorList: React.FC<ActorListProps> = ({
             <div ref={loadMoreRef} className='h-1'></div>
             {
                 (isFetchingNextPage || isLoading) && (
-                    <div className='mt-6 flex flex-col items-center justify-center space-y-4 text-center'>
+                    <div className='mt-6 flex flex-col items-center justify-center gap-4 text-center'>
                         <LoadingIndicator size='md' />
                     </div>
                 )

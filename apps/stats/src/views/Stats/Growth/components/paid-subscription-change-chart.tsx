@@ -314,11 +314,11 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
     const paidChangeChartConfig = {
         new: {
             label: 'New',
-            color: 'hsl(var(--chart-teal))'
+            color: 'var(--chart-teal)'
         },
         cancelled: {
             label: 'Cancelled',
-            color: 'hsl(var(--chart-rose))'
+            color: 'var(--chart-rose)'
         }
     } satisfies ChartConfig;
 
@@ -387,7 +387,7 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
                                         <stop offset="100%" stopColor={'var(--color-cancelled)'} stopOpacity={0.8} />
                                     </linearGradient>
                                 </defs>
-                                <Recharts.CartesianGrid stroke="hsl(var(--border))" vertical={false} />
+                                <Recharts.CartesianGrid stroke="var(--border)" vertical={false} />
                                 <Recharts.XAxis
                                     axisLine={false}
                                     dataKey="date"
@@ -404,7 +404,7 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
                                 />
                                 <ChartTooltip
                                     content={<ChartTooltipContent
-                                        className='!min-w-[120px] px-3 py-2'
+                                        className='min-w-[120px]! px-3 py-2'
                                         formatter={(value, name, payload, index) => {
                                             const rawValue = Number(value);
                                             let displayValue = '0';

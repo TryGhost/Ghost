@@ -76,7 +76,7 @@ const Explore: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 <Separator />
                 <Toggle
                     checked={shareGrowthData}
-                    containerClasses='!items-center'
+                    containerClasses='items-center!'
                     direction='rtl'
                     gap='gap-0'
                     hint={'Enabling this will use your revenue/member growth data to rank your site more highly on Ghost Explore. Total member count will be displayed publicly, other data will be kept private.'}

@@ -342,7 +342,7 @@ const Notifications: React.FC = () => {
                                                                     name: actor.name,
                                                                     handle: actor.handle
                                                                 }}
-                                                                className='-ml-2 !bg-[#F3F3F3] outline outline-2 outline-white group-hover:!bg-[#EDEEF0] group-hover:outline-gray-75 dark:outline-black group-hover:dark:outline-gray-950'
+                                                                className='bg-[#F3F3F3]! group-hover:bg-[#EDEEF0]! -ml-2 outline outline-2 outline-white group-hover:outline-gray-75 dark:outline-black group-hover:dark:outline-gray-950'
                                                                 size='notification'
                                                             />
                                                         ))}
@@ -490,7 +490,7 @@ const Notifications: React.FC = () => {
                             </div>
                             <div ref={loadMoreRef} className='h-1'></div>
                             {isFetchingNextPage && (
-                                <div className='-mt-4 mb-8 flex flex-col items-center justify-center space-y-4 text-center'>
+                                <div className='-mt-4 mb-8 flex flex-col items-center justify-center gap-4 text-center'>
                                     <LoadingIndicator size='md' />
                                 </div>
                             )}
