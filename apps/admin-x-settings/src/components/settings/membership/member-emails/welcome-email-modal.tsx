@@ -292,6 +292,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                     <div className='flex grow flex-col bg-grey-50 p-8 dark:bg-grey-975'>
                         <div
                             className={`mx-auto flex w-full max-w-[600px] grow flex-col rounded border bg-white p-8 shadow-sm dark:bg-grey-950/25 dark:shadow-none ${errors.lexical ? 'border-red' : 'border-grey-200 dark:border-grey-925'}`}
+                            data-testid='welcome-email-editor'
                             onFocus={() => {
                                 hasEditorBeenFocused.current = true;
                             }}
@@ -393,6 +394,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                     <EmailPreviewBody className={errors.lexical ? 'border border-red-500' : ''}>
                         <div
                             className='mx-auto w-full max-w-[600px] pb-8 pt-10 transition-[max-width,padding] duration-300 ease-out motion-reduce:transition-none'
+                            data-testid='welcome-email-editor'
                             onFocus={() => {
                                 hasEditorBeenFocused.current = true;
                             }}
