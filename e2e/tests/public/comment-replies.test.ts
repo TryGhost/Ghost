@@ -63,7 +63,6 @@ test.describe('Ghost Public - Comments - Replies', () => {
     });
 
     test('reply to reply comment', async ({page}) => {
-        test.skip(true, 'Race condition fix in #26247');
         const post = await postFactory.create({status: 'published'});
         const member = await memberFactory.create({status: 'free'});
         const paidTier = await tiersService.getFirstPaidTier();
