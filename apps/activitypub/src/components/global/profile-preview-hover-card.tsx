@@ -109,7 +109,7 @@ const ProfilePreviewHoverCard: React.FC<ProfilePreviewHoverCardProps> = ({
             </HoverCardTrigger>
             <HoverCardContent
                 align={align}
-                className='w-[320px] cursor-default rounded-2xl border-0 p-5 text-left text-gray-900 shadow-[0_5px_24px_0px_rgba(0,0,0,0.02),0px_2px_5px_0px_rgba(0,0,0,0.07),0px_0px_1px_0px_rgba(0,0,0,0.25)] outline-none dark:bg-[#101114] dark:shadow-none'
+                className='outline-hidden w-[320px] cursor-default rounded-2xl border-0 p-5 text-left text-gray-900 shadow-[0_5px_24px_0px_rgba(0,0,0,0.02),0px_2px_5px_0px_rgba(0,0,0,0.07),0px_0px_1px_0px_rgba(0,0,0,0.25)] dark:bg-[#101114] dark:shadow-none'
                 side={side}
                 sideOffset={12}
                 onClick={e => e.stopPropagation()}

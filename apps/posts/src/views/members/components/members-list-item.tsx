@@ -122,7 +122,7 @@ function MembersListItem({item, gridCols, showEmailOpenRate, onClick, ...props}:
     return (
         <div
             {...props}
-            className={`grid w-full cursor-pointer grid-cols-[minmax(0,1fr)_7rem] items-center gap-2 border-b px-4 py-3 hover:bg-muted/50 lg:gap-4 ${gridCols}`}
+            className={`hover:bg-muted/50 grid w-full cursor-pointer grid-cols-[minmax(0,1fr)_7rem] items-center gap-2 border-b px-4 py-3 lg:gap-4 ${gridCols}`}
             data-testid="members-list-item"
             onClick={() => onClick(item.id)}
         >

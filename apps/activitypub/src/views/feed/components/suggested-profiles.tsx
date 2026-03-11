@@ -91,7 +91,7 @@ const SuggestedProfiles: React.FC = () => {
                             variant='ghost'
                             onClick={scrollLeft}
                         >
-                            <LucideIcon.ChevronLeft className='!size-6' />
+                            <LucideIcon.ChevronLeft className='size-6!' />
                         </Button>
                     )}
 
@@ -101,7 +101,7 @@ const SuggestedProfiles: React.FC = () => {
                             variant='ghost'
                             onClick={scrollRight}
                         >
-                            <LucideIcon.ChevronRight className='!size-6' />
+                            <LucideIcon.ChevronRight className='size-6!' />
                         </Button>
                     )}
 

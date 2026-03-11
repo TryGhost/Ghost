@@ -15,7 +15,7 @@ function RepliesLine({hasReplies}: {hasReplies: boolean}) {
 
     return (
         <div
-            className="mb-2 h-full w-px grow rounded bg-gradient-to-b from-muted-foreground/20 from-70% to-transparent"
+            className="from-muted-foreground/20 mb-2 h-full w-px grow rounded bg-gradient-to-b from-70% to-transparent"
             data-testid="replies-line"
         />
     );
