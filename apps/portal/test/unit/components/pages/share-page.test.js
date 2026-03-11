@@ -51,16 +51,21 @@ describe('SharePage', () => {
         expect(getByTestId('share-preview-image')).toHaveAttribute('src', 'https://example.com/post.jpg');
 
         const twitterLink = getByRole('link', {name: 'X (Twitter)'});
+        const threadsLink = getByRole('link', {name: 'Threads'});
         const facebookLink = getByRole('link', {name: 'Facebook'});
         const linkedInLink = getByRole('link', {name: 'LinkedIn'});
 
         const twitterUrl = new URL(twitterLink.getAttribute('href'));
+        const threadsUrl = new URL(threadsLink.getAttribute('href'));
         const facebookUrl = new URL(facebookLink.getAttribute('href'));
         const linkedInUrl = new URL(linkedInLink.getAttribute('href'));
 
         expect(twitterUrl.origin + twitterUrl.pathname).toBe('https://twitter.com/intent/tweet');
         expect(twitterUrl.searchParams.get('url')).toBe(pageData.url);
         expect(twitterUrl.searchParams.get('text')).toBe(pageData.title);
+
+        expect(threadsUrl.origin + threadsUrl.pathname).toBe('https://www.threads.net/intent/post');
+        expect(threadsUrl.searchParams.get('text')).toBe(`${pageData.title} ${pageData.url}`);
 
         expect(facebookUrl.origin + facebookUrl.pathname).toBe('https://www.facebook.com/sharer/sharer.php');
         expect(facebookUrl.searchParams.get('u')).toBe(pageData.url);
