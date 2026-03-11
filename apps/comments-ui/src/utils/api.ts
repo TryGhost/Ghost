@@ -170,6 +170,23 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
                 return response;
             },
             async replies({commentId, afterReplyId, limit}: {commentId: string; afterReplyId?: string; limit?: number | 'all'}) {
+                if (limit === 'all') {
+                    const all: Comment[] = [];
+                    let cursor: string | undefined = afterReplyId;
+                    let hasMore = true;
+
+                    while (hasMore) {
+                        const data = await this.replies({commentId, afterReplyId: cursor, limit: 100});
+                        all.push(...data.comments);
+                        hasMore = !!data.meta?.pagination?.next && data.comments.length > 0;
+                        if (data.comments.length > 0) {
+                            cursor = data.comments[data.comments.length - 1]?.id;
+                        }
+                    }
+
+                    return {comments: all, meta: {pagination: {next: false}}};
+                }
+
                 const params = new URLSearchParams();
                 params.set('limit', (limit ?? 5).toString());
 
