@@ -124,7 +124,7 @@
                                                     <span class="gh-membertier-original-price">{{sub.originalPrice.currencySymbol}}{{gh-price-amount sub.originalPrice.nonDecimalAmount cents=false}}</span>
                                                 {{else}}
                                                     <span class="currency-symbol">{{sub.price.currencySymbol}}</span>
-                                                    <span class="amount">{{gh-price-amount sub.price.nonDecimalAmount cents=false}}</span>
+                                                    <span class="amount">{{format-number sub.price.nonDecimalAmount}}</span>
                                                 {{/if}}
                                             </div>
                                             <div class="period">{{if (eq sub.price.interval "year") "yearly" "monthly"}}</div>
