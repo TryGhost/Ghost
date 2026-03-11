@@ -77,20 +77,20 @@ const ThemePreview: React.FC<{
     const left =
         <div className='flex items-center gap-2'>
             <Breadcrumbs
-                activeItemClassName='hidden md:!block md:!visible'
+                activeItemClassName='hidden md:block! md:visible!'
                 containerClassName='whitespace-nowrap'
-                itemClassName='hidden md:!block md:!visible'
+                itemClassName='hidden md:block! md:visible!'
                 items={[
                     {label: 'Change theme', onClick: onBack},
                     {label: selectedTheme.name}
                 ]}
-                separatorClassName='hidden md:!block md:!visible'
+                separatorClassName='hidden md:block! md:visible!'
                 backIcon
                 onBack={onBack}
             />
             {hasVariants(selectedTheme) ?
                 <>
-                    <span className='hidden md:!visible md:!block'>–</span>
+                    <span className='md:visible! md:block! hidden'>–</span>
                     <Select
                         border={false}
                         containerClassName='text-sm font-bold'

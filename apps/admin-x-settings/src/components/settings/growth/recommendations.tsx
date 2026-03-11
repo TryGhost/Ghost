@@ -112,7 +112,7 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     };
 
     const buttons = (
-        <Button className='mt-[-5px] hidden md:!visible md:!block' color='clear' label='Add recommendation' size='sm' onClick={() => {
+        <Button className='md:visible! md:block! mt-[-5px] hidden' color='clear' label='Add recommendation' size='sm' onClick={() => {
             openAddNewRecommendationModal();
         }} />
     );
