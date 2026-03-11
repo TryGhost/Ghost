@@ -19,7 +19,7 @@ describe('comments useFilterState hook', () => {
 
         mockUseSearchParams.mockReturnValue([
             new URLSearchParams({
-                created_at: 'is:2024-01-01'
+                filter: 'created_at:>=\'2024-01-01T05:00:00.000Z\'+created_at:<=\'2024-01-02T04:59:59.999Z\''
             }),
             vi.fn()
         ]);

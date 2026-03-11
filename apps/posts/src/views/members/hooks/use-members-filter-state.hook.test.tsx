@@ -20,7 +20,7 @@ describe('useMembersFilterState', () => {
 
         mockUseSearchParams.mockReturnValue([
             new URLSearchParams({
-                created_at: 'is-or-greater:2022-02-22'
+                filter: 'created_at:>=\'2022-02-22 05:00:00\''
             }),
             vi.fn()
         ]);
@@ -59,7 +59,7 @@ describe('useMembersFilterState', () => {
     it('exposes active field metadata for table adaptation', () => {
         mockUseSearchParams.mockReturnValue([
             new URLSearchParams({
-                'subscriptions.status': 'is:active'
+                filter: 'subscriptions.status:active'
             }),
             vi.fn()
         ]);

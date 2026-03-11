@@ -5,8 +5,10 @@ interface BuildCommentsQueryParamsInput {
 }
 
 export function buildCommentsQueryParams({filter}: BuildCommentsQueryParamsInput): Record<string, string> {
-    return compileSurfaceQuery({
+    const query = compileSurfaceQuery({
         surface: 'comments',
         filter
-    }) as Record<string, string>;
+    });
+
+    return query.filter ? {filter: query.filter} : {};
 }

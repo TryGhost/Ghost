@@ -2,8 +2,7 @@ import type {Filter} from '@tryghost/shade';
 import {useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {COMMENT_FIELDS, CommentPredicate, isCommentField, isCommentOperatorForField} from '@src/views/filters/comment-fields';
 import {deriveFilterFlags} from '@src/views/filters/filter-flags';
-import {serializeCommentFilters} from '@src/views/filters/filter-nql';
-import {parsePredicateParams, serializePredicateParams} from '@src/views/filters/url-predicate-params';
+import {parseCommentNqlFilterParam, serializeCommentFilters} from '@src/views/filters/filter-nql';
 import {UrlFilterStateOptions, useUrlFilterState} from '@src/views/filters/use-url-filter-state';
 import {getSiteTimezone} from '@src/utils/get-site-timezone';
 
@@ -24,36 +23,24 @@ export function coerceCommentFilters(filters: Filter[]): CommentPredicate[] {
     });
 }
 /**
- * Parse URL search params into Filter objects
- * Preserves the order of filters as they appear in the URL
+ * Parse Ember-style filter NQL from URL search params into comment predicates.
  */
 export function searchParamsToFilters(searchParams: URLSearchParams): CommentPredicate[] {
-    return parsePredicateParams({
-        params: searchParams,
-        multiselectFields: new Set()
-    }).filter(({field, operator}) => isCommentField(field) && isCommentOperatorForField(field, operator)).map(predicate => ({
-        id: predicate.id,
-        field: predicate.field,
-        operator: predicate.operator,
-        values: predicate.values
-    })) as CommentPredicate[];
+    return parseCommentNqlFilterParam(searchParams.get('filter') ?? '');
 }
 
 /**
- * Serialize filters to URL search params format
+ * Serialize comment predicates into Ember-style filter NQL URL search params.
  */
 export function filtersToSearchParams(filters: CommentPredicate[]): URLSearchParams {
-    return serializePredicateParams({
-        predicates: filters
-            .filter(filter => isCommentField(filter.field) && filter.values[0] !== undefined)
-            .map((filter, index) => ({
-                id: filter.id || `${filter.field}-${index + 1}`,
-                field: filter.field,
-                operator: filter.operator,
-                values: filter.values.map(value => String(value))
-            })),
-        multiselectFields: new Set()
-    });
+    const params = new URLSearchParams();
+    const filter = serializeCommentFilters(filters);
+
+    if (filter) {
+        params.set('filter', filter);
+    }
+
+    return params;
 }
 
 interface UseFilterStateReturn {
@@ -67,9 +54,9 @@ interface UseFilterStateReturn {
 }
 
 /**
- * Hook to sync comment filter state with URL query parameters
+ * Hook to sync comment filter state with Ember-style URL query parameters.
  *
- * URL format: ?status=is:published&author=is:member-id&body=contains:search+term
+ * URL format: ?filter=status:published+html:~'needs review'
  */
 export function useFilterState(): UseFilterStateReturn {
     const {data: settingsData} = useBrowseSettings({});
@@ -81,7 +68,7 @@ export function useFilterState(): UseFilterStateReturn {
         hasSearch: boolean;
         hasFilterOrSearch: boolean;
     }>({
-        parseFilters: searchParamsToFilters,
+        parseFilters: searchParams => parseCommentNqlFilterParam(searchParams.get('filter') ?? '', {timezone: siteTimezone}),
         serializeFilters: (newFilters) => filtersToSearchParams(newFilters),
         buildNql: currentFilters => buildNqlFilter(currentFilters, {timezone: siteTimezone}),
         deriveState: ({filters: currentFilters}) => ({

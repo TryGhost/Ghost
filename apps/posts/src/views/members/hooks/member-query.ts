@@ -1,11 +1,11 @@
 import {compileSurfaceQuery} from '@src/views/filters/query-compiler';
+import type {MemberPredicate} from '@src/views/filters/member-fields';
 import {deriveMemberFilterMetadata} from './member-filter-metadata';
-import type {Filter} from '@tryghost/shade';
 
 interface BuildMembersQueryParamsInput {
     filter?: string;
     search?: string;
-    filters?: Filter[];
+    filters?: MemberPredicate[];
 }
 
 export function buildMembersQueryParams({filter, search, filters = []}: BuildMembersQueryParamsInput): Record<string, string> | undefined {

@@ -1,4 +1,4 @@
-import type {Filter} from '@tryghost/shade';
+import type {MemberPredicate} from '@src/views/filters/member-fields';
 
 export interface MemberFilterColumnMetadata {
     key: string;
@@ -56,7 +56,7 @@ const MEMBER_FILTER_COLUMN_MAP: Record<string, MemberFilterColumnMetadata | unde
     }
 };
 
-export function deriveMemberFilterMetadata(filters: Filter[]): MemberFilterMetadata {
+export function deriveMemberFilterMetadata(filters: MemberPredicate[]): MemberFilterMetadata {
     const activeFields = [...new Set(filters.map(filter => filter.field))];
     const activeColumns = activeFields
         .map(field => MEMBER_FILTER_COLUMN_MAP[field])

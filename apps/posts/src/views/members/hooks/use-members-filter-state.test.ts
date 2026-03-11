@@ -12,9 +12,11 @@ describe('use-members-filter-state URL helpers', () => {
         const params = filtersToSearchParams(filters);
         const parsed = searchParamsToFilters(params);
 
+        expect(params.get('filter')).toBe('status:-free+status:paid');
+        expect([...params.keys()]).toEqual(['filter']);
         expect(parsed.map(({field, operator, values}) => ({field, operator, values}))).toEqual([
-            {field: 'status', operator: 'is', values: ['paid']},
-            {field: 'status', operator: 'is_not', values: ['free']}
+            {field: 'status', operator: 'is-not', values: ['free']},
+            {field: 'status', operator: 'is', values: ['paid']}
         ]);
     });
 
@@ -176,17 +178,15 @@ describe('use-members-filter-state URL helpers', () => {
         ]);
     });
 
-    it('drops query param predicates with operators that are invalid for the field', () => {
+    it('ignores the removed React field-param filter format', () => {
         const params = new URLSearchParams({
-            status: 'contains:paid',
+            status: 'is:paid',
             name: 'contains:alex'
         });
 
         const parsed = searchParamsToFilters(params);
 
-        expect(parsed.map(({field, operator, values}) => ({field, operator, values}))).toEqual([
-            {field: 'name', operator: 'contains', values: ['alex']}
-        ]);
+        expect(parsed).toEqual([]);
     });
 
     it('parses legacy ember filter query params for date filters', () => {

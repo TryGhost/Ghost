@@ -1,12 +1,18 @@
 import {canonicalizeFilter} from './canonical-filter';
 import {isCommentField, isCommentOperatorForField} from './comment-fields';
+import type {CommentPredicate} from './comment-fields';
 import {isMemberField, isMemberOperatorForField} from './member-fields';
 import type {MemberPredicate} from './member-fields';
 import type {Filter} from '@tryghost/shade';
 import moment from 'moment-timezone';
 import nql from '@tryghost/nql-lang';
 
-function serializeFiltersToNql(filters: Filter[], serializeFilter: (filter: Filter) => string | undefined): string | undefined {
+type SerializableFilter = Pick<Filter, 'field' | 'operator' | 'values'>;
+
+function serializeFiltersToNql<TFilter extends SerializableFilter>(
+    filters: TFilter[],
+    serializeFilter: (filter: TFilter) => string | undefined
+): string | undefined {
     const parts: string[] = [];
 
     for (const filter of filters) {
@@ -347,7 +353,7 @@ export function parseMemberNqlFilterParam(filterParam: string): MemberPredicate[
     }
 }
 
-export function buildMemberNqlFilter(filters: Filter[], options: {timezone?: string} = {}): string | undefined {
+export function buildMemberNqlFilter<TFilter extends SerializableFilter>(filters: TFilter[], options: {timezone?: string} = {}): string | undefined {
     const timezone = options.timezone ?? 'Etc/UTC';
 
     return serializeFiltersToNql(filters, (filter) => {
@@ -468,10 +474,184 @@ export function buildMemberNqlFilter(filters: Filter[], options: {timezone?: str
 }
 
 export function serializeMemberPredicates(predicates: MemberPredicate[]): string | undefined {
-    return buildMemberNqlFilter(predicates as unknown as Filter[]);
+    return buildMemberNqlFilter(predicates);
 }
 
-export function serializeCommentFilters(filters: Filter[], options: {timezone?: string} = {}): string | undefined {
+function parseCommentFilterNode(filterNode: Record<string, unknown>, idSuffix: string, timezone: string): CommentPredicate[] {
+    if ('$and' in filterNode && Array.isArray(filterNode.$and)) {
+        const exactDateRange = filterNode.$and;
+
+        if (exactDateRange.length === 2) {
+            const [startNode, endNode] = exactDateRange as Array<Record<string, unknown>>;
+            const startValue = startNode.created_at;
+            const endValue = endNode.created_at;
+
+            if (startValue && typeof startValue === 'object' && '$gte' in startValue
+                && endValue && typeof endValue === 'object' && '$lte' in endValue
+                && typeof startValue.$gte === 'string' && typeof endValue.$lte === 'string') {
+                return [{
+                    id: `created_at-legacy-${idSuffix}`,
+                    field: 'created_at',
+                    operator: 'is',
+                    values: [moment.tz(startValue.$gte, timezone).format('YYYY-MM-DD')]
+                }];
+            }
+        }
+
+        return filterNode.$and.flatMap((childNode, index) => {
+            if (!childNode || typeof childNode !== 'object' || Array.isArray(childNode)) {
+                return [];
+            }
+
+            return parseCommentFilterNode(childNode as Record<string, unknown>, `${idSuffix}-${index + 1}`, timezone);
+        });
+    }
+
+    const entries = Object.entries(filterNode);
+
+    if (entries.length !== 1) {
+        return [];
+    }
+
+    const [field, rawValue] = entries[0];
+
+    switch (field) {
+    case 'id':
+        if (typeof rawValue === 'string') {
+            return [{
+                id: `id-legacy-${idSuffix}`,
+                field: 'id',
+                operator: 'is',
+                values: [rawValue]
+            }];
+        }
+        break;
+    case 'status':
+        if (rawValue === 'published' || rawValue === 'hidden') {
+            return [{
+                id: `status-legacy-${idSuffix}`,
+                field: 'status',
+                operator: 'is',
+                values: [rawValue]
+            }];
+        }
+        break;
+    case 'created_at':
+        if (rawValue && typeof rawValue === 'object') {
+            if ('$lt' in rawValue && typeof rawValue.$lt === 'string') {
+                return [{
+                    id: `created_at-legacy-${idSuffix}`,
+                    field: 'created_at',
+                    operator: 'before',
+                    values: [rawValue.$lt.split('T')[0] ?? rawValue.$lt]
+                }];
+            }
+
+            if ('$gt' in rawValue && typeof rawValue.$gt === 'string') {
+                return [{
+                    id: `created_at-legacy-${idSuffix}`,
+                    field: 'created_at',
+                    operator: 'after',
+                    values: [rawValue.$gt.split('T')[0] ?? rawValue.$gt]
+                }];
+            }
+        }
+        break;
+    case 'html':
+        if (rawValue && typeof rawValue === 'object' && '$regex' in rawValue && rawValue.$regex instanceof RegExp) {
+            return [{
+                id: `body-legacy-${idSuffix}`,
+                field: 'body',
+                operator: 'contains',
+                values: [rawValue.$regex.source]
+            }];
+        }
+
+        if (rawValue && typeof rawValue === 'object' && '$not' in rawValue && rawValue.$not instanceof RegExp) {
+            return [{
+                id: `body-legacy-${idSuffix}`,
+                field: 'body',
+                operator: 'not_contains',
+                values: [rawValue.$not.source]
+            }];
+        }
+        break;
+    case 'post_id':
+        if (typeof rawValue === 'string') {
+            return [{
+                id: `post-legacy-${idSuffix}`,
+                field: 'post',
+                operator: 'is',
+                values: [rawValue]
+            }];
+        }
+
+        if (rawValue && typeof rawValue === 'object' && '$ne' in rawValue && typeof rawValue.$ne === 'string') {
+            return [{
+                id: `post-legacy-${idSuffix}`,
+                field: 'post',
+                operator: 'is_not',
+                values: [rawValue.$ne]
+            }];
+        }
+        break;
+    case 'member_id':
+        if (typeof rawValue === 'string') {
+            return [{
+                id: `author-legacy-${idSuffix}`,
+                field: 'author',
+                operator: 'is',
+                values: [rawValue]
+            }];
+        }
+
+        if (rawValue && typeof rawValue === 'object' && '$ne' in rawValue && typeof rawValue.$ne === 'string') {
+            return [{
+                id: `author-legacy-${idSuffix}`,
+                field: 'author',
+                operator: 'is_not',
+                values: [rawValue.$ne]
+            }];
+        }
+        break;
+    case 'count.reports':
+        if (rawValue === 0) {
+            return [{
+                id: `reported-legacy-${idSuffix}`,
+                field: 'reported',
+                operator: 'is',
+                values: ['false']
+            }];
+        }
+
+        if (rawValue && typeof rawValue === 'object' && '$gt' in rawValue && rawValue.$gt === 0) {
+            return [{
+                id: `reported-legacy-${idSuffix}`,
+                field: 'reported',
+                operator: 'is',
+                values: ['true']
+            }];
+        }
+        break;
+    }
+
+    return [];
+}
+
+export function parseCommentNqlFilterParam(filterParam: string, options: {timezone?: string} = {}): CommentPredicate[] {
+    const timezone = options.timezone ?? 'Etc/UTC';
+
+    try {
+        const parsedFilter = nql.parse(filterParam) as Record<string, unknown>;
+        return parseCommentFilterNode(parsedFilter, '1', timezone).filter(predicate => (
+            isCommentField(predicate.field) && isCommentOperatorForField(predicate.field, predicate.operator)
+        ));
+    } catch {
+        return [];
+    }
+}
+
+export function serializeCommentFilters<TFilter extends SerializableFilter>(filters: TFilter[], options: {timezone?: string} = {}): string | undefined {
     const timezone = options.timezone ?? 'Etc/UTC';
 
     return serializeFiltersToNql(filters, (filter) => {

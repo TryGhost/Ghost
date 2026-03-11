@@ -4,7 +4,6 @@ import type {Filter} from '@tryghost/shade';
 import {deriveFilterFlags} from '@src/views/filters/filter-flags';
 import {buildMemberNqlFilter, parseMemberNqlFilterParam} from '@src/views/filters/filter-nql';
 import {isMemberField, isMemberOperatorForField, MEMBER_STATIC_FIELDS, type MemberPredicate} from '@src/views/filters/member-fields';
-import {parsePredicateParams, serializePredicateParams} from '@src/views/filters/url-predicate-params';
 import {UrlFilterStateOptions, useUrlFilterState} from '@src/views/filters/use-url-filter-state';
 import {getSiteTimezone} from '@src/utils/get-site-timezone';
 import {deriveMemberFilterMetadata, MemberFilterColumnMetadata} from './member-filter-metadata';
@@ -18,11 +17,8 @@ export const MEMBER_FILTER_FIELDS = [...MEMBER_STATIC_FIELDS, 'newsletters'] as 
 
 export type MemberFilterField = typeof MEMBER_FILTER_FIELDS[number];
 
-// Fields that support multiselect (comma-separated values in URL)
-const MULTISELECT_FIELDS = new Set<string>(['label', 'offer_redemptions', 'tier_id']);
-
 /**
- * Parse URL search params into Filter objects
+ * Coerce generic Shade filters at the UI boundary into typed member predicates.
  */
 export function coerceMemberFilters(filters: Filter[]): MemberPredicate[] {
     return filters.filter((filter): filter is MemberPredicate => {
@@ -31,50 +27,31 @@ export function coerceMemberFilters(filters: Filter[]): MemberPredicate[] {
 }
 
 /**
- * Parse URL search params into member predicates
+ * Parse Ember-style filter NQL from URL search params into member predicates.
  */
 export function searchParamsToFilters(searchParams: URLSearchParams): MemberPredicate[] {
-    const predicateFilters = parsePredicateParams({
-        params: searchParams,
-        multiselectFields: MULTISELECT_FIELDS,
-        ignoredFields: new Set(['search'])
-    }).map(predicate => ({
-            id: predicate.id,
-            field: predicate.field,
-            operator: predicate.operator,
-            values: predicate.values
-        }));
-
     const legacyFilters = searchParams.getAll('filter')
         .flatMap(filterParam => parseMemberNqlFilterParam(filterParam));
 
-    return legacyFilters.length > 0 ? legacyFilters : coerceMemberFilters(predicateFilters);
+    return legacyFilters;
 }
 
 /**
- * Serialize filters to URL search params format
+ * Serialize member predicates into Ember-style filter NQL URL search params.
  */
 export function filtersToSearchParams(filters: MemberPredicate[], search?: string): URLSearchParams {
-    const predicates = coerceMemberFilters(filters)
-        .filter((filter) => {
-            if (MULTISELECT_FIELDS.has(filter.field)) {
-                return true;
-            }
+    const params = new URLSearchParams();
+    const filter = buildMemberNqlFilter(coerceMemberFilters(filters));
 
-            return filter.values[0] !== undefined;
-        })
-        .map((filter, index) => ({
-            id: filter.id || `${filter.field}-${index + 1}`,
-            field: filter.field,
-            operator: filter.operator,
-            values: filter.values.map(value => String(value))
-        }));
+    if (filter) {
+        params.set('filter', filter);
+    }
 
-    return serializePredicateParams({
-        predicates,
-        multiselectFields: MULTISELECT_FIELDS,
-        search
-    });
+    if (search?.trim()) {
+        params.set('search', search);
+    }
+
+    return params;
 }
 
 interface UseFilterStateReturn {
@@ -93,9 +70,9 @@ interface UseFilterStateReturn {
 }
 
 /**
- * Hook to sync member filter state with URL query parameters
+ * Hook to sync member filter state with Ember-style URL query parameters.
  *
- * URL format: ?status=is:paid&label=is:vip&search=john
+ * URL format: ?filter=status:paid+label:[vip]&search=john
  */
 export function useMembersFilterState(): UseFilterStateReturn {
     const {data: settingsData} = useBrowseSettings({});

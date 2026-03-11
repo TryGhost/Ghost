@@ -13,9 +13,11 @@ describe('comments useFilterState URL helpers', () => {
         const params = filtersToSearchParams(filters);
         const parsed = searchParamsToFilters(params);
 
+        expect(params.get('filter')).toBe('status:hidden+status:published');
+        expect([...params.keys()]).toEqual(['filter']);
         expect(parsed.map(({field, operator, values}) => ({field, operator, values}))).toEqual([
-            {field: 'status', operator: 'is', values: ['published']},
-            {field: 'status', operator: 'is', values: ['hidden']}
+            {field: 'status', operator: 'is', values: ['hidden']},
+            {field: 'status', operator: 'is', values: ['published']}
         ]);
     });
 
@@ -28,17 +30,29 @@ describe('comments useFilterState URL helpers', () => {
         expect(buildNqlFilter(filters)).toBe('member_id:member_1+status:published');
     });
 
-    it('drops query param predicates with operators that are invalid for the field', () => {
+    it('roundtrips exact-date comment filters through ember-style NQL params', () => {
+        const filters: CommentPredicate[] = [
+            {id: 'created-at-1', field: 'created_at', operator: 'is', values: ['2024-01-01']}
+        ];
+
+        const params = filtersToSearchParams(filters);
+        const parsed = searchParamsToFilters(params);
+
+        expect(params.get('filter')).toBe('created_at:>=\'2024-01-01T00:00:00.000Z\'+created_at:<=\'2024-01-01T23:59:59.999Z\'');
+        expect(parsed.map(({field, operator, values}) => ({field, operator, values}))).toEqual([
+            {field: 'created_at', operator: 'is', values: ['2024-01-01']}
+        ]);
+    });
+
+    it('ignores the removed React field-param filter format', () => {
         const params = new URLSearchParams({
-            status: 'contains:published',
+            status: 'is:published',
             body: 'contains:hello'
         });
 
         const parsed = searchParamsToFilters(params);
 
-        expect(parsed.map(({field, operator, values}) => ({field, operator, values}))).toEqual([
-            {field: 'body', operator: 'contains', values: ['hello']}
-        ]);
+        expect(parsed).toEqual([]);
     });
 
     it('coerces UI filters into valid comment predicates and drops invalid combinations', () => {

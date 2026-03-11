@@ -44,7 +44,9 @@ export function isCommentOperatorForField<TField extends CommentField>(
     field: TField,
     operator: string
 ): operator is CommentOperator<TField> {
-    return COMMENT_FIELD_OPERATORS[field].includes(operator as never);
+    const operators: readonly string[] = COMMENT_FIELD_OPERATORS[field];
+
+    return operators.includes(operator);
 }
 
 export function createCommentPredicate<TField extends CommentField>(
