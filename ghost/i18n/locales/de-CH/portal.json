@@ -163,7 +163,7 @@
     "Resume subscription": "Abo wieder aktivieren",
     "Retry": "Erneut versuchen",
     "Save": "Speichern",
-    "Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.": "Sparen Sie {amountOff} bei Ihrer nächsten Abrechnung. Danach {currency}{originalPrice}/{cadence}",
+    "Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.": "Sparen Sie {amountOff} in Ihren nächsten {durationInMonths} Abrechnungszyklen. Danach {currency}{originalPrice}/{cadence}.",
     "Save {amountOff} on your next billing cycle. Then {currency}{originalPrice}/{cadence}.": "Sparen Sie {amountOff} bei Ihrer nächsten Abrechnung. Danach {currency}{originalPrice}/{cadence}.",
     "Send an email and say hi!": "Senden Sie uns eine E-Mail und sagen Sie Hallo!",
     "Send an email to {senderEmail} and say hello. This can also help signal to your mail provider that emails to and from this address should be trusted.": "Senden Sie uns ein E-Mail an {senderEmail} und sagen Sie Hallo. Das kann auch dazu beitragen, Ihrem E-Mail-Anbieter zu signalisieren, dass E-Mails an und von dieser Adresse vertrauenswürdig sind.",
