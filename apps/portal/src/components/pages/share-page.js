@@ -5,18 +5,23 @@ import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg'
 import {ReactComponent as FacebookIcon} from '../../images/icons/share-facebook.svg';
 import {ReactComponent as LinkIcon} from '../../images/icons/share-link.svg';
 import {ReactComponent as LinkedinIcon} from '../../images/icons/share-linkedin.svg';
+import {ReactComponent as ThreadsIcon} from '../../images/icons/share-threads.svg';
 import {ReactComponent as XIcon} from '../../images/icons/share-x.svg';
 import {useContext, useEffect, useMemo, useRef, useState} from 'react';
 import {t} from '../../utils/i18n';
 
 export const SharePageStyles = `
+    .gh-portal-popup-container.share {
+        width: 560px;
+    }
+
     .gh-portal-share-header {
-        margin-bottom: 14px;
+        margin-bottom: 20px;
     }
 
     .gh-portal-share-header .gh-portal-main-title {
         text-align: left;
-        font-size: 2.4rem;
+        font-size: 2.1rem;
         font-weight: 600;
     }
     html[dir="rtl"] .gh-portal-share-header .gh-portal-main-title {
@@ -24,30 +29,38 @@ export const SharePageStyles = `
     }
 
     .gh-portal-share-actions {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 10px;
-        margin-top: 14px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 20px;
     }
 
     .gh-portal-share-preview {
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        border: 1px solid var(--grey12);
+        border-radius: 12px;
     }
 
     .gh-portal-share-preview-image {
         width: 100%;
         aspect-ratio: 16 / 9;
-        border-radius: 8px;
+        border-radius: 12px 12px 0 0;
         object-fit: cover;
         background: var(--grey14);
+    }
+
+    .gh-portal-share-preview-content {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        padding: 16px;
     }
 
     .gh-portal-share-preview-title {
         margin: 0;
         color: var(--grey0);
-        font-size: 1.65rem;
+        font-size: 1.9rem;
         font-weight: 600;
         line-height: 1.35;
         text-wrap: pretty;
@@ -56,14 +69,16 @@ export const SharePageStyles = `
     .gh-portal-share-preview-excerpt {
         margin: -2px 0 0;
         color: var(--grey6);
-        font-size: 1.4rem;
+        font-size: 1.5rem;
         line-height: 1.45;
         text-wrap: pretty;
         margin-top: -8px;
     }
 
     .gh-portal-share-action {
-        height: 54px;
+        height: 44px;
+        width: 100%;
+        max-width: 70px;
         min-width: 0;
         padding: 0;
         border-radius: 8px;
@@ -76,6 +91,26 @@ export const SharePageStyles = `
         border-color: var(--grey10);
     }
 
+    .gh-portal-share-action.copy {
+        width: auto;
+        max-width: none;
+        flex: 1 1 auto;
+        padding: 0 14px;
+        justify-content: center;
+        border: none;
+        color: var(--white);
+        background: var(--black);
+        gap: 8px;
+    }
+
+    .gh-portal-share-label {
+        font-size: 1.4rem;
+        font-weight: 500;
+        line-height: 1;
+        color: var(--white);
+        white-space: nowrap;
+    }
+
     .gh-portal-share-icon {
         display: inline-flex;
         align-items: center;
@@ -84,7 +119,7 @@ export const SharePageStyles = `
         height: 20px;
         border-radius: 999px;
         line-height: 0;
-        color: var(--grey2);
+        color: var(--white);
     }
 
     .gh-portal-share-icon svg {
@@ -105,6 +140,7 @@ export const SharePageStyles = `
     .gh-portal-share-icon.copied svg path {
         stroke: currentColor;
     }
+
 `;
 
 const getCanonicalUrl = () => {
@@ -163,8 +199,11 @@ const SharePage = () => {
     const shareImage = useMemo(() => getShareImage(pageData), [pageData]);
 
     const socialLinks = useMemo(() => {
+        const threadsText = [shareTitle, shareUrl].filter(Boolean).join(' ').trim();
+
         return {
             twitter: createShareLink('https://twitter.com/intent/tweet', {url: shareUrl, text: shareTitle}),
+            threads: createShareLink('https://www.threads.net/intent/post', {text: threadsText}),
             facebook: createShareLink('https://www.facebook.com/sharer/sharer.php', {u: shareUrl}),
             linkedin: createShareLink('https://www.linkedin.com/sharing/share-offsite/', {url: shareUrl})
         };
@@ -198,8 +237,10 @@ const SharePage = () => {
 
             <div className='gh-portal-share-preview'>
                 {shareImage && <img className='gh-portal-share-preview-image' src={shareImage} alt='' data-testid='share-preview-image' />}
-                {shareTitle && <h2 className='gh-portal-share-preview-title'>{shareTitle}</h2>}
-                {shareExcerpt && <p className='gh-portal-share-preview-excerpt'>{shareExcerpt}</p>}
+                <div className='gh-portal-share-preview-content'>
+                    {shareTitle && <h2 className='gh-portal-share-preview-title'>{shareTitle}</h2>}
+                    {shareExcerpt && <p className='gh-portal-share-preview-excerpt'>{shareExcerpt}</p>}
+                </div>
             </div>
 
             <div className='gh-portal-share-actions'>
@@ -213,6 +254,19 @@ const SharePage = () => {
                 >
                     <span className='gh-portal-share-icon' aria-hidden='true'>
                         <XIcon />
+                    </span>
+                </a>
+
+                <a
+                    className='gh-portal-btn gh-portal-share-action'
+                    href={socialLinks.threads}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    aria-label={t('Threads')}
+                    title={t('Threads')}
+                >
+                    <span className='gh-portal-share-icon' aria-hidden='true'>
+                        <ThreadsIcon />
                     </span>
                 </a>
 
@@ -243,7 +297,7 @@ const SharePage = () => {
                 </a>
 
                 <button
-                    className='gh-portal-btn gh-portal-share-action'
+                    className='gh-portal-btn gh-portal-share-action copy'
                     type='button'
                     onClick={onCopy}
                     aria-label={copied ? t('Copied') : t('Copy link')}
@@ -258,6 +312,7 @@ const SharePage = () => {
                             <LinkIcon />
                         </span>
                     )}
+                    <span className='gh-portal-share-label'>{copied ? t('Copied') : t('Copy link')}</span>
                 </button>
             </div>
         </div>
