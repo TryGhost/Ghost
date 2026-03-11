@@ -10,6 +10,7 @@ export class MemberWelcomeEmailsSection extends BasePage {
 
     // Modal locators
     readonly welcomeEmailModal: Locator;
+    readonly modalEditor: Locator;
     readonly modalSubjectInput: Locator;
     readonly modalSaveButton: Locator;
     readonly modalSavedButton: Locator;
@@ -25,10 +26,11 @@ export class MemberWelcomeEmailsSection extends BasePage {
 
         // Modal locators
         this.welcomeEmailModal = page.getByTestId('welcome-email-modal');
+        this.modalEditor = this.welcomeEmailModal.getByTestId('welcome-email-editor');
         this.modalSubjectInput = this.welcomeEmailModal.locator('input').first();
         this.modalSaveButton = this.welcomeEmailModal.getByRole('button', {name: 'Save'});
         this.modalSavedButton = this.welcomeEmailModal.getByRole('button', {name: 'Saved'});
-        this.modalLexicalEditor = this.welcomeEmailModal.locator('[contenteditable="true"]');
+        this.modalLexicalEditor = this.modalEditor.getByRole('textbox').first();
     }
 
     async enableFreeWelcomeEmail(): Promise<void> {
@@ -90,6 +92,19 @@ export class MemberWelcomeEmailsSection extends BasePage {
     async saveWelcomeEmail(): Promise<void> {
         await this.modalSaveButton.click();
         await this.modalSavedButton.waitFor({state: 'visible'});
+    }
+
+    async waitForWelcomeEmailEditor(): Promise<void> {
+        await this.modalEditor.waitFor({state: 'visible'});
+        await this.modalLexicalEditor.waitFor({state: 'visible'});
+    }
+
+    async replaceWelcomeEmailContent(content: string): Promise<void> {
+        await this.waitForWelcomeEmailEditor();
+        await this.modalLexicalEditor.click();
+        await this.page.keyboard.press('ControlOrMeta+a');
+        await this.page.keyboard.press('Backspace');
+        await this.modalLexicalEditor.type(content);
     }
 
     private async openWelcomeEmailModal(editButton: Locator): Promise<void> {
