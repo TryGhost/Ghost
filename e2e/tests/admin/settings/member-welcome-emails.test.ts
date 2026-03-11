@@ -123,7 +123,7 @@ test.describe('Ghost Admin - Member Welcome Emails', () => {
     });
 });
 
-test.describe('Ghost Admin - Welcome Email Customize Button', () => {
+test.describe('Ghost Admin - Welcome Email Customize Button - flag enabled', () => {
     test.use({labs: {welcomeEmailsDesignCustomization: true}});
 
     test('customize button opens modal when labs flag is enabled', async ({page}) => {
@@ -139,6 +139,16 @@ test.describe('Ghost Admin - Welcome Email Customize Button', () => {
         await welcomeEmailsSection.customizeModal.getByRole('button', {name: 'Close'}).click();
 
         await expect(welcomeEmailsSection.customizeModal).toBeHidden();
+    });
+});
+
+test.describe('Ghost Admin - Welcome Email Customize Button - flag disabled', () => {
+    test('customize button is hidden when labs flag is disabled', async ({page}) => {
+        const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);
+
+        await welcomeEmailsSection.goto();
+
+        await expect(welcomeEmailsSection.customizeButton).toBeHidden();
     });
 });
 
