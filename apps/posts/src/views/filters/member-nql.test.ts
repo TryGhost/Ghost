@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vitest';
 import {createMemberPredicate} from '@src/views/filters/member-fields';
-import {parseMemberNqlFilterParam, serializeMemberPredicates} from '@src/views/filters/member-nql';
+import {parseMemberNqlFilterParam, serializeMemberPredicates} from '@src/views/filters/filter-nql';
 
 describe('serializeMemberPredicates', () => {
     it('serializes label is_none_of using ember-compatible negation', () => {

@@ -8,8 +8,6 @@ import {UrlFilterStateOptions, useUrlFilterState} from '@src/views/filters/use-u
 import {getSiteTimezone} from '@src/utils/get-site-timezone';
 import {deriveMemberFilterMetadata, MemberFilterColumnMetadata} from './member-filter-metadata';
 
-export {buildMemberNqlFilter};
-
 /**
  * Member filter field keys - single source of truth for filter definitions
  */

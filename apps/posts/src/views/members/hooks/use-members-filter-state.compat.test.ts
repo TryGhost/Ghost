@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {buildMemberNqlFilter} from '@src/views/members/hooks/use-members-filter-state';
+import {buildMemberNqlFilter} from '@src/views/filters/filter-nql';
 import type {Filter} from '@tryghost/shade';
 
 describe('members nql compatibility', () => {

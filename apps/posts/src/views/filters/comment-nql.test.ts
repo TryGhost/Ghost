@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {serializeCommentFilters} from '@src/views/filters/comment-nql';
+import {serializeCommentFilters} from '@src/views/filters/filter-nql';
 import type {Filter} from '@tryghost/shade';
 
 describe('serializeCommentFilters', () => {
