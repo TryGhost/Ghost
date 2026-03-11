@@ -8,6 +8,10 @@ export class MemberWelcomeEmailsSection extends BasePage {
     readonly freeWelcomeEmailEditButton: Locator;
     readonly paidWelcomeEmailEditButton: Locator;
 
+    // Customize button and modal
+    readonly customizeButton: Locator;
+    readonly customizeModal: Locator;
+
     // Modal locators
     readonly welcomeEmailModal: Locator;
     readonly modalEditor: Locator;
@@ -23,6 +27,10 @@ export class MemberWelcomeEmailsSection extends BasePage {
         this.paidWelcomeEmailToggle = this.section.getByTestId('paid-welcome-email-row').getByRole('switch');
         this.freeWelcomeEmailEditButton = this.section.getByTestId('free-welcome-email-row').getByRole('button', {name: 'Edit'});
         this.paidWelcomeEmailEditButton = this.section.getByTestId('paid-welcome-email-row').getByRole('button', {name: 'Edit'});
+
+        // Customize button and modal
+        this.customizeButton = this.section.getByRole('button', {name: 'Customize'});
+        this.customizeModal = page.getByTestId('welcome-email-customize-modal');
 
         // Modal locators
         this.welcomeEmailModal = page.getByTestId('welcome-email-modal');
