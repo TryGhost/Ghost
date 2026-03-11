@@ -162,8 +162,8 @@ test.describe('Recommendations', async () => {
 
         // Confirm delete
         const confirmation = page.getByTestId('confirmation-modal');
-        expect(confirmation).toContainText('Delete recommendation');
-        expect(confirmation).toContainText('Your recommendation Recommendation 1 title will no longer be visible to your audience.');
+        await expect(confirmation).toContainText('Delete recommendation');
+        await expect(confirmation).toContainText('Your recommendation Recommendation 1 title will no longer be visible to your audience.');
 
         await confirmation.getByRole('button', {name: 'Delete'}).click();
 
