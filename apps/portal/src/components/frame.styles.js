@@ -947,7 +947,9 @@ const MobileStyles = `
     .gh-portal-popup-wrapper.full-size .gh-portal-popup-container.preview.account-plan {
         max-width: 420px;
         width: auto;
+        height: auto;
         margin: 3.2vw auto 0;
+        padding-bottom: 24px;
         transform: scale(0.9);
     }
 }
