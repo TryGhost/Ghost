@@ -6,6 +6,19 @@ import {showDatabaseWarning} from '../../../utils/show-database-warning';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useUpgradeStatus} from '../../providers/settings-app-provider';
 
+const adminBuildVersion = import.meta.env.GHOST_BUILD_VERSION;
+
+function VersionLink({label, version}: {label: string; version: string}) {
+    const link = linkToGitHubReleases(version);
+    return (
+        <div>
+            <strong>{label}:</strong> {link
+                ? <a className='text-green' href={link} rel="noopener noreferrer" target="_blank">{version}</a>
+                : version}
+        </div>
+    );
+}
+
 const AboutModal = NiceModal.create<RoutingModalProps>(({}) => {
     const {updateRoute} = useRouting();
     const globalData = useGlobalData();
@@ -56,13 +69,14 @@ const AboutModal = NiceModal.create<RoutingModalProps>(({}) => {
                             </div>
                         )
                     }
-                    {
-                        linkToGitHubReleases(config.version) && (
-                            <div><strong>Version:</strong> <a className='text-green' href={linkToGitHubReleases(config.version)} rel="noopener noreferrer" target="_blank">{config.version}</a></div>
-                        ) || (
-                            <div><strong>Version:</strong> {config.version}</div>
-                        )
-                    }
+                    {adminBuildVersion ? (
+                        <>
+                            <VersionLink label="Server" version={config.version} />
+                            <VersionLink label="Admin" version={adminBuildVersion} />
+                        </>
+                    ) : (
+                        <VersionLink label="Version" version={config.version} />
+                    )}
                     {
                         showSystemInfo() && (
                             <>
