@@ -1,6 +1,5 @@
 import React, {useState} from 'react';
 import {
-    Button,
     ColorPicker,
     Popover,
     PopoverContent,
@@ -88,7 +87,7 @@ const ColorPickerField: React.FC<ColorPickerFieldProps> = ({title, value, swatch
                     <PopoverContent align="end" className="w-auto p-4">
                         <ColorPicker
                             value={displayHex}
-                            onChange={(hex) => {
+                            onChange={(hex: string) => {
                                 onChange(hex);
                             }}
                         />
@@ -188,7 +187,7 @@ const DesignSettingsForm: React.FC<DesignSettingsFormProps> = ({settings, onSett
                     </div>
                     <div className="flex items-center justify-between">
                         <span className="text-sm">Heading weight</span>
-                        <Select value={currentWeight} onValueChange={value => onSettingsChange({title_font_weight: value})}>
+                        <Select value={currentWeight} onValueChange={(value: string) => onSettingsChange({title_font_weight: value})}>
                             <SelectTrigger className="w-[180px]">
                                 <SelectValue />
                             </SelectTrigger>
@@ -201,7 +200,7 @@ const DesignSettingsForm: React.FC<DesignSettingsFormProps> = ({settings, onSett
                     </div>
                     <div className="flex items-center justify-between">
                         <span className="text-sm">Body font</span>
-                        <Select value={settings.body_font_category || 'sans_serif'} onValueChange={value => onSettingsChange({body_font_category: value})}>
+                        <Select value={settings.body_font_category || 'sans_serif'} onValueChange={(value: string) => onSettingsChange({body_font_category: value})}>
                             <SelectTrigger className="w-[180px]">
                                 <SelectValue />
                             </SelectTrigger>
@@ -265,14 +264,14 @@ const DesignSettingsForm: React.FC<DesignSettingsFormProps> = ({settings, onSett
                     />
                     <div className="flex items-center justify-between">
                         <span className="text-sm">Button style</span>
-                        <ToggleGroup size="sm" type="single" value={settings.button_style || 'fill'} onValueChange={value => value && onSettingsChange({button_style: value})}>
+                        <ToggleGroup size="sm" type="single" value={settings.button_style || 'fill'} onValueChange={(value: string) => value && onSettingsChange({button_style: value})}>
                             <ToggleGroupItem value="fill">Fill</ToggleGroupItem>
                             <ToggleGroupItem value="outline">Outline</ToggleGroupItem>
                         </ToggleGroup>
                     </div>
                     <div className="flex items-center justify-between">
                         <span className="text-sm">Button corners</span>
-                        <ToggleGroup size="sm" type="single" value={settings.button_corners || 'rounded'} onValueChange={value => value && onSettingsChange({button_corners: value})}>
+                        <ToggleGroup size="sm" type="single" value={settings.button_corners || 'rounded'} onValueChange={(value: string) => value && onSettingsChange({button_corners: value})}>
                             <ToggleGroupItem value="square">Square</ToggleGroupItem>
                             <ToggleGroupItem value="rounded">Rounded</ToggleGroupItem>
                             <ToggleGroupItem value="pill">Pill</ToggleGroupItem>
@@ -289,7 +288,7 @@ const DesignSettingsForm: React.FC<DesignSettingsFormProps> = ({settings, onSett
                     />
                     <div className="flex items-center justify-between">
                         <span className="text-sm">Link style</span>
-                        <ToggleGroup size="sm" type="single" value={settings.link_style || 'underline'} onValueChange={value => value && onSettingsChange({link_style: value})}>
+                        <ToggleGroup size="sm" type="single" value={settings.link_style || 'underline'} onValueChange={(value: string) => value && onSettingsChange({link_style: value})}>
                             <ToggleGroupItem value="underline">Underline</ToggleGroupItem>
                             <ToggleGroupItem value="regular">Regular</ToggleGroupItem>
                             <ToggleGroupItem value="bold">Bold</ToggleGroupItem>
@@ -297,7 +296,7 @@ const DesignSettingsForm: React.FC<DesignSettingsFormProps> = ({settings, onSett
                     </div>
                     <div className="flex items-center justify-between">
                         <span className="text-sm">Image corners</span>
-                        <ToggleGroup size="sm" type="single" value={settings.image_corners || 'square'} onValueChange={value => value && onSettingsChange({image_corners: value})}>
+                        <ToggleGroup size="sm" type="single" value={settings.image_corners || 'square'} onValueChange={(value: string) => value && onSettingsChange({image_corners: value})}>
                             <ToggleGroupItem value="square">Square</ToggleGroupItem>
                             <ToggleGroupItem value="rounded">Rounded</ToggleGroupItem>
                         </ToggleGroup>
