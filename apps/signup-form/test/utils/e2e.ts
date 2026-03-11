@@ -66,7 +66,7 @@ export async function mockApi({page, status = 200}: {page: any, status?: number}
     });
 
     await page.route(`${MOCKED_SITE_URL}/members/api/integrity-token/`, async (route) => {
-        await route.fulfill({body: 'testtoken'});
+        await route.fulfill('testtoken');
     });
 
     return lastApiRequest;
