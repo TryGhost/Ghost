@@ -279,8 +279,9 @@ describe(`Admin Comments API`, function () {
 
             const res = await adminApi.get('/comments/post/' + postId + '/');
             const item = res.body.comments.find(cmt => parent.id === cmt.id);
-            const lastReply = item.replies[item.replies.length - 1];
-            const filter = encodeURIComponent(`id:>'${lastReply.id}'`);
+            // Use the 3rd reply as cursor to simulate "load more after first 3"
+            const thirdReply = item.replies[2];
+            const filter = encodeURIComponent(`id:>'${thirdReply.id}'`);
             const res2 = await adminApi.get(`/comments/${parent.id}/replies?limit=5&filter=${filter}`);
             assert.equal(res2.body.comments.length, 3);
         });
@@ -319,8 +320,10 @@ describe(`Admin Comments API`, function () {
 
             const res = await adminApi.get('/comments/post/' + postId + '/');
             const item = res.body.comments.find(cmt => parent.id === cmt.id);
-            const lastReply = item.replies[item.replies.length - 1];
-            const filter = encodeURIComponent(`id:>'${lastReply.id}'`);
+            // Admin browse returns all non-deleted replies (published + hidden)
+            // Use the 3rd reply as cursor to simulate "load more after first 3"
+            const thirdReply = item.replies[2];
+            const filter = encodeURIComponent(`id:>'${thirdReply.id}'`);
             const res2 = await adminApi.get(`/comments/${parent.id}/replies?limit=5&filter=${filter}`);
             assert.equal(res2.body.comments.length, 3);
         });
@@ -351,8 +354,9 @@ describe(`Admin Comments API`, function () {
 
             const res = await adminApi.get('/comments/post/' + postId + '/');
             const item = res.body.comments.find(cmt => parent.id === cmt.id);
-            const lastReply = item.replies[item.replies.length - 1];
-            const filter = encodeURIComponent(`id:>'${lastReply.id}'`);
+            // Use the 3rd reply as cursor to fetch remaining replies
+            const thirdReply = item.replies[2];
+            const filter = encodeURIComponent(`id:>'${thirdReply.id}'`);
             const res2 = await adminApi.get(`/comments/${parent.id}/replies?limit=5&filter=${filter}`);
             assert.equal(res2.body.comments.length, 1);
             assert.equal(res2.body.comments[0].html, 'Reply 4');
@@ -441,8 +445,9 @@ describe(`Admin Comments API`, function () {
 
             const res = await adminApi.get('/comments/post/' + postId + '/');
             const item = res.body.comments.find(cmt => parent.id === cmt.id);
-            const lastReply = item.replies[item.replies.length - 1];
-            const filter = encodeURIComponent(`id:>'${lastReply.id}'`);
+            // Use the 3rd reply as cursor to simulate "load more after first 3"
+            const thirdReply = item.replies[2];
+            const filter = encodeURIComponent(`id:>'${thirdReply.id}'`);
             const res2 = await adminApi.get(`/comments/${parent.id}/replies?limit=10&filter=${filter}`);
             assert.equal(res2.body.comments.length, 3);
             assert.equal(res2.body.comments[0].html, 'Reply 4');
