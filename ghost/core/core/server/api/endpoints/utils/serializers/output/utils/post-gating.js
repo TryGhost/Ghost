@@ -123,6 +123,7 @@ const forPost = (attrs, frame) => {
             /<iframe[^>]*data-kg-transistor-embed[^>]*><\/iframe><script>[\s\S]*?<\/script>(?:<noscript>[\s\S]*?<\/noscript>)?/g,
             _buildTransistorPlaceholder()
         );
+        _updateTextAttrs(attrs);
     }
 
     if (!Object.prototype.hasOwnProperty.call(frame.options, 'columns') || (frame.options.columns.includes('access'))) {
