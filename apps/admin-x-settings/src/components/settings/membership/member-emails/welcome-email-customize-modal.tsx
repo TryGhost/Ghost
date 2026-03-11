@@ -1,25 +1,22 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import {Modal} from '@tryghost/admin-x-design-system';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {Button, Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from '@tryghost/shade';
 
 const WelcomeEmailCustomizeModal = NiceModal.create(() => {
     const modal = useModal();
-    const {updateRoute} = useRouting();
 
     return (
-        <Modal
-            afterClose={() => {
-                updateRoute('memberemails');
-            }}
-            cancelLabel='Close'
-            okLabel='Save'
-            testId='welcome-email-customize-modal'
-            title='Customize welcome emails'
-            onCancel={() => modal.remove()}
-            onOk={() => modal.remove()}
-        >
-            <p className='text-grey-700'>Design customization options coming soon.</p>
-        </Modal>
+        <Dialog open onOpenChange={() => modal.remove()}>
+            <DialogContent data-testid='welcome-email-customize-modal'>
+                <DialogHeader>
+                    <DialogTitle>Customize welcome emails</DialogTitle>
+                </DialogHeader>
+                <p className='text-sm text-muted-foreground'>Design customization options coming soon.</p>
+                <DialogFooter>
+                    <Button variant='outline' onClick={() => modal.remove()}>Close</Button>
+                    <Button onClick={() => modal.remove()}>Save</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     );
 });
 
