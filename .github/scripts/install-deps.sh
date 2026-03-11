@@ -19,7 +19,15 @@ yarn install --frozen-lockfile --prefer-offline --ignore-scripts "$@"
 # These environments default to SQLite as the database
 BUILD_SQLITE3=false
 
-# Test environments use SQLite by default (config.testing.json)
+# In CI, build sqlite3 by default (unless explicitly MySQL-only)
+# This covers browser tests and other test jobs that may need sqlite3
+# Note: NODE_ENV may not be set when this script runs during cache restore
+if [ -n "${CI:-}" ] && [ "${DB:-}" != "mysql8" ]; then
+    BUILD_SQLITE3=true
+    echo "CI environment detected (not MySQL-only), sqlite3 will be built if needed"
+fi
+
+# Test environments use SQLite by default (config.testing.json, config.testing-browser.json)
 if [ "${NODE_ENV:-}" = "testing" ] || [ "${NODE_ENV:-}" = "testing-browser" ]; then
     BUILD_SQLITE3=true
     echo "Test environment detected (NODE_ENV=${NODE_ENV}), sqlite3 will be built if needed"
