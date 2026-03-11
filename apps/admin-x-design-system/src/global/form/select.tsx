@@ -172,7 +172,7 @@ const Select: React.FC<SelectProps> = ({
         valueContainer: clsx('mr-1.5 gap-1', controlClasses?.valueContainer),
         placeHolder: clsx('text-grey-700 dark:text-grey-800', controlClasses?.placeHolder),
         menu: clsx(
-            'z-[300]! mt-0.5 overflow-hidden rounded-lg bg-white shadow-lg dark:border dark:border-grey-900 dark:bg-black',
+            '!z-[300] mt-0.5 overflow-hidden rounded-lg bg-white shadow-lg dark:border dark:border-grey-900 dark:bg-black',
             size === 'xs' && 'text-xs',
             controlClasses?.menu
         ),
@@ -205,7 +205,7 @@ const Select: React.FC<SelectProps> = ({
 
     const customProps = {
         classNames: {
-            menuList: () => 'z-[300]!',
+            menuList: () => '!z-[300]',
             valueContainer: () => customClasses.valueContainer,
             control: () => customClasses.control,
             placeholder: () => customClasses.placeHolder,

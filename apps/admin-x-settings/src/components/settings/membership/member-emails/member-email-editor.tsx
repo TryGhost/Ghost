@@ -76,7 +76,7 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
         // Paragraph spacing & bold
         '[&_p]:mb-4 [&_strong]:font-semibold',
         // Keep settings panel copy compact
-        '[&_[data-kg-settings-panel]_p]:mb-0!',
+        '[&_[data-kg-settings-panel]_p]:!mb-0',
         // Nested-editor (callout, etc.) fixes: align placeholder with text
         // 1. Override placeholder font/size/line-height to match the <p> styles
         '[&_.not-kg-prose>div]:font-inter! [&_.not-kg-prose>div]:tracking-tight! [&_.not-kg-prose>div]:text-xl! [&_.not-kg-prose>div]:leading-[1.6]!',
@@ -86,7 +86,7 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
         // 3. Nudge nested editor text down to vertically align with the emoji
         '[&_.kg-inherit-styles]:pt-[3px]!',
         // CTA card: keep sponsor label at its intended 12.5px size
-        '[&_.koenig-lexical-cta-label_p]:text-[12.5px]!'
+        '[&_.koenig-lexical-cta-label_p]:!text-[12.5px]'
     );
 
     const registerEditorAPI = useCallback((API: KoenigInstance | null) => {
