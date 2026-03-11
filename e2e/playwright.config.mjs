@@ -17,9 +17,9 @@ const getWorkerCount = () => {
 
 /** @type {import('@playwright/test').PlaywrightTestConfig} */
 const config = {
-    timeout: process.env.CI ? 60 * 1000 : 30 * 1000,
+    timeout: process.env.CI ? 30 * 1000 : 30 * 1000,
     expect: {
-        timeout: process.env.CI ? 30 * 1000 : 10 * 1000
+        timeout: process.env.CI ? 10 * 1000 : 10 * 1000
     },
     retries: 0, // Retries open the door to flaky tests. If the test needs retries, it's not a good test or the app is broken.
     maxFailures: process.argv.includes('--ui') ? 0 : 1,
