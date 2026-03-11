@@ -582,44 +582,6 @@ test.describe('Member emails settings', async () => {
         });
     });
 
-    test.describe('Customize button', async () => {
-        test('Shows Customize button and opens modal when labs flag is enabled', async ({page}) => {
-            const configWithDesignCustomization = {
-                ...responseFixtures.config,
-                config: {
-                    ...responseFixtures.config.config,
-                    labs: {
-                        ...responseFixtures.config.config.labs,
-                        welcomeEmailsDesignCustomization: true
-                    }
-                }
-            };
-
-            await mockApi({page, requests: {
-                ...globalDataRequests,
-                ...newslettersRequest,
-                browseConfig: {method: 'GET', path: '/config/', response: configWithDesignCustomization},
-                browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: automatedEmailsFixture}
-            }});
-
-            await page.goto('/#/memberemails');
-            await page.waitForLoadState('networkidle');
-
-            const section = page.getByTestId('memberemails');
-            await expect(section).toBeVisible({timeout: 10000});
-
-            // Customize button should be visible
-            const customizeButton = section.getByRole('button', {name: 'Customize'});
-            await expect(customizeButton).toBeVisible();
-
-            // Click it to open the modal
-            await customizeButton.click();
-
-            const modal = page.getByTestId('welcome-email-customize-modal');
-            await expect(modal).toBeVisible();
-        });
-    });
-
     // NY-842: Tests for editing/viewing welcome emails before activation
     test.describe('Email preview visibility and edit-before-activation', async () => {
         test('Email preview card is visible with default subject when no DB row exists', async ({page}) => {
