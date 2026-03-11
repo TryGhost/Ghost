@@ -75,7 +75,7 @@
     "Ends {offerEndDate}": "Endet am {offerEndDate}",
     "Enjoy {amountOff} off forever.": "Ein Rabatt in der Höhe von {amountOff} – für immer.",
     "Enjoy {months} free months on us.": "Profitieren Sie von {months} kostenlosen Monaten.",
-    "Enjoy {months} free months on us. You won't be charged until {newBillingDate}.": "Wir bieten Ihnen {Monate} kostenlose Monate an. Es werden Ihnen bis zum {newBillingDate} keine Kosten berechnet.",
+    "Enjoy {months} free months on us. You won't be charged until {newBillingDate}.": "Wir bieten Ihnen {months} kostenlose Monate an. Es werden Ihnen bis zum {newBillingDate} keine Kosten berechnet.",
     "Enjoy a free month on us.": "Sie erhalten einen Monat gratis.",
     "Enjoy a free month on us. You won't be charged until {newBillingDate}.": "Sie erhalten einen Monat kostenlos. Es fallen bis zum {newBillingDate} keine Kosten für Sie an.",
     "Enter code above": "Geben Sie obigen Code ein",
