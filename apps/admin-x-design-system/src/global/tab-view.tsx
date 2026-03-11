@@ -91,6 +91,7 @@ export const TabList: React.FC<TabListProps> = ({
             <div className={containerClasses} role='tablist'>
                 {tabs.map(tab => (
                     <TabButton
+                        key={tab.id}
                         border={buttonBorder}
                         counter={tab.counter}
                         icon={tab.icon}
@@ -160,7 +161,11 @@ function TabView<ID extends string = string>({
             />
             {tabs.map((tab) => {
                 return (
-                    <TabsPrimitive.Content className={tab.tabWrapperClassName} value={tab.id}>
+                    <TabsPrimitive.Content
+                        key={tab.id}
+                        className={tab.tabWrapperClassName}
+                        value={tab.id}
+                    >
                         <div className={tab.containerClassName}>{tab.contents}</div>
                     </TabsPrimitive.Content>
                 );

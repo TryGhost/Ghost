@@ -52,6 +52,10 @@ const features: Feature[] = [{
     description: 'Enable Transistor podcast integration',
     flag: 'transistor'
 }, {
+    title: 'Verification flow',
+    description: 'Enable new Email verification webhook-based flow',
+    flag: 'verificationFlow'
+}, {
     title: 'Members Forward',
     description: 'Use the new React-based members list instead of the Ember implementation',
     flag: 'membersForward'
