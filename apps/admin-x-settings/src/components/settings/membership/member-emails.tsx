@@ -1,13 +1,14 @@
 import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
+import WelcomeEmailCustomizeModal from './member-emails/welcome-email-customize-modal';
 import WelcomeEmailModal from './member-emails/welcome-email-modal';
+import useFeatureFlag from '../../../hooks/use-feature-flag';
 import {Button, Icon, Table, TableRow, Toggle, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useAddAutomatedEmail, useBrowseAutomatedEmails, useEditAutomatedEmail} from '@tryghost/admin-x-framework/api/automated-emails';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-import useFeatureFlag from '../../../hooks/use-feature-flag';
 import type {AutomatedEmail} from '@tryghost/admin-x-framework/api/automated-emails';
 
 // Default welcome email content in Lexical JSON format
@@ -240,7 +241,7 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
             color='clear'
             label='Customize'
             size='sm'
-            onClick={() => {}}
+            onClick={() => NiceModal.show(WelcomeEmailCustomizeModal)}
         />
     ) : null;
 
