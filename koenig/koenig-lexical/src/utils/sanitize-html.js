@@ -16,7 +16,7 @@ export function sanitizeHtml(html = '', options = {}) {
 
     // sanitize html
     return DOMPurify.sanitize(html, {
-        ALLOWED_URI_REGEXP: /^https?:|^\/|blob:/,
+        ALLOWED_URI_REGEXP: /^(?:https?:|\/|blob:)/,
         ADD_ATTR: ['id'],
         FORBID_TAGS: ['style']
     });
