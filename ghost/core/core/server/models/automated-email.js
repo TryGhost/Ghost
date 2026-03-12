@@ -6,6 +6,11 @@ const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../services/member-welcome-emails/
 
 const MEMBER_WELCOME_EMAIL_SLUG_SET = new Set(Object.values(MEMBER_WELCOME_EMAIL_SLUGS));
 
+// Reverse mapping: slug → member status (e.g. 'member-welcome-email-free' → 'free')
+const SLUG_TO_MEMBER_STATUS = Object.fromEntries(
+    Object.entries(MEMBER_WELCOME_EMAIL_SLUGS).map(([status, slug]) => [slug, status])
+);
+
 const AutomatedEmail = ghostBookshelf.Model.extend({
     tableName: 'automated_emails',
 
@@ -67,6 +72,42 @@ const AutomatedEmail = ghostBookshelf.Model.extend({
                 slug
             }
         }, isEnableTransition ? 'Welcome email enabled' : 'Welcome email disabled');
+
+        if (isDisableTransition) {
+            const memberStatus = SLUG_TO_MEMBER_STATUS[slug];
+            if (memberStatus) {
+                this.deletePendingOutboxEntries(memberStatus).catch((err) => {
+                    logging.error({
+                        system: {
+                            event: 'welcome_email.cleanup_failed',
+                            slug
+                        },
+                        err
+                    }, 'Failed to clean up pending outbox entries after disabling welcome email');
+                });
+            }
+        }
+    },
+
+    async deletePendingOutboxEntries(memberStatus) {
+        const knex = ghostBookshelf.knex;
+        const MemberCreatedEvent = require('../../shared/events/member-created-event');
+
+        const deleted = await knex('outbox')
+            .where('event_type', MemberCreatedEvent.name)
+            .whereIn('status', ['pending', 'processing'])
+            .whereRaw('JSON_EXTRACT(payload, ?) = ?', ['$.status', memberStatus])
+            .delete();
+
+        if (deleted > 0) {
+            logging.info({
+                system: {
+                    event: 'welcome_email.outbox_cleanup',
+                    member_status: memberStatus,
+                    deleted_count: deleted
+                }
+            }, `Deleted ${deleted} pending outbox entries for "${memberStatus}" welcome email`);
+        }
     }
 });
 

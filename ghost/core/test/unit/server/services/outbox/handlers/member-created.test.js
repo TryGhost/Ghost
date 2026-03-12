@@ -15,7 +15,8 @@ describe('member-created handler', function () {
 
         memberWelcomeEmailServiceStub = {
             api: {
-                send: sinon.stub().resolves()
+                send: sinon.stub().resolves(),
+                isMemberWelcomeEmailActive: sinon.stub().resolves(true)
             }
         };
 
@@ -92,6 +93,28 @@ describe('member-created handler', function () {
             member_status: 'comped'
         });
         sinon.assert.notCalled(AutomatedEmailRecipientStub.add);
+    });
+
+    it('skips sending when welcome email is inactive', async function () {
+        memberWelcomeEmailServiceStub.api.isMemberWelcomeEmailActive.resolves(false);
+
+        await handler.handle({
+            payload: {
+                memberId: 'member123',
+                uuid: 'uuid-123',
+                email: 'test@example.com',
+                name: 'Test Member',
+                status: 'free'
+            }
+        });
+
+        sinon.assert.notCalled(memberWelcomeEmailServiceStub.api.send);
+        const infoLog = findByEvent(logCapture.output, 'outbox.member_created.skipped_inactive');
+        assert.ok(infoLog);
+        assert.deepEqual(infoLog.system, {
+            event: 'outbox.member_created.skipped_inactive',
+            member_status: 'free'
+        });
     });
 
     it('logs warning when no automated email found for slug', async function () {

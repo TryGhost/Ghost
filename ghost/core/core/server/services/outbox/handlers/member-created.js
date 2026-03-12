@@ -7,6 +7,20 @@ const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../member-welcome-emails/consta
 const LOG_KEY = `${OUTBOX_LOG_KEY}[MEMBER-WELCOME-EMAIL]`;
 
 async function handle({payload}) {
+    // Check if the welcome email is still active before attempting to send.
+    // If the template was disabled after this outbox entry was created,
+    // we skip sending and let the entry be deleted from the outbox.
+    const isActive = await memberWelcomeEmailService.api.isMemberWelcomeEmailActive(payload.status);
+    if (!isActive) {
+        logging.info({
+            system: {
+                event: 'outbox.member_created.skipped_inactive',
+                member_status: payload.status
+            }
+        }, `${LOG_KEY} Skipping send for ${payload.email || 'unknown'} — welcome email for "${payload.status}" members is inactive`);
+        return;
+    }
+
     await memberWelcomeEmailService.api.send({member: payload, memberStatus: payload.status});
 
     try {
