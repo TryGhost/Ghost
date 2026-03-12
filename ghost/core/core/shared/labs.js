@@ -52,7 +52,8 @@ const PRIVATE_FEATURES = [
     'verificationFlow',
     'membersForward',
     'welcomeEmailsDesignCustomization',
-    'pictureImageFormats'
+    'pictureImageFormats',
+    'smarterCounts'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

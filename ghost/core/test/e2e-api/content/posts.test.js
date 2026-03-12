@@ -420,19 +420,22 @@ describe('Posts Content API', function () {
         let queries = await trackDb(() => agent.get('posts/?limit=all').expectStatus(200), this.skip.bind(this));
         let postsRelatedQueries = queries.filter(q => q.sql.includes('`posts`'));
         for (const query of postsRelatedQueries) {
-            assert(!query.sql.includes('*'), 'Query should not select *');
+            const sqlWithoutCount = query.sql.replace(/count\(\*\)/g, '');
+            assert(!sqlWithoutCount.includes('*'), 'Query should not select *');
         }
 
         queries = await trackDb(() => agent.get('posts/?limit=3').expectStatus(200), this.skip.bind(this));
         postsRelatedQueries = queries.filter(q => q.sql.includes('`posts`'));
         for (const query of postsRelatedQueries) {
-            assert(!query.sql.includes('*'), 'Query should not select *');
+            const sqlWithoutCount = query.sql.replace(/count\(\*\)/g, '');
+            assert(!sqlWithoutCount.includes('*'), 'Query should not select *');
         }
 
         queries = await trackDb(() => agent.get('posts/?include=tags,authors').expectStatus(200), this.skip.bind(this));
         postsRelatedQueries = queries.filter(q => q.sql.includes('`posts`'));
         for (const query of postsRelatedQueries) {
-            assert(!query.sql.includes('*'), 'Query should not select *');
+            const sqlWithoutCount = query.sql.replace(/count\(\*\)/g, '');
+            assert(!sqlWithoutCount.includes('*'), 'Query should not select *');
         }
     });
 

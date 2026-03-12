@@ -67,6 +67,10 @@ const features: Feature[] = [{
     title: 'Picture Element',
     description: 'Use the HTML picture element to serve modern image formats (AVIF, WebP) with automatic fallbacks',
     flag: 'pictureImageFormats'
+}, {
+    title: 'Smarter Counts',
+    description: 'Use optimized COUNT queries for API pagination when safe',
+    flag: 'smarterCounts'
 }];
 
 const AlphaFeatures: React.FC = () => {
