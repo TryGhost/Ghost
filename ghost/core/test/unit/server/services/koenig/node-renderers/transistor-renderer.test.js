@@ -43,7 +43,7 @@ describe('services/koenig/node-renderers/transistor-renderer', function () {
             assert.ok(result.html.includes('initTransistorEmbed'));
             assert.ok(result.html.includes('colorToRgb'));
             assert.ok(result.html.includes('event.data.type === \'resize\''));
-            assert.ok(result.html.includes('partner.transistor.fm'));
+            assert.ok(result.html.includes('iframeOrigin'));
             assert.ok(result.html.includes('Number.isSafeInteger'));
         });
 
