@@ -1,9 +1,10 @@
 import {expect, test} from '@/helpers/playwright';
+import {usePerTestIsolation} from '@/helpers/playwright/isolation';
 
 import {MemberFactory, createMemberFactory} from '@/data-factory';
 import {MembersPage} from '@/admin-pages';
 
-test.describe.configure({mode: 'parallel'});
+usePerTestIsolation();
 
 test.describe('Ghost Admin - Member Filter Actions', () => {
     let memberFactory: MemberFactory;

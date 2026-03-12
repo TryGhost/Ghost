@@ -238,9 +238,8 @@ test('example with fixtures', async ({page, ghostInstance, resolvedIsolation, re
 
 Isolation rules:
 - Default is per-file isolation.
-- Root-level `test.describe.configure({mode: 'parallel'})` switches the file to per-test isolation.
-- Nested mode toggles are not supported.
-- `test.describe.parallel(...)` and `test.describe.serial(...)` are not supported for e2e tests.
+- Call `usePerTestIsolation()` at the root of a file to switch to per-test isolation.
+- Import it from `@/helpers/playwright/isolation`.
 
 ## Data Factories
 

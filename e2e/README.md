@@ -186,9 +186,9 @@ Tests use [Project Dependencies](https://playwright.dev/docs/test-global-setup-t
 ### Playwright Fixtures
 
 [Playwright Fixtures](https://playwright.dev/docs/test-fixtures) are defined in `helpers/playwright/fixture.ts` and provide reusable test setup/teardown logic.
-The fixture now resolves isolation mode per test file:
+The fixture resolves isolation mode per test file:
 - Default: per-file isolation (one Ghost environment cycle per file)
-- Opt-in per-test: root-level `test.describe.configure({mode: 'parallel'})`
+- Opt-in per-test: call `usePerTestIsolation()` from `@/helpers/playwright/isolation` at the root of the file
 - Forced per-test: any run with `fullyParallel: true`
 
 ### Test Isolation
@@ -213,10 +213,9 @@ Per-test mode (`helpers/playwright/fixture.ts`) does:
 Escape hatch:
 - `resetEnvironment()` can be used in `beforeEach/afterEach` to force a full recycle in per-file mode.
 
-Execution mode guard rails:
-- Only root-level `test.describe.configure({mode})` can change mode per file.
-- `test.describe.parallel(...)` and `test.describe.serial(...)` are intentionally unsupported in e2e tests.
-- Nested `test.describe.configure({mode: ...})` throws.
+Opting into per-test isolation:
+- Use `usePerTestIsolation()` from `@/helpers/playwright/isolation` at the root of the file.
+- This configures both Playwright parallel mode and the fixture isolation in one call.
 
 Global teardown (`tests/global.teardown.ts`) does:
 - Cleans up e2e containers and test databases (infra services stay running)

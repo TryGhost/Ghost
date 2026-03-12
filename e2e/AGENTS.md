@@ -111,7 +111,7 @@ const post = await postFactory.create({userId: user.id});
 ## Best Practices
 
 ### DO ✅
-- Use root-level `test.describe.configure({mode})` if a file needs per-test isolation
+- Use `usePerTestIsolation()` from `@/helpers/playwright/isolation` if a file needs per-test isolation
 - Use `resetEnvironment()` in hooks when you need a forced recycle inside per-file mode
 - Use factories for all test data
 - Use Playwright's auto-waiting

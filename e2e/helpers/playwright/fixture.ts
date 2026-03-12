@@ -2,7 +2,6 @@ import baseDebug from '@tryghost/debug';
 import {AnalyticsOverviewPage} from '@/helpers/pages';
 import {Browser, BrowserContext, Page, TestInfo, test as base} from '@playwright/test';
 import {FakeStripeServer, StripeTestService, WebhookClient} from '@/helpers/services/stripe';
-import {FileExecutionMode, getFileMode, setFileModeFromCaller} from './mode-registry';
 import {GhostInstance, getEnvironmentManager} from '@/helpers/environment';
 import {SettingsService} from '@/helpers/services/settings/settings-service';
 import {faker} from '@faker-js/faker';
@@ -40,15 +39,9 @@ interface WorkerFixtures {
     _cleanupPerFileInstance: void;
 }
 
-const MODE_GUARD_ERROR =
-    '[e2e fixture] Per-describe execution mode is not supported. ' +
-    'Use root-level test.describe.configure({mode: \'parallel\' | \'default\' | \'serial\'}) only.';
-
 let cachedPerFileInstance: PerFileInstanceCache | null = null;
 let cachedPerFileGhostAccountOwner: User | null = null;
 let cachedPerFileAuthenticatedSession: PerFileAuthenticatedSessionCache | null = null;
-let modeGuardsInstalled = false;
-let describeDeclarationDepth = 0;
 
 export interface User {
     name: string;
@@ -64,6 +57,7 @@ export interface GhostConfig {
 
 export interface GhostInstanceFixture {
     ghostInstance: GhostInstance;
+    isolation?: 'per-test';
     resolvedIsolation: ResolvedIsolation;
     resetEnvironment: () => Promise<void>;
     labs?: Record<string, boolean>;
@@ -87,116 +81,12 @@ function getSuiteKey(testInfo: TestInfo): string {
     return `${testInfo.project.name}:${testInfo.file}`;
 }
 
-function getResolvedIsolation(testInfo: TestInfo): ResolvedIsolation {
-    if (testInfo.config.fullyParallel) {
+function getResolvedIsolation(testInfo: TestInfo, isolation?: 'per-test'): ResolvedIsolation {
+    if (testInfo.config.fullyParallel || isolation === 'per-test') {
         return 'per-test';
     }
 
-    const fileMode = getFileMode(testInfo.file);
-    return fileMode === 'parallel' ? 'per-test' : 'per-file';
-}
-
-function getCallbackArgumentIndex(args: unknown[]): number {
-    for (let i = args.length - 1; i >= 0; i -= 1) {
-        if (typeof args[i] === 'function') {
-            return i;
-        }
-    }
-
-    return -1;
-}
-
-function wrapDescribeDeclaration(describeFn: (...args: unknown[]) => void): (...args: unknown[]) => void {
-    return (...args: unknown[]) => {
-        const callbackIndex = getCallbackArgumentIndex(args);
-        if (callbackIndex === -1) {
-            return describeFn(...args);
-        }
-
-        const callback = args[callbackIndex] as () => void;
-        const wrappedCallback = () => {
-            describeDeclarationDepth += 1;
-            try {
-                return callback();
-            } finally {
-                describeDeclarationDepth -= 1;
-            }
-        };
-
-        const wrappedArgs = [...args];
-        wrappedArgs[callbackIndex] = wrappedCallback;
-
-        return describeFn(...wrappedArgs);
-    };
-}
-
-function createUnsupportedDescribeApi(apiName: string): ((...args: unknown[]) => never) & {only: (...args: unknown[]) => never} {
-    const unsupportedApi = (() => {
-        throw new Error(`[e2e fixture] "${apiName}" is not supported. ${MODE_GUARD_ERROR}`);
-    }) as ((...args: unknown[]) => never) & {only: (...args: unknown[]) => never};
-
-    unsupportedApi.only = () => {
-        throw new Error(`[e2e fixture] "${apiName}.only" is not supported. ${MODE_GUARD_ERROR}`);
-    };
-
-    return unsupportedApi;
-}
-
-function installModeGuardsOnce(testType: {describe: Record<string, unknown>}): void {
-    if (modeGuardsInstalled) {
-        return;
-    }
-
-    const describe = testType.describe as Record<string, unknown>;
-    const originalDescribe = describe as unknown as (...args: unknown[]) => void;
-    const originalConfigure = describe.configure as ((options: {
-        mode?: FileExecutionMode;
-        retries?: number;
-        timeout?: number;
-    }) => void) | undefined;
-
-    if (typeof originalConfigure !== 'function') {
-        throw new Error('[e2e fixture] Could not install mode guards: test.describe.configure is unavailable.');
-    }
-
-    const wrappedDescribe = wrapDescribeDeclaration((...args: unknown[]) => {
-        return originalDescribe(...args);
-    }) as unknown as Record<string, unknown>;
-
-    for (const describeVariant of ['only', 'skip', 'fixme']) {
-        const variant = describe[describeVariant];
-        if (typeof variant === 'function') {
-            wrappedDescribe[describeVariant] = wrapDescribeDeclaration((...args: unknown[]) => {
-                return (variant as (...innerArgs: unknown[]) => void)(...args);
-            });
-        }
-    }
-
-    wrappedDescribe.configure = (options: {
-        mode?: FileExecutionMode;
-        retries?: number;
-        timeout?: number;
-    }) => {
-        if (options.mode !== undefined) {
-            if (describeDeclarationDepth !== 0) {
-                throw new Error(`[e2e fixture] Non-root describe mode configuration is not supported. ${MODE_GUARD_ERROR}`);
-            }
-
-            const filePath = setFileModeFromCaller(options.mode);
-            debug('Registered root-level describe mode', {
-                filePath,
-                mode: options.mode
-            });
-        }
-
-        return originalConfigure(options);
-    };
-
-    wrappedDescribe.parallel = createUnsupportedDescribeApi('test.describe.parallel');
-    wrappedDescribe.serial = createUnsupportedDescribeApi('test.describe.serial');
-
-    (testType as {describe: Record<string, unknown>}).describe = wrappedDescribe;
-    modeGuardsInstalled = true;
+    return 'per-file';
 }
 
 async function setupNewAuthenticatedPage(browser: Browser, baseURL: string, ghostAccountOwner: User) {
@@ -273,9 +163,9 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
         auto: true
     }],
 
-    _testEnvironmentContext: async ({config, stripeEnabled, stripeServer}, use, testInfo: TestInfo) => {
+    _testEnvironmentContext: async ({config, isolation, stripeEnabled, stripeServer}, use, testInfo: TestInfo) => {
         const environmentManager = await getEnvironmentManager();
-        const requestedIsolation = getResolvedIsolation(testInfo);
+        const requestedIsolation = getResolvedIsolation(testInfo, isolation);
         const resolvedIsolation = stripeEnabled ? 'per-test' : requestedIsolation;
         const suiteKey = getSuiteKey(testInfo);
         const stripeConfig = stripeEnabled && stripeServer ? {
@@ -376,6 +266,7 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
 
     // Define options that can be set per test or describe block
     config: [undefined, {option: true}],
+    isolation: [undefined, {option: true}],
     labs: [undefined, {option: true}],
     stripeEnabled: [false, {option: true}],
 
@@ -502,7 +393,5 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
         await use(page);
     }
 });
-
-installModeGuardsOnce(test as unknown as {describe: Record<string, unknown>});
 
 export {expect} from '@playwright/test';
