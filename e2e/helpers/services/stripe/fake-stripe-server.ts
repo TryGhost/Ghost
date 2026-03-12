@@ -96,7 +96,7 @@ export class FakeStripeServer {
             res.status(200).json(response);
         });
 
-        // GET /v1/subscriptions/:id — returns subscription
+        // GET /v1/subscriptions/:id — returns subscription (supports expand[]=default_payment_method)
         this.app.get('/v1/subscriptions/:id', (req, res) => {
             const subscriptionId = req.params.id;
             const subscription = this.subscriptions.get(subscriptionId);
@@ -107,8 +107,21 @@ export class FakeStripeServer {
                 return;
             }
 
-            debug(`Returning subscription: ${subscriptionId}`);
-            res.status(200).json(subscription);
+            const rawExpand = req.query['expand[]'];
+            const expand: string[] = Array.isArray(rawExpand)
+                ? rawExpand.filter((v): v is string => typeof v === 'string')
+                : (typeof rawExpand === 'string' ? [rawExpand] : []);
+            const response = {...subscription} as Record<string, unknown>;
+
+            if (expand.includes('default_payment_method') && typeof subscription.default_payment_method === 'string') {
+                const pm = this.paymentMethods.get(subscription.default_payment_method);
+                if (pm) {
+                    response.default_payment_method = pm;
+                }
+            }
+
+            debug(`Returning subscription: ${subscriptionId} (expand: ${expand.join(', ') || 'none'})`);
+            res.status(200).json(response);
         });
 
         // GET /v1/payment_methods/:id — returns payment method
