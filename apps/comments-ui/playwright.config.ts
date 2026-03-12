@@ -32,7 +32,8 @@ export default defineConfig({
             // force GPU hardware acceleration
             // (even in headless mode)
             args: ['--use-gl=egl']
-        }
+        },
+        permissions: ['local-network-access']
     },
 
     /* Configure projects for major browsers */
