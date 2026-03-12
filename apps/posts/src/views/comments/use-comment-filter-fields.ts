@@ -2,6 +2,7 @@ import React, {useMemo} from 'react';
 import {Filter, FilterFieldConfig, LucideIcon} from '@tryghost/shade';
 import {getMember} from '@tryghost/admin-x-framework/api/members';
 import {getPost} from '@tryghost/admin-x-framework/api/posts';
+import {createOperatorOptions} from '../filters/filter-operator-options';
 import {commentFields} from './comment-fields';
 import {useFilterOptions} from './hooks/use-filter-options';
 import {useSearchMembers} from './hooks/use-search-members';
@@ -14,13 +15,6 @@ interface UseCommentFilterFieldsProps {
 }
 
 const COMMENT_FIELD_ORDER = ['author', 'post', 'body', 'status', 'reported', 'created_at'] as const;
-
-function toOperatorOptions(operators: readonly string[]) {
-    return operators.map((operator) => ({
-        value: operator,
-        label: operator.replaceAll('-', ' ')
-    }));
-}
 
 function getFieldIcon(key: string) {
     switch (key) {
@@ -84,7 +78,7 @@ export function useCommentFilterFields({
                     key,
                     ...field.ui,
                     icon: getFieldIcon(key),
-                    operators: toOperatorOptions(field.operators),
+                    operators: createOperatorOptions(field.operators),
                     ...('options' in field && field.options ? {options: field.options} : {})
                 };
 
