@@ -16,18 +16,21 @@ async function checkHasAdminSession(adminUrl: string): Promise<boolean> {
     }
 }
 
-export type CommentApi = {
+export type PublicApi = {
     browse(params: {page: number; postId: string; order?: string}): Promise<{comments: Comment[]; meta: {pagination: any}}>;
-    replies(params: {commentId: string; afterReplyId?: string; limit?: number}): Promise<{comments: Comment[]; meta: {pagination: any}}>;
+    replies(params: {commentId: string; afterReplyId?: string; limit?: number | 'all'}): Promise<{comments: Comment[]; meta: {pagination: any}}>;
     read(commentId: string): Promise<{comments: Comment[]}>;
     count(params: {postId: string | null}): Promise<any>;
+};
 
+export type MemberApi = {
     add(params: {comment: AddComment}): Promise<{comments: Comment[]}>;
     edit(params: {comment: Partial<Comment> & {id: string}}): Promise<{comments: Comment[]}>;
     like(params: {comment: {id: string}}): Promise<string>;
     unlike(params: {comment: {id: string}}): Promise<string>;
     report(params: {comment: {id: string}}): Promise<string>;
-
+    replies(params: {commentId: string; afterReplyId?: string; limit?: number | 'all'}): Promise<{comments: Comment[]; meta: {pagination: any}}>;
+    getMember(params: {postId: string}): Promise<any>;
     updateMember(data: {name?: string; expertise?: string}): Promise<Member | null>;
 };
 
@@ -38,44 +41,48 @@ export type AdminActions = {
 
 const ALLOWED_MODERATORS = ['Owner', 'Administrator', 'Super Editor'];
 
-function createCommentApi(api: GhostApi): CommentApi {
+function createPublicApi(api: GhostApi): PublicApi {
     return {
         browse: p => api.comments.browse(p),
-        replies: p => api.comments.replies(p),
+        replies: p => api.comments.replies({...p, credentials: 'omit'}),
         read: id => api.comments.read(id),
-        count: p => api.comments.count(p),
+        count: p => api.comments.count(p)
+    };
+}
+
+function createMemberApi(api: GhostApi): MemberApi {
+    return {
         add: p => api.comments.add(p),
         edit: p => api.comments.edit(p),
         like: p => api.comments.like(p),
         unlike: p => api.comments.unlike(p),
         report: p => api.comments.report(p),
+        replies: p => api.comments.replies({...p, credentials: 'same-origin'}),
+        getMember: p => api.comments.getMember(p),
         updateMember: data => api.member.update(data)
     };
 }
 
-export type MemberOverlay = {
-    member: {
-        uuid: string;
-        name: string;
-        expertise: string | null;
-        avatar_image: string | null;
-        can_comment: boolean;
-        paid: boolean;
-    };
+export type CommentMember = {
+    uuid: string;
+    name: string;
+    expertise: string | null;
+    avatar_image: string | null;
+    can_comment: boolean;
+    paid: boolean;
     liked_comments: string[];
-    authored_comments: string[];
 };
 
 type CommentApiContextType = {
-    commentApi: CommentApi;
+    publicApi: PublicApi;
+    memberApi: MemberApi;
     isAdmin: boolean;
     adminActions: AdminActions | null;
     member: Member | null;
     labs: LabsContextType;
     supportEmail: string | null;
-    memberOverlay: MemberOverlay | null;
-    memberOverlayLoaded: boolean;
-    settingsLoaded: boolean;
+    commentMember: CommentMember | null;
+    commentMemberLoaded: boolean;
 };
 
 const CommentApiContext = createContext<CommentApiContextType | null>(null);
@@ -98,11 +105,10 @@ type CommentApiProviderProps = {
 export function CommentApiProvider({children, api, adminUrl, postId}: CommentApiProviderProps) {
     const [labs, setLabs] = useState<LabsContextType>({});
     const [supportEmail, setSupportEmail] = useState<string | null>(null);
-    const [settingsLoaded, setSettingsLoaded] = useState(false);
     const [adminActions, setAdminActions] = useState<AdminActions | null>(null);
     const [hasAdminSession, setHasSession] = useState<boolean | undefined>(adminUrl ? undefined : false);
-    const [memberOverlay, setMemberOverlay] = useState<MemberOverlay | null>(null);
-    const [memberOverlayLoaded, setMemberOverlayLoaded] = useState(false);
+    const [commentMember, setCommentMember] = useState<CommentMember | null>(null);
+    const [commentMemberLoaded, setCommentMemberLoaded] = useState(false);
 
     // Step 1: Fetch site settings (labs, support email) — non-blocking
     useEffect(() => {
@@ -110,24 +116,32 @@ export function CommentApiProvider({children, api, adminUrl, postId}: CommentApi
             .then(({labs: initLabs, supportEmail: initSupportEmail}) => {
                 setLabs(initLabs);
                 setSupportEmail(initSupportEmail);
-                setSettingsLoaded(true);
             })
             .catch((e) => {
                 // eslint-disable-next-line no-console
                 console.error(`[Comments] Failed to initialize settings:`, e);
-                setSettingsLoaded(true);
             });
     }, [api]);
 
-    // Step 2: Fetch member overlay data (lightweight, parallel with everything else)
+    // Step 2: Fetch comment member data (lightweight, parallel with everything else)
     useEffect(() => {
-        api.comments.memberInfo({postId})
+        api.comments.getMember({postId})
             .then((data) => {
-                setMemberOverlay(data);
-                setMemberOverlayLoaded(true);
+                if (data) {
+                    setCommentMember({
+                        uuid: data.member.uuid,
+                        name: data.member.name,
+                        expertise: data.member.expertise,
+                        avatar_image: data.member.avatar_image,
+                        can_comment: data.member.can_comment,
+                        paid: data.member.paid,
+                        liked_comments: data.liked_comments
+                    });
+                }
+                setCommentMemberLoaded(true);
             })
             .catch(() => {
-                setMemberOverlayLoaded(true);
+                setCommentMemberLoaded(true);
             });
     }, [api, postId]);
 
@@ -164,41 +178,44 @@ export function CommentApiProvider({children, api, adminUrl, postId}: CommentApi
         console.warn(`[Comments] Admin auth frame failed to load`);
     };
 
-    // Build member from overlay data for the context
+    // Build member from comment member data for the context
     const member: Member | null = useMemo(() => {
-        if (!memberOverlay) {
+        if (!commentMember) {
             return null;
         }
         return {
-            uuid: memberOverlay.member.uuid,
-            name: memberOverlay.member.name,
-            expertise: memberOverlay.member.expertise,
-            avatar_image: memberOverlay.member.avatar_image,
-            can_comment: memberOverlay.member.can_comment,
-            paid: memberOverlay.member.paid
+            uuid: commentMember.uuid,
+            name: commentMember.name,
+            expertise: commentMember.expertise,
+            avatar_image: commentMember.avatar_image,
+            can_comment: commentMember.can_comment,
+            paid: commentMember.paid
         };
-    }, [memberOverlay]);
+    }, [commentMember]);
 
-    // CommentApi: always uses public API for reads
-    const commentApi = useMemo(() => {
-        return createCommentApi(api);
+    const publicApi = useMemo(() => {
+        return createPublicApi(api);
+    }, [api]);
+
+    const memberApi = useMemo(() => {
+        return createMemberApi(api);
     }, [api]);
 
     const isAdmin = !!adminActions;
 
     const contextValue = useMemo(() => {
         return {
-            commentApi,
+            publicApi,
+            memberApi,
             isAdmin,
             adminActions,
             member,
             labs,
             supportEmail,
-            memberOverlay,
-            memberOverlayLoaded,
-            settingsLoaded
+            commentMember,
+            commentMemberLoaded
         };
-    }, [commentApi, isAdmin, adminActions, member, labs, supportEmail, memberOverlay, memberOverlayLoaded, settingsLoaded]);
+    }, [publicApi, memberApi, isAdmin, adminActions, member, labs, supportEmail, commentMember, commentMemberLoaded]);
 
     return (
         <>

@@ -305,8 +305,8 @@ export class MockedApi {
     // (useful to spy on these methods in tests)
 
     requestHandlers = {
-        async getMember(route) {
-            const failureResponse = await this.#handleFailure('getMember');
+        async updateMember(route) {
+            const failureResponse = await this.#handleFailure('updateMember');
             if (failureResponse) {
                 return route.fulfill(failureResponse);
             }
@@ -491,8 +491,8 @@ export class MockedApi {
             });
         },
 
-        async getMemberInfo(route) {
-            const failureResponse = await this.#handleFailure('getMemberInfo');
+        async getMember(route) {
+            const failureResponse = await this.#handleFailure('getMember');
             if (failureResponse) {
                 return route.fulfill(failureResponse);
             }
@@ -647,8 +647,8 @@ export class MockedApi {
 
     async listen({page, path}: {page: any, path: string}) {
         // Public API ----------------------------------------------------------
-        await page.route(`${path}/members/api/member/`, this.requestHandlers.getMember.bind(this));
-        await page.route(`${path}/members/api/comments/post/*/member/`, this.requestHandlers.getMemberInfo.bind(this));
+        await page.route(`${path}/members/api/member/`, this.requestHandlers.updateMember.bind(this));
+        await page.route(`${path}/members/api/comments/post/*/member/`, this.requestHandlers.getMember.bind(this));
         await page.route(`${path}/members/api/comments/*`, this.requestHandlers.addComment.bind(this));
         await page.route(`${path}/members/api/comments/post/*/*`, this.requestHandlers.browseComments.bind(this));
         await page.route(`${path}/members/api/comments/*/`, this.requestHandlers.getOrDeleteComment.bind(this));

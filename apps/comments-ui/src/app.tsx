@@ -7,7 +7,7 @@ import i18nLib from '@tryghost/i18n';
 import setupGhostApi from './utils/api';
 import {ActionHandler, SyncActionHandler, isSyncAction} from './actions';
 import {AppContext, Comment, DispatchActionType, EditableAppContext} from './app-context';
-import {CommentApiProvider, MemberOverlay, useCommentApi} from './components/comment-api-provider';
+import {CommentApiProvider, CommentMember, useCommentApi} from './components/comment-api-provider';
 import {CommentsFrame} from './components/frame';
 import {useOptions} from './utils/options';
 
@@ -25,14 +25,14 @@ function isCommentLoaded(comments: Comment[], targetId: string): boolean {
 }
 
 /**
- * Apply member overlay data to comments — sets `liked` flag on comments
- * the member has liked, based on the overlay's liked_comments array.
+ * Apply comment member data to comments — sets `liked` flag on comments
+ * the member has liked, based on the member's liked_comments array.
  */
-function applyMemberOverlay(comments: Comment[], overlay: MemberOverlay | null): Comment[] {
-    if (!overlay) {
+function applyCommentMember(comments: Comment[], commentMember: CommentMember | null): Comment[] {
+    if (!commentMember) {
         return comments;
     }
-    const likedSet = new Set(overlay.liked_comments);
+    const likedSet = new Set(commentMember.liked_comments);
     return comments.map((comment) => {
         const liked = likedSet.has(comment.id);
         const replies = comment.replies?.map(reply => ({
@@ -51,7 +51,7 @@ const AppContent: React.FC<{
     initialCommentId: string | null;
     pageUrl: string;
 }> = ({options, initialCommentId, pageUrl}) => {
-    const {commentApi, isAdmin, adminActions, member, labs, supportEmail, memberOverlay, memberOverlayLoaded} = useCommentApi();
+    const {publicApi, memberApi, isAdmin, adminActions, member, labs, supportEmail, commentMember, commentMemberLoaded} = useCommentApi();
     const [state, setFullState] = useState<EditableAppContext>({
         initStatus: 'running',
         member: null,
@@ -75,8 +75,8 @@ const AppContent: React.FC<{
     });
 
     const iframeRef = useRef<HTMLIFrameElement>(null);
-    const memberOverlayRef = useRef({data: memberOverlay, loaded: memberOverlayLoaded});
-    memberOverlayRef.current = {data: memberOverlay, loaded: memberOverlayLoaded};
+    const commentMemberRef = useRef({data: commentMember, loaded: commentMemberLoaded});
+    commentMemberRef.current = {data: commentMember, loaded: commentMemberLoaded};
     const setState = useCallback((newState: Partial<EditableAppContext> | ((state: EditableAppContext) => Partial<EditableAppContext>)) => {
         setFullState((state) => {
             if (typeof newState === 'function') {
@@ -108,7 +108,7 @@ const AppContent: React.FC<{
         // allow for async actions within it's updater function so this is the best option.
         return new Promise((resolve) => {
             setState((state) => {
-                ActionHandler({action, data, state, commentApi, adminActions, options, dispatchAction: dispatchAction as DispatchActionType}).then((updatedState) => {
+                ActionHandler({action, data, state, publicApi, memberApi, adminActions, options, dispatchAction: dispatchAction as DispatchActionType}).then((updatedState) => {
                     const newState = {...updatedState};
                     resolve(newState);
                     setState(newState);
@@ -118,7 +118,7 @@ const AppContent: React.FC<{
                 return {};
             });
         });
-    }, [commentApi, adminActions, options]); // Do not add state or context as a dependency here -> infinite render loop
+    }, [publicApi, memberApi, adminActions, options]); // Do not add state or context as a dependency here -> infinite render loop
 
     const i18n = useMemo(() => {
         return i18nLib(options.locale, 'comments');
@@ -137,10 +137,10 @@ const AppContent: React.FC<{
         openFormCount: useMemo(() => state.openCommentForms.length, [state.openCommentForms])
     };
 
-    /** Fetch first few comments using the resolved commentApi */
+    /** Fetch first few comments using the public API */
     const fetchComments = async () => {
-        const dataPromise = commentApi.browse({page: 1, postId: options.postId, order: state.order});
-        const countPromise = commentApi.count({postId: options.postId});
+        const dataPromise = publicApi.browse({page: 1, postId: options.postId, order: state.order});
+        const countPromise = publicApi.count({postId: options.postId});
 
         const [data, count] = await Promise.all([dataPromise, countPromise]);
 
@@ -157,7 +157,7 @@ const AppContent: React.FC<{
      */
     const fetchScrollTarget = async (targetId: string): Promise<Comment | null> => {
         try {
-            const response = await commentApi.read(targetId);
+            const response = await publicApi.read(targetId);
             const comment = response.comments?.[0];
             return (comment && comment.status === 'published') ? comment : null;
         } catch {
@@ -182,7 +182,7 @@ const AppContent: React.FC<{
                 break;
             }
 
-            const nextPage = await commentApi.browse({
+            const nextPage = await publicApi.browse({
                 page: pagination.page + 1,
                 postId: options.postId,
                 order: state.order
@@ -209,7 +209,7 @@ const AppContent: React.FC<{
         let comments = paginatedComments;
 
         if (parentId && !isCommentLoaded(comments, targetId)) {
-            const {comments: allReplies} = await commentApi.replies({commentId: parentId, limit: 'all'});
+            const {comments: allReplies} = await publicApi.replies({commentId: parentId, limit: 'all'});
             comments = comments.map(c => (c.id === parentId ? {...c, replies: allReplies} : c));
         }
 
@@ -236,24 +236,24 @@ const AppContent: React.FC<{
                 }
             }
 
-            // Read latest overlay from ref (avoids stale closure)
-            const currentOverlay = memberOverlayRef.current.data;
-            const currentMember = currentOverlay ? {
-                uuid: currentOverlay.member.uuid,
-                name: currentOverlay.member.name,
-                expertise: currentOverlay.member.expertise,
-                avatar_image: currentOverlay.member.avatar_image,
-                can_comment: currentOverlay.member.can_comment,
-                paid: currentOverlay.member.paid
+            // Read latest comment member from ref (avoids stale closure)
+            const currentCommentMember = commentMemberRef.current.data;
+            const currentMember = currentCommentMember ? {
+                uuid: currentCommentMember.uuid,
+                name: currentCommentMember.name,
+                expertise: currentCommentMember.expertise,
+                avatar_image: currentCommentMember.avatar_image,
+                can_comment: currentCommentMember.can_comment,
+                paid: currentCommentMember.paid
             } : member;
             const isMember = !!currentMember;
             const isPaidOnly = options.commentsEnabled === 'paid';
             const isPaidMember = !!currentMember?.paid;
             const hasRequiredTier = isPaidMember || !isPaidOnly;
 
-            // Apply member overlay to comments if already available
-            const overlaidComments = memberOverlayRef.loaded
-                ? applyMemberOverlay(comments, currentOverlay)
+            // Apply comment member liked states if already available
+            const overlaidComments = commentMemberRef.current.loaded
+                ? applyCommentMember(comments, currentCommentMember)
                 : comments;
 
             setState({
@@ -283,14 +283,14 @@ const AppContent: React.FC<{
         }
     };
 
-    // Apply member overlay when it arrives — updates liked states on existing comments
+    // Apply comment member data when it arrives — updates liked states on existing comments
     useEffect(() => {
-        if (!memberOverlayLoaded || state.initStatus !== 'success') {
+        if (!commentMemberLoaded || state.initStatus !== 'success') {
             return;
         }
 
         setState((prev) => {
-            const updatedComments = applyMemberOverlay(prev.comments, memberOverlay);
+            const updatedComments = applyCommentMember(prev.comments, commentMember);
             const isMember = !!member;
             const isPaidMember = !!member?.paid;
             const isPaidOnly = options.commentsEnabled === 'paid';
@@ -305,7 +305,7 @@ const AppContent: React.FC<{
                 isCommentingDisabled: member?.can_comment === false
             };
         });
-    }, [memberOverlayLoaded, state.initStatus]);
+    }, [commentMemberLoaded, state.initStatus]);
 
     /** Delay initialization until comments block is in viewport (unless permalink present) */
     useEffect(() => {

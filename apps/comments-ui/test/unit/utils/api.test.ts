@@ -18,7 +18,7 @@ test('should call counts endpoint', () => {
         expect.objectContaining({
             method: 'GET',
             headers: {'Content-Type': 'application/json'},
-            credentials: undefined,
+            credentials: 'omit',
             body: undefined
         })
     );
@@ -41,7 +41,7 @@ test('should call counts endpoint with postId query param', () => {
         expect.objectContaining({
             method: 'GET',
             headers: {'Content-Type': 'application/json'},
-            credentials: undefined,
+            credentials: 'omit',
             body: undefined
         })
     );

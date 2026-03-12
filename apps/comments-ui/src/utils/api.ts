@@ -55,32 +55,6 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
             }
         },
         member: {
-            identity() {
-                const url = endpointFor({type: 'members', resource: 'session'});
-                return makeRequest({
-                    url,
-                    credentials: 'same-origin'
-                }).then(function (res) {
-                    if (!res.ok || res.status === 204) {
-                        return null;
-                    }
-                    return res.text();
-                });
-            },
-
-            sessionData() {
-                const url = endpointFor({type: 'members', resource: 'member'});
-                return makeRequest({
-                    url,
-                    credentials: 'same-origin'
-                }).then(function (res) {
-                    if (!res.ok || res.status === 204) {
-                        return null;
-                    }
-                    return res.json();
-                });
-            },
-
             update({name, expertise}: {name?: string, expertise?: string}) {
                 const url = endpointFor({type: 'members', resource: 'member'});
                 const body = {
@@ -103,7 +77,6 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
                     return res.json();
                 });
             }
-
         },
         comments: {
             async count({postId}: {postId: string | null}) {
@@ -114,7 +87,8 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json'
-                    }
+                    },
+                    credentials: 'omit'
                 });
 
                 const json = await response.json();
@@ -168,14 +142,14 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
 
                 return response;
             },
-            async replies({commentId, afterReplyId, limit}: {commentId: string; afterReplyId?: string; limit?: number | 'all'}) {
+            async replies({commentId, afterReplyId, limit, credentials = 'omit'}: {commentId: string; afterReplyId?: string; limit?: number | 'all'; credentials?: string}) {
                 if (limit === 'all') {
                     const all: Comment[] = [];
                     let cursor: string | undefined = afterReplyId;
                     let hasMore = true;
 
                     while (hasMore) {
-                        const data = await this.replies({commentId, afterReplyId: cursor, limit: 100});
+                        const data = await this.replies({commentId, afterReplyId: cursor, limit: 100, credentials});
                         all.push(...data.comments);
                         hasMore = !!data.meta?.pagination?.next && data.comments.length > 0;
                         if (data.comments.length > 0) {
@@ -200,7 +174,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    credentials: 'omit'
+                    credentials
                 });
                 if (res.ok) {
                     return res.json();
@@ -208,7 +182,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
                     throw new Error('Failed to fetch replies');
                 }
             },
-            async memberInfo({postId}: {postId: string}) {
+            async getMember({postId}: {postId: string}) {
                 const url = endpointFor({type: 'members', resource: `comments/post/${postId}/member`});
                 const res = await makeRequest({
                     url,
@@ -234,6 +208,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
                     headers: {
                         'Content-Type': 'application/json'
                     },
+                    credentials: 'same-origin',
                     body: JSON.stringify(body)
                 }).then(function (res) {
                     if (res.ok) {
@@ -254,6 +229,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
                     headers: {
                         'Content-Type': 'application/json'
                     },
+                    credentials: 'same-origin',
                     body: JSON.stringify(body)
                 }).then(function (res) {
                     if (res.ok) {
@@ -284,7 +260,8 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
-                    }
+                    },
+                    credentials: 'same-origin'
                 }).then(function (res) {
                     if (res.ok) {
                         return 'Success';
@@ -304,6 +281,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
                     headers: {
                         'Content-Type': 'application/json'
                     },
+                    credentials: 'same-origin',
                     body: JSON.stringify(body)
                 }).then(function (res) {
                     if (res.ok) {
@@ -320,7 +298,8 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
-                    }
+                    },
+                    credentials: 'same-origin'
                 }).then(function (res) {
                     if (res.ok) {
                         return 'Success';
