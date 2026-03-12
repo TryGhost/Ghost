@@ -263,6 +263,39 @@ describe('oembed-service', function () {
             sinon.assert.calledOnce(saveRaw);
             assert.equal(saveRaw.firstCall.args[1], 'thumbnail/sample.png');
         });
+
+        it('works when saveRaw returns a relative path (local storage)', async function () {
+            const saveRaw = sinon.stub().resolves('/content/images/icon/favicon.ico');
+            const generateUnique = sinon.stub().resolves('/tmp/content/images/icon/favicon.ico');
+            const getSanitizedFileName = sinon.stub().returns('favicon');
+
+            const service = new OembedService({
+                config: {
+                    getContentPath() {
+                        return '/tmp/content/images';
+                    }
+                },
+                storage: {
+                    getStorage() {
+                        return {
+                            getSanitizedFileName,
+                            generateUnique,
+                            saveRaw
+                        };
+                    }
+                },
+                externalRequest() {
+                    return {
+                        buffer: async () => Buffer.from('ico-bytes')
+                    };
+                }
+            });
+
+            const storedUrl = await service.processImageFromUrl('https://example.com/favicon.ico', 'icon');
+
+            assert.equal(storedUrl, '/content/images/icon/favicon.ico');
+            assert.equal(saveRaw.firstCall.args[1], 'icon/favicon.ico');
+        });
     });
 
     describe('metascraper inherits externalRequest hooks', function () {
