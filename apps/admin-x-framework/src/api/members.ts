@@ -198,7 +198,7 @@ export interface BulkOperationResponseType {
 
 export const useBulkEditMembers = createMutation<
     BulkOperationResponseType,
-    {filter: string; all?: boolean; action: BulkEditAction}
+    {filter?: string; search?: string; all?: boolean; action: BulkEditAction}
 >({
     method: 'PUT',
     path: () => '/members/bulk/',
@@ -209,15 +209,19 @@ export const useBulkEditMembers = createMutation<
             newsletter: action.newsletter
         }
     }),
-    searchParams: ({filter, all}) => {
-        if (!all && !filter) {
-            throw new Error('Bulk edit requires either a filter or all flag');
+    searchParams: ({filter, search, all}) => {
+        if (!all && !filter && !search) {
+            throw new Error('Bulk edit requires a filter, search, or all flag');
         }
         const params: Record<string, string> = {};
         if (all) {
             params.all = 'true';
-        } else {
+        }
+        if (filter) {
             params.filter = filter;
+        }
+        if (search) {
+            params.search = search;
         }
         return params;
     },
@@ -226,19 +230,23 @@ export const useBulkEditMembers = createMutation<
 
 export const useBulkDeleteMembers = createMutation<
     BulkOperationResponseType,
-    {filter: string; all?: boolean}
+    {filter?: string; search?: string; all?: boolean}
 >({
     method: 'DELETE',
     path: () => '/members/',
-    searchParams: ({filter, all}) => {
-        if (!all && !filter) {
-            throw new Error('Bulk delete requires either a filter or all flag');
+    searchParams: ({filter, search, all}) => {
+        if (!all && !filter && !search) {
+            throw new Error('Bulk delete requires a filter, search, or all flag');
         }
         const params: Record<string, string> = {};
         if (all) {
             params.all = 'true';
-        } else {
+        }
+        if (filter) {
             params.filter = filter;
+        }
+        if (search) {
+            params.search = search;
         }
         return params;
     },
