@@ -9,6 +9,15 @@ interface CompoundMatchResult {
     remainingNodes: AstNode[];
 }
 
+interface LeafPairMatch {
+    indices: [number, number];
+    predicate: ParsedPredicate;
+}
+
+type GroupedNodeMatcher = (node: AstNode) => ParsedPredicate | null;
+type LeafPairMatcher = (nodes: AstNode[], index: number) => LeafPairMatch | null;
+type CompoundMatcher = (nodes: AstNode[]) => CompoundMatchResult;
+
 function getCompoundChildren(node: AstNode): {operator: '$and' | '$or'; children: AstNode[]} | null {
     if (Array.isArray(node.$and)) {
         return {operator: '$and', children: node.$and as AstNode[]};
@@ -55,6 +64,33 @@ function claimLeafPair(
     for (const removalIndex of removalIndices) {
         remainingNodes.splice(removalIndex, 1);
     }
+}
+
+function collectCompoundMatches(
+    nodes: AstNode[],
+    groupedMatcher: GroupedNodeMatcher,
+    leafPairMatcher: LeafPairMatcher
+): CompoundMatchResult {
+    const predicates: ParsedPredicate[] = [];
+    const remainingNodes = [...nodes];
+
+    for (let index = 0; index < remainingNodes.length; index += 1) {
+        if (claimGroupedMatch(remainingNodes, index, predicates, groupedMatcher)) {
+            index -= 1;
+            continue;
+        }
+
+        const leafPairMatch = leafPairMatcher(remainingNodes, index);
+
+        if (!leafPairMatch) {
+            continue;
+        }
+
+        claimLeafPair(remainingNodes, leafPairMatch.indices, predicates, leafPairMatch.predicate);
+        index -= 1;
+    }
+
+    return {predicates, remainingNodes};
 }
 
 function matchSubscribedGroupedNode(node: AstNode): ParsedPredicate | null {
@@ -182,19 +218,11 @@ function matchFeedbackGroupedNode(node: AstNode): ParsedPredicate | null {
 }
 
 function matchSubscribedCompound(nodes: AstNode[]): CompoundMatchResult {
-    const predicates: ParsedPredicate[] = [];
-    const remainingNodes = [...nodes];
-
-    for (let index = 0; index < remainingNodes.length; index += 1) {
-        if (claimGroupedMatch(remainingNodes, index, predicates, matchSubscribedGroupedNode)) {
-            index -= 1;
-            continue;
-        }
-
+    return collectCompoundMatches(nodes, matchSubscribedGroupedNode, (remainingNodes, index) => {
         const comparator = extractComparator(remainingNodes[index]);
 
         if (!comparator || comparator.field !== 'subscribed' || typeof comparator.value !== 'boolean') {
-            continue;
+            return null;
         }
 
         const emailDisabledIndex = findLeaf(remainingNodes, index, (node) => {
@@ -203,35 +231,26 @@ function matchSubscribedCompound(nodes: AstNode[]): CompoundMatchResult {
         });
 
         if (emailDisabledIndex === -1) {
-            continue;
+            return null;
         }
 
-        claimLeafPair(remainingNodes, [index, emailDisabledIndex], predicates, {
-            field: 'subscribed',
-            operator: 'is',
-            values: [comparator.value ? 'subscribed' : 'unsubscribed']
-        });
-
-        index -= 1;
-    }
-
-    return {predicates, remainingNodes};
+        return {
+            indices: [index, emailDisabledIndex],
+            predicate: {
+                field: 'subscribed',
+                operator: 'is',
+                values: [comparator.value ? 'subscribed' : 'unsubscribed']
+            }
+        };
+    });
 }
 
 function matchNewsletterCompound(nodes: AstNode[]): CompoundMatchResult {
-    const predicates: ParsedPredicate[] = [];
-    const remainingNodes = [...nodes];
-
-    for (let index = 0; index < remainingNodes.length; index += 1) {
-        if (claimGroupedMatch(remainingNodes, index, predicates, matchNewsletterGroupedNode)) {
-            index -= 1;
-            continue;
-        }
-
+    return collectCompoundMatches(nodes, matchNewsletterGroupedNode, (remainingNodes, index) => {
         const comparator = extractComparator(remainingNodes[index]);
 
         if (!comparator || comparator.field !== 'newsletters.slug' || typeof comparator.value !== 'string') {
-            continue;
+            return null;
         }
 
         const emailDisabledIndex = findLeaf(remainingNodes, index, (node) => {
@@ -240,35 +259,26 @@ function matchNewsletterCompound(nodes: AstNode[]): CompoundMatchResult {
         });
 
         if (emailDisabledIndex === -1) {
-            continue;
+            return null;
         }
 
-        claimLeafPair(remainingNodes, [index, emailDisabledIndex], predicates, {
-            field: `newsletters.${comparator.value}`,
-            operator: 'is',
-            values: ['subscribed']
-        });
-
-        index -= 1;
-    }
-
-    return {predicates, remainingNodes};
+        return {
+            indices: [index, emailDisabledIndex],
+            predicate: {
+                field: `newsletters.${comparator.value}`,
+                operator: 'is',
+                values: ['subscribed']
+            }
+        };
+    });
 }
 
 function matchFeedbackCompound(nodes: AstNode[]): CompoundMatchResult {
-    const predicates: ParsedPredicate[] = [];
-    const remainingNodes = [...nodes];
-
-    for (let index = 0; index < remainingNodes.length; index += 1) {
-        if (claimGroupedMatch(remainingNodes, index, predicates, matchFeedbackGroupedNode)) {
-            index -= 1;
-            continue;
-        }
-
+    return collectCompoundMatches(nodes, matchFeedbackGroupedNode, (remainingNodes, index) => {
         const comparator = extractComparator(remainingNodes[index]);
 
         if (!comparator || comparator.field !== 'feedback.post_id' || typeof comparator.value !== 'string') {
-            continue;
+            return null;
         }
 
         const scoreIndex = findLeaf(remainingNodes, index, (node) => {
@@ -277,26 +287,31 @@ function matchFeedbackCompound(nodes: AstNode[]): CompoundMatchResult {
         });
 
         if (scoreIndex === -1) {
-            continue;
+            return null;
         }
 
         const scoreComparator = extractComparator(remainingNodes[scoreIndex]);
 
         if (!scoreComparator || (scoreComparator.value !== 0 && scoreComparator.value !== 1)) {
-            continue;
+            return null;
         }
 
-        claimLeafPair(remainingNodes, [index, scoreIndex], predicates, {
-            field: 'newsletter_feedback',
-            operator: String(scoreComparator.value),
-            values: [comparator.value]
-        });
-
-        index -= 1;
-    }
-
-    return {predicates, remainingNodes};
+        return {
+            indices: [index, scoreIndex],
+            predicate: {
+                field: 'newsletter_feedback',
+                operator: String(scoreComparator.value),
+                values: [comparator.value]
+            }
+        };
+    });
 }
+
+const MEMBER_COMPOUND_MATCHERS: CompoundMatcher[] = [
+    matchSubscribedCompound,
+    matchNewsletterCompound,
+    matchFeedbackCompound
+];
 
 export function parseMemberFilter(filter: string | undefined, timezone: string): FilterPredicate[] {
     const ast = parseFilterToAst(filter ?? '');
@@ -305,18 +320,18 @@ export function parseMemberFilter(filter: string | undefined, timezone: string):
         return [];
     }
 
-    const flattenedNodes = flattenTopLevelNodes(ast);
-    const subscribedMatch = matchSubscribedCompound(flattenedNodes);
-    const newsletterMatch = matchNewsletterCompound(subscribedMatch.remainingNodes);
-    const feedbackMatch = matchFeedbackCompound(newsletterMatch.remainingNodes);
-    const simplePredicates = dispatchSimpleNodes(feedbackMatch.remainingNodes, memberFields, timezone);
+    let remainingNodes = flattenTopLevelNodes(ast);
+    const compoundPredicates: ParsedPredicate[] = [];
 
-    return stampPredicates([
-        ...subscribedMatch.predicates,
-        ...newsletterMatch.predicates,
-        ...feedbackMatch.predicates,
-        ...simplePredicates
-    ]);
+    for (const matcher of MEMBER_COMPOUND_MATCHERS) {
+        const result = matcher(remainingNodes);
+        compoundPredicates.push(...result.predicates);
+        remainingNodes = result.remainingNodes;
+    }
+
+    const simplePredicates = dispatchSimpleNodes(remainingNodes, memberFields, timezone);
+
+    return stampPredicates([...compoundPredicates, ...simplePredicates]);
 }
 
 export function serializeMemberFilters(predicates: FilterPredicate[], timezone: string): string | undefined {

@@ -89,6 +89,20 @@ describe('member-filter-query', () => {
         ]);
     });
 
+    it('parses ordered member compounds alongside simple predicates', () => {
+        const parsed = parseMemberFilter(
+            "(subscribed:true+email_disabled:0)+(newsletters.slug:weekly+email_disabled:0)+(feedback.post_id:'post_123'+feedback.score:1)+status:paid",
+            'UTC'
+        );
+
+        expect(stripIds(parsed)).toEqual([
+            {field: 'subscribed', operator: 'is', values: ['subscribed']},
+            {field: 'newsletters.weekly', operator: 'is', values: ['subscribed']},
+            {field: 'newsletter_feedback', operator: '1', values: ['post_123']},
+            {field: 'status', operator: 'is', values: ['paid']}
+        ]);
+    });
+
     it('ignores malformed NQL input', () => {
         expect(parseMemberFilter('status:(', 'UTC')).toEqual([]);
     });

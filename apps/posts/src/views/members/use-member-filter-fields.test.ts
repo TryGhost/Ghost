@@ -41,8 +41,10 @@ describe('useMemberFilterFields', () => {
         ]);
 
         const basicFields = result.current.find(group => group.group === 'Basic')?.fields ?? [];
+        const emailFields = result.current.find(group => group.group === 'Email')?.fields ?? [];
         const labelField = basicFields.find(field => field.key === 'label');
         const signupField = basicFields.find(field => field.key === 'signup');
+        const emailPostField = emailFields.find(field => field.key === 'emails.post_id');
 
         expect(labelField?.operators?.map(operator => operator.value)).toEqual(memberFields.label.operators);
         expect(labelField?.options).toEqual([{value: 'vip', label: 'VIP'}]);
@@ -51,6 +53,12 @@ describe('useMemberFilterFields', () => {
         expect(signupField).toMatchObject({
             options: [{value: 'post_1', label: 'Welcome'}],
             searchValue: 'wel',
+            isLoading: false
+        });
+
+        expect(emailPostField).toMatchObject({
+            options: [{value: 'email_1', label: 'Launch'}],
+            searchValue: 'lau',
             isLoading: false
         });
     });
