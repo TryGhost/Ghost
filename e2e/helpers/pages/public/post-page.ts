@@ -13,7 +13,7 @@ export class PostPage extends PublicPage {
     constructor(page: Page) {
         super(page);
         this.postTitle = page.locator('article h1').first();
-        this.postContent = page.locator('article');
+        this.postContent = page.locator('article.gh-article');
         this.commentsSection = new CommentsSection(page);
         this.transistorCard = page.locator('.kg-transistor-card');
         this.transistorIframe = page.locator('iframe[data-kg-transistor-embed]');
