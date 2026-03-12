@@ -129,6 +129,20 @@ describe('textCodec', () => {
         });
     });
 
+    it('preserves regex escape sequences while unescaping literal punctuation', () => {
+        expect(textCodec().parse(nql.parse('email:~\'g.ost\'') as never, emailContext)).toEqual({
+            field: 'email',
+            operator: 'contains',
+            values: ['g.ost']
+        });
+
+        expect(textCodec().parse(nql.parse('email:~\'\\d\'') as never, emailContext)).toEqual({
+            field: 'email',
+            operator: 'contains',
+            values: ['\\d']
+        });
+    });
+
     it('parses and serializes exact text operators', () => {
         expect(textCodec().parse(nql.parse('email:\'ghost@example.com\'') as never, emailContext)).toEqual({
             field: 'email',

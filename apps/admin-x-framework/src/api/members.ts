@@ -196,6 +196,28 @@ export interface BulkOperationResponseType {
     };
 }
 
+function buildBulkMemberSearchParams({filter, search, all}: {filter?: string; search?: string; all?: boolean}) {
+    if (!all && !filter && !search) {
+        throw new Error('Bulk operation requires a filter, search, or all flag');
+    }
+
+    const params: Record<string, string> = {};
+
+    if (all) {
+        params.all = 'true';
+    }
+
+    if (filter) {
+        params.filter = filter;
+    }
+
+    if (search) {
+        params.search = search;
+    }
+
+    return params;
+}
+
 export const useBulkEditMembers = createMutation<
     BulkOperationResponseType,
     {filter?: string; search?: string; all?: boolean; action: BulkEditAction}
@@ -209,22 +231,7 @@ export const useBulkEditMembers = createMutation<
             newsletter: action.newsletter
         }
     }),
-    searchParams: ({filter, search, all}) => {
-        if (!all && !filter && !search) {
-            throw new Error('Bulk edit requires a filter, search, or all flag');
-        }
-        const params: Record<string, string> = {};
-        if (all) {
-            params.all = 'true';
-        }
-        if (filter) {
-            params.filter = filter;
-        }
-        if (search) {
-            params.search = search;
-        }
-        return params;
-    },
+    searchParams: buildBulkMemberSearchParams,
     invalidateQueries: {dataType}
 });
 
@@ -234,21 +241,6 @@ export const useBulkDeleteMembers = createMutation<
 >({
     method: 'DELETE',
     path: () => '/members/',
-    searchParams: ({filter, search, all}) => {
-        if (!all && !filter && !search) {
-            throw new Error('Bulk delete requires a filter, search, or all flag');
-        }
-        const params: Record<string, string> = {};
-        if (all) {
-            params.all = 'true';
-        }
-        if (filter) {
-            params.filter = filter;
-        }
-        if (search) {
-            params.search = search;
-        }
-        return params;
-    },
+    searchParams: buildBulkMemberSearchParams,
     invalidateQueries: {dataType}
 });

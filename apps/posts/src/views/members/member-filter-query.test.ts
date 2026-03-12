@@ -124,4 +124,8 @@ describe('member-filter-query', () => {
     it('ignores malformed NQL input', () => {
         expect(parseMemberFilter('status:(', 'UTC')).toEqual([]);
     });
+
+    it('drops invalid member date values during parse', () => {
+        expect(parseMemberFilter('created_at:<=\'not-a-date\'', 'UTC')).toEqual([]);
+    });
 });
