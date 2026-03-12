@@ -1,9 +1,9 @@
 import {describe, expect, it} from 'vitest';
 import {scalarCodec, numberCodec} from './filter-codecs';
-import {flattenTopLevelNodes} from './filter-ast';
 import {defineFields} from './filter-types';
 import {dispatchSimpleNodes, parseFilterToAst, serializePredicates} from './filter-query-core';
 import type {FilterPredicate} from './filter-types';
+import type {AstNode} from './filter-ast';
 
 const fields = defineFields({
     status: {
@@ -42,10 +42,10 @@ const fields = defineFields({
 });
 
 describe('filter-query-core', () => {
-    it('parses NQL and top-level nodes for surface-level composition', () => {
+    it('parses NQL into a traversable AST for surface-level composition', () => {
         const ast = parseFilterToAst('status:paid+email_count:>5');
 
-        expect(flattenTopLevelNodes(ast as Record<string, unknown>)).toEqual([
+        expect((ast as Record<string, unknown>).$and).toEqual([
             {status: 'paid'},
             {email_count: {$gt: 5}}
         ]);
@@ -57,7 +57,7 @@ describe('filter-query-core', () => {
 
     it('dispatches simple nodes into parsed predicates', () => {
         const ast = parseFilterToAst('status:paid+email_count:>5');
-        const predicates = dispatchSimpleNodes(flattenTopLevelNodes(ast as Record<string, unknown>), fields, 'UTC');
+        const predicates = dispatchSimpleNodes((ast as Record<string, unknown>).$and as AstNode[], fields, 'UTC');
 
         expect(predicates).toEqual([
             {field: 'status', operator: 'is', values: ['paid']},
@@ -67,7 +67,7 @@ describe('filter-query-core', () => {
 
     it('skips unknown simple nodes', () => {
         const ast = parseFilterToAst('status:paid+unknown:test');
-        const predicates = dispatchSimpleNodes(flattenTopLevelNodes(ast as Record<string, unknown>), fields, 'UTC');
+        const predicates = dispatchSimpleNodes((ast as Record<string, unknown>).$and as AstNode[], fields, 'UTC');
 
         expect(predicates).toEqual([
             {field: 'status', operator: 'is', values: ['paid']}
@@ -76,7 +76,7 @@ describe('filter-query-core', () => {
 
     it('dispatches through declared parse aliases when the AST field name differs', () => {
         const ast = parseFilterToAst('member_id:abc123');
-        const predicates = dispatchSimpleNodes(flattenTopLevelNodes(ast as Record<string, unknown>), fields, 'UTC');
+        const predicates = dispatchSimpleNodes([ast as AstNode], fields, 'UTC');
 
         expect(predicates).toEqual([
             {field: 'author', operator: 'is', values: ['abc123']}
@@ -95,7 +95,7 @@ describe('filter-query-core', () => {
 
     it('round-trips simple predicates canonically', () => {
         const ast = parseFilterToAst('status:paid+email_count:>5');
-        const parsed = dispatchSimpleNodes(flattenTopLevelNodes(ast as Record<string, unknown>), fields, 'UTC').map((predicate, index) => ({
+        const parsed = dispatchSimpleNodes((ast as Record<string, unknown>).$and as AstNode[], fields, 'UTC').map((predicate, index) => ({
             ...predicate,
             id: String(index + 1)
         }));

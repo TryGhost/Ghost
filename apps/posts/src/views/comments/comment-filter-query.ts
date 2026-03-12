@@ -1,14 +1,13 @@
 import moment from 'moment-timezone';
 import type {AstNode} from '../filters/filter-ast';
-import {flattenTopLevelNodes} from '../filters/filter-ast';
 import {dispatchSimpleNodes, parseFilterToAst, serializePredicates, stampPredicates} from '../filters/filter-query-core';
 import {getDayBoundsInUtc} from '../filters/filter-normalization';
 import {commentFields} from './comment-fields';
 import type {FilterPredicate, ParsedPredicate} from '../filters/filter-types';
 
-interface CompoundMatchResult {
-    predicates: ParsedPredicate[];
-    remainingNodes: AstNode[];
+interface ExactDateMatchResult {
+    predicate: ParsedPredicate | null;
+    remainingChildren: AstNode[];
 }
 
 function extractCreatedAtComparator(node: AstNode): {operator: string; value: string} | null {
@@ -27,56 +26,59 @@ function extractCreatedAtComparator(node: AstNode): {operator: string; value: st
     return {operator, value};
 }
 
-function matchExactDateCompound(nodes: AstNode[], timezone: string): CompoundMatchResult {
-    const predicates: ParsedPredicate[] = [];
-    const remainingNodes = [...nodes];
+function matchExactDateCompound(children: AstNode[], timezone: string): ExactDateMatchResult {
+    for (let index = 0; index < children.length; index += 1) {
+        const lowerBound = extractCreatedAtComparator(children[index]);
 
-    for (let index = 0; index < remainingNodes.length; index += 1) {
-        const comparator = extractCreatedAtComparator(remainingNodes[index]);
-
-        if (!comparator) {
+        if (!lowerBound || lowerBound.operator !== '$gte') {
             continue;
         }
 
-        const date = moment.tz(comparator.value, timezone).format('YYYY-MM-DD');
+        const date = moment.tz(lowerBound.value, timezone).format('YYYY-MM-DD');
         const {start, end} = getDayBoundsInUtc(date, timezone);
-        const hasLowerBound = comparator.operator === '$gte' && comparator.value === start;
-        const hasUpperBound = comparator.operator === '$lte' && comparator.value === end;
 
-        if (!hasLowerBound && !hasUpperBound) {
+        if (lowerBound.value !== start) {
             continue;
         }
 
-        const expectedOperator = hasLowerBound ? '$lte' : '$gte';
-        const expectedValue = hasLowerBound ? end : start;
-        const matchIndex = remainingNodes.findIndex((node, candidateIndex) => {
+        const upperBoundIndex = children.findIndex((child, candidateIndex) => {
             if (candidateIndex === index) {
                 return false;
             }
 
-            const candidate = extractCreatedAtComparator(node);
-            return candidate?.operator === expectedOperator && candidate.value === expectedValue;
+            const comparator = extractCreatedAtComparator(child);
+            return comparator?.operator === '$lte' && comparator.value === end;
         });
 
-        if (matchIndex === -1) {
+        if (upperBoundIndex === -1) {
             continue;
         }
 
-        predicates.push({
-            field: 'created_at',
-            operator: 'is',
-            values: [date]
-        });
-
-        const indicesToRemove = [index, matchIndex].sort((left, right) => right - left);
-        for (const removalIndex of indicesToRemove) {
-            remainingNodes.splice(removalIndex, 1);
-        }
-
-        index -= 1;
+        return {
+            predicate: {
+                field: 'created_at',
+                operator: 'is',
+                values: [date]
+            },
+            remainingChildren: children.filter((_, candidateIndex) => candidateIndex !== index && candidateIndex !== upperBoundIndex)
+        };
     }
 
-    return {predicates, remainingNodes};
+    return {
+        predicate: null,
+        remainingChildren: children
+    };
+}
+
+function parseCommentNode(node: AstNode, timezone: string): ParsedPredicate[] {
+    if (Array.isArray(node.$and)) {
+        const {predicate, remainingChildren} = matchExactDateCompound(node.$and as AstNode[], timezone);
+        const simplePredicates = remainingChildren.flatMap(child => parseCommentNode(child, timezone));
+
+        return predicate ? [predicate, ...simplePredicates] : simplePredicates;
+    }
+
+    return dispatchSimpleNodes([node], commentFields, timezone);
 }
 
 export function parseCommentFilter(filter: string | undefined, timezone: string): FilterPredicate[] {
@@ -86,10 +88,7 @@ export function parseCommentFilter(filter: string | undefined, timezone: string)
         return [];
     }
 
-    const {predicates: compoundPredicates, remainingNodes} = matchExactDateCompound(flattenTopLevelNodes(ast), timezone);
-    const simplePredicates = dispatchSimpleNodes(remainingNodes, commentFields, timezone);
-
-    return stampPredicates([...compoundPredicates, ...simplePredicates]);
+    return stampPredicates(parseCommentNode(ast, timezone));
 }
 
 export function serializeCommentFilters(predicates: FilterPredicate[], timezone: string): string | undefined {
