@@ -1,8 +1,8 @@
-import {act, renderHook} from '@testing-library/react';
 import {MemoryRouter, useSearchParams} from 'react-router';
-import type {ReactNode} from 'react';
+import {act, renderHook} from '@testing-library/react';
 import {describe, expect, it, vi} from 'vitest';
 import {useMembersFilterState} from './use-members-filter-state';
+import type {ReactNode} from 'react';
 
 vi.mock('@tryghost/admin-x-framework/api/settings', () => ({
     useBrowseSettings: () => ({

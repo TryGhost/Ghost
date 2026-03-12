@@ -1,4 +1,3 @@
-import {describe, expect, it} from 'vitest';
 import {
     canonicalizeClauses,
     escapeNqlString,
@@ -6,10 +5,11 @@ import {
     normalizeMultiValue,
     normalizeOperator
 } from './filter-normalization';
+import {describe, expect, it} from 'vitest';
 
 describe('filter-normalization', () => {
     it('escapes single quotes for NQL strings', () => {
-        expect(escapeNqlString("can't stop")).toBe("'can\\'t stop'");
+        expect(escapeNqlString('can\'t stop')).toBe('\'can\\\'t stop\'');
     });
 
     it('canonicalizes clause order', () => {

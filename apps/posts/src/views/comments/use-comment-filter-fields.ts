@@ -1,9 +1,9 @@
 import React, {useMemo} from 'react';
 import {Filter, FilterFieldConfig, LucideIcon} from '@tryghost/shade';
+import {commentFields} from './comment-fields';
+import {createOperatorOptions} from '../filters/filter-operator-options';
 import {getMember} from '@tryghost/admin-x-framework/api/members';
 import {getPost} from '@tryghost/admin-x-framework/api/posts';
-import {createOperatorOptions} from '../filters/filter-operator-options';
-import {commentFields} from './comment-fields';
 import {useFilterOptions} from './hooks/use-filter-options';
 import {useSearchMembers} from './hooks/use-search-members';
 import {useSearchPosts} from './hooks/use-search-posts';
@@ -74,33 +74,33 @@ export function useCommentFilterFields({
                 return null;
             }
 
-                const config: FilterFieldConfig = {
-                    key,
-                    ...field.ui,
-                    icon: getFieldIcon(key),
-                    operators: createOperatorOptions(field.operators),
-                    ...('options' in field && field.options ? {options: field.options} : {})
+            const config: FilterFieldConfig = {
+                key,
+                ...field.ui,
+                icon: getFieldIcon(key),
+                operators: createOperatorOptions(field.operators),
+                ...('options' in field && field.options ? {options: field.options} : {})
+            };
+
+            if (key === 'author') {
+                return {
+                    ...config,
+                    options: members.options,
+                    isLoading: members.options.length === 0 && members.isLoading,
+                    onSearchChange: members.onSearchChange,
+                    searchValue: members.searchValue
                 };
+            }
 
-                if (key === 'author') {
-                    return {
-                        ...config,
-                        options: members.options,
-                        isLoading: members.options.length === 0 && members.isLoading,
-                        onSearchChange: members.onSearchChange,
-                        searchValue: members.searchValue
-                    };
-                }
-
-                if (key === 'post') {
-                    return {
-                        ...config,
-                        options: posts.options,
-                        isLoading: posts.options.length === 0 && posts.isLoading,
-                        onSearchChange: posts.onSearchChange,
-                        searchValue: posts.searchValue
-                    };
-                }
+            if (key === 'post') {
+                return {
+                    ...config,
+                    options: posts.options,
+                    isLoading: posts.options.length === 0 && posts.isLoading,
+                    onSearchChange: posts.onSearchChange,
+                    searchValue: posts.searchValue
+                };
+            }
 
             return config;
         }).filter((field): field is FilterFieldConfig => field !== null);

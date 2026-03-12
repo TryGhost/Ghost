@@ -5,13 +5,20 @@ import {MemberAvatar} from '@components/member-avatar';
 
 // --- Helpers ---
 
-function formatLocation(geolocation: Member['geolocation']): {text: string; isKnown: boolean} {
+function formatLocation(geolocation: Member['geolocation']): {
+    text: string;
+    isKnown: boolean;
+} {
     if (!geolocation) {
         return {text: 'Unknown', isKnown: false};
     }
 
     try {
-        const parsed = JSON.parse(geolocation) as {country?: string; region?: string; country_code?: string};
+        const parsed = JSON.parse(geolocation) as {
+            country?: string;
+            region?: string;
+            country_code?: string;
+        };
 
         if (!parsed.country) {
             return {text: 'Unknown', isKnown: false};
@@ -41,7 +48,7 @@ function getStatusLabel(status: Member['status']): string {
 
 // --- Sub-components ---
 
-function MembersListItemName({item}: {item: Member}) {
+function MembersListItemName({item}: { item: Member }) {
     return (
         <div className="flex items-center gap-3">
             <MemberAvatar
@@ -54,7 +61,10 @@ function MembersListItemName({item}: {item: Member}) {
                     {item.name || item.email || 'Anonymous'}
                 </div>
                 {item.name && item.email && (
-                    <div className="truncate text-sm text-muted-foreground" data-testid="member-email">
+                    <div
+                        className="truncate text-sm text-muted-foreground"
+                        data-testid="member-email"
+                    >
                         {item.email}
                     </div>
                 )}
@@ -63,7 +73,13 @@ function MembersListItemName({item}: {item: Member}) {
     );
 }
 
-function MembersListItemStatus({status, tiers}: {status: Member['status']; tiers?: Member['tiers']}) {
+function MembersListItemStatus({
+    status,
+    tiers
+}: {
+    status: Member['status'];
+    tiers?: Member['tiers'];
+}) {
     const tierNames = tiers?.map(t => t.name).join(', ');
     return (
         <div className="flex justify-end lg:justify-start">
@@ -79,29 +95,47 @@ function MembersListItemStatus({status, tiers}: {status: Member['status']; tiers
     );
 }
 
-function MembersListItemOpenRate({emailOpenRate}: {emailOpenRate: number | null | undefined}) {
+function MembersListItemOpenRate({
+    emailOpenRate
+}: {
+    emailOpenRate: number | null | undefined;
+}) {
     const isKnown = emailOpenRate !== null && emailOpenRate !== undefined;
     return (
-        <div className={`hidden text-sm lg:block ${isKnown ? 'text-foreground' : 'text-muted-foreground'}`}>
+        <div
+            className={`hidden text-sm lg:block ${
+                isKnown ? 'text-foreground' : 'text-muted-foreground'
+            }`}
+        >
             {isKnown ? `${Math.round(emailOpenRate)}%` : 'N/A'}
         </div>
     );
 }
 
-function MembersListItemLocation({geolocation}: {geolocation: Member['geolocation']}) {
+function MembersListItemLocation({
+    geolocation
+}: {
+    geolocation: Member['geolocation'];
+}) {
     const location = formatLocation(geolocation);
 
     return (
-        <div className={`hidden truncate text-sm lg:block ${location.isKnown ? 'text-foreground' : 'text-muted-foreground'}`}>
+        <div
+            className={`hidden truncate text-sm lg:block ${
+                location.isKnown ? 'text-foreground' : 'text-muted-foreground'
+            }`}
+        >
             {location.text}
         </div>
     );
 }
 
-function MembersListItemCreated({createdAt}: {createdAt: string}) {
+function MembersListItemCreated({createdAt}: { createdAt: string }) {
     return (
         <div className="hidden lg:block">
-            <div className="text-sm">{moment.utc(createdAt).format('D MMM YYYY')}</div>
+            <div className="text-sm">
+                {moment.utc(createdAt).format('D MMM YYYY')}
+            </div>
             <div className="text-xs text-muted-foreground">
                 {moment.utc(createdAt).fromNow()}
             </div>
@@ -118,7 +152,14 @@ interface MembersListItemProps {
     onClick: (memberId: string) => void;
 }
 
-function MembersListItem({item, gridCols, showEmailOpenRate, onClick, ...props}: MembersListItemProps & Omit<React.HTMLAttributes<HTMLDivElement>, 'onClick'>) {
+function MembersListItem({
+    item,
+    gridCols,
+    showEmailOpenRate,
+    onClick,
+    ...props
+}: MembersListItemProps &
+    Omit<React.HTMLAttributes<HTMLDivElement>, 'onClick'>) {
     return (
         <div
             {...props}

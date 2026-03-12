@@ -6,10 +6,10 @@ import MembersLayout from './components/members-layout';
 import MembersList from './components/members-list';
 import React, {useMemo} from 'react';
 import {Button, EmptyIndicator, Header, LoadingIndicator, LucideIcon, cn} from '@tryghost/shade';
+import {buildMemberListSearchParams} from './member-query-params';
 import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {useBrowseMembersInfinite} from '@tryghost/admin-x-framework/api/members';
 import {useMembersFilterState} from './hooks/use-members-filter-state';
-import {buildMemberListSearchParams} from './member-query-params';
 
 // Filters that restrict bulk delete
 const BULK_DELETE_RESTRICTED_FILTERS = [

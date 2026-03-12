@@ -1,9 +1,9 @@
-import {describe, expect, it} from 'vitest';
-import {scalarCodec, numberCodec} from './filter-codecs';
 import {defineFields} from './filter-types';
+import {describe, expect, it} from 'vitest';
 import {dispatchSimpleNodes, parseFilterToAst, serializePredicates} from './filter-query-core';
-import type {FilterPredicate} from './filter-types';
+import {numberCodec, scalarCodec} from './filter-codecs';
 import type {AstNode} from './filter-ast';
+import type {FilterPredicate} from './filter-types';
 
 const fields = defineFields({
     status: {

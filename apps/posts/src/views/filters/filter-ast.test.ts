@@ -10,7 +10,7 @@ describe('filter-ast helpers', () => {
     });
 
     it('extracts comparators from simple nodes', () => {
-        const lessThanNode = nql.parse("created_at:<'2024-01-01'") as Record<string, unknown>;
+        const lessThanNode = nql.parse('created_at:<\'2024-01-01\'') as Record<string, unknown>;
         const equalNode = nql.parse('status:paid') as Record<string, unknown>;
 
         expect(extractComparator(lessThanNode)).toEqual({

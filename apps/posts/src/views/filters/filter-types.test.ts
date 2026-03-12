@@ -1,6 +1,6 @@
-import {describe, expect, expectTypeOf, it} from 'vitest';
 import {defineFields} from './filter-types';
-import type {CodecContext, FilterCodec, FilterField, FilterPredicate, ParsedPredicate} from './filter-types';
+import {describe, expect, expectTypeOf, it} from 'vitest';
+import type {CodecContext, FilterCodec, FilterField, ParsedPredicate} from './filter-types';
 
 describe('defineFields', () => {
     it('returns the same object shape at runtime', () => {
@@ -90,7 +90,7 @@ describe('filter core types', () => {
 
                 return parsed;
             },
-            serialize: (_predicate: FilterPredicate) => null
+            serialize: () => null
         };
 
         const parsed = codec.parse({} as never, {

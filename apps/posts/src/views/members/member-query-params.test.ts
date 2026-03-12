@@ -1,9 +1,9 @@
-import {describe, expect, it} from 'vitest';
 import {
     buildMemberListSearchParams,
     buildMemberOperationParams,
     getMemberActiveColumns
 } from './member-query-params';
+import {describe, expect, it} from 'vitest';
 import type {FilterPredicate} from '../filters/filter-types';
 
 describe('member-query-params', () => {

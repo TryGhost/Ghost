@@ -1,6 +1,6 @@
-import type {AstNode} from '../filters/filter-ast';
 import {dispatchSimpleNodes, parseFilterToAst, serializePredicates, stampPredicates} from '../filters/filter-query-core';
 import {memberFields} from './member-fields';
+import type {AstNode} from '../filters/filter-ast';
 import type {FilterPredicate, ParsedPredicate} from '../filters/filter-types';
 
 type CompoundMatcher = (node: AstNode) => ParsedPredicate | null;

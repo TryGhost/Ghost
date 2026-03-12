@@ -1,5 +1,5 @@
-import {act, renderHook} from '@testing-library/react';
 import {MemoryRouter, useSearchParams} from 'react-router';
+import {act, renderHook} from '@testing-library/react';
 import {describe, expect, it, vi} from 'vitest';
 import {useFilterState} from './use-filter-state';
 
