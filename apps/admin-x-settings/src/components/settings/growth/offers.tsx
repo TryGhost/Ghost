@@ -26,11 +26,9 @@ const Offers: React.FC<{ keywords: string[] }> = ({keywords}) => {
         updateRoute('/tiers');
     };
 
-    const hasPaidActiveTiers = paidActiveTiers.length > 0;
-
     return (
         <TopLevelGroup
-            customButtons={hasPaidActiveTiers ? <Button className='mt-[-5px]' color='clear' disabled={!checkStripeEnabled(settings, config)} label='Manage offers' size='sm' onClick={openOfferListModal}/> : undefined}
+            customButtons={<Button className='mt-[-5px]' color='clear' disabled={!checkStripeEnabled(settings, config)} label='Manage offers' size='sm' onClick={openOfferListModal}/>}
             description={<>Create discounts & coupons to boost new subscriptions and retain existing members.<span>{' '}</span><a className='text-green' href="https://ghost.org/help/offers" rel="noopener noreferrer" target="_blank">Learn more</a></>}
             keywords={keywords}
             navid='offers'
