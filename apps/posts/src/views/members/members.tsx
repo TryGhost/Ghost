@@ -9,6 +9,7 @@ import {Button, EmptyIndicator, Header, LoadingIndicator, LucideIcon, cn} from '
 import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {useBrowseMembersInfinite} from '@tryghost/admin-x-framework/api/members';
 import {useMembersFilterState} from './hooks/use-members-filter-state';
+import {buildMemberListSearchParams} from './member-query-params';
 
 // Filters that restrict bulk delete
 const BULK_DELETE_RESTRICTED_FILTERS = [
@@ -21,7 +22,7 @@ const BULK_DELETE_RESTRICTED_FILTERS = [
 ];
 
 const Members: React.FC = () => {
-    const {filters, nql, setFilters, isFiltered, clearFilters} = useMembersFilterState();
+    const {filters, nql, search, setFilters, hasFilterOrSearch, clearAll} = useMembersFilterState();
     const {data: configData} = useBrowseConfig();
 
     // Check if email analytics is enabled
@@ -33,17 +34,13 @@ const Members: React.FC = () => {
     }, [filters]);
 
     // Build search params for the API query, merging with defaults so we don't lose include/limit/order
-    const searchParams = useMemo((): Record<string, string> | undefined => {
-        if (!nql) {
-            return undefined;
-        }
-        return {
-            include: 'labels,tiers',
-            limit: '50',
-            order: 'created_at desc',
-            filter: nql
-        };
-    }, [nql]);
+    const searchParams = useMemo(() => {
+        return buildMemberListSearchParams({
+            filters,
+            nql,
+            search
+        });
+    }, [filters, nql, search]);
 
     const {
         data,
@@ -90,12 +87,13 @@ const Members: React.FC = () => {
                         )}
                         <MembersActions
                             canBulkDelete={canBulkDelete}
-                            isFiltered={isFiltered}
+                            hasFilterOrSearch={hasFilterOrSearch}
                             memberCount={totalMembers}
                             nql={nql}
                             onImportComplete={() => {
                                 void refetch();
                             }}
+                            search={search}
                         />
                     </Header.ActionGroup>
                 </Header.Actions>
@@ -129,7 +127,7 @@ const Members: React.FC = () => {
                     </div>
                 ) : !data?.members.length ? (
                     <div className="flex h-full flex-col items-center justify-center">
-                        {isFiltered ? (
+                        {hasFilterOrSearch ? (
                             <>
                                 <EmptyIndicator title="No members match the current filter">
                                     <LucideIcon.Users />
@@ -137,7 +135,7 @@ const Members: React.FC = () => {
                                 <Button
                                     className="mt-4"
                                     variant="outline"
-                                    onClick={() => clearFilters({replace: false})}
+                                    onClick={() => clearAll({replace: false})}
                                 >
                                     Show all members
                                 </Button>
