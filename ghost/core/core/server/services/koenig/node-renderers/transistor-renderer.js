@@ -182,7 +182,7 @@ function buildResizeScript() {
                 return;
             }
 
-            if (event.data.type === 'transistor-resize' && typeof event.data.height === 'number') {
+            if (event.data.type === 'resize' && typeof event.data.height === 'number') {
                 if (iframe.contentWindow === event.source) {
                     iframe.style.height = event.data.height + 'px';
                 }
