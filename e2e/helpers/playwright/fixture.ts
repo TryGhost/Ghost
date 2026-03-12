@@ -1,5 +1,6 @@
 import baseDebug from '@tryghost/debug';
 import {Browser, BrowserContext, Page, TestInfo, test as base} from '@playwright/test';
+import {FakeStripeServer, StripeTestService, WebhookClient} from '@/helpers/services/stripe';
 import {GhostInstance, getEnvironmentManager} from '@/helpers/environment';
 import {SettingsService} from '@/helpers/services/settings/settings-service';
 import {faker} from '@faker-js/faker';
@@ -7,6 +8,10 @@ import {loginToGetAuthenticatedSession} from '@/helpers/playwright/flows/sign-in
 import {setupUser} from '@/helpers/utils';
 
 const debug = baseDebug('e2e:ghost-fixture');
+const STRIPE_FAKE_SERVER_PORT = 40000 + parseInt(process.env.TEST_PARALLEL_INDEX || '0', 10);
+const STRIPE_SECRET_KEY = 'sk_test_e2eTestKey';
+const STRIPE_PUBLISHABLE_KEY = 'pk_test_e2eTestKey';
+
 export interface User {
     name: string;
     email: string;
@@ -23,7 +28,9 @@ export interface GhostInstanceFixture {
     ghostInstance: GhostInstance;
     labs?: Record<string, boolean>;
     config?: GhostConfig;
-    stripeConnected?: boolean;
+    stripeEnabled?: boolean;
+    stripeServer?: FakeStripeServer;
+    stripe?: StripeTestService;
     ghostAccountOwner: User;
     pageWithAuthenticatedUser: {
         page: Page;
@@ -59,19 +66,47 @@ async function setupNewAuthenticatedPage(browser: Browser, baseURL: string, ghos
  * - Build mode: Same isolation model, but Ghost runs from a prebuilt image
  *
  * Optionally allows setting labs flags via test.use({labs: {featureName: true}})
- * and Stripe connection via test.use({stripeConnected: true})
+ * and Stripe connection via test.use({stripeEnabled: true})
  */
 export const test = base.extend<GhostInstanceFixture>({
     // Define options that can be set per test or describe block
     config: [undefined, {option: true}],
     labs: [undefined, {option: true}],
-    stripeConnected: [false, {option: true}],
+    stripeEnabled: [false, {option: true}],
 
-    // Each test gets its own Ghost instance with isolated database
-    ghostInstance: async ({config}, use, testInfo: TestInfo) => {
+    stripeServer: async ({stripeEnabled}, use) => {
+        if (!stripeEnabled) {
+            await use(undefined);
+            return;
+        }
+
+        const server = new FakeStripeServer(STRIPE_FAKE_SERVER_PORT);
+        await server.start();
+        debug('Fake Stripe server started on port', STRIPE_FAKE_SERVER_PORT);
+
+        await use(server);
+
+        await server.stop();
+        debug('Fake Stripe server stopped');
+    },
+
+    // Each test gets its own Ghost instance with isolated database.
+    ghostInstance: async ({config, stripeEnabled, stripeServer}, use, testInfo: TestInfo) => {
         debug('Setting up Ghost instance for test:', testInfo.title);
+        const stripeConfig = stripeEnabled ? {
+            STRIPE_API_HOST: 'host.docker.internal',
+            STRIPE_API_PORT: String(STRIPE_FAKE_SERVER_PORT),
+            STRIPE_API_PROTOCOL: 'http'
+        } : {};
+        const mergedConfig = {...(config || {}), ...stripeConfig};
         const environmentManager = await getEnvironmentManager();
-        const ghostInstance = await environmentManager.perTestSetup({config});
+        const ghostInstance = await environmentManager.perTestSetup({
+            config: mergedConfig,
+            stripe: stripeServer ? {
+                secretKey: STRIPE_SECRET_KEY,
+                publishableKey: STRIPE_PUBLISHABLE_KEY
+            } : undefined
+        });
 
         debug('Ghost instance ready for test:', {
             testTitle: testInfo.title,
@@ -82,6 +117,17 @@ export const test = base.extend<GhostInstanceFixture>({
         debug('Tearing down Ghost instance for test:', testInfo.title);
         await environmentManager.perTestTeardown(ghostInstance);
         debug('Teardown completed for test:', testInfo.title);
+    },
+
+    stripe: async ({stripeEnabled, baseURL, stripeServer}, use) => {
+        if (!stripeEnabled || !baseURL || !stripeServer) {
+            await use(undefined);
+            return;
+        }
+
+        const webhookClient = new WebhookClient(baseURL);
+        const service = new StripeTestService(stripeServer, webhookClient);
+        await use(service);
     },
 
     baseURL: async ({ghostInstance}, use) => {
@@ -116,22 +162,17 @@ export const test = base.extend<GhostInstanceFixture>({
     },
 
     // Extract the page from pageWithAuthenticatedUser and apply labs/stripe settings
-    page: async ({pageWithAuthenticatedUser, labs, stripeConnected}, use) => {
+    page: async ({pageWithAuthenticatedUser, labs}, use) => {
         const page = pageWithAuthenticatedUser.page;
-        const settingsService = new SettingsService(page.request);
-
-        if (stripeConnected) {
-            debug('Setting up Stripe connection for test');
-            await settingsService.setStripeConnected();
-        }
 
         const labsFlagsSpecified = labs && Object.keys(labs).length > 0;
         if (labsFlagsSpecified) {
+            const settingsService = new SettingsService(page.request);
             debug('Updating labs settings:', labs);
             await settingsService.updateLabsSettings(labs);
         }
 
-        const needsReload = stripeConnected || labsFlagsSpecified;
+        const needsReload = labsFlagsSpecified;
         if (needsReload) {
             await page.reload({waitUntil: 'load'});
             debug('Settings applied and page reloaded');

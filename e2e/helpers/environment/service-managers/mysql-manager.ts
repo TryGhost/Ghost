@@ -27,12 +27,20 @@ export class MySQLManager {
         this.containerName = containerName;
     }
 
-    async setupTestDatabase(databaseName: string, siteUuid: string): Promise<void> {
+    async setupTestDatabase(databaseName: string, siteUuid: string, options: {
+        stripe?: {
+            secretKey: string;
+            publishableKey: string;
+        };
+    } = {}): Promise<void> {
         debug('Setting up test database:', databaseName);
         try {
             await this.createDatabase(databaseName);
             await this.restoreDatabaseFromSnapshot(databaseName);
             await this.updateSiteUuid(databaseName, siteUuid);
+            if (options.stripe) {
+                await this.updateStripeSettings(databaseName, options.stripe.secretKey, options.stripe.publishableKey);
+            }
 
             debug('Test database setup completed:', databaseName, 'with site_uuid:', siteUuid);
         } catch (error) {
@@ -165,6 +173,26 @@ export class MySQLManager {
         await this.exec(command);
 
         debug('site_uuid updated in database settings:', siteUuid);
+    }
+
+    async updateStripeSettings(database: string, secretKey: string, publishableKey: string): Promise<void> {
+        debug('Updating Stripe settings in database:', database);
+
+        const escapedSecretKey = secretKey.replace(/'/g, '\\\'');
+        const escapedPublishableKey = publishableKey.replace(/'/g, '\\\'');
+
+        // Use INSERT ... ON DUPLICATE KEY UPDATE so this works whether or not
+        // the settings rows already exist. In dev mode the base DB is empty
+        // (only schema, no seeded rows), so a plain UPDATE would be a no-op.
+        const command = 'mysql -uroot -proot -e "INSERT INTO \\`' + database + '\\`.settings ' +
+            '(id, \\`group\\`, \\`key\\`, value, type, flags, created_at, updated_at) VALUES ' +
+            '(SUBSTRING(REPLACE(UUID(), \'-\', \'\'), 1, 24), \'members\', \'stripe_secret_key\', \'' + escapedSecretKey + '\', \'string\', NULL, NOW(), NOW()), ' +
+            '(SUBSTRING(REPLACE(UUID(), \'-\', \'\'), 1, 24), \'members\', \'stripe_publishable_key\', \'' + escapedPublishableKey + '\', \'string\', NULL, NOW(), NOW()) ' +
+            'ON DUPLICATE KEY UPDATE value = VALUES(value), updated_at = NOW();"';
+
+        await this.exec(command);
+
+        debug('Stripe settings updated in database');
     }
 
     private async exec(command: string) {
