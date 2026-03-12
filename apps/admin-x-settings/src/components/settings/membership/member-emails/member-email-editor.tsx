@@ -158,4 +158,4 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
     );
 };
 
-export default MemberEmailsEditor;
+export default React.memo(MemberEmailsEditor);

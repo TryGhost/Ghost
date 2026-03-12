@@ -302,7 +302,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                                 className='welcome-email-editor'
                                 placeholder='Write your welcome email content...'
 
-                                value={formState.lexical}
+                                value={automatedEmail?.lexical || ''}
                                 onChange={handleEditorChange}
                             />
                         </div>
@@ -404,7 +404,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                                 className='welcome-email-editor'
                                 placeholder='Write your welcome email content...'
 
-                                value={formState.lexical}
+                                value={automatedEmail?.lexical || ''}
                                 onChange={handleEditorChange}
                             />
                         </div>
