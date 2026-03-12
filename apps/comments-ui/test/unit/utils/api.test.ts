@@ -10,7 +10,7 @@ test('should call counts endpoint', () => {
 
     const api = setupGhostApi({siteUrl: 'http://localhost:3000', apiUrl: '', apiKey: ''});
 
-    api.comments.count({postId: null});
+    api.comments().count({postId: null});
 
     expect(spy).toHaveBeenCalledTimes(1);
     expect(spy).toHaveBeenCalledWith(
@@ -33,7 +33,7 @@ test('should call counts endpoint with postId query param', () => {
 
     const api = setupGhostApi({siteUrl: 'http://localhost:3000', apiUrl: '', apiKey: ''});
 
-    api.comments.count({postId: '123'});
+    api.comments().count({postId: '123'});
 
     expect(spy).toHaveBeenCalledTimes(1);
     expect(spy).toHaveBeenCalledWith(
@@ -43,6 +43,26 @@ test('should call counts endpoint with postId query param', () => {
             headers: {'Content-Type': 'application/json'},
             credentials: 'omit',
             body: undefined
+        })
+    );
+});
+
+test('should call counts endpoint with explicit credentials', () => {
+    const spy = vi.spyOn(window, 'fetch');
+    spy.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({success: true})
+    } as any);
+
+    const api = setupGhostApi({siteUrl: 'http://localhost:3000', apiUrl: '', apiKey: ''});
+
+    api.comments({credentials: 'same-origin'}).count({postId: '123'});
+
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenCalledWith(
+        'http://localhost:3000/members/api/comments/counts/?ids=123',
+        expect.objectContaining({
+            credentials: 'same-origin'
         })
     );
 });

@@ -504,10 +504,9 @@ export class MockedApi {
                 });
             }
 
-            // Derive liked/authored IDs from the flat comment+reply list
+            // Derive liked IDs from the flat comment+reply list
             const allComments = this.comments.flatMap(c => [c, ...(c.replies || [])]);
             const likedComments = allComments.filter(c => c.liked).map(c => c.id);
-            const authoredComments = allComments.filter(c => c.member?.uuid === this.member?.uuid).map(c => c.id);
 
             await route.fulfill({
                 status: 200,
@@ -518,10 +517,9 @@ export class MockedApi {
                         expertise: this.member.expertise || null,
                         avatar_image: this.member.avatar_image || null,
                         can_comment: this.member.can_comment !== false,
-                        paid: this.member.paid || false
-                    },
-                    liked_comments: likedComments,
-                    authored_comments: authoredComments
+                        paid: this.member.paid || false,
+                        liked_comments: likedComments
+                    }
                 })
             });
         }

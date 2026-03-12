@@ -265,18 +265,12 @@ const getCommentsMemberInfo = async function getCommentsMemberInfo(req, res) {
         const memberId = memberJson.id;
         const db = require('../../data/db');
 
-        // Fetch liked comment IDs and authored comment IDs in parallel
-        const [likedRows, authoredRows] = await Promise.all([
-            db.knex('comment_likes')
-                .select('comment_likes.comment_id')
-                .join('comments', 'comment_likes.comment_id', '=', 'comments.id')
-                .where('comment_likes.member_id', memberId)
-                .where('comments.post_id', postId),
-            db.knex('comments')
-                .select('id')
-                .where('member_id', memberId)
-                .where('post_id', postId)
-        ]);
+        // Fetch liked comment IDs for this post
+        const likedRows = await db.knex('comment_likes')
+            .select('comment_likes.comment_id')
+            .join('comments', 'comment_likes.comment_id', '=', 'comments.id')
+            .where('comment_likes.member_id', memberId)
+            .where('comments.post_id', postId);
 
         res.json({
             member: {
@@ -285,10 +279,9 @@ const getCommentsMemberInfo = async function getCommentsMemberInfo(req, res) {
                 expertise: memberJson.expertise,
                 avatar_image: memberJson.avatar_image,
                 can_comment: memberJson.can_comment,
-                paid: memberJson.status !== 'free'
-            },
-            liked_comments: likedRows.map(r => r.comment_id),
-            authored_comments: authoredRows.map(r => r.id)
+                paid: memberJson.status !== 'free',
+                liked_comments: likedRows.map(r => r.comment_id)
+            }
         });
     } catch (err) {
         // No session or any error — return 204 (same pattern as getMemberData)

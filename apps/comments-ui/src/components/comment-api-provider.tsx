@@ -2,7 +2,7 @@ import AuthFrame from '../auth-frame';
 import React, {createContext, useContext, useEffect, useMemo, useState} from 'react';
 import {AddComment, Comment, LabsContextType, Member} from '../app-context';
 import {setupAdminAPI} from '../utils/admin-api';
-import {GhostApi} from '../utils/api';
+import {CommentsApi, GhostApi} from '../utils/api';
 
 async function checkHasAdminSession(adminUrl: string): Promise<boolean> {
     try {
@@ -30,7 +30,7 @@ export type MemberApi = {
     unlike(params: {comment: {id: string}}): Promise<string>;
     report(params: {comment: {id: string}}): Promise<string>;
     replies(params: {commentId: string; afterReplyId?: string; limit?: number | 'all'}): Promise<{comments: Comment[]; meta: {pagination: any}}>;
-    getMember(params: {postId: string}): Promise<any>;
+    getMember(params: {postId: string}): Promise<{member: Member} | null>;
     updateMember(data: {name?: string; expertise?: string}): Promise<Member | null>;
 };
 
@@ -41,37 +41,16 @@ export type AdminActions = {
 
 const ALLOWED_MODERATORS = ['Owner', 'Administrator', 'Super Editor'];
 
-function createPublicApi(api: GhostApi): PublicApi {
-    return {
-        browse: p => api.comments.browse(p),
-        replies: p => api.comments.replies({...p, credentials: 'omit'}),
-        read: id => api.comments.read(id),
-        count: p => api.comments.count(p)
-    };
+function createPublicApi(commentsApi: CommentsApi): PublicApi {
+    return commentsApi;
 }
 
-function createMemberApi(api: GhostApi): MemberApi {
+function createMemberApi(commentsApi: CommentsApi, api: GhostApi): MemberApi {
     return {
-        add: p => api.comments.add(p),
-        edit: p => api.comments.edit(p),
-        like: p => api.comments.like(p),
-        unlike: p => api.comments.unlike(p),
-        report: p => api.comments.report(p),
-        replies: p => api.comments.replies({...p, credentials: 'same-origin'}),
-        getMember: p => api.comments.getMember(p),
+        ...commentsApi,
         updateMember: data => api.member.update(data)
     };
 }
-
-export type CommentMember = {
-    uuid: string;
-    name: string;
-    expertise: string | null;
-    avatar_image: string | null;
-    can_comment: boolean;
-    paid: boolean;
-    liked_comments: string[];
-};
 
 type CommentApiContextType = {
     publicApi: PublicApi;
@@ -81,8 +60,7 @@ type CommentApiContextType = {
     member: Member | null;
     labs: LabsContextType;
     supportEmail: string | null;
-    commentMember: CommentMember | null;
-    commentMemberLoaded: boolean;
+    memberLoaded: boolean;
 };
 
 const CommentApiContext = createContext<CommentApiContextType | null>(null);
@@ -107,8 +85,11 @@ export function CommentApiProvider({children, api, adminUrl, postId}: CommentApi
     const [supportEmail, setSupportEmail] = useState<string | null>(null);
     const [adminActions, setAdminActions] = useState<AdminActions | null>(null);
     const [hasAdminSession, setHasSession] = useState<boolean | undefined>(adminUrl ? undefined : false);
-    const [commentMember, setCommentMember] = useState<CommentMember | null>(null);
-    const [commentMemberLoaded, setCommentMemberLoaded] = useState(false);
+    const [member, setMember] = useState<Member | null>(null);
+    const [memberLoaded, setMemberLoaded] = useState(false);
+
+    const publicApi = useMemo(() => createPublicApi(api.comments({credentials: 'omit'})), [api]);
+    const memberApi = useMemo(() => createMemberApi(api.comments({credentials: 'same-origin'}), api), [api]);
 
     // Step 1: Fetch site settings (labs, support email) — non-blocking
     useEffect(() => {
@@ -125,25 +106,17 @@ export function CommentApiProvider({children, api, adminUrl, postId}: CommentApi
 
     // Step 2: Fetch comment member data (lightweight, parallel with everything else)
     useEffect(() => {
-        api.comments.getMember({postId})
+        memberApi.getMember({postId})
             .then((data) => {
                 if (data) {
-                    setCommentMember({
-                        uuid: data.member.uuid,
-                        name: data.member.name,
-                        expertise: data.member.expertise,
-                        avatar_image: data.member.avatar_image,
-                        can_comment: data.member.can_comment,
-                        paid: data.member.paid,
-                        liked_comments: data.liked_comments
-                    });
+                    setMember(data.member);
                 }
-                setCommentMemberLoaded(true);
+                setMemberLoaded(true);
             })
             .catch(() => {
-                setCommentMemberLoaded(true);
+                setMemberLoaded(true);
             });
-    }, [api, postId]);
+    }, [memberApi, postId]);
 
     // Step 3: Preflight check for admin session
     useEffect(() => {
@@ -178,29 +151,6 @@ export function CommentApiProvider({children, api, adminUrl, postId}: CommentApi
         console.warn(`[Comments] Admin auth frame failed to load`);
     };
 
-    // Build member from comment member data for the context
-    const member: Member | null = useMemo(() => {
-        if (!commentMember) {
-            return null;
-        }
-        return {
-            uuid: commentMember.uuid,
-            name: commentMember.name,
-            expertise: commentMember.expertise,
-            avatar_image: commentMember.avatar_image,
-            can_comment: commentMember.can_comment,
-            paid: commentMember.paid
-        };
-    }, [commentMember]);
-
-    const publicApi = useMemo(() => {
-        return createPublicApi(api);
-    }, [api]);
-
-    const memberApi = useMemo(() => {
-        return createMemberApi(api);
-    }, [api]);
-
     const isAdmin = !!adminActions;
 
     const contextValue = useMemo(() => {
@@ -212,10 +162,9 @@ export function CommentApiProvider({children, api, adminUrl, postId}: CommentApi
             member,
             labs,
             supportEmail,
-            commentMember,
-            commentMemberLoaded
+            memberLoaded
         };
-    }, [publicApi, memberApi, isAdmin, adminActions, member, labs, supportEmail, commentMember, commentMemberLoaded]);
+    }, [publicApi, memberApi, isAdmin, adminActions, member, labs, supportEmail, memberLoaded]);
 
     return (
         <>

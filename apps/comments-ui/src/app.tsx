@@ -6,8 +6,8 @@ import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import i18nLib from '@tryghost/i18n';
 import setupGhostApi from './utils/api';
 import {ActionHandler, SyncActionHandler, isSyncAction} from './actions';
-import {AppContext, Comment, DispatchActionType, EditableAppContext} from './app-context';
-import {CommentApiProvider, CommentMember, useCommentApi} from './components/comment-api-provider';
+import {AppContext, Comment, DispatchActionType, EditableAppContext, Member} from './app-context';
+import {CommentApiProvider, useCommentApi} from './components/comment-api-provider';
 import {CommentsFrame} from './components/frame';
 import {useOptions} from './utils/options';
 
@@ -25,20 +25,20 @@ function isCommentLoaded(comments: Comment[], targetId: string): boolean {
 }
 
 /**
- * Apply comment member data to comments — sets `liked` flag on comments
+ * Apply member liked states to comments — sets `liked` flag on comments
  * the member has liked, based on the member's liked_comments array.
  */
-function applyCommentMember(comments: Comment[], commentMember: CommentMember | null): Comment[] {
-    if (!commentMember) {
+function applyMemberLikes(comments: Comment[], member: Member | null): Comment[] {
+    if (!member?.liked_comments?.length) {
         return comments;
     }
-    const likedSet = new Set(commentMember.liked_comments);
+    const likedSet = new Set(member.liked_comments);
     return comments.map((comment) => {
         const liked = likedSet.has(comment.id);
-        const replies = comment.replies?.map(reply => ({
-            ...reply,
-            liked: likedSet.has(reply.id)
-        })) ?? [];
+        const hasLikedReply = comment.replies?.some(r => likedSet.has(r.id));
+        const replies = hasLikedReply
+            ? comment.replies.map(reply => ({...reply, liked: likedSet.has(reply.id)}))
+            : comment.replies;
         if (liked !== comment.liked || replies !== comment.replies) {
             return {...comment, liked, replies};
         }
@@ -51,7 +51,7 @@ const AppContent: React.FC<{
     initialCommentId: string | null;
     pageUrl: string;
 }> = ({options, initialCommentId, pageUrl}) => {
-    const {publicApi, memberApi, isAdmin, adminActions, member, labs, supportEmail, commentMember, commentMemberLoaded} = useCommentApi();
+    const {publicApi, memberApi, isAdmin, adminActions, member, labs, supportEmail, memberLoaded} = useCommentApi();
     const [state, setFullState] = useState<EditableAppContext>({
         initStatus: 'running',
         member: null,
@@ -75,8 +75,8 @@ const AppContent: React.FC<{
     });
 
     const iframeRef = useRef<HTMLIFrameElement>(null);
-    const commentMemberRef = useRef({data: commentMember, loaded: commentMemberLoaded});
-    commentMemberRef.current = {data: commentMember, loaded: commentMemberLoaded};
+    const memberRef = useRef({data: member, loaded: memberLoaded});
+    memberRef.current = {data: member, loaded: memberLoaded};
     const setState = useCallback((newState: Partial<EditableAppContext> | ((state: EditableAppContext) => Partial<EditableAppContext>)) => {
         setFullState((state) => {
             if (typeof newState === 'function') {
@@ -236,24 +236,16 @@ const AppContent: React.FC<{
                 }
             }
 
-            // Read latest comment member from ref (avoids stale closure)
-            const currentCommentMember = commentMemberRef.current.data;
-            const currentMember = currentCommentMember ? {
-                uuid: currentCommentMember.uuid,
-                name: currentCommentMember.name,
-                expertise: currentCommentMember.expertise,
-                avatar_image: currentCommentMember.avatar_image,
-                can_comment: currentCommentMember.can_comment,
-                paid: currentCommentMember.paid
-            } : member;
+            // Read latest member from ref (avoids stale closure from useEffect/IntersectionObserver)
+            const currentMember = memberRef.current.data;
             const isMember = !!currentMember;
             const isPaidOnly = options.commentsEnabled === 'paid';
             const isPaidMember = !!currentMember?.paid;
             const hasRequiredTier = isPaidMember || !isPaidOnly;
 
-            // Apply comment member liked states if already available
-            const overlaidComments = commentMemberRef.current.loaded
-                ? applyCommentMember(comments, currentCommentMember)
+            // Apply member liked states if already available
+            const overlaidComments = memberRef.current.loaded
+                ? applyMemberLikes(comments, currentMember)
                 : comments;
 
             setState({
@@ -283,14 +275,14 @@ const AppContent: React.FC<{
         }
     };
 
-    // Apply comment member data when it arrives — updates liked states on existing comments
+    // Apply member data when it arrives — updates liked states on existing comments
     useEffect(() => {
-        if (!commentMemberLoaded || state.initStatus !== 'success') {
+        if (!memberLoaded || state.initStatus !== 'success') {
             return;
         }
 
         setState((prev) => {
-            const updatedComments = applyCommentMember(prev.comments, commentMember);
+            const updatedComments = applyMemberLikes(prev.comments, member);
             const isMember = !!member;
             const isPaidMember = !!member?.paid;
             const isPaidOnly = options.commentsEnabled === 'paid';
@@ -305,7 +297,7 @@ const AppContent: React.FC<{
                 isCommentingDisabled: member?.can_comment === false
             };
         });
-    }, [commentMemberLoaded, state.initStatus]);
+    }, [memberLoaded, state.initStatus]);
 
     /** Delay initialization until comments block is in viewport (unless permalink present) */
     useEffect(() => {
