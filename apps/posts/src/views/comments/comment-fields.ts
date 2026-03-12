@@ -1,7 +1,7 @@
-import {extractComparator} from '../filters/filter-ast';
-import {scalarCodec, textCodec} from '../filters/filter-codecs';
-import {getDayBoundsInUtc} from '../filters/filter-normalization';
 import {defineFields} from '../filters/filter-types';
+import {extractComparator} from '../filters/filter-ast';
+import {getDayBoundsInUtc} from '../filters/filter-normalization';
+import {scalarCodec, textCodec} from '../filters/filter-codecs';
 import type {FilterCodec} from '../filters/filter-types';
 
 const commentDateCodec: FilterCodec = {

@@ -1,5 +1,5 @@
-import {describe, expect, it} from 'vitest';
 import {commentFields} from './comment-fields';
+import {describe, expect, it} from 'vitest';
 import type {CodecContext, FilterPredicate} from '../filters/filter-types';
 
 const createdAtContext: CodecContext = {
@@ -69,8 +69,8 @@ describe('commentDateCodec', () => {
         };
 
         expect(commentFields.created_at.codec.serialize(predicate, createdAtContext)).toEqual([
-            "created_at:>='2024-01-01T00:00:00.000Z'",
-            "created_at:<='2024-01-01T23:59:59.999Z'"
+            'created_at:>=\'2024-01-01T00:00:00.000Z\'',
+            'created_at:<=\'2024-01-01T23:59:59.999Z\''
         ]);
     });
 });

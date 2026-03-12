@@ -1,5 +1,5 @@
-import {describe, expect, it} from 'vitest';
 import {createOperatorOptions} from './filter-operator-options';
+import {describe, expect, it} from 'vitest';
 
 describe('createOperatorOptions', () => {
     it('formats operators with hyphen fallback labels', () => {
@@ -15,7 +15,7 @@ describe('createOperatorOptions', () => {
             labels: {
                 'is-not-any': 'is none of',
                 'does-not-contain': 'does not contain',
-                '1': 'More like this'
+                1: 'More like this'
             }
         })).toEqual([
             {value: 'is-not-any', label: 'is none of'},

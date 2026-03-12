@@ -47,15 +47,17 @@ export function CommentHeader({
 }: CommentHeaderProps) {
     return (
         <div className={cn('flex items-baseline gap-4', className)}>
-            <div className={cn(
-                'mb-1 flex min-w-0 items-center gap-x-1 text-sm',
-                isHidden && 'opacity-50'
-            )}>
-                <div className='whitespace-nowrap'>
+            <div
+                className={cn(
+                    'mb-1 flex min-w-0 items-center gap-x-1 text-sm',
+                    isHidden && 'opacity-50'
+                )}
+            >
+                <div className="whitespace-nowrap">
                     {memberId && onAuthorClick ? (
                         <Button
                             className="flex h-auto items-center gap-1.5 truncate p-0 font-semibold text-primary hover:opacity-70"
-                            variant='link'
+                            variant="link"
                             onClick={onAuthorClick}
                         >
                             {memberName || 'Unknown'}
@@ -71,17 +73,18 @@ export function CommentHeader({
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <span data-testid="commenting-disabled-indicator">
-                                    <LucideIcon.MessageCircleOff
-                                        className="size-3.5 text-muted-foreground"
-                                    />
+                                    <LucideIcon.MessageCircleOff className="size-3.5 text-muted-foreground" />
                                 </span>
                             </TooltipTrigger>
                             <TooltipContent>Comments disabled</TooltipContent>
                         </Tooltip>
                     </TooltipProvider>
                 )}
-                <LucideIcon.Dot className='text-muted-foreground/50 shrink-0' size={16} />
-                <div className='shrink-0 whitespace-nowrap'>
+                <LucideIcon.Dot
+                    className="text-muted-foreground/50 shrink-0"
+                    size={16}
+                />
+                <div className="shrink-0 whitespace-nowrap">
                     {createdAt && (
                         <TooltipProvider>
                             <Tooltip>
@@ -99,12 +102,12 @@ export function CommentHeader({
                 </div>
                 {postTitle && (
                     <>
-                        <div className='shrink-0 text-muted-foreground'>on</div>
-                        <div className='min-w-0 truncate'>
+                        <div className="shrink-0 text-muted-foreground">on</div>
+                        <div className="min-w-0 truncate">
                             {onPostClick ? (
                                 <Button
                                     className="block h-auto w-full cursor-pointer truncate p-0 text-left font-medium text-gray-800 hover:opacity-70 dark:text-gray-400"
-                                    variant='link'
+                                    variant="link"
                                     onClick={onPostClick}
                                 >
                                     {postTitle}
@@ -118,9 +121,7 @@ export function CommentHeader({
                     </>
                 )}
             </div>
-            {isHidden && (
-                <Badge variant='secondary'>Hidden</Badge>
-            )}
+            {isHidden && <Badge variant="secondary">Hidden</Badge>}
         </div>
     );
 }

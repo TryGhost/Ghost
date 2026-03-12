@@ -3,13 +3,17 @@ import {parseCommentFilter, serializeCommentFilters} from './comment-filter-quer
 import type {FilterPredicate} from '../filters/filter-types';
 
 function stripIds(predicates: FilterPredicate[]) {
-    return predicates.map(({id: _id, ...predicate}) => predicate);
+    return predicates.map(predicate => ({
+        field: predicate.field,
+        operator: predicate.operator,
+        values: predicate.values
+    }));
 }
 
 describe('comment-filter-query', () => {
     it('parses exact-date compounds into a single predicate', () => {
         const predicates = parseCommentFilter(
-            "created_at:>='2024-01-01T00:00:00.000Z'+created_at:<='2024-01-01T23:59:59.999Z'",
+            'created_at:>=\'2024-01-01T00:00:00.000Z\'+created_at:<=\'2024-01-01T23:59:59.999Z\'',
             'UTC'
         );
 
@@ -33,13 +37,13 @@ describe('comment-filter-query', () => {
         ];
 
         expect(serializeCommentFilters(predicates, 'UTC')).toBe(
-            "created_at:<='2024-01-01T23:59:59.999Z'+created_at:>='2024-01-01T00:00:00.000Z'"
+            'created_at:<=\'2024-01-01T23:59:59.999Z\'+created_at:>=\'2024-01-01T00:00:00.000Z\''
         );
     });
 
     it('round-trips exact-date compounds in site timezones', () => {
         const parsed = parseCommentFilter(
-            "created_at:>='2024-01-31T23:00:00.000Z'+created_at:<='2024-02-01T22:59:59.999Z'",
+            'created_at:>=\'2024-01-31T23:00:00.000Z\'+created_at:<=\'2024-02-01T22:59:59.999Z\'',
             'Europe/Stockholm'
         );
 
@@ -52,7 +56,7 @@ describe('comment-filter-query', () => {
         ]);
 
         expect(serializeCommentFilters(parsed, 'Europe/Stockholm')).toBe(
-            "created_at:<='2024-02-01T22:59:59.999Z'+created_at:>='2024-01-31T23:00:00.000Z'"
+            'created_at:<=\'2024-02-01T22:59:59.999Z\'+created_at:>=\'2024-01-31T23:00:00.000Z\''
         );
     });
 
@@ -94,17 +98,17 @@ describe('comment-filter-query', () => {
     });
 
     it('round-trips canonical comment examples', () => {
-        const filter = "count.reports:0+created_at:>='2024-01-01T00:00:00.000Z'+created_at:<='2024-01-01T23:59:59.999Z'+status:published";
+        const filter = 'count.reports:0+created_at:>=\'2024-01-01T00:00:00.000Z\'+created_at:<=\'2024-01-01T23:59:59.999Z\'+status:published';
         const parsed = parseCommentFilter(filter, 'UTC');
 
         expect(serializeCommentFilters(parsed, 'UTC')).toBe(
-            "count.reports:0+created_at:<='2024-01-01T23:59:59.999Z'+created_at:>='2024-01-01T00:00:00.000Z'+status:published"
+            'count.reports:0+created_at:<=\'2024-01-01T23:59:59.999Z\'+created_at:>=\'2024-01-01T00:00:00.000Z\'+status:published'
         );
     });
 
     it('claims exact-date compounds before leaving leftovers to simple dispatch', () => {
         const parsed = parseCommentFilter(
-            "created_at:>='2024-01-01T00:00:00.000Z'+created_at:<='2024-01-01T23:59:59.999Z'+id:comment_123",
+            'created_at:>=\'2024-01-01T00:00:00.000Z\'+created_at:<=\'2024-01-01T23:59:59.999Z\'+id:comment_123',
             'UTC'
         );
 
@@ -124,7 +128,7 @@ describe('comment-filter-query', () => {
 
     it('parses nested exact-date compounds recursively', () => {
         const parsed = parseCommentFilter(
-            "((created_at:>='2024-01-01T00:00:00.000Z'+created_at:<='2024-01-01T23:59:59.999Z')+status:published)",
+            '((created_at:>=\'2024-01-01T00:00:00.000Z\'+created_at:<=\'2024-01-01T23:59:59.999Z\')+status:published)',
             'UTC'
         );
 
