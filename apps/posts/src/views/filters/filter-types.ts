@@ -21,6 +21,7 @@ export interface FilterCodec {
 
 export interface FilterField {
     operators: readonly string[];
+    parseKeys?: readonly string[];
     ui: {
         label: string;
         type: 'text' | 'select' | 'multiselect' | 'date' | 'number' | 'custom';
