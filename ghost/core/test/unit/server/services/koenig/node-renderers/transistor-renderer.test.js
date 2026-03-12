@@ -36,18 +36,15 @@ describe('services/koenig/node-renderers/transistor-renderer', function () {
             assert.ok(result.html.includes('src="https://partner.transistor.fm/ghost/embed/%7Buuid%7D?ctx=test-site-uuid"'));
         });
 
-        it('renders background detection script', function () {
+        it('renders embed script with background detection and resize listener', function () {
             const result = renderForWeb(getTestData());
 
             assert.ok(result.html.includes('<script>'));
-            assert.ok(result.html.includes('setSrcBackgroundFromParent'));
-        });
-
-        it('renders resize listener script', function () {
-            const result = renderForWeb(getTestData());
-
-            assert.ok(result.html.includes('listenForTransistorResize'));
-            assert.ok(result.html.includes('event.data.type === "resize"'));
+            assert.ok(result.html.includes('initTransistorEmbed'));
+            assert.ok(result.html.includes('colorToRgb'));
+            assert.ok(result.html.includes('event.data.type === \'resize\''));
+            assert.ok(result.html.includes('partner.transistor.fm'));
+            assert.ok(result.html.includes('Number.isSafeInteger'));
         });
 
         it('includes siteUuid as ctx param', function () {

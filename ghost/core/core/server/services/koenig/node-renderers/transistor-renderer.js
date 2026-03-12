@@ -41,8 +41,7 @@ function frontendTemplate(node, document, options) {
 
     // Use innerHTML to inject script - jsdom's createElement('script') doesn't serialize textContent in outerHTML
     // Matches implementation from kg-default-nodes set-src-background-from-parent.js
-    figure.insertAdjacentHTML('beforeend', buildSrcBackgroundScript());
-    figure.insertAdjacentHTML('beforeend', buildResizeScript());
+    figure.insertAdjacentHTML('beforeend', buildEmbedScript());
 
     // noscript fallback with src (not data-src) so the iframe loads without JS
     const noscript = document.createElement('noscript');
@@ -102,10 +101,10 @@ function emailTemplate(node, document, options) {
     return renderWithVisibility({element: container.firstElementChild}, node.visibility, options);
 }
 
-function buildSrcBackgroundScript() {
+function buildEmbedScript() {
     /* eslint-disable no-undef */
     // This function is serialized via .toString() and runs in the browser, not Node
-    function setSrcBackgroundFromParent() {
+    function initTransistorEmbed() {
         const script = document.currentScript;
         if (!script) {
             return;
@@ -116,6 +115,7 @@ function buildSrcBackgroundScript() {
             return;
         }
 
+        // Set src with background color detection
         const baseSrc = el.getAttribute('data-src');
 
         function colorToRgb(color) {
@@ -144,54 +144,49 @@ function buildSrcBackgroundScript() {
 
         if (!node || !bg || bg === 'transparent') {
             el.src = baseSrc;
-            return;
+        } else {
+            const {r, g, b, a} = colorToRgb(bg);
+            if (a === 0) {
+                el.src = baseSrc;
+            } else {
+                const hex = [r, g, b].map(c => c.toString(16).padStart(2, '0')).join('');
+                const u = new URL(baseSrc);
+                u.searchParams.set('background', hex);
+                el.src = u.toString();
+            }
         }
 
-        const {r, g, b, a} = colorToRgb(bg);
-        if (a === 0) {
-            el.src = baseSrc;
-            return;
-        }
-
-        const hex = [r, g, b].map(c => c.toString(16).padStart(2, '0')).join('');
-        const u = new URL(baseSrc);
-        u.searchParams.set('background', hex);
-        el.src = u.toString();
-    }
-    /* eslint-enable no-undef */
-
-    return `<script>(${setSrcBackgroundFromParent.toString()})()</script>`;
-}
-
-function buildResizeScript() {
-    /* eslint-disable no-undef */
-    // This function is serialized via .toString() and runs in the browser, not Node
-    function listenForTransistorResize() {
-        const script = document.currentScript;
-        if (!script) {
-            return;
-        }
-
-        const iframe = script.parentElement.querySelector('iframe[data-kg-transistor-embed]');
-        if (!iframe) {
-            return;
-        }
-
-        window.addEventListener('message', function (event) {
-            if (!event.data || typeof event.data !== 'object') {
+        // Listen for resize messages from the Transistor iframe
+        window.addEventListener('message', (event) => {
+            const isMessageFromValidSource = (
+                event.source === el.contentWindow &&
+                event.origin === 'https://partner.transistor.fm'
+            );
+            if (!isMessageFromValidSource) {
                 return;
             }
 
-            if (event.data.type === 'resize' && typeof event.data.height === 'number') {
-                if (iframe.contentWindow === event.source) {
-                    iframe.style.height = event.data.height + 'px';
-                }
+            const isDataValid = (
+                !!event.data &&
+                typeof event.data === 'object' &&
+                !Array.isArray(event.data) &&
+                'type' in event.data &&
+                event.data.type === 'resize' &&
+                'height' in event.data &&
+                typeof event.data.height === 'number' &&
+                Number.isSafeInteger(event.data.height) &&
+                event.data.height >= 1
+            );
+            if (!isDataValid) {
+                return;
             }
+
+            el.style.height = event.data.height + 'px';
         });
     }
     /* eslint-enable no-undef */
 
-    return `<script>(${listenForTransistorResize.toString()})()</script>`;
+    return `<script>(${initTransistorEmbed.toString()})()</script>`;
 }
 
 module.exports = renderTransistorNode;
