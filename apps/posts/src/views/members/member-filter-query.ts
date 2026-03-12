@@ -1,22 +1,9 @@
 import type {AstNode} from '../filters/filter-ast';
-import {extractComparator, flattenTopLevelNodes} from '../filters/filter-ast';
 import {dispatchSimpleNodes, parseFilterToAst, serializePredicates, stampPredicates} from '../filters/filter-query-core';
 import {memberFields} from './member-fields';
 import type {FilterPredicate, ParsedPredicate} from '../filters/filter-types';
 
-interface CompoundMatchResult {
-    predicates: ParsedPredicate[];
-    remainingNodes: AstNode[];
-}
-
-interface LeafPairMatch {
-    indices: [number, number];
-    predicate: ParsedPredicate;
-}
-
-type GroupedNodeMatcher = (node: AstNode) => ParsedPredicate | null;
-type LeafPairMatcher = (nodes: AstNode[], index: number) => LeafPairMatch | null;
-type CompoundMatcher = (nodes: AstNode[]) => CompoundMatchResult;
+type CompoundMatcher = (node: AstNode) => ParsedPredicate | null;
 
 function getCompoundChildren(node: AstNode): {operator: '$and' | '$or'; children: AstNode[]} | null {
     if (Array.isArray(node.$and)) {
@@ -30,73 +17,10 @@ function getCompoundChildren(node: AstNode): {operator: '$and' | '$or'; children
     return null;
 }
 
-function findLeaf(nodes: AstNode[], startIndex: number, matcher: (node: AstNode) => boolean): number {
-    return nodes.findIndex((node, index) => index > startIndex && matcher(node));
-}
-
-function claimGroupedMatch(
-    remainingNodes: AstNode[],
-    index: number,
-    predicates: ParsedPredicate[],
-    matcher: (node: AstNode) => ParsedPredicate | null
-): boolean {
-    const groupedMatch = matcher(remainingNodes[index]);
-
-    if (!groupedMatch) {
-        return false;
-    }
-
-    predicates.push(groupedMatch);
-    remainingNodes.splice(index, 1);
-
-    return true;
-}
-
-function claimLeafPair(
-    remainingNodes: AstNode[],
-    indices: [number, number],
-    predicates: ParsedPredicate[],
-    predicate: ParsedPredicate
-) {
-    predicates.push(predicate);
-
-    const removalIndices = [...indices].sort((left, right) => right - left);
-    for (const removalIndex of removalIndices) {
-        remainingNodes.splice(removalIndex, 1);
-    }
-}
-
-function collectCompoundMatches(
-    nodes: AstNode[],
-    groupedMatcher: GroupedNodeMatcher,
-    leafPairMatcher: LeafPairMatcher
-): CompoundMatchResult {
-    const predicates: ParsedPredicate[] = [];
-    const remainingNodes = [...nodes];
-
-    for (let index = 0; index < remainingNodes.length; index += 1) {
-        if (claimGroupedMatch(remainingNodes, index, predicates, groupedMatcher)) {
-            index -= 1;
-            continue;
-        }
-
-        const leafPairMatch = leafPairMatcher(remainingNodes, index);
-
-        if (!leafPairMatch) {
-            continue;
-        }
-
-        claimLeafPair(remainingNodes, leafPairMatch.indices, predicates, leafPairMatch.predicate);
-        index -= 1;
-    }
-
-    return {predicates, remainingNodes};
-}
-
 function matchSubscribedGroupedNode(node: AstNode): ParsedPredicate | null {
     const compound = getCompoundChildren(node);
 
-    if (!compound) {
+    if (!compound || compound.children.length !== 2) {
         return null;
     }
 
@@ -135,7 +59,7 @@ function matchSubscribedGroupedNode(node: AstNode): ParsedPredicate | null {
 function matchNewsletterGroupedNode(node: AstNode): ParsedPredicate | null {
     const compound = getCompoundChildren(node);
 
-    if (!compound) {
+    if (!compound || compound.children.length !== 2) {
         return null;
     }
 
@@ -189,7 +113,7 @@ function matchNewsletterGroupedNode(node: AstNode): ParsedPredicate | null {
 function matchFeedbackGroupedNode(node: AstNode): ParsedPredicate | null {
     const compound = getCompoundChildren(node);
 
-    if (!compound || compound.operator !== '$and') {
+    if (!compound || compound.operator !== '$and' || compound.children.length !== 2) {
         return null;
     }
 
@@ -217,101 +141,29 @@ function matchFeedbackGroupedNode(node: AstNode): ParsedPredicate | null {
     };
 }
 
-function matchSubscribedCompound(nodes: AstNode[]): CompoundMatchResult {
-    return collectCompoundMatches(nodes, matchSubscribedGroupedNode, (remainingNodes, index) => {
-        const comparator = extractComparator(remainingNodes[index]);
-
-        if (!comparator || comparator.field !== 'subscribed' || typeof comparator.value !== 'boolean') {
-            return null;
-        }
-
-        const emailDisabledIndex = findLeaf(remainingNodes, index, (node) => {
-            const candidate = extractComparator(node);
-            return candidate?.field === 'email_disabled' && candidate.value === 0;
-        });
-
-        if (emailDisabledIndex === -1) {
-            return null;
-        }
-
-        return {
-            indices: [index, emailDisabledIndex],
-            predicate: {
-                field: 'subscribed',
-                operator: 'is',
-                values: [comparator.value ? 'subscribed' : 'unsubscribed']
-            }
-        };
-    });
-}
-
-function matchNewsletterCompound(nodes: AstNode[]): CompoundMatchResult {
-    return collectCompoundMatches(nodes, matchNewsletterGroupedNode, (remainingNodes, index) => {
-        const comparator = extractComparator(remainingNodes[index]);
-
-        if (!comparator || comparator.field !== 'newsletters.slug' || typeof comparator.value !== 'string') {
-            return null;
-        }
-
-        const emailDisabledIndex = findLeaf(remainingNodes, index, (node) => {
-            const candidate = extractComparator(node);
-            return candidate?.field === 'email_disabled' && candidate.value === 0;
-        });
-
-        if (emailDisabledIndex === -1) {
-            return null;
-        }
-
-        return {
-            indices: [index, emailDisabledIndex],
-            predicate: {
-                field: `newsletters.${comparator.value}`,
-                operator: 'is',
-                values: ['subscribed']
-            }
-        };
-    });
-}
-
-function matchFeedbackCompound(nodes: AstNode[]): CompoundMatchResult {
-    return collectCompoundMatches(nodes, matchFeedbackGroupedNode, (remainingNodes, index) => {
-        const comparator = extractComparator(remainingNodes[index]);
-
-        if (!comparator || comparator.field !== 'feedback.post_id' || typeof comparator.value !== 'string') {
-            return null;
-        }
-
-        const scoreIndex = findLeaf(remainingNodes, index, (node) => {
-            const candidate = extractComparator(node);
-            return candidate?.field === 'feedback.score' && (candidate.value === 0 || candidate.value === 1);
-        });
-
-        if (scoreIndex === -1) {
-            return null;
-        }
-
-        const scoreComparator = extractComparator(remainingNodes[scoreIndex]);
-
-        if (!scoreComparator || (scoreComparator.value !== 0 && scoreComparator.value !== 1)) {
-            return null;
-        }
-
-        return {
-            indices: [index, scoreIndex],
-            predicate: {
-                field: 'newsletter_feedback',
-                operator: String(scoreComparator.value),
-                values: [comparator.value]
-            }
-        };
-    });
-}
-
 const MEMBER_COMPOUND_MATCHERS: CompoundMatcher[] = [
-    matchSubscribedCompound,
-    matchNewsletterCompound,
-    matchFeedbackCompound
+    matchSubscribedGroupedNode,
+    matchNewsletterGroupedNode,
+    matchFeedbackGroupedNode
 ];
+
+function parseMemberNode(node: AstNode, timezone: string): ParsedPredicate[] {
+    for (const matcher of MEMBER_COMPOUND_MATCHERS) {
+        const parsed = matcher(node);
+
+        if (parsed) {
+            return [parsed];
+        }
+    }
+
+    const compound = getCompoundChildren(node);
+
+    if (compound?.operator === '$and') {
+        return compound.children.flatMap(child => parseMemberNode(child, timezone));
+    }
+
+    return dispatchSimpleNodes([node], memberFields, timezone);
+}
 
 export function parseMemberFilter(filter: string | undefined, timezone: string): FilterPredicate[] {
     const ast = parseFilterToAst(filter ?? '');
@@ -320,18 +172,7 @@ export function parseMemberFilter(filter: string | undefined, timezone: string):
         return [];
     }
 
-    let remainingNodes = flattenTopLevelNodes(ast);
-    const compoundPredicates: ParsedPredicate[] = [];
-
-    for (const matcher of MEMBER_COMPOUND_MATCHERS) {
-        const result = matcher(remainingNodes);
-        compoundPredicates.push(...result.predicates);
-        remainingNodes = result.remainingNodes;
-    }
-
-    const simplePredicates = dispatchSimpleNodes(remainingNodes, memberFields, timezone);
-
-    return stampPredicates([...compoundPredicates, ...simplePredicates]);
+    return stampPredicates(parseMemberNode(ast, timezone));
 }
 
 export function serializeMemberFilters(predicates: FilterPredicate[], timezone: string): string | undefined {
