@@ -10,6 +10,4 @@ export {HeadingWeightField} from './heading-weight-field';
 export {ImageCornersField} from './image-corners-field';
 export {LinkColorField} from './link-color-field';
 export {LinkStyleField} from './link-style-field';
-export {PostTitleColorField} from './post-title-color-field';
 export {SectionTitleColorField} from './section-title-color-field';
-export {TitleAlignmentField} from './title-alignment-field';
