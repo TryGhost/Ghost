@@ -3,7 +3,7 @@ import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {useCallback, useMemo, useState} from 'react';
 import type {FilterOption} from '@tryghost/shade';
 
-export type ResourceType = 'post' | 'email';
+type ResourceType = 'post' | 'email';
 
 interface UseResourceSearchReturn {
     options: FilterOption<string>[];
