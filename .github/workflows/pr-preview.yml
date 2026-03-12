@@ -1,0 +1,51 @@
+name: PR Preview
+
+on:
+  pull_request_target:
+    types: [labeled, unlabeled, closed]
+
+jobs:
+  deploy:
+    name: Deploy Preview
+    # Runs when the "preview" label is added — requires collaborator write access
+    if: >-
+      github.event.action == 'labeled'
+      && github.event.label.name == 'preview'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Dispatch deploy to Ghost-Moya
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.CANARY_DOCKER_BUILD }}
+          repository: TryGhost/Ghost-Moya
+          event-type: preview-deploy
+          client-payload: >-
+            {
+              "pr_number": "${{ github.event.pull_request.number }}",
+              "action": "deploy",
+              "seed": "true"
+            }
+
+  destroy:
+    name: Destroy Preview
+    # Runs when "preview" label is removed, or the PR is closed/merged while labeled
+    if: >-
+      (github.event.action == 'unlabeled' && github.event.label.name == 'preview')
+      || (github.event.action == 'closed' && contains(github.event.pull_request.labels.*.name, 'preview'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Dispatch destroy to Ghost-Moya
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.CANARY_DOCKER_BUILD }}
+          repository: TryGhost/Ghost-Moya
+          event-type: preview-destroy
+          client-payload: >-
+            {
+              "pr_number": "${{ github.event.pull_request.number }}",
+              "action": "destroy"
+            }
