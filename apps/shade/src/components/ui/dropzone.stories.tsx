@@ -1,6 +1,6 @@
 import type {Meta, StoryObj} from '@storybook/react-vite';
 import {Upload} from 'lucide-react';
-import {Dropzone} from './dropzone';
+import {Dropzone} from '@/components/ui/dropzone';
 
 const meta = {
     title: 'Components / Dropzone',
@@ -8,10 +8,10 @@ const meta = {
     tags: ['autodocs'],
     args: {
         children: (
-            <>
+            <div className="pointer-events-none flex flex-col items-center">
                 <Upload className="mb-2 size-6 text-grey-600" />
                 <span className="text-sm text-grey-700">Select or drop a CSV file</span>
-            </>
+            </div>
         )
     },
     parameters: {
@@ -61,7 +61,7 @@ export const CustomContent: Story = {
     render: args => (
         <Dropzone {...args}>
             {({isDragActive, isDragReject}) => (
-                <>
+                <div className="pointer-events-none flex flex-col items-center">
                     <Upload className="mb-2 size-6 text-grey-600" />
                     <span className="text-sm text-grey-700">
                         {isDragReject
@@ -70,7 +70,7 @@ export const CustomContent: Story = {
                                 ? 'Drop file to upload'
                                 : 'Select or drop a CSV file'}
                     </span>
-                </>
+                </div>
             )}
         </Dropzone>
     )

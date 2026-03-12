@@ -5,16 +5,10 @@ import {Dropzone} from '../../../../src/components/ui/dropzone';
 import {render} from '../../utils/test-utils';
 
 function createFile(name: string, type: string, contents = 'content') {
-    return {
-        name,
+    return new File([contents], name, {
         type,
-        size: contents.length,
-        lastModified: Date.now(),
-        arrayBuffer: vi.fn(),
-        slice: vi.fn(),
-        stream: vi.fn(),
-        text: vi.fn()
-    };
+        lastModified: Date.now()
+    });
 }
 
 describe('Dropzone Component', () => {
@@ -33,20 +27,23 @@ describe('Dropzone Component', () => {
 
     it('opens the file dialog when activated with the keyboard', async () => {
         const clickSpy = vi.spyOn(HTMLInputElement.prototype, 'click').mockImplementation(() => {});
+        try {
+            render(
+                <Dropzone>
+                    <span>Upload CSV</span>
+                </Dropzone>
+            );
 
-        render(
-            <Dropzone>
-                <span>Upload CSV</span>
-            </Dropzone>
-        );
+            const dropTarget = screen.getByRole('button', {name: /upload csv/i});
 
-        const dropTarget = screen.getByRole('button', {name: /upload csv/i});
+            fireEvent.keyDown(dropTarget, {key: 'Enter', code: 'Enter', keyCode: 13, charCode: 13});
 
-        fireEvent.keyDown(dropTarget, {key: 'Enter', code: 'Enter', keyCode: 13, charCode: 13});
-
-        await waitFor(() => {
-            assert.equal(clickSpy.mock.calls.length, 1, 'Keyboard activation should open the file dialog');
-        });
+            await waitFor(() => {
+                assert.equal(clickSpy.mock.calls.length, 1, 'Keyboard activation should open the file dialog');
+            });
+        } finally {
+            clickSpy.mockRestore();
+        }
     });
 
     it('calls onDropAccepted for accepted files', async () => {
@@ -159,7 +156,7 @@ describe('Dropzone Component', () => {
         );
     });
 
-    it('disables pointer events on content to keep drag interactions on the dropzone root', () => {
+    it('does not disable pointer events on child content by default', () => {
         render(
             <Dropzone>
                 <span>Upload CSV</span>
@@ -169,8 +166,8 @@ describe('Dropzone Component', () => {
         const dropTarget = screen.getByRole('button', {name: /upload csv/i});
 
         assert.ok(
-            dropTarget.className.includes('[&>*:not(input)]:pointer-events-none'),
-            'Dropzone should disable pointer events on its content'
+            !dropTarget.className.includes('[&>*:not(input)]:pointer-events-none'),
+            'Dropzone should not force pointer-events-none on its child content'
         );
     });
 });
