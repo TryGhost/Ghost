@@ -6,6 +6,52 @@ import {fileURLToPath} from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const visibleEmailMenuItems = [
+    'Image',
+    'Unsplash',
+    'GIF',
+    'Bookmark',
+    'Button',
+    'Callout',
+    'Call to action',
+    'Email call to action',
+    'HTML',
+    'Product',
+    'Divider',
+    'YouTube',
+    'Other...'
+];
+
+const unavailableEmailMenuItems = [
+    'Audio',
+    'Gallery',
+    'Video',
+    'File',
+    'Markdown',
+    'Header',
+    'Public preview',
+    'Toggle',
+    'Signup',
+    'Email content'
+];
+
+const smokeTestInsertions = [
+    {shortcut: 'button', menuItem: 'Button', selector: '[data-kg-card="button"]'},
+    {shortcut: 'callout', menuItem: 'Callout', selector: '[data-kg-card="callout"]'},
+    {shortcut: 'html', menuItem: 'HTML', selector: '[data-kg-card="html"]'},
+    {shortcut: 'divider', menuItem: 'Divider', selector: '[data-kg-card="horizontalrule"]'},
+    {shortcut: 'email-cta', menuItem: 'Email call to action', selector: '[data-kg-card="email-cta"]'},
+    {shortcut: 'embed', menuItem: 'Other...', selector: '[data-kg-card="embed"]'}
+];
+
+async function insertCardFromMenu(page, {shortcut, menuItem, selector}) {
+    await focusEditor(page);
+    await page.keyboard.type(`/${shortcut}`);
+    await expect(page.locator(`[data-kg-card-menu-item="${menuItem}" i]`)).toBeVisible();
+    await page.locator(`[data-kg-card-menu-item="${menuItem}" i]`).click();
+    await expect(page.locator(selector)).toBeVisible();
+}
+
 test.describe('Koenig Editor with email template nodes', async function () {
     let page;
 
@@ -31,7 +77,7 @@ test.describe('Koenig Editor with email template nodes', async function () {
             await expect(page.locator('text=Begin writing your email...')).toBeVisible();
         });
 
-        test('renders EmailEditorWrapper with From and Subject fields', async function () {
+        test('renders email header with From and Subject fields', async function () {
             await expect(page.locator('text=From:')).toBeVisible();
             await expect(page.locator('text=Ghost <noreply@example.com>')).toBeVisible();
             await expect(page.locator('text=Subject:')).toBeVisible();
@@ -197,6 +243,20 @@ test.describe('Koenig Editor with email template nodes', async function () {
             await expect(page.locator('[data-kg-slash-menu]')).toBeVisible();
         });
 
+        test('shows the supported email card menu items', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('/');
+            await expect(page.locator('[data-kg-slash-menu]')).toBeVisible();
+
+            for (const label of visibleEmailMenuItems) {
+                await expect(page.locator(`[data-kg-card-menu-item="${label}"]`)).toBeVisible();
+            }
+
+            for (const label of unavailableEmailMenuItems) {
+                await expect(page.locator(`[data-kg-card-menu-item="${label}"]`)).toHaveCount(0);
+            }
+        });
+
         test('only shows YouTube and Other embed options', async function () {
             await focusEditor(page);
             await page.keyboard.type('/');
@@ -222,6 +282,12 @@ test.describe('Koenig Editor with email template nodes', async function () {
 
             await expect(page.locator('[data-kg-card="embed"]')).toBeVisible();
         });
+
+        for (const {shortcut, menuItem, selector} of smokeTestInsertions) {
+            test(`can insert ${menuItem} via slash menu`, async function () {
+                await insertCardFromMenu(page, {shortcut, menuItem, selector});
+            });
+        }
 
         test('can insert call to action card via slash menu', async function () {
             await focusEditor(page);

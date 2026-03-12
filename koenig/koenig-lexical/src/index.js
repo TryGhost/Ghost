@@ -1,5 +1,6 @@
 /* Components */
 import DesignSandbox from './components/DesignSandbox';
+import EmailEditor, {EMAIL_EDITOR_CARD_CONFIG, getEmailEditorCardConfig} from './components/EmailEditor';
 import KoenigCardWrapper from './components/KoenigCardWrapper';
 import KoenigComposableEditor from './components/KoenigComposableEditor';
 import KoenigComposer from './components/KoenigComposer';
@@ -71,6 +72,7 @@ export * from './utils';
 
 export {
     DesignSandbox,
+    EmailEditor,
     KoenigComposableEditor,
     KoenigComposer,
     KoenigEditor,
@@ -124,6 +126,8 @@ export {
     EMAIL_NODES,
     MINIMAL_NODES,
 
+    EMAIL_EDITOR_CARD_CONFIG,
+
     ELEMENT_TRANSFORMERS,
     HR_TRANSFORMER,
     CODE_BLOCK_TRANSFORMER,
@@ -131,7 +135,9 @@ export {
     DEFAULT_TRANSFORMERS,
     BASIC_TRANSFORMERS,
     EMAIL_TRANSFORMERS,
-    MINIMAL_TRANSFORMERS
+    MINIMAL_TRANSFORMERS,
+
+    getEmailEditorCardConfig
 };
 
 // eslint-disable-next-line no-undef
