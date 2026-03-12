@@ -72,12 +72,22 @@ describe('OfferBookshelfRepository', function () {
                 cancel_at_period_end: false
             }, context);
 
-            // Add redemptions so there's real data to skip
+            // Add two redemptions so we can verify the last redeemed date is the latest
+            const olderDate = new Date('2024-01-01');
+            const newerDate = new Date('2025-06-15');
+
             await OfferRedemption.add({
                 offer_id: offerModel.get('id'),
                 member_id: member.get('id'),
                 subscription_id: subscription.get('id'),
-                created_at: new Date()
+                created_at: olderDate
+            }, context);
+
+            await OfferRedemption.add({
+                offer_id: offerModel.get('id'),
+                member_id: member.get('id'),
+                subscription_id: subscription.get('id'),
+                created_at: newerDate
             }, context);
 
             // Create an unredeemed offer
@@ -98,20 +108,25 @@ describe('OfferBookshelfRepository', function () {
                 currency: 'USD',
                 active: false
             });
-            await Offer.add(offerData3, {context: {internal: true}});
+            const offerModel3 = await Offer.add(offerData3, {context: {internal: true}});
 
             const repository = new OfferBookshelfRepository(Offer, OfferRedemption);
 
             // With stats - redeemed offer should have redemptionCount and lastRedeemed
             const offersWithStats = await repository.getAll({});
             const offerWithStats = offersWithStats.find(o => o.id === offerModel.get('id'));
-            assert.equal(offerWithStats.redemptionCount, 1);
-            assert.notEqual(offerWithStats.lastRedeemed, null);
+            assert.equal(offerWithStats.redemptionCount, 2);
+            assert.equal(new Date(offerWithStats.lastRedeemed).toISOString(), newerDate.toISOString());
 
             // Unredeemed offer should have redemptionCount 0
             const unredeemedWithStats = offersWithStats.find(o => o.id === offerModel2.get('id'));
             assert.equal(unredeemedWithStats.redemptionCount, 0);
             assert.equal(unredeemedWithStats.lastRedeemed, null);
+
+            // Archived fixed-amount offer should be mapped correctly
+            const archivedOffer = offersWithStats.find(o => o.id === offerModel3.get('id'));
+            assert.equal(archivedOffer.status.value, 'archived');
+            assert.equal(archivedOffer.type.value, 'fixed');
 
             // Without stats - should have redemptionCount 0 and lastRedeemed null
             const offersWithoutStats = await repository.getAll({}, {withRedemptionStats: false});

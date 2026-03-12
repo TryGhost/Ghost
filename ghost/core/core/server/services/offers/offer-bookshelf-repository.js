@@ -108,10 +108,13 @@ class OfferBookshelfRepository {
                 transacting: options.transacting
             });
 
-            const lastRedeemedResult = await this.OfferRedemptionModel.where({offer_id: json.id}).orderBy('created_at', 'DESC').fetchAll({
-                transacting: options.transacting,
-                limit: 1
-            });
+            const lastRedeemedResult = await this.OfferRedemptionModel
+                .where({offer_id: json.id})
+                .query(qb => qb.limit(1))
+                .orderBy('created_at', 'DESC')
+                .fetchAll({
+                    transacting: options.transacting
+                });
 
             const lastRedeemedObject = lastRedeemedResult.toJSON();
             lastRedeemed = lastRedeemedObject.length > 0 ? lastRedeemedObject[0].created_at : null;
