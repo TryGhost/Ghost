@@ -1,8 +1,8 @@
 import {Factory} from '@/data-factory';
-import {generateId, generateSlug, generateUuid} from '@/data-factory';
-import {faker} from '@faker-js/faker';
-import type {CardSpec} from './lexical';
 import {buildLexical} from './lexical';
+import {faker} from '@faker-js/faker';
+import {generateId, generateSlug, generateUuid} from '@/data-factory';
+import type {CardSpec} from './lexical';
 
 export interface Post {
     id: string;
