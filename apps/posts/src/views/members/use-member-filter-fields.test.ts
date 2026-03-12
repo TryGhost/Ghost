@@ -2,13 +2,11 @@ import {renderHook} from '@testing-library/react';
 import {describe, expect, it, vi} from 'vitest';
 import {
     buildOfferOptions,
-    buildRetentionOfferIdMap,
-    collapseRetentionOfferFilters,
-    expandRetentionOfferFilters,
+    fromOfferFilterDisplayValues,
+    toOfferFilterDisplayValues,
     useMemberFilterFields
 } from './use-member-filter-fields';
 import {memberFields} from './member-fields';
-import type {Filter} from '@tryghost/shade';
 
 describe('useMemberFilterFields', () => {
     it('hydrates grouped member fields from the local schema', () => {
@@ -25,8 +23,7 @@ describe('useMemberFilterFields', () => {
             onEmailResourceSearchChange: vi.fn(),
             emailResourceSearchValue: 'lau',
             emailResourceLoading: false,
-            hasOffers: true,
-            offersOptions: [{value: 'offer_1', label: 'Offer'}],
+            offers: [{id: 'offer_1', name: 'Offer', redemption_type: 'signup', cadence: 'month'} as never],
             membersTrackSources: true,
             emailTrackOpens: true,
             emailTrackClicks: true,
@@ -84,6 +81,44 @@ describe('useMemberFilterFields', () => {
             label: 'Weekly'
         });
     });
+
+    it('hydrates grouped retention offers on the offer field', () => {
+        const {result} = renderHook(() => useMemberFilterFields({
+            paidMembersEnabled: true,
+            offers: [
+                {id: 'offer_regular', name: 'Regular Offer', redemption_type: 'signup', cadence: 'month'},
+                {id: 'offer_month_1', name: 'Retention A', redemption_type: 'retention', cadence: 'month'},
+                {id: 'offer_month_2', name: 'Retention B', redemption_type: 'retention', cadence: 'month'},
+                {id: 'offer_year_1', name: 'Retention C', redemption_type: 'retention', cadence: 'year'}
+            ] as never,
+            siteTimezone: 'UTC'
+        }));
+
+        const subscriptionFields = result.current.find(group => group.group === 'Subscription')?.fields ?? [];
+        const offerField = subscriptionFields.find(field => field.key === 'offer_redemptions');
+
+        expect(offerField?.options).toEqual([
+            {value: 'offer_regular', label: 'Regular Offer'},
+            {value: 'retention:month', label: 'Monthly Retention', metadata: {offerIds: ['offer_month_1', 'offer_month_2']}},
+            {value: 'retention:year', label: 'Yearly Retention', metadata: {offerIds: ['offer_year_1']}}
+        ]);
+        expect(offerField?.customValueRenderer).toBeTypeOf('function');
+    });
+
+    it('renders direct retention offer ids with the fetched offer label', () => {
+        const {result} = renderHook(() => useMemberFilterFields({
+            paidMembersEnabled: true,
+            offers: [
+                {id: 'offer_month_1', name: 'Retention A', redemption_type: 'retention', cadence: 'month'}
+            ] as never,
+            siteTimezone: 'UTC'
+        }));
+
+        const subscriptionFields = result.current.find(group => group.group === 'Subscription')?.fields ?? [];
+        const offerField = subscriptionFields.find(field => field.key === 'offer_redemptions');
+
+        expect(offerField?.customValueRenderer?.(['offer_month_1'], offerField.options || [])).toBe('Retention A');
+    });
 });
 
 describe('retention offer helpers', () => {
@@ -95,38 +130,29 @@ describe('retention offer helpers', () => {
     ] as const;
 
     it('builds grouped retention offer options', () => {
-        const retentionMap = buildRetentionOfferIdMap(offers as never);
-        const options = buildOfferOptions(offers as never, true, retentionMap);
+        const options = buildOfferOptions(offers as never);
 
         expect(options).toEqual([
             {value: 'offer_regular', label: 'Regular Offer'},
-            {value: 'retention:month', label: 'Monthly Retention'},
-            {value: 'retention:year', label: 'Yearly Retention'}
+            {value: 'retention:month', label: 'Monthly Retention', metadata: {offerIds: ['offer_month_1', 'offer_month_2']}},
+            {value: 'retention:year', label: 'Yearly Retention', metadata: {offerIds: ['offer_year_1']}}
         ]);
     });
 
-    it('collapses and expands grouped retention offer filters', () => {
-        const retentionMap = buildRetentionOfferIdMap(offers as never);
-        const collapsed = collapseRetentionOfferFilters([
-            {
-                id: '1',
-                field: 'offer_redemptions',
-                operator: 'is-any',
-                values: ['offer_month_1', 'offer_month_2', 'offer_regular']
-            }
-        ] as Filter[], retentionMap);
+    it('maps offer filter values between stored ids and grouped UI tokens', () => {
+        const options = buildOfferOptions(offers as never);
 
-        expect(collapsed[0].values).toEqual(['retention:month', 'offer_regular']);
+        expect(toOfferFilterDisplayValues(['offer_month_1', 'offer_month_2', 'offer_regular'], options)).toEqual([
+            'retention:month',
+            'offer_regular'
+        ]);
 
-        const expanded = expandRetentionOfferFilters([
-            {
-                id: '1',
-                field: 'offer_redemptions',
-                operator: 'is-any',
-                values: ['retention:month', 'offer_regular']
-            }
-        ] as Filter[], retentionMap);
+        expect(toOfferFilterDisplayValues(['offer_month_1'], options)).toEqual(['offer_month_1']);
 
-        expect(expanded[0].values).toEqual(['offer_month_1', 'offer_month_2', 'offer_regular']);
+        expect(fromOfferFilterDisplayValues(['retention:month', 'offer_regular'], options)).toEqual([
+            'offer_month_1',
+            'offer_month_2',
+            'offer_regular'
+        ]);
     });
 });
