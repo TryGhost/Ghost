@@ -204,7 +204,9 @@ export function toOfferFilterDisplayValues(values: string[], options: FilterOpti
 
         if (groupIds && groupIds.length > 0 && groupIds.every(id => values.includes(id))) {
             collapsed.push(String(option.value));
-            groupIds.forEach(id => consumed.add(id));
+            groupIds.forEach((id) => {
+                consumed.add(id);
+            });
         }
     }
 

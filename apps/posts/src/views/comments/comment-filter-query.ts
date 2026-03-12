@@ -34,7 +34,13 @@ function matchExactDateCompound(children: AstNode[], timezone: string): ExactDat
             continue;
         }
 
-        const date = moment.tz(lowerBound.value, timezone).format('YYYY-MM-DD');
+        const parsed = moment.tz(lowerBound.value, moment.ISO_8601, true, timezone);
+
+        if (!parsed.isValid()) {
+            continue;
+        }
+
+        const date = parsed.format('YYYY-MM-DD');
         const {start, end} = getDayBoundsInUtc(date, timezone);
 
         if (lowerBound.value !== start) {

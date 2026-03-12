@@ -149,4 +149,11 @@ describe('comment-filter-query', () => {
     it('ignores malformed NQL input', () => {
         expect(parseCommentFilter('created_at:(', 'UTC')).toEqual([]);
     });
+
+    it('ignores invalid exact-date compounds', () => {
+        expect(parseCommentFilter(
+            'created_at:>=\'not-a-date\'+created_at:<=\'2024-01-01T23:59:59.999Z\'',
+            'UTC'
+        )).toEqual([]);
+    });
 });

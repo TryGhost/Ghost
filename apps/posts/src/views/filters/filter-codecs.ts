@@ -89,7 +89,7 @@ function normalizeRegexValue(pattern: RegExp): string {
         source = source.slice(0, -1);
     }
 
-    return source.replace(/\\(.)/g, '$1');
+    return source.replace(/\\([\\.^$|?*+()[\]{}\/-])/g, '$1');
 }
 
 export function scalarCodec(config?: CodecConfig): FilterCodec {
