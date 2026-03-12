@@ -1,6 +1,6 @@
 import nql from '@tryghost/nql-lang';
 import {describe, expect, it} from 'vitest';
-import {extractComparator, extractFieldName, flattenTopLevelNodes} from './filter-ast';
+import {extractComparator, extractFieldName} from './filter-ast';
 
 describe('filter-ast helpers', () => {
     it('extracts simple field names', () => {
@@ -25,16 +25,12 @@ describe('filter-ast helpers', () => {
         });
     });
 
-    it('flattens top-level and groups into a node list', () => {
+    it('preserves grouped nodes in the parsed AST', () => {
         const compoundNode = nql.parse('(status:paid+email:~\'ghost\')') as Record<string, unknown>;
-        const simpleNode = nql.parse('status:paid') as Record<string, unknown>;
 
-        expect(flattenTopLevelNodes(compoundNode)).toEqual([
+        expect(compoundNode.$and).toEqual([
             {status: 'paid'},
             {email: {$regex: /ghost/i}}
-        ]);
-        expect(flattenTopLevelNodes(simpleNode)).toEqual([
-            {status: 'paid'}
         ]);
     });
 
