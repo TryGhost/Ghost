@@ -111,18 +111,18 @@ describe('scalarCodec', () => {
             pattern: 'emails.post_id',
             params: {},
             timezone: 'UTC'
-        })).toEqual(["emails.post_id:'post_123'"]);
+        })).toEqual(['emails.post_id:\'post_123\'']);
     });
 });
 
 describe('textCodec', () => {
     it('parses regex-based text operators', () => {
-        expect(textCodec().parse(nql.parse("email:~'ghost'") as never, emailContext)).toEqual({
+        expect(textCodec().parse(nql.parse('email:~\'ghost\'') as never, emailContext)).toEqual({
             field: 'email',
             operator: 'contains',
             values: ['ghost']
         });
-        expect(textCodec().parse(nql.parse("email:-~$'ghost'") as never, emailContext)).toEqual({
+        expect(textCodec().parse(nql.parse('email:-~$\'ghost\'') as never, emailContext)).toEqual({
             field: 'email',
             operator: 'does-not-end-with',
             values: ['ghost']
@@ -130,7 +130,7 @@ describe('textCodec', () => {
     });
 
     it('parses and serializes exact text operators', () => {
-        expect(textCodec().parse(nql.parse("email:'ghost@example.com'") as never, emailContext)).toEqual({
+        expect(textCodec().parse(nql.parse('email:\'ghost@example.com\'') as never, emailContext)).toEqual({
             field: 'email',
             operator: 'is',
             values: ['ghost@example.com']
@@ -143,7 +143,7 @@ describe('textCodec', () => {
             values: ['ghost@example.com']
         };
 
-        expect(textCodec().serialize(predicate, emailContext)).toEqual(["email:'ghost@example.com'"]);
+        expect(textCodec().serialize(predicate, emailContext)).toEqual(['email:\'ghost@example.com\'']);
     });
 
     it('serializes canonical text operators', () => {
@@ -151,10 +151,10 @@ describe('textCodec', () => {
             id: '1',
             field: 'email',
             operator: 'starts-with',
-            values: ["can't"]
+            values: ['can\'t']
         };
 
-        expect(textCodec().serialize(predicate, emailContext)).toEqual(["email:~^'can\\'t'"]);
+        expect(textCodec().serialize(predicate, emailContext)).toEqual(['email:~^\'can\\\'t\'']);
     });
 
     it('returns null for invalid text operators', () => {
@@ -171,7 +171,7 @@ describe('textCodec', () => {
     it('supports mapped NQL field names', () => {
         const bodyCodec = textCodec({field: 'html'});
 
-        expect(bodyCodec.parse(nql.parse("html:~'ghost'") as never, bodyContext)).toEqual({
+        expect(bodyCodec.parse(nql.parse('html:~\'ghost\'') as never, bodyContext)).toEqual({
             field: 'body',
             operator: 'contains',
             values: ['ghost']
@@ -182,7 +182,7 @@ describe('textCodec', () => {
             field: 'body',
             operator: 'does-not-contain',
             values: ['ghost']
-        }, bodyContext)).toEqual(["html:-~'ghost'"]);
+        }, bodyContext)).toEqual(['html:-~\'ghost\'']);
     });
 });
 

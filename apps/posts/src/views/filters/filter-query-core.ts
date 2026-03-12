@@ -1,7 +1,7 @@
 import nql from '@tryghost/nql-lang';
-import type {AstNode} from './filter-ast';
 import {canonicalizeClauses} from './filter-normalization';
 import {resolveField} from './resolve-field';
+import type {AstNode} from './filter-ast';
 import type {FilterField, FilterPredicate, ParsedPredicate} from './filter-types';
 
 export function parseFilterToAst(filter: string): AstNode | undefined {

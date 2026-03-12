@@ -13,7 +13,7 @@ export function createOperatorOptions(
 ): OperatorOption[] {
     const labels = options.labels || {};
 
-    return operators.map((operator) => ({
+    return operators.map(operator => ({
         value: operator,
         label: labels[operator] ?? operator.replaceAll('-', ' ')
     }));

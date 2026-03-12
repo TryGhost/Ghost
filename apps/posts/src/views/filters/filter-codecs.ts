@@ -1,18 +1,18 @@
-import {extractComparator} from './filter-ast';
 import {escapeNqlString, normalizeMultiValue} from './filter-normalization';
+import {extractComparator} from './filter-ast';
 import type {FilterCodec} from './filter-types';
 
 const SCALAR_OPERATORS: Record<string, string> = {
-    '$eq': 'is',
-    '$ne': 'is-not'
+    $eq: 'is',
+    $ne: 'is-not'
 };
 
 const NUMBER_OPERATORS: Record<string, string> = {
-    '$eq': 'is',
-    '$gt': 'is-greater',
-    '$gte': 'is-or-greater',
-    '$lt': 'is-less',
-    '$lte': 'is-or-less'
+    $eq: 'is',
+    $gt: 'is-greater',
+    $gte: 'is-or-greater',
+    $lt: 'is-less',
+    $lte: 'is-or-less'
 };
 
 const TEXT_OPERATOR_SYMBOLS: Record<string, string> = {

@@ -1,6 +1,6 @@
-import {renderHook} from '@testing-library/react';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {commentFields} from './comment-fields';
+import {renderHook} from '@testing-library/react';
 import {useCommentFilterFields} from './use-comment-filter-fields';
 
 const mockUseFilterOptions = vi.fn();

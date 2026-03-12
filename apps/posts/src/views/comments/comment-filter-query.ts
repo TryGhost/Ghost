@@ -1,8 +1,8 @@
 import moment from 'moment-timezone';
-import type {AstNode} from '../filters/filter-ast';
+import {commentFields} from './comment-fields';
 import {dispatchSimpleNodes, parseFilterToAst, serializePredicates, stampPredicates} from '../filters/filter-query-core';
 import {getDayBoundsInUtc} from '../filters/filter-normalization';
-import {commentFields} from './comment-fields';
+import type {AstNode} from '../filters/filter-ast';
 import type {FilterPredicate, ParsedPredicate} from '../filters/filter-types';
 
 interface ExactDateMatchResult {

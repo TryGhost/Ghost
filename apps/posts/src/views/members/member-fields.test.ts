@@ -47,7 +47,7 @@ describe('memberFields', () => {
 
     it('keeps the expected operators for key member fields', () => {
         expect(memberFields.label.operators).toEqual(['is-any', 'is-not-any']);
-        expect(memberFields['tier_id'].operators).toEqual(['is-any', 'is-not-any']);
+        expect(memberFields.tier_id.operators).toEqual(['is-any', 'is-not-any']);
         expect(memberFields['newsletters.:slug'].operators).toEqual(['is']);
         expect(memberFields.newsletter_feedback.operators).toEqual(['1', '0']);
         expect(memberFields.created_at.operators).toEqual([
@@ -67,7 +67,7 @@ describe('memberFields', () => {
             }
         });
 
-        expect(memberFields['tier_id'].metadata).toEqual({
+        expect(memberFields.tier_id.metadata).toEqual({
             activeColumn: {
                 key: 'tiers',
                 label: 'Tiers',
@@ -106,7 +106,7 @@ describe('memberDateCodec', () => {
         };
 
         expect(memberFields.created_at.codec.serialize(predicate, dateContext)).toEqual([
-            "created_at:<='2024-01-01T23:59:59.999Z'"
+            'created_at:<=\'2024-01-01T23:59:59.999Z\''
         ]);
     });
 });

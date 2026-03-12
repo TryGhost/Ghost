@@ -1,12 +1,12 @@
-import {renderHook} from '@testing-library/react';
-import {describe, expect, it, vi} from 'vitest';
 import {
     buildOfferOptions,
     fromOfferFilterDisplayValues,
     toOfferFilterDisplayValues,
     useMemberFilterFields
 } from './use-member-filter-fields';
+import {describe, expect, it, vi} from 'vitest';
 import {memberFields} from './member-fields';
+import {renderHook} from '@testing-library/react';
 
 describe('useMemberFilterFields', () => {
     it('hydrates grouped member fields from the local schema', () => {

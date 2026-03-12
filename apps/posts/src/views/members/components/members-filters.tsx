@@ -1,5 +1,11 @@
 import React, {useCallback, useMemo} from 'react';
 import {Filter, Filters, LucideIcon} from '@tryghost/shade';
+import {
+    buildOfferOptions,
+    fromOfferFilterDisplayValues,
+    toOfferFilterDisplayValues,
+    useMemberFilterFields
+} from '../use-member-filter-fields';
 import {getSettingValue, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {getSiteTimezone} from '@src/utils/get-site-timezone';
 import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
@@ -8,17 +14,13 @@ import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters'
 import {useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
 import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {useResourceSearch} from '../hooks/use-resource-search';
-import {
-    buildOfferOptions,
-    fromOfferFilterDisplayValues,
-    toOfferFilterDisplayValues,
-    useMemberFilterFields
-} from '../use-member-filter-fields';
 
 interface MembersFiltersProps {
     filters: Filter[];
     onFiltersChange: (filters: Filter[]) => void;
 }
+
+const EMPTY_OFFERS: typeof buildOfferOptions extends (offers: infer T) => unknown ? T : never = [];
 
 function mapOfferRedemptionFilters(
     filters: Filter[],
@@ -59,7 +61,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     const labels = labelsData?.labels || [];
     const tiers = tiersData?.tiers || [];
     const newsletters = newslettersData?.newsletters || [];
-    const offers = offersData?.offers || [];
+    const offers = useMemo(() => offersData?.offers ?? EMPTY_OFFERS, [offersData?.offers]);
     const activePaidTiers = tiers.filter(tier => tier.type === 'paid' && tier.active);
     const hasMultipleTiers = activePaidTiers.length > 1;
 

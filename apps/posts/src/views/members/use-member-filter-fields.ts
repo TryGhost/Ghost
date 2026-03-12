@@ -39,8 +39,8 @@ const MEMBER_OPERATOR_LABELS = {
     'is-or-less': 'on or before',
     'is-greater': 'after',
     'is-or-greater': 'on or after',
-    '1': 'More like this',
-    '0': 'Less like this'
+    1: 'More like this',
+    0: 'Less like this'
 };
 
 function getFieldIcon(key: string) {

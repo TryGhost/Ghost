@@ -10,10 +10,10 @@ import {
     LucideIcon
 } from '@tryghost/shade';
 import {blobDownloadFromEndpoint} from '@tryghost/admin-x-framework/helpers';
+import {buildMemberOperationParams} from '../member-query-params';
 import {toast} from 'sonner';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
 import {useBulkDeleteMembers, useBulkEditMembers} from '@tryghost/admin-x-framework/api/members';
-import {buildMemberOperationParams} from '../member-query-params';
 
 interface MembersActionsProps {
     hasFilterOrSearch: boolean;
@@ -253,8 +253,8 @@ const MembersActions: React.FC<MembersActionsProps> = ({
                 isLoading={isBulkEditing}
                 memberCount={memberCount}
                 nql={nql}
-                search={search}
                 open={showRemoveLabelModal}
+                search={search}
                 onConfirm={handleRemoveLabel}
                 onOpenChange={setShowRemoveLabelModal}
             />

@@ -1,7 +1,7 @@
 import moment from 'moment-timezone';
-import {numberCodec, scalarCodec, setCodec, textCodec} from '../filters/filter-codecs';
-import {escapeNqlString, getDayBoundsInUtc} from '../filters/filter-normalization';
 import {defineFields} from '../filters/filter-types';
+import {escapeNqlString, getDayBoundsInUtc} from '../filters/filter-normalization';
+import {numberCodec, scalarCodec, setCodec, textCodec} from '../filters/filter-codecs';
 import type {FilterCodec} from '../filters/filter-types';
 
 const TEXT_OPERATORS = ['is', 'contains', 'does-not-contain', 'starts-with', 'ends-with'] as const;
