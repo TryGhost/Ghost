@@ -1,9 +1,8 @@
 import nql from '@tryghost/nql-lang';
+import type {AstNode} from './filter-ast';
 import {canonicalizeClauses} from './filter-normalization';
 import {resolveField} from './resolve-field';
 import type {FilterField, FilterPredicate, ParsedPredicate} from './filter-types';
-
-type AstNode = Record<string, unknown>;
 
 export function parseFilterToAst(filter: string): AstNode | undefined {
     if (!filter) {
@@ -15,6 +14,13 @@ export function parseFilterToAst(filter: string): AstNode | undefined {
     } catch {
         return undefined;
     }
+}
+
+export function stampPredicates(predicates: ParsedPredicate[]): FilterPredicate[] {
+    return predicates.map((predicate, index) => ({
+        ...predicate,
+        id: `${predicate.field}:${index + 1}`
+    }));
 }
 
 export function dispatchSimpleNodes<TFields extends Record<string, FilterField>>(nodes: AstNode[], fields: TFields, timezone: string): ParsedPredicate[] {
@@ -29,20 +35,6 @@ export function dispatchSimpleNodes<TFields extends Record<string, FilterField>>
 
         if (resolved) {
             const parsed = resolved.definition.codec.parse(node, resolved.context);
-
-            if (parsed) {
-                return [parsed];
-            }
-        }
-
-        for (const fieldKey of Object.keys(fields)) {
-            const fallbackResolved = resolveField(fields, fieldKey, timezone);
-
-            if (!fallbackResolved) {
-                continue;
-            }
-
-            const parsed = fallbackResolved.definition.codec.parse(node, fallbackResolved.context);
 
             if (parsed) {
                 return [parsed];

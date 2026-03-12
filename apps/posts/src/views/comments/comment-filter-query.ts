@@ -1,22 +1,14 @@
 import moment from 'moment-timezone';
+import type {AstNode} from '../filters/filter-ast';
 import {flattenTopLevelNodes} from '../filters/filter-ast';
-import {dispatchSimpleNodes, parseFilterToAst, serializePredicates} from '../filters/filter-query-core';
+import {dispatchSimpleNodes, parseFilterToAst, serializePredicates, stampPredicates} from '../filters/filter-query-core';
 import {getDayBoundsInUtc} from '../filters/filter-normalization';
 import {commentFields} from './comment-fields';
 import type {FilterPredicate, ParsedPredicate} from '../filters/filter-types';
 
-type AstNode = Record<string, unknown>;
-
 interface CompoundMatchResult {
     predicates: ParsedPredicate[];
     remainingNodes: AstNode[];
-}
-
-function stampPredicates(predicates: ParsedPredicate[]): FilterPredicate[] {
-    return predicates.map((predicate, index) => ({
-        ...predicate,
-        id: `${predicate.field}:${index + 1}`
-    }));
 }
 
 function extractCreatedAtComparator(node: AstNode): {operator: string; value: string} | null {

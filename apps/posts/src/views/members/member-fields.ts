@@ -207,6 +207,7 @@ export const memberFields = defineFields({
     },
     subscribed: {
         operators: SCALAR_OPERATORS,
+        parseKeys: ['email_disabled'],
         ui: {
             label: 'Newsletter subscription',
             type: 'select',

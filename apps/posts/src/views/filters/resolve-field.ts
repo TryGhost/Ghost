@@ -47,6 +47,22 @@ export function resolveField<TFields extends Record<string, FilterField>>(fields
         };
     }
 
+    for (const [fieldKey, definition] of Object.entries(fields)) {
+        if (!definition.parseKeys?.includes(key)) {
+            continue;
+        }
+
+        return {
+            definition,
+            context: {
+                key: fieldKey,
+                pattern: fieldKey,
+                params: {},
+                timezone
+            }
+        };
+    }
+
     for (const [pattern, definition] of Object.entries(fields)) {
         if (!pattern.includes(':')) {
             continue;

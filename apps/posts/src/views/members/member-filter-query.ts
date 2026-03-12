@@ -1,20 +1,12 @@
+import type {AstNode} from '../filters/filter-ast';
 import {extractComparator, flattenTopLevelNodes} from '../filters/filter-ast';
-import {dispatchSimpleNodes, parseFilterToAst, serializePredicates} from '../filters/filter-query-core';
+import {dispatchSimpleNodes, parseFilterToAst, serializePredicates, stampPredicates} from '../filters/filter-query-core';
 import {memberFields} from './member-fields';
 import type {FilterPredicate, ParsedPredicate} from '../filters/filter-types';
-
-type AstNode = Record<string, unknown>;
 
 interface CompoundMatchResult {
     predicates: ParsedPredicate[];
     remainingNodes: AstNode[];
-}
-
-function stampPredicates(predicates: ParsedPredicate[]): FilterPredicate[] {
-    return predicates.map((predicate, index) => ({
-        ...predicate,
-        id: `${predicate.field}:${index + 1}`
-    }));
 }
 
 function getCompoundChildren(node: AstNode): {operator: '$and' | '$or'; children: AstNode[]} | null {
@@ -288,10 +280,15 @@ function matchFeedbackCompound(nodes: AstNode[]): CompoundMatchResult {
             continue;
         }
 
-        const score = extractComparator(remainingNodes[scoreIndex])?.value as number;
+        const scoreComparator = extractComparator(remainingNodes[scoreIndex]);
+
+        if (!scoreComparator || (scoreComparator.value !== 0 && scoreComparator.value !== 1)) {
+            continue;
+        }
+
         claimLeafPair(remainingNodes, [index, scoreIndex], predicates, {
             field: 'newsletter_feedback',
-            operator: String(score),
+            operator: String(scoreComparator.value),
             values: [comparator.value]
         });
 
