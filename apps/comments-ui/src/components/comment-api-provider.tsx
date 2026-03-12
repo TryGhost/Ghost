@@ -1,7 +1,7 @@
 import AuthFrame from '../auth-frame';
 import React, {createContext, useContext, useEffect, useMemo, useState} from 'react';
 import {AddComment, Comment, LabsContextType, Member} from '../app-context';
-import {AdminApi, setupAdminAPI} from '../utils/admin-api';
+import {setupAdminAPI} from '../utils/admin-api';
 import {GhostApi} from '../utils/api';
 
 async function checkHasAdminSession(adminUrl: string): Promise<boolean> {
@@ -16,7 +16,7 @@ async function checkHasAdminSession(adminUrl: string): Promise<boolean> {
     }
 }
 
-type BaseCommentApi = {
+export type CommentApi = {
     browse(params: {page: number; postId: string; order?: string}): Promise<{comments: Comment[]; meta: {pagination: any}}>;
     replies(params: {commentId: string; afterReplyId?: string; limit?: number}): Promise<{comments: Comment[]; meta: {pagination: any}}>;
     read(commentId: string): Promise<{comments: Comment[]}>;
@@ -31,39 +31,15 @@ type BaseCommentApi = {
     updateMember(data: {name?: string; expertise?: string}): Promise<Member | null>;
 };
 
-export type MemberCommentApi = BaseCommentApi & {isAdmin: false};
-
-export type AdminCommentApi = BaseCommentApi & {
-    isAdmin: true;
+export type AdminActions = {
     hideComment(id: string): Promise<any>;
     showComment(params: {id: string}): Promise<any>;
 };
 
-export type CommentApi = MemberCommentApi | AdminCommentApi;
-
 const ALLOWED_MODERATORS = ['Owner', 'Administrator', 'Super Editor'];
 
-function createCommentApi(api: GhostApi, adminApi: AdminApi | null, memberUuid?: string): CommentApi {
-    if (adminApi) {
-        return {
-            isAdmin: true,
-            browse: p => adminApi.browse({...p, memberUuid}),
-            replies: p => adminApi.replies({...p, memberUuid}),
-            read: id => adminApi.read({commentId: id, memberUuid}),
-            count: p => api.comments.count(p),
-            add: p => api.comments.add(p),
-            edit: p => api.comments.edit(p),
-            like: p => api.comments.like(p),
-            unlike: p => api.comments.unlike(p),
-            report: p => api.comments.report(p),
-            updateMember: data => api.member.update(data),
-            hideComment: id => adminApi.hideComment(id),
-            showComment: p => adminApi.showComment(p)
-        };
-    }
-
+function createCommentApi(api: GhostApi): CommentApi {
     return {
-        isAdmin: false,
         browse: p => api.comments.browse(p),
         replies: p => api.comments.replies(p),
         read: id => api.comments.read(id),
@@ -92,6 +68,8 @@ export type MemberOverlay = {
 
 type CommentApiContextType = {
     commentApi: CommentApi;
+    isAdmin: boolean;
+    adminActions: AdminActions | null;
     member: Member | null;
     labs: LabsContextType;
     supportEmail: string | null;
@@ -121,7 +99,7 @@ export function CommentApiProvider({children, api, adminUrl, postId}: CommentApi
     const [labs, setLabs] = useState<LabsContextType>({});
     const [supportEmail, setSupportEmail] = useState<string | null>(null);
     const [settingsLoaded, setSettingsLoaded] = useState(false);
-    const [adminApi, setAdminApi] = useState<AdminApi | null | undefined>(adminUrl ? undefined : null);
+    const [adminActions, setAdminActions] = useState<AdminActions | null>(null);
     const [hasAdminSession, setHasSession] = useState<boolean | undefined>(adminUrl ? undefined : false);
     const [memberOverlay, setMemberOverlay] = useState<MemberOverlay | null>(null);
     const [memberOverlayLoaded, setMemberOverlayLoaded] = useState(false);
@@ -160,9 +138,6 @@ export function CommentApiProvider({children, api, adminUrl, postId}: CommentApi
         }
         checkHasAdminSession(adminUrl).then((result) => {
             setHasSession(result);
-            if (!result) {
-                setAdminApi(null);
-            }
         });
     }, [adminUrl]);
 
@@ -172,18 +147,21 @@ export function CommentApiProvider({children, api, adminUrl, postId}: CommentApi
             const newAdminApi = setupAdminAPI({adminUrl: adminUrl!});
             const admin = await newAdminApi.getUser();
             const isAllowed = admin?.roles?.some((role: {name: string}) => ALLOWED_MODERATORS.includes(role.name));
-            setAdminApi(isAllowed ? newAdminApi : null);
+            if (isAllowed) {
+                setAdminActions({
+                    hideComment: id => newAdminApi.hideComment(id),
+                    showComment: p => newAdminApi.showComment(p)
+                });
+            }
         } catch (e) {
             // eslint-disable-next-line no-console
             console.warn(`[Comments] Admin auth failed:`, e);
-            setAdminApi(null);
         }
     };
 
     const onAdminAuthError = () => {
         // eslint-disable-next-line no-console
         console.warn(`[Comments] Admin auth frame failed to load`);
-        setAdminApi(null);
     };
 
     // Build member from overlay data for the context
@@ -201,15 +179,18 @@ export function CommentApiProvider({children, api, adminUrl, postId}: CommentApi
         };
     }, [memberOverlay]);
 
-    // CommentApi: starts as public, upgrades to admin when admin auth resolves
+    // CommentApi: always uses public API for reads
     const commentApi = useMemo(() => {
-        const resolvedAdminApi = adminApi !== undefined ? adminApi : null;
-        return createCommentApi(api, resolvedAdminApi, member?.uuid);
-    }, [api, adminApi, member?.uuid]);
+        return createCommentApi(api);
+    }, [api]);
+
+    const isAdmin = !!adminActions;
 
     const contextValue = useMemo(() => {
         return {
             commentApi,
+            isAdmin,
+            adminActions,
             member,
             labs,
             supportEmail,
@@ -217,7 +198,7 @@ export function CommentApiProvider({children, api, adminUrl, postId}: CommentApi
             memberOverlayLoaded,
             settingsLoaded
         };
-    }, [commentApi, member, labs, supportEmail, memberOverlay, memberOverlayLoaded, settingsLoaded]);
+    }, [commentApi, isAdmin, adminActions, member, labs, supportEmail, memberOverlay, memberOverlayLoaded, settingsLoaded]);
 
     return (
         <>

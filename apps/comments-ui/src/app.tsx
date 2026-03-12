@@ -51,7 +51,7 @@ const AppContent: React.FC<{
     initialCommentId: string | null;
     pageUrl: string;
 }> = ({options, initialCommentId, pageUrl}) => {
-    const {commentApi, member, labs, supportEmail, memberOverlay, memberOverlayLoaded} = useCommentApi();
+    const {commentApi, isAdmin, adminActions, member, labs, supportEmail, memberOverlay, memberOverlayLoaded} = useCommentApi();
     const [state, setFullState] = useState<EditableAppContext>({
         initStatus: 'running',
         member: null,
@@ -69,7 +69,6 @@ const AppContent: React.FC<{
         pageUrl,
         supportEmail: null,
         isMember: false,
-        isAdmin: false,
         isPaidOnly: false,
         hasRequiredTier: true,
         isCommentingDisabled: false
@@ -109,7 +108,7 @@ const AppContent: React.FC<{
         // allow for async actions within it's updater function so this is the best option.
         return new Promise((resolve) => {
             setState((state) => {
-                ActionHandler({action, data, state, commentApi, options, dispatchAction: dispatchAction as DispatchActionType}).then((updatedState) => {
+                ActionHandler({action, data, state, commentApi, adminActions, options, dispatchAction: dispatchAction as DispatchActionType}).then((updatedState) => {
                     const newState = {...updatedState};
                     resolve(newState);
                     setState(newState);
@@ -119,7 +118,7 @@ const AppContent: React.FC<{
                 return {};
             });
         });
-    }, [commentApi, options]); // Do not add state or context as a dependency here -> infinite render loop
+    }, [commentApi, adminActions, options]); // Do not add state or context as a dependency here -> infinite render loop
 
     const i18n = useMemo(() => {
         return i18nLib(options.locale, 'comments');
@@ -130,6 +129,7 @@ const AppContent: React.FC<{
         ...state,
         // Override state values with latest from provider (state may have stale values
         // if initSetup ran before settings loaded)
+        isAdmin,
         supportEmail,
         labs,
         t: i18n.t,
@@ -270,7 +270,6 @@ const AppContent: React.FC<{
                 showMissingCommentNotice: !!initialCommentId && !scrollTargetFound,
                 supportEmail,
                 isMember,
-                isAdmin: commentApi.isAdmin,
                 isPaidOnly,
                 hasRequiredTier,
                 isCommentingDisabled: currentMember?.can_comment === false
@@ -307,38 +306,6 @@ const AppContent: React.FC<{
             };
         });
     }, [memberOverlayLoaded, state.initStatus]);
-
-    // Re-fetch comments when commentApi upgrades to admin (admin browse returns hidden comments).
-    // Wait for member overlay to resolve first so the admin browse includes the member UUID.
-    // Uses a ref to read the latest commentApi at fetch time, and a flag to ensure single execution.
-    const commentApiRef = useRef(commentApi);
-    commentApiRef.current = commentApi;
-    const adminFetchDone = useRef(false);
-    useEffect(() => {
-        if (adminFetchDone.current || !commentApi.isAdmin || state.initStatus !== 'success' || !memberOverlayLoaded) {
-            return;
-        }
-        adminFetchDone.current = true;
-        // Read latest commentApi (may have updated UUID since effect was scheduled)
-        const api = commentApiRef.current;
-        const dataPromise = api.browse({page: 1, postId: options.postId, order: state.order});
-        const countPromise = api.count({postId: options.postId});
-        Promise.all([dataPromise, countPromise]).then(([data, count]) => {
-            setState((prev) => {
-                // If we've paginated beyond page 1 (e.g. for a permalink target),
-                // don't overwrite — the admin page 1 would discard paginated results
-                if (prev.pagination && prev.pagination.page > 1) {
-                    return {isAdmin: true};
-                }
-                return {
-                    comments: data.comments,
-                    pagination: data.meta.pagination,
-                    commentCount: count,
-                    isAdmin: true
-                };
-            });
-        }).catch(console.error); // eslint-disable-line no-console
-    }, [commentApi.isAdmin, state.initStatus, memberOverlayLoaded]);
 
     /** Delay initialization until comments block is in viewport (unless permalink present) */
     useEffect(() => {

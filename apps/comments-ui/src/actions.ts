@@ -1,5 +1,5 @@
 import {AddComment, Comment, CommentsOptions, DispatchActionType, EditableAppContext, OpenCommentForm} from './app-context';
-import {CommentApi} from './components/comment-api-provider';
+import {AdminActions, CommentApi} from './components/comment-api-provider';
 import {Page} from './pages';
 
 async function loadMoreComments({state, commentApi, options, order}: {state: EditableAppContext, commentApi: CommentApi, options: CommentsOptions, order?: string}): Promise<Partial<EditableAppContext>> {
@@ -127,9 +127,9 @@ async function addReply({state, commentApi, data: {reply, parent}}: {state: Edit
     };
 }
 
-async function hideComment({state, commentApi, data: comment}: {state: EditableAppContext, commentApi: CommentApi, data: {id: string}}) {
-    if (commentApi.isAdmin) {
-        await commentApi.hideComment(comment.id);
+async function hideComment({state, adminActions, data: comment}: {state: EditableAppContext, adminActions: AdminActions | null, data: {id: string}}) {
+    if (adminActions) {
+        await adminActions.hideComment(comment.id);
     }
     return {
         comments: state.comments.map((c) => {
@@ -161,12 +161,11 @@ async function hideComment({state, commentApi, data: comment}: {state: EditableA
     };
 }
 
-async function showComment({state, commentApi, data: comment}: {state: EditableAppContext, commentApi: CommentApi, data: {id: string}}) {
-    if (commentApi.isAdmin) {
-        await commentApi.showComment({id: comment.id});
+async function showComment({state, adminActions, commentApi, data: comment}: {state: EditableAppContext, adminActions: AdminActions | null, commentApi: CommentApi, data: {id: string}}) {
+    if (adminActions) {
+        await adminActions.showComment({id: comment.id});
     }
-    // We need to refetch the comment, to make sure we have an up to date HTML content
-    // + all relations are loaded as the current member (not the admin)
+    // Re-read the comment via public API to get updated status
     const data = await commentApi.read(comment.id);
 
     const updatedComment = data.comments[0];
@@ -505,10 +504,10 @@ export function isSyncAction(action: string): action is SyncActionType {
 }
 
 /** Handle actions in the App, returns updated state */
-export async function ActionHandler({action, data, state, commentApi, options, dispatchAction}: {action: ActionType, data: any, state: EditableAppContext, options: CommentsOptions, commentApi: CommentApi, dispatchAction: DispatchActionType}): Promise<Partial<EditableAppContext>> {
+export async function ActionHandler({action, data, state, commentApi, adminActions, options, dispatchAction}: {action: ActionType, data: any, state: EditableAppContext, options: CommentsOptions, commentApi: CommentApi, adminActions: AdminActions | null, dispatchAction: DispatchActionType}): Promise<Partial<EditableAppContext>> {
     const handler = Actions[action];
     if (handler) {
-        return await handler({data, state, commentApi, options, dispatchAction} as any) || {};
+        return await handler({data, state, commentApi, adminActions, options, dispatchAction} as any) || {};
     }
     return {};
 }
