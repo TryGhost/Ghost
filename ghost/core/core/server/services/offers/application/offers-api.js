@@ -195,7 +195,7 @@ class OffersAPI {
             const allOffers = await this.repository.getAll({
                 transacting: transaction,
                 filter: 'status:active'
-            });
+            }, {withRedemptionStats: false});
 
             debug(`listOffersAvailableToSubscription: found ${allOffers.length} active offers`);
 

@@ -210,9 +210,10 @@ describe('OffersAPI', function () {
                 redemptionType: 'retention'
             });
 
-            // Verify getAll was called with status:active filter
+            // Verify getAll was called with status:active filter and without redemption stats
             sinon.assert.calledOnce(repository.getAll);
             assert.equal(repository.getAll.firstCall.args[0].filter, 'status:active');
+            assert.deepEqual(repository.getAll.firstCall.args[1], {withRedemptionStats: false});
 
             // Only active offer returned
             assert.equal(result.length, 1);
