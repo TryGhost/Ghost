@@ -167,8 +167,3 @@ remove|ember-template-lint|require-valid-alt-text|4|12|4|12|8369d1b06deac93e8c8e
 remove|ember-template-lint|no-action|1|71|1|71|2e6351f546807d88cc8eb9dbe8baa149468b5cb9|1746489600000|||app/components/gh-view-title.hbs
 remove|ember-template-lint|no-invalid-role|1|0|1|0|3e651d38e0110e1be20e5082075db1b879b59a36|1746489600000|||app/components/gh-view-title.hbs
 add|ember-template-lint|no-yield-only|1|0|1|0|a5fa6e8c1e0f03fb31b5cd17770e4368d44932e4|1771200000000|||app/components/gh-view-title.hbs
-remove|ember-template-lint|no-redundant-role|6|20|6|20|bc4fbabe3d468440d8a2c70e92cec991caca41e2|1746489600000|||app/components/gh-post-bookmark.hbs
-remove|ember-template-lint|no-redundant-role|14|64|14|64|ce988c0098c6e4845fc3307eb523b8b1687a3ecf|1746489600000|||app/components/gh-post-bookmark.hbs
-remove|ember-template-lint|no-redundant-role|85|24|85|24|ce988c0098c6e4845fc3307eb523b8b1687a3ecf|1746489600000|||app/components/modal-post-success.hbs
-remove|ember-template-lint|no-redundant-role|136|24|136|24|ce988c0098c6e4845fc3307eb523b8b1687a3ecf|1746489600000|||app/components/modal-post-success.hbs
-remove|ember-template-lint|no-redundant-role|11|20|11|20|bc4fbabe3d468440d8a2c70e92cec991caca41e2|1746489600000|||app/components/dashboard/onboarding/share-modal.hbs
