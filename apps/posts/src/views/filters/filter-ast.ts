@@ -1,4 +1,4 @@
-type AstNode = Record<string, unknown>;
+export type AstNode = Record<string, unknown>;
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null && !Array.isArray(value) && !(value instanceof RegExp);

@@ -8,7 +8,7 @@ const commentDateCodec: FilterCodec = {
     parse(node, ctx) {
         const comparator = extractComparator(node as Record<string, unknown>);
 
-        if (!comparator || comparator.field !== 'created_at') {
+        if (!comparator || comparator.field !== ctx.key) {
             return null;
         }
 
@@ -42,19 +42,19 @@ const commentDateCodec: FilterCodec = {
         }
 
         if (predicate.operator === 'before') {
-            return [`created_at:<'${value}'`];
+            return [`${ctx.key}:<'${value}'`];
         }
 
         if (predicate.operator === 'after') {
-            return [`created_at:>'${value}'`];
+            return [`${ctx.key}:>'${value}'`];
         }
 
         if (predicate.operator === 'is') {
             const {start, end} = getDayBoundsInUtc(value, ctx.timezone);
 
             return [
-                `created_at:>='${start}'`,
-                `created_at:<='${end}'`
+                `${ctx.key}:>='${start}'`,
+                `${ctx.key}:<='${end}'`
             ];
         }
 
@@ -142,6 +142,7 @@ export const commentFields = defineFields({
     },
     body: {
         operators: ['contains', 'does-not-contain'],
+        parseKeys: ['html'],
         ui: {
             label: 'Text',
             type: 'text',
@@ -154,6 +155,7 @@ export const commentFields = defineFields({
     },
     post: {
         operators: ['is', 'is-not'],
+        parseKeys: ['post_id'],
         ui: {
             label: 'Post',
             type: 'select',
@@ -165,6 +167,7 @@ export const commentFields = defineFields({
     },
     author: {
         operators: ['is', 'is-not'],
+        parseKeys: ['member_id'],
         ui: {
             label: 'Author',
             type: 'select',
@@ -176,6 +179,7 @@ export const commentFields = defineFields({
     },
     reported: {
         operators: ['is'],
+        parseKeys: ['count.reports'],
         ui: {
             label: 'Reported',
             type: 'select',

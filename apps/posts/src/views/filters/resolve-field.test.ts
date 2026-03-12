@@ -24,6 +24,18 @@ const fields = defineFields({
             parse: () => null,
             serialize: () => null
         }
+    },
+    author: {
+        operators: ['is'],
+        parseKeys: ['member_id'],
+        ui: {
+            label: 'Author',
+            type: 'select'
+        },
+        codec: {
+            parse: () => null,
+            serialize: () => null
+        }
     }
 });
 
@@ -63,6 +75,20 @@ describe('resolveField', () => {
 
         expect(resolved?.context.pattern).toBe('newsletters.:slug');
         expect(resolved?.context.key).toBe('newsletters.weekly');
+    });
+
+    it('resolves parse aliases back to their field definitions', () => {
+        const resolved = resolveField(fields, 'member_id', 'UTC');
+
+        expect(resolved).toEqual({
+            definition: fields.author,
+            context: {
+                key: 'author',
+                pattern: 'author',
+                params: {},
+                timezone: 'UTC'
+            }
+        });
     });
 
     it('returns undefined for unknown fields', () => {

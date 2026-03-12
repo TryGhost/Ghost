@@ -32,6 +32,7 @@ const fields = defineFields({
     },
     author: {
         operators: ['is', 'is-not'],
+        parseKeys: ['member_id'],
         ui: {
             label: 'Author',
             type: 'select'
@@ -73,7 +74,7 @@ describe('filter-query-core', () => {
         ]);
     });
 
-    it('falls back to mapped codecs when the AST field name does not match the field key', () => {
+    it('dispatches through declared parse aliases when the AST field name differs', () => {
         const ast = parseFilterToAst('member_id:abc123');
         const predicates = dispatchSimpleNodes(flattenTopLevelNodes(ast as Record<string, unknown>), fields, 'UTC');
 
