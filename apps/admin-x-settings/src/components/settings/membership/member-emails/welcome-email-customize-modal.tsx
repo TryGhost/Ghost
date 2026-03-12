@@ -1,9 +1,9 @@
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import {useCallback, useState} from 'react';
 import DesignSettingsForm from '../../email-design/design-settings-form';
 import EmailDesignModal from '../../email-design/email-design-modal';
 import EmailPreview from '../../email-design/email-preview';
+import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import {DEFAULT_EMAIL_DESIGN, type EmailDesignSettings} from '../../email-design/types';
+import {useCallback, useState} from 'react';
 import {useGlobalData} from '../../../providers/global-data-provider';
 
 const WelcomeEmailCustomizeModal = NiceModal.create(() => {

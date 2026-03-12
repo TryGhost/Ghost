@@ -8,7 +8,7 @@
         {{#let (get-setting "coverImage") as |imageUrl|}}
             {{#if imageUrl}}
                 <div class="gh-share-card-image">
-                    <img src={{imageUrl}} alt="" role="presentation" />
+                    <img src={{imageUrl}} alt="" />
                 </div>
             {{else}}
                 <div class="gh-share-card-image gh-cover-placeholder">{{svg-jar "picture"}}</div>
