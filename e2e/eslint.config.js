@@ -97,7 +97,7 @@ export default tseslint.config([
         }
     },
 
-    // Keep raw page selectors out of tests so page objects remain the primary interface.
+    // Keep test files on page objects and the supported isolation APIs.
     {
         files: ['tests/**/*.ts'],
         rules: {
@@ -105,6 +105,14 @@ export default tseslint.config([
                 {
                     selector: "CallExpression[callee.object.name='page'][callee.property.name='locator']",
                     message: 'Use page objects or higher-level page methods instead of page.locator() in test files.'
+                },
+                {
+                    selector: 'MemberExpression[object.property.name="describe"][property.name="parallel"]',
+                    message: 'test.describe.parallel() is deprecated. Use usePerTestIsolation() from @/helpers/playwright/isolation instead.'
+                },
+                {
+                    selector: 'MemberExpression[object.property.name="describe"][property.name="serial"]',
+                    message: 'test.describe.serial() is deprecated. Use test.describe.configure({mode: "serial"}) if needed.'
                 }
             ]
         }
