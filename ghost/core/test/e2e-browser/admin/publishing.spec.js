@@ -274,8 +274,9 @@ test.describe('Publishing', () => {
             await sharedPage.goto('/ghost');
             await createPage(sharedPage, pageData);
 
-            // Schedule the post to publish asap (by setting it to 00:00, it will get auto corrected to the minimum time possible - 5 seconds in the future)
-            await publishPost(sharedPage, {time: '00:00', type: null});
+            // Setting today's date + 00:00 time gives us a date in the past, which Ghost clamps to 5 seconds from now.
+            // We must pass today's date explicitly because near midnight the default schedule date rolls to tomorrow, and 00:00 tomorrow would be in the future.
+            await publishPost(sharedPage, {date: DateTime.now().toFormat('yyyy-MM-dd'), time: '00:00', type: null});
             await closePublishFlow(sharedPage);
             await checkPostStatus(sharedPage, 'Scheduled', 'Scheduled to be published in a few seconds');
 
@@ -375,8 +376,9 @@ test.describe('Publishing', () => {
 
             const editorUrl = await sharedPage.url();
 
-            // Schedule the post to publish asap (by setting it to 00:00, it will get auto corrected to the minimum time possible - 5 seconds in the future)
-            await publishPost(sharedPage, {time: '00:00', type: 'publish+send'});
+            // Setting today's date + 00:00 time gives us a date in the past, which Ghost clamps to 5 seconds from now.
+            // We must pass today's date explicitly because near midnight the default schedule date rolls to tomorrow, and 00:00 tomorrow would be in the future.
+            await publishPost(sharedPage, {date: DateTime.now().toFormat('yyyy-MM-dd'), time: '00:00', type: 'publish+send'});
             await closePublishFlow(sharedPage);
             await checkPostStatus(sharedPage, 'Scheduled', 'Scheduled to be published and sent'); // Member count can differ, hence not included here
             await checkPostStatus(sharedPage, 'Scheduled', 'in a few seconds'); // Extra test for suffix on hover
@@ -406,8 +408,9 @@ test.describe('Publishing', () => {
             await createPostDraft(sharedPage, postData);
 
             const editorUrl = await sharedPage.url();
-            // Schedule the post to publish asap (by setting it to 00:00, it will get auto corrected to the minimum time possible - 5 seconds in the future)
-            await publishPost(sharedPage, {time: '00:00'});
+            // Setting today's date + 00:00 time gives us a date in the past, which Ghost clamps to 5 seconds from now.
+            // We must pass today's date explicitly because near midnight the default schedule date rolls to tomorrow, and 00:00 tomorrow would be in the future.
+            await publishPost(sharedPage, {date: DateTime.now().toFormat('yyyy-MM-dd'), time: '00:00'});
             await closePublishFlow(sharedPage);
             await checkPostStatus(sharedPage, 'Scheduled', 'Scheduled to be published in a few seconds');
 
@@ -438,8 +441,9 @@ test.describe('Publishing', () => {
             await createPostDraft(sharedPage, postData);
             const editorUrl = await sharedPage.url();
 
-            // Schedule the post to publish asap (by setting it to 00:00, it will get auto corrected to the minimum time possible - 5 seconds in the future)
-            await publishPost(sharedPage, {type: 'send', time: '00:00'});
+            // Setting today's date + 00:00 time gives us a date in the past, which Ghost clamps to 5 seconds from now.
+            // We must pass today's date explicitly because near midnight the default schedule date rolls to tomorrow, and 00:00 tomorrow would be in the future.
+            await publishPost(sharedPage, {date: DateTime.now().toFormat('yyyy-MM-dd'), type: 'send', time: '00:00'});
             await closePublishFlow(sharedPage);
             await checkPostStatus(sharedPage, 'Scheduled', 'Scheduled to be sent in a few seconds');
 
