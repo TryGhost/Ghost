@@ -29,7 +29,16 @@ const CARD_DEFAULTS: Record<string, CardNode> = {
         type: 'transistor',
         version: 1,
         accentColor: '#15171A',
-        backgroundColor: '#FFFFFF'
+        backgroundColor: '#FFFFFF',
+        visibility: {
+            web: {
+                nonMember: false,
+                memberSegment: 'status:free,status:-free'
+            },
+            email: {
+                memberSegment: 'status:free,status:-free'
+            }
+        }
     }
 };
 

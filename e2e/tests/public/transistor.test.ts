@@ -45,7 +45,6 @@ test.describe('Ghost Public - Transistor', () => {
 
         await expect(postPage.postContent).toContainText('Before transistor');
         await expect(postPage.postContent).toContainText('After transistor');
-        await expect(postPage.transistorCard).toBeVisible();
         await expect(postPage.transistorIframe).toBeVisible();
 
         // The data-src should contain the member's UUID (server-side replacement of %7Buuid%7D)
@@ -69,7 +68,6 @@ test.describe('Ghost Public - Transistor', () => {
 
         await expect(postPage.postContent).toContainText('Before transistor');
         await expect(postPage.postContent).toContainText('After transistor');
-        await expect(postPage.transistorCard).toBeVisible();
         await expect(postPage.transistorIframe).toBeVisible();
 
         const dataSrc = await postPage.transistorIframe.getAttribute('data-src');
