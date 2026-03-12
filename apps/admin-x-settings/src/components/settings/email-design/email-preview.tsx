@@ -112,23 +112,6 @@ const EmailPreview: React.FC<EmailPreviewProps> = ({settings, senderName, sender
                     </div>
                 )}
 
-                {/* Title */}
-                <div className="px-12 pb-2 pt-4">
-                    <h1
-                        style={{
-                            color: colors.postTitleColor,
-                            fontFamily: titleFont,
-                            fontWeight: titleFontWeight,
-                            fontSize: '26px',
-                            lineHeight: '1.3',
-                            margin: 0,
-                            textAlign: (settings.title_alignment || 'left') as 'left' | 'center'
-                        }}
-                    >
-                        Your welcome email title
-                    </h1>
-                </div>
-
                 {/* Divider */}
                 <div className="px-12 py-4">
                     <hr
