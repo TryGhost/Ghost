@@ -1,4 +1,4 @@
-const adminXPreset = require('@tryghost/shade/tailwind.cjs');
+const shadeConfig = require('@tryghost/shade/tailwind.config.cjs');
 
 /**
  * Important: Any changes made to this file need to be mirrored to the tailwind
@@ -6,11 +6,15 @@ const adminXPreset = require('@tryghost/shade/tailwind.cjs');
  */
 
 module.exports = {
-    presets: [adminXPreset('.shade-activitypub')],
+    ...shadeConfig,
+    important: '.shade-activitypub',
     content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}', '../../node_modules/@tryghost/shade/es/**/*.{js,ts,jsx,tsx}'],
     theme: {
+        ...shadeConfig.theme,
         extend: {
+            ...(shadeConfig.theme?.extend || {}),
             keyframes: {
+                ...(shadeConfig.theme?.extend?.keyframes || {}),
                 lineExpand: {
                     '0%': {
                         transform: 'scaleX(0)',
@@ -34,6 +38,7 @@ module.exports = {
                 }
             },
             animation: {
+                ...(shadeConfig.theme?.extend?.animation || {}),
                 'onboarding-handle-bg': 'fadeIn 0.2s ease-in 0.5s forwards',
                 'onboarding-handle-line': 'lineExpand 0.2s ease-in-out 0.7s forwards',
                 'onboarding-handle-label': 'fadeIn 0.2s ease-in 1.2s forwards',
@@ -43,6 +48,7 @@ module.exports = {
         }
     },
     plugins: [
+        ...(shadeConfig.plugins || []),
         require('tailwindcss/plugin')(function ({ addUtilities }) {
             addUtilities({
                 '.break-anywhere': {

@@ -23,9 +23,7 @@
     },
     "files": [
         "es",
-        "types",
-        "tailwind.cjs",
-        "tailwind.config.cjs"
+        "types"
     ],
     "devDependencies": {
         "@codemirror/lang-html": "6.4.11",

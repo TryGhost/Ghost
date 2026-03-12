@@ -1,4 +1,4 @@
-// Used for eslint and storybook. Styles should not be compiled directly with this, they should be compiled by calling the function in tailwind.cjs
+// Used for eslint and Storybook metadata checks only.
 module.exports = {
     content: ['./src/**/*.{js,ts,jsx,tsx}'],
     important: false,
