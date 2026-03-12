@@ -68,7 +68,7 @@
     "nwsapi": "2.2.12"
   },
   "lint-staged": {
-    "*.js": "eslint"
+    "*.{js,ts,tsx,jsx,cjs}": "eslint"
   },
   "devDependencies": {
     "@actions/core": "1.11.1",
