@@ -71,29 +71,7 @@ const memberDateCodec: FilterCodec = {
 };
 
 const subscribedCodec: FilterCodec = {
-    parse(node, ctx) {
-        const entry = Object.entries(node as Record<string, unknown>)[0];
-
-        if (!entry || entry[0] !== 'email_disabled') {
-            return null;
-        }
-
-        if (entry[1] === 1) {
-            return {
-                field: ctx.key,
-                operator: 'is',
-                values: ['email-disabled']
-            };
-        }
-
-        if (entry[1] === 0) {
-            return {
-                field: ctx.key,
-                operator: 'is-not',
-                values: ['email-disabled']
-            };
-        }
-
+    parse() {
         return null;
     },
     serialize(predicate) {
@@ -207,7 +185,6 @@ export const memberFields = defineFields({
     },
     subscribed: {
         operators: SCALAR_OPERATORS,
-        parseKeys: ['email_disabled'],
         ui: {
             label: 'Newsletter subscription',
             type: 'select',
