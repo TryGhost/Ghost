@@ -4,12 +4,13 @@ import {ActionType, Actions, SyncActionType, SyncActions} from './actions';
 import {Page} from './pages';
 
 export type Member = {
-    id: string,
+    id?: string,
     uuid: string,
     name: string,
-    avatar_image: string,
-    expertise: string,
-    can_comment?: boolean
+    avatar_image: string | null,
+    expertise: string | null,
+    can_comment?: boolean,
+    paid?: boolean
 }
 
 export type Comment = {

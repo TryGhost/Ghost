@@ -77,10 +77,17 @@ function createCommentApi(api: GhostApi, adminApi: AdminApi | null, memberUuid?:
     };
 }
 
-type MemberData = {
-    member: Member | null;
-    labs: LabsContextType;
-    supportEmail: string | null;
+export type MemberOverlay = {
+    member: {
+        uuid: string;
+        name: string;
+        expertise: string | null;
+        avatar_image: string | null;
+        can_comment: boolean;
+        paid: boolean;
+    };
+    liked_comments: string[];
+    authored_comments: string[];
 };
 
 type CommentApiContextType = {
@@ -88,6 +95,9 @@ type CommentApiContextType = {
     member: Member | null;
     labs: LabsContextType;
     supportEmail: string | null;
+    memberOverlay: MemberOverlay | null;
+    memberOverlayLoaded: boolean;
+    settingsLoaded: boolean;
 };
 
 const CommentApiContext = createContext<CommentApiContextType | null>(null);
@@ -104,26 +114,46 @@ type CommentApiProviderProps = {
     children: React.ReactNode;
     api: GhostApi;
     adminUrl: string | undefined;
+    postId: string;
 };
 
-export function CommentApiProvider({children, api, adminUrl}: CommentApiProviderProps) {
-    // undefined = pending, value = resolved
-    const [memberData, setMemberData] = useState<MemberData | undefined>(undefined);
+export function CommentApiProvider({children, api, adminUrl, postId}: CommentApiProviderProps) {
+    const [labs, setLabs] = useState<LabsContextType>({});
+    const [supportEmail, setSupportEmail] = useState<string | null>(null);
+    const [settingsLoaded, setSettingsLoaded] = useState(false);
     const [adminApi, setAdminApi] = useState<AdminApi | null | undefined>(adminUrl ? undefined : null);
     const [hasAdminSession, setHasSession] = useState<boolean | undefined>(adminUrl ? undefined : false);
+    const [memberOverlay, setMemberOverlay] = useState<MemberOverlay | null>(null);
+    const [memberOverlayLoaded, setMemberOverlayLoaded] = useState(false);
 
-    // Step 1: Initialize member data
+    // Step 1: Fetch site settings (labs, support email) — non-blocking
     useEffect(() => {
         api.init()
-            .then(setMemberData)
+            .then(({labs: initLabs, supportEmail: initSupportEmail}) => {
+                setLabs(initLabs);
+                setSupportEmail(initSupportEmail);
+                setSettingsLoaded(true);
+            })
             .catch((e) => {
                 // eslint-disable-next-line no-console
-                console.error(`[Comments] Failed to initialize member:`, e);
-                setMemberData({member: null, labs: {}, supportEmail: null});
+                console.error(`[Comments] Failed to initialize settings:`, e);
+                setSettingsLoaded(true);
             });
     }, [api]);
 
-    // Step 2: Preflight check for admin session
+    // Step 2: Fetch member overlay data (lightweight, parallel with everything else)
+    useEffect(() => {
+        api.comments.memberInfo({postId})
+            .then((data) => {
+                setMemberOverlay(data);
+                setMemberOverlayLoaded(true);
+            })
+            .catch(() => {
+                setMemberOverlayLoaded(true);
+            });
+    }, [api, postId]);
+
+    // Step 3: Preflight check for admin session
     useEffect(() => {
         if (!adminUrl) {
             return;
@@ -136,7 +166,7 @@ export function CommentApiProvider({children, api, adminUrl}: CommentApiProvider
         });
     }, [adminUrl]);
 
-    // Step 3: If session exists, verify admin role when iframe loads
+    // Step 4: If session exists, verify admin role when iframe loads
     const onAdminAuthLoad = async () => {
         try {
             const newAdminApi = setupAdminAPI({adminUrl: adminUrl!});
@@ -156,28 +186,45 @@ export function CommentApiProvider({children, api, adminUrl}: CommentApiProvider
         setAdminApi(null);
     };
 
-    const resolved = memberData !== undefined && adminApi !== undefined;
-
-    const contextValue = useMemo(() => {
-        if (!resolved) {
+    // Build member from overlay data for the context
+    const member: Member | null = useMemo(() => {
+        if (!memberOverlay) {
             return null;
         }
         return {
-            commentApi: createCommentApi(api, adminApi, memberData.member?.uuid),
-            member: memberData.member,
-            labs: memberData.labs,
-            supportEmail: memberData.supportEmail
+            uuid: memberOverlay.member.uuid,
+            name: memberOverlay.member.name,
+            expertise: memberOverlay.member.expertise,
+            avatar_image: memberOverlay.member.avatar_image,
+            can_comment: memberOverlay.member.can_comment,
+            paid: memberOverlay.member.paid
         };
-    }, [resolved, api, adminApi, memberData]);
+    }, [memberOverlay]);
+
+    // CommentApi: starts as public, upgrades to admin when admin auth resolves
+    const commentApi = useMemo(() => {
+        const resolvedAdminApi = adminApi !== undefined ? adminApi : null;
+        return createCommentApi(api, resolvedAdminApi, member?.uuid);
+    }, [api, adminApi, member?.uuid]);
+
+    const contextValue = useMemo(() => {
+        return {
+            commentApi,
+            member,
+            labs,
+            supportEmail,
+            memberOverlay,
+            memberOverlayLoaded,
+            settingsLoaded
+        };
+    }, [commentApi, member, labs, supportEmail, memberOverlay, memberOverlayLoaded, settingsLoaded]);
 
     return (
         <>
             {hasAdminSession && <AuthFrame adminUrl={adminUrl!} onError={onAdminAuthError} onLoad={onAdminAuthLoad} />}
-            {contextValue && (
-                <CommentApiContext.Provider value={contextValue}>
-                    {children}
-                </CommentApiContext.Provider>
-            )}
+            <CommentApiContext.Provider value={contextValue}>
+                {children}
+            </CommentApiContext.Provider>
         </>
     );
 }

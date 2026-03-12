@@ -114,8 +114,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json'
-                    },
-                    credentials: 'same-origin'
+                    }
                 });
 
                 const json = await response.json();
@@ -149,7 +148,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    credentials: 'same-origin'
+                    credentials: 'omit'
                 }).then(function (res) {
                     if (res.ok) {
                         return res.json();
@@ -201,13 +200,28 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    credentials: 'same-origin'
+                    credentials: 'omit'
                 });
                 if (res.ok) {
                     return res.json();
                 } else {
                     throw new Error('Failed to fetch replies');
                 }
+            },
+            async memberInfo({postId}: {postId: string}) {
+                const url = endpointFor({type: 'members', resource: `comments/post/${postId}/member`});
+                const res = await makeRequest({
+                    url,
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin'
+                });
+                if (!res.ok || res.status === 204) {
+                    return null;
+                }
+                return res.json();
             },
             add({comment}: {comment: AddComment}) {
                 const body = {
@@ -254,7 +268,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
                 return makeRequest({
                     url,
                     method: 'GET',
-                    credentials: 'same-origin'
+                    credentials: 'omit'
                 }).then(function (res) {
                     if (res.ok) {
                         return res.json();
@@ -316,14 +330,10 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
                 });
             }
         },
-        init: (() => {}) as () => Promise<{ member: any; labs: any; supportEmail: string | null}>
+        init: (() => {}) as () => Promise<{ labs: any; supportEmail: string | null}>
     };
 
     api.init = async () => {
-        const [member] = await Promise.all([
-            api.member.sessionData()
-        ]);
-
         let labs = {};
         let supportEmail: string | null = null;
 
@@ -337,7 +347,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
             labs = {};
         }
 
-        return {member, labs, supportEmail};
+        return {labs, supportEmail};
     };
 
     return api;

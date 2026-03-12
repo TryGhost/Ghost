@@ -40,6 +40,9 @@ module.exports = function apiRoutes() {
     );
     router.get('/counts', countsCache, http(api.commentsMembers.counts));
 
+    // Lightweight member info for comments overlay (handles its own auth)
+    router.get('/post/:post_id/member', membersService.middleware.getCommentsMemberInfo);
+
     // Authenticated Routes
     router.use(membersService.middleware.loadMemberSession);
 
