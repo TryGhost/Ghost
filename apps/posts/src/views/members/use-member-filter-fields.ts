@@ -2,6 +2,7 @@ import LabelFilterRenderer from '@src/components/label-picker/label-filter-rende
 import React, {useMemo} from 'react';
 import moment from 'moment-timezone';
 import {CustomRendererProps, FilterFieldConfig, FilterFieldGroup, FilterOption, LucideIcon} from '@tryghost/shade';
+import {createOperatorOptions} from '../filters/filter-operator-options';
 import {memberFields} from './member-fields';
 import type {Offer} from '@tryghost/admin-x-framework/api/offers';
 
@@ -30,27 +31,16 @@ interface UseMemberFilterFieldsOptions {
 
 type OfferOption = FilterOption<string>;
 
-function toOperatorOptions(operators: readonly string[]) {
-    return operators.map((operator) => ({
-        value: operator,
-        label: ({
-            'is': 'is',
-            'is-not': 'is not',
-            'is-any': 'is any of',
-            'is-not-any': 'is none of',
-            'contains': 'contains',
-            'does-not-contain': 'does not contain',
-            'starts-with': 'starts with',
-            'ends-with': 'ends with',
-            'is-less': 'before',
-            'is-or-less': 'on or before',
-            'is-greater': 'after',
-            'is-or-greater': 'on or after',
-            '1': 'More like this',
-            '0': 'Less like this'
-        }[operator] ?? operator.replaceAll('-', ' '))
-    }));
-}
+const MEMBER_OPERATOR_LABELS = {
+    'is-not-any': 'is none of',
+    'does-not-contain': 'does not contain',
+    'is-less': 'before',
+    'is-or-less': 'on or before',
+    'is-greater': 'after',
+    'is-or-greater': 'on or after',
+    '1': 'More like this',
+    '0': 'Less like this'
+};
 
 function getFieldIcon(key: string) {
     switch (key) {
@@ -115,7 +105,7 @@ function createFieldConfig(
         key,
         ...field.ui,
         icon: getFieldIcon(key),
-        operators: toOperatorOptions(field.operators),
+        operators: createOperatorOptions(field.operators, {labels: MEMBER_OPERATOR_LABELS}),
         ...('options' in field && field.options ? {options: field.options} : {}),
         ...overrides
     };
