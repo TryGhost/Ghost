@@ -85,7 +85,24 @@ test.describe('Ghost Admin - Member Welcome Emails', () => {
         expect(freeWelcomeEmail?.subject).toBe('Custom Welcome Subject');
     });
 
-    test('edited welcome email persists after page reload', async ({page}) => {
+    test('edited welcome email content persists after page reload', async ({page}) => {
+        const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);
+        const updatedContent = 'Persisted editor content';
+
+        await welcomeEmailsSection.goto();
+        await welcomeEmailsSection.enableFreeWelcomeEmail();
+        await welcomeEmailsSection.openFreeWelcomeEmailModal();
+        await welcomeEmailsSection.replaceWelcomeEmailContent(updatedContent);
+        await welcomeEmailsSection.saveWelcomeEmail();
+
+        await page.reload();
+        await welcomeEmailsSection.section.waitFor({state: 'visible'});
+
+        await welcomeEmailsSection.openFreeWelcomeEmailModal();
+        await expect(welcomeEmailsSection.modalLexicalEditor).toContainText(updatedContent);
+    });
+
+    test('edited welcome email subject persists after page reload', async ({page}) => {
         const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);
 
         // Enable and edit free welcome email

@@ -232,14 +232,14 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                 testId='welcome-email-modal'
                 width={672}
             >
-                <div className='-mx-8 flex h-[calc(100vh-16vmin)] flex-col overflow-y-auto dark:!bg-grey-975'>
+                <div className='dark:bg-grey-975! -mx-8 flex h-[calc(100vh-16vmin)] flex-col overflow-y-auto'>
                     <div className='sticky top-0 z-10 flex flex-col gap-2 border-b border-grey-100 bg-white p-5 dark:border-grey-900 dark:bg-grey-975'>
                         <div className='mb-2 flex items-center justify-between'>
                             <h3 className='text-lg font-semibold'>{modalTitle}</h3>
                             <div className='flex items-center gap-2'>
                                 <div ref={dropdownRef} className='relative'>
                                     <LegacyButton
-                                        className='border border-grey-200 font-semibold hover:border-grey-300 hover:!bg-white dark:border-grey-900 dark:hover:border-grey-800 dark:hover:!bg-grey-950'
+                                        className='hover:bg-white! dark:hover:bg-grey-950! border border-grey-200 font-semibold hover:border-grey-300 dark:border-grey-900 dark:hover:border-grey-800'
                                         color="clear"
                                         icon='send'
                                         label="Test"
@@ -292,6 +292,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                     <div className='flex grow flex-col bg-grey-50 p-8 dark:bg-grey-975'>
                         <div
                             className={`mx-auto flex w-full max-w-[600px] grow flex-col rounded border bg-white p-8 shadow-sm dark:bg-grey-950/25 dark:shadow-none ${errors.lexical ? 'border-red' : 'border-grey-200 dark:border-grey-925'}`}
+                            data-testid='welcome-email-editor'
                             onFocus={() => {
                                 hasEditorBeenFocused.current = true;
                             }}
@@ -355,7 +356,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                                 </div>
                                 <div ref={dropdownRef} className='relative'>
                                     <LegacyButton
-                                        className='border border-grey-200 font-semibold hover:border-grey-300 hover:!bg-white dark:border-grey-900 dark:hover:border-grey-800 dark:hover:!bg-grey-950'
+                                        className='hover:bg-white! dark:hover:bg-grey-950! border border-grey-200 font-semibold hover:border-grey-300 dark:border-grey-900 dark:hover:border-grey-800'
                                         color="clear"
                                         icon='send'
                                         label="Test"
@@ -393,6 +394,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                     <EmailPreviewBody className={errors.lexical ? 'border border-red-500' : ''}>
                         <div
                             className='mx-auto w-full max-w-[600px] pb-8 pt-10 transition-[max-width,padding] duration-300 ease-out motion-reduce:transition-none'
+                            data-testid='welcome-email-editor'
                             onFocus={() => {
                                 hasEditorBeenFocused.current = true;
                             }}

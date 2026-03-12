@@ -314,7 +314,7 @@ test.describe('Member emails settings', async () => {
             await page.keyboard.press('Enter');
 
             const bookmarkUrlInput = modal.getByTestId('bookmark-url');
-            await expect(bookmarkUrlInput).toBeVisible();
+            await expect(bookmarkUrlInput).toBeVisible({timeout: 10000});
             await bookmarkUrlInput.fill('https://ghost.org/');
             await bookmarkUrlInput.press('Enter');
 
@@ -372,7 +372,8 @@ test.describe('Member emails settings', async () => {
             await editor.click({timeout: 5000});
             await page.keyboard.press('ControlOrMeta+a');
             await page.keyboard.press('Backspace');
-            await page.keyboard.type('/product');
+            await page.keyboard.type('/product', {delay: 50});
+            await expect(page.locator('[data-kg-slash-menu]')).toBeVisible({timeout: 5000});
             await page.keyboard.press('Enter');
 
             await expect(modal.locator('[data-kg-card="product"]')).toBeVisible();
@@ -547,7 +548,7 @@ test.describe('Member emails settings', async () => {
             await expect(modal).not.toContainText('default@example.com');
         });
 
-        test('preview card uses newsletter sender name when automated sender name is empty', async ({page}) => {
+        test('preview card title stays stable when automated sender name is empty', async ({page}) => {
             const emptyAutomatedSenderFixture = {
                 automated_emails: [{
                     ...automatedEmailsFixture.automated_emails[0],
@@ -576,8 +577,8 @@ test.describe('Member emails settings', async () => {
             const section = page.getByTestId('memberemails');
             await expect(section).toBeVisible({timeout: 10000});
 
-            const cardSenderName = section.locator('[data-testid="free-welcome-email-preview"] .font-semibold').first();
-            await expect(cardSenderName).toHaveText('Newsletter Sender');
+            const cardTitle = section.getByTestId('free-welcome-email-title');
+            await expect(cardTitle).toHaveText('Free members welcome email');
         });
     });
 

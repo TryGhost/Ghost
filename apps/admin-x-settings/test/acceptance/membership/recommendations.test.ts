@@ -8,7 +8,7 @@ test.describe('Recommendations', async () => {
             browseRecommendations: {method: 'GET', path: '/recommendations/?include=count.clicks%2Ccount.subscribers&order=created_at+desc&limit=5', response: responseFixtures.recommendations}
         }});
 
-        await page.goto('/');
+        await page.goto('/#/settings/recommendations');
 
         const section = page.getByTestId('recommendations');
         const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
@@ -29,7 +29,7 @@ test.describe('Recommendations', async () => {
             addRecommendation: {method: 'POST', path: '/recommendations/', response: {}}
         }});
 
-        await page.goto('/');
+        await page.goto('/#/settings/recommendations');
 
         // Open add recommendation modal
         const section = page.getByTestId('recommendations');
@@ -82,7 +82,7 @@ test.describe('Recommendations', async () => {
             checkRecommendation: {method: 'POST', path: '/recommendations/check/', response: {recommendations: [{url: 'https://recommendation1.com', one_click_subscribe: true, id: 'exists'}], meta: {}}}
         }});
 
-        await page.goto('/');
+        await page.goto('/#/settings/recommendations');
         const section = page.getByTestId('recommendations');
 
         // Open add recommendation modal
@@ -105,7 +105,7 @@ test.describe('Recommendations', async () => {
             editRecommendation: {method: 'PUT', path: `/recommendations/${recommendationToEdit.id}/`, response: {}}
         }});
 
-        await page.goto('/');
+        await page.goto('/#/settings/recommendations');
         const section = page.getByTestId('recommendations');
         const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
         await section.getByRole('tab', {name: 'Your Recommendations'}).click();
@@ -147,7 +147,7 @@ test.describe('Recommendations', async () => {
             deleteRecommendation: {method: 'DELETE', path: `/recommendations/${recommendationToDelete.id}/`, response: {}}
         }});
 
-        await page.goto('/');
+        await page.goto('/#/settings/recommendations');
         const section = page.getByTestId('recommendations');
         const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
         await section.getByRole('tab', {name: 'Your Recommendations'}).click();
@@ -162,8 +162,8 @@ test.describe('Recommendations', async () => {
 
         // Confirm delete
         const confirmation = page.getByTestId('confirmation-modal');
-        expect(confirmation).toContainText('Delete recommendation');
-        expect(confirmation).toContainText('Your recommendation Recommendation 1 title will no longer be visible to your audience.');
+        await expect(confirmation).toContainText('Delete recommendation');
+        await expect(confirmation).toContainText('Your recommendation Recommendation 1 title will no longer be visible to your audience.');
 
         await confirmation.getByRole('button', {name: 'Delete'}).click();
 
@@ -176,7 +176,7 @@ test.describe('Recommendations', async () => {
             browseIncomingRecommendations: {method: 'GET', path: '/incoming_recommendations/?limit=5&order=created_at+desc', response: responseFixtures.incomingRecommendations}
         }});
 
-        await page.goto('/');
+        await page.goto('/#/settings/recommendations');
 
         const section = page.getByTestId('recommendations');
         const activeTab = section.locator('[role=tabpanel]:not(.hidden)');

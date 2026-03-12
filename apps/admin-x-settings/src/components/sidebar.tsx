@@ -86,6 +86,8 @@ const Sidebar: React.FC = () => {
     }, [checkVisible, setNoResult, filter]);
 
     useEffect(() => {
+        const searchInput = searchInputRef.current;
+
         const handleKeyDown = (event: KeyboardEvent) => {
             if (event.key === 'Escape' && filter) {
                 // Blur the field
@@ -97,11 +99,11 @@ const Sidebar: React.FC = () => {
         };
 
         // Add the event listener to the searchInputRef field
-        searchInputRef.current?.addEventListener('keydown', handleKeyDown);
+        searchInput?.addEventListener('keydown', handleKeyDown);
 
         // Clean up the event listener when the component unmounts
         return () => {
-            searchInputRef.current?.removeEventListener('keydown', handleKeyDown);
+            searchInput?.removeEventListener('keydown', handleKeyDown);
         };
     }, [filter]);
 
@@ -126,7 +128,7 @@ const Sidebar: React.FC = () => {
     };
 
     const navClasses = clsx(
-        'hidden pt-10 tablet:!visible tablet:!block'
+        'tablet:visible! tablet:block! hidden pt-10'
     );
 
     return (
@@ -137,7 +139,7 @@ const Sidebar: React.FC = () => {
                     <TextField
                         autoComplete="off"
                         autoCorrect="off"
-                        className='mr-12 flex h-10 w-full items-center rounded-lg border border-transparent bg-white px-[33px] py-1.5 text-[14px] shadow-[0_0_1px_rgba(21,23,26,0.25),0_1px_3px_rgba(0,0,0,0.03),0_8px_10px_-12px_rgba(0,0,0,.1)] transition-colors hover:shadow-sm focus:border-green focus:bg-white focus:shadow-[0_0_0_2px_rgba(48,207,67,0.25)] focus:outline-2 tablet:mr-0 dark:border-transparent dark:bg-grey-925 dark:text-white dark:placeholder:text-grey-800 dark:focus:border-green dark:focus:bg-grey-950'
+                        className='mr-12 flex h-10 w-full items-center rounded-lg border border-transparent bg-white px-[33px] py-1.5 text-[14px] shadow-[0_0_1px_rgba(21,23,26,0.25),0_1px_3px_rgba(0,0,0,0.03),0_8px_10px_-12px_rgba(0,0,0,.1)] transition-colors hover:shadow-sm focus:border-green focus:bg-white focus:shadow-[0_0_0_2px_rgba(48,207,67,0.25)] tablet:mr-0 dark:border-transparent dark:bg-grey-925 dark:text-white dark:placeholder:text-grey-800 dark:focus:border-green dark:focus:bg-grey-950'
                         containerClassName='w-100'
                         inputRef={searchInputRef}
                         placeholder="Search settings"
@@ -148,10 +150,10 @@ const Sidebar: React.FC = () => {
                         unstyled
                         onChange={updateSearch}
                     />
-                    {filter ? <Button className='absolute right-14 top-3 p-1 tablet:right-3' icon='close' iconColorClass='text-grey-700 !w-[10px] !h-[10px]' size='sm' unstyled onClick={() => {
+                    {filter ? <Button className='absolute right-14 top-3 p-1 tablet:right-3' icon='close' iconColorClass='text-grey-700 w-[10px]! h-[10px]!' size='sm' unstyled onClick={() => {
                         setFilter('');
                         searchInputRef.current?.focus();
-                    }} /> : <div className='absolute -right-1/2 top-[9px] hidden rounded border border-grey-400 bg-white px-1.5 py-0.5 text-2xs font-semibold uppercase tracking-wider text-grey-600 shadow-[0px_1px_#CED4D9] tablet:!visible tablet:right-3 tablet:!block dark:border-grey-800 dark:bg-grey-900 dark:text-grey-500 dark:shadow-[0px_1px_#626D79]'>/</div>}
+                    }} /> : <div className='tablet:visible! tablet:block! absolute -right-1/2 top-[9px] hidden rounded border border-grey-400 bg-white px-1.5 py-0.5 text-2xs font-semibold uppercase tracking-wider text-grey-600 shadow-[0px_1px_#CED4D9] tablet:right-3 dark:border-grey-800 dark:bg-grey-900 dark:text-grey-500 dark:shadow-[0px_1px_#626D79]'>/</div>}
                 </div>
             </div>
             <nav className={navClasses} id='admin-x-settings-sidebar'>
