@@ -17,7 +17,25 @@ function getCompoundChildren(node: AstNode): {operator: '$and' | '$or'; children
     return null;
 }
 
-function matchSubscribedGroupedNode(node: AstNode): ParsedPredicate | null {
+function matchSubscribedNode(node: AstNode): ParsedPredicate | null {
+    if (typeof node.email_disabled === 'number') {
+        if (node.email_disabled === 1) {
+            return {
+                field: 'subscribed',
+                operator: 'is',
+                values: ['email-disabled']
+            };
+        }
+
+        if (node.email_disabled === 0) {
+            return {
+                field: 'subscribed',
+                operator: 'is-not',
+                values: ['email-disabled']
+            };
+        }
+    }
+
     const compound = getCompoundChildren(node);
 
     if (!compound || compound.children.length !== 2) {
@@ -142,7 +160,7 @@ function matchFeedbackGroupedNode(node: AstNode): ParsedPredicate | null {
 }
 
 const MEMBER_COMPOUND_MATCHERS: CompoundMatcher[] = [
-    matchSubscribedGroupedNode,
+    matchSubscribedNode,
     matchNewsletterGroupedNode,
     matchFeedbackGroupedNode
 ];
