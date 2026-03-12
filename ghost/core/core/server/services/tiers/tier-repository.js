@@ -34,6 +34,7 @@ module.exports = class TierRepository {
         const models = await this.#ProductModel.findAll({
             withRelated: ['benefits']
         });
+        this.#ids.clear();
         this.#store = await Promise.all(models.map(async (model) => {
             const tier = await Tier.create(this.mapToTier(model));
             this.#ids.add(tier.id.toHexString());
