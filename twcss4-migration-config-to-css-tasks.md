@@ -41,7 +41,7 @@
 
 ## Phase 3: Decouple Admin Apps From Preset/Config Chain
 - [x] Remove effective dependency on `shadePreset(...)` for admin/posts/stats/activitypub runtime lane (removed preset usage in app-level configs for admin/posts/stats; runtime CSS generation remains centralized in `apps/admin/src/index.css` + Shade CSS-first tokens).
-- [ ] Update ESLint tailwind rules so they no longer require removed config files.
+- [ ] Update ESLint tailwind rules so they no longer require removed config files (currently blocked by `eslint-plugin-tailwindcss` v3 expecting `tailwindcss/resolveConfig` when v4 is hoisted).
 - [ ] Remove preset/config references from docs and package metadata for this lane.
 - [x] Run gate: `yarn workspace @tryghost/admin build` (still fails on existing baseline `@tryghost/admin-x-settings` TS errors, unrelated to this migration).
 - [x] Run gate: `yarn workspace @tryghost/posts build`.
@@ -51,19 +51,19 @@
 - [ ] Smoke gate: full Admin clickthrough; verify no missing classes.
 
 ## Phase 4: Migrate admin-x-design-system (Separate Lane)
-- [ ] Convert [apps/admin-x-design-system/styles.css](/Users/peterzimon/Code/Ghost/apps/admin-x-design-system/styles.css) from v3 directives to v4 CSS-first imports.
-- [ ] Replace DS PostCSS/Tailwind v3 pipeline with CSS-first-compatible setup.
-- [ ] Update settings lane to consume DS without config-token dependency.
-- [ ] Replace temporary Phase 2 `.rounded*` compatibility override in [apps/shade/styles.css](/Users/peterzimon/Code/Ghost/apps/shade/styles.css) with a proper CSS-first default radius token mapping (preserve legacy `rounded` = `0.4rem` behavior without manual utility overrides).
-- [ ] Run gate: `yarn workspace @tryghost/admin-x-design-system build`.
-- [ ] Run gate: `yarn workspace @tryghost/admin-x-design-system build-storybook`.
-- [ ] Run gate: `yarn workspace @tryghost/admin-x-settings build`.
-- [ ] Run gate: `yarn build`.
+- [x] Convert [apps/admin-x-design-system/styles.css](/Users/peterzimon/Code/Ghost/apps/admin-x-design-system/styles.css) from v3 directives to v4 CSS-first imports.
+- [x] Replace DS PostCSS/Tailwind v3 pipeline with CSS-first-compatible setup.
+- [x] Update settings lane to consume DS without config-token dependency.
+- [x] Replace temporary Phase 2 `.rounded*` compatibility override in [apps/shade/styles.css](/Users/peterzimon/Code/Ghost/apps/shade/styles.css) with a proper CSS-first default radius token mapping (legacy `rounded` now resolves through Tailwind token variables; removed manual `.rounded*` patch, and moved component-specific `9px` usage to `--input-group-radius`).
+- [x] Run gate: `yarn workspace @tryghost/admin-x-design-system build`.
+- [x] Run gate: `yarn workspace @tryghost/admin-x-design-system build-storybook` (passes; only existing Storybook eval/chunk-size warnings remain).
+- [x] Run gate: `yarn workspace @tryghost/admin-x-settings build` (still fails on existing baseline TS typing errors around `@tryghost/admin-x-framework/api/roles`, unrelated to migration changes).
+- [x] Run gate: `yarn build` (still fails because `@tryghost/admin-x-settings` build fails on the same baseline TS errors).
 - [ ] Smoke gate: settings-heavy clickthrough (forms, nav, modals, notifications).
 
 ## Phase 5: Hard Cleanup
 - [ ] Remove deprecated `tailwind.config.*` and `tailwind.cjs` files that are no longer referenced.
-- [ ] Remove temporary `.rounded*` compatibility override from [apps/shade/styles.css](/Users/peterzimon/Code/Ghost/apps/shade/styles.css) after Phase 4 default-radius token fix is validated.
+- [x] Remove temporary `.rounded*` compatibility override from [apps/shade/styles.css](/Users/peterzimon/Code/Ghost/apps/shade/styles.css) after Phase 4 default-radius token fix is validated.
 - [ ] Remove obsolete package `files` exports and outdated doc references.
 - [ ] Update architecture/token docs to CSS-first-only guidance.
 - [ ] Run gate: `yarn build`.

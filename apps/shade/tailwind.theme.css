@@ -191,10 +191,12 @@
     --container-prose: 65ch;
     --container-page: 148rem;
     --container-pageminsidebar: 116rem;
-    --radius-xs: max(calc(var(--radius) - 6px), 0px);
-    --radius-sm: calc(var(--radius) - 4px);
-    --radius-md: calc(var(--radius) - 2px);
-    --radius-lg: var(--radius);
+    /* Preserve legacy Tailwind v3 border radius scale for v4 rounded* utilities. */
+    --radius: 0.4rem;
+    --radius-xs: 0.3rem;
+    --radius-sm: 0.4rem;
+    --radius-md: 0.6rem;
+    --radius-lg: 0.8rem;
     --radius-xl: 1.2rem;
     --radius-2xl: 1.6rem;
     --radius-3xl: 2.4rem;
