@@ -71,6 +71,15 @@ export class SettingsService {
     }
 
     /**
+     * Set transistor integration enabled/disabled
+     */
+    async setTransistorEnabled(enabled: boolean) {
+        const data = {settings: [{key: 'transistor', value: enabled}]};
+        const response = await this.request.put(`${this.adminEndpoint}/settings`, {data});
+        return await response.json() as SettingsResponse;
+    }
+
+    /**
      * Set member source tracking enabled/disabled
      * @param enabled - true to enable member source tracking, false to disable
      */

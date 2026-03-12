@@ -33,7 +33,8 @@
         "@/public-pages": ["./helpers/pages/public/index"],
         "@/portal-pages": ["./helpers/pages/portal/index"],
         "@/helpers/*": ["./helpers/*"],
-        "@/data-factory": ["./data-factory/index.ts"]
+        "@/data-factory": ["./data-factory/index.ts"],
+        "@/data-factory/*": ["./data-factory/*"]
     },                                                   /* Specify a set of entries that re-map imports to additional lookup locations. */
     // "rootDirs": [],                                   /* Allow multiple folders to be treated as one when resolving modules. */
     // "typeRoots": [],                                  /* Specify multiple folders that act like './node_modules/@types'. */
