@@ -30,6 +30,7 @@ interface UseMemberFilterFieldsOptions {
 }
 
 type OfferOption = FilterOption<string>;
+type SearchableFieldOverrides = Pick<FilterFieldConfig, 'options' | 'onSearchChange' | 'searchValue' | 'isLoading'>;
 
 const MEMBER_OPERATOR_LABELS = {
     'is-not-any': 'is none of',
@@ -108,6 +109,24 @@ function createFieldConfig(
         operators: createOperatorOptions(field.operators, {labels: MEMBER_OPERATOR_LABELS}),
         ...('options' in field && field.options ? {options: field.options} : {}),
         ...overrides
+    };
+}
+
+function createDateFieldConfig(key: string, defaultValue: string) {
+    return createFieldConfig(key, {defaultValue});
+}
+
+function createSearchableFieldOverrides(
+    options: FilterOption[],
+    onSearchChange: ((search: string) => void) | undefined,
+    searchValue: string | undefined,
+    isLoading: boolean
+): SearchableFieldOverrides {
+    return {
+        options,
+        onSearchChange,
+        searchValue,
+        isLoading: options.length === 0 && isLoading
     };
 }
 
@@ -290,17 +309,17 @@ export function useMemberFilterFields({
         }
 
         basicFields.push(
-            createFieldConfig('last_seen_at', {defaultValue: today}),
-            createFieldConfig('created_at', {defaultValue: today})
+            createDateFieldConfig('last_seen_at', today),
+            createDateFieldConfig('created_at', today)
         );
 
         if (membersTrackSources) {
-            basicFields.push(createFieldConfig('signup', {
-                options: postResourceOptions,
-                onSearchChange: onPostResourceSearchChange,
-                searchValue: postResourceSearchValue,
-                isLoading: postResourceOptions.length === 0 && postResourceLoading
-            }));
+            basicFields.push(createFieldConfig('signup', createSearchableFieldOverrides(
+                postResourceOptions,
+                onPostResourceSearchChange,
+                postResourceSearchValue,
+                postResourceLoading
+            )));
         }
 
         groups.push({group: 'Basic', fields: basicFields});
@@ -339,17 +358,17 @@ export function useMemberFilterFields({
                 createFieldConfig('status'),
                 createFieldConfig('subscriptions.plan_interval'),
                 createFieldConfig('subscriptions.status'),
-                createFieldConfig('subscriptions.start_date', {defaultValue: today}),
-                createFieldConfig('subscriptions.current_period_end', {defaultValue: today})
+                createDateFieldConfig('subscriptions.start_date', today),
+                createDateFieldConfig('subscriptions.current_period_end', today)
             );
 
             if (membersTrackSources) {
-                subscriptionFields.push(createFieldConfig('conversion', {
-                    options: postResourceOptions,
-                    onSearchChange: onPostResourceSearchChange,
-                    searchValue: postResourceSearchValue,
-                    isLoading: postResourceOptions.length === 0 && postResourceLoading
-                }));
+                subscriptionFields.push(createFieldConfig('conversion', createSearchableFieldOverrides(
+                    postResourceOptions,
+                    onPostResourceSearchChange,
+                    postResourceSearchValue,
+                    postResourceLoading
+                )));
             }
 
             if (offers.length > 0) {
@@ -372,38 +391,38 @@ export function useMemberFilterFields({
                 emailFields.push(createFieldConfig('email_open_rate'));
             }
 
-            emailFields.push(createFieldConfig('emails.post_id', {
-                options: emailResourceOptions,
-                onSearchChange: onEmailResourceSearchChange,
-                searchValue: emailResourceSearchValue,
-                isLoading: emailResourceOptions.length === 0 && emailResourceLoading
-            }));
+            emailFields.push(createFieldConfig('emails.post_id', createSearchableFieldOverrides(
+                emailResourceOptions,
+                onEmailResourceSearchChange,
+                emailResourceSearchValue,
+                emailResourceLoading
+            )));
 
             if (emailTrackOpens) {
-                emailFields.push(createFieldConfig('opened_emails.post_id', {
-                    options: emailResourceOptions,
-                    onSearchChange: onEmailResourceSearchChange,
-                    searchValue: emailResourceSearchValue,
-                    isLoading: emailResourceOptions.length === 0 && emailResourceLoading
-                }));
+                emailFields.push(createFieldConfig('opened_emails.post_id', createSearchableFieldOverrides(
+                    emailResourceOptions,
+                    onEmailResourceSearchChange,
+                    emailResourceSearchValue,
+                    emailResourceLoading
+                )));
             }
 
             if (emailTrackClicks) {
-                emailFields.push(createFieldConfig('clicked_links.post_id', {
-                    options: emailResourceOptions,
-                    onSearchChange: onEmailResourceSearchChange,
-                    searchValue: emailResourceSearchValue,
-                    isLoading: emailResourceOptions.length === 0 && emailResourceLoading
-                }));
+                emailFields.push(createFieldConfig('clicked_links.post_id', createSearchableFieldOverrides(
+                    emailResourceOptions,
+                    onEmailResourceSearchChange,
+                    emailResourceSearchValue,
+                    emailResourceLoading
+                )));
             }
 
             if (audienceFeedbackEnabled) {
-                emailFields.push(createFieldConfig('newsletter_feedback', {
-                    options: emailResourceOptions,
-                    onSearchChange: onEmailResourceSearchChange,
-                    searchValue: emailResourceSearchValue,
-                    isLoading: emailResourceOptions.length === 0 && emailResourceLoading
-                }));
+                emailFields.push(createFieldConfig('newsletter_feedback', createSearchableFieldOverrides(
+                    emailResourceOptions,
+                    onEmailResourceSearchChange,
+                    emailResourceSearchValue,
+                    emailResourceLoading
+                )));
             }
 
             groups.push({group: 'Email', fields: emailFields});

@@ -90,6 +90,10 @@ describe('memberFields', () => {
         expect(memberFields['newsletters.:slug'].codec).not.toBe(memberFields.status.codec);
         expect(memberFields.newsletter_feedback.codec).not.toBe(memberFields.status.codec);
     });
+
+    it('keeps subscribed parsing out of shared parse aliases', () => {
+        expect('parseKeys' in memberFields.subscribed).toBe(false);
+    });
 });
 
 describe('memberDateCodec', () => {
