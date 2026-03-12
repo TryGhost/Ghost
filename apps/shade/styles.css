@@ -24,8 +24,74 @@
 @import "./preflight.css";
 @import "tailwindcss/utilities.css";
 @import "tw-animate-css";
+@import "./tailwind.theme.css";
 
-@config "./tailwind.config.cjs";
+/* Phase 2 compatibility: preserve pre-migration DEFAULT border radius (0.4rem). */
+.rounded {
+    border-radius: 0.4rem;
+}
+
+.rounded-s {
+    border-start-start-radius: 0.4rem;
+    border-end-start-radius: 0.4rem;
+}
+
+.rounded-e {
+    border-start-end-radius: 0.4rem;
+    border-end-end-radius: 0.4rem;
+}
+
+.rounded-t {
+    border-top-left-radius: 0.4rem;
+    border-top-right-radius: 0.4rem;
+}
+
+.rounded-r {
+    border-top-right-radius: 0.4rem;
+    border-bottom-right-radius: 0.4rem;
+}
+
+.rounded-b {
+    border-bottom-right-radius: 0.4rem;
+    border-bottom-left-radius: 0.4rem;
+}
+
+.rounded-l {
+    border-top-left-radius: 0.4rem;
+    border-bottom-left-radius: 0.4rem;
+}
+
+.rounded-ss {
+    border-start-start-radius: 0.4rem;
+}
+
+.rounded-se {
+    border-start-end-radius: 0.4rem;
+}
+
+.rounded-ee {
+    border-end-end-radius: 0.4rem;
+}
+
+.rounded-es {
+    border-end-start-radius: 0.4rem;
+}
+
+.rounded-tl {
+    border-top-left-radius: 0.4rem;
+}
+
+.rounded-tr {
+    border-top-right-radius: 0.4rem;
+}
+
+.rounded-br {
+    border-bottom-right-radius: 0.4rem;
+}
+
+.rounded-bl {
+    border-bottom-left-radius: 0.4rem;
+}
 
 /* CSS variables — outside @layer so they're in the implicit layer */
 :root {
