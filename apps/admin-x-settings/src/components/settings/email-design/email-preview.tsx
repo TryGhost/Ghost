@@ -7,9 +7,16 @@ import type {EmailDesignSettings} from './types';
 
 interface EmailPreviewProps {
     settings: EmailDesignSettings;
+    senderName?: string;
+    senderEmail?: string;
+    subject?: string;
+    headerImage?: string;
+    showPublicationIcon?: boolean;
+    showPublicationTitle?: boolean;
+    emailFooter?: string;
 }
 
-const EmailPreview: React.FC<EmailPreviewProps> = ({settings}) => {
+const EmailPreview: React.FC<EmailPreviewProps> = ({settings, senderName, senderEmail, subject, headerImage, showPublicationIcon = true, showPublicationTitle = true, emailFooter}) => {
     const {settings: globalSettings, siteData} = useGlobalData();
     const [siteTitle, siteIcon] = getSettingValues<string>(globalSettings, ['title', 'icon']);
     const accentColor = siteData.accent_color;
@@ -42,35 +49,68 @@ const EmailPreview: React.FC<EmailPreviewProps> = ({settings}) => {
 
     return (
         <div className="mx-auto w-full max-w-[600px]">
-            {/* Email container */}
-            <div
-                className="w-full overflow-hidden rounded-lg shadow-sm"
-                style={{backgroundColor: colors.backgroundColor}}
-            >
-                {/* Header */}
-                <div
-                    className="px-12 pb-4 pt-10 text-center"
-                    style={{backgroundColor: colors.headerBackgroundColor === 'transparent' ? undefined : colors.headerBackgroundColor}}
-                >
-                    {siteIcon && (
-                        <img
-                            alt=""
-                            className="mx-auto mb-3 size-10 rounded-full"
-                            src={siteIcon}
-                        />
+            {/* Email envelope header */}
+            {(senderName || senderEmail || subject) && (
+                <div className="rounded-t-lg border border-b-0 border-gray-200 bg-white px-6 py-4 text-sm dark:border-gray-800 dark:bg-gray-950">
+                    {senderName && (
+                        <div className="flex gap-2">
+                            <span className="font-semibold">{senderName}</span>
+                            {senderEmail && <span className="text-gray-500">&lt;{senderEmail}&gt;</span>}
+                        </div>
                     )}
-                    {siteTitle && (
-                        <h4
-                            className="text-sm font-semibold uppercase tracking-wide"
-                            style={{
-                                color: colors.headerTextColor,
-                                fontFamily: titleFont
-                            }}
-                        >
-                            {siteTitle}
-                        </h4>
+                    {senderEmail && (
+                        <div className="text-gray-500">
+                            To: <span className="text-gray-700 dark:text-gray-300">subscriber@example.com</span>
+                        </div>
+                    )}
+                    {subject && (
+                        <div className="mt-1">{subject}</div>
                     )}
                 </div>
+            )}
+
+            {/* Email container */}
+            <div
+                className={cn('w-full overflow-hidden border border-gray-200 dark:border-gray-800', (senderName || senderEmail || subject) ? 'rounded-b-lg' : 'rounded-lg')}
+                style={{backgroundColor: colors.backgroundColor}}
+            >
+                {/* Header image */}
+                {headerImage && (
+                    <div className="px-12 pt-8">
+                        <img
+                            alt="Header"
+                            className="h-auto w-full"
+                            src={headerImage}
+                        />
+                    </div>
+                )}
+
+                {/* Header */}
+                {(showPublicationIcon || showPublicationTitle) && (
+                    <div
+                        className="px-12 pb-4 pt-10 text-center"
+                        style={{backgroundColor: colors.headerBackgroundColor === 'transparent' ? undefined : colors.headerBackgroundColor}}
+                    >
+                        {showPublicationIcon && siteIcon && (
+                            <img
+                                alt=""
+                                className="mx-auto mb-3 size-10 rounded-full"
+                                src={siteIcon}
+                            />
+                        )}
+                        {showPublicationTitle && siteTitle && (
+                            <h4
+                                className="text-sm font-semibold uppercase tracking-wide"
+                                style={{
+                                    color: colors.headerTextColor,
+                                    fontFamily: titleFont
+                                }}
+                            >
+                                {siteTitle}
+                            </h4>
+                        )}
+                    </div>
+                )}
 
                 {/* Title */}
                 <div className="px-12 pb-2 pt-4">
@@ -81,7 +121,8 @@ const EmailPreview: React.FC<EmailPreviewProps> = ({settings}) => {
                             fontWeight: titleFontWeight,
                             fontSize: '26px',
                             lineHeight: '1.3',
-                            margin: 0
+                            margin: 0,
+                            textAlign: (settings.title_alignment || 'left') as 'left' | 'center'
                         }}
                     >
                         Your welcome email title
@@ -176,6 +217,11 @@ const EmailPreview: React.FC<EmailPreviewProps> = ({settings}) => {
                     className="px-12 pb-10 text-center text-xs"
                     style={{color: colors.secondaryTextColor}}
                 >
+                    {emailFooter && (
+                        <p style={{margin: '0 0 0.5em', whiteSpace: 'pre-line'}}>
+                            {emailFooter}
+                        </p>
+                    )}
                     <p style={{margin: '0 0 0.5em'}}>
                         {siteTitle || 'Your publication'} &mdash; Unsubscribe
                     </p>

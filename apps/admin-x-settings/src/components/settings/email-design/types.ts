@@ -5,6 +5,7 @@ export interface EmailDesignSettings {
     body_font_category: string;
     header_background_color: string;
     post_title_color: string | null;
+    title_alignment: string;
     section_title_color: string | null;
     button_color: string | null;
     button_style: string;
@@ -21,8 +22,9 @@ export const DEFAULT_EMAIL_DESIGN: EmailDesignSettings = {
     title_font_category: 'sans_serif',
     title_font_weight: 'bold',
     body_font_category: 'sans_serif',
-    header_background_color: 'transparent',
+    header_background_color: '#ffffff',
     post_title_color: null,
+    title_alignment: 'left',
     section_title_color: null,
     button_color: null,
     button_style: 'fill',
