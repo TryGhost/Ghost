@@ -42,6 +42,7 @@ function frontendTemplate(node, document, options) {
     // Use innerHTML to inject script - jsdom's createElement('script') doesn't serialize textContent in outerHTML
     // Matches implementation from kg-default-nodes set-src-background-from-parent.js
     figure.insertAdjacentHTML('beforeend', buildSrcBackgroundScript());
+    figure.insertAdjacentHTML('beforeend', buildResizeScript());
 
     // noscript fallback with src (not data-src) so the iframe loads without JS
     const noscript = document.createElement('noscript');
@@ -160,6 +161,37 @@ function buildSrcBackgroundScript() {
     /* eslint-enable no-undef */
 
     return `<script>(${setSrcBackgroundFromParent.toString()})()</script>`;
+}
+
+function buildResizeScript() {
+    /* eslint-disable no-undef */
+    // This function is serialized via .toString() and runs in the browser, not Node
+    function listenForTransistorResize() {
+        const script = document.currentScript;
+        if (!script) {
+            return;
+        }
+
+        const iframe = script.parentElement.querySelector('iframe[data-kg-transistor-embed]');
+        if (!iframe) {
+            return;
+        }
+
+        window.addEventListener('message', function (event) {
+            if (!event.data || typeof event.data !== 'object') {
+                return;
+            }
+
+            if (event.data.type === 'transistor-resize' && typeof event.data.height === 'number') {
+                if (iframe.contentWindow === event.source) {
+                    iframe.style.height = event.data.height + 'px';
+                }
+            }
+        });
+    }
+    /* eslint-enable no-undef */
+
+    return `<script>(${listenForTransistorResize.toString()})()</script>`;
 }
 
 module.exports = renderTransistorNode;

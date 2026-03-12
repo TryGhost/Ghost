@@ -43,6 +43,13 @@ describe('services/koenig/node-renderers/transistor-renderer', function () {
             assert.ok(result.html.includes('setSrcBackgroundFromParent'));
         });
 
+        it('renders resize listener script', function () {
+            const result = renderForWeb(getTestData());
+
+            assert.ok(result.html.includes('listenForTransistorResize'));
+            assert.ok(result.html.includes('transistor-resize'));
+        });
+
         it('includes siteUuid as ctx param', function () {
             const result = renderForWeb(getTestData(), {siteUuid: 'my-site-uuid'});
 
