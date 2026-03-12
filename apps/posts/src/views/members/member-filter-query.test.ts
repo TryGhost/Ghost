@@ -31,6 +31,20 @@ describe('member-filter-query', () => {
         ]);
     });
 
+    it('parses unwrapped Ember compounds at the root', () => {
+        expect(stripIds(parseMemberFilter('subscribed:true+email_disabled:0', 'UTC'))).toEqual([
+            {field: 'subscribed', operator: 'is', values: ['subscribed']}
+        ]);
+
+        expect(stripIds(parseMemberFilter('newsletters.slug:weekly+email_disabled:0', 'UTC'))).toEqual([
+            {field: 'newsletters.weekly', operator: 'is', values: ['subscribed']}
+        ]);
+
+        expect(stripIds(parseMemberFilter("feedback.post_id:'post_123'+feedback.score:1", 'UTC'))).toEqual([
+            {field: 'newsletter_feedback', operator: '1', values: ['post_123']}
+        ]);
+    });
+
     it('serializes canonical Ember member filters', () => {
         const predicates: FilterPredicate[] = [
             {id: '2', field: 'status', operator: 'is', values: ['paid']},
@@ -81,7 +95,7 @@ describe('member-filter-query', () => {
         );
     });
 
-    it('claims subscribed compounds before simple fallback can misread email_disabled', () => {
+    it('prefers grouped compound parsing over simple node fallback', () => {
         const parsed = parseMemberFilter('(subscribed:false,email_disabled:1)', 'UTC');
 
         expect(stripIds(parsed)).toEqual([
