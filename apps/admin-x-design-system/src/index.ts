@@ -34,7 +34,7 @@ export {default as HtmlEditor} from './global/form/html-editor';
 export type {HtmlEditorProps} from './global/form/html-editor';
 export {default as HtmlField} from './global/form/html-field';
 export type {HtmlFieldProps} from './global/form/html-field';
-export {default as KoenigEditorBase} from './global/form/koenig-editor-base';
+export {default as KoenigEditorBase, loadKoenig} from './global/form/koenig-editor-base';
 export type {KoenigEditorBaseProps, KoenigInstance, NodeType} from './global/form/koenig-editor-base';
 export {default as ImageUpload} from './global/form/image-upload';
 export type {ImageUploadProps} from './global/form/image-upload';
