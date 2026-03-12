@@ -46,11 +46,3 @@ export function extractComparator(node: AstNode): {field: string; operator: stri
         value
     };
 }
-
-export function flattenTopLevelNodes(node: AstNode): AstNode[] {
-    if ('$and' in node && Array.isArray(node.$and)) {
-        return node.$and as AstNode[];
-    }
-
-    return [node];
-}

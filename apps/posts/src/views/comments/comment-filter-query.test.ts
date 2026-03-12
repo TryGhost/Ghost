@@ -122,6 +122,26 @@ describe('comment-filter-query', () => {
         ]);
     });
 
+    it('parses nested exact-date compounds recursively', () => {
+        const parsed = parseCommentFilter(
+            "((created_at:>='2024-01-01T00:00:00.000Z'+created_at:<='2024-01-01T23:59:59.999Z')+status:published)",
+            'UTC'
+        );
+
+        expect(stripIds(parsed)).toEqual([
+            {
+                field: 'created_at',
+                operator: 'is',
+                values: ['2024-01-01']
+            },
+            {
+                field: 'status',
+                operator: 'is',
+                values: ['published']
+            }
+        ]);
+    });
+
     it('ignores malformed NQL input', () => {
         expect(parseCommentFilter('created_at:(', 'UTC')).toEqual([]);
     });
