@@ -4,9 +4,11 @@ const {DateTime} = require('luxon');
 const {slugify} = require('@tryghost/string');
 const {createTier, createMember, createPostDraft, impersonateMember} = require('../utils');
 
-// Schedules a post to publish ASAP by setting today's date + 00:00 time.
-// This is always in the past, so Ghost auto-corrects it to 5 seconds from now.
-const scheduleAsap = (page, options = {}) => publishPost(page, {date: DateTime.now().toFormat('yyyy-MM-dd'), time: '00:00', ...options});
+// Schedules a post to publish ASAP by setting yesterday + 00:00, which is always in the past.
+// Ghost auto-corrects past dates to 5 seconds from now. We use yesterday (not today) because
+// publishPost waits for the schedule summary to change after setting the date, and today's
+// date would be a no-op since the default schedule is already today.
+const scheduleAsap = (page, options = {}) => publishPost(page, {date: DateTime.now().minus({days: 1}).toFormat('yyyy-MM-dd'), time: '00:00', ...options});
 
 /**
  * Test the status of a post in the post editor.
