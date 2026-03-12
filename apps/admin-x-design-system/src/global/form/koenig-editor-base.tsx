@@ -44,7 +44,7 @@ export type KoenigInstance = {
     lastNodeIsDecorator: () => boolean
 };
 
-const loadKoenig = function (fetchKoenigLexical: FetchKoenigLexical) {
+export const loadKoenig = function (fetchKoenigLexical: FetchKoenigLexical) {
     let status = 'pending';
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let response: any;
