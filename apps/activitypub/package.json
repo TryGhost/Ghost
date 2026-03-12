@@ -29,7 +29,7 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "@playwright/test": "1.55.1",
+    "@playwright/test": "1.58.2",
     "@testing-library/react": "14.3.1",
     "@types/dompurify": "3.2.0",
     "@types/jest": "29.5.14",
