@@ -1,8 +1,6 @@
-import shadePreset from "@tryghost/shade/tailwind.cjs";
 import plugin from "tailwindcss/plugin";
 
 export default {
-    presets: [shadePreset(".shade-admin")],
     content: [
         "./index.html",
         "./src/**/*.{js,ts,jsx,tsx}",

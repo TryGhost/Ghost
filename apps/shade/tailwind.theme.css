@@ -1,6 +1,5 @@
 /*
- * Phase 1 (dual-run): CSS-first token source for Tailwind v4.
- * Keep @config active in this phase for fallback while validating parity.
+ * CSS-first token source for Tailwind v4 runtime generation.
  */
 
 @custom-variant dark (&:is(.dark *):not(.light *));
@@ -356,4 +355,3 @@
         height: 0;
     }
 }
-

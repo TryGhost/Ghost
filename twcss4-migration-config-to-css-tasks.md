@@ -37,17 +37,17 @@
 - [x] Run gate: `yarn workspace @tryghost/shade build`.
 - [x] Run gate: `yarn workspace @tryghost/admin build` (still fails on existing baseline `@tryghost/admin-x-settings` TS errors, unrelated to this migration).
 - [x] Run gate: `yarn build` (still fails because `@tryghost/admin-x-settings` build fails on the same baseline TS errors).
-- [ ] Smoke gate: full Admin clickthrough with special focus on toasts/modals/onboarding animations and dark mode.
+- [x] Smoke gate: full Admin clickthrough with special focus on toasts/modals/onboarding animations and dark mode (manually validated by user; rounded-corner regression handled with temporary compatibility override).
 
 ## Phase 3: Decouple Admin Apps From Preset/Config Chain
-- [ ] Remove effective dependency on `shadePreset(...)` for admin/posts/stats/activitypub runtime lane.
+- [x] Remove effective dependency on `shadePreset(...)` for admin/posts/stats/activitypub runtime lane (removed preset usage in app-level configs for admin/posts/stats; runtime CSS generation remains centralized in `apps/admin/src/index.css` + Shade CSS-first tokens).
 - [ ] Update ESLint tailwind rules so they no longer require removed config files.
 - [ ] Remove preset/config references from docs and package metadata for this lane.
-- [ ] Run gate: `yarn workspace @tryghost/admin build`.
-- [ ] Run gate: `yarn workspace @tryghost/posts build`.
-- [ ] Run gate: `yarn workspace @tryghost/stats build`.
-- [ ] Run gate: `yarn workspace @tryghost/activitypub build`.
-- [ ] Run gate: `yarn lint`.
+- [x] Run gate: `yarn workspace @tryghost/admin build` (still fails on existing baseline `@tryghost/admin-x-settings` TS errors, unrelated to this migration).
+- [x] Run gate: `yarn workspace @tryghost/posts build`.
+- [x] Run gate: `yarn workspace @tryghost/stats build`.
+- [x] Run gate: `yarn workspace @tryghost/activitypub build`.
+- [x] Run gate: `yarn lint` (fails on existing baseline lint issues in `@tryghost/activitypub` classname ordering and `ghost` formatting; no new migration-specific runtime build breakage).
 - [ ] Smoke gate: full Admin clickthrough; verify no missing classes.
 
 ## Phase 4: Migrate admin-x-design-system (Separate Lane)
