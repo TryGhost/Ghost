@@ -56,8 +56,8 @@ const Members: React.FC = () => {
         keepPreviousData: true
     });
 
-    // If we are fetching members, but not fetching the next page and not refetching, we should show the loading indicator
-    const shouldShowLoading = isFetching && !isFetchingNextPage && !isRefetching;
+    // Keep showing the spinner while refetching into or out of an empty result set.
+    const shouldShowLoading = isFetching && !isFetchingNextPage && (!isRefetching || !(data?.members.length));
 
     const totalMembers = data?.meta?.pagination?.total ?? 0;
     const hasFilters = filters.length > 0;

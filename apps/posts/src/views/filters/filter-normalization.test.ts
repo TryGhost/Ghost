@@ -12,6 +12,10 @@ describe('filter-normalization', () => {
         expect(escapeNqlString('can\'t stop')).toBe('\'can\\\'t stop\'');
     });
 
+    it('escapes backslashes before single quotes for NQL strings', () => {
+        expect(escapeNqlString('test\\\'value')).toBe('\'test\\\\\\\'value\'');
+    });
+
     it('canonicalizes clause order', () => {
         expect(canonicalizeClauses(['zeta:1', 'alpha:2', 'beta:3'])).toEqual([
             'alpha:2',

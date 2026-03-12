@@ -1,4 +1,5 @@
 import {memberFields} from './member-fields';
+import {resolveField} from '../filters/resolve-field';
 import type {FilterPredicate} from '../filters/filter-types';
 
 type ActiveColumn = {
@@ -22,10 +23,7 @@ export function getMemberActiveColumns(filters: FilterPredicate[]): ActiveColumn
     const columns = new Map<string, ActiveColumn>();
 
     for (const filter of filters) {
-        const field = filter.field.startsWith('newsletters.')
-            ? memberFields['newsletters.:slug']
-            : memberFields[filter.field as keyof typeof memberFields];
-        const activeColumn = field && 'metadata' in field ? field.metadata?.activeColumn : undefined;
+        const activeColumn = resolveField(memberFields, filter.field, 'UTC')?.definition.metadata?.activeColumn;
 
         if (activeColumn) {
             columns.set(activeColumn.key, activeColumn);

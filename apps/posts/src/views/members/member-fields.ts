@@ -15,7 +15,13 @@ function formatDateValue(value: unknown, timezone: string): string | null {
         return null;
     }
 
-    return moment.tz(value, timezone).format('YYYY-MM-DD');
+    const parsed = moment.tz(value, moment.ISO_8601, true, timezone);
+
+    if (!parsed.isValid()) {
+        return null;
+    }
+
+    return parsed.format('YYYY-MM-DD');
 }
 
 const memberDateCodec: FilterCodec = {

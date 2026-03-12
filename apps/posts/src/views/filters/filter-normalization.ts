@@ -7,7 +7,7 @@ const OPERATOR_ALIASES: Record<string, string> = {
 };
 
 export function escapeNqlString(value: string): string {
-    return `'${value.replace(/'/g, '\\\'')}'`;
+    return `'${value.replace(/\\/g, '\\\\').replace(/'/g, '\\\'')}'`;
 }
 
 export function canonicalizeClauses(clauses: string[]): string[] {
