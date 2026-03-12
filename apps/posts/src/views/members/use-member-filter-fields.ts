@@ -1,7 +1,7 @@
 import LabelFilterRenderer from '@src/components/label-picker/label-filter-renderer';
 import React, {useMemo} from 'react';
 import moment from 'moment-timezone';
-import {CustomRendererProps, Filter, FilterFieldConfig, FilterFieldGroup, FilterOption, LucideIcon} from '@tryghost/shade';
+import {CustomRendererProps, FilterFieldConfig, FilterFieldGroup, FilterOption, LucideIcon} from '@tryghost/shade';
 import {memberFields} from './member-fields';
 import type {Offer} from '@tryghost/admin-x-framework/api/offers';
 
@@ -20,14 +20,15 @@ interface UseMemberFilterFieldsOptions {
     onEmailResourceSearchChange?: (search: string) => void;
     emailResourceSearchValue?: string;
     emailResourceLoading?: boolean;
-    offersOptions?: FilterOption[];
-    hasOffers?: boolean;
+    offers?: Offer[];
     membersTrackSources?: boolean;
     emailTrackOpens?: boolean;
     emailTrackClicks?: boolean;
     audienceFeedbackEnabled?: boolean;
     siteTimezone?: string;
 }
+
+type OfferOption = FilterOption<string>;
 
 function toOperatorOptions(operators: readonly string[]) {
     return operators.map((operator) => ({
@@ -146,91 +147,110 @@ export function buildRetentionOfferIdMap(offers: Offer[]): Map<string, string[]>
     return map;
 }
 
-export function buildOfferOptions(offers: Offer[], retentionOffersEnabled: boolean, retentionMap: Map<string, string[]>): FilterOption[] {
-    const options: FilterOption[] = [];
+function getOfferGroupIds(option: FilterOption): string[] | null {
+    if (!Array.isArray(option.metadata?.offerIds)) {
+        return null;
+    }
+
+    return option.metadata.offerIds.filter((value): value is string => typeof value === 'string');
+}
+
+export function buildOfferOptions(offers: Offer[]): OfferOption[] {
+    const options: OfferOption[] = [];
+    const retentionMap = buildRetentionOfferIdMap(offers);
 
     for (const offer of offers) {
-        if (retentionOffersEnabled && offer.redemption_type === 'retention') {
+        if (offer.redemption_type === 'retention') {
             continue;
         }
 
         options.push({value: offer.id, label: offer.name});
     }
 
-    if (retentionOffersEnabled) {
-        if (retentionMap.has('retention:month')) {
-            options.push({value: 'retention:month', label: 'Monthly Retention'});
-        }
+    if (retentionMap.has('retention:month')) {
+        options.push({
+            value: 'retention:month',
+            label: 'Monthly Retention',
+            metadata: {offerIds: retentionMap.get('retention:month')}
+        });
+    }
 
-        if (retentionMap.has('retention:year')) {
-            options.push({value: 'retention:year', label: 'Yearly Retention'});
-        }
+    if (retentionMap.has('retention:year')) {
+        options.push({
+            value: 'retention:year',
+            label: 'Yearly Retention',
+            metadata: {offerIds: retentionMap.get('retention:year')}
+        });
     }
 
     return options;
 }
 
-export function collapseRetentionOfferFilters(filters: Filter[], retentionMap: Map<string, string[]>): Filter[] {
-    if (retentionMap.size === 0) {
-        return filters;
+export function toOfferFilterDisplayValues(values: string[], options: FilterOption[]): string[] {
+    const collapsed: string[] = [];
+    const consumed = new Set<string>();
+
+    for (const option of options) {
+        const groupIds = getOfferGroupIds(option);
+
+        if (groupIds && groupIds.length > 0 && groupIds.every(id => values.includes(id))) {
+            collapsed.push(String(option.value));
+            groupIds.forEach(id => consumed.add(id));
+        }
     }
 
-    return filters.map((filter) => {
-        if (filter.field !== 'offer_redemptions') {
-            return filter;
+    for (const value of values) {
+        if (!consumed.has(value)) {
+            collapsed.push(value);
         }
+    }
 
-        const values = [...filter.values as string[]];
-        const collapsed: string[] = [];
-        const consumed = new Set<string>();
-
-        for (const [syntheticId, realIds] of retentionMap) {
-            if (realIds.length > 0 && realIds.every(id => values.includes(id))) {
-                collapsed.push(syntheticId);
-                realIds.forEach(id => consumed.add(id));
-            }
-        }
-
-        for (const value of values) {
-            if (!consumed.has(value)) {
-                collapsed.push(value);
-            }
-        }
-
-        return {
-            ...filter,
-            values: collapsed
-        };
-    });
+    return collapsed;
 }
 
-export function expandRetentionOfferFilters(filters: Filter[], retentionMap: Map<string, string[]>): Filter[] {
-    if (retentionMap.size === 0) {
-        return filters;
+export function fromOfferFilterDisplayValues(values: string[], options: FilterOption[]): string[] {
+    const expanded: string[] = [];
+
+    for (const value of values) {
+        const option = options.find(currentOption => currentOption.value === value);
+        const groupIds = option ? getOfferGroupIds(option) : null;
+
+        if (groupIds) {
+            expanded.push(...groupIds);
+        } else {
+            expanded.push(value);
+        }
     }
 
-    return filters.map((filter) => {
-        if (filter.field !== 'offer_redemptions') {
-            return filter;
-        }
+    return [...new Set(expanded)];
+}
 
-        const values: string[] = [];
+function createOfferLabelMap(offers: Offer[]) {
+    return new Map(offers.map(offer => [offer.id, offer.name]));
+}
 
-        for (const value of filter.values as string[]) {
-            const realIds = retentionMap.get(String(value));
+function renderOfferFilterValues(values: string[], options: OfferOption[], offerLabels: Map<string, string>) {
+    const selectedOptions = values
+        .map(value => options.find(option => option.value === value))
+        .filter((option): option is OfferOption => Boolean(option));
 
-            if (realIds) {
-                values.push(...realIds);
-            } else {
-                values.push(String(value));
-            }
-        }
+    if (selectedOptions.length === 1) {
+        return selectedOptions[0].label;
+    }
 
-        return {
-            ...filter,
-            values: [...new Set(values)]
-        };
-    });
+    if (selectedOptions.length > 1) {
+        return `${selectedOptions.length} selected`;
+    }
+
+    if (values.length === 1) {
+        return offerLabels.get(values[0]) ?? 'Select...';
+    }
+
+    if (values.length > 1) {
+        return `${values.length} selected`;
+    }
+
+    return 'Select...';
 }
 
 export function useMemberFilterFields({
@@ -248,8 +268,7 @@ export function useMemberFilterFields({
     onEmailResourceSearchChange,
     emailResourceSearchValue,
     emailResourceLoading = false,
-    offersOptions = [],
-    hasOffers = false,
+    offers = [],
     membersTrackSources = false,
     emailTrackOpens = false,
     emailTrackClicks = false,
@@ -259,6 +278,8 @@ export function useMemberFilterFields({
     return useMemo(() => {
         const groups: FilterFieldGroup[] = [];
         const activeNewsletters = newsletters.filter(newsletter => newsletter.status !== 'archived');
+        const offerOptions = buildOfferOptions(offers);
+        const offerLabels = createOfferLabelMap(offers);
         const today = moment.tz(siteTimezone).format('YYYY-MM-DD');
 
         const basicFields: FilterFieldConfig[] = [
@@ -341,9 +362,10 @@ export function useMemberFilterFields({
                 }));
             }
 
-            if (hasOffers) {
+            if (offers.length > 0) {
                 subscriptionFields.push(createFieldConfig('offer_redemptions', {
-                    options: offersOptions
+                    options: offerOptions,
+                    customValueRenderer: values => renderOfferFilterValues(values as string[], offerOptions, offerLabels)
                 }));
             }
 
@@ -407,11 +429,10 @@ export function useMemberFilterFields({
         emailTrackClicks,
         emailTrackOpens,
         hasMultipleTiers,
-        hasOffers,
         labelsOptions,
         membersTrackSources,
         newsletters,
-        offersOptions,
+        offers,
         onEmailResourceSearchChange,
         onPostResourceSearchChange,
         paidMembersEnabled,

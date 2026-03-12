@@ -10,15 +10,30 @@ import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {useResourceSearch} from '../hooks/use-resource-search';
 import {
     buildOfferOptions,
-    buildRetentionOfferIdMap,
-    collapseRetentionOfferFilters,
-    expandRetentionOfferFilters,
+    fromOfferFilterDisplayValues,
+    toOfferFilterDisplayValues,
     useMemberFilterFields
 } from '../use-member-filter-fields';
 
 interface MembersFiltersProps {
     filters: Filter[];
     onFiltersChange: (filters: Filter[]) => void;
+}
+
+function mapOfferRedemptionFilters(
+    filters: Filter[],
+    mapValues: (values: string[]) => string[]
+) {
+    return filters.map((filter) => {
+        if (filter.field !== 'offer_redemptions') {
+            return filter;
+        }
+
+        return {
+            ...filter,
+            values: mapValues(filter.values as string[])
+        };
+    });
 }
 
 const MembersFilters: React.FC<MembersFiltersProps> = ({
@@ -39,7 +54,6 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     const emailTrackOpens = getSettingValue<boolean>(settings, 'email_track_opens') === true;
     const emailTrackClicks = getSettingValue<boolean>(settings, 'email_track_clicks') === true;
     const audienceFeedbackEnabled = configData?.config?.labs?.audienceFeedback === true;
-    const retentionOffersEnabled = configData?.config?.labs?.retentionOffers === true;
     const siteTimezone = getSiteTimezone(settings);
 
     const labels = labelsData?.labels || [];
@@ -49,21 +63,17 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     const activePaidTiers = tiers.filter(tier => tier.type === 'paid' && tier.active);
     const hasMultipleTiers = activePaidTiers.length > 1;
 
-    const retentionMap = useMemo(() => {
-        return retentionOffersEnabled ? buildRetentionOfferIdMap(offers) : new Map<string, string[]>();
-    }, [offers, retentionOffersEnabled]);
-
     const offersOptions = useMemo(() => {
-        return buildOfferOptions(offers, retentionOffersEnabled, retentionMap);
-    }, [offers, retentionOffersEnabled, retentionMap]);
+        return buildOfferOptions(offers);
+    }, [offers]);
 
     const displayFilters = useMemo(() => {
-        return collapseRetentionOfferFilters(filters, retentionMap);
-    }, [filters, retentionMap]);
+        return mapOfferRedemptionFilters(filters, values => toOfferFilterDisplayValues(values, offersOptions));
+    }, [filters, offersOptions]);
 
     const handleFiltersChange = useCallback((newFilters: Filter[]) => {
-        onFiltersChange(expandRetentionOfferFilters(newFilters, retentionMap));
-    }, [onFiltersChange, retentionMap]);
+        onFiltersChange(mapOfferRedemptionFilters(newFilters, values => fromOfferFilterDisplayValues(values, offersOptions)));
+    }, [onFiltersChange, offersOptions]);
 
     const postSearch = useResourceSearch('post');
     const emailSearch = useResourceSearch('email');
@@ -75,8 +85,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
         emailAnalyticsEnabled,
         labelsOptions: labels.map(label => ({value: label.slug, label: label.name})),
         tiersOptions: activePaidTiers.map(tier => ({value: tier.id, label: tier.name})),
-        offersOptions,
-        hasOffers: offers.length > 0,
+        offers,
         postResourceOptions: postSearch.options,
         onPostResourceSearchChange: postSearch.onSearchChange,
         postResourceSearchValue: postSearch.searchValue,
