@@ -418,5 +418,48 @@ describe('Settings Helpers', function () {
             assert.equal(isEnabled, true);
         });
     });
+
+    describe('isMembersSingleOptInEnabled', function () {
+        afterEach(async function () {
+            await configUtils.restore();
+        });
+
+        it('returns true when hostSettings:membersSingleOptIn:enabled is true', function () {
+            configUtils.set({
+                hostSettings: {membersSingleOptIn: {enabled: true}}
+            });
+            const fakeSettings = createSettingsMock({setDirect: false, setConnect: false});
+            const settingsHelpers = new SettingsHelpers({settingsCache: fakeSettings, config: configUtils.config, urlUtils: {}, labs: {}, limitService});
+
+            assert.equal(settingsHelpers.isMembersSingleOptInEnabled(), true);
+        });
+
+        it('returns false when hostSettings:membersSingleOptIn:enabled is false', function () {
+            configUtils.set({
+                hostSettings: {membersSingleOptIn: {enabled: false}}
+            });
+            const fakeSettings = createSettingsMock({setDirect: false, setConnect: false});
+            const settingsHelpers = new SettingsHelpers({settingsCache: fakeSettings, config: configUtils.config, urlUtils: {}, labs: {}, limitService});
+
+            assert.equal(settingsHelpers.isMembersSingleOptInEnabled(), false);
+        });
+
+        it('returns false when hostSettings:membersSingleOptIn is missing', function () {
+            configUtils.set({
+                hostSettings: {}
+            });
+            const fakeSettings = createSettingsMock({setDirect: false, setConnect: false});
+            const settingsHelpers = new SettingsHelpers({settingsCache: fakeSettings, config: configUtils.config, urlUtils: {}, labs: {}, limitService});
+
+            assert.equal(settingsHelpers.isMembersSingleOptInEnabled(), false);
+        });
+
+        it('returns false when no hostSettings config is set', function () {
+            const fakeSettings = createSettingsMock({setDirect: false, setConnect: false});
+            const settingsHelpers = new SettingsHelpers({settingsCache: fakeSettings, config: configUtils.config, urlUtils: {}, labs: {}, limitService});
+
+            assert.equal(settingsHelpers.isMembersSingleOptInEnabled(), false);
+        });
+    });
 });
 

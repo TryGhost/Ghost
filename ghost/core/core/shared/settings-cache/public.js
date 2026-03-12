@@ -32,6 +32,7 @@ module.exports = {
     allow_self_signup: 'allow_self_signup',
     members_invite_only: 'members_invite_only',
     members_signup_access: 'members_signup_access',
+    members_single_opt_in: 'members_single_opt_in',
     paid_members_enabled: 'paid_members_enabled',
     firstpromoter_account: 'firstpromoter_account',
     portal_button_style: 'portal_button_style',

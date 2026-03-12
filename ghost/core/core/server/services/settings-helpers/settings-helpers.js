@@ -307,6 +307,10 @@ class SettingsHelpers {
         return true;
     }
 
+    isMembersSingleOptInEnabled() {
+        return !!this.config.get('hostSettings:membersSingleOptIn:enabled');
+    }
+
     // PRIVATE
 
     /**

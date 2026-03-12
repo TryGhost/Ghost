@@ -115,6 +115,9 @@ module.exports = {
         fields.push(new CalculatedField({key: 'web_analytics_enabled', type: 'boolean', group: 'analytics', fn: settingsHelpers.isWebAnalyticsEnabled.bind(settingsHelpers), dependents: ['web_analytics']}));
         fields.push(new CalculatedField({key: 'web_analytics_configured', type: 'boolean', group: 'analytics', fn: settingsHelpers.isWebAnalyticsConfigured.bind(settingsHelpers), dependents: ['web_analytics']}));
 
+        // Single opt-in — derived from host config, no DB dependents (recomputed at boot only)
+        fields.push(new CalculatedField({key: 'members_single_opt_in', type: 'boolean', group: 'members', fn: settingsHelpers.isMembersSingleOptInEnabled.bind(settingsHelpers), dependents: []}));
+
         return fields;
     },
 
