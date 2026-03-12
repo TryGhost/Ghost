@@ -47,7 +47,7 @@ describe('services/koenig/node-renderers/transistor-renderer', function () {
             const result = renderForWeb(getTestData());
 
             assert.ok(result.html.includes('listenForTransistorResize'));
-            assert.ok(result.html.includes("event.data.type === 'resize'"));
+            assert.ok(result.html.includes('event.data.type === "resize"'));
         });
 
         it('includes siteUuid as ctx param', function () {
