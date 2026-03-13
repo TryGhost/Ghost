@@ -245,7 +245,7 @@ describe('Domain Warming Service', function () {
             }
         });
 
-        it('should return Infinity after warmup period is complete', async function () {
+        it('should return emailCount after warmup period is complete', async function () {
             // After 42 days, warmup is complete
             Email = createModelClass({
                 findAll: [{
@@ -260,10 +260,10 @@ describe('Domain Warming Service', function () {
             });
 
             const result = await service.getWarmupLimit(1000000);
-            assert.equal(result, Infinity);
+            assert.equal(result, 1000000);
         });
 
-        it('should return Infinity well after warmup period is complete', async function () {
+        it('should return emailCount well after warmup period is complete', async function () {
             // After 100 days, warmup should definitely be complete
             Email = createModelClass({
                 findAll: [{
@@ -278,7 +278,7 @@ describe('Domain Warming Service', function () {
             });
 
             const result = await service.getWarmupLimit(1000000);
-            assert.equal(result, Infinity);
+            assert.equal(result, 1000000);
         });
     });
 });
