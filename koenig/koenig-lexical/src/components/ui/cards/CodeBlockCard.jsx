@@ -8,12 +8,12 @@ import {darkBaseExtensions, lightBaseExtensions} from '../../../utils/codemirror
 import {html} from '@codemirror/lang-html';
 import {javascript} from '@codemirror/lang-javascript';
 
-const languageMap = {
-    javascript: javascript,
-    js: javascript,
-    html: html,
-    css: css
-};
+const languageMap = new Map([
+    ['javascript', javascript],
+    ['js', javascript],
+    ['html', html],
+    ['css', css]
+]);
 
 export function CodeEditor({code, language, updateCode, updateLanguage}) {
     const [showLanguage, setShowLanguage] = React.useState(true);
@@ -43,7 +43,7 @@ export function CodeEditor({code, language, updateCode, updateLanguage}) {
 
     const extensions = React.useMemo(() => {
         const base = darkMode ? darkBaseExtensions : lightBaseExtensions;
-        const highlighter = languageMap[language?.toLowerCase().trim()] || null;
+        const highlighter = languageMap.get(language?.toLowerCase().trim());
         return highlighter ? [...base, highlighter()] : base;
     }, [darkMode, language]);
 
