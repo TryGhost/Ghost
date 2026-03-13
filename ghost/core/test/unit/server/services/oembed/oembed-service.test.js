@@ -296,6 +296,61 @@ describe('oembed-service', function () {
             assert.equal(storedUrl, '/content/images/icon/favicon.ico');
             assert.equal(saveRaw.firstCall.args[1], 'icon/favicon.ico');
         });
+
+        it('throws when storage lacks saveRaw', async function () {
+            const service = new OembedService({
+                config: {
+                    getContentPath() {
+                        return '/tmp/content/images';
+                    }
+                },
+                storage: {
+                    getStorage() {
+                        return {
+                            getSanitizedFileName: sinon.stub().returns('sample'),
+                            generateUnique: sinon.stub().resolves('/tmp/sample.png')
+                        };
+                    }
+                },
+                externalRequest() {
+                    return {
+                        buffer: async () => Buffer.from('img-bytes')
+                    };
+                }
+            });
+
+            await assert.rejects(
+                () => service.processImageFromUrl('https://example.com/sample.png', 'thumbnail'),
+                {name: 'TypeError'}
+            );
+        });
+
+        it('throws when external request fails', async function () {
+            const service = new OembedService({
+                config: {
+                    getContentPath() {
+                        return '/tmp/content/images';
+                    }
+                },
+                storage: {
+                    getStorage() {
+                        return {
+                            getSanitizedFileName: sinon.stub().returns('sample'),
+                            generateUnique: sinon.stub().resolves('/tmp/sample.png'),
+                            saveRaw: sinon.stub().resolves('/stored')
+                        };
+                    }
+                },
+                externalRequest() {
+                    throw new Error('Network error');
+                }
+            });
+
+            await assert.rejects(
+                () => service.processImageFromUrl('https://example.com/broken.png', 'thumbnail'),
+                {message: 'Network error'}
+            );
+        });
     });
 
     describe('metascraper inherits externalRequest hooks', function () {
