@@ -10,9 +10,9 @@ const nql = require('@tryghost/nql');
  */
 module.exports = class TierRepository {
     /** @type {import('./tier')[]} */
-    #store = [];
-    /** @type {Object.<string, true>} */
-    #ids = {};
+    #store;
+    /** @type {Set<string>} */
+    #ids = new Set();
 
     /** @type {Object} */
     #ProductModel;
@@ -31,16 +31,15 @@ module.exports = class TierRepository {
     }
 
     async init() {
-        this.#store = [];
-        this.#ids = {};
         const models = await this.#ProductModel.findAll({
             withRelated: ['benefits']
         });
-        for (const model of models) {
+        this.#ids.clear();
+        this.#store = await Promise.all(models.map(async (model) => {
             const tier = await Tier.create(this.mapToTier(model));
-            this.#store.push(tier);
-            this.#ids[tier.id.toHexString()] = true;
-        }
+            this.#ids.add(tier.id.toHexString());
+            return tier;
+        }));
     }
 
     /**
@@ -136,7 +135,7 @@ module.exports = class TierRepository {
 
         const toSave = await Tier.create(tier);
 
-        if (this.#ids[tier.id.toHexString()]) {
+        if (this.#ids.has(tier.id.toHexString())) {
             const existing = this.#store.findIndex((item) => {
                 return item.id.equals(tier.id);
             });
@@ -147,7 +146,7 @@ module.exports = class TierRepository {
         } else {
             await this.#ProductModel.add(data);
             this.#store.push(toSave);
-            this.#ids[tier.id.toHexString()] = true;
+            this.#ids.add(tier.id.toHexString());
         }
 
         for (const event of tier.events) {
