@@ -4,12 +4,13 @@ import {ActionType, Actions, SyncActionType, SyncActions} from './actions';
 import {Page} from './pages';
 
 export type Member = {
-    id: string,
     uuid: string,
     name: string,
-    avatar_image: string,
-    expertise: string,
-    can_comment?: boolean
+    avatar_image: string | null,
+    expertise: string | null,
+    can_comment?: boolean,
+    paid?: boolean,
+    liked_comments?: string[]
 }
 
 export type Comment = {
@@ -88,7 +89,6 @@ export type EditableAppContext = {
     pageUrl: string,
     supportEmail: string | null,
     isMember: boolean,
-    isAdmin: boolean,
     isPaidOnly: boolean,
     hasRequiredTier: boolean,
     isCommentingDisabled: boolean
@@ -98,6 +98,7 @@ export type TranslationFunction = (key: string, replacements?: Record<string, st
 
 export type AppContextType = EditableAppContext & CommentsOptions & {
     // This part makes sure we can add automatic data and return types to the actions when using context.dispatchAction('actionName', data)
+    isAdmin: boolean,
     t: TranslationFunction,
     dispatchAction: <T extends ActionType | SyncActionType>(action: T, data: Parameters<(typeof Actions & typeof SyncActions)[T]>[0] extends { data: any } ? Parameters<(typeof Actions & typeof SyncActions)[T]>[0]['data'] : any) => T extends ActionType ? Promise<void> : void,
     openFormCount: number

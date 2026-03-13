@@ -10,7 +10,7 @@ describe('Actions', function () {
                     {id: '3'}
                 ]
             };
-            const commentApi = {
+            const publicApi = {
                 browse: () => Promise.resolve({
                     comments: [
                         {id: '2'},
@@ -22,7 +22,7 @@ describe('Actions', function () {
                     }
                 })
             };
-            const newState = await Actions.loadMoreComments({state, commentApi, options: {postId: '1'}, order: 'desc'});
+            const newState = await Actions.loadMoreComments({state, publicApi, options: {postId: '1'}, order: 'desc'});
             expect(newState.comments).toEqual([
                 {id: '1'},
                 {id: '2'},

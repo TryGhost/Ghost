@@ -236,6 +236,60 @@ const getMemberData = async function getMemberData(req, res) {
     }
 };
 
+/**
+ * Lightweight endpoint for comments-ui to get member identity and comment interaction data.
+ * Avoids the heavy MemberBREADService.read() path by querying directly.
+ * Returns member info + liked/authored comment IDs for a specific post.
+ */
+const getCommentsMemberInfo = async function getCommentsMemberInfo(req, res) {
+    try {
+        const postId = req.params.post_id;
+        if (!postId) {
+            res.writeHead(400);
+            res.end();
+            return;
+        }
+
+        // Get transient_id from session cookie (throws if no valid session)
+        const transientId = membersService.ssr._getSessionCookies(req, res);
+
+        // Lightweight member lookup — single query, no relations
+        const member = await models.Member.findOne({transient_id: transientId}, {require: false, withRelated: []});
+        if (!member) {
+            res.writeHead(204);
+            res.end();
+            return;
+        }
+
+        const memberJson = member.toJSON();
+        const memberId = memberJson.id;
+        const db = require('../../data/db');
+
+        // Fetch liked comment IDs for this post
+        const likedRows = await db.knex('comment_likes')
+            .select('comment_likes.comment_id')
+            .join('comments', 'comment_likes.comment_id', '=', 'comments.id')
+            .where('comment_likes.member_id', memberId)
+            .where('comments.post_id', postId);
+
+        res.json({
+            member: {
+                uuid: memberJson.uuid,
+                name: memberJson.name,
+                expertise: memberJson.expertise,
+                avatar_image: memberJson.avatar_image,
+                can_comment: memberJson.can_comment,
+                paid: memberJson.status !== 'free',
+                liked_comments: likedRows.map(r => r.comment_id)
+            }
+        });
+    } catch (err) {
+        // No session or any error — return 204 (same pattern as getMemberData)
+        res.writeHead(204);
+        res.end();
+    }
+};
+
 const deleteSuppression = async function deleteSuppression(req, res) {
     try {
         const member = await membersService.ssr.getMemberDataFromSession(req, res);
@@ -443,6 +497,7 @@ module.exports = {
     getEntitlementToken,
     getMemberNewsletters,
     getMemberData,
+    getCommentsMemberInfo,
     updateMemberData,
     updateMemberNewsletters,
     deleteSession,

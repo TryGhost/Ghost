@@ -6,7 +6,7 @@ import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import i18nLib from '@tryghost/i18n';
 import setupGhostApi from './utils/api';
 import {ActionHandler, SyncActionHandler, isSyncAction} from './actions';
-import {AppContext, Comment, DispatchActionType, EditableAppContext} from './app-context';
+import {AppContext, Comment, DispatchActionType, EditableAppContext, Member} from './app-context';
 import {CommentApiProvider, useCommentApi} from './components/comment-api-provider';
 import {CommentsFrame} from './components/frame';
 import {useOptions} from './utils/options';
@@ -24,12 +24,34 @@ function isCommentLoaded(comments: Comment[], targetId: string): boolean {
     return comments.some(c => c.id === targetId || c.replies?.some(r => r.id === targetId));
 }
 
+/**
+ * Apply member liked states to comments — sets `liked` flag on comments
+ * the member has liked, based on the member's liked_comments array.
+ */
+function applyMemberLikes(comments: Comment[], member: Member | null): Comment[] {
+    if (!member?.liked_comments?.length) {
+        return comments;
+    }
+    const likedSet = new Set(member.liked_comments);
+    return comments.map((comment) => {
+        const liked = likedSet.has(comment.id);
+        const hasLikedReply = comment.replies?.some(r => likedSet.has(r.id));
+        const replies = hasLikedReply
+            ? comment.replies.map(reply => ({...reply, liked: likedSet.has(reply.id)}))
+            : comment.replies;
+        if (liked !== comment.liked || replies !== comment.replies) {
+            return {...comment, liked, replies};
+        }
+        return comment;
+    });
+}
+
 const AppContent: React.FC<{
     options: ReturnType<typeof useOptions>;
     initialCommentId: string | null;
     pageUrl: string;
 }> = ({options, initialCommentId, pageUrl}) => {
-    const {commentApi, member, labs, supportEmail} = useCommentApi();
+    const {publicApi, memberApi, isAdmin, adminActions, member, labs, supportEmail, memberLoaded} = useCommentApi();
     const [state, setFullState] = useState<EditableAppContext>({
         initStatus: 'running',
         member: null,
@@ -47,14 +69,14 @@ const AppContent: React.FC<{
         pageUrl,
         supportEmail: null,
         isMember: false,
-        isAdmin: false,
         isPaidOnly: false,
         hasRequiredTier: true,
         isCommentingDisabled: false
     });
 
     const iframeRef = useRef<HTMLIFrameElement>(null);
-
+    const memberRef = useRef({data: member, loaded: memberLoaded});
+    memberRef.current = {data: member, loaded: memberLoaded};
     const setState = useCallback((newState: Partial<EditableAppContext> | ((state: EditableAppContext) => Partial<EditableAppContext>)) => {
         setFullState((state) => {
             if (typeof newState === 'function') {
@@ -86,7 +108,7 @@ const AppContent: React.FC<{
         // allow for async actions within it's updater function so this is the best option.
         return new Promise((resolve) => {
             setState((state) => {
-                ActionHandler({action, data, state, commentApi, options, dispatchAction: dispatchAction as DispatchActionType}).then((updatedState) => {
+                ActionHandler({action, data, state, publicApi, memberApi, adminActions, options, dispatchAction: dispatchAction as DispatchActionType}).then((updatedState) => {
                     const newState = {...updatedState};
                     resolve(newState);
                     setState(newState);
@@ -96,7 +118,7 @@ const AppContent: React.FC<{
                 return {};
             });
         });
-    }, [commentApi, options]); // Do not add state or context as a dependency here -> infinite render loop
+    }, [publicApi, memberApi, adminActions, options]); // Do not add state or context as a dependency here -> infinite render loop
 
     const i18n = useMemo(() => {
         return i18nLib(options.locale, 'comments');
@@ -105,15 +127,20 @@ const AppContent: React.FC<{
     const context = {
         ...options,
         ...state,
+        // Override state values with latest from provider (state may have stale values
+        // if initSetup ran before settings loaded)
+        isAdmin,
+        supportEmail,
+        labs,
         t: i18n.t,
         dispatchAction: dispatchAction as DispatchActionType,
         openFormCount: useMemo(() => state.openCommentForms.length, [state.openCommentForms])
     };
 
-    /** Fetch first few comments using the resolved commentApi */
+    /** Fetch first few comments using the public API */
     const fetchComments = async () => {
-        const dataPromise = commentApi.browse({page: 1, postId: options.postId, order: state.order});
-        const countPromise = commentApi.count({postId: options.postId});
+        const dataPromise = publicApi.browse({page: 1, postId: options.postId, order: state.order});
+        const countPromise = publicApi.count({postId: options.postId});
 
         const [data, count] = await Promise.all([dataPromise, countPromise]);
 
@@ -130,7 +157,7 @@ const AppContent: React.FC<{
      */
     const fetchScrollTarget = async (targetId: string): Promise<Comment | null> => {
         try {
-            const response = await commentApi.read(targetId);
+            const response = await publicApi.read(targetId);
             const comment = response.comments?.[0];
             return (comment && comment.status === 'published') ? comment : null;
         } catch {
@@ -155,7 +182,7 @@ const AppContent: React.FC<{
                 break;
             }
 
-            const nextPage = await commentApi.browse({
+            const nextPage = await publicApi.browse({
                 page: pagination.page + 1,
                 postId: options.postId,
                 order: state.order
@@ -165,46 +192,6 @@ const AppContent: React.FC<{
         }
 
         return {comments, pagination};
-    };
-
-    /**
-     * Load all replies for a parent comment if the target reply isn't already loaded.
-     */
-    const loadRepliesForComment = async (
-        parentId: string,
-        comments: Comment[]
-    ): Promise<Comment[]> => {
-        const parent = comments.find(c => c.id === parentId);
-        const hasMoreReplies = parent && parent.count.replies > parent.replies.length;
-
-        if (!hasMoreReplies) {
-            return comments;
-        }
-
-        let allReplies: Comment[] = [];
-        let hasMore = true;
-        let afterReplyId: string | undefined;
-
-        while (hasMore) {
-            const response = await commentApi.replies({
-                commentId: parentId,
-                afterReplyId,
-                limit: 100
-            });
-            allReplies = [...allReplies, ...response.comments];
-            hasMore = !!response.meta?.pagination?.next;
-
-            if (response.comments.length > 0) {
-                afterReplyId = response.comments[response.comments.length - 1]?.id;
-            } else {
-                hasMore = false;
-            }
-        }
-
-        return comments.map(c => (c.id === parentId
-            ? {...c, replies: allReplies}
-            : c
-        ));
     };
 
     /**
@@ -222,7 +209,7 @@ const AppContent: React.FC<{
         let comments = paginatedComments;
 
         if (parentId && !isCommentLoaded(comments, targetId)) {
-            const {comments: allReplies} = await api.comments.replies({commentId: parentId, limit: 'all'});
+            const {comments: allReplies} = await publicApi.replies({commentId: parentId, limit: 'all'});
             comments = comments.map(c => (c.id === parentId ? {...c, replies: allReplies} : c));
         }
 
@@ -249,16 +236,22 @@ const AppContent: React.FC<{
                 }
             }
 
-            // Compute tier access values
-            const isMember = !!member;
+            // Read latest member from ref (avoids stale closure from useEffect/IntersectionObserver)
+            const currentMember = memberRef.current.data;
+            const isMember = !!currentMember;
             const isPaidOnly = options.commentsEnabled === 'paid';
-            const isPaidMember = !!member?.paid;
+            const isPaidMember = !!currentMember?.paid;
             const hasRequiredTier = isPaidMember || !isPaidOnly;
 
+            // Apply member liked states if already available
+            const overlaidComments = memberRef.current.loaded
+                ? applyMemberLikes(comments, currentMember)
+                : comments;
+
             setState({
-                member,
+                member: currentMember,
                 initStatus: 'success',
-                comments,
+                comments: overlaidComments,
                 pagination,
                 commentCount: count,
                 order: 'count__likes desc, created_at desc',
@@ -269,10 +262,9 @@ const AppContent: React.FC<{
                 showMissingCommentNotice: !!initialCommentId && !scrollTargetFound,
                 supportEmail,
                 isMember,
-                isAdmin: commentApi.isAdmin,
                 isPaidOnly,
                 hasRequiredTier,
-                isCommentingDisabled: member?.can_comment === false
+                isCommentingDisabled: currentMember?.can_comment === false
             });
         } catch (e) {
             // eslint-disable-next-line no-console
@@ -282,6 +274,30 @@ const AppContent: React.FC<{
             });
         }
     };
+
+    // Apply member data when it arrives — updates liked states on existing comments
+    useEffect(() => {
+        if (!memberLoaded || state.initStatus !== 'success') {
+            return;
+        }
+
+        setState((prev) => {
+            const updatedComments = applyMemberLikes(prev.comments, member);
+            const isMember = !!member;
+            const isPaidMember = !!member?.paid;
+            const isPaidOnly = options.commentsEnabled === 'paid';
+            const hasRequiredTier = isPaidMember || !isPaidOnly;
+
+            return {
+                member,
+                comments: updatedComments,
+                isMember,
+                isPaidOnly,
+                hasRequiredTier,
+                isCommentingDisabled: member?.can_comment === false
+            };
+        });
+    }, [memberLoaded, state.initStatus]);
 
     /** Delay initialization until comments block is in viewport (unless permalink present) */
     useEffect(() => {
@@ -344,6 +360,7 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
         <CommentApiProvider
             adminUrl={options.adminUrl}
             api={api}
+            postId={options.postId}
         >
             <AppContent
                 initialCommentId={initialCommentId}

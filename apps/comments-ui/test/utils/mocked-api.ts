@@ -305,8 +305,8 @@ export class MockedApi {
     // (useful to spy on these methods in tests)
 
     requestHandlers = {
-        async getMember(route) {
-            const failureResponse = await this.#handleFailure('getMember');
+        async updateMember(route) {
+            const failureResponse = await this.#handleFailure('updateMember');
             if (failureResponse) {
                 return route.fulfill(failureResponse);
             }
@@ -489,6 +489,39 @@ export class MockedApi {
                 status: 200,
                 body: JSON.stringify(this.settings)
             });
+        },
+
+        async getMember(route) {
+            const failureResponse = await this.#handleFailure('getMember');
+            if (failureResponse) {
+                return route.fulfill(failureResponse);
+            }
+            await this.#delayResponse();
+            if (!this.member) {
+                return await route.fulfill({
+                    status: 204,
+                    body: ''
+                });
+            }
+
+            // Derive liked IDs from the flat comment+reply list
+            const allComments = this.comments.flatMap(c => [c, ...(c.replies || [])]);
+            const likedComments = allComments.filter(c => c.liked).map(c => c.id);
+
+            await route.fulfill({
+                status: 200,
+                body: JSON.stringify({
+                    member: {
+                        uuid: this.member.uuid,
+                        name: this.member.name,
+                        expertise: this.member.expertise || null,
+                        avatar_image: this.member.avatar_image || null,
+                        can_comment: this.member.can_comment !== false,
+                        paid: this.member.paid || false,
+                        liked_comments: likedComments
+                    }
+                })
+            });
         }
     };
 
@@ -612,7 +645,8 @@ export class MockedApi {
 
     async listen({page, path}: {page: any, path: string}) {
         // Public API ----------------------------------------------------------
-        await page.route(`${path}/members/api/member/`, this.requestHandlers.getMember.bind(this));
+        await page.route(`${path}/members/api/member/`, this.requestHandlers.updateMember.bind(this));
+        await page.route(`${path}/members/api/comments/post/*/member/`, this.requestHandlers.getMember.bind(this));
         await page.route(`${path}/members/api/comments/*`, this.requestHandlers.addComment.bind(this));
         await page.route(`${path}/members/api/comments/post/*/*`, this.requestHandlers.browseComments.bind(this));
         await page.route(`${path}/members/api/comments/*/`, this.requestHandlers.getOrDeleteComment.bind(this));

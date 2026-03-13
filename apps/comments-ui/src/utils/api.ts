@@ -21,14 +21,24 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
         return '';
     }
 
-    function makeRequest({url, method = 'GET', headers = {}, credentials = undefined, body = undefined}: {url: string, method?: string, headers?: any, credentials?: any, body?: any}) {
-        const options = {
+    function makeRequest({url, method = 'GET', headers = {}, credentials = undefined, body = undefined, errorMessage = 'Request failed'}: {url: string, method?: string, headers?: any, credentials?: any, body?: any, errorMessage?: string}) {
+        return fetch(url, {
             method,
-            headers,
+            headers: {
+                'Content-Type': 'application/json',
+                ...headers
+            },
             credentials,
             body
-        };
-        return fetch(url, options);
+        }).then((res) => {
+            if (res.ok) {
+                if (res.status === 204) {
+                    return null;
+                }
+                return res.json();
+            }
+            throw new Error(errorMessage);
+        });
     }
 
     // To fix pagination when we create new comments (or people post comments
@@ -39,291 +49,131 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
         site: {
             settings() {
                 const url = contentEndpointFor({resource: 'settings'});
-                return makeRequest({
-                    url,
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                }).then(function (res) {
-                    if (res.ok) {
-                        return res.json();
-                    } else {
-                        throw new Error('Failed to fetch site data');
-                    }
-                });
+                return makeRequest({url, errorMessage: 'Failed to fetch site data'});
             }
         },
         member: {
-            identity() {
-                const url = endpointFor({type: 'members', resource: 'session'});
-                return makeRequest({
-                    url,
-                    credentials: 'same-origin'
-                }).then(function (res) {
-                    if (!res.ok || res.status === 204) {
-                        return null;
-                    }
-                    return res.text();
-                });
-            },
-
-            sessionData() {
-                const url = endpointFor({type: 'members', resource: 'member'});
-                return makeRequest({
-                    url,
-                    credentials: 'same-origin'
-                }).then(function (res) {
-                    if (!res.ok || res.status === 204) {
-                        return null;
-                    }
-                    return res.json();
-                });
-            },
-
             update({name, expertise}: {name?: string, expertise?: string}) {
                 const url = endpointFor({type: 'members', resource: 'member'});
-                const body = {
-                    name,
-                    expertise
-                };
-
                 return makeRequest({
-                    url,
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    credentials: 'same-origin',
-                    body: JSON.stringify(body)
-                }).then(function (res) {
-                    if (!res.ok) {
-                        return null;
-                    }
-                    return res.json();
+                    url, method: 'PUT', credentials: 'same-origin',
+                    body: JSON.stringify({name, expertise})
                 });
             }
-
         },
-        comments: {
-            async count({postId}: {postId: string | null}) {
-                const params = postId ? `?ids=${postId}` : '';
-                const url = endpointFor({type: 'members', resource: `comments/counts`, params});
-                const response = await makeRequest({
-                    url,
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    credentials: 'same-origin'
-                });
-
-                const json = await response.json();
-
-                if (postId) {
-                    return json[postId];
-                }
-
-                return json;
-            },
-            browse({page, postId, order}: {page: number, postId: string, order?: string}) {
-                let filter = null;
-                if (firstCommentCreatedAt && !order) {
-                    filter = `created_at:<=${firstCommentCreatedAt}`;
-                }
-
-                const params = new URLSearchParams();
-
-                params.set('limit', '20');
-                if (filter) {
-                    params.set('filter', filter);
-                }
-                params.set('page', page.toString());
-                if (order) {
-                    params.set('order', order);
-                }
-                const url = endpointFor({type: 'members', resource: `comments/post/${postId}`, params: `?${params.toString()}`});
-                const response = makeRequest({
-                    url,
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    credentials: 'same-origin'
-                }).then(function (res) {
-                    if (res.ok) {
-                        return res.json();
-                    } else {
-                        throw new Error('Failed to fetch comments');
+        comments({credentials = 'omit'}: {credentials?: string} = {}) {
+            const commentsApi = {
+                async count({postId}: {postId: string | null}) {
+                    const params = postId ? `?ids=${postId}` : '';
+                    const url = endpointFor({type: 'members', resource: `comments/counts`, params});
+                    const json = await makeRequest({url, credentials, errorMessage: 'Failed to fetch comment counts'});
+                    return postId ? json[postId] : json;
+                },
+                browse({page, postId, order}: {page: number, postId: string, order?: string}) {
+                    let filter = null;
+                    if (firstCommentCreatedAt && !order) {
+                        filter = `created_at:<=${firstCommentCreatedAt}`;
                     }
-                });
 
-                if (!firstCommentCreatedAt) {
-                    response.then((body) => {
-                        const firstComment = body.comments[0];
-                        if (firstComment) {
-                            firstCommentCreatedAt = firstComment.created_at;
+                    const params = new URLSearchParams();
+
+                    params.set('limit', '20');
+                    if (filter) {
+                        params.set('filter', filter);
+                    }
+                    params.set('page', page.toString());
+                    if (order) {
+                        params.set('order', order);
+                    }
+                    const url = endpointFor({type: 'members', resource: `comments/post/${postId}`, params: `?${params.toString()}`});
+                    const response = makeRequest({url, credentials, errorMessage: 'Failed to fetch comments'});
+
+                    if (!firstCommentCreatedAt) {
+                        response.then((body) => {
+                            const firstComment = body.comments[0];
+                            if (firstComment) {
+                                firstCommentCreatedAt = firstComment.created_at;
+                            }
+                        });
+                    }
+
+                    return response;
+                },
+                async replies({commentId, afterReplyId, limit}: {commentId: string; afterReplyId?: string; limit?: number | 'all'}) {
+                    if (limit === 'all') {
+                        const all: Comment[] = [];
+                        let cursor: string | undefined = afterReplyId;
+                        let hasMore = true;
+
+                        while (hasMore) {
+                            const data = await commentsApi.replies({commentId, afterReplyId: cursor, limit: 100});
+                            all.push(...data.comments);
+                            hasMore = !!data.meta?.pagination?.next && data.comments.length > 0;
+                            if (data.comments.length > 0) {
+                                cursor = data.comments[data.comments.length - 1]?.id;
+                            }
                         }
+
+                        return {comments: all, meta: {pagination: {next: false}}};
+                    }
+
+                    const params = new URLSearchParams();
+                    params.set('limit', (limit ?? 5).toString());
+
+                    if (afterReplyId) {
+                        params.set('filter', `id:>'${afterReplyId}'`);
+                    }
+
+                    const url = endpointFor({type: 'members', resource: `comments/${commentId}/replies`, params: `?${params.toString()}`});
+                    return makeRequest({url, credentials, errorMessage: 'Failed to fetch replies'});
+                },
+                async getMember({postId}: {postId: string}) {
+                    const url = endpointFor({type: 'members', resource: `comments/post/${postId}/member`});
+                    return makeRequest({url, credentials});
+                },
+                read(commentId: string) {
+                    const url = endpointFor({type: 'members', resource: `comments/${commentId}`});
+                    return makeRequest({url, credentials, errorMessage: 'Failed to read comment'});
+                },
+                add({comment}: {comment: AddComment}) {
+                    const url = endpointFor({type: 'members', resource: 'comments'});
+                    return makeRequest({
+                        url, method: 'POST', credentials,
+                        body: JSON.stringify({comments: [comment]}),
+                        errorMessage: 'Failed to add comment'
                     });
+                },
+                edit({comment}: {comment: Partial<Comment> & {id: string}}) {
+                    const url = endpointFor({type: 'members', resource: `comments/${comment.id}`});
+                    return makeRequest({
+                        url, method: 'PUT', credentials,
+                        body: JSON.stringify({comments: [comment]}),
+                        errorMessage: 'Failed to edit comment'
+                    });
+                },
+                like({comment}: {comment: {id: string}}) {
+                    const url = endpointFor({type: 'members', resource: `comments/${comment.id}/like`});
+                    return makeRequest({url, method: 'POST', credentials, errorMessage: 'Failed to like comment'});
+                },
+                unlike({comment}: {comment: {id: string}}) {
+                    const url = endpointFor({type: 'members', resource: `comments/${comment.id}/like`});
+                    return makeRequest({
+                        url, method: 'DELETE', credentials,
+                        body: JSON.stringify({comments: [comment]}),
+                        errorMessage: 'Failed to unlike comment'
+                    });
+                },
+                report({comment}: {comment: {id: string}}) {
+                    const url = endpointFor({type: 'members', resource: `comments/${comment.id}/report`});
+                    return makeRequest({url, method: 'POST', credentials, errorMessage: 'Failed to report comment'});
                 }
-
-                return response;
-            },
-            async replies({commentId, afterReplyId, limit}: {commentId: string; afterReplyId?: string; limit?: number | 'all'}) {
-                if (limit === 'all') {
-                    const all: Comment[] = [];
-                    let cursor: string | undefined = afterReplyId;
-                    let hasMore = true;
-
-                    while (hasMore) {
-                        const data = await this.replies({commentId, afterReplyId: cursor, limit: 100});
-                        all.push(...data.comments);
-                        hasMore = !!data.meta?.pagination?.next && data.comments.length > 0;
-                        if (data.comments.length > 0) {
-                            cursor = data.comments[data.comments.length - 1]?.id;
-                        }
-                    }
-
-                    return {comments: all, meta: {pagination: {next: false}}};
-                }
-
-                const params = new URLSearchParams();
-                params.set('limit', (limit ?? 5).toString());
-
-                if (afterReplyId) {
-                    params.set('filter', `id:>'${afterReplyId}'`);
-                }
-
-                const url = endpointFor({type: 'members', resource: `comments/${commentId}/replies`, params: `?${params.toString()}`});
-                const res = await makeRequest({
-                    url,
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    credentials: 'same-origin'
-                });
-                if (res.ok) {
-                    return res.json();
-                } else {
-                    throw new Error('Failed to fetch replies');
-                }
-            },
-            add({comment}: {comment: AddComment}) {
-                const body = {
-                    comments: [comment]
-                };
-                const url = endpointFor({type: 'members', resource: 'comments'});
-                return makeRequest({
-                    url,
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(body)
-                }).then(function (res) {
-                    if (res.ok) {
-                        return res.json();
-                    } else {
-                        throw new Error('Failed to add comment');
-                    }
-                });
-            },
-            edit({comment}: {comment: Partial<Comment> & {id: string}}) {
-                const body = {
-                    comments: [comment]
-                };
-                const url = endpointFor({type: 'members', resource: `comments/${comment.id}`});
-                return makeRequest({
-                    url,
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(body)
-                }).then(function (res) {
-                    if (res.ok) {
-                        return res.json();
-                    } else {
-                        throw new Error('Failed to edit comment');
-                    }
-                });
-            },
-            read(commentId: string) {
-                const url = endpointFor({type: 'members', resource: `comments/${commentId}`});
-                return makeRequest({
-                    url,
-                    method: 'GET',
-                    credentials: 'same-origin'
-                }).then(function (res) {
-                    if (res.ok) {
-                        return res.json();
-                    } else {
-                        throw new Error('Failed to read comment');
-                    }
-                });
-            },
-            like({comment}: {comment: {id: string}}) {
-                const url = endpointFor({type: 'members', resource: `comments/${comment.id}/like`});
-                return makeRequest({
-                    url,
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                }).then(function (res) {
-                    if (res.ok) {
-                        return 'Success';
-                    } else {
-                        throw new Error('Failed to like comment');
-                    }
-                });
-            },
-            unlike({comment}: {comment: {id: string}}) {
-                const body = {
-                    comments: [comment]
-                };
-                const url = endpointFor({type: 'members', resource: `comments/${comment.id}/like`});
-                return makeRequest({
-                    url,
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(body)
-                }).then(function (res) {
-                    if (res.ok) {
-                        return 'Success';
-                    } else {
-                        throw new Error('Failed to unlike comment');
-                    }
-                });
-            },
-            report({comment}: {comment: {id: string}}) {
-                const url = endpointFor({type: 'members', resource: `comments/${comment.id}/report`});
-                return makeRequest({
-                    url,
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                }).then(function (res) {
-                    if (res.ok) {
-                        return 'Success';
-                    } else {
-                        throw new Error('Failed to report comment');
-                    }
-                });
-            }
+            };
+            return commentsApi;
         },
-        init: (() => {}) as () => Promise<{ member: any; labs: any; supportEmail: string | null}>
+        init: (() => {}) as () => Promise<{ labs: any; supportEmail: string | null}>
     };
 
     api.init = async () => {
-        const [member] = await Promise.all([
-            api.member.sessionData()
-        ]);
-
         let labs = {};
         let supportEmail: string | null = null;
 
@@ -337,7 +187,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
             labs = {};
         }
 
-        return {member, labs, supportEmail};
+        return {labs, supportEmail};
     };
 
     return api;
@@ -345,4 +195,5 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
 
 export default setupGhostApi;
 export type GhostApi = ReturnType<typeof setupGhostApi>;
+export type CommentsApi = ReturnType<GhostApi['comments']>;
 export type LabsType = LabsContextType;

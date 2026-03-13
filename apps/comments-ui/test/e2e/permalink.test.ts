@@ -449,10 +449,9 @@ test.describe('Comment Permalinks', async () => {
         const admin = MOCKED_SITE_URL + '/ghost/';
         await mockAdminAuthFrame({page, admin});
 
-        // Add 25 comments — member API page size is 5, admin API page size is 20.
-        // The target (comment 25) is on member page 5 and admin page 2.
-        // initSetup paginates member API to find it, then initAdminAuth re-fetches
-        // admin page 1 only (20 comments), which must NOT overwrite the 25.
+        // Add 25 comments so initSetup paginates to find the target.
+        // Admin auth resolves independently but does not re-fetch — comments
+        // loaded via public browse for the permalink must remain intact.
         for (let i = 1; i <= 24; i++) {
             mockedApi.addComment({
                 html: `<p>Filler comment ${i}</p>`
@@ -503,11 +502,10 @@ test.describe('Comment Permalinks', async () => {
         await expect(commentsFrame.getByText('Target comment beyond admin page 1')).toBeVisible();
 
         // Wait for admin auth to complete — the more button only renders
-        // when isAdmin is true, so its presence proves initAdminAuth has
-        // finished and React has flushed the state update
+        // when isAdmin is true, confirming admin auth has resolved
         await expect(commentsFrame.locator('[data-testid="more-button"]').first()).toBeVisible();
 
-        // The target comment (beyond admin page 1) must STILL be visible
+        // The target comment must STILL be visible after admin auth resolves
         await expect(commentsFrame.getByText('Target comment beyond admin page 1')).toBeVisible();
     });
 
@@ -519,9 +517,8 @@ test.describe('Comment Permalinks', async () => {
         await mockAdminAuthFrame({page, admin});
 
         // Create a parent with 5 replies — all returned by API but only first 3
-        // shown in UI. The target (reply 5) is auto-expanded by the Replies
-        // component. initAdminAuth then re-fetches admin page 1, which must
-        // NOT overwrite the replies.
+        // shown in UI. The target (reply 5) is auto-expanded via permalink
+        // pagination. Admin auth resolves independently but does not re-fetch.
         const parentId = 'aaa0000000000000parent';
         const parentComment = {
             id: parentId,
@@ -581,11 +578,11 @@ test.describe('Comment Permalinks', async () => {
         // Target reply should be visible after permalink reply expansion
         await expect(commentsFrame.getByText('Target deep reply')).toBeVisible();
 
-        // Wait for admin auth to complete — the more button (admin context menu)
-        // only renders when isAdmin is true, proving initAdminAuth has finished
+        // Wait for admin auth to complete — the more button only renders
+        // when isAdmin is true, confirming admin auth has resolved
         await expect(commentsFrame.locator('[data-testid="more-button"]').first()).toBeVisible();
 
-        // The target reply must STILL be visible after admin auth completes
+        // The target reply must STILL be visible after admin auth resolves
         await expect(commentsFrame.getByText('Target deep reply')).toBeVisible();
     });
 });
