@@ -25,13 +25,12 @@ function frontendTemplate(node, document, options) {
     const figure = document.createElement('figure');
     figure.setAttribute('class', 'kg-card kg-transistor-card');
 
-    // // Use {uuid} placeholder - content.js will substitute with member UUID at request time
-    // const embedUrl = new URL(`https://partner.transistor.fm/ghost/embed/{uuid}`);
+    // Use {uuid} placeholder - content.js will substitute with member UUID at request time
+    const embedUrl = new URL(`https://partner.transistor.fm/ghost/embed/{uuid}`);
 
-    // if (options.siteUuid) {
-    //     embedUrl.searchParams.set('ctx', options.siteUuid);
-    // }
-    const embedUrl = new URL('https://partner.transistor.network/ghost/embed/6ff568dd-834c-4c69-98c1-09d4bda3a04e?ctx=58084f76-767f-4bec-9733-6df3730ad2db')
+    if (options.siteUuid) {
+        embedUrl.searchParams.set('ctx', options.siteUuid);
+    }
 
     const iframe = document.createElement('iframe');
     setIframeAttributes(iframe);
@@ -158,11 +157,10 @@ function buildEmbedScript() {
         }
 
         // Listen for resize messages from the Transistor iframe
-        const iframeOrigin = new URL(el.src).origin;
         window.addEventListener('message', (event) => {
             const isMessageFromValidSource = (
                 event.source === el.contentWindow &&
-                event.origin === iframeOrigin
+                event.origin === 'https://partner.transistor.fm'
             );
             if (!isMessageFromValidSource) {
                 return;
