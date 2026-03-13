@@ -1152,19 +1152,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-        # TODO: Build tb-cli in a separate workflow and pull from GHCR instead of building here
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build Tinybird CLI Image
-        uses: docker/build-push-action@v6
-        id: build
-        with:
-          context: .
-          file: docker/tb-cli/Dockerfile
-          push: false
-          load: true
-          tags: ghost-tb-cli
+      - name: Pull or build Tinybird CLI Image
+        run: |
+          COMPOSE_IMAGE="${COMPOSE_PROJECT_NAME:-ghost-dev}-tb-cli"
+          # Try pulling pre-built image from GHCR first (fast path)
+          if docker pull ghcr.io/tryghost/tb-cli:latest 2>/dev/null; then
+            echo "Pulled tb-cli from GHCR"
+            docker tag ghcr.io/tryghost/tb-cli:latest "$COMPOSE_IMAGE"
+          else
+            echo "GHCR image not available, building from source"
+            docker buildx build --load -t "$COMPOSE_IMAGE" -f docker/tb-cli/Dockerfile .
+          fi
 
       - name: Load Image
         uses: ./.github/actions/load-docker-image
