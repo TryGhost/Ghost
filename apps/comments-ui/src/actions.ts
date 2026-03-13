@@ -259,7 +259,7 @@ async function reportComment({memberApi, data: comment}: {memberApi: MemberApi, 
     return {};
 }
 
-async function deleteComment({state, memberApi, publicApi, data: comment, dispatchAction}: {state: EditableAppContext, memberApi: MemberApi, publicApi: PublicApi, data: {id: string}, dispatchAction: DispatchActionType}) {
+async function deleteComment({state, memberApi, data: comment, dispatchAction}: {state: EditableAppContext, memberApi: MemberApi, data: {id: string}, dispatchAction: DispatchActionType}) {
     await memberApi.edit({
         comment: {
             id: comment.id,
@@ -358,9 +358,6 @@ async function updateMember({data, state, memberApi}: {data: {name: string, expe
     if (Object.keys(patchData).length > 0) {
         try {
             const member = await memberApi.updateMember(patchData);
-            if (!member) {
-                throw new Error('Failed to update member');
-            }
             return {
                 member,
                 success: true
