@@ -7,7 +7,6 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$REPO_ROOT"
 
 MODE="${GHOST_E2E_MODE:-dev}"
-TINYBIRD_CHANGED="${TINYBIRD_CHANGED:-true}"
 
 if [[ "$MODE" != "build" ]]; then
   DEV_COMPOSE_PROJECT="${COMPOSE_PROJECT_NAME:-ghost-dev}"
@@ -20,12 +19,5 @@ if [[ "$MODE" != "build" ]]; then
   fi
 fi
 
-if [[ "$TINYBIRD_CHANGED" == "true" ]]; then
-  echo "Tinybird datafiles changed — starting full analytics stack"
-  docker compose -f compose.dev.yaml -f compose.dev.analytics.yaml up -d --wait \
-    mysql redis mailpit tinybird-local analytics
-else
-  echo "Tinybird datafiles unchanged — skipping analytics containers"
-  docker compose -f compose.dev.yaml up -d --wait \
-    mysql redis mailpit
-fi
+docker compose -f compose.dev.yaml -f compose.dev.analytics.yaml up -d --wait \
+  mysql redis mailpit tinybird-local analytics

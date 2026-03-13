@@ -1156,7 +1156,6 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Pull or build Tinybird CLI Image
-        if: needs.job_setup.outputs.changed_tinybird == 'true'
         run: |
           COMPOSE_IMAGE="${COMPOSE_PROJECT_NAME:-ghost-dev}-tb-cli"
           # Try pulling pre-built image from GHCR first (fast path)
@@ -1191,7 +1190,6 @@ jobs:
       - name: Prepare E2E CI job
         env:
           GHOST_E2E_BASE_IMAGE: ${{ steps.load.outputs.image-tag }}
-          TINYBIRD_CHANGED: ${{ needs.job_setup.outputs.changed_tinybird }}
         run: bash ./e2e/scripts/prepare-ci-e2e-job.sh
 
       - name: Run e2e tests in Playwright container
