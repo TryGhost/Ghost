@@ -17,10 +17,10 @@ const generateTags = function generateTags(data) {
 };
 
 const generateItem = function generateItem(post) {
-    const cheerio = require('cheerio');
+    const {load} = require('../../../server/lib/html-utils');
 
     const itemUrl = routerManager.getUrlByResourceId(post.id, {absolute: true});
-    const htmlContent = cheerio.load(post.html || '');
+    const htmlContent = load(post.html || '');
     const item = {
         title: post.title,
         // @TODO: DRY this up with data/meta/index & other excerpt code

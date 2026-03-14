@@ -3,7 +3,7 @@
 // Uses the Admin API to change locale and labs settings
 
 const assert = require('node:assert/strict');
-const cheerio = require('cheerio');
+const htmlUtils = require('../../core/server/lib/html-utils');
 const {agentProvider, fixtureManager} = require('../utils/e2e-framework');
 const config = require('../../core/shared/config');
 
@@ -38,7 +38,7 @@ describe('Theme i18n', function () {
         await frontendAgent.get('/')
             .expect(200)
             .expect((res) => {
-                const $ = cheerio.load(res.text);
+                const $ = htmlUtils.load(res.text);
                 if (translated) {
                     assert.equal($('.translation-test .translated').text(), translated);
                 }

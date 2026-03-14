@@ -1,7 +1,7 @@
 const EmailRenderer = require('../../../../../core/server/services/email-service/email-renderer');
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
-const cheerio = require('cheerio');
+const htmlUtils = require('../../../../../core/server/lib/html-utils');
 const {createModel, createModelClass} = require('./utils');
 const linkReplacer = require('../../../../../core/server/services/lib/link-replacer');
 const sinon = require('sinon');
@@ -1391,7 +1391,7 @@ describe('Email renderer', function () {
                 options
             );
 
-            const $ = cheerio.load(response.html);
+            const $ = htmlUtils.load(response.html);
 
             assert(response.plaintext.includes('Test Post'));
 
@@ -1437,7 +1437,7 @@ describe('Email renderer', function () {
                 options
             );
 
-            const $ = cheerio.load(response.html);
+            const $ = htmlUtils.load(response.html);
             assert.equal($('.preheader').text(), 'Custom excerpt');
         });
 
@@ -1471,7 +1471,7 @@ describe('Email renderer', function () {
                 {}
             );
 
-            const $ = cheerio.load(response.html);
+            const $ = htmlUtils.load(response.html);
             assert.equal($('.preheader').text(), 'Lexical Test some text for both');
         });
 
@@ -1505,7 +1505,7 @@ describe('Email renderer', function () {
                 {}
             );
 
-            const $ = cheerio.load(response.html);
+            const $ = htmlUtils.load(response.html);
             assert.equal($('.preheader').text(), 'Lexical Test some text for both');
         });
 
@@ -1716,7 +1716,7 @@ describe('Email renderer', function () {
             );
 
             // Check all links have domain tracked-link.com
-            const $ = cheerio.load(response.html);
+            const $ = htmlUtils.load(response.html);
             const links = [];
             for (const link of $('a').toArray()) {
                 const href = $(link).attr('href');
@@ -1787,7 +1787,7 @@ describe('Email renderer', function () {
             );
 
             // Check all links have domain tracked-link.com
-            const $ = cheerio.load(response.html);
+            const $ = htmlUtils.load(response.html);
             const links = [];
             for (const link of $('a').toArray()) {
                 const href = $(link).attr('href');
@@ -1832,7 +1832,7 @@ describe('Email renderer', function () {
             );
 
             // Check all links have domain tracked-link.com
-            const $ = cheerio.load(response.html);
+            const $ = htmlUtils.load(response.html);
             const links = [];
             for (const link of $('a').toArray()) {
                 const href = $(link).attr('href');
@@ -1911,7 +1911,7 @@ describe('Email renderer', function () {
             assert.equal(hasPlaceholder, true, 'URL should contain uuid placeholder');
 
             // The final tracked link should be in the HTML
-            const $ = cheerio.load(response.html);
+            const $ = htmlUtils.load(response.html);
             const links = [];
             for (const link of $('a').toArray()) {
                 const linkHref = $(link).attr('href');
@@ -3479,7 +3479,7 @@ describe('Email renderer', function () {
             assert(!response.html.includes('members only section'));
             assert(response.html.includes('some text for both'));
             assert(!response.html.includes('finishing part only for members'));
-            assert(response.html.includes('Devenez un(e) abonn&#xE9;(e) payant de Cathy&#39;s Blog pour acc&#xE9;der &#xE0; du contenu exclusif'));
+            assert(response.html.includes('Devenez un(e) abonné(e) payant de Cathy&#39;s Blog pour accéder à du contenu exclusif'));
             assert(response.plaintext.includes('Devenez un(e) abonné(e) payant de Cathy\'s Blog pour accéder à du contenu exclusif'));
         });
     });

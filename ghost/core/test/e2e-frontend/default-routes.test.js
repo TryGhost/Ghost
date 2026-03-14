@@ -10,7 +10,7 @@ const {assertExists} = require('../utils/assertions');
 const sinon = require('sinon');
 const supertest = require('supertest');
 const moment = require('moment');
-const cheerio = require('cheerio');
+const htmlUtils = require('../../core/server/lib/html-utils');
 const _ = require('lodash');
 const testUtils = require('../utils');
 const configUtils = require('../utils/config-utils');
@@ -63,7 +63,7 @@ describe('Default Frontend routing', function () {
                 .expect(200)
                 .expect(assertCorrectFrontendHeaders)
                 .expect((res) => {
-                    const $ = cheerio.load(res.text);
+                    const $ = htmlUtils.load(res.text);
 
                     // NOTE: "Ghost" is the title from the settings.
                     assert.equal($('title').text(), 'Ghost');
@@ -82,7 +82,7 @@ describe('Default Frontend routing', function () {
                 .expect(200)
                 .expect(assertCorrectFrontendHeaders)
                 .expect((res) => {
-                    const $ = cheerio.load(res.text);
+                    const $ = htmlUtils.load(res.text);
 
                     // NOTE: "Ghost" is the title from the settings.
                     assert.equal($('title').text(), 'Ghost - Ghost');
@@ -102,7 +102,7 @@ describe('Default Frontend routing', function () {
                 .expect(200)
                 .expect(assertCorrectFrontendHeaders)
                 .expect((res) => {
-                    const $ = cheerio.load(res.text);
+                    const $ = htmlUtils.load(res.text);
 
                     // NOTE: "Ghost" is the title from the settings.
                     assert.equal($('title').text(), 'Getting Started - Ghost');

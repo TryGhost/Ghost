@@ -66,11 +66,7 @@ function escapeRegExp(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-// This aids with lazyloading the cheerio dependency
-function cheerioLoad(html) {
-    const cheerio = require('cheerio');
-    return cheerio.load(html);
-}
+const htmlUtils = require('../../lib/html-utils');
 
 /**
  * @typedef {string|null} Segment
@@ -305,7 +301,7 @@ class EmailRenderer {
             return allowedSegments;
         }
 
-        const $ = cheerioLoad(html);
+        const $ = htmlUtils.load(html);
 
         let allSegments = $('[data-gh-segment]')
             .get()
@@ -397,7 +393,7 @@ class EmailRenderer {
             }
         }
 
-        let $ = cheerioLoad(html);
+        let $ = htmlUtils.load(html);
 
         // Remove parts of the HTML not applicable to the current segment - We do this
         // before rendering the template as the preheader for the email may be generated
@@ -496,7 +492,7 @@ class EmailRenderer {
         // juice will explicitly set the width/height attributes to `auto` on the <img /> tag
         // This is not supported by Outlook, so we need to reset the width/height attributes to the original values
         // Other clients will ignore the width/height attributes and use the inlined CSS instead
-        $ = cheerioLoad(html);
+        $ = htmlUtils.load(html);
         const originalImageSizes = $('img').get().map((image) => {
             const src = image.attribs.src;
             const width = image.attribs.width;
@@ -513,7 +509,7 @@ class EmailRenderer {
         html = juice(html, {inlinePseudoElements: true, removeStyleTags: true});
 
         // happens after inlining of CSS so we can change element types without worrying about styling
-        $ = cheerioLoad(html);
+        $ = htmlUtils.load(html);
 
         // Reset any `height="auto"` or `width="auto"` attributes to their original values before inlining CSS
         const imageTags = $('img').get();

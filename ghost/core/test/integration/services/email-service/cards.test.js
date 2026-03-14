@@ -4,7 +4,7 @@ const models = require('../../../../core/server/models');
 const assert = require('node:assert/strict');
 const configUtils = require('../../../utils/config-utils');
 const {sendEmail, matchEmailSnapshot} = require('../../../utils/batch-email-utils');
-const cheerio = require('cheerio');
+const htmlUtils = require('../../../../core/server/lib/html-utils');
 const fs = require('fs-extra');
 const {DEFAULT_NODES} = require('@tryghost/kg-default-nodes');
 const ImageSize = require('../../../../core/server/lib/image/image-size');
@@ -35,8 +35,8 @@ const excludedNodes = [
  * @returns {asserts data is T & {preheader: string}}
  */
 function splitPreheader(data) {
-    // Remove the preheader span from the email using cheerio
-    const $ = cheerio.load(data.html);
+    // Remove the preheader span from the email using html-utils
+    const $ = htmlUtils.load(data.html);
     const preheader = $('.preheader');
     // @ts-ignore
     data.preheader = preheader.html();
@@ -128,7 +128,7 @@ describe('Can send cards via email', function () {
             ])
         });
 
-        // Remove the preheader span from the email using cheerio
+        // Remove the preheader span from the email using html-utils
         splitPreheader(data);
 
         // Check only contains once in every part
@@ -277,7 +277,7 @@ describe('Can send cards via email', function () {
         sinon.assert.calledWithMatch(imageSizeFromUrlStub, cdnImageUrl);
         sinon.assert.neverCalledWithMatch(storagePathSpy, cdnImageUrl);
 
-        const $ = cheerio.load(data.html);
+        const $ = htmlUtils.load(data.html);
         const featureImage = $(`img[src="${cdnImageUrl}"]`).first();
         assert.ok(featureImage.length > 0);
         assert.equal(featureImage.attr('width'), '600');

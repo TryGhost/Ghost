@@ -620,8 +620,8 @@ describe.skip('Batch sending tests', function () {
             const member = await models.Member.findOne({uuid: memberUuid});
 
             // Test if all links are replaced and contain the member id
-            const cheerio = require('cheerio');
-            const $ = cheerio.load(html);
+            const htmlUtils = require('../../../../core/server/lib/html-utils');
+            const $ = htmlUtils.load(html);
             const links = await linkRedirectRepository.getAll({filter: 'post_id:\'' + emailModel.get('post_id') + '\''});
 
             for (const el of $('a').toArray()) {

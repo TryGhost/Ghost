@@ -6,7 +6,7 @@ const assert = require('node:assert/strict');
 const {assertExists} = require('../utils/assertions');
 const sinon = require('sinon');
 const supertest = require('supertest');
-const cheerio = require('cheerio');
+const htmlUtils = require('../../core/server/lib/html-utils');
 
 const testUtils = require('../utils');
 const config = require('../../core/shared/config');
@@ -44,7 +44,7 @@ describe('Frontend Routing: Email Routes', function () {
             .expect('Content-Type', /html/)
             .expect(200);
 
-        const $ = cheerio.load(res.text);
+        const $ = htmlUtils.load(res.text);
 
         assert.equal($('title').text(), 'I am visible through email route!');
 

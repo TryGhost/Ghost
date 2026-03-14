@@ -147,7 +147,7 @@ describe('Email Preview API', function () {
                 .expect(({body}) => {
                     // Extra assert to ensure apostrophe is transformed
                     assert.doesNotMatch(body.email_previews[0].html, /Testing links in email excerpt and apostrophes &apos;/);
-                    assert.match(body.email_previews[0].html, /Testing links in email excerpt and apostrophes &#39;/);
+                    assert.match(body.email_previews[0].html, /Testing links in email excerpt and apostrophes &#x27;/);
 
                     testCleanedSnapshot(body.email_previews[0].html, {
                         [defaultNewsletter.get('uuid')]: 'requested-newsletter-uuid'

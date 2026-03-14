@@ -61,8 +61,8 @@ module.exports = class MentionDiscoveryService {
             return null;
         }
 
-        const cheerio = require('cheerio');
-        const $ = cheerio.load(response.body);
+        const {load} = require('../../lib/html-utils');
+        const $ = load(response.body);
 
         // must be first <link> OR <a> element with rel=webmention
         href = $('a[rel="webmention"],link[rel="webmention"]').first().attr('href');

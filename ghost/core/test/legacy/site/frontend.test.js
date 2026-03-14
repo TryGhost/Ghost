@@ -7,7 +7,7 @@ const {assertExists} = require('../../utils/assertions');
 
 const sinon = require('sinon');
 const supertest = require('supertest');
-const cheerio = require('cheerio');
+const htmlUtils = require('../../../core/server/lib/html-utils');
 const testUtils = require('../../utils');
 const configUtils = require('../../utils/config-utils');
 const config = require('../../../core/shared/config');
@@ -121,7 +121,7 @@ describe('Frontend Routing', function () {
                     .expect('Cache-Control', testUtils.cacheRules.public)
                     .expect(200)
                     .end(function (err, res) {
-                        const $ = cheerio.load(res.text);
+                        const $ = htmlUtils.load(res.text);
 
                         assert.equal(res.headers['x-cache-invalidate'], undefined);
                         assert.equal(res.headers['X-CSRF-Token'], undefined);

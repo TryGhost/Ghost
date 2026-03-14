@@ -1,7 +1,7 @@
 const {agentProvider, mockManager, fixtureManager, matchers, configUtils, resetRateLimits, dbUtils} = require('../../utils/e2e-framework');
 const sinon = require('sinon');
 const assert = require('node:assert/strict');
-const cheerio = require('cheerio');
+const htmlUtils = require('../../../core/server/lib/html-utils');
 const {assertMatchSnapshot} = require('../../utils/assertions');
 const settingsCache = require('../../../core/shared/settings-cache');
 const settingsService = require('../../../core/server/services/settings');
@@ -775,7 +775,7 @@ describe('sendMagicLink', function () {
             assert(!textMatch, `Email text should not contain OTC. Found: "${textMatch?.[0]}" near: "${mail.text.substring(mail.text.search(otcRegex) - 50, mail.text.search(otcRegex) + 100)}"`);
 
             // It's possible that there's an OTC-like in an href, so only check the rendered text.
-            const htmlText = cheerio.load(mail.html).text();
+            const htmlText = htmlUtils.load(mail.html).text();
             const htmlMatch = htmlText.match(otcRegex);
             assert(!htmlMatch, `Email HTML should not contain OTC. Found: "${htmlMatch?.[0]}" near: "${htmlText.substring(htmlText.search(otcRegex) - 50, htmlText.search(otcRegex) + 100)}"`);
         }

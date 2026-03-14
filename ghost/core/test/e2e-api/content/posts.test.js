@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const cheerio = require('cheerio');
+const htmlUtils = require('../../../core/server/lib/html-utils');
 const sinon = require('sinon');
 const config = require('../../../core/shared/config');
 const moment = require('moment');
@@ -88,7 +88,7 @@ describe('Posts Content API', function () {
         assert.equal(urlParts.protocol, configUrl.protocol);
         assert.equal(urlParts.host, configUrl.host);
 
-        const $ = cheerio.load(res.body.posts[11].html);
+        const $ = htmlUtils.load(res.body.posts[11].html);
         urlParts = new URL($('img').attr('src'));
         assert.equal(urlParts.protocol, configUrl.protocol);
         assert.equal(urlParts.host, configUrl.host);

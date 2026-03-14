@@ -4,7 +4,7 @@ const Mention = require('../../../../../core/server/services/mentions/mention');
 const MentionsAPI = require('../../../../../core/server/services/mentions/mentions-api');
 const InMemoryMentionRepository = require('../../../../../core/server/services/mentions/in-memory-mention-repository');
 const sinon = require('sinon');
-const cheerio = require('cheerio');
+const htmlUtils = require('../../../../../core/server/lib/html-utils');
 
 const mockRoutingService = {
     async pageExists() {
@@ -333,7 +333,7 @@ describe('MentionsAPI', function () {
 
     it('Handles verify errors', async function () {
         const repository = new InMemoryMentionRepository();
-        sinon.stub(cheerio, 'load').throws(new Error('Test error'));
+        sinon.stub(htmlUtils, 'load').throws(new Error('Test error'));
 
         const api = new MentionsAPI({
             repository,

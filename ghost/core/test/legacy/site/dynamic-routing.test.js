@@ -9,7 +9,7 @@ const sinon = require('sinon');
 const moment = require('moment');
 const testUtils = require('../../utils');
 const configUtils = require('../../utils/config-utils');
-const cheerio = require('cheerio');
+const htmlUtils = require('../../../core/server/lib/html-utils');
 const config = require('../../../core/shared/config');
 const themeEngine = require('../../../core/frontend/services/theme-engine');
 
@@ -57,7 +57,7 @@ describe('Dynamic Routing', function () {
                         return done(err);
                     }
 
-                    const $ = cheerio.load(res.text);
+                    const $ = htmlUtils.load(res.text);
 
                     assert.equal(res.headers['x-cache-invalidate'], undefined);
                     assert.equal(res.headers['X-CSRF-Token'], undefined);
@@ -130,7 +130,7 @@ describe('Dynamic Routing', function () {
                         return done(err);
                     }
 
-                    const $ = cheerio.load(res.text);
+                    const $ = htmlUtils.load(res.text);
 
                     assert.equal(res.headers['x-cache-invalidate'], undefined);
                     assert.equal(res.headers['X-CSRF-Token'], undefined);

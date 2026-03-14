@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const ObjectID = require('bson-objectid').default;
-const cheerio = require('cheerio');
+const htmlUtils = require('../../../../../core/server/lib/html-utils');
 const sinon = require('sinon');
 
 const Mention = require('../../../../../core/server/services/mentions/mention');
@@ -46,7 +46,7 @@ describe('Mention', function () {
             const mention = await Mention.create(validInput);
             assert(!mention.verified);
 
-            sinon.stub(cheerio, 'load').throws(new Error('Invalid HTML'));
+            sinon.stub(htmlUtils, 'load').throws(new Error('Invalid HTML'));
 
             mention.verify('irrelevant', 'text/html');
             assert(!mention.verified);

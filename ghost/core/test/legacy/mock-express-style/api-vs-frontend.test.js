@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../utils/assertions');
 const sinon = require('sinon');
-const cheerio = require('cheerio');
+const htmlUtils = require('../../../core/server/lib/html-utils');
 const testUtils = require('../../utils');
 const localUtils = require('./utils');
 const configUtils = require('../../utils/config-utils');
@@ -148,7 +148,7 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        const $ = cheerio.load(response.body);
+                        const $ = htmlUtils.load(response.body);
 
                         assert.equal(response.statusCode, 200);
                         assert.equal(response.template, 'index');
@@ -173,7 +173,7 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        const $ = cheerio.load(response.body);
+                        const $ = htmlUtils.load(response.body);
 
                         assert.equal(response.statusCode, 200);
                         assert.equal(response.template, 'index');
@@ -421,7 +421,7 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        const $ = cheerio.load(response.body);
+                        const $ = htmlUtils.load(response.body);
 
                         assert.equal(response.statusCode, 200);
                         assert.equal(response.template, 'index');
@@ -1242,7 +1242,7 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        const $ = cheerio.load(response.body);
+                        const $ = htmlUtils.load(response.body);
 
                         assert.equal(response.statusCode, 200);
                         assert.equal(response.template, 'index');
@@ -1274,7 +1274,7 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        const $ = cheerio.load(response.body);
+                        const $ = htmlUtils.load(response.body);
 
                         assert.equal(response.statusCode, 200);
                         assert.equal(response.template, 'default');
@@ -1307,7 +1307,7 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        const $ = cheerio.load(response.body);
+                        const $ = htmlUtils.load(response.body);
 
                         assert.equal(response.statusCode, 200);
                         assert.equal(response.template, 'index');
@@ -1325,7 +1325,7 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        const $ = cheerio.load(response.body);
+                        const $ = htmlUtils.load(response.body);
 
                         assert.equal(response.statusCode, 200);
                         assert.equal(response.template, 'index');
@@ -1343,7 +1343,7 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        const $ = cheerio.load(response.body);
+                        const $ = htmlUtils.load(response.body);
 
                         assert.equal(response.statusCode, 200);
                         assert.equal(response.template, 'index');
@@ -1541,7 +1541,7 @@ describe('Frontend behavior tests', function () {
 
             return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
-                    const $ = cheerio.load(response.body);
+                    const $ = htmlUtils.load(response.body);
                     assert.equal(response.statusCode, 200);
                     assert.equal($('head link')[1].attribs.href, `${configUtils.config.get('url')}/rss/`);
                 });

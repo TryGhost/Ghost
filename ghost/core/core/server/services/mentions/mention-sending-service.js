@@ -182,8 +182,8 @@ module.exports = class MentionSendingService {
      * @returns {URL[]}
     */
     getLinks(html) {
-        const cheerio = require('cheerio');
-        const $ = cheerio.load(html);
+        const {load} = require('../../lib/html-utils');
+        const $ = load(html);
         const urls = [];
         const siteUrl = this.siteUrl;
 
