@@ -99,7 +99,7 @@
     "codemirror": "^6.0.1",
     "concurrently": "^9.2.0",
     "cross-fetch": "^4.0.0",
-    "dompurify": "^3.3.0",
+    "dompurify": "^3.3.2",
     "dotenv": "^17.3.1",
     "emoji-mart": "^5.5.2",
     "eslint-plugin-react": "7.37.5",
