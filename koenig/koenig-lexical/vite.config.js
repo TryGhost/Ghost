@@ -99,6 +99,15 @@ export default (function viteConfig({mode}) {
                     globals: {
                         react: 'React',
                         'react-dom': 'ReactDOM'
+                    },
+                    assetFileNames: (assetInfo) => {
+                        // Vite 6 changed CSS output naming in lib mode from
+                        // 'style.css' to deriving from the entry filename.
+                        // Preserve 'style.css' for backwards compatibility.
+                        if (assetInfo.names?.[0]?.endsWith('.css')) {
+                            return 'style.css';
+                        }
+                        return assetInfo.names?.[0] ?? '[name][extname]';
                     }
                 }
             },
