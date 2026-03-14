@@ -94,7 +94,7 @@ const ThemePreview: React.FC<{
                     <Select
                         border={false}
                         containerClassName='text-sm font-bold'
-                        controlClasses={{menu: 'w-24'}}
+                        controlClasses={{menu: 'min-w-max'}}
                         fullWidth={false}
                         options={variantOptions}
                         selectedOption={selectedVariant}
