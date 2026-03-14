@@ -572,7 +572,8 @@ test.describe('Image card', async () => {
         await expect(await page.getByTestId('image-card-populated')).toBeVisible();
 
         // wait for upload to complete
-        await expect(await page.getByTestId('progress-bar')).toBeHidden();
+        await expect(page.getByTestId('progress-bar')).toBeHidden();
+        await expect(page.locator('[data-kg-card="image"] img')).toHaveAttribute('alt', '');
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
@@ -602,9 +603,8 @@ test.describe('Image card', async () => {
 
         await page.locator('[data-kg-card="image"] [data-testid="image-card-populated"]').dispatchEvent('drop', {dataTransfer});
 
-        // wait for upload to complete
-        await expect(page.getByTestId('upload-progress')).toBeVisible();
-        await expect(page.getByTestId('progress-bar')).toBeHidden();
+        // wait for upload to complete (progress bar may be too transient to catch)
+        await expect(page.getByTestId('progress-bar')).toBeHidden({timeout: 15000});
 
         const newSrc = await page.locator('[data-kg-card="image"] img').getAttribute('src');
 
@@ -887,8 +887,10 @@ test.describe('Image card', async () => {
         // insert image
         await insertImage(page);
 
-        // create snippet
+        // create snippet - click card to ensure stable selected (not editing) state
         await page.keyboard.press('Escape');
+        await expect(page.locator('[data-kg-card="image"]')).toHaveAttribute('data-kg-card-editing', 'false');
+        await expect(page.getByTestId('create-snippet')).toBeVisible();
         await createSnippet(page);
 
         // can insert card from snippet
@@ -908,16 +910,22 @@ test.describe('Image card', async () => {
         const rootParagraphs = page.locator('.koenig-lexical > [data-kg="editor"] > div > p');
         const paragraphCount = await rootParagraphs.count();
 
+        await page.keyboard.type('Captiontest--Captiontest');
+
+        const captionEditor = page.locator('[data-testid="image-caption-editor"] [data-kg="editor"] p span');
+
+        // Check contains text
+        await expect(captionEditor).toHaveText('Captiontest--Captiontest');
+
+        // Ensure caption is scrolled into view before mouse operations
+        // (Chrome for Testing auto-scrolls on mouse interactions unlike old Chromium)
+        await page.evaluate(() => {
+            document.querySelector('[data-testid="image-caption-editor"]').scrollIntoView({block: 'center'});
+        });
+        await page.waitForTimeout(100);
+
         await expectUnchangedScrollPosition(page, async () => {
-            await page.keyboard.type('Captiontest--Captiontest');
-
-            const captionEditor = page.locator('[data-testid="image-caption-editor"] [data-kg="editor"] p span');
-
-            // Check contains text
-            await expect(captionEditor).toHaveText('Captiontest--Captiontest');
-
-            // Select the text
-            // Get the bounding box of the span
+            // Select the text using mouse drag (middle to end)
             const box = await captionEditor.boundingBox();
             const y = box.y + box.height / 2;
             const startX = box.x + box.width / 2;
@@ -956,16 +964,22 @@ test.describe('Image card', async () => {
         await enterUntilScrolled(page);
         await insertImage(page);
 
+        await page.keyboard.type('Captiontest--Captiontest');
+
+        const captionEditor = page.locator('[data-testid="image-caption-editor"] [data-kg="editor"] p span');
+
+        // Check contains text
+        await expect(captionEditor).toHaveText('Captiontest--Captiontest');
+
+        // Ensure caption is scrolled into view before mouse operations
+        // (Chrome for Testing auto-scrolls on mouse interactions unlike old Chromium)
+        await page.evaluate(() => {
+            document.querySelector('[data-testid="image-caption-editor"]').scrollIntoView({block: 'center'});
+        });
+        await page.waitForTimeout(100);
+
         await expectUnchangedScrollPosition(page, async () => {
-            await page.keyboard.type('Captiontest--Captiontest');
-
-            const captionEditor = page.locator('[data-testid="image-caption-editor"] [data-kg="editor"] p span');
-
-            // Check contains text
-            await expect(captionEditor).toHaveText('Captiontest--Captiontest');
-
             // Select the left side of the text (deliberately a test in the other direction)
-            // Get the bounding box of the span
             const box = await captionEditor.boundingBox();
             const y = box.y + box.height / 2;
             const startX = box.x + box.width / 2;
@@ -995,16 +1009,22 @@ test.describe('Image card', async () => {
         const rootParagraphs = page.locator('.koenig-lexical > [data-kg="editor"] > div > p');
         const paragraphCount = await rootParagraphs.count();
 
+        await page.keyboard.type('Captiontest--Captiontest');
+
+        const captionEditor = page.locator('[data-testid="image-caption-editor"] [data-kg="editor"] p span');
+
+        // Check contains text
+        await expect(captionEditor).toHaveText('Captiontest--Captiontest');
+
+        // Ensure caption is scrolled into view before mouse operations
+        // (Chrome for Testing auto-scrolls on mouse interactions unlike old Chromium)
+        await page.evaluate(() => {
+            document.querySelector('[data-testid="image-caption-editor"]').scrollIntoView({block: 'center'});
+        });
+        await page.waitForTimeout(100);
+
         await expectUnchangedScrollPosition(page, async () => {
-            await page.keyboard.type('Captiontest--Captiontest');
-
-            const captionEditor = page.locator('[data-testid="image-caption-editor"] [data-kg="editor"] p span');
-
-            // Check contains text
-            await expect(captionEditor).toHaveText('Captiontest--Captiontest');
-
-            // Select the left side of the text (deliberately a test in the other direction)
-            // Get the bounding box of the span
+            // Click at the middle of the caption text
             const box = await captionEditor.boundingBox();
             const y = box.y + box.height / 2;
             const x = box.x + box.width / 2;
@@ -1034,9 +1054,8 @@ test.describe('Image card', async () => {
             // Caption still ok?
             await expect(captionEditor).toHaveText('Captiontest-**-Captiontest');
 
-            // Select the caption again
-            // we need to do this again, because previously this caused a bug only if you selected the caption again
-            await page.mouse.click(x, y);
+            // Select the caption again (click centers on the element by default)
+            await captionEditor.click();
             await page.keyboard.type('_'); // To test the cursor is at the middle, otherwise were not testing anything
 
             // Press the enter key

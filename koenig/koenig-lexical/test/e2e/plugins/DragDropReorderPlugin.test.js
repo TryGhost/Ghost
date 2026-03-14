@@ -57,6 +57,10 @@ test.describe('Drag Drop Reorder Plugin', async function () {
 
         await dragMouse(page, imageBBox, paragraphBBox, 'start', 'start', true, 100, 100);
 
+        // Click on the paragraph to deselect the card after drop
+        // (Chrome for Testing keeps the card selected after drag & drop unlike old Chromium)
+        await page.click('p:not(figure p)');
+
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
                 <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule"></div>
@@ -105,6 +109,10 @@ test.describe('Drag Drop Reorder Plugin', async function () {
         const dividerBBox = await page.locator('hr').boundingBox();
 
         await dragMouse(page, imageBBox, dividerBBox, 'start', 'start', true, 100, 100);
+
+        // Click on the paragraph to deselect the card after drop
+        // (Chrome for Testing keeps the card selected after drag & drop unlike old Chromium)
+        await page.click('p:not(figure p)');
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
@@ -161,6 +169,10 @@ test.describe('Drag Drop Reorder Plugin', async function () {
         };
 
         await dragMouse(page, imageBBox, toBBox, 'start', 'start', true, 1000, 100);
+
+        // Click on the paragraph to deselect the card after drop
+        // (Chrome for Testing keeps the card selected after drag & drop unlike old Chromium)
+        await page.click('p:not(figure p)');
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">

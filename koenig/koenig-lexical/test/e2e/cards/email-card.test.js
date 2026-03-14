@@ -161,7 +161,7 @@ test.describe('Email card', async () => {
         await page.keyboard.type('- List item 1');
         await page.keyboard.press('Enter');
 
-        const emailCard = page.locator('[data-kg-card="email"] ul > li:first-child');
+        const emailCard = page.locator('[data-kg-card="email"] [data-kg="editor"] ul > li:first-child');
         await expect(emailCard).toHaveText('List item 1');
     });
 
@@ -192,7 +192,7 @@ test.describe('Email card', async () => {
         await page.keyboard.press('Backspace');
         await page.keyboard.press(`${ctrlOrCmd}+z`);
 
-        const emailCard = page.locator('[data-kg-card="email"] ul > li:first-child');
+        const emailCard = page.locator('[data-kg-card="email"] [data-kg="editor"] ul > li:first-child');
         await expect(emailCard).toHaveText('List item 1');
     });
 

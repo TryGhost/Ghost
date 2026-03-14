@@ -165,7 +165,8 @@ export function prettifyHTML(string, options = {}) {
             attributeSort: 'ASC',
             bracketSameLine: true,
             htmlWhitespaceSensitivity: 'ignore',
-            parser: 'html'
+            parser: 'html',
+            plugins: ['prettier-plugin-organize-attributes']
         })
         .trim();
 }
@@ -477,4 +478,34 @@ export async function getEditorState(page) {
     return await page.evaluate(() => {
         return window.lexicalEditor.getEditorState().toJSON();
     });
+}
+
+/**
+ * Select text backwards from current cursor position by the given number of characters.
+ * Uses keyboard Shift+ArrowLeft with a short wait to ensure Chrome for Testing
+ * registers the selection correctly before subsequent keyboard actions.
+ */
+export async function selectBackwards(page, charCount) {
+    await page.keyboard.down('Shift');
+    for (let i = 0; i < charCount; i++) {
+        await page.keyboard.press('ArrowLeft');
+    }
+    await page.keyboard.up('Shift');
+    // Wait for selection to be registered in Chrome for Testing before keyboard actions
+    await page.waitForTimeout(50);
+}
+
+/**
+ * Select text forwards from current cursor position by the given number of characters.
+ * Uses keyboard Shift+ArrowRight with a short wait to ensure Chrome for Testing
+ * registers the selection correctly before subsequent keyboard actions.
+ */
+export async function selectForward(page, charCount) {
+    await page.keyboard.down('Shift');
+    for (let i = 0; i < charCount; i++) {
+        await page.keyboard.press('ArrowRight');
+    }
+    await page.keyboard.up('Shift');
+    // Wait for selection to be registered in Chrome for Testing before keyboard actions
+    await page.waitForTimeout(50);
 }

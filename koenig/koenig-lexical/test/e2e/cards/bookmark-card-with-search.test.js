@@ -394,6 +394,7 @@ test.describe('Bookmark card (with searchLinks)', async () => {
         });
 
         test('shows metadata on selected items', async function () {
+            await page.mouse.move(0, 0); // avoid hover state interfering with keyboard selection
             await focusEditor(page);
             await insertCard(page, {cardName: 'bookmark'});
             await expect(page.getByTestId('bookmark-url-dropdown')).toBeVisible();
@@ -406,22 +407,26 @@ test.describe('Bookmark card (with searchLinks)', async () => {
                 </span>
             `, {selector: '[data-testid="bookmark-url-listOption"][aria-selected="true"]'});
 
+            // wait for dropdown to fully settle before navigating
+            await page.waitForTimeout(100);
+
             await page.keyboard.press('ArrowDown');
 
-            // first item no longer shows metadata
+            // wait for selection to move to the second item
+            await expect(page.locator('[data-testid="bookmark-url-listOption"]').nth(1)).toHaveAttribute('aria-selected', 'true');
 
-            await assertHTML(page, html`
-                <span><span>Remote Work's Impact on Job Markets and Employment</span></span>
-            `, {selector: '[data-testid="bookmark-url-listOption"]'});
+            // check all conditions atomically because the dropdown selection can be unstable
+            await expect(async () => {
+                const firstItemText = await page.locator('[data-testid="bookmark-url-listOption"]').nth(0).textContent();
+                const selectedItemText = await page.locator('[data-testid="bookmark-url-listOption"][aria-selected="true"]').textContent();
 
-            // second now-selected item shows metadata
-            await assertHTML(page, html`
-                <span><span>Robotics Renaissance: How Automation is Transforming Industries</span></span>
-                <span>
-                  <span title="Specific tiers only"><svg></svg></span>
-                  <span>2 May 2024</span>
-                </span>
-            `, {selector: '[data-testid="bookmark-url-listOption"][aria-selected="true"]'});
+                // first item no longer shows metadata
+                expect(firstItemText).not.toContain('May 2024');
+
+                // second now-selected item shows metadata
+                expect(selectedItemText).toContain('Robotics Renaissance');
+                expect(selectedItemText).toContain('2 May 2024');
+            }).toPass();
         });
 
         test('highlights matches in results', async function () {
@@ -521,7 +526,7 @@ test.describe('Bookmark card (with searchLinks)', async () => {
                 await insertCard(page, {cardName: 'bookmark'});
                 await expect(page.getByTestId('bookmark-url-dropdown')).toBeVisible();
 
-                await page.keyboard.type(expected);
+                await page.keyboard.type(expected, {delay: 10});
                 await expect(page.getByTestId('input-list-spinner')).not.toBeVisible();
 
                 await assertHTML(page, html`

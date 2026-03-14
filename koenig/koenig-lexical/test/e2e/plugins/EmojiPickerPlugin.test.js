@@ -61,9 +61,11 @@ test.describe('Emoji Picker Plugin', async function () {
     test('can use the enter key to select an emoji', async function () {
         await focusEditor(page);
 
-        await page.keyboard.type(':+1');
+        await page.keyboard.type(':+1', {delay: 10});
         await expect(page.getByTestId('emoji-menu')).toBeVisible();
 
+        // small wait for emoji picker to fully process typed characters
+        await page.waitForTimeout(50);
         await page.keyboard.press('Enter');
 
         await expect(page.getByTestId('emoji-menu')).not.toBeVisible();
@@ -85,6 +87,9 @@ test.describe('Emoji Picker Plugin', async function () {
         await page.keyboard.type('c');
         await expect(page.getByTestId('emoji-option-0')).toHaveText('🌮taco');
         await expect(page.getByTestId('emoji-option-1')).not.toBeVisible();
+
+        // small wait for emoji picker to fully process typed characters
+        await page.waitForTimeout(50);
 
         await page.keyboard.press('Enter');
         await assertHTML(page, '<p dir="ltr"><span data-lexical-text="true">🌮</span></p>');
@@ -162,6 +167,9 @@ test.describe('Emoji Picker Plugin', async function () {
         await insertCard(page, {cardName: 'callout'});
 
         await page.keyboard.type(':tac', {delay: 10});
+        await expect(page.getByTestId('emoji-menu')).toBeVisible();
+        // small wait for emoji picker to fully process typed characters
+        await page.waitForTimeout(50);
         await page.keyboard.press('Enter');
         await page.keyboard.type('s for all', {delay: 10});
 

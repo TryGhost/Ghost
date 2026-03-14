@@ -143,6 +143,8 @@ test.describe('Linking', async () => {
                 </p>
             `);
 
+            // small wait for DOM to settle before backspace removes the at-link
+            await page.waitForTimeout(50);
             await page.keyboard.press('Backspace');
 
             // it should now remove the at-linking entirely leaving only an @

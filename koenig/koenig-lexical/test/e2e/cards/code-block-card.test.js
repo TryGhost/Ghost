@@ -1,4 +1,4 @@
-import {assertHTML, focusEditor, html, initialize, isMac, pasteText} from '../../utils/e2e';
+import {assertHTML, focusEditor, html, initialize, isMac, pasteText, selectBackwards} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 
 test.describe('Code Block card', async () => {
@@ -292,11 +292,7 @@ test.describe('Code Block card', async () => {
 
         // select "test" - highlight plugin marks it and causes issues with .closest('.cm-editor') in shouldIgnoreEvent()
         // see https://github.com/TryGhost/Product/issues/3785
-        await page.keyboard.down('Shift');
-        for (let i = 0; i < 4; i++) {
-            await page.keyboard.press('ArrowLeft');
-        }
-        await page.keyboard.up('Shift');
+        await selectBackwards(page, 4);
 
         await page.keyboard.press(`${ctrlOrCmd}+x`);
 

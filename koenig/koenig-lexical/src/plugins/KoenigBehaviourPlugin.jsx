@@ -128,6 +128,14 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
 
     const isShiftPressed = React.useRef(false);
 
+    // Track card selections restored by undo/redo so we can protect them from
+    // being cleared by decorator reconciliation side-effects. When a 'historic'
+    // update restores a NodeSelection, subsequent Lexical updates triggered by
+    // React rendering the decorator component can momentarily change the
+    // selection, causing the card to appear deselected. We suppress one
+    // clearing cycle and re-set the selection instead.
+    const preserveCardSelectionRef = React.useRef(null);
+
     React.useEffect(() => {
         const keyDown = (event) => {
             isShiftPressed.current = event.shiftKey;
@@ -224,7 +232,44 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                     }, {tag: 'history-merge'}); // don't include a history entry for selection change
                 }
 
+                // When undo/redo restores a card selection, protect it from
+                // being cleared by side-effects of decorator reconciliation
+                if (tags.has('historic') && isCardSelected) {
+                    preserveCardSelectionRef.current = cardKey;
+                }
+
+                // If a non-historic, non-history-merge update arrives with the
+                // card still selected, reconciliation succeeded without a
+                // transient deselection so the ref is no longer needed -
+                // clear it to avoid blocking future legitimate deselections.
+                // history-merge updates are excluded because they fire as
+                // internal bookkeeping before decorator reconciliation.
+                if (!tags.has('historic') && !tags.has('history-merge') && isCardSelected && preserveCardSelectionRef.current === cardKey) {
+                    preserveCardSelectionRef.current = null;
+                }
+
                 if (!isCardSelected && selectedCardKey) {
+                    // If the selection was just restored by undo/redo, re-set
+                    // it instead of clearing - the deselection is a transient
+                    // side-effect of decorator re-rendering, not a user action.
+                    // Clear the ref after one use so subsequent legitimate
+                    // deselections are not blocked.
+                    if (preserveCardSelectionRef.current === selectedCardKey) {
+                        preserveCardSelectionRef.current = null;
+                        editor.update(() => {
+                            const node = $getNodeByKey(selectedCardKey);
+                            if (node) {
+                                const selection = $createNodeSelection();
+                                selection.add(selectedCardKey);
+                                $setSelection(selection);
+                            } else {
+                                setSelectedCardKey(null);
+                                setIsEditingCard(false);
+                            }
+                        }, {tag: 'history-merge'});
+                        return;
+                    }
+
                     editor.update(() => {
                         $deselectCard(editor, selectedCardKey);
 

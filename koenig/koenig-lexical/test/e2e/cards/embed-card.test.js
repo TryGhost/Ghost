@@ -56,7 +56,7 @@ test.describe('Embed card', async () => {
                     <div>
                         <div>
                             <iframe
-                                srcdoc='<iframe width="200" height="113" src="https://www.youtube.com/embed/7hCPODjJO7s?feature=oembed" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen title="Project Binky - Episode 1  - Austin Mini GT-Four - Turbo Charged 4WD Mini"></iframe>'
+                                srcdoc='&lt;iframe width="200" height="113" src="https://www.youtube.com/embed/7hCPODjJO7s?feature=oembed" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen title="Project Binky - Episode 1  - Austin Mini GT-Four - Turbo Charged 4WD Mini"&gt;&lt;/iframe&gt;'
                                 tabindex="-1"
                                 title="embed-card-iframe"></iframe>
                             <div></div>
@@ -239,6 +239,8 @@ test.describe('Embed card', async () => {
 
         // create snippet
         await page.keyboard.press('Escape');
+        await expect(page.locator('[data-kg-card="embed"]')).toHaveAttribute('data-kg-card-selected', 'true');
+        await expect(page.locator('[data-kg-card="embed"]')).toHaveAttribute('data-kg-card-editing', 'false');
         await createSnippet(page);
 
         // can insert card from snippet
@@ -310,7 +312,7 @@ test.describe('Embed card', async () => {
                     <div>
                         <div>
                             <iframe
-                                srcdoc='<iframe width="200" height="113" src="https://www.youtube.com/embed/7hCPODjJO7s?feature=oembed" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen title="Project Binky - Episode 1  - Austin Mini GT-Four - Turbo Charged 4WD Mini"></iframe>'
+                                srcdoc='&lt;iframe width="200" height="113" src="https://www.youtube.com/embed/7hCPODjJO7s?feature=oembed" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen title="Project Binky - Episode 1  - Austin Mini GT-Four - Turbo Charged 4WD Mini"&gt;&lt;/iframe&gt;'
                                 tabindex="-1"
                                 title="embed-card-iframe"></iframe>
                             <div></div>

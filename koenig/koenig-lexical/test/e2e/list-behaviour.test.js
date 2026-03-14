@@ -38,6 +38,8 @@ test.describe('List behaviour', async () => {
             for (let i = 0; i < 'first li'.length; i++) {
                 await page.keyboard.press('ArrowLeft');
             }
+            // Wait for selection to be registered in Chrome for Testing
+            await page.waitForTimeout(50);
 
             // sanity check - cursor is at beginning of list
             await assertSelection(page, {
@@ -81,6 +83,7 @@ test.describe('List behaviour', async () => {
         test('at beginning of populated list after card', async function () {
             await focusEditor(page);
             await page.keyboard.type('---');
+            await expect(page.locator('[data-kg-card="horizontalrule"]')).toBeVisible();
             await page.keyboard.type('- first li');
             await page.keyboard.press('Enter');
             await page.keyboard.type('second li');
@@ -100,6 +103,8 @@ test.describe('List behaviour', async () => {
             for (let i = 0; i < 'first li'.length; i++) {
                 await page.keyboard.press('ArrowLeft');
             }
+            // Wait for selection to be registered in Chrome for Testing
+            await page.waitForTimeout(50);
 
             // sanity check - cursor is at beginning of list
             await assertSelection(page, {
@@ -136,6 +141,8 @@ test.describe('List behaviour', async () => {
                 await page.keyboard.press('ArrowLeft');
             }
             await page.keyboard.press('ArrowUp');
+            // Wait for selection to be registered in Chrome for Testing
+            await page.waitForTimeout(50);
 
             // sanity check - cursor is at beginning of second list item
             await assertSelection(page, {

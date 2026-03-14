@@ -1,4 +1,4 @@
-import {assertHTML, ctrlOrCmd, focusEditor, html, initialize} from '../utils/e2e';
+import {assertHTML, ctrlOrCmd, focusEditor, html, initialize, selectBackwards} from '../utils/e2e';
 import {test} from '@playwright/test';
 
 test.describe('Editor keyboard shortcuts', async () => {
@@ -23,14 +23,9 @@ test.describe('Editor keyboard shortcuts', async () => {
 
             await page.keyboard.type('test');
 
-            await page.keyboard.down('Shift');
-            await page.keyboard.press('ArrowLeft');
-            await page.keyboard.press('ArrowLeft');
-            await page.keyboard.press('ArrowLeft');
-            await page.keyboard.press('ArrowLeft');
-            await page.keyboard.up('Shift', {delay: 100});
+            await selectBackwards(page, 4);
 
-            await page.keyboard.press(`${ctrlOrCmdKey}+B`, {delay: 100});
+            await page.keyboard.press(`${ctrlOrCmdKey}+B`);
 
             await assertHTML(page, html`<p dir="ltr"><strong data-lexical-text="true">test</strong></p>`);
         });
@@ -40,14 +35,9 @@ test.describe('Editor keyboard shortcuts', async () => {
 
             await page.keyboard.type('test');
 
-            await page.keyboard.down('Shift');
-            await page.keyboard.press('ArrowLeft');
-            await page.keyboard.press('ArrowLeft');
-            await page.keyboard.press('ArrowLeft');
-            await page.keyboard.press('ArrowLeft');
-            await page.keyboard.up('Shift', {delay: 100});
+            await selectBackwards(page, 4);
 
-            await page.keyboard.press(`${ctrlOrCmdKey}+I`, {delay: 100});
+            await page.keyboard.press(`${ctrlOrCmdKey}+I`);
 
             await assertHTML(page, html`<p dir="ltr"><em data-lexical-text="true">test</em></p>`);
         });
@@ -57,14 +47,9 @@ test.describe('Editor keyboard shortcuts', async () => {
 
             await page.keyboard.type('test');
 
-            await page.keyboard.down('Shift');
-            await page.keyboard.press('ArrowLeft');
-            await page.keyboard.press('ArrowLeft');
-            await page.keyboard.press('ArrowLeft');
-            await page.keyboard.press('ArrowLeft');
-            await page.keyboard.up('Shift', {delay: 100});
+            await selectBackwards(page, 4);
 
-            await page.keyboard.press(`${ctrlOrCmdKey}+Alt+U`, {delay: 100});
+            await page.keyboard.press(`${ctrlOrCmdKey}+Alt+U`);
 
             await assertHTML(page, html`<p dir="ltr"><span data-lexical-text="true" class="line-through">test</span></p>`);
         });
@@ -74,16 +59,12 @@ test.describe('Editor keyboard shortcuts', async () => {
 
             await page.keyboard.type('test');
 
-            await page.keyboard.down('Shift');
-            await page.keyboard.press('ArrowLeft');
-            await page.keyboard.press('ArrowLeft');
-            await page.keyboard.press('ArrowLeft');
-            await page.keyboard.press('ArrowLeft');
-            await page.keyboard.up('Shift', {delay: 100});
+            await selectBackwards(page, 4);
 
-            await page.keyboard.press(`${ctrlOrCmdKey}+K`, {delay: 100});
+            await page.keyboard.press(`${ctrlOrCmdKey}+K`);
 
-            await page.keyboard.type('https://example.com');
+            await page.waitForSelector('[data-testid="link-input"]');
+            await page.getByTestId('link-input').fill('https://example.com');
             await page.keyboard.press('Enter');
 
             await assertHTML(page, html`
@@ -99,14 +80,9 @@ test.describe('Editor keyboard shortcuts', async () => {
 
             await page.keyboard.type('test');
 
-            await page.keyboard.down('Shift');
-            await page.keyboard.press('ArrowLeft');
-            await page.keyboard.press('ArrowLeft');
-            await page.keyboard.press('ArrowLeft');
-            await page.keyboard.press('ArrowLeft');
-            await page.keyboard.up('Shift', {delay: 100});
+            await selectBackwards(page, 4);
 
-            await page.keyboard.press(`Control+Shift+K`, {delay: 100});
+            await page.keyboard.press(`Control+Shift+K`);
 
             await assertHTML(page, html`<p dir="ltr"><code spellcheck="false" data-lexical-text="true"><span>test</span></code></p>`);
         });
@@ -116,14 +92,9 @@ test.describe('Editor keyboard shortcuts', async () => {
 
             await page.keyboard.type('test');
 
-            await page.keyboard.down('Shift');
-            await page.keyboard.press('ArrowLeft');
-            await page.keyboard.press('ArrowLeft');
-            await page.keyboard.press('ArrowLeft');
-            await page.keyboard.press('ArrowLeft');
-            await page.keyboard.up('Shift', {delay: 100});
+            await selectBackwards(page, 4);
 
-            await page.keyboard.press(`${ctrlOrCmdKey}+Alt+H`, {delay: 100});
+            await page.keyboard.press(`${ctrlOrCmdKey}+Alt+H`);
 
             await assertHTML(page, html`<p dir="ltr"><mark data-lexical-text="true"><span>test</span></mark></p>`);
         });

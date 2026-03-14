@@ -1,4 +1,4 @@
-import {assertHTML, focusEditor, html, initialize, pasteHtml, pasteLexical, pasteText} from '../../utils/e2e';
+import {assertHTML, focusEditor, html, initialize, pasteHtml, pasteLexical, pasteText, selectBackwards} from '../../utils/e2e';
 import {test} from '@playwright/test';
 
 test.describe('Restrict Content Plugin', async function () {
@@ -133,12 +133,7 @@ test.describe('Restrict Content Plugin', async function () {
 
         await focusEditor(page);
         await page.keyboard.type('Test');
-        await page.keyboard.down('Shift');
-        await page.keyboard.press('ArrowLeft');
-        await page.keyboard.press('ArrowLeft');
-        await page.keyboard.press('ArrowLeft');
-        await page.keyboard.press('ArrowLeft');
-        await page.keyboard.up('Shift');
+        await selectBackwards(page, 4);
 
         await pasteHtml(page, '<p>Hello World</p><p>Extra</p>');
 

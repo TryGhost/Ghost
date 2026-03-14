@@ -134,8 +134,11 @@ test.describe('Html card', async () => {
         // waiting for html editor
         await expect(page.locator('.cm-content[contenteditable="true"]')).toBeVisible();
 
-        await page.keyboard.type('Here are some words');
+        await page.keyboard.type('Here are some words', {delay: 20});
         await expect(page.getByText('Here are some words')).toBeVisible();
+        // CodeMirror groups changes within 500ms into a single undo transaction,
+        // wait to ensure backspace is a separate undo group from the typing
+        await page.waitForTimeout(600);
         await page.keyboard.press('Backspace');
         await expect(page.getByText('Here are some word')).toBeVisible();
         await page.keyboard.press(`${ctrlOrCmd()}+z`);

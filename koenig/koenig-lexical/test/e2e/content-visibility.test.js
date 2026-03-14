@@ -6,9 +6,12 @@ test.describe('Content Visibility', async () => {
     async function insertHtmlCard() {
         await focusEditor(page);
         await insertCard(page, {cardName: 'html'});
-        await expect(await page.locator('.cm-content[contenteditable="true"]')).toBeVisible();
+        await expect(page.locator('.cm-content[contenteditable="true"]')).toBeVisible();
         await page.keyboard.type('Testing');
-        await page.keyboard.press('Meta+Enter');
+        // exit editing mode - use Escape instead of Meta+Enter for cross-platform compatibility
+        await page.keyboard.press('Escape');
+        await expect(page.locator('[data-kg-card="html"]')).toHaveAttribute('data-kg-card-editing', 'false');
+        await expect(page.locator('[data-kg-card="html"]')).toHaveAttribute('data-kg-card-selected', 'true');
         return page.locator('[data-kg-card="html"]');
     }
     test.beforeAll(async ({browser}) => {

@@ -32,6 +32,8 @@ test.describe('Snippet Plugin', async function () {
     test('Can Insert a snippet with multiple nodes', async function () {
         await focusEditor(page);
         await page.keyboard.type('/snippet');
+        // Wait for snippet to appear in slash menu before pressing Enter
+        await page.waitForSelector('[data-kg-cardmenu-selected="true"]');
         await page.keyboard.press('Enter');
         await page.waitForSelector('[data-kg-card="image"]');
         expect(await page.$('[data-kg-card="image"]')).not.toBeNull();

@@ -25,6 +25,17 @@ function KoenigNestedEditorPlugin({
     // editor's editable state changes so we need to re-focus on re-render
     const [shouldFocus, setShouldFocus] = React.useState(autoFocus);
 
+    // Sync the nested editor's editable state with the parent card's editing
+    // state synchronously (before browser paint). Without this, the nested
+    // editor can briefly be contenteditable="true" during decorator mount
+    // (e.g. after undo restores a card), causing the browser to fire
+    // selectionchange events that interfere with the parent editor's selection.
+    React.useLayoutEffect(() => {
+        if (parentCardNodeKey !== undefined) {
+            editor.setEditable(!!isParentCardEditing);
+        }
+    }, [editor, isParentCardEditing, parentCardNodeKey]);
+
     React.useEffect(() => {
         // prevent nested editor getting focus when its card isn't being edited
         if (!isParentCardEditing) {

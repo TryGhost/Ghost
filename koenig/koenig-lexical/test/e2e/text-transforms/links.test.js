@@ -1,4 +1,4 @@
-import {assertHTML, focusEditor, html, initialize, pasteText} from '../../utils/e2e';
+import {assertHTML, focusEditor, html, initialize, pasteText, selectBackwards} from '../../utils/e2e';
 import {test} from '@playwright/test';
 
 test.describe('Links', async () => {
@@ -19,12 +19,7 @@ test.describe('Links', async () => {
     test('converts selected text to link on url paste', async function () {
         await focusEditor(page);
         await page.keyboard.type('link');
-        await page.keyboard.down('Shift');
-        await page.keyboard.press('ArrowLeft');
-        await page.keyboard.press('ArrowLeft');
-        await page.keyboard.press('ArrowLeft');
-        await page.keyboard.press('ArrowLeft');
-        await page.keyboard.up('Shift');
+        await selectBackwards(page, 4);
         await pasteText(page, 'https://koenig.ghost.org');
         await assertHTML(page, html`
             <p dir="ltr">
@@ -38,12 +33,7 @@ test.describe('Links', async () => {
     test('does not convert text to link if pasting a non-url', async function () {
         await focusEditor(page);
         await page.keyboard.type('link');
-        await page.keyboard.down('Shift');
-        await page.keyboard.press('ArrowLeft');
-        await page.keyboard.press('ArrowLeft');
-        await page.keyboard.press('ArrowLeft');
-        await page.keyboard.press('ArrowLeft');
-        await page.keyboard.up('Shift');
+        await selectBackwards(page, 4);
         await pasteText(page, 'Hello Koenig');
         await assertHTML(page, html`
             <p dir="ltr">

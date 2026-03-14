@@ -1,5 +1,5 @@
 import path from 'path';
-import {assertHTML, ctrlOrCmd, focusEditor, html, initialize, insertCard} from '../utils/e2e';
+import {assertHTML, ctrlOrCmd, focusEditor, html, initialize, insertCard, selectBackwards} from '../utils/e2e';
 import {expect, test} from '@playwright/test';
 import {fileURLToPath} from 'url';
 
@@ -28,11 +28,7 @@ test.describe('Floating format toolbar', async () => {
 
         await expect(await page.locator('[data-kg-floating-toolbar]')).toHaveCount(0);
 
-        await page.keyboard.down('Shift');
-        for (let i = 0; i < 'for selection'.length; i++) {
-            await page.keyboard.press('ArrowLeft');
-        }
-        await page.keyboard.up('Shift');
+        await selectBackwards(page, 'for selection'.length);
 
         expect(await page.locator('[data-kg-floating-toolbar]')).not.toBeNull();
     });
@@ -67,9 +63,7 @@ test.describe('Floating format toolbar', async () => {
     test('disappears on selection removal', async function () {
         await focusEditor(page);
         await page.keyboard.type('text for selection');
-        await page.keyboard.down('Shift');
-        await page.keyboard.press('ArrowLeft');
-        await page.keyboard.up('Shift');
+        await selectBackwards(page, 1);
 
         expect(await page.locator('[data-kg-floating-toolbar]')).not.toBeNull();
 
@@ -114,11 +108,7 @@ test.describe('Floating format toolbar', async () => {
 
                 await assertHTML(page, html`<p dir="ltr"><span data-lexical-text="true">text for selection</span></p>`);
 
-                await page.keyboard.down('Shift');
-                for (let i = 0; i < 'selection'.length; i++) {
-                    await page.keyboard.press('ArrowLeft');
-                }
-                await page.keyboard.up('Shift');
+                await selectBackwards(page, 'selection'.length);
 
                 const buttonSelector = `[data-kg-floating-toolbar] [data-kg-toolbar-button="${testCase.button}"] button`;
                 await page.click(buttonSelector);
@@ -140,11 +130,7 @@ test.describe('Floating format toolbar', async () => {
 
             await assertHTML(page, html`<h4 dir="ltr"><span data-lexical-text="true">header for selection</span></h4>`);
 
-            await page.keyboard.down('Shift');
-            for (let i = 0; i < 'selection'.length; i++) {
-                await page.keyboard.press('ArrowLeft');
-            }
-            await page.keyboard.up('Shift');
+            await selectBackwards(page, 'selection'.length);
 
             const buttonSelector = `[data-kg-floating-toolbar] [data-kg-toolbar-button="h2"] button`;
             await page.click(buttonSelector);
@@ -167,11 +153,7 @@ test.describe('Floating format toolbar', async () => {
 
             await assertHTML(page, html`<h4 dir="ltr"><span data-lexical-text="true">header for selection</span></h4>`);
 
-            await page.keyboard.down('Shift');
-            for (let i = 0; i < 'selection'.length; i++) {
-                await page.keyboard.press('ArrowLeft');
-            }
-            await page.keyboard.up('Shift');
+            await selectBackwards(page, 'selection'.length);
 
             const buttonSelector = `[data-kg-floating-toolbar] [data-kg-toolbar-button="h3"] button`;
             await page.click(buttonSelector);
@@ -192,9 +174,7 @@ test.describe('Floating format toolbar', async () => {
             await focusEditor(page);
             await page.keyboard.type('quote text');
 
-            await page.keyboard.down('Shift');
-            await page.keyboard.press('ArrowLeft');
-            await page.keyboard.up('Shift');
+            await selectBackwards(page, 1);
 
             const buttonSelector = `[data-kg-floating-toolbar] [data-kg-toolbar-button="quote"] button`;
             await page.click(buttonSelector);
@@ -231,12 +211,7 @@ test.describe('Floating format toolbar', async () => {
                 </p>
             `);
 
-            await page.keyboard.down('Shift');
-            await page.keyboard.press('ArrowLeft');
-            await page.keyboard.press('ArrowLeft');
-            await page.keyboard.press('ArrowLeft');
-            await page.keyboard.press('ArrowLeft');
-            await page.keyboard.up('Shift');
+            await selectBackwards(page, 4);
 
             const buttonSelector = `[data-kg-floating-toolbar] [data-kg-toolbar-button="link"] button`;
 
@@ -244,7 +219,7 @@ test.describe('Floating format toolbar', async () => {
             await page.click(buttonSelector);
             await expect(page.getByTestId('link-input')).toBeVisible();
             await expect(page.getByTestId('link-input')).toBeFocused();
-            await page.keyboard.type('https://ghost.org/');
+            await page.keyboard.type('https://ghost.org/', {delay: 10});
             await page.keyboard.press('Enter');
             await expect(page.locator('[data-kg-floating-toolbar]')).not.toBeVisible();
 
@@ -259,12 +234,7 @@ test.describe('Floating format toolbar', async () => {
             // TODO: assert link is not selected
 
             // Edit the link
-            await page.keyboard.down('Shift');
-            await page.keyboard.press('ArrowLeft');
-            await page.keyboard.press('ArrowLeft');
-            await page.keyboard.press('ArrowLeft');
-            await page.keyboard.press('ArrowLeft');
-            await page.keyboard.up('Shift');
+            await selectBackwards(page, 4);
             await page.click(buttonSelector);
             await expect(page.getByTestId('link-input')).toHaveValue('https://ghost.org/');
         });
@@ -280,12 +250,7 @@ test.describe('Floating format toolbar', async () => {
                 </p>
             `);
 
-            await page.keyboard.down('Shift');
-            await page.keyboard.press('ArrowLeft');
-            await page.keyboard.press('ArrowLeft');
-            await page.keyboard.press('ArrowLeft');
-            await page.keyboard.press('ArrowLeft');
-            await page.keyboard.up('Shift');
+            await selectBackwards(page, 4);
 
             const buttonSelector = `[data-kg-floating-toolbar] [data-kg-toolbar-button="link"] button`;
             await page.click(buttonSelector);
@@ -301,12 +266,7 @@ test.describe('Floating format toolbar', async () => {
                 </p>
             `);
 
-            await page.keyboard.down('Shift');
-            await page.keyboard.press('ArrowLeft');
-            await page.keyboard.press('ArrowLeft');
-            await page.keyboard.press('ArrowLeft');
-            await page.keyboard.press('ArrowLeft');
-            await page.keyboard.up('Shift');
+            await selectBackwards(page, 4);
             await page.click(buttonSelector);
             await page.waitForSelector('[data-testid="link-input"]');
             await page.getByTestId('link-input').fill('');
