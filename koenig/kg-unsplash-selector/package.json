@@ -36,7 +36,7 @@
     "@playwright/test": "^1.58.0",
     "@types/react": "18.3.28",
     "@types/react-dom": "18.3.7",
-    "@vitejs/plugin-react": "5.1.4",
+    "@vitejs/plugin-react": "5.2.0",
     "@vitest/coverage-v8": "4.0.18",
     "autoprefixer": "10.4.27",
     "concurrently": "9.2.1",
