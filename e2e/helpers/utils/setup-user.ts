@@ -1,7 +1,7 @@
-import {appConfig} from './app-config';
-import {UserFactory, User} from '../../data-factory/factories/user-factory';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const logging = require('@tryghost/logging');
+import baseDebug from '@tryghost/debug';
+import {User, UserFactory} from '@/data-factory';
+
+const debug = baseDebug('e2e:helpers:utils:setup-user');
 
 export class GhostUserSetup {
     private readonly baseURL: string;
@@ -14,8 +14,9 @@ export class GhostUserSetup {
     }
 
     async setup(userOverrides: Partial<User> = {}): Promise<void> {
+        debug('setup-user called');
         if (await this.isSetupAlreadyCompleted()) {
-            logging.info('Ghost user setup is already completed.');
+            debug('Ghost user setup is already completed.');
             return;
         }
 
@@ -26,12 +27,13 @@ export class GhostUserSetup {
     private async isSetupAlreadyCompleted(): Promise<boolean> {
         const response = await this.makeRequest('GET');
         const data = await response.json();
+        debug('Setup status response:', data);
         return data.setup?.[0]?.status === true;
     }
 
     private async createUser(user: User): Promise<void> {
         await this.makeRequest('POST', {setup: [user]});
-        logging.info('Ghost user created successfully.');
+        debug('Ghost user created successfully.');
     }
 
     private async makeRequest(method: 'GET' | 'POST', body?: unknown): Promise<Response> {
@@ -55,15 +57,4 @@ export class GhostUserSetup {
 export async function setupUser(baseGhostUrl: string, user: Partial<User> = {}): Promise<void> {
     const ghostUserSetup = new GhostUserSetup(baseGhostUrl);
     await ghostUserSetup.setup(user);
-}
-
-export default setupUser;
-
-// Execute only when run directly
-if (require.main === module) {
-    setupUser(appConfig.baseURL, {email: appConfig.auth.email, password: appConfig.auth.password})
-        .catch((error) => {
-            logging.error('Ghost user setup failed:', error.message);
-            process.exit(1);
-        });
 }

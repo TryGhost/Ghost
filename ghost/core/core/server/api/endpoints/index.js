@@ -81,12 +81,20 @@ module.exports = {
         return apiFramework.pipeline(require('./announcements'), localUtils);
     },
 
+    get automatedEmails() {
+        return apiFramework.pipeline(require('./automated-emails'), localUtils);
+    },
+
     get membersStripeConnect() {
         return apiFramework.pipeline(require('./members-stripe-connect'), localUtils);
     },
 
     get members() {
         return apiFramework.pipeline(require('./members'), localUtils);
+    },
+
+    get memberCommenting() {
+        return apiFramework.pipeline(require('./member-commenting'), localUtils);
     },
 
     get offers() {
@@ -185,6 +193,10 @@ module.exports = {
         return apiFramework.pipeline(require('./tinybird'), localUtils);
     },
 
+    get featurebase() {
+        return apiFramework.pipeline(require('./featurebase'), localUtils);
+    },
+
     get serializers() {
         return require('./utils/serializers');
     },
@@ -199,6 +211,14 @@ module.exports = {
 
     get commentReplies() {
         return apiFramework.pipeline(require('./comment-replies'), localUtils);
+    },
+
+    get commentReports() {
+        return apiFramework.pipeline(require('./comment-reports'), localUtils);
+    },
+
+    get commentLikes() {
+        return apiFramework.pipeline(require('./comment-likes'), localUtils);
     },
 
     get links() {

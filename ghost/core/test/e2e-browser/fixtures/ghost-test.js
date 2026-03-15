@@ -1,40 +1,67 @@
 // express-test.js
 const base = require('@playwright/test');
-const {promisify} = require('util');
-const {spawn, exec} = require('child_process');
+const {spawn} = require('child_process');
 const {setupGhost, setupMailgun, setupStripe, getStripeAccountId, generateStripeIntegrationToken} = require('../utils/e2e-browser-utils');
+const {buildStripeCommand} = require('../utils/stripe-cli');
 const {allowStripe, mockMail, mockGeojs, assert} = require('../../utils/e2e-framework-mock-manager');
 const sinon = require('sinon');
 const ObjectID = require('bson-objectid').default;
 const Stripe = require('stripe').Stripe;
-const configUtils = require('../../utils/configUtils');
-const MailgunClient = require('../../../core/server/services/lib/MailgunClient');
+const configUtils = require('../../utils/config-utils');
+const MailgunClient = require('../../../core/server/services/lib/mailgun-client');
 
+/* eslint-disable no-console */
 const startWebhookServer = (port) => {
-    const isCI = process.env.CI;
-    const isDocker = process.env.GHOST_DEV_IS_DOCKER === 'true';
-    const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
-    const command = `stripe listen --forward-connect-to http://127.0.0.1:${port}/members/webhooks/stripe/ ${isDocker || isCI ? `--api-key ${stripeSecretKey}` : ''}`.trim();
+    const command = buildStripeCommand('listen', '--forward-connect-to', `http://127.0.0.1:${port}/members/webhooks/stripe/`);
     const webhookServer = spawn(command.split(' ')[0], command.split(' ').slice(1));
 
-    // Adding event listeners here seems to prevent heisenbug where webhooks aren't received
-    webhookServer.stdout.on('data', () => {});
-    webhookServer.stderr.on('data', () => {});
+    const readyPromise = new Promise((resolve) => {
+        let resolved = false;
+        const onReady = () => {
+            if (!resolved) {
+                resolved = true;
+                resolve();
+            }
+        };
 
-    return webhookServer;
+        // Logging stdout/stderr drains the stream buffers (prevents heisenbug where
+        // webhooks aren't received) while also making Stripe CLI output visible in CI
+        webhookServer.stderr.on('data', (data) => {
+            const msg = data.toString().trimEnd();
+            console.error(`[stripe-listen:${port}] ${msg}`);
+            if (msg.includes('Ready!')) {
+                onReady();
+            }
+        });
+
+        // Drain stdout to prevent buffer buildup, but don't log it — it's
+        // per-event noise (every forwarded webhook) that drowns out useful output
+        webhookServer.stdout.resume();
+
+        webhookServer.on('error', (err) => {
+            console.error(`[stripe-listen:${port}] Process error: ${err.message}`);
+            onReady();
+        });
+
+        webhookServer.on('exit', (code, signal) => {
+            if (!resolved) {
+                console.error(`[stripe-listen:${port}] Process exited unexpectedly (code=${code}, signal=${signal})`);
+            }
+            onReady();
+        });
+
+        // Don't block forever if "Ready!" never appears
+        setTimeout(() => {
+            if (!resolved) {
+                console.warn(`[stripe-listen:${port}] Timed out waiting for "Ready!" after 30s, proceeding anyway`);
+                onReady();
+            }
+        }, 30000);
+    });
+
+    return {process: webhookServer, ready: readyPromise};
 };
-
-const getWebhookSecret = async () => {
-    const isCI = process.env.CI;
-    const isDocker = process.env.GHOST_DEV_IS_DOCKER === 'true';
-    const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
-    const command = `stripe listen --print-secret ${isDocker || isCI ? `--api-key ${stripeSecretKey}` : ''}`.trim();
-    const webhookSecret = (await promisify(exec)(command)).stdout;
-    return webhookSecret.toString().trim();
-};
-
-// Global promises for webhook secret / Stripe integration token
-const webhookSecretPromise = getWebhookSecret();
+/* eslint-enable no-console */
 
 /**
  * @type {import('@playwright/test').TestType<
@@ -121,7 +148,7 @@ module.exports = base.test.extend({
         const stripeAccountId = await getStripeAccountId();
         const stripeIntegrationToken = await generateStripeIntegrationToken(stripeAccountId);
 
-        const WebhookManager = require('../../../core/server/services/stripe/WebhookManager');
+        const WebhookManager = require('../../../core/server/services/stripe/webhook-manager');
         const originalParseWebhook = WebhookManager.prototype.parseWebhook;
         const sandbox = sinon.createSandbox();
         sandbox.stub(WebhookManager.prototype, 'parseWebhook').callsFake(function (body, signature) {
@@ -135,7 +162,7 @@ module.exports = base.test.extend({
             }
         });
 
-        const StripeAPI = require('../../../core/server/services/stripe/StripeAPI');
+        const StripeAPI = require('../../../core/server/services/stripe/stripe-api');
         const originalStripeConfigure = StripeAPI.prototype.configure;
         sandbox.stub(StripeAPI.prototype, 'configure').callsFake(function (stripeConfig) {
             originalStripeConfigure.call(this, stripeConfig);
@@ -147,9 +174,12 @@ module.exports = base.test.extend({
             }
         });
 
-        const stripeServer = startWebhookServer(port);
+        const stripeWebhook = startWebhookServer(port);
+        await stripeWebhook.ready;
 
-        process.env.WEBHOOK_SECRET = await webhookSecretPromise;
+        if (!process.env.WEBHOOK_SECRET) {
+            throw new Error('WEBHOOK_SECRET not set — did globalSetup run?');
+        }
 
         sandbox.stub(MailgunClient.prototype, 'getInstance').returns({
             // @ts-ignore
@@ -197,7 +227,7 @@ module.exports = base.test.extend({
         } finally {
             const {stopGhost} = require('../../utils/e2e-utils');
             await stopGhost();
-            stripeServer.kill();
+            stripeWebhook.process.kill();
             sandbox.restore();
         }
     }, {scope: 'worker', auto: true}]

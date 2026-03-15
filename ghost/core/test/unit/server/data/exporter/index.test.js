@@ -1,4 +1,5 @@
-const should = require('should');
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
 const db = require('../../../../../core/server/data/db');
@@ -42,17 +43,17 @@ describe('Exporter', function () {
                 // NOTE: 15 default tables
                 const expectedCallCount = exporter.TABLES_ALLOWLIST.length;
 
-                should.exist(exportData);
+                assertExists(exportData);
 
-                exportData.meta.version.should.match(/\d+.\d+.\d+/gi);
+                assert.match(exportData.meta.version, /\d+.\d+.\d+/gi);
 
-                tablesStub.calledOnce.should.be.true();
-                db.knex.called.should.be.true();
+                sinon.assert.calledOnce(tablesStub);
+                sinon.assert.called(db.knex);
 
-                knexMock.callCount.should.eql(expectedCallCount);
-                queryMock.select.callCount.should.have.eql(expectedCallCount);
+                sinon.assert.callCount(knexMock, expectedCallCount);
+                sinon.assert.callCount(queryMock.select, expectedCallCount);
 
-                let expectedTables = [
+                const expectedTables = new Set([
                     'posts',
                     'posts_authors',
                     'posts_meta',
@@ -73,14 +74,9 @@ describe('Exporter', function () {
                     'offers',
                     'offer_redemptions',
                     'snippets'
-                ];
-
-                for (let call = 0; call < expectedCallCount; call++) {
-                    const arg = knexMock.getCall(call).args[0];
-                    arg.should.be.equalOneOf(expectedTables);
-                    expectedTables = expectedTables.filter(item => item !== arg);
-                }
-                expectedTables.should.be.empty();
+                ]);
+                const actualTables = new Set(knexMock.getCalls().map(call => call.args[0]));
+                assert.deepEqual(actualTables, expectedTables);
 
                 done();
             }).catch(done);
@@ -93,18 +89,18 @@ describe('Exporter', function () {
                 // NOTE: 15 default tables + 2 includes
                 const expectedCallCount = exporter.TABLES_ALLOWLIST.length + 2;
 
-                should.exist(exportData);
+                assertExists(exportData);
 
-                exportData.meta.version.should.match(/\d+.\d+.\d+/gi);
+                assert.match(exportData.meta.version, /\d+.\d+.\d+/gi);
 
-                tablesStub.calledOnce.should.be.true();
-                db.knex.called.should.be.true();
-                queryMock.select.called.should.be.true();
+                sinon.assert.calledOnce(tablesStub);
+                sinon.assert.called(db.knex);
+                sinon.assert.called(queryMock.select);
 
-                knexMock.callCount.should.eql(expectedCallCount);
-                queryMock.select.callCount.should.have.eql(expectedCallCount);
+                sinon.assert.callCount(knexMock, expectedCallCount);
+                sinon.assert.callCount(queryMock.select, expectedCallCount);
 
-                let expectedTables = [
+                const expectedTables = new Set([
                     'posts',
                     'posts_authors',
                     'posts_meta',
@@ -124,15 +120,11 @@ describe('Exporter', function () {
                     'products_benefits',
                     'offers',
                     'offer_redemptions',
-                    'snippets'
-                ].concat(include);
-
-                for (let call = 0; call < expectedCallCount; call++) {
-                    const arg = knexMock.getCall(call).args[0];
-                    arg.should.be.equalOneOf(expectedTables);
-                    expectedTables = expectedTables.filter(item => item !== arg);
-                }
-                expectedTables.should.be.empty();
+                    'snippets',
+                    ...include
+                ]);
+                const actualTables = new Set(knexMock.getCalls().map(call => call.args[0]));
+                assert.deepEqual(actualTables, expectedTables);
 
                 done();
             }).catch(done);
@@ -148,7 +140,7 @@ describe('Exporter', function () {
                     done(new Error('expected error for export'));
                 })
                 .catch(function (err) {
-                    (err instanceof errors.DataExportError).should.eql(true);
+                    assert.equal((err instanceof errors.DataExportError), true);
                     done();
                 });
         });
@@ -165,9 +157,9 @@ describe('Exporter', function () {
             );
 
             exporter.fileName().then(function (result) {
-                should.exist(result);
-                settingsStub.calledOnce.should.be.true();
-                result.should.match(/^testblog\.ghost\.[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}\.json$/);
+                assertExists(result);
+                sinon.assert.calledOnce(settingsStub);
+                assert.match(result, /^testblog\.ghost\.[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}\.json$/);
 
                 done();
             }).catch(done);
@@ -179,9 +171,9 @@ describe('Exporter', function () {
             );
 
             exporter.fileName().then(function (result) {
-                should.exist(result);
-                settingsStub.calledOnce.should.be.true();
-                result.should.match(/^ghost\.[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}\.json$/);
+                assertExists(result);
+                sinon.assert.calledOnce(settingsStub);
+                assert.match(result, /^ghost\.[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}\.json$/);
 
                 done();
             }).catch(done);
@@ -194,10 +186,10 @@ describe('Exporter', function () {
             const loggingStub = sinon.stub(logging, 'error');
 
             exporter.fileName().then(function (result) {
-                should.exist(result);
-                settingsStub.calledOnce.should.be.true();
-                loggingStub.calledOnce.should.be.true();
-                result.should.match(/^ghost\.[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}\.json$/);
+                assertExists(result);
+                sinon.assert.calledOnce(settingsStub);
+                sinon.assert.calledOnce(loggingStub);
+                assert.match(result, /^ghost\.[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}\.json$/);
 
                 done();
             }).catch(done);
@@ -221,7 +213,7 @@ describe('Exporter', function () {
 
             // NOTE: this test is serving a role of a reminder to have a look into exported tables allowlists
             //       if it failed you probably need to add or remove a table entry from table-lists module
-            should.deepEqual(actualTables, expectedTables);
+            assert.deepEqual(actualTables, expectedTables);
         });
 
         it('should be fixed when default settings is changed', function () {
@@ -236,8 +228,8 @@ describe('Exporter', function () {
 
             // NOTE: if default settings changed either modify the settings keys blocklist or increase allowedKeysLength
             //       This is a reminder to think about the importer/exporter scenarios ;)
-            const allowedKeysLength = 93;
-            totalKeysLength.should.eql(SETTING_KEYS_BLOCKLIST.length + allowedKeysLength);
+            const allowedKeysLength = 100;
+            assert.equal(totalKeysLength, SETTING_KEYS_BLOCKLIST.length + allowedKeysLength);
         });
     });
 });

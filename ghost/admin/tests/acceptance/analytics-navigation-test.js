@@ -17,10 +17,6 @@ describe('Acceptance: Analytics Navigation', function () {
         return role;
     }
     
-    function findAnalyticsNavLink() {
-        return document.querySelector('.gh-nav-list a[href*="analytics"]');
-    }
-    
     async function clickPostAnalytics(postId) {
         // The analytics link is in the post row, find the specific one for this post
         let postRow = document.querySelector(`[data-test-post-id="${postId}"]`);
@@ -103,32 +99,6 @@ describe('Acceptance: Analytics Navigation', function () {
             let post = this.server.create('post', {status: 'published'});
             await visit(`/posts/analytics/${post.id}`);
             expect(currentURL()).to.equal('/posts');
-        });
-    });
-
-    describe('Navigation Menu', function () {
-        it('shows Analytics link for admin users', async function () {
-            await visit('/site');
-            
-            let analyticsLink = findAnalyticsNavLink();
-            expect(analyticsLink).to.exist;
-            expect(analyticsLink.textContent).to.contain('Analytics');
-        });
-
-        it('hides Analytics link for non-admin users', async function () {
-            updateUserRole(this.server, 'Editor');
-
-            await visit('/site');
-            
-            let analyticsLink = findAnalyticsNavLink();
-            expect(analyticsLink).to.not.exist;
-        });
-
-        it('navigates to Analytics when Analytics nav link is clicked', async function () {
-            await visit('/site');
-            await click('.gh-nav-list a[href*="analytics"]');
-            
-            expect(currentURL()).to.equal('/analytics');
         });
     });
 

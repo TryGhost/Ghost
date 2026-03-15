@@ -1,6 +1,9 @@
 /* eslint-env node */
 'use strict';
 
+// Check Node.js version compatibility before building
+require('./lib/check-node-version')();
+
 const EmberApp = require('ember-cli/lib/broccoli/ember-app');
 const concat = require('broccoli-concat');
 const mergeTrees = require('broccoli-merge-trees');

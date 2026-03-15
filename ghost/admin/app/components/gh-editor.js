@@ -11,7 +11,6 @@ import {inject as service} from '@ember/service';
 @classic
 @classNameBindings(
     'isDraggedOver:-drag-over',
-    'isFullScreen:gh-editor-fullscreen',
     'isPreview:gh-editor-preview'
 )
 export default class GhEditor extends Component {
@@ -25,8 +24,6 @@ export default class GhEditor extends Component {
     imageExtensions = IMAGE_EXTENSIONS;
     imageMimeTypes = IMAGE_MIME_TYPES;
     isDraggedOver = false;
-    isFullScreen = false;
-    isSplitScreen = false;
     uploadedImageUrls = null;
 
     // Private

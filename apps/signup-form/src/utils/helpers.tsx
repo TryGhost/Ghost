@@ -1,4 +1,4 @@
-import {SignupFormOptions} from '../AppContext';
+import {SignupFormOptions} from '../app-context';
 
 export type URLHistory = {
     type?: 'post',
@@ -49,7 +49,6 @@ export function getUrlHistory({siteUrl}: {siteUrl: string}): URLHistory {
     } catch (error) {
         // Most likely an invalid siteUrl
 
-        /* eslint-disable no-console */
         console.warn(`[Signup-Form] Failed to load member URL history:`, error);
     }
 

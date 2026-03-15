@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const StripeService = require('./StripeService');
+const StripeService = require('./stripe-service');
 const logging = require('@tryghost/logging');
 const membersService = require('../members');
 const config = require('../../../shared/config');
@@ -12,6 +12,7 @@ const settingsHelpers = require('../settings-helpers');
 const donationService = require('../donations');
 const staffService = require('../staff');
 const labs = require('../../../shared/labs');
+const settingsCache = require('../../../shared/settings-cache');
 
 async function configureApi() {
     const cfg = getConfig({settingsHelpers, config, urlUtils});
@@ -60,7 +61,8 @@ module.exports = new StripeService({
         }
     },
     donationService,
-    staffService
+    staffService,
+    settingsCache
 });
 
 function stripeSettingsChanged(model) {

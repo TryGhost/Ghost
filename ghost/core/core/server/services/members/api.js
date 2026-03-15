@@ -10,7 +10,7 @@ const signupEmail = require('./emails/signup');
 const signupPaidEmail = require('./emails/signup-paid');
 const subscribeEmail = require('./emails/subscribe');
 const updateEmail = require('./emails/update-email');
-const SingleUseTokenProvider = require('./SingleUseTokenProvider');
+const SingleUseTokenProvider = require('./single-use-token-provider');
 const urlUtils = require('../../../shared/url-utils');
 const labsService = require('../../../shared/labs');
 const offersService = require('../offers');
@@ -18,6 +18,8 @@ const tiersService = require('../tiers');
 const newslettersService = require('../newsletters');
 const memberAttributionService = require('../member-attribution');
 const emailSuppressionList = require('../email-suppression-list');
+const commentsService = require('../comments');
+const emailAddressService = require('../email-address');
 const {t} = require('../i18n');
 const sentry = require('../../../shared/sentry');
 
@@ -58,7 +60,7 @@ function createApiInstance(config) {
                 validityPeriod: MAGIC_LINK_TOKEN_VALIDITY,
                 validityPeriodAfterUsage: MAGIC_LINK_TOKEN_VALIDITY_AFTER_USAGE,
                 maxUsageCount: MAGIC_LINK_TOKEN_MAX_USAGE_COUNT,
-                secret: settingsCache.get('members_email_auth_secret')
+                secret: settingsCache.get('members_otc_secret')
             })
         },
         mail: {
@@ -90,7 +92,7 @@ function createApiInstance(config) {
                 case 'signin':
                 default:
                     if (otc) {
-                        return `🔑 ${t('Your verification code for {siteTitle}', {siteTitle, interpolation: {escapeValue: false}})}`;
+                        return `🔑 ${t('Sign in to {siteTitle} with code {otc}', {siteTitle, otc, interpolation: {escapeValue: false}})}`;
                     } else {
                         return `🔑 ${t(`Secure sign in link for {siteTitle}`, {siteTitle, interpolation: {escapeValue: false}})}`;
                     }
@@ -237,7 +239,10 @@ function createApiInstance(config) {
             Settings: models.Settings,
             Comment: models.Comment,
             MemberFeedback: models.MemberFeedback,
-            EmailSpamComplaintEvent: models.EmailSpamComplaintEvent
+            EmailSpamComplaintEvent: models.EmailSpamComplaintEvent,
+            Outbox: models.Outbox,
+            AutomatedEmail: models.AutomatedEmail,
+            AutomatedEmailRecipient: models.AutomatedEmailRecipient
         },
         stripeAPIService: stripeService.api,
         tiersService: tiersService,
@@ -249,7 +254,9 @@ function createApiInstance(config) {
         settingsCache,
         sentry,
         settingsHelpers,
-        urlUtils
+        urlUtils,
+        commentsService,
+        emailAddressService: emailAddressService.service
     });
 
     return membersApiInstance;

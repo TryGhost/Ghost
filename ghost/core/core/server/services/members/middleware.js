@@ -157,6 +157,17 @@ const getIdentityToken = async function getIdentityToken(req, res) {
     }
 };
 
+const getEntitlementToken = async function getEntitlementToken(req, res) {
+    try {
+        const token = await membersService.ssr.getEntitlementTokenForMemberFromSession(req, res);
+        res.writeHead(200);
+        res.end(token);
+    } catch (err) {
+        res.writeHead(204);
+        res.end();
+    }
+};
+
 const createIntegrityToken = async function createIntegrityToken(req, res) {
     try {
         const token = membersService.requestIntegrityTokenProvider.create();
@@ -332,8 +343,8 @@ const createSessionFromMagicLink = async function createSessionFromMagicLink(req
     // req.query is a plain object, copy it to a URLSearchParams object so we can call toString()
     const searchParams = new URLSearchParams('');
     Object.keys(req.query).forEach((param) => {
-        // don't copy the "token" or "r" params
-        if (param !== 'token' && param !== 'r') {
+        // don't copy the "token", "r", or "otc_verification" params
+        if (param !== 'token' && param !== 'r' && param !== 'otc_verification') {
             searchParams.set(param, req.query[param]);
         }
     });
@@ -429,6 +440,7 @@ module.exports = {
     authMemberByUuid,
     createSessionFromMagicLink,
     getIdentityToken,
+    getEntitlementToken,
     getMemberNewsletters,
     getMemberData,
     updateMemberData,

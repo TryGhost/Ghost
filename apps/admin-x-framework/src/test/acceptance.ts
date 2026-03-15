@@ -25,7 +25,7 @@ import postReferrersFixture from './responses/post_referrers.json';
 
 import {ActionsResponseType} from '../api/actions';
 import {ConfigResponseType} from '../api/config';
-import {CustomThemeSettingsResponseType} from '../api/customThemeSettings';
+import {CustomThemeSettingsResponseType} from '../api/custom-theme-settings';
 import {InvitesResponseType} from '../api/invites';
 import {LabelsResponseType} from '../api/labels';
 import {NewslettersResponseType} from '../api/newsletters';
@@ -81,11 +81,8 @@ export const responseFixtures = {
 };
 
 const defaultLabFlags = {
-    audienceFeedback: false,
     collections: false,
-    themeErrorsNotification: false,
     outboundLinkTagging: false,
-    announcementBar: false,
     members: false
 };
 
@@ -127,7 +124,7 @@ export function toggleLabsFlag(flag: string, value: boolean) {
     let labs: LabsSettings;
     try {
         labs = JSON.parse(labsSetting.value);
-    } catch (e) {
+    } catch {
         throw new Error('Failed to parse labs settings');
     }
 
@@ -351,7 +348,7 @@ export async function testUrlValidation(input: Locator, textToEnter: string, exp
     await input.fill(textToEnter);
     await input.blur();
 
-    expect(input).toHaveValue(expectedResult);
+    await expect(input).toHaveValue(expectedResult);
 
     if (expectedError) {
         await expect(input.locator('xpath=../..')).toContainText(expectedError);
@@ -359,5 +356,7 @@ export async function testUrlValidation(input: Locator, textToEnter: string, exp
 };
 
 export async function expectExternalNavigate(page: Page, link: Partial<ExternalLink>) {
-    await page.waitForURL(`/external/${encodeURIComponent(JSON.stringify({isExternal: true, ...link}))}`);
+    const expected = {isExternal: true, ...link};
+    await expect.poll(() => page.locator('body').getAttribute('data-external-navigate').then(v => v && JSON.parse(v))).toEqual(expected);
+    await page.locator('body').evaluate(el => delete el.dataset.externalNavigate);
 };

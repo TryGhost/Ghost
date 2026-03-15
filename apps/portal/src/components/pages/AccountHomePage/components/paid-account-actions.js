@@ -1,0 +1,254 @@
+import AppContext from '../../../../app-context';
+import {getCompExpiry, getMemberSubscription, getMemberTierName, hasMultipleProductsFeature, hasOnlyFreePlan, isComplimentaryMember, isPaidMember, subscriptionHasFreeTrial} from '../../../../utils/helpers';
+import {getDateString} from '../../../../utils/date-time';
+import {ReactComponent as LoaderIcon} from '../../../../images/icons/loader.svg';
+import {ReactComponent as OfferTagIcon} from '../../../../images/icons/offer-tag.svg';
+import {useContext} from 'react';
+import {t} from '../../../../utils/i18n';
+
+const PaidAccountActions = () => {
+    const {member, site, doAction} = useContext(AppContext);
+
+    const onManageBilling = () => {
+        const subscription = getMemberSubscription({member});
+        doAction('manageBilling', {subscriptionId: subscription.id});
+    };
+
+    const openUpdatePlan = () => {
+        const {is_stripe_configured: isStripeConfigured} = site;
+        if (isStripeConfigured) {
+            doAction('switchPage', {
+                page: 'accountPlan',
+                lastPage: 'accountHome'
+            });
+        }
+    };
+
+    const PlanLabel = ({price, isComplimentary, subscription}) => {
+        const {next_payment: nextPayment} = subscription || {};
+
+        let label = '';
+        if (price) {
+            const {amount = 0, currency, interval} = price;
+            label = `${Intl.NumberFormat('en', {currency, style: 'currency'}).format(amount / 100)}/${t(interval)}`;
+        }
+
+        const compExpiry = getCompExpiry({member});
+        if (isComplimentary) {
+            if (compExpiry) {
+                label = `${t('Complimentary')} - ${t('Expires {expiryDate}', {expiryDate: compExpiry})}`;
+            } else {
+                label = label ? `${t('Complimentary')} (${label})` : t(`Complimentary`);
+            }
+        }
+
+        let oldPriceClassName = '';
+
+        const hasFreeTrial = subscriptionHasFreeTrial({sub: subscription});
+
+        if (hasFreeTrial) {
+            oldPriceClassName = 'gh-portal-account-old-price';
+
+            return (
+                <>
+                    <p className={oldPriceClassName}>
+                        {label}
+                    </p>
+                    <FreeTrialLabel subscription={subscription} />
+                </>
+            );
+        }
+
+        let offerLabelStr = getOfferLabel({
+            nextPayment,
+            currentPeriodEnd: subscription?.current_period_end
+        });
+
+        if (offerLabelStr) {
+            oldPriceClassName = 'gh-portal-account-old-price';
+        }
+
+        const OfferLabel = () => {
+            if (offerLabelStr) {
+                return (
+                    <p className="gh-portal-account-discountcontainer" data-testid="offer-label">
+                        <OfferTagIcon className="gh-portal-account-tagicon" />
+                        <span>{offerLabelStr}</span>
+                    </p>
+                );
+            }
+            return null;
+        };
+
+        return (
+            <>
+                <p className={oldPriceClassName}>
+                    {label}
+                </p>
+                <OfferLabel />
+            </>
+        );
+    };
+
+    const PlanUpdateButton = ({isPaid}) => {
+        if (hasOnlyFreePlan({site}) && !isPaid) {
+            return null;
+        }
+        return (
+            <button
+                className='gh-portal-btn gh-portal-btn-list' onClick={e => openUpdatePlan(e)}
+                data-test-button='change-plan'
+            >
+                {t('Change')}
+            </button>
+        );
+    };
+
+    const CardLabel = ({defaultCardLast4}) => {
+        if (defaultCardLast4) {
+            const label = `**** **** **** ${defaultCardLast4}`;
+            return (
+                <p>
+                    {label}
+                </p>
+            );
+        }
+        return null;
+    };
+
+    const BillingSection = ({defaultCardLast4, isComplimentary}) => {
+        const {action} = useContext(AppContext);
+        const label = action === 'manageBilling:running' ? (
+            <LoaderIcon className='gh-portal-billing-button-loader' />
+        ) : t('Update');
+        if (isComplimentary) {
+            return null;
+        }
+
+        return (
+            <section>
+                <div className='gh-portal-list-detail'>
+                    <h3>{t('Billing info & receipts')}</h3>
+                    <CardLabel defaultCardLast4={defaultCardLast4} />
+                </div>
+                <button
+                    className='gh-portal-btn gh-portal-btn-list'
+                    onClick={e => onManageBilling(e)}
+                    data-test-button='manage-billing'
+                >
+                    {label}
+                </button>
+            </section>
+        );
+    };
+
+    const subscription = getMemberSubscription({member});
+    const isComplimentary = isComplimentaryMember({member});
+    const isPaid = isPaidMember({member});
+    if (subscription || isComplimentary) {
+        const {
+            price,
+            default_payment_card_last4: defaultCardLast4
+        } = subscription || {};
+        let planLabel = t('Plan');
+
+        // Show name of tiers if there are multiple tiers
+        if (hasMultipleProductsFeature({site}) && getMemberTierName({member})) {
+            planLabel = getMemberTierName({member});
+        }
+        // const hasFreeTrial = subscriptionHasFreeTrial({sub: subscription});
+        // if (hasFreeTrial) {
+        //     planLabel += ' (Free Trial)';
+        // }
+        return (
+            <>
+                <section>
+                    <div className='gh-portal-list-detail'>
+                        <h3>
+                            {planLabel}
+                            {subscription?.cancel_at_period_end && (
+                                <span className="gh-portal-canceled-badge">{t('Canceled')}</span>
+                            )}
+                        </h3>
+                        <PlanLabel price={price} isComplimentary={isComplimentary} subscription={subscription} />
+                    </div>
+                    <PlanUpdateButton isPaid={isPaid} />
+                </section>
+                <BillingSection isComplimentary={isComplimentary} defaultCardLast4={defaultCardLast4} />
+            </>
+        );
+    }
+    return null;
+};
+
+function FreeTrialLabel({subscription}) {
+    if (subscriptionHasFreeTrial({sub: subscription})) {
+        const trialEnd = getDateString(subscription.trial_end_at);
+        return (
+            <p className="gh-portal-account-discountcontainer">
+                <div>
+                    <span>{t('Free Trial – Ends {trialEnd}', {trialEnd})}</span>
+                    {/* <span>{getSubFreeTrialDaysLeft({sub: subscription})} days left</span> */}
+                </div>
+            </p>
+        );
+    }
+    return null;
+}
+
+/**
+ * Display discounted price if an offer is active
+ *
+ * Examples:
+ * - "$10.00/month — Forever" (forever offer)
+ * - "$10.00/month — Ends 2026-01-01" (once or repeating offer)
+ *
+ * @param {Object} nextPayment
+ * @param {number} nextPayment.originalAmount - Original amount
+ * @param {number} nextPayment.amount - Amount after discount. Same as original amount if no discount.
+ * @param {string} nextPayment.currency - Currency (e.g. USD, EUR)
+ * @param {'month'|'year'} nextPayment.interval
+ * @param {Object|null} nextPayment.discount
+ * @param {'once'|'repeating'|'forever'} nextPayment.discount.duration
+ * @param {number|null} nextPayment.discount.duration_in_months - Discount duration in months for "repeating" offers
+ * @param {string} nextPayment.discount.start - Discount start date (ISO 8601 date string)
+ * @param {string|null} nextPayment.discount.end - Discount end date (ISO 8601 date string), null for forever / once offers
+ * @param {'fixed'|'percent'} nextPayment.discount.type
+ * @param {number} nextPayment.discount.amount - Discount amount (e.g. 20 for 20% percent offer, or 2 for $2 fixed offer)
+ * @param {string} currentPeriodEnd - Subscription current period end (ISO 8601 date string)
+ *
+ * @returns {string}
+ */
+function getOfferLabel({nextPayment, currentPeriodEnd}) {
+    if (!nextPayment) {
+        return '';
+    }
+
+    const discount = nextPayment.discount;
+
+    // No active discount
+    if (!discount) {
+        return '';
+    }
+
+    let durationLabel = '';
+    if (discount.duration === 'forever') {
+        durationLabel = t('Forever');
+    } else if (discount.duration === 'repeating' && discount.end) {
+        durationLabel = t('Ends {offerEndDate}', {offerEndDate: getDateString(discount.end)});
+    } else if (discount.duration === 'once' && currentPeriodEnd) {
+        // By design, "once" offers don't have a discount end in Stripe. They expire at the end of the current billing period.
+        durationLabel = t('Ends {offerEndDate}', {offerEndDate: getDateString(currentPeriodEnd)});
+    }
+
+    const formattedPrice = Intl.NumberFormat('en', {currency: nextPayment.currency, style: 'currency'}).format(nextPayment.amount / 100);
+
+    // Possible values for nextPayment.interval for i18n parser:
+    // t('month')
+    // t('year')
+    const displayedPrice = `${formattedPrice}/${t(nextPayment.interval)}`;
+
+    return `${displayedPrice}${durationLabel ? ` — ${durationLabel}` : ''}`;
+}
+
+export default PaidAccountActions;

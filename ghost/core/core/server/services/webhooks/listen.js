@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const limitService = require('../../services/limits');
-const WebhookTrigger = require('./WebhookTrigger');
+const WebhookTrigger = require('./webhook-trigger');
 const models = require('../../models');
 const payload = require('./payload');
 

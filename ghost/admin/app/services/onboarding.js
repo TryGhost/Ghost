@@ -70,7 +70,9 @@ export default class OnboardingService extends Service {
     }
 
     @action
-    async completeChecklist() {
+    async completeChecklist(event) {
+        event?.preventDefault();
+
         const settings = this.settings;
 
         settings.checklistState = 'completed';
@@ -79,7 +81,9 @@ export default class OnboardingService extends Service {
     }
 
     @action
-    async dismissChecklist() {
+    async dismissChecklist(event) {
+        event?.preventDefault();
+
         const settings = this.settings;
 
         settings.checklistState = 'dismissed';

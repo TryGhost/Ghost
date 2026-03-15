@@ -19,7 +19,7 @@ const create = ({config, request, settingsCache, tinybirdService}) => {
      * @param {string} [options.timezone] - Timezone for the query
      * @param {string} [options.memberStatus] - Member status filter (defaults to 'all')
      * @param {string} [options.postType] - Post type filter
-     * @param {string} [options.tbVersion] - Tinybird version for API URL
+     * @param {string} [options.version] - Version override (e.g., 'v3') - bypasses config version
      * @returns {Object} Object with URL and request options
      */
     const buildRequest = (pipeName, options = {}) => {
@@ -33,9 +33,12 @@ const create = ({config, request, settingsCache, tinybirdService}) => {
         const tokenData = tinybirdService.getToken();
         const token = tokenData?.token;
 
-        // Use tbVersion if provided for constructing the URL
-        const pipeUrl = (options.tbVersion && !localEnabled) ? 
-            `/v0/pipes/${pipeName}__v${options.tbVersion}.json` : 
+        // Use version from options if provided, otherwise fall back to config
+        // Pattern: api_kpis -> api_kpis_v2 (single underscore + version)
+        // Pass empty string to force unversioned endpoint
+        const version = options.version !== undefined ? options.version : statsConfig?.version;
+        const pipeUrl = version ?
+            `/v0/pipes/${pipeName}_${version}.json` :
             `/v0/pipes/${pipeName}.json`;
         
         const tinybirdUrl = `${endpoint}${pipeUrl}`;
@@ -63,12 +66,14 @@ const create = ({config, request, settingsCache, tinybirdService}) => {
         }
         // Add any other options that might be needed
         Object.entries(options).forEach(([key, value]) => {
-            if (!['dateFrom', 'dateTo', 'timezone', 'memberStatus', 'postType', 'tbVersion'].includes(key)) {
+            if (!['dateFrom', 'dateTo', 'timezone', 'memberStatus', 'postType', 'version'].includes(key) && value !== undefined && value !== null) {
+                // Convert camelCase to snake_case for Tinybird API
+                const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
                 // Handle arrays by converting them to comma-separated strings for Tinybird
                 if (Array.isArray(value)) {
-                    searchParams[key] = value.join(',');
+                    searchParams[snakeKey] = value.join(',');
                 } else {
-                    searchParams[key] = value;
+                    searchParams[snakeKey] = value;
                 }
             }
         });

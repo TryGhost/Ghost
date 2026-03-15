@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import ApplicationSerializer from 'ghost-admin/serializers/application';
 import {pluralize} from 'ember-inflector';
 

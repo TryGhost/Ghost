@@ -5,3 +5,4 @@ Disallow: /email/
 Disallow: /members/api/comments/counts/
 Disallow: /r/
 Disallow: /webmentions/receive/
+Disallow: /.ghost/analytics/api/

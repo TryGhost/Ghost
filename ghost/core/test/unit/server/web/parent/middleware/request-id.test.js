@@ -1,4 +1,5 @@
-const should = require('should');
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../../utils/assertions');
 const sinon = require('sinon');
 const validator = require('@tryghost/validator');
 
@@ -26,24 +27,24 @@ describe('Request ID middleware', function () {
     });
 
     it('generates a new request ID if X-Request-ID not present', function () {
-        should.not.exist(req.requestId);
+        assert.equal(req.requestId, undefined);
 
         requestId(req, res, next);
 
-        should.exist(req.requestId);
-        validator.isUUID(req.requestId).should.be.true();
-        res.set.calledOnce.should.be.false();
+        assertExists(req.requestId);
+        assert.equal(validator.isUUID(req.requestId), true);
+        sinon.assert.notCalled(res.set);
     });
 
     it('keeps the request ID if X-Request-ID is present', function () {
-        should.not.exist(req.requestId);
+        assert.equal(req.requestId, undefined);
         req.get.withArgs('X-Request-ID').returns('abcd');
 
         requestId(req, res, next);
 
-        should.exist(req.requestId);
-        req.requestId.should.eql('abcd');
-        res.set.calledOnce.should.be.true();
-        res.set.calledWith('X-Request-ID', 'abcd').should.be.true();
+        assertExists(req.requestId);
+        assert.equal(req.requestId, 'abcd');
+        sinon.assert.calledOnce(res.set);
+        sinon.assert.calledWith(res.set, 'X-Request-ID', 'abcd');
     });
 });

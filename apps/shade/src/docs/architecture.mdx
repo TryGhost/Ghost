@@ -1,0 +1,164 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Architecture" />
+
+<div className="sb-doc">
+
+# System Architecture
+
+<p className="excerpt">Shade is built as a layered system, with each layer building upon the previous to create a complete design system. This document outlines how these layers work together.</p>
+
+## File Structure
+
+```
+/apps/shade/
+├── src/
+│   ├── components/
+│   │   ├── ui/           # Base ShadCN components
+│   │   ├── layout/       # Composed, reusable layout components
+│   │   └── features/     # Feature-specific, higher-level components
+│   ├── hooks/            # Custom React hooks
+│   ├── providers/        # Context providers
+│   ├── lib/utils.ts      # Utilities
+│   └── docs/             # Documentation
+├── .storybook/          # Storybook configuration
+└── tailwind.config.cjs  # Design tokens
+```
+
+## Component Types
+
+### Base Components (UI)
+Located in `/src/components/ui/`:
+- Built on ShadCN/UI primitives
+- Use RadixUI for accessibility
+- Follow composable pattern
+- Examples: Button, Input, Card
+
+### Layout Components (Composed)
+Located in `/src/components/layout/`:
+- Compose base UI into reusable layout primitives (Page, Header, Heading, ViewHeader)
+- Shared across surfaces; no product logic
+- Follow same patterns as base components
+
+### Feature Components
+Located in `/src/components/features/`:
+- Higher-level, feature-specific compositions (e.g., PostShareModal, SourceTabs)
+- May bundle multiple UI and layout parts for a specific workflow
+- Still reusable across apps when the feature exists
+
+## Dependencies
+
+### Core Dependencies
+- **React**: UI library
+- **TailwindCSS**: Utility-first styling
+- **ShadCN/UI**: Component primitives
+- **RadixUI**: Accessible primitives
+- **Lucide**: Default icon system
+
+> ⚠️ Note: When using third-party libraries that might have naming conflicts (like Recharts), we alias all exports (e.g., `export * as Recharts from "recharts"`).
+
+## Component Implementation
+
+### Naming Conventions
+
+- Filenames: ShadCN-generated files keep kebab-case; file-scoped components live alongside their stories
+- Components: `PascalCase`
+- Functions/vars/types: `camelCase`
+
+> ⚠️ Note: ShadCN/UI CLI creates files in kebab-case. We accept this inconsistency due to case-sensitivity issues.
+
+### Component Structure
+
+```tsx
+// Basic component structure
+import { cn } from "@/lib/utils"
+import { cva } from "class-variance-authority"
+
+const componentVariants = cva(
+    "base-styles",
+    {
+        variants: {
+            variant: {
+                default: "variant-styles",
+                // Add variants...
+            }
+        },
+        defaultVariants: {
+            variant: "default"
+        }
+    }
+)
+
+export interface ComponentProps {
+    className?: string;
+    // Other props...
+}
+
+export function Component({ className, ...props }: ComponentProps) {
+    return (
+        <div className={cn(componentVariants(), className)} {...props} />
+    )
+}
+```
+
+### Component API
+
+- Use RadixUI primitives for accessibility
+- Expose RadixUI props when available
+- Always include `className` prop
+- Use Class Variance Authority for variants
+
+## Icons
+
+Shade defaults to using Lucide icons. Since all exports are aliased as `LucideIcon` in `index.ts`, the way to use icons in apps happens through referencing the LucideIcon package:
+
+   ```tsx
+   import { LucideIcon } from 'lucide-react';
+
+   <LucideIcon.Search size={16} />
+   ```
+
+## ShadCN/UI Configuration
+
+Key configuration in `components.json`:
+```json
+{
+    "style": "new-york",
+    "baseColor": "gray",
+    "cssVariables": true
+}
+```
+
+## Best Practices
+
+### Component Design
+- Create composable, not configurable components
+- Keep components focused and single-purpose
+- Maintain consistent prop patterns
+- Document all variants and props
+
+### Styling
+- Use design tokens via Tailwind classes
+- Always merge className prop using cn utility
+- Maintain dark mode support
+- Follow responsive design patterns
+
+### Implementation Flow
+
+1. **Start with ShadCN/UI**
+   - Install via CLI if available
+   - Customize implementation
+   - Add/modify variants
+
+2. **Add Documentation**
+   - Create stories
+   - Document variants
+   - Show usage examples
+
+3. **Export Component**
+   ```ts
+   // index.ts
+   export * from './components/ui/component';
+   ```
+
+</div>

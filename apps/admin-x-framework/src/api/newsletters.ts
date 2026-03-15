@@ -1,6 +1,6 @@
 import {InfiniteData} from '@tanstack/react-query';
 import {Meta, createInfiniteQuery, createMutation} from '../utils/api/hooks';
-import {insertToQueryCache, updateQueryCache} from '../utils/api/updateQueries';
+import {insertToQueryCache, updateQueryCache} from '../utils/api/update-queries';
 
 export type Newsletter = {
     id: string;

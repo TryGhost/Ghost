@@ -18,6 +18,7 @@ permissions:
   contents: write
 jobs:
   create-branch:
+    if: github.repository == 'TryGhost/Ghost'
     runs-on: ubuntu-latest
     steps:
       - run: echo "BASE_REF=main" >> $GITHUB_ENV
@@ -26,7 +27,7 @@ jobs:
       - run: echo "BASE_REF=${{ inputs.base-ref }}" >> $GITHUB_ENV
         if: inputs.base-ref != 'latest'
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: ${{ env.BASE_REF }}
           fetch-depth: 0

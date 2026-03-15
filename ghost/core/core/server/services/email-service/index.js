@@ -1,3 +1,3 @@
-const EmailServiceWrapper = require('./EmailServiceWrapper');
+const EmailServiceWrapper = require('./email-service-wrapper');
 
 module.exports = new EmailServiceWrapper();

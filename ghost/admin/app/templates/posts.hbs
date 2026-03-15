@@ -2,7 +2,7 @@
     <GhCanvasHeader class="gh-canvas-header sticky break tablet post-header">
         <GhCustomViewTitle @title={{if this.session.user.isContributor (concat this.config.blogTitle " posts") "Posts"}} @query={{reset-query-params "posts"}} />
 
-        <section class="view-actions">
+        <section class="view-actions" data-testid="posts-filters">
             <PostsList::ContentFilter
                 @currentUser={{this.session.user}}
                 @selectedType={{this.selectedType}}
@@ -58,19 +58,19 @@
     {{#if @model.scheduledInfinityModel}}
         <GhInfinityLoader
             @infinityModel={{@model.scheduledInfinityModel}}
-            @scrollable=".gh-main"
+            @scrollable=".shade-admin main"
             @triggerOffset={{1000}} />
     {{/if}}
     {{#if (and @model.draftInfinityModel (or (not @model.scheduledInfinityModel) (and @model.scheduledInfinityModel @model.scheduledInfinityModel.reachedInfinity)))}}
         <GhInfinityLoader
             @infinityModel={{@model.draftInfinityModel}}
-            @scrollable=".gh-main"
+            @scrollable=".shade-admin main"
             @triggerOffset={{1000}} />
     {{/if}}
     {{#if (and @model.publishedAndSentInfinityModel (and (or (not @model.scheduledInfinityModel) @model.scheduledInfinityModel.reachedInfinity) (or (not @model.draftInfinityModel) @model.draftInfinityModel.reachedInfinity)))}}
         <GhInfinityLoader
             @infinityModel={{@model.publishedAndSentInfinityModel}}
-            @scrollable=".gh-main"
+            @scrollable=".shade-admin main"
             @triggerOffset={{1000}} />
     {{/if}}
 

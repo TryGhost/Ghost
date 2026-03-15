@@ -4,6 +4,12 @@ const {DateTime} = require('luxon');
 const {slugify} = require('@tryghost/string');
 const {createTier, createMember, createPostDraft, impersonateMember} = require('../utils');
 
+// Schedules a post to publish ASAP by setting yesterday + 00:00, which is always in the past.
+// Ghost auto-corrects past dates to 5 seconds from now. We use yesterday (not today) because
+// publishPost waits for the schedule summary to change after setting the date, and today's
+// date would be a no-op since the default schedule is already today.
+const scheduleAsap = (page, options = {}) => publishPost(page, {date: DateTime.now().minus({days: 1}).toFormat('yyyy-MM-dd'), time: '00:00', ...options});
+
 /**
  * Test the status of a post in the post editor.
  * @param {import('@playwright/test').Page} page
@@ -68,7 +74,7 @@ const checkPostPublished = async (page, {slug, title, body}) => {
  * @param {String} [options.body]
  */
 const createPage = async (page, {title = 'Hello world', body = 'This is my post body.'} = {}) => {
-    await page.locator('.gh-nav a[href="#/pages/"]').click();
+    await page.getByRole('navigation').getByRole('link', {name: 'Pages'}).click();
 
     // Create a new post
     await page.locator('[data-test-new-page-button]').click();
@@ -140,20 +146,29 @@ const publishPost = async (page, {type = 'publish', time, date} = {}) => {
         await page.locator(`[data-test-publish-type="${type}"] + label`).click({timeout: 1000}); // If this times out, it is likely that there are no members (running a single test).
     }
 
+    const scheduleSummary = page.locator('[data-test-setting="publish-at"] [data-test-setting-title]');
+
     // Schedule the post
     if (date || time) {
         await page.locator('[data-test-setting="publish-at"] > button').click();
         await page.locator('[data-test-radio="schedule"] + label').click();
+        // Wait for Ember to process the schedule toggle and update the summary
+        await expect(scheduleSummary).not.toContainText('Right now');
     }
 
     if (date) {
+        const textBefore = await scheduleSummary.textContent();
         await page.locator('[data-test-date-time-picker-date-input]').fill(date);
         await page.locator('[data-test-date-time-picker-date-input]').blur();
+        // Wait for Ember to process the date change before continuing
+        await expect(scheduleSummary).not.toContainText(textBefore.trim());
     }
 
     if (time) {
         await page.locator('[data-test-date-time-picker-time-input]').fill(time);
         await page.locator('[data-test-date-time-picker-time-input]').blur();
+        // Allow Ember's run loop to process the time change
+        await page.waitForTimeout(500);
     }
 
     // TODO: set other publish options
@@ -166,7 +181,8 @@ const publishPost = async (page, {type = 'publish', time, date} = {}) => {
     // (we need force because the button is animating)
     await page.locator('[data-test-modal="publish-flow"] [data-test-button="confirm-publish"]').click({force: true});
 
-    // TODO: assert publish flow has expected completion details
+    // Wait for the publish flow to complete by checking the confirm button is no longer visible
+    await page.locator('[data-test-modal="publish-flow"] [data-test-button="confirm-publish"]').waitFor({state: 'hidden'});
 };
 
 /**
@@ -264,8 +280,7 @@ test.describe('Publishing', () => {
             await sharedPage.goto('/ghost');
             await createPage(sharedPage, pageData);
 
-            // Schedule the post to publish asap (by setting it to 00:00, it will get auto corrected to the minimum time possible - 5 seconds in the future)
-            await publishPost(sharedPage, {time: '00:00', type: null});
+            await scheduleAsap(sharedPage, {type: null});
             await closePublishFlow(sharedPage);
             await checkPostStatus(sharedPage, 'Scheduled', 'Scheduled to be published in a few seconds');
 
@@ -365,8 +380,7 @@ test.describe('Publishing', () => {
 
             const editorUrl = await sharedPage.url();
 
-            // Schedule the post to publish asap (by setting it to 00:00, it will get auto corrected to the minimum time possible - 5 seconds in the future)
-            await publishPost(sharedPage, {time: '00:00', type: 'publish+send'});
+            await scheduleAsap(sharedPage, {type: 'publish+send'});
             await closePublishFlow(sharedPage);
             await checkPostStatus(sharedPage, 'Scheduled', 'Scheduled to be published and sent'); // Member count can differ, hence not included here
             await checkPostStatus(sharedPage, 'Scheduled', 'in a few seconds'); // Extra test for suffix on hover
@@ -396,8 +410,7 @@ test.describe('Publishing', () => {
             await createPostDraft(sharedPage, postData);
 
             const editorUrl = await sharedPage.url();
-            // Schedule the post to publish asap (by setting it to 00:00, it will get auto corrected to the minimum time possible - 5 seconds in the future)
-            await publishPost(sharedPage, {time: '00:00'});
+            await scheduleAsap(sharedPage);
             await closePublishFlow(sharedPage);
             await checkPostStatus(sharedPage, 'Scheduled', 'Scheduled to be published in a few seconds');
 
@@ -428,8 +441,7 @@ test.describe('Publishing', () => {
             await createPostDraft(sharedPage, postData);
             const editorUrl = await sharedPage.url();
 
-            // Schedule the post to publish asap (by setting it to 00:00, it will get auto corrected to the minimum time possible - 5 seconds in the future)
-            await publishPost(sharedPage, {type: 'send', time: '00:00'});
+            await scheduleAsap(sharedPage, {type: 'send'});
             await closePublishFlow(sharedPage);
             await checkPostStatus(sharedPage, 'Scheduled', 'Scheduled to be sent in a few seconds');
 
@@ -610,7 +622,7 @@ test.describe('Updating post access', () => {
         await closePublishFlow(page);
 
         // go to settings and change the timezone
-        await page.locator('[data-test-nav="settings"]').click();
+        await page.getByRole('navigation').getByRole('link', {name: 'Settings'}).click();
         await expect(page.getByTestId('timezone')).toContainText('UTC');
 
         await page.getByTestId('timezone-select').click();
@@ -620,7 +632,7 @@ test.describe('Updating post access', () => {
         await expect(page.getByTestId('timezone')).toContainText('(GMT +9:00) Osaka, Sapporo, Tokyo');
 
         await page.getByTestId('exit-settings').click();
-        await page.locator('[data-test-nav="posts"]').click();
+        await page.getByRole('navigation').getByRole('link', {name: 'Posts'}).click();
         await page.locator('[data-test-post-id]', {hasText: /Published in timezones/}).click();
 
         await openPostSettingsMenu(page);

@@ -1,9 +1,16 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const handlebars = require('../../../../../core/frontend/services/theme-engine/engine').handlebars;
 
 module.exports.shouldCompileToExpected = (templateString, hash, expected) => {
     const template = handlebars.compile(templateString);
     const result = template(hash);
+
+    assert.equal(result, expected);
+};
+
+module.exports.shouldCompileToExpectedWithGlobals = (templateString, hash, expected, globals) => {
+    const template = handlebars.compile(templateString);
+    const result = template(hash, globals);
 
     assert.equal(result, expected);
 };

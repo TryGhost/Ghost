@@ -1,7 +1,7 @@
+const {assertArrayMatchesWithoutOrder} = require('../../utils/assertions');
 const {agentProvider, mockManager, fixtureManager} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
-const assert = require('assert/strict');
-require('should');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const members = require('../../../core/server/services/members');
 
@@ -10,12 +10,7 @@ let membersAgent, membersService;
 async function assertMemberEvents({eventType, memberId, asserts}) {
     const events = await models[eventType].where('member_id', memberId).fetchAll();
     const eventsJSON = events.map(e => e.toJSON());
-
-    // Order shouldn't matter here
-    for (const a of asserts) {
-        eventsJSON.should.matchAny(a);
-    }
-    assert.equal(events.length, asserts.length, `Only ${asserts.length} ${eventType} should have been added.`);
+    assertArrayMatchesWithoutOrder(eventsJSON, asserts);
 }
 
 async function getMemberByEmail(email, require = true) {
@@ -174,6 +169,57 @@ describe('Members Signin', function () {
 
         const member = await getMemberByEmail(email, false);
         assert(!member, 'Member should not have been created');
+    });
+
+    it('Stores UTM parameters in MemberCreatedEvent', async function () {
+        const email = 'member-with-utm@test.com';
+        const attribution = {
+            id: null,
+            url: null,
+            type: null,
+            referrerSource: 'Google',
+            referrerMedium: 'unknown',
+            referrerUrl: null,
+            utmSource: 'newsletter',
+            utmMedium: 'email',
+            utmCampaign: 'spring_sale',
+            utmTerm: 'ghost_pro',
+            utmContent: 'header_link'
+        };
+
+        const magicLink = await membersService.api.getMagicLink(email, 'signup', {attribution});
+        const magicLinkUrl = new URL(magicLink);
+        const token = magicLinkUrl.searchParams.get('token');
+
+        await membersAgent.get(`/?token=${token}&action=signup`)
+            .expectStatus(302)
+            .expectHeader('Location', /\/welcome-free\/\?success=true&action=signup$/)
+            .expectHeader('Set-Cookie', /members-ssr.*/);
+
+        const member = await getMemberByEmail(email);
+
+        // Check event created with UTM parameters
+        await assertMemberEvents({
+            eventType: 'MemberCreatedEvent',
+            memberId: member.id,
+            asserts: [
+                {
+                    created_at: member.get('created_at'),
+                    attribution_url: null,
+                    attribution_id: null,
+                    attribution_type: null,
+                    source: 'member',
+                    referrer_source: 'Google',
+                    referrer_medium: 'unknown',
+                    referrer_url: null,
+                    utm_source: 'newsletter',
+                    utm_medium: 'email',
+                    utm_campaign: 'spring_sale',
+                    utm_term: 'ghost_pro',
+                    utm_content: 'header_link'
+                }
+            ]
+        });
     });
 
     describe('Validity Period', function () {

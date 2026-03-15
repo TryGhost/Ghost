@@ -40,6 +40,7 @@ export function feature(name, options = {}) {
 
 @classic
 export default class FeatureService extends Service {
+    @service ghostPaths;
     @service lazyLoader;
     @service notifications;
     @service session;
@@ -59,19 +60,14 @@ export default class FeatureService extends Service {
     @feature('referralInviteDismissed', {user: true}) referralInviteDismissed;
 
     // labs flags
-    @feature('audienceFeedback') audienceFeedback;
-    @feature('webmentions') webmentions;
     @feature('stripeAutomaticTax') stripeAutomaticTax;
     @feature('emailCustomization') emailCustomization;
-    @feature('i18n') i18n;
-    @feature('announcementBar') announcementBar;
     @feature('importMemberTier') importMemberTier;
     @feature('lexicalIndicators') lexicalIndicators;
     @feature('editorExcerpt') editorExcerpt;
-    @feature('contentVisibility') contentVisibility;
-    @feature('contentVisibilityAlpha') contentVisibilityAlpha;
-    @feature('membersSigninOTC') membersSigninOTC;
-
+    @feature('transistor') transistor;
+    @feature('tagsX') tagsX;
+    @feature('commentModeration') commentModeration;
     _user = null;
 
     @computed('settings.labs')
@@ -94,6 +90,13 @@ export default class FeatureService extends Service {
         } catch (e) {
             return {};
         }
+    }
+
+    get inAdminForward() {
+        // Detect if Ember is running inside the React admin shell
+        // In React shell: Ember renders to #ember-app
+        // Standalone: Ember renders to body (no #ember-app element)
+        return document.querySelector('#ember-app') !== null;
     }
 
     fetch() {

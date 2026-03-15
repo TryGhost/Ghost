@@ -1,10 +1,11 @@
-import {UseInfiniteQueryOptions, UseQueryOptions, UseQueryResult, useInfiniteQuery, useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
+import {InvalidateOptions, InvalidateQueryFilters, UseInfiniteQueryOptions, UseQueryOptions, UseQueryResult, useInfiniteQuery, useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import {usePagination} from '@tryghost/admin-x-design-system';
 import {useCallback, useEffect, useMemo, useState} from 'react';
-import useHandleError from '../../hooks/useHandleError';
-import {usePermission} from '../../hooks/usePermissions';
-import {useFramework} from '../../providers/FrameworkProvider';
-import {RequestOptions, apiUrl, useFetchApi} from './fetchApi';
+import useHandleError from '../../hooks/use-handle-error';
+import {usePermission} from '../../hooks/use-permissions';
+import {UserRoleType} from '../../api/roles';
+import {useFramework} from '../../providers/framework-provider';
+import {RequestOptions, apiUrl, useFetchApi} from './fetch-api';
 
 export interface Meta {
     pagination: {
@@ -22,7 +23,7 @@ interface QueryOptions<ResponseData> {
     path: string
     headers?: Record<string, string>;
     defaultSearchParams?: Record<string, string>;
-    permissions?: string[];
+    permissions?: UserRoleType[];
     returnData?: (originalData: unknown) => ResponseData;
     useActivityPub?: boolean;
 }
@@ -36,12 +37,13 @@ export const createQuery = <ResponseData>(options: QueryOptions<ResponseData>) =
     const url = apiUrl(options.path, searchParams || options.defaultSearchParams, options?.useActivityPub);
     const fetchApi = useFetchApi();
     const handleError = useHandleError();
+    const hasPermission = usePermission(options.permissions);
 
     const result = useQuery<ResponseData>({
-        enabled: options.permissions ? usePermission(options.permissions) : true,
+        ...query,
+        enabled: hasPermission && (query.enabled ?? true),
         queryKey: [options.dataType, url],
-        queryFn: () => fetchApi(url, {...options}),
-        ...query
+        queryFn: () => fetchApi(url, {...options})
     });
 
     const data = useMemo(() => (
@@ -70,16 +72,18 @@ export const createPaginatedQuery = <ResponseData extends {meta?: Meta}>(options
     const url = apiUrl(options.path, paginatedSearchParams, options?.useActivityPub);
     const fetchApi = useFetchApi();
     const handleError = useHandleError();
+    const hasPermission = usePermission(options.permissions);
 
     const result = useQuery<ResponseData>({
+        ...query,
+        enabled: hasPermission && (query.enabled ?? true),
         queryKey: [options.dataType, url],
-        queryFn: () => fetchApi(url),
-        ...query
+        queryFn: () => fetchApi(url, {...options})
     });
 
     const data = useMemo(() => (
         (result.data && options.returnData) ? options.returnData(result.data) : result.data)
-    , [result]);
+    , [result.data]);
 
     const pagination = usePagination({
         page,
@@ -104,7 +108,7 @@ export const createPaginatedQuery = <ResponseData extends {meta?: Meta}>(options
 
 type InfiniteQueryOptions<ResponseData> = Omit<QueryOptions<ResponseData>, 'returnData'> & {
     returnData: NonNullable<QueryOptions<ResponseData>['returnData']>
-    defaultNextPageParams?: (data: ResponseData, params: Record<string, string>) => Record<string, string>;
+    defaultNextPageParams?: (data: ResponseData, params: Record<string, string>) => Record<string, string> | undefined;
 }
 
 type InfiniteQueryHookOptions<ResponseData> = UseInfiniteQueryOptions<ResponseData> & {
@@ -116,14 +120,16 @@ type InfiniteQueryHookOptions<ResponseData> = UseInfiniteQueryOptions<ResponseDa
 export const createInfiniteQuery = <ResponseData>(options: InfiniteQueryOptions<ResponseData>) => ({searchParams, getNextPageParams, ...query}: InfiniteQueryHookOptions<ResponseData> = {}) => {
     const fetchApi = useFetchApi();
     const handleError = useHandleError();
+    const hasPermission = usePermission(options.permissions);
 
     const nextPageParams = getNextPageParams || options.defaultNextPageParams || (() => ({}));
 
     const result = useInfiniteQuery<ResponseData>({
+        ...query,
+        enabled: hasPermission && (query.enabled ?? true),
         queryKey: [options.dataType, apiUrl(options.path, searchParams || options.defaultSearchParams, options?.useActivityPub)],
         queryFn: ({pageParam}) => fetchApi(apiUrl(options.path, pageParam || searchParams || options.defaultSearchParams, options?.useActivityPub)),
-        getNextPageParam: data => nextPageParams(data, searchParams || options.defaultSearchParams || {}),
-        ...query
+        getNextPageParam: data => nextPageParams(data, searchParams || options.defaultSearchParams || {})
     });
 
     const data = useMemo(() => result.data && options.returnData(result.data), [result.data]);
@@ -150,7 +156,10 @@ interface MutationOptions<ResponseData, Payload> extends Omit<QueryOptions<Respo
     headers?: Record<string, string>;
     body?: (payload: Payload) => FormData | object;
     searchParams?: (payload: Payload) => { [key: string]: string; };
-    invalidateQueries?: { dataType: string; };
+    invalidateQueries?: { dataType: string; } | {
+        filters?: InvalidateQueryFilters<unknown>,
+        options?: InvalidateOptions,
+    };
     updateQueries?: { dataType: string; emberUpdateType: 'createOrUpdate' | 'delete' | 'skip'; update: (newData: ResponseData, currentData: unknown, payload: Payload) => unknown };
 }
 
@@ -184,9 +193,11 @@ export const createMutation = <ResponseData, Payload>({path, searchParams, defau
     const {onUpdate, onInvalidate, onDelete} = useFramework();
 
     const afterMutate = useCallback((newData: ResponseData, payload: Payload) => {
-        if (invalidateQueries) {
+        if (invalidateQueries && 'dataType' in invalidateQueries) {
             queryClient.invalidateQueries([invalidateQueries.dataType]);
             onInvalidate(invalidateQueries.dataType);
+        } else if (invalidateQueries) {
+            queryClient.invalidateQueries(invalidateQueries.filters, invalidateQueries.options);
         }
 
         if (updateQueries) {

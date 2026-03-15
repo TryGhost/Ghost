@@ -1,0 +1,212 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Tokens" />
+
+<div className="sb-doc">
+
+# Design Tokens
+
+<p className="excerpt">Shade's design tokens are implemented through TailwindCSS configuration. This document outlines our token system and how to use it effectively.</p>
+
+## Color System
+
+### Base Colors
+
+Our color system includes semantic colors and a comprehensive neutral palette:
+
+```js
+colors: {
+    // Base colors
+    transparent: 'transparent',
+    current: 'currentColor',
+    ghostaccent: 'var(--accent-color, #ff0095)',
+    white: '#FFF',
+    black: '#15171A',
+
+    // Gray scale (note: we use 'gray', not 'grey')
+    gray: {
+        50: '#FAFAFB',
+        100: '#F4F5F6',
+        // ... more shades
+        900: '#394047',
+        DEFAULT: '#ABB4BE'
+    },
+
+    // Brand colors
+    green: {
+        100: '#E1F9E4',
+        400: '#58DA67',
+        500: '#30CF43',
+        600: '#2AB23A',
+        DEFAULT: '#30CF43'
+    },
+    // ... more colors
+}
+```
+
+> ⚠️ Note: While both `grey` and `gray` exist in the config, use `gray` for new components following TailwindCSS conventions.
+
+### Semantic Tokens
+
+Theme-aware colors using CSS variables:
+
+```js
+colors: {
+    background: 'hsl(var(--background))',
+    foreground: 'hsl(var(--foreground))',
+    primary: {
+        DEFAULT: 'hsl(var(--primary))',
+        foreground: 'hsl(var(--primary-foreground))'
+    },
+    // ... more semantic colors
+}
+```
+
+## Typography
+
+### Font Families
+
+```js
+fontFamily: {
+    sans: 'Inter, -apple-system, ...',  // Default UI font
+    serif: 'Georgia, serif',            // Editorial content
+    mono: 'Consolas, ...',              // Code
+    // Additional web fonts available
+}
+```
+
+### Font Sizes
+
+A comprehensive scale from 2xs to 9xl:
+
+```js
+fontSize: {
+    '2xs': '1.0rem',
+    base: '1.4rem',
+    xs: '1.2rem',
+    // ... more sizes
+    '9xl': ['12.8rem', '1']
+}
+```
+
+### Line Heights
+
+```js
+lineHeight: {
+    base: '1.5em',
+    tight: '1.35em',
+    tighter: '1.25em',
+    supertight: '1.1em'
+}
+```
+
+## Spacing
+
+Our spacing system uses a 0.4rem (4px) base unit:
+
+```js
+spacing: {
+    0: '0px',
+    1: '0.4rem',    // 4px
+    2: '0.8rem',    // 8px
+    3: '1.2rem',    // 12px
+    // ... more spacing values
+}
+```
+
+## Breakpoints
+
+```js
+screens: {
+    sm: '480px',
+    md: '640px',
+    sidebar: '800px',
+    lg: '1024px',
+    sidebarlg: '1240px',
+    xl: '1320px',
+    xxl: '1440px',
+    xxxl: '1600px',
+    tablet: '860px'
+}
+```
+
+## Shadows
+
+```js
+boxShadow: {
+    DEFAULT: '0 0 1px rgba(0,0,0,.05), 0 5px 18px rgba(0,0,0,.08)',
+    xs: '0 0 1px rgba(0,0,0,0.04), ...',
+    // ... more shadow values
+}
+```
+
+## Border Radius
+
+```js
+borderRadius: {
+    DEFAULT: '0.4rem',
+    sm: 'calc(var(--radius) - 4px)',
+    // ... more radius values
+}
+```
+
+## Animations
+
+Pre-defined animations for common interactions:
+
+```js
+animation: {
+    'toaster-in': 'toasterIn 0.8s cubic-bezier(...)',
+    'fade-in': 'fadeIn 0.15s ease forwards',
+    // ... more animations
+}
+```
+
+## Usage Guidelines
+
+### Best Practices
+
+1. **Use Semantic Tokens**
+   ```js
+   // ✅ Good
+   className="bg-background text-foreground"
+
+   // ❌ Avoid
+   className="bg-white text-black"
+   ```
+
+2. **Spacing Consistency**
+   ```js
+   // ✅ Good
+   className="p-4 gap-2"
+
+   // ❌ Avoid
+   style={{padding: '16px', gap: '8px'}}
+   ```
+
+3. **Typography Scale**
+   ```js
+   // ✅ Good
+   className="text-2xl font-sans"
+
+   // ❌ Avoid
+   style={{fontSize: '22px'}}
+   ```
+
+### Dark Mode
+
+Dark mode uses a variant approach:
+```js
+darkMode: ['variant', ['&:is(.dark *):not(.light *)']],
+```
+
+### CSS Reset
+
+Shade uses a scoped CSS reset:
+```js
+corePlugins: {
+    preflight: false // Custom CSS reset provided
+}
+```
+
+</div>

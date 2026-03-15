@@ -1,5 +1,5 @@
-const assert = require('assert/strict');
-const configUtils = require('../../../../utils/configUtils');
+const assert = require('node:assert/strict');
+const configUtils = require('../../../../utils/config-utils');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const getConfigProperties = require('../../../../../core/server/services/public-config/config');
 const sinon = require('sinon');
@@ -43,6 +43,25 @@ describe('Public-config Service', function () {
             const configProperties = getConfigProperties();
 
             assert.deepEqual(Object.keys(configProperties), allowedKeys);
+        });
+
+        it('should return GHOST_BUILD_VERSION as version when set', function () {
+            process.env.GHOST_BUILD_VERSION = '6.21.2+abc1234';
+
+            const configProperties = getConfigProperties();
+
+            assert.equal(configProperties.version, '6.21.2+abc1234');
+
+            delete process.env.GHOST_BUILD_VERSION;
+        });
+
+        it('should return package version when GHOST_BUILD_VERSION is not set', function () {
+            delete process.env.GHOST_BUILD_VERSION;
+
+            const configProperties = getConfigProperties();
+
+            assert.match(configProperties.version, /^\d+\.\d+\.\d+/);
+            assert.notEqual(configProperties.version, '6.21.2+abc1234');
         });
 
         it('should return null for tenor apikey when unset', function () {
@@ -115,6 +134,65 @@ describe('Public-config Service', function () {
             let configProperties = getConfigProperties();
 
             assert.equal(configProperties.stats, undefined);
+        });
+
+        it('should return emailAnalytics as boolean from nested config structure', function () {
+            // Default config has emailAnalytics.enabled = true
+            let configProperties = getConfigProperties();
+
+            assert.equal(configProperties.emailAnalytics, true);
+            assert.equal(typeof configProperties.emailAnalytics, 'boolean');
+        });
+
+        it('should return false for emailAnalytics when disabled', function () {
+            configUtils.set('emailAnalytics:enabled', false);
+
+            let configProperties = getConfigProperties();
+
+            assert.equal(configProperties.emailAnalytics, false);
+        });
+
+        it('should NOT return featurebase config by default', function () {
+            let configProperties = getConfigProperties();
+            assert.equal(configProperties.featurebase, undefined);
+        });
+
+        it('should return featurebase config with enabled=false when configured but disabled', function () {
+            configUtils.set('labs', {
+                featurebaseFeedback: true
+            });
+            configUtils.set('featurebase', {
+                enabled: false,
+                organization: 'test-org',
+                jwtSecret: 'super-secret-key'
+            });
+
+            let configProperties = getConfigProperties();
+
+            assert.equal(configProperties.featurebase.enabled, false);
+            assert.equal(configProperties.featurebase.organization, 'test-org');
+        });
+
+        it('should return only public featurebase config properties, not sensitive ones', function () {
+            configUtils.set('labs', {
+                featurebaseFeedback: true
+            });
+            configUtils.set('featurebase', {
+                enabled: true,
+                organization: 'test-org',
+                jwtSecret: 'super-secret-key',
+                apiKey: 'secret-api-key'
+            });
+
+            let configProperties = getConfigProperties();
+
+            // Only enabled and organization should be exposed, not jwtSecret/apiKey
+            assert.deepEqual(
+                configProperties.featurebase,
+                {enabled: true, organization: 'test-org'}
+            );
+            assert.equal(configProperties.featurebase.jwtSecret, undefined);
+            assert.equal(configProperties.featurebase.apiKey, undefined);
         });
     });
 });

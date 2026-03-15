@@ -1,4 +1,4 @@
-import {AddComment, Comment, LabsContextType} from '../AppContext';
+import {AddComment, Comment, LabsContextType} from '../app-context';
 
 function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {siteUrl: string, apiUrl: string, apiKey: string}) {
     const apiPath = 'members/api';
@@ -170,6 +170,23 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
                 return response;
             },
             async replies({commentId, afterReplyId, limit}: {commentId: string; afterReplyId?: string; limit?: number | 'all'}) {
+                if (limit === 'all') {
+                    const all: Comment[] = [];
+                    let cursor: string | undefined = afterReplyId;
+                    let hasMore = true;
+
+                    while (hasMore) {
+                        const data = await this.replies({commentId, afterReplyId: cursor, limit: 100});
+                        all.push(...data.comments);
+                        hasMore = !!data.meta?.pagination?.next && data.comments.length > 0;
+                        if (data.comments.length > 0) {
+                            cursor = data.comments[data.comments.length - 1]?.id;
+                        }
+                    }
+
+                    return {comments: all, meta: {pagination: {next: false}}};
+                }
+
                 const params = new URLSearchParams();
                 params.set('limit', (limit ?? 5).toString());
 
@@ -299,7 +316,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
                 });
             }
         },
-        init: (() => {}) as () => Promise<{ member: any; labs: any}>
+        init: (() => {}) as () => Promise<{ member: any; labs: any; supportEmail: string | null}>
     };
 
     api.init = async () => {
@@ -308,17 +325,19 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
         ]);
 
         let labs = {};
+        let supportEmail: string | null = null;
 
         try {
             const settings = await api.site.settings();
             if (settings.settings.labs) {
                 Object.assign(labs, settings.settings.labs);
             }
-        } catch (e) {
+            supportEmail = settings.settings.support_email_address || null;
+        } catch {
             labs = {};
         }
 
-        return {member, labs};
+        return {member, labs, supportEmail};
     };
 
     return api;

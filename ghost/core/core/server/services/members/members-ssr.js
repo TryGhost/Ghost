@@ -145,6 +145,11 @@ class MembersSSR {
         const cookies = this._getCookies(req, res);
         const value = cookies.get(this.sessionCookieName, {signed: true});
         if (!value) {
+            // Clear orphaned cookie (cookies library only clears .sig on invalid signature)
+            const unsignedValue = cookies.get(this.sessionCookieName, {signed: false});
+            if (unsignedValue) {
+                cookies.set(this.sessionCookieName, null, {...this.sessionCookieOptions, signed: false});
+            }
             throw new BadRequestError({
                 message: `Cookie ${this.sessionCookieName} not found`
             });
@@ -156,12 +161,13 @@ class MembersSSR {
      * @method _getMemberDataFromToken
      *
      * @param {JWT} token
+     * @param {string} [otcVerification]
      *
      * @returns {Promise<Member>} member
      */
-    async _getMemberDataFromToken(token) {
+    async _getMemberDataFromToken(token, otcVerification) {
         const api = await this._getMembersApi();
-        return api.getMemberDataFromMagicLinkToken(token);
+        return api.getMemberDataFromMagicLinkToken(token, otcVerification);
     }
 
     /**
@@ -200,6 +206,11 @@ class MembersSSR {
         return api.getMemberIdentityToken(transientId);
     }
 
+    async _getMemberEntitlementToken(transientId) {
+        const api = await this._getMembersApi();
+        return api.getMemberEntitlementToken(transientId);
+    }
+
     /**
      * @method _setMemberGeolocationFromIp
      * @param {string} email
@@ -234,7 +245,8 @@ class MembersSSR {
         }
 
         const token = Array.isArray(query.token) ? query.token[0] : query.token;
-        const member = await this._getMemberDataFromToken(token);
+        const otcVerification = Array.isArray(query.otc_verification) ? query.otc_verification[0] : query.otc_verification;
+        const member = await this._getMemberDataFromToken(token, otcVerification);
 
         if (!member) {
             // The member doesn't exist any longer (could be a sign in token for a member that was deleted)
@@ -311,6 +323,18 @@ class MembersSSR {
             await this.deleteSession(req, res);
             throw new BadRequestError({
                 message: 'Invalid session, could not get identity token'
+            });
+        }
+        return token;
+    }
+
+    async getEntitlementTokenForMemberFromSession(req, res) {
+        const transientId = this._getSessionCookies(req, res);
+        const token = await this._getMemberEntitlementToken(transientId);
+        if (!token) {
+            await this.deleteSession(req, res);
+            throw new BadRequestError({
+                message: 'Invalid session, could not get entitlement token'
             });
         }
         return token;

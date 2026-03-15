@@ -1,7 +1,7 @@
 // Used for eslint and storybook. Styles should not be compiled directly with this, they should be compiled by calling the function in tailwind.cjs
 module.exports = {
     content: ['./src/**/*.{js,ts,jsx,tsx}'],
-    important: '.shade',
+    important: false,
 
     corePlugins: {
         preflight: false // we're providing our own scoped CSS reset
@@ -256,6 +256,22 @@ module.exports = {
                     '100%': {
                         transform: 'rotate(360deg)'
                     }
+                },
+                'accordion-down': {
+                    from: {
+                        height: '0'
+                    },
+                    to: {
+                        height: 'var(--radix-accordion-content-height)'
+                    }
+                },
+                'accordion-up': {
+                    from: {
+                        height: 'var(--radix-accordion-content-height)'
+                    },
+                    to: {
+                        height: '0'
+                    }
                 }
             },
             animation: {
@@ -269,7 +285,9 @@ module.exports = {
                 'modal-in': 'modalIn 0.25s ease forwards',
                 'modal-in-from-right': 'modalInFromRight 0.25s ease forwards',
                 'modal-in-reverse': 'modalInReverse 0.25s ease forwards',
-                spin: 'spin 1s linear infinite'
+                spin: 'spin 1s linear infinite',
+                'accordion-down': 'accordion-down 0.2s ease-out',
+                'accordion-up': 'accordion-up 0.2s ease-out'
             },
             spacing: {
                 0: '0px',
@@ -335,6 +353,7 @@ module.exports = {
                 pageminsidebar: '116rem'
             },
             borderRadius: {
+                xs: 'max(calc(var(--radius) - 6px), 0px)',
                 sm: 'calc(var(--radius) - 4px)',
                 DEFAULT: '0.4rem',
                 md: 'calc(var(--radius) - 2px)',
@@ -378,74 +397,79 @@ module.exports = {
                 inherit: 'inherit'
             },
             lineHeight: {
+                none: '1',
+                snug: '1.375',
+                normal: '1.5',
+                relaxed: '1.625',
+                loose: '2',
                 base: '1.5em',
                 tight: '1.35em',
                 tighter: '1.25em',
                 supertight: '1.1em'
             },
             colors: {
-                background: 'hsl(var(--background))',
-                foreground: 'hsl(var(--foreground))',
+                background: 'var(--background)',
+                foreground: 'var(--foreground)',
                 card: {
-                    DEFAULT: 'hsl(var(--card))',
-                    foreground: 'hsl(var(--card-foreground))'
+                    DEFAULT: 'var(--card)',
+                    foreground: 'var(--card-foreground)'
                 },
                 popover: {
-                    DEFAULT: 'hsl(var(--popover))',
-                    foreground: 'hsl(var(--popover-foreground))'
+                    DEFAULT: 'var(--popover)',
+                    foreground: 'var(--popover-foreground)'
                 },
                 primary: {
-                    DEFAULT: 'hsl(var(--primary))',
-                    foreground: 'hsl(var(--primary-foreground))'
+                    DEFAULT: 'var(--primary)',
+                    foreground: 'var(--primary-foreground)'
                 },
                 secondary: {
-                    DEFAULT: 'hsl(var(--secondary))',
-                    foreground: 'hsl(var(--secondary-foreground))'
+                    DEFAULT: 'var(--secondary)',
+                    foreground: 'var(--secondary-foreground)'
                 },
                 muted: {
-                    DEFAULT: 'hsl(var(--muted))',
-                    foreground: 'hsl(var(--muted-foreground))'
+                    DEFAULT: 'var(--muted)',
+                    foreground: 'var(--muted-foreground)'
                 },
                 accent: {
-                    DEFAULT: 'hsl(var(--accent))',
-                    foreground: 'hsl(var(--accent-foreground))'
+                    DEFAULT: 'var(--accent)',
+                    foreground: 'var(--accent-foreground)'
                 },
                 destructive: {
-                    DEFAULT: 'hsl(var(--destructive))',
-                    foreground: 'hsl(var(--destructive-foreground))'
+                    DEFAULT: 'var(--destructive)',
+                    foreground: 'var(--destructive-foreground)'
                 },
-                border: 'hsl(var(--border))',
-                input: 'hsl(var(--input))',
-                ring: 'hsl(var(--ring))',
+                border: 'var(--border)',
+                input: 'var(--input)',
+                ring: 'var(--ring)',
                 chart: {
-                    1: 'hsl(var(--chart-1))',
-                    2: 'hsl(var(--chart-2))',
-                    3: 'hsl(var(--chart-3))',
-                    4: 'hsl(var(--chart-4))',
-                    5: 'hsl(var(--chart-5))',
-                    gray: 'hsl(var(--chart-gray))',
-                    darkgray: 'hsl(var(--chart-darkgray))',
-                    rose: 'hsl(var(--chart-rose))',
-                    orange: 'hsl(var(--chart-orange))',
-                    amber: 'hsl(var(--chart-amber))',
-                    yellow: 'hsl(var(--chart-yellow))',
-                    green: 'hsl(var(--chart-green))',
-                    teal: 'hsl(var(--chart-teal))',
-                    blue: 'hsl(var(--chart-blue))',
-                    purple: 'hsl(var(--chart-purple))'
+                    1: 'var(--chart-1)',
+                    2: 'var(--chart-2)',
+                    3: 'var(--chart-3)',
+                    4: 'var(--chart-4)',
+                    5: 'var(--chart-5)',
+                    gray: 'var(--chart-gray)',
+                    darkgray: 'var(--chart-darkgray)',
+                    rose: 'var(--chart-rose)',
+                    orange: 'var(--chart-orange)',
+                    amber: 'var(--chart-amber)',
+                    yellow: 'var(--chart-yellow)',
+                    green: 'var(--chart-green)',
+                    teal: 'var(--chart-teal)',
+                    blue: 'var(--chart-blue)',
+                    purple: 'var(--chart-purple)'
                 },
                 sidebar: {
-                    DEFAULT: 'hsl(var(--sidebar-background))',
-                    foreground: 'hsl(var(--sidebar-foreground))',
-                    primary: 'hsl(var(--sidebar-primary))',
-                    'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
-                    accent: 'hsl(var(--sidebar-accent))',
-                    'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
-                    border: 'hsl(var(--sidebar-border))',
-                    ring: 'hsl(var(--sidebar-ring))'
+                    DEFAULT: 'var(--sidebar-background)',
+                    foreground: 'var(--sidebar-foreground)',
+                    primary: 'var(--sidebar-primary)',
+                    'primary-foreground': 'var(--sidebar-primary-foreground)',
+                    accent: 'var(--sidebar-accent)',
+                    'accent-foreground': 'var(--sidebar-accent-foreground)',
+                    border: 'var(--sidebar-border)',
+                    ring: 'var(--sidebar-ring)'
                 }
             }
         }
     },
-    plugins: [require('tailwindcss-animate')]
+    plugins: []
 };

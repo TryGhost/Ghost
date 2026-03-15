@@ -7,6 +7,7 @@
     justify-content: center;
     align-items: center;
     user-select: text;
+    height: 100svh;
 }
 
 .error-details {
@@ -28,9 +29,8 @@
 
 .error-code {
     margin: 0;
-    color: #979797;
-    font-size: 7.8rem;
-    line-height: 0.9em;
+    font-size: 1.8rem;
+    color: var(--midgrey);
 }
 
 
@@ -38,21 +38,17 @@
     margin: 0;
     padding: 0;
     border: none;
-    color: #979797;
-    font-size: 1.9rem;
-    font-weight: 300;
+    font-size: 1.8rem;
+    font-weight: 400;
+    color: var(--midgrey);
 }
 
 .error-message {
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    gap: 8px;
     margin: 15px;
-}
-
-.error-message a {
-    margin-top: 5px;
-    font-size: 1.4rem;
-    line-height: 1;
+    color: var(--midgrey);
 }
 
 /* Stack trace

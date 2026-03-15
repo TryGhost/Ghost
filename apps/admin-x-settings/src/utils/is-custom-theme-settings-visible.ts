@@ -1,0 +1,10 @@
+import nql from '@tryghost/nql';
+import {type CustomThemeSetting} from '@tryghost/admin-x-framework/api/custom-theme-settings';
+
+export function isCustomThemeSettingVisible(setting: CustomThemeSetting, settingsKeyValueObj: Record<string, string>) {
+    if (!setting.visibility) {
+        return true;
+    }
+
+    return nql(setting.visibility).queryJSON(settingsKeyValueObj);
+}

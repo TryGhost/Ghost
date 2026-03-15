@@ -25,7 +25,7 @@ export default class TagRoute extends AuthenticatedRoute {
         this._requiresBackgroundRefresh = false;
 
         if (params.tag_slug) {
-            return this.store.queryRecord('tag', {slug: params.tag_slug});
+            return this.store.queryRecord('tag', {slug: params.tag_slug, include: 'count.posts'});
         } else {
             return this.store.createRecord('tag');
         }

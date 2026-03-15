@@ -7,7 +7,8 @@ import {
     determineAggregationStrategy,
     getMonthKey,
     getPeriodText,
-    sanitizeChartData
+    sanitizeChartData,
+    truncateLeadingEmptyData
 } from '@src/utils/chart-helpers';
 import {describe, expect, it} from 'vitest';
 
@@ -29,7 +30,7 @@ describe('chart-helpers', () => {
             const ranges = [
                 {value: 7, name: 'Last 7 days', expected: 'in the last 7 days'},
                 {value: 31, name: 'Last 30 days', expected: 'in the last 30 days'},
-                {value: 91, name: 'Last 3 months', expected: 'in the last 3 months'},
+                {value: 91, name: 'Last 90 days', expected: 'in the last 90 days'},
                 {value: 372, name: 'Last 12 months', expected: 'in the last 12 months'},
                 {value: 1000, name: 'All time', expected: '(all time)'}
             ];
@@ -48,6 +49,85 @@ describe('chart-helpers', () => {
             STATS_RANGE_OPTIONS.push(customRange);
             expect(getPeriodText(customRange.value)).toBe('custom range');
             STATS_RANGE_OPTIONS.pop(); // Clean up
+        });
+    });
+
+    describe('truncateLeadingEmptyData', () => {
+        it('removes leading zero entries, keeping one before first real data', () => {
+            const data = [
+                {date: '2024-01-01', value: 0},
+                {date: '2024-02-01', value: 0},
+                {date: '2024-03-01', value: 0},
+                {date: '2024-04-01', value: 0},
+                {date: '2024-05-01', value: 0},
+                {date: '2024-06-01', value: 0}, // Should be kept (one before first real data)
+                {date: '2024-07-01', value: 10}, // First real data
+                {date: '2024-08-01', value: 20}
+            ];
+
+            const result = truncateLeadingEmptyData(data);
+
+            expect(result.length).toBe(3);
+            expect(result[0].date).toBe('2024-06-01');
+            expect(result[0].value).toBe(0);
+            expect(result[1].date).toBe('2024-07-01');
+            expect(result[1].value).toBe(10);
+            expect(result[2].date).toBe('2024-08-01');
+            expect(result[2].value).toBe(20);
+        });
+
+        it('returns data unchanged if first entry has data', () => {
+            const data = [
+                {date: '2024-01-01', value: 10},
+                {date: '2024-02-01', value: 20}
+            ];
+
+            const result = truncateLeadingEmptyData(data);
+
+            expect(result).toEqual(data);
+        });
+
+        it('returns data unchanged if only one leading zero', () => {
+            const data = [
+                {date: '2024-01-01', value: 0},
+                {date: '2024-02-01', value: 10}
+            ];
+
+            const result = truncateLeadingEmptyData(data);
+
+            expect(result).toEqual(data);
+        });
+
+        it('handles empty array', () => {
+            const result = truncateLeadingEmptyData([]);
+            expect(result).toEqual([]);
+        });
+
+        it('handles all zero values', () => {
+            const data = [
+                {date: '2024-01-01', value: 0},
+                {date: '2024-02-01', value: 0},
+                {date: '2024-03-01', value: 0}
+            ];
+
+            const result = truncateLeadingEmptyData(data);
+            expect(result).toEqual(data);
+        });
+
+        it('preserves trailing zeros after real data', () => {
+            const data = [
+                {date: '2024-01-01', value: 0},
+                {date: '2024-02-01', value: 0},
+                {date: '2024-03-01', value: 10},
+                {date: '2024-04-01', value: 0}, // Trailing zero should be kept
+                {date: '2024-05-01', value: 0} // Trailing zero should be kept
+            ];
+
+            const result = truncateLeadingEmptyData(data);
+
+            expect(result.length).toBe(4);
+            expect(result[0].date).toBe('2024-02-01'); // One zero before first real data
+            expect(result[3].date).toBe('2024-05-01'); // Trailing zeros preserved
         });
     });
 
@@ -154,7 +234,7 @@ describe('chart-helpers', () => {
                 ];
 
                 const result = sanitizeChartData(data, 400, 'value', 'exact');
-                
+
                 // Should keep only end-of-month values
                 expect(result.length).toBe(2);
                 expect(result[0].date).toBe('2024-01-31');
@@ -174,7 +254,7 @@ describe('chart-helpers', () => {
                 ];
 
                 const result = sanitizeChartData(data, 400, 'value', 'exact');
-                
+
                 // Should keep only end-of-month values
                 expect(result.length).toBe(2);
                 expect(result[0].date).toBe('2024-01-31');
@@ -262,7 +342,7 @@ describe('chart-helpers', () => {
 
                 // Verify only end-of-month values are included
                 const points = new Map(result.map(item => [item.date, item.value]));
-                
+
                 // Check month boundaries
                 expect(points.get('2024-01-31')).toBe(155);
                 expect(points.get('2024-02-28')).toBe(205);
@@ -301,12 +381,12 @@ describe('chart-helpers', () => {
                 expect(result[1].value).toBe(275); // Average of 250, 300
             });
 
-            it('handles sum aggregation with outliers', () => {
+            it('handles sum aggregation with high-traffic days', () => {
                 const data = [
                     {date: '2024-01-01', value: 100},
-                    {date: '2024-01-15', value: 15000}, // Outlier - excluded from sum
+                    {date: '2024-01-15', value: 15000}, // High traffic day - should be included
                     {date: '2024-01-31', value: 200},
-                    {date: '2024-02-15', value: 20000}, // Outlier - excluded from sum
+                    {date: '2024-02-15', value: 20000}, // High traffic day - should be included
                     {date: '2024-02-28', value: 300}
                 ];
 
@@ -317,16 +397,12 @@ describe('chart-helpers', () => {
                 // Then verify the full sanitization
                 const result = sanitizeChartData(data, 400, 'value', 'sum') as (ChartDataItem & {_isOutlier: boolean})[];
 
-                // Should have one point per month with sums (excluding outliers)
+                // Should have one point per month with sums (all values included)
                 expect(result.length).toBe(2);
                 expect(result[0].date.startsWith('2024-01')).toBe(true);
-                expect(result[0].value).toBe(300); // Sum of 100, 200 (15000 excluded)
+                expect(result[0].value).toBe(15300); // Sum of 100, 15000, 200
                 expect(result[1].date.startsWith('2024-02')).toBe(true);
-                expect(result[1].value).toBe(300); // Just 300 (20000 excluded)
-
-                // The final points aren't marked as outliers since the outliers were excluded from sums
-                expect(result[0]._isOutlier).toBe(false);
-                expect(result[1]._isOutlier).toBe(false);
+                expect(result[1].value).toBe(20300); // Sum of 20000, 300
             });
 
             it('uses aggregateByMonthSimple for exact monthly aggregation', () => {
@@ -543,6 +619,31 @@ describe('chart-helpers', () => {
                 const longResult = sanitizeChartData(longData, -1);
                 expect(longResult.length).toBeLessThan(longData.length); // Should aggregate monthly
             });
+
+            it('preserves total sum when aggregating monthly for high-traffic sites', () => {
+                // Regression test for NY-799: high-traffic days were being excluded from YTD totals
+                // This simulates a site with a viral day (20,546 views) that should NOT be excluded
+                const data: ChartDataItem[] = [
+                    {date: '2024-01-01', value: 1000},
+                    {date: '2024-01-02', value: 1200},
+                    {date: '2024-01-03', value: 20546}, // High traffic day - must be included
+                    {date: '2024-01-04', value: 1500},
+                    {date: '2024-01-05', value: 1100},
+                    {date: '2024-02-01', value: 900},
+                    {date: '2024-02-02', value: 1000},
+                    {date: '2024-02-03', value: 15000}, // Another high traffic day
+                    {date: '2024-02-04', value: 800}
+                ];
+
+                const expectedTotal = data.reduce((sum, item) => sum + item.value, 0);
+
+                // Simulate YTD aggregation (range > 150 days triggers monthly)
+                const result = sanitizeChartData(data, 400, 'value', 'sum');
+
+                // The sum of all monthly aggregated values should equal the original total
+                const aggregatedTotal = result.reduce((sum, item) => sum + item.value, 0);
+                expect(aggregatedTotal).toBe(expectedTotal);
+            });
         });
 
         describe('edge cases', () => {
@@ -571,4 +672,4 @@ describe('chart-helpers', () => {
             });
         });
     });
-}); 
+});

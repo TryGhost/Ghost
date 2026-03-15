@@ -1,6 +1,6 @@
 import React from 'react';
-import {FormPage} from './components/pages/FormPage';
-import {SuccessPage} from './components/pages/SuccessPage';
+import {FormPage} from './components/pages/form-page';
+import {SuccessPage} from './components/pages/success-page';
 
 const Pages = {
     FormPage,

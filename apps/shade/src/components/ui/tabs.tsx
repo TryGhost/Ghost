@@ -1,5 +1,6 @@
 import * as React from 'react';
 import * as TabsPrimitive from '@radix-ui/react-tabs';
+import {DropdownMenuTrigger} from './dropdown-menu';
 
 import {cn} from '@/lib/utils';
 import {cva} from 'class-variance-authority';
@@ -83,18 +84,18 @@ const TabsList = React.forwardRef<
 TabsList.displayName = TabsPrimitive.List.displayName;
 
 const tabsTriggerVariants = cva(
-    'inline-flex items-center justify-center whitespace-nowrap px-3 py-1 ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground [&_svg]:size-4 [&_svg]:shrink-0',
+    'focus-visible:outline-hidden inline-flex items-center justify-center whitespace-nowrap px-3 py-1 ring-offset-background transition-all focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground [&_svg]:size-4 [&_svg]:shrink-0',
     {
         variants: {
             variant: {
                 segmented: 'h-7 rounded-md text-sm font-medium data-[state=active]:shadow-md',
                 'segmented-sm': 'h-[26px] rounded-md text-xs font-medium data-[state=active]:shadow-md',
-                button: 'h-[34px] gap-1.5 rounded-md py-2 text-sm font-normal hover:bg-muted data-[state=active]:bg-muted-foreground/15 data-[state=active]:font-medium',
-                'button-sm': 'font-regular h-6 gap-1.5 rounded-md p-2 text-xs text-gray-800 hover:bg-muted data-[state=active]:bg-muted-foreground/15 data-[state=active]:font-medium data-[state=active]:text-foreground',
-                underline: 'relative h-[36px] px-0 text-md font-semibold text-gray-700 after:absolute after:inset-x-0 after:bottom-[-1px] after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] hover:after:opacity-10 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:after:!opacity-100',
-                navbar: 'relative h-[52px] px-px text-md font-semibold text-muted-foreground after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:after:!opacity-100',
-                pill: 'relative h-[30px] rounded-md px-3 text-md font-medium text-gray-800 hover:text-foreground data-[state=active]:bg-muted-foreground/15 data-[state=active]:font-semibold data-[state=active]:text-foreground dark:text-gray-500 dark:data-[state=active]:text-foreground',
-                kpis: 'relative rounded-none border-border bg-transparent px-6 py-5 text-foreground ring-0 transition-all after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] first:rounded-tl-md last:rounded-tr-md hover:bg-accent/50 data-[state=active]:bg-transparent data-[state=active]:after:opacity-100 [&:not(:last-child)]:border-r [&[data-state=active]_[data-type="value"]]:text-foreground'
+                button: 'data-[state=active]:bg-muted-foreground/10 h-[34px] gap-1.5 rounded-md py-2 text-sm font-normal hover:bg-muted data-[state=active]:font-medium',
+                'button-sm': 'data-[state=active]:bg-muted-foreground/10 h-6 gap-1.5 rounded-md p-2 text-xs font-normal text-gray-800 hover:bg-muted data-[state=active]:font-medium data-[state=active]:text-foreground',
+                underline: 'data-[state=active]:after:opacity-100! relative h-[36px] px-0 text-md font-semibold text-gray-700 after:absolute after:inset-x-0 after:bottom-[-1px] after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] hover:after:opacity-10 data-[state=active]:bg-transparent data-[state=active]:text-foreground',
+                navbar: 'data-[state=active]:after:opacity-100! relative h-[52px] px-px text-md font-semibold text-muted-foreground after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-foreground',
+                pill: 'data-[state=active]:bg-muted-foreground/10 relative h-[30px] rounded-md px-3 text-md font-medium text-gray-800 hover:text-foreground data-[state=active]:font-semibold data-[state=active]:text-foreground dark:text-gray-500 dark:data-[state=active]:text-foreground',
+                kpis: 'h-full! items-start! hover:bg-accent/50 relative rounded-none border-border bg-transparent px-6 py-5 text-foreground ring-0 transition-all after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] first:rounded-tl-md last:rounded-tr-md data-[state=active]:bg-transparent data-[state=active]:after:opacity-100 [&:not(:last-child)]:border-r [&[data-state=active]_[data-type="value"]]:text-foreground'
             }
         },
         defaultVariants: {
@@ -131,7 +132,7 @@ const TabsTriggerCount: React.FC<TabsTriggerCountProps> = ({className = '', chil
 TabsTriggerCount.displayName = 'TabsTriggerCount';
 
 const tabsContentVariants = cva(
-    'ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+    'focus-visible:outline-hidden ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
     {
         variants: {
             variant: {
@@ -186,6 +187,7 @@ interface KpiTabValueProps {
     diffDirection?: 'up' | 'down' | 'same' | 'hidden';
     diffValue?: string | number;
     className?: string;
+    'data-testid'?: string;
 }
 
 const KpiTabValue: React.FC<KpiTabValueProps> = ({
@@ -195,12 +197,13 @@ const KpiTabValue: React.FC<KpiTabValueProps> = ({
     value,
     diffDirection,
     diffValue,
-    className
+    className,
+    'data-testid': testId
 }) => {
     const IconComponent = iconName ? LucideIcons[iconName] as LucideIcon : null;
 
     const diffContainerClassName = cn(
-        'flex items-center gap-1 text-xs h-[22px] px-1.5 rounded-sm group/diff cursor-default mt-0.5',
+        'flex items-center gap-1 text-xs h-[22px] px-1.5 rounded-xs group/diff cursor-default mt-0.5',
         diffDirection === 'up' && 'text-green-600 bg-green/10',
         diffDirection === 'down' && 'text-red-600 bg-red/10',
         diffDirection === 'same' && 'text-gray-700 bg-muted'
@@ -212,19 +215,19 @@ const KpiTabValue: React.FC<KpiTabValueProps> = ({
                 {IconComponent && <IconComponent size={16} strokeWidth={1.5} />}
                 {label}
             </div>
-            <div className='flex flex-col items-start gap-2 xl:flex-row xl:gap-3'>
-                <div className='text-[2.3rem] font-semibold leading-none tracking-tighter xl:text-[2.6rem]'>
+            <div className='flex flex-col items-start gap-2 lg:flex-row xl:gap-3'>
+                <div className='text-[2.3rem] font-semibold leading-none tracking-tighter xl:text-[2.6rem]' data-testid={testId}>
                     {value}
                 </div>
                 {diffDirection && diffDirection !== 'hidden' &&
                     <>
-                        <div className={diffContainerClassName}>
+                        <div className={diffContainerClassName} data-testid={testId ? `${testId}-diff` : undefined}>
                             <span className='font-medium leading-none'>{diffValue}</span>
                             {diffDirection === 'up' &&
-                                <TrendingUp className='!size-[12px]' size={14} strokeWidth={2} />
+                                <TrendingUp className='size-[12px]!' size={14} strokeWidth={2} />
                             }
                             {diffDirection === 'down' &&
-                                <TrendingDown className='!size-[12px]' size={14} strokeWidth={2} />
+                                <TrendingDown className='size-[12px]!' size={14} strokeWidth={2} />
                             }
                         </div>
                     </>
@@ -258,4 +261,48 @@ const KpiDropdownButton = React.forwardRef<HTMLButtonElement, KpiDropdownButtonP
 );
 KpiDropdownButton.displayName = 'KpiDropdownButton';
 
-export {Tabs, TabsList, TabsTrigger, TabsTriggerCount, TabsContent, KpiTabTrigger, KpiTabValue, KpiDropdownButton, tabsVariants};
+interface TabsDropdownTriggerProps extends Omit<React.ComponentProps<typeof TabsPrimitive.Trigger>, 'asChild'> {
+    children: React.ReactNode;
+}
+
+const TabsDropdownTrigger = React.forwardRef<HTMLButtonElement, TabsDropdownTriggerProps>(({
+    children,
+    className,
+    ...props
+}, ref) => {
+    const variant = React.useContext(TabsVariantContext);
+    return (
+        <div className="relative rounded-md hover:bg-muted">
+            <TabsPrimitive.Trigger
+                ref={ref}
+                className={cn(tabsTriggerVariants({variant, className}))}
+                {...props}
+            >
+                <div className="flex items-center gap-2">
+                    {children}
+                </div>
+            </TabsPrimitive.Trigger>
+            <DropdownMenuTrigger
+                className="absolute inset-0 size-full cursor-pointer"
+                onClick={(e) => {
+                    // Stop propagation to prevent tab change
+                    e.preventDefault();
+                }}
+            />
+        </div>
+    );
+});
+TabsDropdownTrigger.displayName = 'TabsDropdownTrigger';
+
+export {
+    Tabs,
+    TabsList,
+    TabsTrigger,
+    TabsTriggerCount,
+    TabsContent,
+    KpiTabTrigger,
+    KpiTabValue,
+    KpiDropdownButton,
+    TabsDropdownTrigger,
+    tabsVariants
+};

@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const {memberCountRounding, getMemberStats} = require('../../../../core/frontend/utils/member-count');
 
 const getMemberStatsMock = [
@@ -38,13 +38,13 @@ describe('Member Count', function () {
             meta: {totals: {paid: 1000, free: 500, comped: 500}}
         }};
         const members = await getMemberStats.call(meta);
-        should.equal(members.total, 2000);
+        assert.equal(members.total, 2000);
     });
 
     it('should return rounded numbers in correct format', function () {
         getMemberStatsMock.map((mock) => {
             const result = memberCountRounding(mock.members);
-            return should.equal(result, mock.expected);
+            return assert.equal(result, mock.expected);
         });
     });
 });

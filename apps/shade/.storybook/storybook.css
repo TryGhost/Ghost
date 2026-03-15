@@ -280,10 +280,10 @@ body,
 
 .prismjs div {
     font-size: 13px !important;
-    color: #fff !important;
+    /* color: #fff !important; */
 }
 
-.docblock-source {
+/* .docblock-source {
     border-radius: 7px !important;
     border: none !important;
     box-shadow: none !important;
@@ -298,7 +298,7 @@ body,
     background: #394047 !important;
     border: none;
     color: #fff;
-}
+} */
 
 .sbdocs a.button {
     display: inline-block;

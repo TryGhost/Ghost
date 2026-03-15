@@ -1,4 +1,4 @@
-import type {Meta, StoryObj} from '@storybook/react';
+import type {Meta, StoryObj} from '@storybook/react-vite';
 import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue} from './card';
 import {Button} from './button';
 import {Eye, User, Coins} from 'lucide-react';
@@ -6,7 +6,14 @@ import {Eye, User, Coins} from 'lucide-react';
 const meta = {
     title: 'Components / Card',
     component: Card,
-    tags: ['autodocs']
+    tags: ['autodocs'],
+    parameters: {
+        docs: {
+            description: {
+                component: 'Flexible containers for displaying content with consistent styling. Includes standard cards for general content and specialized KPI cards for displaying metrics and trends.'
+            }
+        }
+    }
 } satisfies Meta<typeof Card>;
 
 export default meta;
@@ -113,7 +120,7 @@ export const KpiCardWithColorIndicator: Story = {
             <KpiCardHeader key="kpi-header" className='relative flex grow flex-row items-start justify-between gap-5 border-none pb-4'>
                 <div className='flex grow flex-col gap-1.5 border-none pb-0'>
                     <KpiCardHeaderLabel>
-                        <span className='inline-block size-2 rounded-full opacity-50' style={{backgroundColor: 'hsl(var(--chart-purple))'}}></span>
+                        <span className='inline-block size-2 rounded-full opacity-50' style={{backgroundColor: 'var(--chart-purple)'}}></span>
                         <Coins size={16} strokeWidth={1.5} />
                         MRR
                     </KpiCardHeaderLabel>
@@ -161,7 +168,7 @@ export const KpiCardWithHoverButton: Story = {
             <KpiCardHeader key="kpi-header" className='relative flex grow flex-row items-start justify-between gap-5 border-none pb-4'>
                 <div className='flex grow flex-col gap-1.5 border-none pb-0'>
                     <KpiCardHeaderLabel className='transition-all group-hover:text-foreground'>
-                        <span className='inline-block size-2 rounded-full opacity-50' style={{backgroundColor: 'hsl(var(--chart-teal))'}}></span>
+                        <span className='inline-block size-2 rounded-full opacity-50' style={{backgroundColor: 'var(--chart-teal)'}}></span>
                         <User size={16} strokeWidth={1.5} />
                         Members
                     </KpiCardHeaderLabel>

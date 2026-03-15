@@ -1,1 +1,4 @@
-<AdminX::Posts />
+{{! Posts has been migrated to the new React admin shell }}
+{{#unless (feature "inAdminForward")}}
+    <AdminX::Posts />
+{{/unless}}

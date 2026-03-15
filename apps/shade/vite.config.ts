@@ -1,6 +1,6 @@
 import path from 'path';
 import react from '@vitejs/plugin-react';
-import glob from 'glob';
+import {glob} from 'glob';
 import {resolve} from 'path';
 import svgr from 'vite-plugin-svgr';
 import {defineConfig} from 'vitest/config';

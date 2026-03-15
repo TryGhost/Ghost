@@ -198,11 +198,13 @@ export default function mockMembers(server) {
         const member = members.find(params.id);
 
         // API accepts `tiers: [{id: 'x'}]` which isn't handled natively by mirage
-        if (attrs.tiers.length > 0) {
+        if (attrs.tiers && attrs.tiers.length > 0) {
             attrs.tiers.forEach((p) => {
                 const tier = tiers.find(p.id);
 
                 if (!member.tiers.includes(tier)) {
+                    member.status = 'comped';
+
                     // TODO: serialize tiers through _active_ subscriptions
                     member.tiers.add(tier);
 
@@ -244,19 +246,23 @@ export default function mockMembers(server) {
             });
         }
 
-        const tierIds = (attrs.tiers || []).map(p => p.id);
+        // Only process tier removal if tiers were explicitly provided in the request
+        if (attrs.tiers) {
+            const tierIds = attrs.tiers.map(tier => tier.id);
 
-        member.tiers.models.forEach((tier) => {
-            if (!tierIds.includes(tier.id)) {
-                member.subscriptions.models.filter(sub => sub.tier.id === tier.id).forEach((sub) => {
-                    member.subscriptions.remove(sub);
-                });
+            member.tiers.models.forEach((tier) => {
+                if (!tierIds.includes(tier.id)) {
+                    member.subscriptions.models.filter(sub => sub.tier.id === tier.id).forEach((sub) => {
+                        member.subscriptions.remove(sub);
+                    });
 
-                member.tiers.remove(tier);
-            }
-        });
+                    member.tiers.remove(tier);
+                }
+            });
+        }
 
-        // these are read-only properties so make sure we don't overwrite data
+        // Don't pass tiers/subscriptions to update() - they are managed via
+        // the model relationship methods above
         delete attrs.tiers;
         delete attrs.subscriptions;
 

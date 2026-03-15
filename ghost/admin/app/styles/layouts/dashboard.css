@@ -1783,34 +1783,6 @@ Dashboard Latest Newsletters */
 }
 
 /* ---------------------------------
-Dashboard What's New */
-.gh-dashboard-whats-new .gh-dashboard-list-body {
-    justify-content: flex-start;
-}
-
-.gh-dashboard-whats-new .gh-dashboard-resource-title {
-    margin-top: -4px;
-}
-
-.gh-dashboard-whats-new .gh-dashboard-resource-title h4 {
-    display: flex;
-    color: var(--black);
-    align-items: center;
-}
-
-.gh-dashboard-whats-new .gh-dashboard-resource-title svg {
-    fill: var(--pink);
-    width: 1.8rem;
-    height: auto;
-    margin: 0 8px 3px 0;
-}
-
-.gh-dashboard-whats-new .gh-dashboard-list-link span {
-    font-size: 1.7rem;
-    font-weight: 600;
-}
-
-/* ---------------------------------
 Dashboard Community */
 
 .gh-dashboard-community {

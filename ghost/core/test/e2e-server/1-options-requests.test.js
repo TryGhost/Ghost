@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const {agentProvider, matchers, cacheRules} = require('../utils/e2e-framework');
 const {anyContentVersion} = matchers;
 const config = require('../../core/shared/config');
@@ -98,7 +98,7 @@ describe('OPTIONS requests', function () {
                 .options('/')
                 .expect(204);
 
-            assert.equal(res.headers['access-control-allow-origin'], 'http://127.0.0.1:2369');
+            assert.equal(res.headers['access-control-allow-origin'], config.get('url'));
             assert.equal(res.headers['access-control-allow-credentials'], 'true');
             assert.equal(res.headers['access-control-allow-methods'], 'GET,HEAD,PUT,PATCH,POST,DELETE');
             assert.equal(res.headers['access-control-max-age'], '86400');

@@ -2,7 +2,7 @@
 // Usage: `{{ghost_head}}`
 //
 // Outputs scripts and other assets at the top of a Ghost theme
-const {labs, metaData, settingsCache, config, blogIcon, urlUtils, getFrontendKey, settingsHelpers} = require('../services/proxy');
+const {metaData, settingsCache, config, blogIcon, urlUtils, getFrontendKey, settingsHelpers} = require('../services/proxy');
 const {escapeExpression, SafeString} = require('../services/handlebars');
 const {generateCustomFontCss, isValidCustomFont, isValidCustomHeadingFont} = require('@tryghost/custom-fonts');
 // BAD REQUIRE
@@ -59,12 +59,11 @@ function getMembersHelper(data, frontendKey, excludeList) {
 
         const colorString = (_.has(data, 'site._preview') && data.site.accent_color) ? data.site.accent_color : '';
         const attributes = {
-            i18n: labs.isSet('i18n'),
+            i18n: true,
             ghost: urlUtils.getSiteUrl(),
             key: frontendKey,
             api: urlUtils.urlFor('api', {type: 'content'}, true),
-            locale: settingsCache.get('locale') || 'en',
-            'members-signin-otc': labs.isSet('membersSigninOTC') // html.dataset converts dash-attrs to camelCase
+            locale: settingsCache.get('locale') || 'en'
         };
         if (colorString) {
             attributes['accent-color'] = colorString;
@@ -96,7 +95,7 @@ function getSearchHelper(frontendKey) {
         key: frontendKey,
         styles: stylesUrl,
         'sodo-search': adminUrl,
-        locale: labs.isSet('i18n') ? (settingsCache.get('locale') || 'en') : undefined
+        locale: settingsCache.get('locale') || 'en'
     };
     const dataAttrs = getDataAttributes(attrs);
     let helper = `<script defer src="${scriptUrl}" ${dataAttrs} crossorigin="anonymous"></script>`;
@@ -335,6 +334,15 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
             head.push(`<script defer src="${getAssetUrl('public/member-attribution.min.js')}"></script>`);
         }
 
+        // Use settingsHelpers to check if web analytics is enabled (includes all necessary checks)
+        if (settingsHelpers.isWebAnalyticsEnabled()) {
+            head.push(getTinybirdTrackerScript(dataRoot));
+            // Set a flag in response locals to indicate tracking script is being served
+            if (dataRoot._locals) {
+                dataRoot._locals.ghostAnalytics = true;
+            }
+        }
+
         if (options.data.site.accent_color) {
             const accentColor = escapeExpression(options.data.site.accent_color);
             const styleTag = `<style>:root {--ghost-accent-color: ${accentColor};}</style>`;
@@ -356,15 +364,6 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
 
         if (!_.isEmpty(tagCodeInjection)) {
             head.push(tagCodeInjection);
-        }
-
-        // Use settingsHelpers to check if web analytics is enabled (includes all necessary checks)
-        if (settingsHelpers.isWebAnalyticsEnabled()) {
-            head.push(getTinybirdTrackerScript(dataRoot));
-            // Set a flag in response locals to indicate tracking script is being served
-            if (dataRoot._locals) {
-                dataRoot._locals.ghostAnalytics = true;
-            }
         }
 
         // Check if if the request is for a site preview, in which case we **always** use the custom font values

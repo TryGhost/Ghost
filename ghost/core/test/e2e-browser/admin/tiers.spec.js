@@ -32,7 +32,9 @@ test.describe('Admin', () => {
 
             await sharedPage.goto('/ghost/');
             await sharedPage.goto('/ghost/#/settings/offers');
-            await expect(sharedPage.getByTestId('offers')).toContainText(offerName);
+            await sharedPage.getByTestId('offers').getByRole('button', {name: 'Manage tiers'}).waitFor({state: 'hidden'});
+            await sharedPage.getByTestId('offers').getByRole('button', {name: 'Manage offers'}).click();
+            await expect(sharedPage.getByTestId('offers-modal')).toContainText(offerName);
         });
 
         test('Can create additional Tier', async ({sharedPage}) => {
@@ -102,6 +104,7 @@ test.describe('Admin', () => {
             });
 
             await test.step('Check yearly price and description', async () => {
+                await portalFrame.locator('[data-test-button="switch-yearly"]').click();
                 await expect(portalTierCard.locator('.amount').first()).toHaveText(updatedYearlyPrice);
                 await expect(portalTierCard.locator('.gh-portal-product-description').first()).toHaveText(updatedDescription);
             });

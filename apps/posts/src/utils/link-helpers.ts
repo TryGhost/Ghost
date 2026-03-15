@@ -27,7 +27,7 @@ export const cleanTrackedUrl = (url: string, display = false): string => {
         const urlWithoutProtocol = urlObj.host + (urlObj.pathname === '/' && !urlObj.search ? '' : urlObj.pathname) + (urlObj.search ? urlObj.search : '') + (urlObj.hash ? urlObj.hash : '');
         // remove www. from the start of the URL
         return urlWithoutProtocol.replace(/^www\./, '');
-    } catch (error) {
+    } catch {
         // return the original url if there is an error
         return url;
     }

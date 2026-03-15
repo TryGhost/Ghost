@@ -2,16 +2,12 @@ const path = require('path');
 const config = require('../../../shared/config');
 const themeEngine = require('../../services/theme-engine');
 const express = require('../../../shared/express');
+const AASA_PATH = '/.well-known/apple-app-site-association';
 
-function isDeniedFile(file) {
-    const deniedFileTypes = ['.hbs', '.md', '.json', '.lock', '.log'];
-    const deniedFiles = ['gulpfile.js', 'gruntfile.js'];
-
-    const ext = path.extname(file);
-    const base = path.basename(file);
-
-    return deniedFiles.includes(base) || deniedFileTypes.includes(ext);
-}
+const DENIED_FILE_TYPES = ['.hbs', '.md', '.json', '.lock', '.log'];
+const DENIED_FILES = ['gulpfile.js', 'gruntfile.js'];
+const ALLOWED_FILES = ['manifest.json', 'assetlinks.json'];
+const ALLOWED_PATH = '/assets/';
 
 /**
  * Copy from:
@@ -32,63 +28,97 @@ function decode(filePath) {
 }
 
 /**
- *
- * @param {string} file path to a requested file
+ * @param {string} normalizedPath - already decoded and normalized
  * @returns {boolean}
  */
-function isAllowedFile(file) {
-    const decodedFilePath = decode(file);
-    if (decodedFilePath === -1) {
-        return false;
-    }
+function isDeniedFile(normalizedPath) {
+    const ext = path.extname(normalizedPath);
+    const base = path.basename(normalizedPath);
 
-    const normalizedFilePath = path.normalize(decodedFilePath);
-
-    const allowedFiles = ['manifest.json', 'assetlinks.json'];
-    const allowedPath = '/assets/';
-    const alwaysDeny = ['.hbs'];
-
-    const ext = path.extname(normalizedFilePath);
-    const base = path.basename(normalizedFilePath);
-
-    return allowedFiles.includes(base) || (normalizedFilePath.startsWith(allowedPath) && !alwaysDeny.includes(ext));
+    return DENIED_FILES.includes(base) || DENIED_FILE_TYPES.includes(ext);
 }
 
-function forwardToExpressStatic(req, res, next) {
+/**
+ * @param {string} normalizedPath - already decoded and normalized
+ * @returns {boolean}
+ */
+function isAllowedFile(normalizedPath) {
+    const ext = path.extname(normalizedPath);
+    const base = path.basename(normalizedPath);
+
+    // .hbs files are never allowed, even in /assets/
+    return ALLOWED_FILES.includes(base) || (normalizedPath.startsWith(ALLOWED_PATH) && ext !== '.hbs');
+}
+
+/**
+ * Check if a file path should fall through to the next middleware
+ * This is used for files that Ghost generates dynamically (like sitemaps) or provides defaults for (like robots.txt)
+ * @param {string} filePath - The request path to check
+ * @returns {boolean} - True if the file should fall through to the next middleware
+ */
+function isFallthroughFile(filePath) {
+    const fallthroughFiles = [
+        '/robots.txt',
+        '/sitemap.xml',
+        '/sitemap.xsl'
+    ];
+
+    if (fallthroughFiles.includes(filePath)) {
+        return true;
+    }
+
+    // Match sitemap-{type}.xml and sitemap-{type}-{page}.xml for paginated sitemaps
+    // e.g., /sitemap-posts.xml, /sitemap-posts-2.xml, /sitemap-tags-3.xml
+    if (/^\/sitemap-(posts|pages|tags|authors|users)(-\d+)?\.xml$/.test(filePath)) {
+        return true;
+    }
+
+    return false;
+}
+
+function forwardToExpressStatic(req, res, next, options = {}) {
     if (!themeEngine.getActive()) {
         return next();
     }
 
     // We allow robots.txt to fall through to the next middleware, so that we can return our default robots.txt
     // We also allow sitemap.xml and sitemap-:resource.xml to fall through so that we can serve our defaults if they're not found in the theme
-    const fallthroughFiles = [
-        '/robots.txt',
-        '/sitemap.xml',
-        '/sitemap-posts.xml',
-        '/sitemap-pages.xml',
-        '/sitemap-tags.xml',
-        '/sitemap-authors.xml',
-        '/sitemap-users.xml',
-        '/sitemap.xsl'
-    ];
-    const fallthrough = fallthroughFiles.includes(req.path) ? true : false;
+    const fallthrough = isFallthroughFile(req.path);
 
-    express.static(themeEngine.getActive().path, {
+    express.static(themeEngine.getActive().path, Object.assign({
         // @NOTE: the maxAge config passed below are in milliseconds and the config
         //        is specified in seconds. See https://github.com/expressjs/serve-static/issues/150 for more context
         maxAge: config.get('caching:theme:maxAge') * 1000,
         fallthrough
-    }
-    )(req, res, next);
+    }, options))(req, res, next);
 }
 
 function staticTheme() {
     return function denyStatic(req, res, next) {
-        if (!path.extname(req.path)) {
+        if (req.path === AASA_PATH) {
+            return forwardToExpressStatic(req, res, next, {
+                setHeaders(response) {
+                    response.setHeader('Content-Type', 'application/json');
+                }
+            });
+        }
+
+        const decodedPath = decode(req.path.toLowerCase());
+        if (decodedPath === -1) {
             return next();
         }
 
-        if (!isAllowedFile(req.path.toLowerCase()) && isDeniedFile(req.path.toLowerCase())) {
+        const normalizedPath = path.normalize(decodedPath);
+
+        if (!path.extname(normalizedPath)) {
+            return next();
+        }
+
+        if (isAllowedFile(normalizedPath)) {
+            return forwardToExpressStatic(req, res, next);
+        }
+
+        if (isDeniedFile(normalizedPath)) {
             return next();
         }
 

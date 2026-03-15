@@ -1,8 +1,8 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const supertest = require('supertest');
 const localUtils = require('./utils');
 const testUtils = require('../../../utils');
-const configUtils = require('../../../utils/configUtils');
+const configUtils = require('../../../utils/config-utils');
 const config = require('../../../../core/shared/config');
 const DataGenerator = require('../../../utils/fixtures/data-generator');
 
@@ -43,6 +43,83 @@ describe('Authors Content API', function () {
         });
 
         const res = await request.get(localUtils.API.getApiQuery(`authors/?key=${validKey}&filter=password:'${hashedPassword}'`))
+            .set('Origin', testUtils.API.getURL())
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.public)
+            .expect(200);
+
+        const data = JSON.parse(res.text);
+
+        await testUtils.knex('posts_authors').where('id', '644fd18ca1f0b764b0279b2f').del();
+        await testUtils.knex('users').where('id', userId).del();
+
+        if (data.authors.length === 1) {
+            throw new Error('fuck');
+        }
+    });
+
+    it('can not filter authors by table-qualified password', async function () {
+        const hashedPassword = '$2a$10$FxFlCsNBgXw42cBj0l1GFu39jffibqTqyAGBz7uCLwetYAdBYJEe6';
+        const userId = '644fd18ca1f0b764b0279b2d';
+
+        await testUtils.knex('users').insert({
+            id: userId,
+            slug: 'brute-force-password-test-user',
+            name: 'Brute Force Password Test User',
+            email: 'bruteforcepasswordtestuser@example.com',
+            password: hashedPassword,
+            status: 'active',
+            created_at: '2019-01-01 00:00:00'
+        });
+
+        const {id: postId} = await testUtils.knex('posts').first('id').where('slug', 'welcome');
+
+        await testUtils.knex('posts_authors').insert({
+            id: '644fd18ca1f0b764b0279b2f',
+            post_id: postId,
+            author_id: userId
+        });
+
+        const res = await request.get(localUtils.API.getApiQuery(`authors/?key=${validKey}&filter=users.password:'${hashedPassword}'`))
+            .set('Origin', testUtils.API.getURL())
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.public)
+            .expect(200);
+
+        const data = JSON.parse(res.text);
+
+        await testUtils.knex('posts_authors').where('id', '644fd18ca1f0b764b0279b2f').del();
+        await testUtils.knex('users').where('id', userId).del();
+
+        if (data.authors.length === 1) {
+            throw new Error('fuck');
+        }
+    });
+
+    it('can not filter authors by table-qualified email', async function () {
+        const hashedPassword = '$2a$10$FxFlCsNBgXw42cBj0l1GFu39jffibqTqyAGBz7uCLwetYAdBYJEe6';
+        const userEmail = 'bruteforcepasswordtestuser@example.com';
+        const userId = '644fd18ca1f0b764b0279b2d';
+
+        await testUtils.knex('users').insert({
+            id: userId,
+            slug: 'brute-force-password-test-user',
+            name: 'Brute Force Password Test User',
+            email: userEmail,
+            password: hashedPassword,
+            status: 'active',
+            created_at: '2019-01-01 00:00:00'
+        });
+
+        const {id: postId} = await testUtils.knex('posts').first('id').where('slug', 'welcome');
+
+        await testUtils.knex('posts_authors').insert({
+            id: '644fd18ca1f0b764b0279b2f',
+            post_id: postId,
+            author_id: userId
+        });
+
+        const res = await request.get(localUtils.API.getApiQuery(`authors/?key=${validKey}&filter=users.email:'${userEmail}'`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.public)
@@ -104,7 +181,7 @@ describe('Authors Content API', function () {
             .expect('Cache-Control', testUtils.cacheRules.public)
             .expect(200)
             .then((res) => {
-                should.not.exist(res.headers['x-cache-invalidate']);
+                assert.equal(res.headers['x-cache-invalidate'], undefined);
 
                 // We don't expose any other attrs.
                 localUtils.API.checkResponse(res.body.authors[0], 'author', null, null, ['id', 'name']);
@@ -119,10 +196,11 @@ describe('Authors Content API', function () {
             .then((res) => {
                 const jsonResponse = res.body;
 
-                jsonResponse.authors.should.be.an.Array().with.lengthOf(3);
-                jsonResponse.authors[0].slug.should.equal('joe-bloggs');
-                jsonResponse.authors[1].slug.should.equal('ghost');
-                jsonResponse.authors[2].slug.should.equal('slimer-mcectoplasm');
+                assert(Array.isArray(jsonResponse.authors));
+                assert.equal(jsonResponse.authors.length, 3);
+                assert.equal(jsonResponse.authors[0].slug, 'joe-bloggs');
+                assert.equal(jsonResponse.authors[1].slug, 'ghost');
+                assert.equal(jsonResponse.authors[2].slug, 'slimer-mcectoplasm');
             });
     });
 });

@@ -1,44 +1,12 @@
 import * as Sentry from '@sentry/ember';
 import Component from '@glimmer/component';
 import React, {Suspense} from 'react';
-import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import moment from 'moment-timezone';
 import {action} from '@ember/object';
 import {didCancel, task} from 'ember-concurrency';
 import {inject} from 'ghost-admin/decorators/inject';
+import {koenigFileUploadTypes, useKoenigFileUpload} from '@tryghost/admin-x-framework/hooks';
 import {inject as service} from '@ember/service';
-
-export const fileTypes = {
-    image: {
-        mimeTypes: ['image/gif', 'image/jpg', 'image/jpeg', 'image/png', 'image/svg+xml', 'image/webp'],
-        extensions: ['gif', 'jpg', 'jpeg', 'png', 'svg', 'svgz', 'webp'],
-        endpoint: '/images/upload/',
-        resourceName: 'images'
-    },
-    video: {
-        mimeTypes: ['video/mp4', 'video/webm', 'video/ogg'],
-        extensions: ['mp4', 'webm', 'ogv'],
-        endpoint: '/media/upload/',
-        resourceName: 'media'
-    },
-    audio: {
-        mimeTypes: ['audio/mp3', 'audio/mpeg', 'audio/ogg', 'audio/wav', 'audio/vnd.wav', 'audio/wave', 'audio/x-wav', 'audio/mp4', 'audio/x-m4a'],
-        extensions: ['mp3', 'wav', 'ogg', 'm4a'],
-        endpoint: '/media/upload/',
-        resourceName: 'media'
-    },
-    mediaThumbnail: {
-        mimeTypes: ['image/gif', 'image/jpg', 'image/jpeg', 'image/png', 'image/webp'],
-        extensions: ['gif', 'jpg', 'jpeg', 'png', 'webp'],
-        endpoint: '/media/thumbnail/upload/',
-        requestMethod: 'put',
-        resourceName: 'media'
-    },
-    file: {
-        endpoint: '/files/upload/',
-        resourceName: 'files'
-    }
-};
 
 function LockIcon({...props}) {
     return (
@@ -80,6 +48,13 @@ export function decoratePostSearchResult(item, settings) {
             item.metaIconTitle = 'Specific tiers only';
         }
     }
+}
+
+export function getCardVisibilitySettings(cardConfig = {}) {
+    const post = cardConfig.post;
+    const isPage = post?.isPage || post?.displayName === 'page';
+
+    return isPage ? 'web only' : 'web and email';
 }
 
 /**
@@ -252,7 +227,12 @@ export default class KoenigLexicalEditor extends Component {
         if (this.offers) {
             return this.offers;
         }
-        this.offers = yield this.store.query('offer', {filter: 'status:active'});
+
+        // Only fetch active signup offers for use in link dropdowns
+        // - Archived offers (status:archived) should not appear
+        // - Retention offers (redemption_type:retention) are only triggered during cancellation flows, not via offer links
+        this.offers = yield this.store.query('offer', {filter: 'status:active+redemption_type:signup'});
+
         return this.offers;
     }
 
@@ -440,8 +420,7 @@ export default class KoenigLexicalEditor extends Component {
             fetchLabels,
             renderLabels: !this.session.user.isContributor,
             feature: {
-                contentVisibility: this.feature.contentVisibility,
-                contentVisibilityAlpha: this.feature.contentVisibilityAlpha
+                transistor: this.feature.transistor
             },
             deprecated: { // todo fix typo
                 headerV1: true // if false, shows header v1 in the menu
@@ -451,201 +430,11 @@ export default class KoenigLexicalEditor extends Component {
             siteTitle: this.settings.title,
             siteDescription: this.settings.description,
             siteUrl: this.config.getSiteUrl('/'),
-            stripeEnabled: checkStripeEnabled() // returns a boolean
+            siteUuid: this.config.site_uuid,
+            stripeEnabled: checkStripeEnabled(), // returns a boolean
+            visibilitySettings: getCardVisibilitySettings(props.cardConfig)
         };
-        const cardConfig = Object.assign({}, defaultCardConfig, props.cardConfig, {pinturaConfig: this.pinturaConfig});
-
-        const useFileUpload = (type = 'image') => {
-            const [progress, setProgress] = React.useState(0);
-            const [isLoading, setLoading] = React.useState(false);
-            const [errors, setErrors] = React.useState([]);
-            const [filesNumber, setFilesNumber] = React.useState(0);
-
-            const progressTracker = React.useRef(new Map());
-
-            function updateProgress() {
-                if (progressTracker.current.size === 0) {
-                    setProgress(0);
-                    return;
-                }
-
-                let totalProgress = 0;
-
-                progressTracker.current.forEach(value => totalProgress += value);
-
-                setProgress(Math.round(totalProgress / progressTracker.current.size));
-            }
-
-            // we only check the file extension by default because IE doesn't always
-            // expose the mime-type, we'll rely on the API for final validation
-            function defaultValidator(file) {
-                // if type is file we don't need to validate since the card can accept any file type
-                if (type === 'file') {
-                    return true;
-                }
-                let extensions = fileTypes[type].extensions;
-                let [, extension] = (/(?:\.([^.]+))?$/).exec(file.name);
-
-                // if extensions is falsy exit early and accept all files
-                if (!extensions) {
-                    return true;
-                }
-
-                if (!Array.isArray(extensions)) {
-                    extensions = extensions.split(',');
-                }
-
-                if (!extension || extensions.indexOf(extension.toLowerCase()) === -1) {
-                    let validExtensions = `.${extensions.join(', .').toUpperCase()}`;
-                    return `The file type you uploaded is not supported. Please use ${validExtensions}`;
-                }
-
-                return true;
-            }
-
-            const validate = (files = []) => {
-                const validationResult = [];
-
-                for (let i = 0; i < files.length; i += 1) {
-                    let file = files[i];
-                    let result = defaultValidator(file);
-                    if (result === true) {
-                        continue;
-                    }
-
-                    validationResult.push({fileName: file.name, message: result});
-                }
-
-                return validationResult;
-            };
-
-            const _uploadFile = async (file, {formData = {}} = {}) => {
-                progressTracker.current[file] = 0;
-
-                const fileFormData = new FormData();
-                fileFormData.append('file', file, file.name);
-
-                Object.keys(formData || {}).forEach((key) => {
-                    fileFormData.append(key, formData[key]);
-                });
-
-                const url = `${ghostPaths().apiRoot}${fileTypes[type].endpoint}`;
-
-                try {
-                    const requestMethod = fileTypes[type].requestMethod || 'post';
-                    const response = await this.ajax[requestMethod](url, {
-                        data: fileFormData,
-                        processData: false,
-                        contentType: false,
-                        dataType: 'text',
-                        xhr: () => {
-                            const xhr = new window.XMLHttpRequest();
-
-                            xhr.upload.addEventListener('progress', (event) => {
-                                if (event.lengthComputable) {
-                                    progressTracker.current.set(file, (event.loaded / event.total) * 100);
-                                    updateProgress();
-                                }
-                            }, false);
-
-                            return xhr;
-                        }
-                    });
-
-                    // force tracker progress to 100% in case we didn't get a final event
-                    progressTracker.current.set(file, 100);
-                    updateProgress();
-
-                    let uploadResponse;
-                    let responseUrl;
-
-                    try {
-                        uploadResponse = JSON.parse(response);
-                    } catch (error) {
-                        if (!(error instanceof SyntaxError)) {
-                            throw error;
-                        }
-                    }
-
-                    if (uploadResponse) {
-                        const resource = uploadResponse[fileTypes[type].resourceName];
-                        if (resource && Array.isArray(resource) && resource[0]) {
-                            responseUrl = resource[0].url;
-                        }
-                    }
-
-                    return {
-                        url: responseUrl,
-                        fileName: file.name
-                    };
-                } catch (error) {
-                    console.error(error); // eslint-disable-line
-
-                    // grab custom error message if present
-                    let message = error.payload?.errors?.[0]?.message || '';
-                    let context = error.payload?.errors?.[0]?.context || '';
-
-                    // fall back to EmberData/ember-ajax default message for error type
-                    if (!message) {
-                        message = error.message;
-                    }
-
-                    // TODO: check for or expose known error types?
-                    const errorResult = {
-                        message,
-                        context,
-                        fileName: file.name
-                    };
-
-                    throw errorResult;
-                }
-            };
-
-            const upload = async (files = [], options = {}) => {
-                setFilesNumber(files.length);
-                setLoading(true);
-
-                const validationResult = validate(files);
-
-                if (validationResult.length) {
-                    setErrors(validationResult);
-                    setLoading(false);
-                    setProgress(100);
-
-                    return null;
-                }
-
-                const uploadPromises = [];
-
-                for (let i = 0; i < files.length; i += 1) {
-                    const file = files[i];
-                    uploadPromises.push(_uploadFile(file, options));
-                }
-
-                try {
-                    const uploadResult = await Promise.all(uploadPromises);
-                    setProgress(100);
-                    progressTracker.current.clear();
-
-                    setLoading(false);
-
-                    setErrors([]); // components expect array of objects: { fileName: string, message: string }[]
-
-                    return uploadResult;
-                } catch (error) {
-                    console.error(error); // eslint-disable-line no-console
-
-                    setErrors([...errors, error]);
-                    setLoading(false);
-                    setProgress(100);
-                    progressTracker.current.clear();
-
-                    return null;
-                }
-            };
-
-            return {progress, isLoading, upload, errors, filesNumber};
-        };
+        const cardConfig = Object.assign({}, defaultCardConfig, props.cardConfig, {pinturaConfig: this.pinturaConfig, visibilitySettings: defaultCardConfig.visibilitySettings});
 
         const KGEditorComponent = ({isInitInstance}) => {
             return (
@@ -653,7 +442,7 @@ export default class KoenigLexicalEditor extends Component {
                     <KoenigComposer
                         editorResource={this.editorResource}
                         cardConfig={cardConfig}
-                        fileUploader={{useFileUpload, fileTypes}}
+                        fileUploader={{useFileUpload: useKoenigFileUpload, fileTypes: koenigFileUploadTypes}}
                         initialEditorState={this.args.lexical}
                         onError={this.onError}
                         darkMode={this.feature.nightShift}

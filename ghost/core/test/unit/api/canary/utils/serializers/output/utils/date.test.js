@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const settingsCache = require('../../../../../../../../core/shared/settings-cache');
 const dateUtil = require('../../../../../../../../core/server/api/endpoints/utils/serializers/output/utils/date');
@@ -18,7 +18,7 @@ describe('Unit: endpoints/utils/serializers/output/utils/date', function () {
         sinon.stub(settingsCache, 'get').returns(timezone);
 
         testDates.forEach((date) => {
-            dateUtil.format(date.in).should.equal(date.out);
+            assert.equal(dateUtil.format(date.in), date.out);
         });
     });
 });

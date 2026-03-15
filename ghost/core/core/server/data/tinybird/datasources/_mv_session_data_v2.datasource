@@ -1,0 +1,16 @@
+SCHEMA >
+    `site_uuid` LowCardinality(String),
+    `session_id` String,
+    `pageviews` AggregateFunction(count, UInt64),
+    `first_pageview` AggregateFunction(min, DateTime),
+    `last_pageview` AggregateFunction(max, DateTime),
+    `source` AggregateFunction(argMin, String, DateTime),
+    `device` AggregateFunction(argMin, String, DateTime),
+    `utm_source` AggregateFunction(argMin, String, DateTime),
+    `utm_medium` AggregateFunction(argMin, String, DateTime),
+    `utm_campaign` AggregateFunction(argMin, String, DateTime),
+    `utm_term` AggregateFunction(argMin, String, DateTime),
+    `utm_content` AggregateFunction(argMin, String, DateTime)
+
+ENGINE "AggregatingMergeTree"
+ENGINE_SORTING_KEY "site_uuid, session_id"

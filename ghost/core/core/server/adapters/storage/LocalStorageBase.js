@@ -49,7 +49,12 @@ class LocalStorageBase extends StorageBase {
     async save(file, targetDir) {
         let targetFilename;
 
-        // NOTE: the base implementation of `getTargetDir` returns the format this.storagePath/YYYY/MM
+        // Supports relative paths (preferred) and absolute paths (legacy)
+        // TODO: remove absolute path support once all callers pass relative paths
+        if (targetDir && !targetDir.startsWith(this.storagePath)) {
+            targetDir = path.join(this.storagePath, targetDir);
+        }
+
         targetDir = targetDir || this.getTargetDir(this.storagePath);
 
         const filename = await this.getUniqueFileName(file, targetDir);
@@ -103,12 +108,11 @@ class LocalStorageBase extends StorageBase {
     }
 
     /**
-     *
      * @param {String} url full url under which the stored content is served, result of save method
-     * @returns {String} path under which the content is stored
+     * @returns {String} relative path under which the content is stored
      */
     urlToPath(url) {
-        let filePath;
+        let relativePath;
 
         const prefix = urlUtils.urlJoin('/',
             urlUtils.getSubdir(),
@@ -117,22 +121,25 @@ class LocalStorageBase extends StorageBase {
 
         if (url.startsWith(this.staticFileUrl)) {
             // CASE: full path that includes the site url
-            filePath = url.replace(this.staticFileUrl, '');
-            filePath = path.join(this.storagePath, filePath);
+            relativePath = url.replace(this.staticFileUrl, '');
         } else if (url.startsWith(prefix)) {
             // CASE: The result of the save method doesn't include the site url. So we need to handle this case.
-            filePath = url.replace(prefix, '');
-            filePath = path.join(this.storagePath, filePath);
+            relativePath = url.replace(prefix, '');
         } else {
             throw new errors.IncorrectUsageError({
                 message: tpl(messages.invalidUrlParameter, {url})
             });
         }
 
-        return filePath;
+        return relativePath.replace(/^\//, '');
     }
 
     exists(fileName, targetDir) {
+        // Supports relative paths (preferred) and absolute paths (legacy)
+        // TODO: remove absolute path support once all callers pass relative paths
+        if (targetDir && !targetDir.startsWith(this.storagePath)) {
+            targetDir = path.join(this.storagePath, targetDir);
+        }
         const filePath = path.join(targetDir || this.storagePath, fileName);
 
         return fs.stat(filePath)
@@ -196,7 +203,12 @@ class LocalStorageBase extends StorageBase {
      * @returns {Promise.<*>}
      */
     async delete(fileName, targetDir) {
-        const filePath = path.join(targetDir, fileName);
+        // Supports relative paths (preferred) and absolute paths (legacy)
+        // TODO: remove absolute path support once all callers pass relative paths
+        if (targetDir && !targetDir.startsWith(this.storagePath)) {
+            targetDir = path.join(this.storagePath, targetDir);
+        }
+        const filePath = path.join(targetDir || this.storagePath, fileName);
         return await fs.remove(filePath);
     }
 

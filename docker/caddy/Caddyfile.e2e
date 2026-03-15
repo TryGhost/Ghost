@@ -1,0 +1,18 @@
+# E2E Test Caddyfile - Routes analytics requests to the analytics service
+:80 {
+    log {
+        output stdout
+        format json
+    }
+
+    # Proxy analytics requests with any prefix (e.g. /.ghost/analytics/ or /blog/.ghost/analytics/)
+    @analytics_paths path_regexp analytics_match ^(.*)/\.ghost/analytics(.*)$
+    handle @analytics_paths {
+        rewrite * {re.analytics_match.2}
+        reverse_proxy {$ANALYTICS_PROXY_TARGET}
+    }
+
+    # Default response for healthcheck and other requests
+    # E2E tests create Ghost instances dynamically, so we don't proxy to a fixed server
+    respond "OK" 200
+}

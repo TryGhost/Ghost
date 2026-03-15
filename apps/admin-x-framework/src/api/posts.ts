@@ -11,6 +11,7 @@ export type Post = {
     url: string;
     slug: string;
     title: string;
+    visibility?: string;
     uuid: string;
     feature_image?: string;
     count?: {
@@ -56,4 +57,10 @@ export const usePostsExports = createQuery<string>({
 export const useDeletePost = createMutation<unknown, string>({
     method: 'DELETE',
     path: id => `/posts/${id}/`
+});
+
+// Search index endpoints for efficient search
+export const useSearchIndexPosts = createQuery<PostsResponseType>({
+    dataType,
+    path: '/search-index/posts/'
 });

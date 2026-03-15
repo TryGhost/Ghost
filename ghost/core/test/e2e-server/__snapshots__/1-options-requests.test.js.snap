@@ -104,12 +104,13 @@ Object {
 
 exports[`OPTIONS requests CORS headers in Members API Handles same origin request 1: [headers] 1`] = `
 Object {
+  "access-control-allow-credentials": "true",
   "access-control-allow-methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
-  "access-control-allow-origin": "*",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "access-control-max-age": "86400",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "0",
-  "vary": "Access-Control-Request-Headers",
+  "vary": "Origin, Access-Control-Request-Headers",
   "x-powered-by": "Express",
 }
 `;

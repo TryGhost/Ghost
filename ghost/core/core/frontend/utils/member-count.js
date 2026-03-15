@@ -1,6 +1,14 @@
 const humanNumber = require('human-number');
 const {api} = require('../services/proxy');
 
+/**
+ * @returns {Promise<{
+ *     free: number;
+ *     paid: number;
+ *     comped: number;
+ *     total: number;
+ * }>}
+ */
 async function getMemberStats() {
     let memberStats = this.data || await api.stats.memberCountHistory.query();
     const {free, paid, comped} = memberStats.meta.totals;
@@ -8,18 +16,30 @@ async function getMemberStats() {
     return {free, paid, comped, total};
 }
 
+/**
+ * @param {number} n
+ * @returns {string}
+ */
 const numberWithCommas = (n) => {
     return n.toLocaleString();
 };
 
+/**
+ * @param {number} n
+ * @param {number} roundTo
+ * @returns {number}
+ */
 const rounding = (n, roundTo) => {
     return Math.floor(n / roundTo) * roundTo;
 };
 
-// Rounding https://github.com/TryGhost/Team/issues/1667
+/**
+ * @param {number} memberCount
+ * @returns {string}
+ */
 const memberCountRounding = (memberCount) => {
     if (memberCount <= 50) {
-        return memberCount;
+        return numberWithCommas(memberCount);
     }
 
     if (memberCount > 50 && memberCount <= 100) {

@@ -22,77 +22,117 @@
   ],
   "scripts": {
     "archive": "nx run ghost:archive",
+    "build:production": "nx run ghost:build:tsc && nx run ghost:build:assets && nx run @tryghost/admin:build",
     "build": "nx run-many -t build",
     "build:clean": "nx reset && rimraf -g 'ghost/*/build' && rimraf -g 'ghost/*/tsconfig.tsbuildinfo'",
     "clean:hard": "node ./.github/scripts/clean.js",
-    "dev:debug": "DEBUG_COLORS=true DEBUG=@tryghost*,ghost:* yarn dev",
-    "dev:admin": "node .github/scripts/dev.js --admin",
-    "dev:ghost": "node .github/scripts/dev.js --ghost",
-    "dev": "node .github/scripts/dev.js",
+    "dev": "nx run ghost-monorepo:docker:dev",
+    "dev:mailgun": "DEV_COMPOSE_FILES='-f compose.dev.mailgun.yaml' nx run ghost-monorepo:docker:dev",
+    "dev:lexical": "EDITOR_URL=http://localhost:2368/ghost/assets/koenig-lexical/ yarn dev",
+    "dev:analytics": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml' nx run ghost-monorepo:docker:dev",
+    "dev:storage": "DEV_COMPOSE_FILES='-f compose.dev.storage.yaml' nx run ghost-monorepo:docker:dev",
+    "dev:stripe": "./docker/stripe/with-stripe.sh nx run ghost-monorepo:docker:dev",
+    "dev:all": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml -f compose.dev.storage.yaml' ./docker/stripe/with-stripe.sh nx run ghost-monorepo:docker:dev",
     "fix": "yarn cache clean && rimraf -g '**/node_modules' && yarn && yarn nx reset",
     "knex-migrator": "yarn workspace ghost run knex-migrator",
-    "setup": "yarn && git submodule update --init && NODE_ENV=development node .github/scripts/setup.js",
-    "reset:data": "cd ghost/core && node index.js generate-data --clear-database --quantities members:1000,posts:100 --seed 123",
-    "reset:data:empty": "cd ghost/core && node index.js generate-data --clear-database --quantities members:0,posts:0 --seed 123",
-    "reset:data:xxl": "cd ghost/core && node index.js generate-data --clear-database --quantities members:2000000,posts:0,emails:0,members_stripe_customers:0,members_login_events:0,members_status_events:0 --seed 123",
-    "reset:data:analytics": "cd ghost/core/core/server/data/tinybird/scripts && node reset-data-tinybird.js",
-    "docker": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-ghost} docker compose run --rm -it ghost",
-    "docker:dev": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-ghost} docker compose up --attach=ghost --force-recreate --no-log-prefix",
-    "docker:build": "yarn docker:clean && docker compose --profile all build",
-    "docker:clean": "echo \"Deleting node_modules volumes...\" && docker compose --profile all down --remove-orphans && docker volume ls -q -f name=ghost_node_modules | xargs -I{} docker volume rm {}",
-    "docker:shell": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-ghost} docker compose run --rm -it ghost /bin/bash",
-    "docker:mysql": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-ghost} docker compose up mysql -d --wait && docker compose exec mysql mysql -u root -proot ghost",
-    "docker:sleep": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-ghost} docker compose run -d --name ghost-devcontainer --rm -it ghost /bin/bash -c 'sleep infinity'",
-    "docker:sleep:stop": "docker stop ghost-devcontainer",
-    "docker:test:unit": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-ghost} NX_DAEMON=false docker compose run --rm --no-deps ghost yarn test:unit",
-    "docker:test:browser": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-ghost} docker compose run --rm ghost yarn test:browser",
-    "docker:test:all": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-ghost} NX_DAEMON=false docker compose run --rm ghost yarn nx run ghost:test:all",
-    "docker:test:e2e": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-ghost} NX_DAEMON=false docker compose run --rm ghost yarn test:e2e",
-    "docker:reset": "docker compose --profile all down -v && docker compose up -d --wait",
-    "docker:restart": "docker compose down && docker compose up -d --wait",
-    "docker:down": "docker compose --profile all down",
+    "setup": "yarn && git submodule update --init --recursive",
+    "reset:data": "docker exec ghost-dev bash -c 'cd /home/ghost/ghost/core && node index.js generate-data --clear-database --quantities members:1000,posts:100 --seed 123'",
+    "reset:data:empty": "docker exec ghost-dev bash -c 'cd /home/ghost/ghost/core && node index.js generate-data --clear-database --quantities members:0,posts:0 --seed 123'",
+    "reset:data:xxl": "docker exec ghost-dev bash -c 'cd /home/ghost/ghost/core && node index.js generate-data --clear-database --quantities members:2000000,posts:0,emails:0,members_stripe_customers:0,members_login_events:0,members_status_events:0 --seed 123'",
+    "docker:build": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} build",
+    "docker:clean": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} --profile all down -v --remove-orphans --rmi local",
+    "docker:down": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} down",
     "lint": "nx run-many -t lint",
     "test": "nx run-many -t test",
     "test:unit": "nx run-many -t test:unit",
-    "test:browser": "node .github/scripts/dev.js --browser-tests --all --",
+    "test:browser": "node ghost/core/test/scripts/browser-test-runner.js --",
     "test:e2e": "yarn workspace @tryghost/e2e test",
+    "test:e2e:analytics": "yarn workspace @tryghost/e2e test:analytics",
+    "test:e2e:all": "yarn workspace @tryghost/e2e test:all",
+    "test:e2e:debug": "DEBUG=@tryghost/e2e:* yarn test:e2e",
     "main": "yarn main:monorepo && yarn main:submodules",
     "main:monorepo": "git checkout main && git pull ${GHOST_UPSTREAM:-origin} main && yarn",
     "main:submodules": "git submodule sync && git submodule update && git submodule foreach \"git checkout main && git pull ${GHOST_UPSTREAM:-origin} main\"",
     "prepare": "husky install .github/hooks",
     "tb": "tb local start && cd ghost/core/core/server/data/tinybird && tb dev",
     "tb:install": "curl https://tinybird.co | sh",
-    "postinstall": "patch-package",
-    "query:posts": "cd ghost/core/core/server/data/tinybird/scripts && ./query-posts.sh",
-    "query:members": "cd ghost/core/core/server/data/tinybird/scripts && ./query-members.sh",
-    "generate:analytics": "cd ghost/core && node core/server/data/tinybird/scripts/analytics-generator.js"
+    "data:analytics:generate": "node ghost/core/core/server/data/tinybird/scripts/docker-analytics-manager.js generate",
+    "data:analytics:clear": "node ghost/core/core/server/data/tinybird/scripts/docker-analytics-manager.js clear"
   },
   "resolutions": {
     "@tryghost/errors": "^1.3.7",
-    "@tryghost/logging": "2.4.23",
+    "@tryghost/logging": "2.5.0",
     "jackspeak": "2.3.6",
     "moment": "2.24.0",
-    "moment-timezone": "0.5.45"
+    "moment-timezone": "0.5.45",
+    "nwsapi": "2.2.12"
   },
   "lint-staged": {
-    "*.js": "eslint"
+    "*.{js,ts,tsx,jsx,cjs}": "eslint"
   },
   "devDependencies": {
     "@actions/core": "1.11.1",
     "chalk": "4.1.2",
+    "chokidar": "3.6.0",
     "concurrently": "8.2.2",
     "eslint": "8.57.1",
-    "eslint-plugin-ghost": "3.4.3",
+    "eslint-plugin-ghost": "3.5.0",
     "eslint-plugin-react": "7.37.5",
     "husky": "8.0.3",
     "inquirer": "8.2.7",
     "jsonc-parser": "3.3.1",
     "lint-staged": "15.5.2",
-    "nx": "20.8.0",
-    "patch-package": "8.0.0",
-    "postinstall-postinstall": "2.1.0",
+    "nx": "22.0.4",
     "rimraf": "5.0.10",
     "typescript": "5.8.3"
   },
-  "dependencies": {}
+  "dependencies": {},
+  "nx": {
+    "includedScripts": [],
+    "targets": {
+      "docker:up": {
+        "executor": "nx:run-commands",
+        "options": {
+          "command": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} up -d --force-recreate --wait"
+        },
+        "dependsOn": [
+          "docker:build"
+        ]
+      },
+      "docker:down": {
+        "executor": "nx:run-commands",
+        "options": {
+          "command": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} down"
+        }
+      },
+      "docker:build": {
+        "executor": "nx:run-commands",
+        "options": {
+          "command": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} build"
+        }
+      },
+      "docker:dev": {
+        "continuous": true,
+        "executor": "nx:run-commands",
+        "options": {
+          "command": "trap 'docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} down' EXIT; docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} logs -f"
+        },
+        "dependsOn": [
+          "docker:up",
+          {
+            "target": "dev",
+            "projects": [
+              "@tryghost/admin",
+              "@tryghost/portal",
+              "@tryghost/comments-ui",
+              "@tryghost/signup-form",
+              "@tryghost/sodo-search",
+              "@tryghost/announcement-bar",
+              "@tryghost/parse-email-address"
+            ]
+          }
+        ]
+      }
+    }
+  }
 }

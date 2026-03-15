@@ -1,6 +1,8 @@
 const {expect} = require('@playwright/test');
 const test = require('../fixtures/ghost-test');
 const {deleteAllMembers, createTier, createOffer, completeStripeSubscription} = require('../utils');
+const offersService = require('../../../core/server/services/offers');
+const ObjectID = require('bson-objectid').default;
 
 test.describe('Portal', () => {
     test.setTimeout(90000); // override the default 60s in the config as these retries can run close to 60s
@@ -28,8 +30,11 @@ test.describe('Portal', () => {
 
             // check that offer was added in the offer list screen
             await sharedPage.goto('/ghost');
-            await sharedPage.locator('[data-test-nav="settings"]').click();
-            await expect(await sharedPage.getByTestId('offers')).toContainText(offerName);
+            await sharedPage.getByRole('navigation').getByRole('link', {name: 'Settings'}).click();
+            await sharedPage.getByTestId('offers').getByRole('button', {name: 'Manage tiers'}).waitFor({state: 'hidden'});
+            await sharedPage.getByTestId('offers').getByRole('button', {name: 'Manage offers'}).click();
+            await expect(sharedPage.getByTestId('offers-modal')).toContainText(offerName);
+            await sharedPage.getByTestId('offers-modal').getByRole('button', {name: 'Close'}).click();
 
             await sharedPage.goto(offerLink);
 
@@ -69,7 +74,7 @@ test.describe('Portal', () => {
 
             // go to member list on admin
             await sharedPage.goto('/ghost');
-            await sharedPage.locator('.gh-nav a[href="#/members/"]').click();
+            await sharedPage.getByRole('navigation').getByRole('link', {name: 'Members'}).click();
 
             // // 1 member, should be Testy, on Portal Tier
             await expect(await sharedPage.getByRole('link', {name: 'Testy McTesterson testy+trial@example.com'}), 'Should have 1 paid member').toBeVisible();
@@ -77,9 +82,10 @@ test.describe('Portal', () => {
 
             // // Ensure the offer redemption count was bumped
             await sharedPage.goto('/ghost/#/settings/offers');
-            // await sharedPage.locator('.gh-nav a[href="#/offers/"]').click();
-            const locator = await sharedPage.locator(`[data-test-offer="${offerName}"]`);
-            await expect(locator).toContainText('1 redemption');
+            await sharedPage.getByTestId('offers').getByRole('button', {name: 'Manage tiers'}).waitFor({state: 'hidden'});
+            await sharedPage.getByTestId('offers').getByRole('button', {name: 'Manage offers'}).click();
+            const offerRow = sharedPage.getByTestId('offer-item').filter({hasText: offerName});
+            await expect(offerRow).toContainText('1');
         });
 
         test('Creates and uses a one-time discount Offer', async ({sharedPage}) => {
@@ -105,10 +111,11 @@ test.describe('Portal', () => {
 
             // check that offer was added in the offer list screen
             await sharedPage.goto('/ghost');
-            await sharedPage.locator('[data-test-nav="settings"]').click();
-            await expect(sharedPage.getByTestId('offers')).toContainText(offerName);
-            // open offer details page
-            // await sharedPage.locator(`[data-test-offer="${offerName}"] a`).first().click();
+            await sharedPage.getByRole('navigation').getByRole('link', {name: 'Settings'}).click();
+            await sharedPage.getByTestId('offers').getByRole('button', {name: 'Manage tiers'}).waitFor({state: 'hidden'});
+            await sharedPage.getByTestId('offers').getByRole('button', {name: 'Manage offers'}).click();
+            await expect(sharedPage.getByTestId('offers-modal')).toContainText(offerName);
+            await sharedPage.getByTestId('offers-modal').getByRole('button', {name: 'Close'}).click();
 
             // fetch offer url from portal settings and open it
             await sharedPage.goto(offerLink);
@@ -151,7 +158,7 @@ test.describe('Portal', () => {
 
             // go to members list on admin
             await sharedPage.goto('/ghost');
-            await sharedPage.locator('.gh-nav a[href="#/members/"]').click();
+            await sharedPage.getByRole('navigation').getByRole('link', {name: 'Members'}).click();
 
             // 1 member, should be Testy, on Portal Tier
             await expect(await sharedPage.getByRole('link', {name: 'Testy McTesterson testy+oneoff@example.com'}), 'Should have 1 paid member').toBeVisible();
@@ -182,8 +189,11 @@ test.describe('Portal', () => {
             });
 
             await sharedPage.goto('/ghost');
-            await sharedPage.locator('[data-test-nav="settings"]').click();
-            await expect(await sharedPage.getByTestId('offers')).toContainText(offerName);
+            await sharedPage.getByRole('navigation').getByRole('link', {name: 'Settings'}).click();
+            await sharedPage.getByTestId('offers').getByRole('button', {name: 'Manage tiers'}).waitFor({state: 'hidden'});
+            await sharedPage.getByTestId('offers').getByRole('button', {name: 'Manage offers'}).click();
+            await expect(sharedPage.getByTestId('offers-modal')).toContainText(offerName);
+            await sharedPage.getByTestId('offers-modal').getByRole('button', {name: 'Close'}).click();
 
             await sharedPage.goto(offerLink);
 
@@ -226,7 +236,7 @@ test.describe('Portal', () => {
             // Discounted price should not be visible for member for one-time offers
             await expect(portalFrameLocator.locator('text=$5.40/month'), 'Portal should show discounted price').toBeVisible();
             await sharedPage.goto('/ghost');
-            await sharedPage.locator('.gh-nav a[href="#/members/"]').click();
+            await sharedPage.getByRole('navigation').getByRole('link', {name: 'Members'}).click();
 
             // 1 member, should be Testy, on Portal Tier
             await expect(await sharedPage.getByRole('link', {name: 'Testy McTesterson testy+multi@example.com'}), 'Should have 1 paid member').toBeVisible();
@@ -257,8 +267,11 @@ test.describe('Portal', () => {
 
             // check that offer was added in the offer list screen
             await sharedPage.goto('/ghost');
-            await sharedPage.locator('[data-test-nav="settings"]').click();
-            await expect(sharedPage.getByTestId('offers')).toContainText(offerName);
+            await sharedPage.getByRole('navigation').getByRole('link', {name: 'Settings'}).click();
+            await sharedPage.getByTestId('offers').getByRole('button', {name: 'Manage tiers'}).waitFor({state: 'hidden'});
+            await sharedPage.getByTestId('offers').getByRole('button', {name: 'Manage offers'}).click();
+            await expect(sharedPage.getByTestId('offers-modal')).toContainText(offerName);
+            await sharedPage.getByTestId('offers-modal').getByRole('button', {name: 'Close'}).click();
 
             await sharedPage.goto(offerLink);
 
@@ -299,7 +312,7 @@ test.describe('Portal', () => {
             // Discounted price should be visible for member for forever offers
             await expect(portalFrameLocator.locator('text=$5.40/month'), 'Portal should show discounted price').toBeVisible();
             await sharedPage.goto('/ghost');
-            await sharedPage.locator('.gh-nav a[href="#/members/"]').click();
+            await sharedPage.getByRole('navigation').getByRole('link', {name: 'Members'}).click();
 
             // 1 member, should be Testy, on Portal Tier
             await expect(await sharedPage.getByRole('link', {name: 'Testy McTesterson testy+forever@example.com'}), 'Should have 1 paid member').toBeVisible();
@@ -336,6 +349,36 @@ test.describe('Portal', () => {
             await sharedPage.goto(offerLink);
             const portalPopup = await sharedPage.locator('[data-testid="portal-popup-frame"]').isVisible();
             await expect(portalPopup).toBeFalsy();
+        });
+
+        test('Retention offers do not trigger the offer redemption popup when visiting the offer URL', async ({sharedPage}) => {
+            await sharedPage.goto('/ghost');
+            await deleteAllMembers(sharedPage);
+
+            const suffix = new ObjectID().toHexString().slice(0, 8);
+            const offerCode = `retention-${suffix}`;
+
+            await offersService.api.createOffer({
+                name: `Retention Offer ${suffix}`,
+                code: offerCode,
+                display_title: 'Stay with us',
+                display_description: 'Retention offer',
+                type: 'percent',
+                cadence: 'month',
+                amount: 10,
+                duration: 'once',
+                duration_in_months: null,
+                status: 'active',
+                tier: null,
+                redemption_type: 'retention'
+            });
+
+            const siteUrl = new URL(sharedPage.url()).origin;
+            await sharedPage.goto(`${siteUrl}/${offerCode}`);
+            await sharedPage.waitForLoadState('load');
+
+            await expect(sharedPage.locator('[data-testid="portal-popup-frame"]')).not.toBeVisible();
+            await expect(sharedPage).not.toHaveURL(/#\/portal\/offers/);
         });
     });
 });

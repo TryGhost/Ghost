@@ -11,7 +11,6 @@
  * in the production build and be able to utilize bundler benefits.
  */
 
-/* eslint-disable no-console */
 const esbuild = require('esbuild');
 const path = require('path');
 const fs = require('fs');

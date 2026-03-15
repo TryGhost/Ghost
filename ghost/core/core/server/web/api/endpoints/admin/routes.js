@@ -1,6 +1,7 @@
 const express = require('../../../../../shared/express');
 const api = require('../../../../api').endpoints;
 const {http} = require('@tryghost/api-framework');
+const auth = require('../../../../services/auth');
 const apiMw = require('../../middleware');
 const mw = require('./middleware');
 
@@ -22,6 +23,7 @@ module.exports = function apiRoutes() {
 
     // ## Configuration
     router.get('/config', mw.authAdminApi, http(api.config.read));
+    router.get('/config/featurebase', mw.authAdminApi, http(api.config.featurebase));
 
     // ## Ghost Explore
     router.get('/explore', mw.authAdminApi, http(api.explore.read));
@@ -41,8 +43,12 @@ module.exports = function apiRoutes() {
 
     router.get('/mentions', mw.authAdminApi, http(api.mentions.browse));
 
+    // Comments - browseAll must come before :id routes
+    router.get('/comments', mw.authAdminApi, http(api.comments.browseAll));
     router.get('/comments/:id', mw.authAdminApi, http(api.commentReplies.read));
     router.get('/comments/:id/replies', mw.authAdminApi, http(api.commentReplies.browse));
+    router.get('/comments/:id/reports', mw.authAdminApi, http(api.commentReports.browse));
+    router.get('/comments/:id/likes', mw.authAdminApi, http(api.commentLikes.browse));
     router.get('/comments/post/:post_id', mw.authAdminApi, http(api.comments.browse));
     router.post('/comments', mw.authAdminApi, http(api.comments.add));
     router.put('/comments/:id', mw.authAdminApi, http(api.comments.edit));
@@ -142,17 +148,20 @@ module.exports = function apiRoutes() {
     router.put('/members/:id', mw.authAdminApi, http(api.members.edit));
     router.del('/members/:id', mw.authAdminApi, http(api.members.destroy));
     router.del('/members/:id/sessions', mw.authAdminApi, http(api.members.logout));
+    router.del('/members/:id/suppression', mw.authAdminApi, http(api.members.deleteEmailSuppression));
 
     router.post('/members/:id/subscriptions/', mw.authAdminApi, http(api.members.createSubscription));
     router.put('/members/:id/subscriptions/:subscription_id', mw.authAdminApi, http(api.members.editSubscription));
 
     router.get('/members/:id/signin_urls', mw.authAdminApi, http(api.memberSigninUrls.read));
 
+    router.post('/members/:id/commenting/disable', mw.authAdminApi, http(api.memberCommenting.disable));
+    router.post('/members/:id/commenting/enable', mw.authAdminApi, http(api.memberCommenting.enable));
+
     // ## Stats
     router.get('/stats/member_count', mw.authAdminApi, http(api.stats.memberCountHistory));
     router.get('/stats/mrr', mw.authAdminApi, http(api.stats.mrr));
     router.get('/stats/subscriptions', mw.authAdminApi, http(api.stats.subscriptions));
-    router.get('/stats/referrers/posts/:id', mw.authAdminApi, http(api.stats.postReferrers));
     router.get('/stats/referrers', mw.authAdminApi, http(api.stats.referrersHistory));
     router.get('/stats/posts/:id/stats', mw.authAdminApi, http(api.stats.postStats));
     router.get('/stats/top-posts', mw.authAdminApi, http(api.stats.topPosts));
@@ -162,7 +171,7 @@ module.exports = function apiRoutes() {
     router.get('/stats/newsletter-basic-stats', mw.authAdminApi, http(api.stats.newsletterBasicStats));
     router.get('/stats/newsletter-click-stats', mw.authAdminApi, http(api.stats.newsletterClickStats));
     router.get('/stats/subscriber-count', mw.authAdminApi, http(api.stats.subscriberCount));
-    router.get('/stats/posts/:id/top-referrers', mw.authAdminApi, http(api.stats.postReferrersAlpha));
+    router.get('/stats/posts/:id/top-referrers', mw.authAdminApi, http(api.stats.postReferrers));
     router.get('/stats/posts/:id/growth', mw.authAdminApi, http(api.stats.postGrowthStats));
     router.get('/stats/top-sources-growth', mw.authAdminApi, http(api.stats.topSourcesGrowth));
     router.post('/stats/posts-visitor-counts', mw.authAdminApi, http(api.stats.postsVisitorCounts));
@@ -175,6 +184,14 @@ module.exports = function apiRoutes() {
     router.post('/labels', mw.authAdminApi, http(api.labels.add));
     router.put('/labels/:id', mw.authAdminApi, http(api.labels.edit));
     router.del('/labels/:id', mw.authAdminApi, http(api.labels.destroy));
+
+    // ## Automated Emails
+    router.get('/automated_emails', mw.authAdminApi, http(api.automatedEmails.browse));
+    router.get('/automated_emails/:id', mw.authAdminApi, http(api.automatedEmails.read));
+    router.post('/automated_emails', mw.authAdminApi, http(api.automatedEmails.add));
+    router.put('/automated_emails/:id', mw.authAdminApi, http(api.automatedEmails.edit));
+    router.del('/automated_emails/:id', mw.authAdminApi, http(api.automatedEmails.destroy));
+    router.post('/automated_emails/:id/test', shared.middleware.brute.previewEmailLimiter, mw.authAdminApi, http(api.automatedEmails.sendTestEmail));
 
     // ## Roles
     router.get('/roles/', mw.authAdminApi, http(api.roles.browse));
@@ -245,6 +262,9 @@ module.exports = function apiRoutes() {
     // ## Tinybird
     router.get('/tinybird/token', mw.authAdminApi, http(api.tinybird.token));
 
+    // ## Featurebase
+    router.get('/featurebase/token', mw.authAdminApi, http(api.featurebase.token));
+
     // ## Sessions
     // We don't need auth when creating a new session (logging in)
     router.post('/session',
@@ -265,7 +285,11 @@ module.exports = function apiRoutes() {
         shared.middleware.brute.userReset,
         http(api.authentication.generateResetToken)
     );
-    router.put('/authentication/password_reset', shared.middleware.brute.globalBlock, http(api.authentication.resetPassword));
+    router.put('/authentication/password_reset',
+        shared.middleware.brute.globalBlock,
+        auth.session.initSession,
+        http(api.authentication.resetPassword)
+    );
     router.post('/authentication/invitation', http(api.authentication.acceptInvitation));
     router.get('/authentication/invitation', http(api.authentication.isInvitation));
     router.post('/authentication/setup', http(api.authentication.setup));

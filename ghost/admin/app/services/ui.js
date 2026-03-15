@@ -41,26 +41,22 @@ function updateBodyClasses(transition) {
 export default class UiService extends Service {
     @service dropdown;
     @service feature;
-    @service mediaQueries;
     @service router;
     @service settings;
+    @service('state-bridge') stateBridge;
 
     @inject config;
 
-    @tracked isFullScreen = false;
+    @tracked _isFullScreen = false;
     @tracked mainClass = '';
-    @tracked showMobileMenu = false;
-
-    get isMobile() {
-        return this.mediaQueries.isMobile;
+    get isFullScreen() {
+        return this._isFullScreen;
     }
 
-    get isSideNavHidden() {
-        return this.isFullScreen || this.isMobile;
-    }
-
-    get hasSideNav() {
-        return !this.isSideNavHidden;
+    set isFullScreen(value) {
+        this._isFullScreen = value;
+        // Trigger sidebar visibility event whenever fullscreen mode changes
+        this.stateBridge.setSidebarVisible(!value);
     }
 
     get backgroundColor() {
@@ -107,17 +103,6 @@ export default class UiService extends Service {
     @action
     closeMenus() {
         this.dropdown.closeDropdowns();
-        this.showMobileMenu = false;
-    }
-
-    @action
-    closeMobileMenu() {
-        this.showMobileMenu = false;
-    }
-
-    @action
-    openMobileMenu() {
-        this.showMobileMenu = true;
     }
 
     @action
@@ -191,10 +176,5 @@ export default class UiService extends Service {
         document.body.removeEventListener('dragleave', this.bodyDragLeaveHandler, {capture: true});
         document.body.removeEventListener('dragend', this.cancelDrag, {capture: true});
         document.body.removeEventListener('drop', this.cancelDrag, {capture: true});
-    }
-
-    @action
-    toggleMobileMenu() {
-        this.showMobileMenu = !this.showMobileMenu;
     }
 }

@@ -1,0 +1,49 @@
+TOKEN "monitoring" READ
+TOKEN "axis" READ
+
+NODE ingestion_latency
+SQL >
+    %
+    SELECT
+        toDate(inserted_at) as date,
+        site_uuid,
+        inserted_at,
+        received_at,
+        ingestion_latency_ms
+    FROM _mv_hits
+    WHERE
+        -- ingestion_latency_ms is set to -1 if received_at is invalid
+        ingestion_latency_ms >= 0
+        {% if defined(start_date) %}
+            AND toDate(inserted_at) >= {{ Date(start_date, description="Start date for filtering", required=False) }}
+        {% else %}
+            AND toDate(inserted_at) >= today() - 7
+        {% end %}
+        {% if defined(end_date) %}
+            AND toDate(inserted_at) <= {{ Date(end_date, description="End date for filtering", required=False) }}
+        {% else %}
+            AND toDate(inserted_at) <= today()
+        {% end %}
+        {% if defined(site_uuid) %}
+            AND site_uuid = {{ String(site_uuid, description="Site UUID to filter on", required=False) }}
+        {% end %}
+
+NODE ingestion_metrics
+SQL >
+    %
+    SELECT
+        date,
+        {% if defined(site_uuid) %}
+        site_uuid,
+        {% end %}
+        count() as total_events,
+        round(avg(ingestion_latency_ms)) as avg_latency_ms,
+        round(quantile(0.5)(ingestion_latency_ms)) as p50_latency_ms,
+        round(quantile(0.95)(ingestion_latency_ms)) as p95_latency_ms,
+        round(min(ingestion_latency_ms)) as min_latency_ms,
+        round(max(ingestion_latency_ms)) as max_latency_ms
+    FROM ingestion_latency
+    GROUP BY date{% if defined(site_uuid) %}, site_uuid{% end %}
+    ORDER BY date DESC{% if defined(site_uuid) %}, site_uuid{% end %}
+
+TYPE ENDPOINT

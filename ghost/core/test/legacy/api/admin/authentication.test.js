@@ -1,5 +1,5 @@
 const nock = require('nock');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../../utils/e2e-framework');
 const {anyContentVersion, anyEtag, anyISODateTime, anyErrorId} = matchers;
 
@@ -388,7 +388,11 @@ describe('Authentication API', function () {
                     }]
                 })
                 .expectStatus(200)
-                .matchBodySnapshot()
+                .matchBodySnapshot({
+                    password_reset: [{
+                        message: 'Password updated'
+                    }]
+                })
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
                     etag: anyEtag

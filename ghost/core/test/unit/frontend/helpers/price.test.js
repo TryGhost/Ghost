@@ -25,21 +25,21 @@ describe('{{price}} helper', function () {
         const templateString = '{{price}}';
 
         shouldCompileToExpected(templateString, {}, '');
-        assert.equal(logWarnStub.calledOnce, true);
+        sinon.assert.calledOnce(logWarnStub);
     });
 
     it('throws an error for undefined parameter', function () {
         const templateString = '{{price @dont.exist}}';
 
         shouldCompileToExpected(templateString, {}, '');
-        assert.equal(logWarnStub.calledOnce, true);
+        sinon.assert.calledOnce(logWarnStub);
     });
 
     it('throws if argument is not a number', function () {
         const templateString = '{{price "not_a_number"}}';
 
         shouldCompileToExpected(templateString, {}, '');
-        assert.equal(logWarnStub.calledOnce, true);
+        sinon.assert.calledOnce(logWarnStub);
     });
 
     it('will format decimal adjusted amount', function () {

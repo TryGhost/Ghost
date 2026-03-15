@@ -1,4 +1,4 @@
-require('should');
+const assert = require('node:assert/strict');
 
 const tmp = require('tmp');
 const fs = require('fs-extra');
@@ -19,7 +19,7 @@ describe('package-json parse', function () {
 
         parse(tmpFile.name)
             .then(function (pkg) {
-                pkg.should.eql({
+                assert.deepEqual(pkg, {
                     name: 'test',
                     version: '0.0.0'
                 });
@@ -46,9 +46,9 @@ describe('package-json parse', function () {
                 done(new Error('packageJSON.parse succeeded, but should\'ve failed'));
             })
             .catch(function (err) {
-                err.message.should.equal('"name" or "version" is missing from theme package.json file.');
-                err.context.should.equal(tmpFile.name);
-                err.help.should.equal('This will be required in future. Please see https://ghost.org/docs/themes/');
+                assert.equal(err.message, '"name" or "version" is missing from theme package.json file.');
+                assert.equal(err.context, tmpFile.name);
+                assert.equal(err.help, 'This will be required in future. Please see https://ghost.org/docs/themes/');
 
                 done();
             })
@@ -72,9 +72,9 @@ describe('package-json parse', function () {
                 done(new Error('packageJSON.parse succeeded, but should\'ve failed'));
             })
             .catch(function (err) {
-                err.message.should.equal('"name" or "version" is missing from theme package.json file.');
-                err.context.should.equal(tmpFile.name);
-                err.help.should.equal('This will be required in future. Please see https://ghost.org/docs/themes/');
+                assert.equal(err.message, '"name" or "version" is missing from theme package.json file.');
+                assert.equal(err.context, tmpFile.name);
+                assert.equal(err.help, 'This will be required in future. Please see https://ghost.org/docs/themes/');
 
                 done();
             })
@@ -96,9 +96,9 @@ describe('package-json parse', function () {
                 done(new Error('packageJSON.parse succeeded, but should\'ve failed'));
             })
             .catch(function (err) {
-                err.message.should.equal('Theme package.json file is malformed');
-                err.context.should.equal(tmpFile.name);
-                err.help.should.equal('This will be required in future. Please see https://ghost.org/docs/themes/');
+                assert.equal(err.message, 'Theme package.json file is malformed');
+                assert.equal(err.context, tmpFile.name);
+                assert.equal(err.help, 'This will be required in future. Please see https://ghost.org/docs/themes/');
 
                 done();
             })
@@ -115,8 +115,8 @@ describe('package-json parse', function () {
                 done(new Error('packageJSON.parse succeeded, but should\'ve failed'));
             })
             .catch(function (err) {
-                err.message.should.equal('Could not read package.json file');
-                err.context.should.equal(tmpFile.name);
+                assert.equal(err.message, 'Could not read package.json file');
+                assert.equal(err.context, tmpFile.name);
 
                 done();
             })

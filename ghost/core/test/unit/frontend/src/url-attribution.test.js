@@ -1,12 +1,11 @@
-const should = require('should');
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../utils/assertions');
 const sinon = require('sinon');
 const {JSDOM} = require('jsdom');
 
 // Use path relative to test file
 const {
-    parseReferrer,
-    parsePortalHash,
-    getFinalReferrer,
+    parseReferrerData,
     getReferrer
 } = require('../../../../core/frontend/src/utils/url-attribution');
 
@@ -46,121 +45,122 @@ describe('URL Attribution Utils', function () {
         global.document = undefined;
     });
     
-    describe('parseReferrer', function () {
+    describe('parseReferrerData', function () {
         it('should extract ref parameter correctly', function () {
-            const result = parseReferrer('https://example.com/?ref=newsletter');
-            should.exist(result);
-            should.equal(result.source, 'newsletter');
+            const result = parseReferrerData('https://example.com/?ref=newsletter');
+            assertExists(result);
+            assert.equal(result.source, 'newsletter');
         });
         
         it('should extract source parameter correctly', function () {
-            const result = parseReferrer('https://example.com/?source=twitter');
-            should.exist(result);
-            should.equal(result.source, 'twitter');
+            const result = parseReferrerData('https://example.com/?source=twitter');
+            assertExists(result);
+            assert.equal(result.source, 'twitter');
         });
         
         it('should extract utm_source parameter correctly', function () {
-            const result = parseReferrer('https://example.com/?utm_source=facebook');
-            should.exist(result);
-            should.equal(result.source, 'facebook');
+            const result = parseReferrerData('https://example.com/?utm_source=facebook');
+            assertExists(result);
+            assert.equal(result.source, 'facebook');
         });
         
         it('should handle portal hash URLs', function () {
-            const result = parseReferrer('https://example.com/#/portal/signup?ref=portal-hash');
-            should.exist(result);
-            should.equal(result.source, 'portal-hash');
+            const result = parseReferrerData('https://example.com/#/portal/signup?ref=portal-hash');
+            assertExists(result);
+            assert.equal(result.source, 'portal-hash');
         });
         
         it('should return document.referrer when no source params are present', function () {
-            const result = parseReferrer('https://example.com/');
-            should.exist(result);
-            should.equal(result.url, 'https://external-site.com/');
+            const result = parseReferrerData('https://example.com/');
+            assertExists(result);
+            assert.equal(result.url, 'https://external-site.com/');
+        });
+        
+        it('should extract all UTM parameters', function () {
+            const result = parseReferrerData('https://example.com/?utm_source=google&utm_medium=cpc&utm_campaign=summer&utm_term=ghost&utm_content=banner');
+            assertExists(result);
+            assert.equal(result.utmSource, 'google');
+            assert.equal(result.utmMedium, 'cpc');
+            assert.equal(result.utmCampaign, 'summer');
+            assert.equal(result.utmTerm, 'ghost');
+            assert.equal(result.utmContent, 'banner');
+            assert.equal(result.source, 'google'); // source should be utm_source
         });
     });
     
-    describe('parsePortalHash', function () {
+    describe('parseReferrerData with portal hash', function () {
         it('should extract parameters from portal hash URL', function () {
-            const url = new URL('https://example.com/#/portal/signup?ref=newsletter');
-            const result = parsePortalHash(url);
-            should.exist(result);
-            should.equal(result.source, 'newsletter');
+            const result = parseReferrerData('https://example.com/#/portal/signup?ref=newsletter');
+            assertExists(result);
+            assert.equal(result.source, 'newsletter');
         });
         
-        it('should handle multiple parameters', function () {
-            const url = new URL('https://example.com/#/portal/signup?ref=newsletter&utm_medium=email');
-            const result = parsePortalHash(url);
-            should.exist(result);
-            should.equal(result.source, 'newsletter');
-            should.equal(result.medium, 'email');
+        it('should handle multiple parameters in portal hash', function () {
+            const result = parseReferrerData('https://example.com/#/portal/signup?ref=newsletter&utm_medium=email');
+            assertExists(result);
+            assert.equal(result.source, 'newsletter');
+            assert.equal(result.medium, 'email');
+        });
+        
+        it('should extract all UTM parameters from portal hash', function () {
+            const result = parseReferrerData('https://example.com/#/portal/signup?utm_source=google&utm_medium=cpc&utm_campaign=summer&utm_term=ghost&utm_content=banner');
+            assertExists(result);
+            assert.equal(result.utmSource, 'google');
+            assert.equal(result.utmMedium, 'cpc');
+            assert.equal(result.utmCampaign, 'summer');
+            assert.equal(result.utmTerm, 'ghost');
+            assert.equal(result.utmContent, 'banner');
+            assert.equal(result.source, 'google'); // source should be utm_source
         });
     });
     
-    describe('getFinalReferrer', function () {
-        it('should prioritize source over medium and url', function () {
-            const referrerData = {
-                source: 'newsletter',
-                medium: 'email',
-                url: 'https://external-site.com'
-            };
-            
-            const result = getFinalReferrer(referrerData);
-            should.equal(result, 'newsletter');
+    describe('getReferrer prioritization logic', function () {
+        it('should prioritize ref/source over medium and document.referrer', function () {
+            // When ref is present along with utm_medium
+            const result = getReferrer('https://example.com/?ref=newsletter&utm_medium=email');
+            assert.equal(result, 'newsletter');
         });
         
-        it('should fall back to medium if source is not available', function () {
-            const referrerData = {
-                source: null,
-                medium: 'email',
-                url: 'https://external-site.com'
-            };
-            
-            const result = getFinalReferrer(referrerData);
-            should.equal(result, 'email');
+        it('should prioritize utm_source over medium', function () {
+            // When utm_source is present along with utm_medium
+            const result = getReferrer('https://example.com/?utm_source=twitter&utm_medium=social');
+            assert.equal(result, 'twitter');
         });
         
-        it('should fall back to url if source and medium are not available', function () {
-            const referrerData = {
-                source: null,
-                medium: null,
-                url: 'https://external-site.com'
-            };
-            
-            const result = getFinalReferrer(referrerData);
-            should.equal(result, 'https://external-site.com');
+        it('should fall back to utm_medium if no ref/source/utm_source', function () {
+            // Only utm_medium is present
+            const result = getReferrer('https://example.com/?utm_medium=email');
+            assert.equal(result, 'email');
+        });
+        
+        it('should fall back to document.referrer if no params are present', function () {
+            // No URL params, should use document.referrer (https://external-site.com/ from test setup)
+            const result = getReferrer('https://example.com/');
+            assert.equal(result, 'https://external-site.com/');
         });
         
         it('should return null if referrer matches current hostname', function () {
-            const referrerData = {
-                source: 'https://example.com/some-page',
-                medium: null,
-                url: null
-            };
-            
-            const result = getFinalReferrer(referrerData);
-            should.equal(result, null);
+            // Same-domain referrer should be filtered out
+            const result = getReferrer('https://example.com/?ref=https://example.com/some-page');
+            assert.equal(result, null);
         });
         
-        it('should return non-URL referrers even if hostname parsing fails', function () {
-            const referrerData = {
-                source: 'ghost-newsletter',
-                medium: null,
-                url: null
-            };
-            
-            const result = getFinalReferrer(referrerData);
-            should.equal(result, 'ghost-newsletter');
+        it('should return non-URL referrers like ghost-newsletter', function () {
+            // Non-URL refs should work fine
+            const result = getReferrer('https://example.com/?ref=ghost-newsletter');
+            assert.equal(result, 'ghost-newsletter');
         });
     });
     
     describe('getReferrer', function () {
         it('should combine parse and final referrer functions', function () {
             const result = getReferrer('https://example.com/?ref=newsletter');
-            should.equal(result, 'newsletter');
+            assert.equal(result, 'newsletter');
         });
         
         it('should return null for same-domain referrers', function () {
             const result = getReferrer('https://example.com/?ref=https://example.com/page');
-            should.equal(result, null);
+            assert.equal(result, null);
         });
     });
 }); 

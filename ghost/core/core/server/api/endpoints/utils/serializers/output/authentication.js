@@ -40,10 +40,16 @@ module.exports = {
     },
 
     resetPassword(data, apiConfig, frame) {
+        const resetResponse = {
+            message: tpl(messages.passwordChanged)
+        };
+
+        if (data.emailVerificationToken) {
+            resetResponse.emailVerificationToken = data.emailVerificationToken;
+        }
+
         frame.response = {
-            password_reset: [{
-                message: tpl(messages.passwordChanged)
-            }]
+            password_reset: [resetResponse]
         };
     },
 

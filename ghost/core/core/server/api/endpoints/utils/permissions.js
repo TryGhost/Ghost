@@ -90,9 +90,9 @@ module.exports = {
         // @TODO: https://github.com/TryGhost/Ghost/issues/10099
         frame.options.context = permissions.parseContext(frame.options.context);
 
-        // CASE: Content API access
-        if (frame.options.context.public && frame.apiType !== 'comments') {
-            debug('content api permissions pass-through');
+        // CASE: Public API access (Content API and Members API)
+        if (frame.options.context.public) {
+            debug('public api permissions pass-through');
             return Promise.resolve(frame.options);
         }
 

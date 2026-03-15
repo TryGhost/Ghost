@@ -1,5 +1,19 @@
 import dotenv from 'dotenv';
-dotenv.config();
+import os from 'os';
+dotenv.config({quiet: true});
+
+/*
+ * 1/3 of the number of CPU cores seems to strike a good balance. Each worker
+ * runs in its own process (1 core) and gets its own Ghost instance (1 core)
+ * while leaving some head room for DBs, frontend dev servers, etc.
+ *
+ * It's possible to use more workers, but then the total test time and flakiness
+ * goes up dramatically.
+ */
+const getWorkerCount = () => {
+    const cpuCount = os.cpus().length;
+    return Math.floor(cpuCount / 3) || 1;
+};
 
 /** @type {import('@playwright/test').PlaywrightTestConfig} */
 const config = {
@@ -7,10 +21,13 @@ const config = {
     expect: {
         timeout: process.env.CI ? 30 * 1000 : 10 * 1000
     },
-    retries: 1, // Retries open the door to flaky tests. If the test needs retries, it's not a good test or the app is broken.
-    workers: 1, // One worker for now in the interest of stability. Parallelism leads to flaky tests when not done carefully.
-    reporter: process.env.CI ? [['list', {printSteps: true}], ['html']] : [['list', {printSteps: true}]],
+    retries: 0, // Retries open the door to flaky tests. If the test needs retries, it's not a good test or the app is broken.
+    maxFailures: process.argv.includes('--ui') ? 0 : 1,
+    workers: parseInt(process.env.TEST_WORKERS_COUNT, 10) || getWorkerCount(),
+    fullyParallel: true,
+    reporter: process.env.CI ? [['list', {printSteps: true}], ['blob']] : [['list', {printSteps: true}], ['html']],
     use: {
+        // Base URL will be set dynamically per test via fixture
         baseURL: process.env.GHOST_BASE_URL || 'http://localhost:2368',
         trace: 'retain-on-failure',
         browserName: 'chromium'
@@ -18,27 +35,34 @@ const config = {
     testDir: './',
     testMatch: ['tests/**/*.test.{js,ts}'],
     projects: [
-        // Main tests - run after setup with authentication
+        {
+            name: 'global-setup',
+            testMatch: /global\.setup\.ts/,
+            testDir: './tests',
+            teardown: 'global-teardown',
+            timeout: 60 * 1000 // 60 seconds for setup
+        },
         {
             name: 'main',
-            testIgnore: ['**/auth.setup.ts'], // Exclude setup files
+            testIgnore: ['**/*.setup.ts', '**/*.teardown.ts', 'analytics/**/*.test.ts'],
             testDir: './tests',
             use: {
-                // Use authentication state for all tests by default
-                storageState: 'playwright/.auth/user.json',
                 viewport: {width: 1920, height: 1080}
             },
-            dependencies: ['setup']
+            dependencies: ['global-setup']
         },
-        // Factory tests
         {
-            name: 'factories',
-            testDir: './data-factory/tests'
+            name: 'analytics',
+            testDir: './tests',
+            testMatch: ['analytics/**/*.test.ts'],
+            use: {
+                viewport: {width: 1920, height: 1080}
+            },
+            dependencies: ['global-setup']
         },
-        // Setup project - runs first
         {
-            name: 'setup',
-            testMatch: /.*\.setup\.ts/,
+            name: 'global-teardown',
+            testMatch: /global\.teardown\.ts/,
             testDir: './tests'
         }
     ]

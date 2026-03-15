@@ -1,7 +1,7 @@
 /* eslint-env browser */
 /* eslint-disable no-console */
 const urlAttribution = require('../utils/url-attribution');
-const parseReferrer = urlAttribution.parseReferrer;
+const parseReferrerData = urlAttribution.parseReferrerData;
 const getReferrer = urlAttribution.getReferrer;
 
 // Location where we want to store the history in sessionStorage
@@ -79,18 +79,26 @@ const LIMIT = 15;
             history = [];
         }
 
-        // Get detailed referrer information using parseReferrer
+        // Get detailed referrer information using parseReferrerData
         let referrerData;
         try {
-            referrerData = parseReferrer(window.location.href);
+            referrerData = parseReferrerData(window.location.href);
         } catch (e) {
             console.error('[Member Attribution] Parsing referrer failed', e);
             referrerData = {source: null, medium: null, url: null};
         }
 
-        // Get referrer components from the parsed data
-        const referrerSource = referrerData.source;
-        const referrerMedium = referrerData.medium;
+        // Store all attribution data together
+        // We'll spread this object when creating history entries
+        const attributionData = {
+            referrerSource: referrerData.source,
+            referrerMedium: referrerData.medium,
+            utmSource: referrerData.utmSource,
+            utmMedium: referrerData.utmMedium,
+            utmCampaign: referrerData.utmCampaign,
+            utmTerm: referrerData.utmTerm,
+            utmContent: referrerData.utmContent
+        };
         
         // Use the getReferrer helper to handle same-domain referrer filtering
         // This will return null if the referrer is from the same domain
@@ -98,7 +106,7 @@ const LIMIT = 15;
         try {
             referrerUrl = getReferrer(window.location.href);
             // If no referrer value returned by getReferrer but we have a document.referrer,
-            // use the original URL from parseReferrer
+            // use the original URL from parseReferrerData
             if (!referrerUrl && referrerData.url) {
                 referrerUrl = referrerData.url;
             }
@@ -117,8 +125,7 @@ const LIMIT = 15;
                     time: currentTime,
                     id: params.get('attribution_id'),
                     type: params.get('attribution_type'),
-                    referrerSource,
-                    referrerMedium,
+                    ...attributionData,
                     referrerUrl
                 });
 
@@ -138,19 +145,22 @@ const LIMIT = 15;
             history.push({
                 path: currentPath,
                 time: currentTime,
-                referrerSource,
-                referrerMedium,
+                ...attributionData,
                 referrerUrl
             });
         } else if (history.length > 0) {
-            history[history.length - 1].time = currentTime;
-            // Update referrer information for same path if available (e.g. when opening a link on same path via external referrer)
-            if (referrerSource) {
-                history[history.length - 1].referrerSource = referrerSource;
-                history[history.length - 1].referrerMedium = referrerMedium;
-            }
+            const lastEntry = history[history.length - 1];
+            lastEntry.time = currentTime;
+            
+            // Update with any new attribution data (filters out null/undefined values)
+            Object.entries(attributionData).forEach(([key, value]) => {
+                if (value) {
+                    lastEntry[key] = value;
+                }
+            });
+            
             if (referrerUrl) {
-                history[history.length - 1].referrerUrl = referrerUrl;
+                lastEntry.referrerUrl = referrerUrl;
             }
         }
 

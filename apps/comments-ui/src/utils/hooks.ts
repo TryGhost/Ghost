@@ -1,7 +1,7 @@
 import {CommentsEditorConfig, getEditorConfig} from './editor';
 import {Editor, useEditor as useTiptapEditor} from '@tiptap/react';
 import {formatRelativeTime} from './helpers';
-import {useAppContext} from '../AppContext';
+import {useAppContext} from '../app-context';
 import {useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState} from 'react';
 
 /**

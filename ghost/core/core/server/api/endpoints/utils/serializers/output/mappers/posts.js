@@ -14,7 +14,7 @@ const utils = require('../../../index');
 
 const postsMetaSchema = require('../../../../../../data/schema').tables.posts_meta;
 
-const getPostServiceInstance = require('../../../../../../services/posts/posts-service');
+const getPostServiceInstance = require('../../../../../../services/posts/posts-service-instance');
 const postsService = getPostServiceInstance();
 
 const commentsService = require('../../../../../../services/comments');

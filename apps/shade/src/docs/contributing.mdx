@@ -1,0 +1,268 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Contributing" />
+
+<div className="sb-doc">
+
+# Contributing to Shade
+
+<p className="excerpt">This guide explains how to contribute to the Shade design system, including adding or modifying components and documentation.</p>
+
+## Repository Layout
+
+```
+/apps/shade/
+  .storybook/                 # Storybook config
+  src/
+    components/
+      ui/                     # Base ShadCN/UI primitives
+      layout/                 # Composed, reusable layout components
+      features/               # Feature-specific, higher-level components
+    docs/                     # System docs rendered in Storybook
+```
+
+## Naming Conventions
+
+- **File names:** kebab-case, e.g. `dropdown-menu.tsx` (ShadCN-generated files keep kebab-case)
+  ```
+  dropdown-menu.tsx
+  dropdown-menu.stories.tsx
+  # optional extras below
+  dropdown-menu.mdx
+  dropdown-menu.meta.json
+  fixtures/dropdown-menu.fixtures.ts
+  ```
+- **Storybook titles:**
+  - UI primitives: `Components / <Name>` (e.g., `Components / Button`)
+  - Layout: `Layout / <Name>` (e.g., `Layout / Page`)
+  - Features: `Features / <Name>` (e.g., `Features / Post Share Modal`)
+- **Component folders:**
+  - ShadCN primitives under `/apps/shade/src/components/ui/`
+  - Composed layout components under `/apps/shade/src/components/layout/`
+  - Feature components under `/apps/shade/src/components/features/`
+
+## File Set Per Component
+
+Each documented component requires:
+
+```
+/apps/shade/src/components/ui/button.tsx          # Component (source)
+/apps/shade/src/components/ui/button.stories.tsx  # Stories (CSF)
+/apps/shade/src/components/ui/button.mdx          # (optional) component docs (MDX)
+
+# Optional metadata & fixtures
+/apps/shade/src/components/ui/button.meta.json    # Machine-readable metadata
+/apps/shade/src/components/ui/fixtures/button.fixtures.ts
+```
+
+## Component Documentation in Storybook
+
+We document components through concise stories that show real use cases. Each story should have a one‑line description explaining when to use that variant/state. Prefer multiple focused stories over long prose.
+
+Required for every component:
+- A colocated `*.stories.tsx` using CSF with:
+  - `title` under the right section (Components / Layout / Features)
+  - `tags: ['autodocs']`
+  - An overview via `parameters.docs.description.component`
+  - Stories covering key variants and states with `parameters.docs.description.story`
+
+Example:
+
+```tsx
+import type {Meta, StoryObj} from '@storybook/react-vite';
+import {Button} from './button';
+
+const meta: Meta<typeof Button> = {
+  title: 'Components / Button',
+  component: Button,
+  tags: ['autodocs'],
+  parameters: {
+    docs: {
+      description: {
+        component: 'Reusable button for actions. Choose variant/size by context.'
+      }
+    }
+  }
+};
+export default meta;
+type Story = StoryObj<typeof Button>;
+
+export const Default: Story = {
+  args: {children: 'Continue'},
+  parameters: {
+    docs: {description: {story: 'Primary call‑to‑action with default styling.'}}
+  }
+};
+
+export const Destructive: Story = {
+  args: {variant: 'destructive', children: 'Delete'},
+  parameters: {
+    docs: {description: {story: 'Use for dangerous or irreversible actions.'}}
+  }
+};
+```
+
+## Component Implementation
+
+### Using ShadCN/UI
+
+1. **Install Component**
+   ```bash
+   npx shadcn@latest add button
+   ```
+
+2. **Customize Implementation**
+
+   > ⚠️ Always use the `cn` utility to combine classNames and `cva` for component variants. This ensures consistent class merging and variant handling across the design system.
+
+   ```tsx
+   import { cn } from "@/lib/utils"
+   import { cva, type VariantProps } from "class-variance-authority"
+
+   // Define variants using cva
+   const buttonVariants = cva(
+       // Base styles applied to all variants
+       "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors",
+       {
+           variants: {
+               variant: {
+                   solid: "bg-primary text-primary-foreground hover:bg-primary/90",
+                   outline: "border border-input bg-background hover:bg-accent",
+                   ghost: "hover:bg-accent hover:text-accent-foreground"
+               },
+               size: {
+                   sm: "h-9 px-3",
+                   md: "h-10 px-4",
+                   lg: "h-11 px-8"
+               }
+           },
+           defaultVariants: {
+               variant: "solid",
+               size: "md"
+           }
+       }
+   );
+
+   // Extract variant props type
+   interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+       VariantProps<typeof buttonVariants> {}
+
+   // Use cn to combine variants with custom classes
+   export function Button({ className, variant, size, ...props }: ButtonProps) {
+       return (
+           <button
+               className={cn(buttonVariants({ variant, size }), className)}
+               {...props}
+           />
+       );
+   }
+   ```
+
+   **Key Points:**
+   - Use `cn` to merge component variants with custom className props
+   - Define variants with `cva` for type-safe variant combinations
+   - Extract variant props using `VariantProps` type
+   - Always provide sensible default variants
+   - Include hover/focus states in variant definitions
+
+### Prefer Compound Subcomponents
+
+When a component has multiple meaningful regions (title, meta, actions, etc.), prefer a compound subcomponents API over many props. This keeps the API composable and flexible.
+
+Example (Header):
+
+```tsx
+function Header(props) { /* ... */ }
+function HeaderTitle(props) { /* ... */ }
+function HeaderMeta(props) { /* ... */ }
+function HeaderActions(props) { /* ... */ }
+
+Header.Title = HeaderTitle;
+Header.Meta = HeaderMeta;
+Header.Actions = HeaderActions;
+
+export {Header};
+
+// Usage
+<Header>
+  <Header.Title>Members</Header.Title>
+  <Header.Meta>42,102 total</Header.Meta>
+  <Header.Actions><Button>New member</Button></Header.Actions>
+  {/* ... */}
+</Header>
+```
+
+Tips:
+- Attach parts as static properties and export them as named exports for convenience.
+- Keep parts small and focused; forward and merge `className`.
+- Demonstrate parts usage in stories (e.g., “With actions”, “With meta”).
+
+### Creating Custom Components
+
+1. **File Structure**
+   ```
+   # Layout component
+   src/components/layout/
+   ├── custom-component.tsx
+   ├── custom-component.stories.tsx
+   └── custom-component.mdx
+
+   # Feature component
+   src/components/features/
+   ├── custom-component.tsx
+   ├── custom-component.stories.tsx
+   └── custom-component.mdx
+   ```
+
+2. **Implementation Pattern**
+   ```tsx
+   import { cn } from "@/lib/utils"
+
+   interface CustomComponentProps {
+       className?: string;
+   }
+
+   export function CustomComponent({ className }: CustomComponentProps) {
+       return (
+           <div className={cn("base-styles", className)}>
+               {/* Component content */}
+           </div>
+       );
+   }
+   ```
+
+## Acceptance Checklist
+
+For each component:
+
+- [ ] Component follows design system principles
+- [ ] Prefer compound subcomponents for multi‑region components
+- [ ] `*.stories.tsx` includes: overview + key variants and states
+- [ ] Each story has a short “when to use” description
+- [ ] Accessibility is considered (labels, focus, disabled) and reflected in stories/args
+- [ ] Slots are listed in Anatomy and demonstrated
+- [ ] Accessibility items include keyboard, ARIA, and contrast
+- [ ] (Optional) `*.meta.json` present and valid
+
+## ShadCN Installation Guardrails
+
+- Never overwrite existing Shade components during `npx shadcn@latest add <name>` prompts — choose “No”.
+- Work on a fresh branch before running the installer: `git checkout -b chore/shadcn-add-<name>`.
+- If a component already exists, generate into a scratch repo and manually diff; port only the desired changes.
+- After integrating, run `yarn lint`, `yarn test`, and verify in Storybook.
+
+## Utilities
+
+- Import utilities from `@/lib/utils`.
+- Always forward and merge `className` with `cn(...)` and prefer CVA for variants when useful.
+
+## Agents & Repo Conventions
+
+Refer to `AGENTS.md` at the repository root for additional, repo-specific guidance used by both humans and agents. It covers:
+- Project structure and module organization
+- Build, test, and development commands
+- Coding style, naming conventions, and Tailwind scoping
+- Adding new components and ShadCN guardrails
+- Testing expectations and commit/PR guidelines
+
+</div>

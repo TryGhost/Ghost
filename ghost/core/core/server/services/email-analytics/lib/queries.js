@@ -201,5 +201,89 @@ module.exports = {
         await db.knex('members')
             .update(updateQuery)
             .where('id', memberId);
+    },
+
+    async aggregateMemberStatsBatch(memberIds) {
+        if (!memberIds || memberIds.length === 0) {
+            return;
+        }
+
+        // Batch query to get stats for all members at once
+        const stats = await db.knex('email_recipients')
+            .leftJoin('emails', 'emails.id', 'email_recipients.email_id')
+            .select(
+                'email_recipients.member_id',
+                db.knex.raw('COUNT(email_recipients.id) as email_count'),
+                db.knex.raw('SUM(CASE WHEN email_recipients.opened_at IS NOT NULL THEN 1 ELSE 0 END) as email_opened_count'),
+                db.knex.raw('SUM(CASE WHEN emails.track_opens = 1 THEN 1 ELSE 0 END) as tracked_count')
+            )
+            .whereIn('email_recipients.member_id', memberIds)
+            .groupBy('email_recipients.member_id');
+
+        // Build update data for each member
+        const memberStatsMap = new Map();
+        for (const stat of stats) {
+            const emailOpenRate = stat.tracked_count >= MIN_EMAIL_COUNT_FOR_OPEN_RATE
+                ? Math.round((stat.email_opened_count / stat.tracked_count) * 100)
+                : null;
+
+            memberStatsMap.set(stat.member_id, {
+                email_count: stat.email_count,
+                email_opened_count: stat.email_opened_count,
+                email_open_rate: emailOpenRate
+            });
+        }
+
+        // Build CASE statements for batch update
+        const emailCountCases = [];
+        const emailOpenedCountCases = [];
+        const emailOpenRateCases = [];
+        const emailCountBindings = [];
+        const emailOpenedCountBindings = [];
+        const emailOpenRateBindings = [];
+
+        for (const memberId of memberIds) {
+            const memberStats = memberStatsMap.get(memberId) || {
+                email_count: 0,
+                email_opened_count: 0,
+                email_open_rate: null
+            };
+
+            emailCountCases.push(`WHEN ? THEN ?`);
+            emailCountBindings.push(memberId, memberStats.email_count);
+
+            emailOpenedCountCases.push(`WHEN ? THEN ?`);
+            emailOpenedCountBindings.push(memberId, memberStats.email_opened_count);
+
+            if (memberStats.email_open_rate !== null) {
+                emailOpenRateCases.push(`WHEN ? THEN ?`);
+                emailOpenRateBindings.push(memberId, memberStats.email_open_rate);
+            } else {
+                emailOpenRateCases.push(`WHEN ? THEN NULL`);
+                emailOpenRateBindings.push(memberId);
+            }
+        }
+
+        // Combine bindings in the order they appear in the SQL statement:
+        // 1. All bindings for email_count CASE statement
+        // 2. All bindings for email_opened_count CASE statement
+        // 3. All bindings for email_open_rate CASE statement
+        // 4. Member IDs for the WHERE IN clause
+        const bindings = [
+            ...emailCountBindings,
+            ...emailOpenedCountBindings,
+            ...emailOpenRateBindings,
+            ...memberIds
+        ];
+
+        // Execute batched update with CASE statements
+        await db.knex.raw(`
+            UPDATE members
+            SET
+                email_count = CASE id ${emailCountCases.join(' ')} END,
+                email_opened_count = CASE id ${emailOpenedCountCases.join(' ')} END,
+                email_open_rate = CASE id ${emailOpenRateCases.join(' ')} END
+            WHERE id IN (${memberIds.map(() => '?').join(',')})
+        `, bindings);
     }
 };

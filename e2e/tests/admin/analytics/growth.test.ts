@@ -1,5 +1,5 @@
-import {test, expect} from '@playwright/test';
-import {AnalyticsGrowthPage} from '../../../helpers/pages/admin';
+import {AnalyticsGrowthPage} from '@/admin-pages';
+import {expect, test} from '@/helpers/playwright';
 
 test.describe('Ghost Admin - Growth', () => {
     let growthPage: AnalyticsGrowthPage;
@@ -31,7 +31,7 @@ test.describe('Ghost Admin - Growth', () => {
     test('empty top content card - sources', async () => {
         await growthPage.topContent.sourcesButton.click();
 
-        await expect(growthPage.topContent.contentCard).toContainText('How readers found your site in the last 30 days');
+        await expect(growthPage.topContent.contentCard).toContainText('Which sources drove the most growth in the last 30 days');
         await expect(growthPage.topContent.contentCard).toContainText('No conversions');
     });
 });
