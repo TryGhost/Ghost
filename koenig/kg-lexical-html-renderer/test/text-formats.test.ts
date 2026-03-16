@@ -1,5 +1,5 @@
-const {shouldRender} = require('./utils');
-const {ExtendedTextNode} = require('@tryghost/kg-default-nodes');
+import {shouldRender} from './utils/index.js';
+import {ExtendedTextNode} from '@tryghost/kg-default-nodes';
 
 describe('Basic formats', function () {
     it('bold', shouldRender({

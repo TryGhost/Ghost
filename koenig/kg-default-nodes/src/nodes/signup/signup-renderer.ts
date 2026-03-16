@@ -1,5 +1,6 @@
 import {addCreateDocumentOption} from '../../utils/add-create-document-option.js';
 import type {ExportDOMOptions} from '../../export-dom.js';
+import {getFirstHtmlElement} from '../../utils/get-first-html-element.js';
 
 // ref https://ghost.org/docs/themes/members#signup-forms
 
@@ -158,7 +159,7 @@ export function renderSignupCardToDOM(dataset: SignupDatasetNode, options: Signu
             pElement.remove();
         }
     }
-    return {element: element.firstElementChild, type: 'outer' as const};
+    return {element: getFirstHtmlElement(element, 'renderSignupCardToDOM'), type: 'outer' as const};
 }
 
 export function getCardClasses(nodeData: SignupNodeData) {

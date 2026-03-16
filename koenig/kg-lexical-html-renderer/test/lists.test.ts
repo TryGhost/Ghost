@@ -1,4 +1,4 @@
-const {shouldRender} = require('./utils');
+import {shouldRender} from './utils/index.js';
 
 describe('Lists', function () {
     it('ul', shouldRender({

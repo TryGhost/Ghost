@@ -1,52 +1,43 @@
-import {SerializedEditorState, LexicalEditor, LexicalNode, Klass} from 'lexical';
 import {createHeadlessEditor} from '@lexical/headless';
 import {ListItemNode, ListNode} from '@lexical/list';
 import {HeadingNode, QuoteNode} from '@lexical/rich-text';
 import {LinkNode} from '@lexical/link';
-import $convertToHtmlString from './convert-to-html-string';
-import getDynamicDataNodes from './get-dynamic-data-nodes';
-
-// TODO: Using import causes circular definitions for kg-default-nodes
-
-const {registerRemoveAtLinkNodesTransform} = require('@tryghost/kg-default-transforms');
+import $convertToHtmlString from './convert-to-html-string.js';
+import getDynamicDataNodes from './get-dynamic-data-nodes.js';
+import {registerRemoveAtLinkNodesTransform} from '@tryghost/kg-default-transforms';
+import type {SerializedEditorState, LexicalEditor, LexicalNode, Klass} from 'lexical';
+import type {ExportDOMDom} from '@tryghost/kg-default-nodes';
+import type {RendererOptions} from './types.js';
 
 interface RenderOptions {
     target?: 'html' | 'email' | 'plaintext';
-    dom?: import('jsdom').JSDOM;
+    dom?: ExportDOMDom;
     // TODO: we should define some standard here once we move to more cards with dynamic data
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    renderData?: Map<number, any>;
+    renderData?: Map<number, unknown>;
 }
 
-function defaultOnError() {
+function defaultOnError(error: Error) {
+    void error;
     // do nothing
 }
 
 export default class LexicalHTMLRenderer {
-    dom: import('jsdom').JSDOM;
+    dom?: ExportDOMDom;
     nodes: Klass<LexicalNode>[];
     onError: (error: Error) => void;
 
-    constructor({dom, nodes, onError}: {dom?: import('jsdom').JSDOM, nodes?: Klass<LexicalNode>[], onError?: () => void} = {}) {
-        if (!dom) {
-            const jsdom = require('jsdom');
-            const {JSDOM} = jsdom;
-
-            this.dom = new JSDOM();
-        } else {
-            this.dom = dom;
-        }
-
+    constructor({dom, nodes, onError}: {dom?: ExportDOMDom, nodes?: Klass<LexicalNode>[], onError?: (error: Error) => void} = {}) {
+        this.dom = dom;
         this.nodes = nodes || [];
         this.onError = onError || defaultOnError;
     }
 
     async render(lexicalState: SerializedEditorState | string, userOptions: RenderOptions = {}) {
-        const defaultOptions: RenderOptions = {
+        const defaultOptions: RendererOptions = {
             target: 'html',
-            dom: this.dom
+            dom: await this._getDefaultDom(userOptions.dom)
         };
-        const options = Object.assign({}, defaultOptions, userOptions);
+        const options: RendererOptions = Object.assign({}, defaultOptions, userOptions);
 
         const DEFAULT_NODES: Array<Klass<LexicalNode>> = [
             HeadingNode,
@@ -93,5 +84,23 @@ export default class LexicalHTMLRenderer {
         });
 
         return html;
+    }
+
+    private async _getDefaultDom(dom?: ExportDOMDom): Promise<ExportDOMDom> {
+        if (dom) {
+            return dom;
+        }
+
+        if (this.dom) {
+            return this.dom;
+        }
+
+        // JSDOM default is a Node-side convenience. Consumers in browser
+        // environments can pass any {window: {document}}-shaped object.
+        const {JSDOM} = await import('jsdom');
+
+        this.dom = new JSDOM();
+
+        return this.dom;
     }
 }

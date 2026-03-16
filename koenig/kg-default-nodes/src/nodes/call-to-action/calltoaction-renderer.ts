@@ -1,9 +1,10 @@
 import {addCreateDocumentOption} from '../../utils/add-create-document-option.js';
 import type {ExportDOMOptions} from '../../export-dom.js';
-import {renderWithVisibility, type RenderOutput, type Visibility} from '../../utils/visibility.js';
+import {renderWithVisibility, type Visibility} from '../../utils/visibility.js';
 import {getResizedImageDimensions} from '../../utils/get-resized-image-dimensions.js';
 import {isLocalContentImage} from '../../utils/is-local-content-image.js';
 import {buildCleanBasicHtmlForElement} from '../../utils/build-clean-basic-html-for-element.js';
+import {getFirstHtmlElement} from '../../utils/get-first-html-element.js';
 
 interface CTADataset {
     layout: string;
@@ -401,7 +402,7 @@ export function renderCallToActionNode(node: CTANodeData, options: CTARenderOpti
 
         emailDiv.innerHTML = emailCTATemplate(dataset, options);
 
-        return renderWithVisibility({element: emailDiv.firstElementChild as RenderOutput['element'], type: 'outer' as const}, node.visibility, options);
+        return renderWithVisibility({element: getFirstHtmlElement(emailDiv, 'renderCallToActionNode email'), type: 'outer' as const}, node.visibility, options);
     }
 
     if (dataset.hasSponsorLabel) {
@@ -415,5 +416,5 @@ export function renderCallToActionNode(node: CTANodeData, options: CTARenderOpti
 
     element.innerHTML = htmlString?.trim();
 
-    return renderWithVisibility({element: element.firstElementChild as RenderOutput['element'], type: 'outer' as const}, node.visibility, options);
+    return renderWithVisibility({element: getFirstHtmlElement(element, 'renderCallToActionNode'), type: 'outer' as const}, node.visibility, options);
 }

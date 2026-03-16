@@ -3,9 +3,7 @@ import type {ExportDOMOptions, ExportDOMOutput} from '../../export-dom.js';
 
 interface RenderOptions extends ExportDOMOptions {}
 
-export type PaywallExportDOMOutput = ExportDOMOutput<HTMLDivElement, 'inner'>;
-
-export function renderPaywallNode(_: unknown, options: RenderOptions = {}): PaywallExportDOMOutput {
+export function renderPaywallNode(_: unknown, options: RenderOptions = {}): ExportDOMOutput<'inner'> {
     addCreateDocumentOption(options);
     const document = options.createDocument!();
     const element = document.createElement('div');

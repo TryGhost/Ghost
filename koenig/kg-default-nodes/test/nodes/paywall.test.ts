@@ -7,6 +7,14 @@ import type {LexicalEditor} from 'lexical';
 
 const editorNodes = [PaywallNode];
 
+function getHTMLElement(element: HTMLElement | Text | null): HTMLElement {
+    if (!element || !('innerHTML' in element)) {
+        throw new Error('Expected exportDOM to return an HTMLElement');
+    }
+
+    return element as HTMLElement;
+}
+
 describe('PaywallNode', function () {
     let editor: LexicalEditor;
     let dataset: Record<string, unknown>;
@@ -91,7 +99,7 @@ describe('PaywallNode', function () {
             const {element, type} = paywallNode.exportDOM(exportOptions);
 
             type.should.equal('inner');
-            element.innerHTML.should.equal('<!--members-only-->');
+            getHTMLElement(element).innerHTML.should.equal('<!--members-only-->');
         }));
     });
 

@@ -1,5 +1,6 @@
 import {addCreateDocumentOption} from '../../utils/add-create-document-option.js';
 import type {ExportDOMOptions} from '../../export-dom.js';
+import {getFirstHtmlElement} from '../../utils/get-first-html-element.js';
 import {renderEmptyContainer} from '../../utils/render-empty-container.js';
 
 interface VideoNodeData {
@@ -65,7 +66,7 @@ export function renderVideoNode(node: VideoNodeData, options: VideoRenderOptions
     const element = document.createElement('div');
     element.innerHTML = htmlString.trim();
 
-    return {element: element.firstElementChild, type: 'outer' as const};
+    return {element: getFirstHtmlElement(element, 'renderVideoNode'), type: 'outer' as const};
 }
 
 export function cardTemplate({node, cardClasses}: {node: VideoNodeData, cardClasses: string}) {

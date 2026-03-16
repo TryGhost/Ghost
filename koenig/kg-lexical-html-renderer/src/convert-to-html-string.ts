@@ -1,9 +1,10 @@
-import {ElementNode, LexicalNode} from 'lexical';
 import {$getRoot, $isElementNode, $isLineBreakNode, $isParagraphNode, $isTextNode} from 'lexical';
 import {$isLinkNode} from '@lexical/link';
-import {$isKoenigCard, RendererOptions} from '@tryghost/kg-default-nodes';
-import TextContent from './utils/TextContent';
-import elementTransformers from './transformers';
+import {$isKoenigCard} from '@tryghost/kg-default-nodes';
+import TextContent from './utils/TextContent.js';
+import elementTransformers from './transformers/index.js';
+import type {ElementNode, LexicalNode} from 'lexical';
+import type {RendererOptions} from './types.js';
 
 export default function $convertToHtmlString(options: RendererOptions = {}): string {
     const output: string[] = [];
@@ -31,21 +32,19 @@ export default function $convertToHtmlString(options: RendererOptions = {}): str
 
 function exportTopLevelElementOrDecorator(node: LexicalNode, options: RendererOptions): string | null {
     if ($isKoenigCard(node)) {
-        // NOTE: kg-default-nodes appends type in rare cases to make use of this functionality... with moving to typescript,
-        //  we should change this implementation because it's confusing, or we should override the DOMExportOutput type
         const {element, type} = node.exportDOM(options);
 
         switch (type) {
         case 'inner':
-            return element.innerHTML;
+            return getElementInnerHTML(element);
         case 'value':
-            if ('value' in element) {
+            if (element && 'value' in element && typeof element.value === 'string') {
                 return element.value;
             }
 
             return '';
         default:
-            return element.outerHTML;
+            return getElementOuterHTML(element);
         }
     }
 
@@ -89,4 +88,20 @@ function exportChildren(node: ElementNode, options: RendererOptions): string {
     }
 
     return output.join('');
+}
+
+function getElementInnerHTML(element: HTMLElement | Text | null): string {
+    if (element && 'innerHTML' in element) {
+        return element.innerHTML;
+    }
+
+    return '';
+}
+
+function getElementOuterHTML(element: HTMLElement | Text | null): string {
+    if (element && 'outerHTML' in element) {
+        return element.outerHTML;
+    }
+
+    return '';
 }

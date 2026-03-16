@@ -2,6 +2,7 @@ import {addCreateDocumentOption} from '../../utils/add-create-document-option.js
 import type {ExportDOMOptions} from '../../export-dom.js';
 import {renderEmptyContainer} from '../../utils/render-empty-container.js';
 import {escapeHtml} from '../../utils/escape-html.js';
+import {getFirstHtmlElement} from '../../utils/get-first-html-element.js';
 import {bytesToSize} from '../../utils/size-byte-converter.js';
 
 interface FileNodeData {
@@ -86,7 +87,7 @@ function emailTemplate(node: FileNodeData, document: Document, options: RenderOp
     const container = document.createElement('div');
     container.innerHTML = html.trim();
 
-    return {element: container.firstElementChild, type: 'outer' as const};
+    return {element: getFirstHtmlElement(container, 'renderFileNode emailTemplate'), type: 'outer' as const};
 }
 
 function cardTemplate(node: FileNodeData, document: Document) {

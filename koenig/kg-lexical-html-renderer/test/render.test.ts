@@ -1,7 +1,7 @@
-const {shouldRender} = require('./utils');
-const {AtLinkNode, AtLinkSearchNode, ZWNJNode} = require('@tryghost/kg-default-nodes');
+import {shouldRender} from './utils/index.js';
+import {AtLinkNode, AtLinkSearchNode, ZWNJNode} from '@tryghost/kg-default-nodes';
 
-const Renderer = require('../build/LexicalHTMLRenderer').default;
+import {LexicalHTMLRenderer as Renderer} from '../src/index.js';
 
 describe('render()', function () {
     it('works with no options', async function () {
@@ -11,6 +11,16 @@ describe('render()', function () {
         const html = await renderer.render(editorState);
 
         html.should.eql(`<p>First paragraph</p><p>Second paragraph</p>`);
+    });
+
+    it('accepts an error handler callback', function () {
+        const renderer = new Renderer({
+            onError: (error: Error) => {
+                error.message.should.eql('test');
+            }
+        });
+
+        renderer.onError(new Error('test'));
     });
 
     it('escapes text content', shouldRender({

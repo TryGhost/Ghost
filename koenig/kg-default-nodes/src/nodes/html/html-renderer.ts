@@ -11,7 +11,7 @@ interface HtmlNodeData {
 interface RenderOptions extends ExportDOMOptions {}
 
 export type HtmlExportDOMOutput =
-    ExportDOMOutput<Element, 'inner' | 'value' | 'html'>;
+    ExportDOMOutput<'inner' | 'value' | 'html'>;
 
 export function renderHtmlNode(node: HtmlNodeData, options: RenderOptions = {}): HtmlExportDOMOutput {
     addCreateDocumentOption(options);
@@ -29,7 +29,7 @@ export function renderHtmlNode(node: HtmlNodeData, options: RenderOptions = {}):
     textarea.value = wrappedHtml;
 
     if (node.visibility) {
-        const renderOutput: ExportDOMOutput<HTMLTextAreaElement, 'value'> = {element: textarea, type: 'value'};
+        const renderOutput: ExportDOMOutput<'value'> = {element: textarea, type: 'value'};
         return renderWithVisibility(renderOutput, node.visibility, options) as HtmlExportDOMOutput;
     }
 

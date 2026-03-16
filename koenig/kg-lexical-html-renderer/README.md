@@ -22,8 +22,8 @@ or
 Basic usage:
 
 ```js
-const LexicalHTMLRenderer = require('@tryghost/kg-lexical-html-renderer');
-const renderer = new Renderer();
+const {LexicalHTMLRenderer} = require('@tryghost/kg-lexical-html-renderer');
+const renderer = new LexicalHTMLRenderer();
 
 const lexicalState = '{...}';
 const html = await renderer.render(lexicalState);

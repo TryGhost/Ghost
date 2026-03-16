@@ -1,5 +1,6 @@
 import {addCreateDocumentOption} from '../../utils/add-create-document-option.js';
 import type {ExportDOMOptions} from '../../export-dom.js';
+import {getFirstHtmlElement} from '../../utils/get-first-html-element.js';
 import {html} from '../../utils/tagged-template-fns.js';
 
 interface ToggleNodeData {
@@ -72,6 +73,6 @@ export function renderToggleNode(node: ToggleNodeData, options: RenderOptions = 
     const container = document.createElement('div');
     container.innerHTML = htmlString.trim();
 
-    const element = container.firstElementChild;
+    const element = getFirstHtmlElement(container, 'renderToggleNode');
     return {element, type: 'outer' as const};
 }

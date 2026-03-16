@@ -114,6 +114,10 @@ export class GeneratedDecoratorNodeBase<TDataset extends Record<string, unknown>
         return null;
     }
 
+    isKoenigCard(): true {
+        return true;
+    }
+
     hasDynamicData(): boolean {
         return false;
     }
@@ -189,6 +193,10 @@ export function generateDecoratorNode<
          */
         static getType() {
             return nodeType;
+        }
+
+        isKoenigCard(): true {
+            return true;
         }
 
         /**

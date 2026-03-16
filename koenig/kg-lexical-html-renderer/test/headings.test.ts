@@ -1,5 +1,5 @@
-const {ExtendedHeadingNode} = require('@tryghost/kg-default-nodes');
-const {shouldRender} = require('./utils');
+import {ExtendedHeadingNode} from '@tryghost/kg-default-nodes';
+import {shouldRender} from './utils/index.js';
 
 describe('Headings', function () {
     it('h1-h6', shouldRender({

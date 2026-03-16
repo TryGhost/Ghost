@@ -8,6 +8,5 @@ export {
     isVisibilityRestricted,
     migrateOldVisibilityFormat,
     renderWithVisibility,
-    type RenderOutput,
     type Visibility
 } from './utils/visibility.js';

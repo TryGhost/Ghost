@@ -1,9 +1,13 @@
-export type ExportDOMOutputType = 'inner' | 'outer' | 'value' | 'html';
+import type {DOMExportOutput as LexicalDOMExportOutput} from 'lexical';
 
-export interface ExportDOMOutput<TElement extends Element | null = Element | null, TType extends ExportDOMOutputType = ExportDOMOutputType> {
-    element: TElement;
+export type ExportDOMOutputType = 'inner' | 'outer' | 'value' | 'html';
+export type ExportDOMElement = LexicalDOMExportOutput['element'];
+
+export type ExportDOMOutput<
+    TType extends ExportDOMOutputType = ExportDOMOutputType
+> = LexicalDOMExportOutput & {
     type: TType;
-}
+};
 
 export interface ExportDOMFeatureOptions {
     emailCustomization?: boolean;

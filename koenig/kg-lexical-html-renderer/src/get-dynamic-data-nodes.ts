@@ -1,17 +1,17 @@
 import {$getRoot} from 'lexical';
-import {$isKoenigCard, KoenigDecoratorNode} from '@tryghost/kg-default-nodes';
-
+import {$isKoenigCard} from '@tryghost/kg-default-nodes';
+import type {KoenigCard} from '@tryghost/kg-default-nodes';
 import type {EditorState} from 'lexical';
 
-export default function getDynamicDataNodes(editorState: EditorState): KoenigDecoratorNode[] {
-    const dynamicNodes: KoenigDecoratorNode[] = [];
+export default function getDynamicDataNodes(editorState: EditorState): KoenigCard[] {
+    const dynamicNodes: KoenigCard[] = [];
 
     editorState.read(() => {
         const root = $getRoot();
         const nodes = root.getChildren();
 
         nodes.forEach((node) => {
-            if ($isKoenigCard(node) && node.hasDynamicData?.()) {
+            if ($isKoenigCard(node) && node.hasDynamicData()) {
                 dynamicNodes.push(node);
             }
         });

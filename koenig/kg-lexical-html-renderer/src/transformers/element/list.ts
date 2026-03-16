@@ -1,8 +1,8 @@
 import {$isListNode, $isListItemNode} from '@lexical/list';
 import type {ElementNode} from 'lexical';
 import type {ListNode} from '@lexical/list';
-import type {RendererOptions} from '@tryghost/kg-default-nodes';
-import type {ExportChildren} from '..';
+import type {RendererOptions} from '../../types.js';
+import type {ExportChildren} from '../index.js';
 
 const exportList = function (node: ElementNode, options: RendererOptions, exportChildren: ExportChildren): string | null {
     if (!$isListNode(node)) {
@@ -66,7 +66,7 @@ const exportList = function (node: ElementNode, options: RendererOptions, export
     }
 };
 
-module.exports = {
+export default {
     export(node: ElementNode, options: RendererOptions, exportChildren: ExportChildren) {
         return exportList(node, options, exportChildren);
     }

@@ -1,6 +1,7 @@
 import {addCreateDocumentOption} from '../../utils/add-create-document-option.js';
 import type {ExportDOMOptions} from '../../export-dom.js';
 import {renderEmptyContainer} from '../../utils/render-empty-container.js';
+import {getFirstHtmlElement} from '../../utils/get-first-html-element.js';
 import {getResizedImageDimensions} from '../../utils/get-resized-image-dimensions.js';
 
 interface ProductNodeData {
@@ -81,7 +82,7 @@ export function renderProductNode(node: ProductNodeData, options: ProductRenderO
     const element = document.createElement('div');
     element.innerHTML = htmlString.trim();
 
-    return {element: element.firstElementChild, type: 'outer' as const};
+    return {element: getFirstHtmlElement(element, 'renderProductNode'), type: 'outer' as const};
 }
 
 export function cardTemplate({data}: {data: ProductTemplateData}) {

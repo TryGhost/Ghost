@@ -36,8 +36,6 @@ export interface Visibility {
     [key: string]: unknown;
 }
 
-export type RenderOutput = ExportDOMOutput<Element>;
-
 export function isOldVisibilityFormat(visibility: Visibility) {
     return !Object.prototype.hasOwnProperty.call(visibility, 'web')
         || !Object.prototype.hasOwnProperty.call(visibility, 'email')
@@ -125,12 +123,18 @@ export function migrateOldVisibilityFormat(visibility: Visibility) {
     return newVisibility;
 }
 
-export function renderWithVisibility(originalRenderOutput: RenderOutput, visibility: Visibility | undefined, options: {target?: string}) {
+export function renderWithVisibility(originalRenderOutput: ExportDOMOutput, visibility: Visibility | undefined, options: {target?: string}) {
     if (!visibility) {
         return originalRenderOutput;
     }
 
-    const document = originalRenderOutput.element.ownerDocument;
+    const {element} = originalRenderOutput;
+
+    if (!element || !('ownerDocument' in element)) {
+        return originalRenderOutput;
+    }
+
+    const document = element.ownerDocument;
     const content = _getRenderContent(originalRenderOutput);
 
     const migrated = migrateOldVisibilityFormat(visibility);
@@ -171,20 +175,29 @@ export function renderWithVisibility(originalRenderOutput: RenderOutput, visibil
 
 /* Private functions -------------------------------------------------------- */
 
-function _getRenderContent({element, type}: RenderOutput) {
+function _getRenderContent({element, type}: ExportDOMOutput) {
     if (type === 'inner') {
-        return element.innerHTML;
-    } else if (type === 'value') {
-        if ('value' in element) {
-            return element.value as string;
+        if (element && 'innerHTML' in element) {
+            return element.innerHTML;
         }
+
+        return '';
+    } else if (type === 'value') {
+        if (element && 'value' in element && typeof element.value === 'string') {
+            return element.value;
+        }
+
         return '';
     } else {
-        return element.outerHTML;
+        if (element && 'outerHTML' in element) {
+            return element.outerHTML;
+        }
+
+        return '';
     }
 }
 
-function _renderWithEmailVisibility(document: Document, content: string, emailVisibility: {memberSegment: string}): ExportDOMOutput<HTMLDivElement, 'html'> {
+function _renderWithEmailVisibility(document: Document, content: string, emailVisibility: {memberSegment: string}): ExportDOMOutput<'html'> {
     const {memberSegment} = emailVisibility;
     const container = document.createElement('div');
     container.innerHTML = content;
@@ -193,7 +206,7 @@ function _renderWithEmailVisibility(document: Document, content: string, emailVi
     return {element: container, type: 'html' as const};
 }
 
-function _renderWithWebVisibility(document: Document, content: string, webVisibility: {nonMember: boolean; memberSegment: string}): ExportDOMOutput<HTMLTextAreaElement, 'value'> {
+function _renderWithWebVisibility(document: Document, content: string, webVisibility: {nonMember: boolean; memberSegment: string}): ExportDOMOutput<'value'> {
     const {nonMember, memberSegment} = webVisibility;
     const wrappedContent = `\n<!--kg-gated-block:begin nonMember:${nonMember} memberSegment:"${memberSegment}" -->${content}<!--kg-gated-block:end-->\n`;
     const textarea = document.createElement('textarea');

@@ -1,12 +1,12 @@
-import type {RendererOptions} from '@tryghost/kg-default-nodes';
 import {slugify} from '@tryghost/kg-utils';
+import type {RendererOptions} from '../types.js';
 
 function generateId(text: string, options: RendererOptions) {
     if (!options.usedIdAttributes) {
         options.usedIdAttributes = {};
     }
 
-    const id = slugify(text, options);
+    const id = slugify(text);
     let deduplicatedId = id;
 
     if (options.usedIdAttributes[id] !== undefined) {

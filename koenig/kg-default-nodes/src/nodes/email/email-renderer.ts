@@ -2,7 +2,6 @@ import {addCreateDocumentOption} from '../../utils/add-create-document-option.js
 import type {ExportDOMOptions, ExportDOMOutput} from '../../export-dom.js';
 import {removeSpaces, removeCodeWrappersFromHelpers, wrapReplacementStrings} from '../../utils/replacement-strings.js';
 import {renderEmptyContainer} from '../../utils/render-empty-container.js';
-import type {EmptyContainerOutput} from '../../utils/render-empty-container.js';
 
 interface EmailNodeData {
     html: string;
@@ -10,7 +9,7 @@ interface EmailNodeData {
 
 interface RenderOptions extends ExportDOMOptions {}
 
-export function renderEmailNode(node: EmailNodeData, options: RenderOptions = {}): EmptyContainerOutput | ExportDOMOutput<HTMLDivElement, 'inner'> {
+export function renderEmailNode(node: EmailNodeData, options: RenderOptions = {}): ExportDOMOutput<'inner'> {
     addCreateDocumentOption(options);
     const document = options.createDocument!();
 

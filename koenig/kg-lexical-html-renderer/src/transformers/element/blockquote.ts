@@ -1,9 +1,11 @@
+/* c8 ignore start */
 import {$isQuoteNode} from '@lexical/rich-text';
-import type {RendererOptions} from '@tryghost/kg-default-nodes';
+import type {RendererOptions} from '../../types.js';
 import type {ElementNode} from 'lexical';
-import type {ExportChildren} from '..';
+import type {ExportChildren} from '../index.js';
+/* c8 ignore stop */
 
-module.exports = {
+export default {
     export(node: ElementNode, options: RendererOptions, exportChildren: ExportChildren) {
         if (!$isQuoteNode(node)) {
             return null;

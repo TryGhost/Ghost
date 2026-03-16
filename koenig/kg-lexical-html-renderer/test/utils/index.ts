@@ -5,11 +5,11 @@
  */
 
 // Require overrides - these add globals for tests
-require('./overrides');
+import './overrides.js';
 
 // Require assertions - adds custom should assertions
-require('./assertions');
+import './assertions.js';
 
-module.exports = {
-    shouldRender: require('./should-render')
-};
+import shouldRender from './should-render.js';
+
+export {shouldRender};

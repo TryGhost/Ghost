@@ -8,7 +8,7 @@ interface MarkdownNodeData {
 
 interface MarkdownRenderOptions extends ExportDOMOptions {}
 
-export function renderMarkdownNode(node: MarkdownNodeData, options: MarkdownRenderOptions = {}): ExportDOMOutput<HTMLDivElement, 'inner'> {
+export function renderMarkdownNode(node: MarkdownNodeData, options: MarkdownRenderOptions = {}): ExportDOMOutput<'inner'> {
     addCreateDocumentOption(options);
     if (typeof options.createDocument !== 'function') {
         throw new TypeError('renderMarkdownNode requires options.createDocument to be a function');

@@ -1,13 +1,24 @@
-const {JSDOM} = require('jsdom');
-const Prettier = require('prettier');
-const Renderer = require('../');
-const {ImageNode, PaywallNode, HtmlNode} = require('@tryghost/kg-default-nodes');
+import {JSDOM} from 'jsdom';
+import Prettier from 'prettier';
+import {LexicalHTMLRenderer as Renderer} from '../src/index.js';
+import {ImageNode, PaywallNode, HtmlNode} from '@tryghost/kg-default-nodes';
 
 const nodes = [ImageNode, PaywallNode, HtmlNode];
 
+interface TestLexicalState {
+    root: {
+        children: Array<Record<string, unknown>>;
+        direction: string | null;
+        format: string;
+        indent: number;
+        type: string;
+        version: number;
+    };
+}
+
 describe('Cards', function () {
-    let lexicalState;
-    let options;
+    let lexicalState: TestLexicalState;
+    let options: Record<string, unknown>;
 
     beforeEach(function () {
         lexicalState = {

@@ -1,52 +1,33 @@
-import {fixupPluginRules} from '@eslint/compat';
 import eslint from '@eslint/js';
+import {defineConfig} from 'eslint/config';
 import ghostPlugin from 'eslint-plugin-ghost';
-import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
-const ghost = fixupPluginRules(ghostPlugin);
-
-export default tseslint.config(
-    {ignores: ['build/**', 'cjs/**', 'es/**']},
+export default defineConfig([
+    {ignores: ['build/**']},
     {
-        files: ['lib/**/*.ts'],
+        files: ['**/*.ts'],
         extends: [
             eslint.configs.recommended,
             tseslint.configs.recommended
         ],
-        plugins: {ghost},
         languageOptions: {
-            globals: globals.node
+            parserOptions: {ecmaVersion: 2022, sourceType: 'module'}
         },
+        plugins: {ghost: ghostPlugin},
         rules: {
             ...ghostPlugin.configs.ts.rules,
-            'ghost/filenames/match-exported-class': 'off',
-            '@typescript-eslint/no-unused-expressions': 'off',
-            '@typescript-eslint/no-require-imports': 'off'
+            '@typescript-eslint/no-explicit-any': 'error'
         }
     },
     {
-        files: ['test/**/*.js'],
-        extends: [
-            eslint.configs.recommended
-        ],
-        plugins: {ghost},
-        languageOptions: {
-            globals: {
-                ...globals.node,
-                ...globals.mocha,
-                should: true,
-                sinon: true
-            }
-        },
+        files: ['test/**/*.ts'],
         rules: {
-            ...ghostPlugin.configs.node.rules,
-            'no-unused-vars': ['error', {caughtErrors: 'none'}],
-            'ghost/filenames/match-exported-class': 'off',
-            'ghost/filenames/match-exported': 'off',
-            'ghost/filenames/match-regex': 'off',
-            ...ghostPlugin.configs.test.rules,
+            ...ghostPlugin.configs['ts-test'].rules,
+            'ghost/mocha/no-global-tests': 'off',
+            'ghost/mocha/handle-done-callback': 'off',
+            'ghost/mocha/no-mocha-arrows': 'off',
             'ghost/mocha/max-top-level-suites': 'off'
         }
     }
-);
+]);

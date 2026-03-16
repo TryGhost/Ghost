@@ -23,12 +23,7 @@ interface DefaultAudioRenderOptions extends RenderOptions {
 
 type AudioRenderOptions = EmailAudioRenderOptions | DefaultAudioRenderOptions;
 
-export type AudioExportDOMOutput =
-    | ExportDOMOutput<HTMLDivElement>
-    | ExportDOMOutput<HTMLTableElement>
-    | ExportDOMOutput<HTMLSpanElement, 'inner'>;
-
-export function renderAudioNode(node: AudioNodeData, options: AudioRenderOptions = {}): AudioExportDOMOutput {
+export function renderAudioNode(node: AudioNodeData, options: AudioRenderOptions = {}): ExportDOMOutput {
     addCreateDocumentOption(options);
     const document = options.createDocument!();
 

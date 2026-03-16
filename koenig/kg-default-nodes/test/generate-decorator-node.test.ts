@@ -25,6 +25,16 @@ function createRenderResult(tagName: 'div' | 'span', content: string) {
     };
 }
 
+function expectHtmlElement(output: ExportDOMOutput) {
+    const {element} = output;
+
+    if (!element || !('outerHTML' in element)) {
+        throw new Error('Expected exportDOM() to return an HTML element');
+    }
+
+    return element;
+}
+
 describe('Utils: generateDecoratorNode', function () {
     let editor: LexicalEditor;
 
@@ -65,7 +75,7 @@ describe('Utils: generateDecoratorNode', function () {
             const result = node.exportDOM();
 
             result.type.should.equal('inner');
-            result.element?.outerHTML.should.equal('<div>default render</div>');
+            expectHtmlElement(result).outerHTML.should.equal('<div>default render</div>');
         }));
 
         it('uses versioned default renderer (static version)', editorTest(function () {
@@ -83,7 +93,7 @@ describe('Utils: generateDecoratorNode', function () {
             const result = node.exportDOM();
 
             result.type.should.equal('inner');
-            result.element?.outerHTML.should.equal('<div>version 2</div>');
+            expectHtmlElement(result).outerHTML.should.equal('<div>version 2</div>');
         }));
 
         it('uses versioned default renderer (dataset version)', editorTest(function () {
@@ -101,7 +111,7 @@ describe('Utils: generateDecoratorNode', function () {
             const result = node.exportDOM();
 
             result.type.should.equal('inner');
-            result.element?.outerHTML.should.equal('<div>version 2</div>');
+            expectHtmlElement(result).outerHTML.should.equal('<div>version 2</div>');
         }));
 
         it('throws error when defaultRenderFn is not provided', editorTest(function () {
@@ -144,7 +154,7 @@ describe('Utils: generateDecoratorNode', function () {
                 });
 
                 result.type.should.equal('inner');
-                result.element?.outerHTML.should.equal('<span>custom render</span>');
+                expectHtmlElement(result).outerHTML.should.equal('<span>custom render</span>');
             }));
         });
 

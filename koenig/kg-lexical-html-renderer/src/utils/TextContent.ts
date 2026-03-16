@@ -1,7 +1,8 @@
-import {$isLinkNode, LinkNode} from '@lexical/link';
+import {$isLinkNode} from '@lexical/link';
 import {$isTextNode, $isLineBreakNode, TextNode} from 'lexical';
+import type {LinkNode} from '@lexical/link';
 import type {ElementNode, LexicalNode, TextFormatType} from 'lexical';
-import type {RendererOptions} from '@tryghost/kg-default-nodes';
+import type {RendererOptions} from '../types.js';
 
 type TextFormatAbbreviation = 'STRONG' | 'EM' | 'S' | 'U' | 'CODE' | 'SUB' | 'SUP' | 'MARK';
 type ExportChildren = (node: ElementNode, options: RendererOptions) => string;

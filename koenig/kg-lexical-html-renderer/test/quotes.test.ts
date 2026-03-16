@@ -1,5 +1,5 @@
-const {shouldRender} = require('./utils');
-const {AsideNode, ExtendedQuoteNode} = require('@tryghost/kg-default-nodes');
+import {shouldRender} from './utils/index.js';
+import {AsideNode, ExtendedQuoteNode} from '@tryghost/kg-default-nodes';
 
 describe('Quotes', function () {
     it('quote', shouldRender({

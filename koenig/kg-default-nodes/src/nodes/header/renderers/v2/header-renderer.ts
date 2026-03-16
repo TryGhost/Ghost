@@ -1,5 +1,6 @@
 import {addCreateDocumentOption} from '../../../../utils/add-create-document-option.js';
 import type {ExportDOMOptions} from '../../../../export-dom.js';
+import {getFirstHtmlElement} from '../../../../utils/get-first-html-element.js';
 import {slugify} from '../../../../utils/slugify.js';
 import {getSrcsetAttribute, type ImageRenderOptions} from '../../../../utils/srcset-attribute.js';
 
@@ -242,7 +243,7 @@ export function renderHeaderNodeV2(dataset: HeaderV2DatasetNode, options: Header
 
         emailDiv.innerHTML = emailTemplate(node, options)?.trim();
 
-        return {element: emailDiv.firstElementChild as HTMLDivElement, type: 'outer' as const};
+        return {element: getFirstHtmlElement(emailDiv, 'renderHeaderV2Node email') as HTMLDivElement, type: 'outer' as const};
     }
 
     const htmlString = cardTemplate(node, options);
@@ -264,7 +265,7 @@ export function renderHeaderNodeV2(dataset: HeaderV2DatasetNode, options: Header
         }
     }
 
-    return {element: element.firstElementChild as HTMLDivElement, type: 'outer' as const};
+    return {element: getFirstHtmlElement(element, 'renderHeaderV2Node') as HTMLDivElement, type: 'outer' as const};
 }
 
 export function getCardClasses(nodeData: HeaderV2NodeData) {
