@@ -187,6 +187,45 @@ describe('OfferBookshelfRepository', function () {
         });
     });
 
+    describe('#getById', function () {
+        it('returns offer when found', async function () {
+            const offerData = testUtils.DataGenerator.forKnex.createOffer({
+                product_id: product.get('id')
+            });
+            const offerModel = await Offer.add(offerData, {context: {internal: true}});
+
+            const offer = await repository.getById(offerModel.get('id'), {});
+
+            assert.equal(offer.id, offerModel.get('id'));
+        });
+
+        it('returns null when not found', async function () {
+            const result = await repository.getById('non-existent-id', {});
+
+            assert.equal(result, null);
+        });
+    });
+
+    describe('#getByStripeCouponId', function () {
+        it('returns offer when found', async function () {
+            const offerData = testUtils.DataGenerator.forKnex.createOffer({
+                product_id: product.get('id'),
+                stripe_coupon_id: 'test_coupon_123'
+            });
+            await Offer.add(offerData, {context: {internal: true}});
+
+            const offer = await repository.getByStripeCouponId('test_coupon_123', {});
+
+            assert.equal(offer.stripeCouponId, 'test_coupon_123');
+        });
+
+        it('returns null when not found', async function () {
+            const result = await repository.getByStripeCouponId('non-existent', {});
+
+            assert.equal(result, null);
+        });
+    });
+
     describe('#existsByName', function () {
         it('returns true when offer exists', async function () {
             const offerData = testUtils.DataGenerator.forKnex.createOffer({
@@ -216,6 +255,70 @@ describe('OfferBookshelfRepository', function () {
 
         it('returns false when offer does not exist', async function () {
             assert.equal(await repository.existsByCode('non-existent'), false);
+        });
+    });
+
+    describe('#getRedeemedOfferIdsForSubscription', function () {
+        it('returns offer ids redeemed for a subscription', async function () {
+            const offerData = testUtils.DataGenerator.forKnex.createOffer({
+                product_id: product.get('id')
+            });
+            const offerModel = await Offer.add(offerData, {context: {internal: true}});
+
+            const {member, subscription} = await createMemberWithSubscription();
+
+            await OfferRedemption.add({
+                offer_id: offerModel.get('id'),
+                member_id: member.get('id'),
+                subscription_id: subscription.get('id'),
+                created_at: new Date()
+            }, context);
+
+            const result = await repository.getRedeemedOfferIdsForSubscription(subscription.get('id'));
+
+            assert.deepEqual(result, [offerModel.get('id')]);
+        });
+
+        it('returns empty array when no redemptions exist', async function () {
+            const result = await repository.getRedeemedOfferIdsForSubscription('non-existent');
+
+            assert.deepEqual(result, []);
+        });
+    });
+
+    describe('#getRedeemedOfferIdsForSubscriptions', function () {
+        it('returns redemptions for multiple subscriptions', async function () {
+            const offerData = testUtils.DataGenerator.forKnex.createOffer({
+                product_id: product.get('id')
+            });
+            const offerModel = await Offer.add(offerData, {context: {internal: true}});
+
+            const {member, subscription} = await createMemberWithSubscription();
+
+            await OfferRedemption.add({
+                offer_id: offerModel.get('id'),
+                member_id: member.get('id'),
+                subscription_id: subscription.get('id'),
+                created_at: new Date()
+            }, context);
+
+            const result = await repository.getRedeemedOfferIdsForSubscriptions([subscription.get('id')]);
+
+            assert.equal(result.length, 1);
+            assert.equal(result[0].subscription_id, subscription.get('id'));
+            assert.equal(result[0].offer_id, offerModel.get('id'));
+        });
+
+        it('returns empty array for empty subscription list', async function () {
+            const result = await repository.getRedeemedOfferIdsForSubscriptions([]);
+
+            assert.deepEqual(result, []);
+        });
+
+        it('returns empty array when no redemptions exist', async function () {
+            const result = await repository.getRedeemedOfferIdsForSubscriptions(['non-existent']);
+
+            assert.deepEqual(result, []);
         });
     });
 });
