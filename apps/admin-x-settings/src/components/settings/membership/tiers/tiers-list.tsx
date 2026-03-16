@@ -30,14 +30,14 @@ const TierCard: React.FC<TierCardProps> = ({tier}) => {
             <div className='w-full grow' onClick={() => {
                 updateRoute({route: `tiers/${tier.id}`});
             }}>
-                <div className='text-[1.65rem] leading-tight font-bold tracking-tight text-black dark:text-white'>{tier.name}</div>
+                <div className='text-[1.65rem] font-bold leading-tight tracking-tight text-black dark:text-white'>{tier.name}</div>
                 <div className='mt-2 flex items-baseline'>
                     <span className="ml-1 translate-y-[-3px] text-md font-bold uppercase">{currencySymbol}</span>
                     <span className='text-xl font-bold tracking-tighter'>{numberWithCommas(currencyToDecimal(tier.monthly_price || 0))}</span>
                     {(tier.monthly_price && tier.monthly_price > 0) && <span className='text-sm text-grey-700'>/month</span>}
                 </div>
                 {tier.trial_days ?
-                    <div className='mt-1 mb-4'>
+                    <div className='mb-4 mt-1'>
                         <TrialDaysLabel size='sm' trialDays={tier.trial_days}/>
                     </div>
                     : ''

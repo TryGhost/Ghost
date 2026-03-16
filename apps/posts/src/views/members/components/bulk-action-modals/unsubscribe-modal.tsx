@@ -172,7 +172,7 @@ export function UnsubscribeModal({
                                     })}
                                     <input
                                         ref={inputRef}
-                                        className="min-w-[80px] flex-1 bg-transparent py-1 text-sm outline-hidden placeholder:text-muted-foreground"
+                                        className="outline-hidden min-w-[80px] flex-1 bg-transparent py-1 text-sm placeholder:text-muted-foreground"
                                         id="newsletter-search"
                                         placeholder={selectedIds.length === 0 ? 'Search newsletters...' : ''}
                                         value={search}
@@ -195,7 +195,7 @@ export function UnsubscribeModal({
                                     />
                                 </div>
                                 {listOpen && (
-                                    <div className="absolute top-full left-0 z-50 mt-1 w-full rounded-md border bg-white shadow-md dark:bg-gray-950">
+                                    <div className="absolute left-0 top-full z-50 mt-1 w-full rounded-md border bg-white shadow-md dark:bg-gray-950">
                                         <Command shouldFilter={false}>
                                             <CommandList className="max-h-64 overflow-y-auto">
                                                 <CommandEmpty>No newsletters found.</CommandEmpty>

@@ -10,7 +10,7 @@ const WelcomeEmailCustomizeModal = NiceModal.create(() => {
                 <DialogHeader>
                     <DialogTitle>Customize welcome emails</DialogTitle>
                 </DialogHeader>
-                <p className='text-sm text-muted-foreground'>Design customization options coming soon.</p>
+                <p className='text-muted-foreground text-sm'>Design customization options coming soon.</p>
                 <DialogFooter>
                     <Button variant='outline' onClick={() => modal.remove()}>Close</Button>
                     <Button onClick={() => modal.remove()}>Save</Button>

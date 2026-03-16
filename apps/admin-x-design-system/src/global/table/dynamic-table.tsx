@@ -98,7 +98,7 @@ const DynamicTable: React.FC<DynamicTableProps> = ({
     );
 
     tdClassName = clsx(
-        'w-full border-b group-hover:border-grey-200 dark:group-hover:border-grey-900',
+        'dark:group-hover:border-grey-900 w-full border-b group-hover:border-grey-200',
         border ? 'border-grey-200 dark:border-grey-900' : 'border-transparent',
         tdClassName
     );

@@ -39,7 +39,7 @@ export const TabButton: React.FC<TabButtonProps> = ({
     return (
         <TabsPrimitive.Trigger
             className={clsx(
-                'relative z-[1] cursor-pointer appearance-none pt-1 pb-1.5 text-md font-semibold whitespace-nowrap text-grey-700 transition-all after:invisible after:block after:h-px after:overflow-hidden after:font-bold after:text-transparent after:content-[attr(title)] data-[state=active]:text-black dark:text-white [&>span]:data-[state=active]:text-black [&>span]:data-[state=active]:dark:text-white',
+                'relative z-[1] cursor-pointer appearance-none whitespace-nowrap pb-1.5 pt-1 text-md font-semibold text-grey-700 transition-all after:invisible after:block after:h-px after:overflow-hidden after:font-bold after:text-transparent after:content-[attr(title)] data-[state=active]:text-black dark:text-white [&>span]:data-[state=active]:text-black [&>span]:data-[state=active]:dark:text-white',
                 border && 'border-b-2 border-transparent hover:border-grey-500 data-[state=active]:border-black data-[state=active]:dark:border-white data-[state=active]:dark:text-white'
             )}
             id={id}
@@ -48,7 +48,7 @@ export const TabButton: React.FC<TabButtonProps> = ({
             value={id}
             onClick={onClick}
         >
-            {icon && <Icon className='mr-1.5 mb-0.5 inline' name={icon} size='sm' />}
+            {icon && <Icon className='mb-0.5 mr-1.5 inline' name={icon} size='sm' />}
             {title}
             {(typeof counter === 'number') &&
                 <span className='ml-1.5 rounded-full bg-grey-200 px-1.5 py-[2px] text-xs font-medium text-grey-800 dark:bg-grey-900 dark:text-grey-300'>

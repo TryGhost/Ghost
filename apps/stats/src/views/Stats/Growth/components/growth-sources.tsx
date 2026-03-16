@@ -168,7 +168,7 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
         return (
             <TableBody>
                 <TableRow className='last:border-none'>
-                    <TableCell className='border-none py-12 group-hover:bg-transparent!' colSpan={appSettings?.paidMembersEnabled ? 4 : 2}>
+                    <TableCell className='group-hover:bg-transparent! border-none py-12' colSpan={appSettings?.paidMembersEnabled ? 4 : 2}>
                         <DisabledSourcesIndicator />
                     </TableCell>
                 </TableRow>
@@ -200,7 +200,7 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
             ) : (
                 <TableBody>
                     <TableRow className='last:border-none'>
-                        <TableCell className='border-none py-12 group-hover:bg-transparent!' colSpan={appSettings?.paidMembersEnabled ? 4 : 2}>
+                        <TableCell className='group-hover:bg-transparent! border-none py-12' colSpan={appSettings?.paidMembersEnabled ? 4 : 2}>
                             <EmptyIndicator
                                 description='Try adjusting your date range to see more data.'
                                 title={`No conversions ${getPeriodText(range)}`}
@@ -212,15 +212,15 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
                 </TableBody>
             )}
             {showViewAll && processedData.length > limit &&
-                <TableFooter className='border-none bg-transparent hover:bg-transparent!'>
+                <TableFooter className='hover:bg-transparent! border-none bg-transparent'>
                     <TableRow>
-                        <TableCell className='border-none bg-transparent px-0 pb-0 hover:bg-transparent!' colSpan={4}>
+                        <TableCell className='hover:bg-transparent! border-none bg-transparent px-0 pb-0' colSpan={4}>
                             <Sheet>
                                 <SheetTrigger asChild>
                                     <Button variant='outline'>View all <LucideIcon.TableOfContents /></Button>
                                 </SheetTrigger>
                                 <SheetContent className='overflow-y-auto pt-0 sm:max-w-[600px]'>
-                                    <SheetHeader className='sticky top-0 z-40 -mx-6 bg-background/60 p-6 backdrop-blur'>
+                                    <SheetHeader className='bg-background/60 sticky top-0 z-40 -mx-6 p-6 backdrop-blur'>
                                         <SheetTitle>{title}</SheetTitle>
                                         <SheetDescription>{description}</SheetDescription>
                                     </SheetHeader>

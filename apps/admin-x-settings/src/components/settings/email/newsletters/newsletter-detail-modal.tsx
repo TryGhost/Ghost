@@ -275,7 +275,7 @@ const Sidebar: React.FC<{
                         onChange={e => updateNewsletter({subscribe_on_signup: e.target.checked})}
                     />
                 </Form>
-                <div className='mt-10 mb-5'>
+                <div className='mb-5 mt-10'>
                     {newsletter.status === 'active' ? (!onlyOne && <Button color='red' disabled={activeNewsletters.length === 1} label='Archive newsletter' link onClick={confirmStatusChange}/>) : <Button color='green' label='Reactivate newsletter' link onClick={confirmStatusChange} />}
                 </div>
             </>
@@ -397,7 +397,7 @@ const Sidebar: React.FC<{
                 <Separator />
                 <div className='my-5 flex w-full items-start'>
                     <span>
-                        <Icon className='mt-[-1px] mr-2' colorClass='text-red' name='heart'/>
+                        <Icon className='mr-2 mt-[-1px]' colorClass='text-red' name='heart'/>
                     </span>
                     <Form marginBottom={false}>
                         <Toggle
@@ -762,7 +762,7 @@ const Sidebar: React.FC<{
 
     return (
         <div className='flex flex-col'>
-            <div className='px-7 pt-0 pb-7'>
+            <div className='px-7 pb-7 pt-0'>
                 <TabView selectedTab={selectedTab} stickyHeader={true} tabs={tabs} onTabChange={handleTabChange} />
             </div>
         </div>

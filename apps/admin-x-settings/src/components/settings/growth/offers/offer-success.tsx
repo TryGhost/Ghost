@@ -83,7 +83,7 @@ const OfferSuccess: React.FC<{id: string}> = ({id}) => {
         width={1140}
     >
         <div className='-mt-6 flex h-full flex-col items-center justify-center text-center'>
-            <div className='absolute top-5 left-6'>
+            <div className='absolute left-6 top-5'>
                 <Breadcrumbs
                     activeItemClassName='hidden md:block! md:visible!'
                     containerClassName='whitespace-nowrap'

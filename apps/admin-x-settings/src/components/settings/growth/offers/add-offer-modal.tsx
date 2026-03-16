@@ -235,7 +235,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                                     }}
                                     onKeyDown={() => clearError('amount')}
                                 />
-                                <div className='absolute top-6 right-1.5 z-10'>
+                                <div className='absolute right-1.5 top-6 z-10'>
                                     <Select
                                         clearBg={true}
                                         controlClasses={{menu: 'w-20 right-0'}}

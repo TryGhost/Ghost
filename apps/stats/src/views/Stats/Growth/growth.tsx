@@ -178,7 +178,7 @@ const Growth: React.FC = () => {
                     <CardContent>
                         <Table>
                             <TableHeader>
-                                <TableRow className='[&>th]:h-auto [&>th]:pt-0 [&>th]:pb-2'>
+                                <TableRow className='[&>th]:h-auto [&>th]:pb-2 [&>th]:pt-0'>
                                     <TableHead className='min-w-[320px] pl-0'>
                                         <Tabs defaultValue={selectedContentType} variant='button-sm' onValueChange={(value: string) => {
                                             setSelectedContentType(value as ContentType);
@@ -235,7 +235,7 @@ const Growth: React.FC = () => {
                                     ) : (
                                         !appSettings?.analytics.membersTrackSources ? (
                                             <TableRow className='last:border-none'>
-                                                <TableCell className='border-none py-12 group-hover:bg-transparent!' colSpan={appSettings?.paidMembersEnabled ? 4 : 2}>
+                                                <TableCell className='group-hover:bg-transparent! border-none py-12' colSpan={appSettings?.paidMembersEnabled ? 4 : 2}>
                                                     <DisabledSourcesIndicator />
                                                 </TableCell>
                                             </TableRow>
@@ -246,7 +246,7 @@ const Growth: React.FC = () => {
                                                         <div className='group/link inline-flex flex-col items-start gap-px'>
                                                             {post.post_id && post.attribution_type === 'post' ?
                                                                 <Button
-                                                                    className='h-auto p-0 text-left leading-tight font-medium whitespace-normal hover:underline!'
+                                                                    className='hover:underline! h-auto whitespace-normal p-0 text-left font-medium leading-tight'
                                                                     title='View post analytics'
                                                                     variant='link'
                                                                     onClick={getClickHandler(post.attribution_url, post.post_id, site.url || '', navigate, post.attribution_type)}
@@ -280,7 +280,7 @@ const Growth: React.FC = () => {
                                             ))
                                         ) : (
                                             <TableRow className='border-none'>
-                                                <TableCell className='py-12 group-hover:bg-transparent!' colSpan={appSettings?.paidMembersEnabled ? 4 : 2}>
+                                                <TableCell className='group-hover:bg-transparent! py-12' colSpan={appSettings?.paidMembersEnabled ? 4 : 2}>
                                                     <EmptyIndicator
                                                         description='Try adjusting your date range to see more data.'
                                                         title={`No conversions ${getPeriodText(range)}`}

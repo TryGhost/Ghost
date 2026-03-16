@@ -45,7 +45,7 @@ function CommentReportsModal({comment, open, onOpenChange}: CommentReportsModalP
                                 <span className="shrink-0 font-semibold">
                                     {comment.member?.name || 'Unknown'}
                                 </span>
-                                <LucideIcon.Dot className="shrink-0 text-muted-foreground/50" size={16} />
+                                <LucideIcon.Dot className="text-muted-foreground/50 shrink-0" size={16} />
                                 <span className="shrink-0 text-muted-foreground">
                                     {comment.created_at && formatTimestamp(comment.created_at)}
                                 </span>
@@ -79,7 +79,7 @@ function CommentReportsModal({comment, open, onOpenChange}: CommentReportsModalP
                                                 memberId={report.member?.id}
                                             />
                                             {/* Red flag overlay */}
-                                            <div className="absolute -right-0.5 -bottom-0.5 flex size-4 items-center justify-center rounded-full bg-red text-white">
+                                            <div className="absolute -bottom-0.5 -right-0.5 flex size-4 items-center justify-center rounded-full bg-red text-white">
                                                 <LucideIcon.Flag className="size-2.5" fill="currentColor" />
                                             </div>
                                         </div>

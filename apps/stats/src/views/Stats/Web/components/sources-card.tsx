@@ -36,7 +36,7 @@ const SourcesTable: React.FC<SourcesTableProps> = ({tableHeader, data, defaultSo
                     return (
                         <DataListRow
                             key={row.source}
-                            className={onSourceClick ? 'group/row cursor-pointer transition-colors hover:bg-accent/50' : 'group/row'}
+                            className={onSourceClick ? 'group/row hover:bg-accent/50 cursor-pointer transition-colors' : 'group/row'}
                             data-testid={`source-row-${row.isDirectTraffic ? 'direct' : row.source}`}
                             onClick={onSourceClick ? () => handleRowClick(row) : undefined}
                         >
@@ -129,7 +129,7 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
 
     return (
         <Card className='group/datalist' data-testid='top-sources-card'>
-            <div className='flex items-center justify-between gap-6 px-6 pt-6 pb-5'>
+            <div className='flex items-center justify-between gap-6 px-6 pb-5 pt-6'>
                 <CardHeader className='p-0'>
                     <CardTitle>{title}</CardTitle>
                     <CardDescription>{description}</CardDescription>
@@ -137,8 +137,8 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
             </div>
             <CardContent className='overflow-hidden'>
                 <div className='mb-2 flex h-6 items-center justify-between'>
-                    <div className='text-xs font-medium tracking-wide text-muted-foreground uppercase'>Source</div>
-                    <div className='text-xs font-medium tracking-wide text-muted-foreground uppercase'>Visitors</div>
+                    <div className='text-xs font-medium uppercase tracking-wide text-muted-foreground'>Source</div>
+                    <div className='text-xs font-medium uppercase tracking-wide text-muted-foreground'>Visitors</div>
                 </div>
                 <Separator />
                 {isLoading && !data ?
@@ -166,7 +166,7 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
                             <Button variant='outline'>View all <LucideIcon.TableOfContents /></Button>
                         </SheetTrigger>
                         <SheetContent className='overflow-y-auto pt-0 sm:max-w-[600px]'>
-                            <SheetHeader className='sticky top-0 z-40 -mx-6 bg-background/60 p-6 backdrop-blur'>
+                            <SheetHeader className='bg-background/60 sticky top-0 z-40 -mx-6 p-6 backdrop-blur'>
                                 <SheetTitle>{title}</SheetTitle>
                                 <SheetDescription>{description}</SheetDescription>
                             </SheetHeader>

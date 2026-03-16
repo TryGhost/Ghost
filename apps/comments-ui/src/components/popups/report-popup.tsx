@@ -63,7 +63,7 @@ const ReportPopup = ({comment}: {comment: Comment}) => {
                 <h1 className="mb-1.5 font-sans text-[2.2rem] font-bold tracking-tight text-black">
                     <span>{t('Report this comment?')}</span>
                 </h1>
-                <p className="text-md px-4 font-sans leading-9 text-black sm:pr-4 sm:pl-0">{t('Your request will be sent to the owner of this site.')}</p>
+                <p className="text-md px-4 font-sans leading-9 text-black sm:pl-0 sm:pr-4">{t('Your request will be sent to the owner of this site.')}</p>
                 <div className="mt-auto flex flex-col items-center justify-start gap-4 sm:mt-8 sm:flex-row">
                     <button
                         className={`text-md flex h-[44px] w-full items-center justify-center rounded-md px-4 font-sans font-medium text-white transition duration-200 ease-linear sm:w-fit ${buttonColor} opacity-100 hover:opacity-90`}

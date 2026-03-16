@@ -225,7 +225,7 @@ const Modal = forwardRef<HTMLElement, ModalProps>(({
     if (stickyHeader) {
         headerClasses = clsx(
             headerClasses,
-            'sticky top-0 z-[300] -mb-4 bg-white pb-4! dark:bg-black'
+            'pb-4! sticky top-0 z-[300] -mb-4 bg-white dark:bg-black'
         );
     }
 
@@ -445,7 +445,7 @@ const Modal = forwardRef<HTMLElement, ModalProps>(({
                 {header === false ? '' : (!topRightContent || topRightContent === 'close' ?
                     (<header className={headerClasses}>
                         {title && <Heading level={3}>{title}</Heading>}
-                        <div className={`${topRightContent !== 'close' && 'md:!invisible md:!hidden'} ${hideXOnMobile && 'hidden'} absolute top-6 right-6`}>
+                        <div className={`${topRightContent !== 'close' && 'md:!invisible md:!hidden'} ${hideXOnMobile && 'hidden'} absolute right-6 top-6`}>
                             <Button aria-label='Close modal' className='-m-2 cursor-pointer p-2 opacity-50 hover:opacity-100' icon='close' iconColorClass='text-black dark:text-white' size='sm' testId='close-modal' unstyled onClick={removeModal} />
                         </div>
                     </header>)

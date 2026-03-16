@@ -27,7 +27,7 @@ const Flag: React.FC<FlagProps> = ({
             <ReactFlag
                 className='absolute w-auto max-w-none rounded-[2px]'
                 code={`${countryCode}`}
-                fallback={fallback || <span className='h-[14px] w-[22px] rounded-[2px] bg-muted-foreground/20' style={sizeStyle}></span>}
+                fallback={fallback || <span className='bg-muted-foreground/20 h-[14px] w-[22px] rounded-[2px]' style={sizeStyle}></span>}
                 style={{
                     height: height
                 }} />

@@ -64,7 +64,7 @@ const Header: React.FC<HeaderProps> = ({onToggleMobileSidebar, showBorder = true
     return (
         <>
             {onlyBackButton ?
-                <div className='sticky top-8 left-0 z-50 inline-block max-lg:flex max-lg:items-center max-lg:justify-between max-lg:pr-[15.5px] max-md:top-4'>
+                <div className='sticky left-0 top-8 z-50 inline-block max-lg:flex max-lg:items-center max-lg:justify-between max-lg:pr-[15.5px] max-md:top-4'>
                     <div>{backActive && <BackButton className='ml-6 max-md:ml-[10px]' />}</div>
                     {!backActive && <MobileMenuButton onToggleMobileSidebar={onToggleMobileSidebar} />}
                 </div>

@@ -210,12 +210,12 @@ const RetentionOfferSidebar: React.FC<{
                             <div className='flex items-end justify-between'>
                                 <div className='flex flex-col gap-5'>
                                     <div className='flex flex-col gap-1.5'>
-                                        <span className='text-xs leading-none font-semibold text-grey-700'>Performance</span>
+                                        <span className='text-xs font-semibold leading-none text-grey-700'>Performance</span>
                                         <span>{redemptions} {redemptions === 1 ? 'redemption' : 'redemptions'}</span>
                                     </div>
                                     {redemptions > 0 && lastRedeemed ?
                                         <div className='flex flex-col gap-1.5'>
-                                            <span className='text-xs leading-none font-semibold text-grey-700'>Last redemption</span>
+                                            <span className='text-xs font-semibold leading-none text-grey-700'>Last redemption</span>
                                             <span>{formatOfferTimestamp(lastRedeemed)}</span>
                                         </div> :
                                         null
