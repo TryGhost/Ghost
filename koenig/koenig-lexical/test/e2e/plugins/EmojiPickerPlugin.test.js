@@ -110,9 +110,11 @@ test.describe('Emoji Picker Plugin', async function () {
     test('can use punctuation', async function () {
         await focusEditor(page);
 
-        await page.keyboard.type(':t-rex');
+        await page.keyboard.type(':t-rex', {delay: 10});
         await expect(page.getByTestId('emoji-menu')).toBeVisible();
 
+        // small wait for emoji picker to fully process typed characters
+        await page.waitForTimeout(50);
         await page.keyboard.press('Enter');
         await assertHTML(page, '<p dir="ltr"><span data-lexical-text="true">🦖</span></p>');
     });

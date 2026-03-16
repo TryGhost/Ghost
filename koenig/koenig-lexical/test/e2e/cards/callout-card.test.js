@@ -310,7 +310,7 @@ test.describe('Callout Card', async () => {
         // can insert card from snippet
         await page.keyboard.press('Enter');
         await page.keyboard.type('/snippet');
-        await page.waitForSelector('[data-kg-cardmenu-selected="true"]');
+        await expect(page.locator('[data-kg-cardmenu-selected="true"]').filter({hasText: 'snippet'})).toBeVisible();
         await page.keyboard.press('Enter');
         await expect(await page.locator('[data-kg-card="callout"]')).toHaveCount(2);
     });

@@ -419,6 +419,9 @@ export async function insertCard(page, {cardName, nth = 0}) {
 
 export async function createSnippet(page) {
     await page.waitForSelector('[data-testid="create-snippet"]');
+    // Small wait for toolbar to stabilize after card state transitions
+    // (React re-renders can detach and re-mount toolbar elements)
+    await page.waitForTimeout(50);
     await page.getByTestId('create-snippet').click();
     await page.getByTestId('snippet-name').fill('snippet');
     await page.keyboard.press('Enter');

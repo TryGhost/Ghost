@@ -365,10 +365,14 @@ test.describe('Product card', async () => {
         await page.keyboard.press('Escape');
 
         // Check that the toolbar is displayed
-        await expect(await page.locator('[data-kg-card-toolbar="product"]')).toBeVisible();
+        await expect(page.locator('[data-kg-card-toolbar="product"]')).toBeVisible();
+
+        // Wait for card to finish transitioning to selected (non-editing) state
+        await expect(page.locator('[data-kg-card="product"]')).toHaveAttribute('data-kg-card-editing', 'false');
+        // Small wait for toolbar to stabilize after card state transition
+        await page.waitForTimeout(50);
 
         // Edit video card
-        await page.waitForSelector('[data-testid="edit-product-card"]');
         await page.getByTestId('edit-product-card').click();
 
         await assertHTML(page, html`

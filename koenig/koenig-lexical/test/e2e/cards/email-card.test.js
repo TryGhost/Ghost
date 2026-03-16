@@ -119,10 +119,13 @@ test.describe('Email card', async () => {
         await focusEditor(page);
         await insertEmailCard(page);
 
+        // Wait for card to be in editing mode before moving away
+        const emailCard = page.locator('[data-kg-card="email"]');
+        await expect(emailCard).toHaveAttribute('data-kg-card-editing', 'true');
+
         // Shift focus away from email card
         await page.keyboard.press('ArrowDown');
 
-        const emailCard = page.locator('[data-kg-card="email"]');
         await expect(emailCard).toHaveAttribute('data-kg-card-editing', 'false');
     });
 
@@ -176,7 +179,7 @@ test.describe('Email card', async () => {
         // can insert card from snippet
         await page.keyboard.press('Enter');
         await page.keyboard.type('/snippet');
-        await page.waitForSelector('[data-kg-cardmenu-selected="true"]');
+        await expect(page.locator('[data-kg-cardmenu-selected="true"]').filter({hasText: 'snippet'})).toBeVisible();
         await page.keyboard.press('Enter');
         await expect(await page.locator('[data-kg-card="email"]')).toHaveCount(2);
     });
