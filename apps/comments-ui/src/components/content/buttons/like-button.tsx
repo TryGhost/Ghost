@@ -37,7 +37,7 @@ const LikeButton: React.FC<Props> = ({comment}) => {
 
     return (
         <button
-            className={`duration-50 group flex cursor-pointer items-center font-sans text-base outline-0 transition-all ease-linear sm:text-sm ${
+            className={`group flex cursor-pointer items-center font-sans text-base outline-0 transition-all duration-50 ease-linear sm:text-sm ${
                 comment.liked ? 'text-black/90 dark:text-white/90' : 'text-black/50 hover:text-black/75 dark:text-white/60 dark:hover:text-white/75'
             }`}
             data-testid="like-button"

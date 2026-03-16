@@ -86,7 +86,7 @@ const CommentContextMenu: React.FC<Props> = ({comment, close, toggleEdit}) => {
 
     return (
         <div ref={element} className="relative" data-testid="comment-context-menu" onClick={stopPropagation}>
-            <div ref={innerElement} className={`absolute z-10 min-w-min whitespace-nowrap rounded bg-white p-1 font-sans text-sm shadow-lg outline-0 sm:min-w-[80px] dark:bg-neutral-800 dark:text-white`} data-testid="comment-context-menu-inner">
+            <div ref={innerElement} className={`absolute z-10 min-w-min rounded bg-white p-1 font-sans text-sm whitespace-nowrap shadow-lg outline-0 sm:min-w-[80px] dark:bg-neutral-800 dark:text-white`} data-testid="comment-context-menu-inner">
                 {contextMenu}
             </div>
         </div>

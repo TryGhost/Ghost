@@ -38,7 +38,7 @@ const CTABox: React.FC<Props> = ({isFirst, isPaid}) => {
             <p className="mb-[28px] w-full px-0 text-center font-sans text-lg leading-normal text-neutral-600 sm:max-w-screen-sm sm:px-8 dark:text-[rgba(255,255,255,0.85)]">
                 {text}
             </p>
-            <button className="text-md mb-[12px] inline-block rounded px-5 py-[14px] font-sans font-medium leading-none text-white transition-all hover:opacity-90" data-testid="signup-button" style={buttonStyle} type="button" onClick={handleSignUpClick}>
+            <button className="text-md mb-[12px] inline-block rounded px-5 py-[14px] font-sans leading-none font-medium text-white transition-all hover:opacity-90" data-testid="signup-button" style={buttonStyle} type="button" onClick={handleSignUpClick}>
                 {(isPaid && member) ? t('Upgrade now') : t('Sign up now')}
             </button>
             {!member && (<p className="text-md text-center font-sans text-[rgba(0,0,0,0.4)] dark:text-[rgba(255,255,255,0.5)]">

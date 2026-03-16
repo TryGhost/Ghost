@@ -220,7 +220,7 @@ const Overview: React.FC = () => {
                     topPostsData={topPostsData}
                 />
                 <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
-                    <H3 className='-mb-4 mt-4 lg:col-span-2'>Grow your audience</H3>
+                    <H3 className='mt-4 -mb-4 lg:col-span-2'>Grow your audience</H3>
                     <HelpCard
                         description='Find out how to review the performance of your content and get the most out of post analytics in Ghost.'
                         title='Understanding analytics in Ghost'
